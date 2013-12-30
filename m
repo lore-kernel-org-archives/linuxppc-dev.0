@@ -2,25 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 924A82C00ED
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 14:59:58 +1100 (EST)
-Message-ID: <1388375977.4373.26.camel@pasglop>
-Subject: Re: [PATCH] of/irq: Fix device_node refcount in of_irq_parse_raw()
+ by ozlabs.org (Postfix) with ESMTPS id 028E02C0172
+ for <linuxppc-dev@ozlabs.org>; Mon, 30 Dec 2013 15:37:56 +1100 (EST)
+Message-ID: <1388378259.4373.30.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robherring2@gmail.com>
-Date: Mon, 30 Dec 2013 14:59:37 +1100
-In-Reply-To: <CAL_JsqJRtk+U4nA7hh9Kh2C4UgbWP6V7sYMnTpAooR_zaySZaw@mail.gmail.com>
-References: <1387301573-30502-1-git-send-email-clg@fr.ibm.com>
- <1388371049.4373.22.camel@pasglop>
- <CAL_JsqJRtk+U4nA7hh9Kh2C4UgbWP6V7sYMnTpAooR_zaySZaw@mail.gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 30 Dec 2013 15:37:39 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,139 +22,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2013-12-29 at 20:42 -0600, Rob Herring wrote:
-> On Sun, Dec 29, 2013 at 8:37 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> 
->         On Tue, 2013-12-17 at 18:32 +0100, Cédric Le Goater wrote:
->         > Commit 2361613206e6, "of/irq: Refactor interrupt-map
->         parsing" changed
->         > the refcount on the device_node causing an error in
->         of_node_put():
->         
->         
->         Grant, Thierry, this is a regression, please send to Linus
->         ASAP...
->         
-> 
-> 
-> I'm working on doing that right this moment.
+Hi Linus !
 
-Thanks, looks like I'm not the only trying to get some work done
-today :)
+Here are a few more powerpc fixes for 3.13. A bit more endian
+problems found during testing of 3.13 and a few other simple fixes
+and regressions fixes.
 
 Cheers,
 Ben.
 
-> 
-> Rob
-> 
->         Cheers,
->         Ben.
->         
->         > ERROR: Bad of_node_put() on /pci@800000020000000
->         > CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc3-dirty
->         #2
->         > Call Trace:
->         > [c00000003e403500] [c0000000000144fc] .show_stack+0x7c/0x1f0
->         (unreliable)
->         > [c00000003e4035d0] [c00000000070f250] .dump_stack+0x88/0xb4
->         > [c00000003e403650] [c0000000005e8768] .of_node_release
->         +0xd8/0xf0
->         > [c00000003e4036e0] [c0000000005eeafc] .of_irq_parse_one
->         +0x10c/0x280
->         > [c00000003e4037a0] [c0000000005efd4c] .of_irq_parse_pci
->         +0x3c/0x1d0
->         > [c00000003e403840] [c000000000038240] .pcibios_setup_device
->         +0xa0/0x2e0
->         > [c00000003e403910]
->         [c0000000000398f0] .pcibios_setup_bus_devices+0x60/0xd0
->         > [c00000003e403990] [c00000000003b3a4] .__of_scan_bus
->         +0x1a4/0x2b0
->         > [c00000003e403a80] [c00000000003a62c] .pcibios_scan_phb
->         +0x30c/0x410
->         > [c00000003e403b60] [c0000000009fe430] .pcibios_init
->         +0x7c/0xd4
->         >
->         > This patch adjusts the refcount in the walk of the interrupt
->         tree.
->         > When a match is found, there is no need to increase the
->         refcount
->         > on 'out_irq->np' as 'newpar' is already holding a ref. The
->         refcount
->         > balance between 'ipar' and 'newpar' is maintained in the
->         skiplevel:
->         > goto label.
->         >
->         > This patch also removes the usage of the device_node
->         variable 'old'
->         > which seems useless after the latest changes.
->         >
->         > Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
->         > ---
->         >
->         > This patch was tested on powerpc, pseries and powernv. This
->         is a
->         > new area for me so I might have missed a path. Please take a
->         look.
->         >
->         > We could now introduce an helper routine to look for
->         #address-cells in
->         > of_irq_parse_raw(). This can be the subject of another
->         patch.
->         >
->         > Thanks,
->         >
->         > C.
->         >
->         >  drivers/of/irq.c |    5 +----
->         >  1 file changed, 1 insertion(+), 4 deletions(-)
->         >
->         > diff --git a/drivers/of/irq.c b/drivers/of/irq.c
->         > index 786b0b47fae4..27212402c532 100644
->         > --- a/drivers/of/irq.c
->         > +++ b/drivers/of/irq.c
->         > @@ -165,7 +165,6 @@ int of_irq_parse_raw(const __be32 *addr,
->         struct of_phandle_args *out_irq)
->         >               if (of_get_property(ipar,
->         "interrupt-controller", NULL) !=
->         >                               NULL) {
->         >                       pr_debug(" -> got it !\n");
->         > -                     of_node_put(old);
->         >                       return 0;
->         >               }
->         >
->         > @@ -250,8 +249,7 @@ int of_irq_parse_raw(const __be32 *addr,
->         struct of_phandle_args *out_irq)
->         >                * Successfully parsed an interrrupt-map
->         translation; copy new
->         >                * interrupt specifier into the out_irq
->         structure
->         >                */
->         > -             of_node_put(out_irq->np);
->         > -             out_irq->np = of_node_get(newpar);
->         > +             out_irq->np = newpar;
->         >
->         >               match_array = imap - newaddrsize - newintsize;
->         >               for (i = 0; i < newintsize; i++)
->         > @@ -268,7 +266,6 @@ int of_irq_parse_raw(const __be32 *addr,
->         struct of_phandle_args *out_irq)
->         >       }
->         >   fail:
->         >       of_node_put(ipar);
->         > -     of_node_put(out_irq->np);
->         >       of_node_put(newpar);
->         >
->         >       return -EINVAL;
->         
->         
->         --
->         
->         To unsubscribe from this list: send the line "unsubscribe
->         devicetree" in
->         the body of a message to majordomo@vger.kernel.org
->         More majordomo info at
->          http://vger.kernel.org/majordomo-info.html
->         
-> 
-> 
+The following changes since commit 803c2d2f84da9dc2619449994af34d27148ab20d:
+
+  powerpc/powernv: Fix OPAL LPC access in Little Endian (2013-12-13 15:55:15 +1100)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to f991db1cf1bdca43675b5d2df0af991719727029:
+
+  Merge remote-tracking branch 'agust/merge' into merge (2013-12-30 14:48:27 +1100)
+
+----------------------------------------------------------------
+
+Anton Blanchard (1):
+      powerpc: Align p_end
+
+Brian W Hart (2):
+      powernv/eeh: Fix possible buffer overrun in ioda_eeh_phb_diag()
+      powernv/eeh: Add buffer for P7IOC hub error data
+
+Gerhard Sittig (1):
+      powerpc/512x: dts: remove misplaced IRQ spec from 'soc' node (5125)
+
+Matteo Facchinetti (1):
+      powerpc/512x: dts: disable MPC5125 usb module
+
+Michael Neuling (1):
+      powerpc: Fix bad stack check in exception entry
+
+Olof Johansson (1):
+      powerpc: Fix alignment of secondary cpu spin vars
+
+Paul E. McKenney (1):
+      powerpc: Make 64-bit non-VMX __copy_tofrom_user bi-endian
+
+Rajesh B Prathipati (1):
+      powerpc: Make unaligned accesses endian-safe for powerpc
+
+ arch/powerpc/boot/dts/mpc5125twr.dts      |  6 +++-
+ arch/powerpc/include/asm/exception-64s.h  |  2 +-
+ arch/powerpc/include/asm/unaligned.h      |  7 +++-
+ arch/powerpc/kernel/head_64.S             |  2 ++
+ arch/powerpc/lib/copyuser_64.S            | 53 ++++++++++++++++++++++---------
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 20 +++---------
+ arch/powerpc/platforms/powernv/pci.h      |  4 ++-
+ 7 files changed, 60 insertions(+), 34 deletions(-)
