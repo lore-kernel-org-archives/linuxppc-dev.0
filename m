@@ -1,33 +1,19 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0CED22C00E9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 17:04:48 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 30 Dec 2013 16:04:45 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 47B5A2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 17:04:42 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- rBU5k7Mk55640168
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 16:46:07 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- rBU64fm3024482
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 17:04:42 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V2] POWERPC: BOOK3S: KVM: Use the saved dsisr and dar values
- on book3s 64
-Date: Mon, 30 Dec 2013 11:34:29 +0530
-Message-Id: <1388383469-6411-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <geert@linux-m68k.org>
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+ by ozlabs.org (Postfix) with ESMTP id 48C382C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 20:07:49 +1100 (EST)
+Received: from juliette.telenet-ops.be (juliette.telenet-ops.be
+ [195.130.137.74])
+ by winston.telenet-ops.be (Postfix) with ESMTP id 1702F1BD61C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 10:07:46 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geoff Levand <geoff@infradead.org>,
+	Jim Paris <jim@jtan.com>
+Subject: [PATCH] block/ps3: Remove obsolete reference to MTD
+Date: Mon, 30 Dec 2013 10:07:43 +0100
+Message-Id: <1388394463-25798-1-git-send-email-geert@linux-m68k.org>
+Cc: cbe-oss-dev@lists.ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,70 +23,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+The ps3vram driver is a plain block device driver since commit
+f507cd22035fdadd5dbb476dd05e9e7ee21c3b84 ("ps3/block: Replace mtd/ps3vram
+by block/ps3vram").
 
-Although it's optional IBM POWER cpus always had DAR value set on
-alignment interrupt. So don't try to compute these values.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/powerpc/kvm/book3s_emulate.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/block/ps3vram.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 502a47ac4453..d8e2d079483d 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -599,6 +599,19 @@ unprivileged:
- 
- u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst)
- {
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	return vcpu->arch.fault_dsisr;
-+#else
-+	/*
-+	 * Mac OS X has some applications - namely the Finder - that require
-+	 * alignment interrupts to work properly. So we need to implement them.
-+
-+	 * But the spec for 970 and 750 also looks different. While 750 requires
-+	 * the DSISR and DAR fields to reflect some instruction bits (DSISR) and
-+	 * the fault address (DAR), the 970 declares this as an optional feature.
-+	 * So we need to reconstruct DSISR and DAR manually.
-+	 */
-+
- 	u32 dsisr = 0;
- 
- 	/*
-@@ -637,10 +650,24 @@ u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst)
- 	dsisr |= (inst >> 16) & 0x03ff; /* bits 22:31 */
- 
- 	return dsisr;
-+#endif
- }
- 
- ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
- {
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	return vcpu->arch.fault_dar;
-+#else
-+	/*
-+	 * Mac OS X has some applications - namely the Finder - that require
-+	 * alignment interrupts to work properly. So we need to implement them.
-+
-+	 * But the spec for 970 and 750 also looks different. While 750 requires
-+	 * the DSISR and DAR fields to reflect some instruction bits (DSISR) and
-+	 * the fault address (DAR), the 970 declares this as an optional feature.
-+	 * So we need to reconstruct DSISR and DAR manually.
-+	 */
-+
- 	ulong dar = 0;
- 	ulong ra = get_ra(inst);
- 	ulong rb = get_rb(inst);
-@@ -665,4 +692,5 @@ ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
- 	}
- 
- 	return dar;
-+#endif
- }
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index 06a2e53e5f37..313ee641ea10 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -1,5 +1,5 @@
+ /*
+- * ps3vram - Use extra PS3 video ram as MTD block device.
++ * ps3vram - Use extra PS3 video ram as block device.
+  *
+  * Copyright 2009 Sony Corporation
+  *
 -- 
-1.8.3.2
+1.7.9.5
