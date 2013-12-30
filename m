@@ -1,23 +1,21 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 95F632C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 13:37:12 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "Bharat.Bhushan@freescale.com"
- <Bharat.Bhushan@freescale.com>
-Subject: RE: [PATCH v6 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0
- define
-Date: Mon, 30 Dec 2013 02:37:02 +0000
-Message-ID: <792cbd6b4f0d40b2a4b7c8f106076d74@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1387268222-9703-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 28CFF2C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Dec 2013 13:37:47 +1100 (EST)
+Message-ID: <1388371049.4373.22.camel@pasglop>
+Subject: Re: [PATCH] of/irq: Fix device_node refcount in of_irq_parse_raw()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
+Date: Mon, 30 Dec 2013 13:37:29 +1100
+In-Reply-To: <1387301573-30502-1-git-send-email-clg@fr.ibm.com>
+References: <1387301573-30502-1-git-send-email-clg@fr.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: grant.likely@linaro.org, devicetree@vger.kernel.org,
+ Thierry Reding <thierry.reding@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,87 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On Tue, 2013-12-17 at 18:32 +0100, Cédric Le Goater wrote:
+> Commit 2361613206e6, "of/irq: Refactor interrupt-map parsing" changed
+> the refcount on the device_node causing an error in of_node_put():
 
-Could you apply these patches?
+Grant, Thierry, this is a regression, please send to Linus ASAP...
 
-[v6,1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 define, http://patch=
-work.ozlabs.org/patch/302045/
-[v6,2/4] powerpc/85xx: add hardware automatically enter altivec idle state,=
- http://patchwork.ozlabs.org/patch/302046/
-[v6,3/4] powerpc/85xx: add hardware automatically enter pw20 state, http://=
-patchwork.ozlabs.org/patch/302047/
-[v6,4/4] powerpc/85xx: add sysfs for pw20 state and altivec idle, http://pa=
-tchwork.ozlabs.org/patch/302048/
+Cheers,
+Ben.
 
--Dongsheng
-
-> -----Original Message-----
-> From: Dongsheng Wang [mailto:dongsheng.wang@freescale.com]
-> Sent: Tuesday, December 17, 2013 4:17 PM
-> To: Wood Scott-B07421; Bhushan Bharat-R65777
-> Cc: linuxppc-dev@lists.ozlabs.org; Wang Dongsheng-B40534
-> Subject: [PATCH v6 1/4] powerpc/fsl: add E6500 PVR and SPRN_PWRMGTCR0 def=
-ine
->=20
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->=20
-> E6500 PVR and SPRN_PWRMGTCR0 will be used in subsequent pw20/altivec
-> idle patches.
->=20
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> ERROR: Bad of_node_put() on /pci@800000020000000
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc3-dirty #2
+> Call Trace:
+> [c00000003e403500] [c0000000000144fc] .show_stack+0x7c/0x1f0 (unreliable)
+> [c00000003e4035d0] [c00000000070f250] .dump_stack+0x88/0xb4
+> [c00000003e403650] [c0000000005e8768] .of_node_release+0xd8/0xf0
+> [c00000003e4036e0] [c0000000005eeafc] .of_irq_parse_one+0x10c/0x280
+> [c00000003e4037a0] [c0000000005efd4c] .of_irq_parse_pci+0x3c/0x1d0
+> [c00000003e403840] [c000000000038240] .pcibios_setup_device+0xa0/0x2e0
+> [c00000003e403910] [c0000000000398f0] .pcibios_setup_bus_devices+0x60/0xd0
+> [c00000003e403990] [c00000000003b3a4] .__of_scan_bus+0x1a4/0x2b0
+> [c00000003e403a80] [c00000000003a62c] .pcibios_scan_phb+0x30c/0x410
+> [c00000003e403b60] [c0000000009fe430] .pcibios_init+0x7c/0xd4
+> 
+> This patch adjusts the refcount in the walk of the interrupt tree.
+> When a match is found, there is no need to increase the refcount 
+> on 'out_irq->np' as 'newpar' is already holding a ref. The refcount
+> balance between 'ipar' and 'newpar' is maintained in the skiplevel:
+> goto label.
+> 
+> This patch also removes the usage of the device_node variable 'old' 
+> which seems useless after the latest changes.
+> 
+> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 > ---
-> *v3:
-> Add bit definitions for PWRMGTCR0.
->=20
->  arch/powerpc/include/asm/reg.h       | 2 ++
->  arch/powerpc/include/asm/reg_booke.h | 9 +++++++++
->  2 files changed, 11 insertions(+)
->=20
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/re=
-g.h
-> index 64264bf..d4160ca 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1053,6 +1053,8 @@
->  #define PVR_8560	0x80200000
->  #define PVR_VER_E500V1	0x8020
->  #define PVR_VER_E500V2	0x8021
-> +#define PVR_VER_E6500	0x8040
-> +
->  /*
->   * For the 8xx processors, all of them report the same PVR family for
->   * the PowerPC core. The various versions of these processors must be
-> diff --git a/arch/powerpc/include/asm/reg_booke.h
-> b/arch/powerpc/include/asm/reg_booke.h
-> index ed8f836..4a6457e 100644
-> --- a/arch/powerpc/include/asm/reg_booke.h
-> +++ b/arch/powerpc/include/asm/reg_booke.h
-> @@ -170,6 +170,7 @@
->  #define SPRN_L2CSR1	0x3FA	/* L2 Data Cache Control and Status Register 1
-> */
->  #define SPRN_DCCR	0x3FA	/* Data Cache Cacheability Register */
->  #define SPRN_ICCR	0x3FB	/* Instruction Cache Cacheability Register */
-> +#define SPRN_PWRMGTCR0	0x3FB	/* Power management control register 0 */
->  #define SPRN_SVR	0x3FF	/* System Version Register */
->=20
->  /*
-> @@ -216,6 +217,14 @@
->  #define	CCR1_DPC	0x00000100 /* Disable L1 I-Cache/D-Cache parity
-> checking */
->  #define	CCR1_TCS	0x00000080 /* Timer Clock Select */
->=20
-> +/* Bit definitions for PWRMGTCR0. */
-> +#define PWRMGTCR0_PW20_WAIT		(1 << 14) /* PW20 state enable bit */
-> +#define PWRMGTCR0_PW20_ENT_SHIFT	8
-> +#define PWRMGTCR0_PW20_ENT		0x3F00
-> +#define PWRMGTCR0_AV_IDLE_PD_EN		(1 << 22) /* Altivec idle enable */
-> +#define PWRMGTCR0_AV_IDLE_CNT_SHIFT	16
-> +#define PWRMGTCR0_AV_IDLE_CNT		0x3F0000
-> +
->  /* Bit definitions for the MCSR. */
->  #define MCSR_MCS	0x80000000 /* Machine Check Summary */
->  #define MCSR_IB		0x40000000 /* Instruction PLB Error */
-> --
-> 1.8.0
->=20
+> 
+> This patch was tested on powerpc, pseries and powernv. This is a 
+> new area for me so I might have missed a path. Please take a look.
+> 
+> We could now introduce an helper routine to look for #address-cells in
+> of_irq_parse_raw(). This can be the subject of another patch.
+> 
+> Thanks,
+> 
+> C.
+> 
+>  drivers/of/irq.c |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+> 
+> diff --git a/drivers/of/irq.c b/drivers/of/irq.c
+> index 786b0b47fae4..27212402c532 100644
+> --- a/drivers/of/irq.c
+> +++ b/drivers/of/irq.c
+> @@ -165,7 +165,6 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+>  		if (of_get_property(ipar, "interrupt-controller", NULL) !=
+>  				NULL) {
+>  			pr_debug(" -> got it !\n");
+> -			of_node_put(old);
+>  			return 0;
+>  		}
+>  
+> @@ -250,8 +249,7 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+>  		 * Successfully parsed an interrrupt-map translation; copy new
+>  		 * interrupt specifier into the out_irq structure
+>  		 */
+> -		of_node_put(out_irq->np);
+> -		out_irq->np = of_node_get(newpar);
+> +		out_irq->np = newpar;
+>  
+>  		match_array = imap - newaddrsize - newintsize;
+>  		for (i = 0; i < newintsize; i++)
+> @@ -268,7 +266,6 @@ int of_irq_parse_raw(const __be32 *addr, struct of_phandle_args *out_irq)
+>  	}
+>   fail:
+>  	of_node_put(ipar);
+> -	of_node_put(out_irq->np);
+>  	of_node_put(newpar);
+>  
+>  	return -EINVAL;
