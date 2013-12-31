@@ -1,26 +1,21 @@
-Return-Path: <Li.Xiubo@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0156.outbound.protection.outlook.com [207.46.163.156])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <jeclark2006@aim.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 29E7D2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Dec 2013 14:44:20 +1100 (EST)
-From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: RE: [PATCH] ASoC: fsl_sai: Fix one bug for hardware limitation.
-Date: Tue, 31 Dec 2013 03:29:04 +0000
-Message-ID: <d2c60ec3b8a14500afef632e6163d57e@BY2PR03MB505.namprd03.prod.outlook.com>
-References: <1388026642-1464-1-git-send-email-Li.Xiubo@freescale.com>
- <20131230121520.GR31886@sirena.org.uk>
-In-Reply-To: <20131230121520.GR31886@sirena.org.uk>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id E9F5E2C0085
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Jan 2014 07:35:29 +1100 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <jeclark2006@aim.com>) id 1Vy62B-0000Jw-Lz
+ for linuxppc-dev@ozlabs.org; Tue, 31 Dec 2013 12:35:27 -0800
+Date: Tue, 31 Dec 2013 12:35:27 -0800 (PST)
+From: jeclark2006 <jeclark2006@aim.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1388522127641-79016.post@n7.nabble.com>
+Subject: Where to post problems with linux-ppc for Freescale processors such
+ as the p1020?
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "lgirdwood@gmail.com" <lgirdwood@gmail.com>, "tiwai@suse.de" <tiwai@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "timur@tabi.org" <timur@tabi.org>, "perex@perex.cz" <perex@perex.cz>,
- "shawn.guo@linaro.org" <shawn.guo@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mark,
+As the subject says... where to post problems with ppc & linux that does not
+involve 'apple' implementations.
 
-> Subject: Re: [PATCH] ASoC: fsl_sai: Fix one bug for hardware limitation.
->=20
-> On Thu, Dec 26, 2013 at 10:57:22AM +0800, Xiubo Li wrote:
-> > This is maybe one bug or a limitation of the hardware that the {T,R}CR2=
-'s
-> > Synchronous Mode bits must be set as late as possible, or the SAI devic=
-e
-> > maybe hanged up, and there has not any explaination about this limitati=
-on
-> > in the SAI Data Sheet.
->=20
-> If they really should be set as late as possible then I'd expect them to
-> be being set in the trigger function, that's what gets called as the
-> audio actually starts streaming.  This is moving it to the startup
-> function which is one of the first things that happens during audio
-> stream setup so presumably makes things worse.
->=20
+The 'embedded' list appears to be pretty much dead.
 
-Yes, it is.
 
-If everything is OK, I will send another new patch later.
 
-Thanks,
 
----
-Best Regards,
-Xiubo
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/Where-to-post-problems-with-linux-ppc-for-Freescale-processors-such-as-the-p1020-tp79016.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
