@@ -1,39 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 287762C00A1
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Jan 2014 16:06:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E82A42C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 16:41:13 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 2 Jan 2014 10:36:14 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id EB08B1258054
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Jan 2014 10:37:37 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s02569YE46399502
- for <linuxppc-dev@ozlabs.org>; Thu, 2 Jan 2014 10:36:10 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0256BpH016307
- for <linuxppc-dev@ozlabs.org>; Thu, 2 Jan 2014 10:36:12 +0530
-Message-ID: <52C4F37F.7040804@linux.vnet.ibm.com>
-Date: Thu, 02 Jan 2014 10:35:03 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Thu, 2 Jan 2014 15:40:59 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E84B42CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 16:40:55 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s025MHKn44892386
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2014 16:22:17 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s025etBv001384
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2014 16:40:55 +1100
+Message-ID: <52C4FBF3.1060605@linux.vnet.ibm.com>
+Date: Thu, 02 Jan 2014 11:11:07 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/2] power7, perf: Make some new raw event codes available
- in sysfs
-References: <1381902780-2719-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1381902780-2719-2-git-send-email-khandual@linux.vnet.ibm.com>
- <1386903031.3853.2.camel@concordia> <52AA8D4C.6040905@linux.vnet.ibm.com>
- <1387331962.19507.4.camel@concordia>
-In-Reply-To: <1387331962.19507.4.camel@concordia>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 2/9] POWERPC: pseries: cpuidle: remove superfluous
+ dev->state_count initialization
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
+ <1387565251-7051-3-git-send-email-b.zolnierkie@samsung.com>
+In-Reply-To: <1387565251-7051-3-git-send-email-b.zolnierkie@samsung.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, mikey@neuling.org, sukadev@linux.vnet.ibm.com
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+ kyungmin.park@samsung.com, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,41 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/18/2013 07:29 AM, Michael Ellerman wrote:
-> On Fri, 2013-12-13 at 10:00 +0530, Anshuman Khandual wrote:
->> On 12/13/2013 08:20 AM, Michael Ellerman wrote:
->>> On Wed, 2013-10-16 at 11:22 +0530, Anshuman Khandual wrote:
->>>> This patch adds some more raw event codes into the existing list
->>>> of event codes present in power7-events-list.h file. This tries
->>>> to complete the list of events supported in Power7 and matches
->>>> the raw event list with libpfm4 library.
->>>
->>> It's a bit annoying, but you also need to update the "ABI" document:
->>
->> What is annoying ? you need to be specific.
+On 12/21/2013 12:17 AM, Bartlomiej Zolnierkiewicz wrote:
+> pseries cpuidle driver sets dev->state_count to drv->state_count so
+> the default dev->state_count initialization in cpuidle_enable_device()
+> (called from cpuidle_register_device()) can be used instead.
 > 
-> It's annoying that we have to update the ABI document.
-> 
->>>   Documentation/ABI/testing/sysfs-bus-event_source-devices-events
->>>
->>
->> The events listed under the following heading are events required to do
->> CPI analysis.
-> 
-> No they are not, it doesn't say that anywhere in the file.
-> 
-> It happens that the events in there *now* are the CPI events, but that's because
-> they are the only ones that have been added.
-> 
->> "Description:    POWER-systems specific performance monitoring event"
->>
->> 		  /sys/devices/cpu/events/PM_1PLUS_PPC_CMPL
->>                 /sys/devices/cpu/events/PM_BRU_FIN
->>                 /sys/devices/cpu/events/PM_BR_MPRED
->>                 /sys/devices/cpu/events/PM_CMPLU_STALL
-> 
-> All events that appear in /sys/devices/cpu/events on powerpc should be listed
-> in the file.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Done, sent out the V2 version of the patch for POWER7 adding all the sysfs exported
-raw events into the ABI documentation file.
+Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+
+> Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/processor_idle.c | 2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+> index a166e38..8aa8c40 100644
+> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -271,7 +271,6 @@ static void pseries_idle_devices_uninit(void)
+>  static int pseries_idle_devices_init(void)
+>  {
+>  	int i;
+> -	struct cpuidle_driver *drv = &pseries_idle_driver;
+>  	struct cpuidle_device *dev;
+> 
+>  	pseries_cpuidle_devices = alloc_percpu(struct cpuidle_device);
+> @@ -280,7 +279,6 @@ static int pseries_idle_devices_init(void)
+> 
+>  	for_each_possible_cpu(i) {
+>  		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
+> -		dev->state_count = drv->state_count;
+>  		dev->cpu = i;
+>  		if (cpuidle_register_device(dev)) {
+>  			printk(KERN_DEBUG \
+> 
