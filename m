@@ -1,22 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 28A792C0092
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 23:30:07 +1100 (EST)
-Message-ID: <1388665786.4373.48.camel@pasglop>
-Subject: Re: [PATCH -V2] powerpc: thp: Fix crash on mremap
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Thu, 02 Jan 2014 23:29:46 +1100
-In-Reply-To: <87zjneodtw.fsf@linux.vnet.ibm.com>
-References: <1388654266-5195-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140102094124.04D76E0090@blue.fi.intel.com>
- <87zjneodtw.fsf@linux.vnet.ibm.com>
+Return-Path: <geoff@infradead.org>
+Message-ID: <1388688375.32559.9.camel@smoke>
+Subject: Re: [PATCH] block/ps3: Remove obsolete reference to MTD
+From: Geoff Levand <geoff@infradead.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Jens Axboe <axboe@kernel.dk>
+Date: Thu, 02 Jan 2014 10:46:15 -0800
+In-Reply-To: <1388394463-25798-1-git-send-email-geert@linux-m68k.org>
+References: <1388394463-25798-1-git-send-email-geert@linux-m68k.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: aarcange@redhat.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Jim Paris <jim@jtan.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-01-02 at 16:22 +0530, Aneesh Kumar K.V wrote:
-> > Just use config option directly:
-> >
-> >       if (new_ptl != old_ptl ||
-> >               IS_ENABLED(CONFIG_ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW))
+On Mon, 2013-12-30 at 10:07 +0100, Geert Uytterhoeven wrote:
+> The ps3vram driver is a plain block device driver since commit
+> f507cd22035fdadd5dbb476dd05e9e7ee21c3b84 ("ps3/block: Replace mtd/ps3vram
+> by block/ps3vram").
 > 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  drivers/block/ps3vram.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> I didn't like that. I found the earlier one easier for reading.
-> If you and others strongly feel about this, I can redo the patch.
-> Please let me know
+> diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+> index 06a2e53e5f37..313ee641ea10 100644
+> --- a/drivers/block/ps3vram.c
+> +++ b/drivers/block/ps3vram.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * ps3vram - Use extra PS3 video ram as MTD block device.
+> + * ps3vram - Use extra PS3 video ram as block device.
+>   *
+>   * Copyright 2009 Sony Corporation
+>   *
 
-Yes, use IS_ENABLED, no need to have two indirections of #define's
+Looks good.
 
-Another option is to have
+Jens, could you please apply.
 
-	if (pmd_move_must_withdraw(new,old)) {
-	}
-
-With in a generic header:
-
-#ifndef pmd_move_must_withdraw
-static inline bool pmd_move_must_withdraw(spinlock_t *new_ptl, ...)
-{
-	return new_ptl != old_ptl;
-}
-#endif
-
-And in powerpc:
-
-static inline bool pmd_move_must_withdraw(spinlock_t *new_ptl, ...)
-{
-	return true;
-}
-#define pmd_move_must_withdraw pmd_move_must_withdraw
-
-Cheers,
-Ben.
+Acked-by: Geoff Levand <geoff@infradead.org>
