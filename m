@@ -1,39 +1,33 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 527802C0090
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 16:42:39 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 043552C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 20:18:38 +1100 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Thu, 2 Jan 2014 15:42:27 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 245DA2BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 16:42:24 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s025NaGB57802902
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2014 16:23:36 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s025gNXd003800
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2014 16:42:23 +1100
-Message-ID: <52C4FC45.3040805@linux.vnet.ibm.com>
-Date: Thu, 02 Jan 2014 11:12:29 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2 3/9] POWERPC: pseries: cpuidle: use the common
- cpuidle_[un]register() routines
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
- <1387565251-7051-4-git-send-email-b.zolnierkie@samsung.com>
-In-Reply-To: <1387565251-7051-4-git-send-email-b.zolnierkie@samsung.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
- daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- kyungmin.park@samsung.com, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 2 Jan 2014 14:48:13 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D66F41258054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Jan 2014 14:49:25 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s029HiMp51118284
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2014 14:47:50 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s029Ho7K017238
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Jan 2014 14:47:51 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, aarcange@redhat.com,
+ kirill.shutemov@linux.intel.com
+Subject: [PATCH -V2] powerpc: thp: Fix crash on mremap
+Date: Thu,  2 Jan 2014 14:47:46 +0530
+Message-Id: <1388654266-5195-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,120 +37,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/21/2013 12:17 AM, Bartlomiej Zolnierkiewicz wrote:
-> It is now possible to use the common cpuidle_[un]register() routines
-> (instead of open-coding them) so do it.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+This patch fix the below crash
 
-> Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/processor_idle.c | 57 ++-----------------------
->  1 file changed, 3 insertions(+), 54 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-> index 8aa8c40..94134a5 100644
-> --- a/arch/powerpc/platforms/pseries/processor_idle.c
-> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
-> @@ -28,7 +28,6 @@ struct cpuidle_driver pseries_idle_driver = {
->  #define MAX_IDLE_STATE_COUNT	2
-> 
->  static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
-> -static struct cpuidle_device __percpu *pseries_cpuidle_devices;
->  static struct cpuidle_state *cpuidle_state_table;
-> 
->  static inline void idle_loop_prolog(unsigned long *in_purr)
-> @@ -191,7 +190,7 @@ static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
->  {
->  	int hotcpu = (unsigned long)hcpu;
->  	struct cpuidle_device *dev =
-> -			per_cpu_ptr(pseries_cpuidle_devices, hotcpu);
-> +			per_cpu_ptr(cpuidle_devices, hotcpu);
-> 
->  	if (dev && cpuidle_get_driver()) {
->  		switch (action) {
-> @@ -248,48 +247,6 @@ static int pseries_cpuidle_driver_init(void)
->  	return 0;
->  }
-> 
-> -/* pseries_idle_devices_uninit(void)
-> - * unregister cpuidle devices and de-allocate memory
-> - */
-> -static void pseries_idle_devices_uninit(void)
-> -{
-> -	int i;
-> -	struct cpuidle_device *dev;
-> -
-> -	for_each_possible_cpu(i) {
-> -		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
-> -		cpuidle_unregister_device(dev);
-> -	}
-> -
-> -	free_percpu(pseries_cpuidle_devices);
-> -	return;
-> -}
-> -
-> -/* pseries_idle_devices_init()
-> - * allocate, initialize and register cpuidle device
-> - */
-> -static int pseries_idle_devices_init(void)
-> -{
-> -	int i;
-> -	struct cpuidle_device *dev;
-> -
-> -	pseries_cpuidle_devices = alloc_percpu(struct cpuidle_device);
-> -	if (pseries_cpuidle_devices == NULL)
-> -		return -ENOMEM;
-> -
-> -	for_each_possible_cpu(i) {
-> -		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
-> -		dev->cpu = i;
-> -		if (cpuidle_register_device(dev)) {
-> -			printk(KERN_DEBUG \
-> -				"cpuidle_register_device %d failed!\n", i);
-> -			return -EIO;
-> -		}
-> -	}
-> -
-> -	return 0;
-> -}
-> -
->  /*
->   * pseries_idle_probe()
->   * Choose state table for shared versus dedicated partition
-> @@ -325,19 +282,12 @@ static int __init pseries_processor_idle_init(void)
->  		return retval;
-> 
->  	pseries_cpuidle_driver_init();
-> -	retval = cpuidle_register_driver(&pseries_idle_driver);
-> +	retval = cpuidle_register(&pseries_idle_driver, NULL);
->  	if (retval) {
->  		printk(KERN_DEBUG "Registration of pseries driver failed.\n");
->  		return retval;
->  	}
-> 
-> -	retval = pseries_idle_devices_init();
-> -	if (retval) {
-> -		pseries_idle_devices_uninit();
-> -		cpuidle_unregister_driver(&pseries_idle_driver);
-> -		return retval;
-> -	}
-> -
->  	register_cpu_notifier(&setup_hotplug_notifier);
->  	printk(KERN_DEBUG "pseries_idle_driver registered\n");
-> 
-> @@ -348,8 +298,7 @@ static void __exit pseries_processor_idle_exit(void)
->  {
-> 
->  	unregister_cpu_notifier(&setup_hotplug_notifier);
-> -	pseries_idle_devices_uninit();
-> -	cpuidle_unregister_driver(&pseries_idle_driver);
-> +	cpuidle_unregister(&pseries_idle_driver);
-> 
->  	return;
->  }
-> 
+NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
+LR [c0000000000439ac] .hash_page+0x18c/0x5e0
+...
+Call Trace:
+[c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
+[437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
+[437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
+
+On ppc64 we use the pgtable for storing the hpte slot information and
+store address to the pgtable at a constant offset (PTRS_PER_PMD) from
+pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
+the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
+from new pmd.
+
+We also want to move the withdraw and deposit before the set_pmd so
+that, when page fault find the pmd as trans huge we can be sure that
+pgtable can be located at the offset.
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+Changes from V1:
+* limit the withraw/deposit to only ppc64
+
+ arch/Kconfig                           |  3 +++
+ arch/powerpc/platforms/Kconfig.cputype |  1 +
+ include/linux/huge_mm.h                |  6 ++++++
+ mm/huge_memory.c                       | 21 ++++++++++++---------
+ 4 files changed, 22 insertions(+), 9 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index f1cf895c040f..3759e70a649d 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -371,6 +371,9 @@ config HAVE_IRQ_TIME_ACCOUNTING
+ config HAVE_ARCH_TRANSPARENT_HUGEPAGE
+ 	bool
+ 
++config ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW
++	bool
++
+ config HAVE_ARCH_SOFT_DIRTY
+ 	bool
+ 
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index bca2465a9c34..5f83b4334e5f 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -71,6 +71,7 @@ config PPC_BOOK3S_64
+ 	select PPC_FPU
+ 	select PPC_HAVE_PMU_SUPPORT
+ 	select SYS_SUPPORTS_HUGETLBFS
++	select ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW
+ 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if PPC_64K_PAGES
+ 
+ config PPC_BOOK3E_64
+diff --git a/include/linux/huge_mm.h b/include/linux/huge_mm.h
+index 91672e2deec3..836242a738a5 100644
+--- a/include/linux/huge_mm.h
++++ b/include/linux/huge_mm.h
+@@ -230,4 +230,10 @@ static inline int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_str
+ 
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
++#ifdef CONFIG_ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW
++#define ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW 1
++#else
++#define ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW 0
++#endif
++
+ #endif /* _LINUX_HUGE_MM_H */
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 7de1bf85f683..32006b51d102 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1505,19 +1505,22 @@ int move_huge_pmd(struct vm_area_struct *vma, struct vm_area_struct *new_vma,
+ 			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+ 		pmd = pmdp_get_and_clear(mm, old_addr, old_pmd);
+ 		VM_BUG_ON(!pmd_none(*new_pmd));
+-		set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
+-		if (new_ptl != old_ptl) {
++		/*
++		 * Archs like ppc64 use pgtable to store per pmd
++		 * specific information. So when we switch the pmd,
++		 * we should also withdraw and deposit the pgtable
++		 *
++		 * With split pmd lock we also need to move preallocated
++		 * PTE page table if new_pmd is on different PMD page table.
++		 */
++		if (new_ptl != old_ptl || ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW) {
+ 			pgtable_t pgtable;
+-
+-			/*
+-			 * Move preallocated PTE page table if new_pmd is on
+-			 * different PMD page table.
+-			 */
+ 			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
+ 			pgtable_trans_huge_deposit(mm, new_pmd, pgtable);
+-
+-			spin_unlock(new_ptl);
+ 		}
++		set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
++		if (new_ptl != old_ptl)
++			spin_unlock(new_ptl);
+ 		spin_unlock(old_ptl);
+ 	}
+ out:
+-- 
+1.8.3.2
