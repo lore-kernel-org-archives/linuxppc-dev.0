@@ -1,21 +1,20 @@
-Return-Path: <jeclark2006@aim.com>
-Received: from omr-d07.mx.aol.com (omr-d07.mx.aol.com [205.188.109.204])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5B0E82C008F
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Jan 2014 07:41:11 +1100 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 6.6 \(1510\))
-Subject: Re: Where to post problems with linux-ppc for Freescale processors
- such as the p1020?
-From: John Clark <jeclark2006@aim.com>
-In-Reply-To: <EA9C3A7C-0F5A-4FB5-8DD1-CC6DF4489CA9@kernel.crashing.org>
-Date: Thu, 2 Jan 2014 12:35:14 -0800
-Message-Id: <79464DD8-825D-4251-82F4-B69BD2E2828A@aim.com>
-References: <1388522127641-79016.post@n7.nabble.com>
- <EA9C3A7C-0F5A-4FB5-8DD1-CC6DF4489CA9@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 40ADF2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 09:38:03 +1100 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than mfsprg/mtsprg
+Date: Thu, 2 Jan 2014 16:37:50 -0600
+Message-ID: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>,
+ Anton Vorontsov <avorontsov@mvista.com>, linuxppc-dev@lists.ozlabs.org,
+ Dongsheng Wang <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +24,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This fixes a build break that was probably introduced with the removal
+of -Wa,-me500 (commit f49596a4cf4753d13951608f24f939a59fdcc653), where
+the assembler refuses to recognize SPRG4-7 with a generic PPC target.
 
-On Jan 2, 2014, at 12:21 PM, Kumar Gala <galak@kernel.crashing.org> =
-wrote:
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Cc: Dongsheng Wang <dongsheng.wang@freescale.com>
+Cc: Anton Vorontsov <avorontsov@mvista.com>
+---
+Dongsheng, please test.
+---
+ arch/powerpc/kernel/swsusp_booke.S | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
->=20
-> On Dec 31, 2013, at 2:35 PM, jeclark2006 <jeclark2006@aim.com> wrote:
->=20
->> As the subject says... where to post problems with ppc & linux that =
-does not
->> involve 'apple' implementations.
->>=20
->> The 'embedded' list appears to be pretty much dead.
->=20
-> This is now the list for any ppc linux issues for embedded, server, =
-etc.
->=20
-> - k
-
-Thanks for the reply. I think I subscribed to 'linuxppc-dev', but as yet =
-no 'confirmation' email has shown up.
-
-Is there a moderator who needs to approve subscription?
-
-Thanks,
-John Clark.
+diff --git a/arch/powerpc/kernel/swsusp_booke.S b/arch/powerpc/kernel/swsusp_booke.S
+index 0f20405..553c140 100644
+--- a/arch/powerpc/kernel/swsusp_booke.S
++++ b/arch/powerpc/kernel/swsusp_booke.S
+@@ -74,21 +74,21 @@ _GLOBAL(swsusp_arch_suspend)
+ 	bne	1b
+ 
+ 	/* Save SPRGs */
+-	mfsprg	r4,0
++	mfspr	r4,SPRN_SPRG0
+ 	stw	r4,SL_SPRG0(r11)
+-	mfsprg	r4,1
++	mfspr	r4,SPRN_SPRG1
+ 	stw	r4,SL_SPRG1(r11)
+-	mfsprg	r4,2
++	mfspr	r4,SPRN_SPRG2
+ 	stw	r4,SL_SPRG2(r11)
+-	mfsprg	r4,3
++	mfspr	r4,SPRN_SPRG3
+ 	stw	r4,SL_SPRG3(r11)
+-	mfsprg	r4,4
++	mfspr	r4,SPRN_SPRG4
+ 	stw	r4,SL_SPRG4(r11)
+-	mfsprg	r4,5
++	mfspr	r4,SPRN_SPRG5
+ 	stw	r4,SL_SPRG5(r11)
+-	mfsprg	r4,6
++	mfspr	r4,SPRN_SPRG6
+ 	stw	r4,SL_SPRG6(r11)
+-	mfsprg	r4,7
++	mfspr	r4,SPRN_SPRG7
+ 	stw	r4,SL_SPRG7(r11)
+ 
+ 	/* Call the low level suspend stuff (we should probably have made
+@@ -150,21 +150,21 @@ _GLOBAL(swsusp_arch_resume)
+ 	bl	_tlbil_all
+ 
+ 	lwz	r4,SL_SPRG0(r11)
+-	mtsprg	0,r4
++	mtspr	SPRN_SPRG0,r4
+ 	lwz	r4,SL_SPRG1(r11)
+-	mtsprg	1,r4
++	mtspr	SPRN_SPRG1,r4
+ 	lwz	r4,SL_SPRG2(r11)
+-	mtsprg	2,r4
++	mtspr	SPRN_SPRG2,r4
+ 	lwz	r4,SL_SPRG3(r11)
+-	mtsprg	3,r4
++	mtspr	SPRN_SPRG3,r4
+ 	lwz	r4,SL_SPRG4(r11)
+-	mtsprg	4,r4
++	mtspr	SPRN_SPRG4,r4
+ 	lwz	r4,SL_SPRG5(r11)
+-	mtsprg	5,r4
++	mtspr	SPRN_SPRG5,r4
+ 	lwz	r4,SL_SPRG6(r11)
+-	mtsprg	6,r4
++	mtspr	SPRN_SPRG6,r4
+ 	lwz	r4,SL_SPRG7(r11)
+-	mtsprg	7,r4
++	mtspr	SPRN_SPRG7,r4
+ 
+ 	/* restore the MSR */
+ 	lwz	r3,SL_MSR(r11)
+-- 
+1.8.3.2
