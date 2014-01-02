@@ -1,15 +1,20 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1388688375.32559.9.camel@smoke>
-Subject: Re: [PATCH] block/ps3: Remove obsolete reference to MTD
-From: Geoff Levand <geoff@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Jens Axboe <axboe@kernel.dk>
-Date: Thu, 02 Jan 2014 10:46:15 -0800
-In-Reply-To: <1388394463-25798-1-git-send-email-geert@linux-m68k.org>
-References: <1388394463-25798-1-git-send-email-geert@linux-m68k.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jim Paris <jim@jtan.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CE74A2C0091
+ for <linuxppc-dev@ozlabs.org>; Fri,  3 Jan 2014 07:21:18 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+Subject: Re: Where to post problems with linux-ppc for Freescale processors
+ such as the p1020?
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1388522127641-79016.post@n7.nabble.com>
+Date: Thu, 2 Jan 2014 14:21:06 -0600
+Message-Id: <EA9C3A7C-0F5A-4FB5-8DD1-CC6DF4489CA9@kernel.crashing.org>
+References: <1388522127641-79016.post@n7.nabble.com>
+To: jeclark2006 <jeclark2006@aim.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,30 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-12-30 at 10:07 +0100, Geert Uytterhoeven wrote:
-> The ps3vram driver is a plain block device driver since commit
-> f507cd22035fdadd5dbb476dd05e9e7ee21c3b84 ("ps3/block: Replace mtd/ps3vram
-> by block/ps3vram").
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/block/ps3vram.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-> index 06a2e53e5f37..313ee641ea10 100644
-> --- a/drivers/block/ps3vram.c
-> +++ b/drivers/block/ps3vram.c
-> @@ -1,5 +1,5 @@
->  /*
-> - * ps3vram - Use extra PS3 video ram as MTD block device.
-> + * ps3vram - Use extra PS3 video ram as block device.
->   *
->   * Copyright 2009 Sony Corporation
->   *
 
-Looks good.
+On Dec 31, 2013, at 2:35 PM, jeclark2006 <jeclark2006@aim.com> wrote:
 
-Jens, could you please apply.
+> As the subject says... where to post problems with ppc & linux that =
+does not
+> involve 'apple' implementations.
+>=20
+> The 'embedded' list appears to be pretty much dead.
 
-Acked-by: Geoff Levand <geoff@infradead.org>
+This is now the list for any ppc linux issues for embedded, server, etc.
+
+- k
