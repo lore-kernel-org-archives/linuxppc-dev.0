@@ -1,23 +1,23 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 77D5A2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 21:32:50 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: RE: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than
- mfsprg/mtsprg
-Date: Fri, 3 Jan 2014 10:32:40 +0000
-Message-ID: <a79e5eb1cf444a3782c9af9952efe69b@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id CE6152C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jan 2014 02:04:24 +1100 (EST)
+Date: Fri, 3 Jan 2014 16:04:16 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: jean-jacques hiblot <jjhiblot@traphandler.com>
+Subject: Re: [PATCH v3 REPOST 2/4] i2c: i2c-ibm-iic: perform the transfer in
+ the interrupt handler
+Message-ID: <20140103150416.GA7132@katana>
+References: <1387552376-12986-1-git-send-email-jjhiblot@traphandler.com>
+ <1387552376-12986-3-git-send-email-jjhiblot@traphandler.com>
 MIME-Version: 1.0
-Cc: Anton Vorontsov <avorontsov@mvista.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
+In-Reply-To: <1387552376-12986-3-git-send-email-jjhiblot@traphandler.com>
+Cc: gregory.clement@free-electrons.com, linuxppc-dev@lists.ozlabs.org,
+ linux-i2c@vger.kernel.org, jean-jacques hiblot <jjhiblot@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,102 +27,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks good. I will test it as soon as possible.=20
 
-BTW, there is only SPRG3 need to save.
-32bit: SPRG0-SPRG1, SPRG2-SPRG7, SPRG9 be use to deal with exception,
-those register not need to save.(SPRG8 not be used) Only SPRG3 be used
-to save current thread_info pointer.
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Dongsheng
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, January 03, 2014 6:38 AM
-> To: Benjamin Herrenschmidt
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Wang Dongsheng-B405=
-34;
-> Anton Vorontsov
-> Subject: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than mfsprg/mts=
-prg
->=20
-> This fixes a build break that was probably introduced with the removal
-> of -Wa,-me500 (commit f49596a4cf4753d13951608f24f939a59fdcc653), where
-> the assembler refuses to recognize SPRG4-7 with a generic PPC target.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> Cc: Dongsheng Wang <dongsheng.wang@freescale.com>
-> Cc: Anton Vorontsov <avorontsov@mvista.com>
-> ---
-> Dongsheng, please test.
-> ---
->  arch/powerpc/kernel/swsusp_booke.S | 32 ++++++++++++++++----------------
->  1 file changed, 16 insertions(+), 16 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/swsusp_booke.S
-> b/arch/powerpc/kernel/swsusp_booke.S
-> index 0f20405..553c140 100644
-> --- a/arch/powerpc/kernel/swsusp_booke.S
-> +++ b/arch/powerpc/kernel/swsusp_booke.S
-> @@ -74,21 +74,21 @@ _GLOBAL(swsusp_arch_suspend)
->  	bne	1b
->=20
->  	/* Save SPRGs */
-> -	mfsprg	r4,0
-> +	mfspr	r4,SPRN_SPRG0
->  	stw	r4,SL_SPRG0(r11)
-> -	mfsprg	r4,1
-> +	mfspr	r4,SPRN_SPRG1
->  	stw	r4,SL_SPRG1(r11)
-> -	mfsprg	r4,2
-> +	mfspr	r4,SPRN_SPRG2
->  	stw	r4,SL_SPRG2(r11)
-> -	mfsprg	r4,3
-> +	mfspr	r4,SPRN_SPRG3
->  	stw	r4,SL_SPRG3(r11)
-> -	mfsprg	r4,4
-> +	mfspr	r4,SPRN_SPRG4
->  	stw	r4,SL_SPRG4(r11)
-> -	mfsprg	r4,5
-> +	mfspr	r4,SPRN_SPRG5
->  	stw	r4,SL_SPRG5(r11)
-> -	mfsprg	r4,6
-> +	mfspr	r4,SPRN_SPRG6
->  	stw	r4,SL_SPRG6(r11)
-> -	mfsprg	r4,7
-> +	mfspr	r4,SPRN_SPRG7
->  	stw	r4,SL_SPRG7(r11)
->=20
->  	/* Call the low level suspend stuff (we should probably have made
-> @@ -150,21 +150,21 @@ _GLOBAL(swsusp_arch_resume)
->  	bl	_tlbil_all
->=20
->  	lwz	r4,SL_SPRG0(r11)
-> -	mtsprg	0,r4
-> +	mtspr	SPRN_SPRG0,r4
->  	lwz	r4,SL_SPRG1(r11)
-> -	mtsprg	1,r4
-> +	mtspr	SPRN_SPRG1,r4
->  	lwz	r4,SL_SPRG2(r11)
-> -	mtsprg	2,r4
-> +	mtspr	SPRN_SPRG2,r4
->  	lwz	r4,SL_SPRG3(r11)
-> -	mtsprg	3,r4
-> +	mtspr	SPRN_SPRG3,r4
->  	lwz	r4,SL_SPRG4(r11)
-> -	mtsprg	4,r4
-> +	mtspr	SPRN_SPRG4,r4
->  	lwz	r4,SL_SPRG5(r11)
-> -	mtsprg	5,r4
-> +	mtspr	SPRN_SPRG5,r4
->  	lwz	r4,SL_SPRG6(r11)
-> -	mtsprg	6,r4
-> +	mtspr	SPRN_SPRG6,r4
->  	lwz	r4,SL_SPRG7(r11)
-> -	mtsprg	7,r4
-> +	mtspr	SPRN_SPRG7,r4
->=20
->  	/* restore the MSR */
->  	lwz	r3,SL_MSR(r11)
-> --
-> 1.8.3.2
+Hi,
+
+thanks for the submission!
+
+> --- a/drivers/i2c/busses/i2c-ibm_iic.c
+> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+> @@ -58,6 +58,8 @@ static bool iic_force_fast;
+>  module_param(iic_force_fast, bool, 0);
+>  MODULE_PARM_DESC(iic_force_fast, "Force fast mode (400 kHz)");
+> =20
+> +#define FIFO_FLUSH_TIMEOUT 100
+
+100 what? The unit is missing.
+
+> @@ -167,8 +170,8 @@ static void iic_dev_init(struct ibm_iic_private* dev)
+>  	/* Clear control register */
+>  	out_8(&iic->cntl, 0);
+> =20
+> -	/* Enable interrupts if possible */
+> -	iic_interrupt_mode(dev, dev->irq >=3D 0);
+> +	/* Start with each individual interrupt masked*/
+
+Space at the end of comment missing
+
+>  static irqreturn_t iic_handler(int irq, void *dev_id)
+>  {
+> -	struct ibm_iic_private* dev =3D (struct ibm_iic_private*)dev_id;
+> -	struct iic_regs __iomem *iic =3D dev->vaddr;
+> -
+> -	DBG2(dev, "irq handler, STS =3D 0x%02x, EXTSTS =3D 0x%02x\n",
+> -	     in_8(&iic->sts), in_8(&iic->extsts));
+> -
+> -	/* Acknowledge IRQ and wakeup iic_wait_for_tc */
+> -	out_8(&iic->sts, STS_IRQA | STS_SCMP);
+> -	wake_up_interruptible(&dev->wq);
+> -
+> +	struct ibm_iic_private *dev =3D (struct ibm_iic_private *) dev_id;
+> +	iic_xfer_bytes(dev);
+
+Is iic_xfer_bytes later used when polling, too? Otherwise it could be
+simply inserted here.
+
+
+> +	if ((status & STS_ERR) ||
+> +	    (ext_status & (EXTSTS_LA | EXTSTS_ICT | EXTSTS_XFRA))) {
+> +		DBG(dev, "status 0x%x\n", status);
+> +		DBG(dev, "extended status 0x%x\n", ext_status);
+> +		if (status & STS_ERR)
+> +			ERR(dev, "Error detected\n");
+> +		if (ext_status & EXTSTS_LA)
+> +			DBG(dev, "Lost arbitration\n");
+> +		if (ext_status & EXTSTS_ICT)
+> +			ERR(dev, "Incomplete transfer\n");
+> +		if (ext_status & EXTSTS_XFRA)
+> +			ERR(dev, "Transfer aborted\n");
+> +
+> +		dev->status =3D -EIO;
+
+You could consider returning different fault codes for the different
+states. See Documentation/i2c/fault-codes for a guide.
+
+> +	if (dev->msgs =3D=3D NULL) {
+> +		DBG(dev, "spurious !!!!!\n");
+> +		dev->status =3D -EINVAL;
+> +		return dev->status;
+> +	}
+
+Does that really happen?
+
+And it introduces a build warning:
+
+drivers/i2c/busses/i2c-ibm_iic.c:410:12: warning: 'iic_wait_for_tc' defined=
+ but not used [-Wunused-function]
+
+
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.15 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSxtFwAAoJEBQN5MwUoCm2JawP/RmKkHkt42bBdrgHMUHJGK/G
+4kHlCIcmBBe8DDMl6EmKWBzM33A8gyrNTolszKjziqDNgQkp+fU13/y1fwupiYQZ
+eHQGwmIpj+4CGnilI1thtayvA/tIt80vHU6ZId3SOmNcoD5yUtcDy9WpJmeMTKbC
+9F2yQrjUgPfTHqpcF0UBxuhG61Y6VEBr1CLjoQKGB9RJZuPl41vTJZZ2r1LKGDr4
+5C/dJTcI9Xb4n1Qtg4OA2OSKOvAY1dQVETVCV7iCKtRhi2s1AlGqgxrcktiUc7+1
+1hb0sIOFfVc8M5JNAlVKiPYQYKJ/CRaRW9Eg4RmJjJLMX0cot4zQb80/t0AuZx6C
+T+2KYxF8nHc3SoGgSO400tzCha0y+i4u1J2I19bmoRUpIAtYYqTreDp26w+RsOJ8
+o29sdlLIx5m4OX4kfON5Y4O/IWvtcKz+W9SudSS7Va8P9os+fYQPfjOscYL60A7M
+92ppRO9T7cMgNS+DfTQ52Kj0h0W60uWeqp1MQYdg9yiyxlo1Vs/298hVxJQhvEkG
+IEGO+Dit5R/Du4pKqAl0mWfLRvP9SbvgwH2IqYe9FpIj0psGSaaY/ypwqcHCklQ0
+n0+bWvRcEhkKGaGZTGkrSt20DDYZIMwUI4gCRtQa5Fccz7dYZn/GldzsYJhCixBu
+CQfdw2aiVXQcaM62TnZY
+=pQPj
+-----END PGP SIGNATURE-----
+
+--J2SCkAp4GZ/dPZZf--
