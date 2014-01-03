@@ -1,24 +1,24 @@
 Return-Path: <olof@lixom.net>
-Received: from mail-qe0-f47.google.com (mail-qe0-f47.google.com
- [209.85.128.47])
+Received: from mail-pb0-f54.google.com (mail-pb0-f54.google.com
+ [209.85.160.54])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F1D342C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 18:56:08 +1100 (EST)
-Received: by mail-qe0-f47.google.com with SMTP id t7so15137460qeb.20
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jan 2014 23:56:04 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
-References: <1388264507-5100-1-git-send-email-olof@lixom.net>
- <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
-Date: Thu, 2 Jan 2014 23:56:04 -0800
-Message-ID: <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
+ by ozlabs.org (Postfix) with ESMTPS id 2BC302C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 19:14:30 +1100 (EST)
+Received: by mail-pb0-f54.google.com with SMTP id un15so15311219pbc.41
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jan 2014 00:14:23 -0800 (PST)
+Date: Fri, 3 Jan 2014 00:12:19 -0800
 From: Olof Johansson <olof@lixom.net>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Olof Johansson <olof@lixom.net>, chzigotzky@xenosoft.de,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
+Message-ID: <20140103081219.GA10233@quad.lixom.net>
+References: <1388264507-5100-1-git-send-email-olof@lixom.net>
+ <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
+ <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
+Cc: chzigotzky@xenosoft.de, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,57 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 28, 2013 at 1:05 PM, Olof Johansson <olof@lixom.net> wrote:
+On Thu, Jan 02, 2014 at 11:56:04PM -0800, Olof Johansson wrote:
 
-> Sigh, it's not this after all. I did a clean build with this applied
-> and still see failures. Something else is (also?) going on here.
+> This makes things interesting though. The BE/LE trampoline code
+> assumes at least 3 consecutive instructions. What was the reasoning
+> behind entering the kernel LE instead of keeping the old boot protocol
+> and just switching to LE once kernel is loaded? Is it actually used on
+> some platforms or is this just a theoretical thing?
 
-Ok, so after some more digging I actually think that this isn't about
-the new code added as much as it is about having more code in low
-memory.
+Actually, adding a little hack that zeroes out the memory once we're done
+executing it will work just fine too. I know this is sort of icky, but maybe
+it'll be good enough for now?
 
-Before, there were only two instuctions in __start:
-
-        b       .__start_initialization_multiplatform
-        trap
-
-Now, there's a whole bunch:
-
-c000000000000000 <.__start>:
-c000000000000000:       08 00 00 48     tdi     0,r0,72
-c000000000000004:       48 00 00 24     b       c000000000000028 <.__start+0x28>
-c000000000000008:       05 00 9f 42     .long 0x5009f42
-c00000000000000c:       a6 02 48 7d     lhzu    r16,18557(r2)
-c000000000000010:       1c 00 4a 39     mulli   r0,r0,19001
-c000000000000014:       a6 00 60 7d     lhzu    r16,24701(0)
-c000000000000018:       01 00 6b 69     .long 0x1006b69
-c00000000000001c:       a6 03 5a 7d     lhzu    r16,23165(r3)
-c000000000000020:       a6 03 7b 7d     lhzu    r16,31613(r3)
-c000000000000024:       24 00 00 4c     dozi    r0,r0,76
-c000000000000028:       48 00 95 84     b       c0000000000095ac
-<.__start_initialization_multiplatform>
-c00000000000002c:       7f e0 00 08     trap
-
-And indeed, by replacing some of the LE hand-converted code with 0x0,
-it seems that what's really making things blow up here is that 0x8-0xc
-contain something else than 0x0.
-
-Where/why this comes from I'm less certain of -- and since I seem to
-no longer have a usable JTAG setup, I can't break in and see where the
-code gets stuck and call paths, etc. So it's pure speculation, but I'm
-guessing it's a null pointer dereference somewhere with a chained
-pointer as the second member in a struct, i.e. with NULL the stray
-null ptr deref does no harm.
-
-Since it doesn't seem to impact pSeries, there's a chance that the bug
-is in firmware, not in the kernel, since this seems to happen during
-fairly early boot, i.e. possibly while grabbing the DT contents out.
-
-This makes things interesting though. The BE/LE trampoline code
-assumes at least 3 consecutive instructions. What was the reasoning
-behind entering the kernel LE instead of keeping the old boot protocol
-and just switching to LE once kernel is loaded? Is it actually used on
-some platforms or is this just a theoretical thing?
+Of course, main worry is that this is just hiding some latent NULL deref in
+the kernel now... :-/
 
 
 -Olof
+
+--- 8< --- 8< --- 8< --- 8< --- 8< --- 8< --- 8< --- 8< --- 8< --- 
+
+>From 4d003186cae546900cefc9e51b0ed4e65f775be1 Mon Sep 17 00:00:00 2001
+From: Olof Johansson <olof@lixom.net>
+Date: Fri, 3 Jan 2014 00:09:28 -0800
+Subject: [PATCH] powerpc: set some low memory contents to 0 early
+
+The little-endian code adds some code path to __start, which essentially ends
+up adding memory contents in low memory that didn't use to be there.
+
+That seems to have triggered a latent bug, either in firmware or kernel, where
+the 64-bit word located at physical address 8 needs to be 0.
+
+The simple hack for this right now is to write it to 0 after we're done
+executing it, which is what this patch does. Unfortunately I no longer
+seem to have a working JTAG setup nor firmware sources, so debugging
+this down to root cause might be more trouble than it's worth given the
+relatively simple workaround.
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+---
+ arch/powerpc/kernel/head_64.S |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 2ae41ab..437d8bd 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -69,6 +69,13 @@ _GLOBAL(__start)
+ 	/* NOP this out unconditionally */
+ BEGIN_FTR_SECTION
+ 	FIXUP_ENDIAN
++	/* Hack for PWRficient platforms: Due to CFE(?) bug, the 64-bit
++	 * word at 0x8 needs to be set to 0. Patch it up here once we're
++	 * done executing it (we can be lazy and avoid invalidating
++	 * icache)
++	 */
++	li	r0,0
++	std	0,8(0)
+ 	b	.__start_initialization_multiplatform
+ END_FTR_SECTION(0, 1)
+ 
+-- 
+1.7.10.4
