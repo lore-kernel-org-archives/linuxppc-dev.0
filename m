@@ -1,27 +1,24 @@
-Return-Path: <jjhiblot@traphandler.com>
-Received: from mo3.mail-out.ovh.net (13.mo3.mail-out.ovh.net [188.165.33.202])
- by ozlabs.org (Postfix) with ESMTP id 5164F2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Jan 2014 03:34:54 +1100 (EST)
-Received: from mail628.ha.ovh.net (b9.ovh.net [213.186.33.59])
- by mo3.mail-out.ovh.net (Postfix) with SMTP id D85C9FFAA37
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 16:57:20 +0100 (CET)
-Received: by mail-pd0-f169.google.com with SMTP id v10so15577007pde.28
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Jan 2014 07:57:17 -0800 (PST)
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
+ [IPv6:2607:f8b0:4001:c05::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 95FF12C00A5
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Jan 2014 06:00:56 +1100 (EST)
+Received: by mail-ig0-f177.google.com with SMTP id uy17so1787997igb.4
+ for <linuxppc-dev@ozlabs.org>; Fri, 03 Jan 2014 11:00:53 -0800 (PST)
+Date: Fri, 3 Jan 2014 11:00:49 -0800
+From: Brian Norris <computersforpeace@gmail.com>
+To: Hou Zhiqiang <b48286@freescale.com>
+Subject: Re: [PATCH] mtd: m25p80: Add Power Management support
+Message-ID: <20140103190049.GG5631@ld-irv-0074>
+References: <1386749970-22021-1-git-send-email-b48286@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20140103150416.GA7132@katana>
-References: <1387552376-12986-1-git-send-email-jjhiblot@traphandler.com>
- <1387552376-12986-3-git-send-email-jjhiblot@traphandler.com>
- <20140103150416.GA7132@katana>
-Date: Fri, 3 Jan 2014 16:57:17 +0100
-Message-ID: <CACh+v5OJoGSZZjbDfeKSnPQ7BHHx6zhdp06=YcMWWfu03FVS+Q@mail.gmail.com>
-Subject: Re: [PATCH v3 REPOST 2/4] i2c: i2c-ibm-iic: perform the transfer in
- the interrupt handler
-From: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>,
- linuxppc-dev@lists.ozlabs.org, jean-jacques hiblot <jjhiblot@traphandler.com>,
- linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1386749970-22021-1-git-send-email-b48286@freescale.com>
+Cc: Marek Vasut <marex@denx.de>, linuxppc-dev@ozlabs.org,
+ linux-mtd@lists.infradead.org, scottwood@freescale.com,
+ Mingkai.Hu@freescale.com, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,98 +28,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2014/1/3 Wolfram Sang <wsa@the-dreams.de>:
->
-> Hi,
->
-> thanks for the submission!
-You're welcome :) Thanks for reviewing this.
+On Wed, Dec 11, 2013 at 04:19:30PM +0800, Hou Zhiqiang wrote:
+> Add PM support using callback function suspend and resume in .driver of
+> spi_driver.
+> 
+> Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
+> ---
+>  drivers/mtd/devices/m25p80.c | 37 +++++++++++++++++++++++++++++++++++++
+>  1 file changed, 37 insertions(+)
+> 
+> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+> index 7eda71d..b0c2b8c 100644
+> --- a/drivers/mtd/devices/m25p80.c
+> +++ b/drivers/mtd/devices/m25p80.c
+> @@ -66,6 +66,8 @@
+>  
+>  /* Used for Spansion flashes only. */
+>  #define	OPCODE_BRWR		0x17	/* Bank register write */
+> +#define	OPCODE_DP		0xb9	/* Enter deep power down mode */
+> +#define	OPCODE_RES		0xab	/* Exit deep power down mode */
 
->
->> --- a/drivers/i2c/busses/i2c-ibm_iic.c
->> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
->> @@ -58,6 +58,8 @@ static bool iic_force_fast;
->>  module_param(iic_force_fast, bool, 0);
->>  MODULE_PARM_DESC(iic_force_fast, "Force fast mode (400 kHz)");
->>
->> +#define FIFO_FLUSH_TIMEOUT 100
->
-> 100 what? The unit is missing.
+Where did you get these opcodes from? They are not in the Spansion
+datasheets I'm reading. And in fact, they are overloaded as RES (Read
+Electronic Signature, 0xab) and Bank Register Access (0xb9) in the
+datasheet I'm looking at. So this patch is wrong.
 
-The actual value of this timeout isn't very important. This is used
-only to avoid a never ending loop in case the hardware goes into a
-really bad state.
+Also, can you describe the purpose of these "deep power down" modes?
+I've never seen PM states where the *flash* needs to be put into a lower
+power mode. Typically the flash is pretty low-power when idle, and it
+may even be powered off completely when the system enters a lower-power
+state. Anyway, please describe why this patch is needed.
 
->
->> @@ -167,8 +170,8 @@ static void iic_dev_init(struct ibm_iic_private* dev)
->>       /* Clear control register */
->>       out_8(&iic->cntl, 0);
->>
->> -     /* Enable interrupts if possible */
->> -     iic_interrupt_mode(dev, dev->irq >= 0);
->> +     /* Start with each individual interrupt masked*/
->
-> Space at the end of comment missing
-ok
->
->>  static irqreturn_t iic_handler(int irq, void *dev_id)
->>  {
->> -     struct ibm_iic_private* dev = (struct ibm_iic_private*)dev_id;
->> -     struct iic_regs __iomem *iic = dev->vaddr;
->> -
->> -     DBG2(dev, "irq handler, STS = 0x%02x, EXTSTS = 0x%02x\n",
->> -          in_8(&iic->sts), in_8(&iic->extsts));
->> -
->> -     /* Acknowledge IRQ and wakeup iic_wait_for_tc */
->> -     out_8(&iic->sts, STS_IRQA | STS_SCMP);
->> -     wake_up_interruptible(&dev->wq);
->> -
->> +     struct ibm_iic_private *dev = (struct ibm_iic_private *) dev_id;
->> +     iic_xfer_bytes(dev);
->
-> Is iic_xfer_bytes later used when polling, too? Otherwise it could be
-> simply inserted here.
-Yes it'll be used for polling (implemented in a later patch)
->
->
->> +     if ((status & STS_ERR) ||
->> +         (ext_status & (EXTSTS_LA | EXTSTS_ICT | EXTSTS_XFRA))) {
->> +             DBG(dev, "status 0x%x\n", status);
->> +             DBG(dev, "extended status 0x%x\n", ext_status);
->> +             if (status & STS_ERR)
->> +                     ERR(dev, "Error detected\n");
->> +             if (ext_status & EXTSTS_LA)
->> +                     DBG(dev, "Lost arbitration\n");
->> +             if (ext_status & EXTSTS_ICT)
->> +                     ERR(dev, "Incomplete transfer\n");
->> +             if (ext_status & EXTSTS_XFRA)
->> +                     ERR(dev, "Transfer aborted\n");
->> +
->> +             dev->status = -EIO;
->
-> You could consider returning different fault codes for the different
-> states. See Documentation/i2c/fault-codes for a guide.
-I'll have a look at it.
+>  
+>  /* Status Register bits. */
+>  #define	SR_WIP			1	/* Write in progress */
+> @@ -1128,11 +1130,46 @@ static int m25p_remove(struct spi_device *spi)
+>  	return mtd_device_unregister(&flash->mtd);
+>  }
+>  
+> +#ifdef CONFIG_PM
+> +static int m25p_suspend(struct device *dev, pm_message_t mesg)
+> +{
+> +	struct m25p *flash = dev_get_drvdata(dev);
+> +	int ret;
+> +
+> +	flash->command[0] = OPCODE_DP;
 
->
->> +     if (dev->msgs == NULL) {
->> +             DBG(dev, "spurious !!!!!\n");
->> +             dev->status = -EINVAL;
->> +             return dev->status;
->> +     }
->
-> Does that really happen?
-Not in my test cases (going through i2c dev). But it could if the data
-passed to i2c_transfer is malformed.
-Should I remove this ?
+As mentioned above, this opcode is not recognized by many flash
+supported in this driver. So we might want one or more of the following:
 
->
-> And it introduces a build warning:
->
-> drivers/i2c/busses/i2c-ibm_iic.c:410:12: warning: 'iic_wait_for_tc' defined but not used [-Wunused-function]
->
-I posted this some time ago, but I believe I kept this in to help git
-produce a diff readable by a human.
-It's removed in a later patch
+ (1) to assign different suspend/resume opcodes for use in
+     m25p_suspend/resume
+ (2) to provide over-loadable callbacks so that different flash could
+     use different suspend/resume routines
 
-Jean-Jacques
+And of course, we need to avoid sending these commands at all to
+unsupported flash.
+
+> +	mutex_lock(&flash->lock);
+> +	/* Wait until finished previous write/erase command. */
+> +	ret = wait_till_ready(flash);
+> +	if (ret) {
+> +		mutex_unlock(&flash->lock);
+> +		return ret;
+> +	}
+> +	ret = spi_write(flash->spi, flash->command, 1);
+> +	mutex_unlock(&flash->lock);
+> +
+> +	return ret;
+> +}
+> +
+> +static int m25p_resume(struct device *dev)
+> +{
+> +	struct m25p *flash = dev_get_drvdata(dev);
+> +	int ret;
+> +
+> +	flash->command[0] = OPCODE_RES;
+> +	ret = spi_write(flash->spi, flash->command, 1);
+> +
+> +	return ret;
+> +}
+> +#endif /* CONFIG_PM */
+>  
+>  static struct spi_driver m25p80_driver = {
+>  	.driver = {
+>  		.name	= "m25p80",
+>  		.owner	= THIS_MODULE,
+> +#ifdef CONFIG_PM
+> +		.suspend = m25p_suspend,
+> +		.resume = m25p_resume,
+> +#endif
+>  	},
+>  	.id_table	= m25p_ids,
+>  	.probe	= m25p_probe,
+
+Brian
