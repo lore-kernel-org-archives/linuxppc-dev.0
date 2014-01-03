@@ -1,34 +1,23 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6C90C2C00A6
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Jan 2014 20:47:25 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 3 Jan 2014 02:47:22 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 20F9019D803E
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Jan 2014 02:47:11 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s039lCNo10617280
- for <linuxppc-dev@ozlabs.org>; Fri, 3 Jan 2014 10:47:12 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s039lIUM030981
- for <linuxppc-dev@ozlabs.org>; Fri, 3 Jan 2014 02:47:19 -0700
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] powerpc/eeh: Reinit error reporting
-Date: Fri,  3 Jan 2014 17:47:13 +0800
-Message-Id: <1388742433-7328-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1388742433-7328-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1388742433-7328-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 77D5A2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 21:32:50 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: RE: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than
+ mfsprg/mtsprg
+Date: Fri, 3 Jan 2014 10:32:40 +0000
+Message-ID: <a79e5eb1cf444a3782c9af9952efe69b@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Anton Vorontsov <avorontsov@mvista.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,90 +27,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch implements the EEH operation backend restore_config()
-for PowerNV platform. That relies on OPAL API opal_pci_reinit()
-where we reinitialize the error reporting properly after PE or
-PHB reset. The patch also extends opal_pci_reinit() to have one
-additional parameter to carry more information like PCI device
-address.
+Looks good. I will test it as soon as possible.=20
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal.h              |    8 ++++++--
- arch/powerpc/platforms/powernv/eeh-powernv.c |   23 ++++++++++++++++++++++-
- 2 files changed, 28 insertions(+), 3 deletions(-)
+BTW, there is only SPRG3 need to save.
+32bit: SPRG0-SPRG1, SPRG2-SPRG7, SPRG9 be use to deal with exception,
+those register not need to save.(SPRG8 not be used) Only SPRG3 be used
+to save current thread_info pointer.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 7bdcf34..25f6454 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -311,12 +311,16 @@ enum OpalMveEnableAction {
- 	OPAL_ENABLE_MVE = 1
- };
- 
--enum OpalPciResetAndReinitScope {
-+enum OpalPciResetScope {
- 	OPAL_PHB_COMPLETE = 1, OPAL_PCI_LINK = 2, OPAL_PHB_ERROR = 3,
- 	OPAL_PCI_HOT_RESET = 4, OPAL_PCI_FUNDAMENTAL_RESET = 5,
- 	OPAL_PCI_IODA_TABLE_RESET = 6,
- };
- 
-+enum OpalPciReinitScope {
-+	OPAL_PCI_DEV = 1
-+};
-+
- enum OpalPciResetState {
- 	OPAL_DEASSERT_RESET = 0,
- 	OPAL_ASSERT_RESET = 1
-@@ -710,7 +714,7 @@ int64_t opal_pci_get_phb_diag_data(uint64_t phb_id, void *diag_buffer,
- int64_t opal_pci_get_phb_diag_data2(uint64_t phb_id, void *diag_buffer,
- 				    uint64_t diag_buffer_len);
- int64_t opal_pci_fence_phb(uint64_t phb_id);
--int64_t opal_pci_reinit(uint64_t phb_id, uint8_t reinit_scope);
-+int64_t opal_pci_reinit(uint64_t phb_id, uint8_t reinit_scope, uint32_t data);
- int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t error_type, uint8_t mask_action);
- int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
- int64_t opal_get_epow_status(__be64 *status);
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index ab91e6a..a0d4d9a 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -344,6 +344,27 @@ static int powernv_eeh_next_error(struct eeh_pe **pe)
- 	return -EEXIST;
- }
- 
-+static int powernv_eeh_restore_config(struct device_node *dn)
-+{
-+	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
-+	struct pnv_phb *phb;
-+	s64 ret;
-+
-+	if (!edev)
-+		return -EEXIST;
-+
-+	phb = edev->phb->private_data;
-+	ret = opal_pci_reinit(phb->opal_id,
-+			      OPAL_PCI_DEV, edev->config_addr);
-+	if (ret) {
-+		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
-+			__func__, edev->config_addr, ret);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
- static struct eeh_ops powernv_eeh_ops = {
- 	.name                   = "powernv",
- 	.init                   = powernv_eeh_init,
-@@ -360,7 +381,7 @@ static struct eeh_ops powernv_eeh_ops = {
- 	.read_config            = pnv_pci_cfg_read,
- 	.write_config           = pnv_pci_cfg_write,
- 	.next_error		= powernv_eeh_next_error,
--	.restore_config		= NULL
-+	.restore_config		= powernv_eeh_restore_config
- };
- 
- /**
--- 
-1.7.10.4
+-Dongsheng
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, January 03, 2014 6:38 AM
+> To: Benjamin Herrenschmidt
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Wang Dongsheng-B405=
+34;
+> Anton Vorontsov
+> Subject: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than mfsprg/mts=
+prg
+>=20
+> This fixes a build break that was probably introduced with the removal
+> of -Wa,-me500 (commit f49596a4cf4753d13951608f24f939a59fdcc653), where
+> the assembler refuses to recognize SPRG4-7 with a generic PPC target.
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Cc: Dongsheng Wang <dongsheng.wang@freescale.com>
+> Cc: Anton Vorontsov <avorontsov@mvista.com>
+> ---
+> Dongsheng, please test.
+> ---
+>  arch/powerpc/kernel/swsusp_booke.S | 32 ++++++++++++++++----------------
+>  1 file changed, 16 insertions(+), 16 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/swsusp_booke.S
+> b/arch/powerpc/kernel/swsusp_booke.S
+> index 0f20405..553c140 100644
+> --- a/arch/powerpc/kernel/swsusp_booke.S
+> +++ b/arch/powerpc/kernel/swsusp_booke.S
+> @@ -74,21 +74,21 @@ _GLOBAL(swsusp_arch_suspend)
+>  	bne	1b
+>=20
+>  	/* Save SPRGs */
+> -	mfsprg	r4,0
+> +	mfspr	r4,SPRN_SPRG0
+>  	stw	r4,SL_SPRG0(r11)
+> -	mfsprg	r4,1
+> +	mfspr	r4,SPRN_SPRG1
+>  	stw	r4,SL_SPRG1(r11)
+> -	mfsprg	r4,2
+> +	mfspr	r4,SPRN_SPRG2
+>  	stw	r4,SL_SPRG2(r11)
+> -	mfsprg	r4,3
+> +	mfspr	r4,SPRN_SPRG3
+>  	stw	r4,SL_SPRG3(r11)
+> -	mfsprg	r4,4
+> +	mfspr	r4,SPRN_SPRG4
+>  	stw	r4,SL_SPRG4(r11)
+> -	mfsprg	r4,5
+> +	mfspr	r4,SPRN_SPRG5
+>  	stw	r4,SL_SPRG5(r11)
+> -	mfsprg	r4,6
+> +	mfspr	r4,SPRN_SPRG6
+>  	stw	r4,SL_SPRG6(r11)
+> -	mfsprg	r4,7
+> +	mfspr	r4,SPRN_SPRG7
+>  	stw	r4,SL_SPRG7(r11)
+>=20
+>  	/* Call the low level suspend stuff (we should probably have made
+> @@ -150,21 +150,21 @@ _GLOBAL(swsusp_arch_resume)
+>  	bl	_tlbil_all
+>=20
+>  	lwz	r4,SL_SPRG0(r11)
+> -	mtsprg	0,r4
+> +	mtspr	SPRN_SPRG0,r4
+>  	lwz	r4,SL_SPRG1(r11)
+> -	mtsprg	1,r4
+> +	mtspr	SPRN_SPRG1,r4
+>  	lwz	r4,SL_SPRG2(r11)
+> -	mtsprg	2,r4
+> +	mtspr	SPRN_SPRG2,r4
+>  	lwz	r4,SL_SPRG3(r11)
+> -	mtsprg	3,r4
+> +	mtspr	SPRN_SPRG3,r4
+>  	lwz	r4,SL_SPRG4(r11)
+> -	mtsprg	4,r4
+> +	mtspr	SPRN_SPRG4,r4
+>  	lwz	r4,SL_SPRG5(r11)
+> -	mtsprg	5,r4
+> +	mtspr	SPRN_SPRG5,r4
+>  	lwz	r4,SL_SPRG6(r11)
+> -	mtsprg	6,r4
+> +	mtspr	SPRN_SPRG6,r4
+>  	lwz	r4,SL_SPRG7(r11)
+> -	mtsprg	7,r4
+> +	mtspr	SPRN_SPRG7,r4
+>=20
+>  	/* restore the MSR */
+>  	lwz	r3,SL_MSR(r11)
+> --
+> 1.8.3.2
