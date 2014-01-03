@@ -1,20 +1,29 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 40ADF2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 09:38:03 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 07CAD2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 11:04:37 +1100 (EST)
+Message-ID: <1388707457.11795.32.camel@snotra.buserror.net>
+Subject: Re: commit e38c0a1f breaks powerpc boards with uli1575 chip
 From: Scott Wood <scottwood@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than mfsprg/mtsprg
-Date: Thu, 2 Jan 2014 16:37:50 -0600
-Message-ID: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
+Date: Thu, 2 Jan 2014 18:04:17 -0600
+In-Reply-To: <1388373200.4373.25.camel@pasglop>
+References: <201312171135.38576@blacky.localdomain>
+ <52B1EC15.5070606@gmail.com> <201312190842.02702@blacky.localdomain>
+ <1388373200.4373.25.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Anton Vorontsov <avorontsov@mvista.com>, linuxppc-dev@lists.ozlabs.org,
- Dongsheng Wang <dongsheng.wang@freescale.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Dmitry Krivoschekov <dkrivoschokov@dev.rtsoft.ru>,
+ Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ linux-kernel@vger.kernel.org, Rob
+ Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,82 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a build break that was probably introduced with the removal
-of -Wa,-me500 (commit f49596a4cf4753d13951608f24f939a59fdcc653), where
-the assembler refuses to recognize SPRG4-7 with a generic PPC target.
+On Mon, 2013-12-30 at 14:13 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2013-12-19 at 08:42 +0400, Nikita Yushchenko wrote:
+> > No, this does not help.
+> > 
+> > I've dumped the actual content of 'range' and 'addr' at the failure
+> > point 
+> > (i.e. ar point that returns error with e38c0a1f but passes without 
+> > e38c0a1f ):
+> > 
+> > OF: default map, cp=0, s=10000, da=70
+> > range:  01 00 00 00 00 00 00 00 00 00 00 00
+> >  addr:  00 00 00 00 00 00 00 00 00 00 00 70
+> 
+> Something that has a #address-cells larger than 2, or more generally,
+> an address field that contains more than a single number, must have
+> a specific translation backend, like we have for PCI.
+> 
+> This is a bit annoying but originates from the original OFW stuff on
+> which this stuff is based where the bus node would provide the methods
+> for translation.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Dongsheng Wang <dongsheng.wang@freescale.com>
-Cc: Anton Vorontsov <avorontsov@mvista.com>
----
-Dongsheng, please test.
----
- arch/powerpc/kernel/swsusp_booke.S | 32 ++++++++++++++++----------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+I can maybe see that for PCI which has a special encoding, but why is it
+always needed?  E.g. if Freescale localbus had a 64-bit offset instead
+of 32-bit, the child nodes would have 3 address cells, but
+straightforward use of ranges would bring it down to 2 for the final
+physical address.  Existing localbus nodes already have "an address
+field that contains more than a single number"; it's just a simple
+enough encoding that it works to treat it as if it were a single large
+number.
 
-diff --git a/arch/powerpc/kernel/swsusp_booke.S b/arch/powerpc/kernel/swsusp_booke.S
-index 0f20405..553c140 100644
---- a/arch/powerpc/kernel/swsusp_booke.S
-+++ b/arch/powerpc/kernel/swsusp_booke.S
-@@ -74,21 +74,21 @@ _GLOBAL(swsusp_arch_suspend)
- 	bne	1b
- 
- 	/* Save SPRGs */
--	mfsprg	r4,0
-+	mfspr	r4,SPRN_SPRG0
- 	stw	r4,SL_SPRG0(r11)
--	mfsprg	r4,1
-+	mfspr	r4,SPRN_SPRG1
- 	stw	r4,SL_SPRG1(r11)
--	mfsprg	r4,2
-+	mfspr	r4,SPRN_SPRG2
- 	stw	r4,SL_SPRG2(r11)
--	mfsprg	r4,3
-+	mfspr	r4,SPRN_SPRG3
- 	stw	r4,SL_SPRG3(r11)
--	mfsprg	r4,4
-+	mfspr	r4,SPRN_SPRG4
- 	stw	r4,SL_SPRG4(r11)
--	mfsprg	r4,5
-+	mfspr	r4,SPRN_SPRG5
- 	stw	r4,SL_SPRG5(r11)
--	mfsprg	r4,6
-+	mfspr	r4,SPRN_SPRG6
- 	stw	r4,SL_SPRG6(r11)
--	mfsprg	r4,7
-+	mfspr	r4,SPRN_SPRG7
- 	stw	r4,SL_SPRG7(r11)
- 
- 	/* Call the low level suspend stuff (we should probably have made
-@@ -150,21 +150,21 @@ _GLOBAL(swsusp_arch_resume)
- 	bl	_tlbil_all
- 
- 	lwz	r4,SL_SPRG0(r11)
--	mtsprg	0,r4
-+	mtspr	SPRN_SPRG0,r4
- 	lwz	r4,SL_SPRG1(r11)
--	mtsprg	1,r4
-+	mtspr	SPRN_SPRG1,r4
- 	lwz	r4,SL_SPRG2(r11)
--	mtsprg	2,r4
-+	mtspr	SPRN_SPRG2,r4
- 	lwz	r4,SL_SPRG3(r11)
--	mtsprg	3,r4
-+	mtspr	SPRN_SPRG3,r4
- 	lwz	r4,SL_SPRG4(r11)
--	mtsprg	4,r4
-+	mtspr	SPRN_SPRG4,r4
- 	lwz	r4,SL_SPRG5(r11)
--	mtsprg	5,r4
-+	mtspr	SPRN_SPRG5,r4
- 	lwz	r4,SL_SPRG6(r11)
--	mtsprg	6,r4
-+	mtspr	SPRN_SPRG6,r4
- 	lwz	r4,SL_SPRG7(r11)
--	mtsprg	7,r4
-+	mtspr	SPRN_SPRG7,r4
- 
- 	/* restore the MSR */
- 	lwz	r3,SL_MSR(r11)
--- 
-1.8.3.2
+-Scott
