@@ -1,38 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <olof@lixom.net>
+Received: from mail-qe0-f47.google.com (mail-qe0-f47.google.com
+ [209.85.128.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F10022C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 16:28:33 +1100 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 3 Jan 2014 15:28:30 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2554B2BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 16:28:26 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s035SDbw1769738
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jan 2014 16:28:13 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s035SP8Q022512
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Jan 2014 16:28:25 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH -V2] powerpc: thp: Fix crash on mremap
-In-Reply-To: <1388665786.4373.48.camel@pasglop>
-References: <1388654266-5195-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140102094124.04D76E0090@blue.fi.intel.com>
- <87zjneodtw.fsf@linux.vnet.ibm.com> <1388665786.4373.48.camel@pasglop>
-Date: Fri, 03 Jan 2014 10:58:14 +0530
-Message-ID: <87wqihocr5.fsf@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id F1D342C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Jan 2014 18:56:08 +1100 (EST)
+Received: by mail-qe0-f47.google.com with SMTP id t7so15137460qeb.20
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Jan 2014 23:56:04 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: aarcange@redhat.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-mm@kvack.org
+In-Reply-To: <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
+References: <1388264507-5100-1-git-send-email-olof@lixom.net>
+ <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
+Date: Thu, 2 Jan 2014 23:56:04 -0800
+Message-ID: <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Olof Johansson <olof@lixom.net>, chzigotzky@xenosoft.de,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,44 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Sat, Dec 28, 2013 at 1:05 PM, Olof Johansson <olof@lixom.net> wrote:
 
-> On Thu, 2014-01-02 at 16:22 +0530, Aneesh Kumar K.V wrote:
->> > Just use config option directly:
->> >
->> >       if (new_ptl != old_ptl ||
->> >               IS_ENABLED(CONFIG_ARCH_THP_MOVE_PMD_ALWAYS_WITHDRAW))
->> 
->> 
->> I didn't like that. I found the earlier one easier for reading.
->> If you and others strongly feel about this, I can redo the patch.
->> Please let me know
->
-> Yes, use IS_ENABLED, no need to have two indirections of #define's
->
-> Another option is to have
->
-> 	if (pmd_move_must_withdraw(new,old)) {
-> 	}
->
-> With in a generic header:
->
-> #ifndef pmd_move_must_withdraw
-> static inline bool pmd_move_must_withdraw(spinlock_t *new_ptl, ...)
-> {
-> 	return new_ptl != old_ptl;
-> }
-> #endif
->
-> And in powerpc:
->
-> static inline bool pmd_move_must_withdraw(spinlock_t *new_ptl, ...)
-> {
-> 	return true;
-> }
-> #define pmd_move_must_withdraw pmd_move_must_withdraw
+> Sigh, it's not this after all. I did a clean build with this applied
+> and still see failures. Something else is (also?) going on here.
 
-This is better i guess. It is also in-line with rest of transparent
-hugepage functions. I will do this.
+Ok, so after some more digging I actually think that this isn't about
+the new code added as much as it is about having more code in low
+memory.
 
--aneesh
+Before, there were only two instuctions in __start:
+
+        b       .__start_initialization_multiplatform
+        trap
+
+Now, there's a whole bunch:
+
+c000000000000000 <.__start>:
+c000000000000000:       08 00 00 48     tdi     0,r0,72
+c000000000000004:       48 00 00 24     b       c000000000000028 <.__start+0x28>
+c000000000000008:       05 00 9f 42     .long 0x5009f42
+c00000000000000c:       a6 02 48 7d     lhzu    r16,18557(r2)
+c000000000000010:       1c 00 4a 39     mulli   r0,r0,19001
+c000000000000014:       a6 00 60 7d     lhzu    r16,24701(0)
+c000000000000018:       01 00 6b 69     .long 0x1006b69
+c00000000000001c:       a6 03 5a 7d     lhzu    r16,23165(r3)
+c000000000000020:       a6 03 7b 7d     lhzu    r16,31613(r3)
+c000000000000024:       24 00 00 4c     dozi    r0,r0,76
+c000000000000028:       48 00 95 84     b       c0000000000095ac
+<.__start_initialization_multiplatform>
+c00000000000002c:       7f e0 00 08     trap
+
+And indeed, by replacing some of the LE hand-converted code with 0x0,
+it seems that what's really making things blow up here is that 0x8-0xc
+contain something else than 0x0.
+
+Where/why this comes from I'm less certain of -- and since I seem to
+no longer have a usable JTAG setup, I can't break in and see where the
+code gets stuck and call paths, etc. So it's pure speculation, but I'm
+guessing it's a null pointer dereference somewhere with a chained
+pointer as the second member in a struct, i.e. with NULL the stray
+null ptr deref does no harm.
+
+Since it doesn't seem to impact pSeries, there's a chance that the bug
+is in firmware, not in the kernel, since this seems to happen during
+fairly early boot, i.e. possibly while grabbing the DT contents out.
+
+This makes things interesting though. The BE/LE trampoline code
+assumes at least 3 consecutive instructions. What was the reasoning
+behind entering the kernel LE instead of keeping the old boot protocol
+and just switching to LE once kernel is loaded? Is it actually used on
+some platforms or is this just a theoretical thing?
+
+
+-Olof
