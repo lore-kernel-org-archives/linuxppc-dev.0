@@ -1,24 +1,19 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1B0542C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jan 2014 06:15:42 +1100 (EST)
-Received: by mail-pd0-f179.google.com with SMTP id r10so16618338pdi.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 04 Jan 2014 11:15:39 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Sat, 4 Jan 2014 11:15:37 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: drivers/tty: ehv_bytechan fails to build as a module
-Message-ID: <20140104191537.GA9051@roeck-us.net>
-References: <20131209160310.7f81a1bc@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20131209160310.7f81a1bc@kryten>
-Cc: gregkh@linuxfoundation.org, dvaleev@suse.com, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, timur@freescale.com
+Return-Path: <shc_work@mail.ru>
+Received: from fallback6.mail.ru (fallback6.mail.ru [94.100.176.134])
+ by ozlabs.org (Postfix) with ESMTP id 41A9E2C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jan 2014 17:30:05 +1100 (EST)
+Received: from smtp12.mail.ru (smtp12.mail.ru [94.100.176.89])
+ by fallback6.mail.ru (mPOP.Fallback_MX) with ESMTP id 067662BEEE32
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Jan 2014 10:21:31 +0400 (MSK)
+From: Alexander Shiyan <shc_work@mail.ru>
+To: alsa-devel@alsa-project.org
+Subject: [PATCH] ASoC: fsl_ssi: Fix printing return code on clk error
+Date: Sun,  5 Jan 2014 10:21:16 +0400
+Message-Id: <1388902876-29964-1-git-send-email-shc_work@mail.ru>
+Cc: Alexander Shiyan <shc_work@mail.ru>, Liam Girdwood <lgirdwood@gmail.com>,
+ Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>,
+ Jaroslav Kysela <perex@perex.cz>, Mark Brown <broonie@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 09, 2013 at 04:03:10PM +1100, Anton Blanchard wrote:
-> ehv_bytechan is marked tristate but fails to build as a module:
-> 
-> drivers/tty/ehv_bytechan.c:363:1: error: type defaults to ‘int’ in declaration of ‘console_initcall’ [-Werror=implicit-int]
-> 
-> It doesn't make much sense for a console driver to be built as
-> a module, so change it to a bool.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> 
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+---
+ sound/soc/fsl/fsl_ssi.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Any comments on this patch ? The problem still causes powerpc:allmodconfig to
-fail.
-
-Guenter
-
-> ---
-> 
-> 
-> Index: b/drivers/tty/Kconfig
-> ===================================================================
-> --- a/drivers/tty/Kconfig
-> +++ b/drivers/tty/Kconfig
-> @@ -366,7 +366,7 @@ config TRACE_SINK
->  	  "Trace data router for MIPI P1149.7 cJTAG standard".
->  
->  config PPC_EPAPR_HV_BYTECHAN
-> -	tristate "ePAPR hypervisor byte channel driver"
-> +	bool "ePAPR hypervisor byte channel driver"
->  	depends on PPC
->  	select EPAPR_PARAVIRT
->  	help
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 2101fc5..3d74477a 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -1192,7 +1192,8 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		 */
+ 		ssi_private->baudclk = devm_clk_get(&pdev->dev, "baud");
+ 		if (IS_ERR(ssi_private->baudclk))
+-			dev_warn(&pdev->dev, "could not get baud clock: %d\n", ret);
++			dev_warn(&pdev->dev, "could not get baud clock: %d\n",
++				 PTR_ERR(ssi_private->baudclk));
+ 		else
+ 			clk_prepare_enable(ssi_private->baudclk);
+ 
+-- 
+1.8.3.2
