@@ -1,23 +1,23 @@
-Return-Path: <Minghuan.Lian@freescale.com>
-Received: from db9outboundpool.messaging.microsoft.com
- (mail-db9lp0252.outbound.messaging.microsoft.com [213.199.154.252])
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E4EE62C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 14:57:35 +1100 (EST)
-Message-ID: <52CA29C1.9010405@freescale.com>
-Date: Mon, 6 Jan 2014 11:57:53 +0800
-From: Lian Minghuan-b31939 <b31939@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 39F802C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 16:27:14 +1100 (EST)
+Received: from mail122-va3 (localhost [127.0.0.1])	by
+ mail122-va3-R.bigfish.com (Postfix) with ESMTP id 7F50080290	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 05:27:07 +0000 (UTC)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v2 1/2] powerpc/mpic_timer: fix the time is not accurate
+ caused by GTCRR toggle bit
+Date: Mon, 6 Jan 2014 13:23:30 +0800
+Message-ID: <1388985811-32495-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Minghuan Lian
- <Minghuan.Lian@freescale.com>
-Subject: Re: [11/12,v3] pci: fsl: update PCI EDAC driver
-References: <1382524894-15164-11-git-send-email-Minghuan.Lian@freescale.com>
- <20140103221603.GA22546@home.buserror.net>
-In-Reply-To: <20140103221603.GA22546@home.buserror.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-I think we should reverse this commit
+When the timer GTCCR toggle bit is inverted, we calculated the rest
+of the time is not accurate. So we need to ignore this bit.
 
-0f1741c74aa6794b1c7fbdd19f26a4f2377a11c6.
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+v2:
+No change.
 
-PCI controller driver is a platform driver supports probe and remove,
-when removing the driver we should call mpc85xx_pci_err_remove() to free EDAC PCI resource.
-
-Thanks,
-Minghuan
-
-On 01/04/2014 06:16 AM, Scott Wood wrote:
-> On Wed, Oct 23, 2013 at 06:41:33PM +0800, Minghuan Lian wrote:
->> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
->> index 40d2e1d..4a03e1a 100644
->> --- a/arch/powerpc/sysdev/fsl_pci.c
->> +++ b/arch/powerpc/sysdev/fsl_pci.c
->> @@ -236,6 +236,7 @@ void fsl_arch_pci_sys_remove(struct fsl_pci *pci)
->>   	if (!hose)
->>   		return;
->>   
->> +	mpc85xx_pci_err_remove(to_platform_device(pci->dev));
->>   	pcibios_free_controller(hose);
-> This causes a linker error if the EDAC driver is enabled, due to commit
-> 0f1741c74aa6794b1c7fbdd19f26a4f2377a11c6 ("edac/85xx: Remove
-> mpc85xx_pci_err_remove").
->
-> -Scott
+diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
+index 22d7d57..70dcf9c 100644
+--- a/arch/powerpc/sysdev/mpic_timer.c
++++ b/arch/powerpc/sysdev/mpic_timer.c
+@@ -41,6 +41,7 @@
+ #define MPIC_TIMER_TCR_ROVR_OFFSET	24
+ 
+ #define TIMER_STOP			0x80000000
++#define GTCCR_TOG			0x80000000
+ #define TIMERS_PER_GROUP		4
+ #define MAX_TICKS			(~0U >> 1)
+ #define MAX_TICKS_CASCADE		(~0U)
+@@ -327,11 +328,13 @@ void mpic_get_remain_time(struct mpic_timer *handle, struct timeval *time)
+ 	casc_priv = priv->timer[handle->num].cascade_handle;
+ 	if (casc_priv) {
+ 		tmp_ticks = in_be32(&priv->regs[handle->num].gtccr);
++		tmp_ticks &= ~GTCCR_TOG;
+ 		ticks = ((u64)tmp_ticks & UINT_MAX) * (u64)MAX_TICKS_CASCADE;
+ 		tmp_ticks = in_be32(&priv->regs[handle->num - 1].gtccr);
+ 		ticks += tmp_ticks;
+ 	} else {
+ 		ticks = in_be32(&priv->regs[handle->num].gtccr);
++		ticks &= ~GTCCR_TOG;
+ 	}
+ 
+ 	convert_ticks_to_time(priv, ticks, time);
+-- 
+1.8.5
