@@ -1,23 +1,24 @@
-Return-Path: <Minghuan.Lian@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8998E2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 16:35:58 +1100 (EST)
-Message-ID: <52CA40D8.1090805@freescale.com>
-Date: Mon, 6 Jan 2014 13:36:24 +0800
-From: Lian Minghuan-b31939 <b31939@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 892FA2C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 17:05:54 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: RE: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than
+ mfsprg/mtsprg
+Date: Mon, 6 Jan 2014 06:05:45 +0000
+Message-ID: <7187f9065a0d40d78475523614319cf9@BY2PR03MB191.namprd03.prod.outlook.com>
+References: <1388702270-21550-1-git-send-email-scottwood@freescale.com>
+ <a79e5eb1cf444a3782c9af9952efe69b@BN1PR03MB188.namprd03.prod.outlook.com>
+In-Reply-To: <a79e5eb1cf444a3782c9af9952efe69b@BN1PR03MB188.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Minghuan Lian
- <Minghuan.Lian@freescale.com>
-Subject: Re: [03/12,v3] pci: fsl: add PCI indirect access support
-References: <1382524894-15164-3-git-send-email-Minghuan.Lian@freescale.com>
- <20140103223306.GC22546@home.buserror.net>
-In-Reply-To: <20140103223306.GC22546@home.buserror.net>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
+Cc: "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,90 +28,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-HI Scott,
+Reviewed-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+Tested-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-please see my comments inline.
+Works well. :)
 
-On 01/04/2014 06:33 AM, Scott Wood wrote:
-> On Wed, Oct 23, 2013 at 06:41:25PM +0800, Minghuan Lian wrote:
->> The patch adds PCI indirect read/write functions. The main code
->> is ported from arch/powerpc/sysdev/indirect_pci.c. We use general
->> IO API iowrite32be/ioread32be instead of out_be32/in_be32, and
->> use structure fsl_Pci instead of PowerPC's pci_controller.
->> The patch also provides fsl_pcie_check_link() to check PCI link.
->> The weak function fsl_arch_pci_exclude_device() is provided to
->> call ppc_md.pci_exclude_device() for PowerPC architecture.
->>
->> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
->>
->> ---
->> change log:
->> v1-v3:
->> Derived from http://patchwork.ozlabs.org/patch/278965/
->>
->> Based on upstream master.
->> Based on the discussion of RFC version here
->> http://patchwork.ozlabs.org/patch/274487/
->>
->>   drivers/pci/host/pci-fsl-common.c | 169 ++++++++++++++++++++++++++++++++------
->>   include/linux/fsl/pci-common.h    |   6 ++
->>   2 files changed, 151 insertions(+), 24 deletions(-)
->>
->> diff --git a/drivers/pci/host/pci-fsl-common.c b/drivers/pci/host/pci-fsl-common.c
->> index 69d338b..8bc9a64 100644
->> --- a/drivers/pci/host/pci-fsl-common.c
->> +++ b/drivers/pci/host/pci-fsl-common.c
->> @@ -35,52 +35,173 @@
->>   #include <sysdev/fsl_soc.h>
->>   #include <sysdev/fsl_pci.h>
->>   
->> -static int fsl_pcie_check_link(struct pci_controller *hose)
->> +/* Indirect type */
->> +#define INDIRECT_TYPE_EXT_REG			0x00000002
->> +#define INDIRECT_TYPE_SURPRESS_PRIMARY_BUS	0x00000004
->> +#define INDIRECT_TYPE_NO_PCIE_LINK		0x00000008
->> +#define INDIRECT_TYPE_BIG_ENDIAN		0x00000010
->> +#define INDIRECT_TYPE_FSL_CFG_REG_LINK		0x00000040
-> Why are these here rather than in the header, given that you have
-> indirect_type in the struct in the header?
-[Minghuan] It's better to define the type in the header file. I will fix it.
->
->> +int __weak fsl_arch_pci_exclude_device(struct fsl_pci *pci, u8 bus, u8 devfn)
->> +{
->> +	return PCIBIOS_SUCCESSFUL;
->> +}
->> +
->> +static int fsl_pci_read_config(struct fsl_pci *pci, int bus, int devfn,
->> +				int offset, int len, u32 *val)
->> +{
->> +	u32 bus_no, reg, data;
->> +
->> +	if (pci->indirect_type & INDIRECT_TYPE_NO_PCIE_LINK) {
->> +		if (bus != pci->first_busno)
->> +			return PCIBIOS_DEVICE_NOT_FOUND;
->> +		if (devfn != 0)
->> +			return PCIBIOS_DEVICE_NOT_FOUND;
->> +	}
-> A lot of this seems duplicated from arch/powerpc/sysdev/indirect_pci.c.
->
-> How generally applicable is that file to non-PPC implementations?  At a
-> minimum I see a similar file in arch/microblaze.  It should probably
-> eventually be moved to common code, rather than duplicated again.  A
-> prerequisite for that would be making common the dependencies it has on
-> the rest of what is currently arch PCI infrastructure; until then, it's
-> probably better to just have the common fsl-pci code know how to
-> interface with the appropriate PPC/ARM code rather than trying to copy
-> the infrastructure as well.
-[Minghuan] Yes, This is a duplicate except it uses struct fsl_pci. But 
-it is hard to be move to common code.
-because every indirect read/write functions use different PCI controller 
-structure which is very basic structure and ARM has no this structure.
-If we can not establish a unified pci controller structure, we can only 
-abstract out a simple structure which includes indirect access related 
-fields,
-and need a callback function to get the pointer like this: 
-((powerpc/microblaze/mips/ pci_controller 
-*)(pci_bus->sysdata))->indirect_struct.
-Should we provide the common code for indirect access API or wait for 
-the common PCI controller structure?
-> -Scott
+-Dongsheng
+
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+b40534=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+> Dongsheng.Wang@freescale.com
+> Sent: Friday, January 03, 2014 6:33 PM
+> To: Wood Scott-B07421; Benjamin Herrenschmidt
+> Cc: Anton Vorontsov; linuxppc-dev@lists.ozlabs.org
+> Subject: RE: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than mfsprg=
+/mtsprg
+>=20
+> Looks good. I will test it as soon as possible.
+>=20
+> BTW, there is only SPRG3 need to save.
+> 32bit: SPRG0-SPRG1, SPRG2-SPRG7, SPRG9 be use to deal with exception,
+> those register not need to save.(SPRG8 not be used) Only SPRG3 be used
+> to save current thread_info pointer.
+>=20
+> -Dongsheng
+>=20
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, January 03, 2014 6:38 AM
+> > To: Benjamin Herrenschmidt
+> > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Wang Dongsheng-B4=
+0534;
+> > Anton Vorontsov
+> > Subject: [PATCH] powerpc/fsl-booke: Use SPRN_SPRGn rather than mfsprg/m=
+tsprg
+> >
+> > This fixes a build break that was probably introduced with the removal
+> > of -Wa,-me500 (commit f49596a4cf4753d13951608f24f939a59fdcc653), where
+> > the assembler refuses to recognize SPRG4-7 with a generic PPC target.
+> >
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > Cc: Dongsheng Wang <dongsheng.wang@freescale.com>
+> > Cc: Anton Vorontsov <avorontsov@mvista.com>
+> > ---
+> > Dongsheng, please test.
+> > ---
+> >  arch/powerpc/kernel/swsusp_booke.S | 32 ++++++++++++++++--------------=
+--
+> >  1 file changed, 16 insertions(+), 16 deletions(-)
+> >
+> > diff --git a/arch/powerpc/kernel/swsusp_booke.S
+> > b/arch/powerpc/kernel/swsusp_booke.S
+> > index 0f20405..553c140 100644
+> > --- a/arch/powerpc/kernel/swsusp_booke.S
+> > +++ b/arch/powerpc/kernel/swsusp_booke.S
+> > @@ -74,21 +74,21 @@ _GLOBAL(swsusp_arch_suspend)
+> >  	bne	1b
+> >
+> >  	/* Save SPRGs */
+> > -	mfsprg	r4,0
+> > +	mfspr	r4,SPRN_SPRG0
+> >  	stw	r4,SL_SPRG0(r11)
+> > -	mfsprg	r4,1
+> > +	mfspr	r4,SPRN_SPRG1
+> >  	stw	r4,SL_SPRG1(r11)
+> > -	mfsprg	r4,2
+> > +	mfspr	r4,SPRN_SPRG2
+> >  	stw	r4,SL_SPRG2(r11)
+> > -	mfsprg	r4,3
+> > +	mfspr	r4,SPRN_SPRG3
+> >  	stw	r4,SL_SPRG3(r11)
+> > -	mfsprg	r4,4
+> > +	mfspr	r4,SPRN_SPRG4
+> >  	stw	r4,SL_SPRG4(r11)
+> > -	mfsprg	r4,5
+> > +	mfspr	r4,SPRN_SPRG5
+> >  	stw	r4,SL_SPRG5(r11)
+> > -	mfsprg	r4,6
+> > +	mfspr	r4,SPRN_SPRG6
+> >  	stw	r4,SL_SPRG6(r11)
+> > -	mfsprg	r4,7
+> > +	mfspr	r4,SPRN_SPRG7
+> >  	stw	r4,SL_SPRG7(r11)
+> >
+> >  	/* Call the low level suspend stuff (we should probably have made
+> > @@ -150,21 +150,21 @@ _GLOBAL(swsusp_arch_resume)
+> >  	bl	_tlbil_all
+> >
+> >  	lwz	r4,SL_SPRG0(r11)
+> > -	mtsprg	0,r4
+> > +	mtspr	SPRN_SPRG0,r4
+> >  	lwz	r4,SL_SPRG1(r11)
+> > -	mtsprg	1,r4
+> > +	mtspr	SPRN_SPRG1,r4
+> >  	lwz	r4,SL_SPRG2(r11)
+> > -	mtsprg	2,r4
+> > +	mtspr	SPRN_SPRG2,r4
+> >  	lwz	r4,SL_SPRG3(r11)
+> > -	mtsprg	3,r4
+> > +	mtspr	SPRN_SPRG3,r4
+> >  	lwz	r4,SL_SPRG4(r11)
+> > -	mtsprg	4,r4
+> > +	mtspr	SPRN_SPRG4,r4
+> >  	lwz	r4,SL_SPRG5(r11)
+> > -	mtsprg	5,r4
+> > +	mtspr	SPRN_SPRG5,r4
+> >  	lwz	r4,SL_SPRG6(r11)
+> > -	mtsprg	6,r4
+> > +	mtspr	SPRN_SPRG6,r4
+> >  	lwz	r4,SL_SPRG7(r11)
+> > -	mtsprg	7,r4
+> > +	mtspr	SPRN_SPRG7,r4
+> >
+> >  	/* restore the MSR */
+> >  	lwz	r3,SL_MSR(r11)
+> > --
+> > 1.8.3.2
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
