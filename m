@@ -1,22 +1,23 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 7DE032C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 23:06:20 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
-Date: Mon, 06 Jan 2014 13:13:23 +0100
-Message-ID: <2276888.ovWFBgDtau@vostro.rjw.lan>
-In-Reply-To: <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
-References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
- <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B56E12C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 00:53:18 +1100 (EST)
+Date: Mon, 6 Jan 2014 13:20:11 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Alexander Shiyan <shc_work@mail.ru>
+Message-ID: <20140106132011.GU31886@sirena.org.uk>
+References: <1388902876-29964-1-git-send-email-shc_work@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Linux PM list <linux-pm@vger.kernel.org>, roy.zang@freescale.com,
- Dongsheng Wang <dongsheng.wang@freescale.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="1LWTVVdiXNbbcmmS"
+In-Reply-To: <1388902876-29964-1-git-send-email-shc_work@mail.ru>
+Subject: Re: [PATCH] ASoC: fsl_ssi: Fix printing return code on clk error
+Cc: alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>,
+ Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>,
+ Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, December 20, 2013 09:42:59 AM Bjorn Helgaas wrote:
-> On Fri, Dec 20, 2013 at 3:03 AM, Dongsheng Wang
-> <dongsheng.wang@freescale.com> wrote:
-> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> >
-> > make Freescale platform use pci_platform_pm_ops struct.
-> 
-> This changelog doesn't say anything about what the patch does.
-> 
-> I infer that you want to use pci_platform_pm_ops from some Freescale
-> code.  This patch should be posted along with the patches that add
-> that Freescale code, so we can see how you intend to use it.
-> 
-> The existing use is in drivers/pci/pci-acpi.c, so it's possible that
-> your new use should be added in the same way, in drivers/pci, so we
-> don't have to make pci_platform_pm_ops part of the public PCI
-> interface in include/linux/pci.h.
-> 
-> That said, if Raphael thinks this makes sense, it's OK with me.
 
-Well, I'd like to know why exactly the change is needed in the first place.
+--1LWTVVdiXNbbcmmS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks!
+On Sun, Jan 05, 2014 at 10:21:16AM +0400, Alexander Shiyan wrote:
+> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Applied, thanks.
+
+--1LWTVVdiXNbbcmmS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJSyq2IAAoJELSic+t+oim9dHoQAIrbqUm5hS07DRcUV1Tyfgtz
+Ae0uQ7yeV+bPoFddNPzrj3PIXQlaE9kd5XpgWWRpWRBoXiGp2/9BWcXp9RFpwsV4
+PMoflSZZ5NCtUM7j/MrzJmnFDqmKgHAtocNKz0HvFIvUFIeXd085HmBTtre+bx3H
+oVl97LpHz3dkceQeYfSxJ7LEOTblxp1+6pfpZXwrvKEd2E6TI9Ui6EMAvCmSYXZz
+SNVIWW7P4YMvMf34mlQhkL17VrrDVZYdki8ISXcJq9Lu1D5W68JFPHeRvepVLk5S
+fvNn+/vH8i9d53KQAMaIRrjsOROWuhTvhXrcUpdEq5Q1iw7NsOEegkNNdsw/pRmE
+yD46rmuElLGsu3ZfGatdei6zK1xsq/lMgNQ4PPIPfxljdK2R/4eyNi5BfD472fK6
+r+5MmfzEYegn70WSKf1CvbhAOJoRgH3XYudcGSumZ3zf9yVu75yYpq4i1D3T3ma5
+2blgRo3SOjRmjpCHQ5ogobnp52PdkQW2R7I7+E/evkBD5tVKQZfWNvMvzeVp7EvM
+b7K6emd8h76oN5zTtTomoqlHDMq4fiFxUWDGpki5ZRPTi8A4+ahZtCWfAxb/qmsl
+EHYUrr64zmyAhrrMdEfvZ2AgWpubYgBu41W98HYWYETP30/YfaVl9hSFJP7qUk2h
+mVM8wVIkPJX6x8ZQ4QE6
+=Avcn
+-----END PGP SIGNATURE-----
+
+--1LWTVVdiXNbbcmmS--
