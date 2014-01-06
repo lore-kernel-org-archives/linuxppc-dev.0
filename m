@@ -1,25 +1,16 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
- [IPv6:2607:f8b0:400e:c02::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CBD9E2C0078
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 20:05:30 +1100 (EST)
-Received: by mail-pd0-f172.google.com with SMTP id g10so17856961pdj.31
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2014 01:05:21 -0800 (PST)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1388998868-31448-1-git-send-email-geert@linux-m68k.org>
-References: <1388998868-31448-1-git-send-email-geert@linux-m68k.org>
-Date: Mon, 6 Jan 2014 10:05:21 +0100
-Message-ID: <CAMuHMdWfHtGQQ-s1z0u-PKagD0i+_pd4=H02=TyMiFfcJW63og@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.13-rc7
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: the arch/x86 maintainers <x86@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Mon, 6 Jan 2014 20:28:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the final tree
+Message-Id: <20140106202856.5630590efc4bd6a466b7a668@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1"
+Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 6, 2014 at 10:01 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.13-rc7[1] to v3.13-rc6[3], the summaries are:
->   - build errors: +14/-4
+--Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error:
-'cached_to_uncached' undeclared (first use in this function):  =>
-99:17
-  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error: implicit
-declaration of function 'cpu_context'
-[-Werror=implicit-function-declaration]:  => 192:2
-  + /scratch/kisskb/src/drivers/mtd/maps/vmu-flash.c: error: (near
-initialization for 'vmu_flash_driver.drv'):  => 805:3, 803:3, 804:3
-  + /scratch/kisskb/src/drivers/mtd/maps/vmu-flash.c: error: expected
-declaration specifiers or '...' before string constant:  => 824:20,
-822:16, 823:15
-  + /scratch/kisskb/src/drivers/mtd/maps/vmu-flash.c: error: field
-name not in record or union initializer:  => 805:3, 803:3, 804:3
-  + /scratch/kisskb/src/include/linux/maple.h: error: field 'dev' has
-incomplete type:  => 80:16
-  + /scratch/kisskb/src/include/linux/maple.h: error: field 'drv' has
-incomplete type:  => 85:23
+Hi all,
 
-sh-randconfig
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
-  + /scratch/kisskb/src/drivers/tty/serial/nwpserial.c: error:
-implicit declaration of function 'udelay'
-[-Werror=implicit-function-declaration]:  => 53:3
-  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org back=
+wards
 
-powerpc-randconfig
+The last time I got this error, I needed to apply patch "powerpc: Fix
+"attempt to move .org backwards" error", but that has been included in
+the powerpc tree now, so I guess something else has added code in a
+critical place. :-(
 
-  + error: No rule to make target /etc/sound/msndinit.bin:  => N/A
-  + error: No rule to make target /etc/sound/msndperm.bin:  => N/A
-  + error: No rule to make target /etc/sound/pndsperm.bin:  => N/A
-  + error: No rule to make target /etc/sound/pndspini.bin:  => N/A
+I have just left this broken for today.
+--=20
+Cheers,
+Stephen Rothwell <sfr@canb.auug.org.au>
 
-i386-randconfig
+--Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1
+Content-Type: application/pgp-signature
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/7037/ (119 out of 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/7026/ (119 out of 120 configs)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-Gr{oetje,eeting}s,
+iQIcBAEBCAAGBQJSynddAAoJEMDTa8Ir7ZwVcX4P/3rfUfTUuhHYjgrc55BrVifu
+GiHfPjRESMHFmCXQvXMxlW36FvLi7UUuL9zvx7EuBGERCyKJSavcXJpgAb9amgfW
+Uz/hhPX2pan8584SfIX4W741AGgsycgsgTW55fx0j70XWngHGNEVm5Q+IQyLx/8p
+1zpizXVWwotTsnj/9BtLUqDdQyGZcHLSWfZPGt7ycVTFPbex9nfDtlrKNto2ZG4F
+vcgusyflP94z8y2sxWIUN0V8EetH9j0kcuZXl47vr+tPN52cbyBe13WrOlQuZqDH
+hsXno7yXLUUIexrI12ex9LtFH8NuZnhApRX/ckxwiTaTBhPnpF9Wioiv8MGsAzUe
+KTMoftUgrg8lNIrBwMjqh8dw6AHDFNg8lnz1F8yELWgYyIz80ZEQg9GEuu0gbKjs
+qiJogFqt7N5u28FNSaJc8te48s/+2zqje0+trnacUlPEdOzMeMdRRSjaouWR/+q2
+gpVNuY8GHohNkmAFMBef8huxHPPrOTtE4Lj3zO0x0tpWydcWRNGTTvMyQObrk1Hg
+iLaR5jZL0/oo+b7gNOk+2RWQVWOYpDas1KwzHmGchJ4EOTdBKgCvCqwiTU6gADDR
+lKZYaBHgQql8mS1Bs3Nyaac8UsN7UZR3N8enZRx1k4oncKQjUpLNUqKxPbR0WWHU
+cyb6AhiajJZzw5MrdfsB
+=cLZ0
+-----END PGP SIGNATURE-----
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1--
