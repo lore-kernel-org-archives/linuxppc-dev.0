@@ -1,37 +1,18 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 16FA02C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 03:09:41 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 7 Jan 2014 02:09:38 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id EAF972BB0053
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 03:09:34 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s06Fof5B983400
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 02:50:42 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s06G9XG1023529
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 03:09:34 +1100
-Message-ID: <52CAD413.1040808@linux.vnet.ibm.com>
-Date: Mon, 06 Jan 2014 21:34:35 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <scottwood@freescale.com>
+Message-ID: <1389045939.11795.104.camel@snotra.buserror.net>
+Subject: Re: [question] Can the execution of the atomtic operation
+ instruction pair lwarx/stwcx be interrrupted by local HW interruptions?
+From: Scott Wood <scottwood@freescale.com>
+To: wyang <w90p710@gmail.com>
+Date: Mon, 6 Jan 2014 16:05:39 -0600
+In-Reply-To: <52CA3ED7.2020407@gmail.com>
+References: <CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com>
+ <52C0D251.2000400@gmail.com>
+ <CABiPGEcHxgmuLMcMN1ByutJC22RJPHSZf3n5gF9BgenbfQTJvA@mail.gmail.com>
+ <52CA3ED7.2020407@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, paulus@samba.org, nfont@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/2] powerpc: Fix the setup of CPU-to-Node mappings during
- CPU online
-References: <20131230113517.11508.7224.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20131230113517.11508.7224.stgit@srivatsabhat.in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Linuxppc-dev@lists.ozlabs.org, Gavin Hu <gavin.hu.2010@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,216 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/30/2013 05:05 PM, Srivatsa S. Bhat wrote:
-> On POWER platforms, the hypervisor can notify the guest kernel about dynamic
-> changes in the cpu-numa associativity (VPHN topology update). Hence the
-> cpu-to-node mappings that we got from the firmware during boot, may no longer
-> be valid after such updates. This is handled using the arch_update_cpu_topology()
-> hook in the scheduler, and the sched-domains are rebuilt according to the new
-> mappings.
+On Mon, 2014-01-06 at 13:27 +0800, wyang wrote:
 > 
-> But unfortunately, at the moment, CPU hotplug ignores these updated mappings
-> and instead queries the firmware for the cpu-to-numa relationships and uses
-> them during CPU online. So the kernel can end up assigning wrong NUMA nodes
-> to CPUs during subsequent CPU hotplug online operations (after booting).
+> On 01/06/2014 11:41 AM, Gavin Hu wrote:
 > 
-> Further, a particularly problematic scenario can result from this bug:
-> On POWER platforms, the SMT mode can be switched between 1, 2, 4 (and even 8)
-> threads per core. The switch to Single-Threaded (ST) mode is performed by
-> offlining all except the first CPU thread in each core. Switching back to
-> SMT mode involves onlining those other threads back, in each core.
+> > Thanks your response.  :) 
+> > But that means that these optimitive operations like atomic_add()
+> > aren't optimitive actully in PPC architecture, right? Becuase they
+> > can be interrupted by loacl HW interrupts. Theoretically, the ISR
+> > also can access the atomic gloable variable.
+> > 
 > 
-> Now consider this scenario:
-> 
-> 1. During boot, the kernel gets the cpu-to-node mappings from the firmware
->    and assigns the CPUs to NUMA nodes appropriately, during CPU online.
-> 
-> 2. Later on, the hypervisor updates the cpu-to-node mappings dynamically and
->    communicates this update to the kernel. The kernel in turn updates its
->    cpu-to-node associations and rebuilds its sched domains. Everything is
->    fine so far.
-> 
-> 3. Now, the user switches the machine from SMT to ST mode (say, by running
->    ppc64_cpu --smt=1). This involves offlining all except 1 thread in each
->    core.
-> 
-> 4. The user then tries to switch back from ST to SMT mode (say, by running
->    ppc64_cpu --smt=4), and this involves onlining those threads back. Since
->    CPU hotplug ignores the new mappings, it queries the firmware and tries to
->    associate the newly onlined sibling threads to the old NUMA nodes. This
->    results in sibling threads within the same core getting associated with
->    different NUMA nodes, which is incorrect.
-> 
->    The scheduler's build-sched-domains code gets thoroughly confused with this
->    and enters an infinite loop and causes soft-lockups, as explained in detail
->    in commit 3be7db6ab (powerpc: VPHN topology change updates all siblings).
-> 
-> 
-> So to fix this, use the numa_cpu_lookup_table to remember the updated
-> cpu-to-node mappings, and use them during CPU hotplug online operations.
-> Further, we also need to ensure that all threads in a core are assigned to a
-> common NUMA node, irrespective of whether all those threads were online during
-> the topology update. To achieve this, we take care not to use cpu_sibling_mask()
-> since it is not hotplug invariant. Instead, we use cpu_first_sibling_thread()
-> and set up the mappings manually using the 'threads_per_core' value for that
-> particular platform. This helps us ensure that we don't hit this bug with any
-> combination of CPU hotplug and SMT mode switching.
-> 
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->
+> Nope, my understand is that if you wanna sync kernel primitive code
+> with ISR, you have responsibility to disable local interrupts.
+> atomic_add does not guarantee to handle such case.
 
-Any thoughts about these patches?
+atomic_add() and other atomics do handle that case.  Interrupts are not
+disabled, but there's a stwcx. in the interrupt return code to make sure
+the reservation gets cleared.
 
-Regards,
-Srivatsa S. Bhat
-
- 
->  arch/powerpc/include/asm/topology.h |   10 +++++
->  arch/powerpc/mm/numa.c              |   70 ++++++++++++++++++++++++++++++++++-
->  2 files changed, 76 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> index 89e3ef2..d0b5fca 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -22,7 +22,15 @@ struct device_node;
-> 
->  static inline int cpu_to_node(int cpu)
->  {
-> -	return numa_cpu_lookup_table[cpu];
-> +	int nid;
-> +
-> +	nid = numa_cpu_lookup_table[cpu];
-> +
-> +	/*
-> +	 * During early boot, the numa-cpu lookup table might not have been
-> +	 * setup for all CPUs yet. In such cases, default to node 0.
-> +	 */
-> +	return (nid < 0) ? 0 : nid;
->  }
-> 
->  #define parent_node(node)	(node)
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 078d3e0..6847d50 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -31,6 +31,8 @@
->  #include <asm/sparsemem.h>
->  #include <asm/prom.h>
->  #include <asm/smp.h>
-> +#include <asm/cputhreads.h>
-> +#include <asm/topology.h>
->  #include <asm/firmware.h>
->  #include <asm/paca.h>
->  #include <asm/hvcall.h>
-> @@ -152,9 +154,22 @@ static void __init get_node_active_region(unsigned long pfn,
->  	}
->  }
-> 
-> -static void map_cpu_to_node(int cpu, int node)
-> +static void reset_numa_cpu_lookup_table(void)
-> +{
-> +	unsigned int cpu;
-> +
-> +	for_each_possible_cpu(cpu)
-> +		numa_cpu_lookup_table[cpu] = -1;
-> +}
-> +
-> +static void update_numa_cpu_lookup_table(unsigned int cpu, int node)
->  {
->  	numa_cpu_lookup_table[cpu] = node;
-> +}
-> +
-> +static void map_cpu_to_node(int cpu, int node)
-> +{
-> +	update_numa_cpu_lookup_table(cpu, node);
-> 
->  	dbg("adding cpu %d to node %d\n", cpu, node);
-> 
-> @@ -522,11 +537,24 @@ static int of_drconf_to_nid_single(struct of_drconf_cell *drmem,
->   */
->  static int numa_setup_cpu(unsigned long lcpu)
->  {
-> -	int nid = 0;
-> -	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
-> +	int nid;
-> +	struct device_node *cpu;
-> +
-> +	/*
-> +	 * If a valid cpu-to-node mapping is already available, use it
-> +	 * directly instead of querying the firmware, since it represents
-> +	 * the most recent mapping notified to us by the platform (eg: VPHN).
-> +	 */
-> +	if ((nid = numa_cpu_lookup_table[lcpu]) >= 0) {
-> +		map_cpu_to_node(lcpu, nid);
-> +		return nid;
-> +	}
-> +
-> +	cpu = of_get_cpu_node(lcpu, NULL);
-> 
->  	if (!cpu) {
->  		WARN_ON(1);
-> +		nid = 0;
->  		goto out;
->  	}
-> 
-> @@ -1067,6 +1095,7 @@ void __init do_init_bootmem(void)
->  	 */
->  	setup_node_to_cpumask_map();
-> 
-> +	reset_numa_cpu_lookup_table();
->  	register_cpu_notifier(&ppc64_numa_nb);
->  	cpu_numa_callback(&ppc64_numa_nb, CPU_UP_PREPARE,
->  			  (void *)(unsigned long)boot_cpuid);
-> @@ -1445,6 +1474,33 @@ static int update_cpu_topology(void *data)
->  	return 0;
->  }
-> 
-> +static int update_lookup_table(void *data)
-> +{
-> +	struct topology_update_data *update;
-> +
-> +	if (!data)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * Upon topology update, the numa-cpu lookup table needs to be updated
-> +	 * for all threads in the core, including offline CPUs, to ensure that
-> +	 * future hotplug operations respect the cpu-to-node associativity
-> +	 * properly.
-> +	 */
-> +	for (update = data; update; update = update->next) {
-> +		int nid, base, j;
-> +
-> +		nid = update->new_nid;
-> +		base = cpu_first_thread_sibling(update->cpu);
-> +
-> +		for (j = 0; j < threads_per_core; j++) {
-> +			update_numa_cpu_lookup_table(base + j, nid);
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  /*
->   * Update the node maps and sysfs entries for each cpu whose home node
->   * has changed. Returns 1 when the topology has changed, and 0 otherwise.
-> @@ -1513,6 +1569,14 @@ int arch_update_cpu_topology(void)
-> 
->  	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
-> 
-> +	/*
-> +	 * Update the numa-cpu lookup table with the new mappings, even for
-> +	 * offline CPUs. It is best to perform this update from the stop-
-> +	 * machine context.
-> +	 */
-> +	stop_machine(update_lookup_table, &updates[0],
-> +					cpumask_of(raw_smp_processor_id()));
-> +
->  	for (ud = &updates[0]; ud; ud = ud->next) {
->  		unregister_cpu_under_node(ud->cpu, ud->old_nid);
->  		register_cpu_under_node(ud->cpu, ud->new_nid);
-> 
+-Scott
