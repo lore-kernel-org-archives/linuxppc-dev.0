@@ -5,13 +5,13 @@ References: <CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com>
  <52C0D251.2000400@gmail.com>
  <CABiPGEcHxgmuLMcMN1ByutJC22RJPHSZf3n5gF9BgenbfQTJvA@mail.gmail.com>
  <52CA3ED7.2020407@gmail.com>
-Date: Mon, 6 Jan 2014 13:51:28 +0800
-Message-ID: <CABiPGEcWG22g8vAM3F4RcwZ8HR6ux4-xM_MsKg48x+zqDCYnAA@mail.gmail.com>
+Date: Mon, 6 Jan 2014 14:24:17 +0800
+Message-ID: <CABiPGEeoHCRk_8=yKWnxLAnvh+xg8G-q2r-VbdjtFXudtBS9Hw@mail.gmail.com>
 Subject: Re: [question] Can the execution of the atomtic operation instruction
  pair lwarx/stwcx be interrrupted by local HW interruptions?
 From: Gavin Hu <gavin.hu.2010@gmail.com>
 To: wyang <w90p710@gmail.com>
-Content-Type: multipart/alternative; boundary=089e01182bbedd823204ef46d9c3
+Content-Type: multipart/alternative; boundary=001a1133ff043c6ae304ef474ffb
 Cc: Linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,14 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e01182bbedd823204ef46d9c3
+--001a1133ff043c6ae304ef474ffb
 Content-Type: text/plain; charset=ISO-8859-1
 
-Get it. Thanks!  :)
+So, these primitive funcitons like atomic_add() and so on also can't
+prevent processes schedule switch on local CPU core? right?
+
+Thanks!
 
 
 BR
-Gavin. Hu
+Gvain. Hu
 
 
 On Mon, Jan 6, 2014 at 1:27 PM, wyang <w90p710@gmail.com> wrote:
@@ -123,17 +126,19 @@ On Mon, Jan 6, 2014 at 1:27 PM, wyang <w90p710@gmail.com> wrote:
 >
 >
 
---089e01182bbedd823204ef46d9c3
+--001a1133ff043c6ae304ef474ffb
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><div><div>Get it. Thanks!=A0 :)<br><br><br></div>BR<br></d=
-iv>Gavin. Hu<br></div><div class=3D"gmail_extra"><br><br><div class=3D"gmai=
-l_quote">On Mon, Jan 6, 2014 at 1:27 PM, wyang <span dir=3D"ltr">&lt;<a hre=
-f=3D"mailto:w90p710@gmail.com" target=3D"_blank">w90p710@gmail.com</a>&gt;<=
-/span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
+<div dir=3D"ltr"><div><div>So, these primitive funcitons like atomic_add() =
+and so on also can&#39;t prevent processes schedule switch on local CPU cor=
+e? right? <br><br>Thanks!<br><br><br></div>BR<br></div>Gvain. Hu<br></div>
+<div class=3D"gmail_extra"><br><br><div class=3D"gmail_quote">On Mon, Jan 6=
+, 2014 at 1:27 PM, wyang <span dir=3D"ltr">&lt;<a href=3D"mailto:w90p710@gm=
+ail.com" target=3D"_blank">w90p710@gmail.com</a>&gt;</span> wrote:<br><bloc=
+kquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #cc=
+c solid;padding-left:1ex">
+
  =20
    =20
  =20
@@ -282,4 +287,4 @@ Linuxppc-dev mailing list
 
 </blockquote></div><br></div>
 
---089e01182bbedd823204ef46d9c3--
+--001a1133ff043c6ae304ef474ffb--
