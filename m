@@ -1,36 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0DA1E2C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 20:04:00 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 6 Jan 2014 19:04:00 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 77F843578050
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 20:03:48 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0693Z2p8782136
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jan 2014 20:03:35 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0693l2a005843
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Jan 2014 20:03:47 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, aarcange@redhat.com,
- kirill.shutemov@linux.intel.com
-Subject: [PATCH -V3 1/2] powerpc: mm: Move ppc64 page table range definitions
- to separate header
-Date: Mon,  6 Jan 2014 14:33:31 +0530
-Message-Id: <1388999012-14424-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id CBD9E2C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 20:05:30 +1100 (EST)
+Received: by mail-pd0-f172.google.com with SMTP id g10so17856961pdj.31
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Jan 2014 01:05:21 -0800 (PST)
 MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1388998868-31448-1-git-send-email-geert@linux-m68k.org>
+References: <1388998868-31448-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 6 Jan 2014 10:05:21 +0100
+Message-ID: <CAMuHMdWfHtGQQ-s1z0u-PKagD0i+_pd4=H02=TyMiFfcJW63og@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.13-rc7
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,279 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Mon, Jan 6, 2014 at 10:01 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.13-rc7[1] to v3.13-rc6[3], the summaries are:
+>   - build errors: +14/-4
 
-This avoid mmu-hash64.h including pagetable-ppc64.h. That inclusion
-cause issues like
+  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error:
+'cached_to_uncached' undeclared (first use in this function):  =>
+99:17
+  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error: implicit
+declaration of function 'cpu_context'
+[-Werror=implicit-function-declaration]:  => 192:2
+  + /scratch/kisskb/src/drivers/mtd/maps/vmu-flash.c: error: (near
+initialization for 'vmu_flash_driver.drv'):  => 805:3, 803:3, 804:3
+  + /scratch/kisskb/src/drivers/mtd/maps/vmu-flash.c: error: expected
+declaration specifiers or '...' before string constant:  => 824:20,
+822:16, 823:15
+  + /scratch/kisskb/src/drivers/mtd/maps/vmu-flash.c: error: field
+name not in record or union initializer:  => 805:3, 803:3, 804:3
+  + /scratch/kisskb/src/include/linux/maple.h: error: field 'dev' has
+incomplete type:  => 80:16
+  + /scratch/kisskb/src/include/linux/maple.h: error: field 'drv' has
+incomplete type:  => 85:23
 
-  CC      arch/powerpc/kernel/asm-offsets.s
-In file included from /home/aneesh/linus/arch/powerpc/include/asm/mmu-hash64.h:23:0,
-                 from /home/aneesh/linus/arch/powerpc/include/asm/mmu.h:196,
-                 from /home/aneesh/linus/arch/powerpc/include/asm/lppaca.h:36,
-                 from /home/aneesh/linus/arch/powerpc/include/asm/paca.h:21,
-                 from /home/aneesh/linus/arch/powerpc/include/asm/hw_irq.h:41,
-                 from /home/aneesh/linus/arch/powerpc/include/asm/irqflags.h:11,
-                 from include/linux/irqflags.h:15,
-                 from include/linux/spinlock.h:53,
-                 from include/linux/seqlock.h:35,
-                 from include/linux/time.h:5,
-                 from include/uapi/linux/timex.h:56,
-                 from include/linux/timex.h:56,
-                 from include/linux/sched.h:17,
-                 from arch/powerpc/kernel/asm-offsets.c:17:
-/home/aneesh/linus/arch/powerpc/include/asm/pgtable-ppc64.h:563:42: error: unknown type name ‘spinlock_t’
- static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
+sh-randconfig
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
+  + /scratch/kisskb/src/drivers/tty/serial/nwpserial.c: error:
+implicit declaration of function 'udelay'
+[-Werror=implicit-function-declaration]:  => 53:3
+  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
 
-NOTE: We can either do this or stuck a typdef struct spinlock spinlock_t; in pgtable-ppc64.h 
+powerpc-randconfig
 
- arch/powerpc/include/asm/mmu-hash64.h          |   2 +-
- arch/powerpc/include/asm/pgtable-ppc64-range.h | 101 +++++++++++++++++++++++++
- arch/powerpc/include/asm/pgtable-ppc64.h       | 101 +------------------------
- 3 files changed, 103 insertions(+), 101 deletions(-)
- create mode 100644 arch/powerpc/include/asm/pgtable-ppc64-range.h
+  + error: No rule to make target /etc/sound/msndinit.bin:  => N/A
+  + error: No rule to make target /etc/sound/msndperm.bin:  => N/A
+  + error: No rule to make target /etc/sound/pndsperm.bin:  => N/A
+  + error: No rule to make target /etc/sound/pndspini.bin:  => N/A
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 807014dde821..895b4df31fec 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -20,7 +20,7 @@
-  * need for various slices related matters. Note that this isn't the
-  * complete pgtable.h but only a portion of it.
-  */
--#include <asm/pgtable-ppc64.h>
-+#include <asm/pgtable-ppc64-range.h>
- #include <asm/bug.h>
- 
- /*
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-range.h b/arch/powerpc/include/asm/pgtable-ppc64-range.h
-new file mode 100644
-index 000000000000..b48b089fb209
---- /dev/null
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-range.h
-@@ -0,0 +1,101 @@
-+#ifndef _ASM_POWERPC_PGTABLE_PPC64_RANGE_H_
-+#define _ASM_POWERPC_PGTABLE_PPC64_RANGE_H_
-+/*
-+ * This file contains the functions and defines necessary to modify and use
-+ * the ppc64 hashed page table.
-+ */
-+
-+#ifdef CONFIG_PPC_64K_PAGES
-+#include <asm/pgtable-ppc64-64k.h>
-+#else
-+#include <asm/pgtable-ppc64-4k.h>
-+#endif
-+#include <asm/barrier.h>
-+
-+#define FIRST_USER_ADDRESS	0
-+
-+/*
-+ * Size of EA range mapped by our pagetables.
-+ */
-+#define PGTABLE_EADDR_SIZE (PTE_INDEX_SIZE + PMD_INDEX_SIZE + \
-+			    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
-+#define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
-+
-+#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-+#define PMD_CACHE_INDEX	(PMD_INDEX_SIZE + 1)
-+#else
-+#define PMD_CACHE_INDEX	PMD_INDEX_SIZE
-+#endif
-+/*
-+ * Define the address range of the kernel non-linear virtual area
-+ */
-+
-+#ifdef CONFIG_PPC_BOOK3E
-+#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
-+#else
-+#define KERN_VIRT_START ASM_CONST(0xD000000000000000)
-+#endif
-+#define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
-+
-+/*
-+ * The vmalloc space starts at the beginning of that region, and
-+ * occupies half of it on hash CPUs and a quarter of it on Book3E
-+ * (we keep a quarter for the virtual memmap)
-+ */
-+#define VMALLOC_START	KERN_VIRT_START
-+#ifdef CONFIG_PPC_BOOK3E
-+#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 2)
-+#else
-+#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 1)
-+#endif
-+#define VMALLOC_END	(VMALLOC_START + VMALLOC_SIZE)
-+
-+/*
-+ * The second half of the kernel virtual space is used for IO mappings,
-+ * it's itself carved into the PIO region (ISA and PHB IO space) and
-+ * the ioremap space
-+ *
-+ *  ISA_IO_BASE = KERN_IO_START, 64K reserved area
-+ *  PHB_IO_BASE = ISA_IO_BASE + 64K to ISA_IO_BASE + 2G, PHB IO spaces
-+ * IOREMAP_BASE = ISA_IO_BASE + 2G to VMALLOC_START + PGTABLE_RANGE
-+ */
-+#define KERN_IO_START	(KERN_VIRT_START + (KERN_VIRT_SIZE >> 1))
-+#define FULL_IO_SIZE	0x80000000ul
-+#define  ISA_IO_BASE	(KERN_IO_START)
-+#define  ISA_IO_END	(KERN_IO_START + 0x10000ul)
-+#define  PHB_IO_BASE	(ISA_IO_END)
-+#define  PHB_IO_END	(KERN_IO_START + FULL_IO_SIZE)
-+#define IOREMAP_BASE	(PHB_IO_END)
-+#define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE)
-+
-+
-+/*
-+ * Region IDs
-+ */
-+#define REGION_SHIFT		60UL
-+#define REGION_MASK		(0xfUL << REGION_SHIFT)
-+#define REGION_ID(ea)		(((unsigned long)(ea)) >> REGION_SHIFT)
-+
-+#define VMALLOC_REGION_ID	(REGION_ID(VMALLOC_START))
-+#define KERNEL_REGION_ID	(REGION_ID(PAGE_OFFSET))
-+#define VMEMMAP_REGION_ID	(0xfUL)	/* Server only */
-+#define USER_REGION_ID		(0UL)
-+
-+/*
-+ * Defines the address of the vmemap area, in its own region on
-+ * hash table CPUs and after the vmalloc space on Book3E
-+ */
-+#ifdef CONFIG_PPC_BOOK3E
-+#define VMEMMAP_BASE		VMALLOC_END
-+#define VMEMMAP_END		KERN_IO_START
-+#else
-+#define VMEMMAP_BASE		(VMEMMAP_REGION_ID << REGION_SHIFT)
-+#endif
-+#define vmemmap			((struct page *)VMEMMAP_BASE)
-+
-+#ifdef CONFIG_PPC_MM_SLICES
-+#define HAVE_ARCH_UNMAPPED_AREA
-+#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
-+#endif /* CONFIG_PPC_MM_SLICES */
-+
-+#endif
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 4a191c472867..9935e9b79524 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -1,102 +1,8 @@
- #ifndef _ASM_POWERPC_PGTABLE_PPC64_H_
- #define _ASM_POWERPC_PGTABLE_PPC64_H_
--/*
-- * This file contains the functions and defines necessary to modify and use
-- * the ppc64 hashed page table.
-- */
--
--#ifdef CONFIG_PPC_64K_PAGES
--#include <asm/pgtable-ppc64-64k.h>
--#else
--#include <asm/pgtable-ppc64-4k.h>
--#endif
--#include <asm/barrier.h>
--
--#define FIRST_USER_ADDRESS	0
--
--/*
-- * Size of EA range mapped by our pagetables.
-- */
--#define PGTABLE_EADDR_SIZE (PTE_INDEX_SIZE + PMD_INDEX_SIZE + \
--                	    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
--#define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
--
--#ifdef CONFIG_TRANSPARENT_HUGEPAGE
--#define PMD_CACHE_INDEX	(PMD_INDEX_SIZE + 1)
--#else
--#define PMD_CACHE_INDEX	PMD_INDEX_SIZE
--#endif
--/*
-- * Define the address range of the kernel non-linear virtual area
-- */
--
--#ifdef CONFIG_PPC_BOOK3E
--#define KERN_VIRT_START ASM_CONST(0x8000000000000000)
--#else
--#define KERN_VIRT_START ASM_CONST(0xD000000000000000)
--#endif
--#define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
--
--/*
-- * The vmalloc space starts at the beginning of that region, and
-- * occupies half of it on hash CPUs and a quarter of it on Book3E
-- * (we keep a quarter for the virtual memmap)
-- */
--#define VMALLOC_START	KERN_VIRT_START
--#ifdef CONFIG_PPC_BOOK3E
--#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 2)
--#else
--#define VMALLOC_SIZE	(KERN_VIRT_SIZE >> 1)
--#endif
--#define VMALLOC_END	(VMALLOC_START + VMALLOC_SIZE)
--
--/*
-- * The second half of the kernel virtual space is used for IO mappings,
-- * it's itself carved into the PIO region (ISA and PHB IO space) and
-- * the ioremap space
-- *
-- *  ISA_IO_BASE = KERN_IO_START, 64K reserved area
-- *  PHB_IO_BASE = ISA_IO_BASE + 64K to ISA_IO_BASE + 2G, PHB IO spaces
-- * IOREMAP_BASE = ISA_IO_BASE + 2G to VMALLOC_START + PGTABLE_RANGE
-- */
--#define KERN_IO_START	(KERN_VIRT_START + (KERN_VIRT_SIZE >> 1))
--#define FULL_IO_SIZE	0x80000000ul
--#define  ISA_IO_BASE	(KERN_IO_START)
--#define  ISA_IO_END	(KERN_IO_START + 0x10000ul)
--#define  PHB_IO_BASE	(ISA_IO_END)
--#define  PHB_IO_END	(KERN_IO_START + FULL_IO_SIZE)
--#define IOREMAP_BASE	(PHB_IO_END)
--#define IOREMAP_END	(KERN_VIRT_START + KERN_VIRT_SIZE)
--
--
--/*
-- * Region IDs
-- */
--#define REGION_SHIFT		60UL
--#define REGION_MASK		(0xfUL << REGION_SHIFT)
--#define REGION_ID(ea)		(((unsigned long)(ea)) >> REGION_SHIFT)
--
--#define VMALLOC_REGION_ID	(REGION_ID(VMALLOC_START))
--#define KERNEL_REGION_ID	(REGION_ID(PAGE_OFFSET))
--#define VMEMMAP_REGION_ID	(0xfUL)	/* Server only */
--#define USER_REGION_ID		(0UL)
--
--/*
-- * Defines the address of the vmemap area, in its own region on
-- * hash table CPUs and after the vmalloc space on Book3E
-- */
--#ifdef CONFIG_PPC_BOOK3E
--#define VMEMMAP_BASE		VMALLOC_END
--#define VMEMMAP_END		KERN_IO_START
--#else
--#define VMEMMAP_BASE		(VMEMMAP_REGION_ID << REGION_SHIFT)
--#endif
--#define vmemmap			((struct page *)VMEMMAP_BASE)
- 
-+#include <asm/pgtable-ppc64-range.h>
- 
--/*
-- * Include the PTE bits definitions
-- */
- #ifdef CONFIG_PPC_BOOK3S
- #include <asm/pte-hash64.h>
- #else
-@@ -104,11 +10,6 @@
- #endif
- #include <asm/pte-common.h>
- 
--#ifdef CONFIG_PPC_MM_SLICES
--#define HAVE_ARCH_UNMAPPED_AREA
--#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
--#endif /* CONFIG_PPC_MM_SLICES */
--
- #ifndef __ASSEMBLY__
- 
- /*
--- 
-1.8.3.2
+i386-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/7037/ (119 out of 120 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/7026/ (119 out of 120 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
