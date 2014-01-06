@@ -1,16 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 6 Jan 2014 20:28:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the final tree
-Message-Id: <20140106202856.5630590efc4bd6a466b7a668@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1"
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 03E682C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Jan 2014 23:05:13 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
+Date: Mon, 06 Jan 2014 13:12:16 +0100
+Message-ID: <2125614.4MjcCLIIsz@vostro.rjw.lan>
+In-Reply-To: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
+ kyungmin.park@samsung.com, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,49 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+> 
+> Some cpuidle drivers assume that cpuidle core will handle cases where
+> device->state_count is smaller than driver->state_count, unfortunately
+> currently this is untrue (device->state_count is used only for handling
+> cpuidle state sysfs entries and driver->state_count is used for all
+> other cases) and will not be fixed in the future as device->state_count
+> is planned to be removed [1].
+> 
+> This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
+> cpuidle driver), removes superflous device->state_count initialization
+> from drivers for which device->state_count equals driver->state_count
+> (POWERPC pseries cpuidle driver and intel_idle driver) and finally
+> removes state_count field from struct cpuidle_device.
+> 
+> Additionaly (while at it) this patchset fixes C1E promotion disable
+> quirk handling (in intel_idle driver) and converts cpuidle drivers code
+> to use the common cpuidle_[un]register() routines (in POWERPC pseries
+> cpuidle driver and intel_idle driver).
+> 
+> [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
+> 
+> Reference to v1:
+> 	http://comments.gmane.org/gmane.linux.power-management.general/37390
+> 
+> Changes since v1:
+> - synced patch series with next-20131220
+> - added ACKs from Daniel Lezcano
 
-Hi all,
+I've queued up the series for 3.14, thanks!
 
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (9):
+>   ARM: EXYNOS: cpuidle: fix AFTR mode check
+>   POWERPC: pseries: cpuidle: remove superfluous dev->state_count
+>     initialization
+>   POWERPC: pseries: cpuidle: use the common cpuidle_[un]register()
+>     routines
+>   ACPI / cpuidle: fix max idle state handling with hotplug CPU support
+>   ACPI / cpuidle: remove dev->state_count setting
+>   intel_idle: do C1E promotion disable quirk for hotplugged CPUs
+>   intel_idle: remove superfluous dev->state_count initialization
+>   intel_idle: use the common cpuidle_[un]register() routines
+>   cpuidle: remove state_count field from struct cpuidle_device
+> 
+>  arch/arm/mach-exynos/cpuidle.c                  |   8 +-
+>  arch/powerpc/platforms/pseries/processor_idle.c |  59 +---------
+>  drivers/acpi/processor_idle.c                   |  29 +++--
+>  drivers/cpuidle/cpuidle.c                       |   3 -
+>  drivers/cpuidle/sysfs.c                         |   5 +-
+>  drivers/idle/intel_idle.c                       | 140 +++++-------------------
+>  include/linux/cpuidle.h                         |   1 -
+>  7 files changed, 51 insertions(+), 194 deletions(-)
+> 
+> 
 
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org back=
-wards
-
-The last time I got this error, I needed to apply patch "powerpc: Fix
-"attempt to move .org backwards" error", but that has been included in
-the powerpc tree now, so I guess something else has added code in a
-critical place. :-(
-
-I have just left this broken for today.
---=20
-Cheers,
-Stephen Rothwell <sfr@canb.auug.org.au>
-
---Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJSynddAAoJEMDTa8Ir7ZwVcX4P/3rfUfTUuhHYjgrc55BrVifu
-GiHfPjRESMHFmCXQvXMxlW36FvLi7UUuL9zvx7EuBGERCyKJSavcXJpgAb9amgfW
-Uz/hhPX2pan8584SfIX4W741AGgsycgsgTW55fx0j70XWngHGNEVm5Q+IQyLx/8p
-1zpizXVWwotTsnj/9BtLUqDdQyGZcHLSWfZPGt7ycVTFPbex9nfDtlrKNto2ZG4F
-vcgusyflP94z8y2sxWIUN0V8EetH9j0kcuZXl47vr+tPN52cbyBe13WrOlQuZqDH
-hsXno7yXLUUIexrI12ex9LtFH8NuZnhApRX/ckxwiTaTBhPnpF9Wioiv8MGsAzUe
-KTMoftUgrg8lNIrBwMjqh8dw6AHDFNg8lnz1F8yELWgYyIz80ZEQg9GEuu0gbKjs
-qiJogFqt7N5u28FNSaJc8te48s/+2zqje0+trnacUlPEdOzMeMdRRSjaouWR/+q2
-gpVNuY8GHohNkmAFMBef8huxHPPrOTtE4Lj3zO0x0tpWydcWRNGTTvMyQObrk1Hg
-iLaR5jZL0/oo+b7gNOk+2RWQVWOYpDas1KwzHmGchJ4EOTdBKgCvCqwiTU6gADDR
-lKZYaBHgQql8mS1Bs3Nyaac8UsN7UZR3N8enZRx1k4oncKQjUpLNUqKxPbR0WWHU
-cyb6AhiajJZzw5MrdfsB
-=cLZ0
------END PGP SIGNATURE-----
-
---Signature=_Mon__6_Jan_2014_20_28_56_+1100_vCtbRul1wB6sgmw1--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
