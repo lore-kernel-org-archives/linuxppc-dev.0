@@ -1,14 +1,39 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 7 Jan 2014 13:21:00 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, cl@linux-foundation.org,
- penberg@kernel.org, mpm@selenic.com, nacc@linux.vnet.ibm.com
-Subject: [PATCH] slub: Don't throw away partial remote slabs if there is no
- local memory
-Message-ID: <20140107132100.5b5ad198@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 00EAB2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 15:19:49 +1100 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Tue, 7 Jan 2014 14:19:48 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9B6402BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 15:19:42 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0740mBA52428904
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 15:00:49 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s074JfTm004582
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 15:19:42 +1100
+Date: Tue, 7 Jan 2014 12:19:39 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140107041939.GA20916@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140107132100.5b5ad198@kryten>
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, mpm@selenic.com,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,82 +43,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+>
+>We noticed a huge amount of slab memory consumed on a large ppc64 box:
+>
+>Slab:            2094336 kB
+>
+>Almost 2GB. This box is not balanced and some nodes do not have local
+>memory, causing slub to be very inefficient in its slab usage.
+>
+>Each time we call kmem_cache_alloc_node slub checks the per cpu slab,
+>sees it isn't node local, deactivates it and tries to allocate a new
+>slab. On empty nodes we will allocate a new remote slab and use the
+>first slot, but as explained above when we get called a second time
+>we will just deactivate that slab and retry.
+>
+>As such we end up only using 1 entry in each slab:
+>
+>slab                    mem  objects
+>                       used   active
+>------------------------------------
+>kmalloc-16384       1404 MB    4.90%
+>task_struct          668 MB    2.90%
+>kmalloc-128          193 MB    3.61%
+>kmalloc-192          152 MB    5.23%
+>kmalloc-8192          72 MB   23.40%
+>kmalloc-16            64 MB    7.43%
+>kmalloc-512           33 MB   22.41%
+>
+>The patch below checks that a node is not empty before deactivating a
+>slab and trying to allocate it again. With this patch applied we now
+>use about 352MB:
+>
+>Slab:             360192 kB
+>
+>And our efficiency is much better:
+>
+>slab                    mem  objects
+>                       used   active
+>------------------------------------
+>kmalloc-16384         92 MB   74.27%
+>task_struct           23 MB   83.46%
+>idr_layer_cache       18 MB  100.00%
+>pgtable-2^12          17 MB  100.00%
+>kmalloc-65536         15 MB  100.00%
+>inode_cache           14 MB  100.00%
+>kmalloc-256           14 MB   97.81%
+>kmalloc-8192          14 MB   85.71%
+>
+>Signed-off-by: Anton Blanchard <anton@samba.org>
 
-We noticed a huge amount of slab memory consumed on a large ppc64 box:
+Reviewed-by: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 
-Slab:            2094336 kB
+>---
+>
+>Thoughts? It seems like we could hit a similar situation if a machine
+>is balanced but we run out of memory on a single node.
+>
+>Index: b/mm/slub.c
+>===================================================================
+>--- a/mm/slub.c
+>+++ b/mm/slub.c
+>@@ -2278,10 +2278,17 @@ redo:
+>
+> 	if (unlikely(!node_match(page, node))) {
+> 		stat(s, ALLOC_NODE_MISMATCH);
+>-		deactivate_slab(s, page, c->freelist);
+>-		c->page = NULL;
+>-		c->freelist = NULL;
+>-		goto new_slab;
+>+
+>+		/*
+>+		 * If the node contains no memory there is no point in trying
+>+		 * to allocate a new node local slab
+>+		 */
+>+		if (node_spanned_pages(node)) {
 
-Almost 2GB. This box is not balanced and some nodes do not have local
-memory, causing slub to be very inefficient in its slab usage.
+s/node_spanned_pages/node_present_pages 
 
-Each time we call kmem_cache_alloc_node slub checks the per cpu slab,
-sees it isn't node local, deactivates it and tries to allocate a new
-slab. On empty nodes we will allocate a new remote slab and use the
-first slot, but as explained above when we get called a second time
-we will just deactivate that slab and retry.
-
-As such we end up only using 1 entry in each slab:
-
-slab                    mem  objects
-                       used   active
-------------------------------------
-kmalloc-16384       1404 MB    4.90%
-task_struct          668 MB    2.90%
-kmalloc-128          193 MB    3.61%
-kmalloc-192          152 MB    5.23%
-kmalloc-8192          72 MB   23.40%
-kmalloc-16            64 MB    7.43%
-kmalloc-512           33 MB   22.41%
-
-The patch below checks that a node is not empty before deactivating a
-slab and trying to allocate it again. With this patch applied we now
-use about 352MB:
-
-Slab:             360192 kB
-
-And our efficiency is much better:
-
-slab                    mem  objects
-                       used   active
-------------------------------------
-kmalloc-16384         92 MB   74.27%
-task_struct           23 MB   83.46%
-idr_layer_cache       18 MB  100.00%
-pgtable-2^12          17 MB  100.00%
-kmalloc-65536         15 MB  100.00%
-inode_cache           14 MB  100.00%
-kmalloc-256           14 MB   97.81%
-kmalloc-8192          14 MB   85.71%
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Thoughts? It seems like we could hit a similar situation if a machine
-is balanced but we run out of memory on a single node.
-
-Index: b/mm/slub.c
-===================================================================
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2278,10 +2278,17 @@ redo:
- 
- 	if (unlikely(!node_match(page, node))) {
- 		stat(s, ALLOC_NODE_MISMATCH);
--		deactivate_slab(s, page, c->freelist);
--		c->page = NULL;
--		c->freelist = NULL;
--		goto new_slab;
-+
-+		/*
-+		 * If the node contains no memory there is no point in trying
-+		 * to allocate a new node local slab
-+		 */
-+		if (node_spanned_pages(node)) {
-+			deactivate_slab(s, page, c->freelist);
-+			c->page = NULL;
-+			c->freelist = NULL;
-+			goto new_slab;
-+		}
- 	}
- 
- 	/*
+>+			deactivate_slab(s, page, c->freelist);
+>+			c->page = NULL;
+>+			c->freelist = NULL;
+>+			goto new_slab;
+>+		}
+> 	}
+>
+> 	/*
+>
+>--
+>To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>the body to majordomo@kvack.org.  For more info on Linux MM,
+>see: http://www.linux-mm.org/ .
+>Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
