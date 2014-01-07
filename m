@@ -1,23 +1,43 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEMRELSE6Q.lge.com (LGEMRELSE6Q.lge.com [156.147.1.121])
- by ozlabs.org (Postfix) with ESMTP id 9AB8B2C00D5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:31:47 +1100 (EST)
-Date: Tue, 7 Jan 2014 18:31:56 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1077D2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:49:57 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Tue, 7 Jan 2014 19:49:55 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 13B363578053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:49:48 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s079V2Fg55902220
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 20:31:03 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s079nk3A005610
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 20:49:46 +1100
+Date: Tue, 7 Jan 2014 17:49:44 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
  no local memory
-Message-ID: <20140107093156.GA10157@lge.com>
+Message-ID: <20140107094944.GA14040@hacker.(null)>
 References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
  <52cbbf7b.2792420a.571c.ffffd476SMTPIN_ADDED_BROKEN@mx.google.com>
  <20140107091016.GA21965@lge.com>
  <52cbc738.c727440a.5ead.27a3SMTPIN_ADDED_BROKEN@mx.google.com>
+ <20140107093156.GA10157@lge.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52cbc738.c727440a.5ead.27a3SMTPIN_ADDED_BROKEN@mx.google.com>
+In-Reply-To: <20140107093156.GA10157@lge.com>
 Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
  linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
  mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,60 +47,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 07, 2014 at 05:21:45PM +0800, Wanpeng Li wrote:
-> On Tue, Jan 07, 2014 at 06:10:16PM +0900, Joonsoo Kim wrote:
-> >On Tue, Jan 07, 2014 at 04:48:40PM +0800, Wanpeng Li wrote:
-> >> Hi Joonsoo,
-> >> On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
-> >> >On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
-> >> >> 
-> >> [...]
-> >> >Hello,
-> >> >
-> >> >I think that we need more efforts to solve unbalanced node problem.
-> >> >
-> >> >With this patch, even if node of current cpu slab is not favorable to
-> >> >unbalanced node, allocation would proceed and we would get the unintended memory.
-> >> >
-> >> 
-> >> We have a machine:
-> >> 
-> >> [    0.000000] Node 0 Memory:
-> >> [    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
-> >> [    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
-> >> [    0.000000] Node 10 Memory: 0xc0000000-0x180000000
-> >> 
-> >> [    0.041486] Node 0 CPUs: 0-19
-> >> [    0.041490] Node 4 CPUs:
-> >> [    0.041492] Node 6 CPUs:
-> >> [    0.041495] Node 10 CPUs:
-> >> 
-> >> The pages of current cpu slab should be allocated from fallback zones/nodes 
-> >> of the memoryless node in buddy system, how can not favorable happen? 
-> >
-> >Hi, Wanpeng.
-> >
-> >IIRC, if we call kmem_cache_alloc_node() with certain node #, we try to
-> >allocate the page in fallback zones/node of that node #. So fallback list isn't
-> >related to fallback one of memoryless node #. Am I wrong?
-> >
-> 
-> Anton add node_spanned_pages(node) check, so current cpu slab mentioned
-> above is against memoryless node. If I miss something?
+On Tue, Jan 07, 2014 at 06:31:56PM +0900, Joonsoo Kim wrote:
+>On Tue, Jan 07, 2014 at 05:21:45PM +0800, Wanpeng Li wrote:
+>> On Tue, Jan 07, 2014 at 06:10:16PM +0900, Joonsoo Kim wrote:
+>> >On Tue, Jan 07, 2014 at 04:48:40PM +0800, Wanpeng Li wrote:
+>> >> Hi Joonsoo,
+>> >> On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
+>> >> >On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+>> >> >> 
+>> >> [...]
+>> >> >Hello,
+>> >> >
+>> >> >I think that we need more efforts to solve unbalanced node problem.
+>> >> >
+>> >> >With this patch, even if node of current cpu slab is not favorable to
+>> >> >unbalanced node, allocation would proceed and we would get the unintended memory.
+>> >> >
+>> >> 
+>> >> We have a machine:
+>> >> 
+>> >> [    0.000000] Node 0 Memory:
+>> >> [    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
+>> >> [    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
+>> >> [    0.000000] Node 10 Memory: 0xc0000000-0x180000000
+>> >> 
+>> >> [    0.041486] Node 0 CPUs: 0-19
+>> >> [    0.041490] Node 4 CPUs:
+>> >> [    0.041492] Node 6 CPUs:
+>> >> [    0.041495] Node 10 CPUs:
+>> >> 
+>> >> The pages of current cpu slab should be allocated from fallback zones/nodes 
+>> >> of the memoryless node in buddy system, how can not favorable happen? 
+>> >
+>> >Hi, Wanpeng.
+>> >
+>> >IIRC, if we call kmem_cache_alloc_node() with certain node #, we try to
+>> >allocate the page in fallback zones/node of that node #. So fallback list isn't
+>> >related to fallback one of memoryless node #. Am I wrong?
+>> >
+>> 
+>> Anton add node_spanned_pages(node) check, so current cpu slab mentioned
+>> above is against memoryless node. If I miss something?
+>
+>I thought following scenario.
+>
+>memoryless node # : 1
+>1's fallback node # : 0
+>
+>On node 1's cpu,
+>
+>1. kmem_cache_alloc_node (node 2)
+>2. allocate the page on node 2 for the slab, now cpu slab is that one.
+>3. kmem_cache_alloc_node (local node, that is, node 1)
+>4. It check node_spanned_pages() and find it is memoryless node.
+>So return node 2's memory.
+>
+>Is it impossible scenario?
+>
 
-I thought following scenario.
+Indeed, it can happen. 
 
-memoryless node # : 1
-1's fallback node # : 0
+Regards,
+Wanpeng Li 
 
-On node 1's cpu,
-
-1. kmem_cache_alloc_node (node 2)
-2. allocate the page on node 2 for the slab, now cpu slab is that one.
-3. kmem_cache_alloc_node (local node, that is, node 1)
-4. It check node_spanned_pages() and find it is memoryless node.
-So return node 2's memory.
-
-Is it impossible scenario?
-
-Thanks.
+>Thanks.
