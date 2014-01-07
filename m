@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <1389081668.11795.144.camel@snotra.buserror.net>
-Subject: Re: [question] Can the execution of the atomtic operation
- instruction pair lwarx/stwcx be interrrupted by local HW interruptions?
-From: Scott Wood <scottwood@freescale.com>
-To: wyang <w90p710@gmail.com>
-Date: Tue, 7 Jan 2014 02:01:08 -0600
-In-Reply-To: <52CBAB24.9070804@gmail.com>
-References: <CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com>
- <52C0D251.2000400@gmail.com>
- <CABiPGEcHxgmuLMcMN1ByutJC22RJPHSZf3n5gF9BgenbfQTJvA@mail.gmail.com>
- <52CA3ED7.2020407@gmail.com>
- <1389045939.11795.104.camel@snotra.buserror.net>
- <52CB51A4.7080303@gmail.com>
- <1389076538.11795.120.camel@snotra.buserror.net>
- <52CBAB24.9070804@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0248.outbound.messaging.microsoft.com [213.199.154.248])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8FF562C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:07:30 +1100 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <bhelgaas@google.com>, <rjw@rjwysocki.net>
+Subject: [PATCH 1/2] pci: Fix root port bus->self is NULL
+Date: Tue, 7 Jan 2014 16:04:07 +0800
+Message-ID: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Cc: Linuxppc-dev@lists.ozlabs.org, Gavin Hu <gavin.hu.2010@gmail.com>
+Content-Type: text/plain
+Cc: roy.zang@freescale.com, galak@codeaurora.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, linux-pci@vger.kernel.org,
+ scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,55 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-07 at 15:22 +0800, wyang wrote:
-> On 01/07/2014 02:35 PM, Scott Wood wrote:
-> > On Tue, 2014-01-07 at 09:00 +0800, wyang wrote:
-> >> Yeah, Can you provide more detail info about why they can handle that
-> >> case? The following is my understand:
-> >>
-> >> Let us assume that there is a atomic global variable(var_a) and its
-> >> initial value is 0.
-> >>
-> >> The kernel attempts to execute atomic_add(1, var_a), after lwarx a async
-> >> interrupt happens, and the ISR also accesses "var_a" variable and
-> >> executes atomic_add.
-> >>
-> >> static __inline__ void atomic_add(int a, atomic_t *v)
-> >> {
-> >>       int t;
-> >>
-> >>       __asm__ __volatile__(
-> >> "1:    lwarx    %0,0,%3        # atomic_add\n\
-> >> ----------------------------------  <----------- interrupt
-> >> happens------->        ISR also operates this global variable "var_a"
-> >> such as also executing atomic_add(1, var_a). so the
-> >>                 var_a would is 1.
-> >>       add    %0,%2,%0\n"
-> >>       PPC405_ERR77(0,%3)
-> >> "    stwcx.    %0,0,%3 \n\ <----- After interrupt code returns, the
-> >> reservation is cleared. so CR0 is not equal to 0, and then jump the 1
-> >> label. the var_a will be 2.
-> >>       bne-    1b"
-> >>       : "=&r" (t), "+m" (v->counter)
-> >>       : "r" (a), "r" (&v->counter)
-> >>       : "cc");
-> >> }
-> >>
-> >> So the value of var_a is 2 rather than 1. Thats why i said that
-> >> atomic_add does not handle such case. If I miss something, please
-> >> correct me.:-)
-> > 2 is the correct result, since atomic_add(1, var_a) was called twice
-> > (once in the ISR, once in the interrupted context).
-> Scott, thanks for your confirmation. I guess that Gavin thought that 1 
-> is a correct result. So thats why I said that if he wanna get 1,
-> he should have responsibility to disable local interrupts.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-If you disable interrupts, that will just delay the interrupt until
-afterward, at which point the interrupt will increment var_a to 2.
+the root port bus->self always NULL, so put root port pci device
+into root port bus->self.
 
-> I mean that 
-> atomic_add is not able to guarantee that 1 is a correct result.:-)
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Well, no.  It's atomic_add(), not set_var_to_one(). :-)
-
--Scott
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 38e403d..7f2d1ab 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1472,6 +1472,9 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
+ 	if (!dev->is_added)
+ 		nr++;
+ 
++	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
++		bus->self = dev;
++
+ 	for (fn = next_fn(bus, dev, 0); fn > 0; fn = next_fn(bus, dev, fn)) {
+ 		dev = pci_scan_single_device(bus, devfn + fn);
+ 		if (dev) {
+-- 
+1.8.5
