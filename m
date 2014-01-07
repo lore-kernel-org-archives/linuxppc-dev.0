@@ -1,22 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CC0042C008F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 08:19:54 +1100 (EST)
-Message-ID: <1389129582.11795.190.camel@snotra.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id E0BF92C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 10:11:49 +1100 (EST)
+Message-ID: <1389136298.4672.13.camel@pasglop>
 Subject: Re: [PATCH] powerpc/mpic: supply a .disable callback
-From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
-Date: Tue, 7 Jan 2014 15:19:42 -0600
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+Date: Wed, 08 Jan 2014 10:11:38 +1100
 In-Reply-To: <a889eb6414b44d418a34bc5e61fc538a@BN1PR03MB188.namprd03.prod.outlook.com>
 References: <1389073086-6763-1-git-send-email-dongsheng.wang@freescale.com>
  <1389073776.4672.5.camel@pasglop>
  <a889eb6414b44d418a34bc5e61fc538a@BN1PR03MB188.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,7 +26,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-07 at 04:18 -0600, Wang Dongsheng-B40534 wrote:
+On Tue, 2014-01-07 at 10:18 +0000, Dongsheng.Wang@freescale.com wrote:
 > 
 > > -----Original Message-----
 > > From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
@@ -58,14 +58,15 @@ On Tue, 2014-01-07 at 04:18 -0600, Wang Dongsheng-B40534 wrote:
 > This issue is the kernel api irq_disable() only use chip->irq_disable(), but mpic
 > not have this interface so we don't real disable the interrupt.
 
-I think he means that the "two interrupts for every real interrupt"
-effect will only happen with level triggered interrupts, and he'd like
-to keep the potential performance benefit of lazy disabling for edge
-interrupts.
+Yes, because we want to keep the existing behaviour of "lazy disable"
+for edge interrupts. It's faster.
 
-To implement this for "ordinary" edge interrupts (not IPI, timer, etc)
-we'd need to add a new .irq_disable() function that checks whether it's
-level/edge and only calls .irq_mask() if level -- or, introduce a
-separate struct irq_chip for edge versus level.
+Cheers,
+Ben.
 
--Scott
+> -Dongsheng
+> 
+> > Cheers,
+> > Ben.
+> > 
+> 
