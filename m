@@ -1,26 +1,40 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 34F412C0119
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:51:44 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Jiang Liu <jiang.liu@linux.intel.com>, Yijing Wang
- <wangyijing@huawei.com>, "bhelgaas@google.com" <bhelgaas@google.com>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Subject: RE: [PATCH 1/2] pci: Fix root port bus->self is NULL
-Date: Tue, 7 Jan 2014 09:51:34 +0000
-Message-ID: <80033eb36b0f40d682aeecc8b99dbd95@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
- <52CBBA86.7020401@huawei.com> <52CBC0B6.1090904@linux.intel.com>
-In-Reply-To: <52CBC0B6.1090904@linux.intel.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 2CDC72C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:53:08 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Tue, 7 Jan 2014 15:22:37 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8CA44E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 15:25:19 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s079qWHU2621860
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 15:22:32 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s079qW0E031175
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 15:22:33 +0530
+Date: Tue, 7 Jan 2014 17:52:31 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140107095231.GB14040@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten>
+ <20140107074136.GA4011@lge.com>
 MIME-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "galak@codeaurora.org" <galak@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140107074136.GA4011@lge.com>
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
+ mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +44,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY2kvcHJvYmUuYyBiL2RyaXZlcnMvcGNpL3Byb2Jl
-LmMgaW5kZXgNCj4gPj4gMzhlNDAzZC4uN2YyZDFhYiAxMDA2NDQNCj4gPj4gLS0tIGEvZHJpdmVy
-cy9wY2kvcHJvYmUuYw0KPiA+PiArKysgYi9kcml2ZXJzL3BjaS9wcm9iZS5jDQo+ID4+IEBAIC0x
-NDcyLDYgKzE0NzIsOSBAQCBpbnQgcGNpX3NjYW5fc2xvdChzdHJ1Y3QgcGNpX2J1cyAqYnVzLCBp
-bnQgZGV2Zm4pDQo+ID4+ICAJaWYgKCFkZXYtPmlzX2FkZGVkKQ0KPiA+PiAgCQlucisrOw0KPiA+
-Pg0KPiA+PiArCWlmIChwY2lfcGNpZV90eXBlKGRldikgPT0gUENJX0VYUF9UWVBFX1JPT1RfUE9S
-VCkNCj4gPj4gKwkJYnVzLT5zZWxmID0gZGV2Ow0KPiA+DQo+ID4gSW4gdGhpcyBjYXNlLCBidXMg
-aXMgdGhlIHBjaSByb290IGJ1cyBJIHRoaW5rLCBzbyB3aHkgc2V0IGJ1cy0+c2VsZiA9IHJvb3QN
-Cj4gcG9ydCA/DQo+ID4gImJ1cy0+c2VsZiIgc2hvdWxkIHBvaW50ZXIgdG8gdGhlIHBjaSBkZXZp
-Y2UgdGhhdCBicmlkZ2Ugb3V0IHRoaXMgYnVzLg0KPiBZZXMsIHRoaXMgcGF0Y2ggc2VlbXMgd3Jv
-bmcuIElmIGRldiBpcyByb290IHBvcnQsIGJ1cyBzaG91bGQgYmUgcm9vdCBidXMsIHNvIHdlDQo+
-IHNob3VsZG4ndCBzZXQgcm9vdF9idXMtPnNlbGYgPSBwY2lfZGV2X29mX3Jvb3RfcG9ydC4NCj4g
-DQpXaHkgdGhlIHJvb3QgYnVzLT5zZWxmIHBvaW50ZXIgdG8gdGhlIGJyaWRnZT8NCklmIGNoaWxk
-IGJ1cyBjcmVhdGUgZnJvbSByb290IGJ1cywgdGhlIGNoaWxkLT5zZWxmIHdpbGwgZ2V0IHRoZSBi
-cmlkZ2Uocm9vdCBwb3J0KSBwY2kgZGV2aWNlLg0KDQo+IEFjdHVhbGx5IFBDSSBjb3JlIGhhcyBj
-b3JyZWN0bHkgc2V0dXAgcGNpX2J1cy0+c2VsZiBmb3Igc2Vjb25kYXJ5IGJ1cyBvZiBQQ0llDQo+
-IHJvb3QgcG9ydC4NClllcywgcmlnaHQuIEJ1dCB0aGUgcm9vdC1idXMtPnNlbGYgaXMgTlVMTC4g
-SSB0aGluayB0aGUgcm9vdCBidXMgc2hvdWxkIGdldCByb290IHBvcnQNCnBjaSBkZXZpY2UgZm9y
-IGl0c2VsZi4gSWYgdGhlcmUgaXMgbm8gYnJpZGdlIGF0IGJvYXJkIGhvdyB0byBnZXQgdGhlIHJv
-b3QgcG9ydCBkZXZpY2U/DQoNCi1Eb25nc2hlbmcNCg0KPiANCj4gVGhhbmtzIQ0KPiBHZXJyeQ0K
-PiANCg0K
+On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
+>On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+>> 
+>> We noticed a huge amount of slab memory consumed on a large ppc64 box:
+>> 
+>> Slab:            2094336 kB
+>> 
+>> Almost 2GB. This box is not balanced and some nodes do not have local
+>> memory, causing slub to be very inefficient in its slab usage.
+>> 
+>> Each time we call kmem_cache_alloc_node slub checks the per cpu slab,
+>> sees it isn't node local, deactivates it and tries to allocate a new
+>> slab. On empty nodes we will allocate a new remote slab and use the
+>> first slot, but as explained above when we get called a second time
+>> we will just deactivate that slab and retry.
+>> 
+>> As such we end up only using 1 entry in each slab:
+>> 
+>> slab                    mem  objects
+>>                        used   active
+>> ------------------------------------
+>> kmalloc-16384       1404 MB    4.90%
+>> task_struct          668 MB    2.90%
+>> kmalloc-128          193 MB    3.61%
+>> kmalloc-192          152 MB    5.23%
+>> kmalloc-8192          72 MB   23.40%
+>> kmalloc-16            64 MB    7.43%
+>> kmalloc-512           33 MB   22.41%
+>> 
+>> The patch below checks that a node is not empty before deactivating a
+>> slab and trying to allocate it again. With this patch applied we now
+>> use about 352MB:
+>> 
+>> Slab:             360192 kB
+>> 
+>> And our efficiency is much better:
+>> 
+>> slab                    mem  objects
+>>                        used   active
+>> ------------------------------------
+>> kmalloc-16384         92 MB   74.27%
+>> task_struct           23 MB   83.46%
+>> idr_layer_cache       18 MB  100.00%
+>> pgtable-2^12          17 MB  100.00%
+>> kmalloc-65536         15 MB  100.00%
+>> inode_cache           14 MB  100.00%
+>> kmalloc-256           14 MB   97.81%
+>> kmalloc-8192          14 MB   85.71%
+>> 
+>> Signed-off-by: Anton Blanchard <anton@samba.org>
+>> ---
+>> 
+>> Thoughts? It seems like we could hit a similar situation if a machine
+>> is balanced but we run out of memory on a single node.
+>> 
+>> Index: b/mm/slub.c
+>> ===================================================================
+>> --- a/mm/slub.c
+>> +++ b/mm/slub.c
+>> @@ -2278,10 +2278,17 @@ redo:
+>>  
+>>  	if (unlikely(!node_match(page, node))) {
+>>  		stat(s, ALLOC_NODE_MISMATCH);
+>> -		deactivate_slab(s, page, c->freelist);
+>> -		c->page = NULL;
+>> -		c->freelist = NULL;
+>> -		goto new_slab;
+>> +
+>> +		/*
+>> +		 * If the node contains no memory there is no point in trying
+>> +		 * to allocate a new node local slab
+>> +		 */
+>> +		if (node_spanned_pages(node)) {
+>> +			deactivate_slab(s, page, c->freelist);
+>> +			c->page = NULL;
+>> +			c->freelist = NULL;
+>> +			goto new_slab;
+>> +		}
+>>  	}
+>>  
+>>  	/*
+>
+>Hello,
+>
+>I think that we need more efforts to solve unbalanced node problem.
+>
+>With this patch, even if node of current cpu slab is not favorable to
+>unbalanced node, allocation would proceed and we would get the unintended memory.
+>
+>And there is one more problem. Even if we have some partial slabs on
+>compatible node, we would allocate new slab, because get_partial() cannot handle
+>this unbalance node case.
+>
+>To fix this correctly, how about following patch?
+>
+>Thanks.
+>
+>------------->8--------------------
+>diff --git a/mm/slub.c b/mm/slub.c
+>index c3eb3d3..a1f6dfa 100644
+>--- a/mm/slub.c
+>+++ b/mm/slub.c
+>@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+> {
+>        void *object;
+>        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+>+       struct zonelist *zonelist;
+>+       struct zoneref *z;
+>+       struct zone *zone;
+>+       enum zone_type high_zoneidx = gfp_zone(flags);
+>
+>+       if (!node_present_pages(searchnode)) {
+>+               zonelist = node_zonelist(searchnode, flags);
+>+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+>+                       searchnode = zone_to_nid(zone);
+>+                       if (node_present_pages(searchnode))
+>+                               break;
+>+               }
+>+       }
+
+Why change searchnode instead of depending on fallback zones/nodes in 
+get_any_partial() to allocate partial slabs?
+
+Regards,
+Wanpeng Li 
+
+>        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>        if (object || node != NUMA_NO_NODE)
+>                return object;
+>
+>--
+>To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>the body to majordomo@kvack.org.  For more info on Linux MM,
+>see: http://www.linux-mm.org/ .
+>Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
