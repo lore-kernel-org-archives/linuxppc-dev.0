@@ -1,21 +1,23 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 517DE2C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:28:51 +1100 (EST)
-Message-ID: <52CBBA86.7020401@huawei.com>
-Date: Tue, 7 Jan 2014 16:27:50 +0800
-From: Yijing Wang <wangyijing@huawei.com>
-MIME-Version: 1.0
-To: Dongsheng Wang <dongsheng.wang@freescale.com>, <bhelgaas@google.com>,
- <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] pci: Fix root port bus->self is NULL
-References: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
-In-Reply-To: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 126B72C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:33:57 +1100 (EST)
+Message-ID: <1389083623.11795.162.camel@snotra.buserror.net>
+Subject: Re: [02/12,v3] pci: fsl: add structure fsl_pci
+From: Scott Wood <scottwood@freescale.com>
+To: Lian Minghuan-b31939 <b31939@freescale.com>
+Date: Tue, 7 Jan 2014 02:33:43 -0600
+In-Reply-To: <52CA48C0.2020307@freescale.com>
+References: <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
+ <20140103221923.GB22546@home.buserror.net> <52CA48C0.2020307@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: scottwood@freescale.com, roy.zang@freescale.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, galak@codeaurora.org
+MIME-Version: 1.0
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Zang Roy-R61911 <r61911@freescale.com>, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/1/7 16:04, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> the root port bus->self always NULL, so put root port pci device
-> into root port bus->self.
-> 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 38e403d..7f2d1ab 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -1472,6 +1472,9 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
->  	if (!dev->is_added)
->  		nr++;
->  
-> +	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
-> +		bus->self = dev;
+On Mon, 2014-01-06 at 14:10 +0800, Lian Minghuan-b31939 wrote:
+> On 01/04/2014 06:19 AM, Scott Wood wrote:
+> > I don't like the extent to which this duplicates (not moves) PPC's struct
+> > pci_controller.  Also this leaves some fields like "indirect_type"
+> > unexplained (PPC_INDIRECT_TYPE_xxx is only in the PPC header).
+> >
+> > Does the arch-independent part of the driver really need all this?  Given
+> > how closely this tracks the PPC code, how would this work on ARM?
+> [Minghuan] I added the duplicate fields because PPC's struct 
+> pci_controller need them.
 
-In this case, bus is the pci root bus I think, so why set bus->self = root port ?
-"bus->self" should pointer to the pci device that bridge out this bus.
+I think a better approach would be to create a cleanly architected
+arch-independent driver.  Share what you reasonably can with the current
+fsl_pci.c, but not to the extent of propagating PPCisms that don't match
+up with what we ultimately want to see in generic code, or copying
+things that ought to be controller-independent infrastructure into
+controller-specific code.
 
-> +
->  	for (fn = next_fn(bus, dev, 0); fn > 0; fn = next_fn(bus, dev, fn)) {
->  		dev = pci_scan_single_device(bus, devfn + fn);
->  		if (dev) {
-> 
+See these threads:
+http://www.spinics.net/lists/linux-pci/msg25769.html
+https://lkml.org/lkml/2013/5/4/103
 
+> The following is for ARM, I will submit them after verification:
+[snip]
+> +static int fsl_pcie_register(struct fsl_pcie *pcie)
+> +{
+> +    pcie->controller = fsl_hw_pcie.nr_controllers;
+> +    fsl_hw_pcie.nr_controllers = 1;
+> +    fsl_hw_pcie.private_data = (void **)&pcie;
 
--- 
-Thanks!
-Yijing
+I believe this should be:
+	fsl_hw_pcie.private_data = pcie;
+
+> +    pci_common_init(&fsl_hw_pcie);
+> +    pci_assign_unassigned_resources();
+> +#ifdef CONFIG_PCI_DOMAINS
+> +    fsl_hw_pcie.domain++;
+> +#endif
+
+What serializes that non-atomic increment?
+
+-Scott
