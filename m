@@ -1,23 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 417122C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 18:14:01 +1100 (EST)
-Message-ID: <1389078829.11795.138.camel@snotra.buserror.net>
-Subject: Re: [03/12,v3] pci: fsl: add PCI indirect access support
-From: Scott Wood <scottwood@freescale.com>
-To: Lian Minghuan-b31939 <b31939@freescale.com>
-Date: Tue, 7 Jan 2014 01:13:49 -0600
-In-Reply-To: <52CA40D8.1090805@freescale.com>
-References: <1382524894-15164-3-git-send-email-Minghuan.Lian@freescale.com>
- <20140103223306.GC22546@home.buserror.net> <52CA40D8.1090805@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <w90p710@gmail.com>
+Message-ID: <52CBAB24.9070804@gmail.com>
+Date: Tue, 07 Jan 2014 15:22:12 +0800
+From: wyang <w90p710@gmail.com>
 MIME-Version: 1.0
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Zang Roy-R61911 <r61911@freescale.com>, linux-pci@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [question] Can the execution of the atomtic operation instruction
+ pair lwarx/stwcx be interrrupted by local HW interruptions?
+References: <CABiPGEfmEFovARBy0rwjbDpBnVeRrmvQrxgnH+32z0RLUX3Nkw@mail.gmail.com>	
+ <52C0D251.2000400@gmail.com>	
+ <CABiPGEcHxgmuLMcMN1ByutJC22RJPHSZf3n5gF9BgenbfQTJvA@mail.gmail.com>	
+ <52CA3ED7.2020407@gmail.com>	
+ <1389045939.11795.104.camel@snotra.buserror.net>	
+ <52CB51A4.7080303@gmail.com> <1389076538.11795.120.camel@snotra.buserror.net>
+In-Reply-To: <1389076538.11795.120.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Linuxppc-dev@lists.ozlabs.org, Gavin Hu <gavin.hu.2010@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-01-06 at 13:36 +0800, Lian Minghuan-b31939 wrote:
-> HI Scott,
-> 
-> please see my comments inline.
-> 
-> On 01/04/2014 06:33 AM, Scott Wood wrote:
-> > A lot of this seems duplicated from arch/powerpc/sysdev/indirect_pci.c.
-> >
-> > How generally applicable is that file to non-PPC implementations?  At a
-> > minimum I see a similar file in arch/microblaze.  It should probably
-> > eventually be moved to common code, rather than duplicated again.  A
-> > prerequisite for that would be making common the dependencies it has on
-> > the rest of what is currently arch PCI infrastructure; until then, it's
-> > probably better to just have the common fsl-pci code know how to
-> > interface with the appropriate PPC/ARM code rather than trying to copy
-> > the infrastructure as well.
-> [Minghuan] Yes, This is a duplicate except it uses struct fsl_pci. But 
-> it is hard to be move to common code.
-> because every indirect read/write functions use different PCI controller 
-> structure which is very basic structure and ARM has no this structure.
-> If we can not establish a unified pci controller structure, we can only 
-> abstract out a simple structure which includes indirect access related 
-> fields,
-> and need a callback function to get the pointer like this: 
-> ((powerpc/microblaze/mips/ pci_controller 
-> *)(pci_bus->sysdata))->indirect_struct.
-> Should we provide the common code for indirect access API or wait for 
-> the common PCI controller structure?
 
-Either work with the PCI maintainer to come up with a common structure,
-or leave the code where it is and call into it.
+On 01/07/2014 02:35 PM, Scott Wood wrote:
+> On Tue, 2014-01-07 at 09:00 +0800, wyang wrote:
+>> Yeah, Can you provide more detail info about why they can handle that
+>> case? The following is my understand:
+>>
+>> Let us assume that there is a atomic global variable(var_a) and its
+>> initial value is 0.
+>>
+>> The kernel attempts to execute atomic_add(1, var_a), after lwarx a async
+>> interrupt happens, and the ISR also accesses "var_a" variable and
+>> executes atomic_add.
+>>
+>> static __inline__ void atomic_add(int a, atomic_t *v)
+>> {
+>>       int t;
+>>
+>>       __asm__ __volatile__(
+>> "1:    lwarx    %0,0,%3        # atomic_add\n\
+>> ----------------------------------  <----------- interrupt
+>> happens------->        ISR also operates this global variable "var_a"
+>> such as also executing atomic_add(1, var_a). so the
+>>                 var_a would is 1.
+>>       add    %0,%2,%0\n"
+>>       PPC405_ERR77(0,%3)
+>> "    stwcx.    %0,0,%3 \n\ <----- After interrupt code returns, the
+>> reservation is cleared. so CR0 is not equal to 0, and then jump the 1
+>> label. the var_a will be 2.
+>>       bne-    1b"
+>>       : "=&r" (t), "+m" (v->counter)
+>>       : "r" (a), "r" (&v->counter)
+>>       : "cc");
+>> }
+>>
+>> So the value of var_a is 2 rather than 1. Thats why i said that
+>> atomic_add does not handle such case. If I miss something, please
+>> correct me.:-)
+> 2 is the correct result, since atomic_add(1, var_a) was called twice
+> (once in the ISR, once in the interrupted context).
+Scott, thanks for your confirmation. I guess that Gavin thought that 1 
+is a correct result. So thats why I said that if he wanna get 1,
+he should have responsibility to disable local interrupts. I mean that 
+atomic_add is not able to guarantee that 1 is a correct result.:-)
 
--Scott
+Wei
+>
+> -Scott
+>
+>
+>
