@@ -1,23 +1,40 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 126B72C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:33:57 +1100 (EST)
-Message-ID: <1389083623.11795.162.camel@snotra.buserror.net>
-Subject: Re: [02/12,v3] pci: fsl: add structure fsl_pci
-From: Scott Wood <scottwood@freescale.com>
-To: Lian Minghuan-b31939 <b31939@freescale.com>
-Date: Tue, 7 Jan 2014 02:33:43 -0600
-In-Reply-To: <52CA48C0.2020307@freescale.com>
-References: <1382524894-15164-2-git-send-email-Minghuan.Lian@freescale.com>
- <20140103221923.GB22546@home.buserror.net> <52CA48C0.2020307@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 951E82C00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:48:57 +1100 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Tue, 7 Jan 2014 18:48:54 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 781FD3578050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:48:43 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s078mUAH7799118
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 19:48:30 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s078mgtL008689
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 19:48:43 +1100
+Date: Tue, 7 Jan 2014 16:48:40 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140107084840.GA20714@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten>
+ <20140107074136.GA4011@lge.com>
 MIME-Version: 1.0
-Cc: Bjorn Helgaas <bhelgaas@google.com>,
- Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Zang Roy-R61911 <r61911@freescale.com>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140107074136.GA4011@lge.com>
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
+ mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +44,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-01-06 at 14:10 +0800, Lian Minghuan-b31939 wrote:
-> On 01/04/2014 06:19 AM, Scott Wood wrote:
-> > I don't like the extent to which this duplicates (not moves) PPC's struct
-> > pci_controller.  Also this leaves some fields like "indirect_type"
-> > unexplained (PPC_INDIRECT_TYPE_xxx is only in the PPC header).
-> >
-> > Does the arch-independent part of the driver really need all this?  Given
-> > how closely this tracks the PPC code, how would this work on ARM?
-> [Minghuan] I added the duplicate fields because PPC's struct 
-> pci_controller need them.
+Hi Joonsoo,
+On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
+>On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+>> 
+[...]
+>Hello,
+>
+>I think that we need more efforts to solve unbalanced node problem.
+>
+>With this patch, even if node of current cpu slab is not favorable to
+>unbalanced node, allocation would proceed and we would get the unintended memory.
+>
 
-I think a better approach would be to create a cleanly architected
-arch-independent driver.  Share what you reasonably can with the current
-fsl_pci.c, but not to the extent of propagating PPCisms that don't match
-up with what we ultimately want to see in generic code, or copying
-things that ought to be controller-independent infrastructure into
-controller-specific code.
+We have a machine:
 
-See these threads:
-http://www.spinics.net/lists/linux-pci/msg25769.html
-https://lkml.org/lkml/2013/5/4/103
+[    0.000000] Node 0 Memory:
+[    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
+[    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
+[    0.000000] Node 10 Memory: 0xc0000000-0x180000000
 
-> The following is for ARM, I will submit them after verification:
-[snip]
-> +static int fsl_pcie_register(struct fsl_pcie *pcie)
-> +{
-> +    pcie->controller = fsl_hw_pcie.nr_controllers;
-> +    fsl_hw_pcie.nr_controllers = 1;
-> +    fsl_hw_pcie.private_data = (void **)&pcie;
+[    0.041486] Node 0 CPUs: 0-19
+[    0.041490] Node 4 CPUs:
+[    0.041492] Node 6 CPUs:
+[    0.041495] Node 10 CPUs:
 
-I believe this should be:
-	fsl_hw_pcie.private_data = pcie;
+The pages of current cpu slab should be allocated from fallback zones/nodes 
+of the memoryless node in buddy system, how can not favorable happen? 
 
-> +    pci_common_init(&fsl_hw_pcie);
-> +    pci_assign_unassigned_resources();
-> +#ifdef CONFIG_PCI_DOMAINS
-> +    fsl_hw_pcie.domain++;
-> +#endif
+>And there is one more problem. Even if we have some partial slabs on
+>compatible node, we would allocate new slab, because get_partial() cannot handle
+>this unbalance node case.
+>
+>To fix this correctly, how about following patch?
+>
 
-What serializes that non-atomic increment?
+So I think we should fold both of your two patches to one.
 
--Scott
+Regards,
+Wanpeng Li 
+
+>Thanks.
+>
+>------------->8--------------------
+>diff --git a/mm/slub.c b/mm/slub.c
+>index c3eb3d3..a1f6dfa 100644
+>--- a/mm/slub.c
+>+++ b/mm/slub.c
+>@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+> {
+>        void *object;
+>        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+>+       struct zonelist *zonelist;
+>+       struct zoneref *z;
+>+       struct zone *zone;
+>+       enum zone_type high_zoneidx = gfp_zone(flags);
+>
+>+       if (!node_present_pages(searchnode)) {
+>+               zonelist = node_zonelist(searchnode, flags);
+>+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+>+                       searchnode = zone_to_nid(zone);
+>+                       if (node_present_pages(searchnode))
+>+                               break;
+>+               }
+>+       }
+>        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>        if (object || node != NUMA_NO_NODE)
+>                return object;
+>
+>--
+>To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>the body to majordomo@kvack.org.  For more info on Linux MM,
+>see: http://www.linux-mm.org/ .
+>Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
