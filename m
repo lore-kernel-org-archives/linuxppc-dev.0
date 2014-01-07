@@ -1,21 +1,21 @@
-Return-Path: <jiang.liu@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id 9AC722C00D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:04:18 +1100 (EST)
-Message-ID: <52CBC0B6.1090904@linux.intel.com>
-Date: Tue, 07 Jan 2014 16:54:14 +0800
-From: Jiang Liu <jiang.liu@linux.intel.com>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from LGEAMRELO02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
+ by ozlabs.org (Postfix) with ESMTP id 496702C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:10:18 +1100 (EST)
+Date: Tue, 7 Jan 2014 18:10:16 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140107091016.GA21965@lge.com>
+References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
+ <52cbbf7b.2792420a.571c.ffffd476SMTPIN_ADDED_BROKEN@mx.google.com>
 MIME-Version: 1.0
-To: Yijing Wang <wangyijing@huawei.com>,
- Dongsheng Wang <dongsheng.wang@freescale.com>,
- bhelgaas@google.com, rjw@rjwysocki.net
-Subject: Re: [PATCH 1/2] pci: Fix root port bus->self is NULL
-References: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
- <52CBBA86.7020401@huawei.com>
-In-Reply-To: <52CBBA86.7020401@huawei.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: scottwood@freescale.com, roy.zang@freescale.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, galak@codeaurora.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <52cbbf7b.2792420a.571c.ffffd476SMTPIN_ADDED_BROKEN@mx.google.com>
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
+ mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 2014/1/7 16:27, Yijing Wang wrote:
-> On 2014/1/7 16:04, Dongsheng Wang wrote:
->> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->>
->> the root port bus->self always NULL, so put root port pci device
->> into root port bus->self.
->>
->> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->>
->> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->> index 38e403d..7f2d1ab 100644
->> --- a/drivers/pci/probe.c
->> +++ b/drivers/pci/probe.c
->> @@ -1472,6 +1472,9 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
->>  	if (!dev->is_added)
->>  		nr++;
->>  
->> +	if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
->> +		bus->self = dev;
+On Tue, Jan 07, 2014 at 04:48:40PM +0800, Wanpeng Li wrote:
+> Hi Joonsoo,
+> On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
+> >On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+> >> 
+> [...]
+> >Hello,
+> >
+> >I think that we need more efforts to solve unbalanced node problem.
+> >
+> >With this patch, even if node of current cpu slab is not favorable to
+> >unbalanced node, allocation would proceed and we would get the unintended memory.
+> >
 > 
-> In this case, bus is the pci root bus I think, so why set bus->self = root port ?
-> "bus->self" should pointer to the pci device that bridge out this bus.
-Yes, this patch seems wrong. If dev is root port, bus should be root
-bus, so we shouldn't set root_bus->self = pci_dev_of_root_port.
+> We have a machine:
+> 
+> [    0.000000] Node 0 Memory:
+> [    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
+> [    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
+> [    0.000000] Node 10 Memory: 0xc0000000-0x180000000
+> 
+> [    0.041486] Node 0 CPUs: 0-19
+> [    0.041490] Node 4 CPUs:
+> [    0.041492] Node 6 CPUs:
+> [    0.041495] Node 10 CPUs:
+> 
+> The pages of current cpu slab should be allocated from fallback zones/nodes 
+> of the memoryless node in buddy system, how can not favorable happen? 
 
-Actually PCI core has correctly setup pci_bus->self for secondary bus
-of PCIe root port.
+Hi, Wanpeng.
 
-Thanks!
-Gerry
+IIRC, if we call kmem_cache_alloc_node() with certain node #, we try to
+allocate the page in fallback zones/node of that node #. So fallback list isn't
+related to fallback one of memoryless node #. Am I wrong?
+
+Thanks.
 
 > 
->> +
->>  	for (fn = next_fn(bus, dev, 0); fn > 0; fn = next_fn(bus, dev, fn)) {
->>  		dev = pci_scan_single_device(bus, devfn + fn);
->>  		if (dev) {
->>
+> >And there is one more problem. Even if we have some partial slabs on
+> >compatible node, we would allocate new slab, because get_partial() cannot handle
+> >this unbalance node case.
+> >
+> >To fix this correctly, how about following patch?
+> >
 > 
+> So I think we should fold both of your two patches to one.
 > 
+> Regards,
+> Wanpeng Li 
+> 
+> >Thanks.
+> >
+> >------------->8--------------------
+> >diff --git a/mm/slub.c b/mm/slub.c
+> >index c3eb3d3..a1f6dfa 100644
+> >--- a/mm/slub.c
+> >+++ b/mm/slub.c
+> >@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+> > {
+> >        void *object;
+> >        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+> >+       struct zonelist *zonelist;
+> >+       struct zoneref *z;
+> >+       struct zone *zone;
+> >+       enum zone_type high_zoneidx = gfp_zone(flags);
+> >
+> >+       if (!node_present_pages(searchnode)) {
+> >+               zonelist = node_zonelist(searchnode, flags);
+> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+> >+                       searchnode = zone_to_nid(zone);
+> >+                       if (node_present_pages(searchnode))
+> >+                               break;
+> >+               }
+> >+       }
+> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+> >        if (object || node != NUMA_NO_NODE)
+> >                return object;
+> >
+> >--
+> >To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> >the body to majordomo@kvack.org.  For more info on Linux MM,
+> >see: http://www.linux-mm.org/ .
+> >Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
