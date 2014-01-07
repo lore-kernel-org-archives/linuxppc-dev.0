@@ -1,19 +1,21 @@
 Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8F09A2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 17:29:58 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BC4982C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 17:33:47 +1100 (EST)
 From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>, <galak@codeaurora.org>
-Subject: [PATCH 1/2] powerpc/dts: fix lbc lack of error interrupt
-Date: Tue, 7 Jan 2014 14:26:42 +0800
-Message-ID: <1389076002-18674-1-git-send-email-dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH 2/2] powerpc/85xx: handle the eLBC error interrupt if it exist
+ in dts
+Date: Tue, 7 Jan 2014 14:27:41 +0800
+Message-ID: <1389076061-20159-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +27,103 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-P1020, P1021, P1022, P1023 when the lbc get error, the error
-interrupt will be triggered. The corresponding interrupt is
-internal IRQ0. So system have to process the lbc IRQ0 interrupt.
+On P3041, P1020, P1021, P1022, P1023 eLBC event interrupts are routed
+to Int9(P3041) & Int3(P102x) while ELBC error interrupts are routed to
+Int0, we need to call request_irq for each.
 
-The corresponding lbc general interrupt is internal IRQ3.
-
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-diff --git a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
-index 68cc5e7..13f209f 100644
---- a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
-@@ -36,7 +36,8 @@
- 	#address-cells = <2>;
- 	#size-cells = <1>;
- 	compatible = "fsl,p1020-elbc", "fsl,elbc", "simple-bus";
--	interrupts = <19 2 0 0>;
-+	interrupts = <19 2 0 0
-+		      16 2 0 0>;
- };
+diff --git a/arch/powerpc/include/asm/fsl_lbc.h b/arch/powerpc/include/asm/fsl_lbc.h
+index 420b453..067fb0d 100644
+--- a/arch/powerpc/include/asm/fsl_lbc.h
++++ b/arch/powerpc/include/asm/fsl_lbc.h
+@@ -285,7 +285,7 @@ struct fsl_lbc_ctrl {
+ 	/* device info */
+ 	struct device			*dev;
+ 	struct fsl_lbc_regs __iomem	*regs;
+-	int				irq;
++	int				irq[2];
+ 	wait_queue_head_t		irq_wait;
+ 	spinlock_t			lock;
+ 	void				*nand;
+diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+index 6bc5a54..d631022 100644
+--- a/arch/powerpc/sysdev/fsl_lbc.c
++++ b/arch/powerpc/sysdev/fsl_lbc.c
+@@ -214,10 +214,14 @@ static irqreturn_t fsl_lbc_ctrl_irq(int irqno, void *data)
+ 	struct fsl_lbc_ctrl *ctrl = data;
+ 	struct fsl_lbc_regs __iomem *lbc = ctrl->regs;
+ 	u32 status;
++	unsigned long flags;
  
- /* controller at 0x9000 */
-diff --git a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
-index adb82fd..cffc93e 100644
---- a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
-@@ -36,7 +36,8 @@
- 	#address-cells = <2>;
- 	#size-cells = <1>;
- 	compatible = "fsl,p1021-elbc", "fsl,elbc", "simple-bus";
--	interrupts = <19 2 0 0>;
-+	interrupts = <19 2 0 0
-+		      16 2 0 0>;
- };
++	spin_lock_irqsave(&fsl_lbc_lock, flags);
+ 	status = in_be32(&lbc->ltesr);
+-	if (!status)
++	if (!status) {
++		spin_unlock_irqrestore(&fsl_lbc_lock, flags);
+ 		return IRQ_NONE;
++	}
  
- /* controller at 0x9000 */
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-index e179803..979670d 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
-@@ -40,7 +40,8 @@
- 	 * pin muxing when the DIU is enabled.
- 	 */
- 	compatible = "fsl,p1022-elbc", "fsl,elbc";
--	interrupts = <19 2 0 0>;
-+	interrupts = <19 2 0 0
-+		      16 2 0 0>;
- };
+ 	out_be32(&lbc->ltesr, LTESR_CLEAR);
+ 	out_be32(&lbc->lteatr, 0);
+@@ -260,6 +264,7 @@ static irqreturn_t fsl_lbc_ctrl_irq(int irqno, void *data)
+ 	if (status & ~LTESR_MASK)
+ 		dev_err(ctrl->dev, "Unknown error: "
+ 			"LTESR 0x%08X\n", status);
++	spin_unlock_irqrestore(&fsl_lbc_lock, flags);
+ 	return IRQ_HANDLED;
+ }
  
- /* controller at 0x9000 */
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-index f1105bf..f5f5043 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-@@ -36,7 +36,8 @@
- 	#address-cells = <2>;
- 	#size-cells = <1>;
- 	compatible = "fsl,p1023-elbc", "fsl,elbc", "simple-bus";
--	interrupts = <19 2 0 0>;
-+	interrupts = <19 2 0 0
-+		      16 2 0 0>;
- };
+@@ -298,8 +303,8 @@ static int fsl_lbc_ctrl_probe(struct platform_device *dev)
+ 		goto err;
+ 	}
  
- /* controller at 0xa000 */
+-	fsl_lbc_ctrl_dev->irq = irq_of_parse_and_map(dev->dev.of_node, 0);
+-	if (fsl_lbc_ctrl_dev->irq == NO_IRQ) {
++	fsl_lbc_ctrl_dev->irq[0] = irq_of_parse_and_map(dev->dev.of_node, 0);
++	if (!fsl_lbc_ctrl_dev->irq[0]) {
+ 		dev_err(&dev->dev, "failed to get irq resource\n");
+ 		ret = -ENODEV;
+ 		goto err;
+@@ -311,20 +316,34 @@ static int fsl_lbc_ctrl_probe(struct platform_device *dev)
+ 	if (ret < 0)
+ 		goto err;
+ 
+-	ret = request_irq(fsl_lbc_ctrl_dev->irq, fsl_lbc_ctrl_irq, 0,
++	ret = request_irq(fsl_lbc_ctrl_dev->irq[0], fsl_lbc_ctrl_irq, 0,
+ 				"fsl-lbc", fsl_lbc_ctrl_dev);
+ 	if (ret != 0) {
+ 		dev_err(&dev->dev, "failed to install irq (%d)\n",
+-			fsl_lbc_ctrl_dev->irq);
+-		ret = fsl_lbc_ctrl_dev->irq;
++			fsl_lbc_ctrl_dev->irq[0]);
++		ret = fsl_lbc_ctrl_dev->irq[0];
+ 		goto err;
+ 	}
+ 
++	fsl_lbc_ctrl_dev->irq[1] = irq_of_parse_and_map(dev->dev.of_node, 1);
++	if (fsl_lbc_ctrl_dev->irq[1]) {
++		ret = request_irq(fsl_lbc_ctrl_dev->irq[1], fsl_lbc_ctrl_irq,
++				IRQF_SHARED, "fsl-lbc-err", fsl_lbc_ctrl_dev);
++		if (ret) {
++			dev_err(&dev->dev, "failed to install irq (%d)\n",
++					fsl_lbc_ctrl_dev->irq[1]);
++			ret = fsl_lbc_ctrl_dev->irq[1];
++			goto err1;
++		}
++	}
++
+ 	/* Enable interrupts for any detected events */
+ 	out_be32(&fsl_lbc_ctrl_dev->regs->lteir, LTEIR_ENABLE);
+ 
+ 	return 0;
+ 
++err1:
++	free_irq(fsl_lbc_ctrl_dev->irq[0], fsl_lbc_ctrl_dev);
+ err:
+ 	iounmap(fsl_lbc_ctrl_dev->regs);
+ 	kfree(fsl_lbc_ctrl_dev);
 -- 
 1.8.5
