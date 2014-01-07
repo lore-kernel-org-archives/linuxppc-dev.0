@@ -1,36 +1,37 @@
 Return-Path: <liwanp@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 951E82C00CF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:48:57 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1192B2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:21:58 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
- Tue, 7 Jan 2014 18:48:54 +1000
+ Tue, 7 Jan 2014 19:21:57 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 781FD3578050
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 19:48:43 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 915C13578023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:21:48 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s078mUAH7799118
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 19:48:30 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s078mgtL008689
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 19:48:43 +1100
-Date: Tue, 7 Jan 2014 16:48:40 +0800
+ s079LZeS9503156
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 20:21:35 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s079LlEF011385
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 20:21:48 +1100
+Date: Tue, 7 Jan 2014 17:21:45 +0800
 From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
  no local memory
-Message-ID: <20140107084840.GA20714@hacker.(null)>
-References: <20140107132100.5b5ad198@kryten>
- <20140107074136.GA4011@lge.com>
+Message-ID: <20140107092145.GA4841@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
+ <52cbbf7b.2792420a.571c.ffffd476SMTPIN_ADDED_BROKEN@mx.google.com>
+ <20140107091016.GA21965@lge.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140107074136.GA4011@lge.com>
+In-Reply-To: <20140107091016.GA21965@lge.com>
 Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
  linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
  mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
@@ -44,76 +45,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joonsoo,
-On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
->On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+On Tue, Jan 07, 2014 at 06:10:16PM +0900, Joonsoo Kim wrote:
+>On Tue, Jan 07, 2014 at 04:48:40PM +0800, Wanpeng Li wrote:
+>> Hi Joonsoo,
+>> On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
+>> >On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+>> >> 
+>> [...]
+>> >Hello,
+>> >
+>> >I think that we need more efforts to solve unbalanced node problem.
+>> >
+>> >With this patch, even if node of current cpu slab is not favorable to
+>> >unbalanced node, allocation would proceed and we would get the unintended memory.
+>> >
 >> 
-[...]
->Hello,
+>> We have a machine:
+>> 
+>> [    0.000000] Node 0 Memory:
+>> [    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
+>> [    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
+>> [    0.000000] Node 10 Memory: 0xc0000000-0x180000000
+>> 
+>> [    0.041486] Node 0 CPUs: 0-19
+>> [    0.041490] Node 4 CPUs:
+>> [    0.041492] Node 6 CPUs:
+>> [    0.041495] Node 10 CPUs:
+>> 
+>> The pages of current cpu slab should be allocated from fallback zones/nodes 
+>> of the memoryless node in buddy system, how can not favorable happen? 
 >
->I think that we need more efforts to solve unbalanced node problem.
+>Hi, Wanpeng.
 >
->With this patch, even if node of current cpu slab is not favorable to
->unbalanced node, allocation would proceed and we would get the unintended memory.
->
-
-We have a machine:
-
-[    0.000000] Node 0 Memory:
-[    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
-[    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
-[    0.000000] Node 10 Memory: 0xc0000000-0x180000000
-
-[    0.041486] Node 0 CPUs: 0-19
-[    0.041490] Node 4 CPUs:
-[    0.041492] Node 6 CPUs:
-[    0.041495] Node 10 CPUs:
-
-The pages of current cpu slab should be allocated from fallback zones/nodes 
-of the memoryless node in buddy system, how can not favorable happen? 
-
->And there is one more problem. Even if we have some partial slabs on
->compatible node, we would allocate new slab, because get_partial() cannot handle
->this unbalance node case.
->
->To fix this correctly, how about following patch?
+>IIRC, if we call kmem_cache_alloc_node() with certain node #, we try to
+>allocate the page in fallback zones/node of that node #. So fallback list isn't
+>related to fallback one of memoryless node #. Am I wrong?
 >
 
-So I think we should fold both of your two patches to one.
+Anton add node_spanned_pages(node) check, so current cpu slab mentioned
+above is against memoryless node. If I miss something?
 
 Regards,
 Wanpeng Li 
 
 >Thanks.
 >
->------------->8--------------------
->diff --git a/mm/slub.c b/mm/slub.c
->index c3eb3d3..a1f6dfa 100644
->--- a/mm/slub.c
->+++ b/mm/slub.c
->@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
-> {
->        void *object;
->        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
->+       struct zonelist *zonelist;
->+       struct zoneref *z;
->+       struct zone *zone;
->+       enum zone_type high_zoneidx = gfp_zone(flags);
->
->+       if (!node_present_pages(searchnode)) {
->+               zonelist = node_zonelist(searchnode, flags);
->+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
->+                       searchnode = zone_to_nid(zone);
->+                       if (node_present_pages(searchnode))
->+                               break;
->+               }
->+       }
->        object = get_partial_node(s, get_node(s, searchnode), c, flags);
->        if (object || node != NUMA_NO_NODE)
->                return object;
->
->--
->To unsubscribe, send a message with 'unsubscribe linux-mm' in
->the body to majordomo@kvack.org.  For more info on Linux MM,
->see: http://www.linux-mm.org/ .
->Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>> 
+>> >And there is one more problem. Even if we have some partial slabs on
+>> >compatible node, we would allocate new slab, because get_partial() cannot handle
+>> >this unbalance node case.
+>> >
+>> >To fix this correctly, how about following patch?
+>> >
+>> 
+>> So I think we should fold both of your two patches to one.
+>> 
+>> Regards,
+>> Wanpeng Li 
+>> 
+>> >Thanks.
+>> >
+>> >------------->8--------------------
+>> >diff --git a/mm/slub.c b/mm/slub.c
+>> >index c3eb3d3..a1f6dfa 100644
+>> >--- a/mm/slub.c
+>> >+++ b/mm/slub.c
+>> >@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+>> > {
+>> >        void *object;
+>> >        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+>> >+       struct zonelist *zonelist;
+>> >+       struct zoneref *z;
+>> >+       struct zone *zone;
+>> >+       enum zone_type high_zoneidx = gfp_zone(flags);
+>> >
+>> >+       if (!node_present_pages(searchnode)) {
+>> >+               zonelist = node_zonelist(searchnode, flags);
+>> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+>> >+                       searchnode = zone_to_nid(zone);
+>> >+                       if (node_present_pages(searchnode))
+>> >+                               break;
+>> >+               }
+>> >+       }
+>> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>> >        if (object || node != NUMA_NO_NODE)
+>> >                return object;
+>> >
+>> >--
+>> >To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> >the body to majordomo@kvack.org.  For more info on Linux MM,
+>> >see: http://www.linux-mm.org/ .
+>> >Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>> 
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
