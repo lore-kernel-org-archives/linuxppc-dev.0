@@ -1,26 +1,20 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F02D32C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:35:24 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas
- <bhelgaas@google.com>
-Subject: RE: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
-Date: Tue, 7 Jan 2014 09:35:16 +0000
-Message-ID: <121c487959fe4d73897b7003ad8554a4@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
- <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
- <2276888.ovWFBgDtau@vostro.rjw.lan>
-In-Reply-To: <2276888.ovWFBgDtau@vostro.rjw.lan>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from LGEAMRELO02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
+ by ozlabs.org (Postfix) with ESMTP id 4F7932C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 18:56:46 +1100 (EST)
+Date: Tue, 7 Jan 2014 16:41:36 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140107074136.GA4011@lge.com>
+References: <20140107132100.5b5ad198@kryten>
 MIME-Version: 1.0
-Cc: Linux PM list <linux-pm@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140107132100.5b5ad198@kryten>
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, mpm@selenic.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +24,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogTW9uZGF5LCBKYW51YXJ5IDA2
-LCAyMDE0IDg6MTMgUE0NCj4gVG86IEJqb3JuIEhlbGdhYXMNCj4gQ2M6IFdhbmcgRG9uZ3NoZW5n
-LUI0MDUzNDsgWmFuZyBSb3ktUjYxOTExOyBXb29kIFNjb3R0LUIwNzQyMTsgS3VtYXIgR2FsYTsg
-TGludXgNCj4gUE0gbGlzdDsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2
-DQo+IFN1YmplY3Q6IFJlOiBbUkZDXSBsaW51eC9wY2k6IG1vdmUgcGNpX3BsYXRmb3JtX3BtX29w
-cyB0byBsaW51eC9wY2kuaA0KPiANCj4gT24gRnJpZGF5LCBEZWNlbWJlciAyMCwgMjAxMyAwOTo0
-Mjo1OSBBTSBCam9ybiBIZWxnYWFzIHdyb3RlOg0KPiA+IE9uIEZyaSwgRGVjIDIwLCAyMDEzIGF0
-IDM6MDMgQU0sIERvbmdzaGVuZyBXYW5nDQo+ID4gPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5j
-b20+IHdyb3RlOg0KPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZy
-ZWVzY2FsZS5jb20+DQo+ID4gPg0KPiA+ID4gbWFrZSBGcmVlc2NhbGUgcGxhdGZvcm0gdXNlIHBj
-aV9wbGF0Zm9ybV9wbV9vcHMgc3RydWN0Lg0KPiA+DQo+ID4gVGhpcyBjaGFuZ2Vsb2cgZG9lc24n
-dCBzYXkgYW55dGhpbmcgYWJvdXQgd2hhdCB0aGUgcGF0Y2ggZG9lcy4NCj4gPg0KPiA+IEkgaW5m
-ZXIgdGhhdCB5b3Ugd2FudCB0byB1c2UgcGNpX3BsYXRmb3JtX3BtX29wcyBmcm9tIHNvbWUgRnJl
-ZXNjYWxlDQo+ID4gY29kZS4gIFRoaXMgcGF0Y2ggc2hvdWxkIGJlIHBvc3RlZCBhbG9uZyB3aXRo
-IHRoZSBwYXRjaGVzIHRoYXQgYWRkDQo+ID4gdGhhdCBGcmVlc2NhbGUgY29kZSwgc28gd2UgY2Fu
-IHNlZSBob3cgeW91IGludGVuZCB0byB1c2UgaXQuDQo+ID4NCj4gPiBUaGUgZXhpc3RpbmcgdXNl
-IGlzIGluIGRyaXZlcnMvcGNpL3BjaS1hY3BpLmMsIHNvIGl0J3MgcG9zc2libGUgdGhhdA0KPiA+
-IHlvdXIgbmV3IHVzZSBzaG91bGQgYmUgYWRkZWQgaW4gdGhlIHNhbWUgd2F5LCBpbiBkcml2ZXJz
-L3BjaSwgc28gd2UNCj4gPiBkb24ndCBoYXZlIHRvIG1ha2UgcGNpX3BsYXRmb3JtX3BtX29wcyBw
-YXJ0IG9mIHRoZSBwdWJsaWMgUENJDQo+ID4gaW50ZXJmYWNlIGluIGluY2x1ZGUvbGludXgvcGNp
-LmguDQo+ID4NCj4gPiBUaGF0IHNhaWQsIGlmIFJhcGhhZWwgdGhpbmtzIHRoaXMgbWFrZXMgc2Vu
-c2UsIGl0J3MgT0sgd2l0aCBtZS4NCj4gDQo+IFdlbGwsIEknZCBsaWtlIHRvIGtub3cgd2h5IGV4
-YWN0bHkgdGhlIGNoYW5nZSBpcyBuZWVkZWQgaW4gdGhlIGZpcnN0IHBsYWNlLg0KPiANClRoYW5r
-cyBmb3IgcmV2aWV3LCBJIHRoaW5rIHRoZSBpZGVhIGlzIG5vdCBzdWl0YWJsZSBmb3IgZnJlZXNj
-YWxlIHBsYXRmb3JtDQppbXBsZW1lbnRhdGlvbiBvZiB0aGUgcmlnaHQgbm93Lg0KDQpJIHdpbGwg
-ZHJvcCB0aGlzIFJGQyBwYXRjaC4NCg0KLURvbmdzaGVuZw0KDQo+IFRoYW5rcyENCj4gDQo+IC0t
-DQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwg
-T3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IA0KDQo=
+On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+> 
+> We noticed a huge amount of slab memory consumed on a large ppc64 box:
+> 
+> Slab:            2094336 kB
+> 
+> Almost 2GB. This box is not balanced and some nodes do not have local
+> memory, causing slub to be very inefficient in its slab usage.
+> 
+> Each time we call kmem_cache_alloc_node slub checks the per cpu slab,
+> sees it isn't node local, deactivates it and tries to allocate a new
+> slab. On empty nodes we will allocate a new remote slab and use the
+> first slot, but as explained above when we get called a second time
+> we will just deactivate that slab and retry.
+> 
+> As such we end up only using 1 entry in each slab:
+> 
+> slab                    mem  objects
+>                        used   active
+> ------------------------------------
+> kmalloc-16384       1404 MB    4.90%
+> task_struct          668 MB    2.90%
+> kmalloc-128          193 MB    3.61%
+> kmalloc-192          152 MB    5.23%
+> kmalloc-8192          72 MB   23.40%
+> kmalloc-16            64 MB    7.43%
+> kmalloc-512           33 MB   22.41%
+> 
+> The patch below checks that a node is not empty before deactivating a
+> slab and trying to allocate it again. With this patch applied we now
+> use about 352MB:
+> 
+> Slab:             360192 kB
+> 
+> And our efficiency is much better:
+> 
+> slab                    mem  objects
+>                        used   active
+> ------------------------------------
+> kmalloc-16384         92 MB   74.27%
+> task_struct           23 MB   83.46%
+> idr_layer_cache       18 MB  100.00%
+> pgtable-2^12          17 MB  100.00%
+> kmalloc-65536         15 MB  100.00%
+> inode_cache           14 MB  100.00%
+> kmalloc-256           14 MB   97.81%
+> kmalloc-8192          14 MB   85.71%
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Thoughts? It seems like we could hit a similar situation if a machine
+> is balanced but we run out of memory on a single node.
+> 
+> Index: b/mm/slub.c
+> ===================================================================
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -2278,10 +2278,17 @@ redo:
+>  
+>  	if (unlikely(!node_match(page, node))) {
+>  		stat(s, ALLOC_NODE_MISMATCH);
+> -		deactivate_slab(s, page, c->freelist);
+> -		c->page = NULL;
+> -		c->freelist = NULL;
+> -		goto new_slab;
+> +
+> +		/*
+> +		 * If the node contains no memory there is no point in trying
+> +		 * to allocate a new node local slab
+> +		 */
+> +		if (node_spanned_pages(node)) {
+> +			deactivate_slab(s, page, c->freelist);
+> +			c->page = NULL;
+> +			c->freelist = NULL;
+> +			goto new_slab;
+> +		}
+>  	}
+>  
+>  	/*
+
+Hello,
+
+I think that we need more efforts to solve unbalanced node problem.
+
+With this patch, even if node of current cpu slab is not favorable to
+unbalanced node, allocation would proceed and we would get the unintended memory.
+
+And there is one more problem. Even if we have some partial slabs on
+compatible node, we would allocate new slab, because get_partial() cannot handle
+this unbalance node case.
+
+To fix this correctly, how about following patch?
+
+Thanks.
+
+------------->8--------------------
+diff --git a/mm/slub.c b/mm/slub.c
+index c3eb3d3..a1f6dfa 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+ {
+        void *object;
+        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
++       struct zonelist *zonelist;
++       struct zoneref *z;
++       struct zone *zone;
++       enum zone_type high_zoneidx = gfp_zone(flags);
+ 
++       if (!node_present_pages(searchnode)) {
++               zonelist = node_zonelist(searchnode, flags);
++               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
++                       searchnode = zone_to_nid(zone);
++                       if (node_present_pages(searchnode))
++                               break;
++               }
++       }
+        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+        if (object || node != NUMA_NO_NODE)
+                return object;
