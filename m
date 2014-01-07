@@ -1,41 +1,26 @@
-Return-Path: <liwanp@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1192B2C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:21:58 +1100 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
- Tue, 7 Jan 2014 19:21:57 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 915C13578023
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:21:48 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s079LZeS9503156
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 20:21:35 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s079LlEF011385
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 20:21:48 +1100
-Date: Tue, 7 Jan 2014 17:21:45 +0800
-From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-Message-ID: <20140107092145.GA4841@hacker.(null)>
-References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
- <52cbbf7b.2792420a.571c.ffffd476SMTPIN_ADDED_BROKEN@mx.google.com>
- <20140107091016.GA21965@lge.com>
+ by ozlabs.org (Postfix) with ESMTPS id F02D32C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 20:35:24 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas
+ <bhelgaas@google.com>
+Subject: RE: [RFC] linux/pci: move pci_platform_pm_ops to linux/pci.h
+Date: Tue, 7 Jan 2014 09:35:16 +0000
+Message-ID: <121c487959fe4d73897b7003ad8554a4@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1387533832-34554-1-git-send-email-dongsheng.wang@freescale.com>
+ <CAErSpo7+8sLZVi24fi+xxTEW2_DTJ2_zUrW+vobMGsvCEFwY_Q@mail.gmail.com>
+ <2276888.ovWFBgDtau@vostro.rjw.lan>
+In-Reply-To: <2276888.ovWFBgDtau@vostro.rjw.lan>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140107091016.GA21965@lge.com>
-Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
- linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
- mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,100 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 07, 2014 at 06:10:16PM +0900, Joonsoo Kim wrote:
->On Tue, Jan 07, 2014 at 04:48:40PM +0800, Wanpeng Li wrote:
->> Hi Joonsoo,
->> On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
->> >On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
->> >> 
->> [...]
->> >Hello,
->> >
->> >I think that we need more efforts to solve unbalanced node problem.
->> >
->> >With this patch, even if node of current cpu slab is not favorable to
->> >unbalanced node, allocation would proceed and we would get the unintended memory.
->> >
->> 
->> We have a machine:
->> 
->> [    0.000000] Node 0 Memory:
->> [    0.000000] Node 4 Memory: 0x0-0x10000000 0x20000000-0x60000000 0x80000000-0xc0000000
->> [    0.000000] Node 6 Memory: 0x10000000-0x20000000 0x60000000-0x80000000
->> [    0.000000] Node 10 Memory: 0xc0000000-0x180000000
->> 
->> [    0.041486] Node 0 CPUs: 0-19
->> [    0.041490] Node 4 CPUs:
->> [    0.041492] Node 6 CPUs:
->> [    0.041495] Node 10 CPUs:
->> 
->> The pages of current cpu slab should be allocated from fallback zones/nodes 
->> of the memoryless node in buddy system, how can not favorable happen? 
->
->Hi, Wanpeng.
->
->IIRC, if we call kmem_cache_alloc_node() with certain node #, we try to
->allocate the page in fallback zones/node of that node #. So fallback list isn't
->related to fallback one of memoryless node #. Am I wrong?
->
-
-Anton add node_spanned_pages(node) check, so current cpu slab mentioned
-above is against memoryless node. If I miss something?
-
-Regards,
-Wanpeng Li 
-
->Thanks.
->
->> 
->> >And there is one more problem. Even if we have some partial slabs on
->> >compatible node, we would allocate new slab, because get_partial() cannot handle
->> >this unbalance node case.
->> >
->> >To fix this correctly, how about following patch?
->> >
->> 
->> So I think we should fold both of your two patches to one.
->> 
->> Regards,
->> Wanpeng Li 
->> 
->> >Thanks.
->> >
->> >------------->8--------------------
->> >diff --git a/mm/slub.c b/mm/slub.c
->> >index c3eb3d3..a1f6dfa 100644
->> >--- a/mm/slub.c
->> >+++ b/mm/slub.c
->> >@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
->> > {
->> >        void *object;
->> >        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
->> >+       struct zonelist *zonelist;
->> >+       struct zoneref *z;
->> >+       struct zone *zone;
->> >+       enum zone_type high_zoneidx = gfp_zone(flags);
->> >
->> >+       if (!node_present_pages(searchnode)) {
->> >+               zonelist = node_zonelist(searchnode, flags);
->> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
->> >+                       searchnode = zone_to_nid(zone);
->> >+                       if (node_present_pages(searchnode))
->> >+                               break;
->> >+               }
->> >+       }
->> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
->> >        if (object || node != NUMA_NO_NODE)
->> >                return object;
->> >
->> >--
->> >To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> >the body to majordomo@kvack.org.  For more info on Linux MM,
->> >see: http://www.linux-mm.org/ .
->> >Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->> 
->> --
->> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> the body to majordomo@kvack.org.  For more info on Linux MM,
->> see: http://www.linux-mm.org/ .
->> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogTW9uZGF5LCBKYW51YXJ5IDA2
+LCAyMDE0IDg6MTMgUE0NCj4gVG86IEJqb3JuIEhlbGdhYXMNCj4gQ2M6IFdhbmcgRG9uZ3NoZW5n
+LUI0MDUzNDsgWmFuZyBSb3ktUjYxOTExOyBXb29kIFNjb3R0LUIwNzQyMTsgS3VtYXIgR2FsYTsg
+TGludXgNCj4gUE0gbGlzdDsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2
+DQo+IFN1YmplY3Q6IFJlOiBbUkZDXSBsaW51eC9wY2k6IG1vdmUgcGNpX3BsYXRmb3JtX3BtX29w
+cyB0byBsaW51eC9wY2kuaA0KPiANCj4gT24gRnJpZGF5LCBEZWNlbWJlciAyMCwgMjAxMyAwOTo0
+Mjo1OSBBTSBCam9ybiBIZWxnYWFzIHdyb3RlOg0KPiA+IE9uIEZyaSwgRGVjIDIwLCAyMDEzIGF0
+IDM6MDMgQU0sIERvbmdzaGVuZyBXYW5nDQo+ID4gPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5j
+b20+IHdyb3RlOg0KPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZy
+ZWVzY2FsZS5jb20+DQo+ID4gPg0KPiA+ID4gbWFrZSBGcmVlc2NhbGUgcGxhdGZvcm0gdXNlIHBj
+aV9wbGF0Zm9ybV9wbV9vcHMgc3RydWN0Lg0KPiA+DQo+ID4gVGhpcyBjaGFuZ2Vsb2cgZG9lc24n
+dCBzYXkgYW55dGhpbmcgYWJvdXQgd2hhdCB0aGUgcGF0Y2ggZG9lcy4NCj4gPg0KPiA+IEkgaW5m
+ZXIgdGhhdCB5b3Ugd2FudCB0byB1c2UgcGNpX3BsYXRmb3JtX3BtX29wcyBmcm9tIHNvbWUgRnJl
+ZXNjYWxlDQo+ID4gY29kZS4gIFRoaXMgcGF0Y2ggc2hvdWxkIGJlIHBvc3RlZCBhbG9uZyB3aXRo
+IHRoZSBwYXRjaGVzIHRoYXQgYWRkDQo+ID4gdGhhdCBGcmVlc2NhbGUgY29kZSwgc28gd2UgY2Fu
+IHNlZSBob3cgeW91IGludGVuZCB0byB1c2UgaXQuDQo+ID4NCj4gPiBUaGUgZXhpc3RpbmcgdXNl
+IGlzIGluIGRyaXZlcnMvcGNpL3BjaS1hY3BpLmMsIHNvIGl0J3MgcG9zc2libGUgdGhhdA0KPiA+
+IHlvdXIgbmV3IHVzZSBzaG91bGQgYmUgYWRkZWQgaW4gdGhlIHNhbWUgd2F5LCBpbiBkcml2ZXJz
+L3BjaSwgc28gd2UNCj4gPiBkb24ndCBoYXZlIHRvIG1ha2UgcGNpX3BsYXRmb3JtX3BtX29wcyBw
+YXJ0IG9mIHRoZSBwdWJsaWMgUENJDQo+ID4gaW50ZXJmYWNlIGluIGluY2x1ZGUvbGludXgvcGNp
+LmguDQo+ID4NCj4gPiBUaGF0IHNhaWQsIGlmIFJhcGhhZWwgdGhpbmtzIHRoaXMgbWFrZXMgc2Vu
+c2UsIGl0J3MgT0sgd2l0aCBtZS4NCj4gDQo+IFdlbGwsIEknZCBsaWtlIHRvIGtub3cgd2h5IGV4
+YWN0bHkgdGhlIGNoYW5nZSBpcyBuZWVkZWQgaW4gdGhlIGZpcnN0IHBsYWNlLg0KPiANClRoYW5r
+cyBmb3IgcmV2aWV3LCBJIHRoaW5rIHRoZSBpZGVhIGlzIG5vdCBzdWl0YWJsZSBmb3IgZnJlZXNj
+YWxlIHBsYXRmb3JtDQppbXBsZW1lbnRhdGlvbiBvZiB0aGUgcmlnaHQgbm93Lg0KDQpJIHdpbGwg
+ZHJvcCB0aGlzIFJGQyBwYXRjaC4NCg0KLURvbmdzaGVuZw0KDQo+IFRoYW5rcyENCj4gDQo+IC0t
+DQo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLg0KPiBSYWZhZWwgSi4gV3lzb2NraSwgSW50ZWwg
+T3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo+IA0KDQo=
