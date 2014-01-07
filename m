@@ -1,39 +1,19 @@
-Return-Path: <liwanp@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from db9outboundpool.messaging.microsoft.com
+ (mail-db9lp0251.outbound.messaging.microsoft.com [213.199.154.251])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 00EAB2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 15:19:49 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
- Tue, 7 Jan 2014 14:19:48 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9B6402BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 15:19:42 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0740mBA52428904
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 15:00:49 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s074JfTm004582
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Jan 2014 15:19:42 +1100
-Date: Tue, 7 Jan 2014 12:19:39 +0800
-From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-Message-ID: <20140107041939.GA20916@hacker.(null)>
-References: <20140107132100.5b5ad198@kryten>
+ by ozlabs.org (Postfix) with ESMTPS id BCD752C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 16:41:22 +1100 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>, <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/mpic: supply a .disable callback
+Date: Tue, 7 Jan 2014 13:38:06 +0800
+Message-ID: <1389073086-6763-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140107132100.5b5ad198@kryten>
-Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
- linux-mm@kvack.org, paulus@samba.org, mpm@selenic.com,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,95 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
->
->We noticed a huge amount of slab memory consumed on a large ppc64 box:
->
->Slab:            2094336 kB
->
->Almost 2GB. This box is not balanced and some nodes do not have local
->memory, causing slub to be very inefficient in its slab usage.
->
->Each time we call kmem_cache_alloc_node slub checks the per cpu slab,
->sees it isn't node local, deactivates it and tries to allocate a new
->slab. On empty nodes we will allocate a new remote slab and use the
->first slot, but as explained above when we get called a second time
->we will just deactivate that slab and retry.
->
->As such we end up only using 1 entry in each slab:
->
->slab                    mem  objects
->                       used   active
->------------------------------------
->kmalloc-16384       1404 MB    4.90%
->task_struct          668 MB    2.90%
->kmalloc-128          193 MB    3.61%
->kmalloc-192          152 MB    5.23%
->kmalloc-8192          72 MB   23.40%
->kmalloc-16            64 MB    7.43%
->kmalloc-512           33 MB   22.41%
->
->The patch below checks that a node is not empty before deactivating a
->slab and trying to allocate it again. With this patch applied we now
->use about 352MB:
->
->Slab:             360192 kB
->
->And our efficiency is much better:
->
->slab                    mem  objects
->                       used   active
->------------------------------------
->kmalloc-16384         92 MB   74.27%
->task_struct           23 MB   83.46%
->idr_layer_cache       18 MB  100.00%
->pgtable-2^12          17 MB  100.00%
->kmalloc-65536         15 MB  100.00%
->inode_cache           14 MB  100.00%
->kmalloc-256           14 MB   97.81%
->kmalloc-8192          14 MB   85.71%
->
->Signed-off-by: Anton Blanchard <anton@samba.org>
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-Reviewed-by: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Currently MPIC provides .mask, but not .disable.  This means that
+effectively disable_irq() soft-disables the interrupt, and you get
+a .mask call if an interrupt actually occurs.
 
->---
->
->Thoughts? It seems like we could hit a similar situation if a machine
->is balanced but we run out of memory on a single node.
->
->Index: b/mm/slub.c
->===================================================================
->--- a/mm/slub.c
->+++ b/mm/slub.c
->@@ -2278,10 +2278,17 @@ redo:
->
-> 	if (unlikely(!node_match(page, node))) {
-> 		stat(s, ALLOC_NODE_MISMATCH);
->-		deactivate_slab(s, page, c->freelist);
->-		c->page = NULL;
->-		c->freelist = NULL;
->-		goto new_slab;
->+
->+		/*
->+		 * If the node contains no memory there is no point in trying
->+		 * to allocate a new node local slab
->+		 */
->+		if (node_spanned_pages(node)) {
+I'm not sure if this was intended as a performance benefit (it seems common
+to omit .disable on powerpc interrupt controllers, but nowhere else), but it
+interacts badly with threaded/workqueue interrupts (including KVM
+reflection).  In such cases, where the real interrupt handler does a
+disable_irq_nosync(), schedules defered handling, and returns, we get two
+interrupts for every real interrupt.  The second interrupt does nothing
+but see that IRQ_DISABLED is set, and decide that it would be a good
+idea to actually call .mask.
 
-s/node_spanned_pages/node_present_pages 
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
->+			deactivate_slab(s, page, c->freelist);
->+			c->page = NULL;
->+			c->freelist = NULL;
->+			goto new_slab;
->+		}
-> 	}
->
-> 	/*
->
->--
->To unsubscribe, send a message with 'unsubscribe linux-mm' in
->the body to majordomo@kvack.org.  For more info on Linux MM,
->see: http://www.linux-mm.org/ .
->Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 0e166ed..dd7564b 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -975,6 +975,7 @@ void mpic_set_destination(unsigned int virq, unsigned int cpuid)
+ }
+ 
+ static struct irq_chip mpic_irq_chip = {
++	.irq_disable	= mpic_mask_irq,
+ 	.irq_mask	= mpic_mask_irq,
+ 	.irq_unmask	= mpic_unmask_irq,
+ 	.irq_eoi	= mpic_end_irq,
+@@ -984,6 +985,7 @@ static struct irq_chip mpic_irq_chip = {
+ 
+ #ifdef CONFIG_SMP
+ static struct irq_chip mpic_ipi_chip = {
++	.irq_disable	= mpic_mask_ipi,
+ 	.irq_mask	= mpic_mask_ipi,
+ 	.irq_unmask	= mpic_unmask_ipi,
+ 	.irq_eoi	= mpic_end_ipi,
+@@ -991,6 +993,7 @@ static struct irq_chip mpic_ipi_chip = {
+ #endif /* CONFIG_SMP */
+ 
+ static struct irq_chip mpic_tm_chip = {
++	.irq_disable	= mpic_mask_tm,
+ 	.irq_mask	= mpic_mask_tm,
+ 	.irq_unmask	= mpic_unmask_tm,
+ 	.irq_eoi	= mpic_end_irq,
+@@ -1001,6 +1004,7 @@ static struct irq_chip mpic_tm_chip = {
+ static struct irq_chip mpic_irq_ht_chip = {
+ 	.irq_startup	= mpic_startup_ht_irq,
+ 	.irq_shutdown	= mpic_shutdown_ht_irq,
++	.irq_disable	= mpic_mask_irq,
+ 	.irq_mask	= mpic_mask_irq,
+ 	.irq_unmask	= mpic_unmask_ht_irq,
+ 	.irq_eoi	= mpic_end_ht_irq,
+-- 
+1.8.5
