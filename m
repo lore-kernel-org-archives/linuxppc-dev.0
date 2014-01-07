@@ -1,25 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D62102C0099
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 10:46:16 +1100 (EST)
-Message-ID: <1389138364.11795.205.camel@snotra.buserror.net>
-Subject: Re: [v3, 3/7] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
+ by ozlabs.org (Postfix) with ESMTPS id 12C912C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 10:51:29 +1100 (EST)
+Message-ID: <1389138670.11795.208.camel@snotra.buserror.net>
+Subject: Re: [PATCH v5 1/1] powerpc/embedded6xx: Add support for
+ Motorola/Emerson MVME5100
 From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Tue, 7 Jan 2014 17:46:04 -0600
-In-Reply-To: <20140104063452.GA11548@pek-khao-d1.corp.ad.wrs.com>
-References: <1375838315-27797-4-git-send-email-haokexin@gmail.com>
- <20131218234825.GA6959@home.buserror.net>
- <20131220074339.GA23977@pek-khao-d1.corp.ad.wrs.com>
- <1388796549.11795.100.camel@snotra.buserror.net>
- <20140104063452.GA11548@pek-khao-d1.corp.ad.wrs.com>
+To: Stephen Chivers <schivers@csc.com>
+Date: Tue, 7 Jan 2014 17:51:10 -0600
+In-Reply-To: <20140106012306.A6AB5E06BF@canberra.localdomain>
+References: <20140106012306.A6AB5E06BF@canberra.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-01-04 at 14:34 +0800, Kevin Hao wrote:
-> On Fri, Jan 03, 2014 at 06:49:09PM -0600, Scott Wood wrote:
-> > On Fri, 2013-12-20 at 15:43 +0800, Kevin Hao wrote:
-> > > On Wed, Dec 18, 2013 at 05:48:25PM -0600, Scott Wood wrote:
-> > > > On Wed, Aug 07, 2013 at 09:18:31AM +0800, Kevin Hao wrote:
-> > > > > This is based on the codes in the head_44x.S. The difference is that
-> > > > > the init tlb size we used is 64M. With this patch we can only load the
-> > > > > kernel at address between memstart_addr ~ memstart_addr + 64M. We will
-> > > > > fix this restriction in the following patches.
-> > > > 
-> > > > Which following patch fixes the restriction?  With all seven patches
-> > > > applied, I was still only successful booting within 64M of memstart_addr.
-> > > 
-> > > There is bug in this patch series when booting above the 64M. It seems
-> > > that I missed to test this previously. Sorry for that. With the following
-> > > change I can boot the kernel at 0x5000000.
-> > 
-> > I tried v4 and it still doesn't work for me over 64M (without increasing
-> > the start of memory).  I pulled the following out of the log buffer when
-> > booting at 0x5000000 (after cleaning up the binary goo -- is that
-> > something new?):
-> > 
-> > Unable to handle kernel paging request for data at address 0xbffe4008
+On Mon, 2014-01-06 at 12:23 +1100, Stephen Chivers wrote:
+> Add support for the Motorola/Emerson MVME5100 Single Board Computer.
 > 
-> Actually there still have one limitation that we have to make sure
-> that the kernel and dtb are in the 64M memory mapped by the init tlb entry.
-> I booted the kernel successfully by using the following u-boot commands:
->   setenv fdt_high 0xffffffff
->   dhcp 6000000 128.224.162.196:/vlm-boards/p5020/uImage
->   tftp 6f00000 128.224.162.196:/vlm-boards/p5020/p5020ds.dtb
->   bootm 6000000 - 6f00000                                                                                                                                         
-
-OK, that was it -- I hadn't set fdt_high and thus U-Boot was relocating
-the fdt under 64M.
-
-We should probably be using ioremap_prot() (or some other mechanism) to
-create a special mapping, rather than assuming the fdt is covered by the
-initial TLB entry.  That doesn't need to happen as part of this
-patchset, of course, as it's not a new limitation.
-
-> > I'm having a hard time following the logic here.  What is PAGE_OFFSET -
-> > offset supposed to be?  Why would we map anything belowe PAGE_OFFSET?
+> The MVME5100 is a 6U form factor VME64 computer with:
 > 
-> No, we don't map the address below PAGE_OFFSET.
->     memstart_addr is the physical start address of RAM.
->     start is the kernel running physical address aligned with 64M.
+> 	- A single MPC7410 or MPC750 CPU
+> 	- A HAWK Processor Host Bridge (CPU to PCI) and
+> 	  MultiProcessor Interrupt Controller (MPIC)
+> 	- Up to 500Mb of onboard memory
+> 	- A M48T37 Real Time Clock (RTC) and Non-Volatile Memory chip
+> 	- Two 16550 compatible UARTS
+> 	- Two Intel E100 Fast Ethernets
+> 	- Two PCI Mezzanine Card (PMC) Slots
+> 	- PPCBug Firmware
 > 
->     offset = memstart_addr - start
+> The HAWK PHB/MPIC is compatible with the MPC10x devices.
 > 
-> So if memstart_addr < start, the offset is negative. The PAGE_OFFSET - offset
-> is the virtual start address we should use for the init 64M map. It's above
-> the PAGE_OFFSET instead of below.
+> There is no onboard disk support. This is usually provided by installing a PMC
+> in first PMC slot.
+> 
+> This patch revives the board support, it was present in early 2.6
+> series kernels. The board support in those days was by Matt Porter of
+> MontaVista Software.
+> 
+> CSC Australia has around 31 of these boards in service. The kernel in use
+> for the boards is based on 2.6.31. The boards are operated without disks
+> from a file server. 
+> 
+> This patch is based on linux-3.13-rc2 and has been boot tested.
+> 
+> Only boards with 512 Mb of memory are known to work.
+> 
+> V1->V2:
+> 	Address comments by Kumar Gala and Scott Wood.
+> 	Minor adjustment to platforms/embedded6xx/Kconfig to ensure
+> 		correct indentation where possible.
+> 
+> V2->V3:
+> 	Address comments by Scott Wood and Ben Herrenschmidt.
+> 	Address errors reported by checkpatch.
+> 
+> V3->V4:
+> 	Address comment by Geert Uytterhoeven
+> 	Add tested by Alessio Bogani.
+> 
+> V4->V5:
+> 	Correct horrible typo in patch history.
+> 	Kular Gama is Kumar Gala.
 
-Oh.  I think it'd be more readable to do "offset = start -
-memstart_addr" and add offset instead of subtracting it.
-
-Also, offset should be phys_addr_t -- even if you don't expect to
-support offsets greater than 4G on 32-bit, it's semantically the right
-type to use.  Plus, "int" would break if this code were ever used with
-64-bit.
-
-If you're OK with these changes, I can fix it while applying.
+The patch history should go below the --- line, as it's for reviewers
+who have seen previous versions rather than for the git history.
 
 -Scott
