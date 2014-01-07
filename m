@@ -1,20 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A75662C0096
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 17:39:19 +1100 (EST)
-Message-ID: <1389076738.11795.122.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/mpic: supply a .disable callback
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Tue, 7 Jan 2014 00:38:58 -0600
-In-Reply-To: <1389073086-6763-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1389073086-6763-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <andi@firstfloor.org>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 0CB322C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Jan 2014 17:50:07 +1100 (EST)
+From: Andi Kleen <andi@firstfloor.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+References: <20140107132100.5b5ad198@kryten>
+Date: Mon, 06 Jan 2014 22:49:53 -0800
+In-Reply-To: <20140107132100.5b5ad198@kryten> (Anton Blanchard's message of
+ "Tue, 7 Jan 2014 13:21:00 +1100")
+Message-ID: <871u0k5lri.fsf@tassilo.jf.intel.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, mpm@selenic.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,9 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-07 at 13:38 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+Anton Blanchard <anton@samba.org> writes:
+>
+> Thoughts? It seems like we could hit a similar situation if a machine
+> is balanced but we run out of memory on a single node.
 
-Why did you change the author field?
+Yes I agree, but your patch doesn't seem to attempt to handle this?
 
--Scott
+-Andi
+>
+> Index: b/mm/slub.c
+> ===================================================================
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -2278,10 +2278,17 @@ redo:
+>  
+>  	if (unlikely(!node_match(page, node))) {
+>  		stat(s, ALLOC_NODE_MISMATCH);
+> -		deactivate_slab(s, page, c->freelist);
+> -		c->page = NULL;
+> -		c->freelist = NULL;
+> -		goto new_slab;
+> +
+> +		/*
+> +		 * If the node contains no memory there is no point in trying
+> +		 * to allocate a new node local slab
+> +		 */
+> +		if (node_spanned_pages(node)) {
+> +			deactivate_slab(s, page, c->freelist);
+> +			c->page = NULL;
+> +			c->freelist = NULL;
+> +			goto new_slab;
+> +		}
+>  	}
+>  
+>  	/*
+-- 
+ak@linux.intel.com -- Speaking for myself only
