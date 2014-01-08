@@ -1,22 +1,25 @@
-Return-Path: <Minghuan.Lian@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F2EE12C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 16:02:23 +1100 (EST)
-From: Minghuan Lian <Minghuan.Lian@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 10/12][v4] pci: fsl: support function fsl_pci_assign_primary
-Date: Wed, 8 Jan 2014 13:02:01 +0800
-Message-ID: <1389157323-3088-10-git-send-email-Minghuan.Lian@freescale.com>
-In-Reply-To: <1389157323-3088-1-git-send-email-Minghuan.Lian@freescale.com>
-References: <1389157323-3088-1-git-send-email-Minghuan.Lian@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id E7A552C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 18:12:58 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 2/2] powerpc/85xx: handle the eLBC error interrupt if it
+ exist in dts
+Date: Wed, 8 Jan 2014 07:12:48 +0000
+Message-ID: <e5d262c851104fd88878822f38670c47@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389076061-20159-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389077881.11795.137.camel@snotra.buserror.net>
+ <1acd410af7444ba89e81dc004f2d6e89@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1389127500.11795.184.camel@snotra.buserror.net>
+In-Reply-To: <1389127500.11795.184.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linux-pci@vger.kernel.org,
- Zang Roy-R61911 <r61911@freescale.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Scott Wood <scottwood@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Shaohui
+ Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,83 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change pci_ids to fsl_pci_ids Freescale-specific name and change
-static to extern modifier for using in fsl_pci_assign_primary().
-
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
----
-change log:
-v4:
-no change
-v1-v3:
-Derived from http://patchwork.ozlabs.org/patch/278965/
-
-Based on upstream master.
-Based on the discussion of RFC version here
-http://patchwork.ozlabs.org/patch/274487/
-
- arch/powerpc/sysdev/fsl_pci.c     | 5 +++--
- drivers/pci/host/pci-fsl-common.c | 4 ++--
- include/linux/fsl/pci-common.h    | 2 ++
- 3 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 38e8dca..6d9bec4 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -736,7 +736,8 @@ void fsl_pci_assign_primary(void)
- 		of_node_put(np);
- 		np = fsl_pci_primary;
- 
--		if (of_match_node(pci_ids, np) && of_device_is_available(np))
-+		if (of_match_node(fsl_pci_ids, np) &&
-+		    of_device_is_available(np))
- 			return;
- 	}
- 
-@@ -745,7 +746,7 @@ void fsl_pci_assign_primary(void)
- 	 * designate one as primary.  This can go away once
- 	 * various bugs with primary-less systems are fixed.
- 	 */
--	for_each_matching_node(np, pci_ids) {
-+	for_each_matching_node(np, fsl_pci_ids) {
- 		if (of_device_is_available(np)) {
- 			fsl_pci_primary = np;
- 			of_node_put(np);
-diff --git a/drivers/pci/host/pci-fsl-common.c b/drivers/pci/host/pci-fsl-common.c
-index e3696eb..0be7bc0 100644
---- a/drivers/pci/host/pci-fsl-common.c
-+++ b/drivers/pci/host/pci-fsl-common.c
-@@ -637,7 +637,7 @@ no_bridge:
- 	return -ENODEV;
- }
- 
--static const struct of_device_id pci_ids[] = {
-+const struct of_device_id fsl_pci_ids[] = {
- 	{ .compatible = "fsl,mpc8540-pci", },
- 	{ .compatible = "fsl,mpc8548-pcie", },
- 	{ .compatible = "fsl,mpc8610-pci", },
-@@ -728,7 +728,7 @@ static struct platform_driver fsl_pci_driver = {
- 	.driver = {
- 		.name = "fsl-pci",
- 		.pm = PCI_PM_OPS,
--		.of_match_table = pci_ids,
-+		.of_match_table = fsl_pci_ids,
- 	},
- 	.probe = fsl_pci_probe,
- 	.remove = fsl_pci_remove,
-diff --git a/include/linux/fsl/pci-common.h b/include/linux/fsl/pci-common.h
-index 8d33354..3247682 100644
---- a/include/linux/fsl/pci-common.h
-+++ b/include/linux/fsl/pci-common.h
-@@ -143,6 +143,8 @@ struct fsl_pci {
- 	void *sys;
- };
- 
-+extern const struct of_device_id fsl_pci_ids[];
-+
- /*
-  * Convert architecture specific pci controller structure to fsl_pci
-  * PowerPC uses structure pci_controller and ARM uses structure pci_sys_data
--- 
-1.8.1.2
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBKYW51YXJ5IDA4LCAyMDE0IDQ6NDUgQU0NCj4gVG86IFdh
+bmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7
+IFhpZSBTaGFvaHVpLUIyMTk4OTsgS3VtYXIgR2FsYQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIv
+Ml0gcG93ZXJwYy84NXh4OiBoYW5kbGUgdGhlIGVMQkMgZXJyb3IgaW50ZXJydXB0IGlmIGl0DQo+
+IGV4aXN0IGluIGR0cw0KPiANCj4gT24gVHVlLCAyMDE0LTAxLTA3IGF0IDA0OjAxIC0wNjAwLCBX
+YW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVz
+c2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVl
+c2RheSwgSmFudWFyeSAwNywgMjAxNCAyOjU4IFBNDQo+ID4gPiBUbzogV2FuZyBEb25nc2hlbmct
+QjQwNTM0DQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBTaGFv
+aHVpLUIyMTk4OTsgS3VtYXIgR2FsYQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIHBv
+d2VycGMvODV4eDogaGFuZGxlIHRoZSBlTEJDIGVycm9yIGludGVycnVwdCBpZiBpdA0KPiA+ID4g
+ZXhpc3QgaW4gZHRzDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE0LTAxLTA3IGF0IDE0OjI3ICsw
+ODAwLCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcg
+PGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPg0KPiA+ID4gQUZBSUNUIHRoaXMg
+cGF0Y2ggd2FzIG9yaWdpbmFsbHkgd3JpdHRlbiBieSBTaGFvaHVpIFhpZS4NCj4gPiA+DQo+ID4g
+PiA+IE9uIFAzMDQxLCBQMTAyMCwgUDEwMjEsIFAxMDIyLCBQMTAyMyBlTEJDIGV2ZW50IGludGVy
+cnVwdHMgYXJlIHJvdXRlZA0KPiA+ID4gPiB0byBJbnQ5KFAzMDQxKSAmIEludDMoUDEwMngpIHdo
+aWxlIEVMQkMgZXJyb3IgaW50ZXJydXB0cyBhcmUgcm91dGVkIHRvDQo+ID4gPiA+IEludDAsIHdl
+IG5lZWQgdG8gY2FsbCByZXF1ZXN0X2lycSBmb3IgZWFjaC4NCj4gPiA+DQo+ID4gPiBGb3IgcDMw
+NDEgSSB0aG91Z2h0IHRoYXQgd2FzIG9ubHkgb24gZWFybHkgc2lsaWNvbiByZXZzIHRoYXQgd2Ug
+ZG9uJ3QNCj4gPiA+IHN1cHBvcnQgYW55bW9yZS4NCj4gPiA+DQo+ID4gPiBBcyBmb3IgcDEwMngs
+IGhhdmUgeW91IHRlc3RlZCB0aGF0IHRoaXMgaXMgYWN0dWFsbHkgd2hhdCBoYXBwZW5zPyAgSG93
+DQo+ID4gPiB3b3VsZCB3ZSBkaXN0aW5ndWlzaCBlTEJDIGVycm9ycyBmcm9tIG90aGVyIGVycm9y
+IHNvdXJjZXMsIGdpdmVuIHRoYXQNCj4gPiA+IHRoZXJlJ3Mgbm8gRUlTUjA/ICBEbyB3ZSBqdXN0
+IGhvcGUgdGhhdCBubyBvdGhlciBlcnJvciBpbnRlcnJ1cHRzDQo+ID4gPiBoYXBwZW4/DQo+ID4g
+WWVzLCBJIHRlc3RlZC4gVGhlIGludGVycnVwdCBpcyBzaGFyZCBlTEJDIGludGVycnVwdCBoYW5k
+bGVyIGNvdWxkIGNoZWNrIHRoZQ0KPiBlcnJvci4NCj4gPiBUaGlzIHBhdGNoIGlzIGZpeCAibm9i
+b2R5IGNhcmVkIiB0aGUgZXJyb3IgaW50ZXJydXB0LiBBZnRlciBzbGVlcCByZXN1bWUgdGhlDQo+
+IGxiYw0KPiA+IHdpbGwgZ2V0IGEgY2hpcCBzZWxlY3QgZXJyb3IuDQo+IA0KPiBzL25vIG90aGVy
+IGVycm9yIGludGVycnVwdHMgaGFwcGVuL25vIG90aGVyIGVycm9yIGludGVycnVwdHMgZm9yIHdo
+aWNoDQo+IHdlIGRvbid0IGhhdmUgYSBoYW5kbGVyIHJlZ2lzdGVyZWQgb3Igd2hpY2ggZG9uJ3Qg
+ZXZlbiBoYXZlIGFuDQo+IGFzc29jaWF0ZWQgc3RhdHVzIHJlZ2lzdGVyIGhhcHBlbi8NCj4gDQpJ
+ZiB0aGUgaXAtYmxvY2sgZG9lcyBub3QgaGFuZGxlIHRoZWlyIGVycm9yIGludGVycnVwdCBpcyBh
+IGlwLWJsb2NrIGlzc3VlIHRoYXQuDQpTaW5jZSB0aGUgdXNlIG9mIHRoaXMgc2hhcmVkIGludGVy
+cnVwdCBtdXN0IG1haW50YWluIHRoZWlyIHN0YXR1cywgb25jZSB0aGVyZQ0KaXMgbm8gZGVhbCBz
+aGFyZWQgaW50ZXJydXB0LCBpdCB3aWxsIGFmZmVjdCB0aGUgb3RoZXIgaXAtYmxvY2suDQo=
