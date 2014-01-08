@@ -1,30 +1,26 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-pa0-f41.google.com (mail-pa0-f41.google.com
- [209.85.220.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0155.outbound.protection.outlook.com [207.46.163.155])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 389E02C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 04:50:33 +1100 (EST)
-Received: by mail-pa0-f41.google.com with SMTP id fb1so585389pad.28
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2014 09:50:30 -0800 (PST)
-Date: Wed, 8 Jan 2014 09:48:28 -0800
-From: Olof Johansson <olof@lixom.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
-Message-ID: <20140108174828.GA16830@quad.lixom.net>
-References: <1388264507-5100-1-git-send-email-olof@lixom.net>
- <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
- <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
- <20140103081219.GA10233@quad.lixom.net>
- <1389154189.2076.5.camel@concordia>
- <1389154706.4672.21.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 30D062C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 05:43:52 +1100 (EST)
+Message-ID: <1389206619.25654.9.camel@snotra.buserror.net>
+Subject: Re: =?UTF-8?Q?=E7=AD=94=E5=A4=8D=3A?= [v7] clk: corenet: Adds the
+ clock binding
+From: Scott Wood <scottwood@freescale.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Date: Wed, 8 Jan 2014 12:43:39 -0600
+In-Reply-To: <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
+References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20140108002115.GA19801@home.buserror.net>
+ <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
+ <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1389154706.4672.21.camel@pasglop>
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Anton Blanchard <anton@samba.org>, chzigotzky@xenosoft.de
+Cc: Yuantian Tang <Yuantian.Tang@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,70 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 08, 2014 at 03:18:26PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2014-01-08 at 15:09 +1100, Michael Ellerman wrote:
-> > > Of course, main worry is that this is just hiding some latent NULL
-> > deref in
-> > > the kernel now... :-/
+On Wed, 2014-01-08 at 09:30 +0000, Mark Rutland wrote:
+> On Wed, Jan 08, 2014 at 08:53:56AM +0000, Yuantian Tang wrote:
 > > 
-> > Wow, that would have to come close to winning the
-> > grossest-hack-in-arch-powerpc
-> > award :)
+> > ________________________________________
+> > 发件人: Wood Scott-B07421
+> > 发送时间: 2014年1月8日 8:21
+> > 收件人: Tang Yuantian-B29983
+> > 抄送: galak@kernel.crashing.org; mark.rutland@arm.com; devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > 主题: Re: [v7] clk: corenet: Adds the clock binding
 > > 
-> > Have you tried changing the value at 8 to point to a reserved page?
+> > On Wed, Nov 20, 2013 at 05:04:49PM +0800, tang yuantian wrote:
+> > > +Recommended properties:
+> > > +- ranges: Allows valid translation between child's address space and
+> > > +     parent's. Must be present if the device has sub-nodes.
+> > > +- #address-cells: Specifies the number of cells used to represent
+> > > +     physical base addresses.  Must be present if the device has
+> > > +     sub-nodes and set to 1 if present
+> > > +- #size-cells: Specifies the number of cells used to represent
+> > > +     the size of an address. Must be present if the device has
+> > > +     sub-nodes and set to 1 if present
 > > 
-> > Some other possibilities:
+> > Why are we specifying #address-cells/#size-cells here?
 > > 
-> >  * Change the #define so FIXUP_ENDIAN is empty for PASEMI, that would
-> > mean
-> >    you'd only be able to boot pasemi_defconfig.
-
-No thanks -- this went uncaught because that used to be all I booted
-(and for some random reason it didn't trigger in that case).
-
-> >  * Move the hack into FIXUP_ENDIAN
+> > A: it has sub-nodes which have REG property, don't we need to 
+> > specify #address-cells/#size-cells?
 > 
-> We actually found the root cause on irc the other day, I was waiting for
-> Olof to send a fix :-)
+> If a node has a reg entry, its parent should have #size-cells and
+> #address-cells to allow it to be parsed properly.
 
-Yeah, I'm low on spare time these days, in particular spare time to spend on
-ppc stuff. :-(
+Yes, but why do we need to specify in this binding how many cells there
+will be, especially since this binding only addresses the clock provider
+aspect of the clockgen nodes (e.g. it doesn't describe the reg)?  Or
+rather, it's partially describing the non-clock aspect, and doesn't
+address the clock aspect at all AFAICT.
 
-> Olof: Can you try this totally untested patch ?
+Where does the actual input clock frequency go?  U-Boot puts it in the
+clockgen node itself as clock-frequency, but that isn't described in the
+binding.  How does that relate to the sysclk node?  If
+"fsl,qoriq-sysclk-1.0" is supposed to indicate that clock-frequency can
+be found in the parent node, that isn't specified by the binding, nor is
+clock-frequency shown in the example.
 
-With one fixup below:
+What is the difference between "fsl,qoriq-sysclk-1.0" and
+"fsl,qoriq-sysclk-2.0"?  How does the concept of a fixed input clock
+change?
 
-Tested-by: Olof Johansson <olof@lixom.net>
-
-> --- a/arch/powerpc/kernel/prom_init.c
-> +++ b/arch/powerpc/kernel/prom_init.c
-> @@ -1986,8 +1986,6 @@ static void __init prom_init_stdout(void)
->         /* Get the full OF pathname of the stdout device */
->         memset(path, 0, 256);
->         call_prom("instance-to-path", 3, 1, prom.stdout, path, 255);
-> -       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
-> -       val = cpu_to_be32(stdout_node);
->         prom_setprop(prom.chosen, "/chosen", "linux,stdout-package",
->                      &val, sizeof(val));
->         prom_printf("OF stdout device is: %s\n", of_stdout_device);
-> @@ -1995,10 +1993,14 @@ static void __init prom_init_stdout(void)
->                      path, strlen(path) + 1);
->  
->         /* If it's a display, note it */
-> -       memset(type, 0, sizeof(type));
-> -       prom_getprop(stdout_node, "device_type", type, sizeof(type));
-> -       if (strcmp(type, "display") == 0)
-> -               prom_setprop(stdout_node, path, "linux,boot-display", NULL, 0);
-> +       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
-> +       if (stdout_node != PROM_ERROR) {
-> +               val = cpu_to_be32(stdout_node);
-> +               memset(type, 0, sizeof(type));
-> +               prom_getprop(stdout_node, "device_type", type, sizeof(type));
-> +               if (strcmp(type, "display") == 0)
-> +                       prom_setprop(stdout_node, path, "linux,boot-display", NU
-
-Line is cut off, this needs "NULL, 0);" at the end.
-
-
-
--Olof
+-Scott
