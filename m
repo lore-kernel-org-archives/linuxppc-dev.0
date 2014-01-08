@@ -1,22 +1,20 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id C51E22C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 20:30:56 +1100 (EST)
-Date: Wed, 8 Jan 2014 09:30:46 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Yuantian Tang <Yuantian.Tang@freescale.com>
-Subject: Re: =?utf-8?B?562U5aSN?=
- =?utf-8?Q?=3A?= [v7] clk: corenet: Adds the clock binding
-Message-ID: <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
-References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
- <20140108002115.GA19801@home.buserror.net>
- <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D2FFD2C00B8
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Jan 2014 21:03:21 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: add vr save/restore functions
+References: <87eh4uif62.fsf@igel.home> <1389154699.2076.6.camel@concordia>
+Date: Wed, 08 Jan 2014 10:54:10 +0100
+In-Reply-To: <1389154699.2076.6.camel@concordia> (Michael Ellerman's message
+ of "Wed, 08 Jan 2014 15:18:19 +1100")
+Message-ID: <87fvoypznh.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
-Cc: Scott Wood <scottwood@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 08, 2014 at 08:53:56AM +0000, Yuantian Tang wrote:
-> 
-> ________________________________________
-> 发件人: Wood Scott-B07421
-> 发送时间: 2014年1月8日 8:21
-> 收件人: Tang Yuantian-B29983
-> 抄送: galak@kernel.crashing.org; mark.rutland@arm.com; devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> 主题: Re: [v7] clk: corenet: Adds the clock binding
-> 
-> On Wed, Nov 20, 2013 at 05:04:49PM +0800, tang yuantian wrote:
-> > +Recommended properties:
-> > +- ranges: Allows valid translation between child's address space and
-> > +     parent's. Must be present if the device has sub-nodes.
-> > +- #address-cells: Specifies the number of cells used to represent
-> > +     physical base addresses.  Must be present if the device has
-> > +     sub-nodes and set to 1 if present
-> > +- #size-cells: Specifies the number of cells used to represent
-> > +     the size of an address. Must be present if the device has
-> > +     sub-nodes and set to 1 if present
-> 
-> Why are we specifying #address-cells/#size-cells here?
-> 
-> A: it has sub-nodes which have REG property, don't we need to 
-> specify #address-cells/#size-cells?
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-If a node has a reg entry, its parent should have #size-cells and
-#address-cells to allow it to be parsed properly.
+> On Mon, 2013-12-30 at 15:31 +0100, Andreas Schwab wrote:
+>> GCC 4.8 now generates out-of-line vr save/restore functions when
+>> optimizing for size.  They are needed for the raid6 altivec support.
+>
+> It looks like they're identical for 32 & 64-bit ?
 
-Mark.
+They use different temporary registers and calling conventions (no .opd
+for ppc64).
+  
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
