@@ -1,26 +1,30 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <olof@lixom.net>
+Received: from mail-pa0-f41.google.com (mail-pa0-f41.google.com
+ [209.85.220.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EA5AA2C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 03:47:27 +1100 (EST)
-Date: Wed, 8 Jan 2014 17:47:19 +0100
-From: Gerhard Sittig <gsi@denx.de>
-To: Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: Re: [PATCH RFC v6 4/5] dma: mpc512x: register for device tree
- channel lookup
-Message-ID: <20140108164719.GO20094@book.gsilab.sittig.org>
-References: <1387886789-20249-1-git-send-email-a13xp0p0v88@gmail.com>
- <1387886789-20249-5-git-send-email-a13xp0p0v88@gmail.com>
- <20131226124828.GK8064@book.gsilab.sittig.org>
- <CAF0T0X7wotm60Bq4tfYcRhkDwiCw2hh5R5m2WmVLmLGLZYpQsQ@mail.gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 389E02C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 04:50:33 +1100 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id fb1so585389pad.28
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2014 09:50:30 -0800 (PST)
+Date: Wed, 8 Jan 2014 09:48:28 -0800
+From: Olof Johansson <olof@lixom.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
+Message-ID: <20140108174828.GA16830@quad.lixom.net>
+References: <1388264507-5100-1-git-send-email-olof@lixom.net>
+ <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
+ <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
+ <20140103081219.GA10233@quad.lixom.net>
+ <1389154189.2076.5.camel@concordia>
+ <1389154706.4672.21.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAF0T0X7wotm60Bq4tfYcRhkDwiCw2hh5R5m2WmVLmLGLZYpQsQ@mail.gmail.com>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, dmaengine@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1389154706.4672.21.camel@pasglop>
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>, chzigotzky@xenosoft.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,137 +34,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ dropping devicetree from the Cc: list ]
+On Wed, Jan 08, 2014 at 03:18:26PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-01-08 at 15:09 +1100, Michael Ellerman wrote:
+> > > Of course, main worry is that this is just hiding some latent NULL
+> > deref in
+> > > the kernel now... :-/
+> > 
+> > Wow, that would have to come close to winning the
+> > grossest-hack-in-arch-powerpc
+> > award :)
+> > 
+> > Have you tried changing the value at 8 to point to a reserved page?
+> > 
+> > Some other possibilities:
+> > 
+> >  * Change the #define so FIXUP_ENDIAN is empty for PASEMI, that would
+> > mean
+> >    you'd only be able to boot pasemi_defconfig.
 
-[ what is the semantics of DMA_PRIVATE capability flag?
-  is documentation available beyond the initial commit message?
-  need individual channels be handled instead of controllers? ]
+No thanks -- this went uncaught because that used to be all I booted
+(and for some random reason it didn't trigger in that case).
 
-On Sat, Jan 04, 2014 at 00:54 +0400, Alexander Popov wrote:
+> >  * Move the hack into FIXUP_ENDIAN
 > 
-> Hello Gerhard.
-> Thanks for your review.
-> 
-> 2013/12/26 Gerhard Sittig <gsi@denx.de>:
-> > [ dropping devicetree, we're DMA specific here ]
-> >
-> > On Tue, Dec 24, 2013 at 16:06 +0400, Alexander Popov wrote:
-> >>
-> >> --- a/drivers/dma/mpc512x_dma.c
-> >> +++ b/drivers/dma/mpc512x_dma.c
-> >> [ ... ]
-> >> @@ -950,6 +951,7 @@ static int mpc_dma_probe(struct platform_device *op)
-> >>       INIT_LIST_HEAD(&dma->channels);
-> >>       dma_cap_set(DMA_MEMCPY, dma->cap_mask);
-> >>       dma_cap_set(DMA_SLAVE, dma->cap_mask);
-> >> +     dma_cap_set(DMA_PRIVATE, dma->cap_mask);
-> >>
-> >>       for (i = 0; i < dma->chancnt; i++) {
-> >>               mchan = &mdma->channels[i];
-> >
-> > What are the implications of this?  Is a comment due?
-> 
-> I've involved DMA_PRIVATE flag because new of_dma_xlate_by_chan_id()
-> uses dma_get_slave_channel() instead of dma_request_channel()
-> (PATCH RFC v6 3/5). This flag is implicitly set in dma_request_channel(),
-> but is not set in dma_get_slave_channel().
-> 
-> There are only two places in the mainline kernel, where
-> dma_get_slave_channel() is used. I've picked up the idea
-> at one of these places. Please look at this patch:
-> http://www.spinics.net/lists/arm-kernel/msg268718.html
+> We actually found the root cause on irc the other day, I was waiting for
+> Olof to send a fix :-)
 
-I agree that the change looks simple, and there is no doubt that
-other drivers apply the flag.  None of this I questioned.  Yet
-I'm afraid that the implications are rather huge.
+Yeah, I'm low on spare time these days, in particular spare time to spend on
+ppc stuff. :-(
 
-Unless I miss something, I'd happily learn where I'm wrong.
+> Olof: Can you try this totally untested patch ?
 
-> > I haven't found documentation about the DMA_PRIVATE flag, only
-> > saw commit 59b5ec21446b9 "dmaengine: introduce
-> > dma_request_channel and private channels".
-> 
-> Unfortunately I didn't find any description of DMA_PRIVATE flag too.
-> But the comment at the beginning of drivers/dma/dmaengine.c
-> may give a clue. Quotation:
->   * subsystem can get access to a channel by calling dmaengine_get() followed
->   * by dma_find_channel(), or if it has need for an exclusive channel
-> it can call
->   * dma_request_channel().  Once a channel is allocated a reference is taken
->   * against its corresponding driver to disable removal.
-> 
-> DMA_PRIVATE capability flag might indicate that the DMA controller
-> can provide exclusive channels to its clients. Please correct me if I'm wrong.
-> 
-> > Alex, unless I'm
-> > missing something this one-line change is quite a change in
-> > semantics, and has dramatic influence on the code's behaviour
-> > (ignores the DMA controller when looking for channels that can do
-> > mem-to-mem transfers)
-> 
-> Excuse me, Gerhard, I don't see what you mean.
-> Could you point to the corresponding code?
+With one fixup below:
 
-You did see `git show 59b5ec21446b9`, didn't you?  The commit
-message strongly suggests that DMA_PRIVATE applies to the whole
-DMA controller and excludes _all_ of its channels from the
-general purpose allocator which mem-to-mem transfers appear to be
-using.  It's not just a hint, but an active decision to reject
-requests.
+Tested-by: Olof Johansson <olof@lixom.net>
 
-Not only checking code references, but doing a text search,
-reveals one more comment on the DMA_PRIVATE flag in a crypto
-related document, which supports my interpretation:
-Documentation/crypto/async-tx-api.txt:203
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -1986,8 +1986,6 @@ static void __init prom_init_stdout(void)
+>         /* Get the full OF pathname of the stdout device */
+>         memset(path, 0, 256);
+>         call_prom("instance-to-path", 3, 1, prom.stdout, path, 255);
+> -       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+> -       val = cpu_to_be32(stdout_node);
+>         prom_setprop(prom.chosen, "/chosen", "linux,stdout-package",
+>                      &val, sizeof(val));
+>         prom_printf("OF stdout device is: %s\n", of_stdout_device);
+> @@ -1995,10 +1993,14 @@ static void __init prom_init_stdout(void)
+>                      path, strlen(path) + 1);
+>  
+>         /* If it's a display, note it */
+> -       memset(type, 0, sizeof(type));
+> -       prom_getprop(stdout_node, "device_type", type, sizeof(type));
+> -       if (strcmp(type, "display") == 0)
+> -               prom_setprop(stdout_node, path, "linux,boot-display", NULL, 0);
+> +       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+> +       if (stdout_node != PROM_ERROR) {
+> +               val = cpu_to_be32(stdout_node);
+> +               memset(type, 0, sizeof(type));
+> +               prom_getprop(stdout_node, "device_type", type, sizeof(type));
+> +               if (strcmp(type, "display") == 0)
+> +                       prom_setprop(stdout_node, path, "linux,boot-display", NU
+
+Line is cut off, this needs "NULL, 0);" at the end.
 
 
-Can somebody ACK or NAK my interpretation?  Dan, you committed
-this change which introduced the DMA_PRIVATE logic.  What was the
-motivation for it, or the goal to achieve?  Do other platforms
-have several dedicated DMA controllers, some for peripherals and
-some for memory transfers?  Should the "private" flag apply to
-channels and not whole controllers?  Am I over-estimating the
-benefit or importance of DMA supported memory transfers?
 
-
-Still I see a difference in the lookup approaches:  Yours applies
-DMA_PRIVATE globally and in advance, preventing _any_ use of DMA
-for memory transfers.  While the __dma_request_channel() routine
-only applies it _temporarily_ around a dma_chan_get() operation.
-Allowing for use of DMA channels by both individual peripherals
-as well as memory transfers.
-
-
-> > Consider the fact that this driver
-> > handles both MPC5121 as well as MPC8308 hardware.
-> 
-> Ah, yes, sorry. I should certainly fix this, if setting of DMA_PRIVATE flag
-> is needed at all.
-
-What I meant here is that implications for all affected platforms
-should be considered.  There is one driver source, but the driver
-applies to more than one platform (another issue of the driver is
-that this is not apparent from the doc nor the compat strings).
-
-MPC512x has one (GP) DMA controller, of which one channel is
-dedicated to DDR, and all other channels can get used for memory
-transfers as well.  In addition to most channels being connected
-to a specific peripheral for flow control.  Which your patch set
-introduces initial support for.
-
-MPC8308 has _all_ channels for memory transfers exclusively (or
-at least none of its channels supports flow control).
-
-So blocking memory transfers in mpc512x_dma.c is a total breakage
-for MPC8308 (removes the only previous feature and adds nothing),
-and is a regression for MPC512x (removes the previously supported
-memory transfers, while it may add peripheral supports with very
-few users).
-
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+-Olof
