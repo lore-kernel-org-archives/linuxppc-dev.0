@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 12C912C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 10:51:29 +1100 (EST)
-Message-ID: <1389138670.11795.208.camel@snotra.buserror.net>
-Subject: Re: [PATCH v5 1/1] powerpc/embedded6xx: Add support for
- Motorola/Emerson MVME5100
+ by ozlabs.org (Postfix) with ESMTPS id 7E8892C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 11:21:29 +1100 (EST)
+Date: Tue, 7 Jan 2014 18:21:15 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Stephen Chivers <schivers@csc.com>
-Date: Tue, 7 Jan 2014 17:51:10 -0600
-In-Reply-To: <20140106012306.A6AB5E06BF@canberra.localdomain>
-References: <20140106012306.A6AB5E06BF@canberra.localdomain>
-Content-Type: text/plain; charset="UTF-8"
+To: tang yuantian <Yuantian.Tang@freescale.com>
+Subject: Re: [v7] clk: corenet: Adds the clock binding
+Message-ID: <20140108002115.GA19801@home.buserror.net>
+References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-01-06 at 12:23 +1100, Stephen Chivers wrote:
-> Add support for the Motorola/Emerson MVME5100 Single Board Computer.
-> 
-> The MVME5100 is a 6U form factor VME64 computer with:
-> 
-> 	- A single MPC7410 or MPC750 CPU
-> 	- A HAWK Processor Host Bridge (CPU to PCI) and
-> 	  MultiProcessor Interrupt Controller (MPIC)
-> 	- Up to 500Mb of onboard memory
-> 	- A M48T37 Real Time Clock (RTC) and Non-Volatile Memory chip
-> 	- Two 16550 compatible UARTS
-> 	- Two Intel E100 Fast Ethernets
-> 	- Two PCI Mezzanine Card (PMC) Slots
-> 	- PPCBug Firmware
-> 
-> The HAWK PHB/MPIC is compatible with the MPC10x devices.
-> 
-> There is no onboard disk support. This is usually provided by installing a PMC
-> in first PMC slot.
-> 
-> This patch revives the board support, it was present in early 2.6
-> series kernels. The board support in those days was by Matt Porter of
-> MontaVista Software.
-> 
-> CSC Australia has around 31 of these boards in service. The kernel in use
-> for the boards is based on 2.6.31. The boards are operated without disks
-> from a file server. 
-> 
-> This patch is based on linux-3.13-rc2 and has been boot tested.
-> 
-> Only boards with 512 Mb of memory are known to work.
-> 
-> V1->V2:
-> 	Address comments by Kumar Gala and Scott Wood.
-> 	Minor adjustment to platforms/embedded6xx/Kconfig to ensure
-> 		correct indentation where possible.
-> 
-> V2->V3:
-> 	Address comments by Scott Wood and Ben Herrenschmidt.
-> 	Address errors reported by checkpatch.
-> 
-> V3->V4:
-> 	Address comment by Geert Uytterhoeven
-> 	Add tested by Alessio Bogani.
-> 
-> V4->V5:
-> 	Correct horrible typo in patch history.
-> 	Kular Gama is Kumar Gala.
+On Wed, Nov 20, 2013 at 05:04:49PM +0800, tang yuantian wrote:
+> +Recommended properties:
+> +- ranges: Allows valid translation between child's address space and
+> +	parent's. Must be present if the device has sub-nodes.
+> +- #address-cells: Specifies the number of cells used to represent
+> +	physical base addresses.  Must be present if the device has
+> +	sub-nodes and set to 1 if present
+> +- #size-cells: Specifies the number of cells used to represent
+> +	the size of an address. Must be present if the device has
+> +	sub-nodes and set to 1 if present
 
-The patch history should go below the --- line, as it's for reviewers
-who have seen previous versions rather than for the git history.
+Why are we specifying #address-cells/#size-cells here?
+
+> +2. Clock Provider/Consumer Binding
+> +
+> +Most of the bindings are from the common clock binding[1].
+> + [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
+> +
+> +Required properties:
+> +- compatible : Should include one of the following:
+> +	* "fsl,qoriq-core-pll-1.0" for core PLL clocks (v1.0)
+> +    * "fsl,qoriq-core-pll-2.0" for core PLL clocks (v2.0)
+> +    * "fsl,qoriq-core-mux-1.0" for core mux clocks (v1.0)
+> +    * "fsl,qoriq-core-mux-2.0" for core mux clocks (v2.0)
+> +	* "fsl,qoriq-sysclk-1.0": for input system clock (v1.0)
+> +	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0)
+
+Some of those lines use tabs and others spaces -- I can fix when applying.
 
 -Scott
