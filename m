@@ -1,20 +1,18 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D2FFD2C00B8
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jan 2014 21:03:21 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: add vr save/restore functions
-References: <87eh4uif62.fsf@igel.home> <1389154699.2076.6.camel@concordia>
-Date: Wed, 08 Jan 2014 10:54:10 +0100
-In-Reply-To: <1389154699.2076.6.camel@concordia> (Michael Ellerman's message
- of "Wed, 08 Jan 2014 15:18:19 +1100")
-Message-ID: <87fvoypznh.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Thu, 9 Jan 2014 01:03:58 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140109010358.0f9b30c4@kryten>
+In-Reply-To: <871u0k5lri.fsf@tassilo.jf.intel.com>
+References: <20140107132100.5b5ad198@kryten>
+ <871u0k5lri.fsf@tassilo.jf.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, mpm@selenic.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <michael@ellerman.id.au> writes:
 
-> On Mon, 2013-12-30 at 15:31 +0100, Andreas Schwab wrote:
->> GCC 4.8 now generates out-of-line vr save/restore functions when
->> optimizing for size.  They are needed for the raid6 altivec support.
->
-> It looks like they're identical for 32 & 64-bit ?
+Hi Andi,
 
-They use different temporary registers and calling conventions (no .opd
-for ppc64).
-  
-Andreas.
+> > Thoughts? It seems like we could hit a similar situation if a
+> > machine is balanced but we run out of memory on a single node.
+> 
+> Yes I agree, but your patch doesn't seem to attempt to handle this?
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+It doesn't. I was hoping someone with more mm knowledge than I could
+suggest a lightweight way of doing this.
+
+Anton
