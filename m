@@ -1,25 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Minghuan.Lian@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CF0192C014E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 15:18:39 +1100 (EST)
-Message-ID: <1389154706.4672.21.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 08 Jan 2014 15:18:26 +1100
-In-Reply-To: <1389154189.2076.5.camel@concordia>
-References: <1388264507-5100-1-git-send-email-olof@lixom.net>
- <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
- <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
- <20140103081219.GA10233@quad.lixom.net> <1389154189.2076.5.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Anton Blanchard <anton@samba.org>, chzigotzky@xenosoft.de
+ by ozlabs.org (Postfix) with ESMTPS id 958422C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 16:01:47 +1100 (EST)
+From: Minghuan Lian <Minghuan.Lian@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 02/12][v4] pci: fsl: add structure fsl_pci
+Date: Wed, 8 Jan 2014 13:01:53 +0800
+Message-ID: <1389157323-3088-2-git-send-email-Minghuan.Lian@freescale.com>
+In-Reply-To: <1389157323-3088-1-git-send-email-Minghuan.Lian@freescale.com>
+References: <1389157323-3088-1-git-send-email-Minghuan.Lian@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linux-pci@vger.kernel.org,
+ Zang Roy-R61911 <r61911@freescale.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,54 +26,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-01-08 at 15:09 +1100, Michael Ellerman wrote:
-> > Of course, main worry is that this is just hiding some latent NULL
-> deref in
-> > the kernel now... :-/
-> 
-> Wow, that would have to come close to winning the
-> grossest-hack-in-arch-powerpc
-> award :)
-> 
-> Have you tried changing the value at 8 to point to a reserved page?
-> 
-> Some other possibilities:
-> 
->  * Change the #define so FIXUP_ENDIAN is empty for PASEMI, that would
-> mean
->    you'd only be able to boot pasemi_defconfig.
->  * Move the hack into FIXUP_ENDIAN
+PowerPC uses structure pci_controller to describe PCI controller,
+but ARM uses structure pci_sys_data. In order to support PowerPC
+and ARM simultaneously, the patch adds a structure fsl_pci that
+contains most of the members of the pci_controller and pci_sys_data.
+Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
+be implemented in architecture-specific PCI controller driver to
+convert pci_controller or pci_sys_data to fsl_pci.
 
-We actually found the root cause on irc the other day, I was waiting for
-Olof to send a fix :-)
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+---
+change log:
+v4:
+Added indirect type macro
+v1-v3:
+Derived from http://patchwork.ozlabs.org/patch/278965/
 
-Olof: Can you try this totally untested patch ?
+Based on upstream master.
+Based on the discussion of RFC version here
+http://patchwork.ozlabs.org/patch/274487/
 
---- a/arch/powerpc/kernel/prom_init.c
-+++ b/arch/powerpc/kernel/prom_init.c
-@@ -1986,8 +1986,6 @@ static void __init prom_init_stdout(void)
-        /* Get the full OF pathname of the stdout device */
-        memset(path, 0, 256);
-        call_prom("instance-to-path", 3, 1, prom.stdout, path, 255);
--       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
--       val = cpu_to_be32(stdout_node);
-        prom_setprop(prom.chosen, "/chosen", "linux,stdout-package",
-                     &val, sizeof(val));
-        prom_printf("OF stdout device is: %s\n", of_stdout_device);
-@@ -1995,10 +1993,14 @@ static void __init prom_init_stdout(void)
-                     path, strlen(path) + 1);
+ include/linux/fsl/pci-common.h | 48 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+diff --git a/include/linux/fsl/pci-common.h b/include/linux/fsl/pci-common.h
+index 5e4f683..7ea20a1 100644
+--- a/include/linux/fsl/pci-common.h
++++ b/include/linux/fsl/pci-common.h
+@@ -102,5 +102,53 @@ struct ccsr_pci {
  
-        /* If it's a display, note it */
--       memset(type, 0, sizeof(type));
--       prom_getprop(stdout_node, "device_type", type, sizeof(type));
--       if (strcmp(type, "display") == 0)
--               prom_setprop(stdout_node, path, "linux,boot-display", NULL, 0);
-+       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
-+       if (stdout_node != PROM_ERROR) {
-+               val = cpu_to_be32(stdout_node);
-+               memset(type, 0, sizeof(type));
-+               prom_getprop(stdout_node, "device_type", type, sizeof(type));
-+               if (strcmp(type, "display") == 0)
-+                       prom_setprop(stdout_node, path, "linux,boot-display", NU
-+       }
- }
+ };
+ 
++/*
++ * Structure of a PCI controller (host bridge)
++ */
++struct fsl_pci {
++	struct list_head node;
++	bool is_pcie;
++	struct device_node *dn;
++	struct device *dev;
++
++	int first_busno;
++	int last_busno;
++	int self_busno;
++	struct resource busn;
++
++	struct pci_ops *ops;
++	struct ccsr_pci __iomem *regs;
++
++#define INDIRECT_TYPE_SET_CFG_TYPE		0x00000001
++#define INDIRECT_TYPE_EXT_REG		0x00000002
++#define INDIRECT_TYPE_SURPRESS_PRIMARY_BUS	0x00000004
++#define INDIRECT_TYPE_NO_PCIE_LINK		0x00000008
++#define INDIRECT_TYPE_BIG_ENDIAN		0x00000010
++#define INDIRECT_TYPE_BROKEN_MRM		0x00000020
++#define INDIRECT_TYPE_FSL_CFG_REG_LINK	0x00000040
++	u32 indirect_type;
++
++	struct resource io_resource;
++	resource_size_t io_base_phys;
++	resource_size_t pci_io_size;
++
++	struct resource mem_resources[3];
++	resource_size_t mem_offset[3];
++
++	int global_number;	/* PCI domain number */
++
++	resource_size_t dma_window_base_cur;
++	resource_size_t dma_window_size;
++
++	void *sys;
++};
++
++/*
++ * Convert architecture specific pci controller structure to fsl_pci
++ * PowerPC uses structure pci_controller and ARM uses structure pci_sys_data
++ * to describe pci controller.
++ */
++extern struct fsl_pci *fsl_arch_sys_to_pci(void *sys);
++
+ #endif /* __PCI_COMMON_H */
+ #endif /* __KERNEL__ */
+-- 
+1.8.1.2
