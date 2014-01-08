@@ -1,25 +1,26 @@
 Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0156.outbound.protection.outlook.com [207.46.163.156])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E7A552C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 18:12:58 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 73AA02C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 18:13:02 +1100 (EST)
 From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 2/2] powerpc/85xx: handle the eLBC error interrupt if it
- exist in dts
-Date: Wed, 8 Jan 2014 07:12:48 +0000
-Message-ID: <e5d262c851104fd88878822f38670c47@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1389076061-20159-1-git-send-email-dongsheng.wang@freescale.com>
- <1389077881.11795.137.camel@snotra.buserror.net>
- <1acd410af7444ba89e81dc004f2d6e89@BN1PR03MB188.namprd03.prod.outlook.com>
- <1389127500.11795.184.camel@snotra.buserror.net>
-In-Reply-To: <1389127500.11795.184.camel@snotra.buserror.net>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: RE: [PATCH 2/2] fsl/pci: The new pci suspend/resume implementation
+Date: Wed, 8 Jan 2014 07:12:53 +0000
+Message-ID: <5ca123d4b32b49719cd9e8506916a9cf@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389081848-26506-2-git-send-email-dongsheng.wang@freescale.com>
+ <4984978.bktZCpdLkC@vostro.rjw.lan>
+In-Reply-To: <4984978.bktZCpdLkC@vostro.rjw.lan>
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Shaohui
- Xie <Shaohui.Xie@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ Scott Wood <scottwood@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "bhelgaas@google.com" <bhelgaas@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBKYW51YXJ5IDA4LCAyMDE0IDQ6NDUgQU0NCj4gVG86IFdh
-bmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7
-IFhpZSBTaGFvaHVpLUIyMTk4OTsgS3VtYXIgR2FsYQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIv
-Ml0gcG93ZXJwYy84NXh4OiBoYW5kbGUgdGhlIGVMQkMgZXJyb3IgaW50ZXJydXB0IGlmIGl0DQo+
-IGV4aXN0IGluIGR0cw0KPiANCj4gT24gVHVlLCAyMDE0LTAxLTA3IGF0IDA0OjAxIC0wNjAwLCBX
-YW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVHVl
-c2RheSwgSmFudWFyeSAwNywgMjAxNCAyOjU4IFBNDQo+ID4gPiBUbzogV2FuZyBEb25nc2hlbmct
-QjQwNTM0DQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFhpZSBTaGFv
-aHVpLUIyMTk4OTsgS3VtYXIgR2FsYQ0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIHBv
-d2VycGMvODV4eDogaGFuZGxlIHRoZSBlTEJDIGVycm9yIGludGVycnVwdCBpZiBpdA0KPiA+ID4g
-ZXhpc3QgaW4gZHRzDQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE0LTAxLTA3IGF0IDE0OjI3ICsw
-ODAwLCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcg
-PGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPg0KPiA+ID4gQUZBSUNUIHRoaXMg
-cGF0Y2ggd2FzIG9yaWdpbmFsbHkgd3JpdHRlbiBieSBTaGFvaHVpIFhpZS4NCj4gPiA+DQo+ID4g
-PiA+IE9uIFAzMDQxLCBQMTAyMCwgUDEwMjEsIFAxMDIyLCBQMTAyMyBlTEJDIGV2ZW50IGludGVy
-cnVwdHMgYXJlIHJvdXRlZA0KPiA+ID4gPiB0byBJbnQ5KFAzMDQxKSAmIEludDMoUDEwMngpIHdo
-aWxlIEVMQkMgZXJyb3IgaW50ZXJydXB0cyBhcmUgcm91dGVkIHRvDQo+ID4gPiA+IEludDAsIHdl
-IG5lZWQgdG8gY2FsbCByZXF1ZXN0X2lycSBmb3IgZWFjaC4NCj4gPiA+DQo+ID4gPiBGb3IgcDMw
-NDEgSSB0aG91Z2h0IHRoYXQgd2FzIG9ubHkgb24gZWFybHkgc2lsaWNvbiByZXZzIHRoYXQgd2Ug
-ZG9uJ3QNCj4gPiA+IHN1cHBvcnQgYW55bW9yZS4NCj4gPiA+DQo+ID4gPiBBcyBmb3IgcDEwMngs
-IGhhdmUgeW91IHRlc3RlZCB0aGF0IHRoaXMgaXMgYWN0dWFsbHkgd2hhdCBoYXBwZW5zPyAgSG93
-DQo+ID4gPiB3b3VsZCB3ZSBkaXN0aW5ndWlzaCBlTEJDIGVycm9ycyBmcm9tIG90aGVyIGVycm9y
-IHNvdXJjZXMsIGdpdmVuIHRoYXQNCj4gPiA+IHRoZXJlJ3Mgbm8gRUlTUjA/ICBEbyB3ZSBqdXN0
-IGhvcGUgdGhhdCBubyBvdGhlciBlcnJvciBpbnRlcnJ1cHRzDQo+ID4gPiBoYXBwZW4/DQo+ID4g
-WWVzLCBJIHRlc3RlZC4gVGhlIGludGVycnVwdCBpcyBzaGFyZCBlTEJDIGludGVycnVwdCBoYW5k
-bGVyIGNvdWxkIGNoZWNrIHRoZQ0KPiBlcnJvci4NCj4gPiBUaGlzIHBhdGNoIGlzIGZpeCAibm9i
-b2R5IGNhcmVkIiB0aGUgZXJyb3IgaW50ZXJydXB0LiBBZnRlciBzbGVlcCByZXN1bWUgdGhlDQo+
-IGxiYw0KPiA+IHdpbGwgZ2V0IGEgY2hpcCBzZWxlY3QgZXJyb3IuDQo+IA0KPiBzL25vIG90aGVy
-IGVycm9yIGludGVycnVwdHMgaGFwcGVuL25vIG90aGVyIGVycm9yIGludGVycnVwdHMgZm9yIHdo
-aWNoDQo+IHdlIGRvbid0IGhhdmUgYSBoYW5kbGVyIHJlZ2lzdGVyZWQgb3Igd2hpY2ggZG9uJ3Qg
-ZXZlbiBoYXZlIGFuDQo+IGFzc29jaWF0ZWQgc3RhdHVzIHJlZ2lzdGVyIGhhcHBlbi8NCj4gDQpJ
-ZiB0aGUgaXAtYmxvY2sgZG9lcyBub3QgaGFuZGxlIHRoZWlyIGVycm9yIGludGVycnVwdCBpcyBh
-IGlwLWJsb2NrIGlzc3VlIHRoYXQuDQpTaW5jZSB0aGUgdXNlIG9mIHRoaXMgc2hhcmVkIGludGVy
-cnVwdCBtdXN0IG1haW50YWluIHRoZWlyIHN0YXR1cywgb25jZSB0aGVyZQ0KaXMgbm8gZGVhbCBz
-aGFyZWQgaW50ZXJydXB0LCBpdCB3aWxsIGFmZmVjdCB0aGUgb3RoZXIgaXAtYmxvY2suDQo=
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
+a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogV2VkbmVzZGF5LCBKYW51YXJ5
+IDA4LCAyMDE0IDQ6NDIgQU0NCj4gVG86IFdhbmcgRG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogYmhl
+bGdhYXNAZ29vZ2xlLmNvbTsgV29vZCBTY290dC1CMDc0MjE7IGdhbGFrQGNvZGVhdXJvcmEub3Jn
+OyBaYW5nIFJveS0NCj4gUjYxOTExOyBsaW51eC1wY2lAdmdlci5rZXJuZWwub3JnOyBsaW51eHBw
+Yy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIDIvMl0gZnNsL3Bj
+aTogVGhlIG5ldyBwY2kgc3VzcGVuZC9yZXN1bWUgaW1wbGVtZW50YXRpb24NCj4gDQo+IE9uIFR1
+ZXNkYXksIEphbnVhcnkgMDcsIDIwMTQgMDQ6MDQ6MDggUE0gRG9uZ3NoZW5nIFdhbmcgd3JvdGU6
+DQo+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+
+DQo+ID4NCj4gPiBUaGUgbmV3IHN1c3BlbmQvcmVzdW1lIGltcGxlbWVudGF0aW9uLCBzZW5kIHBt
+ZSB0dXJub2ZmIG1lc3NhZ2UNCj4gPiBpbiBzdXNwZW5kLCBhbmQgc2VuZCBwbWUgZXhpdCBtZXNz
+YWdlIGluIHJlc3VtZS4NCj4gPg0KPiA+IEFkZCBhIFBNRSBoYW5kbGVyLCB0byByZXNwb25zZSBQ
+TUUgJiBtZXNzYWdlIGludGVycnVwdC4NCj4gPg0KPiA+IENoYW5nZSBwbGF0Zm9ybV9kcml2ZXIt
+PnN1c3BlbmQvcmVzdW1lIHRvIHN5c2NvcmUtPnN1c3BlbmQvcmVzdW1lLg0KPiANCj4gQ2FuIHlv
+dSBwbGVhc2UgZmlyc3QgZGVzY3JpYmUgdGhlIHByb2JsZW0geW91J3JlIHRyeWluZyB0byBhZGRy
+ZXNzPw0KPiANCklmIHdlIGRvIG5vdGhpbmcgaW4gc3VzcGVuZC9yZXN1bWUsIHNvbWUgcGxhdGZv
+cm0gUENJZSBpcC1ibG9jayBjYW4ndCBndWFyYW50ZWUNCnRoZSBsaW5rIGJhY2sgdG8gTDAgc3Rh
+dGUgZnJvbSBzbGVlcCwgdGhlbiwgd2hlbiB3ZSByZWFkIHRoZSBFUCBkZXZpY2Ugd2lsbCBoYW5n
+LiANCk9ubHkgd2Ugc2VuZCBwbWUgdHVybm9mZiBtZXNzYWdlIGluIHBjaSBjb250cm9sbGVyIHN1
+c3BlbmQsIGFuZCBzZW5kIHBtZSBleGl0DQptZXNzYWdlIGluIHJlc3VtZSwgdGhlIGxpbmsgc3Rh
+dGUgd2lsbCBiZSBub3JtYWwuDQoNCldoZW4gd2Ugc2VuZCBwbWUgdHVybm9mZiBtZXNzYWdlIGlu
+IHBjaSBjb250cm9sbGVyIHN1c3BlbmQsIHRoZSBsaW5rcyB3aWxsIGludG8gbDIvbDMNCnJlYWR5
+LCB0aGVuLCBob3N0IGNhbm5vdCBjb21tdW5pY2F0ZSB3aXRoIGVwIGRldmljZSwgYnV0IHBjaS1k
+cml2ZXIgd2lsbCBjYWxsIGJhY2sgRVANCmRldmljZSB0byBzYXZlIHRoZW0gc3RhdGUuIFNvIHdl
+IG5lZWQgdG8gY2hhbmdlIHBsYXRmb3JtX2RyaXZlci0+c3VzcGVuZC9yZXN1bWUgdG8NCnN5c2Nv
+cmUtPnN1c3BlbmQvcmVzdW1lLg0KDQpUaGFua3MsDQotRG9uZ3NoZW5nDQo=
