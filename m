@@ -1,27 +1,24 @@
-Return-Path: <lravich@gmail.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7BD4A2C00B8
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Jan 2014 19:25:02 +1100 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <lravich@gmail.com>) id 1W0oRf-0003Fm-PT
- for linuxppc-dev@ozlabs.org; Wed, 08 Jan 2014 00:24:59 -0800
-Date: Wed, 8 Jan 2014 00:24:59 -0800 (PST)
-From: ravich <lravich@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1389169499473-79160.post@n7.nabble.com>
-In-Reply-To: <1383059241779-77605.post@n7.nabble.com>
-References: <CAErSpo5ZZgdpkK+QdQUEnNCEXcG_T+QBWTVoQnMTghxkX7n2HA@mail.gmail.com>
- <CAPWoNkJtnE3ASH0AdgfAD-3soa13DyH-zZAyzWMg9K2=nCX87Q@mail.gmail.com>
- <CAPWoNkLTC+1ba3vwY0xiJVmmebvuXZBTwiyH5HAFfE8mRReaRQ@mail.gmail.com>
- <CAErSpo6zGZkL7hWmBOVzd2=MWvY18v5xLO1qg7jVfSgqa8wHzw@mail.gmail.com>
- <CAErSpo49ZLfxkEanmrrwwiqHR8koiCakqe9h8My2Mu1yA4R1Ww@mail.gmail.com>
- <1383059241779-77605.post@n7.nabble.com>
-Subject: Re: PCIE device errors after linux kernel upgrade
+ by ozlabs.org (Postfix) with ESMTPS id 2E7C92C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 19:54:11 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: =?gb2312?B?tPC4tDogW3Y3XSBjbGs6IGNvcmVuZXQ6IEFkZHMgdGhlIGNsb2NrIGJpbmRp?=
+ =?gb2312?Q?ng?=
+Date: Wed, 8 Jan 2014 08:53:56 +0000
+Message-ID: <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
+References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>,
+ <20140108002115.GA19801@home.buserror.net>
+In-Reply-To: <20140108002115.GA19801@home.buserror.net>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Finally I found the problem causing the sudden system reset :
-
-our setup :
-
-P2020<====>PCI Bridge <=====> FPGA
-
-The reset occurs when we allocating skb and giving the Fpga dma addr of
-skb->data of this skb and when the FPGA tries to reach this address we are
-having a hardware reset. 
-
-To fixed it we used GFP_DMA flag on skb allocations.
-
-If you can explain me few thinks I will be more  then happy :
-1) how come we managed to work in 2.6.32 kernel without this flag.
-2) Ok gave you a bad dma address why reset the system without  any warning. 
-
-Thanks for your time and support
-
-Leonid Ravich
-
-
-
-
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/Re-PCIE-device-errors-after-linux-kernel-upgrade-tp74563p79160.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18Kt6K8/sjLOiBXb29kIFNj
+b3R0LUIwNzQyMQq3osvNyrG85DogMjAxNMTqMdTCOMjVIDg6MjEKytW8/sjLOiBUYW5nIFl1YW50
+aWFuLUIyOTk4MwqzrcvNOiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBtYXJrLnJ1dGxhbmRA
+YXJtLmNvbTsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnCtb3zOI6IFJlOiBbdjddIGNsazogY29yZW5ldDogQWRkcyB0aGUgY2xvY2sgYmlu
+ZGluZwoKT24gV2VkLCBOb3YgMjAsIDIwMTMgYXQgMDU6MDQ6NDlQTSArMDgwMCwgdGFuZyB5dWFu
+dGlhbiB3cm90ZToKPiArUmVjb21tZW5kZWQgcHJvcGVydGllczoKPiArLSByYW5nZXM6IEFsbG93
+cyB2YWxpZCB0cmFuc2xhdGlvbiBiZXR3ZWVuIGNoaWxkJ3MgYWRkcmVzcyBzcGFjZSBhbmQKPiAr
+ICAgICBwYXJlbnQncy4gTXVzdCBiZSBwcmVzZW50IGlmIHRoZSBkZXZpY2UgaGFzIHN1Yi1ub2Rl
+cy4KPiArLSAjYWRkcmVzcy1jZWxsczogU3BlY2lmaWVzIHRoZSBudW1iZXIgb2YgY2VsbHMgdXNl
+ZCB0byByZXByZXNlbnQKPiArICAgICBwaHlzaWNhbCBiYXNlIGFkZHJlc3Nlcy4gIE11c3QgYmUg
+cHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcwo+ICsgICAgIHN1Yi1ub2RlcyBhbmQgc2V0IHRvIDEg
+aWYgcHJlc2VudAo+ICstICNzaXplLWNlbGxzOiBTcGVjaWZpZXMgdGhlIG51bWJlciBvZiBjZWxs
+cyB1c2VkIHRvIHJlcHJlc2VudAo+ICsgICAgIHRoZSBzaXplIG9mIGFuIGFkZHJlc3MuIE11c3Qg
+YmUgcHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcwo+ICsgICAgIHN1Yi1ub2RlcyBhbmQgc2V0IHRv
+IDEgaWYgcHJlc2VudAoKV2h5IGFyZSB3ZSBzcGVjaWZ5aW5nICNhZGRyZXNzLWNlbGxzLyNzaXpl
+LWNlbGxzIGhlcmU/CgpBOiBpdCBoYXMgc3ViLW5vZGVzIHdoaWNoIGhhdmUgUkVHIHByb3BlcnR5
+LCBkb24ndCB3ZSBuZWVkIHRvIApzcGVjaWZ5ICNhZGRyZXNzLWNlbGxzLyNzaXplLWNlbGxzPwog
+Cj4gKzIuIENsb2NrIFByb3ZpZGVyL0NvbnN1bWVyIEJpbmRpbmcKPiArCj4gK01vc3Qgb2YgdGhl
+IGJpbmRpbmdzIGFyZSBmcm9tIHRoZSBjb21tb24gY2xvY2sgYmluZGluZ1sxXS4KPiArIFsxXSBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svY2xvY2stYmluZGluZ3MudHh0
+Cj4gKwo+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ICstIGNvbXBhdGlibGUgOiBTaG91bGQgaW5j
+bHVkZSBvbmUgb2YgdGhlIGZvbGxvd2luZzoKPiArICAgICAqICJmc2wscW9yaXEtY29yZS1wbGwt
+MS4wIiBmb3IgY29yZSBQTEwgY2xvY2tzICh2MS4wKQo+ICsgICAgKiAiZnNsLHFvcmlxLWNvcmUt
+cGxsLTIuMCIgZm9yIGNvcmUgUExMIGNsb2NrcyAodjIuMCkKPiArICAgICogImZzbCxxb3JpcS1j
+b3JlLW11eC0xLjAiIGZvciBjb3JlIG11eCBjbG9ja3MgKHYxLjApCj4gKyAgICAqICJmc2wscW9y
+aXEtY29yZS1tdXgtMi4wIiBmb3IgY29yZSBtdXggY2xvY2tzICh2Mi4wKQo+ICsgICAgICogImZz
+bCxxb3JpcS1zeXNjbGstMS4wIjogZm9yIGlucHV0IHN5c3RlbSBjbG9jayAodjEuMCkKPiArICAg
+ICAqICJmc2wscW9yaXEtc3lzY2xrLTIuMCI6IGZvciBpbnB1dCBzeXN0ZW0gY2xvY2sgKHYyLjAp
+CgpTb21lIG9mIHRob3NlIGxpbmVzIHVzZSB0YWJzIGFuZCBvdGhlcnMgc3BhY2VzIC0tIEkgY2Fu
+IGZpeCB3aGVuIGFwcGx5aW5nLgpBOiBzb3JyeSBmb3IgdGhpcyBhbmQgdGhhbmtzIGZvciBmaXhp
+bmcuCgpSZWdhcmRzLApZdWFudGlhbgoKLVNjb3R0Cg==
