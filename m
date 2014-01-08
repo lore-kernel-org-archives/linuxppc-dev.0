@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AC9A62C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 08:58:19 +1100 (EST)
-Message-ID: <1389218288.25654.26.camel@snotra.buserror.net>
-Subject: Re: [PATCH 02/12][v4] pci: fsl: add structure fsl_pci
-From: Scott Wood <scottwood@freescale.com>
-To: Minghuan Lian <Minghuan.Lian@freescale.com>
-Date: Wed, 8 Jan 2014 15:58:08 -0600
-In-Reply-To: <1389157323-3088-2-git-send-email-Minghuan.Lian@freescale.com>
-References: <1389157323-3088-1-git-send-email-Minghuan.Lian@freescale.com>
- <1389157323-3088-2-git-send-email-Minghuan.Lian@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id B72CF2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 11:00:06 +1100 (EST)
+Date: Wed, 8 Jan 2014 17:45:30 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: mpic build failure for 7447_hpc defconfig (bisected)
+Message-ID: <20140108224529.GA4708@windriver.com>
 MIME-Version: 1.0
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-01-08 at 13:01 +0800, Minghuan Lian wrote:
-> PowerPC uses structure pci_controller to describe PCI controller,
-> but ARM uses structure pci_sys_data. In order to support PowerPC
-> and ARM simultaneously, the patch adds a structure fsl_pci that
-> contains most of the members of the pci_controller and pci_sys_data.
-> Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
-> be implemented in architecture-specific PCI controller driver to
-> convert pci_controller or pci_sys_data to fsl_pci.
-> 
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> ---
-> change log:
-> v4:
-> Added indirect type macro
-> v1-v3:
-> Derived from http://patchwork.ozlabs.org/patch/278965/
-> 
-> Based on upstream master.
-> Based on the discussion of RFC version here
-> http://patchwork.ozlabs.org/patch/274487/
-> 
->  include/linux/fsl/pci-common.h | 48 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 48 insertions(+)
+Commit 446f6d06fab0b49c61887ecbe8286d6aaa796637 ("powerpc/mpic: Properly
+set default triggers") breaks the mpc7447_hpc_defconfig as follows:
 
-Same comments on this patchset as last time.
+  CC      arch/powerpc/sysdev/mpic.o
+arch/powerpc/sysdev/mpic.c: In function 'mpic_set_irq_type':
+arch/powerpc/sysdev/mpic.c:886:9: error: case label does not reduce to an integer constant
+arch/powerpc/sysdev/mpic.c:890:9: error: case label does not reduce to an integer constant
+arch/powerpc/sysdev/mpic.c:894:9: error: case label does not reduce to an integer constant
+arch/powerpc/sysdev/mpic.c:898:9: error: case label does not reduce to an integer constant
 
--Scott
+Looking at the cpp output (gcc 4.7.3 from the kernel.org toolchains), I see:
+
+   case mpic->hw_set[MPIC_IDX_VECPRI_SENSE_EDGE] |
+        mpic->hw_set[MPIC_IDX_VECPRI_POLARITY_POSITIVE]:
+
+The pointer into an array appears because CONFIG_MPIC_WEIRD=y is set for
+this thing.
+
+-------------------
+  #ifdef CONFIG_MPIC_WEIRD
+  static u32 mpic_infos[][MPIC_IDX_END] = {
+        [0] = { /* Original OpenPIC compatible MPIC */
+
+  [...]
+
+  #define MPIC_INFO(name) mpic->hw_set[MPIC_IDX_##name]
+
+  #else /* CONFIG_MPIC_WEIRD */
+
+  #define MPIC_INFO(name) MPIC_##name
+
+  #endif /* CONFIG_MPIC_WEIRD */
+-------------------
+
+
+Given it has been broken since 3.4-rc5, is it safe to say MPIC_WEIRD is dead
+and unused?  Or should the case be converted to if/else or similar?  Or were
+other versions of gcc actually able to "see" constant numbers?
+
+Paul.
+--
