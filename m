@@ -1,22 +1,20 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2E7C92C0090
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 19:54:11 +1100 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: =?gb2312?B?tPC4tDogW3Y3XSBjbGs6IGNvcmVuZXQ6IEFkZHMgdGhlIGNsb2NrIGJpbmRp?=
- =?gb2312?Q?ng?=
-Date: Wed, 8 Jan 2014 08:53:56 +0000
-Message-ID: <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
-References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>,
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id C51E22C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 20:30:56 +1100 (EST)
+Date: Wed, 8 Jan 2014 09:30:46 +0000
+From: Mark Rutland <mark.rutland@arm.com>
+To: Yuantian Tang <Yuantian.Tang@freescale.com>
+Subject: Re: =?utf-8?B?562U5aSN?=
+ =?utf-8?Q?=3A?= [v7] clk: corenet: Adds the clock binding
+Message-ID: <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
+References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
  <20140108002115.GA19801@home.buserror.net>
-In-Reply-To: <20140108002115.GA19801@home.buserror.net>
-Content-Type: text/plain; charset="gb2312"
+ <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
 MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
+Cc: Scott Wood <scottwood@freescale.com>,
  "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,35 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18Kt6K8/sjLOiBXb29kIFNj
-b3R0LUIwNzQyMQq3osvNyrG85DogMjAxNMTqMdTCOMjVIDg6MjEKytW8/sjLOiBUYW5nIFl1YW50
-aWFuLUIyOTk4MwqzrcvNOiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBtYXJrLnJ1dGxhbmRA
-YXJtLmNvbTsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnCtb3zOI6IFJlOiBbdjddIGNsazogY29yZW5ldDogQWRkcyB0aGUgY2xvY2sgYmlu
-ZGluZwoKT24gV2VkLCBOb3YgMjAsIDIwMTMgYXQgMDU6MDQ6NDlQTSArMDgwMCwgdGFuZyB5dWFu
-dGlhbiB3cm90ZToKPiArUmVjb21tZW5kZWQgcHJvcGVydGllczoKPiArLSByYW5nZXM6IEFsbG93
-cyB2YWxpZCB0cmFuc2xhdGlvbiBiZXR3ZWVuIGNoaWxkJ3MgYWRkcmVzcyBzcGFjZSBhbmQKPiAr
-ICAgICBwYXJlbnQncy4gTXVzdCBiZSBwcmVzZW50IGlmIHRoZSBkZXZpY2UgaGFzIHN1Yi1ub2Rl
-cy4KPiArLSAjYWRkcmVzcy1jZWxsczogU3BlY2lmaWVzIHRoZSBudW1iZXIgb2YgY2VsbHMgdXNl
-ZCB0byByZXByZXNlbnQKPiArICAgICBwaHlzaWNhbCBiYXNlIGFkZHJlc3Nlcy4gIE11c3QgYmUg
-cHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcwo+ICsgICAgIHN1Yi1ub2RlcyBhbmQgc2V0IHRvIDEg
-aWYgcHJlc2VudAo+ICstICNzaXplLWNlbGxzOiBTcGVjaWZpZXMgdGhlIG51bWJlciBvZiBjZWxs
-cyB1c2VkIHRvIHJlcHJlc2VudAo+ICsgICAgIHRoZSBzaXplIG9mIGFuIGFkZHJlc3MuIE11c3Qg
-YmUgcHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcwo+ICsgICAgIHN1Yi1ub2RlcyBhbmQgc2V0IHRv
-IDEgaWYgcHJlc2VudAoKV2h5IGFyZSB3ZSBzcGVjaWZ5aW5nICNhZGRyZXNzLWNlbGxzLyNzaXpl
-LWNlbGxzIGhlcmU/CgpBOiBpdCBoYXMgc3ViLW5vZGVzIHdoaWNoIGhhdmUgUkVHIHByb3BlcnR5
-LCBkb24ndCB3ZSBuZWVkIHRvIApzcGVjaWZ5ICNhZGRyZXNzLWNlbGxzLyNzaXplLWNlbGxzPwog
-Cj4gKzIuIENsb2NrIFByb3ZpZGVyL0NvbnN1bWVyIEJpbmRpbmcKPiArCj4gK01vc3Qgb2YgdGhl
-IGJpbmRpbmdzIGFyZSBmcm9tIHRoZSBjb21tb24gY2xvY2sgYmluZGluZ1sxXS4KPiArIFsxXSBE
-b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svY2xvY2stYmluZGluZ3MudHh0
-Cj4gKwo+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOgo+ICstIGNvbXBhdGlibGUgOiBTaG91bGQgaW5j
-bHVkZSBvbmUgb2YgdGhlIGZvbGxvd2luZzoKPiArICAgICAqICJmc2wscW9yaXEtY29yZS1wbGwt
-MS4wIiBmb3IgY29yZSBQTEwgY2xvY2tzICh2MS4wKQo+ICsgICAgKiAiZnNsLHFvcmlxLWNvcmUt
-cGxsLTIuMCIgZm9yIGNvcmUgUExMIGNsb2NrcyAodjIuMCkKPiArICAgICogImZzbCxxb3JpcS1j
-b3JlLW11eC0xLjAiIGZvciBjb3JlIG11eCBjbG9ja3MgKHYxLjApCj4gKyAgICAqICJmc2wscW9y
-aXEtY29yZS1tdXgtMi4wIiBmb3IgY29yZSBtdXggY2xvY2tzICh2Mi4wKQo+ICsgICAgICogImZz
-bCxxb3JpcS1zeXNjbGstMS4wIjogZm9yIGlucHV0IHN5c3RlbSBjbG9jayAodjEuMCkKPiArICAg
-ICAqICJmc2wscW9yaXEtc3lzY2xrLTIuMCI6IGZvciBpbnB1dCBzeXN0ZW0gY2xvY2sgKHYyLjAp
-CgpTb21lIG9mIHRob3NlIGxpbmVzIHVzZSB0YWJzIGFuZCBvdGhlcnMgc3BhY2VzIC0tIEkgY2Fu
-IGZpeCB3aGVuIGFwcGx5aW5nLgpBOiBzb3JyeSBmb3IgdGhpcyBhbmQgdGhhbmtzIGZvciBmaXhp
-bmcuCgpSZWdhcmRzLApZdWFudGlhbgoKLVNjb3R0Cg==
+On Wed, Jan 08, 2014 at 08:53:56AM +0000, Yuantian Tang wrote:
+> 
+> ________________________________________
+> 发件人: Wood Scott-B07421
+> 发送时间: 2014年1月8日 8:21
+> 收件人: Tang Yuantian-B29983
+> 抄送: galak@kernel.crashing.org; mark.rutland@arm.com; devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> 主题: Re: [v7] clk: corenet: Adds the clock binding
+> 
+> On Wed, Nov 20, 2013 at 05:04:49PM +0800, tang yuantian wrote:
+> > +Recommended properties:
+> > +- ranges: Allows valid translation between child's address space and
+> > +     parent's. Must be present if the device has sub-nodes.
+> > +- #address-cells: Specifies the number of cells used to represent
+> > +     physical base addresses.  Must be present if the device has
+> > +     sub-nodes and set to 1 if present
+> > +- #size-cells: Specifies the number of cells used to represent
+> > +     the size of an address. Must be present if the device has
+> > +     sub-nodes and set to 1 if present
+> 
+> Why are we specifying #address-cells/#size-cells here?
+> 
+> A: it has sub-nodes which have REG property, don't we need to 
+> specify #address-cells/#size-cells?
+
+If a node has a reg entry, its parent should have #size-cells and
+#address-cells to allow it to be parsed properly.
+
+Mark.
