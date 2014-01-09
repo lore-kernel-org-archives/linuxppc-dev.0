@@ -1,31 +1,24 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Minghuan.Lian@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 166C22C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 12:39:56 +1100 (EST)
-Received: by mail-pa0-f47.google.com with SMTP id kq14so2605120pab.34
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Jan 2014 17:39:54 -0800 (PST)
-Date: Thu, 9 Jan 2014 09:39:43 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [v3, 3/7] powerpc: enable the relocatable support for the fsl
- booke 32bit kernel
-Message-ID: <20140109013943.GA2811@pek-khao-d1.corp.ad.wrs.com>
-References: <1375838315-27797-4-git-send-email-haokexin@gmail.com>
- <20131218234825.GA6959@home.buserror.net>
- <20131220074339.GA23977@pek-khao-d1.corp.ad.wrs.com>
- <1388796549.11795.100.camel@snotra.buserror.net>
- <20140104063452.GA11548@pek-khao-d1.corp.ad.wrs.com>
- <1389138364.11795.205.camel@snotra.buserror.net>
- <20140108024235.GA20739@pek-khao-d1.corp.ad.wrs.com>
- <20140109000219.GA6884@home.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id 75CE72C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 13:21:43 +1100 (EST)
+Message-ID: <52CE07CB.9010005@freescale.com>
+Date: Thu, 9 Jan 2014 10:22:03 +0800
+From: Lian Minghuan-b31939 <b31939@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="X1bOJ3K7DJ5YkBrT"
-In-Reply-To: <20140109000219.GA6884@home.buserror.net>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>, Minghuan Lian
+ <Minghuan.Lian@freescale.com>
+Subject: Re: [PATCH 02/12][v4] pci: fsl: add structure fsl_pci
+References: <1389157323-3088-1-git-send-email-Minghuan.Lian@freescale.com>	
+ <1389157323-3088-2-git-send-email-Minghuan.Lian@freescale.com>
+ <1389218288.25654.26.camel@snotra.buserror.net>
+In-Reply-To: <1389218288.25654.26.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Zang Roy-R61911 <r61911@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,61 +28,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Scott,
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+please see my comments inline.
 
-On Wed, Jan 08, 2014 at 06:02:19PM -0600, Scott Wood wrote:
-> On Wed, Jan 08, 2014 at 10:42:35AM +0800, Kevin Hao wrote:
-> > On Tue, Jan 07, 2014 at 05:46:04PM -0600, Scott Wood wrote:
-> > > Oh.  I think it'd be more readable to do "offset =3D start -
-> > > memstart_addr" and add offset instead of subtracting it.
-> >=20
-> > Yes, I agree. The reason that I use "offset =3D memstart_addr - start" =
-is that
-> > it seems "memstart_addr" is always greater than "start" when we are boo=
-ting
-> > a kdump kernel with a kernel option like "crashkernel=3D64M@80M". :-)
-> >=20
-> > >=20
-> > > Also, offset should be phys_addr_t -- even if you don't expect to
-> > > support offsets greater than 4G on 32-bit, it's semantically the right
-> > > type to use.  Plus, "int" would break if this code were ever used with
-> > > 64-bit.
-> >=20
-> > I thought about using phy_addr_t for the "offset" originally but gave i=
-t up
-> > for the following reasons:
-> >   * It will not be greater than 4G.
-> >   * We have to use the ugly #ifdef CONFIG_PHYS_64BIT in restore_to_as0(=
-).
-> >   * Need more registers for arguments for restore_to_as0().
-> >=20
-> > Of course you can change it to phys_addr_t if you prefer.
->=20
-> Here's the diff I made when applying (also changed the subf in patch 9 to
-> add)
+On 01/09/2014 05:58 AM, Scott Wood wrote:
+> On Wed, 2014-01-08 at 13:01 +0800, Minghuan Lian wrote:
+>> PowerPC uses structure pci_controller to describe PCI controller,
+>> but ARM uses structure pci_sys_data. In order to support PowerPC
+>> and ARM simultaneously, the patch adds a structure fsl_pci that
+>> contains most of the members of the pci_controller and pci_sys_data.
+>> Meanwhile, it defines a interface fsl_arch_sys_to_pci() which should
+>> be implemented in architecture-specific PCI controller driver to
+>> convert pci_controller or pci_sys_data to fsl_pci.
+>>
+>> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+>> ---
+>> change log:
+>> v4:
+>> Added indirect type macro
+>> v1-v3:
+>> Derived from http://patchwork.ozlabs.org/patch/278965/
+>>
+>> Based on upstream master.
+>> Based on the discussion of RFC version here
+>> http://patchwork.ozlabs.org/patch/274487/
+>>
+>>   include/linux/fsl/pci-common.h | 48 ++++++++++++++++++++++++++++++++++++++++++
+>>   1 file changed, 48 insertions(+)
+> Same comments on this patchset as last time.
+[Minghuan] I added the duplicate fields because PPC's struct 
+pci_controller need them.
+The common PCI driver gets the related information and pass to PowerPC 
+driver.
+The most fileds are parsed from dts. the common driver need them to 
+initialize the ATMU
+and access the PCI configuration. If fsl_pci does not contains them, 
+PowerPC driver must parse
+parse dts or access controller to get the information again. The best 
+way is PowerPC and ARM can use
+the common pci_controller structure, but currently, it is very hard and 
+needs more effort. So I create fsl_pci
+that contains most of the members of the pci_controller and pci_sys_data.
 
-Looks fine to me. I also done a boot test and it works pretty well.
-Thanks Scott.
 
-Kevin
+please see the following code for PowerPC:
+int fsl_arch_pci_sys_register(struct fsl_pci *pci)
++{
++    struct pci_controller *hose;
 
---X1bOJ3K7DJ5YkBrT
-Content-Type: application/pgp-signature
++    hose = pcibios_alloc_controller(pci->dn);
++
++    hose->private_data = pci;
++    hose->parent = pci->dev;
++    hose->first_busno = pci->first_busno;
++    hose->last_busno = pci->last_busno;
++    hose->ops = pci->ops;
++
++    hose->io_base_virt = ioremap(pci->io_base_phys + 
+pci->io_resource.start,
++                     pci->pci_io_size);
++    hose->pci_io_size = pci->io_resource.start + pci->pci_io_size;
++    hose->io_base_phys = pci->io_base_phys;
++    hose->io_resource = pci->io_resource;
++
++    memcpy(hose->mem_offset, pci->mem_offset, sizeof(hose->mem_offset));
++    memcpy(hose->mem_resources, pci->mem_resources,
++        sizeof(hose->mem_resources));
++    hose->dma_window_base_cur = pci->dma_window_base_cur;
++    hose->dma_window_size = pci->dma_window_size;
++    pci->sys = hose;
++....
++    return 0;
++}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQEcBAEBAgAGBQJSzf3fAAoJEJNY7TDerrFxd70IAK5XD207/yPUcy44jDrviF31
-+RAGwv+16pV0T9ybodDjdLsdv5vJU+7UX9wPvQvZVzD5Ug9sDABaxPfnpZvGsV/G
-KEAfNXWmrOv8JhRlxnlbfKDvbD3F7Qhw07t+IrudBDXmHtg2ZS282zu9zNRTFGOd
-pVYq9P2zy4f9RctxIqumzsqBXiAIUYUxdhWzrch2buWnf8kgRj4sr+57NJj5GH1Y
-CS/4mW7gbZLZ/SYV7zKizJqIkvKW2E1jefjpQFVqXNNx/Y1FLKAOdFy9EkQv5cVF
-WpR4sWdwoaH7qyPy34HIWVWgQUEUqqYcz/YvCZWMpsdJ5YBhY1S/LcLSuf6mPGg=
-=QacR
------END PGP SIGNATURE-----
 
---X1bOJ3K7DJ5YkBrT--
+The following is for ARM, I will submit them after verification:
+
++
++static inline struct fsl_pcie *sys_to_pcie(struct pci_sys_data *sys)
++{
++    return sys->private_data;
++}
++
++static int fsl_pcie_setup(int nr, struct pci_sys_data *sys)
++{
++    struct fsl_pcie *pcie;
++
++    pcie = sys_to_pcie(sys);
++
++    if (!pcie)
++        return 0;
++
++    pcie->sys = sys;
++
++    sys->io_offset = pcie->io_base_phys;
++    pci_ioremap_io(sys->io_offset, pcie->io_resource.start);
++    pci_add_resource_offset(&sys->resources, &pcie->io_resource,
++                sys->io_offset);
++
++    sys->mem_offset = pcie->mem_offset;
++    pci_add_resource_offset(&sys->resources, &pcie->mem_resource,
++                sys->mem_offset);
++
++    return 1;
++}
++
++static struct pci_bus *
++fsl_pcie_scan_bus(int nr, struct pci_sys_data *sys)
++{
++    struct pci_bus *bus;
++    struct fsl_pcie *pcie = sys_to_pcie(sys);
++
++    bus = pci_create_root_bus(pcie->dev, sys->busnr,
++                  pcie->ops, sys, &sys->resources);
++    if (!bus)
++        return NULL;
++
++    pci_scan_child_bus(bus);
++
++    return bus;
++}
++
++static int fsl_pcie_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
++{
++    struct of_irq oirq;
++    int ret;
++
++    ret = of_irq_map_pci(dev, &oirq);
++    if (ret)
++        return ret;
++
++    return irq_create_of_mapping(oirq.controller, oirq.specifier,
++                     oirq.size);
++}
++
++static struct hw_pci fsl_hw_pcie = {
++    .ops        = &fsl_indirect_pci_ops;
++    .setup        = fsl_pcie_setup,
++    .scan        = fsl_pcie_scan_bus,
++    .map_irq    = fsl_pcie_map_irq,
++};
+
++static struct pci_bus *
++fake_pci_bus(struct fsl_pcie *pcie, int busnr)
++{
++    static struct pci_bus bus;
++    static struct pci_sys_data sys;
++
++    bus.number = busnr;
++    bus.sysdata = &sys;
++    sys.private_data = pcie;
++    bus.ops = pcie->ops;
++    return &bus;
++}
++
++static int fsl_pcie_register(struct fsl_pcie *pcie)
++{
++    pcie->controller = fsl_hw_pcie.nr_controllers;
++    fsl_hw_pcie.nr_controllers = 1;
++    fsl_hw_pcie.private_data = (void **)&pcie;
++
++    pci_common_init(&fsl_hw_pcie);
++    pci_assign_unassigned_resources();
++#ifdef CONFIG_PCI_DOMAINS
++    fsl_hw_pcie.domain++;
++#endif
++}
+>
+> -Scott
+>
+>
