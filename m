@@ -1,19 +1,26 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 246E52C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 07:33:50 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Subject: [PATCH] powerpc: fix 8xx and 6xx final link failures
-Date: Thu, 9 Jan 2014 15:33:35 -0500
-Message-ID: <1389299615-7152-1-git-send-email-paul.gortmaker@windriver.com>
+Return-Path: <sudeep.holla@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id D76A82C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 06:07:38 +1100 (EST)
+Message-ID: <52CEF37B.9010401@arm.com>
+Date: Thu, 09 Jan 2014 19:07:39 +0000
+From: Sudeep Holla <Sudeep.Holla@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH RFC 1/3] drivers: base: support cpu cache information
+ interface to userspace via sysfs
+References: <1389209168-17189-1-git-send-email-sudeep.holla@arm.com>
+ <1389209168-17189-2-git-send-email-sudeep.holla@arm.com>
+ <20140108202613.GD8417@kroah.com>
+In-Reply-To: <20140108202613.GD8417@kroah.com>
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Ashok Raj <ashok.raj@intel.com>, Rob Herring <robh@kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Sudeep.Holla@arm.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As of commit b81f18e55e9f4ea81759bcb00fea295de679bbe8 ("powerpc/boot:
-Only build board support files when required.") the two defconfigs
-ep88xc_defconfig and storcenter_defconfig would fail final link as
-follows:
+On 08/01/14 20:26, Greg Kroah-Hartman wrote:
+> On Wed, Jan 08, 2014 at 07:26:06PM +0000, Sudeep Holla wrote:
+>> From: Sudeep Holla <sudeep.holla@arm.com>
+>>
+>> This patch adds initial support for providing processor cache informatio=
+n
+>> to userspace through sysfs interface. This is based on x86 implementatio=
+n
+>> and hence the interface is intended to be fully compatible.
+>>
+>> A per-cpu array of cache information maintained is used mainly for
+>> sysfs-related book keeping.
+>>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> ---
+>>  drivers/base/Makefile     |   2 +-
+>>  drivers/base/cacheinfo.c  | 296 +++++++++++++++++++++++++++++++++++++++=
++++++++
+>>  include/linux/cacheinfo.h |  43 +++++++
+>>  3 files changed, 340 insertions(+), 1 deletion(-)
+>>  create mode 100644 drivers/base/cacheinfo.c
+>>  create mode 100644 include/linux/cacheinfo.h
+>=20
+> You are creating sysfs files, yet you didn't add Documentation/ABI/
+> information, which is required.  Please fix that.
+>=20
+Ah, I overlooked it. But I am not creating any new sysfs files in this seri=
+es.
+I am just trying to unify duplicated code in various architectures.
 
-  WRAP    arch/powerpc/boot/dtbImage.ep88xc
-arch/powerpc/boot/wrapper.a(mpc8xx.o): In function `mpc885_get_clock':
-arch/powerpc/boot/mpc8xx.c:30: undefined reference to `fsl_get_immr'
-make[1]: *** [arch/powerpc/boot/dtbImage.ep88xc] Error 1
+Since these sysfs files are already created in:
+1. arch/ia64/kernel/topology.c
+2. arch/powerpc/kernel/cacheinfo.c
+3. arch/s390/kernel/cache.c
+4. arch/x86/kernel/cpu/intel_cacheinfo.c and
+also already used by user-space tools like `lscpu` I assumed it's already
+documented.
 
- ...and...
+I will add it in next version.
 
-  WRAP    arch/powerpc/boot/cuImage.storcenter
-arch/powerpc/boot/cuboot-pq2.o: In function `pq2_platform_fixups':
-cuboot-pq2.c:(.text+0x324): undefined reference to `fsl_get_immr'
-make[1]: *** [arch/powerpc/boot/cuImage.storcenter] Error 1
-
-We need the fsl-soc board files built for these two platforms.
-
-Cc: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Fixes: b81f18e55e9f ("powerpc/boot: Only build board support files when required.")
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index ca7f08c..4676e55 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -71,9 +71,9 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
- 		uartlite.c mpc52xx-psc.c
- src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
--src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c
-+src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
- src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
--src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c
-+src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
- 
- src-plat-y := of.c epapr.c
- src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
--- 
-1.8.5.1
+Regards,
+Sudeep
