@@ -1,24 +1,23 @@
 Return-Path: <sudeep.holla@arm.com>
 Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 1709B2C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 06:18:57 +1100 (EST)
-Message-ID: <52CEF624.9020702@arm.com>
-Date: Thu, 09 Jan 2014 19:19:00 +0000
+ by ozlabs.org (Postfix) with ESMTP id 66ACE2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 06:34:58 +1100 (EST)
+Message-ID: <52CEF9E7.4070706@arm.com>
+Date: Thu, 09 Jan 2014 19:35:03 +0000
 From: Sudeep Holla <Sudeep.Holla@arm.com>
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH RFC 1/3] drivers: base: support cpu cache information
- interface to userspace via sysfs
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH RFC 2/3] ARM: kernel: add support for cpu cache information
 References: <1389209168-17189-1-git-send-email-sudeep.holla@arm.com>
- <1389209168-17189-2-git-send-email-sudeep.holla@arm.com>
- <20140108202707.GE8417@kroah.com>
-In-Reply-To: <20140108202707.GE8417@kroah.com>
+ <1389209168-17189-3-git-send-email-sudeep.holla@arm.com>
+ <20140108205754.GN27432@n2100.arm.linux.org.uk>
+In-Reply-To: <20140108205754.GN27432@n2100.arm.linux.org.uk>
 Content-Type: text/plain; charset=WINDOWS-1252
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  Ashok Raj <ashok.raj@intel.com>, Rob Herring <robh@kernel.org>,
  "x86@kernel.org" <x86@kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Sudeep.Holla@arm.com,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudeep.Holla@arm.com,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,115 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/01/14 20:27, Greg Kroah-Hartman wrote:
-> On Wed, Jan 08, 2014 at 07:26:06PM +0000, Sudeep Holla wrote:
->> From: Sudeep Holla <sudeep.holla@arm.com>
->>
->> This patch adds initial support for providing processor cache informatio=
-n
->> to userspace through sysfs interface. This is based on x86 implementatio=
-n
->> and hence the interface is intended to be fully compatible.
->>
->> A per-cpu array of cache information maintained is used mainly for
->> sysfs-related book keeping.
->>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  drivers/base/Makefile     |   2 +-
->>  drivers/base/cacheinfo.c  | 296 +++++++++++++++++++++++++++++++++++++++=
-+++++++
->>  include/linux/cacheinfo.h |  43 +++++++
->>  3 files changed, 340 insertions(+), 1 deletion(-)
->>  create mode 100644 drivers/base/cacheinfo.c
->>  create mode 100644 include/linux/cacheinfo.h
->>
->> diff --git a/drivers/base/Makefile b/drivers/base/Makefile
->> index 94e8a80..76f07c8 100644
->> --- a/drivers/base/Makefile
->> +++ b/drivers/base/Makefile
->> @@ -4,7 +4,7 @@ obj-y=09=09=09:=3D core.o bus.o dd.o syscore.o \
->>  =09=09=09   driver.o class.o platform.o \
->>  =09=09=09   cpu.o firmware.o init.o map.o devres.o \
->>  =09=09=09   attribute_container.o transport_class.o \
->> -=09=09=09   topology.o
->> +=09=09=09   topology.o cacheinfo.o
->>  obj-$(CONFIG_DEVTMPFS)=09+=3D devtmpfs.o
->>  obj-$(CONFIG_DMA_CMA) +=3D dma-contiguous.o
->>  obj-y=09=09=09+=3D power/
->> diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
->> new file mode 100644
->> index 0000000..f436c31
->> --- /dev/null
->> +++ b/drivers/base/cacheinfo.c
->> @@ -0,0 +1,296 @@
->> +/*
->> + * cacheinfo support - processor cache information via sysfs
->> + *
->> + * Copyright (C) 2013 ARM Ltd.
->> + * All Rights Reserved
->> + *
->> + * Author: Sudeep Holla <sudeep.holla@arm.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + *
->> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
->> + * kind, whether express or implied; without even the implied warranty
->> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + */
->> +#include <linux/bitops.h>
->> +#include <linux/cacheinfo.h>
->> +#include <linux/compiler.h>
->> +#include <linux/cpu.h>
->> +#include <linux/device.h>
->> +#include <linux/init.h>
->> +#include <linux/kobject.h>
->> +#include <linux/of.h>
->> +#include <linux/sched.h>
->> +#include <linux/slab.h>
->> +#include <linux/smp.h>
->> +#include <linux/sysfs.h>
+On 08/01/14 20:57, Russell King - ARM Linux wrote:
+> On Wed, Jan 08, 2014 at 07:26:07PM +0000, Sudeep Holla wrote:
+>> +#if __LINUX_ARM_ARCH__ < 7 /* pre ARMv7 */
 >> +
->> +struct cache_attr {
->> +=09struct attribute attr;
->> +=09 ssize_t(*show) (unsigned int, unsigned short, char *);
->> +=09 ssize_t(*store) (unsigned int, unsigned short, const char *, size_t=
-);
->> +};
+>> +#define MAX_CACHE_LEVEL=09=091=09/* Only 1 level supported */
+>> +#define CTR_CTYPE_SHIFT=09=0924
+>> +#define CTR_CTYPE_MASK=09=09(1 << CTR_CTYPE_SHIFT)
 >> +
->> +/* pointer to kobject for cpuX/cache */
->> +static DEFINE_PER_CPU(struct kobject *, ci_cache_kobject);
->> +#define per_cpu_cache_kobject(cpu)     (per_cpu(ci_cache_kobject, cpu))
+>> +static inline unsigned int get_ctr(void)
+>> +{
+>> +=09unsigned int ctr;
+>> +=09asm volatile ("mrc p15, 0, %0, c0, c0, 1" : "=3Dr" (ctr));
+>> +=09return ctr;
+>> +}
 >> +
->> +struct index_kobject {
->> +=09struct kobject kobj;
->> +=09unsigned int cpu;
->> +=09unsigned short index;
->> +};
->> +
->> +static cpumask_t cache_dev_map;
->> +
->> +/* pointer to array of kobjects for cpuX/cache/indexY */
+>> +static enum cache_type get_cache_type(int level)
+>> +{
+>> +=09if (level > MAX_CACHE_LEVEL)
+>> +=09=09return CACHE_TYPE_NOCACHE;
+>> +=09return get_ctr() & CTR_CTYPE_MASK ?
+>> +=09=09CACHE_TYPE_SEPARATE : CACHE_TYPE_UNIFIED;
 >=20
-> Please don't use "raw" kobjects for this, use the device attribute
-> groups, that's what they are there for.  Bonus is that your code should
-> get a lot simpler when you do that.
+> So, what do we do for CPUs that don't implement the CTR?  Just return
+> random rubbish based on decoding the CPU Identity register as if it
+> were the cache type register?
 >=20
 
-Yes I now understand device attribute group simplifies the code, but I thin=
-k
-kobjects are still needed as we need to track both cpu and cache index.
-By reusing only cpu device kobject, we can track cpu only.
-
-Please correct me if I am missing to understand something here.
-
-One thought I have is to make cache_info structure common to all architectu=
-re
-(for now its ARM specific) and introduce kobject in that similar to ia64
-implementation. That even eliminates lot of weak functions defined.
+I assume you referring to some particular CPUs which don't implement this.
+I could not find it as optional or IMPLEMENTATION defined in ARM ARM.
+I might be missing to find it or there may be exceptions.
+Can you please provide more information on that ?
 
 Regards,
 Sudeep
