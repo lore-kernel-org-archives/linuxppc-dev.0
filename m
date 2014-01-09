@@ -1,27 +1,28 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id DE31D2C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 06:47:43 +1100 (EST)
-Message-ID: <52CEFCE3.1040701@arm.com>
-Date: Thu, 09 Jan 2014 19:47:47 +0000
-From: Sudeep Holla <Sudeep.Holla@arm.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F3BD32C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 08:19:41 +1100 (EST)
+Message-ID: <1389302368.14390.33.camel@snotra.buserror.net>
+Subject: Re: =?UTF-8?Q?=E7=AD=94=E5=A4=8D=3A?= [v7] clk: corenet: Adds the
+ clock binding
+From: Scott Wood <scottwood@freescale.com>
+To: Tang Yuantian-B29983 <Yuantian.Tang@freescale.com>
+Date: Thu, 9 Jan 2014 15:19:28 -0600
+In-Reply-To: <e15511a79a9d4446a826da8d9ceec229@BL2PR03MB115.namprd03.prod.outlook.com>
+References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20140108002115.GA19801@home.buserror.net>
+ <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
+ <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
+ <1389206619.25654.9.camel@snotra.buserror.net>
+ <e15511a79a9d4446a826da8d9ceec229@BL2PR03MB115.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH RFC 1/3] drivers: base: support cpu cache information
- interface to userspace via sysfs
-References: <1389209168-17189-1-git-send-email-sudeep.holla@arm.com>
- <1389209168-17189-2-git-send-email-sudeep.holla@arm.com>
- <20140108202707.GE8417@kroah.com> <52CEF624.9020702@arm.com>
- <20140109193121.GA14991@kroah.com>
-In-Reply-To: <20140109193121.GA14991@kroah.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Ashok Raj <ashok.raj@intel.com>, Rob Herring <robh@kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Sudeep.Holla@arm.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,134 +32,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/01/14 19:31, Greg Kroah-Hartman wrote:
-> On Thu, Jan 09, 2014 at 07:19:00PM +0000, Sudeep Holla wrote:
->> On 08/01/14 20:27, Greg Kroah-Hartman wrote:
->>> On Wed, Jan 08, 2014 at 07:26:06PM +0000, Sudeep Holla wrote:
->>>> From: Sudeep Holla <sudeep.holla@arm.com>
->>>>
->>>> This patch adds initial support for providing processor cache informat=
-ion
->>>> to userspace through sysfs interface. This is based on x86 implementat=
-ion
->>>> and hence the interface is intended to be fully compatible.
->>>>
->>>> A per-cpu array of cache information maintained is used mainly for
->>>> sysfs-related book keeping.
->>>>
->>>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->>>> ---
->>>>  drivers/base/Makefile     |   2 +-
->>>>  drivers/base/cacheinfo.c  | 296 +++++++++++++++++++++++++++++++++++++=
-+++++++++
->>>>  include/linux/cacheinfo.h |  43 +++++++
->>>>  3 files changed, 340 insertions(+), 1 deletion(-)
->>>>  create mode 100644 drivers/base/cacheinfo.c
->>>>  create mode 100644 include/linux/cacheinfo.h
->>>>
->>>> diff --git a/drivers/base/Makefile b/drivers/base/Makefile
->>>> index 94e8a80..76f07c8 100644
->>>> --- a/drivers/base/Makefile
->>>> +++ b/drivers/base/Makefile
->>>> @@ -4,7 +4,7 @@ obj-y=09=09=09:=3D core.o bus.o dd.o syscore.o \
->>>>  =09=09=09   driver.o class.o platform.o \
->>>>  =09=09=09   cpu.o firmware.o init.o map.o devres.o \
->>>>  =09=09=09   attribute_container.o transport_class.o \
->>>> -=09=09=09   topology.o
->>>> +=09=09=09   topology.o cacheinfo.o
->>>>  obj-$(CONFIG_DEVTMPFS)=09+=3D devtmpfs.o
->>>>  obj-$(CONFIG_DMA_CMA) +=3D dma-contiguous.o
->>>>  obj-y=09=09=09+=3D power/
->>>> diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
->>>> new file mode 100644
->>>> index 0000000..f436c31
->>>> --- /dev/null
->>>> +++ b/drivers/base/cacheinfo.c
->>>> @@ -0,0 +1,296 @@
->>>> +/*
->>>> + * cacheinfo support - processor cache information via sysfs
->>>> + *
->>>> + * Copyright (C) 2013 ARM Ltd.
->>>> + * All Rights Reserved
->>>> + *
->>>> + * Author: Sudeep Holla <sudeep.holla@arm.com>
->>>> + *
->>>> + * This program is free software; you can redistribute it and/or modi=
-fy
->>>> + * it under the terms of the GNU General Public License version 2 as
->>>> + * published by the Free Software Foundation.
->>>> + *
->>>> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
->>>> + * kind, whether express or implied; without even the implied warrant=
-y
->>>> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->>>> + * GNU General Public License for more details.
->>>> + */
->>>> +#include <linux/bitops.h>
->>>> +#include <linux/cacheinfo.h>
->>>> +#include <linux/compiler.h>
->>>> +#include <linux/cpu.h>
->>>> +#include <linux/device.h>
->>>> +#include <linux/init.h>
->>>> +#include <linux/kobject.h>
->>>> +#include <linux/of.h>
->>>> +#include <linux/sched.h>
->>>> +#include <linux/slab.h>
->>>> +#include <linux/smp.h>
->>>> +#include <linux/sysfs.h>
->>>> +
->>>> +struct cache_attr {
->>>> +=09struct attribute attr;
->>>> +=09 ssize_t(*show) (unsigned int, unsigned short, char *);
->>>> +=09 ssize_t(*store) (unsigned int, unsigned short, const char *, size=
-_t);
->>>> +};
->>>> +
->>>> +/* pointer to kobject for cpuX/cache */
->>>> +static DEFINE_PER_CPU(struct kobject *, ci_cache_kobject);
->>>> +#define per_cpu_cache_kobject(cpu)     (per_cpu(ci_cache_kobject, cpu=
-))
->>>> +
->>>> +struct index_kobject {
->>>> +=09struct kobject kobj;
->>>> +=09unsigned int cpu;
->>>> +=09unsigned short index;
->>>> +};
->>>> +
->>>> +static cpumask_t cache_dev_map;
->>>> +
->>>> +/* pointer to array of kobjects for cpuX/cache/indexY */
->>>
->>> Please don't use "raw" kobjects for this, use the device attribute
->>> groups, that's what they are there for.  Bonus is that your code should
->>> get a lot simpler when you do that.
->>>
->>
->> Yes I now understand device attribute group simplifies the code, but I t=
-hink
->> kobjects are still needed as we need to track both cpu and cache index.
->> By reusing only cpu device kobject, we can track cpu only.
->=20
-> I don't understand, you are putting things under the cpu device object,
-> why do you care about a "cache" kobject?
->=20
-Yes though the cache attributes are under cpu objects, it's hierarchical
-something like:
-/sys/devices/system/cpu/cpu<n>/cache/index<m>/<attribute_x>
-<attribute_x> is unique for each pair of (cpu<n>, index<m>
-index is more like cache level, but with 2 indices if they are separate(I$,=
-D$)
+On Wed, 2014-01-08 at 20:57 -0600, Tang Yuantian-B29983 wrote:
+> Thanks for you review.
+> See my response inline.
+> 
+> Thanks,
+> Yuantian
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: 2014年1月9日 星期四 2:44
+> > To: Mark Rutland
+> > Cc: Tang Yuantian-B29983; galak@kernel.crashing.org;
+> > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: 答复: [v7] clk: corenet: Adds the clock binding
+> > 
+> > On Wed, 2014-01-08 at 09:30 +0000, Mark Rutland wrote:
+> > > On Wed, Jan 08, 2014 at 08:53:56AM +0000, Yuantian Tang wrote:
+> > > >
+> > > > ________________________________________
+> > > > 发件人: Wood Scott-B07421
+> > > > 发送时间: 2014年1月8日 8:21
+> > > > 收件人: Tang Yuantian-B29983
+> > > > 抄送: galak@kernel.crashing.org; mark.rutland@arm.com;
+> > > > devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > > > 主题: Re: [v7] clk: corenet: Adds the clock binding
+> > > >
+> > > > On Wed, Nov 20, 2013 at 05:04:49PM +0800, tang yuantian wrote:
+> > > > > +Recommended properties:
+> > > > > +- ranges: Allows valid translation between child's address space
+> > and
+> > > > > +     parent's. Must be present if the device has sub-nodes.
+> > > > > +- #address-cells: Specifies the number of cells used to represent
+> > > > > +     physical base addresses.  Must be present if the device has
+> > > > > +     sub-nodes and set to 1 if present
+> > > > > +- #size-cells: Specifies the number of cells used to represent
+> > > > > +     the size of an address. Must be present if the device has
+> > > > > +     sub-nodes and set to 1 if present
+> > > >
+> > > > Why are we specifying #address-cells/#size-cells here?
+> > > >
+> > > > A: it has sub-nodes which have REG property, don't we need to
+> > > > specify #address-cells/#size-cells?
+> > >
+> > > If a node has a reg entry, its parent should have #size-cells and
+> > > #address-cells to allow it to be parsed properly.
+> > 
+> > Yes, but why do we need to specify in this binding how many cells there
+> > will be, especially since this binding only addresses the clock provider
+> > aspect of the clockgen nodes (e.g. it doesn't describe the reg)?  Or
+> > rather, it's partially describing the non-clock aspect, and doesn't
+> > address the clock aspect at all AFAICT.
+> > 
+> First of all, they are not "Required properties", they are optional.
+> If present, we should give them a value of 1.
 
->> One thought I have is to make cache_info structure common to all archite=
-cture
->> (for now its ARM specific) and introduce kobject in that similar to ia64
->> implementation. That even eliminates lot of weak functions defined.
->=20
-> Please don't use raw kobjects if at all possible, it's not good for a
-> variety of reasons (no userspace events, have to roll your own code,
-> etc.)
->=20
-Yes I understand, will try to explore other feasible solutions.
+Why does it matter, so long as the values translate properly?  It's not
+as if you're defining a special reg format.  It's not that big of a
+deal, but it seems unnecessary.
 
-Regards,
-Sudeep
+> Then, yes, this binding describes clockgen node which is "CLOCK BLOCK".
+
+Sorry, I missed where "reg" was documented due to the
+required/recommended split.
+
+> > Where does the actual input clock frequency go?  U-Boot puts it in the
+> > clockgen node itself as clock-frequency, but that isn't described in the
+> > binding.  How does that relate to the sysclk node?  If "fsl,qoriq-sysclk-
+> > 1.0" is supposed to indicate that clock-frequency can be found in the
+> > parent node, that isn't specified by the binding, nor is clock-frequency
+> > shown in the example.
+> > 
+> clock-frequency is a wired property.
+
+Do you mean "weird"?
+
+> It is in clockgen node right now.
+> But it should be placed somewhere in clock nodes.
+
+If we were doing this from scratch, yes, but there's existing U-Boot
+code that we want to be compatible with.
+
+> If I describe here, I would be asked why it is related to clockgen node?
+
+That's not a good reason to leave it undocumented.
+
+> > What is the difference between "fsl,qoriq-sysclk-1.0" and "fsl,qoriq-
+> > sysclk-2.0"?  How does the concept of a fixed input clock change?
+> >
+> Technically, there is no difference between *sysclk-1.0 and *-2.0, just like
+> Clockgen-2.0 and 1.0. Naming like this just to indicate they belong to chassis 2.0 
+> and 1.0 respectively.
+
+I guess it's OK if it encourages people to consider switching to the
+standard fixed-clock for future chassis.
+
+So the only thing that really needs to be fixed is the missing
+clock-frequency documentation.
+
+-Scott
