@@ -1,19 +1,22 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EFE6D2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 02:01:17 +1100 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH] KVM: PPC: e500: Fix bad address type in deliver_tlb_misss()
-Date: Thu, 9 Jan 2014 17:01:05 +0200
-Message-ID: <1389279665-20970-1-git-send-email-mihai.caraman@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 57FD72C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 02:29:47 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+Subject: Re: [PATCH] KVM: PPC: e500: Fix bad address type in
+ deliver_tlb_misss()
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1389279665-20970-1-git-send-email-mihai.caraman@freescale.com>
+Date: Thu, 9 Jan 2014 16:29:40 +0100
+Message-Id: <CB855D47-5AC0-4D70-9449-1D6A95E30102@suse.de>
+References: <1389279665-20970-1-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,25 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use gva_t instead of unsigned int for eaddr in deliver_tlb_miss().
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/kvm/e500_mmu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On 09.01.2014, at 16:01, Mihai Caraman <mihai.caraman@freescale.com> wrote:
 
-diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
-index ebca6b8..50860e9 100644
---- a/arch/powerpc/kvm/e500_mmu.c
-+++ b/arch/powerpc/kvm/e500_mmu.c
-@@ -127,7 +127,7 @@ static int kvmppc_e500_tlb_index(struct kvmppc_vcpu_e500 *vcpu_e500,
- }
- 
- static inline void kvmppc_e500_deliver_tlb_miss(struct kvm_vcpu *vcpu,
--		unsigned int eaddr, int as)
-+		gva_t eaddr, int as)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
- 	unsigned int victim, tsized;
--- 
-1.7.3.4
+> Use gva_t instead of unsigned int for eaddr in deliver_tlb_miss().
+> 
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+
+Thanks, applied to kvm-ppc-queue.
+
+
+Alex
