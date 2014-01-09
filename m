@@ -1,28 +1,19 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-vb0-x230.google.com (mail-vb0-x230.google.com
- [IPv6:2607:f8b0:400c:c02::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1EAFF2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 21:41:01 +1100 (EST)
-Received: by mail-vb0-f48.google.com with SMTP id q16so273587vbe.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jan 2014 02:40:58 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id D7B3D2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 21:42:36 +1100 (EST)
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: <broonie@kernel.org>, <timur@tabi.org>
+Subject: [PATCH v2] ASoC: fsl_ssi: Set default slot number for common cases
+Date: Thu, 9 Jan 2014 18:42:48 +0800
+Message-ID: <1389264168-13379-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20140109103453.GC14809@MrMyself>
-References: <1389260514-11365-1-git-send-email-Guangyu.Chen@freescale.com>
- <CAOMZO5C8hGYehqJ6WFUKye8wENuAejT-YXggeYy7V+DQ2_OMHg@mail.gmail.com>
- <20140109103453.GC14809@MrMyself>
-Date: Thu, 9 Jan 2014 08:40:58 -0200
-Message-ID: <CAOMZO5DTbZXE3zzWoVyuM98HcbRNqMOjfK_1VW7=hAKVijtMKQ@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_ssi: Set default slot number for
- common cases
-From: Fabio Estevam <festevam@gmail.com>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, tiwai@suse.de, linuxppc-dev@lists.ozlabs.org,
+ lgirdwood@gmail.com, perex@perex.cz, festevam@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,18 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 9, 2014 at 8:34 AM, Nicolin Chen <Guangyu.Chen@freescale.com> wrote:
+For those platforms using DAI master mode like I2S, it's better to pre-set
+a default slot number so that there's no need for these common cases to set
+the slot number from its machine driver any more.
 
-> Is this for the initial line? The CodingStyle contains two types of multi-line
+Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+---
 
-Yes, correct.
+Changelog
+v2:
+ * Correct coding style for multi-line comment.
 
-> comment, one of which drops the initial line just like mine, even though it's
-> saying 'For files in net/ and drivers/net/ the preferred style', so I thought
-> it shouldn't be quite bother.
+ sound/soc/fsl/fsl_ssi.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-Yes, net and drivers/net are different and checkpatch reports it accordingly.
-
-Regards,
-
-Fabio Estevam
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 94dedcb..aad2a1f 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -711,6 +711,17 @@ static int fsl_ssi_setup(struct fsl_ssi_private *ssi_private)
+ 	if (ssi_private->imx_ac97)
+ 		fsl_ssi_setup_ac97(ssi_private);
+ 
++	/*
++	 * Set a default slot number so that there is no need for those common
++	 * cases like I2S mode to call the extra set_tdm_slot() any more.
++	 */
++	if (!ssi_private->imx_ac97) {
++		write_ssi_mask(&ssi->stccr, CCSR_SSI_SxCCR_DC_MASK,
++				CCSR_SSI_SxCCR_DC(2));
++		write_ssi_mask(&ssi->srccr, CCSR_SSI_SxCCR_DC_MASK,
++				CCSR_SSI_SxCCR_DC(2));
++	}
++
+ 	return 0;
+ }
+ 
+-- 
+1.8.4
