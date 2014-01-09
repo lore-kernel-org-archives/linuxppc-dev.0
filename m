@@ -1,21 +1,18 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEMRELSE7Q.lge.com (LGEMRELSE7Q.lge.com [156.147.1.151])
- by ozlabs.org (Postfix) with ESMTP id 2CC952C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 11:19:50 +1100 (EST)
-Date: Thu, 9 Jan 2014 09:20:00 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-Message-ID: <20140109002000.GB15738@lge.com>
-References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
- <52cbce84.aa71b60a.537c.ffffd9efSMTPIN_ADDED_BROKEN@mx.google.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0153.outbound.protection.outlook.com [207.46.163.153])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 03F152C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 12:32:59 +1100 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v4 1/3] powerpc: add barrier after writing kernel PTE
+Date: Wed, 8 Jan 2014 19:32:41 -0600
+Message-ID: <1389231163-11175-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52cbce84.aa71b60a.537c.ffffd9efSMTPIN_ADDED_BROKEN@mx.google.com>
-Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
- linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
- mpm@selenic.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,80 +22,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 07, 2014 at 05:52:31PM +0800, Wanpeng Li wrote:
-> On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
-> >On Tue, Jan 07, 2014 at 01:21:00PM +1100, Anton Blanchard wrote:
+There is no barrier between something like ioremap() writing to
+a PTE, and returning the value to a caller that may then store the
+pointer in a place that is visible to other CPUs.  Such callers
+generally don't perform barriers of their own.
 
-> >> Index: b/mm/slub.c
-> >> ===================================================================
-> >> --- a/mm/slub.c
-> >> +++ b/mm/slub.c
-> >> @@ -2278,10 +2278,17 @@ redo:
-> >>  
-> >>  	if (unlikely(!node_match(page, node))) {
-> >>  		stat(s, ALLOC_NODE_MISMATCH);
-> >> -		deactivate_slab(s, page, c->freelist);
-> >> -		c->page = NULL;
-> >> -		c->freelist = NULL;
-> >> -		goto new_slab;
-> >> +
-> >> +		/*
-> >> +		 * If the node contains no memory there is no point in trying
-> >> +		 * to allocate a new node local slab
-> >> +		 */
-> >> +		if (node_spanned_pages(node)) {
-> >> +			deactivate_slab(s, page, c->freelist);
-> >> +			c->page = NULL;
-> >> +			c->freelist = NULL;
-> >> +			goto new_slab;
-> >> +		}
-> >>  	}
-> >>  
-> >>  	/*
-> >
-> >Hello,
-> >
-> >I think that we need more efforts to solve unbalanced node problem.
-> >
-> >With this patch, even if node of current cpu slab is not favorable to
-> >unbalanced node, allocation would proceed and we would get the unintended memory.
-> >
-> >And there is one more problem. Even if we have some partial slabs on
-> >compatible node, we would allocate new slab, because get_partial() cannot handle
-> >this unbalance node case.
-> >
-> >To fix this correctly, how about following patch?
-> >
-> >Thanks.
-> >
-> >------------->8--------------------
-> >diff --git a/mm/slub.c b/mm/slub.c
-> >index c3eb3d3..a1f6dfa 100644
-> >--- a/mm/slub.c
-> >+++ b/mm/slub.c
-> >@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
-> > {
-> >        void *object;
-> >        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
-> >+       struct zonelist *zonelist;
-> >+       struct zoneref *z;
-> >+       struct zone *zone;
-> >+       enum zone_type high_zoneidx = gfp_zone(flags);
-> >
-> >+       if (!node_present_pages(searchnode)) {
-> >+               zonelist = node_zonelist(searchnode, flags);
-> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
-> >+                       searchnode = zone_to_nid(zone);
-> >+                       if (node_present_pages(searchnode))
-> >+                               break;
-> >+               }
-> >+       }
-> 
-> Why change searchnode instead of depending on fallback zones/nodes in 
-> get_any_partial() to allocate partial slabs?
-> 
+Even if callers of ioremap() and similar things did use barriers,
+the most logical choise would be smp_wmb(), which is not
+architecturally sufficient when BookE hardware tablewalk is used.  A
+full sync is specified by the architecture.
 
-If node != NUMA_NO_NODE, get_any_partial() isn't called.
-That's why I change searchnode here instead of get_any_partial().
+For userspace mappings, OTOH, we generally already have an lwsync due
+to locking, and if we occasionally take a spurious fault due to not
+having a full sync with hardware tablewalk, it will not be fatal
+because we will retry rather than oops.
 
-Thanks.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+v4: no change
+
+ arch/powerpc/mm/pgtable_32.c |  1 +
+ arch/powerpc/mm/pgtable_64.c | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
+
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 5b96017..343a87f 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -299,6 +299,7 @@ int map_page(unsigned long va, phys_addr_t pa, int flags)
+ 		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT,
+ 						     __pgprot(flags)));
+ 	}
++	smp_wmb();
+ 	return err;
+ }
+ 
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 02e8681..7551382 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -153,6 +153,18 @@ int map_kernel_page(unsigned long ea, unsigned long pa, int flags)
+ 		}
+ #endif /* !CONFIG_PPC_MMU_NOHASH */
+ 	}
++
++#ifdef CONFIG_PPC_BOOK3E_64
++	/*
++	 * With hardware tablewalk, a sync is needed to ensure that
++	 * subsequent accesses see the PTE we just wrote.  Unlike userspace
++	 * mappings, we can't tolerate spurious faults, so make sure
++	 * the new PTE will be seen the first time.
++	 */
++	mb();
++#else
++	smp_wmb();
++#endif
+ 	return 0;
+ }
+ 
+-- 
+1.8.3.2
