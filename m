@@ -1,29 +1,19 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1E3352C0078
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 07:08:21 +1100 (EST)
-Date: Thu, 9 Jan 2014 20:08:01 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Sudeep Holla <Sudeep.Holla@arm.com>
-Subject: Re: [PATCH RFC 2/3] ARM: kernel: add support for cpu cache information
-Message-ID: <20140109200801.GF27432@n2100.arm.linux.org.uk>
-References: <1389209168-17189-1-git-send-email-sudeep.holla@arm.com>
- <1389209168-17189-3-git-send-email-sudeep.holla@arm.com>
- <20140108205754.GN27432@n2100.arm.linux.org.uk> <52CEF9E7.4070706@arm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 246E52C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 07:33:50 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Subject: [PATCH] powerpc: fix 8xx and 6xx final link failures
+Date: Thu, 9 Jan 2014 15:33:35 -0500
+Message-ID: <1389299615-7152-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52CEF9E7.4070706@arm.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Ashok Raj <ashok.raj@intel.com>, Rob Herring <robh@kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 09, 2014 at 07:35:03PM +0000, Sudeep Holla wrote:
-> I assume you referring to some particular CPUs which don't implement this.
-> I could not find it as optional or IMPLEMENTATION defined in ARM ARM.
-> I might be missing to find it or there may be exceptions.
-> Can you please provide more information on that ?
+As of commit b81f18e55e9f4ea81759bcb00fea295de679bbe8 ("powerpc/boot:
+Only build board support files when required.") the two defconfigs
+ep88xc_defconfig and storcenter_defconfig would fail final link as
+follows:
 
-This is where _not_ relying on the most up to date ARM architecture
-reference manual, but instead referring back to the ARM architecture
-manual revision appropriate to the architecture is a far better plan.
+  WRAP    arch/powerpc/boot/dtbImage.ep88xc
+arch/powerpc/boot/wrapper.a(mpc8xx.o): In function `mpc885_get_clock':
+arch/powerpc/boot/mpc8xx.c:30: undefined reference to `fsl_get_immr'
+make[1]: *** [arch/powerpc/boot/dtbImage.ep88xc] Error 1
 
-For example, DDI0100E, Part B, 2.3.2:
+ ...and...
 
-| 2.3.2 Cache Type register
-| If present, the Cache Type register supplies the following details about
-| the cache:
+  WRAP    arch/powerpc/boot/cuImage.storcenter
+arch/powerpc/boot/cuboot-pq2.o: In function `pq2_platform_fixups':
+cuboot-pq2.c:(.text+0x324): undefined reference to `fsl_get_immr'
+make[1]: *** [arch/powerpc/boot/cuImage.storcenter] Error 1
 
-Note the "if present" - it's a fact that not all ARMv4 CPUs support this
-register.  2.3 also tells you how to detect when these registers are
-implemented:
+We need the fsl-soc board files built for these two platforms.
 
-| ID registers other than the main ID register are defined so that when
-| implemented, their value cannot be equal to that of the main ID register.
-| Software can therefore determine whether they exist by reading both
-| the main ID register and the desired register and comparing their values.
-| If the two values are not equal, the desired register exists.
+Cc: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Fixes: b81f18e55e9f ("powerpc/boot: Only build board support files when required.")
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-I can go back further to one of the initial revisions of the ARM ARM,
-but that's a paper copy.
-
-I can also refer you to DDI0087E (ARM720T) section 4.3 - this is an
-ARMv4T CPU, and it has no cache type register.  StrongARM is another
-example where the CTR is not implemented.
-
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index ca7f08c..4676e55 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -71,9 +71,9 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
+ 		uartlite.c mpc52xx-psc.c
+ src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
+ src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
+-src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c
++src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c fsl-soc.c
+ src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
+-src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c
++src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c fsl-soc.c
+ 
+ src-plat-y := of.c epapr.c
+ src-plat-$(CONFIG_40x) += fixed-head.S ep405.c cuboot-hotfoot.c \
 -- 
-FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
-in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
-Estimate before purchase was "up to 13.2Mbit".
+1.8.5.1
