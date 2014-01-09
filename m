@@ -1,25 +1,23 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id 3C7732C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 23:20:49 +1100 (EST)
-Date: Thu, 9 Jan 2014 16:49:57 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH RFC v6 4/5] dma: mpc512x: register for device tree
- channel lookup
-Message-ID: <20140109111957.GE16227@intel.com>
-References: <1387886789-20249-1-git-send-email-a13xp0p0v88@gmail.com>
- <1387886789-20249-5-git-send-email-a13xp0p0v88@gmail.com>
- <20131226124828.GK8064@book.gsilab.sittig.org>
- <CAF0T0X7wotm60Bq4tfYcRhkDwiCw2hh5R5m2WmVLmLGLZYpQsQ@mail.gmail.com>
- <20140108164719.GO20094@book.gsilab.sittig.org>
+Return-Path: <weiyj.lk@gmail.com>
+Received: from mail-bk0-x22f.google.com (mail-bk0-x22f.google.com
+ [IPv6:2a00:1450:4008:c01::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8227A2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 01:27:36 +1100 (EST)
+Received: by mail-bk0-f47.google.com with SMTP id mx12so1147934bkb.34
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Jan 2014 06:27:31 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140108164719.GO20094@book.gsilab.sittig.org>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Alexander Popov <a13xp0p0v88@gmail.com>, dmaengine@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+Date: Thu, 9 Jan 2014 22:27:31 +0800
+Message-ID: <CAPgLHd-wvDcOz1Ne69g3o4b=VS7jaPU5Gu4DBMq_tBCsY0xcew@mail.gmail.com>
+Subject: [PATCH -next] ASoC: fsl-ssi: Add missing clk_disable_unprepare() on
+ error in fsl_ssi_probe()
+From: Wei Yongjun <weiyj.lk@gmail.com>
+To: timur@tabi.org, lgirdwood@gmail.com, broonie@kernel.org, perex@perex.cz,
+ tiwai@suse.de, grant.likely@linaro.org, robh+dt@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
+ alsa-devel@alsa-project.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,160 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 08, 2014 at 05:47:19PM +0100, Gerhard Sittig wrote:
-> [ dropping devicetree from the Cc: list ]
-> 
-> [ what is the semantics of DMA_PRIVATE capability flag?
->   is documentation available beyond the initial commit message?
->   need individual channels be handled instead of controllers? ]
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-The DMA_PRIVATE means that your channels are not to be used for global memcpy,
-as one can do in async cases (this is hwere DMAengine came into existence)
+Add the missing clk_disable_unprepare() before return from
+fsl_ssi_probe() in the request irq error handling case.
 
-If the device has the capablity of doing genric memcpy then it should not set
-this. For slave dma usage the dam channel can transfer data to a specfic
-slave device(s), hence we should use this is geric fashion so setting
-DMA_PRIVATE makes sense in those cases.
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+---
+ sound/soc/fsl/fsl_ssi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> 
-> On Sat, Jan 04, 2014 at 00:54 +0400, Alexander Popov wrote:
-> > 
-> > Hello Gerhard.
-> > Thanks for your review.
-> > 
-> > 2013/12/26 Gerhard Sittig <gsi@denx.de>:
-> > > [ dropping devicetree, we're DMA specific here ]
-> > >
-> > > On Tue, Dec 24, 2013 at 16:06 +0400, Alexander Popov wrote:
-> > >>
-> > >> --- a/drivers/dma/mpc512x_dma.c
-> > >> +++ b/drivers/dma/mpc512x_dma.c
-> > >> [ ... ]
-> > >> @@ -950,6 +951,7 @@ static int mpc_dma_probe(struct platform_device *op)
-> > >>       INIT_LIST_HEAD(&dma->channels);
-> > >>       dma_cap_set(DMA_MEMCPY, dma->cap_mask);
-> > >>       dma_cap_set(DMA_SLAVE, dma->cap_mask);
-> > >> +     dma_cap_set(DMA_PRIVATE, dma->cap_mask);
-> > >>
-> > >>       for (i = 0; i < dma->chancnt; i++) {
-> > >>               mchan = &mdma->channels[i];
-> > >
-> > > What are the implications of this?  Is a comment due?
-> > 
-> > I've involved DMA_PRIVATE flag because new of_dma_xlate_by_chan_id()
-> > uses dma_get_slave_channel() instead of dma_request_channel()
-> > (PATCH RFC v6 3/5). This flag is implicitly set in dma_request_channel(),
-> > but is not set in dma_get_slave_channel().
-Which makes me thing you are targetting slave usages. Do you intend to use for
-mempcy too on all controllers you support. in that case you should set it
-selectively.
-
-> > There are only two places in the mainline kernel, where
-> > dma_get_slave_channel() is used. I've picked up the idea
-> > at one of these places. Please look at this patch:
-> > http://www.spinics.net/lists/arm-kernel/msg268718.html
-> 
-> I agree that the change looks simple, and there is no doubt that
-> other drivers apply the flag.  None of this I questioned.  Yet
-> I'm afraid that the implications are rather huge.
-> 
-> Unless I miss something, I'd happily learn where I'm wrong.
-> 
-> > > I haven't found documentation about the DMA_PRIVATE flag, only
-> > > saw commit 59b5ec21446b9 "dmaengine: introduce
-> > > dma_request_channel and private channels".
-> > 
-> > Unfortunately I didn't find any description of DMA_PRIVATE flag too.
-> > But the comment at the beginning of drivers/dma/dmaengine.c
-> > may give a clue. Quotation:
-> >   * subsystem can get access to a channel by calling dmaengine_get() followed
-> >   * by dma_find_channel(), or if it has need for an exclusive channel
-> > it can call
-> >   * dma_request_channel().  Once a channel is allocated a reference is taken
-> >   * against its corresponding driver to disable removal.
-> > 
-> > DMA_PRIVATE capability flag might indicate that the DMA controller
-> > can provide exclusive channels to its clients. Please correct me if I'm wrong.
-> > 
-> > > Alex, unless I'm
-> > > missing something this one-line change is quite a change in
-> > > semantics, and has dramatic influence on the code's behaviour
-> > > (ignores the DMA controller when looking for channels that can do
-> > > mem-to-mem transfers)
-> > 
-> > Excuse me, Gerhard, I don't see what you mean.
-> > Could you point to the corresponding code?
-> 
-> You did see `git show 59b5ec21446b9`, didn't you?  The commit
-> message strongly suggests that DMA_PRIVATE applies to the whole
-> DMA controller and excludes _all_ of its channels from the
-> general purpose allocator which mem-to-mem transfers appear to be
-> using.  It's not just a hint, but an active decision to reject
-> requests.
-> 
-> Not only checking code references, but doing a text search,
-> reveals one more comment on the DMA_PRIVATE flag in a crypto
-> related document, which supports my interpretation:
-> Documentation/crypto/async-tx-api.txt:203
-> 
-> 
-> Can somebody ACK or NAK my interpretation?  Dan, you committed
-> this change which introduced the DMA_PRIVATE logic.  What was the
-> motivation for it, or the goal to achieve?  Do other platforms
-> have several dedicated DMA controllers, some for peripherals and
-> some for memory transfers?  Should the "private" flag apply to
-> channels and not whole controllers?  Am I over-estimating the
-> benefit or importance of DMA supported memory transfers?
-
-The DMA_PRIVATE flag is more on how the channel is allocated and will it be used
-by generic allocator or not. You cna still use mecpy ops for a controller with
-DMA_PRIVATE flag if the controller supports.
-> 
-> 
-> Still I see a difference in the lookup approaches:  Yours applies
-> DMA_PRIVATE globally and in advance, preventing _any_ use of DMA
-> for memory transfers.  While the __dma_request_channel() routine
-> only applies it _temporarily_ around a dma_chan_get() operation.
-> Allowing for use of DMA channels by both individual peripherals
-> as well as memory transfers.
-> 
-No it doesnt prevent. You can still use it for memcpy once you have the channel.
-
---
-~Vinod
-> 
-> > > Consider the fact that this driver
-> > > handles both MPC5121 as well as MPC8308 hardware.
-> > 
-> > Ah, yes, sorry. I should certainly fix this, if setting of DMA_PRIVATE flag
-> > is needed at all.
-> 
-> What I meant here is that implications for all affected platforms
-> should be considered.  There is one driver source, but the driver
-> applies to more than one platform (another issue of the driver is
-> that this is not apparent from the doc nor the compat strings).
-> 
-> MPC512x has one (GP) DMA controller, of which one channel is
-> dedicated to DDR, and all other channels can get used for memory
-> transfers as well.  In addition to most channels being connected
-> to a specific peripheral for flow control.  Which your patch set
-> introduces initial support for.
-> 
-> MPC8308 has _all_ channels for memory transfers exclusively (or
-> at least none of its channels supports flow control).
-> 
-> So blocking memory transfers in mpc512x_dma.c is a total breakage
-> for MPC8308 (removes the only previous feature and adds nothing),
-> and is a regression for MPC512x (removes the previously supported
-> memory transfers, while it may add peripheral supports with very
-> few users).
-> 
-> 
-> virtually yours
-> Gerhard Sittig
-> -- 
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-> Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-
--- 
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index e18b4b3..4c6818d 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -1464,7 +1464,7 @@ static int fsl_ssi_probe(struct platform_device *pdev)
+ 		if (ret < 0) {
+ 			dev_err(&pdev->dev, "could not claim irq %u\n",
+ 					ssi_private->irq);
+-			goto error_irqmap;
++			goto error_clk;
+ 		}
+ 	}
+ 
