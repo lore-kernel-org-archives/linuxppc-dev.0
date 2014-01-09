@@ -1,21 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0153.outbound.protection.outlook.com [207.46.163.153])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 946442C0212
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 12:33:02 +1100 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 3/3] powerpc/fsl-book3e-64: Use paca for hugetlb TLB1 entry
- selection
-Date: Wed, 8 Jan 2014 19:32:43 -0600
-Message-ID: <1389231163-11175-3-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1389231163-11175-1-git-send-email-scottwood@freescale.com>
-References: <1389231163-11175-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8BF042C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 12:36:42 +1100 (EST)
+Message-ID: <1389231387.4672.50.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Fix alignment of secondary cpu spin vars
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+Date: Thu, 09 Jan 2014 12:36:27 +1100
+In-Reply-To: <20140108174828.GA16830@quad.lixom.net>
+References: <1388264507-5100-1-git-send-email-olof@lixom.net>
+ <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
+ <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
+ <20140103081219.GA10233@quad.lixom.net> <1389154189.2076.5.camel@concordia>
+ <1389154706.4672.21.camel@pasglop> <20140108174828.GA16830@quad.lixom.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>, chzigotzky@xenosoft.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,95 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This keeps usage coordinated for hugetlb and indirect entries, which
-should make entry selection more predictable and probably improve overall
-performance when mixing the two.
+On Wed, 2014-01-08 at 09:48 -0800, Olof Johansson wrote:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-v4: no change
+> >         /* If it's a display, note it */
+> > -       memset(type, 0, sizeof(type));
+> > -       prom_getprop(stdout_node, "device_type", type, sizeof(type));
+> > -       if (strcmp(type, "display") == 0)
+> > -               prom_setprop(stdout_node, path, "linux,boot-display", NULL, 0);
+> > +       stdout_node = call_prom("instance-to-package", 1, 1, prom.stdout);
+> > +       if (stdout_node != PROM_ERROR) {
+> > +               val = cpu_to_be32(stdout_node);
+> > +               memset(type, 0, sizeof(type));
+> > +               prom_getprop(stdout_node, "device_type", type, sizeof(type));
+> > +               if (strcmp(type, "display") == 0)
+> > +                       prom_setprop(stdout_node, path, "linux,boot-display", NU
+> 
+> Line is cut off, this needs "NULL, 0);" at the end.
 
- arch/powerpc/mm/hugetlbpage-book3e.c | 51 +++++++++++++++++++++++++++++-------
- 1 file changed, 41 insertions(+), 10 deletions(-)
+Right, copy/paste failure :-)
 
-diff --git a/arch/powerpc/mm/hugetlbpage-book3e.c b/arch/powerpc/mm/hugetlbpage-book3e.c
-index 646c4bf..5e4ee25 100644
---- a/arch/powerpc/mm/hugetlbpage-book3e.c
-+++ b/arch/powerpc/mm/hugetlbpage-book3e.c
-@@ -8,6 +8,44 @@
- #include <linux/mm.h>
- #include <linux/hugetlb.h>
- 
-+#ifdef CONFIG_PPC_FSL_BOOK3E
-+#ifdef CONFIG_PPC64
-+static inline int tlb1_next(void)
-+{
-+	struct paca_struct *paca = get_paca();
-+	struct tlb_core_data *tcd;
-+	int this, next;
-+
-+	tcd = paca->tcd_ptr;
-+	this = tcd->esel_next;
-+
-+	next = this + 1;
-+	if (next >= tcd->esel_max)
-+		next = tcd->esel_first;
-+
-+	tcd->esel_next = next;
-+	return this;
-+}
-+#else
-+static inline int tlb1_next(void)
-+{
-+	int index, ncams;
-+
-+	ncams = mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY;
-+
-+	index = __get_cpu_var(next_tlbcam_idx);
-+
-+	/* Just round-robin the entries and wrap when we hit the end */
-+	if (unlikely(index == ncams - 1))
-+		__get_cpu_var(next_tlbcam_idx) = tlbcam_index;
-+	else
-+		__get_cpu_var(next_tlbcam_idx)++;
-+
-+	return index;
-+}
-+#endif /* !PPC64 */
-+#endif /* FSL */
-+
- static inline int mmu_get_tsize(int psize)
- {
- 	return mmu_psize_defs[psize].enc;
-@@ -47,7 +85,7 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
- 	struct mm_struct *mm;
- 
- #ifdef CONFIG_PPC_FSL_BOOK3E
--	int index, ncams;
-+	int index;
- #endif
- 
- 	if (unlikely(is_kernel_addr(ea)))
-@@ -77,18 +115,11 @@ void book3e_hugetlb_preload(struct vm_area_struct *vma, unsigned long ea,
- 	}
- 
- #ifdef CONFIG_PPC_FSL_BOOK3E
--	ncams = mfspr(SPRN_TLB1CFG) & TLBnCFG_N_ENTRY;
--
- 	/* We have to use the CAM(TLB1) on FSL parts for hugepages */
--	index = __get_cpu_var(next_tlbcam_idx);
-+	index = tlb1_next();
- 	mtspr(SPRN_MAS0, MAS0_ESEL(index) | MAS0_TLBSEL(1));
--
--	/* Just round-robin the entries and wrap when we hit the end */
--	if (unlikely(index == ncams - 1))
--		__get_cpu_var(next_tlbcam_idx) = tlbcam_index;
--	else
--		__get_cpu_var(next_tlbcam_idx)++;
- #endif
-+
- 	mas1 = MAS1_VALID | MAS1_TID(mm->context.id) | MAS1_TSIZE(tsize);
- 	mas2 = ea & ~((1UL << shift) - 1);
- 	mas2 |= (pte_val(pte) >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
--- 
-1.8.3.2
+Thanks, I'll try to get that to Linus before he cuts .13, otherwise it
+will be -stable.
+
+Cheers,
+Ben.
