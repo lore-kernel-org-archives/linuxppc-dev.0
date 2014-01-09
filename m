@@ -1,26 +1,35 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0158.outbound.protection.outlook.com [207.46.163.158])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3E8FA2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 13:57:40 +1100 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Mark Rutland <mark.rutland@arm.com>
-Subject: =?utf-8?B?UkU6IOetlOWkjTogW3Y3XSBjbGs6IGNvcmVuZXQ6IEFkZHMgdGhlIGNsb2Nr?=
- =?utf-8?Q?_binding?=
-Date: Thu, 9 Jan 2014 02:57:32 +0000
-Message-ID: <e15511a79a9d4446a826da8d9ceec229@BL2PR03MB115.namprd03.prod.outlook.com>
-References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
- <20140108002115.GA19801@home.buserror.net>
- <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
- <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
- <1389206619.25654.9.camel@snotra.buserror.net>
-In-Reply-To: <1389206619.25654.9.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id BF7C72C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 16:08:54 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 8 Jan 2014 22:08:49 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 56B913E40026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Jan 2014 22:08:46 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0958boZ4587914
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Jan 2014 06:08:37 +0100
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0958ju6021875
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Jan 2014 22:08:45 -0700
+Subject: [PATCH] pseries/cpuidle: Remove redundant call to
+ ppc64_runlatch_off() in cpu idle routines
+To: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ deepthi@linux.vnet.ibm.com, benh@kernel.crashing.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Thu, 09 Jan 2014 10:35:20 +0530
+Message-ID: <20140109050519.11532.6044.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +39,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzIGZvciB5b3UgcmV2aWV3Lg0KU2VlIG15IHJlc3BvbnNlIGlubGluZS4NCg0KVGhhbmtz
-LA0KWXVhbnRpYW4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29k
-IFNjb3R0LUIwNzQyMQ0KPiBTZW50OiAyMDE05bm0MeaciDnml6Ug5pif5pyf5ZubIDI6NDQNCj4g
-VG86IE1hcmsgUnV0bGFuZA0KPiBDYzogVGFuZyBZdWFudGlhbi1CMjk5ODM7IGdhbGFrQGtlcm5l
-bC5jcmFzaGluZy5vcmc7DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1k
-ZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTog562U5aSNOiBbdjddIGNsazogY29y
-ZW5ldDogQWRkcyB0aGUgY2xvY2sgYmluZGluZw0KPiANCj4gT24gV2VkLCAyMDE0LTAxLTA4IGF0
-IDA5OjMwICswMDAwLCBNYXJrIFJ1dGxhbmQgd3JvdGU6DQo+ID4gT24gV2VkLCBKYW4gMDgsIDIw
-MTQgYXQgMDg6NTM6NTZBTSArMDAwMCwgWXVhbnRpYW4gVGFuZyB3cm90ZToNCj4gPiA+DQo+ID4g
-PiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+ID4gPiDlj5Hku7bk
-uro6IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiDlj5HpgIHml7bpl7Q6IDIwMTTlubQx5pyIOOaX
-pSA4OjIxDQo+ID4gPiDmlLbku7bkuro6IFRhbmcgWXVhbnRpYW4tQjI5OTgzDQo+ID4gPiDmioTp
-gIE6IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IG1hcmsucnV0bGFuZEBhcm0uY29tOw0KPiA+
-ID4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnDQo+ID4gPiDkuLvpopg6IFJlOiBbdjddIGNsazogY29yZW5ldDogQWRkcyB0aGUgY2xvY2sg
-YmluZGluZw0KPiA+ID4NCj4gPiA+IE9uIFdlZCwgTm92IDIwLCAyMDEzIGF0IDA1OjA0OjQ5UE0g
-KzA4MDAsIHRhbmcgeXVhbnRpYW4gd3JvdGU6DQo+ID4gPiA+ICtSZWNvbW1lbmRlZCBwcm9wZXJ0
-aWVzOg0KPiA+ID4gPiArLSByYW5nZXM6IEFsbG93cyB2YWxpZCB0cmFuc2xhdGlvbiBiZXR3ZWVu
-IGNoaWxkJ3MgYWRkcmVzcyBzcGFjZQ0KPiBhbmQNCj4gPiA+ID4gKyAgICAgcGFyZW50J3MuIE11
-c3QgYmUgcHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcyBzdWItbm9kZXMuDQo+ID4gPiA+ICstICNh
-ZGRyZXNzLWNlbGxzOiBTcGVjaWZpZXMgdGhlIG51bWJlciBvZiBjZWxscyB1c2VkIHRvIHJlcHJl
-c2VudA0KPiA+ID4gPiArICAgICBwaHlzaWNhbCBiYXNlIGFkZHJlc3Nlcy4gIE11c3QgYmUgcHJl
-c2VudCBpZiB0aGUgZGV2aWNlIGhhcw0KPiA+ID4gPiArICAgICBzdWItbm9kZXMgYW5kIHNldCB0
-byAxIGlmIHByZXNlbnQNCj4gPiA+ID4gKy0gI3NpemUtY2VsbHM6IFNwZWNpZmllcyB0aGUgbnVt
-YmVyIG9mIGNlbGxzIHVzZWQgdG8gcmVwcmVzZW50DQo+ID4gPiA+ICsgICAgIHRoZSBzaXplIG9m
-IGFuIGFkZHJlc3MuIE11c3QgYmUgcHJlc2VudCBpZiB0aGUgZGV2aWNlIGhhcw0KPiA+ID4gPiAr
-ICAgICBzdWItbm9kZXMgYW5kIHNldCB0byAxIGlmIHByZXNlbnQNCj4gPiA+DQo+ID4gPiBXaHkg
-YXJlIHdlIHNwZWNpZnlpbmcgI2FkZHJlc3MtY2VsbHMvI3NpemUtY2VsbHMgaGVyZT8NCj4gPiA+
-DQo+ID4gPiBBOiBpdCBoYXMgc3ViLW5vZGVzIHdoaWNoIGhhdmUgUkVHIHByb3BlcnR5LCBkb24n
-dCB3ZSBuZWVkIHRvDQo+ID4gPiBzcGVjaWZ5ICNhZGRyZXNzLWNlbGxzLyNzaXplLWNlbGxzPw0K
-PiA+DQo+ID4gSWYgYSBub2RlIGhhcyBhIHJlZyBlbnRyeSwgaXRzIHBhcmVudCBzaG91bGQgaGF2
-ZSAjc2l6ZS1jZWxscyBhbmQNCj4gPiAjYWRkcmVzcy1jZWxscyB0byBhbGxvdyBpdCB0byBiZSBw
-YXJzZWQgcHJvcGVybHkuDQo+IA0KPiBZZXMsIGJ1dCB3aHkgZG8gd2UgbmVlZCB0byBzcGVjaWZ5
-IGluIHRoaXMgYmluZGluZyBob3cgbWFueSBjZWxscyB0aGVyZQ0KPiB3aWxsIGJlLCBlc3BlY2lh
-bGx5IHNpbmNlIHRoaXMgYmluZGluZyBvbmx5IGFkZHJlc3NlcyB0aGUgY2xvY2sgcHJvdmlkZXIN
-Cj4gYXNwZWN0IG9mIHRoZSBjbG9ja2dlbiBub2RlcyAoZS5nLiBpdCBkb2Vzbid0IGRlc2NyaWJl
-IHRoZSByZWcpPyAgT3INCj4gcmF0aGVyLCBpdCdzIHBhcnRpYWxseSBkZXNjcmliaW5nIHRoZSBu
-b24tY2xvY2sgYXNwZWN0LCBhbmQgZG9lc24ndA0KPiBhZGRyZXNzIHRoZSBjbG9jayBhc3BlY3Qg
-YXQgYWxsIEFGQUlDVC4NCj4gDQpGaXJzdCBvZiBhbGwsIHRoZXkgYXJlIG5vdCAiUmVxdWlyZWQg
-cHJvcGVydGllcyIsIHRoZXkgYXJlIG9wdGlvbmFsLg0KSWYgcHJlc2VudCwgd2Ugc2hvdWxkIGdp
-dmUgdGhlbSBhIHZhbHVlIG9mIDEuDQpUaGVuLCB5ZXMsIHRoaXMgYmluZGluZyBkZXNjcmliZXMg
-Y2xvY2tnZW4gbm9kZSB3aGljaCBpcyAiQ0xPQ0sgQkxPQ0siLg0KSXQgc2hvdWxkIHRha2UgY2Fy
-ZSBvZiBpdHMgc3ViLW5vZGVzIHdoaWNoIGFyZSBjbG9jayBub2RlcyB0byBiZSBwYXJzZWQgcHJv
-cGVybHkuDQoNCj4gV2hlcmUgZG9lcyB0aGUgYWN0dWFsIGlucHV0IGNsb2NrIGZyZXF1ZW5jeSBn
-bz8gIFUtQm9vdCBwdXRzIGl0IGluIHRoZQ0KPiBjbG9ja2dlbiBub2RlIGl0c2VsZiBhcyBjbG9j
-ay1mcmVxdWVuY3ksIGJ1dCB0aGF0IGlzbid0IGRlc2NyaWJlZCBpbiB0aGUNCj4gYmluZGluZy4g
-IEhvdyBkb2VzIHRoYXQgcmVsYXRlIHRvIHRoZSBzeXNjbGsgbm9kZT8gIElmICJmc2wscW9yaXEt
-c3lzY2xrLQ0KPiAxLjAiIGlzIHN1cHBvc2VkIHRvIGluZGljYXRlIHRoYXQgY2xvY2stZnJlcXVl
-bmN5IGNhbiBiZSBmb3VuZCBpbiB0aGUNCj4gcGFyZW50IG5vZGUsIHRoYXQgaXNuJ3Qgc3BlY2lm
-aWVkIGJ5IHRoZSBiaW5kaW5nLCBub3IgaXMgY2xvY2stZnJlcXVlbmN5DQo+IHNob3duIGluIHRo
-ZSBleGFtcGxlLg0KPiANCmNsb2NrLWZyZXF1ZW5jeSBpcyBhIHdpcmVkIHByb3BlcnR5LiBJdCBp
-cyBpbiBjbG9ja2dlbiBub2RlIHJpZ2h0IG5vdy4NCkJ1dCBpdCBzaG91bGQgYmUgcGxhY2VkIHNv
-bWV3aGVyZSBpbiBjbG9jayBub2Rlcy4NCklmIEkgZGVzY3JpYmUgaGVyZSwgSSB3b3VsZCBiZSBh
-c2tlZCB3aHkgaXQgaXMgcmVsYXRlZCB0byBjbG9ja2dlbiBub2RlPw0KSWYgeW91IHRoaW5rIHNo
-b3dpbmcgaXQgdXAgaXMgT0ssIEkgbGlrZSB0byBkbyBpdC4NCiANCj4gV2hhdCBpcyB0aGUgZGlm
-ZmVyZW5jZSBiZXR3ZWVuICJmc2wscW9yaXEtc3lzY2xrLTEuMCIgYW5kICJmc2wscW9yaXEtDQo+
-IHN5c2Nsay0yLjAiPyAgSG93IGRvZXMgdGhlIGNvbmNlcHQgb2YgYSBmaXhlZCBpbnB1dCBjbG9j
-ayBjaGFuZ2U/DQo+DQpUZWNobmljYWxseSwgdGhlcmUgaXMgbm8gZGlmZmVyZW5jZSBiZXR3ZWVu
-ICpzeXNjbGstMS4wIGFuZCAqLTIuMCwganVzdCBsaWtlDQpDbG9ja2dlbi0yLjAgYW5kIDEuMC4g
-TmFtaW5nIGxpa2UgdGhpcyBqdXN0IHRvIGluZGljYXRlIHRoZXkgYmVsb25nIHRvIGNoYXNzaXMg
-Mi4wIA0KYW5kIDEuMCByZXNwZWN0aXZlbHkuDQoNClJlZ2FyZHMsDQpZdWFudGlhbg0KIA0KPiAt
-U2NvdHQNCj4gDQoNCg==
+Commit fbd7740fdfdf9475f switched pseries cpu idle handling from complete idle
+loops to ppc_md.powersave functions. Earlier to this switch,
+ppc64_runlatch_off() had to be called in each of the idle routines. But after
+the switch this call is handled in arch_cpu_idle(),just before the call
+to ppc_md.powersave, where platform specific idle routines are called.
+
+As a consequence, the call to ppc64_runlatch_off() got duplicated in the
+arch_cpu_idle() routine as well as in the some of the idle routines in
+pseries and commit fbd7740fdfdf9475f missed to get rid of these redundant
+calls. These calls were carried over subsequent enhancements to the pseries
+cpuidle routines. This patch takes care of eliminating this redundancy.
+
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/platforms/pseries/processor_idle.c |    3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+index a166e38..09e4f56 100644
+--- a/arch/powerpc/platforms/pseries/processor_idle.c
++++ b/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -17,7 +17,6 @@
+ #include <asm/reg.h>
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+-#include <asm/runlatch.h>
+ #include <asm/plpar_wrappers.h>
+ 
+ struct cpuidle_driver pseries_idle_driver = {
+@@ -63,7 +62,6 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 
+ 	while ((!need_resched()) && cpu_online(cpu)) {
+-		ppc64_runlatch_off();
+ 		HMT_low();
+ 		HMT_very_low();
+ 	}
+@@ -103,7 +101,6 @@ static int dedicated_cede_loop(struct cpuidle_device *dev,
+ 	idle_loop_prolog(&in_purr);
+ 	get_lppaca()->donate_dedicated_cpu = 1;
+ 
+-	ppc64_runlatch_off();
+ 	HMT_medium();
+ 	check_and_cede_processor();
+ 
