@@ -1,20 +1,23 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 30D8B2C00B8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 19:53:05 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Subject: [PATCH] powerpc: delete non-required instances of include
- <linux/init.h>
-Date: Thu, 9 Jan 2014 00:44:29 -0500
-Message-ID: <1389246269-1555-1-git-send-email-paul.gortmaker@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5EE802C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Jan 2014 20:10:42 +1100 (EST)
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: <broonie@kernel.org>, <timur@tabi.org>
+Subject: [PATCH] ASoC: fsl_esai: Add ESAI CPU DAI driver
+Date: Thu, 9 Jan 2014 17:10:33 +0800
+Message-ID: <1389258633-5866-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
+ tiwai@suse.de, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org,
+ lgirdwood@gmail.com, perex@perex.cz, robh+dt@kernel.org,
+ Guangyu.Chen@freescale.com, rob@landley.net, galak@codeaurora.org,
+ grant.likely@linaro.org, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,613 +27,1302 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-None of these files are actually using any __init type directives
-and hence don't need to include <linux/init.h>.  Most are just a
-left over from __devinit and __cpuinit removal, or simply due to
-code getting copied from one driver to the next.
+This patch implements a device-tree-only CPU DAI driver for Freescale ESAI
+controller that supports:
 
-The one instance where we add an include for init.h covers off
-a case where that file was implicitly getting it from another
-header which itself didn't need it.
+ - 12 channels playback and 8 channels record.
+   [ Some of the inner transmitters and receivers are sharing same group of
+     pins. So the maxmium 12 output or 8 input channels are only valid if
+     there is no pin conflict occurring to it. ]
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+ - Independent (asynchronous mode) or shared (synchronous mode) transmit and
+   receive sections with separate or shared internal/external clocks and frame
+   syncs, operating in Master or Slave mode.
+   [ Current ALSA seems not to allow CPU DAI drivers to set DAI format and clks
+     separately for PLAYBACK and CAPTURE. So this first version only supports
+     the case that uses the same DAI format for both directions. ]
+
+ - Various DAI formats: I2S, Left-Justified, Right-Justified, DSP-A and DSP-B.
+
+ - Programmable word length (8, 16, 20 or 24bits)
+
+ - Flexible selection between system clock or external oscillator as input
+   clock source, programmable internal clock divider and frame sync generation.
+
+Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
 ---
+ .../devicetree/bindings/sound/fsl,esai.txt         |  54 ++
+ sound/soc/fsl/Kconfig                              |   3 +
+ sound/soc/fsl/Makefile                             |   2 +
+ sound/soc/fsl/fsl_esai.c                           | 811 +++++++++++++++++++++
+ sound/soc/fsl/fsl_esai.h                           | 348 +++++++++
+ 5 files changed, 1218 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/sound/fsl,esai.txt
+ create mode 100644 sound/soc/fsl/fsl_esai.c
+ create mode 100644 sound/soc/fsl/fsl_esai.h
 
-[ build tested for every arch/powerpc/config/* file, on next
-  branch of benh/powerpc.git -- v3.13-rc1-92-gdece8ada993e ]
-
- arch/powerpc/include/asm/paca.h                | 1 -
- arch/powerpc/include/asm/ppc_asm.h             | 1 -
- arch/powerpc/include/asm/ps3.h                 | 1 -
- arch/powerpc/include/asm/vio.h                 | 1 -
- arch/powerpc/kernel/cacheinfo.c                | 1 -
- arch/powerpc/kernel/crash.c                    | 1 -
- arch/powerpc/kernel/eeh_pe.c                   | 1 -
- arch/powerpc/kernel/head_64.S                  | 1 +
- arch/powerpc/kernel/hw_breakpoint.c            | 1 -
- arch/powerpc/kernel/iomap.c                    | 1 -
- arch/powerpc/kernel/kgdb.c                     | 1 -
- arch/powerpc/kernel/process.c                  | 1 -
- arch/powerpc/kernel/smp-tbsync.c               | 1 -
- arch/powerpc/kernel/syscalls.c                 | 1 -
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S    | 1 -
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S    | 1 -
- arch/powerpc/mm/pgtable.c                      | 1 -
- arch/powerpc/mm/pgtable_64.c                   | 1 -
- arch/powerpc/mm/tlb_hash64.c                   | 1 -
- arch/powerpc/oprofile/op_model_7450.c          | 1 -
- arch/powerpc/oprofile/op_model_cell.c          | 1 -
- arch/powerpc/oprofile/op_model_fsl_emb.c       | 1 -
- arch/powerpc/oprofile/op_model_pa6t.c          | 1 -
- arch/powerpc/oprofile/op_model_power4.c        | 1 -
- arch/powerpc/oprofile/op_model_rs64.c          | 1 -
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c | 1 -
- arch/powerpc/platforms/83xx/suspend.c          | 1 -
- arch/powerpc/platforms/85xx/sgy_cts1000.c      | 1 -
- arch/powerpc/platforms/chrp/smp.c              | 1 -
- arch/powerpc/platforms/embedded6xx/hlwd-pic.c  | 1 -
- arch/powerpc/platforms/pasemi/dma_lib.c        | 1 -
- arch/powerpc/platforms/powermac/pfunc_core.c   | 1 -
- arch/powerpc/platforms/powernv/eeh-ioda.c      | 1 -
- arch/powerpc/platforms/pseries/cmm.c           | 1 -
- arch/powerpc/platforms/pseries/dtl.c           | 1 -
- arch/powerpc/sysdev/cpm2_pic.c                 | 1 -
- arch/powerpc/sysdev/fsl_ifc.c                  | 1 -
- arch/powerpc/sysdev/ge/ge_pic.h                | 1 -
- arch/powerpc/sysdev/i8259.c                    | 1 -
- arch/powerpc/sysdev/mpc8xx_pic.c               | 1 -
- arch/powerpc/sysdev/qe_lib/qe_io.c             | 1 -
- arch/powerpc/sysdev/qe_lib/ucc.c               | 1 -
- arch/powerpc/sysdev/qe_lib/ucc_fast.c          | 1 -
- arch/powerpc/sysdev/qe_lib/ucc_slow.c          | 1 -
- arch/powerpc/sysdev/udbg_memcons.c             | 1 -
- arch/powerpc/sysdev/xics/icp-hv.c              | 1 -
- 46 files changed, 1 insertion(+), 45 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index c3523d1dda58..68bee4636045 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -16,7 +16,6 @@
+diff --git a/Documentation/devicetree/bindings/sound/fsl,esai.txt b/Documentation/devicetree/bindings/sound/fsl,esai.txt
+new file mode 100644
+index 0000000..4372833
+--- /dev/null
++++ b/Documentation/devicetree/bindings/sound/fsl,esai.txt
+@@ -0,0 +1,54 @@
++Freescale Enhanced Serial Audio Interface (ESAI) Controller
++
++The Enhanced Serial Audio Interface (ESAI) provides a full-duplex serial port
++for serial communication with a variety of serial devices, including industry
++standard codecs, Sony/Phillips Digital Interface (S/PDIF) transceivers, and
++other DSPs. It has up to six transmitters and four receivers.
++
++Required properties:
++
++  - compatible : Compatible list, must contain "fsl,imx35-esai".
++
++  - reg : Offset and length of the register set for the device.
++
++  - interrupts : Contains the spdif interrupt.
++
++  - dmas : Generic dma devicetree binding as described in
++  Documentation/devicetree/bindings/dma/dma.txt.
++
++  - dma-names : Two dmas have to be defined, "tx" and "rx".
++
++  - clocks: Contains an entry for each entry in clock-names.
++
++  - clock-names : Includes the following entries:
++	"core"		The core clock used to access registers
++	"extal"		The esai baud clock for esai controller used to derive
++			HCK, SCK and FS.
++	"fsys"		The system clock derived from ahb clock used to derive
++			HCK, SCK and FS.
++
++  - fsl,fifo-depth: The number of elements in the transmit and receive FIFOs.
++    This number is the maximum allowed value for TFCR[TFWM] or RFCR[RFWM].
++
++  - fsl,esai-synchronous: This is a boolean property. If present, indicating
++    that ESAI would work in the synchronous mode, which means all the settings
++    for Receiving would be duplicated from Transmition related registers.
++
++  - fsl,esai-network-mode: This is a boolean property. If present, indicating
++    that ESAI controller would work in its network mode.
++
++Example:
++
++esai: esai@02024000 {
++	compatible = "fsl,imx35-esai";
++	reg = <0x02024000 0x4000>;
++	interrupts = <0 51 0x04>;
++	clocks = <&clks 208>, <&clks 118>, <&clks 208>;
++	clock-names = "core", "extal", "fsys";
++	dmas = <&sdma 23 21 0>, <&sdma 24 21 0>;
++	dma-names = "rx", "tx";
++	fsl,fifo-depth = <128>;
++	fsl,esai-synchronous;
++	fsl,esai-network-mode;
++	status = "disabled";
++};
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index 514c275..324988d 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -8,6 +8,9 @@ config SND_SOC_FSL_SSI
+ config SND_SOC_FSL_SPDIF
+ 	tristate
  
- #ifdef CONFIG_PPC64
++config SND_SOC_FSL_ESAI
++	tristate
++
+ config SND_SOC_FSL_UTILS
+ 	tristate
  
--#include <linux/init.h>
- #include <asm/types.h>
- #include <asm/lppaca.h>
- #include <asm/mmu.h>
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index f595b98079ee..7689e0e98d33 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -4,7 +4,6 @@
- #ifndef _ASM_POWERPC_PPC_ASM_H
- #define _ASM_POWERPC_PPC_ASM_H
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index aaccbee..b12ad4b 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -14,11 +14,13 @@ obj-$(CONFIG_SND_SOC_P1022_RDK) += snd-soc-p1022-rdk.o
+ snd-soc-fsl-sai-objs := fsl_sai.o
+ snd-soc-fsl-ssi-objs := fsl_ssi.o
+ snd-soc-fsl-spdif-objs := fsl_spdif.o
++snd-soc-fsl-esai-objs := fsl_esai.o
+ snd-soc-fsl-utils-objs := fsl_utils.o
+ snd-soc-fsl-dma-objs := fsl_dma.o
+ obj-$(CONFIG_SND_SOC_FSL_SAI) += snd-soc-fsl-sai.o
+ obj-$(CONFIG_SND_SOC_FSL_SSI) += snd-soc-fsl-ssi.o
+ obj-$(CONFIG_SND_SOC_FSL_SPDIF) += snd-soc-fsl-spdif.o
++obj-$(CONFIG_SND_SOC_FSL_ESAI) += snd-soc-fsl-esai.o
+ obj-$(CONFIG_SND_SOC_FSL_UTILS) += snd-soc-fsl-utils.o
+ obj-$(CONFIG_SND_SOC_POWERPC_DMA) += snd-soc-fsl-dma.o
  
--#include <linux/init.h>
- #include <linux/stringify.h>
- #include <asm/asm-compat.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
-index 678a7c1d9cb8..a1bc7e758422 100644
---- a/arch/powerpc/include/asm/ps3.h
-+++ b/arch/powerpc/include/asm/ps3.h
-@@ -21,7 +21,6 @@
- #if !defined(_ASM_POWERPC_PS3_H)
- #define _ASM_POWERPC_PS3_H
- 
--#include <linux/init.h>
- #include <linux/types.h>
- #include <linux/device.h>
- #include <asm/cell-pmu.h>
-diff --git a/arch/powerpc/include/asm/vio.h b/arch/powerpc/include/asm/vio.h
-index 68d0cc998b1b..4f9b7ca0710f 100644
---- a/arch/powerpc/include/asm/vio.h
-+++ b/arch/powerpc/include/asm/vio.h
-@@ -15,7 +15,6 @@
- #define _ASM_POWERPC_VIO_H
- #ifdef __KERNEL__
- 
--#include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index 654932727873..abfa011344d9 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -12,7 +12,6 @@
- 
- #include <linux/cpu.h>
- #include <linux/cpumask.h>
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/kobject.h>
- #include <linux/list.h>
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index fdcd8f551aff..18d7c80ddeb9 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -17,7 +17,6 @@
- #include <linux/export.h>
- #include <linux/crash_dump.h>
- #include <linux/delay.h>
--#include <linux/init.h>
- #include <linux/irq.h>
- #include <linux/types.h>
- 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index f9450537e335..1feccd64f955 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -25,7 +25,6 @@
- #include <linux/delay.h>
- #include <linux/export.h>
- #include <linux/gfp.h>
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/pci.h>
- #include <linux/string.h>
-diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-index 4f0946de2d5c..b7363bd42452 100644
---- a/arch/powerpc/kernel/head_64.S
-+++ b/arch/powerpc/kernel/head_64.S
-@@ -23,6 +23,7 @@
-  */
- 
- #include <linux/threads.h>
-+#include <linux/init.h>
- #include <asm/reg.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index f0b47d1a6b0e..b0a1792279bb 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -28,7 +28,6 @@
- #include <linux/percpu.h>
- #include <linux/kernel.h>
- #include <linux/sched.h>
--#include <linux/init.h>
- #include <linux/smp.h>
- 
- #include <asm/hw_breakpoint.h>
-diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-index 97a3715ac8bd..b82227e7e21b 100644
---- a/arch/powerpc/kernel/iomap.c
-+++ b/arch/powerpc/kernel/iomap.c
-@@ -3,7 +3,6 @@
-  *
-  * (C) Copyright 2004 Linus Torvalds
-  */
--#include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/mm.h>
- #include <linux/export.h>
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index 83e89d310734..8504657379f1 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -15,7 +15,6 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/kgdb.h>
- #include <linux/smp.h>
- #include <linux/signal.h>
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 3386d8ab7eb0..bf8e136316e2 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -25,7 +25,6 @@
- #include <linux/slab.h>
- #include <linux/user.h>
- #include <linux/elf.h>
--#include <linux/init.h>
- #include <linux/prctl.h>
- #include <linux/init_task.h>
- #include <linux/export.h>
-diff --git a/arch/powerpc/kernel/smp-tbsync.c b/arch/powerpc/kernel/smp-tbsync.c
-index e68fd1ae727a..7a37ecd3afa3 100644
---- a/arch/powerpc/kernel/smp-tbsync.c
-+++ b/arch/powerpc/kernel/smp-tbsync.c
-@@ -9,7 +9,6 @@
- #include <linux/sched.h>
- #include <linux/smp.h>
- #include <linux/unistd.h>
--#include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/atomic.h>
- #include <asm/smp.h>
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index 4e3cc47f26b9..cd9be9aa016d 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -34,7 +34,6 @@
- #include <linux/ipc.h>
- #include <linux/utsname.h>
- #include <linux/file.h>
--#include <linux/init.h>
- #include <linux/personality.h>
- 
- #include <asm/uaccess.h>
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 6e8f507ed32b..79683d0393f5 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,4 +1,3 @@
--#include <linux/init.h>
- #include <linux/linkage.h>
- #include <asm/page.h>
- 
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index b8553d62b792..8df9e2463007 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,4 +1,3 @@
--#include <linux/init.h>
- #include <linux/linkage.h>
- #include <asm/page.h>
- 
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index ad90429bbd8b..c695943a513c 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -24,7 +24,6 @@
- #include <linux/kernel.h>
- #include <linux/gfp.h>
- #include <linux/mm.h>
--#include <linux/init.h>
- #include <linux/percpu.h>
- #include <linux/hardirq.h>
- #include <linux/hugetlb.h>
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 02e8681fb865..7f0e872ab83d 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -33,7 +33,6 @@
- #include <linux/swap.h>
- #include <linux/stddef.h>
- #include <linux/vmalloc.h>
--#include <linux/init.h>
- #include <linux/bootmem.h>
- #include <linux/memblock.h>
- #include <linux/slab.h>
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 36e44b4260eb..c99f6510a0b2 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -23,7 +23,6 @@
- 
- #include <linux/kernel.h>
- #include <linux/mm.h>
--#include <linux/init.h>
- #include <linux/percpu.h>
- #include <linux/hardirq.h>
- #include <asm/pgalloc.h>
-diff --git a/arch/powerpc/oprofile/op_model_7450.c b/arch/powerpc/oprofile/op_model_7450.c
-index ff617246d128..d29b6e4e5e72 100644
---- a/arch/powerpc/oprofile/op_model_7450.c
-+++ b/arch/powerpc/oprofile/op_model_7450.c
-@@ -16,7 +16,6 @@
-  */
- 
- #include <linux/oprofile.h>
--#include <linux/init.h>
- #include <linux/smp.h>
- #include <asm/ptrace.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
-index b9589c19ccda..1f0ebdeea5f7 100644
---- a/arch/powerpc/oprofile/op_model_cell.c
-+++ b/arch/powerpc/oprofile/op_model_cell.c
-@@ -16,7 +16,6 @@
- 
- #include <linux/cpufreq.h>
- #include <linux/delay.h>
--#include <linux/init.h>
- #include <linux/jiffies.h>
- #include <linux/kthread.h>
- #include <linux/oprofile.h>
-diff --git a/arch/powerpc/oprofile/op_model_fsl_emb.c b/arch/powerpc/oprofile/op_model_fsl_emb.c
-index 2a82d3ed464d..14cf86fdddab 100644
---- a/arch/powerpc/oprofile/op_model_fsl_emb.c
-+++ b/arch/powerpc/oprofile/op_model_fsl_emb.c
-@@ -14,7 +14,6 @@
-  */
- 
- #include <linux/oprofile.h>
--#include <linux/init.h>
- #include <linux/smp.h>
- #include <asm/ptrace.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/oprofile/op_model_pa6t.c b/arch/powerpc/oprofile/op_model_pa6t.c
-index 42f778dff919..a114a7c22d40 100644
---- a/arch/powerpc/oprofile/op_model_pa6t.c
-+++ b/arch/powerpc/oprofile/op_model_pa6t.c
-@@ -22,7 +22,6 @@
-  */
- 
- #include <linux/oprofile.h>
--#include <linux/init.h>
- #include <linux/smp.h>
- #include <linux/percpu.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
-index f444b94935f5..962fe7b3e3fb 100644
---- a/arch/powerpc/oprofile/op_model_power4.c
-+++ b/arch/powerpc/oprofile/op_model_power4.c
-@@ -10,7 +10,6 @@
-  */
- 
- #include <linux/oprofile.h>
--#include <linux/init.h>
- #include <linux/smp.h>
- #include <asm/firmware.h>
- #include <asm/ptrace.h>
-diff --git a/arch/powerpc/oprofile/op_model_rs64.c b/arch/powerpc/oprofile/op_model_rs64.c
-index 9b801b8c8c5a..7e5b8ed3a1b7 100644
---- a/arch/powerpc/oprofile/op_model_rs64.c
-+++ b/arch/powerpc/oprofile/op_model_rs64.c
-@@ -8,7 +8,6 @@
-  */
- 
- #include <linux/oprofile.h>
--#include <linux/init.h>
- #include <linux/smp.h>
- #include <asm/ptrace.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index fd71cfdf2380..e238b6a55b15 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -11,7 +11,6 @@
-  * (at your option) any later version.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/device.h>
-diff --git a/arch/powerpc/platforms/83xx/suspend.c b/arch/powerpc/platforms/83xx/suspend.c
-index 3d9716ccd327..4b4c081df94d 100644
---- a/arch/powerpc/platforms/83xx/suspend.c
-+++ b/arch/powerpc/platforms/83xx/suspend.c
-@@ -10,7 +10,6 @@
-  * by the Free Software Foundation.
-  */
- 
--#include <linux/init.h>
- #include <linux/pm.h>
- #include <linux/types.h>
- #include <linux/ioport.h>
-diff --git a/arch/powerpc/platforms/85xx/sgy_cts1000.c b/arch/powerpc/platforms/85xx/sgy_cts1000.c
-index b9197cea1854..bb75add67084 100644
---- a/arch/powerpc/platforms/85xx/sgy_cts1000.c
-+++ b/arch/powerpc/platforms/85xx/sgy_cts1000.c
-@@ -14,7 +14,6 @@
- #include <linux/platform_device.h>
- #include <linux/device.h>
- #include <linux/module.h>
--#include <linux/init.h>
- #include <linux/of_gpio.h>
- #include <linux/of_irq.h>
- #include <linux/workqueue.h>
-diff --git a/arch/powerpc/platforms/chrp/smp.c b/arch/powerpc/platforms/chrp/smp.c
-index dead91b177b9..b6c9a0dcc924 100644
---- a/arch/powerpc/platforms/chrp/smp.c
-+++ b/arch/powerpc/platforms/chrp/smp.c
-@@ -14,7 +14,6 @@
- #include <linux/interrupt.h>
- #include <linux/kernel_stat.h>
- #include <linux/delay.h>
--#include <linux/init.h>
- #include <linux/spinlock.h>
- 
- #include <asm/ptrace.h>
-diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-index 6c03034dbbd3..c269caee58f9 100644
---- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-+++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
-@@ -15,7 +15,6 @@
- #define pr_fmt(fmt) DRV_MODULE_NAME ": " fmt
- 
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/irq.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
-diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-index f3defd8a2806..aafa01ba062f 100644
---- a/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ b/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -18,7 +18,6 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/export.h>
- #include <linux/pci.h>
- #include <linux/slab.h>
-diff --git a/arch/powerpc/platforms/powermac/pfunc_core.c b/arch/powerpc/platforms/powermac/pfunc_core.c
-index d588e48dff74..43075081721f 100644
---- a/arch/powerpc/platforms/powermac/pfunc_core.c
-+++ b/arch/powerpc/platforms/powermac/pfunc_core.c
-@@ -5,7 +5,6 @@
-  * FIXME: LOCKING !!!
-  */
- 
--#include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/kernel.h>
- #include <linux/spinlock.h>
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 9b1db254898a..007ac4989841 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -14,7 +14,6 @@
- #include <linux/bootmem.h>
- #include <linux/debugfs.h>
- #include <linux/delay.h>
--#include <linux/init.h>
- #include <linux/io.h>
- #include <linux/irq.h>
- #include <linux/kernel.h>
-diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/pseries/cmm.c
-index 1e561bef459b..2d8bf15879fd 100644
---- a/arch/powerpc/platforms/pseries/cmm.c
-+++ b/arch/powerpc/platforms/pseries/cmm.c
-@@ -25,7 +25,6 @@
- #include <linux/errno.h>
- #include <linux/fs.h>
- #include <linux/gfp.h>
--#include <linux/init.h>
- #include <linux/kthread.h>
- #include <linux/module.h>
- #include <linux/oom.h>
-diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
-index 5db66f1fbc26..7d61498e45c0 100644
---- a/arch/powerpc/platforms/pseries/dtl.c
-+++ b/arch/powerpc/platforms/pseries/dtl.c
-@@ -20,7 +20,6 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- 
--#include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/debugfs.h>
- #include <linux/spinlock.h>
-diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
-index 10386b676d87..a11bd1d433ad 100644
---- a/arch/powerpc/sysdev/cpm2_pic.c
-+++ b/arch/powerpc/sysdev/cpm2_pic.c
-@@ -27,7 +27,6 @@
-  */
- 
- #include <linux/stddef.h>
--#include <linux/init.h>
- #include <linux/sched.h>
- #include <linux/signal.h>
- #include <linux/irq.h>
-diff --git a/arch/powerpc/sysdev/fsl_ifc.c b/arch/powerpc/sysdev/fsl_ifc.c
-index d7fc72239144..fbc885b31946 100644
---- a/arch/powerpc/sysdev/fsl_ifc.c
-+++ b/arch/powerpc/sysdev/fsl_ifc.c
-@@ -19,7 +19,6 @@
-  * along with this program; if not, write to the Free Software
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
--#include <linux/init.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/compiler.h>
-diff --git a/arch/powerpc/sysdev/ge/ge_pic.h b/arch/powerpc/sysdev/ge/ge_pic.h
-index 6149916da3f4..908dbd9826b6 100644
---- a/arch/powerpc/sysdev/ge/ge_pic.h
-+++ b/arch/powerpc/sysdev/ge/ge_pic.h
-@@ -1,7 +1,6 @@
- #ifndef __GEF_PIC_H__
- #define __GEF_PIC_H__
- 
--#include <linux/init.h>
- 
- void gef_pic_cascade(unsigned int, struct irq_desc *);
- unsigned int gef_pic_get_irq(void);
-diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
-index 997df6a7ab5d..45598da0b321 100644
---- a/arch/powerpc/sysdev/i8259.c
-+++ b/arch/powerpc/sysdev/i8259.c
-@@ -8,7 +8,6 @@
-  */
- #undef DEBUG
- 
--#include <linux/init.h>
- #include <linux/ioport.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
-diff --git a/arch/powerpc/sysdev/mpc8xx_pic.c b/arch/powerpc/sysdev/mpc8xx_pic.c
-index b724622c3a0b..c4828c0be5bd 100644
---- a/arch/powerpc/sysdev/mpc8xx_pic.c
-+++ b/arch/powerpc/sysdev/mpc8xx_pic.c
-@@ -1,6 +1,5 @@
- #include <linux/kernel.h>
- #include <linux/stddef.h>
--#include <linux/init.h>
- #include <linux/sched.h>
- #include <linux/signal.h>
- #include <linux/irq.h>
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
-index a88807b3dd57..d09994164daf 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_io.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
-@@ -16,7 +16,6 @@
- 
- #include <linux/stddef.h>
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/module.h>
- #include <linux/ioport.h>
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/arch/powerpc/sysdev/qe_lib/ucc.c
-index 134b07d29435..621575b7e84a 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc.c
-@@ -14,7 +14,6 @@
-  * option) any later version.
-  */
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/stddef.h>
- #include <linux/spinlock.h>
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-index cceb2e366738..65aaf15032ae 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-@@ -13,7 +13,6 @@
-  * option) any later version.
-  */
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/slab.h>
- #include <linux/stddef.h>
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-index 1c062f48f1ac..befaf1123f7f 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-@@ -13,7 +13,6 @@
-  * option) any later version.
-  */
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/slab.h>
- #include <linux/stddef.h>
-diff --git a/arch/powerpc/sysdev/udbg_memcons.c b/arch/powerpc/sysdev/udbg_memcons.c
-index ce5a7b489e4b..9998c0de12d0 100644
---- a/arch/powerpc/sysdev/udbg_memcons.c
-+++ b/arch/powerpc/sysdev/udbg_memcons.c
-@@ -18,7 +18,6 @@
-  *      2 of the License, or (at your option) any later version.
-  */
- 
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <asm/barrier.h>
- #include <asm/page.h>
-diff --git a/arch/powerpc/sysdev/xics/icp-hv.c b/arch/powerpc/sysdev/xics/icp-hv.c
-index df0fc5821469..c1917cf67c3d 100644
---- a/arch/powerpc/sysdev/xics/icp-hv.c
-+++ b/arch/powerpc/sysdev/xics/icp-hv.c
-@@ -12,7 +12,6 @@
- #include <linux/irq.h>
- #include <linux/smp.h>
- #include <linux/interrupt.h>
--#include <linux/init.h>
- #include <linux/cpu.h>
- #include <linux/of.h>
- 
+diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
+new file mode 100644
+index 0000000..1f2a0ef
+--- /dev/null
++++ b/sound/soc/fsl/fsl_esai.c
+@@ -0,0 +1,811 @@
++/*
++ * Freescale ESAI ALSA SoC Digital Audio Interface (DAI) driver
++ *
++ * Copyright (C) 2014 Freescale Semiconductor, Inc.
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#include <linux/clk.h>
++#include <linux/dmaengine.h>
++#include <linux/module.h>
++#include <linux/of_irq.h>
++#include <linux/of_platform.h>
++#include <sound/dmaengine_pcm.h>
++#include <sound/pcm_params.h>
++
++#include "fsl_esai.h"
++#include "imx-pcm.h"
++
++#define FSL_ESAI_RATES		SNDRV_PCM_RATE_8000_192000
++#define FSL_ESAI_FORMATS	(SNDRV_PCM_FMTBIT_S8 | \
++				SNDRV_PCM_FMTBIT_S16_LE | \
++				SNDRV_PCM_FMTBIT_S20_3LE | \
++				SNDRV_PCM_FMTBIT_S24_LE)
++
++/*
++ * @dma_params_rx: DMA parameters for receive channel
++ * @dma_params_tx: DMA parameters for transmit channel
++ * @pdev: platform device pointer
++ * @regmap: regmap handler
++ * @coreclk: clock source to access register
++ * @extalclk: esai clock source to derive HCK, SCK and FS
++ * @fsysclk: system clock source to derive HCK, SCK and FS
++ * @fifo_depth: depth of tx/rx FIFO
++ * @sck_div: if using PSR/PM dividers for SCK clock
++ * @network_mode: if using network mode
++ * @synchronous: if using tx/rx synchronous mode
++ * @name: driver name
++ */
++struct fsl_esai {
++	struct snd_dmaengine_dai_dma_data dma_params_rx;
++	struct snd_dmaengine_dai_dma_data dma_params_tx;
++	struct platform_device *pdev;
++	struct regmap *regmap;
++	struct clk *coreclk;
++	struct clk *extalclk;
++	struct clk *fsysclk;
++	u32 fifo_depth;
++	u32 slot_width;
++	bool sck_div;
++	bool network_mode;
++	bool synchronous;
++	char name[32];
++};
++
++static irqreturn_t esai_isr(int irq, void *devid)
++{
++	struct fsl_esai *esai_priv = (struct fsl_esai *)devid;
++	struct platform_device *pdev = esai_priv->pdev;
++	u32 esr;
++
++	regmap_read(esai_priv->regmap, REG_ESAI_ESR, &esr);
++
++	if (esr & ESAI_ESR_TINIT_MASK)
++		dev_dbg(&pdev->dev, "isr: Transmition Initialized\n");
++
++	if (esr & ESAI_ESR_RFF_MASK)
++		dev_warn(&pdev->dev, "isr: Receiving overrun\n");
++
++	if (esr & ESAI_ESR_TFE_MASK)
++		dev_warn(&pdev->dev, "isr: Transmition underrun\n");
++
++	if (esr & ESAI_ESR_TLS_MASK)
++		dev_dbg(&pdev->dev, "isr: Just transmitted the last slot\n");
++
++	if (esr & ESAI_ESR_TDE_MASK)
++		dev_dbg(&pdev->dev, "isr: Transmition data exception\n");
++
++	if (esr & ESAI_ESR_TED_MASK)
++		dev_dbg(&pdev->dev, "isr: Transmitting even slots\n");
++
++	if (esr & ESAI_ESR_TD_MASK)
++		dev_dbg(&pdev->dev, "isr: Transmitting data\n");
++
++	if (esr & ESAI_ESR_RLS_MASK)
++		dev_dbg(&pdev->dev, "isr: Just received the last slot\n");
++
++	if (esr & ESAI_ESR_RDE_MASK)
++		dev_dbg(&pdev->dev, "isr: Receiving data exception\n");
++
++	if (esr & ESAI_ESR_RED_MASK)
++		dev_dbg(&pdev->dev, "isr: Receiving even slots\n");
++
++	if (esr & ESAI_ESR_RD_MASK)
++		dev_dbg(&pdev->dev, "isr: Receiving data\n");
++
++	return IRQ_HANDLED;
++}
++
++/*
++ * This function is used to calculate the divisors of psr, pm, fp and it is
++ * supposed to be called in set_dai_sysclk() and set_bclk_ratio().
++ *
++ * @ratio: desired overall ratio for the paticipating dividers
++ * @usefp: for HCK setting, there is no need to set fp divider
++ * @fp: bypass other dividers by setting fp directly if fp != 0
++ */
++static int fsl_esai_divisor_cal(struct snd_soc_dai *dai, u32 ratio,
++				bool usefp, u32 fp)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	u32 psr, pm = 999, maxfp, prod, sub, savesub, i, j;
++
++	maxfp = usefp ? 16 : 1;
++
++	if (usefp && fp)
++		goto out_fp;
++
++	if (ratio > 2 * 8 * 256 * maxfp || ratio < 2) {
++		dev_err(dai->dev, "the ratio is out of range (2 ~ %d)\n",
++				2 * 8 * 256 * maxfp);
++		return -EINVAL;
++	} else if (ratio % 2) {
++		dev_err(dai->dev, "the raio must be even if using upper divider\n");
++		return -EINVAL;
++	}
++
++	ratio /= 2;
++
++	psr = ratio <= 256 * maxfp ? ESAI_xCCR_xPSR_BYPASS : ESAI_xCCR_xPSR_DIV8;
++
++	/* Set the max fluctuation -- 0.1% of the max devisor */
++	savesub = (psr ? 1 : 8)  * 256 * maxfp / 1000;
++
++	/* Find the best value for PM */
++	for (i = 1; i <= 256; i++) {
++		for (j = 1; j <= maxfp; j++) {
++			/* PSR (1 or 8) * PM (1 ~ 256) * FP (1 ~ 16) */
++			prod = (psr ? 1 : 8) * i * j;
++
++			if (prod == ratio)
++				sub = 0;
++			else if (prod / ratio == 1)
++				sub = prod - ratio;
++			else if (ratio / prod == 1)
++				sub = ratio - prod;
++			else
++				continue;
++
++			/* Calculate the fraction */
++			sub = sub * 1000 / ratio;
++			if (sub < savesub) {
++				savesub = sub;
++				pm = i;
++				fp = j;
++			}
++
++			/* We are lucky */
++			if (savesub == 0)
++				goto out;
++		}
++	}
++
++	if (pm == 999) {
++		dev_err(dai->dev, "failed to calculate proper divisors\n");
++		return -EINVAL;
++	}
++
++out:
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
++			   ESAI_xCCR_xPSR_MASK | ESAI_xCCR_xPM_MASK,
++			   psr | ESAI_xCCR_xPM(pm));
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
++			   ESAI_xCCR_xPSR_MASK | ESAI_xCCR_xPM_MASK,
++			   psr | ESAI_xCCR_xPM(pm));
++
++out_fp:
++	/* Bypass fp if not being required */
++	if (maxfp <= 1)
++		return 0;
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
++			   ESAI_xCCR_xFP_MASK, ESAI_xCCR_xFP(fp));
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
++			   ESAI_xCCR_xFP_MASK, ESAI_xCCR_xFP(fp));
++
++	return 0;
++}
++
++/*
++ * This function mainly configures the clock frequency of MCLK (HCK)
++ *
++ * @Parameters:
++ * clk_id: The clock source of HCK
++ *	  (Input from outside; output from inside, FSYS or EXTAL)
++ * freq: The required clock rate of HCK
++ * dir: The clock direction of HCK
++ *
++ * Note: If the direction is input, we do not care about clk_id.
++ */
++static int fsl_esai_set_dai_sysclk(struct snd_soc_dai *dai, int clk_id,
++				   unsigned int freq, int dir)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	bool in = dir == SND_SOC_CLOCK_IN;
++	u32 ret, ratio, ecr = 0;
++	unsigned long clk_rate;
++
++	/* sck_div can be only bypassed if ETO/ERO=0 and SNC_SOC_CLOCK_OUT */
++	esai_priv->sck_div = true;
++
++	/* Set the direction of HCK pins */
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
++			   ESAI_xCCR_xHCKD, in ? 0: ESAI_xCCR_xHCKD);
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
++			   ESAI_xCCR_xHCKD, in ? 0: ESAI_xCCR_xHCKD);
++
++	if (in)
++		goto out;
++
++	switch (clk_id) {
++	case ESAI_HCK_FSYS:
++		if (IS_ERR(esai_priv->fsysclk)) {
++			dev_err(dai->dev, "no assigned fsys clock\n");
++			return -EINVAL;
++		}
++		clk_rate = clk_get_rate(esai_priv->fsysclk);
++		break;
++	case ESAI_HCK_EXTAL:
++		if (IS_ERR(esai_priv->extalclk)) {
++			dev_err(dai->dev, "no assigned extal clock\n");
++			return -EINVAL;
++		}
++		clk_rate = clk_get_rate(esai_priv->extalclk);
++
++		ecr |= ESAI_ECR_ETI | ESAI_ECR_ERI;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	ratio = clk_rate / freq;
++	if (ratio * freq > clk_rate)
++		ret = ratio * freq - clk_rate;
++	else if (ratio * freq < clk_rate)
++		ret = clk_rate - ratio * freq;
++	else
++		ret = 0;
++
++	/* Block if clock source can not be divided into the required rate */
++	if (ret != 0 && clk_rate / ret < 1000) {
++		dev_err(dai->dev, "failed to derive the required frequency\n");
++		return -EINVAL;
++	}
++
++	if (ratio == 1) {
++		/* Bypass all the dividers if not being needed */
++		ecr |= ESAI_ECR_ETO | ESAI_ECR_ERO;
++		goto out;
++	}
++
++	ret = fsl_esai_divisor_cal(dai, ratio, false, 0);
++	if (ret)
++		return ret;
++
++	esai_priv->sck_div = false;
++
++out:
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_ECR,
++			   ESAI_ECR_ETI | ESAI_ECR_ETO |
++			   ESAI_ECR_ERI | ESAI_ECR_ERO, ecr);
++
++	return 0;
++}
++
++/*
++ * This function configures the ratio between MCLK (HCK) and BCLK (SCK)
++ * (For DAI Master Mode only)
++ *
++ * Note: Machine driver should calculate the ratio to call this function.
++ * 	 Only effective after calling set_dai_sysclk() to set HCK direction.
++ */
++static int fsl_esai_set_bclk_ratio(struct snd_soc_dai *dai, unsigned int ratio)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	u32 fp = esai_priv->sck_div ? 0 : ratio;
++
++	if (!esai_priv->sck_div && (ratio > 16 || ratio == 0)) {
++		dev_err(dai->dev, "the ratio is out of range (1 ~ 16)\n");
++		return -EINVAL;
++	}
++
++	return fsl_esai_divisor_cal(dai, ratio, true, fp);
++}
++
++/*
++ * This function provides a manual way to configure all the dividers directly
++ * (For DAI Master Mode only)
++ *
++ * By using this function, the driver would allow user to configure a flexible
++ * combination of divisors for both TX and RX route separately
++ *
++ * Note: Only effective after calling set_dai_sysclk() to set HCK direction
++ */
++static int fsl_esai_set_dai_clkdiv(struct snd_soc_dai *dai, int div_id, int div)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	bool tx = div_id <= ESAI_TX_DIV_FP;
++	u32 mask, val;
++
++	switch (div_id) {
++	case ESAI_TX_DIV_PSR:
++	case ESAI_RX_DIV_PSR:
++		mask = ESAI_xCCR_xPSR_MASK;
++		val = div ? ESAI_xCCR_xPSR_BYPASS : 0;
++		break;
++	case ESAI_TX_DIV_PM:
++	case ESAI_RX_DIV_PM:
++		mask = ESAI_xCCR_xPM_MASK;
++		val = ESAI_xCCR_xPM(div);
++		break;
++	case ESAI_TX_DIV_FP:
++	case ESAI_RX_DIV_FP:
++		mask = ESAI_xCCR_xFP_MASK;
++		val = ESAI_xCCR_xFP(div);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return regmap_update_bits(esai_priv->regmap, REG_ESAI_xCCR(tx), mask, val);
++}
++
++static int fsl_esai_set_dai_tdm_slot(struct snd_soc_dai *dai, u32 tx_mask,
++				     u32 rx_mask, int slots, int slot_width)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
++			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMA,
++			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(tx_mask));
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TSMB,
++			   ESAI_xSMA_xS_MASK, ESAI_xSMB_xS(tx_mask));
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
++			   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(slots));
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMA,
++			   ESAI_xSMA_xS_MASK, ESAI_xSMA_xS(rx_mask));
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RSMB,
++			   ESAI_xSMA_xS_MASK, ESAI_xSMB_xS(rx_mask));
++
++	esai_priv->slot_width = slot_width;
++
++	return 0;
++}
++
++static int fsl_esai_set_dai_fmt(struct snd_soc_dai *dai, unsigned int fmt)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	u32 xcr = 0, xccr = 0, mask;
++
++	/* DAI mode */
++	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
++	case SND_SOC_DAIFMT_I2S:
++		/* Data on rising edge of bclk, frame low, 1clk before data */
++		xcr |= ESAI_xCR_xFSR;
++		xccr |= ESAI_xCCR_xFSP | ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP;
++		break;
++	case SND_SOC_DAIFMT_LEFT_J:
++		/* Data on rising edge of bclk, frame high */
++		xccr |= ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP;
++		break;
++	case SND_SOC_DAIFMT_RIGHT_J:
++		/* Data on rising edge of bclk, frame high, right aligned */
++		xccr |= ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP | ESAI_xCR_xWA;
++		break;
++	case SND_SOC_DAIFMT_DSP_A:
++		/* Data on rising edge of bclk, frame high, 1clk before data */
++		xcr |= ESAI_xCR_xFSL | ESAI_xCR_xFSR;
++		xccr |= ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP;
++		break;
++	case SND_SOC_DAIFMT_DSP_B:
++		/* Data on rising edge of bclk, frame high */
++		xcr |= ESAI_xCR_xFSL;
++		xccr |= ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* DAI clock inversion */
++	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
++	case SND_SOC_DAIFMT_NB_NF:
++		/* Nothing to do for both normal cases */
++		break;
++	case SND_SOC_DAIFMT_IB_NF:
++		/* Invert bit clock */
++		xccr ^= ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP;
++		break;
++	case SND_SOC_DAIFMT_NB_IF:
++		/* Invert frame clock */
++		xccr ^= ESAI_xCCR_xFSP;
++		break;
++	case SND_SOC_DAIFMT_IB_IF:
++		/* Invert both clocks */
++		xccr ^= ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP | ESAI_xCCR_xFSP;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	/* DAI clock master masks */
++	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
++	case SND_SOC_DAIFMT_CBM_CFM:
++		break;
++	case SND_SOC_DAIFMT_CBS_CFM:
++		xccr |= ESAI_xCCR_xCKD;
++		break;
++	case SND_SOC_DAIFMT_CBM_CFS:
++		xccr |= ESAI_xCCR_xFSD;
++		break;
++	case SND_SOC_DAIFMT_CBS_CFS:
++		xccr |= ESAI_xCCR_xFSD | ESAI_xCCR_xCKD;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mask = ESAI_xCR_xFSL | ESAI_xCR_xFSR;
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR, mask, xcr);
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCR, mask, xcr);
++
++	mask = ESAI_xCCR_xCKP | ESAI_xCCR_xHCKP | ESAI_xCCR_xFSP |
++		ESAI_xCCR_xFSD | ESAI_xCCR_xCKD | ESAI_xCR_xWA;
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR, mask, xccr);
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR, mask, xccr);
++
++	return 0;
++}
++
++static int fsl_esai_startup(struct snd_pcm_substream *substream,
++			    struct snd_soc_dai *dai)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++
++	/* Some platforms might use the same bit to gate all three or two of
++	 * clocks, so keep all clocks open/close at the same time for safety
++	 */
++	clk_prepare_enable(esai_priv->coreclk);
++	if (!IS_ERR(esai_priv->extalclk))
++		clk_prepare_enable(esai_priv->extalclk);
++	if (!IS_ERR(esai_priv->fsysclk))
++		clk_prepare_enable(esai_priv->fsysclk);
++
++	if (!dai->active) {
++		/* Reset Port C */
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_PRRC,
++				   ESAI_PRRC_PDC_MASK, ESAI_PRRC_PDC(ESAI_GPIO));
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_PCRC,
++				   ESAI_PCRC_PC_MASK, ESAI_PCRC_PC(ESAI_GPIO));
++
++		/* Set synchronous mode */
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_SAICR,
++				   ESAI_SAICR_SYNC, esai_priv->synchronous ?
++				   ESAI_SAICR_SYNC : 0);
++
++		/* Set network mode */
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCR,
++				   ESAI_xCR_xMOD_MASK, esai_priv->network_mode ?
++				   ESAI_xCR_xMOD_NETWORK : 0);
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_RCR,
++				   ESAI_xCR_xMOD_MASK, esai_priv->network_mode ?
++				   ESAI_xCR_xMOD_NETWORK : 0);
++
++		/* Set a default slot number -- 2 */
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_TCCR,
++				   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(2));
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_RCCR,
++				   ESAI_xCCR_xDC_MASK, ESAI_xCCR_xDC(2));
++	}
++
++	return 0;
++}
++
++static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
++			      struct snd_pcm_hw_params *params,
++			      struct snd_soc_dai *dai)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++	u32 width = snd_pcm_format_width(params_format(params));
++	u32 channels = params_channels(params);
++	u32 mask, val;
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
++			   ESAI_xFCR_xFR_MASK, ESAI_xFCR_xFR);
++
++	mask = ESAI_xFCR_xFR_MASK | ESAI_xFCR_xWA_MASK | ESAI_xFCR_xFWM_MASK |
++	      (tx ? ESAI_xFCR_TE_MASK | ESAI_xFCR_TIEN : ESAI_xFCR_RE_MASK);
++	val = ESAI_xFCR_xWA(width) | ESAI_xFCR_xFWM(esai_priv->fifo_depth / 2) |
++	     (tx ? ESAI_xFCR_TE(channels) | ESAI_xFCR_TIEN : ESAI_xFCR_RE(channels));
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx), mask, val);
++
++	mask = ESAI_xCR_xSWS_MASK | (tx ? ESAI_xCR_PADC : 0);
++	val = ESAI_xCR_xSWS(esai_priv->slot_width, width) | (tx ? ESAI_xCR_PADC : 0);
++
++	regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx), mask, val);
++
++	return 0;
++}
++
++static void fsl_esai_shutdown(struct snd_pcm_substream *substream,
++			      struct snd_soc_dai *dai)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++
++	if (!IS_ERR(esai_priv->fsysclk))
++		clk_disable_unprepare(esai_priv->fsysclk);
++	if (!IS_ERR(esai_priv->extalclk))
++		clk_disable_unprepare(esai_priv->extalclk);
++	clk_disable_unprepare(esai_priv->coreclk);
++}
++
++static int fsl_esai_trigger(struct snd_pcm_substream *substream, int cmd,
++			    struct snd_soc_dai *dai)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++	u8 i, channels = substream->runtime->channels;
++
++	switch (cmd) {
++	case SNDRV_PCM_TRIGGER_START:
++	case SNDRV_PCM_TRIGGER_RESUME:
++	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
++				   ESAI_xFCR_xFEN_MASK, ESAI_xFCR_xFEN);
++
++		/* Write initial words reqiured by ESAI as normal procedure */
++		for (i = 0; tx && i < channels; i++)
++			regmap_write(esai_priv->regmap, REG_ESAI_ETDR, 0x0);
++
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
++				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK,
++				   tx ? ESAI_xCR_TE(channels) : ESAI_xCR_RE(channels));
++		break;
++	case SNDRV_PCM_TRIGGER_SUSPEND:
++	case SNDRV_PCM_TRIGGER_STOP:
++	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xCR(tx),
++				   tx ? ESAI_xCR_TE_MASK : ESAI_xCR_RE_MASK, 0);
++
++		/* Disable and reset FIFO */
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
++				   ESAI_xFCR_xFR | ESAI_xFCR_xFEN, ESAI_xFCR_xFR);
++		regmap_update_bits(esai_priv->regmap, REG_ESAI_xFCR(tx),
++				   ESAI_xFCR_xFR, 0);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static struct snd_soc_dai_ops fsl_esai_dai_ops = {
++	.startup = fsl_esai_startup,
++	.shutdown = fsl_esai_shutdown,
++	.trigger = fsl_esai_trigger,
++	.hw_params = fsl_esai_hw_params,
++	.set_sysclk = fsl_esai_set_dai_sysclk,
++	.set_bclk_ratio = fsl_esai_set_bclk_ratio,
++	.set_clkdiv = fsl_esai_set_dai_clkdiv,
++	.set_fmt = fsl_esai_set_dai_fmt,
++	.set_tdm_slot = fsl_esai_set_dai_tdm_slot,
++};
++
++static int fsl_esai_dai_probe(struct snd_soc_dai *dai)
++{
++	struct fsl_esai *esai_priv = snd_soc_dai_get_drvdata(dai);
++
++	snd_soc_dai_init_dma_data(dai, &esai_priv->dma_params_tx,
++				  &esai_priv->dma_params_rx);
++
++	return 0;
++}
++
++static struct snd_soc_dai_driver fsl_esai_dai = {
++	.probe = fsl_esai_dai_probe,
++	.playback = {
++		.channels_min = 1,
++		.channels_max = 12,
++		.rates = FSL_ESAI_RATES,
++		.formats = FSL_ESAI_FORMATS,
++	},
++	.capture = {
++		.channels_min = 1,
++		.channels_max = 8,
++		.rates = FSL_ESAI_RATES,
++		.formats = FSL_ESAI_FORMATS,
++	},
++	.ops = &fsl_esai_dai_ops,
++};
++
++static const struct snd_soc_component_driver fsl_esai_component = {
++	.name		= "fsl-esai",
++};
++
++static bool fsl_esai_readable_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case REG_ESAI_ERDR:
++	case REG_ESAI_ECR:
++	case REG_ESAI_ESR:
++	case REG_ESAI_TFCR:
++	case REG_ESAI_TFSR:
++	case REG_ESAI_RFCR:
++	case REG_ESAI_RFSR:
++	case REG_ESAI_RX0:
++	case REG_ESAI_RX1:
++	case REG_ESAI_RX2:
++	case REG_ESAI_RX3:
++	case REG_ESAI_SAISR:
++	case REG_ESAI_SAICR:
++	case REG_ESAI_TCR:
++	case REG_ESAI_TCCR:
++	case REG_ESAI_RCR:
++	case REG_ESAI_RCCR:
++	case REG_ESAI_TSMA:
++	case REG_ESAI_TSMB:
++	case REG_ESAI_RSMA:
++	case REG_ESAI_RSMB:
++	case REG_ESAI_PRRC:
++	case REG_ESAI_PCRC:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static bool fsl_esai_writeable_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case REG_ESAI_ETDR:
++	case REG_ESAI_ECR:
++	case REG_ESAI_TFCR:
++	case REG_ESAI_RFCR:
++	case REG_ESAI_TX0:
++	case REG_ESAI_TX1:
++	case REG_ESAI_TX2:
++	case REG_ESAI_TX3:
++	case REG_ESAI_TX4:
++	case REG_ESAI_TX5:
++	case REG_ESAI_TSR:
++	case REG_ESAI_SAICR:
++	case REG_ESAI_TCR:
++	case REG_ESAI_TCCR:
++	case REG_ESAI_RCR:
++	case REG_ESAI_RCCR:
++	case REG_ESAI_TSMA:
++	case REG_ESAI_TSMB:
++	case REG_ESAI_RSMA:
++	case REG_ESAI_RSMB:
++	case REG_ESAI_PRRC:
++	case REG_ESAI_PCRC:
++		return true;
++	default:
++		return false;
++	}
++}
++
++static const struct regmap_config fsl_esai_regmap_config = {
++	.reg_bits = 32,
++	.reg_stride = 4,
++	.val_bits = 32,
++
++	.max_register = REG_ESAI_PCRC,
++	.readable_reg = fsl_esai_readable_reg,
++	.writeable_reg = fsl_esai_writeable_reg,
++};
++
++static int fsl_esai_probe(struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	struct fsl_esai *esai_priv;
++	struct resource *res;
++	const uint32_t *iprop;
++	void __iomem *regs;
++	int irq, ret;
++
++	esai_priv = devm_kzalloc(&pdev->dev, sizeof(*esai_priv), GFP_KERNEL);
++	if (!esai_priv)
++		return -ENOMEM;
++
++	esai_priv->pdev = pdev;
++	strcpy(esai_priv->name, np->name);
++
++	/* Get the addresses and IRQ */
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	regs = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(regs))
++		return PTR_ERR(regs);
++
++	esai_priv->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
++			"core", regs, &fsl_esai_regmap_config);
++	if (IS_ERR(esai_priv->regmap)) {
++		dev_err(&pdev->dev, "failed to init regmap: %ld\n",
++				PTR_ERR(esai_priv->regmap));
++		return PTR_ERR(esai_priv->regmap);
++	}
++
++	esai_priv->coreclk = devm_clk_get(&pdev->dev, "core");
++	if (IS_ERR(esai_priv->coreclk)) {
++		dev_err(&pdev->dev, "failed to get core clock: %ld\n",
++				PTR_ERR(esai_priv->coreclk));
++		return PTR_ERR(esai_priv->coreclk);
++	}
++
++	esai_priv->extalclk = devm_clk_get(&pdev->dev, "extal");
++	if (IS_ERR(esai_priv->extalclk))
++		dev_warn(&pdev->dev, "failed to get extal clock: %ld\n",
++				PTR_ERR(esai_priv->extalclk));
++
++	esai_priv->fsysclk = devm_clk_get(&pdev->dev, "fsys");
++	if (IS_ERR(esai_priv->fsysclk))
++		dev_warn(&pdev->dev, "failed to get fsys clock: %ld\n",
++				PTR_ERR(esai_priv->fsysclk));
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0) {
++		dev_err(&pdev->dev, "no irq for node %s\n", np->full_name);
++		return irq;
++	}
++
++	ret = devm_request_irq(&pdev->dev, irq, esai_isr, 0,
++			       esai_priv->name, esai_priv);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to claim irq %u\n", irq);
++		return ret;
++	}
++
++	/* Set a default slot size */
++	esai_priv->slot_width = 32;
++
++	/* Determine the FIFO depth */
++	iprop = of_get_property(np, "fsl,fifo-depth", NULL);
++	if (iprop)
++		esai_priv->fifo_depth = be32_to_cpup(iprop);
++	else
++		esai_priv->fifo_depth = 64;
++
++	esai_priv->dma_params_tx.maxburst = esai_priv->fifo_depth > 1;
++	esai_priv->dma_params_rx.maxburst = esai_priv->fifo_depth > 1;
++	esai_priv->dma_params_tx.addr = res->start + REG_ESAI_ETDR;
++	esai_priv->dma_params_rx.addr = res->start + REG_ESAI_ERDR;
++
++	esai_priv->synchronous =
++		of_property_read_bool(np, "fsl,esai-synchronous");
++	esai_priv->network_mode =
++		of_property_read_bool(np, "fsl,esai-network-mode");
++
++	dev_set_drvdata(&pdev->dev, esai_priv);
++
++	ret = devm_snd_soc_register_component(&pdev->dev, &fsl_esai_component,
++					      &fsl_esai_dai, 1);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to register DAI: %d\n", ret);
++		return ret;
++	}
++
++	ret = imx_pcm_dma_init(pdev);
++	if (ret)
++		dev_err(&pdev->dev, "failed to init imx pcm dma: %d\n", ret);
++
++	/* Reset ESAI unit */
++	regmap_write(esai_priv->regmap, REG_ESAI_ECR, ESAI_ECR_ERST);
++
++	/* We need to enable ESAI so as to access some of its registers.
++	 * Otherwise, we would fail to dump regmap from user space.
++	 */
++	regmap_write(esai_priv->regmap, REG_ESAI_ECR, ESAI_ECR_ESAIEN);
++
++	return ret;
++}
++
++static const struct of_device_id fsl_esai_dt_ids[] = {
++	{ .compatible = "fsl,imx35-esai", },
++	{}
++};
++MODULE_DEVICE_TABLE(of, fsl_esai_dt_ids);
++
++static struct platform_driver fsl_esai_driver = {
++	.probe = fsl_esai_probe,
++	.driver = {
++		.name = "fsl-esai-dai",
++		.owner = THIS_MODULE,
++		.of_match_table = fsl_esai_dt_ids,
++	},
++};
++
++module_platform_driver(fsl_esai_driver);
++
++MODULE_AUTHOR("Freescale Semiconductor, Inc.");
++MODULE_DESCRIPTION("Freescale ESAI CPU DAI driver");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:fsl-esai-dai");
+diff --git a/sound/soc/fsl/fsl_esai.h b/sound/soc/fsl/fsl_esai.h
+new file mode 100644
+index 0000000..707189d
+--- /dev/null
++++ b/sound/soc/fsl/fsl_esai.h
+@@ -0,0 +1,348 @@
++/*
++ * fsl_esai.h - ALSA ESAI interface for the Freescale i.MX SoC
++ *
++ * Copyright (C) 2014 Freescale Semiconductor, Inc.
++ *
++ * Author: Nicolin Chen <Guangyu.Chen@freescale.com>
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2. This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
++
++#ifndef _FSL_ESAI_DAI_H
++#define _FSL_ESAI_DAI_H
++
++/* ESAI Register Map */
++#define REG_ESAI_ETDR		0x00
++#define REG_ESAI_ERDR		0x04
++#define REG_ESAI_ECR		0x08
++#define REG_ESAI_ESR		0x0C
++#define REG_ESAI_TFCR		0x10
++#define REG_ESAI_TFSR		0x14
++#define REG_ESAI_RFCR		0x18
++#define REG_ESAI_RFSR		0x1C
++#define REG_ESAI_xFCR(tx)	(tx ? REG_ESAI_TFCR : REG_ESAI_RFCR)
++#define REG_ESAI_xFSR(tx)	(tx ? REG_ESAI_TFSR : REG_ESAI_RFSR)
++#define REG_ESAI_TX0		0x80
++#define REG_ESAI_TX1		0x84
++#define REG_ESAI_TX2		0x88
++#define REG_ESAI_TX3		0x8C
++#define REG_ESAI_TX4		0x90
++#define REG_ESAI_TX5		0x94
++#define REG_ESAI_TSR		0x98
++#define REG_ESAI_RX0		0xA0
++#define REG_ESAI_RX1		0xA4
++#define REG_ESAI_RX2		0xA8
++#define REG_ESAI_RX3		0xAC
++#define REG_ESAI_SAISR		0xCC
++#define REG_ESAI_SAICR		0xD0
++#define REG_ESAI_TCR		0xD4
++#define REG_ESAI_TCCR		0xD8
++#define REG_ESAI_RCR		0xDC
++#define REG_ESAI_RCCR		0xE0
++#define REG_ESAI_xCR(tx)	(tx ? REG_ESAI_TCR : REG_ESAI_RCR)
++#define REG_ESAI_xCCR(tx)	(tx ? REG_ESAI_TCCR : REG_ESAI_RCCR)
++#define REG_ESAI_TSMA		0xE4
++#define REG_ESAI_TSMB		0xE8
++#define REG_ESAI_RSMA		0xEC
++#define REG_ESAI_RSMB		0xF0
++#define REG_ESAI_xSMA(tx)	(tx ? REG_ESAI_TSMA : REG_ESAI_RSMA)
++#define REG_ESAI_xSMB(tx)	(tx ? REG_ESAI_TSMB : REG_ESAI_RSMB)
++#define REG_ESAI_PRRC		0xF8
++#define REG_ESAI_PCRC		0xFC
++
++/* ESAI Control Register -- REG_ESAI_ECR 0x8 */
++#define ESAI_ECR_ETI_SHIFT	19
++#define ESAI_ECR_ETI_MASK	(1 << ESAI_ECR_ETI_SHIFT)
++#define ESAI_ECR_ETI		(1 << ESAI_ECR_ETI_SHIFT)
++#define ESAI_ECR_ETO_SHIFT	18
++#define ESAI_ECR_ETO_MASK	(1 << ESAI_ECR_ETO_SHIFT)
++#define ESAI_ECR_ETO		(1 << ESAI_ECR_ETO_SHIFT)
++#define ESAI_ECR_ERI_SHIFT	17
++#define ESAI_ECR_ERI_MASK	(1 << ESAI_ECR_ERI_SHIFT)
++#define ESAI_ECR_ERI		(1 << ESAI_ECR_ERI_SHIFT)
++#define ESAI_ECR_ERO_SHIFT	16
++#define ESAI_ECR_ERO_MASK	(1 << ESAI_ECR_ERO_SHIFT)
++#define ESAI_ECR_ERO		(1 << ESAI_ECR_ERO_SHIFT)
++#define ESAI_ECR_ERST_SHIFT	1
++#define ESAI_ECR_ERST_MASK	(1 << ESAI_ECR_ERST_SHIFT)
++#define ESAI_ECR_ERST		(1 << ESAI_ECR_ERST_SHIFT)
++#define ESAI_ECR_ESAIEN_SHIFT	0
++#define ESAI_ECR_ESAIEN_MASK	(1 << ESAI_ECR_ESAIEN_SHIFT)
++#define ESAI_ECR_ESAIEN		(1 << ESAI_ECR_ESAIEN_SHIFT)
++
++/* ESAI Status Register -- REG_ESAI_ESR 0xC */
++#define ESAI_ESR_TINIT_SHIFT	10
++#define ESAI_ESR_TINIT_MASK	(1 << ESAI_ESR_TINIT_SHIFT)
++#define ESAI_ESR_TINIT		(1 << ESAI_ESR_TINIT_SHIFT)
++#define ESAI_ESR_RFF_SHIFT	9
++#define ESAI_ESR_RFF_MASK	(1 << ESAI_ESR_RFF_SHIFT)
++#define ESAI_ESR_RFF		(1 << ESAI_ESR_RFF_SHIFT)
++#define ESAI_ESR_TFE_SHIFT	8
++#define ESAI_ESR_TFE_MASK	(1 << ESAI_ESR_TFE_SHIFT)
++#define ESAI_ESR_TFE		(1 << ESAI_ESR_TFE_SHIFT)
++#define ESAI_ESR_TLS_SHIFT	7
++#define ESAI_ESR_TLS_MASK	(1 << ESAI_ESR_TLS_SHIFT)
++#define ESAI_ESR_TLS		(1 << ESAI_ESR_TLS_SHIFT)
++#define ESAI_ESR_TDE_SHIFT	6
++#define ESAI_ESR_TDE_MASK	(1 << ESAI_ESR_TDE_SHIFT)
++#define ESAI_ESR_TDE		(1 << ESAI_ESR_TDE_SHIFT)
++#define ESAI_ESR_TED_SHIFT	5
++#define ESAI_ESR_TED_MASK	(1 << ESAI_ESR_TED_SHIFT)
++#define ESAI_ESR_TED		(1 << ESAI_ESR_TED_SHIFT)
++#define ESAI_ESR_TD_SHIFT	4
++#define ESAI_ESR_TD_MASK	(1 << ESAI_ESR_TD_SHIFT)
++#define ESAI_ESR_TD		(1 << ESAI_ESR_TD_SHIFT)
++#define ESAI_ESR_RLS_SHIFT	3
++#define ESAI_ESR_RLS_MASK	(1 << ESAI_ESR_RLS_SHIFT)
++#define ESAI_ESR_RLS		(1 << ESAI_ESR_RLS_SHIFT)
++#define ESAI_ESR_RDE_SHIFT	2
++#define ESAI_ESR_RDE_MASK	(1 << ESAI_ESR_RDE_SHIFT)
++#define ESAI_ESR_RDE		(1 << ESAI_ESR_RDE_SHIFT)
++#define ESAI_ESR_RED_SHIFT	1
++#define ESAI_ESR_RED_MASK	(1 << ESAI_ESR_RED_SHIFT)
++#define ESAI_ESR_RED		(1 << ESAI_ESR_RED_SHIFT)
++#define ESAI_ESR_RD_SHIFT	0
++#define ESAI_ESR_RD_MASK	(1 << ESAI_ESR_RD_SHIFT)
++#define ESAI_ESR_RD		(1 << ESAI_ESR_RD_SHIFT)
++
++/* Transmit FIFO Configuration Register -- REG_ESAI_TFCR 0x10
++ * Receive FIFO Configuration Register -- REG_ESAI_RFCR 0x18
++ */
++#define ESAI_xFCR_TIEN_SHIFT	19
++#define ESAI_xFCR_TIEN_MASK	(1 << ESAI_xFCR_TIEN_SHIFT)
++#define ESAI_xFCR_TIEN		(1 << ESAI_xFCR_TIEN_SHIFT)
++#define ESAI_xFCR_REXT_SHIFT	19
++#define ESAI_xFCR_REXT_MASK	(1 << ESAI_xFCR_REXT_SHIFT)
++#define ESAI_xFCR_REXT		(1 << ESAI_xFCR_REXT_SHIFT)
++#define ESAI_xFCR_xWA_SHIFT	16
++#define ESAI_xFCR_xWA_WIDTH	3
++#define ESAI_xFCR_xWA_MASK	(((1 << ESAI_xFCR_xWA_WIDTH) - 1) << ESAI_xFCR_xWA_SHIFT)
++#define ESAI_xFCR_xWA(v)	(((8 - (v >> 2)) << ESAI_xFCR_xWA_SHIFT) & ESAI_xFCR_xWA_MASK)
++#define ESAI_xFCR_xFWM_SHIFT	8
++#define ESAI_xFCR_xFWM_WIDTH	8
++#define ESAI_xFCR_xFWM_MASK	(((1 << ESAI_xFCR_xFWM_WIDTH) - 1) << ESAI_xFCR_xFWM_SHIFT)
++#define ESAI_xFCR_xFWM(v)	(((v - 1) << ESAI_xFCR_xFWM_SHIFT) & ESAI_xFCR_xFWM_MASK)
++#define ESAI_xFCR_xE_SHIFT	2
++#define ESAI_xFCR_TE_WIDTH	6
++#define ESAI_xFCR_RE_WIDTH	4
++#define ESAI_xFCR_TE_MASK	(((1 << ESAI_xFCR_TE_WIDTH) - 1) << ESAI_xFCR_xE_SHIFT)
++#define ESAI_xFCR_RE_MASK	(((1 << ESAI_xFCR_RE_WIDTH) - 1) << ESAI_xFCR_xE_SHIFT)
++#define ESAI_xFCR_TE(x) 	((ESAI_xFCR_TE_MASK >> (ESAI_xFCR_TE_WIDTH - ((x + 1) >> 1))) & ESAI_xFCR_TE_MASK)
++#define ESAI_xFCR_RE(x) 	((ESAI_xFCR_RE_MASK >> (ESAI_xFCR_RE_WIDTH - ((x + 1) >> 1))) & ESAI_xFCR_RE_MASK)
++#define ESAI_xFCR_xFR_SHIFT	1
++#define ESAI_xFCR_xFR_MASK	(1 << ESAI_xFCR_xFR_SHIFT)
++#define ESAI_xFCR_xFR		(1 << ESAI_xFCR_xFR_SHIFT)
++#define ESAI_xFCR_xFEN_SHIFT	0
++#define ESAI_xFCR_xFEN_MASK	(1 << ESAI_xFCR_xFEN_SHIFT)
++#define ESAI_xFCR_xFEN		(1 << ESAI_xFCR_xFEN_SHIFT)
++
++/* Transmit FIFO Status Register -- REG_ESAI_TFSR 0x14
++ * Receive FIFO Status Register --REG_ESAI_RFSR 0x1C
++ */
++#define ESAI_xFSR_NTFO_SHIFT	12
++#define ESAI_xFSR_NRFI_SHIFT	12
++#define ESAI_xFSR_NTFI_SHIFT	8
++#define ESAI_xFSR_NRFO_SHIFT	8
++#define ESAI_xFSR_NTFx_WIDTH	3
++#define ESAI_xFSR_NRFx_WIDTH	2
++#define ESAI_xFSR_NTFO_MASK	(((1 << ESAI_xFSR_NTFx_WIDTH) - 1) << ESAI_xFSR_NTFO_SHIFT)
++#define ESAI_xFSR_NTFI_MASK	(((1 << ESAI_xFSR_NTFx_WIDTH) - 1) << ESAI_xFSR_NTFI_SHIFT)
++#define ESAI_xFSR_NRFO_MASK	(((1 << ESAI_xFSR_NRFx_WIDTH) - 1) << ESAI_xFSR_NRFO_SHIFT)
++#define ESAI_xFSR_NRFI_MASK	(((1 << ESAI_xFSR_NRFx_WIDTH) - 1) << ESAI_xFSR_NRFI_SHIFT)
++#define ESAI_xFSR_xFCNT_SHIFT	0
++#define ESAI_xFSR_xFCNT_WIDTH	8
++#define ESAI_xFSR_xFCNT_MASK	(((1 << ESAI_xFSR_xFCNT_WIDTH) - 1) << ESAI_xFSR_xFCNT_SHIFT)
++
++/* ESAI Transmit Slot Register -- REG_ESAI_TSR 0x98 */
++#define ESAI_TSR_SHIFT		0
++#define ESAI_TSR_WIDTH		24
++#define ESAI_TSR_MASK		(((1 << ESAI_TSR_WIDTH) - 1) << ESAI_TSR_SHIFT)
++
++/* Serial Audio Interface Status Register -- REG_ESAI_SAISR 0xCC */
++#define ESAI_SAISR_TODFE_SHIFT	17
++#define ESAI_SAISR_TODFE_MASK	(1 << ESAI_SAISR_TODFE_SHIFT)
++#define ESAI_SAISR_TODFE	(1 << ESAI_SAISR_TODFE_SHIFT)
++#define ESAI_SAISR_TEDE_SHIFT	16
++#define ESAI_SAISR_TEDE_MASK	(1 << ESAI_SAISR_TEDE_SHIFT)
++#define ESAI_SAISR_TEDE		(1 << ESAI_SAISR_TEDE_SHIFT)
++#define ESAI_SAISR_TDE_SHIFT	15
++#define ESAI_SAISR_TDE_MASK	(1 << ESAI_SAISR_TDE_SHIFT)
++#define ESAI_SAISR_TDE		(1 << ESAI_SAISR_TDE_SHIFT)
++#define ESAI_SAISR_TUE_SHIFT	14
++#define ESAI_SAISR_TUE_MASK	(1 << ESAI_SAISR_TUE_SHIFT)
++#define ESAI_SAISR_TUE		(1 << ESAI_SAISR_TUE_SHIFT)
++#define ESAI_SAISR_TFS_SHIFT	13
++#define ESAI_SAISR_TFS_MASK	(1 << ESAI_SAISR_TFS_SHIFT)
++#define ESAI_SAISR_TFS		(1 << ESAI_SAISR_TFS_SHIFT)
++#define ESAI_SAISR_RODF_SHIFT	10
++#define ESAI_SAISR_RODF_MASK	(1 << ESAI_SAISR_RODF_SHIFT)
++#define ESAI_SAISR_RODF		(1 << ESAI_SAISR_RODF_SHIFT)
++#define ESAI_SAISR_REDF_SHIFT	9
++#define ESAI_SAISR_REDF_MASK	(1 << ESAI_SAISR_REDF_SHIFT)
++#define ESAI_SAISR_REDF		(1 << ESAI_SAISR_REDF_SHIFT)
++#define ESAI_SAISR_RDF_SHIFT	8
++#define ESAI_SAISR_RDF_MASK	(1 << ESAI_SAISR_RDF_SHIFT)
++#define ESAI_SAISR_RDF		(1 << ESAI_SAISR_RDF_SHIFT)
++#define ESAI_SAISR_ROE_SHIFT	7
++#define ESAI_SAISR_ROE_MASK	(1 << ESAI_SAISR_ROE_SHIFT)
++#define ESAI_SAISR_ROE		(1 << ESAI_SAISR_ROE_SHIFT)
++#define ESAI_SAISR_RFS_SHIFT	6
++#define ESAI_SAISR_RFS_MASK	(1 << ESAI_SAISR_RFS_SHIFT)
++#define ESAI_SAISR_RFS		(1 << ESAI_SAISR_RFS_SHIFT)
++#define ESAI_SAISR_IF2_SHIFT	2
++#define ESAI_SAISR_IF2_MASK	(1 << ESAI_SAISR_IF2_SHIFT)
++#define ESAI_SAISR_IF2		(1 << ESAI_SAISR_IF2_SHIFT)
++#define ESAI_SAISR_IF1_SHIFT	1
++#define ESAI_SAISR_IF1_MASK	(1 << ESAI_SAISR_IF1_SHIFT)
++#define ESAI_SAISR_IF1		(1 << ESAI_SAISR_IF1_SHIFT)
++#define ESAI_SAISR_IF0_SHIFT	0
++#define ESAI_SAISR_IF0_MASK	(1 << ESAI_SAISR_IF0_SHIFT)
++#define ESAI_SAISR_IF0		(1 << ESAI_SAISR_IF0_SHIFT)
++
++/* Serial Audio Interface Control Register -- REG_ESAI_SAICR 0xD0 */
++#define ESAI_SAICR_ALC_SHIFT	8
++#define ESAI_SAICR_ALC_MASK	(1 << ESAI_SAICR_ALC_SHIFT)
++#define ESAI_SAICR_ALC		(1 << ESAI_SAICR_ALC_SHIFT)
++#define ESAI_SAICR_TEBE_SHIFT	7
++#define ESAI_SAICR_TEBE_MASK	(1 << ESAI_SAICR_TEBE_SHIFT)
++#define ESAI_SAICR_TEBE		(1 << ESAI_SAICR_TEBE_SHIFT)
++#define ESAI_SAICR_SYNC_SHIFT	6
++#define ESAI_SAICR_SYNC_MASK	(1 << ESAI_SAICR_SYNC_SHIFT)
++#define ESAI_SAICR_SYNC		(1 << ESAI_SAICR_SYNC_SHIFT)
++#define ESAI_SAICR_OF2_SHIFT	2
++#define ESAI_SAICR_OF2_MASK	(1 << ESAI_SAICR_OF2_SHIFT)
++#define ESAI_SAICR_OF2		(1 << ESAI_SAICR_OF2_SHIFT)
++#define ESAI_SAICR_OF1_SHIFT	1
++#define ESAI_SAICR_OF1_MASK	(1 << ESAI_SAICR_OF1_SHIFT)
++#define ESAI_SAICR_OF1		(1 << ESAI_SAICR_OF1_SHIFT)
++#define ESAI_SAICR_OF0_SHIFT	0
++#define ESAI_SAICR_OF0_MASK	(1 << ESAI_SAICR_OF0_SHIFT)
++#define ESAI_SAICR_OF0		(1 << ESAI_SAICR_OF0_SHIFT)
++
++/* Transmit Control Register -- REG_ESAI_TCR 0xD4
++ * Receive Control Register -- REG_ESAI_RCR 0xDC
++ */
++#define ESAI_xCR_xLIE_SHIFT	23
++#define ESAI_xCR_xLIE_MASK	(1 << ESAI_xCR_xLIE_SHIFT)
++#define ESAI_xCR_xLIE		(1 << ESAI_xCR_xLIE_SHIFT)
++#define ESAI_xCR_xIE_SHIFT	22
++#define ESAI_xCR_xIE_MASK	(1 << ESAI_xCR_xIE_SHIFT)
++#define ESAI_xCR_xIE		(1 << ESAI_xCR_xIE_SHIFT)
++#define ESAI_xCR_xEDIE_SHIFT	21
++#define ESAI_xCR_xEDIE_MASK	(1 << ESAI_xCR_xEDIE_SHIFT)
++#define ESAI_xCR_xEDIE		(1 << ESAI_xCR_xEDIE_SHIFT)
++#define ESAI_xCR_xEIE_SHIFT	20
++#define ESAI_xCR_xEIE_MASK	(1 << ESAI_xCR_xEIE_SHIFT)
++#define ESAI_xCR_xEIE		(1 << ESAI_xCR_xEIE_SHIFT)
++#define ESAI_xCR_xPR_SHIFT	19
++#define ESAI_xCR_xPR_MASK	(1 << ESAI_xCR_xPR_SHIFT)
++#define ESAI_xCR_xPR		(1 << ESAI_xCR_xPR_SHIFT)
++#define ESAI_xCR_PADC_SHIFT	17
++#define ESAI_xCR_PADC_MASK	(1 << ESAI_xCR_PADC_SHIFT)
++#define ESAI_xCR_PADC		(1 << ESAI_xCR_PADC_SHIFT)
++#define ESAI_xCR_xFSR_SHIFT	16
++#define ESAI_xCR_xFSR_MASK	(1 << ESAI_xCR_xFSR_SHIFT)
++#define ESAI_xCR_xFSR		(1 << ESAI_xCR_xFSR_SHIFT)
++#define ESAI_xCR_xFSL_SHIFT	15
++#define ESAI_xCR_xFSL_MASK	(1 << ESAI_xCR_xFSL_SHIFT)
++#define ESAI_xCR_xFSL		(1 << ESAI_xCR_xFSL_SHIFT)
++#define ESAI_xCR_xSWS_SHIFT	10
++#define ESAI_xCR_xSWS_WIDTH	5
++#define ESAI_xCR_xSWS_MASK	(((1 << ESAI_xCR_xSWS_WIDTH) - 1) << ESAI_xCR_xSWS_SHIFT)
++#define ESAI_xCR_xSWS(s, w)	((w < 24 ? (s - w + ((w -8) >> 2)) : (s < 32 ? 0x1e : 0x1f)) << ESAI_xCR_xSWS_SHIFT)
++#define ESAI_xCR_xMOD_SHIFT	8
++#define ESAI_xCR_xMOD_WIDTH	2
++#define ESAI_xCR_xMOD_MASK	(((1 << ESAI_xCR_xMOD_WIDTH) - 1) << ESAI_xCR_xMOD_SHIFT)
++#define ESAI_xCR_xMOD_ONDEMAND	(0x1 << ESAI_xCR_xMOD_SHIFT)
++#define ESAI_xCR_xMOD_NETWORK	(0x1 << ESAI_xCR_xMOD_SHIFT)
++#define ESAI_xCR_xMOD_AC97	(0x3 << ESAI_xCR_xMOD_SHIFT)
++#define ESAI_xCR_xWA_SHIFT	7
++#define ESAI_xCR_xWA_MASK	(1 << ESAI_xCR_xWA_SHIFT)
++#define ESAI_xCR_xWA		(1 << ESAI_xCR_xWA_SHIFT)
++#define ESAI_xCR_xSHFD_SHIFT	6
++#define ESAI_xCR_xSHFD_MASK	(1 << ESAI_xCR_xSHFD_SHIFT)
++#define ESAI_xCR_xSHFD		(1 << ESAI_xCR_xSHFD_SHIFT)
++#define ESAI_xCR_xE_SHIFT	0
++#define ESAI_xCR_TE_WIDTH	6
++#define ESAI_xCR_RE_WIDTH	4
++#define ESAI_xCR_TE_MASK	(((1 << ESAI_xCR_TE_WIDTH) - 1) << ESAI_xCR_xE_SHIFT)
++#define ESAI_xCR_RE_MASK	(((1 << ESAI_xCR_RE_WIDTH) - 1) << ESAI_xCR_xE_SHIFT)
++#define ESAI_xCR_TE(x) 		((ESAI_xCR_TE_MASK >> (ESAI_xCR_TE_WIDTH - ((x + 1) >> 1))) & ESAI_xCR_TE_MASK)
++#define ESAI_xCR_RE(x) 		((ESAI_xCR_RE_MASK >> (ESAI_xCR_RE_WIDTH - ((x + 1) >> 1))) & ESAI_xCR_RE_MASK)
++
++/* Transmit Clock Control Register -- REG_ESAI_TCCR 0xD8
++ * Receive Clock Control Register -- REG_ESAI_RCCR 0xE0
++ */
++#define ESAI_xCCR_xHCKD_SHIFT	23
++#define ESAI_xCCR_xHCKD_MASK	(1 << ESAI_xCCR_xHCKD_SHIFT)
++#define ESAI_xCCR_xHCKD		(1 << ESAI_xCCR_xHCKD_SHIFT)
++#define ESAI_xCCR_xFSD_SHIFT	22
++#define ESAI_xCCR_xFSD_MASK	(1 << ESAI_xCCR_xFSD_SHIFT)
++#define ESAI_xCCR_xFSD		(1 << ESAI_xCCR_xFSD_SHIFT)
++#define ESAI_xCCR_xCKD_SHIFT	21
++#define ESAI_xCCR_xCKD_MASK	(1 << ESAI_xCCR_xCKD_SHIFT)
++#define ESAI_xCCR_xCKD		(1 << ESAI_xCCR_xCKD_SHIFT)
++#define ESAI_xCCR_xHCKP_SHIFT	20
++#define ESAI_xCCR_xHCKP_MASK	(1 << ESAI_xCCR_xHCKP_SHIFT)
++#define ESAI_xCCR_xHCKP		(1 << ESAI_xCCR_xHCKP_SHIFT)
++#define ESAI_xCCR_xFSP_SHIFT	19
++#define ESAI_xCCR_xFSP_MASK	(1 << ESAI_xCCR_xFSP_SHIFT)
++#define ESAI_xCCR_xFSP		(1 << ESAI_xCCR_xFSP_SHIFT)
++#define ESAI_xCCR_xCKP_SHIFT	18
++#define ESAI_xCCR_xCKP_MASK	(1 << ESAI_xCCR_xCKP_SHIFT)
++#define ESAI_xCCR_xCKP		(1 << ESAI_xCCR_xCKP_SHIFT)
++#define ESAI_xCCR_xFP_SHIFT	14
++#define ESAI_xCCR_xFP_WIDTH	4
++#define ESAI_xCCR_xFP_MASK	(((1 << ESAI_xCCR_xFP_WIDTH) - 1) << ESAI_xCCR_xFP_SHIFT)
++#define ESAI_xCCR_xFP(v)	(((v - 1) << ESAI_xCCR_xFP_SHIFT) & ESAI_xCCR_xFP_MASK)
++#define ESAI_xCCR_xDC_SHIFT     9
++#define ESAI_xCCR_xDC_WIDTH	4
++#define ESAI_xCCR_xDC_MASK	(((1 << ESAI_xCCR_xDC_WIDTH) - 1) << ESAI_xCCR_xDC_SHIFT)
++#define ESAI_xCCR_xDC(v)	(((v - 1) << ESAI_xCCR_xDC_SHIFT) & ESAI_xCCR_xDC_MASK)
++#define ESAI_xCCR_xPSR_SHIFT	8
++#define ESAI_xCCR_xPSR_MASK	(1 << ESAI_xCCR_xPSR_SHIFT)
++#define ESAI_xCCR_xPSR_BYPASS	(1 << ESAI_xCCR_xPSR_SHIFT)
++#define ESAI_xCCR_xPSR_DIV8	(0 << ESAI_xCCR_xPSR_SHIFT)
++#define ESAI_xCCR_xPM_SHIFT     0
++#define ESAI_xCCR_xPM_WIDTH     8
++#define ESAI_xCCR_xPM_MASK	(((1 << ESAI_xCCR_xPM_WIDTH) - 1) << ESAI_xCCR_xPM_SHIFT)
++#define ESAI_xCCR_xPM(v)	(((v - 1) << ESAI_xCCR_xPM_SHIFT) & ESAI_xCCR_xPM_MASK)
++
++/* Transmit Slot Mask Register A/B -- REG_ESAI_TSMA/B 0xE4 - 0xF0 */
++#define ESAI_xSMA_xS_SHIFT	0
++#define ESAI_xSMA_xS_WIDTH	16
++#define ESAI_xSMA_xS_MASK	(((1 << ESAI_xSMA_xS_WIDTH) - 1) << ESAI_xSMA_xS_SHIFT)
++#define ESAI_xSMA_xS(v)		(v & ESAI_xSMA_xS_MASK)
++#define ESAI_xSMB_xS_SHIFT	0
++#define ESAI_xSMB_xS_WIDTH	16
++#define ESAI_xSMB_xS_MASK	(((1 << ESAI_xSMB_xS_WIDTH) - 1) << ESAI_xSMB_xS_SHIFT)
++#define ESAI_xSMB_xS(v)		((v >> ESAI_xSMA_xS_WIDTH) & ESAI_xSMA_xS_MASK)
++
++/* Port C Direction Register -- REG_ESAI_PRRC 0xF8 */
++#define ESAI_PRRC_PDC_SHIFT	0
++#define ESAI_PRRC_PDC_WIDTH	12
++#define ESAI_PRRC_PDC_MASK	(((1 << ESAI_PRRC_PDC_WIDTH) - 1) << ESAI_PRRC_PDC_SHIFT)
++#define ESAI_PRRC_PDC(v)	(v & ESAI_PRRC_PDC_MASK)
++
++/* Port C Control Register -- REG_ESAI_PCRC 0xFC */
++#define ESAI_PCRC_PC_SHIFT	0
++#define ESAI_PCRC_PC_WIDTH	12
++#define ESAI_PCRC_PC_MASK	(((1 << ESAI_PCRC_PC_WIDTH) - 1) << ESAI_PCRC_PC_SHIFT)
++#define ESAI_PCRC_PC(v)		(v & ESAI_PCRC_PC_MASK)
++
++#define ESAI_GPIO		0xfff
++
++/* ESAI clock source */
++#define ESAI_HCK_FSYS		0
++#define ESAI_HCK_EXTAL		1
++
++/* ESAI clock divider */
++#define ESAI_TX_DIV_PSR		0
++#define ESAI_TX_DIV_PM		1
++#define ESAI_TX_DIV_FP		2
++#define ESAI_RX_DIV_PSR		3
++#define ESAI_RX_DIV_PM		4
++#define ESAI_RX_DIV_FP		5
++#endif /* _FSL_ESAI_DAI_H */
 -- 
-1.8.5.2
+1.8.4
