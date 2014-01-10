@@ -3,20 +3,18 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3E51C2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 23:05:16 +1100 (EST)
-Date: Fri, 10 Jan 2014 12:04:39 +0000
+ by ozlabs.org (Postfix) with ESMTPS id 91BB92C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 23:54:48 +1100 (EST)
+Date: Fri, 10 Jan 2014 12:52:31 +0000
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Message-ID: <20140110120439.GG29039@sirena.org.uk>
-References: <1389265078-16256-1-git-send-email-Guangyu.Chen@freescale.com>
- <20140109184453.GP12858@sirena.org.uk>
- <20140110023252.GA16467@MrMyself> <20140110023537.GB16467@MrMyself>
+Message-ID: <20140110125231.GK29039@sirena.org.uk>
+References: <1389347646-20432-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="fCcDWlUEdh43YKr8"
-In-Reply-To: <20140110023537.GB16467@MrMyself>
-Subject: Re: [PATCH v2] ASoC: fsl_esai: Add ESAI CPU DAI driver
+ protocol="application/pgp-signature"; boundary="VJJoKLVEFXdmHQwR"
+In-Reply-To: <1389347646-20432-1-git-send-email-Guangyu.Chen@freescale.com>
+Subject: Re: [PATCH v3] ASoC: fsl_esai: Add ESAI CPU DAI driver
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
  alsa-devel@alsa-project.org, shawn.guo@linaro.org, pawel.moll@arm.com,
  ijc+devicetree@hellion.org.uk, tiwai@suse.de, linux-kernel@vger.kernel.org,
@@ -33,65 +31,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---fCcDWlUEdh43YKr8
+--VJJoKLVEFXdmHQwR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Jan 10, 2014 at 10:35:39AM +0800, Nicolin Chen wrote:
+On Fri, Jan 10, 2014 at 05:54:06PM +0800, Nicolin Chen wrote:
+> This patch implements a device-tree-only CPU DAI driver for Freescale ESAI
+> controller that supports:
 
-> Resent this because of losing attached file.
+Applied, thanks.
 
-I don't think your previous mail got sent at all, or at least it must've
-been caught by spam filters here...
-
-> On Fri, Jan 10, 2014 at 10:32:52AM +0800, Nicolin Chen wrote:
-> > On Thu, Jan 09, 2014 at 06:44:53PM +0000, Mark Brown wrote:
-
-> > > Why does the machine driver have to do this by hand, being able to
-> > > override is fine but having sensible defaults is easier?  Or does it
-> > > actually do that and the comment just needs updating?
-
-> > The divider part of ESAI is pretty complicated due to caring about three
-> > configure bits - ETO, ETI, HCKD. (I've attached a diagram to this mail.)
-> > So setting sysclk() alone is not enough to take care all the configurations.
-> > That's why I designed these two interfaces at the first place. And it should
-> > be hard to find a default situation.
-
-Why is the machine driver going to be able to come up with a sensible
-configuration then?  It's OK to support overriding the configuration
-where needed, my concern is about providing a default.
-
-> > But there is one approach to omit this calling for machine driver is to do
-> > the set_bclk_ratio() at this CPU DAI driver. And this might be a good idea
-> > because we can then separate the settings between PLAYBACK and CAPTURE, even
-> > though we might then need to check the Master or Slave state to apply the
-> > settings accordingly.
-
-This is about what I'd expect but then surely the next step is for the
-driver to choose a defualt BCLK ratio - that's how most drivers work,
-they try to generate the exact rate that is needed to clock the data.
-Are the bit clock shared between playback and capture?
-
---fCcDWlUEdh43YKr8
+--VJJoKLVEFXdmHQwR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJSz+HUAAoJELSic+t+oim9oDYP/1b4VUYEQq2BGjz+hdjrx5XW
-Tv90KklVlfXZBxkMbusrvB04uuZiHTUipz7tVsSxK4hE56Ye5M5DUavS8cUeoOqU
-Lp4x0RbXGVLPncnX3Af7HXUg3Z7qXUrO+3lnX4nrll7pJJvggN0Uud7YYGvjxNZt
-rm0Wh78h272Oyb4ECdUtQivX6csLqj40E3KIiZfJ/GUmh2ji07GXNwbcr4Be6Twf
-bwE81FfgB1tJ0GZdl1emQTS/h7F8YQgEo72S0G5wY/XfXys+mECrfdtxXvVeLtVv
-Uzd3VPPVKsnYE4ZO0sSsgG7DpJP3pjQWah5xOZ7Vrg/vQreB7Ucdfvs8FhZvJO9l
-nSrGXKUwACAIsO/oedvJCaQ2zcFTGC9foGsuSNH/xaCKITdtA7RfwIJCiGf0vtF9
-i0qO48wkMf+KABaWYbuVX5EZehWoZj9rrrb1j+LZNVKx5UhIKnscls9CmIiSPLEw
-EwarmZ7AOovRTIgJWx6LyhXGiJzcfatugeKQVTkNFgruhlvNAfv49J5ZySBhvKI6
-zwmk8OLkUszFzDbwAoyJYh7JsTQsA6u1KL4O2pQ2CTdp7tmrm7GaBX//4uNydgl6
-NuVwIuHSrpl4thC9YpofAWo3bHF22zPZ8SGpLDbMQsYj809WwRWm2x71ItBPV7uT
-EXyp1eDAIpXyx0Jepi3S
-=vciL
+iQIcBAEBAgAGBQJSz+0LAAoJELSic+t+oim91akP/2mtB/1hNpiDcevh1qECfDrT
+EbvzZIEfN5bJQCjSsA1j4uv/2wz7u3teazfK1SmQHcBv7IF6McpQktdZD5KaP0LO
+sXmV3o6qCfm7ZflKt2fjU2CtnVO1/PFwxfdNhxG+BZ7n8IqwW7EF/Oyvg0a8FAbx
+jI9wxpur/hnqBbQGCi+g/NZ5RFouoH9EJ6W2YnSuCqMT/h/ifTX2gjf0GLlDJ/ip
+Q0fqFfwZPaxFJzUQrEHl7THfEr9MkZswgD6eY8a/bw9Nb5R3a6d1TsToFipco6Zl
+XedQyIBU33hgbq/l471+YH3RtNNQW2PTYP75+Aj1glQxxY0n1MplF7A06obKnBpe
+f9m2WD+6j1fVX0nQVsLXpdN5mcKTk1H0NumOWqi+CQpk9ZYivupXNoKDdq8pk+bX
+DRaQ0yGuheuPCr9BSnK20c1PRnPRwgpaqBfhbd4vZHiuIZFH+TMFz2q2w6IXnE4z
+NDuLj2oAy6BNGb0hCK9FVXXmHnGCKdXaugVoWkp8EG47D2DI2D4sU2Cx1Y/kzbot
+U54pvApJaKaADtFyAm2Z0t1GzCN1TgmAsJa4K1J/tF3S7/0IrD49XzGGQtPB5QP5
+3ZvYG9iemHZoEfJiPzhQQZRCHCO6WCEuLgqFRMk3p75ZAx3FYxdv3XCRH6FMgR11
+JA6UEdXSAb+Gl9OMKVLX
+=yaEU
 -----END PGP SIGNATURE-----
 
---fCcDWlUEdh43YKr8--
+--VJJoKLVEFXdmHQwR--
