@@ -1,20 +1,29 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <Yuantian.Tang@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0152.outbound.protection.outlook.com [207.46.163.152])
+ (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A352F2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 10:51:49 +1100 (EST)
-Date: Thu, 9 Jan 2014 17:51:34 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Subject: Re: [v6,4/4] powerpc/85xx: add sysfs for pw20 state and altivec idle
-Message-ID: <20140109235134.GA24262@home.buserror.net>
-References: <1387268222-9703-4-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9CFDB2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Jan 2014 13:38:25 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: =?utf-8?B?UkU6IOetlOWkjTogW3Y3XSBjbGs6IGNvcmVuZXQ6IEFkZHMgdGhlIGNsb2Nr?=
+ =?utf-8?Q?_binding?=
+Date: Fri, 10 Jan 2014 02:38:14 +0000
+Message-ID: <113a64f56876498ca32a6f050d174eb8@BL2PR03MB115.namprd03.prod.outlook.com>
+References: <1384938289-24713-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20140108002115.GA19801@home.buserror.net>
+ <375c32b2f4e34589ae336af61468a51b@BL2PR03MB115.namprd03.prod.outlook.com>
+ <20140108093046.GB6701@e106331-lin.cambridge.arm.com>
+ <1389206619.25654.9.camel@snotra.buserror.net>
+ <e15511a79a9d4446a826da8d9ceec229@BL2PR03MB115.namprd03.prod.outlook.com>
+ <1389302368.14390.33.camel@snotra.buserror.net>
+In-Reply-To: <1389302368.14390.33.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1387268222-9703-4-git-send-email-dongsheng.wang@freescale.com>
-Cc: Bharat.Bhushan@freescale.com, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,92 +33,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 17, 2013 at 04:17:02PM +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> Add a sys interface to enable/diable pw20 state or altivec idle, and
-> control the wait entry time.
-> 
-> Enable/Disable interface:
->     0, disable. 1, enable.
->     /sys/devices/system/cpu/cpuX/pw20_state
->     /sys/devices/system/cpu/cpuX/altivec_idle
-> 
-> Set wait time interface:(Nanosecond)
->     /sys/devices/system/cpu/cpuX/pw20_wait_time
->     /sys/devices/system/cpu/cpuX/altivec_idle_wait_time
-> Example: Base on TBfreq is 41MHZ.
->     1~48(ns): TB[63]
->     49~97(ns): TB[62]
->     98~195(ns): TB[61]
->     196~390(ns): TB[60]
->     391~780(ns): TB[59]
->     781~1560(ns): TB[58]
->     ...
-> 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-
-This causes ppc6xx_defconfig to fail to build:
-
-  CC      arch/powerpc/kernel/sysfs.o
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'show_pw20_state':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:125:11: error: 'PWRMGTCR0_PW20_WAIT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:125:11: note: each undeclared identifier is reported only once for each function it appears in
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'do_store_pw20_state':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:138:17: error: 'PWRMGTCR0_PW20_WAIT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'show_pw20_wait_time':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:174:20: error: 'PWRMGTCR0_PW20_ENT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:175:6: error: 'PWRMGTCR0_PW20_ENT_SHIFT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'set_pw20_wait_entry_bit':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:204:16: error: 'PWRMGTCR0_PW20_ENT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:207:33: error: 'PWRMGTCR0_PW20_ENT_SHIFT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'show_altivec_idle':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:247:11: error: 'PWRMGTCR0_AV_IDLE_PD_EN' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'do_store_altivec_idle':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:260:19: error: 'PWRMGTCR0_AV_IDLE_PD_EN' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'show_altivec_idle_wait_time':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:296:20: error: 'PWRMGTCR0_AV_IDLE_CNT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:297:6: error: 'PWRMGTCR0_AV_IDLE_CNT_SHIFT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c: In function 'set_altivec_idle_wait_entry_bit':
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:326:19: error: 'PWRMGTCR0_AV_IDLE_CNT' undeclared (first use in this function)
-/home/scott/fsl/git/linux/upstream/arch/powerpc/kernel/sysfs.c:329:36: error: 'PWRMGTCR0_AV_IDLE_CNT_SHIFT' undeclared (first use in this function)
-make[2]: *** [arch/powerpc/kernel/sysfs.o] Error 1
-make[1]: *** [arch/powerpc/kernel] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [sub-make] Error 2
-
-I'll fix when applying with this:
-
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 9af9e37..d4a43e6 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -86,7 +86,7 @@ __setup("smt-snooze-delay=", setup_smt_snooze_delay);
- 
- #endif /* CONFIG_PPC64 */
- 
--#ifdef CONFIG_FSL_SOC
-+#ifdef CONFIG_PPC_FSL_BOOK3E
- #define MAX_BIT				63
- 
- static u64 pw20_wt;
-@@ -723,7 +723,7 @@ static void register_cpu_online(unsigned int cpu)
- 		device_create_file(s, &dev_attr_pir);
- #endif /* CONFIG_PPC64 */
- 
--#ifdef CONFIG_FSL_SOC
-+#ifdef CONFIG_PPC_FSL_BOOK3E
- 	if (PVR_VER(cur_cpu_spec->pvr_value) == PVR_VER_E6500) {
- 		device_create_file(s, &dev_attr_pw20_state);
- 		device_create_file(s, &dev_attr_pw20_wait_time);
-@@ -804,7 +804,7 @@ static void unregister_cpu_online(unsigned int cpu)
- 		device_remove_file(s, &dev_attr_pir);
- #endif /* CONFIG_PPC64 */
- 
--#ifdef CONFIG_FSL_SOC
-+#ifdef CONFIG_PPC_FSL_BOOK3E
- 	if (PVR_VER(cur_cpu_spec->pvr_value) == PVR_VER_E6500) {
- 		device_remove_file(s, &dev_attr_pw20_state);
- 		device_remove_file(s, &dev_attr_pw20_wait_time);
-
--Scott
+VGhhbmtzIGZvciB5b3VyIHJldmlldy4gSSB3aWxsIHNlbmQgbmV4dCB2ZXJzaW9uIG9mIHBhdGNo
+Lg0KDQpUaGFua3MsDQpZdWFudGlhbg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogMjAxNOW5tDHmnIgxMOaXpSDmmJ/m
+nJ/kupQgNToxOQ0KPiBUbzogVGFuZyBZdWFudGlhbi1CMjk5ODMNCj4gQ2M6IE1hcmsgUnV0bGFu
+ZDsgZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7
+DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiDnrZTlpI06
+IFt2N10gY2xrOiBjb3JlbmV0OiBBZGRzIHRoZSBjbG9jayBiaW5kaW5nDQo+IA0KPiBPbiBXZWQs
+IDIwMTQtMDEtMDggYXQgMjA6NTcgLTA2MDAsIFRhbmcgWXVhbnRpYW4tQjI5OTgzIHdyb3RlOg0K
+PiA+IFRoYW5rcyBmb3IgeW91IHJldmlldy4NCj4gPiBTZWUgbXkgcmVzcG9uc2UgaW5saW5lLg0K
+PiA+DQo+ID4gVGhhbmtzLA0KPiA+IFl1YW50aWFuDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDog
+MjAxNOW5tDHmnIg55pelIOaYn+acn+WbmyAyOjQ0DQo+ID4gPiBUbzogTWFyayBSdXRsYW5kDQo+
+ID4gPiBDYzogVGFuZyBZdWFudGlhbi1CMjk5ODM7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7
+DQo+ID4gPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiDnrZTlpI06IFt2N10gY2xrOiBjb3JlbmV0OiBB
+ZGRzIHRoZSBjbG9jayBiaW5kaW5nDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAyMDE0LTAxLTA4IGF0
+IDA5OjMwICswMDAwLCBNYXJrIFJ1dGxhbmQgd3JvdGU6DQo+ID4gPiA+IE9uIFdlZCwgSmFuIDA4
+LCAyMDE0IGF0IDA4OjUzOjU2QU0gKzAwMDAsIFl1YW50aWFuIFRhbmcgd3JvdGU6DQo+ID4gPiA+
+ID4NCj4gPiA+ID4gPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+
+ID4gPiA+ID4g5Y+R5Lu25Lq6OiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gPiA+IOWPkemAgeaX
+tumXtDogMjAxNOW5tDHmnIg45pelIDg6MjENCj4gPiA+ID4gPiDmlLbku7bkuro6IFRhbmcgWXVh
+bnRpYW4tQjI5OTgzDQo+ID4gPiA+ID4g5oqE6YCBOiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3Jn
+OyBtYXJrLnJ1dGxhbmRAYXJtLmNvbTsNCj4gPiA+ID4gPiBkZXZpY2V0cmVlQHZnZXIua2VybmVs
+Lm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+ID4gPiDkuLvpopg6IFJl
+OiBbdjddIGNsazogY29yZW5ldDogQWRkcyB0aGUgY2xvY2sgYmluZGluZw0KPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gT24gV2VkLCBOb3YgMjAsIDIwMTMgYXQgMDU6MDQ6NDlQTSArMDgwMCwgdGFuZyB5
+dWFudGlhbiB3cm90ZToNCj4gPiA+ID4gPiA+ICtSZWNvbW1lbmRlZCBwcm9wZXJ0aWVzOg0KPiA+
+ID4gPiA+ID4gKy0gcmFuZ2VzOiBBbGxvd3MgdmFsaWQgdHJhbnNsYXRpb24gYmV0d2VlbiBjaGls
+ZCdzIGFkZHJlc3MNCj4gPiA+ID4gPiA+ICtzcGFjZQ0KPiA+ID4gYW5kDQo+ID4gPiA+ID4gPiAr
+ICAgICBwYXJlbnQncy4gTXVzdCBiZSBwcmVzZW50IGlmIHRoZSBkZXZpY2UgaGFzIHN1Yi1ub2Rl
+cy4NCj4gPiA+ID4gPiA+ICstICNhZGRyZXNzLWNlbGxzOiBTcGVjaWZpZXMgdGhlIG51bWJlciBv
+ZiBjZWxscyB1c2VkIHRvDQo+IHJlcHJlc2VudA0KPiA+ID4gPiA+ID4gKyAgICAgcGh5c2ljYWwg
+YmFzZSBhZGRyZXNzZXMuICBNdXN0IGJlIHByZXNlbnQgaWYgdGhlIGRldmljZQ0KPiBoYXMNCj4g
+PiA+ID4gPiA+ICsgICAgIHN1Yi1ub2RlcyBhbmQgc2V0IHRvIDEgaWYgcHJlc2VudA0KPiA+ID4g
+PiA+ID4gKy0gI3NpemUtY2VsbHM6IFNwZWNpZmllcyB0aGUgbnVtYmVyIG9mIGNlbGxzIHVzZWQg
+dG8gcmVwcmVzZW50DQo+ID4gPiA+ID4gPiArICAgICB0aGUgc2l6ZSBvZiBhbiBhZGRyZXNzLiBN
+dXN0IGJlIHByZXNlbnQgaWYgdGhlIGRldmljZSBoYXMNCj4gPiA+ID4gPiA+ICsgICAgIHN1Yi1u
+b2RlcyBhbmQgc2V0IHRvIDEgaWYgcHJlc2VudA0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gV2h5IGFy
+ZSB3ZSBzcGVjaWZ5aW5nICNhZGRyZXNzLWNlbGxzLyNzaXplLWNlbGxzIGhlcmU/DQo+ID4gPiA+
+ID4NCj4gPiA+ID4gPiBBOiBpdCBoYXMgc3ViLW5vZGVzIHdoaWNoIGhhdmUgUkVHIHByb3BlcnR5
+LCBkb24ndCB3ZSBuZWVkIHRvDQo+ID4gPiA+ID4gc3BlY2lmeSAjYWRkcmVzcy1jZWxscy8jc2l6
+ZS1jZWxscz8NCj4gPiA+ID4NCj4gPiA+ID4gSWYgYSBub2RlIGhhcyBhIHJlZyBlbnRyeSwgaXRz
+IHBhcmVudCBzaG91bGQgaGF2ZSAjc2l6ZS1jZWxscyBhbmQNCj4gPiA+ID4gI2FkZHJlc3MtY2Vs
+bHMgdG8gYWxsb3cgaXQgdG8gYmUgcGFyc2VkIHByb3Blcmx5Lg0KPiA+ID4NCj4gPiA+IFllcywg
+YnV0IHdoeSBkbyB3ZSBuZWVkIHRvIHNwZWNpZnkgaW4gdGhpcyBiaW5kaW5nIGhvdyBtYW55IGNl
+bGxzDQo+ID4gPiB0aGVyZSB3aWxsIGJlLCBlc3BlY2lhbGx5IHNpbmNlIHRoaXMgYmluZGluZyBv
+bmx5IGFkZHJlc3NlcyB0aGUNCj4gPiA+IGNsb2NrIHByb3ZpZGVyIGFzcGVjdCBvZiB0aGUgY2xv
+Y2tnZW4gbm9kZXMgKGUuZy4gaXQgZG9lc24ndA0KPiA+ID4gZGVzY3JpYmUgdGhlIHJlZyk/ICBP
+ciByYXRoZXIsIGl0J3MgcGFydGlhbGx5IGRlc2NyaWJpbmcgdGhlDQo+ID4gPiBub24tY2xvY2sg
+YXNwZWN0LCBhbmQgZG9lc24ndCBhZGRyZXNzIHRoZSBjbG9jayBhc3BlY3QgYXQgYWxsIEFGQUlD
+VC4NCj4gPiA+DQo+ID4gRmlyc3Qgb2YgYWxsLCB0aGV5IGFyZSBub3QgIlJlcXVpcmVkIHByb3Bl
+cnRpZXMiLCB0aGV5IGFyZSBvcHRpb25hbC4NCj4gPiBJZiBwcmVzZW50LCB3ZSBzaG91bGQgZ2l2
+ZSB0aGVtIGEgdmFsdWUgb2YgMS4NCj4gDQo+IFdoeSBkb2VzIGl0IG1hdHRlciwgc28gbG9uZyBh
+cyB0aGUgdmFsdWVzIHRyYW5zbGF0ZSBwcm9wZXJseT8gIEl0J3Mgbm90DQo+IGFzIGlmIHlvdSdy
+ZSBkZWZpbmluZyBhIHNwZWNpYWwgcmVnIGZvcm1hdC4gIEl0J3Mgbm90IHRoYXQgYmlnIG9mIGEg
+ZGVhbCwNCj4gYnV0IGl0IHNlZW1zIHVubmVjZXNzYXJ5Lg0KPiANCj4gPiBUaGVuLCB5ZXMsIHRo
+aXMgYmluZGluZyBkZXNjcmliZXMgY2xvY2tnZW4gbm9kZSB3aGljaCBpcyAiQ0xPQ0sgQkxPQ0si
+Lg0KPiANCj4gU29ycnksIEkgbWlzc2VkIHdoZXJlICJyZWciIHdhcyBkb2N1bWVudGVkIGR1ZSB0
+byB0aGUNCj4gcmVxdWlyZWQvcmVjb21tZW5kZWQgc3BsaXQuDQo+IA0KPiA+ID4gV2hlcmUgZG9l
+cyB0aGUgYWN0dWFsIGlucHV0IGNsb2NrIGZyZXF1ZW5jeSBnbz8gIFUtQm9vdCBwdXRzIGl0IGlu
+DQo+ID4gPiB0aGUgY2xvY2tnZW4gbm9kZSBpdHNlbGYgYXMgY2xvY2stZnJlcXVlbmN5LCBidXQg
+dGhhdCBpc24ndA0KPiA+ID4gZGVzY3JpYmVkIGluIHRoZSBiaW5kaW5nLiAgSG93IGRvZXMgdGhh
+dCByZWxhdGUgdG8gdGhlIHN5c2NsayBub2RlPw0KPiA+ID4gSWYgImZzbCxxb3JpcS1zeXNjbGst
+IDEuMCIgaXMgc3VwcG9zZWQgdG8gaW5kaWNhdGUgdGhhdA0KPiA+ID4gY2xvY2stZnJlcXVlbmN5
+IGNhbiBiZSBmb3VuZCBpbiB0aGUgcGFyZW50IG5vZGUsIHRoYXQgaXNuJ3QNCj4gPiA+IHNwZWNp
+ZmllZCBieSB0aGUgYmluZGluZywgbm9yIGlzIGNsb2NrLWZyZXF1ZW5jeSBzaG93biBpbiB0aGUg
+ZXhhbXBsZS4NCj4gPiA+DQo+ID4gY2xvY2stZnJlcXVlbmN5IGlzIGEgd2lyZWQgcHJvcGVydHku
+DQo+IA0KPiBEbyB5b3UgbWVhbiAid2VpcmQiPw0KPiANCj4gPiBJdCBpcyBpbiBjbG9ja2dlbiBu
+b2RlIHJpZ2h0IG5vdy4NCj4gPiBCdXQgaXQgc2hvdWxkIGJlIHBsYWNlZCBzb21ld2hlcmUgaW4g
+Y2xvY2sgbm9kZXMuDQo+IA0KPiBJZiB3ZSB3ZXJlIGRvaW5nIHRoaXMgZnJvbSBzY3JhdGNoLCB5
+ZXMsIGJ1dCB0aGVyZSdzIGV4aXN0aW5nIFUtQm9vdCBjb2RlDQo+IHRoYXQgd2Ugd2FudCB0byBi
+ZSBjb21wYXRpYmxlIHdpdGguDQo+IA0KPiA+IElmIEkgZGVzY3JpYmUgaGVyZSwgSSB3b3VsZCBi
+ZSBhc2tlZCB3aHkgaXQgaXMgcmVsYXRlZCB0byBjbG9ja2dlbiBub2RlPw0KPiANCj4gVGhhdCdz
+IG5vdCBhIGdvb2QgcmVhc29uIHRvIGxlYXZlIGl0IHVuZG9jdW1lbnRlZC4NCj4gDQo+ID4gPiBX
+aGF0IGlzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gImZzbCxxb3JpcS1zeXNjbGstMS4wIiBhbmQN
+Cj4gPiA+ICJmc2wscW9yaXEtIHN5c2Nsay0yLjAiPyAgSG93IGRvZXMgdGhlIGNvbmNlcHQgb2Yg
+YSBmaXhlZCBpbnB1dCBjbG9jaw0KPiBjaGFuZ2U/DQo+ID4gPg0KPiA+IFRlY2huaWNhbGx5LCB0
+aGVyZSBpcyBubyBkaWZmZXJlbmNlIGJldHdlZW4gKnN5c2Nsay0xLjAgYW5kICotMi4wLA0KPiA+
+IGp1c3QgbGlrZQ0KPiA+IENsb2NrZ2VuLTIuMCBhbmQgMS4wLiBOYW1pbmcgbGlrZSB0aGlzIGp1
+c3QgdG8gaW5kaWNhdGUgdGhleSBiZWxvbmcgdG8NCj4gPiBjaGFzc2lzIDIuMCBhbmQgMS4wIHJl
+c3BlY3RpdmVseS4NCj4gDQo+IEkgZ3Vlc3MgaXQncyBPSyBpZiBpdCBlbmNvdXJhZ2VzIHBlb3Bs
+ZSB0byBjb25zaWRlciBzd2l0Y2hpbmcgdG8gdGhlDQo+IHN0YW5kYXJkIGZpeGVkLWNsb2NrIGZv
+ciBmdXR1cmUgY2hhc3Npcy4NCj4gDQo+IFNvIHRoZSBvbmx5IHRoaW5nIHRoYXQgcmVhbGx5IG5l
+ZWRzIHRvIGJlIGZpeGVkIGlzIHRoZSBtaXNzaW5nIGNsb2NrLQ0KPiBmcmVxdWVuY3kgZG9jdW1l
+bnRhdGlvbi4NCj4gDQo+IC1TY290dA0KPiANCg0K
