@@ -1,18 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 76BAF2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2014 10:31:11 +1100 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] powerpc/booke-64: fix tlbsrx. path in bolted tlb handler
-Date: Fri, 10 Jan 2014 17:30:56 -0600
-Message-ID: <1389396656-27813-1-git-send-email-scottwood@freescale.com>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 2D8B32C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Jan 2014 11:23:40 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
+Date: Sat, 11 Jan 2014 01:37:29 +0100
+Message-ID: <2079155.EyEBRDoJjP@vostro.rjw.lan>
+In-Reply-To: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
+ kyungmin.park@samsung.com, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Scott Wood <scott@tyr.buserror.net>
+On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+> 
+> Some cpuidle drivers assume that cpuidle core will handle cases where
+> device->state_count is smaller than driver->state_count, unfortunately
+> currently this is untrue (device->state_count is used only for handling
+> cpuidle state sysfs entries and driver->state_count is used for all
+> other cases) and will not be fixed in the future as device->state_count
+> is planned to be removed [1].
+> 
+> This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
+> cpuidle driver), removes superflous device->state_count initialization
+> from drivers for which device->state_count equals driver->state_count
+> (POWERPC pseries cpuidle driver and intel_idle driver) and finally
+> removes state_count field from struct cpuidle_device.
+> 
+> Additionaly (while at it) this patchset fixes C1E promotion disable
+> quirk handling (in intel_idle driver) and converts cpuidle drivers code
+> to use the common cpuidle_[un]register() routines (in POWERPC pseries
+> cpuidle driver and intel_idle driver).
+> 
+> [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
+> 
+> Reference to v1:
+> 	http://comments.gmane.org/gmane.linux.power-management.general/37390
+> 
+> Changes since v1:
+> - synced patch series with next-20131220
+> - added ACKs from Daniel Lezcano
 
-It was branching to the cleanup part of the non-bolted handler,
-which would have been bad if there were any chips with tlbsrx.
-that use the bolted handler.
+This series breaks boot on one of my test machines with intel_idle, so I'm
+not sure how well it has been tested.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-v2: rebase
+I've dropped it entirely for now.  If I have the time, I will try to identify
+the root cause of the failure, but that may not happen before the merge window.
+Sorry about that.
 
- arch/powerpc/mm/tlb_low_64e.S | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Thanks!
 
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 75f5d27..16250b1 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -136,7 +136,7 @@ BEGIN_MMU_FTR_SECTION
- 	 */
- 	PPC_TLBSRX_DOT(0,R16)
- 	ldx	r14,r14,r15		/* grab pgd entry */
--	beq	normal_tlb_miss_done	/* tlb exists already, bail */
-+	beq	tlb_miss_done_bolted	/* tlb exists already, bail */
- MMU_FTR_SECTION_ELSE
- 	ldx	r14,r14,r15		/* grab pgd entry */
- ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
-@@ -192,6 +192,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
- 	mtspr	SPRN_MAS7_MAS3,r15
- 	tlbwe
- 
-+tlb_miss_done_bolted:
- 	TLB_MISS_STATS_X(MMSTAT_TLB_MISS_NORM_OK)
- 	tlb_epilog_bolted
- 	rfi
 -- 
-1.8.3.2
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
