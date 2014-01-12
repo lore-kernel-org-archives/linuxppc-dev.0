@@ -1,33 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C62712C0089
+ by ozlabs.org (Postfix) with ESMTPS id C637E2C008F
  for <linuxppc-dev@ozlabs.org>; Sun, 12 Jan 2014 17:13:58 +1100 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 11 Jan 2014 23:13:55 -0700
+ Sat, 11 Jan 2014 23:13:56 -0700
 Received: from b03cxnp07027.gho.boulder.ibm.com
  (b03cxnp07027.gho.boulder.ibm.com [9.17.130.14])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0B7D13E40026
- for <linuxppc-dev@ozlabs.org>; Sat, 11 Jan 2014 23:13:54 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C97261FF001B
+ for <linuxppc-dev@ozlabs.org>; Sat, 11 Jan 2014 23:13:23 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
  by b03cxnp07027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0C6Deuc5243272
+ s0C6DeGD5439964
  for <linuxppc-dev@ozlabs.org>; Sun, 12 Jan 2014 07:13:40 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0C6DrYL011486
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0C6Drob004309
  for <linuxppc-dev@ozlabs.org>; Sat, 11 Jan 2014 23:13:53 -0700
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] powerpc/eeh: Hotplug improvement
-Date: Sun, 12 Jan 2014 14:13:45 +0800
-Message-Id: <1389507226-32002-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1389507226-32002-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1389507226-32002-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] powerpc/eeh: Handle multiple EEH errors
+Date: Sun, 12 Jan 2014 14:13:44 +0800
+Message-Id: <1389507226-32002-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,104 +36,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When EEH error comes to one specific PCI device before its driver
-is loaded, we will apply hotplug to recover the error. During the
-plug time, the PCI device will be probed and its driver is loaded.
-Then we wrongly calls to the error handlers if the driver supports
-EEH explicitly.
-
-The patch intends to fix by introducing flag EEH_DEV_NO_HANDLER and
-set it before we remove the PCI device. In turn, we can avoid wrongly
-calls the error handlers of the PCI device after its driver loaded.
+For one PCI error relevant OPAL event, we possibly have multiple
+EEH errors for that. For example, multiple frozen PEs detected on
+different PHBs. Unfortunately, we didn't cover the case. The patch
+enumarates the return value from eeh_ops::next_error() and change
+eeh_handle_special_event() and eeh_ops::next_error() to handle all
+existing EEH errors.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h   |    3 ++-
- arch/powerpc/kernel/eeh.c        |   15 +++++++++++++++
- arch/powerpc/kernel/eeh_driver.c |   10 +++++++---
- 3 files changed, 24 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/eeh.h            |   10 ++
+ arch/powerpc/kernel/eeh_driver.c          |  144 ++++++++++++++---------------
+ arch/powerpc/platforms/powernv/eeh-ioda.c |   31 ++++---
+ 3 files changed, 102 insertions(+), 83 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index e37db7f..8e31dad 100644
+index d3e5e9b..e37db7f 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -90,7 +90,8 @@ struct eeh_pe {
- #define EEH_DEV_IRQ_DISABLED	(1 << 3)	/* Interrupt disabled	*/
- #define EEH_DEV_DISCONNECTED	(1 << 4)	/* Removing from PE	*/
+@@ -117,6 +117,16 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+ 	return edev ? edev->pdev : NULL;
+ }
  
--#define EEH_DEV_SYSFS		(1 << 8)	/* Sysfs created        */
-+#define EEH_DEV_NO_HANDLER	(1 << 8)	/* No error handler	*/
-+#define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
- 
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 4bd687d..6a118db 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -921,6 +921,13 @@ void eeh_add_device_late(struct pci_dev *dev)
- 		eeh_sysfs_remove_device(edev->pdev);
- 		edev->mode &= ~EEH_DEV_SYSFS;
- 
-+		/*
-+		 * We definitely should have the PCI device removed
-+		 * though it wasn't correctly. So we needn't call
-+		 * into error handler afterwards.
-+		 */
-+		edev->mode |= EEH_DEV_NO_HANDLER;
++/* Return values from eeh_ops::next_error */
++enum {
++	EEH_NEXT_ERR_NONE = 0,
++	EEH_NEXT_ERR_INF,
++	EEH_NEXT_ERR_FROZEN_PE,
++	EEH_NEXT_ERR_FENCED_PHB,
++	EEH_NEXT_ERR_DEAD_PHB,
++	EEH_NEXT_ERR_DEAD_IOC
++};
 +
- 		edev->pdev = NULL;
- 		dev->dev.archdata.edev = NULL;
- 	}
-@@ -1023,6 +1030,14 @@ void eeh_remove_device(struct pci_dev *dev)
- 	else
- 		edev->mode |= EEH_DEV_DISCONNECTED;
- 
-+	/*
-+	 * We're removing from the PCI subsystem, that means
-+	 * the PCI device driver can't support EEH or not
-+	 * well. So we rely on hotplug completely to do recovery
-+	 * for the specific PCI device.
-+	 */
-+	edev->mode |= EEH_DEV_NO_HANDLER;
-+
- 	eeh_addr_cache_rmv_dev(dev);
- 	eeh_sysfs_remove_device(dev);
- 	edev->mode &= ~EEH_DEV_SYSFS;
+ /*
+  * The struct is used to trace the registered EEH operation
+  * callback functions. Actually, those operation callback
 diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index c1e8bb9..fe102c3 100644
+index 36bed5a..c1e8bb9 100644
 --- a/arch/powerpc/kernel/eeh_driver.c
 +++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -217,7 +217,8 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
- 	if (!driver) return NULL;
+@@ -628,82 +628,82 @@ static void eeh_handle_special_event(void)
+ 	struct pci_bus *bus;
+ 	struct pci_controller *hose, *tmp;
+ 	unsigned long flags;
+-	int rc = 0;
+-
+-	/*
+-	 * The return value from next_error() has been classified as follows.
+-	 * It might be good to enumerate them. However, next_error() is only
+-	 * supported by PowerNV platform for now. So it would be fine to use
+-	 * integer directly:
+-	 *
+-	 * 4 - Dead IOC           3 - Dead PHB
+-	 * 2 - Fenced PHB         1 - Frozen PE
+-	 * 0 - No error found
+-	 *
+-	 */
+-	rc = eeh_ops->next_error(&pe);
+-	if (rc <= 0)
+-		return;
++	int rc;
++
++
++	do {
++		rc = eeh_ops->next_error(&pe);
++
++		switch (rc) {
++		case EEH_NEXT_ERR_DEAD_IOC:
++			/* Mark all PHBs in dead state */
++			eeh_serialize_lock(&flags);
++			list_for_each_entry_safe(hose, tmp,
++					&hose_list, list_node) {
++				phb_pe = eeh_phb_pe_get(hose);
++				if (!phb_pe) continue;
++
++				eeh_pe_state_mark(phb_pe,
++					EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++			}
++			eeh_serialize_unlock(flags);
++
++			/* Purge all events */
++			eeh_remove_event(NULL);
++			break;
++		case EEH_NEXT_ERR_FROZEN_PE:
++		case EEH_NEXT_ERR_FENCED_PHB:
++		case EEH_NEXT_ERR_DEAD_PHB:
++			/* Mark the PE in fenced state */
++			eeh_serialize_lock(&flags);
++			if (rc == EEH_NEXT_ERR_DEAD_PHB)
++				eeh_pe_state_mark(pe,
++					EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++			else
++				eeh_pe_state_mark(pe,
++					EEH_PE_ISOLATED | EEH_PE_RECOVERING);
++			eeh_serialize_unlock(flags);
++
++			/* Purge all events of the PHB */
++			eeh_remove_event(pe);
++			break;
++		default:
++			pr_warn("%s: Invalid value %d from next_error()\n",
++				__func__, rc);
++			return;
++		}
  
- 	if (!driver->err_handler ||
--	    !driver->err_handler->mmio_enabled) {
-+	    !driver->err_handler->mmio_enabled ||
-+	    (edev->mode & EEH_DEV_NO_HANDLER)) {
- 		eeh_pcid_put(dev);
- 		return NULL;
- 	}
-@@ -258,7 +259,8 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	eeh_enable_irq(dev);
+-	switch (rc) {
+-	case 4:
+-		/* Mark all PHBs in dead state */
+-		eeh_serialize_lock(&flags);
+-		list_for_each_entry_safe(hose, tmp,
++		/*
++		 * For fenced PHB and frozen PE, it's handled as normal
++		 * event. We have to remove the affected PHBs for dead
++		 * PHB and IOC
++		 */
++		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
++		    rc == EEH_NEXT_ERR_FENCED_PHB) {
++			eeh_handle_normal_event(pe);
++		} else {
++			list_for_each_entry_safe(hose, tmp,
+ 				&hose_list, list_node) {
+-			phb_pe = eeh_phb_pe_get(hose);
+-			if (!phb_pe) continue;
+-
+-			eeh_pe_state_mark(phb_pe,
+-				EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++				phb_pe = eeh_phb_pe_get(hose);
++				if (!phb_pe ||
++				    !(phb_pe->state & EEH_PE_PHB_DEAD))
++					continue;
++
++				/* Notify all devices to be down */
++				bus = eeh_pe_bus_get(phb_pe);
++				eeh_pe_dev_traverse(pe,
++					eeh_report_failure, NULL);
++				pcibios_remove_pci_devices(bus);
++			}
+ 		}
+-		eeh_serialize_unlock(flags);
+-
+-		/* Purge all events */
+-		eeh_remove_event(NULL);
+-		break;
+-	case 3:
+-	case 2:
+-	case 1:
+-		/* Mark the PE in fenced state */
+-		eeh_serialize_lock(&flags);
+-		if (rc == 3)
+-			eeh_pe_state_mark(pe,
+-				EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
+-		else
+-			eeh_pe_state_mark(pe,
+-				EEH_PE_ISOLATED | EEH_PE_RECOVERING);
+-		eeh_serialize_unlock(flags);
+-
+-		/* Purge all events of the PHB */
+-		eeh_remove_event(pe);
+-		break;
+-	default:
+-		pr_err("%s: Invalid value %d from next_error()\n",
+-		       __func__, rc);
+-		return;
+-	}
  
- 	if (!driver->err_handler ||
--	    !driver->err_handler->slot_reset) {
-+	    !driver->err_handler->slot_reset ||
-+	    (edev->mode & EEH_DEV_NO_HANDLER)) {
- 		eeh_pcid_put(dev);
- 		return NULL;
- 	}
-@@ -297,7 +299,9 @@ static void *eeh_report_resume(void *data, void *userdata)
- 	eeh_enable_irq(dev);
+-	/*
+-	 * For fenced PHB and frozen PE, it's handled as normal
+-	 * event. We have to remove the affected PHBs for dead
+-	 * PHB and IOC
+-	 */
+-	if (rc == 2 || rc == 1)
+-		eeh_handle_normal_event(pe);
+-	else {
+-		list_for_each_entry_safe(hose, tmp,
+-			&hose_list, list_node) {
+-			phb_pe = eeh_phb_pe_get(hose);
+-			if (!phb_pe || !(phb_pe->state & EEH_PE_PHB_DEAD))
+-				continue;
+-
+-			bus = eeh_pe_bus_get(phb_pe);
+-			/* Notify all devices that they're about to go down. */
+-			eeh_pe_dev_traverse(pe, eeh_report_failure, NULL);
+-			pcibios_remove_pci_devices(bus);
+-		}
+-	}
++		/*
++		 * If we have detected dead IOC, we needn't proceed
++		 * any more since all PHBs would have been removed
++		 */
++		if (rc == EEH_NEXT_ERR_DEAD_IOC)
++			break;
++	} while (rc != EEH_NEXT_ERR_NONE);
+ }
  
- 	if (!driver->err_handler ||
--	    !driver->err_handler->resume) {
-+	    !driver->err_handler->resume ||
-+	    (edev->mode & EEH_DEV_NO_HANDLER)) {
-+		edev->mode &= ~EEH_DEV_NO_HANDLER;
- 		eeh_pcid_put(dev);
- 		return NULL;
+ /**
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index d7ddcee..6971146 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -889,7 +889,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 	u64 frozen_pe_no;
+ 	u16 err_type, severity;
+ 	long rc;
+-	int ret = 1;
++	int ret = EEH_NEXT_ERR_NONE;
+ 
+ 	/*
+ 	 * While running here, it's safe to purge the event queue.
+@@ -945,12 +945,12 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 				}
+ 
+ 				pr_err("EEH: dead IOC detected\n");
+-				ret = 4;
+-				goto out;
++				ret = EEH_NEXT_ERR_DEAD_IOC;
+ 			} else if (severity == OPAL_EEH_SEV_INF) {
+ 				pr_info("EEH: IOC informative error "
+ 					"detected\n");
+ 				ioda_eeh_hub_diag(hose);
++				ret = EEH_NEXT_ERR_INF;
+ 			}
+ 
+ 			break;
+@@ -962,21 +962,20 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 				pr_err("EEH: dead PHB#%x detected\n",
+ 					hose->global_number);
+ 				phb->eeh_state |= PNV_EEH_STATE_REMOVED;
+-				ret = 3;
+-				goto out;
++				ret = EEH_NEXT_ERR_DEAD_PHB;
+ 			} else if (severity == OPAL_EEH_SEV_PHB_FENCED) {
+ 				if (ioda_eeh_get_phb_pe(hose, pe))
+ 					break;
+ 
+ 				pr_err("EEH: fenced PHB#%x detected\n",
+ 					hose->global_number);
+-				ret = 2;
+-				goto out;
++				ret = EEH_NEXT_ERR_FENCED_PHB;
+ 			} else if (severity == OPAL_EEH_SEV_INF) {
+ 				pr_info("EEH: PHB#%x informative error "
+ 					"detected\n",
+ 					hose->global_number);
+ 				ioda_eeh_phb_diag(hose);
++				ret = EEH_NEXT_ERR_INF;
+ 			}
+ 
+ 			break;
+@@ -986,13 +985,23 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 
+ 			pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
+ 				(*pe)->addr, (*pe)->phb->global_number);
+-			ret = 1;
+-			goto out;
++			ret = EEH_NEXT_ERR_FROZEN_PE;
++			break;
++		default:
++			pr_warn("%s: Unexpected error type %d\n",
++				__func__, err_type);
+ 		}
++
++		/*
++		 * If we have no errors on the specific PHB or only
++		 * informative error there, we continue poking it.
++		 * Otherwise, we need actions to be taken by upper
++		 * layer.
++		 */
++		if (ret > EEH_NEXT_ERR_INF)
++			break;
  	}
+ 
+-	ret = 0;
+-out:
+ 	return ret;
+ }
+ 
 -- 
 1.7.10.4
