@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 13AF02C008F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 10:27:29 +1100 (EST)
-Message-ID: <1389569240.4672.113.camel@pasglop>
-Subject: Re: [PATCH v2] powerpc/booke-64: fix tlbsrx. path in bolted tlb
- handler
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Mon, 13 Jan 2014 10:27:20 +1100
-In-Reply-To: <1389396656-27813-1-git-send-email-scottwood@freescale.com>
-References: <1389396656-27813-1-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:2:7])
+ by ozlabs.org (Postfix) with ESMTP id 876502C0084
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jan 2014 10:54:23 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 4/8] IBM Akebono: Add support to the OHCI platform driver
+ for PPC476GTR
+Date: Mon, 13 Jan 2014 10:54:23 +1100
+Message-ID: <8440298.OhsXFXVpzc@mexican>
+In-Reply-To: <1389402392.4672.87.camel@pasglop>
+References: <1385086057-10884-1-git-send-email-alistair@popple.id.au>
+ <20140111005256.GB29302@kroah.com> <1389402392.4672.87.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-01-10 at 17:30 -0600, Scott Wood wrote:
-> From: Scott Wood <scott@tyr.buserror.net>
+On Sat, 11 Jan 2014 12:06:32 Benjamin Herrenschmidt wrote:
+> On Fri, 2014-01-10 at 16:52 -0800, Greg KH wrote:
+> > > >Signed-off-by: Alistair Popple <alistair@popple.id.au>
+> > > >Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> > > >Cc: linux-usb@vger.kernel.org
+> > > >
+> > >    Greg, why this patch hasn't been merged? Because it wasn't addressed
+> > >    to
+> > > 
+> > > you (but BenH)? The other, ehci-platform.c patch didn't even get posted
+> > > to
+> > > linux-usb that time, but this one?
+> > 
+> > Probably, yes, if it's not sent to me, I'm guessing that the person
+> > doesn't want it applied by me, especially if it's written by someone who
+> > knows what they are doing.
+> > 
+> > I thought this was going through the PPC tree.  My USB patch queue is
+> > empty, and closed, for 3.14-rc1.
 > 
-> It was branching to the cleanup part of the non-bolted handler,
-> which would have been bad if there were any chips with tlbsrx.
-> that use the bolted handler.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> v2: rebase
+> Communication failure then :-) I told Alistair to submit it to the USB
+> tree and thus was expecting it to be picked up by you but I didn't pay
+> that much attention. I'll see if I can still put it into my tree based
+> on invasiveness when I'm finished with travel. Otherwise, it will wait
+> for the next window.
 
-Ack.
+Sorry - this is probably my fault. I originally thought they would go via the 
+PPC tree but as Ben said he asked me to resubmit them to the appropriate 
+subsystem trees (which I forgot to do). Unless Ben picks them up I will 
+resubmit them for the next window.
 
->  arch/powerpc/mm/tlb_low_64e.S | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-> index 75f5d27..16250b1 100644
-> --- a/arch/powerpc/mm/tlb_low_64e.S
-> +++ b/arch/powerpc/mm/tlb_low_64e.S
-> @@ -136,7 +136,7 @@ BEGIN_MMU_FTR_SECTION
->  	 */
->  	PPC_TLBSRX_DOT(0,R16)
->  	ldx	r14,r14,r15		/* grab pgd entry */
-> -	beq	normal_tlb_miss_done	/* tlb exists already, bail */
-> +	beq	tlb_miss_done_bolted	/* tlb exists already, bail */
->  MMU_FTR_SECTION_ELSE
->  	ldx	r14,r14,r15		/* grab pgd entry */
->  ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
-> @@ -192,6 +192,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
->  	mtspr	SPRN_MAS7_MAS3,r15
->  	tlbwe
->  
-> +tlb_miss_done_bolted:
->  	TLB_MISS_STATS_X(MMSTAT_TLB_MISS_NORM_OK)
->  	tlb_epilog_bolted
->  	rfi
+- Alistair
+
+> Ben.
