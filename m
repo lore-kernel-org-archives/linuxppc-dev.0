@@ -1,23 +1,17 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91AED2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 02:44:33 +1100 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [PATCH] PPC: KVM: fix VCPU run for HV KVM
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1389338467-26303-1-git-send-email-aik@ozlabs.ru>
-Date: Sun, 12 Jan 2014 16:44:25 +0100
-Message-Id: <AF6669B4-EF1A-44BD-9034-8824EFD94B5B@suse.de>
-References: <1389338467-26303-1-git-send-email-aik@ozlabs.ru>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- "Michael S. Tsirkin" <mst@redhat.com>,
- "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1389567961.4672.111.camel@pasglop>
+Subject: Re: [PATCH 02/13] ppc/cell: use get_unused_fd_flags(0) instead of
+ get_unused_fd()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yann Droneaud <ydroneaud@opteya.com>
+Date: Mon, 13 Jan 2014 10:06:01 +1100
+In-Reply-To: <72f6f9ae898a664033f6b958bc7976b994544963.1372777600.git.ydroneaud@opteya.com>
+References: <cover.1372777600.git.ydroneaud@opteya.com>
+ <72f6f9ae898a664033f6b958bc7976b994544963.1372777600.git.ydroneaud@opteya.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,50 +21,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2013-07-02 at 18:39 +0200, Yann Droneaud wrote:
+> Macro get_unused_fd() is used to allocate a file descriptor with
+> default flags. Those default flags (0) can be "unsafe":
+> O_CLOEXEC must be used by default to not leak file descriptor
+> across exec().
+> 
+> Instead of macro get_unused_fd(), functions anon_inode_getfd()
+> or get_unused_fd_flags() should be used with flags given by userspace.
+> If not possible, flags should be set to O_CLOEXEC to provide userspace
+> with a default safe behavor.
+> 
+> In a further patch, get_unused_fd() will be removed so that
+> new code start using anon_inode_getfd() or get_unused_fd_flags()
+> with correct flags.
+> 
+> This patch replaces calls to get_unused_fd() with equivalent call to
+> get_unused_fd_flags(0) to preserve current behavor for existing code.
+> 
+> The hard coded flag value (0) should be reviewed on a per-subsystem basis,
+> and, if possible, set to O_CLOEXEC.
+> 
+> Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
 
-On 10.01.2014, at 08:21, Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+Should I merge this (v5 on patchwork) or let Al do it ?
 
-> When write to MMIO happens and there is an ioeventfd for that and
-> is handled successfully, ioeventfd_write() returns 0 (success) and
-> kvmppc_handle_store() returns EMULATE_DONE. Then kvmppc_emulate_mmio()
-> converts EMULATE_DONE to RESUME_GUEST_NV and this broke from the loop.
->=20
-> This adds handling of RESUME_GUEST_NV in kvmppc_vcpu_run_hv().
->=20
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Suggested-by: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 > ---
->=20
-> This definitely needs a better commit message. Please, help.
-> ps. it seems like ioeventfd never worked on ppc64. hm.
->=20
-> ---
-> arch/powerpc/kvm/book3s_hv.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_hv.c =
-b/arch/powerpc/kvm/book3s_hv.c
-> index 072287f..24f363f 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -1569,7 +1569,7 @@ static int kvmppc_vcpu_run_hv(struct kvm_run =
-*run, struct kvm_vcpu *vcpu)
-> 				vcpu->arch.fault_dar, =
-vcpu->arch.fault_dsisr);
-> 			srcu_read_unlock(&vcpu->kvm->srcu, srcu_idx);
-> 		}
-> -	} while (r =3D=3D RESUME_GUEST);
-> +	} while ((r =3D=3D RESUME_GUEST_NV) || (r =3D=3D RESUME_GUEST));
-
-How about
-
-  while(!(r & RESUME_FLAG_HOST));
-
-That should cover all RESUME_GUEST_XXX cases just fine. Apart from that =
-I agree that we should check for ! FLAG_HOST bit rather than the actual =
-RESUME_GUEST value in all case where we check for it (read: please =
-update all places).
-
-
-Alex
+>  arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+> index f390042..88df441 100644
+> --- a/arch/powerpc/platforms/cell/spufs/inode.c
+> +++ b/arch/powerpc/platforms/cell/spufs/inode.c
+> @@ -301,7 +301,7 @@ static int spufs_context_open(struct path *path)
+>  	int ret;
+>  	struct file *filp;
+>  
+> -	ret = get_unused_fd();
+> +	ret = get_unused_fd_flags(0);
+>  	if (ret < 0)
+>  		return ret;
+>  
+> @@ -518,7 +518,7 @@ static int spufs_gang_open(struct path *path)
+>  	int ret;
+>  	struct file *filp;
+>  
+> -	ret = get_unused_fd();
+> +	ret = get_unused_fd_flags(0);
+>  	if (ret < 0)
+>  		return ret;
+>  
