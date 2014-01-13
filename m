@@ -1,15 +1,17 @@
 Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E2C862C0092
+ by ozlabs.org (Postfix) with ESMTPS id DAB102C007A
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 03:22:09 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
  <paulus@samba.org>
-Subject: [PATCH 0/4] remap non-modular uses of module_init properly
-Date: Mon, 13 Jan 2014 11:21:49 -0500
-Message-ID: <1389630113-7919-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 1/4] powerpc: use device_initcall for registering rtc devices
+Date: Mon, 13 Jan 2014 11:21:50 -0500
+Message-ID: <1389630113-7919-2-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1389630113-7919-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1389630113-7919-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
@@ -23,32 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The goal is to move module_init/module_exit from init.h and into
-module.h -- however in doing so, we uncover several instances in
-powerpc code where module_init is used somewhat incorrectly by
-non modular code, and a file that needs module.h but isn't sourcing
-it.  We need to make these fixups 1st before changing the headers
-so that we don't cause build failures.
+Currently these two RTC devices are in core platform code
+where it is not possible for them to be modular.  It will
+never be modular, so using module_init as an alias for
+__initcall can be somewhat misleading.
 
-The changes are largely inert, however we do cause a largely trivial
-change in the initcall ordering -- that happens because module_init
-is really device_initcall; and yet we shouldn't be using device_initcall
-where clearly arch_initcall or subsys_initcall are more appropriate.
+Fix this up now, so that we can relocate module_init from
+init.h into module.h in the future.  If we don't do this, we'd
+have to add module.h to obviously non-modular code, and that
+would be a worse thing.
 
-Boot tested on sbc8548 on powerpc next branch of today.
+Note that direct use of __initcall is discouraged, vs. one
+of the priority categorized subgroups.  As __initcall gets
+mapped onto device_initcall, our use of device_initcall
+directly in this change means that the runtime impact is
+zero -- they will remain at level 6 in initcall ordering.
 
-Paul Gortmaker (4):
-  powerpc: use device_initcall for registering rtc devices
-  powerpc: book3s kvm can be modular so it should use module.h
-  powerpc: use subsys_initcall for Freescale Local Bus
-  powerpc: don't use module_init for non-modular core hugetlb code
-
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
  arch/powerpc/kernel/time.c        | 2 +-
- arch/powerpc/kvm/book3s.c         | 2 +-
- arch/powerpc/mm/hugetlbpage.c     | 2 +-
  arch/powerpc/platforms/ps3/time.c | 3 +--
- arch/powerpc/sysdev/fsl_lbc.c     | 2 +-
- 5 files changed, 5 insertions(+), 6 deletions(-)
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index afb1b56ef4fa..bee2bb2bbc75 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -1053,4 +1053,4 @@ static int __init rtc_init(void)
+ 	return PTR_ERR_OR_ZERO(pdev);
+ }
+ 
+-module_init(rtc_init);
++device_initcall(rtc_init);
+diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
+index ce73ce865613..791c6142c4a7 100644
+--- a/arch/powerpc/platforms/ps3/time.c
++++ b/arch/powerpc/platforms/ps3/time.c
+@@ -92,5 +92,4 @@ static int __init ps3_rtc_init(void)
+ 
+ 	return PTR_ERR_OR_ZERO(pdev);
+ }
+-
+-module_init(ps3_rtc_init);
++device_initcall(ps3_rtc_init);
 -- 
 1.8.5.2
