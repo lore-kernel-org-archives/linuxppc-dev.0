@@ -1,20 +1,21 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id B93B32C0081
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 08:06:34 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
-Date: Mon, 13 Jan 2014 22:20:27 +0100
-Message-ID: <1616617.RcagPEYAid@vostro.rjw.lan>
-In-Reply-To: <2079155.EyEBRDoJjP@vostro.rjw.lan>
-References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
- <2079155.EyEBRDoJjP@vostro.rjw.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
- daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
- kyungmin.park@samsung.com, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 7ED242C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 09:17:50 +1100 (EST)
+Date: Mon, 13 Jan 2014 14:17:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: Re: [PATCH] powerpc: thp: Fix crash on mremap
+Message-Id: <20140113141748.0b851e1573e41bf26de7c0ae@linux-foundation.org>
+In-Reply-To: <20140102021951.GA26369@node.dhcp.inet.fi>
+References: <1388570027-22933-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1388572145.4373.41.camel@pasglop>
+ <20140102021951.GA26369@node.dhcp.inet.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: aarcange@redhat.com, linux-mm@kvack.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday, January 11, 2014 01:37:29 AM Rafael J. Wysocki wrote:
-> On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > Some cpuidle drivers assume that cpuidle core will handle cases where
-> > device->state_count is smaller than driver->state_count, unfortunately
-> > currently this is untrue (device->state_count is used only for handling
-> > cpuidle state sysfs entries and driver->state_count is used for all
-> > other cases) and will not be fixed in the future as device->state_count
-> > is planned to be removed [1].
-> > 
-> > This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
-> > cpuidle driver), removes superflous device->state_count initialization
-> > from drivers for which device->state_count equals driver->state_count
-> > (POWERPC pseries cpuidle driver and intel_idle driver) and finally
-> > removes state_count field from struct cpuidle_device.
-> > 
-> > Additionaly (while at it) this patchset fixes C1E promotion disable
-> > quirk handling (in intel_idle driver) and converts cpuidle drivers code
-> > to use the common cpuidle_[un]register() routines (in POWERPC pseries
-> > cpuidle driver and intel_idle driver).
-> > 
-> > [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
-> > 
-> > Reference to v1:
-> > 	http://comments.gmane.org/gmane.linux.power-management.general/37390
-> > 
-> > Changes since v1:
-> > - synced patch series with next-20131220
-> > - added ACKs from Daniel Lezcano
-> 
-> This series breaks boot on one of my test machines with intel_idle, so I'm
-> not sure how well it has been tested.
-> 
-> I've dropped it entirely for now.  If I have the time, I will try to identify
-> the root cause of the failure, but that may not happen before the merge window.
-> Sorry about that.
+On Thu, 2 Jan 2014 04:19:51 +0200 "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
 
-The breakage was introduced by patch [8/9], so I've re-applied patches [1-7/9]
-from this series.  Please refer to Fengguang's report [1] for the breakage
-details.
+> On Wed, Jan 01, 2014 at 09:29:05PM +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2014-01-01 at 15:23 +0530, Aneesh Kumar K.V wrote:
+> > > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> > > 
+> > > This patch fix the below crash
+> > > 
+> > > NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
+> > > LR [c0000000000439ac] .hash_page+0x18c/0x5e0
+> > > ...
+> > > Call Trace:
+> > > [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
+> > > [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
+> > > [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
+> > > 
+> > > On ppc64 we use the pgtable for storing the hpte slot information and
+> > > store address to the pgtable at a constant offset (PTRS_PER_PMD) from
+> > > pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
+> > > the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
+> > > from new pmd.
+> > > 
+> > > We also want to move the withdraw and deposit before the set_pmd so
+> > > that, when page fault find the pmd as trans huge we can be sure that
+> > > pgtable can be located at the offset.
+> > > 
 
-Thanks!
-
-[1] http://marc.info/?l=linux-kernel&m=138964167909907&w=2
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Did this get fixed?
