@@ -1,21 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-wg0-x229.google.com (mail-wg0-x229.google.com
+ [IPv6:2a00:1450:400c:c00::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B292C2C0079
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 18:36:48 +1100 (EST)
-Message-ID: <1389598587.4672.121.camel@pasglop>
-Subject: Re: [PATCH V4] powerpc: thp: Fix crash on mremap
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: aarcange@redhat.com
-Date: Mon, 13 Jan 2014 18:36:27 +1100
-In-Reply-To: <1389593064-32664-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1389593064-32664-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aarcange@redhat.com, linux-mm@kvack.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
+ by ozlabs.org (Postfix) with ESMTPS id 72F4B2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 19:17:23 +1100 (EST)
+Received: by mail-wg0-f41.google.com with SMTP id n12so2449075wgh.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 00:17:16 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20140109111957.GE16227@intel.com>
+References: <1387886789-20249-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1387886789-20249-5-git-send-email-a13xp0p0v88@gmail.com>
+ <20131226124828.GK8064@book.gsilab.sittig.org>
+ <CAF0T0X7wotm60Bq4tfYcRhkDwiCw2hh5R5m2WmVLmLGLZYpQsQ@mail.gmail.com>
+ <20140108164719.GO20094@book.gsilab.sittig.org>
+ <20140109111957.GE16227@intel.com>
+Date: Mon, 13 Jan 2014 12:17:16 +0400
+Message-ID: <CAF0T0X67RVNoJAM+9DyDM=HKw_5P4MExgXWaEj5_asqVd5hvDQ@mail.gmail.com>
+Subject: Re: [PATCH RFC v6 4/5] dma: mpc512x: register for device tree channel
+ lookup
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Vinod Koul <vinod.koul@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Gerhard Sittig <gsi@denx.de>, Alexander Popov <a13xp0p0v88@gmail.com>,
+ dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,119 +35,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-01-13 at 11:34 +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> This patch fix the below crash
+Thanks for your replies, Gerhard and Vinod.
 
-Andrea, can you ack the generic bit please ?
+2014/1/9 Vinod Koul <vinod.koul@intel.com>:
+> On Wed, Jan 08, 2014 at 05:47:19PM +0100, Gerhard Sittig wrote:
+>> [ what is the semantics of DMA_PRIVATE capability flag?
+>>   is documentation available beyond the initial commit message?
+>>   need individual channels be handled instead of controllers? ]
+>
+> The DMA_PRIVATE means that your channels are not to be used for global memcpy,
+> as one can do in async cases (this is hwere DMAengine came into existence)
+>
+> If the device has the capablity of doing genric memcpy then it should not set
+> this. For slave dma usage the dam channel can transfer data to a specfic
+> slave device(s), hence we should use this is geric fashion so setting
+> DMA_PRIVATE makes sense in those cases.
 
-Thanks !
+Each DMA channel of MPC512x DMA controller can do _both_
+mem-to-mem transfers and transfers between mem and some slave peripheral
+(only one DMA channel is fully dedicated to DDR).
+All DMA channels of MPC512x DMA controller belong to one dma_device.
+So we _don't_ need setting DMA_PRIVATE flag for this dma_device at all, do we?
 
-Cheers,
-Ben.
+>> On Sat, Jan 04, 2014 at 00:54 +0400, Alexander Popov wrote:
+>> > I've involved DMA_PRIVATE flag because new of_dma_xlate_by_chan_id()
+>> > uses dma_get_slave_channel() instead of dma_request_channel()
+>> > (PATCH RFC v6 3/5). This flag is implicitly set in dma_request_channel(),
+>> > but is not set in dma_get_slave_channel().
+> Which makes me thing you are targetting slave usages. Do you intend to use for
+> mempcy too on all controllers you support. in that case you should set it
+> selectively.
 
-> NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
-> LR [c0000000000439ac] .hash_page+0x18c/0x5e0
-> ...
-> Call Trace:
-> [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
-> [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
-> [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
-> 
-> On ppc64 we use the pgtable for storing the hpte slot information and
-> store address to the pgtable at a constant offset (PTRS_PER_PMD) from
-> pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
-> the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
-> from new pmd.
-> 
-> We also want to move the withdraw and deposit before the set_pmd so
-> that, when page fault find the pmd as trans huge we can be sure that
-> pgtable can be located at the offset.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> Changes from V3:
-> * Drop "powerpc: mm: Move ppc64 page table range definitions to separate header"" patch
-> 
->  arch/powerpc/include/asm/pgtable-ppc64.h | 14 ++++++++++++++
->  include/asm-generic/pgtable.h            | 12 ++++++++++++
->  mm/huge_memory.c                         | 14 +++++---------
->  3 files changed, 31 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-> index 4a191c472867..d27960c89a71 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -558,5 +558,19 @@ extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
->  #define __HAVE_ARCH_PMDP_INVALIDATE
->  extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
->  			    pmd_t *pmdp);
-> +
-> +#define pmd_move_must_withdraw pmd_move_must_withdraw
-> +typedef struct spinlock spinlock_t;
-> +static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
-> +					 spinlock_t *old_pmd_ptl)
-> +{
-> +	/*
-> +	 * Archs like ppc64 use pgtable to store per pmd
-> +	 * specific information. So when we switch the pmd,
-> +	 * we should also withdraw and deposit the pgtable
-> +	 */
-> +	return true;
-> +}
-> +
->  #endif /* __ASSEMBLY__ */
->  #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
-> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-> index db0923458940..8e4f41d9af4d 100644
-> --- a/include/asm-generic/pgtable.h
-> +++ b/include/asm-generic/pgtable.h
-> @@ -558,6 +558,18 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
->  }
->  #endif
->  
-> +#ifndef pmd_move_must_withdraw
-> +static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
-> +					 spinlock_t *old_pmd_ptl)
-> +{
-> +	/*
-> +	 * With split pmd lock we also need to move preallocated
-> +	 * PTE page table if new_pmd is on different PMD page table.
-> +	 */
-> +	return new_pmd_ptl != old_pmd_ptl;
-> +}
-> +#endif
-> +
->  /*
->   * This function is meant to be used by sites walking pagetables with
->   * the mmap_sem hold in read mode to protect against MADV_DONTNEED and
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index 95d1acb0f3d2..5d80c53b87cb 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -1502,19 +1502,15 @@ int move_huge_pmd(struct vm_area_struct *vma, struct vm_area_struct *new_vma,
->  			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
->  		pmd = pmdp_get_and_clear(mm, old_addr, old_pmd);
->  		VM_BUG_ON(!pmd_none(*new_pmd));
-> -		set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
-> -		if (new_ptl != old_ptl) {
-> -			pgtable_t pgtable;
->  
-> -			/*
-> -			 * Move preallocated PTE page table if new_pmd is on
-> -			 * different PMD page table.
-> -			 */
-> +		if (pmd_move_must_withdraw(new_ptl, old_ptl)) {
-> +			pgtable_t pgtable;
->  			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
->  			pgtable_trans_huge_deposit(mm, new_pmd, pgtable);
-> -
-> -			spin_unlock(new_ptl);
->  		}
-> +		set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
-> +		if (new_ptl != old_ptl)
-> +			spin_unlock(new_ptl);
->  		spin_unlock(old_ptl);
->  	}
->  out:
+Vinod, please correct me if I'm wrong.
+As I could understand from your comments and the code,
+DMA_PRIVATE flag is needed for dma_devices with DMA channels
+which _can_ work with slave peripheral but _can't_ do mem-to-mem transfers.
+If DMA_PRIVATE flag is set for some dma_device before
+dma_async_device_register()
+then its DMA channels are not published in tables for kernel slab allocator
+(because these channels are simply useless for memcpy).
+
+>> Still I see a difference in the lookup approaches:  Yours applies
+>> DMA_PRIVATE globally and in advance, preventing _any_ use of DMA
+>> for memory transfers.  While the __dma_request_channel() routine
+>> only applies it _temporarily_ around a dma_chan_get() operation.
+>> Allowing for use of DMA channels by both individual peripherals
+>> as well as memory transfers.
+>>
+> No it doesnt prevent. You can still use it for memcpy once you have the channel.
+
+Excuse me, I don't completely understand why dma_request_channel()
+needs to set DMA_PRIVATE flag.
+If dma_request_channel() for some dma_device without DMA_PRIVATE
+is called before the first dmaengine_get()
+then no DMA channels of this dma_device will become available for memcpy
+by slab allocator.
+Could you give me a clue?
+
+>> > > Consider the fact that this driver
+>> > > handles both MPC5121 as well as MPC8308 hardware.
+>> >
+>> > Ah, yes, sorry. I should certainly fix this, if setting of DMA_PRIVATE flag
+>> > is needed at all.
+>>
+>> What I meant here is that implications for all affected platforms
+>> should be considered.  There is one driver source, but the driver
+>> applies to more than one platform (another issue of the driver is
+>> that this is not apparent from the doc nor the compat strings).
+
+I'll add a comment with information about the supported platforms to
+mpc512x_dma.c
+in RFC PATCH 1/5. Ok?
+
+>> So blocking memory transfers in mpc512x_dma.c is a total breakage
+>> for MPC8308 (removes the only previous feature and adds nothing),
+>> and is a regression for MPC512x (removes the previously supported
+>> memory transfers, while it may add peripheral supports with very
+>> few users).
+
+Yes, I see. MPC512x and MPC8308 should be treated differently.
+
+Thanks!
+Alexander
