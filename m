@@ -1,35 +1,20 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6BF7A2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 03:36:16 +1100 (EST)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 13 Jan 2014 16:36:11 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9DE8F1B08069
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 16:35:31 +0000 (GMT)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0DGZwOf51118166
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 16:35:58 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0DGa942023645
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 09:36:09 -0700
-Subject: [PATCH] powerpc/relocate fix relocate processing in LE mode
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Mon, 13 Jan 2014 17:36:08 +0100
-Message-ID: <20140113163608.10118.11793.stgit@nimbus>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id B93B32C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 08:06:34 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 0/9] cpuidle: rework device state count handling
+Date: Mon, 13 Jan 2014 22:20:27 +0100
+Message-ID: <1616617.RcagPEYAid@vostro.rjw.lan>
+In-Reply-To: <2079155.EyEBRDoJjP@vostro.rjw.lan>
+References: <1387565251-7051-1-git-send-email-b.zolnierkie@samsung.com>
+ <2079155.EyEBRDoJjP@vostro.rjw.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+ daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
+ kyungmin.park@samsung.com, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,34 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Relocation's code is not working in little endian mode because the r_info
-field, which is a 64 bits value, should be read from the right offset.
+On Saturday, January 11, 2014 01:37:29 AM Rafael J. Wysocki wrote:
+> On Friday, December 20, 2013 07:47:22 PM Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
+> > 
+> > Some cpuidle drivers assume that cpuidle core will handle cases where
+> > device->state_count is smaller than driver->state_count, unfortunately
+> > currently this is untrue (device->state_count is used only for handling
+> > cpuidle state sysfs entries and driver->state_count is used for all
+> > other cases) and will not be fixed in the future as device->state_count
+> > is planned to be removed [1].
+> > 
+> > This patchset fixes such drivers (ARM EXYNOS cpuidle driver and ACPI
+> > cpuidle driver), removes superflous device->state_count initialization
+> > from drivers for which device->state_count equals driver->state_count
+> > (POWERPC pseries cpuidle driver and intel_idle driver) and finally
+> > removes state_count field from struct cpuidle_device.
+> > 
+> > Additionaly (while at it) this patchset fixes C1E promotion disable
+> > quirk handling (in intel_idle driver) and converts cpuidle drivers code
+> > to use the common cpuidle_[un]register() routines (in POWERPC pseries
+> > cpuidle driver and intel_idle driver).
+> > 
+> > [1] http://permalink.gmane.org/gmane.linux.power-management.general/36908
+> > 
+> > Reference to v1:
+> > 	http://comments.gmane.org/gmane.linux.power-management.general/37390
+> > 
+> > Changes since v1:
+> > - synced patch series with next-20131220
+> > - added ACKs from Daniel Lezcano
+> 
+> This series breaks boot on one of my test machines with intel_idle, so I'm
+> not sure how well it has been tested.
+> 
+> I've dropped it entirely for now.  If I have the time, I will try to identify
+> the root cause of the failure, but that may not happen before the merge window.
+> Sorry about that.
 
-The current code is optimized to read the r_info field as a 32 bits value
-starting at the middle of the double word (offset 12). When running in LE
-mode, the read value is not correct since only the MSB is read.
+The breakage was introduced by patch [8/9], so I've re-applied patches [1-7/9]
+from this series.  Please refer to Fengguang's report [1] for the breakage
+details.
 
-This patch removes this optimization which consist to deal with a 32 bits
-value instead of a 64 bits one. This way it works in big and little endian
-mode.
+Thanks!
 
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/reloc_64.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+[1] http://marc.info/?l=linux-kernel&m=138964167909907&w=2
 
-diff --git a/arch/powerpc/kernel/reloc_64.S b/arch/powerpc/kernel/reloc_64.S
-index b47a0e1..1482327 100644
---- a/arch/powerpc/kernel/reloc_64.S
-+++ b/arch/powerpc/kernel/reloc_64.S
-@@ -69,8 +69,8 @@ _GLOBAL(relocate)
- 	 * R_PPC64_RELATIVE ones.
- 	 */
- 	mtctr	r8
--5:	lwz	r0,12(9)	/* ELF64_R_TYPE(reloc->r_info) */
--	cmpwi	r0,R_PPC64_RELATIVE
-+5:	ld	r0,8(9)		/* ELF64_R_TYPE(reloc->r_info) */
-+	cmpdi	r0,R_PPC64_RELATIVE
- 	bne	6f
- 	ld	r6,0(r9)	/* reloc->r_offset */
- 	ld	r0,16(r9)	/* reloc->r_addend */
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
