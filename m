@@ -1,38 +1,21 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
+ [209.85.192.171])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3CA8E2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 15:26:05 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Sun, 12 Jan 2014 21:26:03 -0700
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B580CC90058
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2014 23:25:57 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0D4Pxo71638752
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 04:26:00 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0D4PxSt029150
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Jan 2014 23:25:59 -0500
-Message-ID: <52D369FF.4010807@linux.vnet.ibm.com>
-Date: Mon, 13 Jan 2014 09:52:23 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0B7102C007A
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jan 2014 15:54:23 +1100 (EST)
+Received: by mail-pd0-f171.google.com with SMTP id x10so2233569pdj.30
+ for <linuxppc-dev@ozlabs.org>; Sun, 12 Jan 2014 20:54:21 -0800 (PST)
+Message-ID: <52D37173.7030907@ozlabs.ru>
+Date: Mon, 13 Jan 2014 15:54:11 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: Re: [PATCH] pseries/cpuidle: Remove redundant call to
- ppc64_runlatch_off() in cpu idle routines
-References: <20140109050519.11532.6044.stgit@preeti.in.ibm.com>
- <52D3640F.2060805@linux.vnet.ibm.com>
-In-Reply-To: <52D3640F.2060805@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+To: Gavin Shan <shangw@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/iommu: Don't detach device without IOMMU group
+References: <1389584182-6349-1-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1389584182-6349-1-git-send-email-shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=KOI8-R
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,73 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Deepthi,
+On 01/13/2014 02:36 PM, Gavin Shan wrote:
+> Some devices, for example PCI root port, don't have IOMMU table and
+> group. We needn't detach them from their IOMMU group. Otherwise, it
+> potentially incurs kernel crash because of referring NULL IOMMU group
+> as following backtrace indicates:
+> 
+>   .iommu_group_remove_device+0x74/0x1b0
+>   .iommu_bus_notifier+0x94/0xb4
+>   .notifier_call_chain+0x78/0xe8
+>   .__blocking_notifier_call_chain+0x7c/0xbc
+>   .blocking_notifier_call_chain+0x38/0x48
+>   .device_del+0x50/0x234
+>   .pci_remove_bus_device+0x88/0x138
+>   .pci_stop_and_remove_bus_device+0x2c/0x40
+>   .pcibios_remove_pci_devices+0xcc/0xfc
+>   .pcibios_remove_pci_devices+0x3c/0xfc
+> 
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 
-On 01/13/2014 09:27 AM, Deepthi Dharwar wrote:
-> On 01/09/2014 10:35 AM, Preeti U Murthy wrote:
->> Commit fbd7740fdfdf9475f switched pseries cpu idle handling from complete idle
->> loops to ppc_md.powersave functions. Earlier to this switch,
->> ppc64_runlatch_off() had to be called in each of the idle routines. But after
->> the switch this call is handled in arch_cpu_idle(),just before the call
->> to ppc_md.powersave, where platform specific idle routines are called.
->>
->> As a consequence, the call to ppc64_runlatch_off() got duplicated in the
->> arch_cpu_idle() routine as well as in the some of the idle routines in
->> pseries and commit fbd7740fdfdf9475f missed to get rid of these redundant
->> calls. These calls were carried over subsequent enhancements to the pseries
->> cpuidle routines. This patch takes care of eliminating this redundancy.
->>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
-> 
-> Acked-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-> 
-> Preeti, I will include this patch as part of the pseries cpuidle driver
-> clean-ups series which I have undertaken.
+Thanks! I never tested the unplug case...
 
-Yes that would be great, thanks!
+Reviewed-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Regards
-Preeti U Murthy
+
+
+> ---
+>  arch/powerpc/kernel/iommu.c |   11 +++++++++++
+>  1 file changed, 11 insertions(+)
 > 
-> Regards,
-> Deepthi
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 572bb5b..8a49424 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -1137,6 +1137,17 @@ static int iommu_add_device(struct device *dev)
+>  
+>  static void iommu_del_device(struct device *dev)
+>  {
+> +	/*
+> +	 * Some devices might not have IOMMU table and group
+> +	 * and we needn't detach them from the associated
+> +	 * IOMMU groups
+> +	 */
+> +	if (!dev->iommu_group) {
+> +		pr_debug("iommu_tce: skipping device %s with no tbl\n",
+> +			 dev_name(dev));
+> +		return;
+> +	}
+> +
+>  	iommu_group_remove_device(dev);
+>  }
+>  
 > 
->>  arch/powerpc/platforms/pseries/processor_idle.c |    3 ---
->>  1 file changed, 3 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
->> index a166e38..09e4f56 100644
->> --- a/arch/powerpc/platforms/pseries/processor_idle.c
->> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
->> @@ -17,7 +17,6 @@
->>  #include <asm/reg.h>
->>  #include <asm/machdep.h>
->>  #include <asm/firmware.h>
->> -#include <asm/runlatch.h>
->>  #include <asm/plpar_wrappers.h>
->>
->>  struct cpuidle_driver pseries_idle_driver = {
->> @@ -63,7 +62,6 @@ static int snooze_loop(struct cpuidle_device *dev,
->>  	set_thread_flag(TIF_POLLING_NRFLAG);
->>
->>  	while ((!need_resched()) && cpu_online(cpu)) {
->> -		ppc64_runlatch_off();
->>  		HMT_low();
->>  		HMT_very_low();
->>  	}
->> @@ -103,7 +101,6 @@ static int dedicated_cede_loop(struct cpuidle_device *dev,
->>  	idle_loop_prolog(&in_purr);
->>  	get_lppaca()->donate_dedicated_cpu = 1;
->>
->> -	ppc64_runlatch_off();
->>  	HMT_medium();
->>  	check_and_cede_processor();
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
-> 
+
+
+-- 
+Alexey
