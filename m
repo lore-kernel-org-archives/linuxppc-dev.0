@@ -1,18 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 986092C0097
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 12:16:02 +1100 (EST)
-Message-ID: <1389575749.4672.118.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 13 Jan 2014 12:15:49 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 82D152C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 13:40:21 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v8] clk: corenet: Adds the clock binding
+Date: Mon, 13 Jan 2014 02:40:07 +0000
+Message-ID: <7dbb1b46adbe44d7893dca779b3fbf14@BL2PR03MB115.namprd03.prod.outlook.com>
+References: <1389320944-2574-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1389385170.24905.19.camel@snotra.buserror.net>
+In-Reply-To: <1389385170.24905.19.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,32 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
-
-Here's one regression fix for 3.13 that I would appreciate if you could still
-pull in. It was an "interesting" one to debug, basically it's an old bug that
-got somewhat "exposed" by new code breaking the boot on PA Semi boards (yes,
-it does appear that some people are still using these !).
-
-Cheers,
-Ben.
-
-The following changes since commit f991db1cf1bdca43675b5d2df0af991719727029:
-
-  Merge remote-tracking branch 'agust/merge' into merge (2013-12-30 14:48:27 +1100)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 10348f5976830e5d8f74e8abb04a9a057a5e8478:
-
-  powerpc: Check return value of instance-to-package OF call (2014-01-13 09:49:17 +1100)
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (1):
-      powerpc: Check return value of instance-to-package OF call
-
- arch/powerpc/kernel/prom_init.c | 22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+VGhhbmtzIGZvciB5b3VyIHJldmlldy4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KPiAtLS0tLU9y
+aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiAy
+MDE05bm0MeaciDEx5pelIOaYn+acn+WFrSA0OjIwDQo+IFRvOiBUYW5nIFl1YW50aWFuLUIyOTk4
+Mw0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IG1h
+cmsucnV0bGFuZEBhcm0uY29tOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctTGVvLQ0KPiBSNTg0NzINCj4gU3ViamVj
+dDogUmU6IFtQQVRDSCB2OF0gY2xrOiBjb3JlbmV0OiBBZGRzIHRoZSBjbG9jayBiaW5kaW5nDQo+
+IA0KPiBPbiBGcmksIDIwMTQtMDEtMTAgYXQgMTA6MjkgKzA4MDAsIFRhbmcgWXVhbnRpYW4gd3Jv
+dGU6DQo+ID4gKy0gcmVnOiBPZmZzZXQgYW5kIGxlbmd0aCBvZiB0aGUgY2xvY2sgcmVnaXN0ZXIg
+c2V0DQo+IA0KPiAib2Zmc2V0IiBpbnRvIHdoYXQ/ICBUaGUgY29udGFpbmluZyBub2RlIGlzIG5v
+dCB3aXRoaW4gdGhlIHNjb3BlIG9mIHRoaXMNCj4gYmluZGluZy4NCj4gDQo+IEkga25vdyB0aGF0
+IHBsZW50eSBvZiBvdGhlciBiaW5kaW5ncyBhcmUgd29yZGVkIHRoaXMgd2F5LCBhbmQgSSB3b3Vs
+ZG4ndA0KPiBob2xkIHVwIGFjY2VwdGFuY2UgaWYgdGhpcyB3ZXJlIHRoZSBvbmx5IGlzc3VlLCBi
+dXQgaXQgb3VnaHQgdG8gYmUgZml4ZWQNCj4gdG8gc2F5IHNvbWV0aGluZyBsaWtlICJyZWc6IHJl
+c291cmNlIHplcm8gcmVwcmVzZW50cyB0aGUgY2xvY2sgcmVnaXN0ZXINCj4gc2V0Ii4NCj4gDQpP
+Sywgd2lsbCByZWZpbmUgaXQuDQoNCj4gPiArUmVjb21tZW5kZWQgcHJvcGVydGllczoNCj4gPiAr
+LSBjbG9jay1mcmVxdWVuY3k6IElucHV0IHN5c3RlbSBjbG9jayBmcmVxdWVuY3kuIE11c3QgYmUg
+cHJlc2VudA0KPiA+ICsJaWYgdGhlIGRldmljZSBoYXMgc3ViLW5vZGVzLg0KPiANCj4gV2h5IG9u
+bHkgImlmIHRoZSBkZXZpY2UgaGFzIHN1Yi1ub2RlcyI/DQo+IA0KT0ssIHdpbGwgZml4IGl0Lg0K
+DQo+ID4gKyAgICAgICAqICJmc2wscW9yaXEtc3lzY2xrLTEuMCI6IGZvciBpbnB1dCBzeXN0ZW0g
+Y2xvY2sgKHYxLjApLg0KPiA+ICsgICAgICAgICAgICAgICBJdCB0YWtlcyBwYXJlbnQncyBjbG9j
+ayBhcyBpdHMgY2xvY2suDQo+ID4gKyAgICAgICAqICJmc2wscW9yaXEtc3lzY2xrLTIuMCI6IGZv
+ciBpbnB1dCBzeXN0ZW0gY2xvY2sgKHYyLjApLg0KPiA+ICsgICAgICAgICAgICAgICBJdCB0YWtl
+cyBwYXJlbnQncyBjbG9jayBhcyBpdHMgY2xvY2suDQo+IA0KPiBzL3BhcmVudCdzIGNsb2NrL3Bh
+cmVudCdzIGNsb2NrLWZyZXF1ZW5jeS8gc2luY2UgdGhlIHBhcmVudCBpc24ndA0KPiBhY3R1YWxs
+eSBleHBvc2luZyBhIGNsb2NrIGFzIHBlciB0aGUgY2xvY2sgYmluZGluZ3MuDQo+IA0KT0suDQoN
+Cj4gPiArRXhhbXBsZSBmb3IgY2xvY2sgYmxvY2sgYW5kIGNsb2NrIHByb3ZpZGVyOg0KPiA+ICsv
+IHsNCj4gPiArCWNsb2NrZ2VuOiBnbG9iYWwtdXRpbGl0aWVzQGUxMDAwIHsNCj4gPiArCQljb21w
+YXRpYmxlID0gImZzbCxwNTAyMC1jbG9ja2dlbiIsICJmc2wscW9yaXEtY2xvY2tnZW4tMS4wIjsN
+Cj4gPiArCQlyYW5nZXMgPSA8MHgwIDB4ZTEwMDAgMHgxMDAwPjsNCj4gPiArCQljbG9jay1mcmVx
+dWVuY3kgPSA8MD47DQo+IA0KPiBJdCdkIGJlIGJldHRlciB0byBzaG93IGEgcmVhbCBjbG9jay1m
+cmVxdWVuY3kgaGVyZSAtLSB0aGlzIGlzIGFuIGV4YW1wbGUNCj4gZm9yIHRoZSBub2RlIGFzIHRo
+ZSBPUyBzZWVzIGl0LCBub3Qgd2hhdCBnb2VzIGluIHRoZSBkdHMgYXMgYW4gaW5wdXQgdG8NCj4g
+VS1Cb290Lg0KPiANCk9LLCB3aWxsIHJlbW92ZSBpdC4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
