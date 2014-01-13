@@ -1,23 +1,32 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 82D152C0081
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 13:40:21 +1100 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v8] clk: corenet: Adds the clock binding
-Date: Mon, 13 Jan 2014 02:40:07 +0000
-Message-ID: <7dbb1b46adbe44d7893dca779b3fbf14@BL2PR03MB115.namprd03.prod.outlook.com>
-References: <1389320944-2574-1-git-send-email-Yuantian.Tang@freescale.com>
- <1389385170.24905.19.camel@snotra.buserror.net>
-In-Reply-To: <1389385170.24905.19.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 86A782C007E
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jan 2014 14:36:34 +1100 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Sun, 12 Jan 2014 20:36:32 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BA3AC1FF001A
+ for <linuxppc-dev@ozlabs.org>; Sun, 12 Jan 2014 20:36:00 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0D3aUhJ4587798
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jan 2014 04:36:30 +0100
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0D3aUKm019125
+ for <linuxppc-dev@ozlabs.org>; Sun, 12 Jan 2014 20:36:30 -0700
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/iommu: Don't detach device without IOMMU group
+Date: Mon, 13 Jan 2014 11:36:22 +0800
+Message-Id: <1389584182-6349-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +36,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzIGZvciB5b3VyIHJldmlldy4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KPiAtLS0tLU9y
-aWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiAy
-MDE05bm0MeaciDEx5pelIOaYn+acn+WFrSA0OjIwDQo+IFRvOiBUYW5nIFl1YW50aWFuLUIyOTk4
-Mw0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IG1h
-cmsucnV0bGFuZEBhcm0uY29tOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExpIFlhbmctTGVvLQ0KPiBSNTg0NzINCj4gU3ViamVj
-dDogUmU6IFtQQVRDSCB2OF0gY2xrOiBjb3JlbmV0OiBBZGRzIHRoZSBjbG9jayBiaW5kaW5nDQo+
-IA0KPiBPbiBGcmksIDIwMTQtMDEtMTAgYXQgMTA6MjkgKzA4MDAsIFRhbmcgWXVhbnRpYW4gd3Jv
-dGU6DQo+ID4gKy0gcmVnOiBPZmZzZXQgYW5kIGxlbmd0aCBvZiB0aGUgY2xvY2sgcmVnaXN0ZXIg
-c2V0DQo+IA0KPiAib2Zmc2V0IiBpbnRvIHdoYXQ/ICBUaGUgY29udGFpbmluZyBub2RlIGlzIG5v
-dCB3aXRoaW4gdGhlIHNjb3BlIG9mIHRoaXMNCj4gYmluZGluZy4NCj4gDQo+IEkga25vdyB0aGF0
-IHBsZW50eSBvZiBvdGhlciBiaW5kaW5ncyBhcmUgd29yZGVkIHRoaXMgd2F5LCBhbmQgSSB3b3Vs
-ZG4ndA0KPiBob2xkIHVwIGFjY2VwdGFuY2UgaWYgdGhpcyB3ZXJlIHRoZSBvbmx5IGlzc3VlLCBi
-dXQgaXQgb3VnaHQgdG8gYmUgZml4ZWQNCj4gdG8gc2F5IHNvbWV0aGluZyBsaWtlICJyZWc6IHJl
-c291cmNlIHplcm8gcmVwcmVzZW50cyB0aGUgY2xvY2sgcmVnaXN0ZXINCj4gc2V0Ii4NCj4gDQpP
-Sywgd2lsbCByZWZpbmUgaXQuDQoNCj4gPiArUmVjb21tZW5kZWQgcHJvcGVydGllczoNCj4gPiAr
-LSBjbG9jay1mcmVxdWVuY3k6IElucHV0IHN5c3RlbSBjbG9jayBmcmVxdWVuY3kuIE11c3QgYmUg
-cHJlc2VudA0KPiA+ICsJaWYgdGhlIGRldmljZSBoYXMgc3ViLW5vZGVzLg0KPiANCj4gV2h5IG9u
-bHkgImlmIHRoZSBkZXZpY2UgaGFzIHN1Yi1ub2RlcyI/DQo+IA0KT0ssIHdpbGwgZml4IGl0Lg0K
-DQo+ID4gKyAgICAgICAqICJmc2wscW9yaXEtc3lzY2xrLTEuMCI6IGZvciBpbnB1dCBzeXN0ZW0g
-Y2xvY2sgKHYxLjApLg0KPiA+ICsgICAgICAgICAgICAgICBJdCB0YWtlcyBwYXJlbnQncyBjbG9j
-ayBhcyBpdHMgY2xvY2suDQo+ID4gKyAgICAgICAqICJmc2wscW9yaXEtc3lzY2xrLTIuMCI6IGZv
-ciBpbnB1dCBzeXN0ZW0gY2xvY2sgKHYyLjApLg0KPiA+ICsgICAgICAgICAgICAgICBJdCB0YWtl
-cyBwYXJlbnQncyBjbG9jayBhcyBpdHMgY2xvY2suDQo+IA0KPiBzL3BhcmVudCdzIGNsb2NrL3Bh
-cmVudCdzIGNsb2NrLWZyZXF1ZW5jeS8gc2luY2UgdGhlIHBhcmVudCBpc24ndA0KPiBhY3R1YWxs
-eSBleHBvc2luZyBhIGNsb2NrIGFzIHBlciB0aGUgY2xvY2sgYmluZGluZ3MuDQo+IA0KT0suDQoN
-Cj4gPiArRXhhbXBsZSBmb3IgY2xvY2sgYmxvY2sgYW5kIGNsb2NrIHByb3ZpZGVyOg0KPiA+ICsv
-IHsNCj4gPiArCWNsb2NrZ2VuOiBnbG9iYWwtdXRpbGl0aWVzQGUxMDAwIHsNCj4gPiArCQljb21w
-YXRpYmxlID0gImZzbCxwNTAyMC1jbG9ja2dlbiIsICJmc2wscW9yaXEtY2xvY2tnZW4tMS4wIjsN
-Cj4gPiArCQlyYW5nZXMgPSA8MHgwIDB4ZTEwMDAgMHgxMDAwPjsNCj4gPiArCQljbG9jay1mcmVx
-dWVuY3kgPSA8MD47DQo+IA0KPiBJdCdkIGJlIGJldHRlciB0byBzaG93IGEgcmVhbCBjbG9jay1m
-cmVxdWVuY3kgaGVyZSAtLSB0aGlzIGlzIGFuIGV4YW1wbGUNCj4gZm9yIHRoZSBub2RlIGFzIHRo
-ZSBPUyBzZWVzIGl0LCBub3Qgd2hhdCBnb2VzIGluIHRoZSBkdHMgYXMgYW4gaW5wdXQgdG8NCj4g
-VS1Cb290Lg0KPiANCk9LLCB3aWxsIHJlbW92ZSBpdC4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
+Some devices, for example PCI root port, don't have IOMMU table and
+group. We needn't detach them from their IOMMU group. Otherwise, it
+potentially incurs kernel crash because of referring NULL IOMMU group
+as following backtrace indicates:
+
+  .iommu_group_remove_device+0x74/0x1b0
+  .iommu_bus_notifier+0x94/0xb4
+  .notifier_call_chain+0x78/0xe8
+  .__blocking_notifier_call_chain+0x7c/0xbc
+  .blocking_notifier_call_chain+0x38/0x48
+  .device_del+0x50/0x234
+  .pci_remove_bus_device+0x88/0x138
+  .pci_stop_and_remove_bus_device+0x2c/0x40
+  .pcibios_remove_pci_devices+0xcc/0xfc
+  .pcibios_remove_pci_devices+0x3c/0xfc
+
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/iommu.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 572bb5b..8a49424 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -1137,6 +1137,17 @@ static int iommu_add_device(struct device *dev)
+ 
+ static void iommu_del_device(struct device *dev)
+ {
++	/*
++	 * Some devices might not have IOMMU table and group
++	 * and we needn't detach them from the associated
++	 * IOMMU groups
++	 */
++	if (!dev->iommu_group) {
++		pr_debug("iommu_tce: skipping device %s with no tbl\n",
++			 dev_name(dev));
++		return;
++	}
++
+ 	iommu_group_remove_device(dev);
+ }
+ 
+-- 
+1.7.10.4
