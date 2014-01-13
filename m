@@ -1,31 +1,19 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x229.google.com (mail-wg0-x229.google.com
- [IPv6:2a00:1450:400c:c00::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 72F4B2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 19:17:23 +1100 (EST)
-Received: by mail-wg0-f41.google.com with SMTP id n12so2449075wgh.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 00:17:16 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 170862C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 20:13:34 +1100 (EST)
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
+To: <b07421@freescale.com>
+Subject: [PATCH v9] clk: corenet: Adds the clock binding
+Date: Mon, 13 Jan 2014 16:16:35 +0800
+Message-ID: <1389600995-28293-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20140109111957.GE16227@intel.com>
-References: <1387886789-20249-1-git-send-email-a13xp0p0v88@gmail.com>
- <1387886789-20249-5-git-send-email-a13xp0p0v88@gmail.com>
- <20131226124828.GK8064@book.gsilab.sittig.org>
- <CAF0T0X7wotm60Bq4tfYcRhkDwiCw2hh5R5m2WmVLmLGLZYpQsQ@mail.gmail.com>
- <20140108164719.GO20094@book.gsilab.sittig.org>
- <20140109111957.GE16227@intel.com>
-Date: Mon, 13 Jan 2014 12:17:16 +0400
-Message-ID: <CAF0T0X67RVNoJAM+9DyDM=HKw_5P4MExgXWaEj5_asqVd5hvDQ@mail.gmail.com>
-Subject: Re: [PATCH RFC v6 4/5] dma: mpc512x: register for device tree channel
- lookup
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Vinod Koul <vinod.koul@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Gerhard Sittig <gsi@denx.de>, Alexander Popov <a13xp0p0v88@gmail.com>,
- dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,85 +23,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for your replies, Gerhard and Vinod.
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-2014/1/9 Vinod Koul <vinod.koul@intel.com>:
-> On Wed, Jan 08, 2014 at 05:47:19PM +0100, Gerhard Sittig wrote:
->> [ what is the semantics of DMA_PRIVATE capability flag?
->>   is documentation available beyond the initial commit message?
->>   need individual channels be handled instead of controllers? ]
->
-> The DMA_PRIVATE means that your channels are not to be used for global memcpy,
-> as one can do in async cases (this is hwere DMAengine came into existence)
->
-> If the device has the capablity of doing genric memcpy then it should not set
-> this. For slave dma usage the dam channel can transfer data to a specfic
-> slave device(s), hence we should use this is geric fashion so setting
-> DMA_PRIVATE makes sense in those cases.
+Adds the clock bindings for Freescale PowerPC CoreNet platforms
 
-Each DMA channel of MPC512x DMA controller can do _both_
-mem-to-mem transfers and transfers between mem and some slave peripheral
-(only one DMA channel is fully dedicated to DDR).
-All DMA channels of MPC512x DMA controller belong to one dma_device.
-So we _don't_ need setting DMA_PRIVATE flag for this dma_device at all, do we?
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+v9:
+	- refined some properties' description
+v8:
+	- added clock-frequency property description
+	- fixed whitespace and tab mixing issue
+v7:
+	- refined some properties' definitions
+v6:
+	- splited the previous patch into 2 parts, one is for binding(this one),
+	  the other is for DTS modification(will submit once this gets accepted)
+	- fixed typo
+	- refined #clock-cells and clock-output-names properties
+	- removed fixed-clock compatible string
+v5:
+	- refine the binding document
+	- update the compatible string
+v4:
+	- add binding document
+	- update compatible string
+	- update the reg property
+v3:
+	- fix typo
+v2:
+	- add t4240, b4420, b4860 support
+	- remove pll/4 clock from p2041, p3041 and p5020 board
 
->> On Sat, Jan 04, 2014 at 00:54 +0400, Alexander Popov wrote:
->> > I've involved DMA_PRIVATE flag because new of_dma_xlate_by_chan_id()
->> > uses dma_get_slave_channel() instead of dma_request_channel()
->> > (PATCH RFC v6 3/5). This flag is implicitly set in dma_request_channel(),
->> > but is not set in dma_get_slave_channel().
-> Which makes me thing you are targetting slave usages. Do you intend to use for
-> mempcy too on all controllers you support. in that case you should set it
-> selectively.
+ .../devicetree/bindings/clock/corenet-clock.txt    | 134 +++++++++++++++++++++
+ 1 file changed, 134 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/clock/corenet-clock.txt
 
-Vinod, please correct me if I'm wrong.
-As I could understand from your comments and the code,
-DMA_PRIVATE flag is needed for dma_devices with DMA channels
-which _can_ work with slave peripheral but _can't_ do mem-to-mem transfers.
-If DMA_PRIVATE flag is set for some dma_device before
-dma_async_device_register()
-then its DMA channels are not published in tables for kernel slab allocator
-(because these channels are simply useless for memcpy).
-
->> Still I see a difference in the lookup approaches:  Yours applies
->> DMA_PRIVATE globally and in advance, preventing _any_ use of DMA
->> for memory transfers.  While the __dma_request_channel() routine
->> only applies it _temporarily_ around a dma_chan_get() operation.
->> Allowing for use of DMA channels by both individual peripherals
->> as well as memory transfers.
->>
-> No it doesnt prevent. You can still use it for memcpy once you have the channel.
-
-Excuse me, I don't completely understand why dma_request_channel()
-needs to set DMA_PRIVATE flag.
-If dma_request_channel() for some dma_device without DMA_PRIVATE
-is called before the first dmaengine_get()
-then no DMA channels of this dma_device will become available for memcpy
-by slab allocator.
-Could you give me a clue?
-
->> > > Consider the fact that this driver
->> > > handles both MPC5121 as well as MPC8308 hardware.
->> >
->> > Ah, yes, sorry. I should certainly fix this, if setting of DMA_PRIVATE flag
->> > is needed at all.
->>
->> What I meant here is that implications for all affected platforms
->> should be considered.  There is one driver source, but the driver
->> applies to more than one platform (another issue of the driver is
->> that this is not apparent from the doc nor the compat strings).
-
-I'll add a comment with information about the supported platforms to
-mpc512x_dma.c
-in RFC PATCH 1/5. Ok?
-
->> So blocking memory transfers in mpc512x_dma.c is a total breakage
->> for MPC8308 (removes the only previous feature and adds nothing),
->> and is a regression for MPC512x (removes the previously supported
->> memory transfers, while it may add peripheral supports with very
->> few users).
-
-Yes, I see. MPC512x and MPC8308 should be treated differently.
-
-Thanks!
-Alexander
+diff --git a/Documentation/devicetree/bindings/clock/corenet-clock.txt b/Documentation/devicetree/bindings/clock/corenet-clock.txt
+new file mode 100644
+index 0000000..8394bc7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/clock/corenet-clock.txt
+@@ -0,0 +1,134 @@
++* Clock Block on Freescale CoreNet Platforms
++
++Freescale CoreNet chips take primary clocking input from the external
++SYSCLK signal. The SYSCLK input (frequency) is multiplied using
++multiple phase locked loops (PLL) to create a variety of frequencies
++which can then be passed to a variety of internal logic, including
++cores and peripheral IP blocks.
++Please refer to the Reference Manual for details.
++
++1. Clock Block Binding
++
++Required properties:
++- compatible: Should contain a specific clock block compatible string
++	and a single chassis clock compatible string.
++	Clock block strings include, but not limited to, one of the:
++	* "fsl,p2041-clockgen"
++	* "fsl,p3041-clockgen"
++	* "fsl,p4080-clockgen"
++	* "fsl,p5020-clockgen"
++	* "fsl,p5040-clockgen"
++	* "fsl,t4240-clockgen"
++	* "fsl,b4420-clockgen"
++	* "fsl,b4860-clockgen"
++	Chassis clock strings include:
++	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
++	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
++- reg: Describes the address of the device's resources within the
++	address space defined by its parent bus, and resource zero
++	represents the clock register set
++- clock-frequency: Input system clock frequency
++
++Recommended properties:
++- ranges: Allows valid translation between child's address space and
++	parent's. Must be present if the device has sub-nodes.
++- #address-cells: Specifies the number of cells used to represent
++	physical base addresses.  Must be present if the device has
++	sub-nodes and set to 1 if present
++- #size-cells: Specifies the number of cells used to represent
++	the size of an address. Must be present if the device has
++	sub-nodes and set to 1 if present
++
++2. Clock Provider/Consumer Binding
++
++Most of the bindings are from the common clock binding[1].
++ [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
++
++Required properties:
++- compatible : Should include one of the following:
++	* "fsl,qoriq-core-pll-1.0" for core PLL clocks (v1.0)
++	* "fsl,qoriq-core-pll-2.0" for core PLL clocks (v2.0)
++	* "fsl,qoriq-core-mux-1.0" for core mux clocks (v1.0)
++	* "fsl,qoriq-core-mux-2.0" for core mux clocks (v2.0)
++	* "fsl,qoriq-sysclk-1.0": for input system clock (v1.0).
++		It takes parent's clock-frequency as its clock.
++	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0).
++		It takes parent's clock-frequency as its clock.
++- #clock-cells: From common clock binding. The number of cells in a
++	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
++	clocks, or <1> for "fsl,qoriq-core-pll-[1,2].0" clocks.
++	For "fsl,qoriq-core-pll-[1,2].0" clocks, the single
++	clock-specifier cell may take the following values:
++	* 0 - equal to the PLL frequency
++	* 1 - equal to the PLL frequency divided by 2
++	* 2 - equal to the PLL frequency divided by 4
++
++Recommended properties:
++- clocks: Should be the phandle of input parent clock
++- clock-names: From common clock binding, indicates the clock name
++- clock-output-names: From common clock binding, indicates the names of
++	output clocks
++- reg: Should be the offset and length of clock block base address.
++	The length should be 4.
++
++Example for clock block and clock provider:
++/ {
++	clockgen: global-utilities@e1000 {
++		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
++		ranges = <0x0 0xe1000 0x1000>;
++		clock-frequency = 133333;
++		reg = <0xe1000 0x1000>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		sysclk: sysclk {
++			#clock-cells = <0>;
++			compatible = "fsl,qoriq-sysclk-1.0";
++			clock-output-names = "sysclk";
++		}
++
++		pll0: pll0@800 {
++			#clock-cells = <1>;
++			reg = <0x800 0x4>;
++			compatible = "fsl,qoriq-core-pll-1.0";
++			clocks = <&sysclk>;
++			clock-output-names = "pll0", "pll0-div2";
++		};
++
++		pll1: pll1@820 {
++			#clock-cells = <1>;
++			reg = <0x820 0x4>;
++			compatible = "fsl,qoriq-core-pll-1.0";
++			clocks = <&sysclk>;
++			clock-output-names = "pll1", "pll1-div2";
++		};
++
++		mux0: mux0@0 {
++			#clock-cells = <0>;
++			reg = <0x0 0x4>;
++			compatible = "fsl,qoriq-core-mux-1.0";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
++			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
++			clock-output-names = "cmux0";
++		};
++
++		mux1: mux1@20 {
++			#clock-cells = <0>;
++			reg = <0x20 0x4>;
++			compatible = "fsl,qoriq-core-mux-1.0";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll1 0>, <&pll1 1>;
++			clock-names = "pll0", "pll0-div2", "pll1", "pll1-div2";
++			clock-output-names = "cmux1";
++		};
++	};
++  }
++
++Example for clock consumer:
++
++/ {
++	cpu0: PowerPC,e5500@0 {
++		...
++		clocks = <&mux0>;
++		...
++	};
++  }
+-- 
+1.8.0
