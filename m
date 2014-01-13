@@ -2,21 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 96EFB2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 11:08:46 +1100 (EST)
-Message-ID: <1389566806.4672.108.camel@pasglop>
-Subject: Re: [PATCH -V3 1/2] powerpc: mm: Move ppc64 page table range
- definitions to separate header
+ by ozlabs.org (Postfix) with ESMTPS id 986092C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 12:16:02 +1100 (EST)
+Message-ID: <1389575749.4672.118.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 13 Jan 2014 09:46:46 +1100
-In-Reply-To: <87mwj8wn3e.fsf@linux.vnet.ibm.com>
-References: <1388999012-14424-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1389050101.12906.13.camel@pasglop> <87mwj8wn3e.fsf@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 13 Jan 2014 12:15:49 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: aarcange@redhat.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- kirill.shutemov@linux.intel.com, linux-mm@kvack.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-07 at 07:49 +0530, Aneesh Kumar K.V wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > On Mon, 2014-01-06 at 14:33 +0530, Aneesh Kumar K.V wrote:
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >> 
-> >> This avoid mmu-hash64.h including pagetable-ppc64.h. That inclusion
-> >> cause issues like
-> >
-> > I don't like this. We have that stuff split into too many includes
-> > already it's a mess.
-> 
-> I understand. Let me know, if you have any suggestion on cleaning that
-> up. I can do that.
-> 
-> >
-> > Why do we need to include it from mmu*.h ?
-> 
-> in mmu-hash64.h added by me via 78f1dbde9fd020419313c2a0c3b602ea2427118f
-> 
-> /*
->  * This is necessary to get the definition of PGTABLE_RANGE which we
->  * need for various slices related matters. Note that this isn't the
->  * complete pgtable.h but only a portion of it.
->  */
-> #include <asm/pgtable-ppc64.h>
+Hi Linus !
 
-For now, instead, just do fwd def of the spinlock, I don't like the
-inclusion of spinlock.h there anyway.
+Here's one regression fix for 3.13 that I would appreciate if you could still
+pull in. It was an "interesting" one to debug, basically it's an old bug that
+got somewhat "exposed" by new code breaking the boot on PA Semi boards (yes,
+it does appear that some people are still using these !).
 
 Cheers,
-Ben,
+Ben.
+
+The following changes since commit f991db1cf1bdca43675b5d2df0af991719727029:
+
+  Merge remote-tracking branch 'agust/merge' into merge (2013-12-30 14:48:27 +1100)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 10348f5976830e5d8f74e8abb04a9a057a5e8478:
+
+  powerpc: Check return value of instance-to-package OF call (2014-01-13 09:49:17 +1100)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc: Check return value of instance-to-package OF call
+
+ arch/powerpc/kernel/prom_init.c | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
