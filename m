@@ -1,15 +1,16 @@
 Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DAB102C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 03:22:09 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BA20D2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 03:22:11 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
  <paulus@samba.org>
-Subject: [PATCH 1/4] powerpc: use device_initcall for registering rtc devices
-Date: Mon, 13 Jan 2014 11:21:50 -0500
-Message-ID: <1389630113-7919-2-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 4/4] powerpc: don't use module_init for non-modular core
+ hugetlb code
+Date: Mon, 13 Jan 2014 11:21:53 -0500
+Message-ID: <1389630113-7919-5-git-send-email-paul.gortmaker@windriver.com>
 In-Reply-To: <1389630113-7919-1-git-send-email-paul.gortmaker@windriver.com>
 References: <1389630113-7919-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
@@ -25,10 +26,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently these two RTC devices are in core platform code
-where it is not possible for them to be modular.  It will
-never be modular, so using module_init as an alias for
-__initcall can be somewhat misleading.
+The hugetlbpage.o is obj-y (always built in).  It will never
+be modular, so using module_init as an alias for __initcall is
+somewhat misleading.
 
 Fix this up now, so that we can relocate module_init from
 init.h into module.h in the future.  If we don't do this, we'd
@@ -37,36 +37,29 @@ would be a worse thing.
 
 Note that direct use of __initcall is discouraged, vs. one
 of the priority categorized subgroups.  As __initcall gets
-mapped onto device_initcall, our use of device_initcall
-directly in this change means that the runtime impact is
-zero -- they will remain at level 6 in initcall ordering.
+mapped onto device_initcall, our use of arch_initcall (which
+makes sense for arch code) will thus change this registration
+from level 6-device to level 3-arch (i.e. slightly earlier).
+However no observable impact of that small difference has
+been observed during testing, or is expected.
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/kernel/time.c        | 2 +-
- arch/powerpc/platforms/ps3/time.c | 3 +--
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/hugetlbpage.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index afb1b56ef4fa..bee2bb2bbc75 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -1053,4 +1053,4 @@ static int __init rtc_init(void)
- 	return PTR_ERR_OR_ZERO(pdev);
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 90bb6d9409bf..d25c202420da 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -911,7 +911,7 @@ static int __init hugetlbpage_init(void)
+ 	return 0;
  }
+ #endif
+-module_init(hugetlbpage_init);
++arch_initcall(hugetlbpage_init);
  
--module_init(rtc_init);
-+device_initcall(rtc_init);
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index ce73ce865613..791c6142c4a7 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -92,5 +92,4 @@ static int __init ps3_rtc_init(void)
- 
- 	return PTR_ERR_OR_ZERO(pdev);
- }
--
--module_init(ps3_rtc_init);
-+device_initcall(ps3_rtc_init);
+ void flush_dcache_icache_hugepage(struct page *page)
+ {
 -- 
 1.8.5.2
