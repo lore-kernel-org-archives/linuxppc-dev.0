@@ -1,18 +1,35 @@
-Return-Path: <kas@node.shutemov.name>
-Received: from jenni2.inet.fi (mta-out.inet.fi [195.156.147.13])
- by ozlabs.org (Postfix) with ESMTP id 894642C0092
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 03:33:27 +1100 (EST)
-Date: Mon, 13 Jan 2014 18:32:54 +0200
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4] powerpc: thp: Fix crash on mremap
-Message-ID: <20140113163254.GA4658@node.dhcp.inet.fi>
-References: <1389593064-32664-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6BF7A2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 03:36:16 +1100 (EST)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 13 Jan 2014 16:36:11 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9DE8F1B08069
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 16:35:31 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0DGZwOf51118166
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 16:35:58 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0DGa942023645
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Jan 2014 09:36:09 -0700
+Subject: [PATCH] powerpc/relocate fix relocate processing in LE mode
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Mon, 13 Jan 2014 17:36:08 +0100
+Message-ID: <20140113163608.10118.11793.stgit@nimbus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1389593064-32664-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: aarcange@redhat.com, linux-mm@kvack.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 13, 2014 at 11:34:24AM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> This patch fix the below crash
-> 
-> NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
-> LR [c0000000000439ac] .hash_page+0x18c/0x5e0
-> ...
-> Call Trace:
-> [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
-> [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
-> [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
-> 
-> On ppc64 we use the pgtable for storing the hpte slot information and
-> store address to the pgtable at a constant offset (PTRS_PER_PMD) from
-> pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
-> the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
-> from new pmd.
-> 
-> We also want to move the withdraw and deposit before the set_pmd so
-> that, when page fault find the pmd as trans huge we can be sure that
-> pgtable can be located at the offset.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Relocation's code is not working in little endian mode because the r_info
+field, which is a 64 bits value, should be read from the right offset.
 
-Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+The current code is optimized to read the r_info field as a 32 bits value
+starting at the middle of the double word (offset 12). When running in LE
+mode, the read value is not correct since only the MSB is read.
 
+This patch removes this optimization which consist to deal with a 32 bits
+value instead of a 64 bits one. This way it works in big and little endian
+mode.
 
--- 
- Kirill A. Shutemov
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/reloc_64.S |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/reloc_64.S b/arch/powerpc/kernel/reloc_64.S
+index b47a0e1..1482327 100644
+--- a/arch/powerpc/kernel/reloc_64.S
++++ b/arch/powerpc/kernel/reloc_64.S
+@@ -69,8 +69,8 @@ _GLOBAL(relocate)
+ 	 * R_PPC64_RELATIVE ones.
+ 	 */
+ 	mtctr	r8
+-5:	lwz	r0,12(9)	/* ELF64_R_TYPE(reloc->r_info) */
+-	cmpwi	r0,R_PPC64_RELATIVE
++5:	ld	r0,8(9)		/* ELF64_R_TYPE(reloc->r_info) */
++	cmpdi	r0,R_PPC64_RELATIVE
+ 	bne	6f
+ 	ld	r6,0(r9)	/* reloc->r_offset */
+ 	ld	r0,16(r9)	/* reloc->r_addend */
