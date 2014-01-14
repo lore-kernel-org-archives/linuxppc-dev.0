@@ -1,40 +1,24 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-pb0-x22b.google.com (mail-pb0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BF8012C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 18:43:04 +1100 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 14 Jan 2014 17:43:03 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 83D0D2BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 18:43:00 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0E7O6Ij59834508
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 18:24:07 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0E7gwW9005177
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 18:42:59 +1100
-Message-ID: <52D4E93C.3050503@linux.vnet.ibm.com>
-Date: Tue, 14 Jan 2014 13:07:32 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0DBE62C0091
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 18:47:54 +1100 (EST)
+Received: by mail-pb0-f43.google.com with SMTP id up15so1710719pbc.30
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Jan 2014 23:47:45 -0800 (PST)
+Date: Mon, 13 Jan 2014 23:47:11 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Move precessing of MCE queued event out from syscall
+ exit path.
+In-Reply-To: <20140114042611.13145.6551.stgit@mars.in.ibm.com>
+Message-ID: <alpine.LSU.2.11.1401132314380.3222@eggly.anvils>
+References: <20140114042611.13145.6551.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
- is acceptable
-References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
- <52D4E07E.204@linux.vnet.ibm.com>
-In-Reply-To: <52D4E07E.204@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: deepthi@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- tuukka.tikkanen@linaro.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,42 +28,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/14/2014 12:30 PM, Srivatsa S. Bhat wrote:
-> On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
->> On PowerPC, in a particular test scenario, all the cpu idle states were disabled.
->> Inspite of this it was observed that the idle state count of the shallowest
->> idle state, snooze, was increasing.
->>
->> This is because the governor returns the idle state index as 0 even in
->> scenarios when no idle state can be chosen. These scenarios could be when the
->> latency requirement is 0 or as mentioned above when the user wants to disable
->> certain cpu idle states at runtime. In the latter case, its possible that no
->> cpu idle state is valid because the suitable states were disabled
->> and the rest did not match the menu governor criteria to be chosen as the
->> next idle state.
->>
->> This patch adds the code to indicate that a valid cpu idle state could not be
->> chosen by the menu governor and reports back to arch so that it can take some
->> default action.
->>
+On Tue, 14 Jan 2014, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> That sounds fair enough. However, the "default" action of pseries idle loop
-> (pseries_lpar_idle()) surprises me. It enters Cede, which is _deeper_ than doing
-> a snooze! IOW, a user might "disable" cpuidle or set the PM_QOS_CPU_DMA_LATENCY
-> to 0 hoping to prevent the CPUs from going to deep idle states, but then the
-> machine would still end up going to Cede, even though that wont get reflected
-> in the idle state counts. IMHO that scenario needs some thought as well...
+> Huge Dickins reported an issue that b5ff4211a829
+> "powerpc/book3s: Queue up and process delayed MCE events" breaks the
+> PowerMac G5 boot. This patch fixes it by moving the mce even processing
+> away from syscall exit, which was wrong to do that in first place, and
+> implements a different mechanism to deal with it using a paca flag and
+> decrementer interrupt to process the event.
 > 
+> Reported-by: Hugh Dickins <hughd@google.com>
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-I checked the git history and found that the default idle was changed (on purpose)
-to cede the processor, in order to speed up booting.. Hmm..
+Good work guys: I can happily report that both this rework,
+and Ben's one-liner, fix the issue for me on the G5: thank you.
 
-commit 363edbe2614aa90df706c0f19ccfa2a6c06af0be
-Author: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Date:   Fri Sep 6 00:25:06 2013 +0530
+(Irrelevant not-so-happy detail: I very nearly mailed you an hour or
+so earlier to report that neither fixed it; but retried my original
+CONFIG_PPC_POWERNV hack after, and found that now equally useless.
 
-    powerpc: Default arch idle could cede processor on pseries
+I did write of changing behaviour and ATA errors: it now appears that's
+an independent but intermittent issue on the G5 in 3.13-rc7-mm1, which
+coincidentally happened to trigger when I tested rc7-mm1 without fixes,
+but not when I tested with my hack, until today.
 
+I've gone back to testing on rc6-mm1, the previous week's mmotm,
+which showed failure to run /sbin/init: rc6-mm1 has no trouble mounting
+root, and it runs properly with your new patch, and with Ben's patch.
 
-Regards,
-Srivatsa S. Bhat
+And I may be quite wrong to point a finger at ATA errors: perhaps
+they're always shown, and quickly cleared off screen in successful boots,
+but left visible when root cannot be mounted for some other reason.
+
+I don't know, and won't have time to investigate further - bisecting
+intermittents is not much fun!  I'll just have to hope that it's
+sorted out before it reaches 3.14-rc, or else bite the bullet and
+investigate on that.)
+
+Hugh
+
+> ---
+>  arch/powerpc/include/asm/mce.h  |    3 +++
+>  arch/powerpc/include/asm/paca.h |    3 +++
+>  arch/powerpc/kernel/entry_64.S  |    5 -----
+>  arch/powerpc/kernel/irq.c       |   11 ++++++++++-
+>  arch/powerpc/kernel/mce.c       |    7 +++++++
+>  arch/powerpc/kernel/time.c      |    9 +++++++++
+>  6 files changed, 32 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+> index 2257d1e..225e678 100644
+> --- a/arch/powerpc/include/asm/mce.h
+> +++ b/arch/powerpc/include/asm/mce.h
+> @@ -186,6 +186,9 @@ struct mce_error_info {
+>  #define MCE_EVENT_RELEASE	true
+>  #define MCE_EVENT_DONTRELEASE	false
+>  
+> +/* MCE bit flags (paca.mce_flags) */
+> +#define MCE_EVENT_PENDING	0x0001
+> +
+>  extern void save_mce_event(struct pt_regs *regs, long handled,
+>  			   struct mce_error_info *mce_err, uint64_t nip,
+>  			   uint64_t addr);
+> diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+> index c3523d1..f9aa521 100644
+> --- a/arch/powerpc/include/asm/paca.h
+> +++ b/arch/powerpc/include/asm/paca.h
+> @@ -141,6 +141,9 @@ struct paca_struct {
+>  	u8 io_sync;			/* writel() needs spin_unlock sync */
+>  	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+>  	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	u8 mce_flags;			/* MCE bit flags. */
+> +#endif
+>  	u64 sprg3;			/* Saved user-visible sprg */
+>  #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+>  	u64 tm_scratch;                 /* TM scratch area for reclaim */
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 770d6d6..bbfb029 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -184,11 +184,6 @@ syscall_exit:
+>  	bl	.do_show_syscall_exit
+>  	ld	r3,RESULT(r1)
+>  #endif
+> -#ifdef CONFIG_PPC_BOOK3S_64
+> -BEGIN_FTR_SECTION
+> -	bl	.machine_check_process_queued_event
+> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+> -#endif
+>  	CURRENT_THREAD_INFO(r12, r1)
+>  
+>  	ld	r8,_MSR(r1)
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index ba01656..e22f591 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -67,6 +67,7 @@
+>  #include <asm/udbg.h>
+>  #include <asm/smp.h>
+>  #include <asm/debug.h>
+> +#include <asm/mce.h>
+>  
+>  #ifdef CONFIG_PPC64
+>  #include <asm/paca.h>
+> @@ -158,9 +159,17 @@ notrace unsigned int __check_irq_replay(void)
+>  	 * We may have missed a decrementer interrupt. We check the
+>  	 * decrementer itself rather than the paca irq_happened field
+>  	 * in case we also had a rollover while hard disabled
+> +	 * Also check if any MCE event is queued up that requires
+> +	 * processing. Machine check handler would set paca->mce_flags
+> +	 * and then call set_dec(1) to trigger a decrementer interrupt
+> +	 * from NMI.
+>  	 */
+>  	local_paca->irq_happened &= ~PACA_IRQ_DEC;
+> -	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow())
+> +	if ((happened & PACA_IRQ_DEC) || decrementer_check_overflow()
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +		|| local_paca->mce_flags & MCE_EVENT_PENDING
+> +#endif
+> +		)
+>  		return 0x900;
+>  
+>  	/* Finally check if an external interrupt happened */
+> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+> index d6edf2b..7bab827 100644
+> --- a/arch/powerpc/kernel/mce.c
+> +++ b/arch/powerpc/kernel/mce.c
+> @@ -185,6 +185,13 @@ void machine_check_queue_event(void)
+>  		return;
+>  	}
+>  	__get_cpu_var(mce_event_queue[index]) = evt;
+> +
+> +	/*
+> +	 * Set the event pending flag and raise an decrementer interrupt
+> +	 * to process the queued event later.
+> +	 */
+> +	local_paca->mce_flags |= MCE_EVENT_PENDING;
+> +	set_dec(1);
+>  }
+>  
+>  /*
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index b3b1441..87ccf92 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -69,6 +69,7 @@
+>  #include <asm/vdso_datapage.h>
+>  #include <asm/firmware.h>
+>  #include <asm/cputime.h>
+> +#include <asm/mce.h>
+>  
+>  /* powerpc clocksource/clockevent code */
+>  
+> @@ -505,6 +506,14 @@ void timer_interrupt(struct pt_regs * regs)
+>  		return;
+>  	}
+>  
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	/* Check if we have MCE event pending for processing. */
+> +	if (local_paca->mce_flags & MCE_EVENT_PENDING) {
+> +		local_paca->mce_flags &= ~MCE_EVENT_PENDING;
+> +		machine_check_process_queued_event();
+> +	}
+> +#endif
+> +
+>  	/* Conditionally hard-enable interrupts now that the DEC has been
+>  	 * bumped to its maximum value
+>  	 */
