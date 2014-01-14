@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91CEA2C0092
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jan 2014 07:17:49 +1100 (EST)
-Message-ID: <1389730655.6933.22.camel@pasglop>
-Subject: Re: [PATCH v2] Move precessing of MCE queued event out from syscall
- exit path.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>
-Date: Wed, 15 Jan 2014 07:17:35 +1100
-In-Reply-To: <alpine.LSU.2.11.1401141135240.3762@eggly.anvils>
-References: <20140114101450.32385.65506.stgit@mars.in.ibm.com>
- <alpine.LSU.2.11.1401141135240.3762@eggly.anvils>
+ by ozlabs.org (Postfix) with ESMTPS id EC64E2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2014 09:56:44 +1100 (EST)
+Message-ID: <1389740192.24905.134.camel@snotra.buserror.net>
+Subject: Re: [PATCH 3/4] powerpc: use subsys_initcall for Freescale Local Bus
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Tue, 14 Jan 2014 16:56:32 -0600
+In-Reply-To: <1389630113-7919-4-git-send-email-paul.gortmaker@windriver.com>
+References: <1389630113-7919-1-git-send-email-paul.gortmaker@windriver.com>
+ <1389630113-7919-4-git-send-email-paul.gortmaker@windriver.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+MIME-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,116 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-14 at 11:48 -0800, Hugh Dickins wrote:
-> On Tue, 14 Jan 2014, Mahesh J Salgaonkar wrote:
-> > From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> > 
-> > Huge Dickins reported an issue that b5ff4211a829
-> > "powerpc/book3s: Queue up and process delayed MCE events" breaks the
-> > PowerMac G5 boot. This patch fixes it by moving the mce even processing
-> > away from syscall exit, which was wrong to do that in first place, and
-> > using irq work framework to delay processing of mce event.
-> > 
-> > Reported-by: Hugh Dickins <hughd@google.com
-> > Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Mon, 2014-01-13 at 11:21 -0500, Paul Gortmaker wrote:
+> The FSL_SOC option is bool, and hence this code is either
+> present or absent.  It will never be modular, so using
+> module_init as an alias for __initcall is rather misleading.
 > 
-> This version also boots and runs fine for me on the G5
-> (but of course, I'm probably not testing delayed MCE events at all).
-
-Thanks Hugh !
-
-Cheers,
-Ben.
-
-> Hugh
+> Fix this up now, so that we can relocate module_init from
+> init.h into module.h in the future.  If we don't do this, we'd
+> have to add module.h to obviously non-modular code, and that
+> would be a worse thing.
 > 
-> > ---
-> >  arch/powerpc/include/asm/mce.h |    1 -
-> >  arch/powerpc/kernel/entry_64.S |    5 -----
-> >  arch/powerpc/kernel/mce.c      |   13 ++++++++++---
-> >  3 files changed, 10 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-> > index 2257d1e..f97d8cb 100644
-> > --- a/arch/powerpc/include/asm/mce.h
-> > +++ b/arch/powerpc/include/asm/mce.h
-> > @@ -192,7 +192,6 @@ extern void save_mce_event(struct pt_regs *regs, long handled,
-> >  extern int get_mce_event(struct machine_check_event *mce, bool release);
-> >  extern void release_mce_event(void);
-> >  extern void machine_check_queue_event(void);
-> > -extern void machine_check_process_queued_event(void);
-> >  extern void machine_check_print_event_info(struct machine_check_event *evt);
-> >  extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
-> >  
-> > diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> > index 770d6d6..bbfb029 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -184,11 +184,6 @@ syscall_exit:
-> >  	bl	.do_show_syscall_exit
-> >  	ld	r3,RESULT(r1)
-> >  #endif
-> > -#ifdef CONFIG_PPC_BOOK3S_64
-> > -BEGIN_FTR_SECTION
-> > -	bl	.machine_check_process_queued_event
-> > -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
-> > -#endif
-> >  	CURRENT_THREAD_INFO(r12, r1)
-> >  
-> >  	ld	r8,_MSR(r1)
-> > diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-> > index d6edf2b..a7fd4cb 100644
-> > --- a/arch/powerpc/kernel/mce.c
-> > +++ b/arch/powerpc/kernel/mce.c
-> > @@ -26,6 +26,7 @@
-> >  #include <linux/ptrace.h>
-> >  #include <linux/percpu.h>
-> >  #include <linux/export.h>
-> > +#include <linux/irq_work.h>
-> >  #include <asm/mce.h>
-> >  
-> >  static DEFINE_PER_CPU(int, mce_nest_count);
-> > @@ -35,6 +36,11 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
-> >  static DEFINE_PER_CPU(int, mce_queue_count);
-> >  static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
-> >  
-> > +static void machine_check_process_queued_event(struct irq_work *work);
-> > +struct irq_work mce_event_process_work = {
-> > +        .func = machine_check_process_queued_event,
-> > +};
-> > +
-> >  static void mce_set_error_info(struct machine_check_event *mce,
-> >  			       struct mce_error_info *mce_err)
-> >  {
-> > @@ -185,17 +191,19 @@ void machine_check_queue_event(void)
-> >  		return;
-> >  	}
-> >  	__get_cpu_var(mce_event_queue[index]) = evt;
-> > +
-> > +	/* Queue irq work to process this event later. */
-> > +	irq_work_queue(&mce_event_process_work);
-> >  }
-> >  
-> >  /*
-> >   * process pending MCE event from the mce event queue. This function will be
-> >   * called during syscall exit.
-> >   */
-> > -void machine_check_process_queued_event(void)
-> > +static void machine_check_process_queued_event(struct irq_work *work)
-> >  {
-> >  	int index;
-> >  
-> > -	preempt_disable();
-> >  	/*
-> >  	 * For now just print it to console.
-> >  	 * TODO: log this error event to FSP or nvram.
-> > @@ -206,7 +214,6 @@ void machine_check_process_queued_event(void)
-> >  				&__get_cpu_var(mce_event_queue[index]));
-> >  		__get_cpu_var(mce_queue_count)--;
-> >  	}
-> > -	preempt_enable();
-> >  }
-> >  
-> >  void machine_check_print_event_info(struct machine_check_event *evt)
-> > 
-> > 
+> Note that direct use of __initcall is discouraged, vs. one
+> of the priority categorized subgroups.  As __initcall gets
+> mapped onto device_initcall, our use of subsys_initcall (which
+> makes sense for bus code) will thus change this registration
+> from level 6-device to level 4-subsys (i.e. slightly earlier).
+> However no observable impact of that small difference has
+> been observed during testing, or is expected.
+> 
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> ---
+>  arch/powerpc/sysdev/fsl_lbc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
+> index 6bc5a546d49f..9f00e5f84abe 100644
+> --- a/arch/powerpc/sysdev/fsl_lbc.c
+> +++ b/arch/powerpc/sysdev/fsl_lbc.c
+> @@ -388,4 +388,4 @@ static int __init fsl_lbc_init(void)
+>  {
+>  	return platform_driver_register(&fsl_lbc_ctrl_driver);
+>  }
+> -module_init(fsl_lbc_init);
+> +subsys_initcall(fsl_lbc_init);
+
+Acked-by: Scott Wood <scottwood@freescale.com>
+
+-Scott
