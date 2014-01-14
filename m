@@ -1,20 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1CB7E2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:14:16 +1100 (EST)
-Message-ID: <1389694446.6933.14.camel@pasglop>
-Subject: Re: [PATCH] powerpc: dma-mapping: Return dma_direct_ops variable
- when dev == NULL
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chunhe Lan <Chunhe.Lan@freescale.com>
-Date: Tue, 14 Jan 2014 21:14:06 +1100
-In-Reply-To: <1389692656-27758-1-git-send-email-Chunhe.Lan@freescale.com>
-References: <1389692656-27758-1-git-send-email-Chunhe.Lan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 8ACD42C00A2
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 21:15:20 +1100 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 14 Jan 2014 20:15:19 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4AF7C2BB0052
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 21:15:18 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0E9uGpj52101212
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 20:56:16 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0EAFHRG022632
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 21:15:17 +1100
+Subject: [PATCH v2] Move precessing of MCE queued event out from syscall exit
+ path.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Tue, 14 Jan 2014 15:45:09 +0530
+Message-ID: <20140114101450.32385.65506.stgit@mars.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Hugh Dickins <hughd@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +39,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-14 at 17:44 +0800, Chunhe Lan wrote:
-> Without this patch, kind of below error will be dumped if
-> 'insmod ixgbevf.ko' is executed:
-> 
->     ixgbevf: Intel(R) 10 Gigabit PCI Express Virtual Function
->              Network Driver - version 2.7.12-k
->     ixgbevf: Copyright (c) 2009 - 2012 Intel Corporation.
->     ixgbevf 0000:01:10.0: enabling device (0000 -> 0002)
->     ixgbevf 0000:01:10.0: No usable DMA configuration, aborting
->     ixgbevf: probe of 0000:01:10.0 failed with error -5
->     ......
->     ......
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-That's not right. The DMA ops must be set properly for the VF somewhere
-in the arch code instead. When creating VFs, is there a hook allowing
-the arch to fix things up ?
+Huge Dickins reported an issue that b5ff4211a829
+"powerpc/book3s: Queue up and process delayed MCE events" breaks the
+PowerMac G5 boot. This patch fixes it by moving the mce even processing
+away from syscall exit, which was wrong to do that in first place, and
+using irq work framework to delay processing of mce event.
 
-(Also adding linux-pci on CC)
+Reported-by: Hugh Dickins <hughd@google.com
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/mce.h |    1 -
+ arch/powerpc/kernel/entry_64.S |    5 -----
+ arch/powerpc/kernel/mce.c      |   13 ++++++++++---
+ 3 files changed, 10 insertions(+), 9 deletions(-)
 
-Ben.
-
-> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Tested-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> ---
->  arch/powerpc/include/asm/dma-mapping.h |   13 +++++++++----
->  1 files changed, 9 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index e27e9ad..b8c10de 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -84,10 +84,15 @@ static inline struct dma_map_ops *get_dma_ops(struct device *dev)
->  	 * only ISA DMA device we support is the floppy and we have a hack
->  	 * in the floppy driver directly to get a device for us.
->  	 */
-> -	if (unlikely(dev == NULL))
-> -		return NULL;
-> -
-> -	return dev->archdata.dma_ops;
-> +	if (dev && dev->archdata.dma_ops)
-> +		return dev->archdata.dma_ops;
-> +	/*
-> +	 * In some cases (for example, use the Intel(R) 10 Gigabit PCI
-> +	 * expression Virtual Function Network Driver -- ixgbevf.ko),
-> +	 * their value of dev is the NULL. If return NULL, the driver is
-> +	 * aborting. So return dma_direct_ops variable when dev == NULL.
-> +	 */
-> +	return &dma_direct_ops;
->  }
->  
->  static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+index 2257d1e..f97d8cb 100644
+--- a/arch/powerpc/include/asm/mce.h
++++ b/arch/powerpc/include/asm/mce.h
+@@ -192,7 +192,6 @@ extern void save_mce_event(struct pt_regs *regs, long handled,
+ extern int get_mce_event(struct machine_check_event *mce, bool release);
+ extern void release_mce_event(void);
+ extern void machine_check_queue_event(void);
+-extern void machine_check_process_queued_event(void);
+ extern void machine_check_print_event_info(struct machine_check_event *evt);
+ extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
+ 
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 770d6d6..bbfb029 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -184,11 +184,6 @@ syscall_exit:
+ 	bl	.do_show_syscall_exit
+ 	ld	r3,RESULT(r1)
+ #endif
+-#ifdef CONFIG_PPC_BOOK3S_64
+-BEGIN_FTR_SECTION
+-	bl	.machine_check_process_queued_event
+-END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+-#endif
+ 	CURRENT_THREAD_INFO(r12, r1)
+ 
+ 	ld	r8,_MSR(r1)
+diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+index d6edf2b..a7fd4cb 100644
+--- a/arch/powerpc/kernel/mce.c
++++ b/arch/powerpc/kernel/mce.c
+@@ -26,6 +26,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/percpu.h>
+ #include <linux/export.h>
++#include <linux/irq_work.h>
+ #include <asm/mce.h>
+ 
+ static DEFINE_PER_CPU(int, mce_nest_count);
+@@ -35,6 +36,11 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
+ static DEFINE_PER_CPU(int, mce_queue_count);
+ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
+ 
++static void machine_check_process_queued_event(struct irq_work *work);
++struct irq_work mce_event_process_work = {
++        .func = machine_check_process_queued_event,
++};
++
+ static void mce_set_error_info(struct machine_check_event *mce,
+ 			       struct mce_error_info *mce_err)
+ {
+@@ -185,17 +191,19 @@ void machine_check_queue_event(void)
+ 		return;
+ 	}
+ 	__get_cpu_var(mce_event_queue[index]) = evt;
++
++	/* Queue irq work to process this event later. */
++	irq_work_queue(&mce_event_process_work);
+ }
+ 
+ /*
+  * process pending MCE event from the mce event queue. This function will be
+  * called during syscall exit.
+  */
+-void machine_check_process_queued_event(void)
++static void machine_check_process_queued_event(struct irq_work *work)
+ {
+ 	int index;
+ 
+-	preempt_disable();
+ 	/*
+ 	 * For now just print it to console.
+ 	 * TODO: log this error event to FSP or nvram.
+@@ -206,7 +214,6 @@ void machine_check_process_queued_event(void)
+ 				&__get_cpu_var(mce_event_queue[index]));
+ 		__get_cpu_var(mce_queue_count)--;
+ 	}
+-	preempt_enable();
+ }
+ 
+ void machine_check_print_event_info(struct machine_check_event *evt)
