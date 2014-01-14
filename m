@@ -1,38 +1,42 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 96EF02C051E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 22:02:28 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DB3062C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 22:05:47 +1100 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Tue, 14 Jan 2014 16:32:24 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id B87711258053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:33:55 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0EB2Hc547054858
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:32:17 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0EB2L3J025102
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:32:21 +0530
-Subject: [PATCH v1] powernv/cpuidle: Back-end cpuidle driver for powernv
- platform.
-To: linux-pm@vger.kernel.org, benh@kernel.crashing.org,
- daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com,
- svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Tue, 14 Jan 2014 16:32:40 +0530
-Message-ID: <20140114110229.4091.25232.stgit@deepthi.in.ibm.com>
-In-Reply-To: <20140114110157.4091.80684.stgit@deepthi.in.ibm.com>
-References: <20140114110157.4091.80684.stgit@deepthi.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Tue, 14 Jan 2014 06:05:43 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id B3FA638C8047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 06:05:41 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0EB5fDI3146018
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 11:05:41 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0EB5egL011490
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 06:05:41 -0500
+Message-ID: <52D51938.6020105@linux.vnet.ibm.com>
+Date: Tue, 14 Jan 2014 16:32:16 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ svaidy@linux.vnet.ibm.com
+Subject: Re: [PATCH] cpuidle/menu: Fail cpuidle_idle_call() if no idle state
+ is acceptable
+References: <20140114060516.6109.14901.stgit@preeti.in.ibm.com>
+ <52D4E07E.204@linux.vnet.ibm.com> <52D4E93C.3050503@linux.vnet.ibm.com>
+In-Reply-To: <52D4E93C.3050503@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: deepthi@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ daniel.lezcano@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+ paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ tuukka.tikkanen@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,255 +46,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Following patch ports the cpuidle framework for powernv
-platform and also implements a cpuidle back-end powernv
-idle driver calling on to power7_nap and snooze idle states.
+On 01/14/2014 01:07 PM, Srivatsa S. Bhat wrote:
+> On 01/14/2014 12:30 PM, Srivatsa S. Bhat wrote:
+>> On 01/14/2014 11:35 AM, Preeti U Murthy wrote:
+>>> On PowerPC, in a particular test scenario, all the cpu idle states were disabled.
+>>> Inspite of this it was observed that the idle state count of the shallowest
+>>> idle state, snooze, was increasing.
+>>>
+>>> This is because the governor returns the idle state index as 0 even in
+>>> scenarios when no idle state can be chosen. These scenarios could be when the
+>>> latency requirement is 0 or as mentioned above when the user wants to disable
+>>> certain cpu idle states at runtime. In the latter case, its possible that no
+>>> cpu idle state is valid because the suitable states were disabled
+>>> and the rest did not match the menu governor criteria to be chosen as the
+>>> next idle state.
+>>>
+>>> This patch adds the code to indicate that a valid cpu idle state could not be
+>>> chosen by the menu governor and reports back to arch so that it can take some
+>>> default action.
+>>>
+>>
+>> That sounds fair enough. However, the "default" action of pseries idle loop
+>> (pseries_lpar_idle()) surprises me. It enters Cede, which is _deeper_ than doing
+>> a snooze! IOW, a user might "disable" cpuidle or set the PM_QOS_CPU_DMA_LATENCY
+>> to 0 hoping to prevent the CPUs from going to deep idle states, but then the
+>> machine would still end up going to Cede, even though that wont get reflected
+>> in the idle state counts. IMHO that scenario needs some thought as well...
+>>
+> 
+> I checked the git history and found that the default idle was changed (on purpose)
+> to cede the processor, in order to speed up booting.. Hmm..
+> 
+> commit 363edbe2614aa90df706c0f19ccfa2a6c06af0be
+> Author: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Date:   Fri Sep 6 00:25:06 2013 +0530
+> 
+>     powerpc: Default arch idle could cede processor on pseries
 
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/setup.c |   13 ++
- drivers/cpuidle/Kconfig.powerpc        |    9 ++
- drivers/cpuidle/Makefile               |    1 
- drivers/cpuidle/cpuidle-powernv.c      |  169 ++++++++++++++++++++++++++++++++
- 4 files changed, 191 insertions(+), 1 deletion(-)
- create mode 100644 drivers/cpuidle/cpuidle-powernv.c
+This issue is not powerpc specific as I observed on digging a bit into
+the default idle routines of the common archs. The way that archs
+perceive the call to cpuidle framework today is that if it fails, it
+means that cpuidle backend driver fails to *function* due to some reason
+(as is mentioned in the above commit: either since cpuidle driver is not
+registered or it does not work on some specific platforms) and that
+therefore the archs should decide on an idle state themselves. They
+therefore end up choosing a convenient idle state which could very well
+be one of the idle states in the cpuidle state table.
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 19884b2..764a14e 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -26,6 +26,7 @@
- #include <linux/of_fdt.h>
- #include <linux/interrupt.h>
- #include <linux/bug.h>
-+#include <linux/cpuidle.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -214,6 +215,16 @@ static int __init pnv_probe(void)
- 	return 1;
- }
- 
-+void powernv_idle(void)
-+{
-+	/* Hook to cpuidle framework if available, else
-+	 * call on default platform idle code
-+	 */
-+	if (cpuidle_idle_call()) {
-+		power7_idle();
-+	}
-+}
-+
- define_machine(powernv) {
- 	.name			= "PowerNV",
- 	.probe			= pnv_probe,
-@@ -223,7 +234,7 @@ define_machine(powernv) {
- 	.show_cpuinfo		= pnv_show_cpuinfo,
- 	.progress		= pnv_progress,
- 	.machine_shutdown	= pnv_shutdown,
--	.power_save             = power7_idle,
-+	.power_save             = powernv_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
-diff --git a/drivers/cpuidle/Kconfig.powerpc b/drivers/cpuidle/Kconfig.powerpc
-index 8147de5..66c3a09 100644
---- a/drivers/cpuidle/Kconfig.powerpc
-+++ b/drivers/cpuidle/Kconfig.powerpc
-@@ -9,3 +9,12 @@ config PSERIES_CPUIDLE
- 	help
- 	  Select this option to enable processor idle state management
- 	  through cpuidle subsystem.
-+
-+config POWERNV_CPUIDLE
-+	bool "Cpuidle driver for powernv platforms"
-+	depends on CPU_IDLE
-+	depends on PPC_POWERNV
-+	default y
-+	help
-+	  Select this option to enable processor idle state management
-+	  through cpuidle subsystem.
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index a6331ad..f71ae1b 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -17,3 +17,4 @@ obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
- ###############################################################################
- # POWERPC drivers
- obj-$(CONFIG_PSERIES_CPUIDLE)		+= cpuidle-pseries.o
-+obj-$(CONFIG_POWERNV_CPUIDLE)		+= cpuidle-powernv.o
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-new file mode 100644
-index 0000000..78fd174
---- /dev/null
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -0,0 +1,169 @@
-+/*
-+ *  cpuidle-powernv - idle state cpuidle driver.
-+ *  Adapted from drivers/cpuidle/cpuidle-pseries
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/moduleparam.h>
-+#include <linux/cpuidle.h>
-+#include <linux/cpu.h>
-+#include <linux/notifier.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/firmware.h>
-+
-+struct cpuidle_driver powernv_idle_driver = {
-+	.name             = "powernv_idle",
-+	.owner            = THIS_MODULE,
-+};
-+
-+static int max_idle_state;
-+static struct cpuidle_state *cpuidle_state_table;
-+
-+static int snooze_loop(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv,
-+			int index)
-+{
-+	local_irq_enable();
-+	set_thread_flag(TIF_POLLING_NRFLAG);
-+
-+	while (!need_resched()) {
-+		HMT_low();
-+		HMT_very_low();
-+	}
-+
-+	HMT_medium();
-+	clear_thread_flag(TIF_POLLING_NRFLAG);
-+	smp_mb();
-+	return index;
-+}
-+
-+static int nap_loop(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv,
-+			int index)
-+{
-+	power7_idle();
-+	return index;
-+}
-+
-+/*
-+ * States for dedicated partition case.
-+ */
-+static struct cpuidle_state powernv_states[] = {
-+	{ /* Snooze */
-+		.name = "snooze",
-+		.desc = "snooze",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 0,
-+		.target_residency = 0,
-+		.enter = &snooze_loop },
-+	{ /* NAP */
-+		.name = "NAP",
-+		.desc = "NAP",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 10,
-+		.target_residency = 100,
-+		.enter = &nap_loop },
-+};
-+
-+static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-+			unsigned long action, void *hcpu)
-+{
-+	int hotcpu = (unsigned long)hcpu;
-+	struct cpuidle_device *dev =
-+				per_cpu(cpuidle_devices, hotcpu);
-+
-+	if (dev && cpuidle_get_driver()) {
-+		switch (action) {
-+		case CPU_ONLINE:
-+		case CPU_ONLINE_FROZEN:
-+			cpuidle_pause_and_lock();
-+			cpuidle_enable_device(dev);
-+			cpuidle_resume_and_unlock();
-+			break;
-+
-+		case CPU_DEAD:
-+		case CPU_DEAD_FROZEN:
-+			cpuidle_pause_and_lock();
-+			cpuidle_disable_device(dev);
-+			cpuidle_resume_and_unlock();
-+			break;
-+
-+		default:
-+			return NOTIFY_DONE;
-+		}
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block setup_hotplug_notifier = {
-+	.notifier_call = powernv_cpuidle_add_cpu_notifier,
-+};
-+
-+/*
-+ * powernv_cpuidle_driver_init()
-+ */
-+static int powernv_cpuidle_driver_init(void)
-+{
-+	int idle_state;
-+	struct cpuidle_driver *drv = &powernv_idle_driver;
-+
-+	drv->state_count = 0;
-+
-+	for (idle_state = 0; idle_state < max_idle_state; ++idle_state) {
-+		/* Is the state not enabled? */
-+		if (cpuidle_state_table[idle_state].enter == NULL)
-+			continue;
-+
-+		drv->states[drv->state_count] =	/* structure copy */
-+			cpuidle_state_table[idle_state];
-+
-+		drv->state_count += 1;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * powernv_idle_probe()
-+ * Choose state table for shared versus dedicated partition
-+ */
-+static int powernv_idle_probe(void)
-+{
-+
-+	if (cpuidle_disable != IDLE_NO_OVERRIDE)
-+		return -ENODEV;
-+
-+	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
-+		cpuidle_state_table = powernv_states;
-+		max_idle_state = ARRAY_SIZE(powernv_states);
-+ 	} else
-+ 		return -ENODEV;
-+
-+	return 0;
-+}
-+
-+static int __init powernv_processor_idle_init(void)
-+{
-+	int retval;
-+
-+	retval = powernv_idle_probe();
-+	if (retval)
-+		return retval;
-+
-+	powernv_cpuidle_driver_init();
-+	retval = cpuidle_register(&powernv_idle_driver, NULL);
-+	if (retval) {
-+		printk(KERN_DEBUG "Registration of powernv driver failed.\n");
-+		return retval;
-+	}
-+
-+	register_cpu_notifier(&setup_hotplug_notifier);
-+	printk(KERN_DEBUG "powernv_idle_driver registered\n");
-+	return 0;
-+}
-+
-+device_initcall(powernv_processor_idle_init);
+The archs do not see failed call to cpuidle driver as "cpuidle driver
+says no idle state can be entered now because there are strict latency
+requirements or the idle states are disabled". IOW, the call to cpuidle
+driver is currently based on if cpuidle driver exists rather than if it
+agrees on entry into any of the idle states.
+
+This patch brings in the need for the archs to incorporate this
+additional check of "did cpuidle_idle_call() fail because it did not
+find it wise to enter any of the idle states". In which case they should
+simply exit without taking any *default action*.
+
+Need to give this some thought and reconsider the patch.
+
+Regards
+Preeti U Murthy
+> 
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
