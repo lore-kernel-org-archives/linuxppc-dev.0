@@ -1,35 +1,36 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8ACD42C00A2
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 21:15:20 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E61F22C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:55:27 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 14 Jan 2014 20:15:19 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4AF7C2BB0052
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 21:15:18 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0E9uGpj52101212
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 20:56:16 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0EAFHRG022632
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 21:15:17 +1100
-Subject: [PATCH v2] Move precessing of MCE queued event out from syscall exit
- path.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Tue, 14 Jan 2014 15:45:09 +0530
-Message-ID: <20140114101450.32385.65506.stgit@mars.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Tue, 14 Jan 2014 20:55:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D044C2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:55:23 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0EAaUY25767436
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:36:30 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0EAtM0H022700
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:55:23 +1100
+Subject: [PATCH v1 0/6] pseries/cpuidle: pseries cpuidle backend driver
+ clean-ups.
+To: linux-pm@vger.kernel.org, benh@kernel.crashing.org,
+ daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com,
+ svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Tue, 14 Jan 2014 16:25:39 +0530
+Message-ID: <20140114105525.3064.52013.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: Hugh Dickins <hughd@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,101 +40,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+The following patch series includes a bunch of clean-ups for the
+pseries cpuidle backend driver. This includes,
+moving the driver from arch/powerpc/platforms/pseries to
+driver/cpuidle, refactoring of the code, making it a non-module,
+removing smt-snooze-delay update and dead code around it.
 
-Huge Dickins reported an issue that b5ff4211a829
-"powerpc/book3s: Queue up and process delayed MCE events" breaks the
-PowerMac G5 boot. This patch fixes it by moving the mce even processing
-away from syscall exit, which was wrong to do that in first place, and
-using irq work framework to delay processing of mce event.
+After a number of attempts to consolidate the backend cpuidle driver 
+for pSeries and powernv platforms, it seems best to have separate 
+idle drivers for both the platforms as any kind of  code duplication 
+seizes to exist beyond snooze loop and a hot plug notifier.  
+Also going further, with addition of device tree parsing to setup
+idle states and related changes just for powernv platform, it is
+best to keep these drivers separate without adding complexity 
+and thus improving readabilty for both the platform drivers.  
 
-Reported-by: Hugh Dickins <hughd@google.com
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/mce.h |    1 -
- arch/powerpc/kernel/entry_64.S |    5 -----
- arch/powerpc/kernel/mce.c      |   13 ++++++++++---
- 3 files changed, 10 insertions(+), 9 deletions(-)
+The clean-up undertaken here was posted earlier as part of
+generic powerpc cpuidle driver clean-up.
 
-diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-index 2257d1e..f97d8cb 100644
---- a/arch/powerpc/include/asm/mce.h
-+++ b/arch/powerpc/include/asm/mce.h
-@@ -192,7 +192,6 @@ extern void save_mce_event(struct pt_regs *regs, long handled,
- extern int get_mce_event(struct machine_check_event *mce, bool release);
- extern void release_mce_event(void);
- extern void machine_check_queue_event(void);
--extern void machine_check_process_queued_event(void);
- extern void machine_check_print_event_info(struct machine_check_event *evt);
- extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
- 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 770d6d6..bbfb029 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -184,11 +184,6 @@ syscall_exit:
- 	bl	.do_show_syscall_exit
- 	ld	r3,RESULT(r1)
- #endif
--#ifdef CONFIG_PPC_BOOK3S_64
--BEGIN_FTR_SECTION
--	bl	.machine_check_process_queued_event
--END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
--#endif
- 	CURRENT_THREAD_INFO(r12, r1)
- 
- 	ld	r8,_MSR(r1)
-diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-index d6edf2b..a7fd4cb 100644
---- a/arch/powerpc/kernel/mce.c
-+++ b/arch/powerpc/kernel/mce.c
-@@ -26,6 +26,7 @@
- #include <linux/ptrace.h>
- #include <linux/percpu.h>
- #include <linux/export.h>
-+#include <linux/irq_work.h>
- #include <asm/mce.h>
- 
- static DEFINE_PER_CPU(int, mce_nest_count);
-@@ -35,6 +36,11 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
- static DEFINE_PER_CPU(int, mce_queue_count);
- static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
- 
-+static void machine_check_process_queued_event(struct irq_work *work);
-+struct irq_work mce_event_process_work = {
-+        .func = machine_check_process_queued_event,
-+};
-+
- static void mce_set_error_info(struct machine_check_event *mce,
- 			       struct mce_error_info *mce_err)
- {
-@@ -185,17 +191,19 @@ void machine_check_queue_event(void)
- 		return;
- 	}
- 	__get_cpu_var(mce_event_queue[index]) = evt;
-+
-+	/* Queue irq work to process this event later. */
-+	irq_work_queue(&mce_event_process_work);
- }
- 
- /*
-  * process pending MCE event from the mce event queue. This function will be
-  * called during syscall exit.
-  */
--void machine_check_process_queued_event(void)
-+static void machine_check_process_queued_event(struct irq_work *work)
- {
- 	int index;
- 
--	preempt_disable();
- 	/*
- 	 * For now just print it to console.
- 	 * TODO: log this error event to FSP or nvram.
-@@ -206,7 +214,6 @@ void machine_check_process_queued_event(void)
- 				&__get_cpu_var(mce_event_queue[index]));
- 		__get_cpu_var(mce_queue_count)--;
- 	}
--	preempt_enable();
- }
- 
- void machine_check_print_event_info(struct machine_check_event *evt)
+V1 -> http://lkml.org/lkml/2013/7/23/143
+V2 -> https://lkml.org/lkml/2013/7/30/872
+V3 -> http://comments.gmane.org/gmane.linux.ports.ppc.embedded/63093
+V4 -> https://lkml.org/lkml/2013/8/22/25
+V5 -> http://lkml.org/lkml/2013/8/22/184
+V6 -> https://lkml.org/lkml/2013/8/27/432
+V7 -> https://lkml.org/lkml/2013/10/29/216
+V8 -> https://lkml.org/lkml/2013/11/11/29
+
+ Deepthi Dharwar (5):
+      pseries/cpuidle: Move processor_idle.c to drivers/cpuidle.
+      pseries/cpuidle: Use cpuidle_register() for initialisation.
+      pseries/cpuidle: Make cpuidle-pseries backend driver a non-module.
+      pseries/cpuidle: Remove MAX_IDLE_STATE macro.
+      pseries/cpuidle: smt-snooze-delay cleanup.
+
+Preeti U Murthy (1):
+      pseries/cpuidle: Remove redundant call to ppc64_runlatch_off() in cpu idle routines
+
+
+ arch/powerpc/include/asm/processor.h            |    7 
+ arch/powerpc/kernel/sysfs.c                     |    2 
+ arch/powerpc/platforms/pseries/Kconfig          |    9 -
+ arch/powerpc/platforms/pseries/Makefile         |    1 
+ arch/powerpc/platforms/pseries/processor_idle.c |  364 -----------------------
+ drivers/cpuidle/Kconfig                         |    5 
+ drivers/cpuidle/Kconfig.powerpc                 |   11 +
+ drivers/cpuidle/Makefile                        |    4 
+ drivers/cpuidle/cpuidle-pseries.c               |  267 +++++++++++++++++
+ 9 files changed, 287 insertions(+), 383 deletions(-)
+ delete mode 100644 arch/powerpc/platforms/pseries/processor_idle.c
+ create mode 100644 drivers/cpuidle/Kconfig.powerpc
+ create mode 100644 drivers/cpuidle/cpuidle-pseries.c
+
+
+-- Deepthi
