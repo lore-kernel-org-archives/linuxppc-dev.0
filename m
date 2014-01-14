@@ -1,37 +1,23 @@
-Return-Path: <slpratt@austin.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hughd@google.com>
+Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
+ [IPv6:2607:f8b0:400e:c02::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8484B2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2014 04:05:15 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <slpratt@austin.ibm.com>;
- Tue, 14 Jan 2014 10:05:13 -0700
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 75E51C90050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 12:05:01 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0EH525E45744180
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 17:05:02 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0EH51LG006575
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 12:05:01 -0500
-Message-ID: <52D56E3B.7060500@austin.ibm.com>
-Date: Tue, 14 Jan 2014 11:04:59 -0600
-From: Steven Pratt <slpratt@austin.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1699F2C008F
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jan 2014 06:49:09 +1100 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id q10so81338pdj.8
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 11:49:06 -0800 (PST)
+Date: Tue, 14 Jan 2014 11:48:34 -0800 (PST)
+From: Hugh Dickins <hughd@google.com>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] Move precessing of MCE queued event out from syscall
+ exit path.
+In-Reply-To: <20140114101450.32385.65506.stgit@mars.in.ibm.com>
+Message-ID: <alpine.LSU.2.11.1401141135240.3762@eggly.anvils>
+References: <20140114101450.32385.65506.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: Disable sleep states on P7+
-References: <52D54B60.4090807@austin.ibm.com>
- <52D56186.70807@linux.vnet.ibm.com>
-In-Reply-To: <52D56186.70807@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,63 +27,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/14/2014 10:10 AM, Preeti U Murthy wrote:
-> Hi Steven,
->
-> On 01/14/2014 08:06 PM, Steven Pratt wrote:
->> I am looking for info on when and how we are able to disable power saving features of current (P7, P7+) chips in order to reduce latency. This is often done in latency sensitive applications when power consumption is not an issue. On Intel boxes we can disable P-state frequency changes as well as disabling C-State or sleep state changes. In fact we can control how deep a sleep the processor can go into.  I know we have control Dynamic Processor Scaling and Idle Power Savings, but what states do these really affect?  Can I really disable Nap mode of a processor? If so how?  Can I disable even the lightest winkle mode?  Looking for current information (read RHEL 6 and SLES11), future changes are interesting.
->>
->> Steve
-> I can answer this question with respect to cpuidle on PowerNV platforms.
->
-> 1. In order to disable cpuidle states management altogether, one can
-> pass the powersave=off kernel cmd line parameter during boot up of the
-> kernel. This will ensure that each time a CPU has nothing to do, it can
-> enter low thread priority which could lower power consumption to some
-> extent but is not expected to hit latency of applications noticeably.
->
-> 2. In order to exactly control the cpuidle states into which idle CPUs
-> can enter into during runtime, one can make use of the sysfs files under:
-> /sys/devices/system/cpu/cpux/cpuidle/statex/disable option to
-> selectively disable any state.
->
-> However if one is using the menu cpuidle governor, disabling an idle
-> state does not disable the idle states which are deeper than it. They
-> continue to remain active unless they are specifically disabled. What
-> this means is that one cannot control the depth of the idle states
-> available for a CPU, although we can control the exact idle states
-> available for a processor.
->
-> But if the ladder governor is used, one can control the depth of the
-> idle states that a CPU can enter into. The governor can be chosen by
-> echoing either menu/ladder to
-> /sys/devices/system/cpu/cpuidle/current_governor_ro. The cpuidle
-> governor takes decisions about the idle state for a cpu to enter into
-> depending on its idle history. The popular governor used by most archs
-> is the menu governor.
->
-> Hence nap/sleep/winkle any of these states can be disabled. The code
-> which enables the above mentioned functionalities on powernv is yet to
-> go upstream although the same is already upstream and can be used for
-> the pseries platform to disable/enable the idle states on it.
->
-> Today on powernv the default idle state nap is entered into all the
-> time. One can disable it by echoing 0 to powersave_nap under
-> /proc/sys/kernel/powersave_nap, in which case the cpu enters low thread
+On Tue, 14 Jan 2014, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> 
+> Huge Dickins reported an issue that b5ff4211a829
+> "powerpc/book3s: Queue up and process delayed MCE events" breaks the
+> PowerMac G5 boot. This patch fixes it by moving the mce even processing
+> away from syscall exit, which was wrong to do that in first place, and
+> using irq work framework to delay processing of mce event.
+> 
+> Reported-by: Hugh Dickins <hughd@google.com
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Thanks, that is great information going forward, now I just need info on what works today in PowerVM.
+This version also boots and runs fine for me on the G5
+(but of course, I'm probably not testing delayed MCE events at all).
 
-Steve
+Hugh
 
-> priority.
->
-> Thanks
->
-> Regards
-> Preeti U Murthy
->
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
+> ---
+>  arch/powerpc/include/asm/mce.h |    1 -
+>  arch/powerpc/kernel/entry_64.S |    5 -----
+>  arch/powerpc/kernel/mce.c      |   13 ++++++++++---
+>  3 files changed, 10 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
+> index 2257d1e..f97d8cb 100644
+> --- a/arch/powerpc/include/asm/mce.h
+> +++ b/arch/powerpc/include/asm/mce.h
+> @@ -192,7 +192,6 @@ extern void save_mce_event(struct pt_regs *regs, long handled,
+>  extern int get_mce_event(struct machine_check_event *mce, bool release);
+>  extern void release_mce_event(void);
+>  extern void machine_check_queue_event(void);
+> -extern void machine_check_process_queued_event(void);
+>  extern void machine_check_print_event_info(struct machine_check_event *evt);
+>  extern uint64_t get_mce_fault_addr(struct machine_check_event *evt);
+>  
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index 770d6d6..bbfb029 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -184,11 +184,6 @@ syscall_exit:
+>  	bl	.do_show_syscall_exit
+>  	ld	r3,RESULT(r1)
+>  #endif
+> -#ifdef CONFIG_PPC_BOOK3S_64
+> -BEGIN_FTR_SECTION
+> -	bl	.machine_check_process_queued_event
+> -END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+> -#endif
+>  	CURRENT_THREAD_INFO(r12, r1)
+>  
+>  	ld	r8,_MSR(r1)
+> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
+> index d6edf2b..a7fd4cb 100644
+> --- a/arch/powerpc/kernel/mce.c
+> +++ b/arch/powerpc/kernel/mce.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/ptrace.h>
+>  #include <linux/percpu.h>
+>  #include <linux/export.h>
+> +#include <linux/irq_work.h>
+>  #include <asm/mce.h>
+>  
+>  static DEFINE_PER_CPU(int, mce_nest_count);
+> @@ -35,6 +36,11 @@ static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event);
+>  static DEFINE_PER_CPU(int, mce_queue_count);
+>  static DEFINE_PER_CPU(struct machine_check_event[MAX_MC_EVT], mce_event_queue);
+>  
+> +static void machine_check_process_queued_event(struct irq_work *work);
+> +struct irq_work mce_event_process_work = {
+> +        .func = machine_check_process_queued_event,
+> +};
+> +
+>  static void mce_set_error_info(struct machine_check_event *mce,
+>  			       struct mce_error_info *mce_err)
+>  {
+> @@ -185,17 +191,19 @@ void machine_check_queue_event(void)
+>  		return;
+>  	}
+>  	__get_cpu_var(mce_event_queue[index]) = evt;
+> +
+> +	/* Queue irq work to process this event later. */
+> +	irq_work_queue(&mce_event_process_work);
+>  }
+>  
+>  /*
+>   * process pending MCE event from the mce event queue. This function will be
+>   * called during syscall exit.
+>   */
+> -void machine_check_process_queued_event(void)
+> +static void machine_check_process_queued_event(struct irq_work *work)
+>  {
+>  	int index;
+>  
+> -	preempt_disable();
+>  	/*
+>  	 * For now just print it to console.
+>  	 * TODO: log this error event to FSP or nvram.
+> @@ -206,7 +214,6 @@ void machine_check_process_queued_event(void)
+>  				&__get_cpu_var(mce_event_queue[index]));
+>  		__get_cpu_var(mce_queue_count)--;
+>  	}
+> -	preempt_enable();
+>  }
+>  
+>  void machine_check_print_event_info(struct machine_check_event *evt)
+> 
+> 
