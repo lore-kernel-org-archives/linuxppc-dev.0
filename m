@@ -1,34 +1,34 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A45F72C034D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:55:55 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C92F82C0434
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 21:56:05 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Tue, 14 Jan 2014 16:25:53 +0530
+ Tue, 14 Jan 2014 16:26:03 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4C1EF1258051
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:27:25 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 651D01258051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:27:34 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0EAtkie393554
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:25:46 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0EAtowI029444
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:25:51 +0530
-Subject: [PATCH v1 3/6] pseries/cpuidle: Use cpuidle_register() for
- initialisation.
+ s0EAtt0v6947138
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:25:55 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0EAtxRT000653
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Jan 2014 16:26:00 +0530
+Subject: [PATCH v1 4/6] pseries/cpuidle: Make cpuidle-pseries backend driver
+ a non-module.
 To: linux-pm@vger.kernel.org, benh@kernel.crashing.org,
  daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org,
  srivatsa.bhat@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com,
  svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Date: Tue, 14 Jan 2014 16:26:09 +0530
-Message-ID: <20140114105607.3064.15745.stgit@deepthi.in.ibm.com>
+Date: Tue, 14 Jan 2014 16:26:18 +0530
+Message-ID: <20140114105615.3064.90274.stgit@deepthi.in.ibm.com>
 In-Reply-To: <20140114105525.3064.52013.stgit@deepthi.in.ibm.com>
 References: <20140114105525.3064.52013.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
@@ -42,166 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch replaces the cpuidle driver and devices initialisation
-calls with a single generic cpuidle_register() call
-and also includes minor refactoring of the code around it.
-
-Remove the cpu online check in snooze loop, as this code can
-only locally run on a cpu only if it is online. Therefore,
-this check is not required.
+Currently cpuidle-pseries backend driver cannot be
+built as a module due to dependencies wrt cpuidle framework.
+This patch removes all the module related code in the driver.
 
 Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 ---
- drivers/cpuidle/cpuidle-pseries.c |   78 +++++--------------------------------
- 1 file changed, 11 insertions(+), 67 deletions(-)
+ drivers/cpuidle/cpuidle-pseries.c |   15 +--------------
+ 1 file changed, 1 insertion(+), 14 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 2115478..32d86bc 100644
+index 32d86bc..5e13f6c 100644
 --- a/drivers/cpuidle/cpuidle-pseries.c
 +++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -27,7 +27,6 @@ struct cpuidle_driver pseries_idle_driver = {
- #define MAX_IDLE_STATE_COUNT	2
- 
- static int max_idle_state = MAX_IDLE_STATE_COUNT - 1;
--static struct cpuidle_device __percpu *pseries_cpuidle_devices;
- static struct cpuidle_state *cpuidle_state_table;
- 
- static inline void idle_loop_prolog(unsigned long *in_purr)
-@@ -55,13 +54,12 @@ static int snooze_loop(struct cpuidle_device *dev,
- 			int index)
- {
- 	unsigned long in_purr;
--	int cpu = dev->cpu;
- 
- 	idle_loop_prolog(&in_purr);
- 	local_irq_enable();
- 	set_thread_flag(TIF_POLLING_NRFLAG);
- 
--	while ((!need_resched()) && cpu_online(cpu)) {
-+	while (!need_resched()) {
- 		HMT_low();
- 		HMT_very_low();
- 	}
-@@ -188,7 +186,7 @@ static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
- {
- 	int hotcpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev =
--			per_cpu_ptr(pseries_cpuidle_devices, hotcpu);
-+				per_cpu(cpuidle_devices, hotcpu);
- 
- 	if (dev && cpuidle_get_driver()) {
- 		switch (action) {
-@@ -245,50 +243,6 @@ static int pseries_cpuidle_driver_init(void)
+@@ -289,17 +289,4 @@ static int __init pseries_processor_idle_init(void)
  	return 0;
  }
  
--/* pseries_idle_devices_uninit(void)
-- * unregister cpuidle devices and de-allocate memory
-- */
--static void pseries_idle_devices_uninit(void)
+-static void __exit pseries_processor_idle_exit(void)
 -{
--	int i;
--	struct cpuidle_device *dev;
 -
--	for_each_possible_cpu(i) {
--		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
--		cpuidle_unregister_device(dev);
--	}
--
--	free_percpu(pseries_cpuidle_devices);
+-	unregister_cpu_notifier(&setup_hotplug_notifier);
+-	cpuidle_unregister(&pseries_idle_driver);
 -	return;
 -}
 -
--/* pseries_idle_devices_init()
-- * allocate, initialize and register cpuidle device
-- */
--static int pseries_idle_devices_init(void)
--{
--	int i;
--	struct cpuidle_driver *drv = &pseries_idle_driver;
--	struct cpuidle_device *dev;
+-module_init(pseries_processor_idle_init);
+-module_exit(pseries_processor_idle_exit);
 -
--	pseries_cpuidle_devices = alloc_percpu(struct cpuidle_device);
--	if (pseries_cpuidle_devices == NULL)
--		return -ENOMEM;
--
--	for_each_possible_cpu(i) {
--		dev = per_cpu_ptr(pseries_cpuidle_devices, i);
--		dev->state_count = drv->state_count;
--		dev->cpu = i;
--		if (cpuidle_register_device(dev)) {
--			printk(KERN_DEBUG \
--				"cpuidle_register_device %d failed!\n", i);
--			return -EIO;
--		}
--	}
--
--	return 0;
--}
--
- /*
-  * pseries_idle_probe()
-  * Choose state table for shared versus dedicated partition
-@@ -296,9 +250,6 @@ static int pseries_idle_devices_init(void)
- static int pseries_idle_probe(void)
- {
- 
--	if (!firmware_has_feature(FW_FEATURE_SPLPAR))
--		return -ENODEV;
--
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
- 
-@@ -307,10 +258,13 @@ static int pseries_idle_probe(void)
- 		return -EPERM;
- 	}
- 
--	if (lppaca_shared_proc(get_lppaca()))
--		cpuidle_state_table = shared_states;
--	else
--		cpuidle_state_table = dedicated_states;
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+		if (lppaca_shared_proc(get_lppaca()))
-+			cpuidle_state_table = shared_states;
-+		else
-+			cpuidle_state_table = dedicated_states;
-+	} else
-+		return -ENODEV;
- 
- 	return 0;
- }
-@@ -324,22 +278,14 @@ static int __init pseries_processor_idle_init(void)
- 		return retval;
- 
- 	pseries_cpuidle_driver_init();
--	retval = cpuidle_register_driver(&pseries_idle_driver);
-+	retval = cpuidle_register(&pseries_idle_driver, NULL);
- 	if (retval) {
- 		printk(KERN_DEBUG "Registration of pseries driver failed.\n");
- 		return retval;
- 	}
- 
--	retval = pseries_idle_devices_init();
--	if (retval) {
--		pseries_idle_devices_uninit();
--		cpuidle_unregister_driver(&pseries_idle_driver);
--		return retval;
--	}
--
- 	register_cpu_notifier(&setup_hotplug_notifier);
- 	printk(KERN_DEBUG "pseries_idle_driver registered\n");
--
- 	return 0;
- }
- 
-@@ -347,9 +293,7 @@ static void __exit pseries_processor_idle_exit(void)
- {
- 
- 	unregister_cpu_notifier(&setup_hotplug_notifier);
--	pseries_idle_devices_uninit();
--	cpuidle_unregister_driver(&pseries_idle_driver);
--
-+	cpuidle_unregister(&pseries_idle_driver);
- 	return;
- }
- 
+-MODULE_AUTHOR("Deepthi Dharwar <deepthi@linux.vnet.ibm.com>");
+-MODULE_DESCRIPTION("Cpuidle driver for POWER");
+-MODULE_LICENSE("GPL");
++device_initcall(pseries_processor_idle_init);
