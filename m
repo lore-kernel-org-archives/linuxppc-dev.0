@@ -2,19 +2,21 @@ Return-Path: <Paul.Gortmaker@windriver.com>
 Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 00C7F2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 08:26:05 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B3BC72C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 08:35:53 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH] drivers/tty/hvc: don't use module_init in non-modular hyp.
+Subject: [PATCH v2] drivers/tty/hvc: don't use module_init in non-modular hyp.
  console code
-Date: Wed, 15 Jan 2014 16:24:38 -0500
-Message-ID: <1389821078-24948-1-git-send-email-paul.gortmaker@windriver.com>
+Date: Wed, 15 Jan 2014 16:35:43 -0500
+Message-ID: <1389821743-25081-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Richard Weinberger <richard@nod.at>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ David Vrabel <david.vrabel@citrix.com>, xen-devel@lists.xenproject.org,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,7 +26,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The HVC_OPAL/RTAS/UDBG options are all bool, and hence their support
+The HVC_OPAL/RTAS/UDBG/XEN options are all bool, and hence their support
 is either present or absent.  It will never be modular, so using
 module_init as an alias for __initcall is rather misleading.
 
@@ -44,8 +46,15 @@ they are only ever of interest to UML, and UML will never be
 using any of this code.
 
 Cc: Richard Weinberger <richard@nod.at>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: David Vrabel <david.vrabel@citrix.com>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+
+[v2: unchanged; just added xen guys to Cc list, as hvc_xen isnt
+ hooked into the MAINTAINERS file as of yet, so I forgot them.]
 
 diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
 index 6496872e2e47..b01659bd4f7c 100644
