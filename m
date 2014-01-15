@@ -1,17 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 74B442C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 08:19:04 +1100 (EST)
-Date: Wed, 15 Jan 2014 22:18:59 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull 'next' branch of 5xxx tree
-Message-ID: <20140115221859.50866e87@crub>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 00C7F2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 08:26:05 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH] drivers/tty/hvc: don't use module_init in non-modular hyp.
+ console code
+Date: Wed, 15 Jan 2014 16:24:38 -0500
+Message-ID: <1389821078-24948-1-git-send-email-paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +24,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben !
+The HVC_OPAL/RTAS/UDBG options are all bool, and hence their support
+is either present or absent.  It will never be modular, so using
+module_init as an alias for __initcall is rather misleading.
 
-please pull mpc5xxx patches for v3.14:
+Fix this up now, so that we can relocate module_init from
+init.h into module.h in the future.  If we don't do this, we'd
+have to add module.h to obviously non-modular code, and that
+would be a worse thing.
 
-Switch mpc512x to the common clock framework and adapt mpc512x
-drivers to use the new clock driver. Old PPC_CLOCK code is
-removed entirely since there are no users any more.
+Note that direct use of __initcall is discouraged, vs. one
+of the priority categorized subgroups.  As __initcall gets
+mapped onto device_initcall, our use of device_initcall
+directly in this change means that the runtime impact is
+zero -- it will remain at level 6 in initcall ordering.
 
-All these patches have been in linux-next for more then
-two weeks now.
+Also the __exitcall functions have been outright deleted since
+they are only ever of interest to UML, and UML will never be
+using any of this code.
 
-Thanks,
-Anatolij
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-The following changes since commit dece8ada993e1764a115bdff0f1effffaa5fc8dc:
-
-  Merge branch 'merge' into next (2013-12-30 15:19:31 +1100)
-
-are available in the git repository at:
-
-
-  git://git.denx.de/linux-2.6-agust.git next
-
-for you to fetch changes up to bc75059422338197ce487d338ac9c898761e1e61:
-
-  powerpc/512x: dts: add MPC5125 clock specs (2014-01-12 18:59:50 +0100)
-
-----------------------------------------------------------------
-Gerhard Sittig (20):
-      dts: mpc512x: introduce dt-bindings/clock/ header
-      dts: mpc512x: add clock related device tree specs
-      clk: mpc512x: introduce COMMON_CLK for MPC512x (disabled)
-      clk: mpc512x: add backwards compat to the CCF code
-      dts: mpc512x: add clock specs for client lookups
-      clk: mpc5xxx: switch to COMMON_CLK, retire PPC_CLOCK
-      spi: mpc512x: adjust to OF based clock lookup
-      serial: mpc512x: adjust for OF based clock lookup
-      serial: mpc512x: setup the PSC FIFO clock as well
-      USB: fsl-mph-dr-of: adjust for OF based clock lookup
-      mtd: mpc5121_nfc: adjust for OF based clock lookup
-      fsl-viu: adjust for OF based clock lookup
-      net: can: mscan: adjust to common clock support for mpc512x
-      net: can: mscan: remove non-CCF code for MPC512x
-      powerpc/mpc512x: improve DIU related clock setup
-      clk: mpc512x: remove migration support workarounds
-      powerpc/512x: clk: minor comment updates
-      powerpc/512x: clk: enforce even SDHC divider values
-      powerpc/512x: clk: support MPC5121/5123/5125 SoC variants
-      powerpc/512x: dts: add MPC5125 clock specs
-
- arch/powerpc/Kconfig                          |    5 -
- arch/powerpc/boot/dts/ac14xx.dts              |    7 +
- arch/powerpc/boot/dts/mpc5121.dtsi            |  113 ++-
- arch/powerpc/boot/dts/mpc5125twr.dts          |   53 +-
- arch/powerpc/include/asm/clk_interface.h      |   20 -
- arch/powerpc/include/asm/mpc5121.h            |    7 +-
- arch/powerpc/kernel/Makefile                  |    1 -
- arch/powerpc/kernel/clock.c                   |   82 --
- arch/powerpc/platforms/512x/Kconfig           |    2 +-
- arch/powerpc/platforms/512x/Makefile          |    3 +-
- arch/powerpc/platforms/512x/clock-commonclk.c | 1221 +++++++++++++++++++++++++
- arch/powerpc/platforms/512x/clock.c           |  754 ---------------
- arch/powerpc/platforms/512x/mpc512x_shared.c  |  169 ++--
- arch/powerpc/platforms/52xx/Kconfig           |    2 +-
- drivers/media/platform/fsl-viu.c              |    2 +-
- drivers/mtd/nand/mpc5121_nfc.c                |    2 +-
- drivers/net/can/mscan/mpc5xxx_can.c           |  270 +++---
- drivers/spi/spi-mpc512x-psc.c                 |   26 +-
- drivers/tty/serial/mpc52xx_uart.c             |   90 +-
- drivers/usb/host/fsl-mph-dr-of.c              |   13 +-
- include/dt-bindings/clock/mpc512x-clock.h     |   76 ++
- include/linux/clk-provider.h                  |   16 +
- 22 files changed, 1840 insertions(+), 1094 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/clk_interface.h
- delete mode 100644 arch/powerpc/kernel/clock.c
- create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
- delete mode 100644 arch/powerpc/platforms/512x/clock.c
- create mode 100644 include/dt-bindings/clock/mpc512x-clock.h
+diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
+index 6496872e2e47..b01659bd4f7c 100644
+--- a/drivers/tty/hvc/hvc_opal.c
++++ b/drivers/tty/hvc/hvc_opal.c
+@@ -255,13 +255,7 @@ static int __init hvc_opal_init(void)
+ 	/* Register as a vio device to receive callbacks */
+ 	return platform_driver_register(&hvc_opal_driver);
+ }
+-module_init(hvc_opal_init);
+-
+-static void __exit hvc_opal_exit(void)
+-{
+-	platform_driver_unregister(&hvc_opal_driver);
+-}
+-module_exit(hvc_opal_exit);
++device_initcall(hvc_opal_init);
+ 
+ static void udbg_opal_putc(char c)
+ {
+diff --git a/drivers/tty/hvc/hvc_rtas.c b/drivers/tty/hvc/hvc_rtas.c
+index 0069bb86ba49..08c87920b74a 100644
+--- a/drivers/tty/hvc/hvc_rtas.c
++++ b/drivers/tty/hvc/hvc_rtas.c
+@@ -102,17 +102,7 @@ static int __init hvc_rtas_init(void)
+ 
+ 	return 0;
+ }
+-module_init(hvc_rtas_init);
+-
+-/* This will tear down the tty portion of the driver */
+-static void __exit hvc_rtas_exit(void)
+-{
+-	/* Really the fun isn't over until the worker thread breaks down and
+-	 * the tty cleans up */
+-	if (hvc_rtas_dev)
+-		hvc_remove(hvc_rtas_dev);
+-}
+-module_exit(hvc_rtas_exit);
++device_initcall(hvc_rtas_init);
+ 
+ /* This will happen prior to module init.  There is no tty at this time? */
+ static int __init hvc_rtas_console_init(void)
+diff --git a/drivers/tty/hvc/hvc_udbg.c b/drivers/tty/hvc/hvc_udbg.c
+index 72228276fe31..9cf573d06a29 100644
+--- a/drivers/tty/hvc/hvc_udbg.c
++++ b/drivers/tty/hvc/hvc_udbg.c
+@@ -80,14 +80,7 @@ static int __init hvc_udbg_init(void)
+ 
+ 	return 0;
+ }
+-module_init(hvc_udbg_init);
+-
+-static void __exit hvc_udbg_exit(void)
+-{
+-	if (hvc_udbg_dev)
+-		hvc_remove(hvc_udbg_dev);
+-}
+-module_exit(hvc_udbg_exit);
++device_initcall(hvc_udbg_init);
+ 
+ static int __init hvc_udbg_console_init(void)
+ {
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index 636c9baad7a5..2dc2831840ca 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -561,18 +561,7 @@ static int __init xen_hvc_init(void)
+ #endif
+ 	return r;
+ }
+-
+-static void __exit xen_hvc_fini(void)
+-{
+-	struct xencons_info *entry, *next;
+-
+-	if (list_empty(&xenconsoles))
+-			return;
+-
+-	list_for_each_entry_safe(entry, next, &xenconsoles, list) {
+-		xen_console_remove(entry);
+-	}
+-}
++device_initcall(xen_hvc_init);
+ 
+ static int xen_cons_init(void)
+ {
+@@ -598,10 +587,6 @@ static int xen_cons_init(void)
+ 	hvc_instantiate(HVC_COOKIE, 0, ops);
+ 	return 0;
+ }
+-
+-
+-module_init(xen_hvc_init);
+-module_exit(xen_hvc_fini);
+ console_initcall(xen_cons_init);
+ 
+ #ifdef CONFIG_EARLY_PRINTK
+-- 
+1.8.5.2
