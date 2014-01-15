@@ -1,22 +1,20 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
+ (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 463AD2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2014 10:51:09 +1100 (EST)
-Message-ID: <1389743456.24905.143.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/3] powerpc/85xx: Provide two functions to save/restore
- the core registers
+ by ozlabs.org (Postfix) with ESMTPS id 83E2B2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Jan 2014 12:27:36 +1100 (EST)
+Date: Tue, 14 Jan 2014 19:27:13 -0600
 From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Tue, 14 Jan 2014 17:50:56 -0600
-In-Reply-To: <1389686397-46555-2-git-send-email-dongsheng.wang@freescale.com>
-References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
- <1389686397-46555-2-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Subject: Re: [v6,2/5] powerpc/book3e: store crit/mc/dbg exception thread info
+Message-ID: <20140115012121.GA11229@home.buserror.net>
+References: <1382520685-11609-3-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: anton@enomsg.org, linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1382520685-11609-3-git-send-email-tiejun.chen@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-14 at 15:59 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On Wed, Oct 23, 2013 at 05:31:22PM +0800, Tiejun Chen wrote:
+> We need to store thread info to these exception thread info like something
+> we already did for PPC32.
 > 
-> Add fsl_cpu_state_save/fsl_cpu_state_restore functions, used for deep
-> sleep and hibernation to save/restore core registers. We abstract out
-> save/restore code for use in various modules, to make them don't need
-> to maintain.
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 > 
-> Currently supported processors type are E6500, E5500, E500MC, E500v2 and
-> E500v1.
+> ---
+> arch/powerpc/kernel/exceptions-64e.S |   22 +++++++++++++++++++---
+>  1 file changed, 19 insertions(+), 3 deletions(-)
 > 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index 68d74b4..a55cf62 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -36,6 +36,19 @@
+>   */
+>  #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
+>  
+> +/* Now we only store something to exception thread info */
 
-What is there that is specfic to a particular core type that can't be
-handled from C code?
+Now as opposed to when?  Only as opposed to what else?
 
-> +	/*
-> +	 * Need to save float-point registers if MSR[FP] = 1.
-> +	 */
-> +	mfmsr	r12
-> +	andi.	r12, r12, MSR_FP
-> +	beq	1f
-> +	do_sr_fpr_regs(save)
+> +#define	EXC_LEVEL_EXCEPTION_PROLOG(type)				\
 
-C code should have already ensured that MSR[FP] is not 1 (and thus the
-FP context has been saved).
+I'd prefer .macro over #define.
 
-> +/*
-> + * r3 = the virtual address of buffer
-> + * r4 = suspend type, 0-BASE_SAVE, 1-ALL_SAVE
+> +	ld	r14,PACAKSAVE(r13);					\
+> +	CURRENT_THREAD_INFO(r14, r14);					\
+> +	CURRENT_THREAD_INFO(r15, r1);					\
+> +	ld	r10,TI_FLAGS(r14);		     			\
+> +	std	r10,TI_FLAGS(r15);			     		\
+> +	ld	r10,TI_PREEMPT(r14);		     			\
+> +	std	r10,TI_PREEMPT(r15);		     			\
+> +	ld	r10,TI_TASK(r14);			     		\
+> +	std	r10,TI_TASK(r15);
 
-#define these magic numbers, and define what is meant by "base save"
-versus "all save".
+This is a start, but we'll also need to save some more context to allow
+TLB misses from within the exception (e.g. if a machine check handler or
+GDB stub writes to a serial port, and the I/O registers aren't in the
+TLB).  At a minimum I think we need to save SRR0, SRR1,
+SPRN_SPRG_GEN_SCRATCH, SPRN_SPRG_TLB_SCRATCH, and the MAS registers. 
+We'll also need to make the bolted TLB miss handlers capable of pointing
+to different extables (though they won't need to auto-advance as the
+original TLB miss handlers do -- we would advance SPRN_SPRG_TLB_EXFRAME
+from this code), and the original TLB miss handlers will now need to
+support more than 3 levels of nesting.
+
+For the e6500 tablewalk TLB miss handler, we'll need to do something
+special if we interrupt it when the lock is held, to revoke the lock and
+return to code that retries.
+
+Is there anything else I'm missing?
 
 -Scott
