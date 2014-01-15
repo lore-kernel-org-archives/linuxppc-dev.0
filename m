@@ -1,19 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B50BF2C008F
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Jan 2014 16:01:28 +1100 (EST)
-Message-ID: <1389762075.6933.76.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 15 Jan 2014 16:01:15 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id D27DA2C008F
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jan 2014 16:16:24 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 14 Jan 2014 22:16:22 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5361A19D8046
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 22:16:11 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0F5G6JM9306594
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Jan 2014 06:16:06 +0100
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0F5GJFE007996
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Jan 2014 22:16:20 -0700
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2 3/3] powerpc/eeh: Escalate error on non-existing PE
+Date: Wed, 15 Jan 2014 13:16:13 +0800
+Message-Id: <1389762974-14176-3-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1389762974-14176-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1389762974-14176-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +38,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Sometimes, especially in sinario of loading another kernel with kdump,
+we got EEH error on non-existing PE. That means the PEEV / PEST in
+the corresponding PHB would be messy and we can't handle that case.
+The patch escalates the error to fenced PHB so that the PHB could be
+rested in order to revoer the errors on non-existing PEs.
 
-So you make the call onto whether taking that one now or waiting for the
-merge window. It's a bug fix for a crash in mremap that occurs on
-powerpc with THP enabled.
+Reported-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Tested-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/eeh-ioda.c |   31 +++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
 
-The fix however requires a small change in the generic code. It moves a
-condition into a helper we can override from the arch which is harmless,
-but it *also* slightly changes the order of the set_pmd and the withdraw
-& deposit, which should be fine according to Kirill (who wrote that
-code) but I agree -rc8 is a bit late...
-
-It was acked by Kirill and Andrew told me to just merge it via powerpc.
-
-My original intend was to put it in powerpc-next and then shoot it to
-stable, but it got a tad annoying (due to churn it needs to be applied
-at least on rc4 or later while my next is at rc1 and clean that way), so
-I put it in the merge branch.
-
->From there, you tell me if you want to take it now, if not, I'll send
-you that branch along with my normal next one after you open the merge
-window.
-
-Cheers,
-Ben.
-
-The following changes since commit a6da83f98267bc8ee4e34aa899169991eb0ceb93:
-
-  Merge branch 'merge' of git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc (2014-01-13 10:59:05 +0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to b3084f4db3aeb991c507ca774337c7e7893ed04f:
-
-  powerpc/thp: Fix crash on mremap (2014-01-15 15:46:38 +1100)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc/thp: Fix crash on mremap
-
- arch/powerpc/include/asm/pgtable-ppc64.h | 14 ++++++++++++++
- include/asm-generic/pgtable.h            | 12 ++++++++++++
- mm/huge_memory.c                         | 14 +++++---------
- 3 files changed, 31 insertions(+), 9 deletions(-)
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index e0b12d0..92aa1f9 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -862,11 +862,7 @@ static int ioda_eeh_get_pe(struct pci_controller *hose,
+ 	dev.phb = hose;
+ 	dev.pe_config_addr = pe_no;
+ 	dev_pe = eeh_pe_get(&dev);
+-	if (!dev_pe) {
+-		pr_warning("%s: Can't find PE for PHB#%x - PE#%x\n",
+-			   __func__, hose->global_number, pe_no);
+-		return -EEXIST;
+-	}
++	if (!dev_pe) return -EEXIST;
+ 
+ 	*pe = dev_pe;
+ 	return 0;
+@@ -980,12 +976,27 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 
+ 			break;
+ 		case OPAL_EEH_PE_ERROR:
+-			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe))
+-				break;
++			/*
++			 * If we can't find the corresponding PE, the
++			 * PEEV / PEST would be messy. So we force an
++			 * fenced PHB so that it can be recovered.
++			 */
++			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe)) {
++				if (!ioda_eeh_get_phb_pe(hose, pe)) {
++					pr_err("EEH: Escalated fenced PHB#%x "
++					       "detected for PE#%llx\n",
++						hose->global_number,
++						frozen_pe_no);
++					ret = EEH_NEXT_ERR_FENCED_PHB;
++				} else {
++					ret = EEH_NEXT_ERR_NONE;
++				}
++			} else {
++				pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
++					(*pe)->addr, (*pe)->phb->global_number);
++				ret = EEH_NEXT_ERR_FROZEN_PE;
++			}
+ 
+-			pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
+-				(*pe)->addr, (*pe)->phb->global_number);
+-			ret = EEH_NEXT_ERR_FROZEN_PE;
+ 			break;
+ 		default:
+ 			pr_warn("%s: Unexpected error type %d\n",
+-- 
+1.7.10.4
