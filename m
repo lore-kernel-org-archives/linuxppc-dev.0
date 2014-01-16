@@ -1,21 +1,32 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2CEF12C0082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 22:00:18 +1100 (EST)
-Received: from mail199-va3 (localhost [127.0.0.1])	by
- mail199-va3-R.bigfish.com (Postfix) with ESMTP id E8C18360144	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 11:00:13 +0000 (UTC)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 3/4 v2]powerpc/fsl-booke: Add support for T2080/T2081 SoC
-Date: Thu, 16 Jan 2014 18:02:42 +0800
-Message-ID: <1389866562-6235-1-git-send-email-Shengzhou.Liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 76A1F2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 23:16:08 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 16 Jan 2014 17:46:03 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 9F83CE005A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 17:48:55 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0GCG03357081938
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 17:46:00 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0GCG0wA025500
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 17:46:01 +0530
+Subject: [PATCH v2] powerpc/powernv: Platform dump interface
+To: linuxppc-dev@lists.ozlabs.org
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Date: Thu, 16 Jan 2014 17:46:00 +0530
+Message-ID: <20140116121411.624.55662.stgit@hegdevasant.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,615 +36,569 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for T2080/T2081 SoC without DPAA components.
+This patch adds interface to retrieve FSP and Platform dump.
 
-The T2080 SoC includes the following function and features:
-- Four dual-threaded 64-bit Power architecture e6500 cores, up to 1.8GHz
-- 2MB L2 cache and 512KB CoreNet platform cache (CPC)
-- Hierarchical interconnect fabric
-- One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
-- Data Path Acceleration Architecture (DPAA) incorporating acceleration
-- 16 SerDes lanes up to 10.3125 GHz
-- 8 Ethernet interfaces (multiple 1G/2.5G/10G MACs)
-- High-speed peripheral interfaces
-  - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0)
-  - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
-- Additional peripheral interfaces
-  - Two serial ATA (SATA 2.0) controllers
-  - Two high-speed USB 2.0 controllers with integrated PHY
-  - Enhanced secure digital host controller (SD/SDXC/eMMC)
-  - Enhanced serial peripheral interface (eSPI)
-  - Four I2C controllers
-  - Four 2-pin UARTs or two 4-pin UARTs
-  - Integrated Flash Controller supporting NAND and NOR flash
-- Three eight-channel DMA engines
-- Support for hardware virtualization and partitioning enforcement
-- QorIQ Platform's Trust Architecture 2.0
+Flow:
+  - We register for OPAL notification events.
+  - OPAL sends new dump available notification.
+  - We retrieve the dump via OPAL interface and send it to debugfs.
+  - User copies the dump data and end ACKs via debugfs.
+  - We send ACK to OPAL.
 
-T2081 is a reduced personality of T2080 without SATA, sRIO, RMan,
-Aurora, and with less SerDes lanes and ethernet interfaces.
+OPAL APIs:
+  - opal_dump_init()
+  - opal_dump_info()
+  - opal_dump_read()
+  - opal_dump_ack()
+  - opal_dump_resend_notification()
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+debugfs files:
+  We create below dump related files under "fsp" directory.
+    - dump            : Dump data
+    - dump_available  : New dump available notification to userspace
+    - dump_control    : ACK dump. Also initiate new FSP dump
+    - README          : README
+
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 ---
-v2: remove wildcards in compatible strings.
+Ben,
+  I have rebased this patch on top of your next branch.
 
- arch/powerpc/boot/dts/fsl/t2080si-post.dtsi |  60 +++++
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 383 ++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi  |  95 +++++++
- arch/powerpc/include/asm/mpc85xx.h          |   2 +
- 4 files changed, 540 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+-Vasant
 
-diff --git a/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
-new file mode 100644
-index 0000000..1a902fe
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
-@@ -0,0 +1,60 @@
-+/*
-+ * T2080 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "t2081si-post.dtsi"
-+
-+&soc {
-+/include/ "qoriq-sata2-0.dtsi"
-+/include/ "qoriq-sata2-1.dtsi"
-+};
-+
-+&rio {
-+	compatible = "fsl,srio";
-+	interrupts = <16 2 1 11>;
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	ranges;
-+
-+	port1 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		cell-index = <1>;
-+	};
-+
-+	port2 {
-+		#address-cells = <2>;
-+		#size-cells = <2>;
-+		cell-index = <2>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-new file mode 100644
-index 0000000..d7e036c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-@@ -0,0 +1,383 @@
-+/*
-+ * T2081 Silicon/SoC Device Tree Source (post include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+&ifc {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	compatible = "fsl,ifc", "simple-bus";
-+	interrupts = <25 2 0 0>;
-+};
-+
-+/* controller at 0x240000 */
-+&pci0 {
-+	compatible = "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <20 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <20 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 40 1 0 0
-+			0000 0 0 2 &mpic 1 1 0 0
-+			0000 0 0 3 &mpic 2 1 0 0
-+			0000 0 0 4 &mpic 3 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x250000 */
-+&pci1 {
-+	compatible = "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0 0xff>;
-+	interrupts = <21 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <21 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 41 1 0 0
-+			0000 0 0 2 &mpic 5 1 0 0
-+			0000 0 0 3 &mpic 6 1 0 0
-+			0000 0 0 4 &mpic 7 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x260000 */
-+&pci2 {
-+	compatible = "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <22 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <22 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 42 1 0 0
-+			0000 0 0 2 &mpic 9 1 0 0
-+			0000 0 0 3 &mpic 10 1 0 0
-+			0000 0 0 4 &mpic 11 1 0 0
-+			>;
-+	};
-+};
-+
-+/* controller at 0x270000 */
-+&pci3 {
-+	compatible = "fsl,qoriq-pcie";
-+	device_type = "pci";
-+	#size-cells = <2>;
-+	#address-cells = <3>;
-+	bus-range = <0x0 0xff>;
-+	interrupts = <23 2 0 0>;
-+	pcie@0 {
-+		reg = <0 0 0 0 0>;
-+		#interrupt-cells = <1>;
-+		#size-cells = <2>;
-+		#address-cells = <3>;
-+		device_type = "pci";
-+		interrupts = <23 2 0 0>;
-+		interrupt-map-mask = <0xf800 0 0 7>;
-+		interrupt-map = <
-+			/* IDSEL 0x0 */
-+			0000 0 0 1 &mpic 43 1 0 0
-+			0000 0 0 2 &mpic 0 1 0 0
-+			0000 0 0 3 &mpic 4 1 0 0
-+			0000 0 0 4 &mpic 8 1 0 0
-+			>;
-+	};
-+};
-+
-+&dcsr {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "fsl,dcsr", "simple-bus";
-+
-+	dcsr-epu@0 {
-+		compatible = "fsl,dcsr-epu";
-+		interrupts = <52 2 0 0
-+			      84 2 0 0
-+			      85 2 0 0
-+			      94 2 0 0
-+			      95 2 0 0>;
-+		reg = <0x0 0x1000>;
-+	};
-+	dcsr-npc {
-+		compatible = "fsl,dcsr-cnpc";
-+		reg = <0x1000 0x1000 0x1002000 0x10000>;
-+	};
-+	dcsr-nxc@2000 {
-+		compatible = "fsl,dcsr-nxc";
-+		reg = <0x2000 0x1000>;
-+	};
-+	dcsr-corenet {
-+		compatible = "fsl,dcsr-corenet";
-+		reg = <0x8000 0x1000 0x1A000 0x1000>;
-+	};
-+	dcsr-ocn@11000 {
-+		compatible = "fsl,dcsr-ocn";
-+		reg = <0x11000 0x1000>;
-+	};
-+	dcsr-ddr@12000 {
-+		compatible = "fsl,dcsr-ddr";
-+		dev-handle = <&ddr1>;
-+		reg = <0x12000 0x1000>;
-+	};
-+	dcsr-nal@18000 {
-+		compatible = "fsl,dcsr-nal";
-+		reg = <0x18000 0x1000>;
-+	};
-+	dcsr-rcpm@22000 {
-+		compatible = "fsl,dcsr-rcpm";
-+		reg = <0x22000 0x1000>;
-+	};
-+	dcsr-snpc@30000 {
-+		compatible = "fsl,dcsr-snpc";
-+		reg = <0x30000 0x1000 0x1022000 0x10000>;
-+	};
-+	dcsr-snpc@31000 {
-+		compatible = "fsl,dcsr-snpc";
-+		reg = <0x31000 0x1000 0x1042000 0x10000>;
-+	};
-+	dcsr-snpc@32000 {
-+		compatible = "fsl,dcsr-snpc";
-+		reg = <0x32000 0x1000 0x1062000 0x10000>;
-+	};
-+	dcsr-cpu-sb-proxy@100000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu0>;
-+		reg = <0x100000 0x1000 0x101000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@108000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu1>;
-+		reg = <0x108000 0x1000 0x109000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@110000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu2>;
-+		reg = <0x110000 0x1000 0x111000 0x1000>;
-+	};
-+	dcsr-cpu-sb-proxy@118000 {
-+		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-+		cpu-handle = <&cpu3>;
-+		reg = <0x118000 0x1000 0x119000 0x1000>;
-+	};
-+};
-+
-+&soc {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	device_type = "soc";
-+	compatible = "simple-bus";
-+
-+	soc-sram-error {
-+		compatible = "fsl,soc-sram-error";
-+		interrupts = <16 2 1 29>;
-+	};
-+
-+	corenet-law@0 {
-+		compatible = "fsl,corenet-law";
-+		reg = <0x0 0x1000>;
-+		fsl,num-laws = <32>;
-+	};
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-+
-+	cpc: l3-cache-controller@10000 {
-+		compatible = "cache";
-+		reg = <0x10000 0x1000
-+		       0x11000 0x1000
-+		       0x12000 0x1000>;
-+		interrupts = <16 2 1 27
-+			      16 2 1 26
-+			      16 2 1 25>;
-+	};
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet2-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-+
-+	iommu@20000 {
-+		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-+		reg = <0x20000 0x6000>;
-+		interrupts = <
-+			24 2 0 0
-+			16 2 1 30>;
-+	};
-+
-+/include/ "qoriq-mpic4.3.dtsi"
-+
-+	guts: global-utilities@e0000 {
-+		compatible = "fsl,qoriq-device-config-2.0";
-+		reg = <0xe0000 0xe00>;
-+		fsl,has-rstcr;
-+		fsl,liodn-bits = <12>;
-+	};
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,qoriq-clockgen-2.0", "fixed-clock";
-+		reg = <0xe1000 0x1000>;
-+		clock-output-names = "sysclk";
-+		#clock-cells = <0>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pll0: pll0@800 {
-+			#clock-cells = <1>;
-+			reg = <0x800>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-+		};
-+		pll1: pll1@820 {
-+			#clock-cells = <1>;
-+			reg = <0x820>;
-+			compatible = "fsl,core-pll-clock";
-+			clocks = <&clockgen>;
-+			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-+		};
-+		mux0: mux0@0 {
-+			#clock-cells = <0>;
-+			reg = <0x0>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				      "pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux0";
-+		};
-+		mux1: mux1@20 {
-+			#clock-cells = <0>;
-+			reg = <0x20>;
-+			compatible = "fsl,core-mux-clock";
-+			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-+				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-+			clock-names = "pll0_0", "pll0_1", "pll0_2",
-+				      "pll1_0", "pll1_1", "pll1_2";
-+			clock-output-names = "cmux1";
-+		};
-+	};
-+
-+	rcpm: global-utilities@e2000 {
-+		compatible = "fsl,qoriq-rcpm-2.0";
-+		reg = <0xe2000 0x1000>;
-+	};
-+
-+	sfp: sfp@e8000 {
-+		compatible = "fsl,t2080-sfp";
-+		reg = <0xe8000 0x1000>;
-+	};
-+
-+	serdes: serdes@ea000 {
-+		compatible = "fsl,t2080-serdes";
-+		reg = <0xea000 0x4000>;
-+	};
-+
-+/include/ "elo3-dma-0.dtsi"
-+/include/ "elo3-dma-1.dtsi"
-+/include/ "elo3-dma-2.dtsi"
-+
-+/include/ "qoriq-espi-0.dtsi"
-+	spi@110000 {
-+		fsl,espi-num-chipselects = <4>;
-+	};
-+
-+/include/ "qoriq-esdhc-0.dtsi"
-+	sdhc@114000 {
-+		compatible = "fsl,esdhc";
-+		sdhci,auto-cmd12;
-+	};
-+/include/ "qoriq-i2c-0.dtsi"
-+/include/ "qoriq-i2c-1.dtsi"
-+/include/ "qoriq-duart-0.dtsi"
-+/include/ "qoriq-duart-1.dtsi"
-+/include/ "qoriq-gpio-0.dtsi"
-+/include/ "qoriq-gpio-1.dtsi"
-+/include/ "qoriq-gpio-2.dtsi"
-+/include/ "qoriq-gpio-3.dtsi"
-+/include/ "qoriq-usb2-mph-0.dtsi"
-+	usb0: usb@210000 {
-+		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-+		phy_type = "utmi";
-+		port0;
-+	};
-+/include/ "qoriq-usb2-dr-0.dtsi"
-+	usb1: usb@211000 {
-+		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-+		dr_mode = "host";
-+		phy_type = "utmi";
-+	};
-+/include/ "qoriq-sec5.2-0.dtsi"
-+
-+	L2_1: l2-cache-controller@c20000 {
-+		/* Cluster 0 L2 cache */
-+		compatible = "fsl,t2080-l2-cache-controller";
-+		reg = <0xc20000 0x40000>;
-+		next-level-cache = <&cpc>;
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-new file mode 100644
-index 0000000..1283e26
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-@@ -0,0 +1,95 @@
-+/*
-+ * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
-+ *
-+ * Copyright 2013 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/dts-v1/;
-+
-+/include/ "e6500_power_isa.dtsi"
-+
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	aliases {
-+		ccsr = &soc;
-+		dcsr = &dcsr;
-+
-+		serial0 = &serial0;
-+		serial1 = &serial1;
-+		serial2 = &serial2;
-+		serial3 = &serial3;
-+
-+		crypto = &crypto;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+		pci2 = &pci2;
-+		pci3 = &pci3;
-+		usb0 = &usb0;
-+		usb1 = &usb1;
-+		dma0 = &dma0;
-+		dma1 = &dma1;
-+		dma2 = &dma2;
-+		sdhc = &sdhc;
-+	};
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu0: PowerPC,e6500@0 {
-+			device_type = "cpu";
-+			reg = <0 1>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu1: PowerPC,e6500@2 {
-+			device_type = "cpu";
-+			reg = <2 3>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu2: PowerPC,e6500@4 {
-+			device_type = "cpu";
-+			reg = <4 5>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+		};
-+		cpu3: PowerPC,e6500@6 {
-+			device_type = "cpu";
-+			reg = <6 7>;
-+			clocks = <&mux0>;
-+			next-level-cache = <&L2_1>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-index 736d4ac..3bef74a 100644
---- a/arch/powerpc/include/asm/mpc85xx.h
-+++ b/arch/powerpc/include/asm/mpc85xx.h
-@@ -77,6 +77,8 @@
- #define SVR_T1020	0x852100
- #define SVR_T1021	0x852101
- #define SVR_T1022	0x852102
-+#define SVR_T2080	0x853000
-+#define SVR_T2081	0x853100
+ arch/powerpc/include/asm/opal.h                |   12 +
+ arch/powerpc/platforms/powernv/Makefile        |    2 
+ arch/powerpc/platforms/powernv/opal-dump.c     |  436 ++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    5 
+ arch/powerpc/platforms/powernv/opal.c          |    2 
+ 5 files changed, 456 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-dump.c
+
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9a87b44..0f4c7ff 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -154,8 +154,13 @@ extern int opal_enter_rtas(struct rtas_args *args,
+ #define OPAL_FLASH_VALIDATE			76
+ #define OPAL_FLASH_MANAGE			77
+ #define OPAL_FLASH_UPDATE			78
++#define OPAL_DUMP_INIT				81
++#define OPAL_DUMP_INFO				82
++#define OPAL_DUMP_READ				83
++#define OPAL_DUMP_ACK				84
+ #define OPAL_GET_MSG				85
+ #define OPAL_CHECK_ASYNC_COMPLETION		86
++#define OPAL_DUMP_RESEND			91
  
- #define SVR_8610	0x80A000
- #define SVR_8641	0x809000
--- 
-1.8.0
+ #ifndef __ASSEMBLY__
+ 
+@@ -236,6 +241,7 @@ enum OpalPendingState {
+ 	OPAL_EVENT_EPOW			= 0x80,
+ 	OPAL_EVENT_LED_STATUS		= 0x100,
+ 	OPAL_EVENT_PCI_ERROR		= 0x200,
++	OPAL_EVENT_DUMP_AVAIL		= 0x400,
+ 	OPAL_EVENT_MSG_PENDING		= 0x800,
+ };
+ 
+@@ -825,6 +831,11 @@ int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
+ int64_t opal_validate_flash(uint64_t buffer, uint32_t *size, uint32_t *result);
+ int64_t opal_manage_flash(uint8_t op);
+ int64_t opal_update_flash(uint64_t blk_list);
++int64_t opal_dump_init(uint8_t dump_type);
++int64_t opal_dump_info(uint32_t *dump_id, uint32_t *dump_size);
++int64_t opal_dump_read(uint32_t dump_id, uint64_t buffer);
++int64_t opal_dump_ack(uint32_t dump_id);
++int64_t opal_dump_resend_notification(void);
+ 
+ int64_t opal_get_msg(uint64_t buffer, size_t size);
+ int64_t opal_check_completion(uint64_t buffer, size_t size, uint64_t token);
+@@ -859,6 +870,7 @@ extern void opal_get_rtc_time(struct rtc_time *tm);
+ extern unsigned long opal_get_boot_time(void);
+ extern void opal_nvram_init(void);
+ extern void opal_flash_init(void);
++extern void opal_platform_dump_init(void);
+ 
+ extern int opal_machine_check(struct pt_regs *regs);
+ 
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 8d767fd..3528c11 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -1,6 +1,6 @@
+ obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o
+ obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+-obj-y			+= rng.o
++obj-y			+= rng.o opal-dump.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+new file mode 100644
+index 0000000..4447027
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -0,0 +1,436 @@
++/*
++ * PowerNV OPAL Dump Interface
++ *
++ * Copyright 2013 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/kobject.h>
++#include <linux/debugfs.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/pagemap.h>
++#include <linux/delay.h>
++
++#include <asm/opal.h>
++
++/* Dump type */
++#define DUMP_TYPE_FSP	0x01
++
++/* Extract failed */
++#define DUMP_NACK_ID	0x00
++
++/* Dump record */
++struct dump_record {
++	uint8_t		type;
++	uint32_t	id;
++	uint32_t	size;
++	char		*buffer;
++};
++static struct dump_record dump_record;
++
++/* Dump available status */
++static u32 dump_avail;
++
++/* Binary blobs */
++static struct debugfs_blob_wrapper dump_blob;
++static struct debugfs_blob_wrapper readme_blob;
++
++/* Ignore dump notification, if we fail to create debugfs files */
++static bool dump_disarmed = false;
++
++
++static void free_dump_sg_list(struct opal_sg_list *list)
++{
++	struct opal_sg_list *sg1;
++	while (list) {
++		sg1 = list->next;
++		kfree(list);
++		list = sg1;
++	}
++	list = NULL;
++}
++
++/*
++ * Build dump buffer scatter gather list
++ */
++static struct opal_sg_list *dump_data_to_sglist(void)
++{
++	struct opal_sg_list *sg1, *list = NULL;
++	void *addr;
++	int64_t size;
++
++	addr = dump_record.buffer;
++	size = dump_record.size;
++
++	sg1 = kzalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!sg1)
++		goto nomem;
++
++	list = sg1;
++	sg1->num_entries = 0;
++	while (size > 0) {
++		/* Translate virtual address to physical address */
++		sg1->entry[sg1->num_entries].data =
++			(void *)(vmalloc_to_pfn(addr) << PAGE_SHIFT);
++
++		if (size > PAGE_SIZE)
++			sg1->entry[sg1->num_entries].length = PAGE_SIZE;
++		else
++			sg1->entry[sg1->num_entries].length = size;
++
++		sg1->num_entries++;
++		if (sg1->num_entries >= SG_ENTRIES_PER_NODE) {
++			sg1->next = kzalloc(PAGE_SIZE, GFP_KERNEL);
++			if (!sg1->next)
++				goto nomem;
++
++			sg1 = sg1->next;
++			sg1->num_entries = 0;
++		}
++		addr += PAGE_SIZE;
++		size -= PAGE_SIZE;
++	}
++	return list;
++
++nomem:
++	pr_err("%s : Failed to allocate memory\n", __func__);
++	free_dump_sg_list(list);
++	return NULL;
++}
++
++/*
++ * Translate sg list address to absolute
++ */
++static void sglist_to_phy_addr(struct opal_sg_list *list)
++{
++	struct opal_sg_list *sg, *next;
++
++	for (sg = list; sg; sg = next) {
++		next = sg->next;
++		/* Don't translate NULL pointer for last entry */
++		if (sg->next)
++			sg->next = (struct opal_sg_list *)__pa(sg->next);
++		else
++			sg->next = NULL;
++
++		/* Convert num_entries to length */
++		sg->num_entries =
++			sg->num_entries * sizeof(struct opal_sg_entry) + 16;
++	}
++}
++
++static void free_dump_data_buf(void)
++{
++	vfree(dump_record.buffer);
++	dump_record.size = 0;
++}
++
++/*
++ * Allocate dump data buffer.
++ */
++static int alloc_dump_data_buf(void)
++{
++	dump_record.buffer = vzalloc(PAGE_ALIGN(dump_record.size));
++	if (!dump_record.buffer) {
++		pr_err("%s : Failed to allocate memory\n", __func__);
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++/*
++ * Initiate FipS dump
++ */
++static int64_t dump_fips_init(uint8_t type)
++{
++	int rc;
++
++	rc = opal_dump_init(type);
++	if (rc)
++		pr_warn("%s: Failed to initiate FipS dump (%d)\n",
++			__func__, rc);
++	return rc;
++}
++
++/*
++ * Get dump ID and size.
++ */
++static int64_t dump_read_info(void)
++{
++	int rc;
++
++	rc = opal_dump_info(&dump_record.id, &dump_record.size);
++	if (rc)
++		pr_warn("%s: Failed to get dump info (%d)\n",
++			__func__, rc);
++	return rc;
++}
++
++/*
++ * Send acknowledgement to OPAL
++ */
++static int64_t dump_send_ack(uint32_t dump_id)
++{
++	int rc;
++
++	rc = opal_dump_ack(dump_id);
++	if (rc)
++		pr_warn("%s: Failed to send ack to Dump ID 0x%x (%d)\n",
++			__func__, dump_id, rc);
++	return rc;
++}
++
++/*
++ * Retrieve dump data
++ */
++static int64_t dump_read_data(void)
++{
++	struct opal_sg_list *list;
++	uint64_t addr;
++	int64_t rc;
++
++	/* Allocate memory */
++	rc = alloc_dump_data_buf();
++	if (rc)
++		goto out;
++
++	/* Generate SG list */
++	list = dump_data_to_sglist();
++	if (!list) {
++		rc = -ENOMEM;
++		goto out;
++	}
++
++	/* Translate sg list addr to real address */
++	sglist_to_phy_addr(list);
++
++	/* First entry address */
++	addr = __pa(list);
++
++	/* Fetch data */
++	rc = OPAL_BUSY_EVENT;
++	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
++		rc = opal_dump_read(dump_record.id, addr);
++		if (rc == OPAL_BUSY_EVENT) {
++			opal_poll_events(NULL);
++			msleep(10);
++		}
++	}
++
++	if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL)
++		pr_warn("%s: Extract dump failed for ID 0x%x\n",
++			__func__, dump_record.id);
++
++	/* Free SG list */
++	free_dump_sg_list(list);
++
++out:
++	return rc;
++}
++
++static int extract_dump(void)
++{
++	int rc;
++
++	/* Get dump ID, size */
++	rc = dump_read_info();
++	if (rc != OPAL_SUCCESS)
++		return rc;
++
++	/* Read dump data */
++	rc = dump_read_data();
++	if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL) {
++		/*
++		 * Failed to allocate memory to retrieve dump. Lets send
++		 * negative ack so that we get notification again.
++		 */
++		dump_send_ack(DUMP_NACK_ID);
++
++		/* Free dump buffer */
++		free_dump_data_buf();
++
++		return rc;
++	}
++	if (rc == OPAL_PARTIAL)
++		pr_info("%s: Platform dump partially read. ID = 0x%x\n",
++			__func__, dump_record.id);
++	else
++		pr_info("%s: New platform dump available. ID = 0x%x\n",
++			__func__, dump_record.id);
++
++	/* Update dump blob */
++	dump_blob.data = (void *)dump_record.buffer;
++	dump_blob.size = dump_record.size;
++
++	/* Update dump available status */
++	dump_avail = 1;
++
++	return rc;
++}
++
++static void dump_extract_fn(struct work_struct *work)
++{
++	extract_dump();
++}
++
++static DECLARE_WORK(dump_work, dump_extract_fn);
++
++/* Workqueue to extract dump */
++static void schedule_extract_dump(void)
++{
++	schedule_work(&dump_work);
++}
++
++/*
++ * New dump available notification
++ *
++ * Once we get notification, we extract dump via OPAL call
++ * and then pass dump to userspace via debugfs interface.
++ */
++static int dump_event(struct notifier_block *nb,
++		      unsigned long events, void *change)
++{
++	/*
++	 * Don't retrieve dump, if we don't have debugfs
++	 * interface to pass data to userspace.
++	 */
++	if (dump_disarmed)
++		return 0;
++
++	/* Check for dump available notification */
++	if (events & OPAL_EVENT_DUMP_AVAIL)
++		schedule_extract_dump();
++
++	return 0;
++}
++
++static struct notifier_block dump_nb = {
++	.notifier_call  = dump_event,
++	.next           = NULL,
++	.priority       = 0
++};
++
++
++/* debugfs README message */
++static const char readme_msg[] =
++	"Platform dump HOWTO:\n\n"
++	"files:\n"
++	"  dump                  - Binary file, contains actual dump data\n"
++	"  dump_available (r--)  - New dump available notification\n"
++	"                          0 : No dump available\n"
++	"                          1 : New dump available\n"
++	"  dump_control(-w-)     - Dump control file\n"
++	"                          1 : Send acknowledgement (dump copied)\n"
++	"                          2 : Initiate FipS dump\n";
++
++/* debugfs dump_control file operations */
++static ssize_t dump_control_write(struct file *file,
++				  const char __user *user_buf,
++				  size_t count, loff_t *ppos)
++{
++	char buf[4];
++	size_t buf_size;
++
++	buf_size = min(count, (sizeof(buf) - 1));
++	if (copy_from_user(buf, user_buf, buf_size))
++		return -EFAULT;
++
++	switch (buf[0]) {
++	case '1':	/* Dump send ack */
++		if (dump_avail) {
++			dump_avail = 0;
++			free_dump_data_buf();
++			dump_send_ack(dump_record.id);
++		}
++		break;
++	case '2':	/* Initiate FipS dump */
++		dump_fips_init(DUMP_TYPE_FSP);
++		break;
++	default:
++		break;
++	}
++	return count;
++}
++
++static const struct file_operations dump_control_fops = {
++	.open	= simple_open,
++	.write	= dump_control_write,
++	.llseek	= default_llseek,
++};
++
++/*
++ * Create dump debugfs file
++ */
++static int debugfs_dump_init(void)
++{
++	struct dentry *dir, *file;
++
++	/* FSP dump directory */
++	dir = debugfs_create_dir("fsp", NULL);
++	if (!dir)
++		goto out;
++
++	/* README */
++	readme_blob.data = (void *)readme_msg;
++	readme_blob.size = strlen(readme_msg);
++	file = debugfs_create_blob("README", 0400, dir, &readme_blob);
++	if (!file)
++		goto remove_dir;
++
++	/* Dump available notification */
++	file = debugfs_create_u32("dump_avail", 0400, dir, &dump_avail);
++	if (!file)
++		goto remove_dir;
++
++	/* data file */
++	dump_blob.data = (void *)dump_record.buffer;
++	dump_blob.size = dump_record.size;
++	file = debugfs_create_blob("dump", 0400, dir, &dump_blob);
++	if (!file)
++		goto remove_dir;
++
++	/* Control file */
++	file = debugfs_create_file("dump_control", 0200, dir,
++				   NULL, &dump_control_fops);
++	if (!file)
++		goto remove_dir;
++
++	return 0;
++
++remove_dir:
++	debugfs_remove_recursive(dir);
++
++out:
++	dump_disarmed = true;
++	return -1;
++}
++
++void __init opal_platform_dump_init(void)
++{
++	int rc;
++
++	/* debugfs interface */
++	rc = debugfs_dump_init();
++	if (rc) {
++		pr_warn("%s: Failed to create debugfs interface (%d)\n",
++			__func__, rc);
++		return;
++	}
++
++	/* Register for opal notifier */
++	rc = opal_notifier_register(&dump_nb);
++	if (rc) {
++		pr_warn("%s: Can't register OPAL event notifier (%d)\n",
++			__func__, rc);
++		return;
++	}
++
++	/* Request to resend dump available notification */
++	opal_dump_resend_notification();
++}
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 719aa5c..c1e979b 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -126,5 +126,10 @@ OPAL_CALL(opal_return_cpu,			OPAL_RETURN_CPU);
+ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
+ OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
+ OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
++OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
++OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
++OPAL_CALL(opal_dump_read,			OPAL_DUMP_READ);
++OPAL_CALL(opal_dump_ack,			OPAL_DUMP_ACK);
+ OPAL_CALL(opal_get_msg,				OPAL_GET_MSG);
+ OPAL_CALL(opal_check_completion,		OPAL_CHECK_ASYNC_COMPLETION);
++OPAL_CALL(opal_dump_resend_notification,	OPAL_DUMP_RESEND);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 7a184a0..1b00e99 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -473,6 +473,8 @@ static int __init opal_init(void)
+ 	if (rc == 0) {
+ 		/* Setup code update interface */
+ 		opal_flash_init();
++		/* Setup platform dump extract interface */
++		opal_platform_dump_init();
+ 	}
+ 
+ 	return 0;
