@@ -1,22 +1,14 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B3BC72C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 08:35:53 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2] drivers/tty/hvc: don't use module_init in non-modular hyp.
- console code
-Date: Wed, 15 Jan 2014 16:35:43 -0500
-Message-ID: <1389821743-25081-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Richard Weinberger <richard@nod.at>, linux-kernel@vger.kernel.org,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- David Vrabel <david.vrabel@citrix.com>, xen-devel@lists.xenproject.org,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1389833903.31288.1.camel@concordia>
+Subject: Re: powerpc/powernv: Call OPAL sync before kexec'ing
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 16 Jan 2014 11:58:23 +1100
+In-Reply-To: <1389765724.6933.78.camel@pasglop>
+References: <1389765724.6933.78.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,132 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The HVC_OPAL/RTAS/UDBG/XEN options are all bool, and hence their support
-is either present or absent.  It will never be modular, so using
-module_init as an alias for __initcall is rather misleading.
+On Wed, 2014-01-15 at 17:02 +1100, Benjamin Herrenschmidt wrote:
+> From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>     
+> Its possible that OPAL may be writing to host memory during
+> kexec (like dump retrieve scenario). In this situation we might
+> end up corrupting host memory.
 
-Fix this up now, so that we can relocate module_init from
-init.h into module.h in the future.  If we don't do this, we'd
-have to add module.h to obviously non-modular code, and that
-would be a worse thing.
+Are we happy with that happening during kdump? (which doesn't call any of the
+shutdown paths)
 
-Note that direct use of __initcall is discouraged, vs. one
-of the priority categorized subgroups.  As __initcall gets
-mapped onto device_initcall, our use of device_initcall
-directly in this change means that the runtime impact is
-zero -- it will remain at level 6 in initcall ordering.
-
-Also the __exitcall functions have been outright deleted since
-they are only ever of interest to UML, and UML will never be
-using any of this code.
-
-Cc: Richard Weinberger <richard@nod.at>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: David Vrabel <david.vrabel@citrix.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
-
-[v2: unchanged; just added xen guys to Cc list, as hvc_xen isnt
- hooked into the MAINTAINERS file as of yet, so I forgot them.]
-
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index 6496872e2e47..b01659bd4f7c 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -255,13 +255,7 @@ static int __init hvc_opal_init(void)
- 	/* Register as a vio device to receive callbacks */
- 	return platform_driver_register(&hvc_opal_driver);
- }
--module_init(hvc_opal_init);
--
--static void __exit hvc_opal_exit(void)
--{
--	platform_driver_unregister(&hvc_opal_driver);
--}
--module_exit(hvc_opal_exit);
-+device_initcall(hvc_opal_init);
- 
- static void udbg_opal_putc(char c)
- {
-diff --git a/drivers/tty/hvc/hvc_rtas.c b/drivers/tty/hvc/hvc_rtas.c
-index 0069bb86ba49..08c87920b74a 100644
---- a/drivers/tty/hvc/hvc_rtas.c
-+++ b/drivers/tty/hvc/hvc_rtas.c
-@@ -102,17 +102,7 @@ static int __init hvc_rtas_init(void)
- 
- 	return 0;
- }
--module_init(hvc_rtas_init);
--
--/* This will tear down the tty portion of the driver */
--static void __exit hvc_rtas_exit(void)
--{
--	/* Really the fun isn't over until the worker thread breaks down and
--	 * the tty cleans up */
--	if (hvc_rtas_dev)
--		hvc_remove(hvc_rtas_dev);
--}
--module_exit(hvc_rtas_exit);
-+device_initcall(hvc_rtas_init);
- 
- /* This will happen prior to module init.  There is no tty at this time? */
- static int __init hvc_rtas_console_init(void)
-diff --git a/drivers/tty/hvc/hvc_udbg.c b/drivers/tty/hvc/hvc_udbg.c
-index 72228276fe31..9cf573d06a29 100644
---- a/drivers/tty/hvc/hvc_udbg.c
-+++ b/drivers/tty/hvc/hvc_udbg.c
-@@ -80,14 +80,7 @@ static int __init hvc_udbg_init(void)
- 
- 	return 0;
- }
--module_init(hvc_udbg_init);
--
--static void __exit hvc_udbg_exit(void)
--{
--	if (hvc_udbg_dev)
--		hvc_remove(hvc_udbg_dev);
--}
--module_exit(hvc_udbg_exit);
-+device_initcall(hvc_udbg_init);
- 
- static int __init hvc_udbg_console_init(void)
- {
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index 636c9baad7a5..2dc2831840ca 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -561,18 +561,7 @@ static int __init xen_hvc_init(void)
- #endif
- 	return r;
- }
--
--static void __exit xen_hvc_fini(void)
--{
--	struct xencons_info *entry, *next;
--
--	if (list_empty(&xenconsoles))
--			return;
--
--	list_for_each_entry_safe(entry, next, &xenconsoles, list) {
--		xen_console_remove(entry);
--	}
--}
-+device_initcall(xen_hvc_init);
- 
- static int xen_cons_init(void)
- {
-@@ -598,10 +587,6 @@ static int xen_cons_init(void)
- 	hvc_instantiate(HVC_COOKIE, 0, ops);
- 	return 0;
- }
--
--
--module_init(xen_hvc_init);
--module_exit(xen_hvc_fini);
- console_initcall(xen_cons_init);
- 
- #ifdef CONFIG_EARLY_PRINTK
--- 
-1.8.5.2
+cheers
