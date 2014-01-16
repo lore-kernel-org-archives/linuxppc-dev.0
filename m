@@ -1,31 +1,32 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8DB3C2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 10:54:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 98BCE2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 10:54:17 +1100 (EST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Thu, 16 Jan 2014 16:54:14 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 55E3419D8041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 16:54:02 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0GNru0O7536996
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 00:53:56 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0GNsAZR015659
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 16:54:11 -0700
+ Thu, 16 Jan 2014 18:54:15 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 09303C90041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 18:54:11 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0GNsDCG3539242
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 23:54:13 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0GNsCSQ016056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 18:54:13 -0500
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 To: Linux PPC <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 5/8] powerpc: add 24x7 interface header
-Date: Thu, 16 Jan 2014 15:53:51 -0800
-Message-Id: <1389916434-2288-6-git-send-email-cody@linux.vnet.ibm.com>
+Subject: [PATCH 6/8] powerpc/perf: add support for the hv gpci (get
+ performance counter info) interface
+Date: Thu, 16 Jan 2014 15:53:52 -0800
+Message-Id: <1389916434-2288-7-git-send-email-cody@linux.vnet.ibm.com>
 In-Reply-To: <1389916434-2288-1-git-send-email-cody@linux.vnet.ibm.com>
 References: <1389916434-2288-1-git-send-email-cody@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -42,265 +43,256 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-24x7 (also called hv_24x7 or H_24X7) is an interface to obtain
-performance counters from the hypervisor. These counters do not have a
-fixed format/possition and are instead documented in a "24x7 Catalog",
-which is provided by the hypervisor (that interface is also documented
-in this header).
-
-This method of obtaining performance counters from the hypervisor is
-intended to paritialy replace the gpci interface.
+This provides a basic link between perf and hv_gpci. Notably, it does
+not yet support transactions and does not list any events (they can
+still be manually composed).
 
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/hv_24x7.h | 239 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 239 insertions(+)
- create mode 100644 arch/powerpc/include/asm/hv_24x7.h
+ arch/powerpc/perf/hv-gpci.c | 235 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 235 insertions(+)
+ create mode 100644 arch/powerpc/perf/hv-gpci.c
 
-diff --git a/arch/powerpc/include/asm/hv_24x7.h b/arch/powerpc/include/asm/hv_24x7.h
+diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
 new file mode 100644
-index 0000000..f77b3cc
+index 0000000..31d9d59
 --- /dev/null
-+++ b/arch/powerpc/include/asm/hv_24x7.h
-@@ -0,0 +1,239 @@
-+#ifndef ARCH_POWERPC_24X7_H_
-+#define ARCH_POWERPC_24X7_H_
++++ b/arch/powerpc/perf/hv-gpci.c
+@@ -0,0 +1,235 @@
++/*
++ * Hypervisor supplied "gpci" ("get performance counter info") performance
++ * counter support
++ *
++ * Author: Cody P Schafer <cody@linux.vnet.ibm.com>
++ * Copyright 2014 IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#define pr_fmt(fmt) "hv-gpci: " fmt
 +
-+#include <linux/types.h>
++#include <linux/module.h>
++#include <linux/perf_event.h>
++#include <asm/firmware.h>
++#include <asm/hvcall.h>
++#include <asm/hv_gpci.h>
++#include <asm/io.h>
 +
-+struct hv_24x7_request {
-+	/* PHYSICAL domains require enabling via phyp/hmc. */
-+#define HV_24X7_PERF_DOMAIN_PHYSICAL_CHIP 0x01
-+#define HV_24X7_PERF_DOMAIN_PHYSICAL_CORE 0x02
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_HOME_CORE   0x03
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_HOME_CHIP   0x04
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_HOME_NODE   0x05
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_REMOTE_NODE 0x06
-+	__u8 performance_domain;
-+	__u8 reserved[0x1];
++/* See arch/powerpc/include/asm/hv_gpci.h for details on the hcall interface */
 +
-+	/* bytes to read starting at @data_offset. must be a multiple of 8 */
-+	__be16 data_size;
++PMU_RANGE_ATTR(request, config, 0, 31); /* u32 */
++PMU_RANGE_ATTR(starting_index, config, 32, 63); /* u32 */
++PMU_RANGE_ATTR(secondary_index, config1, 0, 15); /* u16 */
++PMU_RANGE_ATTR(counter_info_version, config1, 16, 23); /* u8 */
++PMU_RANGE_ATTR(length, config1, 24, 31); /* u8, bytes of data (1-8) */
++PMU_RANGE_ATTR(offset, config1, 32, 63); /* u32, byte offset */
 +
-+	/*
-+	 * byte offset within the perf domain to read from. must be 8 byte
-+	 * aligned
-+	 */
-+	__be32 data_offset;
++static struct attribute *format_attr[] = {
++	&format_attr_request.attr,
++	&format_attr_starting_index.attr,
++	&format_attr_secondary_index.attr,
++	&format_attr_counter_info_version.attr,
 +
-+	/*
-+	 * only valid for VIRTUAL_PROCESSOR domains, ignored for others.
-+	 * -1 means "current partition only"
-+	 *  Enabling via phyp/hmc required for non-"-1" values. 0 forbidden
-+	 *  unless requestor is 0.
-+	 */
-+	__be16 starting_lpar_ix;
-+
-+	/*
-+	 * Ignored when @starting_lpar_ix == -1
-+	 * Ignored when @performance_domain is not VIRTUAL_PROCESSOR_*
-+	 * -1 means "infinite" or all
-+	 */
-+	__be16 max_num_lpars;
-+
-+	/* chip, core, or virtual processor based on @performance_domain */
-+	__be16 starting_ix;
-+	__be16 max_ix;
-+} __packed;
-+
-+struct hv_24x7_request_buffer {
-+	/* 0 - ? */
-+	/* 1 - ? */
-+#define HV_24X7_IF_VERSION_CURRENT 0x01
-+	__u8 interface_version;
-+	__u8 num_requests;
-+	__u8 reserved[0xE];
-+	struct hv_24x7_request requests[];
-+} __packed;
-+
-+struct hv_24x7_result_element {
-+	__be16 lpar_ix;
-+
-+	/*
-+	 * represents the core, chip, or virtual processor based on the
-+	 * request's @performance_domain
-+	 */
-+	__be16 domain_ix;
-+
-+	/* -1 if @performance_domain does not refer to a virtual processor */
-+	__be32 lpar_cfg_instance_id;
-+
-+	/* size = @result_element_data_size of cointaining result. */
-+	__u8 element_data[];
-+} __packed;
-+
-+struct hv_24x7_result {
-+	__u8 result_ix;
-+
-+	/*
-+	 * 0 = not all result elements fit into the buffer, additional requests
-+	 *     required
-+	 * 1 = all result elements were returned
-+	 */
-+	__u8 results_complete;
-+	__be16 num_elements_returned;
-+
-+	/* This is a copy of @data_size from the coresponding hv_24x7_request */
-+	__be16 result_element_data_size;
-+	__u8 reserved[0x2];
-+
-+	/* WARNING: only valid for first result element due to variable sizes
-+	 *          of result elements */
-+	/* struct hv_24x7_result_element[@num_elements_returned] */
-+	struct hv_24x7_result_element elements[];
-+} __packed;
-+
-+struct hv_24x7_data_result_buffer {
-+	/* See versioning for request buffer */
-+	__u8 interface_version;
-+
-+	__u8 num_results;
-+	__u8 reserved[0x1];
-+	__u8 failing_request_ix;
-+	__be32 detailed_rc;
-+	__be64 cec_cfg_instance_id;
-+	__be64 catalog_version_num;
-+	__u8 reserved2[0x8];
-+	/* WARNING: only valid for the first result due to variable sizes of
-+	 *	    results */
-+	struct hv_24x7_result results[]; /* [@num_results] */
-+} __packed;
-+
-+/* From document "24x7 Event and Group Catalog Formats Proposal" v0.14 */
-+struct hv_24x7_catalog_page_0 {
-+#define HV_24X7_CATALOG_MAGIC 0x32347837 /* "24x7" in ASCII */
-+	__be32 magic;
-+	__be32 length; /* In 4096 byte pages */
-+	__u8 reserved1[4];
-+	__be32 version;
-+	__u8 build_time_stamp[16]; /* "YYYYMMDDHHMMSS\0\0" */
-+	__u8 reserved2[32];
-+	__be16 schema_data_offs; /* in 4096 byte pages */
-+	__be16 schema_data_len;  /* in 4096 byte pages */
-+	__be16 schema_entry_count;
-+	__u8 reserved3[2];
-+	__be16 group_data_offs; /* in 4096 byte pages */
-+	__be16 group_data_len;  /* in 4096 byte pages */
-+	__be16 group_entry_count;
-+	__u8 reserved4[2];
-+	__be16 formula_data_offs; /* in 4096 byte pages */
-+	__be16 formula_data_len;  /* in 4096 byte pages */
-+	__be16 formula_entry_count;
-+	__u8 reserved5[2];
-+} __packed;
-+
-+struct hv_24x7_event_data {
-+	__be16 length; /* in bytes, must be a multiple of 16 */
-+	__u8 reserved1[2];
-+	__u8 domain; /* Chip = 1, Core = 2 */
-+	__u8 reserved2[1];
-+	__be16 event_group_record_offs; /* in bytes, must be 8 byte aligned */
-+	__be16 event_group_record_len; /* in bytes */
-+
-+	/* in bytes, offset from event_group_record */
-+	__be16 event_counter_offs;
-+
-+	/* verified_state, unverified_state, caveat_state, broken_state, ... */
-+	__be32 flags;
-+
-+	__be16 primary_group_ix;
-+	__be16 group_count;
-+	__be16 event_name_len;
-+	__u8 remainder[];
-+	/* __u8 event_name[event_name_len - 2]; */
-+	/* __be16 event_description_len; */
-+	/* __u8 event_desc[event_description_len - 2]; */
-+	/* __be16 detailed_desc_len; */
-+	/* __u8 detailed_desc[detailed_desc_len - 2]; */
-+} __packed;
-+
-+struct hv_24x7_group_data {
-+	__be16 length; /* in bytes, must be multiple of 16 */
-+	__u8 reserved1[2];
-+	__be32 flags; /* undefined contents */
-+	__u8 domain; /* Chip = 1, Core = 2 */
-+	__u8 reserved2[1];
-+	__be16 event_group_record_offs;
-+	__be16 event_group_record_len;
-+	__u8 group_schema_ix;
-+	__u8 event_count; /* 1 to 16 */
-+	__be16 event_ixs;
-+	__be16 group_name_len;
-+	__u8 remainder[];
-+	/* __u8 group_name[group_name_len]; */
-+	/* __be16 group_desc_len; */
-+	/* __u8 group_desc[group_desc_len]; */
-+} __packed;
-+
-+/* TODO: Schema Data */
-+/* TODO: Event Counter Group Record (see the PORE/SLW workbook) */
-+
-+/* "Get Event Counter Group Record Schema hypervisor interface" */
-+
-+enum hv_24x7_grs_field_enums {
-+	/* GRS_COUNTER_1 = 1
-+	 * GRS_COUNTER_2 = 2
-+	 * ...
-+	 * GRS_COUNTER_31 = 32 // FIXME: Doc issue.
-+	 */
-+	GRS_COUNTER_BASE = 1,
-+	GRS_COUNTER_LAST = 32,
-+	GRS_TIMEBASE_UPDATE = 48,
-+	GRS_TIMEBASE_FENCE = 49,
-+	GRS_UPDATE_COUNT = 50,
-+	GRS_MEASUREMENT_PERIOD = 51,
-+	GRS_ACCUMULATED_MEASUREMENT_PERIOD = 52,
-+	GRS_LAST_UPDATE_PERIOD = 53,
-+	GRS_STATUS_FLAGS = 54,
++	&format_attr_offset.attr,
++	&format_attr_length.attr,
++	NULL,
 +};
 +
-+enum hv_24x7_grs_enums {
-+	GRS_CORE_SCHEMA_INDEX = 0,
++static struct attribute_group format_group = {
++	.name = "format",
++	.attrs = format_attr,
 +};
 +
-+struct hv_24x7_grs_field {
-+	__be16 field_enum;
-+	__be16 offs; /* in bytes, within Event Counter group record */
-+	__be16 length; /* in bytes */
-+	__be16 flags; /* presently unused */
-+} __packed;
++static const struct attribute_group *attr_groups[] = {
++	&format_group,
++	NULL,
++};
 +
-+struct hv_24x7_grs {
-+	__be16 length;
-+	__u8 reserved1[2];
-+	__be16 descriptor;
-+	__be16 version_id;
-+	__u8 reserved2[6];
-+	__be16 field_entry_count;
-+	__u8 field_entrys[];
-+} __packed;
++static unsigned long single_gpci_request(u32 req, u32 starting_index,
++		u16 secondary_index, u8 version_in, u32 offset, u8 length,
++		u64 *value)
++{
++	unsigned long ret;
++	size_t i;
++	u64 count;
 +
-+struct hv_24x7_formula_data {
-+	__be32 length; /* in bytes, must be multiple of 16 */
-+	__u8 reserved1[2];
-+	__be32 flags; /* not yet defined */
-+	__be16 group;
-+	__u8 reserved2[6];
-+	__be16 name_len;
-+	__u8 remainder[];
-+	/* __u8 name[name_len]; */
-+	/* __be16 desc_len; */
-+	/* __u8 desc[name_len]; */
-+	/* __be16 formula_len */
-+	/* __u8 formula[formula_len]; */
-+} __packed;
++	struct {
++		struct hv_get_perf_counter_info_params params;
++		union {
++			union h_gpci_cvs data;
++			uint8_t bytes[sizeof(union h_gpci_cvs)];
++		};
++	} arg = {
++		.params = {
++			.counter_request = cpu_to_be32(req),
++			.starting_index = cpu_to_be32(starting_index),
++			.secondary_index = cpu_to_be16(secondary_index),
++			.counter_info_version_in = version_in,
++		}
++	};
 +
-+/* Formula Syntax: ie, impliment a forth interpereter. */
-+/* need fast lookup of the formula names, event names, "delta-timebase",
-+ * "delta-cycles", "delta-instructions", "delta-seconds" */
-+/* operators: '+', '-', '*', '/', 'mod', 'rem', 'sqr', 'x^y' (XXX: pow? xor?),
-+ *            'rot', 'dup' */
++	ret = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO,
++			virt_to_phys(&arg), sizeof(arg));
++	if (ret) {
++		pr_devel("hcall failed: 0x%lx\n", ret);
++		return ret;
++	}
 +
-+#endif
++	/*
++	 * we verify offset and length are within the zeroed buffer at event
++	 * init.
++	 */
++	count = 0;
++	for (i = offset; i < offset + length; i++)
++		count |= arg.bytes[i] << (i - offset);
++
++	*value = count;
++	return ret;
++}
++
++static u64 h_gpci_get_value(struct perf_event *event)
++{
++	u64 count;
++	unsigned long ret = single_gpci_request(event_get_request(event),
++					event_get_starting_index(event),
++					event_get_secondary_index(event),
++					event_get_counter_info_version(event),
++					event_get_offset(event),
++					event_get_length(event),
++					&count);
++	if (ret)
++		return 0;
++	return count;
++}
++
++static void h_gpci_event_update(struct perf_event *event)
++{
++	s64 prev;
++	u64 now = h_gpci_get_value(event);
++	prev = local64_xchg(&event->hw.prev_count, now);
++	local64_add(now - prev, &event->count);
++}
++
++static void h_gpci_event_start(struct perf_event *event, int flags)
++{
++	local64_set(&event->hw.prev_count, h_gpci_get_value(event));
++	perf_swevent_start_hrtimer(event);
++}
++
++static void h_gpci_event_stop(struct perf_event *event, int flags)
++{
++	perf_swevent_cancel_hrtimer(event);
++	h_gpci_event_update(event);
++}
++
++static int h_gpci_event_add(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_START)
++		h_gpci_event_start(event, flags);
++
++	return 0;
++}
++
++static void h_gpci_event_del(struct perf_event *event, int flags)
++{
++	h_gpci_event_stop(event, flags);
++}
++
++static void h_gpci_event_read(struct perf_event *event)
++{
++	h_gpci_event_update(event);
++}
++
++static int h_gpci_event_init(struct perf_event *event)
++{
++	u64 count;
++	u8 length;
++
++	/* Not our event */
++	if (event->attr.type != event->pmu->type)
++		return -ENOENT;
++
++	/* config2 is unused */
++	if (event->attr.config2)
++		return -EINVAL;
++
++	/* unsupported modes and filters */
++	if (event->attr.exclude_user   ||
++	    event->attr.exclude_kernel ||
++	    event->attr.exclude_hv     ||
++	    event->attr.exclude_idle   ||
++	    event->attr.exclude_host   ||
++	    event->attr.exclude_guest  ||
++	    is_sampling_event(event)) /* no sampling */
++		return -EINVAL;
++
++	/* no branch sampling */
++	if (has_branch_stack(event))
++		return -EOPNOTSUPP;
++
++	length = event_get_length(event);
++	if (length < 1 || length > 8)
++		return -EINVAL;
++
++	/* last byte within the buffer? */
++	if ((event_get_offset(event) + length) > sizeof(union h_gpci_cvs))
++		return -EINVAL;
++
++	/* check if the request works... */
++	if (single_gpci_request(event_get_request(event),
++				event_get_starting_index(event),
++				event_get_secondary_index(event),
++				event_get_counter_info_version(event),
++				event_get_offset(event),
++				length,
++				&count))
++		return -EINVAL;
++
++	/*
++	 * Some of the events are per-cpu, some per-core, some per-chip, some
++	 * are global, and some access data from other virtual machines on the
++	 * same physical machine. We can't map the cpu value without a lot of
++	 * work. Instead, we pick an arbitrary cpu for all events on this pmu.
++	 */
++	event->cpu = 0;
++
++	perf_swevent_init_hrtimer(event);
++	return 0;
++}
++
++struct pmu h_gpci_pmu = {
++	.task_ctx_nr = perf_invalid_context,
++
++	.name = "hv_gpci",
++	.attr_groups = attr_groups,
++	.event_init = h_gpci_event_init,
++	.add = h_gpci_event_add,
++	.del = h_gpci_event_del,
++	.start = h_gpci_event_start,
++	.stop = h_gpci_event_stop,
++	.read = h_gpci_event_read,
++
++	.event_idx = perf_swevent_event_idx,
++};
++
++static int hv_gpci_init(void)
++{
++	int r;
++
++	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
++		pr_info("Not running under phyp, not supported\n");
++		return -ENODEV;
++	}
++
++	r = perf_pmu_register(&h_gpci_pmu, h_gpci_pmu.name, -1);
++	if (r)
++		return r;
++
++	return 0;
++}
++
++module_init(hv_gpci_init);
 -- 
 1.8.5.2
