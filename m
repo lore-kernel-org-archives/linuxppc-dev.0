@@ -1,19 +1,20 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 877022C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 16:42:52 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <arnd@arndb.de>, <gregkh@linuxfoundation.org>
-Subject: [PATCH 2/2][v3] powerpc/config: Enable memory driver
-Date: Thu, 16 Jan 2014 11:12:33 +0530
-Message-ID: <1389850953-19907-1-git-send-email-prabhakar@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 002B32C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 16:48:08 +1100 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
+ <dmaengine@vger.kernel.org>
+Subject: [PATCH 0/7] DMA: Freescale: driver cleanups and enhancements
+Date: Thu, 16 Jan 2014 13:47:19 +0800
+Message-ID: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: scottwood@freescale.com, Hongbo Zhang <hongbo.zhang@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,68 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As Freescale IFC controller has been moved to driver to driver/memory.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-So enable memory driver in powerpc config
+Hi Vinod Koul and Dan Williams,
+Please have a look at these patches.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Changes for v2: Sending as it is
- Changes for v3: Sending as it is
+Note that patch 2~6 had beed sent out for upstream before, but were together
+with other storage patches at that time, that was not easy for being reviewed
+and merged, so I send them separately this time.
 
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- 4 files changed, 4 insertions(+)
+Thanks.
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..087d437 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -142,6 +142,7 @@ CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_UIO=y
- CONFIG_STAGING=y
-+CONFIG_MEMORY=y
- CONFIG_VIRT_DRIVERS=y
- CONFIG_FSL_HV_MANAGER=y
- CONFIG_EXT2_FS=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..25b03f8 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -129,6 +129,7 @@ CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- CONFIG_ISO9660_FS=m
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index d2e0fab..87aad6d 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -213,6 +213,7 @@ CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4cb7b59..d5d6915 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -214,6 +214,7 @@ CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
+Hongbo Zhang (7):
+  DMA: Freescale: unify register access methods
+  DMA: Freescale: remove attribute DMA_INTERRUPT of dmaengine
+  DMA: Freescale: add fsl_dma_free_descriptor() to reduce code
+    duplication
+  DMA: Freescale: move functions to avoid forward declarations
+  DMA: Freescale: change descriptor release process for supporting
+    async_tx
+  DMA: Freescale: use spin_lock_bh instead of spin_lock_irqsave
+  DMA: Freescale: add suspend resume functions for DMA driver
+
+ drivers/dma/fsldma.c |  592 ++++++++++++++++++++++++++++++++------------------
+ drivers/dma/fsldma.h |   33 ++-
+ 2 files changed, 412 insertions(+), 213 deletions(-)
+
 -- 
 1.7.9.5
