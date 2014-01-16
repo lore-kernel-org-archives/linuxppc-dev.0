@@ -1,17 +1,16 @@
 Return-Path: <hongbo.zhang@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0DF092C0098
+ by ozlabs.org (Postfix) with ESMTPS id 1156C2C00A1
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Jan 2014 16:48:11 +1100 (EST)
 From: <hongbo.zhang@freescale.com>
 To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
  <dmaengine@vger.kernel.org>
-Subject: [PATCH 2/7] DMA: Freescale: remove attribute DMA_INTERRUPT of
- dmaengine
-Date: Thu, 16 Jan 2014 13:47:21 +0800
-Message-ID: <1389851246-8564-3-git-send-email-hongbo.zhang@freescale.com>
+Subject: [PATCH 1/7] DMA: Freescale: unify register access methods
+Date: Thu, 16 Jan 2014 13:47:20 +0800
+Message-ID: <1389851246-8564-2-git-send-email-hongbo.zhang@freescale.com>
 In-Reply-To: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
 References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
@@ -29,67 +28,188 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Delete attribute DMA_INTERRUPT because fsldma doesn't support this function,
-exception will be thrown if talitos is used to offload xor at the same time.
+Methods of accessing DMA contorller registers are inconsistent, some registers
+are accessed by DMA_IN/OUT directly, while others are accessed by functions
+get/set_* which are wrappers of DMA_IN/OUT, and even for the BCR register, it
+is read by get_bcr but written by DMA_OUT.
+This patch unifies the inconsistent methods, all registers are accessed by
+get/set_* now.
 
 Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
 ---
- drivers/dma/fsldma.c |   31 -------------------------------
- 1 file changed, 31 deletions(-)
+ drivers/dma/fsldma.c |   52 ++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 33 insertions(+), 19 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index fbf19d3..95236e6 100644
+index f157c6f..fbf19d3 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -534,35 +534,6 @@ static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
+@@ -61,6 +61,16 @@ static u32 get_sr(struct fsldma_chan *chan)
+ 	return DMA_IN(chan, &chan->regs->sr, 32);
  }
  
- static struct dma_async_tx_descriptor *
--fsl_dma_prep_interrupt(struct dma_chan *dchan, unsigned long flags)
--{
--	struct fsldma_chan *chan;
--	struct fsl_desc_sw *new;
--
--	if (!dchan)
--		return NULL;
--
--	chan = to_fsl_chan(dchan);
--
--	new = fsl_dma_alloc_descriptor(chan);
--	if (!new) {
--		chan_err(chan, "%s\n", msg_ld_oom);
--		return NULL;
--	}
--
--	new->async_tx.cookie = -EBUSY;
--	new->async_tx.flags = flags;
--
--	/* Insert the link descriptor to the LD ring */
--	list_add_tail(&new->node, &new->tx_list);
--
--	/* Set End-of-link to the last link descriptor of new list */
--	set_ld_eol(chan, new);
--
--	return &new->async_tx;
--}
--
--static struct dma_async_tx_descriptor *
- fsl_dma_prep_memcpy(struct dma_chan *dchan,
- 	dma_addr_t dma_dst, dma_addr_t dma_src,
- 	size_t len, unsigned long flags)
-@@ -1318,12 +1289,10 @@ static int fsldma_of_probe(struct platform_device *op)
- 	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
++static void set_mr(struct fsldma_chan *chan, u32 val)
++{
++	DMA_OUT(chan, &chan->regs->mr, val, 32);
++}
++
++static u32 get_mr(struct fsldma_chan *chan)
++{
++	return DMA_IN(chan, &chan->regs->mr, 32);
++}
++
+ static void set_cdar(struct fsldma_chan *chan, dma_addr_t addr)
+ {
+ 	DMA_OUT(chan, &chan->regs->cdar, addr | FSL_DMA_SNEN, 64);
+@@ -71,6 +81,11 @@ static dma_addr_t get_cdar(struct fsldma_chan *chan)
+ 	return DMA_IN(chan, &chan->regs->cdar, 64) & ~FSL_DMA_SNEN;
+ }
  
- 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
--	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
- 	dma_cap_set(DMA_SG, fdev->common.cap_mask);
- 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
- 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
- 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
--	fdev->common.device_prep_dma_interrupt = fsl_dma_prep_interrupt;
- 	fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
- 	fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
- 	fdev->common.device_tx_status = fsl_tx_status;
++static void set_bcr(struct fsldma_chan *chan, u32 val)
++{
++	DMA_OUT(chan, &chan->regs->bcr, val, 32);
++}
++
+ static u32 get_bcr(struct fsldma_chan *chan)
+ {
+ 	return DMA_IN(chan, &chan->regs->bcr, 32);
+@@ -135,7 +150,7 @@ static void set_ld_eol(struct fsldma_chan *chan, struct fsl_desc_sw *desc)
+ static void dma_init(struct fsldma_chan *chan)
+ {
+ 	/* Reset the channel */
+-	DMA_OUT(chan, &chan->regs->mr, 0, 32);
++	set_mr(chan, 0);
+ 
+ 	switch (chan->feature & FSL_DMA_IP_MASK) {
+ 	case FSL_DMA_IP_85XX:
+@@ -144,16 +159,15 @@ static void dma_init(struct fsldma_chan *chan)
+ 		 * EOLNIE - End of links interrupt enable
+ 		 * BWC - Bandwidth sharing among channels
+ 		 */
+-		DMA_OUT(chan, &chan->regs->mr, FSL_DMA_MR_BWC
+-				| FSL_DMA_MR_EIE | FSL_DMA_MR_EOLNIE, 32);
++		set_mr(chan, FSL_DMA_MR_BWC | FSL_DMA_MR_EIE
++			| FSL_DMA_MR_EOLNIE);
+ 		break;
+ 	case FSL_DMA_IP_83XX:
+ 		/* Set the channel to below modes:
+ 		 * EOTIE - End-of-transfer interrupt enable
+ 		 * PRC_RM - PCI read multiple
+ 		 */
+-		DMA_OUT(chan, &chan->regs->mr, FSL_DMA_MR_EOTIE
+-				| FSL_DMA_MR_PRC_RM, 32);
++		set_mr(chan, FSL_DMA_MR_EOTIE | FSL_DMA_MR_PRC_RM);
+ 		break;
+ 	}
+ }
+@@ -175,10 +189,10 @@ static void dma_start(struct fsldma_chan *chan)
+ {
+ 	u32 mode;
+ 
+-	mode = DMA_IN(chan, &chan->regs->mr, 32);
++	mode = get_mr(chan);
+ 
+ 	if (chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
+-		DMA_OUT(chan, &chan->regs->bcr, 0, 32);
++		set_bcr(chan, 0);
+ 		mode |= FSL_DMA_MR_EMP_EN;
+ 	} else {
+ 		mode &= ~FSL_DMA_MR_EMP_EN;
+@@ -191,7 +205,7 @@ static void dma_start(struct fsldma_chan *chan)
+ 		mode |= FSL_DMA_MR_CS;
+ 	}
+ 
+-	DMA_OUT(chan, &chan->regs->mr, mode, 32);
++	set_mr(chan, mode);
+ }
+ 
+ static void dma_halt(struct fsldma_chan *chan)
+@@ -200,7 +214,7 @@ static void dma_halt(struct fsldma_chan *chan)
+ 	int i;
+ 
+ 	/* read the mode register */
+-	mode = DMA_IN(chan, &chan->regs->mr, 32);
++	mode = get_mr(chan);
+ 
+ 	/*
+ 	 * The 85xx controller supports channel abort, which will stop
+@@ -209,14 +223,14 @@ static void dma_halt(struct fsldma_chan *chan)
+ 	 */
+ 	if ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
+ 		mode |= FSL_DMA_MR_CA;
+-		DMA_OUT(chan, &chan->regs->mr, mode, 32);
++		set_mr(chan, mode);
+ 
+ 		mode &= ~FSL_DMA_MR_CA;
+ 	}
+ 
+ 	/* stop the DMA controller */
+ 	mode &= ~(FSL_DMA_MR_CS | FSL_DMA_MR_EMS_EN);
+-	DMA_OUT(chan, &chan->regs->mr, mode, 32);
++	set_mr(chan, mode);
+ 
+ 	/* wait for the DMA controller to become idle */
+ 	for (i = 0; i < 100; i++) {
+@@ -245,7 +259,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *chan, int size)
+ {
+ 	u32 mode;
+ 
+-	mode = DMA_IN(chan, &chan->regs->mr, 32);
++	mode = get_mr(chan);
+ 
+ 	switch (size) {
+ 	case 0:
+@@ -259,7 +273,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *chan, int size)
+ 		break;
+ 	}
+ 
+-	DMA_OUT(chan, &chan->regs->mr, mode, 32);
++	set_mr(chan, mode);
+ }
+ 
+ /**
+@@ -277,7 +291,7 @@ static void fsl_chan_set_dst_loop_size(struct fsldma_chan *chan, int size)
+ {
+ 	u32 mode;
+ 
+-	mode = DMA_IN(chan, &chan->regs->mr, 32);
++	mode = get_mr(chan);
+ 
+ 	switch (size) {
+ 	case 0:
+@@ -291,7 +305,7 @@ static void fsl_chan_set_dst_loop_size(struct fsldma_chan *chan, int size)
+ 		break;
+ 	}
+ 
+-	DMA_OUT(chan, &chan->regs->mr, mode, 32);
++	set_mr(chan, mode);
+ }
+ 
+ /**
+@@ -312,10 +326,10 @@ static void fsl_chan_set_request_count(struct fsldma_chan *chan, int size)
+ 
+ 	BUG_ON(size > 1024);
+ 
+-	mode = DMA_IN(chan, &chan->regs->mr, 32);
++	mode = get_mr(chan);
+ 	mode |= (__ilog2(size) << 24) & 0x0f000000;
+ 
+-	DMA_OUT(chan, &chan->regs->mr, mode, 32);
++	set_mr(chan, mode);
+ }
+ 
+ /**
+@@ -899,9 +913,9 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
+ 	if ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
+ 		u32 mode;
+ 
+-		mode = DMA_IN(chan, &chan->regs->mr, 32);
++		mode = get_mr(chan);
+ 		mode &= ~FSL_DMA_MR_CS;
+-		DMA_OUT(chan, &chan->regs->mr, mode, 32);
++		set_mr(chan, mode);
+ 	}
+ 
+ 	/*
 -- 
 1.7.9.5
