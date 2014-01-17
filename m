@@ -3,20 +3,20 @@ Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
  [IPv6:2a01:238:20a:202:5300::3])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3862A2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 05:24:44 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 037E62C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 05:29:07 +1100 (EST)
 Received: from christians-pro.lan
  (ppp-93-104-71-144.dynamic.mnet-online.de [93.104.71.144])
  by smtp.strato.de (RZmta 32.17 DYNA|AUTH)
- with (TLSv1:DHE-RSA-AES256-SHA encrypted) ESMTPSA id k037e9q0HIBTqPe
+ with (TLSv1:DHE-RSA-AES256-SHA encrypted) ESMTPSA id C00c2aq0HI4mpW0
  for <linuxppc-dev@lists.ozlabs.org>;
- Fri, 17 Jan 2014 19:11:29 +0100 (CET)
-Message-ID: <52D97250.5070302@xenosoft.de>
-Date: Fri, 17 Jan 2014 19:11:28 +0100
+ Fri, 17 Jan 2014 19:04:48 +0100 (CET)
+Message-ID: <52D970C0.3020600@xenosoft.de>
+Date: Fri, 17 Jan 2014 19:04:48 +0100
 From: Christian Zigotzky <chzigotzky@xenosoft.de>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: PASEMI: Nemo support
+Subject: linuxppc-dev@lists.ozlabs.org
 Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -100,7 +100,7 @@ board. It also solved any problems with Radeon HD graphics cards. I'd
 like to integrate this patch to the kernel sources. Olof and Alan told 
 me that I have to split up the big patch into separate patches.
 
-OK, here is the first part.
+OK, here is the first part. :-)
 
 diff -rupN linux-3.13/arch/powerpc/platforms/pasemi/Kconfig 
 linux-3.13-nemo/arch/powerpc/platforms/pasemi/Kconfig
