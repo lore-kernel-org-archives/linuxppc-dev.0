@@ -1,34 +1,20 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prabhakar@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 836FF2C041B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 16:10:18 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 17 Jan 2014 15:10:18 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7224A2CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 16:10:14 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0H4nllH60817512
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 15:49:52 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0H58pcl027796
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 16:08:51 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] pci: add "fundamental reset" quirk
-Date: Fri, 17 Jan 2014 16:08:46 +1100
-Message-Id: <1389935328-22588-2-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1389935328-22588-1-git-send-email-aik@ozlabs.ru>
-References: <1389935328-22588-1-git-send-email-aik@ozlabs.ru>
-Cc: aik@ozlabs.ru, Paul Mackerras <paulus@samba.org>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id A9A942C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 16:45:58 +1100 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <arnd@arndb.de>, <gregkh@linuxfoundation.org>
+Subject: [PATCH 1/2][4] driver/memory:Move Freescale IFC driver to a common
+ driver
+Date: Fri, 17 Jan 2014 11:15:16 +0530
+Message-ID: <1389937516-29563-1-git-send-email-prabhakar@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,51 +24,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+ Freescale IFC controller has been used for mpc8xxx. It will be used
+ for ARM-based SoC as well. This patch moves the driver to driver/memory
+ and fix the header file includes.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+  Also remove module_platform_driver() and  instead call
+  platform_driver_register() from subsys_initcall() to make sure this module
+  has been loaded before MTD partition parsing starts.
+
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Acked-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/pci/quirks.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+Changes for v2:
+	- Move fsl_ifc in driver/memory
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index f6c31fa..f3eedbf 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -3271,6 +3271,19 @@ static int reset_chelsio_generic_dev(struct pci_dev *dev, int probe)
- 	return 0;
- }
+Changes for v3:
+	- move device tree bindings to memory
+
+Changes for v4: Rebased to 
+	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+
+ .../{powerpc => memory-controllers}/fsl/ifc.txt    |    0
+ arch/powerpc/sysdev/Makefile                       |    1 -
+ drivers/memory/Makefile                            |    1 +
+ {arch/powerpc/sysdev => drivers/memory}/fsl_ifc.c  |    8 ++++++--
+ drivers/mtd/nand/fsl_ifc_nand.c                    |    2 +-
+ .../include/asm => include/linux}/fsl_ifc.h        |    0
+ 6 files changed, 8 insertions(+), 4 deletions(-)
+ rename Documentation/devicetree/bindings/{powerpc => memory-controllers}/fsl/ifc.txt (100%)
+ rename {arch/powerpc/sysdev => drivers/memory}/fsl_ifc.c (98%)
+ rename {arch/powerpc/include/asm => include/linux}/fsl_ifc.h (100%)
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ifc.txt b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/powerpc/fsl/ifc.txt
+rename to Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 99464a7..ec69532 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -19,7 +19,6 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o fsl_mpic_err.o
+ obj-$(CONFIG_FSL_PCI)		+= fsl_pci.o $(fsl-msi-obj-y)
+ obj-$(CONFIG_FSL_PMC)		+= fsl_pmc.o
+ obj-$(CONFIG_FSL_LBC)		+= fsl_lbc.o
+-obj-$(CONFIG_FSL_IFC)		+= fsl_ifc.o
+ obj-$(CONFIG_FSL_GTM)		+= fsl_gtm.o
+ obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+= fsl_85xx_l2ctlr.o fsl_85xx_cache_sram.o
+ obj-$(CONFIG_SIMPLE_GPIO)	+= simple_gpio.o
+diff --git a/drivers/memory/Makefile b/drivers/memory/Makefile
+index 9cce5d7..b494e5b 100644
+--- a/drivers/memory/Makefile
++++ b/drivers/memory/Makefile
+@@ -6,5 +6,6 @@ ifeq ($(CONFIG_DDR),y)
+ obj-$(CONFIG_OF)		+= of_memory.o
+ endif
+ obj-$(CONFIG_TI_EMIF)		+= emif.o
++obj-$(CONFIG_FSL_IFC)		+= fsl_ifc.o
+ obj-$(CONFIG_TEGRA20_MC)	+= tegra20-mc.o
+ obj-$(CONFIG_TEGRA30_MC)	+= tegra30-mc.o
+diff --git a/arch/powerpc/sysdev/fsl_ifc.c b/drivers/memory/fsl_ifc.c
+similarity index 98%
+rename from arch/powerpc/sysdev/fsl_ifc.c
+rename to drivers/memory/fsl_ifc.c
+index d7fc722..135a950 100644
+--- a/arch/powerpc/sysdev/fsl_ifc.c
++++ b/drivers/memory/fsl_ifc.c
+@@ -30,8 +30,8 @@
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/fsl_ifc.h>
+ #include <asm/prom.h>
+-#include <asm/fsl_ifc.h>
  
-+static int reset_fundamental(struct pci_dev *dev, int probe)
-+{
-+	if (probe)
-+		return 0;
-+
-+	pci_set_pcie_reset_state(dev, pcie_hot_reset);
-+	msleep(250);
-+	pci_set_pcie_reset_state(dev, pcie_deassert_reset);
-+	msleep(1800);
-+
-+	return 0;
-+}
-+
- #define PCI_DEVICE_ID_INTEL_82599_SFP_VF   0x10ed
- #define PCI_DEVICE_ID_INTEL_IVB_M_VGA      0x0156
- #define PCI_DEVICE_ID_INTEL_IVB_M2_VGA     0x0166
-@@ -3286,6 +3299,14 @@ static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
- 		reset_intel_generic_dev },
- 	{ PCI_VENDOR_ID_CHELSIO, PCI_ANY_ID,
- 		reset_chelsio_generic_dev },
-+
-+	{ PCI_VENDOR_ID_IBM, PCI_ANY_ID,
-+		reset_fundamental },
-+	{ PCI_VENDOR_ID_MELLANOX, PCI_ANY_ID,
-+		reset_fundamental },
-+	{ PCI_VENDOR_ID_TI, PCI_ANY_ID,
-+		reset_fundamental },
-+
- 	{ 0 }
+ struct fsl_ifc_ctrl *fsl_ifc_ctrl_dev;
+ EXPORT_SYMBOL(fsl_ifc_ctrl_dev);
+@@ -299,7 +299,11 @@ static struct platform_driver fsl_ifc_ctrl_driver = {
+ 	.remove      = fsl_ifc_ctrl_remove,
  };
  
+-module_platform_driver(fsl_ifc_ctrl_driver);
++static int __init fsl_ifc_init(void)
++{
++	return platform_driver_register(&fsl_ifc_ctrl_driver);
++}
++subsys_initcall(fsl_ifc_init);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Freescale Semiconductor");
+diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
+index f1f7f12..43d1a92 100644
+--- a/drivers/mtd/nand/fsl_ifc_nand.c
++++ b/drivers/mtd/nand/fsl_ifc_nand.c
+@@ -29,7 +29,7 @@
+ #include <linux/mtd/nand.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/nand_ecc.h>
+-#include <asm/fsl_ifc.h>
++#include <linux/fsl_ifc.h>
+ 
+ #define FSL_IFC_V1_1_0	0x01010000
+ #define ERR_BYTE		0xFF /* Value returned for read
+diff --git a/arch/powerpc/include/asm/fsl_ifc.h b/include/linux/fsl_ifc.h
+similarity index 100%
+rename from arch/powerpc/include/asm/fsl_ifc.h
+rename to include/linux/fsl_ifc.h
 -- 
-1.8.4.rc4
+1.7.9.5
