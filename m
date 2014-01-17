@@ -1,36 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5DE342C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 17:57:37 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 17 Jan 2014 16:57:36 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C0E383578023
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 17:57:34 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0H6vLDR10158398
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 17:57:22 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0H6vYfI010323
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 17:57:34 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Li Zhong <zhong@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [RFC PATCH powerpc] Fix compile error of pgtable-ppc64.h
-In-Reply-To: <1389939036.3000.7.camel@ThinkPad-T5421.cn.ibm.com>
-References: <1389939036.3000.7.camel@ThinkPad-T5421.cn.ibm.com>
-Date: Fri, 17 Jan 2014 12:27:30 +0530
-Message-ID: <87vbxj6qp1.fsf@linux.vnet.ibm.com>
+Return-Path: <nyushchenko@dev.rtsoft.ru>
+Received: from dev.rtsoft.ru (mail.dev.rtsoft.ru [213.79.90.226])
+ by ozlabs.org (Postfix) with ESMTP id A96302C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Jan 2014 20:24:02 +1100 (EST)
+From: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: powerpc/hugetlb: BUG: using smp_processor_id() in preemptible
+Date: Fri, 17 Jan 2014 13:23:50 +0400
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <201401171323.52657@blacky.localdomain>
+Cc: Alexey Lugovskoy <lugovskoy@dev.rtsoft.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Li Zhong <zhong@linux.vnet.ibm.com> writes:
+Hi
 
-> It seems that forward declaration couldn't work well with typedef, use
-> struct spinlock directly to avoiding following build errors:
->
-> In file included from include/linux/spinlock.h:81,
->                  from include/linux/seqlock.h:35,
->                  from include/linux/time.h:5,
->                  from include/uapi/linux/timex.h:56,
->                  from include/linux/timex.h:56,
->                  from include/linux/sched.h:17,
->                  from arch/powerpc/kernel/asm-offsets.c:17:
-> include/linux/spinlock_types.h:76: error: redefinition of typedef 'spinlock_t'
-> /root/linux-next/arch/powerpc/include/asm/pgtable-ppc64.h:563: note: previous declaration of 'spinlock_t' was here
->
+While running LTP hugeltb tests on freescale powerpc board, I'm getting 
 
-what compiler version ? I have seen that error in gcc 4.3 and it was
-concluded that it is too old a compiler version to worry about. That
-specific compiler version also gave error for forward declaring struct;
+[ 7253.637591] BUG: using smp_processor_id() in preemptible [00000000 00000000]
+code: hugemmap01/9048
+[ 7253.637601] caller is free_hugepd_range.constprop.25+0x88/0x1a8
+[ 7253.637605] CPU: 1 PID: 9048 Comm: hugemmap01 Not tainted 3.10.20-rt14+ #114
+[ 7253.637606] Call Trace:
+[ 7253.637617] [cb049d80] [c0007ea4] show_stack+0x4c/0x168 (unreliable)
+[ 7253.637624] [cb049dc0] [c031c674] debug_smp_processor_id+0x114/0x134
+[ 7253.637628] [cb049de0] [c0016d28] free_hugepd_range.constprop.25+0x88/0x1a8
+[ 7253.637632] [cb049e00] [c001711c] hugetlb_free_pgd_range+0x6c/0x168
+[ 7253.637639] [cb049e40] [c0117408] free_pgtables+0x12c/0x150
+[ 7253.637646] [cb049e70] [c011ce38] unmap_region+0xa0/0x11c
+[ 7253.637671] [cb049ef0] [c011f03c] do_munmap+0x224/0x3bc
+[ 7253.637676] [cb049f20] [c011f2e0] vm_munmap+0x38/0x5c
+[ 7253.637682] [cb049f40] [c000ef88] ret_from_syscall+0x0/0x3c
+[ 7253.637686] --- Exception: c01 at 0xff16004
 
-> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc64.h |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-> index d27960c..bc141c9 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-> @@ -560,9 +560,9 @@ extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
->  			    pmd_t *pmdp);
->
->  #define pmd_move_must_withdraw pmd_move_must_withdraw
-> -typedef struct spinlock spinlock_t;
-> -static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
-> -					 spinlock_t *old_pmd_ptl)
-> +struct spinlock;
-> +static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
-> +					 struct spinlock *old_pmd_ptl)
->  {
->  	/*
->  	 * Archs like ppc64 use pgtable to store per pmd
+This is on 3.10 based kernel but looks like code in question did not change
+since then.
+
+Immediate reason of this dump is usage of smp_processor_id() in hugepd_free(),
+which is executed in preemptible context on this path.
+
+Perhaps need to add preempt_disable() / preempt_enable() somewhere.
+But what is the proper location for these?
+
+
+Nikita
