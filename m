@@ -1,21 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F1AAC2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 05:50:03 +1100 (EST)
-Message-ID: <1389984587.24905.249.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/configs: Enbale Freescale IFC controller
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Fri, 17 Jan 2014 12:49:47 -0600
-In-Reply-To: <B2E40837-4025-4975-8DAC-BB47E2B07E1A@kernel.crashing.org>
-References: <1389938981-30858-1-git-send-email-prabhakar@freescale.com>
- <B2E40837-4025-4975-8DAC-BB47E2B07E1A@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id D84302C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 07:59:27 +1100 (EST)
+Message-ID: <1389992354.7406.34.camel@pasglop>
+Subject: Re: [RFC PATCH powerpc] Fix compile error of pgtable-ppc64.h
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Date: Sat, 18 Jan 2014 07:59:14 +1100
+In-Reply-To: <1389965453.5628.3.camel@ThinkPad-T5421>
+References: <1389939036.3000.7.camel@ThinkPad-T5421.cn.ibm.com>
+ <87vbxj6qp1.fsf@linux.vnet.ibm.com>
+ <1389965453.5628.3.camel@ThinkPad-T5421>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Prabhakar Kushwaha <prabhakar@freescale.com>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-01-17 at 11:02 -0600, Kumar Gala wrote:
-> On Jan 17, 2014, at 12:09 AM, Prabhakar Kushwaha <prabhakar@freescale.com> wrote:
+On Fri, 2014-01-17 at 21:30 +0800, Li Zhong wrote:
+> On Fri, 2014-01-17 at 12:27 +0530, Aneesh Kumar K.V wrote:
+> > Li Zhong <zhong@linux.vnet.ibm.com> writes:
+> > 
+> > > It seems that forward declaration couldn't work well with typedef, use
+> > > struct spinlock directly to avoiding following build errors:
+> > >
+> > > In file included from include/linux/spinlock.h:81,
+> > >                  from include/linux/seqlock.h:35,
+> > >                  from include/linux/time.h:5,
+> > >                  from include/uapi/linux/timex.h:56,
+> > >                  from include/linux/timex.h:56,
+> > >                  from include/linux/sched.h:17,
+> > >                  from arch/powerpc/kernel/asm-offsets.c:17:
+> > > include/linux/spinlock_types.h:76: error: redefinition of typedef 'spinlock_t'
+> > > /root/linux-next/arch/powerpc/include/asm/pgtable-ppc64.h:563: note: previous declaration of 'spinlock_t' was here
+> > >
+> > 
+> > what compiler version ? I have seen that error in gcc 4.3 and it was
+> > concluded that it is too old a compiler version to worry about. That
+> > specific compiler version also gave error for forward declaring struct;
 > 
-> > Currently IFC NAND driver is enabled in corenet32smp_defconfig. But IFC
-> > controller is not enabled
+> gcc version 4.4.6 20110731 (Red Hat 4.4.6-3) (GCC), and it doesn't
+> report error after use struct directly. 
+
+Ok, I think that's justification enough then. I'll add that. It's all
+too late for 3.13 anyway so I'll send these patches during the window
+with an appropriate CC to stable.
+
+Cheers,
+Ben.
+
 > > 
-> > So, Enable IFC controller in corenet32smp_defconfig.
-> > 
-> > Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> > ---
-> > Based upon git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
-> > branch master
-> > 
-> > arch/powerpc/configs/corenet32_smp_defconfig |    1 +
-> > 1 file changed, 1 insertion(+)
+> > > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/include/asm/pgtable-ppc64.h |    6 +++---
+> > >  1 files changed, 3 insertions(+), 3 deletions(-)
+> > >
+> > > diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+> > > index d27960c..bc141c9 100644
+> > > --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> > > +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> > > @@ -560,9 +560,9 @@ extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+> > >  			    pmd_t *pmdp);
+> > >
+> > >  #define pmd_move_must_withdraw pmd_move_must_withdraw
+> > > -typedef struct spinlock spinlock_t;
+> > > -static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
+> > > -					 spinlock_t *old_pmd_ptl)
+> > > +struct spinlock;
+> > > +static inline int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+> > > +					 struct spinlock *old_pmd_ptl)
+> > >  {
+> > >  	/*
+> > >  	 * Archs like ppc64 use pgtable to store per pmd
 > 
-> Shouldn’t the NAND driver get the IFC controller enabled by Kconfig dependancies?
-
-Yes (by select, not dependencies).
-
-Prabhakar, was there an actual problem you saw before?  Did you run
-savedefconfig after making this change?
-
-CONFIG_FSL_IFC isn't even user-selectable (though it probably should be,
-as how else would it get enabled in the absence of NAND for catching NOR
-errors?).
-
--Scott
