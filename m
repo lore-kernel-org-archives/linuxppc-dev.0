@@ -1,18 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 26E662C0099
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 12:22:48 +1100 (EST)
-Date: Fri, 17 Jan 2014 19:22:36 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: Pull request: scottwood/linux.git
-Message-ID: <20140118012236.GA23644@home.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id 71F802C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 13:42:41 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Sat, 18 Jan 2014 08:12:37 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 40371394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 08:12:35 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0I2gP1w64291016
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 08:12:25 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0I2gY6B022393
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 08:12:34 +0530
+Subject: [PATCH V3 0/3] powerpc/powernv: Error logging interfaces 
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Sat, 18 Jan 2014 08:12:54 +0530
+Message-ID: <20140118024150.13537.11381.stgit@deepthi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This contains a fix for a chroma_defconfig build break that was
-introduced by e6500 tablewalk support, and a device tree binding patch
-that missed the previous pull request due to some last-minute polishing.
+This patch series defines generic interfaces for error logging to
+push down critical errors from powernv platform to FSP.
 
-The following changes since commit fac515db45207718168cb55ca4d0a390e43b61af:
+Also, it contains few minor fixes for the exisiting error logging
+framework that retrieves error logs from FSP.
 
-  Merge remote-tracking branch 'scott/next' into next (2014-01-15 14:22:35 +1100)
+This patch only adds the framework to log errors. Coming days this
+framework will be used to report all POWERNV errors in a phased manner.
+We would ideally be targeting one sub-system at a time and use these
+interfaces.
 
-are available in the git repository at:
+Changes from V2:
+* Review comments from V2 have been addressed
+  includes comment formats, changing naming
+  conventions and incorporated error handling
+  of the buffers.
+* Minor typo fix and use of pr_err/pr_fmt to
+  log errors.
+
+ Deepthi Dharwar (3):
+      powernv: Push critical error logs to FSP
+      powernv: Correct spell error in opal-elog.c
+      powernv: Have uniform logging of errors in opal-elog.c
 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+ arch/powerpc/include/asm/opal.h                |  123 ++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-elog.c     |   92 ++++++++++++++++--
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
+ 3 files changed, 207 insertions(+), 9 deletions(-)
 
-for you to fetch changes up to 4b3cbc82a04485f6400cb5b227798daaa8512a23:
 
-  clk: corenet: Adds the clock binding (2014-01-17 19:01:27 -0600)
-
-----------------------------------------------------------------
-Scott Wood (1):
-      powerpc/booke64: Guard e6500 tlb handler with CONFIG_PPC_FSL_BOOK3E
-
-Tang Yuantian (1):
-      clk: corenet: Adds the clock binding
-
- .../devicetree/bindings/clock/corenet-clock.txt    | 134 +++++++++++++++++++++
- arch/powerpc/Kconfig                               |   1 +
- arch/powerpc/mm/tlb_low_64e.S                      |   3 +-
- arch/powerpc/mm/tlb_nohash.c                       |   2 +
- 4 files changed, 139 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/clock/corenet-clock.txt
+-- Deepthi
