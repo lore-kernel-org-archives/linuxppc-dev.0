@@ -1,19 +1,12 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 554F22C0300
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Jan 2014 17:22:14 +1100 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2][v5] powerpc/config: Enable memory driver
-Date: Sat, 18 Jan 2014 11:51:55 +0530
-Message-ID: <1390026115-25145-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 18 Jan 2014 21:14:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Make sure "cache" directory is removed when
+ offlining cpu
+Message-ID: <20140118101447.GA4929@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, linux-kernel@vger.kernel.org,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,73 +16,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As Freescale IFC controller has been moved to driver to driver/memory.
+The code in remove_cache_dir() is supposed to remove the "cache"
+subdirectory from the sysfs directory for a CPU when that CPU is
+being offlined.  It tries to do this by calling kobject_put() on
+the kobject for the subdirectory.  However, the subdirectory only
+gets removed once the last reference goes away, and the reference
+being put here may well not be the last reference.  That means
+that the "cache" subdirectory may still exist when the offlining
+operation has finished.  If the same CPU subsequently gets onlined,
+the code tries to add a new "cache" subdirectory.  If the old
+subdirectory has not yet been removed, we get a WARN_ON in the
+sysfs code, with stack trace, and an error message printed on the
+console.  Further, we ultimately end up with an online cpu with no
+"cache" subdirectory.
 
-So enable memory driver in powerpc config
+This fixes it by doing an explicit kobject_del() at the point where
+we want the subdirectory to go away.  kobject_del() removes the sysfs
+directory even though the object still exists in memory.  The object
+will get freed at some point in the future.  A subsequent onlining
+operation can create a new sysfs directory, even if the old object
+still exists in memory, without causing any problems.
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: stable@vger.kernel.org # v3.0+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- Changes for v2: Sending as it is
- Changes for v3: Sending as it is
- Changes for v4: Rebased to 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- changes for v5:
- 	- Rebased to branch next of 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+ arch/powerpc/kernel/cacheinfo.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- 4 files changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..087d437 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -142,6 +142,7 @@ CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_UIO=y
- CONFIG_STAGING=y
-+CONFIG_MEMORY=y
- CONFIG_VIRT_DRIVERS=y
- CONFIG_FSL_HV_MANAGER=y
- CONFIG_EXT2_FS=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..25b03f8 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -129,6 +129,7 @@ CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- CONFIG_ISO9660_FS=m
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 83d3550..cba638c 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -216,6 +216,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4b68629..e315b8a 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -217,6 +217,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index 6549327..bfb8236 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -794,6 +794,9 @@ static void remove_cache_dir(struct cache_dir *cache_dir)
+ {
+ 	remove_index_dirs(cache_dir);
+ 
++	/* Remove cache dir from sysfs */
++	kobject_del(cache_dir->kobj);
++
+ 	kobject_put(cache_dir->kobj);
+ 
+ 	kfree(cache_dir);
 -- 
-1.7.9.5
+1.8.5.2
