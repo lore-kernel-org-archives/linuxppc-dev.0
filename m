@@ -1,19 +1,22 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 75DB92C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 00:53:26 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH] powerpc: 85xx: EDAC PCI: request irq as IRQF_SHARED
-Date: Mon, 20 Jan 2014 16:39:35 +0800
-Message-ID: <1390207175-2181-2-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1390207175-2181-1-git-send-email-tiejun.chen@windriver.com>
-References: <1390207175-2181-1-git-send-email-tiejun.chen@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id C9DC32C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 01:53:45 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+Subject: Re: [PATCH 0/4] powernv: kvm: numa fault improvement
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <CAFgQCTthThEtNEG7EOuYFCtOm46-br59u9QUNkxF0w-TM+RdJQ@mail.gmail.com>
+Date: Mon, 20 Jan 2014 15:48:36 +0100
+Message-Id: <62DB3340-5AF7-4DA4-A790-77EE00696F57@suse.de>
+References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <DB55CAD2-72AF-4740-9904-193071C2740B@suse.de>
+ <CAFgQCTthThEtNEG7EOuYFCtOm46-br59u9QUNkxF0w-TM+RdJQ@mail.gmail.com>
+To: Liu ping fan <kernelfans@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-AER driver needs to share this PCI err irq with EDAC, otherwise
-we can't register AER driver successfully as follows:
 
-genirq: Flags mismatch irq 482. 00000080 (aerdrv) vs. 00000020 ([EDAC] PCI err)
-CPU: 3 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc1-148346-g2513817 #69
-Call Trace:
-[ee063cb0] [c00070c4] show_stack+0x44/0x160 (unreliable)
-[ee063cf0] [c055fac4] dump_stack+0x78/0xa0
-[ee063d00] [c006e16c] __setup_irq+0x51c/0x540
-[ee063d40] [c006e264] request_threaded_irq+0xd4/0x150
-[ee063d70] [c0280d10] aer_probe+0xe0/0x2a0
-[ee063da0] [c027e590] pcie_port_probe_service+0x40/0x90
-[ee063dc0] [c02c253c] driver_probe_device+0x8c/0x250
-[ee063de0] [c02c27bc] __driver_attach+0xbc/0xc0
-[ee063e00] [c02c0760] bus_for_each_dev+0x70/0xb0
-[ee063e30] [c02c1f94] driver_attach+0x24/0x40
-[ee063e40] [c02c1aec] bus_add_driver+0xfc/0x210
-[ee063e60] [c02c2d98] driver_register+0x88/0x140
-[ee063e70] [c027e4b4] pcie_port_service_register+0x64/0x80
-[ee063e80] [c06fb14c] aer_service_init+0x28/0x38
-[ee063e90] [c0002468] do_one_initcall+0x158/0x1b0
-[ee063f00] [c06e291c] kernel_init_freeable+0x128/0x1d4
-[ee063f30] [c0002ac4] kernel_init+0x14/0x130
-[ee063f40] [c000f84c] ret_from_kernel_thread+0x5c/0x64
-aer: probe of 0000:00:00.0:pcie02 failed with error -16
-genirq: Flags mismatch irq 480. 00000080 (aerdrv) vs. 00000020 ([EDAC] PCI err)
-CPU: 3 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc1-148346-g2513817 #69
-Call Trace:
-[ee063cb0] [c00070c4] show_stack+0x44/0x160 (unreliable)
-[ee063cf0] [c055fac4] dump_stack+0x78/0xa0
-[ee063d00] [c006e16c] __setup_irq+0x51c/0x540
-[ee063d40] [c006e264] request_threaded_irq+0xd4/0x150
-[ee063d70] [c0280d10] aer_probe+0xe0/0x2a0
-[ee063da0] [c027e590] pcie_port_probe_service+0x40/0x90
-[ee063dc0] [c02c253c] driver_probe_device+0x8c/0x250
-[ee063de0] [c02c27bc] __driver_attach+0xbc/0xc0
-[ee063e00] [c02c0760] bus_for_each_dev+0x70/0xb0
-[ee063e30] [c02c1f94] driver_attach+0x24/0x40
-[ee063e40] [c02c1aec] bus_add_driver+0xfc/0x210
-[ee063e60] [c02c2d98] driver_register+0x88/0x140
-[ee063e70] [c027e4b4] pcie_port_service_register+0x64/0x80
-[ee063e80] [c06fb14c] aer_service_init+0x28/0x38
-[ee063e90] [c0002468] do_one_initcall+0x158/0x1b0
-[ee063f00] [c06e291c] kernel_init_freeable+0x128/0x1d4
-[ee063f30] [c0002ac4] kernel_init+0x14/0x130
-[ee063f40] [c000f84c] ret_from_kernel_thread+0x5c/0x64
-aer: probe of 0001:02:00.0:pcie02 failed with error -16
+On 15.01.2014, at 07:36, Liu ping fan <kernelfans@gmail.com> wrote:
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- drivers/edac/mpc85xx_edac.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> On Thu, Jan 9, 2014 at 8:08 PM, Alexander Graf <agraf@suse.de> wrote:
+>>=20
+>> On 11.12.2013, at 09:47, Liu Ping Fan <kernelfans@gmail.com> wrote:
+>>=20
+>>> This series is based on Aneesh's series  "[PATCH -V2 0/5] powerpc: =
+mm: Numa faults support for ppc64"
+>>>=20
+>>> For this series, I apply the same idea from the previous thread =
+"[PATCH 0/3] optimize for powerpc _PAGE_NUMA"
+>>> (for which, I still try to get a machine to show nums)
+>>>=20
+>>> But for this series, I think that I have a good justification -- the =
+fact of heavy cost when switching context between guest and host,
+>>> which is  well known.
+>>=20
+>> This cover letter isn't really telling me anything. Please put a =
+proper description of what you're trying to achieve, why you're trying =
+to achieve what you're trying and convince your readers that it's a good =
+idea to do it the way you do it.
+>>=20
+> Sorry for the unclear message. After introducing the _PAGE_NUMA,
+> kvmppc_do_h_enter() can not fill up the hpte for guest. Instead, it
+> should rely on host's kvmppc_book3s_hv_page_fault() to call
+> do_numa_page() to do the numa fault check. This incurs the overhead
+> when exiting from rmode to vmode.  My idea is that in
+> kvmppc_do_h_enter(), we do a quick check, if the page is right placed,
+> there is no need to exit to vmode (i.e saving htab, slab switching)
+>=20
+>>> If my suppose is correct, will CCing kvm@vger.kernel.org from next =
+version.
+>>=20
+>> This translates to me as "This is an RFC"?
+>>=20
+> Yes, I am not quite sure about it. I have no bare-metal to verify it.
+> So I hope at least, from the theory, it is correct.
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index fd46b0b..0dda7c4 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -297,7 +297,8 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
- 		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
--				       mpc85xx_pci_isr, IRQF_DISABLED,
-+				       mpc85xx_pci_isr, IRQF_SHARED |
-+				       IRQF_DISABLED,
- 				       "[EDAC] PCI err", pci);
- 		if (res < 0) {
- 			printk(KERN_ERR
--- 
-1.7.9.5
+Paul, could you please give this some thought and maybe benchmark it?
+
+
+Alex
