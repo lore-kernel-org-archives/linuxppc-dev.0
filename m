@@ -1,19 +1,17 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id D4A3C2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 19:45:28 +1100 (EST)
-Date: Mon, 20 Jan 2014 13:13:49 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: hongbo.zhang@freescale.com
-Subject: Re: [PATCH] DMA: Freescale: change BWC from 256 bytes to 1024 bytes
-Message-ID: <20140120074349.GH26823@intel.com>
-References: <1389852653-8806-1-git-send-email-hongbo.zhang@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 587332C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 19:56:22 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH] powerpc: 85xx: EDAC PCI: request irq as IRQF_SHARED
+Date: Mon, 20 Jan 2014 16:56:15 +0800
+Message-ID: <1390208175-3656-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1389852653-8806-1-git-send-email-hongbo.zhang@freescale.com>
-Cc: linux-kernel@vger.kernel.org, scottwood@freescale.com,
- dmaengine@vger.kernel.org, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +21,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 16, 2014 at 02:10:53PM +0800, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
-> 
-> Freescale DMA has a feature of BandWidth Control (ab. BWC), which is currently
-> 256 bytes and should be changed to 1024 bytes for best DMA throughput.
-> Changing BWC from 256 to 1024 will improve DMA performance much, in cases
-> whatever one channel is running or multi channels are running simultanously,
-> large or small buffers are copied.  And this change doesn't impact memory
-> access performance remarkably, lmbench tests show that for some cases the
-> memory performance are decreased very slightly, while the others are even
-> better.
-> Tested on T4240.
+AER driver needs to share this PCI err irq with EDAC, otherwise
+we can't register AER driver successfully as follows:
 
-Applied, thanks
+genirq: Flags mismatch irq 482. 00000080 (aerdrv) vs. 00000020 ([EDAC] PCI err)
+CPU: 3 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc1-148346-g2513817 #69
+Call Trace:
+[ee063cb0] [c00070c4] show_stack+0x44/0x160 (unreliable)
+[ee063cf0] [c055fac4] dump_stack+0x78/0xa0
+[ee063d00] [c006e16c] __setup_irq+0x51c/0x540
+[ee063d40] [c006e264] request_threaded_irq+0xd4/0x150
+[ee063d70] [c0280d10] aer_probe+0xe0/0x2a0
+[ee063da0] [c027e590] pcie_port_probe_service+0x40/0x90
+[ee063dc0] [c02c253c] driver_probe_device+0x8c/0x250
+[ee063de0] [c02c27bc] __driver_attach+0xbc/0xc0
+[ee063e00] [c02c0760] bus_for_each_dev+0x70/0xb0
+[ee063e30] [c02c1f94] driver_attach+0x24/0x40
+[ee063e40] [c02c1aec] bus_add_driver+0xfc/0x210
+[ee063e60] [c02c2d98] driver_register+0x88/0x140
+[ee063e70] [c027e4b4] pcie_port_service_register+0x64/0x80
+[ee063e80] [c06fb14c] aer_service_init+0x28/0x38
+[ee063e90] [c0002468] do_one_initcall+0x158/0x1b0
+[ee063f00] [c06e291c] kernel_init_freeable+0x128/0x1d4
+[ee063f30] [c0002ac4] kernel_init+0x14/0x130
+[ee063f40] [c000f84c] ret_from_kernel_thread+0x5c/0x64
+aer: probe of 0000:00:00.0:pcie02 failed with error -16
+genirq: Flags mismatch irq 480. 00000080 (aerdrv) vs. 00000020 ([EDAC] PCI err)
+CPU: 3 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc1-148346-g2513817 #69
+Call Trace:
+[ee063cb0] [c00070c4] show_stack+0x44/0x160 (unreliable)
+[ee063cf0] [c055fac4] dump_stack+0x78/0xa0
+[ee063d00] [c006e16c] __setup_irq+0x51c/0x540
+[ee063d40] [c006e264] request_threaded_irq+0xd4/0x150
+[ee063d70] [c0280d10] aer_probe+0xe0/0x2a0
+[ee063da0] [c027e590] pcie_port_probe_service+0x40/0x90
+[ee063dc0] [c02c253c] driver_probe_device+0x8c/0x250
+[ee063de0] [c02c27bc] __driver_attach+0xbc/0xc0
+[ee063e00] [c02c0760] bus_for_each_dev+0x70/0xb0
+[ee063e30] [c02c1f94] driver_attach+0x24/0x40
+[ee063e40] [c02c1aec] bus_add_driver+0xfc/0x210
+[ee063e60] [c02c2d98] driver_register+0x88/0x140
+[ee063e70] [c027e4b4] pcie_port_service_register+0x64/0x80
+[ee063e80] [c06fb14c] aer_service_init+0x28/0x38
+[ee063e90] [c0002468] do_one_initcall+0x158/0x1b0
+[ee063f00] [c06e291c] kernel_init_freeable+0x128/0x1d4
+[ee063f30] [c0002ac4] kernel_init+0x14/0x130
+[ee063f40] [c000f84c] ret_from_kernel_thread+0x5c/0x64
+aer: probe of 0001:02:00.0:pcie02 failed with error -16
 
---
-~Vinod
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ drivers/edac/mpc85xx_edac.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index fd46b0b..0dda7c4 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -297,7 +297,8 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
+ 	if (edac_op_state == EDAC_OPSTATE_INT) {
+ 		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
+ 		res = devm_request_irq(&op->dev, pdata->irq,
+-				       mpc85xx_pci_isr, IRQF_DISABLED,
++				       mpc85xx_pci_isr, IRQF_SHARED |
++				       IRQF_DISABLED,
+ 				       "[EDAC] PCI err", pci);
+ 		if (res < 0) {
+ 			printk(KERN_ERR
+-- 
+1.7.9.5
