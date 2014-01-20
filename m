@@ -1,22 +1,25 @@
-Return-Path: <cl@linux.com>
-Received: from qmta12.emeryville.ca.mail.comcast.net
- (qmta12.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:227])
- by ozlabs.org (Postfix) with ESMTP id 1E9132C009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 09:21:51 +1100 (EST)
-Date: Mon, 20 Jan 2014 16:13:30 -0600 (CST)
-From: Christoph Lameter <cl@linux.com>
-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-In-Reply-To: <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
-Message-ID: <alpine.DEB.2.10.1401201612340.28048@nuc>
-References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
- <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
-Content-Type: MULTIPART/Mixed; BOUNDARY=XsQoSWH+UP9D9v3l
-Cc: nacc@linux.vnet.ibm.com, penberg@kernel.org, linux-mm@kvack.org,
- Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, mpm@selenic.com,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0155.outbound.protection.outlook.com [207.46.163.155])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 967452C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 09:37:25 +1100 (EST)
+Message-ID: <1390257432.24905.329.camel@snotra.buserror.net>
+Subject: Re: [PATCH RFC] powerpc/mpc85xx: add support for the kmp204x
+ reference board
+From: Scott Wood <scottwood@freescale.com>
+To: Valentin Longchamp <valentin.longchamp@keymile.com>
+Date: Mon, 20 Jan 2014 16:37:12 -0600
+In-Reply-To: <52DD50F7.1050107@keymile.com>
+References: <1389879525-27130-1-git-send-email-valentin.longchamp@keymile.com>
+ <1389915301.24905.240.camel@snotra.buserror.net>
+ <52D9273E.10008@keymile.com>
+ <1389995322.24905.275.camel@snotra.buserror.net>
+ <52DD50F7.1050107@keymile.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,105 +29,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 2014-01-20 at 17:38 +0100, Valentin Longchamp wrote:
+> On 01/17/2014 10:48 PM, Scott Wood wrote:
+> > On Fri, 2014-01-17 at 13:51 +0100, Valentin Longchamp wrote:
+> >> Hi Scott,
+> >>
+> >> Thanks for you feedback.
+> >>
+> >> On 01/17/2014 12:35 AM, Scott Wood wrote:
+> >>> On Thu, 2014-01-16 at 14:38 +0100, Valentin Longchamp wrote:
+> >>>> This patch introduces the support for Keymile's kmp204x reference
+> >>>> design. This design is based on Freescale's P2040/P2041 SoC.
+> >>>>
+> >>>> The peripherals used by this design are:
+> >>>> - SPI NOR Flash as bootloader medium
+> >>>> - NAND Flash with a ubi partition
+> >>>> - 2 PCIe busses (hosts 1 and 3)
+> >>>> - 3 FMAN Ethernet devices (FMAN1 DTSEC1/2/5)
+> >>>> - 4 Local Bus windows, with one dedicated to the QRIO reset/power mgmt
+> >>>>   FPGA
+> >>>> - 2 HW I2C busses
+> >>>> - last but not least, the mandatory serial port
+> >>>>
+> >>>> The patch also adds a defconfig file for this reference design and a DTS
+> >>>> file for the kmcoge4 board which is the first one based on this
+> >>>> reference design.
+> >>>>
+> >>>> To try to avoid code duplication, the support was added directly to the
+> >>>> corenet_generic.c file.
+> >>>>
+> >>>> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+> >>>> ---
+> >>>>  arch/powerpc/boot/dts/kmcoge4.dts             | 165 ++++++++++++++++++
+> >>>>  arch/powerpc/configs/85xx/kmp204x_defconfig   | 231 ++++++++++++++++++++++++++
+> >>>>  arch/powerpc/platforms/85xx/Kconfig           |  14 ++
+> >>>>  arch/powerpc/platforms/85xx/Makefile          |   1 +
+> >>>>  arch/powerpc/platforms/85xx/corenet_generic.c |  52 ++++++
+> >>>>  5 files changed, 463 insertions(+)
+> >>>>  create mode 100644 arch/powerpc/boot/dts/kmcoge4.dts
+> >>>>  create mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
+> >>>>
+> >>>> diff --git a/arch/powerpc/boot/dts/kmcoge4.dts b/arch/powerpc/boot/dts/kmcoge4.dts
+> >>>> new file mode 100644
+> >>>> index 0000000..c10df6d
+> >>>> --- /dev/null
+> >>>> +++ b/arch/powerpc/boot/dts/kmcoge4.dts
+> >>>> @@ -0,0 +1,165 @@
+> >>>> +/*
+> >>>> + * Keymile kmcoge4 Device Tree Source, based on the P2041RDB DTS
+> >>>> + *
+> >>>> + * (C) Copyright 2014
+> >>>> + * Valentin Longchamp, Keymile AG, valentin.longchamp@keymile.com
+> >>>> + *
+> >>>> + * Copyright 2011 Freescale Semiconductor Inc.
+> >>>> + *
+> >>>> + * This program is free software; you can redistribute  it and/or modify it
+> >>>> + * under  the terms of  the GNU General  Public License as published by the
+> >>>> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> >>>> + * option) any later version.
+> >>>> + */
+> >>>> +
+> >>>> +/include/ "fsl/p2041si-pre.dtsi"
+> >>>> +
+> >>>> +/ {
+> >>>> +	model = "keymile,kmcoge4";
+> >>>> +	compatible = "keymile,kmp204x";
+> >>>
+> >>> Don't put wildcards in compatible.
+> >>
+> >> Well it's a wildcard in the sense that we support both the p2040 and the p2041,
+> >> but it's also the name of the plaftorm, similarly to names like '85xx' or 'tqm85xx'.
+> > 
+> > Names like 85xx are not allowed in device trees.
+> > 
+> > With "p204x", what would happen if a p2042 were introduced, that were
+> > not compatible?
+> 
+> What would you suggest as a generic name for the architecture that supports both ?
+> 
+> > 
+> > Why isn't the compatible "keymile,kmcoge4", like the model?
+> 
+> Because kmcoge4 is the board that is based on the kmp204x architecture/design.
+> We expect other boards (kmcoge7 for instance) based on the same kmp204x design.
 
---XsQoSWH+UP9D9v3l
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <alpine.DEB.2.10.1401201612342.28048@nuc>
-Content-Disposition: INLINE
+The top-level compatible isn't for the "architecture" or the "design".
+It's for the board.  Surely there's something different about kmcoge7
+versus kmcoge4 -- is it visible to software?
 
-On Mon, 20 Jan 2014, Wanpeng Li wrote:
+> You would prefer that I have the model and compatible stricly the same and add
+> any future board into the compatible boards[] from corenet_generic ?
 
-> >+       enum zone_type high_zoneidx = gfp_zone(flags);
-> >
-> >+       if (!node_present_pages(searchnode)) {
-> >+               zonelist = node_zonelist(searchnode, flags);
-> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
-> >+                       searchnode = zone_to_nid(zone);
-> >+                       if (node_present_pages(searchnode))
-> >+                               break;
-> >+               }
-> >+       }
-> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
-> >        if (object || node != NUMA_NO_NODE)
-> >                return object;
-> >
->
-> The patch fix the bug. However, the kernel crashed very quickly after running
-> stress tests for a short while:
+That's how it's usually done.  Or, at least provide the board
+architecture name as a secondary compatible after the board name.
 
-This is not a good way of fixing it. How about not asking for memory from
-nodes that are memoryless? Use numa_mem_id() which gives you the next node
-that has memory instead of numa_node_id() (gives you the current node
-regardless if it has memory or not).
+> If possible I would like to be able to see the boards that are based on a
+> similar design, that's what I wanted to achieve with this kmp204x name.
 
---XsQoSWH+UP9D9v3l
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-ID: <alpine.DEB.2.10.1401201612343.28048@nuc>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=oops
+Is "kmp204x" an official name of the architecture, rather than a
+generalization of "kmp2040" and "kmp2041"?  If there were a p2042, and
+you made a board for it, is there any chance it would be called kmp204x
+even if it were very different from the p2040/p2041 board?
 
-[  287.464285] Unable to handle kernel paging request for data at address 0x00000001
-[  287.464289] Faulting instruction address: 0xc000000000445af8
-[  287.464294] Oops: Kernel access of bad area, sig: 11 [#1]
-[  287.464296] SMP NR_CPUS=2048 NUMA pSeries
-[  287.464301] Modules linked in: btrfs raid6_pq xor dm_service_time sg nfsv3 arc4 md4 rpcsec_gss_krb5 nfsv4 nls_utf8 cifs nfs fscache dns_resolver nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT ipt_REJECT xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter ip_tables ext4 mbcache jbd2 ibmvfc scsi_transport_fc ibmveth nx_crypto pseries_rng nfsd auth_rpcgss nfs_acl lockd binfmt_misc sunrpc uinput dm_multipath xfs libcrc32c sd_mod crc_t10dif crct10dif_common ibmvscsi scsi_transport_srp scsi_tgt dm_mirror dm_region_hash dm_log dm_mod
-[  287.464374] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.10.0-71.el7.91831.ppc64 #1
-[  287.464378] task: c000000000fde590 ti: c0000001fffd0000 task.ti: c0000000010a4000
-[  287.464382] NIP: c000000000445af8 LR: c000000000445bcc CTR: c000000000445b90
-[  287.464385] REGS: c0000001fffd38e0 TRAP: 0300   Not tainted  (3.10.0-71.el7.91831.ppc64)
-[  287.464388] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 88002084  XER: 00000001
-[  287.464397] SOFTE: 0
-[  287.464398] CFAR: c00000000000908c
-[  287.464401] DAR: 0000000000000001, DSISR: 40000000
-[  287.464403]
-GPR00: d000000003649a04 c0000001fffd3b60 c0000000010a94d0 0000000000000003
-GPR04: c00000018d841048 c0000001fffd3bd0 0000000000000012 d00000000364eff0
-GPR08: c0000001fffd3bd0 0000000000000001 d00000000364d688 c000000000445b90
-GPR12: d00000000364b960 c000000007e00000 00000000042ac510 0000000000000060
-GPR16: 0000000000200000 00000000fffffb19 c000000001122100 0000000000000000
-GPR20: c000000000a94680 c000000001122180 c000000000a94680 000000000000000a
-GPR24: 0000000000000100 0000000000000000 0000000000000001 c0000001ef900000
-GPR28: c0000001d6c066f0 c0000001aea03520 c0000001bc9a2640 c00000018d841680
-[  287.464447] NIP [c000000000445af8] .__dev_printk+0x28/0xc0
-[  287.464450] LR [c000000000445bcc] .dev_printk+0x3c/0x50
-[  287.464453] PACATMSCRATCH [8000000000009032]
-[  287.464455] Call Trace:
-[  287.464458] [c0000001fffd3b60] [c0000001fffd3c00] 0xc0000001fffd3c00 (unreliable)
-[  287.464467] [c0000001fffd3bf0] [d000000003649a04] .ibmvfc_scsi_done+0x334/0x3e0 [ibmvfc]
-[  287.464474] [c0000001fffd3cb0] [d0000000036495b8] .ibmvfc_handle_crq+0x2e8/0x320 [ibmvfc]
-[  287.464488] [c0000001fffd3d30] [d000000003649fe4] .ibmvfc_tasklet+0xd4/0x250 [ibmvfc]
-[  287.464494] [c0000001fffd3de0] [c00000000009b46c] .tasklet_action+0xcc/0x1b0
-[  287.464498] [c0000001fffd3e90] [c00000000009a668] .__do_softirq+0x148/0x360
-[  287.464503] [c0000001fffd3f90] [c0000000000218a8] .call_do_softirq+0x14/0x24
-[  287.464507] [c0000001fffcfdf0] [c0000000000107e0] .do_softirq+0xd0/0x100
-[  287.464511] [c0000001fffcfe80] [c00000000009aba8] .irq_exit+0x1b8/0x1d0
-[  287.464514] [c0000001fffcff10] [c000000000010410] .__do_irq+0xc0/0x1e0
-[  287.464518] [c0000001fffcff90] [c0000000000218cc] .call_do_irq+0x14/0x24
-[  287.464522] [c0000000010a76d0] [c0000000000105bc] .do_IRQ+0x8c/0x100
-[  287.464527] --- Exception: 501 at 0xffff
-[  287.464527]     LR = .arch_local_irq_restore+0x74/0x90
-[  287.464533] [c0000000010a7770] [c000000000002494] hardware_interrupt_common+0x114/0x180 (unreliable)
-[  287.464540] --- Exception: 501 at .plpar_hcall_norets+0x84/0xd4
-[  287.464540]     LR = .check_and_cede_processor+0x24/0x40
-[  287.464546] [c0000000010a7a60] [0000000000000001] 0x1 (unreliable)
-[  287.464550] [c0000000010a7ad0] [c000000000074ecc] .shared_cede_loop+0x2c/0x70
-[  287.464555] [c0000000010a7b50] [c0000000005538f4] .cpuidle_enter_state+0x64/0x150
-[  287.464559] [c0000000010a7c10] [c000000000553ad0] .cpuidle_idle_call+0xf0/0x300
-[  287.464563] [c0000000010a7cc0] [c0000000000695c0] .pseries_lpar_idle+0x10/0x50
-[  287.464568] [c0000000010a7d30] [c000000000016ee4] .arch_cpu_idle+0x64/0x150
-[  287.464572] [c0000000010a7db0] [c0000000000f6504] .cpu_startup_entry+0x1a4/0x2d0
-[  287.464577] [c0000000010a7e80] [c00000000000bd04] .rest_init+0x94/0xb0
-[  287.464582] [c0000000010a7ef0] [c000000000a044d0] .start_kernel+0x4b0/0x4cc
-[  287.464586] [c0000000010a7f90] [c000000000009d30] .start_here_common+0x20/0x70
-[  287.464589] Instruction dump:
-[  287.464591] 60000000 60420000 2c240000 7c6a1b78 41c20088 e9240090 88630001 7ca82b78
-[  287.464598] 2fa90000 3863ffd0 7c6307b4 419e002c <e8c90000> e8e40050 2fa70000 419e004c
-[  287.464606] ---[ end trace c469801a8c53d8f1 ]---
-[  287.466576]
-[  287.466582] Sending IPI to other CPUs
-[  287.468526] IPI complete
+> >>>> +			zl30343@1 {
+> >>>> +				compatible = "gen,spidev";
+> >>>
+> >>> Node names are supposed to be generic.  Compatibles are supposed to be
+> >>> specific.
+> >>
+> >> That's a very specific device for which we only have a userspace driver and for
+> >> which we must use the generic kernel spidev driver.
+> > 
+> > The device tree describes the hardware, not what driver you want to use.
+> > 
+> > Plus, I don't see any driver that matches "gen,spidev" nor any binding
+> > for it, and "gen" doesn't make sense as a vendor prefix.  The only
+> > instance of that string I can find in the Linux tree is in mgcoge.dts.
+> 
+> Well it comes from mgcoge and that's why I have used this
+> 
+> It's for usage with the spidev driver (driver/spi/spidev.c). I agree that the
+> gen brings nothing. Would
+> 
+> spidev@1 {
+> 	compatible = "spidev";
+> 
+> make more sense ?
 
+It doesn't address any of the other comments.
 
---XsQoSWH+UP9D9v3l--
+> >>>> +	lbc: localbus@ffe124000 {
+> >>>> +		reg = <0xf 0xfe124000 0 0x1000>;
+> >>>> +		ranges = <0 0 0xf 0xffa00000 0x00040000		/* LB 0 */
+> >>>> +			  1 0 0xf 0xfb000000 0x00010000		/* LB 1 */
+> >>>> +			  2 0 0xf 0xd0000000 0x10000000		/* LB 2 */
+> >>>> +			  3 0 0xf 0xe0000000 0x10000000>;	/* LB 3 */
+> >>>> +
+> >>>> +		nand@0,0 {
+> >>>> +			#address-cells = <1>;
+> >>>> +			#size-cells = <1>;
+> >>>> +			compatible = "fsl,elbc-fcm-nand";
+> >>>> +			reg = <0 0 0x40000>;
+> >>>> +
+> >>>> +			partition@0 {
+> >>>> +				label = "ubi0";
+> >>>> +				reg = <0x0 0x8000000>;
+> >>>> +			};
+> >>>> +		};
+> >>>> +	};
+> >>>
+> >>> No nodes for those other chipselects?
+> >>
+> >> Well, there are nodes, but they are internally developed FPGAs and the drivers
+> >> are not mainlined that's why I removed the nodes.
+> > 
+> > The device tree describes the hardware, not what drivers are currently
+> > mainlined in Linux.
+> 
+> What do you want me to do: add the nodes for which there are no bindings ?
+
+No, ideally you'd add bindings and nodes.  I'm not going to insist on it
+if bindings aren't ready, but please don't leave things out only because
+there's no driver.
+
+> I did this similarly to the situation with the FSL .dtsi that currently in
+> mainline do not include the DPAA/QMAN/BMAN nodes.
+
+What we've done with DPAA doesn't make a very good role model,
+unfortunately.
+ 
+-Scott
