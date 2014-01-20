@@ -1,17 +1,41 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 587332C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 19:56:22 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH] powerpc: 85xx: EDAC PCI: request irq as IRQF_SHARED
-Date: Mon, 20 Jan 2014 16:56:15 +0800
-Message-ID: <1390208175-3656-1-git-send-email-tiejun.chen@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 14A7D2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 20:10:18 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Mon, 20 Jan 2014 14:40:13 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id F0ED81258054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 14:41:47 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0K9A8pi32112650
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 14:40:08 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0K9A8Ca010519
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 14:40:09 +0530
+Date: Mon, 20 Jan 2014 17:10:05 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140120091005.GA18295@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten>
+ <20140107074136.GA4011@lge.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org
+Content-Type: multipart/mixed; boundary="XsQoSWH+UP9D9v3l"
+In-Reply-To: <20140107074136.GA4011@lge.com>
+Cc: cl@linux-foundation.org, nacc@linux.vnet.ibm.com, penberg@kernel.org,
+ linux-mm@kvack.org, Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, mpm@selenic.com,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,72 +45,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-AER driver needs to share this PCI err irq with EDAC, otherwise
-we can't register AER driver successfully as follows:
 
-genirq: Flags mismatch irq 482. 00000080 (aerdrv) vs. 00000020 ([EDAC] PCI err)
-CPU: 3 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc1-148346-g2513817 #69
-Call Trace:
-[ee063cb0] [c00070c4] show_stack+0x44/0x160 (unreliable)
-[ee063cf0] [c055fac4] dump_stack+0x78/0xa0
-[ee063d00] [c006e16c] __setup_irq+0x51c/0x540
-[ee063d40] [c006e264] request_threaded_irq+0xd4/0x150
-[ee063d70] [c0280d10] aer_probe+0xe0/0x2a0
-[ee063da0] [c027e590] pcie_port_probe_service+0x40/0x90
-[ee063dc0] [c02c253c] driver_probe_device+0x8c/0x250
-[ee063de0] [c02c27bc] __driver_attach+0xbc/0xc0
-[ee063e00] [c02c0760] bus_for_each_dev+0x70/0xb0
-[ee063e30] [c02c1f94] driver_attach+0x24/0x40
-[ee063e40] [c02c1aec] bus_add_driver+0xfc/0x210
-[ee063e60] [c02c2d98] driver_register+0x88/0x140
-[ee063e70] [c027e4b4] pcie_port_service_register+0x64/0x80
-[ee063e80] [c06fb14c] aer_service_init+0x28/0x38
-[ee063e90] [c0002468] do_one_initcall+0x158/0x1b0
-[ee063f00] [c06e291c] kernel_init_freeable+0x128/0x1d4
-[ee063f30] [c0002ac4] kernel_init+0x14/0x130
-[ee063f40] [c000f84c] ret_from_kernel_thread+0x5c/0x64
-aer: probe of 0000:00:00.0:pcie02 failed with error -16
-genirq: Flags mismatch irq 480. 00000080 (aerdrv) vs. 00000020 ([EDAC] PCI err)
-CPU: 3 PID: 1 Comm: swapper/0 Not tainted 3.13.0-rc1-148346-g2513817 #69
-Call Trace:
-[ee063cb0] [c00070c4] show_stack+0x44/0x160 (unreliable)
-[ee063cf0] [c055fac4] dump_stack+0x78/0xa0
-[ee063d00] [c006e16c] __setup_irq+0x51c/0x540
-[ee063d40] [c006e264] request_threaded_irq+0xd4/0x150
-[ee063d70] [c0280d10] aer_probe+0xe0/0x2a0
-[ee063da0] [c027e590] pcie_port_probe_service+0x40/0x90
-[ee063dc0] [c02c253c] driver_probe_device+0x8c/0x250
-[ee063de0] [c02c27bc] __driver_attach+0xbc/0xc0
-[ee063e00] [c02c0760] bus_for_each_dev+0x70/0xb0
-[ee063e30] [c02c1f94] driver_attach+0x24/0x40
-[ee063e40] [c02c1aec] bus_add_driver+0xfc/0x210
-[ee063e60] [c02c2d98] driver_register+0x88/0x140
-[ee063e70] [c027e4b4] pcie_port_service_register+0x64/0x80
-[ee063e80] [c06fb14c] aer_service_init+0x28/0x38
-[ee063e90] [c0002468] do_one_initcall+0x158/0x1b0
-[ee063f00] [c06e291c] kernel_init_freeable+0x128/0x1d4
-[ee063f30] [c0002ac4] kernel_init+0x14/0x130
-[ee063f40] [c000f84c] ret_from_kernel_thread+0x5c/0x64
-aer: probe of 0001:02:00.0:pcie02 failed with error -16
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- drivers/edac/mpc85xx_edac.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Hi Joonsoo,
+On Tue, Jan 07, 2014 at 04:41:36PM +0900, Joonsoo Kim wrote:
+[...]
+>
+>------------->8--------------------
+>diff --git a/mm/slub.c b/mm/slub.c
+>index c3eb3d3..a1f6dfa 100644
+>--- a/mm/slub.c
+>+++ b/mm/slub.c
+>@@ -1672,7 +1672,19 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+> {
+>        void *object;
+>        int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+>+       struct zonelist *zonelist;
+>+       struct zoneref *z;
+>+       struct zone *zone;
+>+       enum zone_type high_zoneidx = gfp_zone(flags);
+>
+>+       if (!node_present_pages(searchnode)) {
+>+               zonelist = node_zonelist(searchnode, flags);
+>+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+>+                       searchnode = zone_to_nid(zone);
+>+                       if (node_present_pages(searchnode))
+>+                               break;
+>+               }
+>+       }
+>        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>        if (object || node != NUMA_NO_NODE)
+>                return object;
+>
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index fd46b0b..0dda7c4 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -297,7 +297,8 @@ int mpc85xx_pci_err_probe(struct platform_device *op)
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
- 		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
--				       mpc85xx_pci_isr, IRQF_DISABLED,
-+				       mpc85xx_pci_isr, IRQF_SHARED |
-+				       IRQF_DISABLED,
- 				       "[EDAC] PCI err", pci);
- 		if (res < 0) {
- 			printk(KERN_ERR
--- 
-1.7.9.5
+The patch fix the bug. However, the kernel crashed very quickly after running 
+stress tests for a short while:
+
+
+--XsQoSWH+UP9D9v3l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=oops
+
+[  287.464285] Unable to handle kernel paging request for data at address 0x00000001
+[  287.464289] Faulting instruction address: 0xc000000000445af8
+[  287.464294] Oops: Kernel access of bad area, sig: 11 [#1]
+[  287.464296] SMP NR_CPUS=2048 NUMA pSeries
+[  287.464301] Modules linked in: btrfs raid6_pq xor dm_service_time sg nfsv3 arc4 md4 rpcsec_gss_krb5 nfsv4 nls_utf8 cifs nfs fscache dns_resolver nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT ipt_REJECT xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter ip_tables ext4 mbcache jbd2 ibmvfc scsi_transport_fc ibmveth nx_crypto pseries_rng nfsd auth_rpcgss nfs_acl lockd binfmt_misc sunrpc uinput dm_multipath xfs libcrc32c sd_mod crc_t10dif crct10dif_common ibmvscsi scsi_transport_srp scsi_tgt dm_mirror dm_region_hash dm_log dm_mod
+[  287.464374] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 3.10.0-71.el7.91831.ppc64 #1
+[  287.464378] task: c000000000fde590 ti: c0000001fffd0000 task.ti: c0000000010a4000
+[  287.464382] NIP: c000000000445af8 LR: c000000000445bcc CTR: c000000000445b90
+[  287.464385] REGS: c0000001fffd38e0 TRAP: 0300   Not tainted  (3.10.0-71.el7.91831.ppc64)
+[  287.464388] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 88002084  XER: 00000001
+[  287.464397] SOFTE: 0
+[  287.464398] CFAR: c00000000000908c
+[  287.464401] DAR: 0000000000000001, DSISR: 40000000
+[  287.464403]
+GPR00: d000000003649a04 c0000001fffd3b60 c0000000010a94d0 0000000000000003
+GPR04: c00000018d841048 c0000001fffd3bd0 0000000000000012 d00000000364eff0
+GPR08: c0000001fffd3bd0 0000000000000001 d00000000364d688 c000000000445b90
+GPR12: d00000000364b960 c000000007e00000 00000000042ac510 0000000000000060
+GPR16: 0000000000200000 00000000fffffb19 c000000001122100 0000000000000000
+GPR20: c000000000a94680 c000000001122180 c000000000a94680 000000000000000a
+GPR24: 0000000000000100 0000000000000000 0000000000000001 c0000001ef900000
+GPR28: c0000001d6c066f0 c0000001aea03520 c0000001bc9a2640 c00000018d841680
+[  287.464447] NIP [c000000000445af8] .__dev_printk+0x28/0xc0
+[  287.464450] LR [c000000000445bcc] .dev_printk+0x3c/0x50
+[  287.464453] PACATMSCRATCH [8000000000009032]
+[  287.464455] Call Trace:
+[  287.464458] [c0000001fffd3b60] [c0000001fffd3c00] 0xc0000001fffd3c00 (unreliable)
+[  287.464467] [c0000001fffd3bf0] [d000000003649a04] .ibmvfc_scsi_done+0x334/0x3e0 [ibmvfc]
+[  287.464474] [c0000001fffd3cb0] [d0000000036495b8] .ibmvfc_handle_crq+0x2e8/0x320 [ibmvfc]
+[  287.464488] [c0000001fffd3d30] [d000000003649fe4] .ibmvfc_tasklet+0xd4/0x250 [ibmvfc]
+[  287.464494] [c0000001fffd3de0] [c00000000009b46c] .tasklet_action+0xcc/0x1b0
+[  287.464498] [c0000001fffd3e90] [c00000000009a668] .__do_softirq+0x148/0x360
+[  287.464503] [c0000001fffd3f90] [c0000000000218a8] .call_do_softirq+0x14/0x24
+[  287.464507] [c0000001fffcfdf0] [c0000000000107e0] .do_softirq+0xd0/0x100
+[  287.464511] [c0000001fffcfe80] [c00000000009aba8] .irq_exit+0x1b8/0x1d0
+[  287.464514] [c0000001fffcff10] [c000000000010410] .__do_irq+0xc0/0x1e0
+[  287.464518] [c0000001fffcff90] [c0000000000218cc] .call_do_irq+0x14/0x24
+[  287.464522] [c0000000010a76d0] [c0000000000105bc] .do_IRQ+0x8c/0x100
+[  287.464527] --- Exception: 501 at 0xffff
+[  287.464527]     LR = .arch_local_irq_restore+0x74/0x90
+[  287.464533] [c0000000010a7770] [c000000000002494] hardware_interrupt_common+0x114/0x180 (unreliable)
+[  287.464540] --- Exception: 501 at .plpar_hcall_norets+0x84/0xd4
+[  287.464540]     LR = .check_and_cede_processor+0x24/0x40
+[  287.464546] [c0000000010a7a60] [0000000000000001] 0x1 (unreliable)
+[  287.464550] [c0000000010a7ad0] [c000000000074ecc] .shared_cede_loop+0x2c/0x70
+[  287.464555] [c0000000010a7b50] [c0000000005538f4] .cpuidle_enter_state+0x64/0x150
+[  287.464559] [c0000000010a7c10] [c000000000553ad0] .cpuidle_idle_call+0xf0/0x300
+[  287.464563] [c0000000010a7cc0] [c0000000000695c0] .pseries_lpar_idle+0x10/0x50
+[  287.464568] [c0000000010a7d30] [c000000000016ee4] .arch_cpu_idle+0x64/0x150
+[  287.464572] [c0000000010a7db0] [c0000000000f6504] .cpu_startup_entry+0x1a4/0x2d0
+[  287.464577] [c0000000010a7e80] [c00000000000bd04] .rest_init+0x94/0xb0
+[  287.464582] [c0000000010a7ef0] [c000000000a044d0] .start_kernel+0x4b0/0x4cc
+[  287.464586] [c0000000010a7f90] [c000000000009d30] .start_here_common+0x20/0x70
+[  287.464589] Instruction dump:
+[  287.464591] 60000000 60420000 2c240000 7c6a1b78 41c20088 e9240090 88630001 7ca82b78
+[  287.464598] 2fa90000 3863ffd0 7c6307b4 419e002c <e8c90000> e8e40050 2fa70000 419e004c
+[  287.464606] ---[ end trace c469801a8c53d8f1 ]---
+[  287.466576]
+[  287.466582] Sending IPI to other CPUs
+[  287.468526] IPI complete
+
+
+--XsQoSWH+UP9D9v3l--
