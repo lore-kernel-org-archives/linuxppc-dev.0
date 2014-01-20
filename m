@@ -1,22 +1,27 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-qa0-f53.google.com (mail-qa0-f53.google.com
- [209.85.216.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 51BE12C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 15:16:57 +1100 (EST)
-Received: by mail-qa0-f53.google.com with SMTP id cm18so5116125qab.40
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Jan 2014 20:16:54 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id E3B002C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 16:57:15 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 3/3] powerpc/fsl: Use the new interface to save or
+ restore registers
+Date: Mon, 20 Jan 2014 05:57:06 +0000
+Message-ID: <18d3109ac114477a805618829632b463@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389686397-46555-3-git-send-email-dongsheng.wang@freescale.com>
+ <1389742224.24905.140.camel@snotra.buserror.net>
+ <93a6a30cd8d240109405d45c8e143dea@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1389842143.24905.195.camel@snotra.buserror.net>
+In-Reply-To: <1389842143.24905.195.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <52D970C0.3020600@xenosoft.de>
-References: <52D970C0.3020600@xenosoft.de>
-Date: Sun, 19 Jan 2014 20:16:53 -0800
-Message-ID: <CAOesGMgE6TkBO1fp0D_GUAHWv1wOJGy7RtwyPEvr2u=0G=-EWg@mail.gmail.com>
-Subject: Re: linuxppc-dev@lists.ozlabs.org
-From: Olof Johansson <olof@lixom.net>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Fri, Jan 17, 2014 at 10:04 AM, Christian Zigotzky
-<chzigotzky@xenosoft.de> wrote:
-
-[Removed some fairly verbose patch description]
-
-> diff -rupN linux-3.13/arch/powerpc/platforms/pasemi/Kconfig
-> linux-3.13-nemo/arch/powerpc/platforms/pasemi/Kconfig
-> --- linux-3.13/arch/powerpc/platforms/pasemi/Kconfig    2013-12-06
-> 18:34:04.000000000 +0100
-> +++ linux-3.13-nemo/arch/powerpc/platforms/pasemi/Kconfig 2013-12-14
-> 10:31:19.896353725 +0100
-> @@ -14,6 +14,13 @@ config PPC_PASEMI
->  menu "PA Semi PWRficient options"
->      depends on PPC_PASEMI
->
-> +config PPC_PASEMI_SB600
-> +       bool "Nemo SB600 South Bridge Support"
-> +       depends on PPC_PASEMI
-> +       select PPC_I8259
-> +       help
-> +       Workarounds for the SB600 South Bridge.
-> +
->  config PPC_PASEMI_IOMMU
->      bool "PA Semi IOMMU support"
->      depends on PPC_PASEMI
->
-> Is it possible to integrate the support of the Nemo board to the official
-> kernel sources? Thanks a lot to this list for the help to solve the boot
-> problems with the kernel 3.13. Sorry, my English isn't very well. I hope you
-> understand my email. But I'll learn more English. I promise it gets better.
-
-We'd be happy to integrate support for it, but you should expect to
-have to rework the patches to a form where they will be to our liking.
-
-Your english seems to be quite sufficient so far, there are many
-kernel developers who do not have english as main language. Ask if you
-need something clarified when we reply to you.
-
-Unfortunately, this patch alone doesn't do much good -- it just adds a
-kernel config option without telling us much about what it's doing. It
-would make more sense to also include the code changes that the config
-option will result in (or makefile changes and c file additions, if
-any).
-
-In this case, isn't the southbridge just another PCI-e device? I don't
-see how we would need a machine-specific configuration option to
-enable it, but seeing the code changes that go along with it would
-help explain to us.
-
-
--Olof
+PiA+ID4gPiBVc2UgZnNsX2NwdV9zdGF0ZV9zYXZlL2ZzbF9jcHVfc3RhdGVfcmVzdG9yZSB0byBz
+YXZlL3Jlc3RvcmUgcmVnaXN0ZXJzLg0KPiA+ID4gPiBVc2UgdGhlIGZ1bmN0aW9ucyB0byBzYXZl
+L3Jlc3RvcmUgcmVnaXN0ZXJzLCBzbyB3ZSBkb24ndCBuZWVkIHRvDQo+ID4gPiA+IG1haW50YWlu
+IHRoZSBjb2RlLg0KPiA+ID4gPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBXYW5nIERvbmdzaGVu
+ZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiA+DQo+ID4gPiBJcyB0aGVyZSBh
+bnkgZnVuY3Rpb25hbCBjaGFuZ2Ugd2l0aCB0aGlzIHBhdGNoc2V0IChlLmcuIHN1c3BlbmQNCj4g
+PiA+IHN1cHBvcnRlZCBvbiBjaGlwcyB3aGVyZSBpdCB3YXNuJ3QgYmVmb3JlKSwgb3IgaXMgaXQg
+anVzdCBjbGVhbnVwPyAgQQ0KPiA+ID4gY292ZXIgbGV0dGVyIHdvdWxkIGJlIHVzZWZ1bCB0byBk
+ZXNjcmliZSB0aGUgcHVycG9zZSBvZiB0aGUgb3ZlcmFsbA0KPiA+ID4gcGF0Y2hzZXQgd2hlbiBp
+dCBpc24ndCBvYnZpb3VzLg0KPiA+ID4NCj4gPg0KPiA+IFllcywganVzdCBjbGVhbnVwLi4NCj4g
+DQo+IEl0IHNlZW1zIHRvIGJlIGludHJvZHVjaW5nIGNvbXBsZXhpdHkgcmF0aGVyIHRoYW4gcmVt
+b3ZpbmcgaXQuICBJcyB0aGlzDQo+IGNsZWFudXAgbmVlZGVkIHRvIHByZXBhcmUgZm9yIGFkZGlu
+ZyBuZXcgZnVuY3Rpb25hbGl0eT8NCj4gDQo+IFBsdXMsIEknbSBza2VwdGljYWwgdGhhdCB0aGlz
+IGlzIGZ1bmN0aW9uYWxseSBlcXVpdmFsZW50LiAgSXQgbG9va3MgbGlrZQ0KPiB0aGUgbmV3IGNv
+ZGUgc2F2ZXMgYSBsb3QgbW9yZSB0aGFuIHRoZSBvbGQgY29kZSBkb2VzLiAgV2h5Pw0KPiANCg0K
+QWN0dWFsbHksIEkgd2FudCB0byB0YWtlIGEgcHJhY3RpY2FsIGV4YW1wbGUgdG8gcHVzaCB0aGUg
+c2F2ZS9yZXN0b3JlIHBhdGNoZXMuDQpBbmQgdGhpcyBpcyBhbHNvIHJlYXNvbmFibGUgZm9yIDMy
+Yml0LWhpYmVybmF0aW9uLCB0aGUgY29kZSBpcyBtb3JlIGNsZWFuLiA6KQ0KSSB0aGluayBJIG5l
+ZWQgdG8gY2hhbmdlIHRoZSBkZXNjcmlwdGlvbiBvZiB0aGUgcGF0Y2guDQoNCj4gPiA+ID4gKw0K
+PiA+ID4gPiArCS8qIFJlc3RvcmUgYmFzZSByZWdpc3RlciAqLw0KPiA+ID4gPiArCWxpCXI0LCAw
+DQo+ID4gPiA+ICsJYmwJZnNsX2NwdV9zdGF0ZV9yZXN0b3JlDQo+ID4gPg0KPiA+ID4gV2h5IGFy
+ZSB5b3UgY2FsbGluZyBhbnl0aGluZyB3aXRoICJmc2wiIGluIHRoZSBuYW1lIGZyb20gY29kZSB0
+aGF0IGlzDQo+ID4gPiBzdXBwb3NlZCB0byBiZSBmb3IgYWxsIGJvb2tlPw0KPiA+ID4NCj4gPiBF
+MjAwLCBFMzAwIG5vdCBzdXBwb3J0Lg0KPiA+IFN1cHBvcnQgRTUwMCwgRTUwMHYyLCBFNTAwTUMs
+IEU1NTAwLCBFNjUwMC4NCj4gPg0KPiA+IERvIHlvdSBoYXZlIGFueSBzdWdnZXN0aW9ucyBhYm91
+dCB0aGlzPw0KPiANCj4gV2hhdCBhYm91dCBub24tRlNMIGJvb2tlIHN1Y2ggYXMgNDR4Pw0KPiAN
+Cj4gT3IgaWYgdGhpcyBmaWxlIG5ldmVyIHN1cHBvcnRlZCA0NHgsIHJlbmFtZSBpdCBhcHByb3By
+aWF0ZWx5Lg0KPiANCkN1cnJlbnRseSBkb2VzIG5vdCBzdXBwb3J0LiBvayBjaGFuZ2UgdGhlIG5h
+bWUgZmlyc3QsIGlmIGxhdGVyIHN1cHBvcnQsIGFuZA0KdGhlbiBhZ2FpbiB0byBtb2RpZnkgdGhl
+IG5hbWUgb2YgdGhpcyBmdW5jdGlvbi4NCg0KSG93IGFib3V0IDg1eHhfY3B1X3N0YXRlX3Jlc3Rv
+cmU/DQoNClRoYW5rcywNCi1Eb25nc2hlbmcNCg==
