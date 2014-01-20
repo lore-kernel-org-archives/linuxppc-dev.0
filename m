@@ -1,12 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Sat, 18 Jan 2014 21:14:47 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Make sure "cache" directory is removed when
- offlining cpu
-Message-ID: <20140118101447.GA4929@iris.ozlabs.ibm.com>
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3C1372C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 13:26:30 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v9] clk: corenet: Adds the clock binding
+Date: Mon, 20 Jan 2014 02:26:21 +0000
+Message-ID: <8dc96a3b72aa4960a673e75fc6d24605@BL2PR03MB115.namprd03.prod.outlook.com>
+References: <1389600995-28293-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1390007187.24905.293.camel@snotra.buserror.net>
+In-Reply-To: <1390007187.24905.293.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,46 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The code in remove_cache_dir() is supposed to remove the "cache"
-subdirectory from the sysfs directory for a CPU when that CPU is
-being offlined.  It tries to do this by calling kobject_put() on
-the kobject for the subdirectory.  However, the subdirectory only
-gets removed once the last reference goes away, and the reference
-being put here may well not be the last reference.  That means
-that the "cache" subdirectory may still exist when the offlining
-operation has finished.  If the same CPU subsequently gets onlined,
-the code tries to add a new "cache" subdirectory.  If the old
-subdirectory has not yet been removed, we get a WARN_ON in the
-sysfs code, with stack trace, and an error message printed on the
-console.  Further, we ultimately end up with an online cpu with no
-"cache" subdirectory.
-
-This fixes it by doing an explicit kobject_del() at the point where
-we want the subdirectory to go away.  kobject_del() removes the sysfs
-directory even though the object still exists in memory.  The object
-will get freed at some point in the future.  A subsequent onlining
-operation can create a new sysfs directory, even if the old object
-still exists in memory, without causing any problems.
-
-Cc: stable@vger.kernel.org # v3.0+
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/kernel/cacheinfo.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index 6549327..bfb8236 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -794,6 +794,9 @@ static void remove_cache_dir(struct cache_dir *cache_dir)
- {
- 	remove_index_dirs(cache_dir);
- 
-+	/* Remove cache dir from sysfs */
-+	kobject_del(cache_dir->kobj);
-+
- 	kobject_put(cache_dir->kobj);
- 
- 	kfree(cache_dir);
--- 
-1.8.5.2
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IDIwMTTlubQx5pyIMTjml6Ug5pif5pyf5YWtIDk6MDYNCj4gVG86IFRhbmcgWXVh
+bnRpYW4tQjI5OTgzDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgZ2FsYWtAa2VybmVsLmNyYXNo
+aW5nLm9yZzsgbWFyay5ydXRsYW5kQGFybS5jb207DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwu
+b3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgTGkgWWFuZy1MZW8tDQo+IFI1ODQ3
+Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHY5XSBjbGs6IGNvcmVuZXQ6IEFkZHMgdGhlIGNsb2Nr
+IGJpbmRpbmcNCj4gDQo+IE9uIE1vbiwgMjAxNC0wMS0xMyBhdCAxNjoxNiArMDgwMCwgVGFuZyBZ
+dWFudGlhbiB3cm90ZToNCj4gPiArRXhhbXBsZSBmb3IgY2xvY2sgYmxvY2sgYW5kIGNsb2NrIHBy
+b3ZpZGVyOg0KPiA+ICsvIHsNCj4gPiArCWNsb2NrZ2VuOiBnbG9iYWwtdXRpbGl0aWVzQGUxMDAw
+IHsNCj4gPiArCQljb21wYXRpYmxlID0gImZzbCxwNTAyMC1jbG9ja2dlbiIsICJmc2wscW9yaXEt
+Y2xvY2tnZW4tMS4wIjsNCj4gPiArCQlyYW5nZXMgPSA8MHgwIDB4ZTEwMDAgMHgxMDAwPjsNCj4g
+PiArCQljbG9jay1mcmVxdWVuY3kgPSAxMzMzMzM7DQo+IA0KPiBNaXNzaW5nIDw+IGFyb3VuZCAx
+MzMzMzMsIGFuZCB0aGUgYWN0dWFsIHA1MDIwZHMgaW5wdXQgY2xvY2sgKGJhc2VkIG9uDQo+IG9i
+c2VydmluZyB3aGF0IFUtQm9vdCBmaWxscyBpbikgaXMgMTMzMzMzMzMzLCBub3QgMTMzMzMzLg0K
+PiANClNvcnJ5LCA6KA0KDQo+IEknbGwgZml4IHdoZW4gYXBwbHlpbmcuDQo+IA0KVGhhbmsgeW91
+IHZlcnkgbXVjaC4NCg0KUmVnYXJkcywNCll1YW50aWFuDQoNCj4gLVNjb3R0DQo+IA0KDQo=
