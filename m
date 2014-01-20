@@ -1,12 +1,14 @@
 Return-Path: <luis.henriques@canonical.com>
-Date: Mon, 20 Jan 2014 19:37:16 +0000
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id BFAB62C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 06:39:29 +1100 (EST)
+Date: Mon, 20 Jan 2014 19:39:25 +0000
 From: Luis Henriques <luis.henriques@canonical.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ian Munsie <imunsie@au1.ibm.com>,
- Tony Breeds <tony@bakeyournoodle.com>
-Subject: [PATCH] powerpc: Fix build dependencies for ep88xc
-Message-ID: <20140120193709.GA5084@hercules>
+ Anton Blanchard <anton@samba.org>, Ian Munsie <imunsie@au1.ibm.com>
+Subject: [PATCH] powerpc: Fix build dependencies for storcenter
+Message-ID: <20140120193921.GA5267@hercules>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -27,11 +29,11 @@ Date:   Tue Apr 3 15:00:39 2012 +0000
 
     powerpc/boot: Only build board support files when required.
 
-This is easily reproducible my using the ep88xc_defconfig config file:
+This is easily reproducible my using the storcenter_defconfig config file:
 
-arch/powerpc/boot/wrapper.a(mpc8xx.o): In function `mpc885_get_clock':
-/home/henrix/src/linux/arch/powerpc/boot/mpc8xx.c:30: undefined reference to `fsl_get_immr'
-make[1]: *** [arch/powerpc/boot/dtbImage.ep88xc] Error 1
+arch/powerpc/boot/cuboot-pq2.o: In function `pq2_platform_fixups':
+cuboot-pq2.c:(.text+0x30c): undefined reference to `fsl_get_immr'
+make[1]: *** [arch/powerpc/boot/cuImage.storcenter] Error 1
 
 Fixes: b81f18e55e9f ("powerpc/boot: Only build board support files when required.")
 Cc: Tony Breeds <tony@bakeyournoodle.com>
@@ -39,21 +41,40 @@ Cc: <stable@vger.kernel.org> (3.6+)
 Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
 ---
  arch/powerpc/boot/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/boot/wrapper  | 5 ++++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index ca7f08c..981d418 100644
+index 981d418..cf8e5db 100644
 --- a/arch/powerpc/boot/Makefile
 +++ b/arch/powerpc/boot/Makefile
-@@ -71,7 +71,7 @@ src-wlib-y := string.S crt0.S crtsavres.S stdio.c main.c \
- 		uartlite.c mpc52xx-psc.c
- src-wlib-$(CONFIG_40x) += 4xx.c planetcore.c
- src-wlib-$(CONFIG_44x) += 4xx.c ebony.c bamboo.c
--src-wlib-$(CONFIG_8xx) += mpc8xx.c planetcore.c
-+src-wlib-$(CONFIG_8xx) += mpc8xx.c fsl-soc.c planetcore.c
- src-wlib-$(CONFIG_PPC_82xx) += pq2.c fsl-soc.c planetcore.c
- src-wlib-$(CONFIG_EMBEDDED6xx) += mv64x60.c mv64x60_i2c.c ugecon.c
- 
+@@ -95,7 +95,7 @@ src-plat-$(CONFIG_FSL_SOC_BOOKE) += cuboot-85xx.c cuboot-85xx-cpm2.c
+ src-plat-$(CONFIG_EMBEDDED6xx) += cuboot-pq2.c cuboot-mpc7448hpc2.c \
+ 					cuboot-c2k.c gamecube-head.S \
+ 					gamecube.c wii-head.S wii.c holly.c \
+-					prpmc2800.c
++					prpmc2800.c fsl-soc.c
+ src-plat-$(CONFIG_AMIGAONE) += cuboot-amigaone.c
+ src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
+ src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 2e1af74..4d90b98 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -190,9 +190,12 @@ cuboot*)
+     *5200*|*-motionpro)
+         platformo=$object/cuboot-52xx.o
+         ;;
+-    *-pq2fads|*-ep8248e|*-mpc8272*|*-storcenter)
++    *-pq2fads|*-ep8248e|*-mpc8272*)
+         platformo=$object/cuboot-pq2.o
+         ;;
++    *-storcenter)
++	platformo="$object/cuboot-pq2.o $object/fsl-soc.o"
++	;;
+     *-mpc824*)
+         platformo=$object/cuboot-824x.o
+         ;;
 -- 
 1.8.3.2
 
