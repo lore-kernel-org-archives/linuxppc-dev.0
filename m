@@ -1,21 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 046FD2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 08:49:04 +1100 (EST)
-Message-ID: <1390340928.9227.13.camel@pasglop>
-Subject: Re: [PATCH] powerpc: set the correct ksp_limit on ppc32 when
- switching to irq stack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 22 Jan 2014 08:48:48 +1100
-In-Reply-To: <20140121161450.GA3311@roeck-us.net>
-References: <1389932728-25178-1-git-send-email-haokexin@gmail.com>
- <20140121161450.GA3311@roeck-us.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, Kevin Hao <haokexin@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 21AA32C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 09:23:21 +1100 (EST)
+Message-ID: <52DEF366.6030105@windriver.com>
+Date: Tue, 21 Jan 2014 17:23:34 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+MIME-Version: 1.0
+To: <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 12/73] powerpc: kvm e500/44x is not modular, so don't
+ use module_init
+References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
+ <1390339396-3479-13-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1390339396-3479-13-git-send-email-paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org,
+ Gleb Natapov <gleb@kernel.org>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +29,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-21 at 08:14 -0800, Guenter Roeck wrote:
-> On Fri, Jan 17, 2014 at 12:25:28PM +0800, Kevin Hao wrote:
-> > Guenter Roeck has got the following call trace on a p2020 board:
-> >   Kernel stack overflow in process eb3e5a00, r1=eb79df90
-> >   CPU: 0 PID: 2838 Comm: ssh Not tainted 3.13.0-rc8-juniper-00146-g19eca00 #4
-> >   task: eb3e5a00 ti: c0616000 task.ti: ef440000
-> >   NIP: c003a420 LR: c003a410 CTR: c0017518
-> >   REGS: eb79dee0 TRAP: 0901   Not tainted (3.13.0-rc8-juniper-00146-g19eca00)
-> >   MSR: 00029000 <CE,EE,ME>  CR: 24008444  XER: 00000000
-> >   GPR00: c003a410 eb79df90 eb3e5a00 00000000 eb05d900 00000001 65d87646 00000000
-> >   GPR08: 00000000 020b8000 00000000 00000000 44008442
-> >   NIP [c003a420] __do_softirq+0x94/0x1ec
-> >   LR [c003a410] __do_softirq+0x84/0x1ec
-> >   Call Trace:
-> >   [eb79df90] [c003a410] __do_softirq+0x84/0x1ec (unreliable)
-> >   [eb79dfe0] [c003a970] irq_exit+0xbc/0xc8
-> >   [eb79dff0] [c000cc1c] call_do_irq+0x24/0x3c
-> >   [ef441f20] [c00046a8] do_IRQ+0x8c/0xf8
-> >   [ef441f40] [c000e7f4] ret_from_except+0x0/0x18
-> >   --- Exception: 501 at 0xfcda524
-> >       LR = 0x10024900
-> >   Instruction dump:
-> >   7c781b78 3b40000a 3a73b040 543c0024 3a800000 3b3913a0 7ef5bb78 48201bf9
-> >   5463103a 7d3b182e 7e89b92e 7c008146 <3ba00000> 7e7e9b78 48000014 57fff87f
-> >   Kernel panic - not syncing: kernel stack overflow
-> >   CPU: 0 PID: 2838 Comm: ssh Not tainted 3.13.0-rc8-juniper-00146-g19eca00 #4
-> >   Call Trace:
-> > 
-> > The reason is that we have used the wrong register to calculate the
-> > ksp_limit in commit cbc9565ee826 (powerpc: Remove ksp_limit on ppc64).
-> > Just fix it.
-> > 
-> > As suggested by Benjamin Herrenschmidt, also add the C prototype of the
-> > function in the comment in order to avoid such kind of errors in the
-> > future.
-> > 
-> Was this patch accepted, or are there any problems with it ?
-> I didn't see any comments, and it still isn't upstream nor in linux-next.
+On 14-01-21 04:22 PM, Paul Gortmaker wrote:
+> In powerpc, CONFIG_KVM is bool, and  so are these three subarch
+> options, for the 44x and e500 variants.  This means that any
+> module_exit() calls and functions used by them such as the
+> kvmppc_booke_exit() are dead code.  Here we remove them.
+> 
+> In addition, rather than use module_init, which is just
+> __initcall for non-modules, we update those as well.
+> 
+> Note that direct use of __initcall is discouraged, vs. one
+> of the priority categorized subgroups.  As __initcall gets
+> mapped onto device_initcall, our use of subsys_initcall (which
+> seems to make sense for netfilter code) will thus change this
 
-It will be merged when I come back from vacation. It was too late for
-3.13 so I'll send it to Linus next week and will CC -stable.
+I've fixed the above --  s/netfilter/PPC KVM/
 
-Cheers,
-Ben.
+The risks of recycling commit logs...
+
+Paul.
+--
+
+> registration from level 6-device to level 4-subsys (i.e. slightly
+> earlier).
+> 
+> However no impact of that small difference is expected,
+> since the arch independent kvm code doesn't trigger any init;
+> it is the arch initcalls here which actually call kvm_init.
+> 
+> Cc: Gleb Natapov <gleb@kernel.org>
+> Cc: Paolo Bonzini <pbonzini@redhat.com>
+> Cc: Alexander Graf <agraf@suse.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: kvm@vger.kernel.org
+> Cc: kvm-ppc@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> ---
+>  arch/powerpc/include/asm/kvm_ppc.h |  1 -
+>  arch/powerpc/kvm/44x.c             | 10 +---------
+>  arch/powerpc/kvm/booke.c           |  6 ------
+>  arch/powerpc/kvm/e500.c            | 10 +---------
+>  arch/powerpc/kvm/e500mc.c          | 10 +---------
+>  5 files changed, 3 insertions(+), 34 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+> index c8317fb..8466df5 100644
+> --- a/arch/powerpc/include/asm/kvm_ppc.h
+> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+> @@ -109,7 +109,6 @@ extern void kvmppc_core_flush_tlb(struct kvm_vcpu *vcpu);
+>  extern int kvmppc_core_check_requests(struct kvm_vcpu *vcpu);
+>  
+>  extern int kvmppc_booke_init(void);
+> -extern void kvmppc_booke_exit(void);
+>  
+>  extern void kvmppc_core_destroy_mmu(struct kvm_vcpu *vcpu);
+>  extern int kvmppc_kvm_pv(struct kvm_vcpu *vcpu);
+> diff --git a/arch/powerpc/kvm/44x.c b/arch/powerpc/kvm/44x.c
+> index 93221e8..2129fc1 100644
+> --- a/arch/powerpc/kvm/44x.c
+> +++ b/arch/powerpc/kvm/44x.c
+> @@ -222,12 +222,4 @@ static int __init kvmppc_44x_init(void)
+>  err_out:
+>  	return r;
+>  }
+> -
+> -static void __exit kvmppc_44x_exit(void)
+> -{
+> -	kvmppc_pr_ops = NULL;
+> -	kvmppc_booke_exit();
+> -}
+> -
+> -module_init(kvmppc_44x_init);
+> -module_exit(kvmppc_44x_exit);
+> +subsys_initcall(kvmppc_44x_init);
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index 0591e05..49dffa2 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -1995,9 +1995,3 @@ int __init kvmppc_booke_init(void)
+>  #endif /* !BOOKE_HV */
+>  	return 0;
+>  }
+> -
+> -void __exit kvmppc_booke_exit(void)
+> -{
+> -	free_pages(kvmppc_booke_handlers, VCPU_SIZE_ORDER);
+> -	kvm_exit();
+> -}
+> diff --git a/arch/powerpc/kvm/e500.c b/arch/powerpc/kvm/e500.c
+> index 497b142..115ef12 100644
+> --- a/arch/powerpc/kvm/e500.c
+> +++ b/arch/powerpc/kvm/e500.c
+> @@ -564,12 +564,4 @@ static int __init kvmppc_e500_init(void)
+>  err_out:
+>  	return r;
+>  }
+> -
+> -static void __exit kvmppc_e500_exit(void)
+> -{
+> -	kvmppc_pr_ops = NULL;
+> -	kvmppc_booke_exit();
+> -}
+> -
+> -module_init(kvmppc_e500_init);
+> -module_exit(kvmppc_e500_exit);
+> +subsys_initcall(kvmppc_e500_init);
+> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+> index 4132cd2..612c216 100644
+> --- a/arch/powerpc/kvm/e500mc.c
+> +++ b/arch/powerpc/kvm/e500mc.c
+> @@ -382,12 +382,4 @@ static int __init kvmppc_e500mc_init(void)
+>  err_out:
+>  	return r;
+>  }
+> -
+> -static void __exit kvmppc_e500mc_exit(void)
+> -{
+> -	kvmppc_pr_ops = NULL;
+> -	kvmppc_booke_exit();
+> -}
+> -
+> -module_init(kvmppc_e500mc_init);
+> -module_exit(kvmppc_e500mc_exit);
+> +subsys_initcall(kvmppc_e500mc_init);
+> 
