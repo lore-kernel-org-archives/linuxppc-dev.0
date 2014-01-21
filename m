@@ -1,27 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0212.outbound.protection.outlook.com [207.46.163.212])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 598BE2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 04:01:49 +1100 (EST)
-Message-ID: <1390323689.24905.484.camel@snotra.buserror.net>
-Subject: Re: [PATCH RFC] powerpc/mpc85xx: add support for the kmp204x
- reference board
-From: Scott Wood <scottwood@freescale.com>
-To: Valentin Longchamp <valentin.longchamp@keymile.com>
-Date: Tue, 21 Jan 2014 11:01:29 -0600
-In-Reply-To: <52DEA179.9090607@keymile.com>
-References: <1389879525-27130-1-git-send-email-valentin.longchamp@keymile.com>
- <1389915301.24905.240.camel@snotra.buserror.net>
- <52D9273E.10008@keymile.com>
- <1389995322.24905.275.camel@snotra.buserror.net>
- <52DD50F7.1050107@keymile.com>
- <1390257432.24905.329.camel@snotra.buserror.net>
- <52DEA179.9090607@keymile.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id D30DA2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 04:11:46 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+Subject: Re: [PATCH 1/2][v5] driver/memory:Move Freescale IFC driver to a
+ common driver
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1390026091-25111-1-git-send-email-prabhakar@freescale.com>
+Date: Tue, 21 Jan 2014 11:11:31 -0600
+Message-Id: <0E81C3B6-B875-4DA3-BD24-92B63C57E913@kernel.crashing.org>
+References: <1390026091-25111-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,79 +25,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-21 at 17:34 +0100, Valentin Longchamp wrote:
-> On 01/20/2014 11:37 PM, Scott Wood wrote:
-> > On Mon, 2014-01-20 at 17:38 +0100, Valentin Longchamp wrote:
-> >> On 01/17/2014 10:48 PM, Scott Wood wrote:
-> >>> Why isn't the compatible "keymile,kmcoge4", like the model?
-> >>
-> >> Because kmcoge4 is the board that is based on the kmp204x architecture/design.
-> >> We expect other boards (kmcoge7 for instance) based on the same kmp204x design.
-> > 
-> > The top-level compatible isn't for the "architecture" or the "design".
-> > It's for the board.  Surely there's something different about kmcoge7
-> > versus kmcoge4 -- is it visible to software?
-> 
-> There should only be a few differences in the dts between the two boards.
-> 
-> Reading the ePAPR my understanding was that compatible is the "programming
-> model" and that's what I have named above design/architecture while model is the
-> exact model of the device in this case the exact board name.
 
-In practice, model is more for human consumption (e.g. there may be many
-variants that all look identical to software).  The "programming model"
-for an entire board includes everything on it.
- 
-> >> You would prefer that I have the model and compatible stricly the same and add
-> >> any future board into the compatible boards[] from corenet_generic ?
-> > 
-> > That's how it's usually done.  Or, at least provide the board
-> > architecture name as a secondary compatible after the board name.
-> > 
-> >> If possible I would like to be able to see the boards that are based on a
-> >> similar design, that's what I wanted to achieve with this kmp204x name.
-> > 
-> > Is "kmp204x" an official name of the architecture, rather than a
-> > generalization of "kmp2040" and "kmp2041"?  If there were a p2042, and
-> > you made a board for it, is there any chance it would be called kmp204x
-> > even if it were very different from the p2040/p2041 board?
-> 
-> It's the name we have picked up, but it's not official. We also use km83xx,
-> km82xx and it was derived from that.
-> 
-> If the hypothetical p2042 board was different it would then have another name.
+On Jan 18, 2014, at 12:21 AM, Prabhakar Kushwaha =
+<prabhakar@freescale.com> wrote:
 
-In that case, I don't object to it being listed in compatible, though
-the specific board name should come first.
+> Freescale IFC controller has been used for mpc8xxx. It will be used
+> for ARM-based SoC as well. This patch moves the driver to =
+driver/memory
+> and fix the header file includes.
+>=20
+> Also remove module_platform_driver() and  instead call
+> platform_driver_register() from subsys_initcall() to make sure this =
+module
+> has been loaded before MTD partition parsing starts.
+>=20
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+> Changes for v2:
+> 	- Move fsl_ifc in driver/memory
+>=20
+> Changes for v3:
+> 	- move device tree bindings to memory
+>=20
+> Changes for v4: Rebased to=20
+> 	=
+git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+>=20
+> Changes for v5:=20
+> 	- Moved powerpc/Kconfig option to driver/memory
+>=20
+>=20
+> .../{powerpc =3D> memory-controllers}/fsl/ifc.txt    |    0
+> arch/powerpc/Kconfig                               |    4 ----
+> arch/powerpc/sysdev/Makefile                       |    1 -
+> drivers/memory/Kconfig                             |    4 ++++
+> drivers/memory/Makefile                            |    1 +
+> {arch/powerpc/sysdev =3D> drivers/memory}/fsl_ifc.c  |    8 ++++++--
+> drivers/mtd/nand/fsl_ifc_nand.c                    |    2 +-
+> .../include/asm =3D> include/linux}/fsl_ifc.h        |    0
+> 8 files changed, 12 insertions(+), 8 deletions(-)
+> rename Documentation/devicetree/bindings/{powerpc =3D> =
+memory-controllers}/fsl/ifc.txt (100%)
+> rename {arch/powerpc/sysdev =3D> drivers/memory}/fsl_ifc.c (98%)
+> rename {arch/powerpc/include/asm =3D> include/linux}/fsl_ifc.h (100%)
+>=20
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ifc.txt =
+b/Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+> similarity index 100%
+> rename from Documentation/devicetree/bindings/powerpc/fsl/ifc.txt
+> rename to =
+Documentation/devicetree/bindings/memory-controllers/fsl/ifc.txt
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index b44b52c..83fb8b3 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -725,10 +725,6 @@ config FSL_LBC
+> 	  controller.  Also contains some common code used by
+> 	  drivers for specific local bus peripherals.
+>=20
+> -config FSL_IFC
+> -	bool
+> -        depends on FSL_SOC
+> -
+> config FSL_GTM
+> 	bool
+> 	depends on PPC_83xx || QUICC_ENGINE || CPM2
+> diff --git a/arch/powerpc/sysdev/Makefile =
+b/arch/powerpc/sysdev/Makefile
+> index f67ac90..afbcc37 100644
+> --- a/arch/powerpc/sysdev/Makefile
+> +++ b/arch/powerpc/sysdev/Makefile
+> @@ -21,7 +21,6 @@ obj-$(CONFIG_FSL_SOC)		+=3D fsl_soc.o =
+fsl_mpic_err.o
+> obj-$(CONFIG_FSL_PCI)		+=3D fsl_pci.o $(fsl-msi-obj-y)
+> obj-$(CONFIG_FSL_PMC)		+=3D fsl_pmc.o
+> obj-$(CONFIG_FSL_LBC)		+=3D fsl_lbc.o
+> -obj-$(CONFIG_FSL_IFC)		+=3D fsl_ifc.o
+> obj-$(CONFIG_FSL_GTM)		+=3D fsl_gtm.o
+> obj-$(CONFIG_FSL_85XX_CACHE_SRAM)	+=3D fsl_85xx_l2ctlr.o =
+fsl_85xx_cache_sram.o
+> obj-$(CONFIG_SIMPLE_GPIO)	+=3D simple_gpio.o
+> diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
+> index 29a11db..b33bb0e 100644
+> --- a/drivers/memory/Kconfig
+> +++ b/drivers/memory/Kconfig
+> @@ -50,4 +50,8 @@ config TEGRA30_MC
+> 	  analysis, especially for IOMMU/SMMU(System Memory Management
+> 	  Unit) module.
+>=20
+> +config FSL_IFC
+> +	bool
+> +        depends on FSL_SOC
+> +
 
-> >>> The device tree describes the hardware, not what driver you want to use.
-> >>>
-> >>> Plus, I don't see any driver that matches "gen,spidev" nor any binding
-> >>> for it, and "gen" doesn't make sense as a vendor prefix.  The only
-> >>> instance of that string I can find in the Linux tree is in mgcoge.dts.
-> >>
-> >> Well it comes from mgcoge and that's why I have used this
-> >>
-> >> It's for usage with the spidev driver (driver/spi/spidev.c). I agree that the
-> >> gen brings nothing. Would
-> >>
-> >> spidev@1 {
-> >> 	compatible = "spidev";
-> >>
-> >> make more sense ?
-> > 
-> > It doesn't address any of the other comments.
-> 
-> Can you please explicitly tell me how I should build this node ? What other
-> comments ? Must I be more generic with the name ?
-> 
-> Something like :
-> 
-> spi@1 {
-> 	compatible = "zarlink,30343", "spidev";
+I think this should be user selectable like all the other Kconfig =
+options in drivers/memory
 
-Remove "spidev".  Any nodes under the SPI controller node will be SPI
-devices, right?  So it doesn't add anything regarding hardware
-description.
- 
--Scott
+Also add a help description.
+
+> endif
+
+[ snip ]
+
+- k
