@@ -1,31 +1,34 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 39A592C0099
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 10:02:55 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3365D2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 10:02:56 +1100 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 21 Jan 2014 16:02:52 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 76CF21FF0021
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:02:18 -0700 (MST)
+ Tue, 21 Jan 2014 16:02:53 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 3C14019D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:02:42 -0700 (MST)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0LN2a208389036
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 00:02:36 +0100
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0LL0QwF4260340
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 22:00:26 +0100
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0LN2nER012197
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:02:50 -0700
+ s0LN2opk012232
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:02:51 -0700
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/3] powerpc/pseries: fix issues in suspend/resume code
-Date: Tue, 21 Jan 2014 17:55:46 -0500
-Message-Id: <1390344949-3983-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] powerpc/pseries: Device tree should only be updated once
+ after suspend/migrate
+Date: Tue, 21 Jan 2014 17:55:47 -0500
+Message-Id: <1390344949-3983-2-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1390344949-3983-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1390344949-3983-1-git-send-email-tyreld@linux.vnet.ibm.com>
 Cc: nfont@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,27 +39,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset fixes a couple of issues encountered in the suspend/resume code
-base. First when using the kernel device tree update code update-nodes is
-unnecessarily called more than once. Second the cpu cache lists are not
-updated after a suspend/resume which under certain conditions may cause a
-panic. Finally, since the cache list fix utilzes in kernel device tree update
-code a means for telling drmgr not to perform a device tree update from 
-userspace is required.
+The current code makes rtas calls for update-nodes, activate-firmware and then
+update-nodes again. The FW provides the same data for both update-nodes calls.
+As a result a proc entry exists error is reported for the second update while
+adding device nodes.
 
-Tyrel Datwyler (3):
-  powerpc/pseries: Device tree should only be updated once after
-    suspend/migrate
-  powerpc/pseries: Update dynamic cache nodes for suspend/resume
-    operation
-  powerpc/pseries: Report in kernel device tree update to drmgr
+This patch makes a single rtas call for update-nodes after activating the FW.
+It also add rtas_busy delay for the activate-firmware rtas call.
 
- arch/powerpc/include/asm/rtas.h           |  4 ++++
- arch/powerpc/kernel/rtas.c                | 17 +++++++++++++++++
- arch/powerpc/kernel/time.c                |  6 ++++++
+Signed-off-by: Haren Myneni <hbabu@us.ibm.com>
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
  arch/powerpc/platforms/pseries/mobility.c | 26 ++++++++++----------------
- arch/powerpc/platforms/pseries/suspend.c  | 25 ++++++++++++++++++++++++-
- 5 files changed, 61 insertions(+), 17 deletions(-)
+ 1 file changed, 10 insertions(+), 16 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index cde4e0a..bde7eba 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -290,13 +290,6 @@ void post_mobility_fixup(void)
+ 	int rc;
+ 	int activate_fw_token;
+ 
+-	rc = pseries_devicetree_update(MIGRATION_SCOPE);
+-	if (rc) {
+-		printk(KERN_ERR "Initial post-mobility device tree update "
+-		       "failed: %d\n", rc);
+-		return;
+-	}
+-
+ 	activate_fw_token = rtas_token("ibm,activate-firmware");
+ 	if (activate_fw_token == RTAS_UNKNOWN_SERVICE) {
+ 		printk(KERN_ERR "Could not make post-mobility "
+@@ -304,16 +297,17 @@ void post_mobility_fixup(void)
+ 		return;
+ 	}
+ 
+-	rc = rtas_call(activate_fw_token, 0, 1, NULL);
+-	if (!rc) {
+-		rc = pseries_devicetree_update(MIGRATION_SCOPE);
+-		if (rc)
+-			printk(KERN_ERR "Secondary post-mobility device tree "
+-			       "update failed: %d\n", rc);
+-	} else {
++	do {
++		rc = rtas_call(activate_fw_token, 0, 1, NULL);
++	} while (rtas_busy_delay(rc));
++
++	if (rc)
+ 		printk(KERN_ERR "Post-mobility activate-fw failed: %d\n", rc);
+-		return;
+-	}
++
++	rc = pseries_devicetree_update(MIGRATION_SCOPE);
++	if (rc)
++		printk(KERN_ERR "Post-mobility device tree update "
++			"failed: %d\n", rc);
+ 
+ 	return;
+ }
 -- 
 1.7.12.4
