@@ -1,19 +1,27 @@
 Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0157.outbound.protection.outlook.com [207.46.163.157])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 04BCD2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:28:11 +1100 (EST)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <a.zummo@towertech.it>
-Subject: [PATCH] rtc/ds3232: Enable ds3232 to work as wakeup source
-Date: Tue, 21 Jan 2014 13:24:51 +0800
-Message-ID: <1390281891-9632-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 23B372C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:40:26 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "bhelgaas@google.com"
+ <bhelgaas@google.com>
+Subject: RE: [PATCH 2/2] fsl/pci: The new pci suspend/resume implementation
+Date: Tue, 21 Jan 2014 05:40:17 +0000
+Message-ID: <fac9007cecb54cad99d371ac08698467@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389081848-26506-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389081848-26506-2-git-send-email-dongsheng.wang@freescale.com>
+ <4984978.bktZCpdLkC@vostro.rjw.lan>
+ <5ca123d4b32b49719cd9e8506916a9cf@BN1PR03MB188.namprd03.prod.outlook.com>
+In-Reply-To: <5ca123d4b32b49719cd9e8506916a9cf@BN1PR03MB188.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
- rtc-linux@googlegroups.com, Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "galak@codeaurora.org" <galak@codeaurora.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,164 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+Any more comments? :)
 
-Add suspend/resume and device_init_wakeup to enable ds3232 as
-wakeup source, /sys/class/rtc/rtcX/wakealarm for set wakeup alarm.
+Thanks,
+-Dongsheng
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-
-diff --git a/drivers/rtc/rtc-ds3232.c b/drivers/rtc/rtc-ds3232.c
-index b83bb5a5..a3c40d5 100644
---- a/drivers/rtc/rtc-ds3232.c
-+++ b/drivers/rtc/rtc-ds3232.c
-@@ -57,6 +57,7 @@ struct ds3232 {
- 	 * in the remove function.
- 	 */
- 	struct mutex mutex;
-+	bool suspended;
- 	int exiting;
- };
- 
-@@ -345,7 +346,15 @@ static irqreturn_t ds3232_irq(int irq, void *dev_id)
- 	struct ds3232 *ds3232 = i2c_get_clientdata(client);
- 
- 	disable_irq_nosync(irq);
--	schedule_work(&ds3232->work);
-+
-+	/*
-+	 * If rtc as a wakeup source, can't schedule the work
-+	 * at system resume flow, because at this time the i2c bus
-+	 * has not been resumed.
-+	 */
-+	if (!ds3232->suspended)
-+		schedule_work(&ds3232->work);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -363,22 +372,26 @@ static void ds3232_work(struct work_struct *work)
- 
- 	if (stat & DS3232_REG_SR_A1F) {
- 		control = i2c_smbus_read_byte_data(client, DS3232_REG_CR);
--		if (control < 0)
--			goto out;
--		/* disable alarm1 interrupt */
--		control &= ~(DS3232_REG_CR_A1IE);
--		i2c_smbus_write_byte_data(client, DS3232_REG_CR, control);
--
--		/* clear the alarm pend flag */
--		stat &= ~DS3232_REG_SR_A1F;
--		i2c_smbus_write_byte_data(client, DS3232_REG_SR, stat);
--
--		rtc_update_irq(ds3232->rtc, 1, RTC_AF | RTC_IRQF);
-+		if (control < 0) {
-+			pr_warn("Read DS3232 Control Register error."
-+				"Disable IRQ%d.\n", client->irq);
-+		} else {
-+			/* disable alarm1 interrupt */
-+			control &= ~(DS3232_REG_CR_A1IE);
-+			i2c_smbus_write_byte_data(client, DS3232_REG_CR,
-+						control);
-+
-+			/* clear the alarm pend flag */
-+			stat &= ~DS3232_REG_SR_A1F;
-+			i2c_smbus_write_byte_data(client, DS3232_REG_SR, stat);
-+
-+			rtc_update_irq(ds3232->rtc, 1, RTC_AF | RTC_IRQF);
-+
-+			if (!ds3232->exiting)
-+				enable_irq(client->irq);
-+		}
- 	}
- 
--out:
--	if (!ds3232->exiting)
--		enable_irq(client->irq);
- unlock:
- 	mutex_unlock(&ds3232->mutex);
- }
-@@ -411,23 +424,21 @@ static int ds3232_probe(struct i2c_client *client,
- 	if (ret)
- 		return ret;
- 
--	ds3232->rtc = devm_rtc_device_register(&client->dev, client->name,
--					  &ds3232_rtc_ops, THIS_MODULE);
--	if (IS_ERR(ds3232->rtc)) {
--		dev_err(&client->dev, "unable to register the class device\n");
--		return PTR_ERR(ds3232->rtc);
--	}
--
--	if (client->irq >= 0) {
-+	if (client->irq != NO_IRQ) {
- 		ret = devm_request_irq(&client->dev, client->irq, ds3232_irq, 0,
- 				 "ds3232", client);
- 		if (ret) {
- 			dev_err(&client->dev, "unable to request IRQ\n");
- 			return ret;
- 		}
-+
-+		device_init_wakeup(&client->dev, 1);
-+
- 	}
- 
--	return 0;
-+	ds3232->rtc = devm_rtc_device_register(&client->dev, client->name,
-+					  &ds3232_rtc_ops, THIS_MODULE);
-+	return PTR_ERR_OR_ZERO(ds3232->rtc);
- }
- 
- static int ds3232_remove(struct i2c_client *client)
-@@ -446,6 +457,42 @@ static int ds3232_remove(struct i2c_client *client)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+static int ds3232_suspend(struct device *dev)
-+{
-+	struct ds3232 *ds3232 = dev_get_drvdata(dev);
-+	struct i2c_client *client = to_i2c_client(dev);
-+
-+	if (device_can_wakeup(dev)) {
-+		ds3232->suspended = true;
-+		irq_set_irq_wake(client->irq, 1);
-+	}
-+
-+	return 0;
-+}
-+
-+static int ds3232_resume(struct device *dev)
-+{
-+	struct ds3232 *ds3232 = dev_get_drvdata(dev);
-+	struct i2c_client *client = to_i2c_client(dev);
-+
-+	if (ds3232->suspended) {
-+		ds3232->suspended = false;
-+
-+		/* Clear the hardware alarm pend flag */
-+		schedule_work(&ds3232->work);
-+
-+		irq_set_irq_wake(client->irq, 0);
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+static const struct dev_pm_ops ds3232_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(ds3232_suspend, ds3232_resume)
-+};
-+
- static const struct i2c_device_id ds3232_id[] = {
- 	{ "ds3232", 0 },
- 	{ }
-@@ -456,6 +503,7 @@ static struct i2c_driver ds3232_driver = {
- 	.driver = {
- 		.name = "rtc-ds3232",
- 		.owner = THIS_MODULE,
-+		.pm	= &ds3232_pm_ops,
- 	},
- 	.probe = ds3232_probe,
- 	.remove = ds3232_remove,
--- 
-1.8.5
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+b40534=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+> Dongsheng.Wang@freescale.com
+> Sent: Wednesday, January 08, 2014 3:13 PM
+> To: Rafael J. Wysocki
+> Cc: linuxppc-dev@lists.ozlabs.org; galak@codeaurora.org; Wood Scott-B0742=
+1;
+> linux-pci@vger.kernel.org; bhelgaas@google.com
+> Subject: RE: [PATCH 2/2] fsl/pci: The new pci suspend/resume implementati=
+on
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > Sent: Wednesday, January 08, 2014 4:42 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: bhelgaas@google.com; Wood Scott-B07421; galak@codeaurora.org; Zang =
+Roy-
+> > R61911; linux-pci@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH 2/2] fsl/pci: The new pci suspend/resume implementa=
+tion
+> >
+> > On Tuesday, January 07, 2014 04:04:08 PM Dongsheng Wang wrote:
+> > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > >
+> > > The new suspend/resume implementation, send pme turnoff message
+> > > in suspend, and send pme exit message in resume.
+> > >
+> > > Add a PME handler, to response PME & message interrupt.
+> > >
+> > > Change platform_driver->suspend/resume to syscore->suspend/resume.
+> >
+> > Can you please first describe the problem you're trying to address?
+> >
+> If we do nothing in suspend/resume, some platform PCIe ip-block can't gua=
+rantee
+> the link back to L0 state from sleep, then, when we read the EP device wi=
+ll hang.
+> Only we send pme turnoff message in pci controller suspend, and send pme =
+exit
+> message in resume, the link state will be normal.
+>=20
+> When we send pme turnoff message in pci controller suspend, the links wil=
+l into
+> l2/l3
+> ready, then, host cannot communicate with ep device, but pci-driver will =
+call
+> back EP
+> device to save them state. So we need to change platform_driver->suspend/=
+resume
+> to
+> syscore->suspend/resume.
+>=20
+> Thanks,
+> -Dongsheng
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
