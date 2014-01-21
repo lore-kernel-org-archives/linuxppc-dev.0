@@ -1,12 +1,21 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 22 Jan 2014 08:40:28 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Fix endian issues in kexec and crash dump code
-Message-ID: <20140122084028.62e6a6b2@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 046FD2C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 08:49:04 +1100 (EST)
+Message-ID: <1390340928.9227.13.camel@pasglop>
+Subject: Re: [PATCH] powerpc: set the correct ksp_limit on ppc32 when
+ switching to irq stack
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Date: Wed, 22 Jan 2014 08:48:48 +1100
+In-Reply-To: <20140121161450.GA3311@roeck-us.net>
+References: <1389932728-25178-1-git-send-email-haokexin@gmail.com>
+ <20140121161450.GA3311@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>, Kevin Hao <haokexin@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,107 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-01-21 at 08:14 -0800, Guenter Roeck wrote:
+> On Fri, Jan 17, 2014 at 12:25:28PM +0800, Kevin Hao wrote:
+> > Guenter Roeck has got the following call trace on a p2020 board:
+> >   Kernel stack overflow in process eb3e5a00, r1=eb79df90
+> >   CPU: 0 PID: 2838 Comm: ssh Not tainted 3.13.0-rc8-juniper-00146-g19eca00 #4
+> >   task: eb3e5a00 ti: c0616000 task.ti: ef440000
+> >   NIP: c003a420 LR: c003a410 CTR: c0017518
+> >   REGS: eb79dee0 TRAP: 0901   Not tainted (3.13.0-rc8-juniper-00146-g19eca00)
+> >   MSR: 00029000 <CE,EE,ME>  CR: 24008444  XER: 00000000
+> >   GPR00: c003a410 eb79df90 eb3e5a00 00000000 eb05d900 00000001 65d87646 00000000
+> >   GPR08: 00000000 020b8000 00000000 00000000 44008442
+> >   NIP [c003a420] __do_softirq+0x94/0x1ec
+> >   LR [c003a410] __do_softirq+0x84/0x1ec
+> >   Call Trace:
+> >   [eb79df90] [c003a410] __do_softirq+0x84/0x1ec (unreliable)
+> >   [eb79dfe0] [c003a970] irq_exit+0xbc/0xc8
+> >   [eb79dff0] [c000cc1c] call_do_irq+0x24/0x3c
+> >   [ef441f20] [c00046a8] do_IRQ+0x8c/0xf8
+> >   [ef441f40] [c000e7f4] ret_from_except+0x0/0x18
+> >   --- Exception: 501 at 0xfcda524
+> >       LR = 0x10024900
+> >   Instruction dump:
+> >   7c781b78 3b40000a 3a73b040 543c0024 3a800000 3b3913a0 7ef5bb78 48201bf9
+> >   5463103a 7d3b182e 7e89b92e 7c008146 <3ba00000> 7e7e9b78 48000014 57fff87f
+> >   Kernel panic - not syncing: kernel stack overflow
+> >   CPU: 0 PID: 2838 Comm: ssh Not tainted 3.13.0-rc8-juniper-00146-g19eca00 #4
+> >   Call Trace:
+> > 
+> > The reason is that we have used the wrong register to calculate the
+> > ksp_limit in commit cbc9565ee826 (powerpc: Remove ksp_limit on ppc64).
+> > Just fix it.
+> > 
+> > As suggested by Benjamin Herrenschmidt, also add the C prototype of the
+> > function in the comment in order to avoid such kind of errors in the
+> > future.
+> > 
+> Was this patch accepted, or are there any problems with it ?
+> I didn't see any comments, and it still isn't upstream nor in linux-next.
 
-We expose a number of OF properties in the kexec and crash dump code
-and these need to be big endian.
+It will be merged when I come back from vacation. It was too late for
+3.13 so I'll send it to Linus next week and will CC -stable.
 
-Cc: stable@vger.kernel.org # v3.13
-Signed-off-by: Anton Blanchard <anton@samba.org>
---
-
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 75d4f73..015ae55 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -196,7 +196,9 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
- 
- /* Values we need to export to the second kernel via the device tree. */
- static phys_addr_t kernel_end;
-+static phys_addr_t crashk_base;
- static phys_addr_t crashk_size;
-+static unsigned long long mem_limit;
- 
- static struct property kernel_end_prop = {
- 	.name = "linux,kernel-end",
-@@ -207,7 +209,7 @@ static struct property kernel_end_prop = {
- static struct property crashk_base_prop = {
- 	.name = "linux,crashkernel-base",
- 	.length = sizeof(phys_addr_t),
--	.value = &crashk_res.start,
-+	.value = &crashk_base
- };
- 
- static struct property crashk_size_prop = {
-@@ -219,9 +221,11 @@ static struct property crashk_size_prop = {
- static struct property memory_limit_prop = {
- 	.name = "linux,memory-limit",
- 	.length = sizeof(unsigned long long),
--	.value = &memory_limit,
-+	.value = &mem_limit,
- };
- 
-+#define cpu_to_be_ulong	__PASTE(cpu_to_be, BITS_PER_LONG)
-+
- static void __init export_crashk_values(struct device_node *node)
- {
- 	struct property *prop;
-@@ -237,8 +241,9 @@ static void __init export_crashk_values(struct device_node *node)
- 		of_remove_property(node, prop);
- 
- 	if (crashk_res.start != 0) {
-+		crashk_base = cpu_to_be_ulong(crashk_res.start),
- 		of_add_property(node, &crashk_base_prop);
--		crashk_size = resource_size(&crashk_res);
-+		crashk_size = cpu_to_be_ulong(resource_size(&crashk_res));
- 		of_add_property(node, &crashk_size_prop);
- 	}
- 
-@@ -246,6 +251,7 @@ static void __init export_crashk_values(struct device_node *node)
- 	 * memory_limit is required by the kexec-tools to limit the
- 	 * crash regions to the actual memory used.
- 	 */
-+	mem_limit = cpu_to_be_ulong(memory_limit);
- 	of_update_property(node, &memory_limit_prop);
- }
- 
-@@ -264,7 +270,7 @@ static int __init kexec_setup(void)
- 		of_remove_property(node, prop);
- 
- 	/* information needed by userspace when using default_machine_kexec */
--	kernel_end = __pa(_end);
-+	kernel_end = cpu_to_be_ulong(__pa(_end));
- 	of_add_property(node, &kernel_end_prop);
- 
- 	export_crashk_values(node);
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index be4e6d6..59d229a 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -369,6 +369,7 @@ void default_machine_kexec(struct kimage *image)
- 
- /* Values we need to export to the second kernel via the device tree. */
- static unsigned long htab_base;
-+static unsigned long htab_size;
- 
- static struct property htab_base_prop = {
- 	.name = "linux,htab-base",
-@@ -379,7 +380,7 @@ static struct property htab_base_prop = {
- static struct property htab_size_prop = {
- 	.name = "linux,htab-size",
- 	.length = sizeof(unsigned long),
--	.value = &htab_size_bytes,
-+	.value = &htab_size,
- };
- 
- static int __init export_htab_values(void)
-@@ -403,8 +404,9 @@ static int __init export_htab_values(void)
- 	if (prop)
- 		of_remove_property(node, prop);
- 
--	htab_base = __pa(htab_address);
-+	htab_base = cpu_to_be64(__pa(htab_address));
- 	of_add_property(node, &htab_base_prop);
-+	htab_size = cpu_to_be64(htab_size_bytes);
- 	of_add_property(node, &htab_size_prop);
- 
- 	of_node_put(node);
+Cheers,
+Ben.
