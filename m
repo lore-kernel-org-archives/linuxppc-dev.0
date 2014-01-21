@@ -1,18 +1,29 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 15DF72C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 13:31:12 +1100 (EST)
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
-To: <mturquette@linaro.org>
-Subject: [PATCH] clk: mpc85xx: Update the driver to align to new clock bindings
-Date: Tue, 21 Jan 2014 09:32:45 +0800
-Message-ID: <1390267965-22408-1-git-send-email-Yuantian.Tang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id EF9062C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 13:43:39 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 2/3] powerpc/85xx: Provide two functions to save/restore
+ the core registers
+Date: Tue, 21 Jan 2014 02:43:30 +0000
+Message-ID: <7db8f36932f84bc5bdcb8a7777c55383@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389686397-46555-2-git-send-email-dongsheng.wang@freescale.com>
+ <1389743456.24905.143.camel@snotra.buserror.net>
+ <a11e0d7b3b954aa68483513340043452@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1389842249.24905.196.camel@snotra.buserror.net>
+ <6f81ef13c25744b685b99a3fbb304f1b@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1390266361.24905.399.camel@snotra.buserror.net>
+In-Reply-To: <1390266361.24905.399.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,164 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <yuantian.tang@freescale.com>
-
-The clock bindings for Freescale CoreNet platform are updated.
-So, the driver needs to be updated accordingly.
-The main changes include:
-	- Added a new node to present the input system clock
-	- Changed PLL and MUX's compatible string
-
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
- drivers/clk/clk-ppc-corenet.c | 70 +++++++++++++++++++++++++++++--------------
- 1 file changed, 48 insertions(+), 22 deletions(-)
-
-diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
-index c4f76ed..8b284be 100644
---- a/drivers/clk/clk-ppc-corenet.c
-+++ b/drivers/clk/clk-ppc-corenet.c
-@@ -27,7 +27,6 @@ struct cmux_clk {
- #define CLKSEL_ADJUST		BIT(0)
- #define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
- 
--static void __iomem *base;
- static unsigned int clocks_per_pll;
- 
- static int cmux_set_parent(struct clk_hw *hw, u8 idx)
-@@ -100,7 +99,11 @@ static void __init core_mux_init(struct device_node *np)
- 		pr_err("%s: could not allocate cmux_clk\n", __func__);
- 		goto err_name;
- 	}
--	cmux_clk->reg = base + offset;
-+	cmux_clk->reg = of_iomap(np, 0);
-+	if (!cmux_clk->reg) {
-+		pr_err("%s: could not map register\n", __func__);
-+		goto err_clk;
-+	}
- 
- 	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
- 	if (node && (offset >= 0x80))
-@@ -143,38 +146,39 @@ err_name:
- 
- static void __init core_pll_init(struct device_node *np)
- {
--	u32 offset, mult;
-+	u32 mult;
- 	int i, rc, count;
- 	const char *clk_name, *parent_name;
- 	struct clk_onecell_data *onecell_data;
- 	struct clk      **subclks;
-+	void __iomem *base;
- 
--	rc = of_property_read_u32(np, "reg", &offset);
--	if (rc) {
--		pr_err("%s: could not get reg property\n", np->name);
-+	base = of_iomap(np, 0);
-+	if (!base) {
-+		pr_err("clk-ppc: iomap error\n");
- 		return;
- 	}
- 
- 	/* get the multiple of PLL */
--	mult = ioread32be(base + offset);
-+	mult = ioread32be(base);
- 
- 	/* check if this PLL is disabled */
- 	if (mult & PLL_KILL) {
- 		pr_debug("PLL:%s is disabled\n", np->name);
--		return;
-+		goto err_map;
- 	}
- 	mult = (mult >> 1) & 0x3f;
- 
- 	parent_name = of_clk_get_parent_name(np, 0);
- 	if (!parent_name) {
- 		pr_err("PLL: %s must have a parent\n", np->name);
--		return;
-+		goto err_map;
- 	}
- 
- 	count = of_property_count_strings(np, "clock-output-names");
- 	if (count < 0 || count > 4) {
- 		pr_err("%s: clock is not supported\n", np->name);
--		return;
-+		goto err_map;
- 	}
- 
- 	/* output clock number per PLL */
-@@ -183,7 +187,7 @@ static void __init core_pll_init(struct device_node *np)
- 	subclks = kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
- 	if (!subclks) {
- 		pr_err("%s: could not allocate subclks\n", __func__);
--		return;
-+		goto err_map;
- 	}
- 
- 	onecell_data = kzalloc(sizeof(struct clk_onecell_data), GFP_KERNEL);
-@@ -230,30 +234,52 @@ static void __init core_pll_init(struct device_node *np)
- 		goto err_cell;
- 	}
- 
-+	iounmap(base);
- 	return;
- err_cell:
- 	kfree(onecell_data);
- err_clks:
- 	kfree(subclks);
-+err_map:
-+	iounmap(base);
-+}
-+
-+static void __init sysclk_init(struct device_node *node)
-+{
-+	struct clk *clk;
-+	const char *clk_name = node->name;
-+	struct device_node *np = of_get_parent(node);
-+	u32 rate;
-+
-+	if (!np) {
-+		pr_err("ppc-clk: could not get parent node\n");
-+		return;
-+	}
-+
-+	if (of_property_read_u32(np, "clock-frequency", &rate)) {
-+		of_node_put(node);
-+		return;
-+	}
-+
-+	of_property_read_string(np, "clock-output-names", &clk_name);
-+
-+	clk = clk_register_fixed_rate(NULL, clk_name, NULL, CLK_IS_ROOT, rate);
-+	if (!IS_ERR(clk))
-+		of_clk_add_provider(np, of_clk_src_simple_get, clk);
- }
- 
- static const struct of_device_id clk_match[] __initconst = {
--	{ .compatible = "fixed-clock", .data = of_fixed_clk_setup, },
--	{ .compatible = "fsl,core-pll-clock", .data = core_pll_init, },
--	{ .compatible = "fsl,core-mux-clock", .data = core_mux_init, },
-+	{ .compatible = "fsl,qoriq-sysclk-1.0", .data = sysclk_init, },
-+	{ .compatible = "fsl,qoriq-sysclk-2.0", .data = sysclk_init, },
-+	{ .compatible = "fsl,qoriq-core-pll-1.0", .data = core_pll_init, },
-+	{ .compatible = "fsl,qoriq-core-pll-2.0", .data = core_pll_init, },
-+	{ .compatible = "fsl,qoriq-core-mux-1.0", .data = core_mux_init, },
-+	{ .compatible = "fsl,qoriq-core-mux-2.0", .data = core_mux_init, },
- 	{}
- };
- 
- static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
- {
--	struct device_node *np;
--
--	np = pdev->dev.of_node;
--	base = of_iomap(np, 0);
--	if (!base) {
--		dev_err(&pdev->dev, "iomap error\n");
--		return -ENOMEM;
--	}
- 	of_clk_init(clk_match);
- 
- 	return 0;
--- 
-1.8.0
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgSmFudWFyeSAyMSwgMjAxNCA5OjA2IEFNDQo+IFRvOiBXYW5n
+IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgWmhhbyBD
+aGVuaHVpLUIzNTMzNjsgYW50b25AZW5vbXNnLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5v
+emxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8zXSBwb3dlcnBjLzg1eHg6IFByb3Zp
+ZGUgdHdvIGZ1bmN0aW9ucyB0byBzYXZlL3Jlc3RvcmUgdGhlDQo+IGNvcmUgcmVnaXN0ZXJzDQo+
+IA0KPiBPbiBNb24sIDIwMTQtMDEtMjAgYXQgMDA6MDMgLTA2MDAsIFdhbmcgRG9uZ3NoZW5nLUI0
+MDUzNCB3cm90ZToNCj4gPiA+ID4gPiA+ICsJLyoNCj4gPiA+ID4gPiA+ICsJICogTmVlZCB0byBz
+YXZlIGZsb2F0LXBvaW50IHJlZ2lzdGVycyBpZiBNU1JbRlBdID0gMS4NCj4gPiA+ID4gPiA+ICsJ
+ICovDQo+ID4gPiA+ID4gPiArCW1mbXNyCXIxMg0KPiA+ID4gPiA+ID4gKwlhbmRpLglyMTIsIHIx
+MiwgTVNSX0ZQDQo+ID4gPiA+ID4gPiArCWJlcQkxZg0KPiA+ID4gPiA+ID4gKwlkb19zcl9mcHJf
+cmVncyhzYXZlKQ0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gQyBjb2RlIHNob3VsZCBoYXZlIGFscmVh
+ZHkgZW5zdXJlZCB0aGF0IE1TUltGUF0gaXMgbm90IDEgKGFuZCB0aHVzIHRoZQ0KPiBGUA0KPiA+
+ID4gPiA+IGNvbnRleHQgaGFzIGJlZW4gc2F2ZWQpLg0KPiA+ID4gPiA+DQo+ID4gPiA+DQo+ID4g
+PiA+IFllcywgcmlnaHQuIEJ1dCBJIG1lYW4gaWYgdGhlIEZQIHN0aWxsIHVzZSBpbiBjb3JlIHNh
+dmUgZmxvdywgd2UgbmVlZCB0bw0KPiBzYXZlDQo+ID4gPiBpdC4NCj4gPiA+ID4gSW4gdGhpcyBw
+cm9jZXNzLCBpIGRvbid0IGNhcmUgd2hhdCBvdGhlciBjb2RlIGRvLCB3ZSBuZWVkIHRvIGZvY3Vz
+IG9uIG5vdA0KPiA+ID4gbG9zaW5nDQo+ID4gPiA+IHZhbHVhYmxlIGRhdGEuDQo+ID4gPg0KPiA+
+ID4gSXQgaXMgbm90IGFsbG93ZWQgdG8gdXNlIEZQIGF0IHRoYXQgcG9pbnQuDQo+ID4gPg0KPiA+
+IElmIE1TUltGUF0gbm90IGFjdGl2ZSwgdGhhdCBpcyBGUCBub3QgYWxsb3dlZCB0byB1c2UuDQo+
+ID4gQnV0IGhlcmUgaXMgYSBub3JtYWwganVkZ21lbnQsIGlmIE1TUltGUF0gaXMgYWN0aXZlLCB0
+aGlzIG1lYW5zIHRoYXQgdGhlDQo+IGZsb2F0aW5nDQo+ID4gcG9pbnQgbW9kdWxlIGlzIGJlaW5n
+IHVzZWQuIEkgb2ZmZXIgaXMgYSBmdW5jdGlvbiBvZiB0aGUgaW50ZXJmYWNlLCB3ZSBkb24ndA0K
+PiBrbm93DQo+ID4gd2hlcmUgaXMgdGhlIGZ1bmN0aW9uIHdpbGwgYmUgY2FsbGVkLiBKdXN0IGJl
+Y2F1c2Ugd2UgY2FsbCB0aGlzIGZ1bmN0aW9uIGluDQo+IHRoZQ0KPiA+IGNvbnRleHQgb2YgdW5j
+ZXJ0YWludHksIHdlIG5lZWQgdGhpcyBqdWRnbWVudCB0byBlbnN1cmUgdGhhdCBubyBkYXRhIGlz
+IGxvc3QuDQo+IA0KPiBUaGUgd2hvbGUgcG9pbnQgb2YgY2FsbGluZyBlbmFibGVfa2VybmVsX2Zw
+KCkgaW4gQyBjb2RlIGJlZm9yZQ0KPiBzdXNwZW5kaW5nIGlzIHRvIGVuc3VyZSB0aGF0IHRoZSBG
+UCBzdGF0ZSBnZXRzIHNhdmVkLiAgSWYgRlAgaXMgdXNlZA0KPiBhZnRlciB0aGF0IHBvaW50IGl0
+IGlzIGEgYnVnLiAgSWYgeW91J3JlIHdvcnJpZWQgYWJvdXQgc3VjaCBidWdzLCB0aGVuDQo+IGNs
+ZWFyIE1TUltGUF0gYWZ0ZXIgY2FsbGluZyBlbmFibGVfa2VybmVsX2ZwKCksIHJhdGhlciB0aGFu
+IGFkZGluZw0KPiByZWR1bmRhbnQgc3RhdGUgc2F2aW5nLg0KPiANCg0KZW5hYmxlX2tlcm5lbF9m
+cCgpIGNhbGxpbmcgaW4gTUVNIHN1c3BlbmQgZmxvdy4NCkhpYmVybmF0aW9uIGlzIGRpZmZlcmVu
+dCB3aXRoIE1FTSBzdXNwZW5kLCBhbmQgSSdtIG5vdCBzdXJlIHdoZXJlIHdpbGwgY2FsbCB0aGlz
+DQppbnRlcmZhY2UsIHNvIHdlIG5lZWQgdG8gZW5zdXJlIHRoZSBpbnRlZ3JpdHkgb2YgdGhlIGNv
+cmUgc2F2aW5nLiBJIGRvbid0IHRoaW5rDQp0aGlzIGNvZGUgaXMgKnJlZHVuZGFudCouIEkgdHJ1
+c3QgdGhhdCB0aGUga2VybmVsIGNhbiBrZWVwIHRoZSBGUCByZWxhdGVkDQpvcGVyYXRpb25zLCB0
+aGF0J3Mgd2h5IGEganVkZ21lbnQgaXMgaGVyZS4gOikNCg0KVGhhbmtzLA0KLURvbmdzaGVuZw0K
