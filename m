@@ -1,19 +1,24 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
- [IPv6:2607:f8b0:4002:c01::231])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
+ [IPv6:2607:f8b0:400e:c02::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 30ABB2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 19:14:02 +1100 (EST)
-Received: by mail-yh0-f49.google.com with SMTP id b6so2672761yha.36
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 00:13:58 -0800 (PST)
-From: Liu Ping Fan <kernelfans@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
-Subject: [PATCH v2] powernv: kvm: make _PAGE_NUMA take effect
-Date: Tue, 21 Jan 2014 16:15:29 +0800
-Message-Id: <1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 54A082C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 19:41:08 +1100 (EST)
+Received: by mail-pd0-f169.google.com with SMTP id v10so7931117pde.28
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 00:41:05 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1390291850-17849-1-git-send-email-geert@linux-m68k.org>
+References: <1390291850-17849-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 21 Jan 2014 09:41:05 +0100
+Message-ID: <CAMuHMdVBD7Gn_0zNBD+oVq11=UrCrB-Aocm4EmGRgHdRqF+XoA@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.13
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To make sure that on host, the pages marked with _PAGE_NUMA result in a fault
-when guest access them, we should force the checking when guest uses hypercall
-to setup hpte.
+On Tue, Jan 21, 2014 at 9:10 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.13[1]  to v3.13-rc8[3], the summaries are:
+>   - build errors: +22/-3
 
-Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
----
-v2:
-  It should be the reply to "[PATCH 2/4] powernv: kvm: make _PAGE_NUMA take effect"
-  And I imporve the changelog according to Aneesh's suggestion.
----
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'dmac_resource.end'):  => 87:2
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'dmac_resource.start'):  => 86:2
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'epbr_resources[0].end'):  => 69:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'epbr_resources[0].start'):  => 68:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'epbr_resources[1].end'):  => 74:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'epbr_resources[1].start'):  => 73:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'femi_resources[0].end'):  => 50:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'femi_resources[0].start'):  => 49:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'femi_resources[1].end'):  => 55:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'femi_resources[1].start'):  => 54:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'pbr_resources[0].end'):  => 100:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'pbr_resources[0].start'):  => 99:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'pbr_resources[1].end'):  => 105:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: (near initialization for 'pbr_resources[1].start'):  => 104:3
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: braced-group within expression allowed only inside a function:
+=> 30:12, 73:12, 31:10, 99:12, 68:12, 36:10, 86:11, 54:12, 74:10,
+55:10, 104:12, 49:12, 69:10, 87:9, 105:10, 35:12, 50:10, 100:10
+  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
+error: initializer element is not constant:  => 74:3, 86:2, 55:3,
+105:3, 73:3, 68:3, 100:3, 104:3, 99:3, 87:2, 50:3, 69:3, 49:3, 54:3
+  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error:
+'cached_to_uncached' undeclared (first use in this function):  =>
+99:17
+  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error: implicit
+declaration of function 'cpu_context'
+[-Werror=implicit-function-declaration]:  => 192:2
+  + /scratch/kisskb/src/kernel/bounds.c: error: -mcall-aixdesc must be
+big endian:  => 1:0
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 9c51544..af8602d 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -232,7 +232,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 		/* Look up the Linux PTE for the backing page */
- 		pte_size = psize;
- 		pte = lookup_linux_pte(pgdir, hva, writing, &pte_size);
--		if (pte_present(pte)) {
-+		if (pte_present(pte) && !pte_numa(pte)) {
- 			if (writing && !pte_write(pte))
- 				/* make the actual HPTE be read-only */
- 				ptel = hpte_make_readonly(ptel);
--- 
-1.8.1.4
+sh-randconfig
+
+  + /scratch/kisskb/src/scripts/mod/devicetable-offsets.c: error:
+-mcall-aixdesc must be big endian:  => 1:0
+  + /scratch/kisskb/src/scripts/mod/empty.c: error: -mcall-aixdesc
+must be big endian:  => 1:0
+  + <stdin>: error: -mcall-aixdesc must be big endian:  => 1:0
+
+powerpc-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/7082/ (119 out of 120 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/7056/ (119 out of 120 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
