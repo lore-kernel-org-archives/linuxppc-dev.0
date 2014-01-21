@@ -1,40 +1,11 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F30972C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 14:40:58 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 21 Jan 2014 13:40:55 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 226F12CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 14:40:53 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0L3LpNP53477388
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 14:21:51 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0L3epb6031521
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 14:40:52 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Liu ping fan <kernelfans@gmail.com>
-Subject: Re: [PATCH 0/4] powernv: kvm: numa fault improvement
-In-Reply-To: <CAFgQCTt2eWHF4iZP6bx075ZFMx8yhqnZgHnZwm2uLLOOCar+XQ@mail.gmail.com>
-References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <DB55CAD2-72AF-4740-9904-193071C2740B@suse.de>
- <CAFgQCTthThEtNEG7EOuYFCtOm46-br59u9QUNkxF0w-TM+RdJQ@mail.gmail.com>
- <87d2jm7j3d.fsf@linux.vnet.ibm.com>
- <CAFgQCTt2eWHF4iZP6bx075ZFMx8yhqnZgHnZwm2uLLOOCar+XQ@mail.gmail.com>
-Date: Tue, 21 Jan 2014 09:10:47 +0530
-Message-ID: <87ob36ypc0.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] selftests: powerpc: Import Anton's memcpy / copy_tofrom_user
+ tests
+Date: Tue, 21 Jan 2014 15:22:17 +1100
+Message-Id: <1390278137-23699-1-git-send-email-mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,54 +15,345 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Liu ping fan <kernelfans@gmail.com> writes:
+Turn Anton's memcpy / copy_tofrom_user test into something that can
+live in tools/testing/selftests.
 
-> On Mon, Jan 20, 2014 at 11:45 PM, Aneesh Kumar K.V
-> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->> Liu ping fan <kernelfans@gmail.com> writes:
->>
->>> On Thu, Jan 9, 2014 at 8:08 PM, Alexander Graf <agraf@suse.de> wrote:
->>>>
->>>> On 11.12.2013, at 09:47, Liu Ping Fan <kernelfans@gmail.com> wrote:
->>>>
->>>>> This series is based on Aneesh's series  "[PATCH -V2 0/5] powerpc: mm: Numa faults support for ppc64"
->>>>>
->>>>> For this series, I apply the same idea from the previous thread "[PATCH 0/3] optimize for powerpc _PAGE_NUMA"
->>>>> (for which, I still try to get a machine to show nums)
->>>>>
->>>>> But for this series, I think that I have a good justification -- the fact of heavy cost when switching context between guest and host,
->>>>> which is  well known.
->>>>
->>>> This cover letter isn't really telling me anything. Please put a proper description of what you're trying to achieve, why you're trying to achieve what you're trying and convince your readers that it's a good idea to do it the way you do it.
->>>>
->>> Sorry for the unclear message. After introducing the _PAGE_NUMA,
->>> kvmppc_do_h_enter() can not fill up the hpte for guest. Instead, it
->>> should rely on host's kvmppc_book3s_hv_page_fault() to call
->>> do_numa_page() to do the numa fault check. This incurs the overhead
->>> when exiting from rmode to vmode.  My idea is that in
->>> kvmppc_do_h_enter(), we do a quick check, if the page is right placed,
->>> there is no need to exit to vmode (i.e saving htab, slab switching)
->>
->> Can you explain more. Are we looking at hcall from guest  and
->> hypervisor handling them in real mode ? If so why would guest issue a
->> hcall on a pte entry that have PAGE_NUMA set. Or is this about
->> hypervisor handling a missing hpte, because of host swapping this page
->> out ? In that case how we end up in h_enter ? IIUC for that case we
->> should get to kvmppc_hpte_hv_fault.
->>
-> After setting _PAGE_NUMA, we should flush out all hptes both in host's
-> htab and guest's. So when guest tries to access memory, host finds
-> that there is not hpte ready for guest in guest's htab. And host
-> should raise dsi to guest.
+It requires one turd in arch/powerpc/lib/memcpy_64.S, but it's pretty
+harmless IMHO.
 
-Now guest receive that fault, removes the PAGE_NUMA bit and do an
-hpte_insert. So before we do an hpte_insert (or H_ENTER) we should have
-cleared PAGE_NUMA bit.
+We are sailing very close to the wind with the feature macros. We define
+them to nothing, which currently means we get a few extra nops and
+include the unaligned calls.
 
->This incurs that guest ends up in h_enter.
-> And you can see in current code, we also try this quick path firstly.
-> Only if fail, we will resort to slow path --  kvmppc_hpte_hv_fault.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/lib/memcpy_64.S                       |  2 +
+ tools/testing/selftests/powerpc/Makefile           |  2 +-
+ tools/testing/selftests/powerpc/copyloops/Makefile | 29 +++++++
+ .../selftests/powerpc/copyloops/asm/ppc_asm.h      | 86 +++++++++++++++++++
+ .../selftests/powerpc/copyloops/asm/processor.h    |  0
+ .../selftests/powerpc/copyloops/copyuser_64.S      |  1 +
+ .../selftests/powerpc/copyloops/copyuser_power7.S  |  1 +
+ .../selftests/powerpc/copyloops/memcpy_64.S        |  1 +
+ .../selftests/powerpc/copyloops/memcpy_power7.S    |  1 +
+ .../testing/selftests/powerpc/copyloops/validate.c | 99 ++++++++++++++++++++++
+ tools/testing/selftests/powerpc/utils.h            |  3 +
+ 11 files changed, 224 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/asm/processor.h
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+ create mode 120000 tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+ create mode 100644 tools/testing/selftests/powerpc/copyloops/validate.c
 
-hmm ? hpte_hv_fault is the hypervisor handling the fault.
-
--aneesh
+diff --git a/arch/powerpc/lib/memcpy_64.S b/arch/powerpc/lib/memcpy_64.S
+index d2bbbc8..72ad055 100644
+--- a/arch/powerpc/lib/memcpy_64.S
++++ b/arch/powerpc/lib/memcpy_64.S
+@@ -14,7 +14,9 @@ _GLOBAL(memcpy)
+ BEGIN_FTR_SECTION
+ 	std	r3,48(r1)	/* save destination pointer for return value */
+ FTR_SECTION_ELSE
++#ifndef SELFTEST
+ 	b	memcpy_power7
++#endif
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+ 	PPC_MTOCRF(0x01,r5)
+ 	cmpldi	cr1,r5,16
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index bd24ae5..316194f 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
+ 
+ export CC CFLAGS
+ 
+-TARGETS = pmu
++TARGETS = pmu copyloops
+ 
+ endif
+ 
+diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
+new file mode 100644
+index 0000000..6f2d3be
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/Makefile
+@@ -0,0 +1,29 @@
++# The loops are all 64-bit code
++CFLAGS += -m64
++CFLAGS += -I$(CURDIR)
++CFLAGS += -D SELFTEST
++
++# Use our CFLAGS for the implicit .S rule
++ASFLAGS = $(CFLAGS)
++
++PROGS := copyuser_64 copyuser_power7 memcpy_64 memcpy_power7
++EXTRA_SOURCES := validate.c ../harness.c
++
++all: $(PROGS)
++
++copyuser_64:     CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_base
++copyuser_power7: CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_power7
++memcpy_64:       CPPFLAGS += -D COPY_LOOP=test_memcpy
++memcpy_power7:   CPPFLAGS += -D COPY_LOOP=test_memcpy_power7
++
++$(PROGS): $(EXTRA_SOURCES)
++
++run_tests: all
++	@-for PROG in $(PROGS); do \
++		./$$PROG; \
++	done;
++
++clean:
++	rm -f $(PROGS) *.o
++
++.PHONY: all run_tests clean
+diff --git a/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+new file mode 100644
+index 0000000..ccd9c84
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/asm/ppc_asm.h
+@@ -0,0 +1,86 @@
++#include <ppc-asm.h>
++
++#define CONFIG_ALTIVEC
++
++#define r1	1
++
++#define vr0     0
++#define vr1     1
++#define vr2     2
++#define vr3     3
++#define vr4     4
++#define vr5     5
++#define vr6     6
++#define vr7     7
++#define vr8     8
++#define vr9     9
++#define vr10    10
++#define vr11    11
++#define vr12    12
++#define vr13    13
++#define vr14    14
++#define vr15    15
++#define vr16    16
++#define vr17    17
++#define vr18    18
++#define vr19    19
++#define vr20    20
++#define vr21    21
++#define vr22    22
++#define vr23    23
++#define vr24    24
++#define vr25    25
++#define vr26    26
++#define vr27    27
++#define vr28    28
++#define vr29    29
++#define vr30    30
++#define vr31    31
++
++#define R14 r14
++#define R15 r15
++#define R16 r16
++#define R17 r17
++#define R18 r18
++#define R19 r19
++#define R20 r20
++#define R21 r21
++#define R22 r22
++
++#define STACKFRAMESIZE	256
++#define STK_PARAM(i)	(48 + ((i)-3)*8)
++#define STK_REG(i)	(112 + ((i)-14)*8)
++
++#define _GLOBAL(A) FUNC_START(test_ ## A)
++
++#define PPC_MTOCRF(A, B)	mtocrf A, B
++
++FUNC_START(enter_vmx_usercopy)
++	li	r3,1
++	blr
++
++FUNC_START(exit_vmx_usercopy)
++	li	r3,0
++	blr
++
++FUNC_START(enter_vmx_copy)
++	li	r3,1
++	blr
++
++FUNC_START(exit_vmx_copy)
++	blr
++
++FUNC_START(memcpy_power7)
++	blr
++
++FUNC_START(__copy_tofrom_user_power7)
++	blr
++
++FUNC_START(__copy_tofrom_user_base)
++	blr
++
++#define BEGIN_FTR_SECTION
++#define FTR_SECTION_ELSE
++#define ALT_FTR_SECTION_END_IFCLR(x)
++#define ALT_FTR_SECTION_END(x, y)
++#define END_FTR_SECTION_IFCLR(x)
+diff --git a/tools/testing/selftests/powerpc/copyloops/asm/processor.h b/tools/testing/selftests/powerpc/copyloops/asm/processor.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a/tools/testing/selftests/powerpc/copyloops/copyuser_64.S b/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+new file mode 120000
+index 0000000..f1c418a
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/copyuser_64.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S b/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+new file mode 120000
+index 0000000..4786895
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/copyuser_power7.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/memcpy_64.S b/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+new file mode 120000
+index 0000000..cce33fb
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/memcpy_64.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S b/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+new file mode 120000
+index 0000000..0d6fbfa
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/lib/memcpy_power7.S
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/copyloops/validate.c b/tools/testing/selftests/powerpc/copyloops/validate.c
+new file mode 100644
+index 0000000..1750ff5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/copyloops/validate.c
+@@ -0,0 +1,99 @@
++#include <malloc.h>
++#include <string.h>
++#include <stdlib.h>
++#include <stdbool.h>
++
++#include "../utils.h"
++
++#define MAX_LEN 8192
++#define MAX_OFFSET 16
++#define MIN_REDZONE 128
++#define BUFLEN (MAX_LEN+MAX_OFFSET+2*MIN_REDZONE)
++#define POISON 0xa5
++
++unsigned long COPY_LOOP(void *to, const void *from, unsigned long size);
++
++static void do_one(char *src, char *dst, unsigned long src_off,
++		   unsigned long dst_off, unsigned long len, void *redzone,
++		   void *fill)
++{
++	char *srcp, *dstp;
++	unsigned long ret;
++	unsigned long i;
++
++	srcp = src + MIN_REDZONE + src_off;
++	dstp = dst + MIN_REDZONE + dst_off;
++
++	memset(src, POISON, BUFLEN);
++	memset(dst, POISON, BUFLEN);
++	memcpy(srcp, fill, len);
++
++	ret = COPY_LOOP(dstp, srcp, len);
++	if (ret && ret != (unsigned long)dstp) {
++		printf("(%p,%p,%ld) returned %ld\n", dstp, srcp, len, ret);
++		abort();
++	}
++
++	if (memcmp(dstp, srcp, len)) {
++		printf("(%p,%p,%ld) miscompare\n", dstp, srcp, len);
++		printf("src: ");
++		for (i = 0; i < len; i++)
++			printf("%02x ", srcp[i]);
++		printf("\ndst: ");
++		for (i = 0; i < len; i++)
++			printf("%02x ", dstp[i]);
++		printf("\n");
++		abort();
++	}
++
++	if (memcmp(dst, redzone, dstp - dst)) {
++		printf("(%p,%p,%ld) redzone before corrupted\n",
++		       dstp, srcp, len);
++		abort();
++	}
++
++	if (memcmp(dstp+len, redzone, dst+BUFLEN-(dstp+len))) {
++		printf("(%p,%p,%ld) redzone after corrupted\n",
++		       dstp, srcp, len);
++		abort();
++	}
++}
++
++int test_copy_loop(void)
++{
++	char *src, *dst, *redzone, *fill;
++	unsigned long len, src_off, dst_off;
++	unsigned long i;
++
++	src = memalign(BUFLEN, BUFLEN);
++	dst = memalign(BUFLEN, BUFLEN);
++	redzone = malloc(BUFLEN);
++	fill = malloc(BUFLEN);
++
++	if (!src || !dst || !redzone || !fill) {
++		fprintf(stderr, "malloc failed\n");
++		exit(1);
++	}
++
++	memset(redzone, POISON, BUFLEN);
++
++	/* Fill with sequential bytes */
++	for (i = 0; i < BUFLEN; i++)
++		fill[i] = i & 0xff;
++
++	for (len = 1; len < MAX_LEN; len++) {
++		for (src_off = 0; src_off < MAX_OFFSET; src_off++) {
++			for (dst_off = 0; dst_off < MAX_OFFSET; dst_off++) {
++				do_one(src, dst, src_off, dst_off, len,
++				       redzone, fill);
++			}
++		}
++	}
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_copy_loop, str(COPY_LOOP));
++}
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index 5851c4b..0de0644 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -31,4 +31,7 @@ do {								\
+ 	}							\
+ } while (0)
+ 
++#define _str(s) #s
++#define str(s) _str(s)
++
+ #endif /* _SELFTESTS_POWERPC_UTILS_H */
+-- 
+1.8.3.2
