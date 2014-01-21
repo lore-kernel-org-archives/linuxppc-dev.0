@@ -1,24 +1,28 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-qa0-x229.google.com (mail-qa0-x229.google.com
+ [IPv6:2607:f8b0:400d:c00::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 54A082C009C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 19:41:08 +1100 (EST)
-Received: by mail-pd0-f169.google.com with SMTP id v10so7931117pde.28
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 00:41:05 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id A8ACA2C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 20:07:25 +1100 (EST)
+Received: by mail-qa0-f41.google.com with SMTP id w8so6408166qac.28
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 01:07:21 -0800 (PST)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1390291850-17849-1-git-send-email-geert@linux-m68k.org>
-References: <1390291850-17849-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 21 Jan 2014 09:41:05 +0100
-Message-ID: <CAMuHMdVBD7Gn_0zNBD+oVq11=UrCrB-Aocm4EmGRgHdRqF+XoA@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.13
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <87ob36ypc0.fsf@linux.vnet.ibm.com>
+References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <DB55CAD2-72AF-4740-9904-193071C2740B@suse.de>
+ <CAFgQCTthThEtNEG7EOuYFCtOm46-br59u9QUNkxF0w-TM+RdJQ@mail.gmail.com>
+ <87d2jm7j3d.fsf@linux.vnet.ibm.com>
+ <CAFgQCTt2eWHF4iZP6bx075ZFMx8yhqnZgHnZwm2uLLOOCar+XQ@mail.gmail.com>
+ <87ob36ypc0.fsf@linux.vnet.ibm.com>
+Date: Tue, 21 Jan 2014 17:07:21 +0800
+Message-ID: <CAFgQCTuUz-=2Uhi3Zj001-yzSCDe9skCTPkORjCuLW0XSNhjow@mail.gmail.com>
+Subject: Re: [PATCH 0/4] powernv: kvm: numa fault improvement
+From: Liu ping fan <kernelfans@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux-sh list <linux-sh@vger.kernel.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,75 +32,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 21, 2014 at 9:10 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.13[1]  to v3.13-rc8[3], the summaries are:
->   - build errors: +22/-3
+On Tue, Jan 21, 2014 at 11:40 AM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Liu ping fan <kernelfans@gmail.com> writes:
+>
+>> On Mon, Jan 20, 2014 at 11:45 PM, Aneesh Kumar K.V
+>> <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>> Liu ping fan <kernelfans@gmail.com> writes:
+>>>
+>>>> On Thu, Jan 9, 2014 at 8:08 PM, Alexander Graf <agraf@suse.de> wrote:
+>>>>>
+>>>>> On 11.12.2013, at 09:47, Liu Ping Fan <kernelfans@gmail.com> wrote:
+>>>>>
+>>>>>> This series is based on Aneesh's series  "[PATCH -V2 0/5] powerpc: mm: Numa faults support for ppc64"
+>>>>>>
+>>>>>> For this series, I apply the same idea from the previous thread "[PATCH 0/3] optimize for powerpc _PAGE_NUMA"
+>>>>>> (for which, I still try to get a machine to show nums)
+>>>>>>
+>>>>>> But for this series, I think that I have a good justification -- the fact of heavy cost when switching context between guest and host,
+>>>>>> which is  well known.
+>>>>>
+>>>>> This cover letter isn't really telling me anything. Please put a proper description of what you're trying to achieve, why you're trying to achieve what you're trying and convince your readers that it's a good idea to do it the way you do it.
+>>>>>
+>>>> Sorry for the unclear message. After introducing the _PAGE_NUMA,
+>>>> kvmppc_do_h_enter() can not fill up the hpte for guest. Instead, it
+>>>> should rely on host's kvmppc_book3s_hv_page_fault() to call
+>>>> do_numa_page() to do the numa fault check. This incurs the overhead
+>>>> when exiting from rmode to vmode.  My idea is that in
+>>>> kvmppc_do_h_enter(), we do a quick check, if the page is right placed,
+>>>> there is no need to exit to vmode (i.e saving htab, slab switching)
+>>>
+>>> Can you explain more. Are we looking at hcall from guest  and
+>>> hypervisor handling them in real mode ? If so why would guest issue a
+>>> hcall on a pte entry that have PAGE_NUMA set. Or is this about
+>>> hypervisor handling a missing hpte, because of host swapping this page
+>>> out ? In that case how we end up in h_enter ? IIUC for that case we
+>>> should get to kvmppc_hpte_hv_fault.
+>>>
+>> After setting _PAGE_NUMA, we should flush out all hptes both in host's
+>> htab and guest's. So when guest tries to access memory, host finds
+>> that there is not hpte ready for guest in guest's htab. And host
+>> should raise dsi to guest.
+>
+> Now guest receive that fault, removes the PAGE_NUMA bit and do an
+> hpte_insert. So before we do an hpte_insert (or H_ENTER) we should have
+> cleared PAGE_NUMA bit.
+>
+>>This incurs that guest ends up in h_enter.
+>> And you can see in current code, we also try this quick path firstly.
+>> Only if fail, we will resort to slow path --  kvmppc_hpte_hv_fault.
+>
+> hmm ? hpte_hv_fault is the hypervisor handling the fault.
+>
+After we discuss in irc. I think we should also do the fast check in
+kvmppc_hpte_hv_fault() for the case of HPTE_V_ABSENT,
+and let H_ENTER take care of the rest case i.e. no hpte when pte_mknuma. Right?
 
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'dmac_resource.end'):  => 87:2
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'dmac_resource.start'):  => 86:2
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'epbr_resources[0].end'):  => 69:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'epbr_resources[0].start'):  => 68:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'epbr_resources[1].end'):  => 74:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'epbr_resources[1].start'):  => 73:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'femi_resources[0].end'):  => 50:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'femi_resources[0].start'):  => 49:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'femi_resources[1].end'):  => 55:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'femi_resources[1].start'):  => 54:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'pbr_resources[0].end'):  => 100:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'pbr_resources[0].start'):  => 99:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'pbr_resources[1].end'):  => 105:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: (near initialization for 'pbr_resources[1].start'):  => 104:3
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: braced-group within expression allowed only inside a function:
-=> 30:12, 73:12, 31:10, 99:12, 68:12, 36:10, 86:11, 54:12, 74:10,
-55:10, 104:12, 49:12, 69:10, 87:9, 105:10, 35:12, 50:10, 100:10
-  + /scratch/kisskb/src/arch/sh/drivers/superhyway/ops-sh4-202.c:
-error: initializer element is not constant:  => 74:3, 86:2, 55:3,
-105:3, 73:3, 68:3, 100:3, 104:3, 99:3, 87:2, 50:3, 69:3, 49:3, 54:3
-  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error:
-'cached_to_uncached' undeclared (first use in this function):  =>
-99:17
-  + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error: implicit
-declaration of function 'cpu_context'
-[-Werror=implicit-function-declaration]:  => 192:2
-  + /scratch/kisskb/src/kernel/bounds.c: error: -mcall-aixdesc must be
-big endian:  => 1:0
-
-sh-randconfig
-
-  + /scratch/kisskb/src/scripts/mod/devicetable-offsets.c: error:
--mcall-aixdesc must be big endian:  => 1:0
-  + /scratch/kisskb/src/scripts/mod/empty.c: error: -mcall-aixdesc
-must be big endian:  => 1:0
-  + <stdin>: error: -mcall-aixdesc must be big endian:  => 1:0
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/7082/ (119 out of 120 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/7056/ (119 out of 120 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks and regards,
+Fan
+> -aneesh
+>
