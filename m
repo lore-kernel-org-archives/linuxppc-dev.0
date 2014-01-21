@@ -1,23 +1,32 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B533E2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 09:24:19 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Michael Neuling <mikey@neuling.org>
-Subject: [PATCH] powerpc: fix hw breakpoints on !HAVE_HW_BREAKPOINT
- configurations
-References: <1356048405-20560-1-git-send-email-mikey@neuling.org>
- <1356048405-20560-7-git-send-email-mikey@neuling.org>
- <12813.1357794092__45363.9676016339$1357794149$gmane$org@ale.ozlabs.ibm.com>
-Date: Tue, 21 Jan 2014 23:24:02 +0100
-In-Reply-To: <12813.1357794092__45363.9676016339$1357794149$gmane$org@ale.ozlabs.ibm.com>
- (Michael Neuling's message of "Thu, 10 Jan 2013 16:01:32 +1100")
-Message-ID: <8761pdht31.fsf_-_@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 39A592C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 10:02:55 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Tue, 21 Jan 2014 16:02:52 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 76CF21FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:02:18 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0LN2a208389036
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 00:02:36 +0100
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0LN2nER012197
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 16:02:50 -0700
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/3] powerpc/pseries: fix issues in suspend/resume code
+Date: Tue, 21 Jan 2014 17:55:46 -0500
+Message-Id: <1390344949-3983-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Cc: nfont@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes a logic error that caused a failure to update the hw breakpoint
-registers when not using the hw-breakpoint interface.
+This patchset fixes a couple of issues encountered in the suspend/resume code
+base. First when using the kernel device tree update code update-nodes is
+unnecessarily called more than once. Second the cpu cache lists are not
+updated after a suspend/resume which under certain conditions may cause a
+panic. Finally, since the cache list fix utilzes in kernel device tree update
+code a means for telling drmgr not to perform a device tree update from 
+userspace is required.
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
----
- arch/powerpc/kernel/process.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Tyrel Datwyler (3):
+  powerpc/pseries: Device tree should only be updated once after
+    suspend/migrate
+  powerpc/pseries: Update dynamic cache nodes for suspend/resume
+    operation
+  powerpc/pseries: Report in kernel device tree update to drmgr
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 4a96556..7714950 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -690,7 +690,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
-  * schedule DABR
-  */
- #ifndef CONFIG_HAVE_HW_BREAKPOINT
--	if (unlikely(hw_brk_match(&__get_cpu_var(current_brk), &new->thread.hw_brk)))
-+	if (unlikely(!hw_brk_match(&__get_cpu_var(current_brk), &new->thread.hw_brk)))
- 		set_breakpoint(&new->thread.hw_brk);
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- #endif
--- 
-1.8.5.3
-
+ arch/powerpc/include/asm/rtas.h           |  4 ++++
+ arch/powerpc/kernel/rtas.c                | 17 +++++++++++++++++
+ arch/powerpc/kernel/time.c                |  6 ++++++
+ arch/powerpc/platforms/pseries/mobility.c | 26 ++++++++++----------------
+ arch/powerpc/platforms/pseries/suspend.c  | 25 ++++++++++++++++++++++++-
+ 5 files changed, 61 insertions(+), 17 deletions(-)
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.7.12.4
