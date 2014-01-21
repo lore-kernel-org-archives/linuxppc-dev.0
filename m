@@ -1,26 +1,18 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-qe0-x232.google.com (mail-qe0-x232.google.com
- [IPv6:2607:f8b0:400d:c02::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C97872C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 13:30:33 +1100 (EST)
-Received: by mail-qe0-f50.google.com with SMTP id cz11so1687392qeb.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Jan 2014 18:30:29 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 15DF72C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 13:31:12 +1100 (EST)
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
+To: <mturquette@linaro.org>
+Subject: [PATCH] clk: mpc85xx: Update the driver to align to new clock bindings
+Date: Tue, 21 Jan 2014 09:32:45 +0800
+Message-ID: <1390267965-22408-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <87d2jm7j3d.fsf@linux.vnet.ibm.com>
-References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <DB55CAD2-72AF-4740-9904-193071C2740B@suse.de>
- <CAFgQCTthThEtNEG7EOuYFCtOm46-br59u9QUNkxF0w-TM+RdJQ@mail.gmail.com>
- <87d2jm7j3d.fsf@linux.vnet.ibm.com>
-Date: Tue, 21 Jan 2014 10:30:28 +0800
-Message-ID: <CAFgQCTt2eWHF4iZP6bx075ZFMx8yhqnZgHnZwm2uLLOOCar+XQ@mail.gmail.com>
-Subject: Re: [PATCH 0/4] powernv: kvm: numa fault improvement
-From: Liu ping fan <kernelfans@gmail.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org
+Content-Type: text/plain
+Cc: Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,57 +22,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 20, 2014 at 11:45 PM, Aneesh Kumar K.V
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
-> Liu ping fan <kernelfans@gmail.com> writes:
->
->> On Thu, Jan 9, 2014 at 8:08 PM, Alexander Graf <agraf@suse.de> wrote:
->>>
->>> On 11.12.2013, at 09:47, Liu Ping Fan <kernelfans@gmail.com> wrote:
->>>
->>>> This series is based on Aneesh's series  "[PATCH -V2 0/5] powerpc: mm: Numa faults support for ppc64"
->>>>
->>>> For this series, I apply the same idea from the previous thread "[PATCH 0/3] optimize for powerpc _PAGE_NUMA"
->>>> (for which, I still try to get a machine to show nums)
->>>>
->>>> But for this series, I think that I have a good justification -- the fact of heavy cost when switching context between guest and host,
->>>> which is  well known.
->>>
->>> This cover letter isn't really telling me anything. Please put a proper description of what you're trying to achieve, why you're trying to achieve what you're trying and convince your readers that it's a good idea to do it the way you do it.
->>>
->> Sorry for the unclear message. After introducing the _PAGE_NUMA,
->> kvmppc_do_h_enter() can not fill up the hpte for guest. Instead, it
->> should rely on host's kvmppc_book3s_hv_page_fault() to call
->> do_numa_page() to do the numa fault check. This incurs the overhead
->> when exiting from rmode to vmode.  My idea is that in
->> kvmppc_do_h_enter(), we do a quick check, if the page is right placed,
->> there is no need to exit to vmode (i.e saving htab, slab switching)
->
-> Can you explain more. Are we looking at hcall from guest  and
-> hypervisor handling them in real mode ? If so why would guest issue a
-> hcall on a pte entry that have PAGE_NUMA set. Or is this about
-> hypervisor handling a missing hpte, because of host swapping this page
-> out ? In that case how we end up in h_enter ? IIUC for that case we
-> should get to kvmppc_hpte_hv_fault.
->
-After setting _PAGE_NUMA, we should flush out all hptes both in host's
-htab and guest's. So when guest tries to access memory, host finds
-that there is not hpte ready for guest in guest's htab. And host
-should raise dsi to guest. This incurs that guest ends up in h_enter.
-And you can see in current code, we also try this quick path firstly.
-Only if fail, we will resort to slow path --  kvmppc_hpte_hv_fault.
+From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Thanks and regards,
-Fan
->
->>
->>>> If my suppose is correct, will CCing kvm@vger.kernel.org from next version.
->>>
->>> This translates to me as "This is an RFC"?
->>>
->> Yes, I am not quite sure about it. I have no bare-metal to verify it.
->> So I hope at least, from the theory, it is correct.
->>
->
-> -aneesh
->
+The clock bindings for Freescale CoreNet platform are updated.
+So, the driver needs to be updated accordingly.
+The main changes include:
+	- Added a new node to present the input system clock
+	- Changed PLL and MUX's compatible string
+
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+---
+ drivers/clk/clk-ppc-corenet.c | 70 +++++++++++++++++++++++++++++--------------
+ 1 file changed, 48 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
+index c4f76ed..8b284be 100644
+--- a/drivers/clk/clk-ppc-corenet.c
++++ b/drivers/clk/clk-ppc-corenet.c
+@@ -27,7 +27,6 @@ struct cmux_clk {
+ #define CLKSEL_ADJUST		BIT(0)
+ #define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
+ 
+-static void __iomem *base;
+ static unsigned int clocks_per_pll;
+ 
+ static int cmux_set_parent(struct clk_hw *hw, u8 idx)
+@@ -100,7 +99,11 @@ static void __init core_mux_init(struct device_node *np)
+ 		pr_err("%s: could not allocate cmux_clk\n", __func__);
+ 		goto err_name;
+ 	}
+-	cmux_clk->reg = base + offset;
++	cmux_clk->reg = of_iomap(np, 0);
++	if (!cmux_clk->reg) {
++		pr_err("%s: could not map register\n", __func__);
++		goto err_clk;
++	}
+ 
+ 	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
+ 	if (node && (offset >= 0x80))
+@@ -143,38 +146,39 @@ err_name:
+ 
+ static void __init core_pll_init(struct device_node *np)
+ {
+-	u32 offset, mult;
++	u32 mult;
+ 	int i, rc, count;
+ 	const char *clk_name, *parent_name;
+ 	struct clk_onecell_data *onecell_data;
+ 	struct clk      **subclks;
++	void __iomem *base;
+ 
+-	rc = of_property_read_u32(np, "reg", &offset);
+-	if (rc) {
+-		pr_err("%s: could not get reg property\n", np->name);
++	base = of_iomap(np, 0);
++	if (!base) {
++		pr_err("clk-ppc: iomap error\n");
+ 		return;
+ 	}
+ 
+ 	/* get the multiple of PLL */
+-	mult = ioread32be(base + offset);
++	mult = ioread32be(base);
+ 
+ 	/* check if this PLL is disabled */
+ 	if (mult & PLL_KILL) {
+ 		pr_debug("PLL:%s is disabled\n", np->name);
+-		return;
++		goto err_map;
+ 	}
+ 	mult = (mult >> 1) & 0x3f;
+ 
+ 	parent_name = of_clk_get_parent_name(np, 0);
+ 	if (!parent_name) {
+ 		pr_err("PLL: %s must have a parent\n", np->name);
+-		return;
++		goto err_map;
+ 	}
+ 
+ 	count = of_property_count_strings(np, "clock-output-names");
+ 	if (count < 0 || count > 4) {
+ 		pr_err("%s: clock is not supported\n", np->name);
+-		return;
++		goto err_map;
+ 	}
+ 
+ 	/* output clock number per PLL */
+@@ -183,7 +187,7 @@ static void __init core_pll_init(struct device_node *np)
+ 	subclks = kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
+ 	if (!subclks) {
+ 		pr_err("%s: could not allocate subclks\n", __func__);
+-		return;
++		goto err_map;
+ 	}
+ 
+ 	onecell_data = kzalloc(sizeof(struct clk_onecell_data), GFP_KERNEL);
+@@ -230,30 +234,52 @@ static void __init core_pll_init(struct device_node *np)
+ 		goto err_cell;
+ 	}
+ 
++	iounmap(base);
+ 	return;
+ err_cell:
+ 	kfree(onecell_data);
+ err_clks:
+ 	kfree(subclks);
++err_map:
++	iounmap(base);
++}
++
++static void __init sysclk_init(struct device_node *node)
++{
++	struct clk *clk;
++	const char *clk_name = node->name;
++	struct device_node *np = of_get_parent(node);
++	u32 rate;
++
++	if (!np) {
++		pr_err("ppc-clk: could not get parent node\n");
++		return;
++	}
++
++	if (of_property_read_u32(np, "clock-frequency", &rate)) {
++		of_node_put(node);
++		return;
++	}
++
++	of_property_read_string(np, "clock-output-names", &clk_name);
++
++	clk = clk_register_fixed_rate(NULL, clk_name, NULL, CLK_IS_ROOT, rate);
++	if (!IS_ERR(clk))
++		of_clk_add_provider(np, of_clk_src_simple_get, clk);
+ }
+ 
+ static const struct of_device_id clk_match[] __initconst = {
+-	{ .compatible = "fixed-clock", .data = of_fixed_clk_setup, },
+-	{ .compatible = "fsl,core-pll-clock", .data = core_pll_init, },
+-	{ .compatible = "fsl,core-mux-clock", .data = core_mux_init, },
++	{ .compatible = "fsl,qoriq-sysclk-1.0", .data = sysclk_init, },
++	{ .compatible = "fsl,qoriq-sysclk-2.0", .data = sysclk_init, },
++	{ .compatible = "fsl,qoriq-core-pll-1.0", .data = core_pll_init, },
++	{ .compatible = "fsl,qoriq-core-pll-2.0", .data = core_pll_init, },
++	{ .compatible = "fsl,qoriq-core-mux-1.0", .data = core_mux_init, },
++	{ .compatible = "fsl,qoriq-core-mux-2.0", .data = core_mux_init, },
+ 	{}
+ };
+ 
+ static int __init ppc_corenet_clk_probe(struct platform_device *pdev)
+ {
+-	struct device_node *np;
+-
+-	np = pdev->dev.of_node;
+-	base = of_iomap(np, 0);
+-	if (!base) {
+-		dev_err(&pdev->dev, "iomap error\n");
+-		return -ENOMEM;
+-	}
+ 	of_clk_init(clk_match);
+ 
+ 	return 0;
+-- 
+1.8.0
