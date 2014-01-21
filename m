@@ -1,28 +1,42 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 33D5C2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 12:06:15 +1100 (EST)
-Message-ID: <1390266361.24905.399.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/3] powerpc/85xx: Provide two functions to save/restore
- the core registers
-From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
-Date: Mon, 20 Jan 2014 19:06:01 -0600
-In-Reply-To: <6f81ef13c25744b685b99a3fbb304f1b@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
- <1389686397-46555-2-git-send-email-dongsheng.wang@freescale.com>
- <1389743456.24905.143.camel@snotra.buserror.net>
- <a11e0d7b3b954aa68483513340043452@BN1PR03MB188.namprd03.prod.outlook.com>
- <1389842249.24905.196.camel@snotra.buserror.net>
- <6f81ef13c25744b685b99a3fbb304f1b@BN1PR03MB188.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 884542C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 13:20:52 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Tue, 21 Jan 2014 07:50:47 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 416F53940057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 07:50:45 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0L2KVHv4129158
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 07:50:31 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0L2KhRm025879
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 07:50:44 +0530
+Date: Tue, 21 Jan 2014 10:20:42 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140121022042.GA27525@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
+ <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401201612340.28048@nuc>
 MIME-Version: 1.0
-Cc: "anton@enomsg.org" <anton@enomsg.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Zhao
- Chenhui-B35336 <chenhui.zhao@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1401201612340.28048@nuc>
+Cc: nacc@linux.vnet.ibm.com, penberg@kernel.org, linux-mm@kvack.org,
+ Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, mpm@selenic.com,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +46,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-01-20 at 00:03 -0600, Wang Dongsheng-B40534 wrote:
-> > > > > +	/*
-> > > > > +	 * Need to save float-point registers if MSR[FP] = 1.
-> > > > > +	 */
-> > > > > +	mfmsr	r12
-> > > > > +	andi.	r12, r12, MSR_FP
-> > > > > +	beq	1f
-> > > > > +	do_sr_fpr_regs(save)
-> > > >
-> > > > C code should have already ensured that MSR[FP] is not 1 (and thus the FP
-> > > > context has been saved).
-> > > >
-> > >
-> > > Yes, right. But I mean if the FP still use in core save flow, we need to save
-> > it.
-> > > In this process, i don't care what other code do, we need to focus on not
-> > losing
-> > > valuable data.
-> > 
-> > It is not allowed to use FP at that point.
-> > 
-> If MSR[FP] not active, that is FP not allowed to use.
-> But here is a normal judgment, if MSR[FP] is active, this means that the floating
-> point module is being used. I offer is a function of the interface, we don't know
-> where is the function will be called. Just because we call this function in the
-> context of uncertainty, we need this judgment to ensure that no data is lost.
+On Mon, Jan 20, 2014 at 04:13:30PM -0600, Christoph Lameter wrote:
+>On Mon, 20 Jan 2014, Wanpeng Li wrote:
+>
+>> >+       enum zone_type high_zoneidx = gfp_zone(flags);
+>> >
+>> >+       if (!node_present_pages(searchnode)) {
+>> >+               zonelist = node_zonelist(searchnode, flags);
+>> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+>> >+                       searchnode = zone_to_nid(zone);
+>> >+                       if (node_present_pages(searchnode))
+>> >+                               break;
+>> >+               }
+>> >+       }
+>> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>> >        if (object || node != NUMA_NO_NODE)
+>> >                return object;
+>> >
+>>
+>> The patch fix the bug. However, the kernel crashed very quickly after running
+>> stress tests for a short while:
+>
+>This is not a good way of fixing it. How about not asking for memory from
+>nodes that are memoryless? Use numa_mem_id() which gives you the next node
+>that has memory instead of numa_node_id() (gives you the current node
+>regardless if it has memory or not).
 
-The whole point of calling enable_kernel_fp() in C code before
-suspending is to ensure that the FP state gets saved.  If FP is used
-after that point it is a bug.  If you're worried about such bugs, then
-clear MSR[FP] after calling enable_kernel_fp(), rather than adding
-redundant state saving.
+Thanks for your pointing out, I will do it and retest it later.
 
--Scott
+Regards,
+Wanpeng Li 
