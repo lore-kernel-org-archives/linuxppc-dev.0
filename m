@@ -1,19 +1,19 @@
 Return-Path: <Yuantian.Tang@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6E30F2C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 14:00:44 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BDE482C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 14:29:38 +1100 (EST)
 From: Tang Yuantian <Yuantian.Tang@freescale.com>
 To: <b07421@freescale.com>
-Subject: [PATCH] clk: corenet: Update the clock bindings
-Date: Tue, 21 Jan 2014 10:02:12 +0800
-Message-ID: <1390269732-22798-1-git-send-email-Yuantian.Tang@freescale.com>
+Subject: [PATCH] powerpc: T4240: Add ina220 node in dts
+Date: Tue, 21 Jan 2014 10:31:13 +0800
+Message-ID: <1390271473-23661-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Tang Yuantian <yuantian.tang@freescale.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, b32579@freescale.com
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Tang Yuantian <Yuantian.Tang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,36 +25,66 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Main changs include:
-	- Clarified the clock nodes' version number
-	- Fixed a issue in example
+Add power sensor chip ina220 node in dts to support
+power monitor
 
-Singed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 ---
- Documentation/devicetree/bindings/clock/corenet-clock.txt | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/boot/dts/t4240qds.dts | 42 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/clock/corenet-clock.txt b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-index 24711af..d6cadef 100644
---- a/Documentation/devicetree/bindings/clock/corenet-clock.txt
-+++ b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-@@ -54,6 +54,8 @@ Required properties:
- 		It takes parent's clock-frequency as its clock.
- 	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0).
- 		It takes parent's clock-frequency as its clock.
-+	Note: v1.0 and v2.0 are clock version which should align to
-+	clockgen node's they belong to which is chassis version.
- - #clock-cells: From common clock binding. The number of cells in a
- 	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
- 	clocks, or <1> for "fsl,qoriq-core-pll-[1,2].0" clocks.
-@@ -85,7 +87,7 @@ Example for clock block and clock provider:
- 			#clock-cells = <0>;
- 			compatible = "fsl,qoriq-sysclk-1.0";
- 			clock-output-names = "sysclk";
--		}
-+		};
+diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
+index 63e81b0..97683f6 100644
+--- a/arch/powerpc/boot/dts/t4240qds.dts
++++ b/arch/powerpc/boot/dts/t4240qds.dts
+@@ -159,6 +159,48 @@
+ 						interrupts = <0x1 0x1 0 0>;
+ 					};
+ 				};
++
++				i2c@2 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x2>;
++
++					ina220@40 {
++						compatible = "ti,ina220";
++						reg = <0x40>;
++						shunt-resistor = <1000>;
++					};
++
++					ina220@41 {
++						compatible = "ti,ina220";
++						reg = <0x41>;
++						shunt-resistor = <1000>;
++					};
++
++					ina220@44 {
++						compatible = "ti,ina220";
++						reg = <0x44>;
++						shunt-resistor = <1000>;
++					};
++
++					ina220@45 {
++						compatible = "ti,ina220";
++						reg = <0x45>;
++						shunt-resistor = <1000>;
++					};
++
++					ina220@46 {
++						compatible = "ti,ina220";
++						reg = <0x46>;
++						shunt-resistor = <1000>;
++					};
++
++					ina220@47 {
++						compatible = "ti,ina220";
++						reg = <0x47>;
++						shunt-resistor = <1000>;
++					};
++				};
+ 			};
+ 		};
  
- 		pll0: pll0@800 {
- 			#clock-cells = <1>;
 -- 
 1.8.0
