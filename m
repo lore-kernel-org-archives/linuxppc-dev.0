@@ -1,21 +1,12 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 96BAD2C0B7E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 08:29:43 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: [PATCH 10/73] powerpc: use device_initcall for registering rtc devices
-Date: Tue, 21 Jan 2014 16:22:13 -0500
-Message-ID: <1390339396-3479-11-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-arch@vger.kernel.org, Geoff Levand <geoff@infradead.org>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Wed, 22 Jan 2014 08:40:28 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Fix endian issues in kexec and crash dump code
+Message-ID: <20140122084028.62e6a6b2@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +16,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently these two RTC devices are in core platform code
-where it is not possible for them to be modular.  It will
-never be modular, so using module_init as an alias for
-__initcall can be somewhat misleading.
 
-Fix this up now, so that we can relocate module_init from
-init.h into module.h in the future.  If we don't do this, we'd
-have to add module.h to obviously non-modular code, and that
-would be a worse thing.
+We expose a number of OF properties in the kexec and crash dump code
+and these need to be big endian.
 
-Note that direct use of __initcall is discouraged, vs. one
-of the priority categorized subgroups.  As __initcall gets
-mapped onto device_initcall, our use of device_initcall
-directly in this change means that the runtime impact is
-zero -- they will remain at level 6 in initcall ordering.
+Cc: stable@vger.kernel.org # v3.13
+Signed-off-by: Anton Blanchard <anton@samba.org>
+--
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/kernel/time.c        | 2 +-
- arch/powerpc/platforms/ps3/time.c | 3 +--
- 2 files changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index b3dab20..63b34fc 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -1064,4 +1064,4 @@ static int __init rtc_init(void)
- 	return PTR_ERR_OR_ZERO(pdev);
+diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
+index 75d4f73..015ae55 100644
+--- a/arch/powerpc/kernel/machine_kexec.c
++++ b/arch/powerpc/kernel/machine_kexec.c
+@@ -196,7 +196,9 @@ int overlaps_crashkernel(unsigned long start, unsigned long size)
+ 
+ /* Values we need to export to the second kernel via the device tree. */
+ static phys_addr_t kernel_end;
++static phys_addr_t crashk_base;
+ static phys_addr_t crashk_size;
++static unsigned long long mem_limit;
+ 
+ static struct property kernel_end_prop = {
+ 	.name = "linux,kernel-end",
+@@ -207,7 +209,7 @@ static struct property kernel_end_prop = {
+ static struct property crashk_base_prop = {
+ 	.name = "linux,crashkernel-base",
+ 	.length = sizeof(phys_addr_t),
+-	.value = &crashk_res.start,
++	.value = &crashk_base
+ };
+ 
+ static struct property crashk_size_prop = {
+@@ -219,9 +221,11 @@ static struct property crashk_size_prop = {
+ static struct property memory_limit_prop = {
+ 	.name = "linux,memory-limit",
+ 	.length = sizeof(unsigned long long),
+-	.value = &memory_limit,
++	.value = &mem_limit,
+ };
+ 
++#define cpu_to_be_ulong	__PASTE(cpu_to_be, BITS_PER_LONG)
++
+ static void __init export_crashk_values(struct device_node *node)
+ {
+ 	struct property *prop;
+@@ -237,8 +241,9 @@ static void __init export_crashk_values(struct device_node *node)
+ 		of_remove_property(node, prop);
+ 
+ 	if (crashk_res.start != 0) {
++		crashk_base = cpu_to_be_ulong(crashk_res.start),
+ 		of_add_property(node, &crashk_base_prop);
+-		crashk_size = resource_size(&crashk_res);
++		crashk_size = cpu_to_be_ulong(resource_size(&crashk_res));
+ 		of_add_property(node, &crashk_size_prop);
+ 	}
+ 
+@@ -246,6 +251,7 @@ static void __init export_crashk_values(struct device_node *node)
+ 	 * memory_limit is required by the kexec-tools to limit the
+ 	 * crash regions to the actual memory used.
+ 	 */
++	mem_limit = cpu_to_be_ulong(memory_limit);
+ 	of_update_property(node, &memory_limit_prop);
  }
  
--module_init(rtc_init);
-+device_initcall(rtc_init);
-diff --git a/arch/powerpc/platforms/ps3/time.c b/arch/powerpc/platforms/ps3/time.c
-index ce73ce8..791c614 100644
---- a/arch/powerpc/platforms/ps3/time.c
-+++ b/arch/powerpc/platforms/ps3/time.c
-@@ -92,5 +92,4 @@ static int __init ps3_rtc_init(void)
+@@ -264,7 +270,7 @@ static int __init kexec_setup(void)
+ 		of_remove_property(node, prop);
  
- 	return PTR_ERR_OR_ZERO(pdev);
- }
--
--module_init(ps3_rtc_init);
-+device_initcall(ps3_rtc_init);
--- 
-1.8.4.1
+ 	/* information needed by userspace when using default_machine_kexec */
+-	kernel_end = __pa(_end);
++	kernel_end = cpu_to_be_ulong(__pa(_end));
+ 	of_add_property(node, &kernel_end_prop);
+ 
+ 	export_crashk_values(node);
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index be4e6d6..59d229a 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -369,6 +369,7 @@ void default_machine_kexec(struct kimage *image)
+ 
+ /* Values we need to export to the second kernel via the device tree. */
+ static unsigned long htab_base;
++static unsigned long htab_size;
+ 
+ static struct property htab_base_prop = {
+ 	.name = "linux,htab-base",
+@@ -379,7 +380,7 @@ static struct property htab_base_prop = {
+ static struct property htab_size_prop = {
+ 	.name = "linux,htab-size",
+ 	.length = sizeof(unsigned long),
+-	.value = &htab_size_bytes,
++	.value = &htab_size,
+ };
+ 
+ static int __init export_htab_values(void)
+@@ -403,8 +404,9 @@ static int __init export_htab_values(void)
+ 	if (prop)
+ 		of_remove_property(node, prop);
+ 
+-	htab_base = __pa(htab_address);
++	htab_base = cpu_to_be64(__pa(htab_address));
+ 	of_add_property(node, &htab_base_prop);
++	htab_size = cpu_to_be64(htab_size_bytes);
+ 	of_add_property(node, &htab_size_prop);
+ 
+ 	of_node_put(node);
