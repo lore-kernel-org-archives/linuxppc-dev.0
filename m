@@ -1,30 +1,27 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <prvs=0099228091=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9FC942C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 00:53:54 +1100 (EST)
-Date: Wed, 22 Jan 2014 14:27:56 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V5 6/8] time/cpuidle: Support in tick broadcast framework
- in the absence of external clock device
-In-Reply-To: <20140115080947.20446.30305.stgit@preeti.in.ibm.com>
-Message-ID: <alpine.DEB.2.02.1401221042130.4260@ionos.tec.linutronix.de>
-References: <20140115080555.20446.27238.stgit@preeti.in.ibm.com>
- <20140115080947.20446.30305.stgit@preeti.in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 16B692C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 03:38:57 +1100 (EST)
+Message-ID: <52DFF413.7060806@keymile.com>
+Date: Wed, 22 Jan 2014 17:38:43 +0100
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com,
- paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org,
- mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
- agraf@suse.de, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH RFC] powerpc/mpc85xx: add support for the kmp204x reference
+ board
+References: <1389879525-27130-1-git-send-email-valentin.longchamp@keymile.com>	
+ <1389915301.24905.240.camel@snotra.buserror.net>	
+ <52D9273E.10008@keymile.com>	
+ <1389995322.24905.275.camel@snotra.buserror.net>	
+ <52DD50F7.1050107@keymile.com>	
+ <1390257432.24905.329.camel@snotra.buserror.net>	
+ <52DEA179.9090607@keymile.com>
+ <1390323689.24905.484.camel@snotra.buserror.net>
+In-Reply-To: <1390323689.24905.484.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,280 +31,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 15 Jan 2014, Preeti U Murthy wrote:
-> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
-> index 086ad60..d61404e 100644
-> --- a/kernel/time/clockevents.c
-> +++ b/kernel/time/clockevents.c
-> @@ -524,12 +524,13 @@ void clockevents_resume(void)
->  #ifdef CONFIG_GENERIC_CLOCKEVENTS
->  /**
->   * clockevents_notify - notification about relevant events
-> + * Returns non zero on error.
->   */
-> -void clockevents_notify(unsigned long reason, void *arg)
-> +int clockevents_notify(unsigned long reason, void *arg)
->  {
-
-The interface change of clockevents_notify wants to be a separate
-patch.
-
-> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-> index 9532690..1c23912 100644
-> --- a/kernel/time/tick-broadcast.c
-> +++ b/kernel/time/tick-broadcast.c
-> @@ -20,6 +20,7 @@
->  #include <linux/sched.h>
->  #include <linux/smp.h>
->  #include <linux/module.h>
-> +#include <linux/slab.h>
+On 01/21/2014 06:01 PM, Scott Wood wrote:
+> On Tue, 2014-01-21 at 17:34 +0100, Valentin Longchamp wrote:
+>> On 01/20/2014 11:37 PM, Scott Wood wrote:
+>>> On Mon, 2014-01-20 at 17:38 +0100, Valentin Longchamp wrote:
+>>>> On 01/17/2014 10:48 PM, Scott Wood wrote:
+>>>>> Why isn't the compatible "keymile,kmcoge4", like the model?
+>>>>
+>>>> Because kmcoge4 is the board that is based on the kmp204x architecture/design.
+>>>> We expect other boards (kmcoge7 for instance) based on the same kmp204x design.
+>>>
+>>> The top-level compatible isn't for the "architecture" or the "design".
+>>> It's for the board.  Surely there's something different about kmcoge7
+>>> versus kmcoge4 -- is it visible to software?
+>>
+>> There should only be a few differences in the dts between the two boards.
+>>
+>> Reading the ePAPR my understanding was that compatible is the "programming
+>> model" and that's what I have named above design/architecture while model is the
+>> exact model of the device in this case the exact board name.
+> 
+> In practice, model is more for human consumption (e.g. there may be many
+> variants that all look identical to software).  The "programming model"
+> for an entire board includes everything on it.
 >  
->  #include "tick-internal.h"
+>>>> You would prefer that I have the model and compatible stricly the same and add
+>>>> any future board into the compatible boards[] from corenet_generic ?
+>>>
+>>> That's how it's usually done.  Or, at least provide the board
+>>> architecture name as a secondary compatible after the board name.
+>>>
+>>>> If possible I would like to be able to see the boards that are based on a
+>>>> similar design, that's what I wanted to achieve with this kmp204x name.
+>>>
+>>> Is "kmp204x" an official name of the architecture, rather than a
+>>> generalization of "kmp2040" and "kmp2041"?  If there were a p2042, and
+>>> you made a board for it, is there any chance it would be called kmp204x
+>>> even if it were very different from the p2040/p2041 board?
+>>
+>> It's the name we have picked up, but it's not official. We also use km83xx,
+>> km82xx and it was derived from that.
+>>
+>> If the hypothetical p2042 board was different it would then have another name.
+> 
+> In that case, I don't object to it being listed in compatible, though
+> the specific board name should come first.
+
+OK then to sum up both points we would have:
+
+	model = "keymile,kmcoge4";
+	compatible = "keymile,kmcoge4", "keymile,kmp204x";
+
+And I would add "keymile,kmcoge4" into the boards[] table.
+
+> 
+>>>>> The device tree describes the hardware, not what driver you want to use.
+>>>>>
+>>>>> Plus, I don't see any driver that matches "gen,spidev" nor any binding
+>>>>> for it, and "gen" doesn't make sense as a vendor prefix.  The only
+>>>>> instance of that string I can find in the Linux tree is in mgcoge.dts.
+>>>>
+>>>> Well it comes from mgcoge and that's why I have used this
+>>>>
+>>>> It's for usage with the spidev driver (driver/spi/spidev.c). I agree that the
+>>>> gen brings nothing. Would
+>>>>
+>>>> spidev@1 {
+>>>> 	compatible = "spidev";
+>>>>
+>>>> make more sense ?
+>>>
+>>> It doesn't address any of the other comments.
+>>
+>> Can you please explicitly tell me how I should build this node ? What other
+>> comments ? Must I be more generic with the name ?
+>>
+>> Something like :
+>>
+>> spi@1 {
+>> 	compatible = "zarlink,30343", "spidev";
+> 
+> Remove "spidev".  Any nodes under the SPI controller node will be SPI
+> devices, right?  So it doesn't add anything regarding hardware
+> description.
 >  
-> @@ -35,6 +36,15 @@ static cpumask_var_t tmpmask;
->  static DEFINE_RAW_SPINLOCK(tick_broadcast_lock);
->  static int tick_broadcast_force;
->  
-> +/*
-> + * Helper variables for handling broadcast in the absence of a
-> + * tick_broadcast_device.
-> + * */
-> +static struct hrtimer *bc_hrtimer;
-> +static int bc_cpu = -1;
-> +static ktime_t bc_next_wakeup;
 
-Why do you need another variable to store the expiry time? The
-broadcast code already knows it and the hrtimer expiry value gives you
-the same information for free.
+OK.
 
-> +static int hrtimer_initialized = 0;
+Thank you for the feedback, I will then send a revised patch as soon as I have time.
 
-What's the point of this hrtimer_initialized dance? Why not simply
-making the hrtimer static and avoid that all together. Also adding the
-initialization into tick_broadcast_oneshot_available() is
-braindamaged.  Why not adding this to tick_broadcast_init() which is
-the proper place to do?
-
-Aside of that you are making this hrtimer mode unconditional, which
-might break existing systems which are not aware of the hrtimer
-implications.
-
-What you really want is a pseudo clock event device which has the
-proper functions for handling the timer and you can register it from
-your architecture code. The broadcast core code needs a few tweaks to
-avoid the shutdown of the cpu local clock event device, but aside of
-that the whole thing just falls into place. So architectures can use
-this if they want and are sure that their low level idle code knows
-about the deep idle preventing return value of
-clockevents_notify(). Once that works you can register the hrtimer
-based broadcast device and a real hardware broadcast device with a
-higher rating. It just works.
-
-Find an incomplete and nonfunctional concept patch below. It should be
-simple to make it work for real.
-
-Thanks,
-
-	tglx
-----
-Index: linux-2.6/include/linux/clockchips.h
-===================================================================
---- linux-2.6.orig/include/linux/clockchips.h
-+++ linux-2.6/include/linux/clockchips.h
-@@ -62,6 +62,11 @@ enum clock_event_mode {
- #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
- #define CLOCK_EVT_FEAT_PERCPU		0x000040
- 
-+/*
-+ * Clockevent device is based on a hrtimer for broadcast
-+ */
-+#define CLOCK_EVT_FEAT_HRTIMER		0x000080
-+
- /**
-  * struct clock_event_device - clock event device descriptor
-  * @event_handler:	Assigned by the framework to be called by the low
-@@ -83,6 +88,7 @@ enum clock_event_mode {
-  * @name:		ptr to clock event name
-  * @rating:		variable to rate clock event devices
-  * @irq:		IRQ number (only for non CPU local devices)
-+ * @bound_on:		Bound on CPU
-  * @cpumask:		cpumask to indicate for which CPUs this device works
-  * @list:		list head for the management code
-  * @owner:		module reference
-@@ -113,6 +119,7 @@ struct clock_event_device {
- 	const char		*name;
- 	int			rating;
- 	int			irq;
-+	int			bound_on;
- 	const struct cpumask	*cpumask;
- 	struct list_head	list;
- 	struct module		*owner;
-Index: linux-2.6/kernel/time/tick-broadcast-hrtimer.c
-===================================================================
---- /dev/null
-+++ linux-2.6/kernel/time/tick-broadcast-hrtimer.c
-@@ -0,0 +1,77 @@
-+
-+static struct hrtimer bctimer;
-+
-+static void bc_set_mode(enum clock_event_mode mode,
-+			struct clock_event_device *bc)
-+{
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		/*
-+		 * Note, we cannot cancel the timer here as we might
-+		 * run into the following live lock scenario:
-+		 *
-+		 * cpu 0		cpu1
-+		 * lock(broadcast_lock);
-+		 *			hrtimer_interrupt()
-+		 *			bc_handler()
-+		 *			   tick_handle_oneshot_broadcast();
-+		 *			    lock(broadcast_lock);
-+		 * hrtimer_cancel()
-+		 *  wait_for_callback()
-+		 */
-+		hrtimer_try_to_cancel(&bctimer);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+/*
-+ * This is called from the guts of the broadcast code when the cpu
-+ * which is about to enter idle has the earliest broadcast timer event.
-+ */
-+static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
-+{
-+	/*
-+	 * We try to cancel the timer first. If the callback is on
-+	 * flight on some other cpu then we let it handle it. If we
-+	 * were able to cancel the timer nothing can rearm it as we
-+	 * own broadcast_lock.
-+	 */
-+	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
-+		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+		/* Bind the "device" to the cpu */
-+		bc->bound_on = smp_processor_id();
-+	}
-+	return 0;
-+}
-+
-+static struct clock_event_device ce_broadcast_hrtimer = {
-+	.set_mode		= bc_set_mode,
-+	.set_next_ktime		= bc_set_next,
-+	.features		= CLOCK_EVT_FEAT_ONESHOT |
-+				  CLOCK_EVT_FEAT_KTIME |
-+				  CLOCK_EVT_FEAT_HRTIMER,
-+	.rating			= 0,
-+	.bound_on		= -1,
-+	.min_delta_ns		= 1,
-+	.max_delta_ns		= KTIME_MAX,
-+	.min_delta_ticks	= 1,
-+	.max_delta_ticks	= KTIME_MAX,
-+	.mult			= 1,
-+	.shift			= 0,
-+	.cpumask		= cpu_all_mask,
-+};
-+
-+static enum hrtimer_restart bc_handler(struct hrtimer *t)
-+{
-+	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
-+	return HRTIMER_NORESTART;
-+}
-+
-+void tick_setup_hrtimer_broadcast(void)
-+{
-+	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	bctimer.function = bc_handler;
-+	clockevents_register(&ce_broadcast_hrtimer);
-+}
-Index: linux-2.6/kernel/time/tick-broadcast.c
-===================================================================
---- linux-2.6.orig/kernel/time/tick-broadcast.c
-+++ linux-2.6/kernel/time/tick-broadcast.c
-@@ -630,6 +630,42 @@ again:
- 	raw_spin_unlock(&tick_broadcast_lock);
- }
- 
-+static int broadcast_needs_cpu(struct clock_event_device *bc, int cpu)
-+{
-+	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
-+		return 0;
-+	if (bc->next_event.tv64 == KTIME_MAX)
-+		return 0;
-+	return bc->bound_on == cpu ? -EBUSY : 0;
-+}
-+
-+static void broadcast_shutdown_local(struct clock_event_device *bc,
-+				     struct clock_event_device *dev)
-+{
-+	/*
-+	 * For hrtimer based broadcasting we cannot shutdown the cpu
-+	 * local device if our own event is the first one to expire or
-+	 * if we own the broadcast timer.
-+	 */
-+	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
-+		if (broadcast_needs_cpu(bc))
-+			return;
-+		if (dev->next_event.tv64 < bc->next_event.tv64)
-+			return;
-+	}
-+	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+}
-+
-+static void broadcast_move_bc(int deadcpu)
-+{
-+	struct clock_event_device *bc = tick_broadcast_device.evtdev;
-+
-+	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
-+		return;
-+	/* This moves the broadcast assignment to this cpu */
-+	clockevents_program_event(bc, bc->next_event, 1);
-+}
-+
- /*
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-@@ -639,8 +675,8 @@ void tick_broadcast_oneshot_control(unsi
- 	struct clock_event_device *bc, *dev;
- 	struct tick_device *td;
- 	unsigned long flags;
-+	int cpu, ret = 0;
- 	ktime_t now;
--	int cpu;
- 
- 	/*
- 	 * Periodic mode does not care about the enter/exit of power
-@@ -666,7 +702,7 @@ void tick_broadcast_oneshot_control(unsi
- 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
- 		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask));
--			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+			broadcast_shutdown_local(bc, dev);
- 			/*
- 			 * We only reprogram the broadcast timer if we
- 			 * did not mark ourself in the force mask and
-@@ -679,6 +715,11 @@ void tick_broadcast_oneshot_control(unsi
- 			    dev->next_event.tv64 < bc->next_event.tv64)
- 				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
- 		}
-+		/*
-+		 * If the current CPU owns the hrtimer broadcast
-+		 * mechanism, it cannot go deep idle.
-+		 */
-+		ret = broadcast_needs_cpu(bc, cpu);
- 	} else {
- 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-@@ -851,6 +892,8 @@ void tick_shutdown_broadcast_oneshot(uns
- 	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
- 	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
- 
-+	broadcast_move_bc(cpu);
-+
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
- 
+Valentin
