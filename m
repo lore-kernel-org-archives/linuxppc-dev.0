@@ -1,27 +1,40 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-we0-x22a.google.com (mail-we0-x22a.google.com
- [IPv6:2a00:1450:400c:c03::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5F7372C008F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 13:27:29 +1100 (EST)
-Received: by mail-we0-f170.google.com with SMTP id u57so8861018wes.29
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Jan 2014 18:27:22 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id A05862C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 16:18:39 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 22 Jan 2014 10:48:34 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 569E3394003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 10:48:31 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0M5IUue54460606
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 10:48:30 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0M5IUE2028507
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 10:48:30 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 0/4] powernv: kvm: numa fault improvement
+In-Reply-To: <20140121112204.GE8265@iris.ozlabs.ibm.com>
+References: <1386751674-14136-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <DB55CAD2-72AF-4740-9904-193071C2740B@suse.de>
+ <CAFgQCTthThEtNEG7EOuYFCtOm46-br59u9QUNkxF0w-TM+RdJQ@mail.gmail.com>
+ <62DB3340-5AF7-4DA4-A790-77EE00696F57@suse.de>
+ <20140121112204.GE8265@iris.ozlabs.ibm.com>
+Date: Wed, 22 Jan 2014 10:48:30 +0530
+Message-ID: <87zjmoiogp.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <1390348085.5027.18.camel@smoke>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
- <1390339396-3479-11-git-send-email-paul.gortmaker@windriver.com>
- <1390348085.5027.18.camel@smoke>
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Tue, 21 Jan 2014 21:26:52 -0500
-Message-ID: <CAP=VYLp5UiVJYxtpAcptoqdvgYD_Z=5CMBxmKekXEeSSBgFS9Q@mail.gmail.com>
-Subject: Re: [PATCH 10/73] powerpc: use device_initcall for registering rtc
- devices
-To: Geoff Levand <geoff@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch <linux-arch@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ Liu ping fan <kernelfans@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +44,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 21, 2014 at 6:48 PM, Geoff Levand <geoff@infradead.org> wrote:
-> Hi Paul,
->
-> On Tue, 2014-01-21 at 16:22 -0500, Paul Gortmaker wrote:
->> Currently these two RTC devices are in core platform code
->> where it is not possible for them to be modular.  It will
->> never be modular, so using module_init as an alias for
->> __initcall can be somewhat misleading.
->>
->>  arch/powerpc/kernel/time.c        | 2 +-
->>  arch/powerpc/platforms/ps3/time.c | 3 +--
->>  2 files changed, 2 insertions(+), 3 deletions(-)
->
-> I tested the PS3 part of this patch and it seems to work OK.
->
-> Acked-by: Geoff Levand <geoff@infradead.org>
+Paul Mackerras <paulus@samba.org> writes:
 
-Thanks Geoff for the review and testing; I'll add the ack.
-
-Paul.
---
-
+> On Mon, Jan 20, 2014 at 03:48:36PM +0100, Alexander Graf wrote:
+>> 
+>> On 15.01.2014, at 07:36, Liu ping fan <kernelfans@gmail.com> wrote:
+>> 
+>> > On Thu, Jan 9, 2014 at 8:08 PM, Alexander Graf <agraf@suse.de> wrote:
+>> >> 
+>> >> On 11.12.2013, at 09:47, Liu Ping Fan <kernelfans@gmail.com> wrote:
+>> >> 
+>> >>> This series is based on Aneesh's series  "[PATCH -V2 0/5] powerpc: mm: Numa faults support for ppc64"
+>> >>> 
+>> >>> For this series, I apply the same idea from the previous thread "[PATCH 0/3] optimize for powerpc _PAGE_NUMA"
+>> >>> (for which, I still try to get a machine to show nums)
+>> >>> 
+>> >>> But for this series, I think that I have a good justification -- the fact of heavy cost when switching context between guest and host,
+>> >>> which is  well known.
+>> >> 
+>> >> This cover letter isn't really telling me anything. Please put a proper description of what you're trying to achieve, why you're trying to achieve what you're trying and convince your readers that it's a good idea to do it the way you do it.
+>> >> 
+>> > Sorry for the unclear message. After introducing the _PAGE_NUMA,
+>> > kvmppc_do_h_enter() can not fill up the hpte for guest. Instead, it
+>> > should rely on host's kvmppc_book3s_hv_page_fault() to call
+>> > do_numa_page() to do the numa fault check. This incurs the overhead
+>> > when exiting from rmode to vmode.  My idea is that in
+>> > kvmppc_do_h_enter(), we do a quick check, if the page is right placed,
+>> > there is no need to exit to vmode (i.e saving htab, slab switching)
+>> > 
+>> >>> If my suppose is correct, will CCing kvm@vger.kernel.org from next version.
+>> >> 
+>> >> This translates to me as "This is an RFC"?
+>> >> 
+>> > Yes, I am not quite sure about it. I have no bare-metal to verify it.
+>> > So I hope at least, from the theory, it is correct.
+>> 
+>> Paul, could you please give this some thought and maybe benchmark it?
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> OK, once I get Aneesh to tell me how I get to have ptes with
+> _PAGE_NUMA set in the first place. :)
+>
+
+I guess we want patch 2, Which Liu has sent separately and I have
+reviewed. http://article.gmane.org/gmane.comp.emulators.kvm.powerpc.devel/8619
+I am not sure about the rest of the patches in the series.
+We definitely don't want to numa migrate on henter. We may want to do
+that on fault. But even there, IMHO, we should let the host take the
+fault and do the numa migration instead of doing this in guest context.
+
+-aneesh
