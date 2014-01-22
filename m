@@ -3,27 +3,26 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 71A952C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 07:33:26 +1100 (EST)
-Message-ID: <1390422794.24905.510.camel@snotra.buserror.net>
-Subject: Re: [PATCH RFC] powerpc/mpc85xx: add support for the kmp204x
- reference board
+ by ozlabs.org (Postfix) with ESMTPS id 2662F2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 07:35:06 +1100 (EST)
+Message-ID: <1390422892.24905.512.camel@snotra.buserror.net>
+Subject: Re: [PATCH 3/3] powerpc/fsl: Use the new interface to save or
+ restore registers
 From: Scott Wood <scottwood@freescale.com>
-To: Valentin Longchamp <valentin.longchamp@keymile.com>
-Date: Wed, 22 Jan 2014 14:33:14 -0600
-In-Reply-To: <52DFF413.7060806@keymile.com>
-References: <1389879525-27130-1-git-send-email-valentin.longchamp@keymile.com>
- <1389915301.24905.240.camel@snotra.buserror.net>
- <52D9273E.10008@keymile.com>
- <1389995322.24905.275.camel@snotra.buserror.net>
- <52DD50F7.1050107@keymile.com>
- <1390257432.24905.329.camel@snotra.buserror.net>
- <52DEA179.9090607@keymile.com>
- <1390323689.24905.484.camel@snotra.buserror.net>
- <52DFF413.7060806@keymile.com>
+To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
+Date: Wed, 22 Jan 2014 14:34:52 -0600
+In-Reply-To: <18d3109ac114477a805618829632b463@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389686397-46555-3-git-send-email-dongsheng.wang@freescale.com>
+ <1389742224.24905.140.camel@snotra.buserror.net>
+ <93a6a30cd8d240109405d45c8e143dea@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1389842143.24905.195.camel@snotra.buserror.net>
+ <18d3109ac114477a805618829632b463@BN1PR03MB188.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Zhao
+ Chenhui-B35336 <chenhui.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-01-22 at 17:38 +0100, Valentin Longchamp wrote:
-> On 01/21/2014 06:01 PM, Scott Wood wrote:
-> > On Tue, 2014-01-21 at 17:34 +0100, Valentin Longchamp wrote:
-> >> Can you please explicitly tell me how I should build this node ? What other
-> >> comments ? Must I be more generic with the name ?
-> >>
-> >> Something like :
-> >>
-> >> spi@1 {
-> >> 	compatible = "zarlink,30343", "spidev";
+On Sun, 2014-01-19 at 23:57 -0600, Wang Dongsheng-B40534 wrote:
+> > > > > Use fsl_cpu_state_save/fsl_cpu_state_restore to save/restore registers.
+> > > > > Use the functions to save/restore registers, so we don't need to
+> > > > > maintain the code.
+> > > > >
+> > > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > >
+> > > > Is there any functional change with this patchset (e.g. suspend
+> > > > supported on chips where it wasn't before), or is it just cleanup?  A
+> > > > cover letter would be useful to describe the purpose of the overall
+> > > > patchset when it isn't obvious.
+> > > >
+> > >
+> > > Yes, just cleanup..
 > > 
-> > Remove "spidev".  Any nodes under the SPI controller node will be SPI
-> > devices, right?  So it doesn't add anything regarding hardware
-> > description.
-> >  
+> > It seems to be introducing complexity rather than removing it.  Is this
+> > cleanup needed to prepare for adding new functionality?
+> > 
+> > Plus, I'm skeptical that this is functionally equivalent.  It looks like
+> > the new code saves a lot more than the old code does.  Why?
+> > 
 > 
-> OK.
+> Actually, I want to take a practical example to push the save/restore patches.
+> And this is also reasonable for 32bit-hibernation, the code is more clean. :)
+> I think I need to change the description of the patch.
 > 
-> Thank you for the feedback, I will then send a revised patch as soon as I have time.
+> > > > > +
+> > > > > +	/* Restore base register */
+> > > > > +	li	r4, 0
+> > > > > +	bl	fsl_cpu_state_restore
+> > > >
+> > > > Why are you calling anything with "fsl" in the name from code that is
+> > > > supposed to be for all booke?
+> > > >
+> > > E200, E300 not support.
+> > > Support E500, E500v2, E500MC, E5500, E6500.
+> > >
+> > > Do you have any suggestions about this?
+> > 
+> > What about non-FSL booke such as 44x?
+> > 
+> > Or if this file never supported 44x, rename it appropriately.
+> > 
+> Currently does not support. ok change the name first, if later support, and
+> then again to modify the name of this function.
+> 
+> How about 85xx_cpu_state_restore?
 
-Oh, and ideally the node name should describe the function of the device
--- "spi" as a node name usually means a SPI controller.
+Symbols can't begin with numbers.  booke_cpu_state_restore would be
+better (it would still provide a place for 44x to be added if somebody
+actually cared about doing so).
 
-Maybe "ptp_clock@1"?
-
-Also, zarlink should be added to
-Documentation/devicetree/bindings/vendor-prefixes.txt
+I'm still not convinced that asm code is the place to do this, though.
 
 -Scott
