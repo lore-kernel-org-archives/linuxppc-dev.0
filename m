@@ -1,23 +1,44 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 22 Jan 2014 18:00:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH RFC 00/73] tree-wide: clean up some no longer required
- #include <linux/init.h>
-Message-Id: <20140122180023.dd90d34cba38d9f9ac516349@canb.auug.org.au>
-In-Reply-To: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1390339396-3479-1-git-send-email-paul.gortmaker@windriver.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__22_Jan_2014_18_00_23_+1100_zcOtMRV1NI/h=88n"
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-m68k@vger.kernel.org, rusty@rustcorp.com.au, linux-ia64@vger.kernel.org,
- kvm@vger.kernel.org, linux-s390@vger.kernel.org, netdev@vger.kernel.org,
- x86@kernel.org, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
- gregkh@linuxfoundation.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 180882C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 18:11:29 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 22 Jan 2014 00:11:27 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id CF58038C8027
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 02:11:24 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0M7BOBC2687294
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 07:11:24 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0M7BM8r018037
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 02:11:24 -0500
+Subject: [RESEND PATCH V5 0/8] cpuidle/ppc: Enable deep idle states on PowerNV
+To: peterz@infradead.org, fweisbec@gmail.com, paul.gortmaker@windriver.com,
+ paulus@samba.org, mingo@kernel.org, mikey@neuling.org,
+ shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
+ galak@kernel.crashing.org, =daniel.lezcano@linaro.org,
+ benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com,
+ --to=agraf@suse.de, arnd@arndb.de, linux-pm@vger.kernel.org,
+ rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org,
+ anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
+ deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Wed, 22 Jan 2014 12:37:51 +0530
+Message-ID: <20140122065918.30650.22437.stgit@preeti.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,84 +48,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__22_Jan_2014_18_00_23_+1100_zcOtMRV1NI/h=88n
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On PowerPC, when CPUs enter certain deep idle states, the local timers stop
+and the time base could go out of sync with the rest of the cores in the system.
 
-Hi Paul,
+This patchset adds support to wake up CPUs in such idle states by
+broadcasting IPIs to them at their next timer events using the tick broadcast
+framework in the Linux kernel. We refer to these IPIs as the tick
+broadcast IPIs in this patchset.
 
-On Tue, 21 Jan 2014 16:22:03 -0500 Paul Gortmaker <paul.gortmaker@windriver=
-.com> wrote:
->
-> Where: This work exists as a queue of patches that I apply to
-> linux-next; since the changes are fixing some things that currently
-> can only be found there.  The patch series can be found at:
->=20
->    http://git.kernel.org/cgit/linux/kernel/git/paulg/init.git
->    git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
->=20
-> I've avoided annoying Stephen with another queue of patches for
-> linux-next while the development content was in flux, but now that
-> the merge window has opened, and new additions are fewer, perhaps he
-> wouldn't mind tacking it on the end...  Stephen?
+However the tick broadcast framework as it exists today makes use of an external
+clock device to wakeup CPUs in such idle states. But not all implementations of
+PowerPC provides such an external clock device.
 
-OK, I have added this to the end of linux-next today - we will see how we
-go.  It is called "init".
+Hence Patch[6/8]:
+[time/cpuidle: Support in tick broadcast framework for archs without external
+clock device] adds support in the tick broadcast framework for such
+use cases by queuing a hrtimer on one of the CPUs which is meant to handle the wakeup
+of CPUs in deep idle states.
+This patch was posted separately at: https://lkml.org/lkml/2013/12/12/687.
 
-Thanks for adding your subsystem tree as a participant of linux-next.  As
-you may know, this is not a judgment of your code.  The purpose of
-linux-next is for integration testing and to lower the impact of
-conflicts between subsystems in the next merge window.=20
+Patches 1-3 adds support in powerpc to hook onto the tick broadcast framework.
 
-You will need to ensure that the patches/commits in your tree/series have
-been:
-     * submitted under GPL v2 (or later) and include the Contributor's
-	Signed-off-by,
-     * posted to the relevant mailing list,
-     * reviewed by you (or another maintainer of your subsystem tree),
-     * successfully unit tested, and=20
-     * destined for the current or next Linux merge window.
+The patchset also includes support for resyncing of time base with the rest of the
+cores in the system and context management for fast sleep. PATCH[4/8] and
+PATCH[5/8] address these issues.
 
-Basically, this should be just what you would send to Linus (or ask him
-to fetch).  It is allowed to be rebased if you deem it necessary.
+With the required support for deep idle states thus in place, the
+patchset adds "Fast-Sleep" idle state into cpuidle (Patches 7 and 8). "Fast-Sleep"
+is a deep idle state on Power8 in which the above mentioned challenges
+exist. Fast-Sleep can yield us significantly more power
+savings than the idle states that we have in cpuidle so far.
 
---=20
-Cheers,
-Stephen Rothwell=20
-sfr@canb.auug.org.au
+This patchset is based on Ben's ppc next branch at commit fac515db45207718
+[Merge remote-tracking branch 'scott/next' into next],  and the
+cpuidle driver for powernv posted by Deepthi Dharwar:
+https://lkml.org/lkml/2014/1/14/172. The same patchset minus the resolving of
+merge conflicts with Ben's ppc next branch had been posted earlier
+at http://lkml.org/lkml/2014/1/15/70. This Repost resolves these merge
+conflicts with Ben's ppc next branch. Hence the Repost. Besides the earlier
+post was based and tested on the mainline commit that was quite old.
 
-Legal Stuff:
-By participating in linux-next, your subsystem tree contributions are
-public and will be included in the linux-next trees.  You may be sent
-e-mail messages indicating errors or other issues when the
-patches/commits from your subsystem tree are merged and tested in
-linux-next.  These messages may also be cross-posted to the linux-next
-mailing list, the linux-kernel mailing list, etc.  The linux-next tree
-project and IBM (my employer) make no warranties regarding the linux-next
-project, the testing procedures, the results, the e-mails, etc.  If you
-don't agree to these ground rules, let me know and I'll remove your tree
-from participation in linux-next.
+However the patchset posted earlier at http://lkml.org/lkml/2014/1/15/70
+along wiith Deepthi's patches on cpuidle driver for
+powernv applies cleanly on the mainline kernel at commit: 85ce70fdf48aa290b484531
+dated Jan 16 2014 and has been tested on the same at the time of this Repost.
 
---Signature=_Wed__22_Jan_2014_18_00_23_+1100_zcOtMRV1NI/h=88n
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Changes in V5: The primary change in this version is in Patch[6/8].
+As per the discussions in V4 posting of this patchset, it was decided to
+refine handling the wakeup of CPUs in fast-sleep by doing the following:
 
-iQIcBAEBCAAGBQJS32yLAAoJEMDTa8Ir7ZwVm18P/i9+tdEJe4LadVgjePUgRka0
-guzWVBgQs96hVeg/7h+LJWNRsMgu90m1S6n0BhoA/maJqSb1zHJ5VhWbPuDkCdRo
-EEB1J/lW35ziCkBg+ejAQm1c+5QIsoyi0MbuFEGyX7a8FgFJrzC3bJCQCysNHsxR
-mKYtXKdpPzpluxSzjCdecZyfWA6SU3Lbvgh6Th3yyQaAlm/QOk/k3wGGvQND/ODS
-37ktKXITCAnhCZ6HvVanJvim6pK78dDJPL1h7yVZ/heYJbEqEONfFuHeg+j1RVZg
-ilcnhvmkg6jEJoQkHB+ZopLVwv+QEnkPxzDPwmNNcAIexxvHXXpOkc3geeWtNsHp
-NNvJFXIWMbzemktgVNM3r5uxgnPmAcHCU6vaZTv/kodSZDuGrkvbOscwEpNyr1Bw
-rVm5gSiLyfA8eecFymGhPXvPvrAbmcA11lxZCh0V4gmgC5eKrUwiTIFGhm6n9WCy
-FartKLucuqCzLOgLujCC+c+7BOwTjc1vyMBbQtBwSCfPc/tyZZLvI9QTyv3tJKro
-G4Jimb7wth9sm93N7n9uplshLbNrNvTbE3Q9OU+mOKMzj0uD9ck/htxfh1vEZKWd
-vfuOCJrgnQdOA/TeZQmlKfIy/t2hkJXAV/oipKVrGg45oJZB72Tt7BA4FhUi/PeE
-2qfphmmDreRrUP/I4bqp
-=j4pk
------END PGP SIGNATURE-----
+1. In V4, a polling mechanism was used by the CPU handling broadcast to
+find out the time of next wakeup of the CPUs in deep idle states. V5 avoids
+polling by a way described under PATCH[6/8] in this patchset.
 
---Signature=_Wed__22_Jan_2014_18_00_23_+1100_zcOtMRV1NI/h=88n--
+2. The mechanism of broadcast handling of CPUs in deep idle in the absence of an
+external wakeup device should be generic and not arch specific code. Hence in this
+version this functionality has been integrated into the tick broadcast framework in
+the kernel unlike before where it was handled in powerpc specific code.
+
+3. It was suggested that the "broadcast cpu" can be the time keeping cpu
+itself. However this has challenges of its own:
+
+ a. The time keeping cpu need not exist when all cpus are idle. Hence there
+are phases in time when time keeping cpu is absent. But for the use case that
+this patchset is trying to address we rely on the presence of a broadcast cpu
+all the time.
+
+ b. The nomination and un-assignment of the time keeping cpu is not protected
+by a lock today and need not be as well since such is its use case in the
+kernel. However we would need locks if we double up the time keeping cpu as the
+broadcast cpu.
+
+Hence the broadcast cpu is independent of the time-keeping cpu. However PATCH[6/8]
+proposes a simpler solution to pick a broadcast cpu in this version.
+
+
+
+Changes in V4: https://lkml.org/lkml/2013/11/29/97
+
+1. Add Fast Sleep CPU idle state on PowerNV.
+
+2. Add the required context management for Fast Sleep and the call to OPAL
+to synchronize time base after wakeup from fast sleep.
+
+4. Add parsing of CPU idle states from the device tree to populate the
+cpuidle
+state table.
+
+5. Rename ambiguous functions in the code around waking up of CPUs from fast
+sleep.
+
+6. Fixed a bug in re-programming of the hrtimer that is queued to wakeup the
+CPUs in fast sleep and modified Changelogs.
+
+7. Added the ARCH_HAS_TICK_BROADCAST option. This signifies that we have a
+arch specific function to perform broadcast.
+
+
+Changes in V3:
+http://thread.gmane.org/gmane.linux.power-management.general/38113
+
+1. Fix the way in which a broadcast ipi is handled on the idling cpus. Timer
+handling on a broadcast ipi is being done now without missing out any timer
+stats generation.
+
+2. Fix a bug in the programming of the hrtimer meant to do broadcast. Program
+it to trigger at the earlier of a "broadcast period", and the next wakeup
+event. By introducing the "broadcast period" as the maximum period after
+which the broadcast hrtimer can fire, we ensure that we do not miss
+wakeups in corner cases.
+
+3. On hotplug of a broadcast cpu, trigger the hrtimer meant to do broadcast
+to fire immediately on the new broadcast cpu. This will ensure we do not miss
+doing a broadcast pending in the nearest future.
+
+4. Change the type of allocation from GFP_KERNEL to GFP_NOWAIT while
+initializing bc_hrtimer since we are in an atomic context and cannot sleep.
+
+5. Use the broadcast ipi to wakeup the newly nominated broadcast cpu on
+hotplug of the old instead of smp_call_function_single(). This is because we
+are interrupt disabled at this point and should not be using
+smp_call_function_single or its children in this context to send an ipi.
+
+6. Move GENERIC_CLOCKEVENTS_BROADCAST to arch/powerpc/Kconfig.
+
+7. Fix coding style issues.
+
+
+Changes in V2: https://lkml.org/lkml/2013/8/14/239
+
+1. Dynamically pick a broadcast CPU, instead of having a dedicated one.
+2. Remove the constraint of having to disable tickless idle on the broadcast
+CPU by queueing a hrtimer dedicated to do broadcast.
+
+
+
+V1 posting: https://lkml.org/lkml/2013/7/25/740.
+
+1. Added the infrastructure to wakeup CPUs in deep idle states in which the
+local timers stop.
+
+---
+
+Preeti U Murthy (5):
+      cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
+      powermgt: Add OPAL call to resync timebase on wakeup
+      time/cpuidle: Support in tick broadcast framework in the absence of external clock device
+      cpuidle/powernv: Add "Fast-Sleep" CPU idle state
+      cpuidle/powernv: Parse device tree to setup idle states
+
+Srivatsa S. Bhat (2):
+      powerpc: Free up the slot of PPC_MSG_CALL_FUNC_SINGLE IPI message
+      powerpc: Implement tick broadcast IPI as a fixed IPI message
+
+Vaidyanathan Srinivasan (1):
+      powernv/cpuidle: Add context management for Fast Sleep
+
+
+ arch/powerpc/Kconfig                           |    2 
+ arch/powerpc/include/asm/opal.h                |    2 
+ arch/powerpc/include/asm/processor.h           |    1 
+ arch/powerpc/include/asm/smp.h                 |    2 
+ arch/powerpc/include/asm/time.h                |    1 
+ arch/powerpc/kernel/exceptions-64s.S           |   10 +
+ arch/powerpc/kernel/idle_power7.S              |   90 +++++++++--
+ arch/powerpc/kernel/smp.c                      |   23 ++-
+ arch/powerpc/kernel/time.c                     |   88 +++++++----
+ arch/powerpc/platforms/cell/interrupt.c        |    2 
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
+ arch/powerpc/platforms/ps3/smp.c               |    2 
+ drivers/cpuidle/cpuidle-powernv.c              |  109 ++++++++++++--
+ include/linux/clockchips.h                     |    4 -
+ kernel/time/clockevents.c                      |    9 +
+ kernel/time/tick-broadcast.c                   |  192 ++++++++++++++++++++++--
+ kernel/time/tick-internal.h                    |    8 +
+ 17 files changed, 442 insertions(+), 104 deletions(-)
