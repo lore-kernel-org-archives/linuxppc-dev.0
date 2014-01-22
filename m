@@ -1,47 +1,26 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wg0-f53.google.com (mail-wg0-f53.google.com [74.125.82.53])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1621F2C0629
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 18:13:23 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 22 Jan 2014 02:13:21 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 8E06AC90026
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 02:13:17 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0M7DKAm9896290
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 07:13:20 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0M7DH1R001851
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 02:13:19 -0500
-Subject: [RESEND PATCH V5 8/8] cpuidle/powernv: Parse device tree to setup
- idle states
-To: peterz@infradead.org, fweisbec@gmail.com, paul.gortmaker@windriver.com,
- paulus@samba.org, mingo@kernel.org, mikey@neuling.org,
- shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
- galak@kernel.crashing.org, =daniel.lezcano@linaro.org,
- benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com,
- --to=agraf@suse.de, arnd@arndb.de, linux-pm@vger.kernel.org,
- rostedt@goodmis.org, michael@ellerman.id.au, john.stultz@linaro.org,
- anton@samba.org, tglx@linutronix.de, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 22 Jan 2014 12:39:47 +0530
-Message-ID: <20140122070946.30650.64517.stgit@preeti.in.ibm.com>
-In-Reply-To: <20140122065918.30650.22437.stgit@preeti.in.ibm.com>
-References: <20140122065918.30650.22437.stgit@preeti.in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 500832C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 19:29:23 +1100 (EST)
+Received: by mail-wg0-f53.google.com with SMTP id y10so55521wgg.8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 00:29:18 -0800 (PST)
+Message-ID: <52DF815D.50104@linaro.org>
+Date: Wed, 22 Jan 2014 09:29:17 +0100
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ svaidy@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ benh@kernel.crashing.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ tuukka.tikkanen@linaro.org
+Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
+ states
+References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com>
+In-Reply-To: <20140117043351.21531.14192.stgit@preeti.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,140 +30,270 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add deep idle states such as nap and fast sleep to the cpuidle state table
-only if they are discovered from the device tree during cpuidle initialization.
+On 01/17/2014 05:33 AM, Preeti U Murthy wrote:
+> The cpuidle governors today are not handling scenarios where no idle state
+> can be chosen. Such scenarios coud arise if the user has disabled all the
+> idle states at runtime or the latency requirement from the cpus is very strict.
+>
+> The menu governor returns 0th index of the idle state table when no other
+> idle state is suitable. This is even when the idle state corresponding to this
+> index is disabled or the latency requirement is strict and the exit_latency
+> of the lowest idle state is also not acceptable. Hence this patch
+> fixes this logic in the menu governor by defaulting to an idle state index
+> of -1 unless any other state is suitable.
+>
+> The ladder governor needs a few more fixes in addition to that required in the
+> menu governor. When the ladder governor decides to demote the idle state of a
+> CPU, it does not check if the lower idle states are enabled. Add this logic
+> in addition to the logic where it chooses an index of -1 if it can neither
+> promote or demote the idle state of a cpu nor can it choose the current idle
+> state.
+>
+> The cpuidle_idle_call() will return back if the governor decides upon not
+> entering any idle state. However it cannot return an error code because all
+> archs have the logic today that if the call to cpuidle_idle_call() fails, it
+> means that the cpuidle driver failed to *function*; for instance due to
+> errors during registration. As a result they end up deciding upon a
+> default idle state on their own, which could very well be a deep idle state.
+> This is incorrect in cases where no idle state is suitable.
+>
+> Besides for the scenario that this patch is addressing, the call actually
+> succeeds. Its just that no idle state is thought to be suitable by the governors.
+> Under such a circumstance return success code without entering any idle
+> state.
+>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>
+> Changes from V1:https://lkml.org/lkml/2014/1/14/26
+>
+> 1. Change the return code to success from -EINVAL due to the reason mentioned
+> in the changelog.
+> 2. Add logic that the patch is addressing in the ladder governor as well.
+> 3. Added relevant comments and removed redundant logic as suggested in the
+> above thread.
+> ---
+>
+>   drivers/cpuidle/cpuidle.c          |   15 +++++-
+>   drivers/cpuidle/governors/ladder.c |   98 ++++++++++++++++++++++++++----------
+>   drivers/cpuidle/governors/menu.c   |    7 +--
+>   3 files changed, 89 insertions(+), 31 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..831b664 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>
+>   	/* ask the governor for the next state */
+>   	next_state = cpuidle_curr_governor->select(drv, dev);
+> +
+> +	dev->last_residency = 0;
+>   	if (need_resched()) {
+> -		dev->last_residency = 0;
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+Why do you need to do this change ? ^^^^^
 
- drivers/cpuidle/cpuidle-powernv.c |   81 +++++++++++++++++++++++++++++--------
- 1 file changed, 64 insertions(+), 17 deletions(-)
+>   		/* give the governor an opportunity to reflect on the outcome */
+>   		if (cpuidle_curr_governor->reflect)
+>   			cpuidle_curr_governor->reflect(dev, next_state);
+> @@ -140,6 +141,18 @@ int cpuidle_idle_call(void)
+>   		return 0;
+>   	}
+>
+> +	/* Unlike in the need_resched() case, we return here because the
+> +	 * governor did not find a suitable idle state. However idle is still
+> +	 * in progress as we are not asked to reschedule. Hence we return
+> +	 * without enabling interrupts.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 90f0c2b..b3face5 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -12,10 +12,17 @@
- #include <linux/cpu.h>
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
-+#include <linux/of.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- 
-+/* Flags and constants used in PowerNV platform */
-+
-+#define MAX_POWERNV_IDLE_STATES	8
-+#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
-+#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
-+
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
- 	.owner            = THIS_MODULE,
-@@ -87,7 +94,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- /*
-  * States for dedicated partition case.
-  */
--static struct cpuidle_state powernv_states[] = {
-+static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
-@@ -95,20 +102,6 @@ static struct cpuidle_state powernv_states[] = {
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
--	{ /* NAP */
--		.name = "NAP",
--		.desc = "NAP",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &nap_loop },
--	 { /* Fastsleep */
--		.name = "fastsleep",
--		.desc = "fastsleep",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &fastsleep_loop },
- };
- 
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-@@ -169,19 +162,73 @@ static int powernv_cpuidle_driver_init(void)
- 	return 0;
- }
- 
-+static int powernv_add_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	struct property *prop;
-+	int nr_idle_states = 1; /* Snooze */
-+	int dt_idle_states;
-+	u32 *flags;
-+	int i;
-+
-+	/* Currently we have snooze statically defined */
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return nr_idle_states;
-+	}
-+
-+	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
-+	if (!prop) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return nr_idle_states;
-+	}
-+
-+	dt_idle_states = prop->length / sizeof(u32);
-+	flags = (u32 *) prop->value;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+
-+		if (flags[i] & IDLE_USE_INST_NAP) {
-+			/* Add NAP state */
-+			strcpy(powernv_states[nr_idle_states].name, "Nap");
-+			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 10;
-+			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].enter = &nap_loop;
-+			nr_idle_states++;
-+		}
-+
-+		if (flags[i] & IDLE_USE_INST_SLEEP) {
-+			/* Add FASTSLEEP state */
-+			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-+			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 300;
-+			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			nr_idle_states++;
-+		}
-+	}
-+
-+	return nr_idle_states;
-+}
-+
- /*
-  * powernv_idle_probe()
-  * Choose state table for shared versus dedicated partition
-  */
- static int powernv_idle_probe(void)
- {
--
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
- 
- 	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		cpuidle_state_table = powernv_states;
--		max_idle_state = ARRAY_SIZE(powernv_states);
-+		/* Device tree can indicate more idle states */
-+		max_idle_state = powernv_add_idle_states();
-  	} else
-  		return -ENODEV;
- 
+That will lead to a WARN.
+
+> +	 * NOTE: The return code should still be success, since the verdict of this
+> +	 * call is "do not enter any idle state" and not a failed call due to
+> +	 * errors.
+> +	 */
+> +	if (next_state < 0)
+> +		return 0;
+> +
+
+Returning from here breaks the symmetry of the trace.
+
+>   	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>
+>   	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 9f08e8c..f495f57 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -58,6 +58,36 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+>   	ldev->last_state_idx = new_idx;
+>   }
+>
+> +static int can_promote(struct ladder_device *ldev, int last_idx,
+> +				int last_residency)
+> +{
+> +	struct ladder_device_state *last_state;
+> +
+> +	last_state = &ldev->states[last_idx];
+> +	if (last_residency > last_state->threshold.promotion_time) {
+> +		last_state->stats.promotion_count++;
+> +		last_state->stats.demotion_count = 0;
+> +		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count)
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int can_demote(struct ladder_device *ldev, int last_idx,
+> +			int last_residency)
+> +{
+> +	struct ladder_device_state *last_state;
+> +
+> +	last_state = &ldev->states[last_idx];
+> +	if (last_residency < last_state->threshold.demotion_time) {
+> +		last_state->stats.demotion_count++;
+> +		last_state->stats.promotion_count = 0;
+> +		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count)
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>   /**
+>    * ladder_select_state - selects the next state to enter
+>    * @drv: cpuidle driver
+> @@ -73,29 +103,33 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>
+>   	/* Special case when user has set very strict latency requirement */
+>   	if (unlikely(latency_req == 0)) {
+> -		ladder_do_selection(ldev, last_idx, 0);
+> -		return 0;
+> +		if (last_idx >= 0)
+> +			ladder_do_selection(ldev, last_idx, -1);
+> +		goto out;
+>   	}
+>
+> -	last_state = &ldev->states[last_idx];
+> -
+> -	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+> -		last_residency = cpuidle_get_last_residency(dev) - \
+> -					 drv->states[last_idx].exit_latency;
+> +	if (last_idx >= 0) {
+> +		if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+> +			last_residency = cpuidle_get_last_residency(dev) - \
+> +						 drv->states[last_idx].exit_latency;
+> +		} else {
+> +			last_state = &ldev->states[last_idx];
+> +			last_residency = last_state->threshold.promotion_time + 1;
+> +		}
+>   	}
+> -	else
+> -		last_residency = last_state->threshold.promotion_time + 1;
+>
+>   	/* consider promotion */
+>   	if (last_idx < drv->state_count - 1 &&
+>   	    !drv->states[last_idx + 1].disabled &&
+>   	    !dev->states_usage[last_idx + 1].disable &&
+> -	    last_residency > last_state->threshold.promotion_time &&
+>   	    drv->states[last_idx + 1].exit_latency <= latency_req) {
+> -		last_state->stats.promotion_count++;
+> -		last_state->stats.demotion_count = 0;
+> -		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count) {
+> -			ladder_do_selection(ldev, last_idx, last_idx + 1);
+> +		if (last_idx >= 0) {
+> +			if (can_promote(ldev, last_idx, last_residency)) {
+> +				ladder_do_selection(ldev, last_idx, last_idx + 1);
+> +				return last_idx + 1;
+> +			}
+> +		} else {
+> +			ldev->last_state_idx = last_idx + 1;
+>   			return last_idx + 1;
+>   		}
+>   	}
+> @@ -107,26 +141,36 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>   	    drv->states[last_idx].exit_latency > latency_req)) {
+>   		int i;
+>
+> -		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+> -			if (drv->states[i].exit_latency <= latency_req)
+> +		for (i = last_idx - 1; i >= CPUIDLE_DRIVER_STATE_START; i--) {
+> +			if (drv->states[i].exit_latency <= latency_req &&
+> +				!(drv->states[i].disabled || dev->states_usage[i].disable))
+>   				break;
+>   		}
+> -		ladder_do_selection(ldev, last_idx, i);
+> -		return i;
+> +		if (i >= 0) {
+> +			ladder_do_selection(ldev, last_idx, i);
+> +			return i;
+> +		}
+> +		goto out;
+>   	}
+>
+> -	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+> -	    last_residency < last_state->threshold.demotion_time) {
+> -		last_state->stats.demotion_count++;
+> -		last_state->stats.promotion_count = 0;
+> -		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
+> -			ladder_do_selection(ldev, last_idx, last_idx - 1);
+> -			return last_idx - 1;
+> +	if (last_idx > CPUIDLE_DRIVER_STATE_START) {
+> +		int i = last_idx - 1;
+> +
+> +		if (can_demote(ldev, last_idx, last_residency) &&
+> +			!(drv->states[i].disabled || dev->states_usage[i].disable)) {
+> +			ladder_do_selection(ldev, last_idx, i);
+> +			return i;
+>   		}
+> +		/* We come here when the last_idx is still a suitable idle state, just that
+> +		 * promotion or demotion is not ideal.
+> +		 */
+> +		ldev->last_state_idx = last_idx;
+> +		return last_idx;
+>   	}
+>
+> -	/* otherwise remain at the current state */
+> -	return last_idx;
+> +	/* we come here if no idle state is suitable */
+> +out:	ldev->last_state_idx = -1;
+> +	return ldev->last_state_idx;
+>   }
+>
+>   /**
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index cf7f2f0..e9f17ce 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -297,12 +297,12 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>   		data->needs_update = 0;
+>   	}
+>
+> -	data->last_state_idx = 0;
+> +	data->last_state_idx = -1;
+>   	data->exit_us = 0;
+>
+>   	/* Special case when user has set very strict latency requirement */
+>   	if (unlikely(latency_req == 0))
+> -		return 0;
+> +		return data->last_state_idx;
+>
+>   	/* determine the expected residency time, round up */
+>   	t = ktime_to_timespec(tick_nohz_get_sleep_length());
+> @@ -368,7 +368,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>   /**
+>    * menu_reflect - records that data structures need update
+>    * @dev: the CPU
+> - * @index: the index of actual entered state
+> + * @index: the index of actual entered state or -1 if no idle state is
+> + * suitable.
+>    *
+>    * NOTE: it's important to be fast here because this operation will add to
+>    *       the overall exit latency.
+>
+
+
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
