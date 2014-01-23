@@ -1,55 +1,32 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 2BBAD2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 22:40:43 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 31843-06 for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 23 Jan 2014 11:40:38 +0000 (GMT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Tony Prisk' <linux@prisktech.co.nz>, Yijing Wang <wangyijing@huawei.com>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
-Subject: RE: [PATCH 2/2] clocksource: Make clocksource register functions void
-Date: Thu, 23 Jan 2014 11:40:35 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D46489C@AcuExch.aculab.com>
-References: <1390461166-36440-1-git-send-email-wangyijing@huawei.com>
- <52E0C889.6000106@prisktech.co.nz>
-In-Reply-To: <52E0C889.6000106@prisktech.co.nz>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D2B752C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 03:23:05 +1100 (EST)
+Message-ID: <1390494165.24905.554.camel@snotra.buserror.net>
+Subject: Re: [PATCH 2/3] powerpc/85xx: Provide two functions to save/restore
+ the core registers
+From: Scott Wood <scottwood@freescale.com>
+To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
+Date: Thu, 23 Jan 2014 10:22:45 -0600
+In-Reply-To: <46dd04cc9b6245fa90d20e2d94ff8523@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
+ <1389686397-46555-2-git-send-email-dongsheng.wang@freescale.com>
+ <1389743456.24905.143.camel@snotra.buserror.net>
+ <a11e0d7b3b954aa68483513340043452@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1389842249.24905.196.camel@snotra.buserror.net>
+ <6f81ef13c25744b685b99a3fbb304f1b@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1390266361.24905.399.camel@snotra.buserror.net>
+ <7db8f36932f84bc5bdcb8a7777c55383@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1390438219.24905.551.camel@snotra.buserror.net>
+ <46dd04cc9b6245fa90d20e2d94ff8523@BN1PR03MB188.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "x86@kernel.org" <x86@kernel.org>, Kevin Hilman <khilman@deeprootsystems.com>,
- "linux@lists.openrisc.net" <linux@lists.openrisc.net>,
- Sekhar Nori <nsekhar@ti.com>, Michal Simek <monstr@monstr.eu>,
- Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Daniel Walker <dwalker@fifo99.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jonas Bonn <jonas@southpole.se>,
- Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>,
- Richard
- Weinberger <richard@nod.at>, Daniel Lezcano <daniel.lezcano@linaro.org>,
- Tony Lindgren <tony@atomide.com>, Ingo Molnar <mingo@redhat.com>,
- "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
- David Brown <davidb@codeaurora.org>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>, Mike
- Frysinger <vapier@gentoo.org>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>,
- "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
- Jeff Dike <jdike@addtoit.com>,
- "davinci-linux-open-source@linux.davincidsp.com"
- <davinci-linux-open-source@linux.davincidsp.com>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- "user-mode-linux-user@lists.sourceforge.net"
- <user-mode-linux-user@lists.sourceforge.net>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Barry Song <baohua@kernel.org>, Jim Cromie <jim.cromie@gmail.com>,
- Hanjun Guo <guohanjun@huawei.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, Bryan
- Huntsman <bryanh@codeaurora.org>, "uclinux-dist-devel@blackfin.uclinux.org"
- <uclinux-dist-devel@blackfin.uclinux.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "anton@enomsg.org" <anton@enomsg.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Zhao
+ Chenhui-B35336 <chenhui.zhao@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -59,30 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Linuxppc-dev Tony Prisk
-> On 23/01/14 20:12, Yijing Wang wrote:
-> > Currently, clocksource_register() and __clocksource_register_scale()
-> > functions always return 0, it's pointless, make functions void.
-> > And remove the dead code that check the clocksource_register_hz()
-> > return value.
-> ......
-> > -static inline int clocksource_register_hz(struct clocksource *cs, u32 =
-hz)
-> > +static inline void clocksource_register_hz(struct clocksource *cs, u32=
- hz)
-> >   {
-> >   	return __clocksource_register_scale(cs, 1, hz);
-> >   }
->=20
-> This doesn't make sense - you are still returning a value on a function
-> declared void, and the return is now from a function that doesn't return
-> anything either ?!?!
-> Doesn't this throw a compile-time warning??
+On Wed, 2014-01-22 at 20:49 -0600, Wang Dongsheng-B40534 wrote:
+> > > >
+> > > > The whole point of calling enable_kernel_fp() in C code before
+> > > > suspending is to ensure that the FP state gets saved.  If FP is used
+> > > > after that point it is a bug.  If you're worried about such bugs, then
+> > > > clear MSR[FP] after calling enable_kernel_fp(), rather than adding
+> > > > redundant state saving.
+> > > >
+> > >
+> > > enable_kernel_fp() calling in MEM suspend flow.
+> > > Hibernation is different with MEM suspend, and I'm not sure where will call
+> > this
+> > > interface, so we need to ensure the integrity of the core saving. I don't
+> > think
+> > > this code is *redundant*. I trust that the kernel can keep the FP related
+> > > operations, that's why a judgment is here. :)
+> > 
+> > For hibernation, save_processor_state() is called first, which does
+> > flush_fp_to_thread() which has a similar effect (though I wonder if it's
+> > being called on the correct task for non-SMP).
+> > 
+> Yes, thanks, I miss this code.:)
+> 
+> But I still think we need to keep this judgment, because i provide an API.
+> If you still insist on I can remove *FP*, but I don't want to do this..:)
 
-It depends on the compiler.
-Recent gcc allow it.
-I don't know if it is actually valid C though.
+I insist.  Redundant code wastes review and maintenance bandwidth, and
+is a potential source of bugs.
 
-There is no excuse for it on lines like the above though.
-
-	David
+-Scott
