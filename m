@@ -1,30 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
+ [IPv6:2607:f8b0:4001:c05::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B6CC2C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 11:50:32 +1100 (EST)
-Message-ID: <1390438219.24905.551.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/3] powerpc/85xx: Provide two functions to save/restore
- the core registers
-From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
-Date: Wed, 22 Jan 2014 18:50:19 -0600
-In-Reply-To: <7db8f36932f84bc5bdcb8a7777c55383@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1389686397-46555-1-git-send-email-dongsheng.wang@freescale.com>
- <1389686397-46555-2-git-send-email-dongsheng.wang@freescale.com>
- <1389743456.24905.143.camel@snotra.buserror.net>
- <a11e0d7b3b954aa68483513340043452@BN1PR03MB188.namprd03.prod.outlook.com>
- <1389842249.24905.196.camel@snotra.buserror.net>
- <6f81ef13c25744b685b99a3fbb304f1b@BN1PR03MB188.namprd03.prod.outlook.com>
- <1390266361.24905.399.camel@snotra.buserror.net>
- <7db8f36932f84bc5bdcb8a7777c55383@BN1PR03MB188.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id F2A512C0099
+ for <linuxppc-dev@ozlabs.org>; Thu, 23 Jan 2014 13:12:21 +1100 (EST)
+Received: by mail-ig0-f180.google.com with SMTP id m12so3568336iga.1
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Jan 2014 18:12:18 -0800 (PST)
+Date: Wed, 22 Jan 2014 18:12:13 -0800
+From: Brian Norris <computersforpeace@gmail.com>
+To: Hou Zhiqiang <b48286@freescale.com>
+Subject: Re: [PATCH] mtd: m25p80: Make the name of mtd_info fixed
+Message-ID: <20140123021213.GZ8919@ld-irv-0074>
+References: <1388990069-27066-1-git-send-email-b48286@freescale.com>
 MIME-Version: 1.0
-Cc: "anton@enomsg.org" <anton@enomsg.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Zhao
- Chenhui-B35336 <chenhui.zhao@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1388990069-27066-1-git-send-email-b48286@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, mingkai.hu@freescale.com,
+ linux-mtd@lists.infradead.org,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,64 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-01-20 at 20:43 -0600, Wang Dongsheng-B40534 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, January 21, 2014 9:06 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: benh@kernel.crashing.org; Zhao Chenhui-B35336; anton@enomsg.org; linuxppc-
-> > dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 2/3] powerpc/85xx: Provide two functions to save/restore the
-> > core registers
-> > 
-> > On Mon, 2014-01-20 at 00:03 -0600, Wang Dongsheng-B40534 wrote:
-> > > > > > > +	/*
-> > > > > > > +	 * Need to save float-point registers if MSR[FP] = 1.
-> > > > > > > +	 */
-> > > > > > > +	mfmsr	r12
-> > > > > > > +	andi.	r12, r12, MSR_FP
-> > > > > > > +	beq	1f
-> > > > > > > +	do_sr_fpr_regs(save)
-> > > > > >
-> > > > > > C code should have already ensured that MSR[FP] is not 1 (and thus the
-> > FP
-> > > > > > context has been saved).
-> > > > > >
-> > > > >
-> > > > > Yes, right. But I mean if the FP still use in core save flow, we need to
-> > save
-> > > > it.
-> > > > > In this process, i don't care what other code do, we need to focus on not
-> > > > losing
-> > > > > valuable data.
-> > > >
-> > > > It is not allowed to use FP at that point.
-> > > >
-> > > If MSR[FP] not active, that is FP not allowed to use.
-> > > But here is a normal judgment, if MSR[FP] is active, this means that the
-> > floating
-> > > point module is being used. I offer is a function of the interface, we don't
-> > know
-> > > where is the function will be called. Just because we call this function in
-> > the
-> > > context of uncertainty, we need this judgment to ensure that no data is lost.
-> > 
-> > The whole point of calling enable_kernel_fp() in C code before
-> > suspending is to ensure that the FP state gets saved.  If FP is used
-> > after that point it is a bug.  If you're worried about such bugs, then
-> > clear MSR[FP] after calling enable_kernel_fp(), rather than adding
-> > redundant state saving.
-> > 
-> 
-> enable_kernel_fp() calling in MEM suspend flow.
-> Hibernation is different with MEM suspend, and I'm not sure where will call this
-> interface, so we need to ensure the integrity of the core saving. I don't think
-> this code is *redundant*. I trust that the kernel can keep the FP related
-> operations, that's why a judgment is here. :)
+Hi Hou,
 
-For hibernation, save_processor_state() is called first, which does
-flush_fp_to_thread() which has a similar effect (though I wonder if it's
-being called on the correct task for non-SMP).
+On Mon, Jan 06, 2014 at 02:34:29PM +0800, Hou Zhiqiang wrote:
+> To give spi flash layout using "mtdparts=..." in cmdline, we must
+> give mtd_info a fixed name,because the cmdlinepart's parser will
+> match the name given in cmdline with the mtd_info.
+> 
+> Now, if use OF node, mtd_info's name will be spi->dev->name. It
+> consists of spi_master->bus_num, and the spi_master->bus_num maybe
+> dynamically fetched.
+> So, give the mtd_info a new fiexd name "name.cs", "name" is name of
+> spi_device_id and "cs" is chip-select in spi_dev.
+> 
+> Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
+> ---
+>  drivers/mtd/devices/m25p80.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+> index eb558e8..d1ed480 100644
+> --- a/drivers/mtd/devices/m25p80.c
+> +++ b/drivers/mtd/devices/m25p80.c
+> @@ -1012,7 +1012,8 @@ static int m25p_probe(struct spi_device *spi)
+>  	if (data && data->name)
+>  		flash->mtd.name = data->name;
+>  	else
+> -		flash->mtd.name = dev_name(&spi->dev);
+> +		flash->mtd.name = kasprintf(GFP_KERNEL, "%s.%d",
+> +				id->name, spi->chip_select);
 
--Scott
+Changing the mtd.name may have far-reaching consequences for users who
+already have mtdparts= command lines. But your concern is probably valid
+for dynamically-determined bus numbers. Perhaps you can edit this patch
+to only change the name when the busnum is dynamically-allocated?
+
+This also needs a NULL check (for OOM), and you leak memory on device
+removal.
+
+>  
+>  	flash->mtd.type = MTD_NORFLASH;
+>  	flash->mtd.writesize = 1;
+
+Brian
