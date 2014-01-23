@@ -1,25 +1,47 @@
-Return-Path: <B48286@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 16C5F2C0091
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Jan 2014 14:29:45 +1100 (EST)
-From: "B48286@freescale.com" <B48286@freescale.com>
-To: 'Brian Norris' <computersforpeace@gmail.com>
-Subject: RE: [PATCH] mtd: m25p80: Make the name of mtd_info fixed
-Date: Thu, 23 Jan 2014 03:29:41 +0000
-Message-ID: <66941b677b7e4b8d9ce4cc44304b0955@DM2PR03MB301.namprd03.prod.outlook.com>
-References: <1388990069-27066-1-git-send-email-b48286@freescale.com>
- <20140123021213.GZ8919@ld-irv-0074>
-In-Reply-To: <20140123021213.GZ8919@ld-irv-0074>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 61E082C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 14:42:23 +1100 (EST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 22 Jan 2014 20:42:21 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CEF603E40055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 20:42:18 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0N3gIfp4784622
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 04:42:18 +0100
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0N3gG0R004624
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Jan 2014 20:42:18 -0700
+Message-ID: <52E08EC2.6090204@linux.vnet.ibm.com>
+Date: Thu, 23 Jan 2014 09:08:42 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "Mingkai.Hu@freescale.com" <Mingkai.Hu@freescale.com>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V5 6/8] time/cpuidle: Support in tick broadcast framework
+ in the absence of external clock device
+References: <20140115080555.20446.27238.stgit@preeti.in.ibm.com>
+ <20140115080947.20446.30305.stgit@preeti.in.ibm.com>
+ <alpine.DEB.2.02.1401221042130.4260@ionos.tec.linutronix.de>
+In-Reply-To: <alpine.DEB.2.02.1401221042130.4260@ionos.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com,
+ paul.gortmaker@windriver.com, paulus@samba.org, mingo@kernel.org,
+ mikey@neuling.org, shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
+ agraf@suse.de, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
+ linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
+ john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com,
+ deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,70 +51,316 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Brian,
-Thanks for your comments!
+Hi Thomas,
 
-> -----Original Message-----
-> From: Brian Norris [mailto:computersforpeace@gmail.com]
-> Sent: Thursday, January 23, 2014 10:12 AM
-> To: Hou Zhiqiang-B48286
-> Cc: linux-mtd@lists.infradead.org; linuxppc-dev@ozlabs.org; Wood Scott-
-> B07421; Hu Mingkai-B21284; Ezequiel Garcia
-> Subject: Re: [PATCH] mtd: m25p80: Make the name of mtd_info fixed
->=20
-> Hi Hou,
->=20
-> On Mon, Jan 06, 2014 at 02:34:29PM +0800, Hou Zhiqiang wrote:
-> > To give spi flash layout using "mtdparts=3D..." in cmdline, we must giv=
-e
-> > mtd_info a fixed name,because the cmdlinepart's parser will match the
-> > name given in cmdline with the mtd_info.
-> >
-> > Now, if use OF node, mtd_info's name will be spi->dev->name. It
-> > consists of spi_master->bus_num, and the spi_master->bus_num maybe
-> > dynamically fetched.
-> > So, give the mtd_info a new fiexd name "name.cs", "name" is name of
-> > spi_device_id and "cs" is chip-select in spi_dev.
-> >
-> > Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
-> > ---
-> >  drivers/mtd/devices/m25p80.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/mtd/devices/m25p80.c
-> > b/drivers/mtd/devices/m25p80.c index eb558e8..d1ed480 100644
-> > --- a/drivers/mtd/devices/m25p80.c
-> > +++ b/drivers/mtd/devices/m25p80.c
-> > @@ -1012,7 +1012,8 @@ static int m25p_probe(struct spi_device *spi)
-> >  	if (data && data->name)
-> >  		flash->mtd.name =3D data->name;
-> >  	else
-> > -		flash->mtd.name =3D dev_name(&spi->dev);
-> > +		flash->mtd.name =3D kasprintf(GFP_KERNEL, "%s.%d",
-> > +				id->name, spi->chip_select);
->=20
-> Changing the mtd.name may have far-reaching consequences for users who
-> already have mtdparts=3D command lines. But your concern is probably vali=
-d
-> for dynamically-determined bus numbers. Perhaps you can edit this patch
-> to only change the name when the busnum is dynamically-allocated?
->
-It's a good idea, but in the case of mtd_info's name dynamically-allocated
-using "mtdparts=3D..." in command lines is illegal obviously. Would you tel=
-l
-me what side-effect will be brought by the change of mtd_info's name.
-Thanks=20
-=20
-> This also needs a NULL check (for OOM), and you leak memory on device
-> removal.
->=20
-Yes, it's necessary to check the return value of function kasprintf.
+Thank you very much for the review.
 
-> >
-> >  	flash->mtd.type =3D MTD_NORFLASH;
-> >  	flash->mtd.writesize =3D 1;
->=20
-> Brian
->=20
-Thanks,
-Hou Zhiqiang
+On 01/22/2014 06:57 PM, Thomas Gleixner wrote:
+> On Wed, 15 Jan 2014, Preeti U Murthy wrote:
+>> diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+>> index 086ad60..d61404e 100644
+>> --- a/kernel/time/clockevents.c
+>> +++ b/kernel/time/clockevents.c
+>> @@ -524,12 +524,13 @@ void clockevents_resume(void)
+>>  #ifdef CONFIG_GENERIC_CLOCKEVENTS
+>>  /**
+>>   * clockevents_notify - notification about relevant events
+>> + * Returns non zero on error.
+>>   */
+>> -void clockevents_notify(unsigned long reason, void *arg)
+>> +int clockevents_notify(unsigned long reason, void *arg)
+>>  {
+> 
+> The interface change of clockevents_notify wants to be a separate
+> patch.
+> 
+>> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+>> index 9532690..1c23912 100644
+>> --- a/kernel/time/tick-broadcast.c
+>> +++ b/kernel/time/tick-broadcast.c
+>> @@ -20,6 +20,7 @@
+>>  #include <linux/sched.h>
+>>  #include <linux/smp.h>
+>>  #include <linux/module.h>
+>> +#include <linux/slab.h>
+>>  
+>>  #include "tick-internal.h"
+>>  
+>> @@ -35,6 +36,15 @@ static cpumask_var_t tmpmask;
+>>  static DEFINE_RAW_SPINLOCK(tick_broadcast_lock);
+>>  static int tick_broadcast_force;
+>>  
+>> +/*
+>> + * Helper variables for handling broadcast in the absence of a
+>> + * tick_broadcast_device.
+>> + * */
+>> +static struct hrtimer *bc_hrtimer;
+>> +static int bc_cpu = -1;
+>> +static ktime_t bc_next_wakeup;
+> 
+> Why do you need another variable to store the expiry time? The
+> broadcast code already knows it and the hrtimer expiry value gives you
+> the same information for free.
+
+The reason was functions like tick_handle_oneshot_broadcast() and
+tick_broadcast_switch_to_oneshot() were using the
+tick_broadcast_device.evtdev->next_event to set/get the next wakeups.
+
+But since this patchset introduced an explicit hrtimer for archs which
+did not have such a device, I wanted these functions to use a generic
+parameter to set/get the next wakeups without having to know about the
+existence of this hrtimer, if at all. And program the hrtimer/tick
+broadcast device whichever was present only when the next event was to
+be set. But with your below concept patch, we will not be required to do
+this.
+> 
+>> +static int hrtimer_initialized = 0;
+> 
+> What's the point of this hrtimer_initialized dance? Why not simply
+> making the hrtimer static and avoid that all together. Also adding the
+> initialization into tick_broadcast_oneshot_available() is
+> braindamaged.  Why not adding this to tick_broadcast_init() which is
+> the proper place to do?
+
+Right I agree, this hrtimer initialization should have been in
+tick_broadcast_init() and a simple static declaration would have done
+the job.
+> 
+> Aside of that you are making this hrtimer mode unconditional, which
+> might break existing systems which are not aware of the hrtimer
+> implications.
+> 
+> What you really want is a pseudo clock event device which has the
+> proper functions for handling the timer and you can register it from
+> your architecture code. The broadcast core code needs a few tweaks to
+> avoid the shutdown of the cpu local clock event device, but aside of
+> that the whole thing just falls into place. So architectures can use
+> this if they want and are sure that their low level idle code knows
+> about the deep idle preventing return value of
+> clockevents_notify(). Once that works you can register the hrtimer
+> based broadcast device and a real hardware broadcast device with a
+> higher rating. It just works.
+
+I now completely see your point. This will surely break on archs which
+are not using the return value of the BROADCAST_ENTER notification.
+
+I am not even giving them a choice about using the hrtimer mode of
+broadcast framework and am expecting them to take action for the failed
+return of BROADCAST_ENTER. I missed that critical point. I went through
+the below patch and am able to see how you are solving this problem.
+> 
+> Find an incomplete and nonfunctional concept patch below. It should be
+> simple to make it work for real.
+
+Thank you very much for the valuable review. The below patch makes your
+points very clear. Let me try this out.
+
+Regards
+Preeti U Murthy
+> 
+> Thanks,
+> 
+> 	tglx
+> ----
+> Index: linux-2.6/include/linux/clockchips.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/clockchips.h
+> +++ linux-2.6/include/linux/clockchips.h
+> @@ -62,6 +62,11 @@ enum clock_event_mode {
+>  #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
+>  #define CLOCK_EVT_FEAT_PERCPU		0x000040
+> 
+> +/*
+> + * Clockevent device is based on a hrtimer for broadcast
+> + */
+> +#define CLOCK_EVT_FEAT_HRTIMER		0x000080
+> +
+>  /**
+>   * struct clock_event_device - clock event device descriptor
+>   * @event_handler:	Assigned by the framework to be called by the low
+> @@ -83,6 +88,7 @@ enum clock_event_mode {
+>   * @name:		ptr to clock event name
+>   * @rating:		variable to rate clock event devices
+>   * @irq:		IRQ number (only for non CPU local devices)
+> + * @bound_on:		Bound on CPU
+>   * @cpumask:		cpumask to indicate for which CPUs this device works
+>   * @list:		list head for the management code
+>   * @owner:		module reference
+> @@ -113,6 +119,7 @@ struct clock_event_device {
+>  	const char		*name;
+>  	int			rating;
+>  	int			irq;
+> +	int			bound_on;
+>  	const struct cpumask	*cpumask;
+>  	struct list_head	list;
+>  	struct module		*owner;
+> Index: linux-2.6/kernel/time/tick-broadcast-hrtimer.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/kernel/time/tick-broadcast-hrtimer.c
+> @@ -0,0 +1,77 @@
+> +
+> +static struct hrtimer bctimer;
+> +
+> +static void bc_set_mode(enum clock_event_mode mode,
+> +			struct clock_event_device *bc)
+> +{
+> +	switch (mode) {
+> +	case CLOCK_EVT_MODE_SHUTDOWN:
+> +		/*
+> +		 * Note, we cannot cancel the timer here as we might
+> +		 * run into the following live lock scenario:
+> +		 *
+> +		 * cpu 0		cpu1
+> +		 * lock(broadcast_lock);
+> +		 *			hrtimer_interrupt()
+> +		 *			bc_handler()
+> +		 *			   tick_handle_oneshot_broadcast();
+> +		 *			    lock(broadcast_lock);
+> +		 * hrtimer_cancel()
+> +		 *  wait_for_callback()
+> +		 */
+> +		hrtimer_try_to_cancel(&bctimer);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +}
+> +
+> +/*
+> + * This is called from the guts of the broadcast code when the cpu
+> + * which is about to enter idle has the earliest broadcast timer event.
+> + */
+> +static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+> +{
+> +	/*
+> +	 * We try to cancel the timer first. If the callback is on
+> +	 * flight on some other cpu then we let it handle it. If we
+> +	 * were able to cancel the timer nothing can rearm it as we
+> +	 * own broadcast_lock.
+> +	 */
+> +	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+> +		/* Bind the "device" to the cpu */
+> +		bc->bound_on = smp_processor_id();
+> +	}
+> +	return 0;
+> +}
+> +
+> +static struct clock_event_device ce_broadcast_hrtimer = {
+> +	.set_mode		= bc_set_mode,
+> +	.set_next_ktime		= bc_set_next,
+> +	.features		= CLOCK_EVT_FEAT_ONESHOT |
+> +				  CLOCK_EVT_FEAT_KTIME |
+> +				  CLOCK_EVT_FEAT_HRTIMER,
+> +	.rating			= 0,
+> +	.bound_on		= -1,
+> +	.min_delta_ns		= 1,
+> +	.max_delta_ns		= KTIME_MAX,
+> +	.min_delta_ticks	= 1,
+> +	.max_delta_ticks	= KTIME_MAX,
+> +	.mult			= 1,
+> +	.shift			= 0,
+> +	.cpumask		= cpu_all_mask,
+> +};
+> +
+> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
+> +{
+> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
+> +	return HRTIMER_NORESTART;
+> +}
+> +
+> +void tick_setup_hrtimer_broadcast(void)
+> +{
+> +	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
+> +	bctimer.function = bc_handler;
+> +	clockevents_register(&ce_broadcast_hrtimer);
+> +}
+> Index: linux-2.6/kernel/time/tick-broadcast.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time/tick-broadcast.c
+> +++ linux-2.6/kernel/time/tick-broadcast.c
+> @@ -630,6 +630,42 @@ again:
+>  	raw_spin_unlock(&tick_broadcast_lock);
+>  }
+> 
+> +static int broadcast_needs_cpu(struct clock_event_device *bc, int cpu)
+> +{
+> +	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
+> +		return 0;
+> +	if (bc->next_event.tv64 == KTIME_MAX)
+> +		return 0;
+> +	return bc->bound_on == cpu ? -EBUSY : 0;
+> +}
+> +
+> +static void broadcast_shutdown_local(struct clock_event_device *bc,
+> +				     struct clock_event_device *dev)
+> +{
+> +	/*
+> +	 * For hrtimer based broadcasting we cannot shutdown the cpu
+> +	 * local device if our own event is the first one to expire or
+> +	 * if we own the broadcast timer.
+> +	 */
+> +	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
+> +		if (broadcast_needs_cpu(bc))
+> +			return;
+> +		if (dev->next_event.tv64 < bc->next_event.tv64)
+> +			return;
+> +	}
+> +	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
+> +}
+> +
+> +static void broadcast_move_bc(int deadcpu)
+> +{
+> +	struct clock_event_device *bc = tick_broadcast_device.evtdev;
+> +
+> +	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
+> +		return;
+> +	/* This moves the broadcast assignment to this cpu */
+> +	clockevents_program_event(bc, bc->next_event, 1);
+> +}
+> +
+>  /*
+>   * Powerstate information: The system enters/leaves a state, where
+>   * affected devices might stop
+> @@ -639,8 +675,8 @@ void tick_broadcast_oneshot_control(unsi
+>  	struct clock_event_device *bc, *dev;
+>  	struct tick_device *td;
+>  	unsigned long flags;
+> +	int cpu, ret = 0;
+>  	ktime_t now;
+> -	int cpu;
+> 
+>  	/*
+>  	 * Periodic mode does not care about the enter/exit of power
+> @@ -666,7 +702,7 @@ void tick_broadcast_oneshot_control(unsi
+>  	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
+>  		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) {
+>  			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask));
+> -			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
+> +			broadcast_shutdown_local(bc, dev);
+>  			/*
+>  			 * We only reprogram the broadcast timer if we
+>  			 * did not mark ourself in the force mask and
+> @@ -679,6 +715,11 @@ void tick_broadcast_oneshot_control(unsi
+>  			    dev->next_event.tv64 < bc->next_event.tv64)
+>  				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
+>  		}
+> +		/*
+> +		 * If the current CPU owns the hrtimer broadcast
+> +		 * mechanism, it cannot go deep idle.
+> +		 */
+> +		ret = broadcast_needs_cpu(bc, cpu);
+>  	} else {
+>  		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
+>  			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
+> @@ -851,6 +892,8 @@ void tick_shutdown_broadcast_oneshot(uns
+>  	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
+>  	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
+> 
+> +	broadcast_move_bc(cpu);
+> +
+>  	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+>  }
+> 
+> 
