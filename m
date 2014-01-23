@@ -1,24 +1,23 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-ig0-x234.google.com (mail-ig0-x234.google.com
- [IPv6:2607:f8b0:4001:c05::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F2A512C0099
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Jan 2014 13:12:21 +1100 (EST)
-Received: by mail-ig0-f180.google.com with SMTP id m12so3568336iga.1
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Jan 2014 18:12:18 -0800 (PST)
-Date: Wed, 22 Jan 2014 18:12:13 -0800
-From: Brian Norris <computersforpeace@gmail.com>
-To: Hou Zhiqiang <b48286@freescale.com>
-Subject: Re: [PATCH] mtd: m25p80: Make the name of mtd_info fixed
-Message-ID: <20140123021213.GZ8919@ld-irv-0074>
-References: <1388990069-27066-1-git-send-email-b48286@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 886FB2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 13:47:27 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] clk: corenet: Update the clock bindings
+Date: Thu, 23 Jan 2014 02:47:18 +0000
+Message-ID: <d61cabaec0af4aada9fadf93e7c0bb61@BL2PR03MB115.namprd03.prod.outlook.com>
+References: <1390269732-22798-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1390437863.24905.549.camel@snotra.buserror.net>
+In-Reply-To: <1390437863.24905.549.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1388990069-27066-1-git-send-email-b48286@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, mingkai.hu@freescale.com,
- linux-mtd@lists.infradead.org,
- Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "prabhakar@freescale.com" <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Hou,
-
-On Mon, Jan 06, 2014 at 02:34:29PM +0800, Hou Zhiqiang wrote:
-> To give spi flash layout using "mtdparts=..." in cmdline, we must
-> give mtd_info a fixed name,because the cmdlinepart's parser will
-> match the name given in cmdline with the mtd_info.
-> 
-> Now, if use OF node, mtd_info's name will be spi->dev->name. It
-> consists of spi_master->bus_num, and the spi_master->bus_num maybe
-> dynamically fetched.
-> So, give the mtd_info a new fiexd name "name.cs", "name" is name of
-> spi_device_id and "cs" is chip-select in spi_dev.
-> 
-> Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
-> ---
->  drivers/mtd/devices/m25p80.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-> index eb558e8..d1ed480 100644
-> --- a/drivers/mtd/devices/m25p80.c
-> +++ b/drivers/mtd/devices/m25p80.c
-> @@ -1012,7 +1012,8 @@ static int m25p_probe(struct spi_device *spi)
->  	if (data && data->name)
->  		flash->mtd.name = data->name;
->  	else
-> -		flash->mtd.name = dev_name(&spi->dev);
-> +		flash->mtd.name = kasprintf(GFP_KERNEL, "%s.%d",
-> +				id->name, spi->chip_select);
-
-Changing the mtd.name may have far-reaching consequences for users who
-already have mtdparts= command lines. But your concern is probably valid
-for dynamically-determined bus numbers. Perhaps you can edit this patch
-to only change the name when the busnum is dynamically-allocated?
-
-This also needs a NULL check (for OOM), and you leak memory on device
-removal.
-
->  
->  	flash->mtd.type = MTD_NORFLASH;
->  	flash->mtd.writesize = 1;
-
-Brian
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiAyMDE05bm0MeaciDIz5pelIOaYn+acn+WbmyA4OjQ0DQo+IFRvOiBUYW5nIFl1YW50
+aWFuLUIyOTk4Mw0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGdhbGFrQGtlcm5lbC5jcmFzaGlu
+Zy5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNldHJlZUB2Z2Vy
+Lmtlcm5lbC5vcmc7IEt1c2h3YWhhIFByYWJoYWthci0NCj4gQjMyNTc5DQo+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0hdIGNsazogY29yZW5ldDogVXBkYXRlIHRoZSBjbG9jayBiaW5kaW5ncw0KPiANCj4g
+T24gVHVlLCAyMDE0LTAxLTIxIGF0IDEwOjAyICswODAwLCBUYW5nIFl1YW50aWFuIHdyb3RlOg0K
+PiA+IEZyb206IFRhbmcgWXVhbnRpYW4gPHl1YW50aWFuLnRhbmdAZnJlZXNjYWxlLmNvbT4NCj4g
+Pg0KPiA+IE1haW4gY2hhbmdzIGluY2x1ZGU6DQo+ID4gCS0gQ2xhcmlmaWVkIHRoZSBjbG9jayBu
+b2RlcycgdmVyc2lvbiBudW1iZXINCj4gPiAJLSBGaXhlZCBhIGlzc3VlIGluIGV4YW1wbGUNCj4g
+Pg0KPiA+IFNpbmdlZC1vZmYtYnk6IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFuLlRhbmdAZnJlZXNj
+YWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdz
+L2Nsb2NrL2NvcmVuZXQtY2xvY2sudHh0IHwgNCArKystDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAz
+IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svY29yZW5ldC1jbG9jay50eHQNCj4g
+PiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9jb3JlbmV0LWNsb2Nr
+LnR4dA0KPiA+IGluZGV4IDI0NzExYWYuLmQ2Y2FkZWYgMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL2NvcmVuZXQtY2xvY2sudHh0DQo+ID4g
+KysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL2NvcmVuZXQtY2xv
+Y2sudHh0DQo+ID4gQEAgLTU0LDYgKzU0LDggQEAgUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiAg
+CQlJdCB0YWtlcyBwYXJlbnQncyBjbG9jay1mcmVxdWVuY3kgYXMgaXRzIGNsb2NrLg0KPiA+ICAJ
+KiAiZnNsLHFvcmlxLXN5c2Nsay0yLjAiOiBmb3IgaW5wdXQgc3lzdGVtIGNsb2NrICh2Mi4wKS4N
+Cj4gPiAgCQlJdCB0YWtlcyBwYXJlbnQncyBjbG9jay1mcmVxdWVuY3kgYXMgaXRzIGNsb2NrLg0K
+PiA+ICsJTm90ZTogdjEuMCBhbmQgdjIuMCBhcmUgY2xvY2sgdmVyc2lvbiB3aGljaCBzaG91bGQg
+YWxpZ24gdG8NCj4gPiArCWNsb2NrZ2VuIG5vZGUncyB0aGV5IGJlbG9uZyB0byB3aGljaCBpcyBj
+aGFzc2lzIHZlcnNpb24uDQo+IA0KPiBJbnN0ZWFkLCBob3cgYWJvdXQgYSBub3RlIGxpa2UgdGhp
+cyBuZWFyIHRoZSB0b3Agb2YgdGhlIGZpbGU6DQo+IA0KPiBBbGwgcmVmZXJlbmNlcyB0byAiMS4w
+IiBhbmQgIjIuMCIgcmVmZXIgdG8gdGhlIFFvcklRIGNoYXNzaXMgdmVyc2lvbiB0bw0KPiB3aGlj
+aCB0aGUgY2hpcCBjb21wbGllcy4NCj4gDQo+IENoYXNzaXMgVmVyc2lvbgkJRXhhbXBsZSBDaGlw
+cw0KPiAtLS0tLS0tLS0tLS0tLS0JCS0tLS0tLS0tLS0tLS0NCj4gMS4wCQkJcDQwODAsIHA1MDIw
+LCBwNTA0MA0KPiAyLjAJCQl0NDI0MCwgYjQ4NjAsIHQxMDQwDQo+IA0KQmV0dGVyLCBJIHdpbGwg
+dXBkYXRlLg0KDQo+IA0KPiBCVFcsIHRoaXMgYmluZGluZyBhbmQgdGhlIGFzc29jaWF0ZWQgZHJp
+dmVyIHJlYWxseSBzaG91bGQgYmUgY2FsbGVkDQo+ICJxb3JpcS1jbG9jayIsIG5vdCAiY29yZW5l
+dC1jbG9jayIuICBUaGlzIHdvdWxkIG1hdGNoIHRoZSBjb21wYXRpYmxlDQo+IHN0cmluZywgYW5k
+IGl0IGRvZXNuJ3QgcmVhbGx5IGhhdmUgbXVjaCB0byBkbyB3aXRoIGNvcmVuZXQgKHdoaWNoIGlz
+IHBhcnQNCj4gb2YgdGhlIFFvcklRIGNoYXNzaXMgdjEgYW5kIHYyLCBidXQgbm90ICp0aGlzKiBw
+YXJ0KS4gIERvIHlvdSBrbm93IGlmIHRoZQ0KPiBjaGFzc2lzIHYzIGNsb2NrIGludGVyZmFjZSB3
+aWxsIGJlIHNpbWlsYXIgZW5vdWdoIHRvIHNoYXJlIGEgZHJpdmVyPw0KPiANCkRvZXNuJ3QgUW9y
+SVEgaW5jbHVkZSBzb21lIGxvdy1lbmQgc29jcywgbGlrZSBwMTAyMiwgcDEwMjA/IA0KVGhpcyBk
+cml2ZXIgaGFzIG5vdGhpbmcgdG8gZG8gd2l0aCB0aGVzZSBib2FyZHMuIA0KSSBoYXZlIG5vIGlk
+ZWEgYWJvdXQgY2hhc3NpcyB2My4gSWYgaXQgaGFzIHNpbWlsYXIgY2xvY2sgdHJlZSwgdGhpcyBk
+cml2ZXIgY2FuIGJlIHNoYXJlZC4NCkV2ZW4gdGhlIGRyaXZlciBjYW4ndCBiZSB1c2VkIGJ5IHYz
+LCB3ZSBjYW4gZWFzaWx5IGFkZCB2MyBzdXBwb3J0IHNpbmNlIGl0IGhhcyBkaWZmZXJlbnQNCkNv
+bXBhdGlibGUgc3RyaW5nLg0KDQpSZWdhcmRzLA0KWXVhbnRpYW4NCg0KPiAtU2NvdHQNCj4gDQoN
+Cg==
