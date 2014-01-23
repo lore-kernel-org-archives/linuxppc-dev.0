@@ -1,40 +1,38 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 808D52C0086
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 22:19:39 +1100 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 23 Jan 2014 04:19:37 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5BD6F3E40044
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 04:19:34 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0NBJYqb8847832
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 12:19:34 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s0NBMqd6009753
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 04:22:52 -0700
-Message-ID: <52E0F9ED.2010506@linux.vnet.ibm.com>
-Date: Thu, 23 Jan 2014 16:45:57 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Return-Path: <linux@prisktech.co.nz>
+Received: from server.prisktech.co.nz (server.prisktech.co.nz [115.188.14.127])
+ by ozlabs.org (Postfix) with ESMTP id A3B852C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Jan 2014 18:54:36 +1100 (EST)
+Message-ID: <52E0C889.6000106@prisktech.co.nz>
+Date: Thu, 23 Jan 2014 20:45:13 +1300
+From: Tony Prisk <linux@prisktech.co.nz>
 MIME-Version: 1.0
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
- states
-References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com>
- <52DF815D.50104@linaro.org>
-In-Reply-To: <52DF815D.50104@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
+To: Yijing Wang <wangyijing@huawei.com>, John Stultz <john.stultz@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/2] clocksource: Make clocksource register functions void
+References: <1390461166-36440-1-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1390461166-36440-1-git-send-email-wangyijing@huawei.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-mips@linux-mips.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ Kevin Hilman <khilman@deeprootsystems.com>, linux@lists.openrisc.net,
+ Sekhar Nori <nsekhar@ti.com>, Paul Mackerras <paulus@samba.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Daniel Walker <dwalker@fifo99.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jonas Bonn <jonas@southpole.se>,
+ Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>,
+ Richard Weinberger <richard@nod.at>, x86@kernel.org,
+ Tony Lindgren <tony@atomide.com>, Ingo Molnar <mingo@redhat.com>,
+ linux-arm-msm@vger.kernel.org, David Brown <davidb@codeaurora.org>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
+ user-mode-linux-devel@lists.sourceforge.net,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Jeff Dike <jdike@addtoit.com>,
+ Barry Song <baohua@kernel.org>, linux-samsung-soc@vger.kernel.org,
+ user-mode-linux-user@lists.sourceforge.net, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org,
+ davinci-linux-open-source@linux.davincidsp.com,
+ Michal Simek <monstr@monstr.eu>, Jim Cromie <jim.cromie@gmail.com>,
+ microblaze-uclinux@itee.uq.edu.au, Hanjun Guo <guohanjun@huawei.com>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Bryan Huntsman <bryanh@codeaurora.org>,
+ uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,349 +42,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Daniel,
+On 23/01/14 20:12, Yijing Wang wrote:
+> Currently, clocksource_register() and __clocksource_register_scale()
+> functions always return 0, it's pointless, make functions void.
+> And remove the dead code that check the clocksource_register_hz()
+> return value.
+>
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+......
+> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+> index 67301a4..5a17c5e 100644
+> --- a/include/linux/clocksource.h
+> +++ b/include/linux/clocksource.h
+> @@ -282,7 +282,7 @@ static inline s64 clocksource_cyc2ns(cycle_t cycles, u32 mult, u32 shift)
+>   }
+>   
+>   
+> -extern int clocksource_register(struct clocksource*);
+> +extern void clocksource_register(struct clocksource *);
+>   extern int clocksource_unregister(struct clocksource*);
+>   extern void clocksource_touch_watchdog(void);
+>   extern struct clocksource* clocksource_get_next(void);
+> @@ -301,17 +301,17 @@ clocks_calc_mult_shift(u32 *mult, u32 *shift, u32 from, u32 to, u32 minsec);
+>    * Don't call __clocksource_register_scale directly, use
+>    * clocksource_register_hz/khz
+>    */
+> -extern int
+> +extern void
+>   __clocksource_register_scale(struct clocksource *cs, u32 scale, u32 freq);
+>   extern void
+>   __clocksource_updatefreq_scale(struct clocksource *cs, u32 scale, u32 freq);
+>   
+> -static inline int clocksource_register_hz(struct clocksource *cs, u32 hz)
+> +static inline void clocksource_register_hz(struct clocksource *cs, u32 hz)
+>   {
+>   	return __clocksource_register_scale(cs, 1, hz);
+>   }
 
-Thank you for the review.
-
-On 01/22/2014 01:59 PM, Daniel Lezcano wrote:
-> On 01/17/2014 05:33 AM, Preeti U Murthy wrote:
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index a55e68f..831b664 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
->>
->>       /* ask the governor for the next state */
->>       next_state = cpuidle_curr_governor->select(drv, dev);
->> +
->> +    dev->last_residency = 0;
->>       if (need_resched()) {
->> -        dev->last_residency = 0;
-> 
-> Why do you need to do this change ? ^^^^^
-
-So as to keep the last_residency consistent with the case that this patch
-addresses: where no idle state could be selected due to strict latency
-requirements or disabled states and hence the cpu exits without entering
-idle. Else it would contain the stale value from the previous idle state
-entry.
-
-But coming to think of it dev->last_residency is not used when the last
-entered idle state index is -1.
-
-So I have reverted this change as well in the revised patch below along
-with mentioning the reason in the last paragraph of the changelog.
-
-> 
->>           /* give the governor an opportunity to reflect on the
->> outcome */
->>           if (cpuidle_curr_governor->reflect)
->>               cpuidle_curr_governor->reflect(dev, next_state);
->> @@ -140,6 +141,18 @@ int cpuidle_idle_call(void)
->>           return 0;
->>       }
->>
->> +    /* Unlike in the need_resched() case, we return here because the
->> +     * governor did not find a suitable idle state. However idle is
->> still
->> +     * in progress as we are not asked to reschedule. Hence we return
->> +     * without enabling interrupts.
-> 
-> That will lead to a WARN.
-> 
->> +     * NOTE: The return code should still be success, since the
->> verdict of this
->> +     * call is "do not enter any idle state" and not a failed call
->> due to
->> +     * errors.
->> +     */
->> +    if (next_state < 0)
->> +        return 0;
->> +
-> 
-> Returning from here breaks the symmetry of the trace.
-
-I have addressed the above concerns in the patch found below.
-Does the rest of the patch look sound?
+This doesn't make sense - you are still returning a value on a function 
+declared void, and the return is now from a function that doesn't return 
+anything either ?!?!
+Doesn't this throw a compile-time warning??
 
 Regards
-Preeti U Murthy
-
-----------------------------------------------------------------------
-
-cpuidle/governors: Fix logic in selection of idle states
-
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-
-The cpuidle governors today are not handling scenarios where no idle state
-can be chosen. Such scenarios coud arise if the user has disabled all the
-idle states at runtime or the latency requirement from the cpus is very strict.
-
-The menu governor returns 0th index of the idle state table when no other
-idle state is suitable. This is even when the idle state corresponding to this
-index is disabled or the latency requirement is strict and the exit_latency
-of the lowest idle state is also not acceptable. Hence this patch
-fixes this logic in the menu governor by defaulting to an idle state index
-of -1 unless any other state is suitable.
-
-The ladder governor needs a few more fixes in addition to that required in the
-menu governor. When the ladder governor decides to demote the idle state of a
-CPU, it does not check if the lower idle states are enabled. Add this logic
-in addition to the logic where it chooses an index of -1 if it can neither
-promote or demote the idle state of a cpu nor can it choose the current idle
-state.
-
-The cpuidle_idle_call() will return back if the governor decides upon not
-entering any idle state. However it cannot return an error code because all
-archs have the logic today that if the call to cpuidle_idle_call() fails, it
-means that the cpuidle driver failed to *function*; for instance due to
-errors during registration. As a result they end up deciding upon a
-default idle state on their own, which could very well be a deep idle state.
-This is incorrect in cases where no idle state is suitable.
-
-Besides for the scenario that this patch is addressing, the call actually
-succeeds. Its just that no idle state is thought to be suitable by the governors.
-Under such a circumstance return success code without entering any idle
-state.
-
-The consequence of this patch additionally  on the menu governor is that as
-long as a valid idle state cannot be chosen, the cpuidle statistics that this
-governor uses to predict the next idle state remain untouched from the last
-valid idle state. This is because an idle state is not even being predicted
-in this path, hence there is no point correcting the prediction either.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-
-Changes from V1:https://lkml.org/lkml/2014/1/14/26
-
-1. Change the return code to success from -EINVAL due to the reason mentioned
-in the changelog.
-2. Add logic that the patch is addressing in the ladder governor as well.
-3. Added relevant comments and removed redundant logic as suggested in the
-above thread.
----
- drivers/cpuidle/cpuidle.c          |   15 +++++
- drivers/cpuidle/governors/ladder.c |  101 ++++++++++++++++++++++++++----------
- drivers/cpuidle/governors/menu.c   |    7 +-
- 3 files changed, 90 insertions(+), 33 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index a55e68f..19d17e8 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
- 
- 	/* ask the governor for the next state */
- 	next_state = cpuidle_curr_governor->select(drv, dev);
-+
-+	dev->last_residency = 0;
- 	if (need_resched()) {
--		dev->last_residency = 0;
- 		/* give the governor an opportunity to reflect on the outcome */
- 		if (cpuidle_curr_governor->reflect)
- 			cpuidle_curr_governor->reflect(dev, next_state);
-@@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
- 	}
- 
- 	trace_cpu_idle_rcuidle(next_state, dev->cpu);
-+	/*
-+	 * NOTE: The return code should still be success, since the verdict of
-+	 * this call is "do not enter any idle state". It is not a failed call
-+	 * due to errors.
-+	 */
-+	if (next_state < 0) {
-+		entered_state = next_state;
-+		local_irq_enable();
-+		goto out;
-+	}
- 
- 	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
- 
-@@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
- 	if (broadcast)
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
- 
--	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-+out:	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
- 	/* give the governor an opportunity to reflect on the outcome */
- 	if (cpuidle_curr_governor->reflect)
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 9f08e8c..7e93aaa 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -58,6 +58,36 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
- 	ldev->last_state_idx = new_idx;
- }
- 
-+static int can_promote(struct ladder_device *ldev, int last_idx,
-+				int last_residency)
-+{
-+	struct ladder_device_state *last_state;
-+
-+	last_state = &ldev->states[last_idx];
-+	if (last_residency > last_state->threshold.promotion_time) {
-+		last_state->stats.promotion_count++;
-+		last_state->stats.demotion_count = 0;
-+		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count)
-+			return 1;
-+	}
-+	return 0;
-+}
-+
-+static int can_demote(struct ladder_device *ldev, int last_idx,
-+			int last_residency)
-+{
-+	struct ladder_device_state *last_state;
-+
-+	last_state = &ldev->states[last_idx];
-+	if (last_residency < last_state->threshold.demotion_time) {
-+		last_state->stats.demotion_count++;
-+		last_state->stats.promotion_count = 0;
-+		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count)
-+			return 1;
-+	}
-+	return 0;
-+}
-+
- /**
-  * ladder_select_state - selects the next state to enter
-  * @drv: cpuidle driver
-@@ -73,29 +103,33 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0)) {
--		ladder_do_selection(ldev, last_idx, 0);
--		return 0;
-+		if (last_idx >= 0)
-+			ladder_do_selection(ldev, last_idx, -1);
-+		goto out;
- 	}
- 
--	last_state = &ldev->states[last_idx];
--
--	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
--		last_residency = cpuidle_get_last_residency(dev) - \
--					 drv->states[last_idx].exit_latency;
-+	if (last_idx >= 0) {
-+		if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
-+			last_residency = cpuidle_get_last_residency(dev) - \
-+						 drv->states[last_idx].exit_latency;
-+		} else {
-+			last_state = &ldev->states[last_idx];
-+			last_residency = last_state->threshold.promotion_time + 1;
-+		}
- 	}
--	else
--		last_residency = last_state->threshold.promotion_time + 1;
- 
- 	/* consider promotion */
- 	if (last_idx < drv->state_count - 1 &&
- 	    !drv->states[last_idx + 1].disabled &&
- 	    !dev->states_usage[last_idx + 1].disable &&
--	    last_residency > last_state->threshold.promotion_time &&
- 	    drv->states[last_idx + 1].exit_latency <= latency_req) {
--		last_state->stats.promotion_count++;
--		last_state->stats.demotion_count = 0;
--		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count) {
--			ladder_do_selection(ldev, last_idx, last_idx + 1);
-+		if (last_idx >= 0) {
-+			if (can_promote(ldev, last_idx, last_residency)) {
-+				ladder_do_selection(ldev, last_idx, last_idx + 1);
-+				return last_idx + 1;
-+			}
-+		} else {
-+			ldev->last_state_idx = last_idx + 1;
- 			return last_idx + 1;
- 		}
- 	}
-@@ -107,26 +141,36 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 	    drv->states[last_idx].exit_latency > latency_req)) {
- 		int i;
- 
--		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
--			if (drv->states[i].exit_latency <= latency_req)
-+		for (i = last_idx - 1; i >= CPUIDLE_DRIVER_STATE_START; i--) {
-+			if (drv->states[i].exit_latency <= latency_req &&
-+				!(drv->states[i].disabled || dev->states_usage[i].disable))
- 				break;
- 		}
--		ladder_do_selection(ldev, last_idx, i);
--		return i;
-+		if (i >= 0) {
-+			ladder_do_selection(ldev, last_idx, i);
-+			return i;
-+		}
-+		goto out;
- 	}
- 
--	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
--	    last_residency < last_state->threshold.demotion_time) {
--		last_state->stats.demotion_count++;
--		last_state->stats.promotion_count = 0;
--		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
--			ladder_do_selection(ldev, last_idx, last_idx - 1);
--			return last_idx - 1;
-+	if (last_idx > CPUIDLE_DRIVER_STATE_START) {
-+		int i = last_idx - 1;
-+
-+		if (can_demote(ldev, last_idx, last_residency) &&
-+			!(drv->states[i].disabled || dev->states_usage[i].disable)) {
-+			ladder_do_selection(ldev, last_idx, i);
-+			return i;
- 		}
-+		/* We come here when the last_idx is still a suitable idle state,
-+		 * just that  promotion or demotion is not ideal.
-+		 */
-+		ldev->last_state_idx = last_idx;
-+		return last_idx;
- 	}
- 
--	/* otherwise remain at the current state */
--	return last_idx;
-+	/* we come here if no idle state is suitable */
-+out:	ldev->last_state_idx = -1;
-+	return ldev->last_state_idx;
- }
- 
- /**
-@@ -166,7 +210,8 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
- /**
-  * ladder_reflect - update the correct last_state_idx
-  * @dev: the CPU
-- * @index: the index of actual state entered
-+ * @index: the index of actual state entered or -1 if no idle state is
-+ * suitable.
-  */
- static void ladder_reflect(struct cpuidle_device *dev, int index)
- {
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index cf7f2f0..e9f17ce 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -297,12 +297,12 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 		data->needs_update = 0;
- 	}
- 
--	data->last_state_idx = 0;
-+	data->last_state_idx = -1;
- 	data->exit_us = 0;
- 
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0))
--		return 0;
-+		return data->last_state_idx;
- 
- 	/* determine the expected residency time, round up */
- 	t = ktime_to_timespec(tick_nohz_get_sleep_length());
-@@ -368,7 +368,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- /**
-  * menu_reflect - records that data structures need update
-  * @dev: the CPU
-- * @index: the index of actual entered state
-+ * @index: the index of actual entered state or -1 if no idle state is
-+ * suitable.
-  *
-  * NOTE: it's important to be fast here because this operation will add to
-  *       the overall exit latency.
+Tony Prisk
