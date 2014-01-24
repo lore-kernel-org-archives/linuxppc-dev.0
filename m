@@ -1,24 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0157.outbound.protection.outlook.com [207.46.163.157])
+Return-Path: <Yuantian.Tang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1760C2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 08:03:40 +1100 (EST)
-Message-ID: <1390511008.24905.581.camel@snotra.buserror.net>
-Subject: Re: [PATCH] clk: corenet: Update the clock bindings
-From: Scott Wood <scottwood@freescale.com>
-To: Tang Yuantian-B29983 <Yuantian.Tang@freescale.com>
-Date: Thu, 23 Jan 2014 15:03:28 -0600
-In-Reply-To: <d61cabaec0af4aada9fadf93e7c0bb61@BL2PR03MB115.namprd03.prod.outlook.com>
+ by ozlabs.org (Postfix) with ESMTPS id 088142C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 13:33:27 +1100 (EST)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] clk: corenet: Update the clock bindings
+Date: Fri, 24 Jan 2014 02:33:19 +0000
+Message-ID: <a0800d606e364b5980fe5c17efca9d9e@BL2PR03MB115.namprd03.prod.outlook.com>
 References: <1390269732-22798-1-git-send-email-Yuantian.Tang@freescale.com>
  <1390437863.24905.549.camel@snotra.buserror.net>
  <d61cabaec0af4aada9fadf93e7c0bb61@BL2PR03MB115.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1390511008.24905.581.camel@snotra.buserror.net>
+In-Reply-To: <1390511008.24905.581.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
+ "prabhakar@freescale.com" <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-01-22 at 20:47 -0600, Tang Yuantian-B29983 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: 2014年1月23日 星期四 8:44
-> > To: Tang Yuantian-B29983
-> > Cc: Wood Scott-B07421; galak@kernel.crashing.org; linuxppc-
-> > dev@lists.ozlabs.org; devicetree@vger.kernel.org; Kushwaha Prabhakar-
-> > B32579
-> > Subject: Re: [PATCH] clk: corenet: Update the clock bindings
-> > 
-> > On Tue, 2014-01-21 at 10:02 +0800, Tang Yuantian wrote:
-> > > From: Tang Yuantian <yuantian.tang@freescale.com>
-> > >
-> > > Main changs include:
-> > > 	- Clarified the clock nodes' version number
-> > > 	- Fixed a issue in example
-> > >
-> > > Singed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> > > ---
-> > >  Documentation/devicetree/bindings/clock/corenet-clock.txt | 4 +++-
-> > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> > > b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> > > index 24711af..d6cadef 100644
-> > > --- a/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> > > +++ b/Documentation/devicetree/bindings/clock/corenet-clock.txt
-> > > @@ -54,6 +54,8 @@ Required properties:
-> > >  		It takes parent's clock-frequency as its clock.
-> > >  	* "fsl,qoriq-sysclk-2.0": for input system clock (v2.0).
-> > >  		It takes parent's clock-frequency as its clock.
-> > > +	Note: v1.0 and v2.0 are clock version which should align to
-> > > +	clockgen node's they belong to which is chassis version.
-> > 
-> > Instead, how about a note like this near the top of the file:
-> > 
-> > All references to "1.0" and "2.0" refer to the QorIQ chassis version to
-> > which the chip complies.
-> > 
-> > Chassis Version		Example Chips
-> > ---------------		-------------
-> > 1.0			p4080, p5020, p5040
-> > 2.0			t4240, b4860, t1040
-> > 
-> Better, I will update.
-> 
-> > 
-> > BTW, this binding and the associated driver really should be called
-> > "qoriq-clock", not "corenet-clock".  This would match the compatible
-> > string, and it doesn't really have much to do with corenet (which is part
-> > of the QorIQ chassis v1 and v2, but not *this* part).  Do you know if the
-> > chassis v3 clock interface will be similar enough to share a driver?
-> > 
-> Doesn't QorIQ include some low-end socs, like p1022, p1020? 
-
-Yes, but those aren't "QorIQ Chassis 1.0" or "QorIQ Chassis 2.0".
-They're mpc85xx-family chips.
-
-In any case, if "qoriq" makes sense for the compatible, I don't see why
-it doesn't make sense for the driver.
-
-> This driver has nothing to do with these boards. 
-> I have no idea about chassis v3. If it has similar clock tree, this driver can be shared.
-> Even the driver can't be used by v3, we can easily add v3 support since it has different
-> Compatible string.
-
-The reason I mentioned it is that chassis v3 will involve ARM chips that
-have their own interconnect rather than corenet.
-
--Scott
+PiA+ID4gSW5zdGVhZCwgaG93IGFib3V0IGEgbm90ZSBsaWtlIHRoaXMgbmVhciB0aGUgdG9wIG9m
+IHRoZSBmaWxlOg0KPiA+ID4NCj4gPiA+IEFsbCByZWZlcmVuY2VzIHRvICIxLjAiIGFuZCAiMi4w
+IiByZWZlciB0byB0aGUgUW9ySVEgY2hhc3NpcyB2ZXJzaW9uDQo+ID4gPiB0byB3aGljaCB0aGUg
+Y2hpcCBjb21wbGllcy4NCj4gPiA+DQo+ID4gPiBDaGFzc2lzIFZlcnNpb24JCUV4YW1wbGUgQ2hp
+cHMNCj4gPiA+IC0tLS0tLS0tLS0tLS0tLQkJLS0tLS0tLS0tLS0tLQ0KPiA+ID4gMS4wCQkJcDQw
+ODAsIHA1MDIwLCBwNTA0MA0KPiA+ID4gMi4wCQkJdDQyNDAsIGI0ODYwLCB0MTA0MA0KPiA+ID4N
+Cj4gPiBCZXR0ZXIsIEkgd2lsbCB1cGRhdGUuDQo+ID4NCj4gPiA+DQo+ID4gPiBCVFcsIHRoaXMg
+YmluZGluZyBhbmQgdGhlIGFzc29jaWF0ZWQgZHJpdmVyIHJlYWxseSBzaG91bGQgYmUgY2FsbGVk
+DQo+ID4gPiAicW9yaXEtY2xvY2siLCBub3QgImNvcmVuZXQtY2xvY2siLiAgVGhpcyB3b3VsZCBt
+YXRjaCB0aGUgY29tcGF0aWJsZQ0KPiA+ID4gc3RyaW5nLCBhbmQgaXQgZG9lc24ndCByZWFsbHkg
+aGF2ZSBtdWNoIHRvIGRvIHdpdGggY29yZW5ldCAod2hpY2ggaXMNCj4gPiA+IHBhcnQgb2YgdGhl
+IFFvcklRIGNoYXNzaXMgdjEgYW5kIHYyLCBidXQgbm90ICp0aGlzKiBwYXJ0KS4gIERvIHlvdQ0K
+PiA+ID4ga25vdyBpZiB0aGUgY2hhc3NpcyB2MyBjbG9jayBpbnRlcmZhY2Ugd2lsbCBiZSBzaW1p
+bGFyIGVub3VnaCB0bw0KPiBzaGFyZSBhIGRyaXZlcj8NCj4gPiA+DQo+ID4gRG9lc24ndCBRb3JJ
+USBpbmNsdWRlIHNvbWUgbG93LWVuZCBzb2NzLCBsaWtlIHAxMDIyLCBwMTAyMD8NCj4gDQo+IFll
+cywgYnV0IHRob3NlIGFyZW4ndCAiUW9ySVEgQ2hhc3NpcyAxLjAiIG9yICJRb3JJUSBDaGFzc2lz
+IDIuMCIuDQo+IFRoZXkncmUgbXBjODV4eC1mYW1pbHkgY2hpcHMuDQo+IA0KPiBJbiBhbnkgY2Fz
+ZSwgaWYgInFvcmlxIiBtYWtlcyBzZW5zZSBmb3IgdGhlIGNvbXBhdGlibGUsIEkgZG9uJ3Qgc2Vl
+IHdoeQ0KPiBpdCBkb2Vzbid0IG1ha2Ugc2Vuc2UgZm9yIHRoZSBkcml2ZXIuDQo+IA0KU28sICJD
+b3JlbmV0IiBpcyBhcHByb3ByaWF0ZSBmb3IgZHJpdmVyLg0KSWYgc29tZXRoaW5nIHNob3VsZCBj
+aGFuZ2UsIHRoYXQgbXVzdCBiZSBjb21wYXRpYmxlIHN0cmluZy4NCg0KUmVnYXJkcywNCll1YW50
+aWFuDQoNCj4gPiBUaGlzIGRyaXZlciBoYXMgbm90aGluZyB0byBkbyB3aXRoIHRoZXNlIGJvYXJk
+cy4NCj4gPiBJIGhhdmUgbm8gaWRlYSBhYm91dCBjaGFzc2lzIHYzLiBJZiBpdCBoYXMgc2ltaWxh
+ciBjbG9jayB0cmVlLCB0aGlzDQo+IGRyaXZlciBjYW4gYmUgc2hhcmVkLg0KPiA+IEV2ZW4gdGhl
+IGRyaXZlciBjYW4ndCBiZSB1c2VkIGJ5IHYzLCB3ZSBjYW4gZWFzaWx5IGFkZCB2MyBzdXBwb3J0
+DQo+ID4gc2luY2UgaXQgaGFzIGRpZmZlcmVudCBDb21wYXRpYmxlIHN0cmluZy4NCj4gDQo+IFRo
+ZSByZWFzb24gSSBtZW50aW9uZWQgaXQgaXMgdGhhdCBjaGFzc2lzIHYzIHdpbGwgaW52b2x2ZSBB
+Uk0gY2hpcHMgdGhhdA0KPiBoYXZlIHRoZWlyIG93biBpbnRlcmNvbm5lY3QgcmF0aGVyIHRoYW4g
+Y29yZW5ldC4NCj4gDQo+IC1TY290dA0KPiANCg0K
