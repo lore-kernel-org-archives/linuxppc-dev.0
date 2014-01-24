@@ -2,31 +2,31 @@ Return-Path: <nacc@linux.vnet.ibm.com>
 Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2C8B62C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 09:20:08 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 88B002C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 10:29:26 +1100 (EST)
 Received: from /spool/local
  by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 24 Jan 2014 15:20:04 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4424E19D8041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 15:19:52 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0OMK1qH11010362
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 23:20:01 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0OMK0go023080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 15:20:01 -0700
-Date: Fri, 24 Jan 2014 14:19:42 -0800
+ Fri, 24 Jan 2014 16:29:23 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C74791FF001E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 16:28:48 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0OLQsLh11338232
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 22:26:54 +0100
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0ONTK0l028531
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 16:29:21 -0700
+Date: Fri, 24 Jan 2014 15:29:02 -0800
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: David Rientjes <rientjes@google.com>
 Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
  no local memory
-Message-ID: <20140124221942.GA30361@linux.vnet.ibm.com>
+Message-ID: <20140124232902.GB30361@linux.vnet.ibm.com>
 References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
  <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
  <alpine.DEB.2.10.1401201612340.28048@nuc>
@@ -37,11 +37,11 @@ References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
-Cc: penberg@kernel.org, linux-mm@kvack.org,
- Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, mpm@selenic.com,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, penberg@kernel.org,
+ linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
+ mpm@selenic.com, Christoph Lameter <cl@linux.com>,
+ linuxppc-dev@lists.ozlabs.org, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,10 +78,13 @@ On 24.01.2014 [13:03:13 -0800], David Rientjes wrote:
 > I think the problem is a memoryless node being used for kmalloc_node() so 
 > we need to decide where to enforce node_present_pages().  __slab_alloc() 
 > seems like the best candidate when !node_match().
-> 
 
-Yep, I'm looking through callers and such right now and came to a
-similar conclusion. I should have a patch soon.
+Actually, this is effectively what Anton's patch does, except with
+Wanpeng's adjustment to use node_present_pages(). Does that seem
+sufficient to you?
 
-Thanks,
-Nish
+It does only cover the memoryless node case (not the exhausted node
+case), but I think that shouldn't block the fix (and it does fix the
+issue we've run across in our testing).
+
+-Nish
