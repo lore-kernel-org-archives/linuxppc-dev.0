@@ -1,32 +1,19 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-bk0-x229.google.com (mail-bk0-x229.google.com
+ [IPv6:2a00:1450:4008:c01::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 88B002C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 10:29:26 +1100 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 24 Jan 2014 16:29:23 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C74791FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 16:28:48 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0OLQsLh11338232
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 22:26:54 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0ONTK0l028531
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 16:29:21 -0700
-Date: Fri, 24 Jan 2014 15:29:02 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
+ by ozlabs.org (Postfix) with ESMTPS id BEDA32C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 10:49:46 +1100 (EST)
+Received: by mail-bk0-f41.google.com with SMTP id na10so1599509bkb.14
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 15:49:39 -0800 (PST)
+Date: Fri, 24 Jan 2014 15:49:33 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
  no local memory
-Message-ID: <20140124232902.GB30361@linux.vnet.ibm.com>
+In-Reply-To: <20140124232902.GB30361@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
 References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
  <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
  <alpine.DEB.2.10.1401201612340.28048@nuc>
@@ -34,9 +21,9 @@ References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
  <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
  <alpine.DEB.2.10.1401240946530.12886@nuc>
  <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+ <20140124232902.GB30361@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, penberg@kernel.org,
  linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
  mpm@selenic.com, Christoph Lameter <cl@linux.com>,
@@ -51,40 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24.01.2014 [13:03:13 -0800], David Rientjes wrote:
-> On Fri, 24 Jan 2014, Christoph Lameter wrote:
+On Fri, 24 Jan 2014, Nishanth Aravamudan wrote:
+
+> > I think the problem is a memoryless node being used for kmalloc_node() so 
+> > we need to decide where to enforce node_present_pages().  __slab_alloc() 
+> > seems like the best candidate when !node_match().
 > 
-> > On Fri, 24 Jan 2014, Wanpeng Li wrote:
-> > 
-> > > >
-> > > >diff --git a/mm/slub.c b/mm/slub.c
-> > > >index 545a170..a1c6040 100644
-> > > >--- a/mm/slub.c
-> > > >+++ b/mm/slub.c
-> > > >@@ -1700,6 +1700,9 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
-> > > > 	void *object;
-> > > >	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
-> > 
-> > This needs to be numa_mem_id() and numa_mem_id would need to be
-> > consistently used.
-> > 
-> > > >
-> > > >+	if (!node_present_pages(searchnode))
-> > > >+		searchnode = numa_mem_id();
-> > 
-> > Probably wont need that?
-> > 
+> Actually, this is effectively what Anton's patch does, except with
+> Wanpeng's adjustment to use node_present_pages(). Does that seem
+> sufficient to you?
 > 
-> I think the problem is a memoryless node being used for kmalloc_node() so 
-> we need to decide where to enforce node_present_pages().  __slab_alloc() 
-> seems like the best candidate when !node_match().
 
-Actually, this is effectively what Anton's patch does, except with
-Wanpeng's adjustment to use node_present_pages(). Does that seem
-sufficient to you?
+I don't see that as being the effect of Anton's patch.  We need to use 
+numa_mem_id() as Christoph mentioned when a memoryless node is passed for 
+the best NUMA locality.  Something like this:
 
-It does only cover the memoryless node case (not the exhausted node
-case), but I think that shouldn't block the fix (and it does fix the
-issue we've run across in our testing).
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2278,10 +2278,14 @@ redo:
+ 
+ 	if (unlikely(!node_match(page, node))) {
+ 		stat(s, ALLOC_NODE_MISMATCH);
+-		deactivate_slab(s, page, c->freelist);
+-		c->page = NULL;
+-		c->freelist = NULL;
+-		goto new_slab;
++		if (unlikely(!node_present_pages(node)))
++			node = numa_mem_id();
++		if (!node_match(page, node)) {
++			deactivate_slab(s, page, c->freelist);
++			c->page = NULL;
++			c->freelist = NULL;
++			goto new_slab;
++		}
+ 	}
+ 
+ 	/*
 
--Nish
+> It does only cover the memoryless node case (not the exhausted node
+> case), but I think that shouldn't block the fix (and it does fix the
+> issue we've run across in our testing).
+> 
+
+kmalloc_node(nid) and kmem_cache_alloc_node(nid) should fallback to nodes 
+other than nid when memory can't be allocated, these functions only 
+indicate a preference.
