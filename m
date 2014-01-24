@@ -1,29 +1,43 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <liwanp@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 53B322C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 14:06:12 +1100 (EST)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] clk: corenet: Update the clock bindings
-Date: Fri, 24 Jan 2014 03:05:57 +0000
-Message-ID: <ab64f4bbf44b41a3bd462f538dffc6d4@BL2PR03MB115.namprd03.prod.outlook.com>
-References: <1390269732-22798-1-git-send-email-Yuantian.Tang@freescale.com>
- <1390437863.24905.549.camel@snotra.buserror.net>
- <d61cabaec0af4aada9fadf93e7c0bb61@BL2PR03MB115.namprd03.prod.outlook.com>
- <1390511008.24905.581.camel@snotra.buserror.net>
- <a0800d606e364b5980fe5c17efca9d9e@BL2PR03MB115.namprd03.prod.outlook.com>
- <1390530934.24905.639.camel@snotra.buserror.net>
- <ac1c6cb1a6e54f6e87b76e2a3006b64a@BL2PR03MB115.namprd03.prod.outlook.com>
- <1390531664.24905.640.camel@snotra.buserror.net>
-In-Reply-To: <1390531664.24905.640.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 0DB422C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 14:09:18 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
+ Fri, 24 Jan 2014 13:09:14 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C15983578050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 14:09:10 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0O38vOG63766754
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 14:08:57 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0O399m5029085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 14:09:10 +1100
+Date: Fri, 24 Jan 2014 11:09:07 +0800
+From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140124030907.GA28168@hacker.(null)>
+References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
+ <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401201612340.28048@nuc>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "prabhakar@freescale.com" <prabhakar@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1401201612340.28048@nuc>
+Cc: nacc@linux.vnet.ibm.com, David Rientjes <rientjes@google.com>,
+ penberg@kernel.org, linux-mm@kvack.org,
+ Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, mpm@selenic.com,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +47,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+ID4gPiA+IEluIGFueSBjYXNlLCBpZiAicW9yaXEiIG1ha2VzIHNlbnNlIGZvciB0aGUgY29t
-cGF0aWJsZSwgSSBkb24ndA0KPiA+ID4gPiA+IHNlZSB3aHkgaXQgZG9lc24ndCBtYWtlIHNlbnNl
-IGZvciB0aGUgZHJpdmVyLg0KPiA+ID4gPiA+DQo+ID4gPiA+IFNvLCAiQ29yZW5ldCIgaXMgYXBw
-cm9wcmlhdGUgZm9yIGRyaXZlci4NCj4gPiA+ID4gSWYgc29tZXRoaW5nIHNob3VsZCBjaGFuZ2Us
-IHRoYXQgbXVzdCBiZSBjb21wYXRpYmxlIHN0cmluZy4NCj4gPiA+DQo+ID4gPiBOby4gIENvcmVu
-ZXQgaXMgYSBidXMgaW50ZXJjb25uZWN0LCBub3QgYSBjaGlwIGZhbWlseSAoZGVzcGl0ZSBhYnVz
-ZQ0KPiA+ID4gb2YgdGhlIG5hbWUgaW4gb3RoZXIgY29udGV4dHMgaW4gTGludXgvVS1Cb290KS4g
-IEFuZCB0aGUgYmluZGluZw0KPiA+ID4gd2l0aCBxb3JpcSBoYXMgYWxyZWFkeSBiZWVuIGFjY2Vw
-dGVkLg0KPiA+ID4NCj4gPiBRb3JJUSBpcyBub3QgdGhlIGJlc3QgbmFtZSBlaXRoZXIgc2luY2Ug
-aXQgaW5jbHVkZSB0aGUgbG93LWVuZCBzb2NzLg0KPiA+IFdoYXQgdGhlIG5hbWUgc2hvdWxkIGJl
-Pw0KPiANCj4gQWdhaW4sIHRob3NlIGxvdy1lbmQgY2hpcHMgZG8gbm90IGltcGxlbWVudCAiUW9y
-SVEgQ2hhc3NpcyAxLjAiIG9yICJRb3JJUQ0KPiBDaGFzc2lzIDIuMCIuICBUaGF0IHRoZXkgaGF2
-ZSAiUW9ySVEiIGluIHRoZWlyIG5hbWUgaXMgaXJyZWxldmFudC4NCj4gDQpHb3QgaXQuIA0KDQpS
-ZWdhcmRzLA0KWXVhbnRpYW4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
+Hi Christoph,
+On Mon, Jan 20, 2014 at 04:13:30PM -0600, Christoph Lameter wrote:
+>On Mon, 20 Jan 2014, Wanpeng Li wrote:
+>
+>> >+       enum zone_type high_zoneidx = gfp_zone(flags);
+>> >
+>> >+       if (!node_present_pages(searchnode)) {
+>> >+               zonelist = node_zonelist(searchnode, flags);
+>> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
+>> >+                       searchnode = zone_to_nid(zone);
+>> >+                       if (node_present_pages(searchnode))
+>> >+                               break;
+>> >+               }
+>> >+       }
+>> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>> >        if (object || node != NUMA_NO_NODE)
+>> >                return object;
+>> >
+>>
+>> The patch fix the bug. However, the kernel crashed very quickly after running
+>> stress tests for a short while:
+>
+>This is not a good way of fixing it. How about not asking for memory from
+>nodes that are memoryless? Use numa_mem_id() which gives you the next node
+>that has memory instead of numa_node_id() (gives you the current node
+>regardless if it has memory or not).
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 545a170..a1c6040 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1700,6 +1700,9 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+ 	void *object;
+	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+
++	if (!node_present_pages(searchnode))
++		searchnode = numa_mem_id();
++
+	object = get_partial_node(s, get_node(s, searchnode), c, flags);
+	if (object || node != NUMA_NO_NODE)
+		return object;
