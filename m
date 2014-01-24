@@ -1,19 +1,26 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3D2092C0092
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 22:11:25 +1100 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <rtc-linux@googlegroups.com>, <a.zummo@towertech.it>,
- <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] rtc: ds3232 make it possible to share an irq
-Date: Fri, 24 Jan 2014 16:36:32 +0530
-Message-ID: <1390561592-23968-1-git-send-email-Bharat.Bhushan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <Bharat.Bhushan@freescale.com>
+Return-Path: <cl@linux.com>
+Received: from qmta09.emeryville.ca.mail.comcast.net
+ (qmta09.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:96])
+ by ozlabs.org (Postfix) with ESMTP id 110E32C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 02:58:37 +1100 (EST)
+Date: Fri, 24 Jan 2014 09:50:17 -0600 (CST)
+From: Christoph Lameter <cl@linux.com>
+To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+In-Reply-To: <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+Message-ID: <alpine.DEB.2.10.1401240946530.12886@nuc>
+References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
+ <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401201612340.28048@nuc>
+ <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
+ <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: nacc@linux.vnet.ibm.com, David Rientjes <rientjes@google.com>,
+ penberg@kernel.org, linux-mm@kvack.org,
+ Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, mpm@selenic.com,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's possible to have RTC irq shared with other device (e.g.
-t4240qds board shares ds3232irq with phy one).  Handle this in
-driver.
+On Fri, 24 Jan 2014, Wanpeng Li wrote:
 
-Signed-off-by: Bharat Bhushan <Bharat.Bhushan@freescale.com>
----
- drivers/rtc/rtc-ds3232.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> >
+> >diff --git a/mm/slub.c b/mm/slub.c
+> >index 545a170..a1c6040 100644
+> >--- a/mm/slub.c
+> >+++ b/mm/slub.c
+> >@@ -1700,6 +1700,9 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+> > 	void *object;
+> >	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
 
-diff --git a/drivers/rtc/rtc-ds3232.c b/drivers/rtc/rtc-ds3232.c
-index b83bb5a..598837b 100644
---- a/drivers/rtc/rtc-ds3232.c
-+++ b/drivers/rtc/rtc-ds3232.c
-@@ -419,8 +419,8 @@ static int ds3232_probe(struct i2c_client *client,
- 	}
- 
- 	if (client->irq >= 0) {
--		ret = devm_request_irq(&client->dev, client->irq, ds3232_irq, 0,
--				 "ds3232", client);
-+		ret = devm_request_irq(&client->dev, client->irq, ds3232_irq,
-+				       IRQF_SHARED, "ds3232", client);
- 		if (ret) {
- 			dev_err(&client->dev, "unable to request IRQ\n");
- 			return ret;
--- 
-1.7.0.4
+This needs to be numa_mem_id() and numa_mem_id would need to be
+consistently used.
+
+> >
+> >+	if (!node_present_pages(searchnode))
+> >+		searchnode = numa_mem_id();
+
+Probably wont need that?
+
+> >+
+> >	object = get_partial_node(s, get_node(s, searchnode), c, flags);
+> >	if (object || node != NUMA_NO_NODE)
+> >		return object;
+> >
+>
+> The bug still can't be fixed w/ this patch.
+
+Some more detail would be good. If memory is requested from a particular
+node then it would be best to use one that has memory. Callers also may
+have used numa_node_id() and that also would need to be fixed.
