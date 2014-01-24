@@ -1,46 +1,26 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-we0-f178.google.com (mail-we0-f178.google.com
+ [74.125.82.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D52F42C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 18:02:40 +1100 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 24 Jan 2014 02:02:37 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D6E65C90041
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 02:02:32 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0O72ZLS57213000
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 07:02:35 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0O72Vwp022936
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 02:02:35 -0500
-Subject: [PATCH V2 2/2] tick/cpuidle: Initialize hrtimer mode of broadcast
-To: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com,
- galak@kernel.crashing.org, paul.gortmaker@windriver.com,
- paulus@samba.org, mingo@kernel.org, mikey@neuling.org,
- shangw@linux.vnet.ibm.com, rafael.j.wysocki@intel.com, agraf@suse.de,
- benh@kernel.crashing.org, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, anton@samba.org, tglx@linutronix.de,
- chenhui.zhao@freescale.com, deepthi@linux.vnet.ibm.com,
- r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, svaidy@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 24 Jan 2014 12:28:29 +0530
-Message-ID: <20140124065820.17564.83076.stgit@preeti>
-In-Reply-To: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
-References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9863C2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 20:08:32 +1100 (EST)
+Received: by mail-we0-f178.google.com with SMTP id t60so2306032wes.23
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 01:08:27 -0800 (PST)
+Message-ID: <52E22D8A.5000305@linaro.org>
+Date: Fri, 24 Jan 2014 10:08:26 +0100
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
+ states
+References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com>
+ <52DF815D.50104@linaro.org> <52E0F9ED.2010506@linux.vnet.ibm.com>
+In-Reply-To: <52E0F9ED.2010506@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,283 +30,363 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
+> Hi Daniel,
+>
+> Thank you for the review.
+>
+> On 01/22/2014 01:59 PM, Daniel Lezcano wrote:
+>> On 01/17/2014 05:33 AM, Preeti U Murthy wrote:
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>> index a55e68f..831b664 100644
+>>> --- a/drivers/cpuidle/cpuidle.c
+>>> +++ b/drivers/cpuidle/cpuidle.c
+>>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>>
+>>>        /* ask the governor for the next state */
+>>>        next_state = cpuidle_curr_governor->select(drv, dev);
+>>> +
+>>> +    dev->last_residency = 0;
+>>>        if (need_resched()) {
+>>> -        dev->last_residency = 0;
+>>
+>> Why do you need to do this change ? ^^^^^
+>
+> So as to keep the last_residency consistent with the case that this patch
+> addresses: where no idle state could be selected due to strict latency
+> requirements or disabled states and hence the cpu exits without entering
+> idle. Else it would contain the stale value from the previous idle state
+> entry.
+>
+> But coming to think of it dev->last_residency is not used when the last
+> entered idle state index is -1.
+>
+> So I have reverted this change as well in the revised patch below along
+> with mentioning the reason in the last paragraph of the changelog.
+>
+>>
+>>>            /* give the governor an opportunity to reflect on the
+>>> outcome */
+>>>            if (cpuidle_curr_governor->reflect)
+>>>                cpuidle_curr_governor->reflect(dev, next_state);
+>>> @@ -140,6 +141,18 @@ int cpuidle_idle_call(void)
+>>>            return 0;
+>>>        }
+>>>
+>>> +    /* Unlike in the need_resched() case, we return here because the
+>>> +     * governor did not find a suitable idle state. However idle is
+>>> still
+>>> +     * in progress as we are not asked to reschedule. Hence we return
+>>> +     * without enabling interrupts.
+>>
+>> That will lead to a WARN.
+>>
+>>> +     * NOTE: The return code should still be success, since the
+>>> verdict of this
+>>> +     * call is "do not enter any idle state" and not a failed call
+>>> due to
+>>> +     * errors.
+>>> +     */
+>>> +    if (next_state < 0)
+>>> +        return 0;
+>>> +
+>>
+>> Returning from here breaks the symmetry of the trace.
+>
+> I have addressed the above concerns in the patch found below.
+> Does the rest of the patch look sound?
+>
+> Regards
+> Preeti U Murthy
+>
+> ----------------------------------------------------------------------
+>
+> cpuidle/governors: Fix logic in selection of idle states
+>
+> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>
+> The cpuidle governors today are not handling scenarios where no idle state
+> can be chosen. Such scenarios coud arise if the user has disabled all the
+> idle states at runtime or the latency requirement from the cpus is very strict.
+>
+> The menu governor returns 0th index of the idle state table when no other
+> idle state is suitable. This is even when the idle state corresponding to this
+> index is disabled or the latency requirement is strict and the exit_latency
+> of the lowest idle state is also not acceptable. Hence this patch
+> fixes this logic in the menu governor by defaulting to an idle state index
+> of -1 unless any other state is suitable.
+>
+> The ladder governor needs a few more fixes in addition to that required in the
+> menu governor. When the ladder governor decides to demote the idle state of a
+> CPU, it does not check if the lower idle states are enabled. Add this logic
+> in addition to the logic where it chooses an index of -1 if it can neither
+> promote or demote the idle state of a cpu nor can it choose the current idle
+> state.
+>
+> The cpuidle_idle_call() will return back if the governor decides upon not
+> entering any idle state. However it cannot return an error code because all
+> archs have the logic today that if the call to cpuidle_idle_call() fails, it
+> means that the cpuidle driver failed to *function*; for instance due to
+> errors during registration. As a result they end up deciding upon a
+> default idle state on their own, which could very well be a deep idle state.
+> This is incorrect in cases where no idle state is suitable.
+>
+> Besides for the scenario that this patch is addressing, the call actually
+> succeeds. Its just that no idle state is thought to be suitable by the governors.
+> Under such a circumstance return success code without entering any idle
+> state.
+>
+> The consequence of this patch additionally  on the menu governor is that as
+> long as a valid idle state cannot be chosen, the cpuidle statistics that this
+> governor uses to predict the next idle state remain untouched from the last
+> valid idle state. This is because an idle state is not even being predicted
+> in this path, hence there is no point correcting the prediction either.
+>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>
+> Changes from V1:https://lkml.org/lkml/2014/1/14/26
+>
+> 1. Change the return code to success from -EINVAL due to the reason mentioned
+> in the changelog.
+> 2. Add logic that the patch is addressing in the ladder governor as well.
+> 3. Added relevant comments and removed redundant logic as suggested in the
+> above thread.
+> ---
+>   drivers/cpuidle/cpuidle.c          |   15 +++++
+>   drivers/cpuidle/governors/ladder.c |  101 ++++++++++++++++++++++++++----------
+>   drivers/cpuidle/governors/menu.c   |    7 +-
+>   3 files changed, 90 insertions(+), 33 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..19d17e8 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>
+>   	/* ask the governor for the next state */
+>   	next_state = cpuidle_curr_governor->select(drv, dev);
+> +
+> +	dev->last_residency = 0;
+>   	if (need_resched()) {
 
-On some architectures, in certain CPU deep idle states the local timers stop.
-An external clock device is used to wakeup these CPUs. The kernel support for the
-wakeup of these CPUs is provided by the tick broadcast framework by using the
-external clock device as the wakeup source.
+What about if (need_resched() || next_state < 0) ?
 
-However not all implementations of architectures provide such an external
-clock device. This patch includes support in the broadcast framework to handle
-the wakeup of the CPUs in deep idle states on such systems by queuing a hrtimer
-on one of the CPUs, which is meant to handle the wakeup of CPUs in deep idle states.
+> -		dev->last_residency = 0;
+>   		/* give the governor an opportunity to reflect on the outcome */
+>   		if (cpuidle_curr_governor->reflect)
+>   			cpuidle_curr_governor->reflect(dev, next_state);
+> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
+>   	}
+>
+>   	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> +	/*
+> +	 * NOTE: The return code should still be success, since the verdict of
+> +	 * this call is "do not enter any idle state". It is not a failed call
+> +	 * due to errors.
+> +	 */
+> +	if (next_state < 0) {
+> +		entered_state = next_state;
+> +		local_irq_enable();
+> +		goto out;
+> +	}
+>
+>   	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
+>
+> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
+>   	if (broadcast)
+>   		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>
+> -	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> +out:	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>
+>   	/* give the governor an opportunity to reflect on the outcome */
+>   	if (cpuidle_curr_governor->reflect)
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 9f08e8c..7e93aaa 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -58,6 +58,36 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+>   	ldev->last_state_idx = new_idx;
+>   }
+>
+> +static int can_promote(struct ladder_device *ldev, int last_idx,
+> +				int last_residency)
+> +{
+> +	struct ladder_device_state *last_state;
+> +
+> +	last_state = &ldev->states[last_idx];
+> +	if (last_residency > last_state->threshold.promotion_time) {
+> +		last_state->stats.promotion_count++;
+> +		last_state->stats.demotion_count = 0;
+> +		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count)
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int can_demote(struct ladder_device *ldev, int last_idx,
+> +			int last_residency)
+> +{
+> +	struct ladder_device_state *last_state;
+> +
+> +	last_state = &ldev->states[last_idx];
+> +	if (last_residency < last_state->threshold.demotion_time) {
+> +		last_state->stats.demotion_count++;
+> +		last_state->stats.promotion_count = 0;
+> +		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count)
+> +			return 1;
+> +	}
+> +	return 0;
+> +}
+> +
+>   /**
+>    * ladder_select_state - selects the next state to enter
+>    * @drv: cpuidle driver
+> @@ -73,29 +103,33 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>
+>   	/* Special case when user has set very strict latency requirement */
+>   	if (unlikely(latency_req == 0)) {
+> -		ladder_do_selection(ldev, last_idx, 0);
+> -		return 0;
+> +		if (last_idx >= 0)
+> +			ladder_do_selection(ldev, last_idx, -1);
+> +		goto out;
+>   	}
+>
+> -	last_state = &ldev->states[last_idx];
+> -
+> -	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+> -		last_residency = cpuidle_get_last_residency(dev) - \
+> -					 drv->states[last_idx].exit_latency;
+> +	if (last_idx >= 0) {
+> +		if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
+> +			last_residency = cpuidle_get_last_residency(dev) - \
+> +						 drv->states[last_idx].exit_latency;
+> +		} else {
+> +			last_state = &ldev->states[last_idx];
+> +			last_residency = last_state->threshold.promotion_time + 1;
+> +		}
+>   	}
+> -	else
+> -		last_residency = last_state->threshold.promotion_time + 1;
+>
+>   	/* consider promotion */
+>   	if (last_idx < drv->state_count - 1 &&
+>   	    !drv->states[last_idx + 1].disabled &&
+>   	    !dev->states_usage[last_idx + 1].disable &&
+> -	    last_residency > last_state->threshold.promotion_time &&
+>   	    drv->states[last_idx + 1].exit_latency <= latency_req) {
+> -		last_state->stats.promotion_count++;
+> -		last_state->stats.demotion_count = 0;
+> -		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count) {
+> -			ladder_do_selection(ldev, last_idx, last_idx + 1);
+> +		if (last_idx >= 0) {
+> +			if (can_promote(ldev, last_idx, last_residency)) {
+> +				ladder_do_selection(ldev, last_idx, last_idx + 1);
+> +				return last_idx + 1;
+> +			}
+> +		} else {
+> +			ldev->last_state_idx = last_idx + 1;
+>   			return last_idx + 1;
+>   		}
+>   	}
+> @@ -107,26 +141,36 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>   	    drv->states[last_idx].exit_latency > latency_req)) {
+>   		int i;
+>
+> -		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+> -			if (drv->states[i].exit_latency <= latency_req)
+> +		for (i = last_idx - 1; i >= CPUIDLE_DRIVER_STATE_START; i--) {
+> +			if (drv->states[i].exit_latency <= latency_req &&
+> +				!(drv->states[i].disabled || dev->states_usage[i].disable))
+>   				break;
+>   		}
+> -		ladder_do_selection(ldev, last_idx, i);
+> -		return i;
+> +		if (i >= 0) {
+> +			ladder_do_selection(ldev, last_idx, i);
+> +			return i;
+> +		}
+> +		goto out;
+>   	}
+>
+> -	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+> -	    last_residency < last_state->threshold.demotion_time) {
+> -		last_state->stats.demotion_count++;
+> -		last_state->stats.promotion_count = 0;
+> -		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
+> -			ladder_do_selection(ldev, last_idx, last_idx - 1);
+> -			return last_idx - 1;
+> +	if (last_idx > CPUIDLE_DRIVER_STATE_START) {
+> +		int i = last_idx - 1;
+> +
+> +		if (can_demote(ldev, last_idx, last_residency) &&
+> +			!(drv->states[i].disabled || dev->states_usage[i].disable)) {
+> +			ladder_do_selection(ldev, last_idx, i);
+> +			return i;
+>   		}
+> +		/* We come here when the last_idx is still a suitable idle state,
+> +		 * just that  promotion or demotion is not ideal.
+> +		 */
+> +		ldev->last_state_idx = last_idx;
+> +		return last_idx;
+>   	}
+>
+> -	/* otherwise remain at the current state */
+> -	return last_idx;
+> +	/* we come here if no idle state is suitable */
+> +out:	ldev->last_state_idx = -1;
+> +	return ldev->last_state_idx;
+>   }
+>
+>   /**
+> @@ -166,7 +210,8 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+>   /**
+>    * ladder_reflect - update the correct last_state_idx
+>    * @dev: the CPU
+> - * @index: the index of actual state entered
+> + * @index: the index of actual state entered or -1 if no idle state is
+> + * suitable.
+>    */
+>   static void ladder_reflect(struct cpuidle_device *dev, int index)
+>   {
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index cf7f2f0..e9f17ce 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -297,12 +297,12 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>   		data->needs_update = 0;
+>   	}
+>
+> -	data->last_state_idx = 0;
+> +	data->last_state_idx = -1;
+>   	data->exit_us = 0;
+>
+>   	/* Special case when user has set very strict latency requirement */
+>   	if (unlikely(latency_req == 0))
+> -		return 0;
+> +		return data->last_state_idx;
+>
+>   	/* determine the expected residency time, round up */
+>   	t = ktime_to_timespec(tick_nohz_get_sleep_length());
+> @@ -368,7 +368,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>   /**
+>    * menu_reflect - records that data structures need update
+>    * @dev: the CPU
+> - * @index: the index of actual entered state
+> + * @index: the index of actual entered state or -1 if no idle state is
+> + * suitable.
+>    *
+>    * NOTE: it's important to be fast here because this operation will add to
+>    *       the overall exit latency.
+>
+>
 
-This patchset introduces a pseudo clock device which can be registered by the
-archs as tick_broadcast_device in the absence of a real external clock
-device. Once registered, the broadcast framework will work as is for these
-architectures as long as the archs take care of the BROADCAST_ENTER
-notification failing for one of the CPUs. This CPU is made the stand by CPU to
-handle wakeup of the CPUs in deep idle and it *must not enter deep idle states*.
 
-The CPU with the earliest wakeup is chosen to be this CPU. Hence this way the
-stand by CPU dynamically moves around and so does the hrtimer which is queued
-to trigger at the next earliest wakeup time. This is consistent with the case where
-an external clock device is present. The smp affinity of this clock device is
-set to the CPU with the earliest wakeup. This patchset handles the hotplug of
-the stand by CPU as well by moving the hrtimer on to the CPU handling the CPU_DEAD
-notification.
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-[Added Changelog and code to handle reprogramming of hrtimer]
----
-
- include/linux/clockchips.h           |    9 +++
- kernel/time/Makefile                 |    2 -
- kernel/time/tick-broadcast-hrtimer.c |  102 ++++++++++++++++++++++++++++++++++
- kernel/time/tick-broadcast.c         |   45 +++++++++++++++
- 4 files changed, 156 insertions(+), 2 deletions(-)
- create mode 100644 kernel/time/tick-broadcast-hrtimer.c
-
-diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-index ac81b56..2293025 100644
---- a/include/linux/clockchips.h
-+++ b/include/linux/clockchips.h
-@@ -62,6 +62,11 @@ enum clock_event_mode {
- #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
- #define CLOCK_EVT_FEAT_PERCPU		0x000040
- 
-+/*
-+ * Clockevent device is based on a hrtimer for broadcast
-+ */
-+#define CLOCK_EVT_FEAT_HRTIMER		0x000080
-+
- /**
-  * struct clock_event_device - clock event device descriptor
-  * @event_handler:	Assigned by the framework to be called by the low
-@@ -83,6 +88,7 @@ enum clock_event_mode {
-  * @name:		ptr to clock event name
-  * @rating:		variable to rate clock event devices
-  * @irq:		IRQ number (only for non CPU local devices)
-+ * @bound_on:		Bound on CPU
-  * @cpumask:		cpumask to indicate for which CPUs this device works
-  * @list:		list head for the management code
-  * @owner:		module reference
-@@ -113,6 +119,7 @@ struct clock_event_device {
- 	const char		*name;
- 	int			rating;
- 	int			irq;
-+	int			bound_on;
- 	const struct cpumask	*cpumask;
- 	struct list_head	list;
- 	struct module		*owner;
-@@ -180,9 +187,11 @@ extern int tick_receive_broadcast(void);
- #endif
- 
- #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
-+extern void tick_setup_hrtimer_broadcast(void);
- extern int tick_check_broadcast_expired(void);
- #else
- static inline int tick_check_broadcast_expired(void) { return 0; }
-+static void tick_setup_hrtimer_broadcast(void) {};
- #endif
- 
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
-diff --git a/kernel/time/Makefile b/kernel/time/Makefile
-index 9250130..06151ef 100644
---- a/kernel/time/Makefile
-+++ b/kernel/time/Makefile
-@@ -3,7 +3,7 @@ obj-y += timeconv.o posix-clock.o alarmtimer.o
- 
- obj-$(CONFIG_GENERIC_CLOCKEVENTS_BUILD)		+= clockevents.o
- obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= tick-common.o
--obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= tick-broadcast.o
-+obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= tick-broadcast.o tick-broadcast-hrtimer.o
- obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-sched.o
-diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
-new file mode 100644
-index 0000000..23f4925
---- /dev/null
-+++ b/kernel/time/tick-broadcast-hrtimer.c
-@@ -0,0 +1,102 @@
-+/*
-+ * linux/kernel/time/tick-broadcast-hrtimer.c
-+ * This file emulates a local clock event device
-+ * via a pseudo clock device.
-+ */
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/hrtimer.h>
-+#include <linux/interrupt.h>
-+#include <linux/percpu.h>
-+#include <linux/profile.h>
-+#include <linux/clockchips.h>
-+#include <linux/sched.h>
-+#include <linux/smp.h>
-+#include <linux/module.h>
-+
-+#include "tick-internal.h"
-+
-+static struct hrtimer bctimer;
-+
-+static void bc_set_mode(enum clock_event_mode mode,
-+			struct clock_event_device *bc)
-+{
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		/*
-+		 * Note, we cannot cancel the timer here as we might
-+		 * run into the following live lock scenario:
-+		 *
-+		 * cpu 0		cpu1
-+		 * lock(broadcast_lock);
-+		 *			hrtimer_interrupt()
-+		 *			bc_handler()
-+		 *			   tick_handle_oneshot_broadcast();
-+		 *			    lock(broadcast_lock);
-+		 * hrtimer_cancel()
-+		 *  wait_for_callback()
-+		 */
-+		hrtimer_try_to_cancel(&bctimer);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+/*
-+ * This is called from the guts of the broadcast code when the cpu
-+ * which is about to enter idle has the earliest broadcast timer event.
-+ */
-+static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
-+{
-+	ktime_t now, interval;
-+	/*
-+	 * We try to cancel the timer first. If the callback is on
-+	 * flight on some other cpu then we let it handle it. If we
-+	 * were able to cancel the timer nothing can rearm it as we
-+	 * own broadcast_lock.
-+	 *
-+	 * However if we are called from the hrtimer interrupt handler
-+	 * itself, reprogram it.
-+	 */
-+	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
-+		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+		/* Bind the "device" to the cpu */
-+		bc->bound_on = smp_processor_id();
-+	} else if (bc->bound_on == smp_processor_id()) {
-+		now = ktime_get();
-+		interval = ktime_sub(expires, now);
-+		hrtimer_forward_now(&bctimer, interval);
-+	}
-+	return 0;
-+}
-+
-+static struct clock_event_device ce_broadcast_hrtimer = {
-+	.set_mode		= bc_set_mode,
-+	.set_next_ktime		= bc_set_next,
-+	.features		= CLOCK_EVT_FEAT_ONESHOT |
-+				  CLOCK_EVT_FEAT_KTIME |
-+				  CLOCK_EVT_FEAT_HRTIMER,
-+	.rating			= 0,
-+	.bound_on		= -1,
-+	.min_delta_ns		= 1,
-+	.max_delta_ns		= KTIME_MAX,
-+	.min_delta_ticks	= 1,
-+	.max_delta_ticks	= KTIME_MAX,
-+	.mult			= 1,
-+	.shift			= 0,
-+	.cpumask		= cpu_all_mask,
-+};
-+
-+static enum hrtimer_restart bc_handler(struct hrtimer *t)
-+{
-+	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
-+	return HRTIMER_RESTART;
-+}
-+
-+void tick_setup_hrtimer_broadcast(void)
-+{
-+	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	bctimer.function = bc_handler;
-+	clockevents_register_device(&ce_broadcast_hrtimer);
-+}
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index be00692..7ed7e69 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -630,6 +630,42 @@ again:
- 	raw_spin_unlock(&tick_broadcast_lock);
- }
- 
-+static int broadcast_needs_cpu(struct clock_event_device *bc, int cpu)
-+{
-+	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
-+		return 0;
-+	if (bc->next_event.tv64 == KTIME_MAX)
-+		return 0;
-+	return bc->bound_on == cpu ? -EBUSY : 0;
-+}
-+
-+static void broadcast_shutdown_local(struct clock_event_device *bc,
-+				     struct clock_event_device *dev)
-+{
-+	/*
-+	 * For hrtimer based broadcasting we cannot shutdown the cpu
-+	 * local device if our own event is the first one to expire or
-+	 * if we own the broadcast timer.
-+	 */
-+	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
-+		if (broadcast_needs_cpu(bc, smp_processor_id()))
-+			return;
-+		if (dev->next_event.tv64 < bc->next_event.tv64)
-+			return;
-+	}
-+	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+}
-+
-+static void broadcast_move_bc(int deadcpu)
-+{
-+	struct clock_event_device *bc = tick_broadcast_device.evtdev;
-+
-+	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
-+		return;
-+	/* This moves the broadcast assignment to this cpu */
-+	clockevents_program_event(bc, bc->next_event, 1);
-+}
-+
- /*
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-@@ -667,7 +703,7 @@ int tick_broadcast_oneshot_control(unsigned long reason)
- 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
- 		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask));
--			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+			broadcast_shutdown_local(bc, dev);
- 			/*
- 			 * We only reprogram the broadcast timer if we
- 			 * did not mark ourself in the force mask and
-@@ -680,6 +716,11 @@ int tick_broadcast_oneshot_control(unsigned long reason)
- 			    dev->next_event.tv64 < bc->next_event.tv64)
- 				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
- 		}
-+		/*
-+		 * If the current CPU owns the hrtimer broadcast
-+		 * mechanism, it cannot go deep idle.
-+		 */
-+		ret = broadcast_needs_cpu(bc, cpu);
- 	} else {
- 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-@@ -853,6 +894,8 @@ void tick_shutdown_broadcast_oneshot(unsigned int *cpup)
- 	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
- 	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
- 
-+	broadcast_move_bc(cpu);
-+
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
- 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
