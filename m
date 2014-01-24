@@ -1,44 +1,11 @@
-Return-Path: <liwanp@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 767152C0081
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 14:14:22 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <liwanp@linux.vnet.ibm.com>;
- Fri, 24 Jan 2014 08:44:18 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 49BC93940058
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 08:44:15 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0O3Dv2k54067312
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 08:43:57 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0O3EDh1009979
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 08:44:14 +0530
-Date: Fri, 24 Jan 2014 11:14:12 +0800
-From: Wanpeng Li <liwanp@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-Message-ID: <20140124031412.GA32252@hacker.(null)>
-References: <20140107132100.5b5ad198@kryten> <20140107074136.GA4011@lge.com>
- <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
- <alpine.DEB.2.10.1401201612340.28048@nuc>
- <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
-Cc: nacc@linux.vnet.ibm.com, David Rientjes <rientjes@google.com>,
- penberg@kernel.org, linux-mm@kvack.org,
- Han Pingtian <hanpt@linux.vnet.ibm.com>, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, mpm@selenic.com,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org
-Reply-To: Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/perf: Add Power8 cache & TLB events
+Date: Fri, 24 Jan 2014 15:50:51 +1100
+Message-Id: <1390539051-3922-1-git-send-email-mpe@ellerman.id.au>
+Cc: sukadev@linux.vnet.ibm.com, Anton Blanchard <anton@samba.org>,
+ mlpesant@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,57 +15,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 24, 2014 at 11:09:07AM +0800, Wanpeng Li wrote:
->Hi Christoph,
->On Mon, Jan 20, 2014 at 04:13:30PM -0600, Christoph Lameter wrote:
->>On Mon, 20 Jan 2014, Wanpeng Li wrote:
->>
->>> >+       enum zone_type high_zoneidx = gfp_zone(flags);
->>> >
->>> >+       if (!node_present_pages(searchnode)) {
->>> >+               zonelist = node_zonelist(searchnode, flags);
->>> >+               for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
->>> >+                       searchnode = zone_to_nid(zone);
->>> >+                       if (node_present_pages(searchnode))
->>> >+                               break;
->>> >+               }
->>> >+       }
->>> >        object = get_partial_node(s, get_node(s, searchnode), c, flags);
->>> >        if (object || node != NUMA_NO_NODE)
->>> >                return object;
->>> >
->>>
->>> The patch fix the bug. However, the kernel crashed very quickly after running
->>> stress tests for a short while:
->>
->>This is not a good way of fixing it. How about not asking for memory from
->>nodes that are memoryless? Use numa_mem_id() which gives you the next node
->>that has memory instead of numa_node_id() (gives you the current node
->>regardless if it has memory or not).
->
->diff --git a/mm/slub.c b/mm/slub.c
->index 545a170..a1c6040 100644
->--- a/mm/slub.c
->+++ b/mm/slub.c
->@@ -1700,6 +1700,9 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
-> 	void *object;
->	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
->
->+	if (!node_present_pages(searchnode))
->+		searchnode = numa_mem_id();
->+
->	object = get_partial_node(s, get_node(s, searchnode), c, flags);
->	if (object || node != NUMA_NO_NODE)
->		return object;
->
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/perf/power8-pmu.c | 144 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 144 insertions(+)
 
-The bug still can't be fixed w/ this patch. 
-
-Regards,
-Wanpeng Li 
-
->--
->To unsubscribe, send a message with 'unsubscribe linux-mm' in
->the body to majordomo@kvack.org.  For more info on Linux MM,
->see: http://www.linux-mm.org/ .
->Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index a3f7abd..96cee20 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -25,6 +25,37 @@
+ #define PM_BRU_FIN			0x10068
+ #define PM_BR_MPRED_CMPL		0x400f6
+ 
++/* All L1 D cache load references counted at finish, gated by reject */
++#define PM_LD_REF_L1			0x100ee
++/* Load Missed L1 */
++#define PM_LD_MISS_L1			0x3e054
++/* Store Missed L1 */
++#define PM_ST_MISS_L1			0x300f0
++/* L1 cache data prefetches */
++#define PM_L1_PREF			0x0d8b8
++/* Instruction fetches from L1 */
++#define PM_INST_FROM_L1			0x04080
++/* Demand iCache Miss */
++#define PM_L1_ICACHE_MISS		0x200fd
++/* Instruction Demand sectors wriittent into IL1 */
++#define PM_L1_DEMAND_WRITE		0x0408c
++/* Instruction prefetch written into IL1 */
++#define PM_IC_PREF_WRITE		0x0408e
++/* The data cache was reloaded from local core's L3 due to a demand load */
++#define PM_DATA_FROM_L3			0x4c042
++/* Demand LD - L3 Miss (not L2 hit and not L3 hit) */
++#define PM_DATA_FROM_L3MISS		0x300fe
++/* All successful D-side store dispatches for this thread */
++#define PM_L2_ST			0x17080
++/* All successful D-side store dispatches for this thread that were L2 Miss */
++#define PM_L2_ST_MISS			0x17082
++/* Total HW L3 prefetches(Load+store) */
++#define PM_L3_PREF_ALL			0x4e052
++/* Data PTEG reload */
++#define PM_DTLB_MISS			0x300fc
++/* ITLB Reloaded */
++#define PM_ITLB_MISS			0x400fc
++
+ 
+ /*
+  * Raw event encoding for POWER8:
+@@ -557,6 +588,8 @@ static int power8_generic_events[] = {
+ 	[PERF_COUNT_HW_INSTRUCTIONS] =			PM_INST_CMPL,
+ 	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] =		PM_BRU_FIN,
+ 	[PERF_COUNT_HW_BRANCH_MISSES] =			PM_BR_MPRED_CMPL,
++	[PERF_COUNT_HW_CACHE_REFERENCES] =		PM_LD_REF_L1,
++	[PERF_COUNT_HW_CACHE_MISSES] =			PM_LD_MISS_L1,
+ };
+ 
+ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
+@@ -596,6 +629,116 @@ static void power8_config_bhrb(u64 pmu_bhrb_filter)
+ 	mtspr(SPRN_MMCRA, (mfspr(SPRN_MMCRA) | pmu_bhrb_filter));
+ }
+ 
++#define C(x)	PERF_COUNT_HW_CACHE_##x
++
++/*
++ * Table of generalized cache-related events.
++ * 0 means not supported, -1 means nonsensical, other values
++ * are event codes.
++ */
++static int power8_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
++	[ C(L1D) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = PM_LD_REF_L1,
++			[ C(RESULT_MISS)   ] = PM_LD_MISS_L1,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = 0,
++			[ C(RESULT_MISS)   ] = PM_ST_MISS_L1,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = PM_L1_PREF,
++			[ C(RESULT_MISS)   ] = 0,
++		},
++	},
++	[ C(L1I) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = PM_INST_FROM_L1,
++			[ C(RESULT_MISS)   ] = PM_L1_ICACHE_MISS,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = PM_L1_DEMAND_WRITE,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = PM_IC_PREF_WRITE,
++			[ C(RESULT_MISS)   ] = 0,
++		},
++	},
++	[ C(LL) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = PM_DATA_FROM_L3,
++			[ C(RESULT_MISS)   ] = PM_DATA_FROM_L3MISS,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = PM_L2_ST,
++			[ C(RESULT_MISS)   ] = PM_L2_ST_MISS,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = PM_L3_PREF_ALL,
++			[ C(RESULT_MISS)   ] = 0,
++		},
++	},
++	[ C(DTLB) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = 0,
++			[ C(RESULT_MISS)   ] = PM_DTLB_MISS,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++	},
++	[ C(ITLB) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = 0,
++			[ C(RESULT_MISS)   ] = PM_ITLB_MISS,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++	},
++	[ C(BPU) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = PM_BRU_FIN,
++			[ C(RESULT_MISS)   ] = PM_BR_MPRED_CMPL,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++	},
++	[ C(NODE) ] = {
++		[ C(OP_READ) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++		[ C(OP_WRITE) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++		[ C(OP_PREFETCH) ] = {
++			[ C(RESULT_ACCESS) ] = -1,
++			[ C(RESULT_MISS)   ] = -1,
++		},
++	},
++};
++
++#undef C
++
+ static struct power_pmu power8_pmu = {
+ 	.name			= "POWER8",
+ 	.n_counter		= 6,
+@@ -611,6 +754,7 @@ static struct power_pmu power8_pmu = {
+ 	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB | PPMU_EBB,
+ 	.n_generic		= ARRAY_SIZE(power8_generic_events),
+ 	.generic_events		= power8_generic_events,
++	.cache_events		= &power8_cache_events,
+ 	.attr_groups		= power8_pmu_attr_groups,
+ 	.bhrb_nr		= 32,
+ };
+-- 
+1.8.3.2
