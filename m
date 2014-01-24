@@ -1,25 +1,40 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-we0-f178.google.com (mail-we0-f178.google.com
- [74.125.82.178])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9863C2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 20:08:32 +1100 (EST)
-Received: by mail-we0-f178.google.com with SMTP id t60so2306032wes.23
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 01:08:27 -0800 (PST)
-Message-ID: <52E22D8A.5000305@linaro.org>
-Date: Fri, 24 Jan 2014 10:08:26 +0100
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id 0BEE82C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 21:24:59 +1100 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Fri, 24 Jan 2014 03:24:56 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6205F3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 03:24:54 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0O8MRH112059052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 09:22:27 +0100
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0OAOrlF023753
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Jan 2014 03:24:53 -0700
+Message-ID: <52E23EA0.7010803@linux.vnet.ibm.com>
+Date: Fri, 24 Jan 2014 15:51:20 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH V2] cpuidle/governors: Fix logic in selection of idle
  states
 References: <20140117043351.21531.14192.stgit@preeti.in.ibm.com>
  <52DF815D.50104@linaro.org> <52E0F9ED.2010506@linux.vnet.ibm.com>
-In-Reply-To: <52E0F9ED.2010506@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
+ <52E22D8A.5000305@linaro.org>
+In-Reply-To: <52E22D8A.5000305@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, tuukka.tikkanen@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -30,363 +45,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
-> Hi Daniel,
->
-> Thank you for the review.
->
-> On 01/22/2014 01:59 PM, Daniel Lezcano wrote:
->> On 01/17/2014 05:33 AM, Preeti U Murthy wrote:
+On 01/24/2014 02:38 PM, Daniel Lezcano wrote:
+> On 01/23/2014 12:15 PM, Preeti U Murthy wrote:
+>> Hi Daniel,
+>>
+>> Thank you for the review.
+>>
+>> On 01/22/2014 01:59 PM, Daniel Lezcano wrote:
+>>> On 01/17/2014 05:33 AM, Preeti U Murthy wrote:
+>>>>
+>>>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>>>> index a55e68f..831b664 100644
+>>>> --- a/drivers/cpuidle/cpuidle.c
+>>>> +++ b/drivers/cpuidle/cpuidle.c
+>>>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>>>
+>>>>        /* ask the governor for the next state */
+>>>>        next_state = cpuidle_curr_governor->select(drv, dev);
+>>>> +
+>>>> +    dev->last_residency = 0;
+>>>>        if (need_resched()) {
+>>>> -        dev->last_residency = 0;
 >>>
->>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->>> index a55e68f..831b664 100644
->>> --- a/drivers/cpuidle/cpuidle.c
->>> +++ b/drivers/cpuidle/cpuidle.c
->>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>> Why do you need to do this change ? ^^^^^
+>>
+>> So as to keep the last_residency consistent with the case that this patch
+>> addresses: where no idle state could be selected due to strict latency
+>> requirements or disabled states and hence the cpu exits without entering
+>> idle. Else it would contain the stale value from the previous idle state
+>> entry.
+>>
+>> But coming to think of it dev->last_residency is not used when the last
+>> entered idle state index is -1.
+>>
+>> So I have reverted this change as well in the revised patch below along
+>> with mentioning the reason in the last paragraph of the changelog.
+>>
 >>>
->>>        /* ask the governor for the next state */
->>>        next_state = cpuidle_curr_governor->select(drv, dev);
->>> +
->>> +    dev->last_residency = 0;
->>>        if (need_resched()) {
->>> -        dev->last_residency = 0;
->>
->> Why do you need to do this change ? ^^^^^
->
-> So as to keep the last_residency consistent with the case that this patch
-> addresses: where no idle state could be selected due to strict latency
-> requirements or disabled states and hence the cpu exits without entering
-> idle. Else it would contain the stale value from the previous idle state
-> entry.
->
-> But coming to think of it dev->last_residency is not used when the last
-> entered idle state index is -1.
->
-> So I have reverted this change as well in the revised patch below along
-> with mentioning the reason in the last paragraph of the changelog.
->
->>
->>>            /* give the governor an opportunity to reflect on the
->>> outcome */
->>>            if (cpuidle_curr_governor->reflect)
->>>                cpuidle_curr_governor->reflect(dev, next_state);
->>> @@ -140,6 +141,18 @@ int cpuidle_idle_call(void)
->>>            return 0;
->>>        }
+>>>>            /* give the governor an opportunity to reflect on the
+>>>> outcome */
+>>>>            if (cpuidle_curr_governor->reflect)
+>>>>                cpuidle_curr_governor->reflect(dev, next_state);
+>>>> @@ -140,6 +141,18 @@ int cpuidle_idle_call(void)
+>>>>            return 0;
+>>>>        }
+>>>>
+>>>> +    /* Unlike in the need_resched() case, we return here because the
+>>>> +     * governor did not find a suitable idle state. However idle is
+>>>> still
+>>>> +     * in progress as we are not asked to reschedule. Hence we return
+>>>> +     * without enabling interrupts.
 >>>
->>> +    /* Unlike in the need_resched() case, we return here because the
->>> +     * governor did not find a suitable idle state. However idle is
->>> still
->>> +     * in progress as we are not asked to reschedule. Hence we return
->>> +     * without enabling interrupts.
+>>> That will lead to a WARN.
+>>>
+>>>> +     * NOTE: The return code should still be success, since the
+>>>> verdict of this
+>>>> +     * call is "do not enter any idle state" and not a failed call
+>>>> due to
+>>>> +     * errors.
+>>>> +     */
+>>>> +    if (next_state < 0)
+>>>> +        return 0;
+>>>> +
+>>>
+>>> Returning from here breaks the symmetry of the trace.
 >>
->> That will lead to a WARN.
+>> I have addressed the above concerns in the patch found below.
+>> Does the rest of the patch look sound?
 >>
->>> +     * NOTE: The return code should still be success, since the
->>> verdict of this
->>> +     * call is "do not enter any idle state" and not a failed call
->>> due to
->>> +     * errors.
->>> +     */
->>> +    if (next_state < 0)
->>> +        return 0;
->>> +
+>> Regards
+>> Preeti U Murthy
 >>
->> Returning from here breaks the symmetry of the trace.
->
-> I have addressed the above concerns in the patch found below.
-> Does the rest of the patch look sound?
->
-> Regards
-> Preeti U Murthy
->
-> ----------------------------------------------------------------------
->
-> cpuidle/governors: Fix logic in selection of idle states
->
-> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->
-> The cpuidle governors today are not handling scenarios where no idle state
-> can be chosen. Such scenarios coud arise if the user has disabled all the
-> idle states at runtime or the latency requirement from the cpus is very strict.
->
-> The menu governor returns 0th index of the idle state table when no other
-> idle state is suitable. This is even when the idle state corresponding to this
-> index is disabled or the latency requirement is strict and the exit_latency
-> of the lowest idle state is also not acceptable. Hence this patch
-> fixes this logic in the menu governor by defaulting to an idle state index
-> of -1 unless any other state is suitable.
->
-> The ladder governor needs a few more fixes in addition to that required in the
-> menu governor. When the ladder governor decides to demote the idle state of a
-> CPU, it does not check if the lower idle states are enabled. Add this logic
-> in addition to the logic where it chooses an index of -1 if it can neither
-> promote or demote the idle state of a cpu nor can it choose the current idle
-> state.
->
-> The cpuidle_idle_call() will return back if the governor decides upon not
-> entering any idle state. However it cannot return an error code because all
-> archs have the logic today that if the call to cpuidle_idle_call() fails, it
-> means that the cpuidle driver failed to *function*; for instance due to
-> errors during registration. As a result they end up deciding upon a
-> default idle state on their own, which could very well be a deep idle state.
-> This is incorrect in cases where no idle state is suitable.
->
-> Besides for the scenario that this patch is addressing, the call actually
-> succeeds. Its just that no idle state is thought to be suitable by the governors.
-> Under such a circumstance return success code without entering any idle
-> state.
->
-> The consequence of this patch additionally  on the menu governor is that as
-> long as a valid idle state cannot be chosen, the cpuidle statistics that this
-> governor uses to predict the next idle state remain untouched from the last
-> valid idle state. This is because an idle state is not even being predicted
-> in this path, hence there is no point correcting the prediction either.
->
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->
-> Changes from V1:https://lkml.org/lkml/2014/1/14/26
->
-> 1. Change the return code to success from -EINVAL due to the reason mentioned
-> in the changelog.
-> 2. Add logic that the patch is addressing in the ladder governor as well.
-> 3. Added relevant comments and removed redundant logic as suggested in the
-> above thread.
-> ---
->   drivers/cpuidle/cpuidle.c          |   15 +++++
->   drivers/cpuidle/governors/ladder.c |  101 ++++++++++++++++++++++++++----------
->   drivers/cpuidle/governors/menu.c   |    7 +-
->   3 files changed, 90 insertions(+), 33 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index a55e68f..19d17e8 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
->
->   	/* ask the governor for the next state */
->   	next_state = cpuidle_curr_governor->select(drv, dev);
-> +
-> +	dev->last_residency = 0;
->   	if (need_resched()) {
+>> ----------------------------------------------------------------------
+>>
+>> cpuidle/governors: Fix logic in selection of idle states
+>>
+>> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>
+>> The cpuidle governors today are not handling scenarios where no idle
+>> state
+>> can be chosen. Such scenarios coud arise if the user has disabled all the
+>> idle states at runtime or the latency requirement from the cpus is
+>> very strict.
+>>
+>> The menu governor returns 0th index of the idle state table when no other
+>> idle state is suitable. This is even when the idle state corresponding
+>> to this
+>> index is disabled or the latency requirement is strict and the
+>> exit_latency
+>> of the lowest idle state is also not acceptable. Hence this patch
+>> fixes this logic in the menu governor by defaulting to an idle state
+>> index
+>> of -1 unless any other state is suitable.
+>>
+>> The ladder governor needs a few more fixes in addition to that
+>> required in the
+>> menu governor. When the ladder governor decides to demote the idle
+>> state of a
+>> CPU, it does not check if the lower idle states are enabled. Add this
+>> logic
+>> in addition to the logic where it chooses an index of -1 if it can
+>> neither
+>> promote or demote the idle state of a cpu nor can it choose the
+>> current idle
+>> state.
+>>
+>> The cpuidle_idle_call() will return back if the governor decides upon not
+>> entering any idle state. However it cannot return an error code
+>> because all
+>> archs have the logic today that if the call to cpuidle_idle_call()
+>> fails, it
+>> means that the cpuidle driver failed to *function*; for instance due to
+>> errors during registration. As a result they end up deciding upon a
+>> default idle state on their own, which could very well be a deep idle
+>> state.
+>> This is incorrect in cases where no idle state is suitable.
+>>
+>> Besides for the scenario that this patch is addressing, the call actually
+>> succeeds. Its just that no idle state is thought to be suitable by the
+>> governors.
+>> Under such a circumstance return success code without entering any idle
+>> state.
+>>
+>> The consequence of this patch additionally  on the menu governor is
+>> that as
+>> long as a valid idle state cannot be chosen, the cpuidle statistics
+>> that this
+>> governor uses to predict the next idle state remain untouched from the
+>> last
+>> valid idle state. This is because an idle state is not even being
+>> predicted
+>> in this path, hence there is no point correcting the prediction either.
+>>
+>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>>
+>> Changes from V1:https://lkml.org/lkml/2014/1/14/26
+>>
+>> 1. Change the return code to success from -EINVAL due to the reason
+>> mentioned
+>> in the changelog.
+>> 2. Add logic that the patch is addressing in the ladder governor as well.
+>> 3. Added relevant comments and removed redundant logic as suggested in
+>> the
+>> above thread.
+>> ---
+>>   drivers/cpuidle/cpuidle.c          |   15 +++++
+>>   drivers/cpuidle/governors/ladder.c |  101
+>> ++++++++++++++++++++++++++----------
+>>   drivers/cpuidle/governors/menu.c   |    7 +-
+>>   3 files changed, 90 insertions(+), 33 deletions(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index a55e68f..19d17e8 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -131,8 +131,9 @@ int cpuidle_idle_call(void)
+>>
+>>       /* ask the governor for the next state */
+>>       next_state = cpuidle_curr_governor->select(drv, dev);
+>> +
+>> +    dev->last_residency = 0;
+>>       if (need_resched()) {
+> 
+> What about if (need_resched() || next_state < 0) ?
 
-What about if (need_resched() || next_state < 0) ?
+Hmm.. I feel we need to distinguish between the need_resched() scenario
+and the scenario when no idle state was suitable through the trace
+points at-least.
 
-> -		dev->last_residency = 0;
->   		/* give the governor an opportunity to reflect on the outcome */
->   		if (cpuidle_curr_governor->reflect)
->   			cpuidle_curr_governor->reflect(dev, next_state);
-> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
->   	}
->
->   	trace_cpu_idle_rcuidle(next_state, dev->cpu);
-> +	/*
-> +	 * NOTE: The return code should still be success, since the verdict of
-> +	 * this call is "do not enter any idle state". It is not a failed call
-> +	 * due to errors.
-> +	 */
-> +	if (next_state < 0) {
-> +		entered_state = next_state;
-> +		local_irq_enable();
-> +		goto out;
-> +	}
->
->   	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
->
-> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
->   	if (broadcast)
->   		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
->
-> -	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
-> +out:	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->
->   	/* give the governor an opportunity to reflect on the outcome */
->   	if (cpuidle_curr_governor->reflect)
-> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> index 9f08e8c..7e93aaa 100644
-> --- a/drivers/cpuidle/governors/ladder.c
-> +++ b/drivers/cpuidle/governors/ladder.c
-> @@ -58,6 +58,36 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
->   	ldev->last_state_idx = new_idx;
->   }
->
-> +static int can_promote(struct ladder_device *ldev, int last_idx,
-> +				int last_residency)
-> +{
-> +	struct ladder_device_state *last_state;
-> +
-> +	last_state = &ldev->states[last_idx];
-> +	if (last_residency > last_state->threshold.promotion_time) {
-> +		last_state->stats.promotion_count++;
-> +		last_state->stats.demotion_count = 0;
-> +		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count)
-> +			return 1;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static int can_demote(struct ladder_device *ldev, int last_idx,
-> +			int last_residency)
-> +{
-> +	struct ladder_device_state *last_state;
-> +
-> +	last_state = &ldev->states[last_idx];
-> +	if (last_residency < last_state->threshold.demotion_time) {
-> +		last_state->stats.demotion_count++;
-> +		last_state->stats.promotion_count = 0;
-> +		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count)
-> +			return 1;
-> +	}
-> +	return 0;
-> +}
-> +
->   /**
->    * ladder_select_state - selects the next state to enter
->    * @drv: cpuidle driver
-> @@ -73,29 +103,33 @@ static int ladder_select_state(struct cpuidle_driver *drv,
->
->   	/* Special case when user has set very strict latency requirement */
->   	if (unlikely(latency_req == 0)) {
-> -		ladder_do_selection(ldev, last_idx, 0);
-> -		return 0;
-> +		if (last_idx >= 0)
-> +			ladder_do_selection(ldev, last_idx, -1);
-> +		goto out;
->   	}
->
-> -	last_state = &ldev->states[last_idx];
-> -
-> -	if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
-> -		last_residency = cpuidle_get_last_residency(dev) - \
-> -					 drv->states[last_idx].exit_latency;
-> +	if (last_idx >= 0) {
-> +		if (drv->states[last_idx].flags & CPUIDLE_FLAG_TIME_VALID) {
-> +			last_residency = cpuidle_get_last_residency(dev) - \
-> +						 drv->states[last_idx].exit_latency;
-> +		} else {
-> +			last_state = &ldev->states[last_idx];
-> +			last_residency = last_state->threshold.promotion_time + 1;
-> +		}
->   	}
-> -	else
-> -		last_residency = last_state->threshold.promotion_time + 1;
->
->   	/* consider promotion */
->   	if (last_idx < drv->state_count - 1 &&
->   	    !drv->states[last_idx + 1].disabled &&
->   	    !dev->states_usage[last_idx + 1].disable &&
-> -	    last_residency > last_state->threshold.promotion_time &&
->   	    drv->states[last_idx + 1].exit_latency <= latency_req) {
-> -		last_state->stats.promotion_count++;
-> -		last_state->stats.demotion_count = 0;
-> -		if (last_state->stats.promotion_count >= last_state->threshold.promotion_count) {
-> -			ladder_do_selection(ldev, last_idx, last_idx + 1);
-> +		if (last_idx >= 0) {
-> +			if (can_promote(ldev, last_idx, last_residency)) {
-> +				ladder_do_selection(ldev, last_idx, last_idx + 1);
-> +				return last_idx + 1;
-> +			}
-> +		} else {
-> +			ldev->last_state_idx = last_idx + 1;
->   			return last_idx + 1;
->   		}
->   	}
-> @@ -107,26 +141,36 @@ static int ladder_select_state(struct cpuidle_driver *drv,
->   	    drv->states[last_idx].exit_latency > latency_req)) {
->   		int i;
->
-> -		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
-> -			if (drv->states[i].exit_latency <= latency_req)
-> +		for (i = last_idx - 1; i >= CPUIDLE_DRIVER_STATE_START; i--) {
-> +			if (drv->states[i].exit_latency <= latency_req &&
-> +				!(drv->states[i].disabled || dev->states_usage[i].disable))
->   				break;
->   		}
-> -		ladder_do_selection(ldev, last_idx, i);
-> -		return i;
-> +		if (i >= 0) {
-> +			ladder_do_selection(ldev, last_idx, i);
-> +			return i;
-> +		}
-> +		goto out;
->   	}
->
-> -	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
-> -	    last_residency < last_state->threshold.demotion_time) {
-> -		last_state->stats.demotion_count++;
-> -		last_state->stats.promotion_count = 0;
-> -		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
-> -			ladder_do_selection(ldev, last_idx, last_idx - 1);
-> -			return last_idx - 1;
-> +	if (last_idx > CPUIDLE_DRIVER_STATE_START) {
-> +		int i = last_idx - 1;
-> +
-> +		if (can_demote(ldev, last_idx, last_residency) &&
-> +			!(drv->states[i].disabled || dev->states_usage[i].disable)) {
-> +			ladder_do_selection(ldev, last_idx, i);
-> +			return i;
->   		}
-> +		/* We come here when the last_idx is still a suitable idle state,
-> +		 * just that  promotion or demotion is not ideal.
-> +		 */
-> +		ldev->last_state_idx = last_idx;
-> +		return last_idx;
->   	}
->
-> -	/* otherwise remain at the current state */
-> -	return last_idx;
-> +	/* we come here if no idle state is suitable */
-> +out:	ldev->last_state_idx = -1;
-> +	return ldev->last_state_idx;
->   }
->
->   /**
-> @@ -166,7 +210,8 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
->   /**
->    * ladder_reflect - update the correct last_state_idx
->    * @dev: the CPU
-> - * @index: the index of actual state entered
-> + * @index: the index of actual state entered or -1 if no idle state is
-> + * suitable.
->    */
->   static void ladder_reflect(struct cpuidle_device *dev, int index)
->   {
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index cf7f2f0..e9f17ce 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -297,12 +297,12 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->   		data->needs_update = 0;
->   	}
->
-> -	data->last_state_idx = 0;
-> +	data->last_state_idx = -1;
->   	data->exit_us = 0;
->
->   	/* Special case when user has set very strict latency requirement */
->   	if (unlikely(latency_req == 0))
-> -		return 0;
-> +		return data->last_state_idx;
->
->   	/* determine the expected residency time, round up */
->   	t = ktime_to_timespec(tick_nohz_get_sleep_length());
-> @@ -368,7 +368,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->   /**
->    * menu_reflect - records that data structures need update
->    * @dev: the CPU
-> - * @index: the index of actual entered state
-> + * @index: the index of actual entered state or -1 if no idle state is
-> + * suitable.
->    *
->    * NOTE: it's important to be fast here because this operation will add to
->    *       the overall exit latency.
->
->
+This could help while debugging when we could find situations where
+there are no tasks to run, yet the cpu is not entering any idle state.
+The traces could help clearly point that no idle state was thought
+suitable by the governor. Of course there are many other means to find
+this out, but this seems rather straightforward. Hence having the
+condition next_state < 0 between trace_cpu_idle*() would be apt IMHO.
 
+Regards
+Preeti U Murthy
 
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+> 
+>> -        dev->last_residency = 0;
+>>           /* give the governor an opportunity to reflect on the
+>> outcome */
+>>           if (cpuidle_curr_governor->reflect)
+>>               cpuidle_curr_governor->reflect(dev, next_state);
+>> @@ -141,6 +142,16 @@ int cpuidle_idle_call(void)
+>>       }
+>>
+>>       trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>> +    /*
+>> +     * NOTE: The return code should still be success, since the
+>> verdict of
+>> +     * this call is "do not enter any idle state". It is not a failed
+>> call
+>> +     * due to errors.
+>> +     */
+>> +    if (next_state < 0) {
+>> +        entered_state = next_state;
+>> +        local_irq_enable();
+>> +        goto out;
+>> +    }
+>>
+>>       broadcast = !!(drv->states[next_state].flags &
+>> CPUIDLE_FLAG_TIMER_STOP);
+>>
+>> @@ -156,7 +167,7 @@ int cpuidle_idle_call(void)
+>>       if (broadcast)
+>>           clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>>
+>> -    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>> +out:    trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>>
+>>       /* give the governor an opportunity to reflect on the outcome */
+>>       if (cpuidle_curr_governor->reflect)
