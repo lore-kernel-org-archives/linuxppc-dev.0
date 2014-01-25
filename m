@@ -1,15 +1,19 @@
 Return-Path: <prabhakar@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1AE3B2C0329
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 23:06:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2A2822C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Jan 2014 23:23:47 +1100 (EST)
+Received: from mail72-am1 (localhost [127.0.0.1])	by mail72-am1-R.bigfish.com
+ (Postfix) with ESMTP id D1B49400537	for
+ <linuxppc-dev@lists.ozlabs.org>; Sat,
+ 25 Jan 2014 12:23:41 +0000 (UTC)
 From: Prabhakar Kushwaha <prabhakar@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2][v6] powerpc/config: Enable memory driver
-Date: Sat, 25 Jan 2014 17:36:31 +0530
-Message-ID: <1390651591-24502-1-git-send-email-prabhakar@freescale.com>
+Subject: [PATCH] powerpc/config: Remove unnecssary CONFIG_FSL_IFC
+Date: Sat, 25 Jan 2014 17:53:32 +0530
+Message-ID: <1390652612-3553-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>
@@ -22,77 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As Freescale IFC controller has been moved to driver to driver/memory.
-
-So enable memory driver in powerpc config
+CONFIG_FSL_IFC gets enabled by Kconfig dependancies.
+So remove unnecssary define from the defconfigs
 
 Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 ---
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
- Branch next
+ arch/powerpc/configs/corenet64_smp_defconfig |    1 -
+ arch/powerpc/configs/mpc85xx_defconfig       |    1 -
+ arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 -
+ 3 files changed, 3 deletions(-)
 
- Changes for v2: Sending as it is
- Changes for v3: Sending as it is
- Changes for v4: Rebased to 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- changes for v5:
- 	- Rebased to branch next of 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- Changes for v6: Sending as it is
-
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- 4 files changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..087d437 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -142,6 +142,7 @@ CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_UIO=y
- CONFIG_STAGING=y
-+CONFIG_MEMORY=y
- CONFIG_VIRT_DRIVERS=y
- CONFIG_FSL_HV_MANAGER=y
- CONFIG_EXT2_FS=y
 diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..25b03f8 100644
+index 25b03f8..188e117 100644
 --- a/arch/powerpc/configs/corenet64_smp_defconfig
 +++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -129,6 +129,7 @@ CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- CONFIG_ISO9660_FS=m
+@@ -26,7 +26,6 @@ CONFIG_CORENET_GENERIC=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+ CONFIG_MATH_EMULATION_HW_UNIMPLEMENTED=y
+-CONFIG_FSL_IFC=y
+ CONFIG_PCIEPORTBUS=y
+ CONFIG_PCI_MSI=y
+ CONFIG_RAPIDIO=y
 diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 83d3550..cba638c 100644
+index cba638c..3c44a53 100644
 --- a/arch/powerpc/configs/mpc85xx_defconfig
 +++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -216,6 +216,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
+@@ -49,7 +49,6 @@ CONFIG_HIGHMEM=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+ CONFIG_FORCE_MAX_ZONEORDER=12
+-CONFIG_FSL_IFC=y
+ CONFIG_PCI=y
+ CONFIG_PCI_MSI=y
+ CONFIG_RAPIDIO=y
 diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4b68629..e315b8a 100644
+index e315b8a..dd55ed6 100644
 --- a/arch/powerpc/configs/mpc85xx_smp_defconfig
 +++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -217,6 +217,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
+@@ -52,7 +52,6 @@ CONFIG_HIGHMEM=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+ CONFIG_FORCE_MAX_ZONEORDER=12
+-CONFIG_FSL_IFC=y
+ CONFIG_PCI=y
+ CONFIG_PCI_MSI=y
+ CONFIG_RAPIDIO=y
 -- 
 1.7.9.5
