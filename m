@@ -1,36 +1,19 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <B48286@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BB8CA2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jan 2014 16:09:17 +1100 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Sun, 26 Jan 2014 15:09:12 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7657D2CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jan 2014 16:09:08 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0Q58tnW5964114
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jan 2014 16:08:55 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0Q597VN019797
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Jan 2014 16:09:07 +1100
-Message-ID: <1390712942.3911.8.camel@ThinkPad-T5421>
-Subject: [PATCH powerpc] cpuidle: fix per cpu accessing of cpuidle_devices
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- linux-pm@vger.kernel.org
-Date: Sun, 26 Jan 2014 13:09:02 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: deepthi@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
- b.zolnierkie@samsung.com, daniel.lezcano@linaro.org, kyungmin.park@samsung.com,
- Paul Mackerras <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id 6913D2C0091
+ for <linuxppc-dev@ozlabs.org>; Sun, 26 Jan 2014 18:48:23 +1100 (EST)
+From: Hou Zhiqiang <b48286@freescale.com>
+To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2] mtd: m25p80: Make the name of mtd_info fixed
+Date: Sun, 26 Jan 2014 14:16:43 +0800
+Message-ID: <1390717003-28699-1-git-send-email-b48286@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Hou Zhiqiang <b48286@freescale.com>,
+ mingkai.hu@freescale.com, computersforpeace@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,68 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch tries to fix following bad address accessing, seems caused by
-a typo in commit 7f74dc0f. cpuidle_devices is defined statically, so
-per_cpu should be used to access it. 
+To give spi flash layout using "mtdparts=..." in cmdline, we must
+give mtd_info a fixed name,because the cmdlinepart's parser will
+match the name given in cmdline with the mtd_info.
 
-[  204.774193] Unable to handle kernel paging request for data at address 0x00a7d000
-[  204.774215] Faulting instruction address: 0xc0000000006ee92c
-[  204.774225] Oops: Kernel access of bad area, sig: 11 [#1]
-[  204.774230] PREEMPT SMP NR_CPUS=16 DEBUG_PAGEALLOC NUMA pSeries
-[  204.774244] Modules linked in: binfmt_misc
-[  204.774254] CPU: 8 PID: 3590 Comm: bash Not tainted 3.13.0-08526-gb2e448e-dirty #2
-[  204.774262] task: c0000001faf40000 ti: c0000001fa904000 task.ti: c0000001fa904000
-[  204.774268] NIP: c0000000006ee92c LR: c0000000006ee920 CTR: c000000000064e94
-[  204.774275] REGS: c0000001fa907240 TRAP: 0300   Not tainted  (3.13.0-08526-gb2e448e-dirty)
-[  204.774281] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 22242424  XER: 20000000
-[  204.774303] CFAR: 0000000000009088 DAR: 0000000000a7d000 DSISR: 40000000 SOFTE: 1 
-GPR00: c0000000006ee920 c0000001fa9074c0 c000000000d764a8 c000000000c5d4c0 
-GPR04: 0000000000000010 0000000000000010 0000000000000000 0000000000000000 
-GPR08: ffffffffffffffff c0000000016564a8 ffffffffffffffff 0000000000000000 
-GPR12: 0000000000000002 c00000000f33e800 000000001012b3dc 0000000000000000 
-GPR16: 0000000000000000 0000000010129c58 0000000010129bf8 000000001012b948 
-GPR20: 0000000000000000 000000001012b3e4 000000001013ea90 0000000000000000 
-GPR24: c000000000c5d858 c0000000015f38e8 c000000000cb8b26 c000000000c664a8 
-GPR28: 0000000000000000 ffffffffffffffe5 0000000000a7d000 0000000000a7d000 
-[  204.774407] NIP [c0000000006ee92c] .cpuidle_disable_device+0x30/0xc4
-[  204.774413] LR [c0000000006ee920] .cpuidle_disable_device+0x24/0xc4
-[  204.774419] Call Trace:
-[  204.774424] [c0000001fa9074c0] [c0000000006ee920] .cpuidle_disable_device+0x24/0xc4 (unreliable)
-[  204.774435] [c0000001fa907540] [c0000000000652a4] .pseries_cpuidle_add_cpu_notifier+0xb8/0xe0
-[  204.774445] [c0000001fa9075c0] [c000000000855548] .notifier_call_chain+0x150/0x1c0
-[  204.774455] [c0000001fa907670] [c0000000000b3564] .__raw_notifier_call_chain+0x40/0x50
-[  204.774463] [c0000001fa907710] [c000000000079c40] .__cpu_notify+0x50/0x9c
-[  204.774472] [c0000001fa9077a0] [c00000000018a054] ._cpu_down+0x1ec/0x388
-[  204.774479] [c0000001fa9078b0] [c00000000018a234] .cpu_down+0x44/0x64
-[  204.774488] [c0000001fa907940] [c0000000005627bc] .cpu_subsys_offline+0x24/0x3c
-[  204.774497] [c0000001fa9079c0] [c00000000055b2a4] .device_offline+0xc8/0x120
-[  204.774504] [c0000001fa907a50] [c00000000055d000] .online_store+0x74/0xb0
-[  204.774512] [c0000001fa907b00] [c000000000559924] .dev_attr_store+0x60/0x78
-[  204.774520] [c0000001fa907ba0] [c00000000028cc78] .sysfs_kf_write+0x7c/0x9c
-[  204.774528] [c0000001fa907c30] [c000000000291ae8] .kernfs_fop_write+0x108/0x174
-[  204.774537] [c0000001fa907cd0] [c0000000001f8308] .vfs_write+0x110/0x21c
-[  204.774545] [c0000001fa907d70] [c0000000001f854c] .SyS_write+0x70/0xbc
-[  204.774553] [c0000001fa907e30] [c000000000009d88] syscall_exit+0x0/0x7c
-[  204.774560] Instruction dump:
-[  204.774565] 7c0802a6 f8010010 fbe1fff8 f821ff81 7c7f1b78 60000000 60000000 7fe3fb78 
-[  204.774582] 48000c89 60000000 2fbf0000 419e0084 <e81f0000> 780b17e1 41820078 2fa30000 
-[  204.774601] ---[ end trace edf1df93cf81e28d ]---
+Now, if use OF node, mtd_info's name will be spi->dev->name. It
+consists of spi_master->bus_num, and the spi_master->bus_num maybe
+dynamically fetched.
+So, give the mtd_info a new fiexd name "name.cs", "name" is name of
+spi_device_id and "cs" is chip-select in spi_dev.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
 ---
- arch/powerpc/platforms/pseries/processor_idle.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+v2:
+ - add check for return value of function kasprintf.
+ - whether the spi_master->bus_num is dynamical is determined by spi
+   controller driver, and it can't be check in this driver. So, we can
+   not initial the mtd_info's name by distinguishing the spi_master
+   bus_num dynamically-allocated or not.
 
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index 94134a5..197cadc 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -190,7 +190,7 @@ static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
- {
- 	int hotcpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev =
--			per_cpu_ptr(cpuidle_devices, hotcpu);
-+			per_cpu(cpuidle_devices, hotcpu);
+ drivers/mtd/devices/m25p80.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index eb558e8..1f494d2 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -1011,8 +1011,12 @@ static int m25p_probe(struct spi_device *spi)
  
- 	if (dev && cpuidle_get_driver()) {
- 		switch (action) {
+ 	if (data && data->name)
+ 		flash->mtd.name = data->name;
+-	else
+-		flash->mtd.name = dev_name(&spi->dev);
++	else {
++		flash->mtd.name = kasprintf(GFP_KERNEL, "%s.%d",
++				id->name, spi->chip_select);
++		if (!flash->mtd.name)
++			return -ENOMEM;
++	}
+ 
+ 	flash->mtd.type = MTD_NORFLASH;
+ 	flash->mtd.writesize = 1;
+-- 
+1.8.4.1
