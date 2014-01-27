@@ -1,30 +1,22 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wg0-f44.google.com (mail-wg0-f44.google.com [74.125.82.44])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 961E62C0099
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 19:43:16 +1100 (EST)
-Received: by mail-wg0-f44.google.com with SMTP id l18so5228646wgh.35
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 00:43:12 -0800 (PST)
-Message-ID: <52E61C20.50804@linaro.org>
-Date: Mon, 27 Jan 2014 09:43:12 +0100
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-To: Nicolas Pitre <nicolas.pitre@linaro.org>,
- Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 8/9] X86: remove redundant cpuidle_idle_call()
-References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
- <1390802904-28399-9-git-send-email-nicolas.pitre@linaro.org>
-In-Reply-To: <1390802904-28399-9-git-send-email-nicolas.pitre@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
- linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ by ozlabs.org (Postfix) with ESMTPS id D79872C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 20:11:48 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+Subject: Re: [PATCH v2] powernv: kvm: make _PAGE_NUMA take effect
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <8761pdk6x5.fsf@linux.vnet.ibm.com>
+Date: Mon, 27 Jan 2014 10:11:40 +0100
+Message-Id: <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
+References: <1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <8761pdk6x5.fsf@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: kvm-devel <kvm@vger.kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Liu Ping Fan <kernelfans@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,43 +26,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/27/2014 07:08 AM, Nicolas Pitre wrote:
-> The core idle loop now takes care of it.
->
-> Signed-off-by: Nicolas Pitre <nico@linaro.org>
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On 21.01.2014, at 10:42, Aneesh Kumar K.V =
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-> ---
->   arch/x86/kernel/process.c | 5 +----
->   1 file changed, 1 insertion(+), 4 deletions(-)
->
-> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-> index 3fb8d95ab8..4505e2a950 100644
-> --- a/arch/x86/kernel/process.c
-> +++ b/arch/x86/kernel/process.c
-> @@ -298,10 +298,7 @@ void arch_cpu_idle_dead(void)
->    */
->   void arch_cpu_idle(void)
->   {
-> -	if (cpuidle_idle_call())
-> -		x86_idle();
-> -	else
-> -		local_irq_enable();
+> Liu Ping Fan <kernelfans@gmail.com> writes:
+>=20
+>> To make sure that on host, the pages marked with _PAGE_NUMA result in =
+a fault
+>> when guest access them, we should force the checking when guest uses =
+hypercall
+>> to setup hpte.
+>>=20
+>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+>=20
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>=20
+> When we mark pte with _PAGE_NUMA we already call =
+mmu_notifier_invalidate_range_start and
+> mmu_notifier_invalidate_range_end, which will mark existing guest hpte
+> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting =
+new
+> guest hpte entries. This patch does that.=20
 
-For the record, it was pointless to enable the local irq here because it 
-is handled by the cpuidle framework when exiting the idle state.
+So what happens next? We insert a page into the HTAB without =
+HPTE_V_VALID set, so the guest will fail to use it. If the guest does an =
+H_READ on it it will suddenly turn to V_VALID though?
 
-> +	x86_idle();
->   }
->
->   /*
->
+I might need a crash course in the use of HPTE_V_ABSENT.
 
 
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Alex
