@@ -1,19 +1,31 @@
-Return-Path: <B48286@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6913D2C0091
- for <linuxppc-dev@ozlabs.org>; Sun, 26 Jan 2014 18:48:23 +1100 (EST)
-From: Hou Zhiqiang <b48286@freescale.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v2] mtd: m25p80: Make the name of mtd_info fixed
-Date: Sun, 26 Jan 2014 14:16:43 +0800
-Message-ID: <1390717003-28699-1-git-send-email-b48286@freescale.com>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from LGEMRELSE6Q.lge.com (LGEMRELSE6Q.lge.com [156.147.1.121])
+ by ozlabs.org (Postfix) with ESMTP id 9D9B22C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 16:58:20 +1100 (EST)
+Date: Mon, 27 Jan 2014 14:58:05 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140127055805.GA2471@lge.com>
+References: <alpine.DEB.2.10.1401201612340.28048@nuc>
+ <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
+ <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401240946530.12886@nuc>
+ <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+ <20140124232902.GB30361@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
+ <20140125001643.GA25344@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140125011041.GB25344@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Hou Zhiqiang <b48286@freescale.com>,
- mingkai.hu@freescale.com, computersforpeace@gmail.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140125011041.GB25344@linux.vnet.ibm.com>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +35,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To give spi flash layout using "mtdparts=..." in cmdline, we must
-give mtd_info a fixed name,because the cmdlinepart's parser will
-match the name given in cmdline with the mtd_info.
+On Fri, Jan 24, 2014 at 05:10:42PM -0800, Nishanth Aravamudan wrote:
+> On 24.01.2014 [16:25:58 -0800], David Rientjes wrote:
+> > On Fri, 24 Jan 2014, Nishanth Aravamudan wrote:
+> > 
+> > > Thank you for clarifying and providing  a test patch. I ran with this on
+> > > the system showing the original problem, configured to have 15GB of
+> > > memory.
+> > > 
+> > > With your patch after boot:
+> > > 
+> > > MemTotal:       15604736 kB
+> > > MemFree:         8768192 kB
+> > > Slab:            3882560 kB
+> > > SReclaimable:     105408 kB
+> > > SUnreclaim:      3777152 kB
+> > > 
+> > > With Anton's patch after boot:
+> > > 
+> > > MemTotal:       15604736 kB
+> > > MemFree:        11195008 kB
+> > > Slab:            1427968 kB
+> > > SReclaimable:     109184 kB
+> > > SUnreclaim:      1318784 kB
+> > > 
+> > > 
+> > > I know that's fairly unscientific, but the numbers are reproducible. 
+> > > 
 
-Now, if use OF node, mtd_info's name will be spi->dev->name. It
-consists of spi_master->bus_num, and the spi_master->bus_num maybe
-dynamically fetched.
-So, give the mtd_info a new fiexd name "name.cs", "name" is name of
-spi_device_id and "cs" is chip-select in spi_dev.
+Hello,
 
-Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
----
-v2:
- - add check for return value of function kasprintf.
- - whether the spi_master->bus_num is dynamical is determined by spi
-   controller driver, and it can't be check in this driver. So, we can
-   not initial the mtd_info's name by distinguishing the spi_master
-   bus_num dynamically-allocated or not.
+I think that there is one mistake on David's patch although I'm not sure
+that it is the reason for this result.
 
- drivers/mtd/devices/m25p80.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+With David's patch, get_partial() in new_slab_objects() doesn't work properly,
+because we only change node id in !node_match() case. If we meet just !freelist
+case, we pass node id directly to new_slab_objects(), so we always try to allocate
+new slab page regardless existence of partial pages. We should solve it.
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index eb558e8..1f494d2 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -1011,8 +1011,12 @@ static int m25p_probe(struct spi_device *spi)
+Could you try this one?
+
+Thanks.
+
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1698,8 +1698,10 @@ static void *get_partial(struct kmem_cache *s, gfp_t flags, int node,
+                struct kmem_cache_cpu *c)
+ {
+        void *object;
+-       int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
++       int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
  
- 	if (data && data->name)
- 		flash->mtd.name = data->name;
--	else
--		flash->mtd.name = dev_name(&spi->dev);
-+	else {
-+		flash->mtd.name = kasprintf(GFP_KERNEL, "%s.%d",
-+				id->name, spi->chip_select);
-+		if (!flash->mtd.name)
-+			return -ENOMEM;
-+	}
++       if (node != NUMA_NO_NODE && !node_present_pages(node))
++               searchnode = numa_mem_id();
+        object = get_partial_node(s, get_node(s, searchnode), c, flags);
+        if (object || node != NUMA_NO_NODE)
+                return object;
+@@ -2278,10 +2280,14 @@ redo:
  
- 	flash->mtd.type = MTD_NORFLASH;
- 	flash->mtd.writesize = 1;
--- 
-1.8.4.1
+        if (unlikely(!node_match(page, node))) {
+                stat(s, ALLOC_NODE_MISMATCH);
+-               deactivate_slab(s, page, c->freelist);
+-               c->page = NULL;
+-               c->freelist = NULL;
+-               goto new_slab;
++               if (unlikely(!node_present_pages(node)))
++                       node = numa_mem_id();
++               if (!node_match(page, node)) {
++                       deactivate_slab(s, page, c->freelist);
++                       c->page = NULL;
++                       c->freelist = NULL;
++                       goto new_slab;
++               }
+        }
+ 
+        /*
