@@ -1,29 +1,32 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 031CB2C0142
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 03:07:52 +1100 (EST)
-Date: Mon, 27 Jan 2014 16:07:36 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/9] ARM: get rid of arch_cpu_idle_prepare()
-Message-ID: <20140127160736.GP15937@n2100.arm.linux.org.uk>
-References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
- <1390802904-28399-2-git-send-email-nicolas.pitre@linaro.org>
- <52E6175F.1050401@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52E6175F.1050401@linaro.org>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linaro-kernel@lists.linaro.org,
- linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <cl@linux.com>
+Received: from qmta09.emeryville.ca.mail.comcast.net
+ (qmta09.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:96])
+ by ozlabs.org (Postfix) with ESMTP id 4E8FF2C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 03:18:46 +1100 (EST)
+Date: Mon, 27 Jan 2014 10:18:42 -0600 (CST)
+From: Christoph Lameter <cl@linux.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+In-Reply-To: <20140125011041.GB25344@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1401271016560.2215@nuc>
+References: <52dce7fe.e5e6420a.5ff6.ffff84a0SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401201612340.28048@nuc>
+ <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
+ <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401240946530.12886@nuc>
+ <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+ <20140124232902.GB30361@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
+ <20140125001643.GA25344@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140125011041.GB25344@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,27 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 27, 2014 at 09:22:55AM +0100, Daniel Lezcano wrote:
-> On 01/27/2014 07:08 AM, Nicolas Pitre wrote:
->> ARM and ARM64 are the only two architectures implementing
->> arch_cpu_idle_prepare() simply to call local_fiq_enable().
->>
->> We have secondary_start_kernel() already calling local_fiq_enable() and
->> this is done a second time in arch_cpu_idle_prepare() in that case. And
->> enabling FIQs has nothing to do with idling the CPU to start with.
->>
->> So let's introduce init_fiq_boot_cpu() to take care of FIQs on the boot
->> CPU and remove arch_cpu_idle_prepare(). This is now done a bit earlier
->> at late_initcall time but this shouldn't make a difference in practice
->> i.e. when FIQs are actually used.
->>
->> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+On Fri, 24 Jan 2014, Nishanth Aravamudan wrote:
+
+> As to cpu_to_node() being passed to kmalloc_node(), I think an
+> appropriate fix is to change that to cpu_to_mem()?
+
+Yup.
+
+> > Yeah, the default policy should be to fallback to local memory if the node
+> > passed is memoryless.
 >
-> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Thanks!
 
-What kind of review did you do when giving that attributation?
-
--- 
-FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
-in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
-Estimate before purchase was "up to 13.2Mbit".
+I would suggest to use NUMA_NO_NODE instead. That will fit any slab that
+we may be currently allocating from or can get a hold of and is mosty
+efficient.
