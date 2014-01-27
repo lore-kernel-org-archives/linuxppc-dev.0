@@ -1,10 +1,10 @@
 Return-Path: <nicolas.pitre@linaro.org>
 Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
- by ozlabs.org (Postfix) with ESMTP id D0AF82C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 17:24:18 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 60CD02C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 17:24:19 +1100 (EST)
 Received: from yoda.home ([66.130.143.177]) by VL-VM-MR006.ip.videotron.ca
  (Oracle Communications Messaging Exchange Server 7u4-22.01 64bit (built Apr 21
- 2011)) with ESMTP id <0N0100CJZQFBKVJ0@VL-VM-MR006.ip.videotron.ca> for
+ 2011)) with ESMTP id <0N0100CK1QFBKVJ0@VL-VM-MR006.ip.videotron.ca> for
  linuxppc-dev@lists.ozlabs.org; Mon, 27 Jan 2014 01:09:11 -0500 (EST)
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 To: Russell King <linux@arm.linux.org.uk>,
@@ -14,9 +14,10 @@ To: Russell King <linux@arm.linux.org.uk>,
  Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 3/9] idle: no more arch_cpu_idle_prepare() users
-Date: Mon, 27 Jan 2014 01:08:18 -0500
-Message-id: <1390802904-28399-4-git-send-email-nicolas.pitre@linaro.org>
+Subject: [PATCH 4/9] idle: move the cpuidle entry point to the generic idle
+ loop
+Date: Mon, 27 Jan 2014 01:08:19 -0500
+Message-id: <1390802904-28399-5-git-send-email-nicolas.pitre@linaro.org>
 In-reply-to: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
 References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
@@ -31,44 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-... so we can get rid of it entirely.
+In order to integrate cpuidle with the scheduler, we must have a better
+proximity in the core code with what cpuidle is doing and not delegate
+such interaction to arch code.
+
+Architectures implementing arch_cpu_idle() should simply enter
+a cheap idle mode in the absence of a proper cpuidle driver.
 
 Signed-off-by: Nicolas Pitre <nico@linaro.org>
 ---
- include/linux/cpu.h | 1 -
- kernel/cpu/idle.c   | 2 --
- 2 files changed, 3 deletions(-)
+ kernel/cpu/idle.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index 03e235ad1b..218fab7521 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -221,7 +221,6 @@ void cpu_idle(void);
- void cpu_idle_poll_ctrl(bool enable);
- 
- void arch_cpu_idle(void);
--void arch_cpu_idle_prepare(void);
- void arch_cpu_idle_enter(void);
- void arch_cpu_idle_exit(void);
- void arch_cpu_idle_dead(void);
 diff --git a/kernel/cpu/idle.c b/kernel/cpu/idle.c
-index 988573a9a3..4e327e211b 100644
+index 4e327e211b..a6f40ad9f8 100644
 --- a/kernel/cpu/idle.c
 +++ b/kernel/cpu/idle.c
-@@ -52,7 +52,6 @@ static inline int cpu_idle_poll(void)
- }
- 
- /* Weak implementations for optional arch specific functions */
--void __weak arch_cpu_idle_prepare(void) { }
- void __weak arch_cpu_idle_enter(void) { }
- void __weak arch_cpu_idle_exit(void) { }
- void __weak arch_cpu_idle_dead(void) { }
-@@ -136,6 +135,5 @@ void cpu_startup_entry(enum cpuhp_state state)
- 	boot_init_stack_canary();
- #endif
- 	__current_set_polling();
--	arch_cpu_idle_prepare();
- 	cpu_idle_loop();
- }
+@@ -3,6 +3,7 @@
+  */
+ #include <linux/sched.h>
+ #include <linux/cpu.h>
++#include <linux/cpuidle.h>
+ #include <linux/tick.h>
+ #include <linux/mm.h>
+ #include <linux/stackprotector.h>
+@@ -94,7 +95,8 @@ static void cpu_idle_loop(void)
+ 				if (!current_clr_polling_and_test()) {
+ 					stop_critical_timings();
+ 					rcu_idle_enter();
+-					arch_cpu_idle();
++					if (cpuidle_idle_call())
++						arch_cpu_idle();
+ 					WARN_ON_ONCE(irqs_disabled());
+ 					rcu_idle_exit();
+ 					start_critical_timings();
 -- 
 1.8.4.108.g55ea5f6
