@@ -1,14 +1,13 @@
 Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-we0-f174.google.com (mail-we0-f174.google.com
- [74.125.82.174])
+Received: from mail-wg0-f44.google.com (mail-wg0-f44.google.com [74.125.82.44])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 013BF2C0305
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 19:35:46 +1100 (EST)
-Received: by mail-we0-f174.google.com with SMTP id x55so4830226wes.19
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 00:35:43 -0800 (PST)
-Message-ID: <52E61A60.3030202@linaro.org>
-Date: Mon, 27 Jan 2014 09:35:44 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 961E62C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 19:43:16 +1100 (EST)
+Received: by mail-wg0-f44.google.com with SMTP id l18so5228646wgh.35
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 00:43:12 -0800 (PST)
+Message-ID: <52E61C20.50804@linaro.org>
+Date: Mon, 27 Jan 2014 09:43:12 +0100
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
 To: Nicolas Pitre <nicolas.pitre@linaro.org>,
@@ -18,10 +17,10 @@ To: Nicolas Pitre <nicolas.pitre@linaro.org>,
  Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>,
  Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 7/9] SH: remove redundant cpuidle_idle_call()
+Subject: Re: [PATCH 8/9] X86: remove redundant cpuidle_idle_call()
 References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
- <1390802904-28399-8-git-send-email-nicolas.pitre@linaro.org>
-In-Reply-To: <1390802904-28399-8-git-send-email-nicolas.pitre@linaro.org>
+ <1390802904-28399-9-git-send-email-nicolas.pitre@linaro.org>
+In-Reply-To: <1390802904-28399-9-git-send-email-nicolas.pitre@linaro.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
  linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -43,31 +42,29 @@ On 01/27/2014 07:08 AM, Nicolas Pitre wrote:
 Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 > ---
->   arch/sh/kernel/idle.c | 4 +---
->   1 file changed, 1 insertion(+), 3 deletions(-)
+>   arch/x86/kernel/process.c | 5 +----
+>   1 file changed, 1 insertion(+), 4 deletions(-)
 >
-> diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
-> index 2ea4483fd7..be616ee0cf 100644
-> --- a/arch/sh/kernel/idle.c
-> +++ b/arch/sh/kernel/idle.c
-> @@ -16,7 +16,6 @@
->   #include <linux/thread_info.h>
->   #include <linux/irqflags.h>
->   #include <linux/smp.h>
-> -#include <linux/cpuidle.h>
->   #include <linux/atomic.h>
->   #include <asm/pgalloc.h>
->   #include <asm/smp.h>
-> @@ -40,8 +39,7 @@ void arch_cpu_idle_dead(void)
->
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index 3fb8d95ab8..4505e2a950 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -298,10 +298,7 @@ void arch_cpu_idle_dead(void)
+>    */
 >   void arch_cpu_idle(void)
 >   {
 > -	if (cpuidle_idle_call())
-> -		sh_idle();
-> +	sh_idle();
+> -		x86_idle();
+> -	else
+> -		local_irq_enable();
+
+For the record, it was pointless to enable the local irq here because it 
+is handled by the cpuidle framework when exiting the idle state.
+
+> +	x86_idle();
 >   }
 >
->   void __init select_idle_routine(void)
+>   /*
 >
 
 
