@@ -1,10 +1,10 @@
 Return-Path: <nicolas.pitre@linaro.org>
 Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
- by ozlabs.org (Postfix) with ESMTP id 47AFA2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 17:24:22 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 1FD632C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 17:24:26 +1100 (EST)
 Received: from yoda.home ([66.130.143.177]) by VL-VM-MR006.ip.videotron.ca
  (Oracle Communications Messaging Exchange Server 7u4-22.01 64bit (built Apr 21
- 2011)) with ESMTP id <0N0100HJOQFBSKO0@VL-VM-MR006.ip.videotron.ca> for
+ 2011)) with ESMTP id <0N0100CK4QFBKVJ0@VL-VM-MR006.ip.videotron.ca> for
  linuxppc-dev@lists.ozlabs.org; Mon, 27 Jan 2014 01:09:11 -0500 (EST)
 From: Nicolas Pitre <nicolas.pitre@linaro.org>
 To: Russell King <linux@arm.linux.org.uk>,
@@ -14,9 +14,9 @@ To: Russell King <linux@arm.linux.org.uk>,
  Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 5/9] ARM: remove redundant cpuidle_idle_call()
-Date: Mon, 27 Jan 2014 01:08:20 -0500
-Message-id: <1390802904-28399-6-git-send-email-nicolas.pitre@linaro.org>
+Subject: [PATCH 7/9] SH: remove redundant cpuidle_idle_call()
+Date: Mon, 27 Jan 2014 01:08:22 -0500
+Message-id: <1390802904-28399-8-git-send-email-nicolas.pitre@linaro.org>
 In-reply-to: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
 References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
@@ -35,49 +35,30 @@ The core idle loop now takes care of it.
 
 Signed-off-by: Nicolas Pitre <nico@linaro.org>
 ---
- arch/arm/kernel/process.c | 16 +++++-----------
- 1 file changed, 5 insertions(+), 11 deletions(-)
+ arch/sh/kernel/idle.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
-index 725b8c95e0..34a59b7614 100644
---- a/arch/arm/kernel/process.c
-+++ b/arch/arm/kernel/process.c
-@@ -30,7 +30,6 @@
- #include <linux/uaccess.h>
- #include <linux/random.h>
- #include <linux/hw_breakpoint.h>
+diff --git a/arch/sh/kernel/idle.c b/arch/sh/kernel/idle.c
+index 2ea4483fd7..be616ee0cf 100644
+--- a/arch/sh/kernel/idle.c
++++ b/arch/sh/kernel/idle.c
+@@ -16,7 +16,6 @@
+ #include <linux/thread_info.h>
+ #include <linux/irqflags.h>
+ #include <linux/smp.h>
 -#include <linux/cpuidle.h>
- #include <linux/leds.h>
- #include <linux/reboot.h>
+ #include <linux/atomic.h>
+ #include <asm/pgalloc.h>
+ #include <asm/smp.h>
+@@ -40,8 +39,7 @@ void arch_cpu_idle_dead(void)
  
-@@ -133,7 +132,11 @@ EXPORT_SYMBOL_GPL(arm_pm_restart);
- 
- void (*arm_pm_idle)(void);
- 
--static void default_idle(void)
-+/*
-+ * Called from the core idle loop.
-+ */
-+
-+void arch_cpu_idle(void)
+ void arch_cpu_idle(void)
  {
- 	if (arm_pm_idle)
- 		arm_pm_idle();
-@@ -163,15 +166,6 @@ void arch_cpu_idle_dead(void)
- #endif
- 
- /*
-- * Called from the core idle loop.
-- */
--void arch_cpu_idle(void)
--{
 -	if (cpuidle_idle_call())
--		default_idle();
--}
--
--/*
-  * Called by kexec, immediately prior to machine_kexec().
-  *
-  * This must completely disable all secondary CPUs; simply causing those CPUs
+-		sh_idle();
++	sh_idle();
+ }
+ 
+ void __init select_idle_routine(void)
 -- 
 1.8.4.108.g55ea5f6
