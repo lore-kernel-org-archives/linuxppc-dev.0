@@ -1,23 +1,23 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wg0-f43.google.com (mail-wg0-f43.google.com [74.125.82.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F185D2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 04:21:40 +1100 (EST)
-Date: Mon, 27 Jan 2014 17:21:10 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id B97682C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 04:30:50 +1100 (EST)
+Received: by mail-wg0-f43.google.com with SMTP id y10so5958280wgg.22
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 09:30:45 -0800 (PST)
+Message-ID: <52E697C6.10809@linaro.org>
+Date: Mon, 27 Jan 2014 18:30:46 +0100
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+MIME-Version: 1.0
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH 1/9] ARM: get rid of arch_cpu_idle_prepare()
-Message-ID: <20140127172110.GR15937@n2100.arm.linux.org.uk>
 References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
  <1390802904-28399-2-git-send-email-nicolas.pitre@linaro.org>
  <52E6175F.1050401@linaro.org> <20140127160736.GP15937@n2100.arm.linux.org.uk>
- <52E69395.9020004@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52E69395.9020004@linaro.org>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+ <52E69395.9020004@linaro.org> <20140127172110.GR15937@n2100.arm.linux.org.uk>
+In-Reply-To: <20140127172110.GR15937@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linaro-kernel@lists.linaro.org,
  linux-sh@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
  Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org,
@@ -34,47 +34,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 27, 2014 at 06:12:53PM +0100, Daniel Lezcano wrote:
-> On 01/27/2014 05:07 PM, Russell King - ARM Linux wrote:
->> On Mon, Jan 27, 2014 at 09:22:55AM +0100, Daniel Lezcano wrote:
->>> On 01/27/2014 07:08 AM, Nicolas Pitre wrote:
->>>> ARM and ARM64 are the only two architectures implementing
->>>> arch_cpu_idle_prepare() simply to call local_fiq_enable().
+On 01/27/2014 06:21 PM, Russell King - ARM Linux wrote:
+> On Mon, Jan 27, 2014 at 06:12:53PM +0100, Daniel Lezcano wrote:
+>> On 01/27/2014 05:07 PM, Russell King - ARM Linux wrote:
+>>> On Mon, Jan 27, 2014 at 09:22:55AM +0100, Daniel Lezcano wrote:
+>>>> On 01/27/2014 07:08 AM, Nicolas Pitre wrote:
+>>>>> ARM and ARM64 are the only two architectures implementing
+>>>>> arch_cpu_idle_prepare() simply to call local_fiq_enable().
+>>>>>
+>>>>> We have secondary_start_kernel() already calling local_fiq_enable() and
+>>>>> this is done a second time in arch_cpu_idle_prepare() in that case. And
+>>>>> enabling FIQs has nothing to do with idling the CPU to start with.
+>>>>>
+>>>>> So let's introduce init_fiq_boot_cpu() to take care of FIQs on the boot
+>>>>> CPU and remove arch_cpu_idle_prepare(). This is now done a bit earlier
+>>>>> at late_initcall time but this shouldn't make a difference in practice
+>>>>> i.e. when FIQs are actually used.
+>>>>>
+>>>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
 >>>>
->>>> We have secondary_start_kernel() already calling local_fiq_enable() and
->>>> this is done a second time in arch_cpu_idle_prepare() in that case. And
->>>> enabling FIQs has nothing to do with idling the CPU to start with.
->>>>
->>>> So let's introduce init_fiq_boot_cpu() to take care of FIQs on the boot
->>>> CPU and remove arch_cpu_idle_prepare(). This is now done a bit earlier
->>>> at late_initcall time but this shouldn't make a difference in practice
->>>> i.e. when FIQs are actually used.
->>>>
->>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+>>>> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 >>>
->>> Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>> What kind of review did you do when giving that attributation?
 >>
->> What kind of review did you do when giving that attributation?
+>> I did the review to the best of my knowledge and with good will.
+>>
+>> I read your comment on this patch and I learnt one more thing.
+>>
+>> Today, I am smarter than yesterday and dumber than tomorrow :)
 >
-> I did the review to the best of my knowledge and with good will.
+> Just be aware that putting a comment along with the reviewed-by tag
+> is always a good idea.  I know that's a little more work, but this has
+> been raised a number of times by various people over the years.
 >
-> I read your comment on this patch and I learnt one more thing.
+> A reviewed-by tag on its own doesn't mean much, as it could mean that
+> you've just glanced over the code and decided "yea, it looks okay", or
+> it could mean that you've spent all day verifying that the code change
+> is indeed correct.
 >
-> Today, I am smarter than yesterday and dumber than tomorrow :)
+> Consequently, some will ignore emails which just contain a reviewed-by
+> attributation.
 
-Just be aware that putting a comment along with the reviewed-by tag
-is always a good idea.  I know that's a little more work, but this has
-been raised a number of times by various people over the years.
+Thanks for the clarification. I will take care of giving a comment next 
+time.
 
-A reviewed-by tag on its own doesn't mean much, as it could mean that
-you've just glanced over the code and decided "yea, it looks okay", or
-it could mean that you've spent all day verifying that the code change
-is indeed correct.
+   -- Daniel
 
-Consequently, some will ignore emails which just contain a reviewed-by
-attributation.
 
 -- 
-FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
-in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
-Estimate before purchase was "up to 13.2Mbit".
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
