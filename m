@@ -1,41 +1,31 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6E18C2C0078
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 02:57:19 +1100 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 27 Jan 2014 21:27:14 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id EF060394003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 21:27:09 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0RFv7KN40501306
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 21:27:07 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0RFv9m4018321
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 21:27:09 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH v2] powernv: kvm: make _PAGE_NUMA take effect
-In-Reply-To: <72133741-22DA-4477-B89F-E9C978FA294F@suse.de>
-References: <1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <8761pdk6x5.fsf@linux.vnet.ibm.com>
- <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
- <87wqhllnvm.fsf@linux.vnet.ibm.com>
- <72133741-22DA-4477-B89F-E9C978FA294F@suse.de>
-Date: Mon, 27 Jan 2014 21:27:08 +0530
-Message-ID: <87r47to1t7.fsf@linux.vnet.ibm.com>
+Return-Path: <catalin.marinas@arm.com>
+Received: from collaborate-mta1.arm.com (fw-tnat.austin.arm.com
+ [217.140.110.23]) by ozlabs.org (Postfix) with ESMTP id F114C2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 02:58:31 +1100 (EST)
+Date: Mon, 27 Jan 2014 15:57:55 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH 2/9] ARM64: get rid of arch_cpu_idle_prepare()
+Message-ID: <20140127155755.GH32608@arm.com>
+References: <1390802904-28399-1-git-send-email-nicolas.pitre@linaro.org>
+ <1390802904-28399-3-git-send-email-nicolas.pitre@linaro.org>
+ <20140127154315.GG32608@arm.com>
+ <alpine.LFD.2.11.1401271047240.1652@knanqh.ubzr>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kvm-devel <kvm@vger.kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Liu Ping Fan <kernelfans@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.2.11.1401271047240.1652@knanqh.ubzr>
+Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mundt <lethal@linux-sh.org>, Thomas Gleixner <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,52 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> writes:
+On Mon, Jan 27, 2014 at 03:51:02PM +0000, Nicolas Pitre wrote:
+> On Mon, 27 Jan 2014, Catalin Marinas wrote:
+> 
+> > On Mon, Jan 27, 2014 at 06:08:17AM +0000, Nicolas Pitre wrote:
+> > > ARM and ARM64 are the only two architectures implementing
+> > > arch_cpu_idle_prepare() simply to call local_fiq_enable().
+> > > 
+> > > We have secondary_start_kernel() already calling local_fiq_enable() and
+> > > this is done a second time in arch_cpu_idle_prepare() in that case. And
+> > > enabling FIQs has nothing to do with idling the CPU to start with.
+> > > 
+> > > So let's introduce init_fiq_boot_cpu() to take care of FIQs on the boot
+> > > CPU and remove arch_cpu_idle_prepare(). This is now done a bit earlier
+> > > at late_initcall time but this shouldn't make a difference in practice
+> > > given that FIQs are not currently used on ARM64.
+> > > 
+> > > Signed-off-by: Nicolas Pitre <nico@linaro.org>
+> > 
+> > For arm64, we could simply remove any reference to FIQs. I'm not aware
+> > of anyone using them.
+> 
+> OK. What if I sumply remove arch_cpu_idle_prepare() and let you do the 
+> remove the rest?
+> 
+> IMHO I'd simply remove local_fiq_{enable/disable}() from 
+> arm64/kernel/smp.c and leave the infrastructure in place in case someone 
+> needs it eventually.  In which case I could include that into my patch 
+> as well.
 
-> On 27.01.2014, at 11:28, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> Alexander Graf <agraf@suse.de> writes:
->> 
->>> On 21.01.2014, at 10:42, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>> 
->>>> Liu Ping Fan <kernelfans@gmail.com> writes:
->>>> 
->>>>> To make sure that on host, the pages marked with _PAGE_NUMA result in a fault
->>>>> when guest access them, we should force the checking when guest uses hypercall
->>>>> to setup hpte.
->>>>> 
->>>>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->>>> 
->>>> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>>> 
->>>> When we mark pte with _PAGE_NUMA we already call mmu_notifier_invalidate_range_start and
->>>> mmu_notifier_invalidate_range_end, which will mark existing guest hpte
->>>> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
->>>> guest hpte entries. This patch does that. 
->>> 
->>> So what happens next? We insert a page into the HTAB without
->>> HPTE_V_VALID set, so the guest will fail to use it. If the guest does
->>> an H_READ on it it will suddenly turn to V_VALID though?
->> 
->> As per the guest the entry is valid, so yes an hread should return a
->> valid entry. But in real hpte we would mark it not valid.
->
-> Ah, yes.
->
->> 
->>> 
->>> I might need a crash course in the use of HPTE_V_ABSENT.
->> 
->> When guest tries to access the address, the host will handle the fault.
->> 
->> kvmppc_hpte_hv_fault should give more info
->
-> Thanks for the pointer. So we fault it in lazily. Is there any
-> particular reason we can't do that on h_enter already? After all this
-> just means an additional roundtrip because the guest is pretty likely
-> to use the page it just entered, no?
+Sounds good. We can keep the local_fiq_*() functions but remove about 4
+calling sites (process.c and smp.c) until needed.
 
-We could get wrong numa fault information if we didn't do h_enter from
-the right node from which we faulted.
+Thanks.
 
--aneesh
+-- 
+Catalin
