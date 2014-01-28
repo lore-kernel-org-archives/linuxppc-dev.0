@@ -1,17 +1,17 @@
 Return-Path: <stewartb2@gmail.com>
-Received: from mail-ie0-x22e.google.com (mail-ie0-x22e.google.com
- [IPv6:2607:f8b0:4001:c03::22e])
+Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c05::22a])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D49D62C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 12:43:29 +1100 (EST)
-Received: by mail-ie0-f174.google.com with SMTP id tp5so6923386ieb.19
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 17:43:25 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 4417D2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 14:07:45 +1100 (EST)
+Received: by mail-ig0-f170.google.com with SMTP id m12so13190349iga.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Jan 2014 19:07:41 -0800 (PST)
 From: Brandon Stewart <stewartb2@gmail.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 1/1] Fixed some coding style problems
-Date: Mon, 27 Jan 2014 19:43:17 -0600
-Message-Id: <1390873397-4470-1-git-send-email-stewartb2@gmail.com>
+Subject: [PATCH 2/2] Fix coding style errors
+Date: Mon, 27 Jan 2014 21:07:34 -0600
+Message-Id: <1390878454-4329-1-git-send-email-stewartb2@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,70 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+I corrected several coding errors.
+
 Signed-off-by: Brandon Stewart <stewartb2@gmail.com>
 ---
- drivers/macintosh/adb.c | 16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ drivers/macintosh/adb.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-index 04a5049..53611de 100644
+index 53611de..dd3f49a 100644
 --- a/drivers/macintosh/adb.c
 +++ b/drivers/macintosh/adb.c
-@@ -38,7 +38,7 @@
- #include <linux/platform_device.h>
- #include <linux/mutex.h>
- 
--#include <asm/uaccess.h>
-+#include <linux/uaccess.h>
- #ifdef CONFIG_PPC
- #include <asm/prom.h>
- #include <asm/machdep.h>
-@@ -193,8 +193,7 @@ static int adb_scan_bus(void)
- 					break;
- 
- 				noMovement = 0;
--			}
--			else {
-+			} else {
- 				/*
- 				 * No devices left at address i; move the
- 				 * one(s) we moved to `highFree' back to i.
-@@ -502,7 +501,7 @@ void
- adb_input(unsigned char *buf, int nb, int autopoll)
- {
- 	int i, id;
--	static int dump_adb_input = 0;
-+	static int dump_adb_input;
- 	unsigned long flags;
- 	
- 	void (*handler)(unsigned char *, int, int);
-@@ -624,8 +623,7 @@ do_adb_query(struct adb_request *req)
+@@ -623,7 +623,7 @@ do_adb_query(struct adb_request *req)
  {
  	int	ret = -EINVAL;
  
--	switch(req->data[1])
--	{
-+	switch(req->data[1]) {
+-	switch(req->data[1]) {
++	switch (req->data[1]) {
  	case ADB_QUERY_GETDEVINFO:
  		if (req->nbytes < 3)
  			break;
-@@ -697,7 +695,7 @@ static ssize_t adb_read(struct file *file, char __user *buf,
- 	int ret = 0;
- 	struct adbdev_state *state = file->private_data;
- 	struct adb_request *req;
--	DECLARE_WAITQUEUE(wait,current);
-+	DECLARE_WAITQUEUE(wait, current);
- 	unsigned long flags;
- 
- 	if (count < 2)
-@@ -794,8 +792,8 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
+@@ -792,8 +792,9 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
  	}
  	/* Special case for ADB_BUSRESET request, all others are sent to
  	   the controller */
--	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
--		&&(req->data[1] == ADB_BUSRESET)) {
-+	else if ((req->data[0] == ADB_PACKET) && (count > 1)
-+		&& (req->data[1] == ADB_BUSRESET)) {
+-	else if ((req->data[0] == ADB_PACKET) && (count > 1)
+-		&& (req->data[1] == ADB_BUSRESET)) {
++	else if (req->data[0] == ADB_PACKET &&
++		req->data[1] == ADB_BUSRESET &&
++		count > 1) {
  		ret = do_adb_reset_bus();
  		up(&adb_probe_mutex);
  		atomic_dec(&state->n_pending);
