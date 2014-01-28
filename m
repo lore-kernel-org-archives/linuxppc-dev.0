@@ -2,18 +2,19 @@ Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B56FB2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 17:21:00 +1100 (EST)
-Date: Tue, 28 Jan 2014 07:20:48 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 25BCD2C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 17:22:44 +1100 (EST)
+Date: Tue, 28 Jan 2014 07:22:37 +0100
 From: Anatolij Gustschin <agust@denx.de>
-To: <benh@kernel.crashing.org>
-Subject: Re: Pull request: scottwood/linux.git
-Message-ID: <20140128072048.2e8d1778@crub>
-In-Reply-To: <20140118012236.GA23644@home.buserror.net>
-References: <20140118012236.GA23644@home.buserror.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Please pull 'next' branch of 5xxx tree
+Message-ID: <20140128072237.557849ab@crub>
+In-Reply-To: <1390888814.8524.13.camel@pasglop>
+References: <20140115221859.50866e87@crub> <20140128064614.511d36be@crub>
+ <1390888814.8524.13.camel@pasglop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,44 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben !
+On Tue, 28 Jan 2014 17:00:14 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On Fri, 17 Jan 2014 19:22:36 -0600
-Scott Wood <scottwood@freescale.com> wrote:
+> On Tue, 2014-01-28 at 06:46 +0100, Anatolij Gustschin wrote:
+> > Hi Ben !
+> > 
+> > On Wed, 15 Jan 2014 22:18:59 +0100
+> > Anatolij Gustschin <agust@denx.de> wrote:
+> > 
+> > > Hi Ben !
+> > > 
+> > > please pull mpc5xxx patches for v3.14:
+> > 
+> > Ping.
+> 
+> Oops, you sent that while I was on vacation and I missed it.
+> 
+> Next time, try to send your pull request earlier if possible, I'd like
+> to have most stuff together before -rc5. I'll try to send this one to
+> Linus after he has pulled my current one.
 
-> This contains a fix for a chroma_defconfig build break that was
-> introduced by e6500 tablewalk support, and a device tree binding patch
-> that missed the previous pull request due to some last-minute polishing.
-
-this one is still pending, too.
+Okay, I'll try to send it earlier next time.
 
 Thanks,
 
 Anatolij
-
-> The following changes since commit fac515db45207718168cb55ca4d0a390e43b61af:
-> 
->   Merge remote-tracking branch 'scott/next' into next (2014-01-15 14:22:35 +1100)
-> 
-> are available in the git repository at:
-> 
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-> 
-> for you to fetch changes up to 4b3cbc82a04485f6400cb5b227798daaa8512a23:
-> 
->   clk: corenet: Adds the clock binding (2014-01-17 19:01:27 -0600)
-> 
-> ----------------------------------------------------------------
-> Scott Wood (1):
->       powerpc/booke64: Guard e6500 tlb handler with CONFIG_PPC_FSL_BOOK3E
-> 
-> Tang Yuantian (1):
->       clk: corenet: Adds the clock binding
-> 
->  .../devicetree/bindings/clock/corenet-clock.txt    | 134 +++++++++++++++++++++
->  arch/powerpc/Kconfig                               |   1 +
->  arch/powerpc/mm/tlb_low_64e.S                      |   3 +-
->  arch/powerpc/mm/tlb_nohash.c                       |   2 +
->  4 files changed, 139 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/clock/corenet-clock.txt
