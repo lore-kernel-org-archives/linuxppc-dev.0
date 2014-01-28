@@ -1,22 +1,19 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8212F2C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 16:30:09 +1100 (EST)
-Received: from mail75-va3 (localhost [127.0.0.1])	by mail75-va3-R.bigfish.com
- (Postfix) with ESMTP id B303F480208	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 28 Jan 2014 05:30:04 +0000 (UTC)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2][v7] powerpc/config: Enable memory driver
-Date: Tue, 28 Jan 2014 10:59:56 +0530
-Message-ID: <1390886996-9375-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D9E0D2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 16:46:23 +1100 (EST)
+Date: Tue, 28 Jan 2014 06:46:14 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Please pull 'next' branch of 5xxx tree
+Message-ID: <20140128064614.511d36be@crub>
+In-Reply-To: <20140115221859.50866e87@crub>
+References: <20140115221859.50866e87@crub>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,78 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As Freescale IFC controller has been moved to driver to driver/memory.
+Hi Ben !
 
-So enable memory driver in powerpc config
+On Wed, 15 Jan 2014 22:18:59 +0100
+Anatolij Gustschin <agust@denx.de> wrote:
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
- Branch next
+> Hi Ben !
+> 
+> please pull mpc5xxx patches for v3.14:
 
- Changes for v2: Sending as it is
- Changes for v3: Sending as it is
- Changes for v4: Rebased to 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- changes for v5:
- 	- Rebased to branch next of 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- Changes for v6: Sending as it is
- Changes for v7: Sending as it is
+Ping.
 
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- 4 files changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..087d437 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -142,6 +142,7 @@ CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_UIO=y
- CONFIG_STAGING=y
-+CONFIG_MEMORY=y
- CONFIG_VIRT_DRIVERS=y
- CONFIG_FSL_HV_MANAGER=y
- CONFIG_EXT2_FS=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..25b03f8 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -129,6 +129,7 @@ CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- CONFIG_ISO9660_FS=m
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 83d3550..cba638c 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -216,6 +216,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4b68629..e315b8a 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -217,6 +217,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
--- 
-1.7.9.5
+> Switch mpc512x to the common clock framework and adapt mpc512x
+> drivers to use the new clock driver. Old PPC_CLOCK code is
+> removed entirely since there are no users any more.
+> 
+> All these patches have been in linux-next for more then
+> two weeks now.
+> 
+> Thanks,
+> Anatolij
+> 
+> The following changes since commit dece8ada993e1764a115bdff0f1effffaa5fc8dc:
+> 
+>   Merge branch 'merge' into next (2013-12-30 15:19:31 +1100)
+> 
+> are available in the git repository at:
+> 
+> 
+>   git://git.denx.de/linux-2.6-agust.git next
+> 
+> for you to fetch changes up to bc75059422338197ce487d338ac9c898761e1e61:
+> 
+>   powerpc/512x: dts: add MPC5125 clock specs (2014-01-12 18:59:50 +0100)
+> 
+> ----------------------------------------------------------------
+> Gerhard Sittig (20):
+>       dts: mpc512x: introduce dt-bindings/clock/ header
+>       dts: mpc512x: add clock related device tree specs
+>       clk: mpc512x: introduce COMMON_CLK for MPC512x (disabled)
+>       clk: mpc512x: add backwards compat to the CCF code
+>       dts: mpc512x: add clock specs for client lookups
+>       clk: mpc5xxx: switch to COMMON_CLK, retire PPC_CLOCK
+>       spi: mpc512x: adjust to OF based clock lookup
+>       serial: mpc512x: adjust for OF based clock lookup
+>       serial: mpc512x: setup the PSC FIFO clock as well
+>       USB: fsl-mph-dr-of: adjust for OF based clock lookup
+>       mtd: mpc5121_nfc: adjust for OF based clock lookup
+>       fsl-viu: adjust for OF based clock lookup
+>       net: can: mscan: adjust to common clock support for mpc512x
+>       net: can: mscan: remove non-CCF code for MPC512x
+>       powerpc/mpc512x: improve DIU related clock setup
+>       clk: mpc512x: remove migration support workarounds
+>       powerpc/512x: clk: minor comment updates
+>       powerpc/512x: clk: enforce even SDHC divider values
+>       powerpc/512x: clk: support MPC5121/5123/5125 SoC variants
+>       powerpc/512x: dts: add MPC5125 clock specs
+> 
+>  arch/powerpc/Kconfig                          |    5 -
+>  arch/powerpc/boot/dts/ac14xx.dts              |    7 +
+>  arch/powerpc/boot/dts/mpc5121.dtsi            |  113 ++-
+>  arch/powerpc/boot/dts/mpc5125twr.dts          |   53 +-
+>  arch/powerpc/include/asm/clk_interface.h      |   20 -
+>  arch/powerpc/include/asm/mpc5121.h            |    7 +-
+>  arch/powerpc/kernel/Makefile                  |    1 -
+>  arch/powerpc/kernel/clock.c                   |   82 --
+>  arch/powerpc/platforms/512x/Kconfig           |    2 +-
+>  arch/powerpc/platforms/512x/Makefile          |    3 +-
+>  arch/powerpc/platforms/512x/clock-commonclk.c | 1221 +++++++++++++++++++++++++
+>  arch/powerpc/platforms/512x/clock.c           |  754 ---------------
+>  arch/powerpc/platforms/512x/mpc512x_shared.c  |  169 ++--
+>  arch/powerpc/platforms/52xx/Kconfig           |    2 +-
+>  drivers/media/platform/fsl-viu.c              |    2 +-
+>  drivers/mtd/nand/mpc5121_nfc.c                |    2 +-
+>  drivers/net/can/mscan/mpc5xxx_can.c           |  270 +++---
+>  drivers/spi/spi-mpc512x-psc.c                 |   26 +-
+>  drivers/tty/serial/mpc52xx_uart.c             |   90 +-
+>  drivers/usb/host/fsl-mph-dr-of.c              |   13 +-
+>  include/dt-bindings/clock/mpc512x-clock.h     |   76 ++
+>  include/linux/clk-provider.h                  |   16 +
+>  22 files changed, 1840 insertions(+), 1094 deletions(-)
+>  delete mode 100644 arch/powerpc/include/asm/clk_interface.h
+>  delete mode 100644 arch/powerpc/kernel/clock.c
+>  create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
+>  delete mode 100644 arch/powerpc/platforms/512x/clock.c
+>  create mode 100644 include/dt-bindings/clock/mpc512x-clock.h
