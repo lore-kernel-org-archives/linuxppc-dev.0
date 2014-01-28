@@ -1,38 +1,38 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7EF642C0081
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 05:35:09 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3AD792C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 05:49:49 +1100 (EST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 28 Jan 2014 11:35:06 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 598CD1FF001B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 11:35:04 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0SIZ4G064618530
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 19:35:04 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0SIZ2iw022993
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 11:35:03 -0700
-Date: Tue, 28 Jan 2014 10:34:57 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: [PATCH] powerpc: enable CONFIG_HAVE_MEMORYLESS_NODES
-Message-ID: <20140128183457.GA9315@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 29 Jan 2014 04:49:47 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0B9392CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 05:49:44 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0SInUIN10617134
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 05:49:30 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0SInhIA010524
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 05:49:43 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: don't re-issue spinlock typedef that breaks
+ older gcc
+In-Reply-To: <52E7EDC4.3000102@windriver.com>
+References: <1390925817-27374-1-git-send-email-paul.gortmaker@windriver.com>
+ <87sis810dl.fsf@linux.vnet.ibm.com> <52E7EDC4.3000102@windriver.com>
+Date: Wed, 29 Jan 2014 00:19:38 +0530
+Message-ID: <87ppnc0wn1.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: David Rientjes <rientjes@google.com>, Pekka Enberg <penberg@kernel.org>,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Matt Mackall <mpm@selenic.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,32 +42,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard found an issue with an LPAR that had no memory in Node
-0. Christoph Lameter recommended, as one possible solution, to use
-numa_mem_id() for locality of the nearest memory node-wise. However,
-numa_mem_id() [and the other related APIs] are only useful if
-CONFIG_HAVE_MEMORYLESS_NODES is set. This is only the case for ia64
-currently, but clearly we can have memoryless nodes on ppc64. Add the
-Kconfig option and define it to be the same value as CONFIG_NUMA.
+Paul Gortmaker <paul.gortmaker@windriver.com> writes:
 
-On the LPAR in question, which was very inefficiently using slabs, this
-took the slab consumption at boot from roughly 7GB to roughly 4GB.
-    
----
-Ben, the only question I have wrt this change is if it's appropriate to
-change it for all powerpc configs (that have NUMA on)?
+> On 14-01-28 12:28 PM, Aneesh Kumar K.V wrote:
+>> Paul Gortmaker <paul.gortmaker@windriver.com> writes:
+>> 
+>>> Commit b3084f4db3aeb991c507ca774337c7e7893ed04f ("powerpc/thp: Fix
+>>> crash on mremap") added a "typedef struct spinlock spinlock_t;"
+>>> which on gcc 4.5.2 (and possibly other versions) causes many of:
+>>>
+>>> include/linux/spinlock_types.h:76:3: error: redefinition of typedef 'spinlock_t'
+>>> arch/powerpc/include/asm/pgtable-ppc64.h:563:25: note: previous declaration of 'spinlock_t' was here
+>>> In file included from include/linux/mutex.h:15:0,
+>>>                  from include/linux/notifier.h:13,
+>>>                  from include/linux/pm_qos.h:8,
+>>>                  from include/linux/netdevice.h:28,
+>>>                  from drivers/net/wireless/ath/wil6210/wil6210.h:20,
+>>>                  from drivers/net/wireless/ath/wil6210/debug.c:17:
+>>>
+>>> It appears that somewhere between gcc 4.5.2 and 4.6.3 this
+>>> redefinition restriction was lifted.  Using the proper header
+>>> from within !ASSEMBLY seems to fix it up in an acceptable way.
+>>>
+>>> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>>> ---
+>>>
+>> 
+>> 
+>> http://mid.gmane.org/1389939036.3000.7.camel@ThinkPad-T5421.cn.ibm.com
+>> 
+>> This was posted earlier.
+>
+> I see.  Well I guess Ben didn't use it since it is the same as the
+> temporary not-signed-off-by hack patch I posted earlier as well.
+>
+> https://lkml.org/lkml/2014/1/27/584
+>
+> I believe what I've posted here below to be the proper fix.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 25493a0..bb2d5fe 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -447,6 +447,9 @@ config NODES_SHIFT
- 	default "4"
- 	depends on NEED_MULTIPLE_NODES
- 
-+config HAVE_MEMORYLESS_NODES
-+	def_bool NUMA
-+
- config ARCH_SELECT_MEMORY_MODEL
- 	def_bool y
- 	depends on PPC64
+I had another variant which needed this
+
+http://mid.gmane.org/1388999012-14424-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
+
+BTW I had added the above struct spinlock; patch as the backport to
+stable 3.13 series. So if we are picking another one, we may need to
+update stable also
+
+-aneesh
