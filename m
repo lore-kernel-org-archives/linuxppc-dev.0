@@ -1,23 +1,36 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5BEC42C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 06:06:56 +1100 (EST)
-Message-ID: <52E7FFDF.9050405@windriver.com>
-Date: Tue, 28 Jan 2014 14:07:11 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id D5CD62C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 06:41:47 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 29 Jan 2014 01:11:43 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1ABA2E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 01:14:47 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0SJff3t8716604
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 01:11:42 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0SJfei3006700
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 01:11:40 +0530
+Message-ID: <52E807F0.8070508@linux.vnet.ibm.com>
+Date: Tue, 28 Jan 2014 13:41:36 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc: don't re-issue spinlock typedef that breaks
- older gcc
-References: <1390925817-27374-1-git-send-email-paul.gortmaker@windriver.com>
- <87sis810dl.fsf@linux.vnet.ibm.com> <52E7EDC4.3000102@windriver.com>
- <87ppnc0wn1.fsf@linux.vnet.ibm.com>
-In-Reply-To: <87ppnc0wn1.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2 2/3] powerpc/pseries: Update dynamic cache nodes for
+ suspend/resume operation
+References: <1390420717-23907-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1390420717-23907-3-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1390420717-23907-3-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +40,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14-01-28 01:49 PM, Aneesh Kumar K.V wrote:
-> Paul Gortmaker <paul.gortmaker@windriver.com> writes:
+On 01/22/2014 01:58 PM, Tyrel Datwyler wrote:
+> From: Haren Myneni <hbabu@us.ibm.com>
 > 
->> On 14-01-28 12:28 PM, Aneesh Kumar K.V wrote:
->>> Paul Gortmaker <paul.gortmaker@windriver.com> writes:
->>>
->>>> Commit b3084f4db3aeb991c507ca774337c7e7893ed04f ("powerpc/thp: Fix
->>>> crash on mremap") added a "typedef struct spinlock spinlock_t;"
->>>> which on gcc 4.5.2 (and possibly other versions) causes many of:
->>>>
->>>> include/linux/spinlock_types.h:76:3: error: redefinition of typedef 'spinlock_t'
->>>> arch/powerpc/include/asm/pgtable-ppc64.h:563:25: note: previous declaration of 'spinlock_t' was here
->>>> In file included from include/linux/mutex.h:15:0,
->>>>                  from include/linux/notifier.h:13,
->>>>                  from include/linux/pm_qos.h:8,
->>>>                  from include/linux/netdevice.h:28,
->>>>                  from drivers/net/wireless/ath/wil6210/wil6210.h:20,
->>>>                  from drivers/net/wireless/ath/wil6210/debug.c:17:
->>>>
->>>> It appears that somewhere between gcc 4.5.2 and 4.6.3 this
->>>> redefinition restriction was lifted.  Using the proper header
->>>> from within !ASSEMBLY seems to fix it up in an acceptable way.
->>>>
->>>> Cc: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>>> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
->>>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->>>> ---
->>>>
->>>
->>>
->>> http://mid.gmane.org/1389939036.3000.7.camel@ThinkPad-T5421.cn.ibm.com
->>>
->>> This was posted earlier.
->>
->> I see.  Well I guess Ben didn't use it since it is the same as the
->> temporary not-signed-off-by hack patch I posted earlier as well.
->>
->> https://lkml.org/lkml/2014/1/27/584
->>
->> I believe what I've posted here below to be the proper fix.
+> From: Haren Myneni <hbabu@us.ibm.com>
 > 
-> I had another variant which needed this
+> pHyp can change cache nodes for suspend/resume operation. The current code
+> updates the device tree after all non boot CPUs are enabled. Hence, we do not
+> modify the cache list based on the latest cache nodes. Also we do not remove
+> cache entries for the primary CPU.
 > 
-> http://mid.gmane.org/1388999012-14424-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
-
-What config did you use to trigger that?  I've not seen it in
-allyes/allmodconfig.  I'd like us to try and fix it an alternate
-way, vs. fragmenting the header into smaller and smaller
-specialized chunks, if possible.
-
+> This patch removes the cache list for the boot CPU, updates the device tree
+> before enabling nonboot CPUs and adds cache list for the boot cpu.
 > 
-> BTW I had added the above struct spinlock; patch as the backport to
-> stable 3.13 series. So if we are picking another one, we may need to
-> update stable also
-
-The stable tree is self-correcting ; it won't take any patches that
-don't have the same commit present in mainline.  But yes, someone
-will still have to _nominate_ one for stable tree consideration.
-
-Paul.
---
-
+> Signed-off-by: Haren Myneni <hbabu@us.ibm.com>
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/rtas.h |  4 ++++
+>  arch/powerpc/kernel/rtas.c      | 17 +++++++++++++++++
+>  arch/powerpc/kernel/time.c      |  6 ++++++
+>  3 files changed, 27 insertions(+)
 > 
-> -aneesh
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 9bd52c6..da9d733 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -283,6 +283,10 @@ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
+> 
+>  #ifdef CONFIG_PPC_PSERIES
+>  extern int pseries_devicetree_update(s32 scope);
+> +extern void post_mobility_fixup(void);
+> +extern void update_dynamic_configuration(void);
+> +#else /* !CONFIG_PPC_PSERIES */
+> +void update_dynamic_configuration(void) { }
+>  #endif
+> 
+>  #ifdef CONFIG_PPC_RTAS_DAEMON
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 4cf674d..8249eb2 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -43,6 +43,7 @@
+>  #include <asm/time.h>
+>  #include <asm/mmu.h>
+>  #include <asm/topology.h>
+> +#include "cacheinfo.h"
+> 
+>  struct rtas_t rtas = {
+>  	.lock = __ARCH_SPIN_LOCK_UNLOCKED
+> @@ -972,6 +973,22 @@ out:
+>  	free_cpumask_var(offline_mask);
+>  	return atomic_read(&data.error);
+>  }
+> +
+> +/*
+> + * The device tree cache nodes can be modified during suspend/ resume.
+> + * So delete all cache entries and recreate them again after the device tree
+> + * update.
+> + * We already deleted cache entries for notboot CPUs before suspend. So delete
+> + * entries for the primary CPU, recreate entries after the device tree update.
+> + * We can create entries for nonboot CPU when enable them later.
+> + */
+> +
+> +void update_dynamic_configuration(void)
+> +{
+> +	cacheinfo_cpu_offline(smp_processor_id());
+> +	post_mobility_fixup();
+> +	cacheinfo_cpu_online(smp_processor_id());
+> +}
+>  #else /* CONFIG_PPC_PSERIES */
+>  int rtas_ibm_suspend_me(struct rtas_args *args)
+>  {
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index b3b1441..5f1ca28 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -69,6 +69,7 @@
+>  #include <asm/vdso_datapage.h>
+>  #include <asm/firmware.h>
+>  #include <asm/cputime.h>
+> +#include <asm/rtas.h>
+> 
+>  /* powerpc clocksource/clockevent code */
+> 
+> @@ -592,6 +593,11 @@ void arch_suspend_enable_irqs(void)
+>  	generic_suspend_enable_irqs();
+>  	if (ppc_md.suspend_enable_irqs)
+>  		ppc_md.suspend_enable_irqs();
+> +	/*
+> +	 * Update configuration which can be modified based on devicetree
+> +	 * changes during resume.
+> +	 */
+> +	update_dynamic_configuration();
+
+Instead of creating this new routine update_dynamic_reconfiguration() for
+pseries systems only, shouldn't we be defining ppc_md.suspend_enable_irqs
+for pseries. I think this could be done in platforms/pseries/suspend.c
+
+-Nathan
+
+>  }
+>  #endif
 > 
