@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 902CB2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 23:17:25 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6FB1C2C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 23:18:34 +1100 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 28 Jan 2014 17:47:19 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6C6F51258053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 17:48:58 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0SCHAvk52494432
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 17:47:11 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0SCHCQm000985
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 17:47:13 +0530
+ Tue, 28 Jan 2014 22:18:33 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 24A022CE8053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 23:18:32 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0SBxC8J9371804
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 22:59:12 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0SCIUmp024850
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 23:18:31 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, stable@vger.kernel.org
 Subject: [PATCH] powerpc: thp: Fix crash on mremap
-Date: Tue, 28 Jan 2014 17:47:03 +0530
-Message-Id: <1390911423-4409-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Tue, 28 Jan 2014 17:48:22 +0530
+Message-Id: <1390911502-4768-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -57,7 +57,7 @@ that, when page fault find the pmd as trans huge we can be sure that
 pgtable can be located at the offset.
 
 variant of upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
-for 3.11 stable series
+for 3.12 stable series
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
@@ -67,10 +67,10 @@ Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
  3 files changed, 16 insertions(+)
 
 diff --git a/arch/Kconfig b/arch/Kconfig
-index 1feb169274fe..c5863b35d054 100644
+index af2cc6eabcc7..bca9e7a18bd2 100644
 --- a/arch/Kconfig
 +++ b/arch/Kconfig
-@@ -368,6 +368,9 @@ config HAVE_ARCH_TRANSPARENT_HUGEPAGE
+@@ -365,6 +365,9 @@ config HAVE_ARCH_TRANSPARENT_HUGEPAGE
  config HAVE_ARCH_SOFT_DIRTY
  	bool
  
@@ -81,7 +81,7 @@ index 1feb169274fe..c5863b35d054 100644
  	bool
  	help
 diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 47d9a03dd415..d11a34be018d 100644
+index 6704e2e20e6b..0225011231ea 100644
 --- a/arch/powerpc/platforms/Kconfig.cputype
 +++ b/arch/powerpc/platforms/Kconfig.cputype
 @@ -71,6 +71,7 @@ config PPC_BOOK3S_64
@@ -93,10 +93,10 @@ index 47d9a03dd415..d11a34be018d 100644
  
  config PPC_BOOK3E_64
 diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 12acb0ba7991..beaa7cc9de75 100644
+index 292a266e0d42..89b7a647f1cb 100644
 --- a/mm/huge_memory.c
 +++ b/mm/huge_memory.c
-@@ -1461,8 +1461,20 @@ int move_huge_pmd(struct vm_area_struct *vma, struct vm_area_struct *new_vma,
+@@ -1474,8 +1474,20 @@ int move_huge_pmd(struct vm_area_struct *vma, struct vm_area_struct *new_vma,
  
  	ret = __pmd_trans_huge_lock(old_pmd, vma);
  	if (ret == 1) {
