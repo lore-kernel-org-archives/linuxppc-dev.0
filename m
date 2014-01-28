@@ -1,21 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9E9BF2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 10:04:36 +1100 (EST)
-Message-ID: <1390863856.24905.750.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2][v6] driver/memory:Move Freescale IFC driver to a
- common driver
-From: Scott Wood <scottwood@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Date: Mon, 27 Jan 2014 17:04:16 -0600
-In-Reply-To: <1390651572-24468-1-git-send-email-prabhakar@freescale.com>
-References: <1390651572-24468-1-git-send-email-prabhakar@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0182.hostedemail.com
+ [216.40.44.182]) by ozlabs.org (Postfix) with ESMTP id 6BA332C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 12:57:48 +1100 (EST)
+Received: from smtprelay.hostedemail.com (ff-bigip1 [10.5.19.254])
+ by smtpgrave01.hostedemail.com (Postfix) with ESMTP id E42025D724
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 01:52:44 +0000 (UTC)
+Message-ID: <1390873957.20150.78.camel@joe-AO722>
+Subject: Re: [PATCH 1/1] Fixed some coding style problems
+From: Joe Perches <joe@perches.com>
+To: Brandon Stewart <stewartb2@gmail.com>
+Date: Mon, 27 Jan 2014 17:52:37 -0800
+In-Reply-To: <1390873397-4470-1-git-send-email-stewartb2@gmail.com>
+References: <1390873397-4470-1-git-send-email-stewartb2@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-01-25 at 17:36 +0530, Prabhakar Kushwaha wrote:
-> diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
-> index 29a11db..555d26f 100644
-> --- a/drivers/memory/Kconfig
-> +++ b/drivers/memory/Kconfig
-> @@ -50,4 +50,13 @@ config TEGRA30_MC
->  	  analysis, especially for IOMMU/SMMU(System Memory Management
->  	  Unit) module.
+On Mon, 2014-01-27 at 19:43 -0600, Brandon Stewart wrote:
+[]
+> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+[]
+> @@ -624,8 +623,7 @@ do_adb_query(struct adb_request *req)
+>  {
+>  	int	ret = -EINVAL;
 >  
-> +config FSL_IFC
-> +	bool "Freescale Integrated Flash Controller"
-> +	default y
+> -	switch(req->data[1])
+> -	{
+> +	switch(req->data[1]) {
 
-Don't use "default y".
+	switch (req->data[1]) {
 
--Scott
+> @@ -794,8 +792,8 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
+>  	}
+>  	/* Special case for ADB_BUSRESET request, all others are sent to
+>  	   the controller */
+> -	else if ((req->data[0] == ADB_PACKET)&&(count > 1)
+> -		&&(req->data[1] == ADB_BUSRESET)) {
+> +	else if ((req->data[0] == ADB_PACKET) && (count > 1)
+> +		&& (req->data[1] == ADB_BUSRESET)) {
+
+	else if (req->data[0] == ADB_PACKET &&
+		 req->data[1] == ADB_BUSRESET &&
+		 count > 1) {
