@@ -1,22 +1,19 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x22c.google.com (mail-pb0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c01::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 54CB12C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 21:11:37 +1100 (EST)
-Date: Wed, 29 Jan 2014 11:11:25 +0100
-From: Gerhard Sittig <gsi@denx.de>
+ by ozlabs.org (Postfix) with ESMTPS id 6F9E22C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 21:27:04 +1100 (EST)
+Received: by mail-pb0-f44.google.com with SMTP id rq2so1589370pbb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 02:26:57 -0800 (PST)
+From: Kevin Hao <haokexin@gmail.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Please pull 'next' branch of 5xxx tree
-Message-ID: <20140129101125.GJ20094@book.gsilab.sittig.org>
-References: <20140115221859.50866e87@crub> <20140128064614.511d36be@crub>
- <1390888814.8524.13.camel@pasglop>
- <1390981569.8524.53.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1390981569.8524.53.camel@pasglop>
-Cc: Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/ppc32: fix the bug in the init of non-base exception
+ stack for UP
+Date: Wed, 29 Jan 2014 18:24:54 +0800
+Message-Id: <1390991094-16094-1-git-send-email-haokexin@gmail.com>
+Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,41 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 29, 2014 at 18:46 +1100, Benjamin Herrenschmidt wrote:
-> 
-> On Tue, 2014-01-28 at 17:00 +1100, Benjamin Herrenschmidt wrote:
-> > On Tue, 2014-01-28 at 06:46 +0100, Anatolij Gustschin wrote:
-> > > Hi Ben !
-> > > 
-> > > On Wed, 15 Jan 2014 22:18:59 +0100
-> > > Anatolij Gustschin <agust@denx.de> wrote:
-> > > 
-> > > > Hi Ben !
-> > > > 
-> > > > please pull mpc5xxx patches for v3.14:
-> > > 
-> > > Ping.
-> > 
-> > Oops, you sent that while I was on vacation and I missed it.
-> > 
-> > Next time, try to send your pull request earlier if possible, I'd like
-> > to have most stuff together before -rc5. I'll try to send this one to
-> > Linus after he has pulled my current one.
-> 
-> Hrm, I get a merge conflicts with spi-mpc512x-psc.c, please check that I
-> fixed it up properly in powerpc-next and let me know.
+We would allocate one specific exception stack for each kind of
+non-base exceptions for every CPU. For ppc32 the CPU hard ID is
+used as the subscript to get the specific exception stack for
+one CPU. But for an UP kernel, there is only one element in the
+each kind of exception stack array. We would get stuck if the
+CPU hard ID is not equal to '0'. So in this case we should use the
+subscript '0' no matter what the CPU hard ID is.
 
-Did read the merge commit (git show e9a371100dfd), did a build
-and run test of
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+---
+ arch/powerpc/kernel/irq.c      | 5 +++++
+ arch/powerpc/kernel/setup_32.c | 5 +++++
+ 2 files changed, 10 insertions(+)
 
-  f878f84373ae powerpc: Wire up sched_setattr and sched_getattr syscalls
-
-and everything looks good.  Thank you!
-
-
-virtually yours
-Gerhard Sittig
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 9729b23bfb0a..1d0848bba049 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -559,8 +559,13 @@ void exc_lvl_ctx_init(void)
+ #ifdef CONFIG_PPC64
+ 		cpu_nr = i;
+ #else
++#ifdef CONFIG_SMP
+ 		cpu_nr = get_hard_smp_processor_id(i);
++#else
++		cpu_nr = 0;
+ #endif
++#endif
++
+ 		memset((void *)critirq_ctx[cpu_nr], 0, THREAD_SIZE);
+ 		tp = critirq_ctx[cpu_nr];
+ 		tp->cpu = cpu_nr;
+diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+index 2b0da27eaee4..04cc4fcca78b 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -247,7 +247,12 @@ static void __init exc_lvl_early_init(void)
+ 	/* interrupt stacks must be in lowmem, we get that for free on ppc32
+ 	 * as the memblock is limited to lowmem by MEMBLOCK_REAL_LIMIT */
+ 	for_each_possible_cpu(i) {
++#ifdef CONFIG_SMP
+ 		hw_cpu = get_hard_smp_processor_id(i);
++#else
++		hw_cpu = 0;
++#endif
++
+ 		critirq_ctx[hw_cpu] = (struct thread_info *)
+ 			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+ #ifdef CONFIG_BOOKE
 -- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+1.8.5.3
