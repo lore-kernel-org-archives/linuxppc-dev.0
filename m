@@ -1,22 +1,26 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2CCFB2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 04:37:22 +1100 (EST)
-Message-ID: <52E93C4D.8050609@suse.de>
-Date: Wed, 29 Jan 2014 18:37:17 +0100
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 10/10] PPC: BOOK3S: Disable/Enable TM looking at the
- ibm,pa-features device tree entry
-References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1390927455-3312-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from relais.videotron.ca (relais.videotron.ca [24.201.245.36])
+ by ozlabs.org (Postfix) with ESMTP id 3BBEA2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 04:45:22 +1100 (EST)
+Received: from yoda.home ([66.130.143.177]) by VL-VM-MR006.ip.videotron.ca
+ (Oracle Communications Messaging Exchange Server 7u4-22.01 64bit (built Apr 21
+ 2011)) with ESMTP id <0N0600IR6BZJOTG0@VL-VM-MR006.ip.videotron.ca> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 29 Jan 2014 12:45:19 -0500 (EST)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Russell King <linux@arm.linux.org.uk>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH v2 0/6] setting the table for integration of cpuidle with the
+ scheduler
+Date: Wed, 29 Jan 2014 12:45:07 -0500
+Message-id: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +30,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
-> Runtime disable transactional memory feature looking at pa-features
-> device tree entry. We need to do this so that we can run a kernel
-> built with TM config in PR mode. For PR guest we provide a device
-> tree entry with TM feature disabled in pa-features
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+As everyone should know by now, we want to integrate the cpuidle
+governor with the scheduler for a more efficient idling of CPUs.
+In order to help the transition, this small patch series moves the
+existing interaction with cpuidle from architecture code to generic
+core code.  The ARM, PPC, SH and X86 architectures are concerned.
+No functional change should have occurred yet.
 
-We need to be able to run kernels without this patch, so better fix TM 
-for good - worst case by always aborting transactions.
+@peterz: Are you willing to pick up those patches?
+
+Change from v1:
+
+- dropped removal of arch_cpu_idle_prepare()
 
 
-Alex
+ arch/arm/kernel/process.c                       | 16 +++------
+ arch/powerpc/platforms/pseries/processor_idle.c |  5 +++
+ arch/powerpc/platforms/pseries/setup.c          | 34 ++++++++-----------
+ arch/sh/kernel/idle.c                           |  4 +--
+ arch/x86/kernel/process.c                       |  5 +--
+ kernel/Makefile                                 |  1 -
+ kernel/cpu/Makefile                             |  1 -
+ kernel/sched/Makefile                           |  2 +-
+ kernel/{cpu => sched}/idle.c                    |  4 ++-
+ 9 files changed, 30 insertions(+), 42 deletions(-)
 
-> ---
->   arch/powerpc/kernel/prom.c | 5 +++++
->   1 file changed, 5 insertions(+)
->
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index fa0ad8aafbcc..de8c2caf1024 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -160,6 +160,11 @@ static struct ibm_pa_feature {
->   	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
->   	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
->   	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
-> +	/*
-> +	 * We should use CPU_FTR_TM_COMP so that if we disable TM, it won't get
-> +	 * enabled via device tree
-> +	 */
-> +	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
->   };
->   
->   static void __init scan_features(unsigned long node, unsigned char *ftrs,
+
+Nicolas
