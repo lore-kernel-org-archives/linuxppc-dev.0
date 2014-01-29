@@ -1,33 +1,22 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9C5512C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 03:35:04 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Wed, 29 Jan 2014 22:05:00 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 780FA394005B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 22:04:59 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0TGYspZ38469838
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 22:04:54 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0TGYwmd012287
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 22:04:59 +0530
-Message-ID: <52E92DB0.1050902@linux.vnet.ibm.com>
-Date: Wed, 29 Jan 2014 10:34:56 -0600
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 284C22C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 03:39:39 +1100 (EST)
+Message-ID: <52E92EC6.2030607@suse.de>
+Date: Wed, 29 Jan 2014 17:39:34 +0100
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] Handle vmalloc addresses
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Rong Song Shen <shenrs@cn.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 02/10] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
+ register
+References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,112 +26,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The nx-842 compression driver does not currently handle getting
-a physical address for vmalloc addresses. The current driver
-uses __pa() for all addresses which does not properly handle
-vmalloc addresses and thus causes a failure since we do not pass
-a proper physical address to phyp.
+On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
+> virtual time base register is a per vm register and need to saved
+> and restored on vm exit and entry. Writing to VTB is not allowed
+> in the privileged mode.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/include/asm/kvm_host.h |  1 +
+>   arch/powerpc/include/asm/reg.h      |  7 +++++++
+>   arch/powerpc/include/asm/time.h     | 12 ++++++++++++
+>   arch/powerpc/kvm/book3s_emulate.c   |  3 +++
+>   arch/powerpc/kvm/book3s_pr.c        |  3 +++
+>   5 files changed, 26 insertions(+)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+> index 0a3785271f34..9ebdd12e50a9 100644
+> --- a/arch/powerpc/include/asm/kvm_host.h
+> +++ b/arch/powerpc/include/asm/kvm_host.h
+> @@ -508,6 +508,7 @@ struct kvm_vcpu_arch {
+>   #endif
+>   	/* Time base value when we entered the guest */
+>   	u64 entry_tb;
+> +	u64 entry_vtb;
+>   	u32 tcr;
+>   	ulong tsr; /* we need to perform set/clr_bits() which requires ulong */
+>   	u32 ivor[64];
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index e789f76c9bc2..6c649355b1e9 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -1161,6 +1161,13 @@
+>   #define mtspr(rn, v)	asm volatile("mtspr " __stringify(rn) ",%0" : \
+>   				     : "r" ((unsigned long)(v)) \
+>   				     : "memory")
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +#define mfvtb()		({unsigned long rval;				\
+> +			asm volatile("mfspr %0, %1" :			\
+> +				     "=r" (rval) : "i" (SPRN_VTB)); rval;})
+> +#else
+> +#define mfvtb() BUG()
+> +#endif
 
-This patch adds a routine to convert an address to a physical
-address by checking for vmalloc addresses and handling them properly.
+static inline mfvtb(unsigned long)
+{
+#ifdef CONFIG_PPC_BOOK3S_64
+     return mfspr(SPRN_VTB);
+#else
+     BUG();
+#endif
+}
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
- ---
- drivers/crypto/nx/nx-842.c |   29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+is a lot easier to read and get right. But reg.h is Ben's call.
 
-Index: linux/drivers/crypto/nx/nx-842.c
-===================================================================
---- linux.orig/drivers/crypto/nx/nx-842.c	2014-01-22 08:52:55.000000000 -0600
-+++ linux/drivers/crypto/nx/nx-842.c	2014-01-29 08:25:33.000000000 -0600
-@@ -158,6 +158,15 @@
- 	return sl->entry_nr * sizeof(struct nx842_slentry);
- }
- 
-+static inline unsigned long nx842_get_pa(void *addr)
-+{
-+	if (is_vmalloc_addr(addr))
-+		return page_to_phys(vmalloc_to_page(addr))
-+		       + offset_in_page(addr);
-+	else
-+		return __pa(addr);
-+}
-+
- static int nx842_build_scatterlist(unsigned long buf, int len,
- 			struct nx842_scatterlist *sl)
- {
-@@ -168,7 +177,7 @@
- 
- 	entry = sl->entries;
- 	while (len) {
--		entry->ptr = __pa(buf);
-+		entry->ptr = nx842_get_pa((void *)buf);
- 		nextpage = ALIGN(buf + 1, NX842_HW_PAGE_SIZE);
- 		if (nextpage < buf + len) {
- 			/* we aren't at the end yet */
-@@ -370,8 +379,8 @@
- 	op.flags = NX842_OP_COMPRESS;
- 	csbcpb = &workmem->csbcpb;
- 	memset(csbcpb, 0, sizeof(*csbcpb));
--	op.csbcpb = __pa(csbcpb);
--	op.out = __pa(slout.entries);
-+	op.csbcpb = nx842_get_pa(csbcpb);
-+	op.out = nx842_get_pa(slout.entries);
- 
- 	for (i = 0; i < hdr->blocks_nr; i++) {
- 		/*
-@@ -401,13 +410,13 @@
- 		 */
- 		if (likely(max_sync_size == NX842_HW_PAGE_SIZE)) {
- 			/* Create direct DDE */
--			op.in = __pa(inbuf);
-+			op.in = nx842_get_pa((void *)inbuf);
- 			op.inlen = max_sync_size;
- 
- 		} else {
- 			/* Create indirect DDE (scatterlist) */
- 			nx842_build_scatterlist(inbuf, max_sync_size, &slin);
--			op.in = __pa(slin.entries);
-+			op.in = nx842_get_pa(slin.entries);
- 			op.inlen = -nx842_get_scatterlist_size(&slin);
- 		}
- 
-@@ -565,7 +574,7 @@
- 	op.flags = NX842_OP_DECOMPRESS;
- 	csbcpb = &workmem->csbcpb;
- 	memset(csbcpb, 0, sizeof(*csbcpb));
--	op.csbcpb = __pa(csbcpb);
-+	op.csbcpb = nx842_get_pa(csbcpb);
- 
- 	/*
- 	 * max_sync_size may have changed since compression,
-@@ -597,12 +606,12 @@
- 		if (likely((inbuf & NX842_HW_PAGE_MASK) ==
- 			((inbuf + hdr->sizes[i] - 1) & NX842_HW_PAGE_MASK))) {
- 			/* Create direct DDE */
--			op.in = __pa(inbuf);
-+			op.in = nx842_get_pa((void *)inbuf);
- 			op.inlen = hdr->sizes[i];
- 		} else {
- 			/* Create indirect DDE (scatterlist) */
- 			nx842_build_scatterlist(inbuf, hdr->sizes[i] , &slin);
--			op.in = __pa(slin.entries);
-+			op.in = nx842_get_pa(slin.entries);
- 			op.inlen = -nx842_get_scatterlist_size(&slin);
- 		}
- 
-@@ -613,12 +622,12 @@
- 		 */
- 		if (likely(max_sync_size == NX842_HW_PAGE_SIZE)) {
- 			/* Create direct DDE */
--			op.out = __pa(outbuf);
-+			op.out = nx842_get_pa((void *)outbuf);
- 			op.outlen = max_sync_size;
- 		} else {
- 			/* Create indirect DDE (scatterlist) */
- 			nx842_build_scatterlist(outbuf, max_sync_size, &slout);
--			op.out = __pa(slout.entries);
-+			op.out = nx842_get_pa(slout.entries);
- 			op.outlen = -nx842_get_scatterlist_size(&slout);
- 		}
- 
+Also could you please give me a pointer to the specification for it? I 
+tried to look up vtb in the 2.06 ISA and couldn't find it. Is it a CPU 
+specific register?
+
+>   
+>   #ifdef __powerpc64__
+>   #if defined(CONFIG_PPC_CELL) || defined(CONFIG_PPC_FSL_BOOK3E)
+> diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+> index c1f267694acb..1e89dbc665d9 100644
+> --- a/arch/powerpc/include/asm/time.h
+> +++ b/arch/powerpc/include/asm/time.h
+> @@ -101,6 +101,18 @@ static inline u64 get_rtc(void)
+>   	return (u64)hi * 1000000000 + lo;
+>   }
+>   
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +static inline u64 get_vtb(void)
+> +{
+> +	return mfvtb();
+> +}
+> +#else
+> +static inline u64 get_vtb(void)
+> +{
+> +	return 0;
+> +}
+> +#endif
+
+Just put the #ifdef inside the function body.
+
+> +
+>   #ifdef CONFIG_PPC64
+>   static inline u64 get_tb(void)
+>   {
+> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+> index e1f1e5e16449..4b58d8a90cb5 100644
+> --- a/arch/powerpc/kvm/book3s_emulate.c
+> +++ b/arch/powerpc/kvm/book3s_emulate.c
+> @@ -528,6 +528,9 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+>   		 */
+>   		*spr_val = vcpu->arch.spurr;
+>   		break;
+> +	case SPRN_VTB:
+> +		*spr_val = vcpu->arch.vtb;
+> +		break;
+>   	case SPRN_GQR0:
+>   	case SPRN_GQR1:
+>   	case SPRN_GQR2:
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index 02231f5193c2..b5598e9cdd09 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -120,6 +120,8 @@ void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
+>   	 * to find the guest purr and spurr value.
+>   	 */
+>   	vcpu->arch.entry_tb = get_tb();
+> +	vcpu->arch.entry_vtb = get_vtb();
+> +
+>   }
+>   
+>   /* Copy data touched by real-mode code from shadow vcpu back to vcpu */
+> @@ -171,6 +173,7 @@ out:
+>   	 */
+>   	vcpu->arch.purr += get_tb() - vcpu->arch.entry_tb;
+>   	vcpu->arch.spurr += get_tb() - vcpu->arch.entry_tb;
+> +	vcpu->arch.vtb += get_vtb() - vcpu->arch.entry_vtb;
+
+I thought it's per vm? That would contradict the per-vcpu logic you're 
+implementing here. This way vtb scews with world switches on SMP guests.
+
+
+Alex
