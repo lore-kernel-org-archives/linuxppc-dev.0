@@ -1,25 +1,21 @@
-Return-Path: <cengelma@gmx.at>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F2BE62C0082
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 08:19:43 +1100 (EST)
-Received: from spike ([81.217.122.98]) by mail.gmx.com (mrgmx002) with ESMTPSA
- (Nemesis) id 0LoE4f-1VbdzY3gGf-00gDBO for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Jan 2014 22:14:30 +0100
-Date: Tue, 28 Jan 2014 22:14:28 +0100
-From: Christian Engelmayer <cengelma@gmx.at>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:6])
+ by ozlabs.org (Postfix) with ESMTP id E6AFA2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2014 13:29:04 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/sysdev: Fix a mpic section mismatch for MPC85xx
-Message-ID: <20140128221428.4c5b49f2@spike>
-In-Reply-To: <20131220000041.05da4209@spike>
-References: <20131215193856.1637accd@spike>
- <1387152653.15730.175.camel@pasglop>
- <20131220000041.05da4209@spike>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Kevin Hao <haokexin@gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+Date: Wed, 29 Jan 2014 13:29 +1100
+Message-ID: <4555187.D5eRSF5r8x@mexican>
+In-Reply-To: <1390940395.8524.25.camel@pasglop>
+References: <1390883744.3872.76.camel@pasglop>
+ <20140128150309.GA7428@aepfle.de> <1390940395.8524.25.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="nextPart2424423.l9okISCyUE"
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Olaf Hering <olaf@aepfle.de>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 20 Dec 2013 00:00:41 +0100, Christian Engelmayer <cengelma@gmx.at> wrote:
-> On Mon, 16 Dec 2013 11:10:53 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > On Sun, 2013-12-15 at 19:38 +0100, Christian Engelmayer wrote:
-> > > Moved arch/powerpc/sysdev/mpic.c : smp_mpic_probe() out of the __init section.
-> > > It is referenced by arch/powerpc/platforms/85xx/smp.c : smp_85xx_setup_cpu().
+This is a multi-part message in MIME format.
+
+--nextPart2424423.l9okISCyUE
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+
+On Wed, 29 Jan 2014 07:19:55 Benjamin Herrenschmidt wrote:
+> On Tue, 2014-01-28 at 16:03 +0100, Olaf Hering wrote:
+> > d084775738b746648d4102337163a04534a02982 is the first bad commit
+> > commit d084775738b746648d4102337163a04534a02982
+> > Author: Alistair Popple <alistair@popple.id.au>
+> > Date:   Mon Dec 9 18:17:03 2013 +1100
 > > 
-> > I don't like this. The reference is not actually going to call into the
-> > code at all and as such is not an error, it's just a pointer comparison.
+> >     powerpc/iommu: Update the generic code to use dynamic iommu page sizes
+> >     
+> >     This patch updates the generic iommu backend code to use the
+> >     it_page_shift field to determine the iommu page size instead of
+> >     using hardcoded values.
 > 
-> That's correct. I proposed it that way because on first sight I was concerned
-> that there is an address of an __init function assigned to a function pointer
-> within a non __initdata struct at all that can be compared against. However,
-> further usage of smp_ops->probe is currently safe of course and *_ops symbols
-> within .data are whitelisted to refer to init sections.
-> 
-> > If there is no way to silence the warning, then I'd suggest to use a
-> > global flag, something like mpc85xx_pic_type and test that instead
-> > of comparing the pointers.
-> 
-> I've seen that there is currently a patch proposed against
-> 
->    commit dc2c9c52b604f51b1416ed87ff54a1c77a1a8b5b
->    powerpc/85xx: Set up doorbells even with no mpic
-> 
-> that introduced the section causing the warning:
-> 
->    http://patchwork.ozlabs.org/patch/289214/
->    powerpc/85xx: don't init the mpic ipi for the SoC which has doorbell support
-> 
-> This patch also removes the affected pointer comparison and if accepted would
-> thus also silence this warning.
+> Interesting. This is new infrastructure but a nop in functionality, ie,
+> we support different page sizes for DMA but we still set it to 4k,
+> unless we somewhat failed to initialize something...
 
-Kevin's change (powerpc/85xx: don't init the mpic ipi for the SoC which has
-doorbell support) entered mainline by merge 1b17366d. I verified that the
-issue is thereby solved and my patch obsolete.
+Looks like I missed the dart iommu code when changing the iommu table 
+initialisation. The patch below should fix it, would you mind testing it Ben? 
+Thanks.
 
-   http://patchwork.ozlabs.org/patch/301402/
+> I'll have a look, I actually have one of those G5s here still. Thanks !
+> 
+> Cheers,
+> Ben.
+> 
 
-Regards,
-Christian
+---
+
+diff --git a/arch/powerpc/sysdev/dart_iommu.c 
+b/arch/powerpc/sysdev/dart_iommu.c
+index bd968a4..62c47bb 100644
+--- a/arch/powerpc/sysdev/dart_iommu.c
++++ b/arch/powerpc/sysdev/dart_iommu.c
+@@ -292,6 +292,7 @@ static void iommu_table_dart_setup(void)
+ 	iommu_table_dart.it_offset = 0;
+ 	/* it_size is in number of entries */
+ 	iommu_table_dart.it_size = dart_tablesize / sizeof(u32);
++	iommu_table_dart.it_page_shift = IOMMU_PAGE_SHIFT_4K;
+ 
+ 	/* Initialize the common IOMMU code */
+ 	iommu_table_dart.it_base = (unsigned long)dart_vbase;
+
+--nextPart2424423.l9okISCyUE
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/html; charset="us-ascii"
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html><head><meta name="qrichtext" content="1" /><style type="text/css">
+p, li { white-space: pre-wrap; }
+</style></head><body style=" font-family:'Monospace'; font-size:9pt; font-weight:400; font-style:normal;">
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Wed, 29 Jan 2014 07:19:55 Benjamin Herrenschmidt wrote:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; On Tue, 2014-01-28 at 16:03 +0100, Olaf Hering wrote:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; d084775738b746648d4102337163a04534a02982 is the first bad commit</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; commit d084775738b746648d4102337163a04534a02982</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; Author: Alistair Popple &lt;alistair@popple.id.au&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; Date:   Mon Dec 9 18:17:03 2013 +1100</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;     powerpc/iommu: Update the generic code to use dynamic iommu page sizes</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;     </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;     This patch updates the generic iommu backend code to use the</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;     it_page_shift field to determine the iommu page size instead of</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;     using hardcoded values.</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Interesting. This is new infrastructure but a nop in functionality, ie,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; we support different page sizes for DMA but we still set it to 4k,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; unless we somewhat failed to initialize something...</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Looks like I missed the dart iommu code when changing the iommu table initialisation. The patch below should fix it, would you mind testing it Ben? Thanks.</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; I'll have a look, I actually have one of those G5s here still. Thanks !</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Cheers,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Ben.</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">---</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">index bd968a4..62c47bb 100644</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">--- a/arch/powerpc/sysdev/dart_iommu.c</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">+++ b/arch/powerpc/sysdev/dart_iommu.c</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">@@ -292,6 +292,7 @@ static void iommu_table_dart_setup(void)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"> 	iommu_table_dart.it_offset = 0;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"> 	/* it_size is in number of entries */</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"> 	iommu_table_dart.it_size = dart_tablesize / sizeof(u32);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">+	iommu_table_dart.it_page_shift = IOMMU_PAGE_SHIFT_4K;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"> </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"> 	/* Initialize the common IOMMU code */</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;"> 	iommu_table_dart.it_base = (unsigned long)dart_vbase;</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p></body></html>
+--nextPart2424423.l9okISCyUE--
