@@ -2,18 +2,18 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 251912C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 04:11:42 +1100 (EST)
-Message-ID: <52E93649.3080000@suse.de>
-Date: Wed, 29 Jan 2014 18:11:37 +0100
+ by ozlabs.org (Postfix) with ESMTPS id C5FCC2C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 04:35:52 +1100 (EST)
+Message-ID: <52E93BF2.9010500@suse.de>
+Date: Wed, 29 Jan 2014 18:35:46 +0100
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 07/10] KVM: PPC: BOOK3S: PR: Emulate facility status
- and control register
+Subject: Re: [RFC PATCH 08/10] KVM: PPC: BOOK3S: PR: Add support for facility
+ unavailable interrupt
 References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1390927455-3312-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1390927455-3312-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
@@ -27,156 +27,145 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
-> We allow priv-mode update of this. The guest value is saved in fscr,
-> and the value actually used is saved in shadow_fscr. shadow_fscr
-> only contains values that are allowed by the host. On
-> facility unavailable interrupt, if the facility is allowed by fscr
-> but disabled in shadow_fscr we need to emulate the support. Currently
-> all but EBB is disabled. We still don't support performance monitoring
-> in PR guest.
+> At this point we allow all the supported facilities except EBB. So
+> forward the interrupt to guest as illegal instruction.
 >
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 > ---
->   arch/powerpc/include/asm/kvm_book3s_asm.h |  1 +
->   arch/powerpc/include/asm/kvm_host.h       |  1 +
->   arch/powerpc/kernel/asm-offsets.c         |  2 ++
->   arch/powerpc/kvm/book3s_emulate.c         | 16 ++++++++++++++++
->   arch/powerpc/kvm/book3s_interrupts.S      | 25 ++++++++++++++++++++++---
->   5 files changed, 42 insertions(+), 3 deletions(-)
+>   arch/powerpc/include/asm/kvm_asm.h |  4 +++-
+>   arch/powerpc/kvm/book3s.c          |  4 ++++
+>   arch/powerpc/kvm/book3s_emulate.c  | 18 ++++++++++++++++++
+>   arch/powerpc/kvm/book3s_pr.c       | 17 +++++++++++++++++
+>   4 files changed, 42 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> index 192917d2239c..abd42523ad93 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-> @@ -103,6 +103,7 @@ struct kvmppc_host_state {
->   #ifdef CONFIG_PPC_BOOK3S_64
->   	u64 cfar;
->   	u64 ppr;
-> +	u64 host_fscr;
->   #endif
->   };
+> diff --git a/arch/powerpc/include/asm/kvm_asm.h b/arch/powerpc/include/asm/kvm_asm.h
+> index 1bd92fd43cfb..799244face51 100644
+> --- a/arch/powerpc/include/asm/kvm_asm.h
+> +++ b/arch/powerpc/include/asm/kvm_asm.h
+> @@ -99,6 +99,7 @@
+>   #define BOOK3S_INTERRUPT_PERFMON	0xf00
+>   #define BOOK3S_INTERRUPT_ALTIVEC	0xf20
+>   #define BOOK3S_INTERRUPT_VSX		0xf40
+> +#define BOOK3S_INTERRUPT_FAC_UNAVAIL    0xf60
 >   
-> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-> index e0b13aca98e6..f4be7be14330 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -478,6 +478,7 @@ struct kvm_vcpu_arch {
->   	ulong ppr;
->   	ulong pspb;
->   	ulong fscr;
-> +	ulong shadow_fscr;
->   	ulong tfhar;
->   	ulong tfiar;
->   	ulong texasr;
-> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-> index 2c2227da6917..7484676b8f25 100644
-> --- a/arch/powerpc/kernel/asm-offsets.c
-> +++ b/arch/powerpc/kernel/asm-offsets.c
-> @@ -525,6 +525,7 @@ int main(void)
->   	DEFINE(VCPU_CFAR, offsetof(struct kvm_vcpu, arch.cfar));
->   	DEFINE(VCPU_PPR, offsetof(struct kvm_vcpu, arch.ppr));
->   	DEFINE(VCPU_FSCR, offsetof(struct kvm_vcpu, arch.fscr));
-> +	DEFINE(VCPU_SHADOW_FSCR, offsetof(struct kvm_vcpu, arch.shadow_fscr));
->   	DEFINE(VCPU_PSPB, offsetof(struct kvm_vcpu, arch.pspb));
->   	DEFINE(VCPU_TFHAR, offsetof(struct kvm_vcpu, arch.tfhar));
->   	DEFINE(VCPU_TFIAR, offsetof(struct kvm_vcpu, arch.tfiar));
-> @@ -626,6 +627,7 @@ int main(void)
->   #ifdef CONFIG_PPC_BOOK3S_64
->   	HSTATE_FIELD(HSTATE_CFAR, cfar);
->   	HSTATE_FIELD(HSTATE_PPR, ppr);
-> +	HSTATE_FIELD(HSTATE_FSCR, host_fscr);
->   #endif /* CONFIG_PPC_BOOK3S_64 */
+>   #define BOOK3S_IRQPRIO_SYSTEM_RESET		0
+>   #define BOOK3S_IRQPRIO_DATA_SEGMENT		1
+> @@ -117,7 +118,8 @@
+>   #define BOOK3S_IRQPRIO_DECREMENTER		14
+>   #define BOOK3S_IRQPRIO_PERFORMANCE_MONITOR	15
+>   #define BOOK3S_IRQPRIO_EXTERNAL_LEVEL		16
+> -#define BOOK3S_IRQPRIO_MAX			17
+> +#define BOOK3S_IRQPRIO_FAC_UNAVAIL		17
+> +#define BOOK3S_IRQPRIO_MAX			18
 >   
->   #else /* CONFIG_PPC_BOOK3S */
+>   #define BOOK3S_HFLAG_DCBZ32			0x1
+>   #define BOOK3S_HFLAG_SLB			0x2
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index 8912608b7e1b..a9aea28c2677 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -143,6 +143,7 @@ static int kvmppc_book3s_vec2irqprio(unsigned int vec)
+>   	case 0xd00: prio = BOOK3S_IRQPRIO_DEBUG;		break;
+>   	case 0xf20: prio = BOOK3S_IRQPRIO_ALTIVEC;		break;
+>   	case 0xf40: prio = BOOK3S_IRQPRIO_VSX;			break;
+> +	case 0xf60: prio = BOOK3S_IRQPRIO_FAC_UNAVAIL;		break;
+>   	default:    prio = BOOK3S_IRQPRIO_MAX;			break;
+>   	}
+>   
+> @@ -273,6 +274,9 @@ int kvmppc_book3s_irqprio_deliver(struct kvm_vcpu *vcpu, unsigned int priority)
+>   	case BOOK3S_IRQPRIO_PERFORMANCE_MONITOR:
+>   		vec = BOOK3S_INTERRUPT_PERFMON;
+>   		break;
+> +	case BOOK3S_IRQPRIO_FAC_UNAVAIL:
+> +		vec = BOOK3S_INTERRUPT_FAC_UNAVAIL;
+> +		break;
+>   	default:
+>   		deliver = 0;
+>   		printk(KERN_ERR "KVM: Unknown interrupt: 0x%x\n", priority);
 > diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-> index 7f25adbd2590..60d0b6b745e7 100644
+> index 60d0b6b745e7..bf6b11021250 100644
 > --- a/arch/powerpc/kvm/book3s_emulate.c
 > +++ b/arch/powerpc/kvm/book3s_emulate.c
-> @@ -468,6 +468,19 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
->   	case SPRN_MSSSR0:
->   	case SPRN_DABR:
+> @@ -481,6 +481,15 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+>   		vcpu->arch.shadow_fscr = vcpu->arch.fscr & host_fscr;
 >   		break;
-> +	case SPRN_FSCR:
-> +	{
-> +		ulong host_fscr = mfspr(SPRN_FSCR);
-> +		/*
-> +		 * We disable FSCR_EBB for pr guest. TAR and DSCR are always
-> +		 * enabled.
-> +		 */
-> +		if (spr_val & ~(FSCR_TAR|FSCR_DSCR|FSCR_EBB))
-> +			pr_info("KVM: invalud FSCR value 0x%lx", spr_val);
-
-Is this worth printing at all? If it is, it's probably more of a 
-pr_debug(). Also s/invalud/invalid/.
-
-
-Alex
-
-> +		vcpu->arch.fscr = spr_val & (FSCR_TAR|FSCR_DSCR);
-> +		vcpu->arch.shadow_fscr = vcpu->arch.fscr & host_fscr;
+>   	}
+> +	case SPRN_EBBHR:
+> +		vcpu->arch.ebbhr = spr_val;
 > +		break;
-> +	}
+> +	case SPRN_EBBRR:
+> +		vcpu->arch.ebbrr = spr_val;
+> +		break;
+> +	case SPRN_BESCR:
+> +		vcpu->arch.bescr = spr_val;
+> +		break;
 >   unprivileged:
 >   	default:
 >   		printk(KERN_INFO "KVM: invalid SPR write: %d\n", sprn);
-> @@ -591,6 +604,9 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
->   		 */
->   		*spr_val = 0;
+> @@ -607,6 +616,15 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+>   	case SPRN_FSCR:
+>   		*spr_val = vcpu->arch.fscr;
 >   		break;
-> +	case SPRN_FSCR:
-> +		*spr_val = vcpu->arch.fscr;
+> +	case SPRN_EBBHR:
+> +		*spr_val = vcpu->arch.ebbhr;
+> +		break;
+> +	case SPRN_EBBRR:
+> +		*spr_val = vcpu->arch.ebbrr;
+> +		break;
+> +	case SPRN_BESCR:
+> +		*spr_val = vcpu->arch.bescr;
 > +		break;
 >   	default:
 >   unprivileged:
 >   		printk(KERN_INFO "KVM: invalid SPR read: %d\n", sprn);
-> diff --git a/arch/powerpc/kvm/book3s_interrupts.S b/arch/powerpc/kvm/book3s_interrupts.S
-> index f779450cb07c..fcbdf4817301 100644
-> --- a/arch/powerpc/kvm/book3s_interrupts.S
-> +++ b/arch/powerpc/kvm/book3s_interrupts.S
-> @@ -107,6 +107,14 @@ kvm_start_lightweight:
->   	ld	r3, VCPU_SHARED(r4)
->   	ld	r3, VCPU_SHARED_SPRG3(r3)
->   	mtspr	SPRN_SPRG3, r3
-> +
-> +BEGIN_FTR_SECTION
-> +	mfspr r3,SPRN_FSCR
-> +	PPC_STL	r3, HSTATE_FSCR(r13)
-> +
-> +	PPC_LL r3, VCPU_SHADOW_FSCR(r4)
-> +	mtspr SPRN_FSCR, r3
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
->   #endif /* CONFIG_PPC_BOOK3S_64 */
->   
->   	PPC_LL	r4, VCPU_SHADOW_MSR(r4)	/* get shadow_msr */
-> @@ -148,6 +156,9 @@ kvm_start_lightweight:
->   	bl	FUNC(kvmppc_copy_from_svcpu)
->   	nop
->   
-> +	/* R7 = vcpu */
-> +	PPC_LL	r7, GPR4(r1)
-> +
->   #ifdef CONFIG_PPC_BOOK3S_64
->   	/*
->   	 * Reload kernel SPRG3 value.
-> @@ -155,10 +166,18 @@ kvm_start_lightweight:
->   	 */
->   	ld	r3, PACA_SPRG3(r13)
->   	mtspr	SPRN_SPRG3, r3
-> -#endif /* CONFIG_PPC_BOOK3S_64 */
-> +BEGIN_FTR_SECTION
-> +	/*
-> +	 * Save the current fscr in shadow fscr
-> +	 */
-> +	mfspr r3,SPRN_FSCR
-> +	PPC_STL r3, VCPU_SHADOW_FSCR(r7)
->   
-> -	/* R7 = vcpu */
-> -	PPC_LL	r7, GPR4(r1)
-> +	PPC_LL	r3, HSTATE_FSCR(r13)
-> +	mtspr	SPRN_FSCR, r3
-> +END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
-> +
-> +#endif /* CONFIG_PPC_BOOK3S_64 */
->   
->   	PPC_STL	r14, VCPU_GPR(R14)(r7)
->   	PPC_STL	r15, VCPU_GPR(R15)(r7)
+> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+> index 51d469f8c9fd..828056ec208f 100644
+> --- a/arch/powerpc/kvm/book3s_pr.c
+> +++ b/arch/powerpc/kvm/book3s_pr.c
+> @@ -900,6 +900,23 @@ int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>   	case BOOK3S_INTERRUPT_PERFMON:
+>   		r = RESUME_GUEST;
+>   		break;
+> +	case BOOK3S_INTERRUPT_FAC_UNAVAIL:
+> +	{
+> +		/*
+> +		 * Check for the facility that need to be emulated
+> +		 */
+> +		ulong fscr_ic = vcpu->arch.shadow_fscr >> 56;
+> +		if (fscr_ic != FSCR_EBB_LG) {
+> +			/*
+> +			 * We only disable EBB facility.
+> +			 * So only emulate that.
+
+I don't understand the comment. We emulate nothing at all here. We either
+     - hit an EBB unavailable in which case we send the guest an illegal 
+instruction interrupt or we
+     - hit another facility interrupt in which case we forward the 
+interrupt to the guest, but not the interrupt cause (fscr_ic).
+
+I think the EBB case should be explicit:
+
+   /* We don't allow EBB inside the guest, so something must have gone 
+terribly wrong */
+   if (fscr_ic == FSCR_EBB_LG)
+     BUG();
+
+   vcpu->arch.fscr &= ~FSCR_IC_MASK;
+   vcpu->arch.fscr |= vcpu->arch.shadow_fscr & FSCR_IC_MASK;
+   kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+   r = RESUME_GUEST;
+   break;
+
+
+Alex
+
+> +			 */
+> +			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+> +			r = RESUME_GUEST;
+> +			break;
+> +		}
+> +		/* Fall through */
+> +	}
+>   	case BOOK3S_INTERRUPT_PROGRAM:
+>   	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
+>   	{
