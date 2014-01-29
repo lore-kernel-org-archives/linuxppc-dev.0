@@ -1,29 +1,19 @@
 Return-Path: <cl@linux.com>
-Received: from qmta04.emeryville.ca.mail.comcast.net
- (qmta04.emeryville.ca.mail.comcast.net [76.96.30.40])
- by ozlabs.org (Postfix) with ESMTP id 740D92C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 02:54:57 +1100 (EST)
-Date: Wed, 29 Jan 2014 09:54:49 -0600 (CST)
+Received: from qmta06.emeryville.ca.mail.comcast.net
+ (qmta06.emeryville.ca.mail.comcast.net [76.96.30.56])
+ by ozlabs.org (Postfix) with ESMTP id 740BD2C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 02:55:52 +1100 (EST)
+Date: Wed, 29 Jan 2014 09:55:47 -0600 (CST)
 From: Christoph Lameter <cl@linux.com>
 To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-In-Reply-To: <20140128182947.GA1591@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.10.1401290953270.23856@nuc>
-References: <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
- <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
- <alpine.DEB.2.10.1401240946530.12886@nuc>
- <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
- <20140124232902.GB30361@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
- <20140125001643.GA25344@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
- <20140125011041.GB25344@linux.vnet.ibm.com>
- <20140127055805.GA2471@lge.com> <20140128182947.GA1591@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: enable CONFIG_HAVE_MEMORYLESS_NODES
+In-Reply-To: <20140128183457.GA9315@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1401290955190.23856@nuc>
+References: <20140128183457.GA9315@linux.vnet.ibm.com>
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
- penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+Cc: David Rientjes <rientjes@google.com>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Matt Mackall <mpm@selenic.com>,
  Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
  Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,8 +27,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Tue, 28 Jan 2014, Nishanth Aravamudan wrote:
 
-> This helps about the same as David's patch -- but I found the reason
-> why! ppc64 doesn't set CONFIG_HAVE_MEMORYLESS_NODES :) Expect a patch
-> shortly for that and one other case I found.
+> Anton Blanchard found an issue with an LPAR that had no memory in Node
+> 0. Christoph Lameter recommended, as one possible solution, to use
+> numa_mem_id() for locality of the nearest memory node-wise. However,
+> numa_mem_id() [and the other related APIs] are only useful if
+> CONFIG_HAVE_MEMORYLESS_NODES is set. This is only the case for ia64
+> currently, but clearly we can have memoryless nodes on ppc64. Add the
+> Kconfig option and define it to be the same value as CONFIG_NUMA.
 
-Oww...
+Well this is trivial but if you need encouragement:
+
+Reviewed-by: Christoph Lameter <cl@linux.com>
