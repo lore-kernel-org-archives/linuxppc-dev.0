@@ -1,34 +1,31 @@
-Return-Path: <nicolas.pitre@linaro.org>
-Received: from mail-qc0-f175.google.com (mail-qc0-f175.google.com
- [209.85.216.175])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 254612C00D5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 03:07:54 +1100 (EST)
-Received: by mail-qc0-f175.google.com with SMTP id x13so5146962qcv.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 08:07:51 -0800 (PST)
-Date: Thu, 30 Jan 2014 11:07:48 -0500 (EST)
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
- idle loop
-In-Reply-To: <52EA5720.8010000@linaro.org>
-Message-ID: <alpine.LFD.2.11.1401301056180.1652@knanqh.ubzr>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
- <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
- <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
- <52E9C946.50704@linux.vnet.ibm.com>
- <alpine.LFD.2.11.1401300021530.1652@knanqh.ubzr>
- <52EA5720.8010000@linaro.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
- linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- linux-sh@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
- Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+Return-Path: <cl@linux.com>
+Received: from qmta09.emeryville.ca.mail.comcast.net
+ (qmta09.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:96])
+ by ozlabs.org (Postfix) with ESMTP id E4EDF2C01AE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 03:26:56 +1100 (EST)
+Date: Thu, 30 Jan 2014 10:26:51 -0600 (CST)
+From: Christoph Lameter <cl@linux.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+In-Reply-To: <20140129223640.GA10101@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1401301017590.29392@nuc>
+References: <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401240946530.12886@nuc>
+ <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+ <20140124232902.GB30361@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
+ <20140125001643.GA25344@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140125011041.GB25344@linux.vnet.ibm.com> <20140127055805.GA2471@lge.com>
+ <20140128182947.GA1591@linux.vnet.ibm.com>
+ <20140129223640.GA10101@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, cody@linux.vnet.ibm.com,
+ paulus@samba.org, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,91 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 30 Jan 2014, Daniel Lezcano wrote:
+On Wed, 29 Jan 2014, Nishanth Aravamudan wrote:
 
-> On 01/30/2014 06:28 AM, Nicolas Pitre wrote:
-> > On Thu, 30 Jan 2014, Preeti U Murthy wrote:
-> >
-> > > Hi Nicolas,
-> > >
-> > > On 01/30/2014 02:01 AM, Nicolas Pitre wrote:
-> > > > On Wed, 29 Jan 2014, Nicolas Pitre wrote:
-> > > >
-> > > > > In order to integrate cpuidle with the scheduler, we must have a
-> > > > > better
-> > > > > proximity in the core code with what cpuidle is doing and not delegate
-> > > > > such interaction to arch code.
-> > > > >
-> > > > > Architectures implementing arch_cpu_idle() should simply enter
-> > > > > a cheap idle mode in the absence of a proper cpuidle driver.
-> > > > >
-> > > > > Signed-off-by: Nicolas Pitre <nico@linaro.org>
-> > > > > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > > >
-> > > > As mentioned in my reply to Olof's comment on patch #5/6, here's a new
-> > > > version of this patch adding the safety local_irq_enable() to the core
-> > > > code.
-> > > >
-> > > > ----- >8
-> > > >
-> > > > From: Nicolas Pitre <nicolas.pitre@linaro.org>
-> > > > Subject: idle: move the cpuidle entry point to the generic idle loop
-> > > >
-> > > > In order to integrate cpuidle with the scheduler, we must have a better
-> > > > proximity in the core code with what cpuidle is doing and not delegate
-> > > > such interaction to arch code.
-> > > >
-> > > > Architectures implementing arch_cpu_idle() should simply enter
-> > > > a cheap idle mode in the absence of a proper cpuidle driver.
-> > > >
-> > > > In both cases i.e. whether it is a cpuidle driver or the default
-> > > > arch_cpu_idle(), the calling convention expects IRQs to be disabled
-> > > > on entry and enabled on exit. There is a warning in place already but
-> > > > let's add a forced IRQ enable here as well.  This will allow for
-> > > > removing the forced IRQ enable some implementations do locally and
-> > >
-> > > Why would this patch allow for removing the forced IRQ enable that are
-> > > being done on some archs in arch_cpu_idle()? Isn't this patch expecting
-> > > the default arch_cpu_idle() to have re-enabled the interrupts after
-> > > exiting from the default idle state? Its supposed to only catch faulty
-> > > cpuidle drivers that haven't enabled IRQs on exit from idle state but
-> > > are expected to have done so, isn't it?
-> >
-> > Exact.  However x86 currently does this:
-> >
-> >  if (cpuidle_idle_call())
-> >          x86_idle();
-> >  else
-> >          local_irq_enable();
-> >
-> > So whenever cpuidle_idle_call() is successful then IRQs are
-> > unconditionally enabled whether or not the underlying cpuidle driver has
-> > properly done it or not.  And the reason is that some of the x86 cpuidle
-> > do fail to enable IRQs before returning.
-> >
-> > So the idea is to get rid of this unconditional IRQ enabling and let the
-> > core issue a warning instead (as well as enabling IRQs to allow the
-> > system to run).
-> 
-> But what I don't get with your comment is the local_irq_enable is done from
-> the cpuidle common framework in 'cpuidle_enter_state' it is not done from the
-> arch specific backend cpuidle driver.
+> exactly what the caller intends.
+>
+> int searchnode = node;
+> if (node == NUMA_NO_NODE)
+> 	searchnode = numa_mem_id();
+> if (!node_present_pages(node))
+> 	searchnode = local_memory_node(node);
+>
+> The difference in semantics from the previous is that here, if we have a
+> memoryless node, rather than using the CPU's nearest NUMA node, we use
+> the NUMA node closest to the requested one?
 
-Oh well... This certainly means we'll have to clean this mess as some 
-drivers do it on their own while some others don't.  Some drivers also 
-loop on !need_resched() while some others simply return on the first 
-interrupt.
+The idea here is that the page allocator will do the fallback to other
+nodes. This check for !node_present should not be necessary. SLUB needs to
+accept the page from whatever node the page allocator returned and work
+with that.
 
-> So the code above could be:
-> 
-> 	if (cpuidle_idle_call())
-> 		x86_idle();
-> 
-> without the else section, this local_irq_enable is pointless. Or may be I
-> missed something ?
+The problem is the check for having a slab from the "right" node may fall
+again after another attempt to allocate from the same node. SLUB will then
+push the slab from the *wrong* node back to the partial lists and may
+attempt another allocation that will again be successful but return memory
+from another node. That way the partial lists from a particular node are
+growing uselessly.
 
-A later patch removes it anyway.  But if it is really necessary to 
-enable interrupts then the core will do it but with a warning now.
-
-
-Nicolas
+One way to solve this may be to check if memory is actually allocated
+from the requested node and fallback to NUMA_NO_NODE (which will use the
+last allocated slab) for future allocs if the page allocator returned
+memory from a different node (unless GFP_THIS_NODE is set of course).
+Otherwise we end up replicating  the page allocator logic in slub like in
+slab. That is what I wanted to
+avoid.
