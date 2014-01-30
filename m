@@ -1,21 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0158.outbound.protection.outlook.com [207.46.163.158])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <greg@kroah.com>
+Received: from out4-smtp.messagingengine.com (out4-smtp.messagingengine.com
+ [66.111.4.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 65C712C0082
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 08:31:30 +1100 (EST)
-Message-ID: <1391117477.6733.39.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2][v7] driver/memory:Move Freescale IFC driver to a
- common driver
-From: Scott Wood <scottwood@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Date: Thu, 30 Jan 2014 15:31:17 -0600
-In-Reply-To: <1390886979-9341-1-git-send-email-prabhakar@freescale.com>
-References: <1390886979-9341-1-git-send-email-prabhakar@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 8A0372C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 09:36:22 +1100 (EST)
+Date: Thu, 30 Jan 2014 14:37:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Fix compile error of pgtable-ppc64.h
+Message-ID: <20140130223735.GC4046@kroah.com>
+References: <1390911762-5659-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1390911762-5659-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140129184544.GA23204@kroah.com>
+ <1391036256.8524.81.camel@pasglop>
+ <20140130123457.GA6571@kroah.com>
+ <8761p15pzn.fsf@linux.vnet.ibm.com>
+ <20140130175514.GA29370@kroah.com>
+ <1391115541.29634.15.camel@pasglop>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1391115541.29634.15.camel@pasglop>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, stable@vger.kernel.org,
+ Li Zhong <zhong@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-01-28 at 10:59 +0530, Prabhakar Kushwaha wrote:
->  Freescale IFC controller has been used for mpc8xxx. It will be used
->  for ARM-based SoC as well. This patch moves the driver to driver/memory
->  and fix the header file includes.
-> 
->  Also remove module_platform_driver() and  instead call
->  platform_driver_register() from subsys_initcall() to make sure this module
->  has been loaded before MTD partition parsing starts.
-> 
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> Acked-by: Arnd Bergmann <arnd@arndb.de>
+On Fri, Jan 31, 2014 at 07:59:01AM +1100, Benjamin Herrenschmidt wrote:
+> If that's an issue for you, just drop the 3.13 variant of the patch and
+> we'll send it again with the build fix as soon as Linus has pulled the
+> latter.
 
-When did Arnd ack this?  Especially in v7 form... and I don't see him on
-CC.
+I have done that.
 
-> +config FSL_IFC
-> +	bool "Freescale Integrated Flash Controller"
-> +	depends on FSL_SOC
-> +	help
-> +	  This driver is for the Integrated Flash Controller Controller(IFC)
+thanks,
 
-Controller Controller?
-
-> +	  module available in Freescale SoCs. This controller allows to handle flash
-> +	  devices such as NOR, NAND, FPGA and ASIC etc
-
-FPGA and ASIC are not (necessarily) flash devices.
-
--Scott
+greg k-h
