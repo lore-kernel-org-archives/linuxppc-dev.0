@@ -1,15 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Thu, 30 Jan 2014 16:49:13 +1100
+Date: Thu, 30 Jan 2014 17:00:00 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 02/10] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
- register
-Message-ID: <20140130054913.GA10611@iris.ozlabs.ibm.com>
+Subject: Re: [RFC PATCH 07/10] KVM: PPC: BOOK3S: PR: Emulate facility status
+ and control register
+Message-ID: <20140130060000.GB10611@iris.ozlabs.ibm.com>
 References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,35 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 28, 2014 at 10:14:07PM +0530, Aneesh Kumar K.V wrote:
-> virtual time base register is a per vm register and need to saved
-> and restored on vm exit and entry. Writing to VTB is not allowed
-> in the privileged mode.
+On Tue, Jan 28, 2014 at 10:14:12PM +0530, Aneesh Kumar K.V wrote:
+> We allow priv-mode update of this. The guest value is saved in fscr,
+> and the value actually used is saved in shadow_fscr. shadow_fscr
+> only contains values that are allowed by the host. On
+> facility unavailable interrupt, if the facility is allowed by fscr
+> but disabled in shadow_fscr we need to emulate the support. Currently
+> all but EBB is disabled. We still don't support performance monitoring
+> in PR guest.
+
 ...
 
-> +#ifdef CONFIG_PPC_BOOK3S_64
-> +#define mfvtb()		({unsigned long rval;				\
-> +			asm volatile("mfspr %0, %1" :			\
-> +				     "=r" (rval) : "i" (SPRN_VTB)); rval;})
+> +	/*
+> +	 * Save the current fscr in shadow fscr
+> +	 */
+> +	mfspr r3,SPRN_FSCR
+> +	PPC_STL r3, VCPU_SHADOW_FSCR(r7)
 
-The mfspr will be a no-op on anything before POWER8, meaning the
-result will be whatever value was in the destination GPR before the
-mfspr.  I suppose that may not matter if the result is only ever used
-when we're running on a POWER8 host, but I would feel more comfortable
-if we had explicit feature tests to make sure of that, rather than
-possibly doing computations with unpredictable values.
-
-With your patch, a guest on a POWER7 or a PPC970 could do a read from
-VTB and get garbage -- first, there is nothing to stop userspace from
-requesting POWER8 emulation on an older machine, and secondly, even if
-the virtual machine is a PPC970 (say) you don't implement
-unimplemented SPR semantics for VTB (no-op if PR=0, illegal
-instruction interrupt if PR=1).
-
-On the whole I think it is reasonable to reject an attempt to set the
-virtual PVR to a POWER8 PVR value if we are not running on a POWER8
-host, because emulating all the new POWER8 features in software
-(particularly transactional memory) would not be feasible.  Alex may
-disagree. :)
+I don't think you need to do this.  What could possibly have changed
+FSCR since we loaded it on the way into the guest?
 
 Paul.
