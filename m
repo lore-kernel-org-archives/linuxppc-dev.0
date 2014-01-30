@@ -1,17 +1,31 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 30 Jan 2014 17:00:00 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 07/10] KVM: PPC: BOOK3S: PR: Emulate facility status
- and control register
-Message-ID: <20140130060000.GB10611@iris.ozlabs.ibm.com>
-References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 477AD2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 20:25:12 +1100 (EST)
+Date: Thu, 30 Jan 2014 10:24:38 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 5/6] X86: remove redundant cpuidle_idle_call()
+Message-ID: <20140130092438.GK11314@laptop.programming.kicks-ass.net>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-6-git-send-email-nicolas.pitre@linaro.org>
+ <CAOesGMjvOkuxCopog91SAV1-gB9GaEYXpuXwhV1EJQor_pKjBA@mail.gmail.com>
+ <alpine.LFD.2.11.1401291434120.1652@knanqh.ubzr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.11.1401291434120.1652@knanqh.ubzr>
+Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Linux-sh list <linux-sh@vger.kernel.org>, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, Paul Mundt <lethal@linux-sh.org>,
+ Olof Johansson <olof@lixom.net>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@redhat.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,24 +35,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 28, 2014 at 10:14:12PM +0530, Aneesh Kumar K.V wrote:
-> We allow priv-mode update of this. The guest value is saved in fscr,
-> and the value actually used is saved in shadow_fscr. shadow_fscr
-> only contains values that are allowed by the host. On
-> facility unavailable interrupt, if the facility is allowed by fscr
-> but disabled in shadow_fscr we need to emulate the support. Currently
-> all but EBB is disabled. We still don't support performance monitoring
-> in PR guest.
+On Wed, Jan 29, 2014 at 03:14:40PM -0500, Nicolas Pitre wrote:
+> Looking into some cpuidle drivers for x86 I found at least one that 
+> doesn't respect this convention.  Damn.
 
-...
-
-> +	/*
-> +	 * Save the current fscr in shadow fscr
-> +	 */
-> +	mfspr r3,SPRN_FSCR
-> +	PPC_STL r3, VCPU_SHADOW_FSCR(r7)
-
-I don't think you need to do this.  What could possibly have changed
-FSCR since we loaded it on the way into the guest?
-
-Paul.
+Which one? We should probably fix it :-)
