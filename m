@@ -1,18 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DFA5A2C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 13:55:59 +1100 (EST)
-Message-ID: <1391050548.8524.89.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 30 Jan 2014 13:55:48 +1100
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Date: Thu, 30 Jan 2014 14:32:37 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Add cpu family documentation
+Message-Id: <20140130143237.a2bc71327ed4939cd71a734f@canb.auug.org.au>
+In-Reply-To: <1391049480-29346-1-git-send-email-mpe@ellerman.id.au>
+References: <1391049480-29346-1-git-send-email-mpe@ellerman.id.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__30_Jan_2014_14_32_37_+1100_dxlWcoiNP.+DZ057"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,152 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+--Signature=_Thu__30_Jan_2014_14_32_37_+1100_dxlWcoiNP.+DZ057
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here are a few more powerpc bits for this merge window. The bulk is made
-of two pull requests from Scott and Anatolij that I had missed previously
-(they arrived while I was away). Since both their branches are in -next
-independently, and the content has been around for a little while, they
-can still go in.
+Hi Michael,
 
-The rest is mostly bug and regression fixes, a small series of
-cleanups to our pseries cpuidle code (including moving it to
-the right place), and one new cpuidle bakend for the powernv
-platform. I also wired up the new sched_attr syscalls.
+Nice.
 
+On Thu, 30 Jan 2014 13:38:00 +1100 Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>
+> +++ b/Documentation/powerpc/cpu_families.txt
+> @@ -0,0 +1,76 @@
+> +CPU Families
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +
+> +This doco tries to summarise some of the different cpu families that exi=
+st and
+        ^^^^
+document
+
+> +   |            |
+> +   |            *---- [620] --- POWER3/630 --- POWER3+ --- POWER4 --- PO=
+WER4+ --- POWER5 --- POWER5+ --- POWER5++ --- POWER6 --- POWER7 --- POWER7+=
+ --- POWER8
+
+Its a pity that this wraps ...
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-The following changes since commit d891ea23d5203e5c47439b2a174f86a00b356a6c:
+--Signature=_Thu__30_Jan_2014_14_32_37_+1100_dxlWcoiNP.+DZ057
+Content-Type: application/pgp-signature
 
-  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/sage/ceph-client (2014-01-28 11:02:23 -0800)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-are available in the git repository at:
+iQIcBAEBCAAGBQJS6cfZAAoJEMDTa8Ir7ZwVOrEP+wfWS3eetACw7c8Zz95D5GNF
+505RuvmWoyFNgfKs5PrU6PdP4a2BkY7LD+yY2AmEhj34himvseDAejy8y5p6IOHN
+lEhOtlvSs4BeA4PmwTbd3Rwk3A/tGJ+gtX9sRKWij+18lO8iKnq+jnCfP6Rkhl0h
+Dp9grHZ2w1VBZ/oD3Gmos0P3a8jYavHjK5ec6VauYq9GyZPmYlzPuijS9Ixa61DU
+o9oC5fFMFwI2ijZDKzLLSNGDMTlZvdhvWOlUbatr1i+H4MnHPhQzofh1Gu7q1vfI
+rNLRmsRCNASc4GOropfxvBF1QpMotjxNMGFK3VPYTd0JAJQ0th1EZGH1C1jmCK4A
+XCwqHMvFWguftcz3NxC17D9pqYUhcSaYDvj3udEKu5qEU07gnjpih1DZh5JV7spY
+PkkdzRxspE/lC729w1lWGVztWsgjaiYkwaA9DboxFsGlBBncFn6Mi0RIo6eC4Te9
+3Bxk6ZtJtslkHaZghsw9Vtu5buBQUqRz08iNOadFB+iR8xgaD2RqOn9N6kFD1Tgw
+RZRxsRsjHVpqVB8je6vy+KhEcTjxAE6YtHkEf7t+RSErQk7XQYOAU+MB0jW+gW3v
+pFLrAWCMIIcwueEJ2/skig2wTC7TH+rtA69kI77tATQi83oKo2eSJz706PD6cyd7
+jynaWpC83hxh+880D+5Q
+=TjsG
+-----END PGP SIGNATURE-----
 
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
-
-for you to fetch changes up to f878f84373aefda7f041a74b24a83b8b7dec1cf0:
-
-  powerpc: Wire up sched_setattr and sched_getattr syscalls (2014-01-29 17:13:05 +1100)
-
-----------------------------------------------------------------
-Alistair Popple (1):
-      powerpc/iommu: Fix initialisation of DART iommu table
-
-Andreas Schwab (1):
-      powerpc: Fix hw breakpoints on !HAVE_HW_BREAKPOINT configurations
-
-Benjamin Herrenschmidt (3):
-      Merge remote-tracking branch 'agust/next' into next
-      Merge remote-tracking branch 'scott/next' into next
-      powerpc: Wire up sched_setattr and sched_getattr syscalls
-
-Deepthi Dharwar (6):
-      powerpc/pseries/cpuidle: Move processor_idle.c to drivers/cpuidle.
-      powerpc/pseries/cpuidle: Use cpuidle_register() for initialisation.
-      powerpc/pseries/cpuidle: Make cpuidle-pseries backend driver a non-module.
-      powerpc/pseries/cpuidle: Remove MAX_IDLE_STATE macro.
-      powerpc/pseries/cpuidle: smt-snooze-delay cleanup.
-      powerpc/powernv/cpuidle: Back-end cpuidle driver for powernv platform.
-
-Gerhard Sittig (20):
-      dts: mpc512x: introduce dt-bindings/clock/ header
-      dts: mpc512x: add clock related device tree specs
-      clk: mpc512x: introduce COMMON_CLK for MPC512x (disabled)
-      clk: mpc512x: add backwards compat to the CCF code
-      dts: mpc512x: add clock specs for client lookups
-      clk: mpc5xxx: switch to COMMON_CLK, retire PPC_CLOCK
-      spi: mpc512x: adjust to OF based clock lookup
-      serial: mpc512x: adjust for OF based clock lookup
-      serial: mpc512x: setup the PSC FIFO clock as well
-      USB: fsl-mph-dr-of: adjust for OF based clock lookup
-      mtd: mpc5121_nfc: adjust for OF based clock lookup
-      fsl-viu: adjust for OF based clock lookup
-      net: can: mscan: adjust to common clock support for mpc512x
-      net: can: mscan: remove non-CCF code for MPC512x
-      powerpc/mpc512x: improve DIU related clock setup
-      clk: mpc512x: remove migration support workarounds
-      powerpc/512x: clk: minor comment updates
-      powerpc/512x: clk: enforce even SDHC divider values
-      powerpc/512x: clk: support MPC5121/5123/5125 SoC variants
-      powerpc/512x: dts: add MPC5125 clock specs
-
-Joe Perches (1):
-      powerpc/numa: Fix decimal permissions
-
-Li Zhong (1):
-      powerpc/mm: Fix compile error of pgtable-ppc64.h
-
-Paul Mackerras (2):
-      powerpc: Fix 32-bit frames for signals delivered when transactional
-      powerpc: Make sure "cache" directory is removed when offlining cpu
-
-Scott Wood (1):
-      powerpc/booke64: Guard e6500 tlb handler with CONFIG_PPC_FSL_BOOK3E
-
-Tang Yuantian (1):
-      clk: corenet: Adds the clock binding
-
-Tiejun Chen (1):
-      powerpc/hugetlb: Replace __get_cpu_var with get_cpu_var
-
-jmarchan@redhat.com (1):
-      powerpc/mm: Fix mmap errno when MAP_FIXED is set and mapping exceeds the allowed address space
-
- .../devicetree/bindings/clock/corenet-clock.txt    |  134 +++
- arch/powerpc/Kconfig                               |    6 +-
- arch/powerpc/boot/dts/ac14xx.dts                   |    7 +
- arch/powerpc/boot/dts/mpc5121.dtsi                 |  113 +-
- arch/powerpc/boot/dts/mpc5125twr.dts               |   53 +-
- arch/powerpc/include/asm/clk_interface.h           |   20 -
- arch/powerpc/include/asm/mpc5121.h                 |    7 +-
- arch/powerpc/include/asm/pgtable-ppc64.h           |    6 +-
- arch/powerpc/include/asm/processor.h               |    7 -
- arch/powerpc/include/asm/systbl.h                  |    2 +
- arch/powerpc/include/asm/unistd.h                  |    2 +-
- arch/powerpc/include/uapi/asm/unistd.h             |    3 +-
- arch/powerpc/kernel/Makefile                       |    1 -
- arch/powerpc/kernel/cacheinfo.c                    |    3 +
- arch/powerpc/kernel/clock.c                        |   82 --
- arch/powerpc/kernel/process.c                      |    2 +-
- arch/powerpc/kernel/signal_32.c                    |   19 +-
- arch/powerpc/kernel/sysfs.c                        |    2 -
- arch/powerpc/mm/hugetlbpage.c                      |    4 +-
- arch/powerpc/mm/numa.c                             |    2 +-
- arch/powerpc/mm/slice.c                            |    2 +-
- arch/powerpc/mm/tlb_low_64e.S                      |    3 +-
- arch/powerpc/mm/tlb_nohash.c                       |    2 +
- arch/powerpc/platforms/512x/Kconfig                |    2 +-
- arch/powerpc/platforms/512x/Makefile               |    3 +-
- arch/powerpc/platforms/512x/clock-commonclk.c      | 1221 ++++++++++++++++++++
- arch/powerpc/platforms/512x/clock.c                |  754 ------------
- arch/powerpc/platforms/512x/mpc512x_shared.c       |  169 +--
- arch/powerpc/platforms/52xx/Kconfig                |    2 +-
- arch/powerpc/platforms/powernv/setup.c             |   13 +-
- arch/powerpc/platforms/pseries/Kconfig             |    9 -
- arch/powerpc/platforms/pseries/Makefile            |    1 -
- arch/powerpc/sysdev/dart_iommu.c                   |    1 +
- drivers/cpuidle/Kconfig                            |    5 +
- drivers/cpuidle/Kconfig.powerpc                    |   20 +
- drivers/cpuidle/Makefile                           |    5 +
- drivers/cpuidle/cpuidle-powernv.c                  |  169 +++
- .../cpuidle/cpuidle-pseries.c                      |   79 +-
- drivers/media/platform/fsl-viu.c                   |    2 +-
- drivers/mtd/nand/mpc5121_nfc.c                     |    2 +-
- drivers/net/can/mscan/mpc5xxx_can.c                |  270 +++--
- drivers/spi/spi-mpc512x-psc.c                      |   26 +-
- drivers/tty/serial/mpc52xx_uart.c                  |   90 +-
- drivers/usb/host/fsl-mph-dr-of.c                   |   13 +-
- include/dt-bindings/clock/mpc512x-clock.h          |   76 ++
- include/linux/clk-provider.h                       |   16 +
- 46 files changed, 2234 insertions(+), 1196 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/clock/corenet-clock.txt
- delete mode 100644 arch/powerpc/include/asm/clk_interface.h
- delete mode 100644 arch/powerpc/kernel/clock.c
- create mode 100644 arch/powerpc/platforms/512x/clock-commonclk.c
- delete mode 100644 arch/powerpc/platforms/512x/clock.c
- create mode 100644 drivers/cpuidle/Kconfig.powerpc
- create mode 100644 drivers/cpuidle/cpuidle-powernv.c
- rename arch/powerpc/platforms/pseries/processor_idle.c => drivers/cpuidle/cpuidle-pseries.c (75%)
- create mode 100644 include/dt-bindings/clock/mpc512x-clock.h
+--Signature=_Thu__30_Jan_2014_14_32_37_+1100_dxlWcoiNP.+DZ057--
