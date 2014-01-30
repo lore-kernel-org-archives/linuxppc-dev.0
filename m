@@ -1,31 +1,28 @@
-Return-Path: <cl@linux.com>
-Received: from qmta09.emeryville.ca.mail.comcast.net
- (qmta09.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:96])
- by ozlabs.org (Postfix) with ESMTP id E4EDF2C01AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 03:26:56 +1100 (EST)
-Date: Thu, 30 Jan 2014 10:26:51 -0600 (CST)
-From: Christoph Lameter <cl@linux.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
- no local memory
-In-Reply-To: <20140129223640.GA10101@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.10.1401301017590.29392@nuc>
-References: <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
- <alpine.DEB.2.10.1401240946530.12886@nuc>
- <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
- <20140124232902.GB30361@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
- <20140125001643.GA25344@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
- <20140125011041.GB25344@linux.vnet.ibm.com> <20140127055805.GA2471@lge.com>
- <20140128182947.GA1591@linux.vnet.ibm.com>
- <20140129223640.GA10101@linux.vnet.ibm.com>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
- penberg@kernel.org, linux-mm@kvack.org, cody@linux.vnet.ibm.com,
- paulus@samba.org, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 89DB32C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 03:28:26 +1100 (EST)
+Date: Thu, 30 Jan 2014 17:27:53 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Message-ID: <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+ <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,36 +32,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Jan 2014, Nishanth Aravamudan wrote:
+On Thu, Jan 30, 2014 at 11:03:31AM -0500, Nicolas Pitre wrote:
+> > This is not a valid patch for PATCH(1). Please try again.
+> 
+> Don't you use git?  ;-)
 
-> exactly what the caller intends.
->
-> int searchnode = node;
-> if (node == NUMA_NO_NODE)
-> 	searchnode = numa_mem_id();
-> if (!node_present_pages(node))
-> 	searchnode = local_memory_node(node);
->
-> The difference in semantics from the previous is that here, if we have a
-> memoryless node, rather than using the CPU's nearest NUMA node, we use
-> the NUMA node closest to the requested one?
+Nah, git and me don't get along well.
 
-The idea here is that the page allocator will do the fallback to other
-nodes. This check for !node_present should not be necessary. SLUB needs to
-accept the page from whatever node the page allocator returned and work
-with that.
+> Here's a plain patch:
 
-The problem is the check for having a slab from the "right" node may fall
-again after another attempt to allocate from the same node. SLUB will then
-push the slab from the *wrong* node back to the partial lists and may
-attempt another allocation that will again be successful but return memory
-from another node. That way the partial lists from a particular node are
-growing uselessly.
-
-One way to solve this may be to check if memory is actually allocated
-from the requested node and fallback to NUMA_NO_NODE (which will use the
-last allocated slab) for future allocs if the page allocator returned
-memory from a different node (unless GFP_THIS_NODE is set of course).
-Otherwise we end up replicating  the page allocator logic in slub like in
-slab. That is what I wanted to
-avoid.
+Thanks!
