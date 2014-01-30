@@ -1,33 +1,36 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B3ED2C02FD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 05:07:32 +1100 (EST)
-Date: Thu, 30 Jan 2014 19:06:59 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
- idle loop
-Message-ID: <20140130180659.GI5002@laptop.programming.kicks-ass.net>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
- <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
- <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
- <52E9C946.50704@linux.vnet.ibm.com>
- <alpine.LFD.2.11.1401300021530.1652@knanqh.ubzr>
- <52EA5720.8010000@linaro.org>
- <alpine.LFD.2.11.1401301056180.1652@knanqh.ubzr>
- <52EA8BD4.6020803@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id 0D4FE2C00C3
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 06:00:59 +1100 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Fri, 31 Jan 2014 05:00:58 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E53D03578055
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 06:00:56 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0UIfheF62980308
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 05:41:43 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0UJ0tAC020157
+ for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 06:00:55 +1100
+Subject: [PATCH] powerpc/pseries: Disable relocation on exception while going
+ down during crash.
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Date: Fri, 31 Jan 2014 00:30:45 +0530
+Message-ID: <20140130190044.19305.63111.stgit@mars>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <52EA8BD4.6020803@linaro.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linaro-kernel@lists.linaro.org,
- Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org,
- linux-sh@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
- Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Steve Best <sbest@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Hari Bathini <hbathini@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,23 +40,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 30, 2014 at 06:28:52PM +0100, Daniel Lezcano wrote:
-> Ok, I think the mess is coming from 'default_idle' which does not re-enable
-> the local_irq but used from different places like amd_e400_idle and
-> apm_cpu_idle.
-> 
-> void default_idle(void)
-> {
->         trace_cpu_idle_rcuidle(1, smp_processor_id());
->         safe_halt();
->         trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
-> }
-> 
-> Considering the system configured without cpuidle because this one *always*
-> enable the local irq, we have the different cases:
-> 
-> x86_idle = default_idle();
-> ==> local_irq_enable is missing
-> 
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-safe_halt() is "sti; hlt" and so very much does the irq_enable.
+Disable relocation on exception while going down even in kdump case. This
+is because we are about clear htab mappings while kexec-ing into kdump
+kernel and we may run into issues if we still have AIL ON.
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/setup.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index c1f1908..3925173 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -430,8 +430,7 @@ static void pSeries_machine_kexec(struct kimage *image)
+ {
+ 	long rc;
+ 
+-	if (firmware_has_feature(FW_FEATURE_SET_MODE) &&
+-	    (image->type != KEXEC_TYPE_CRASH)) {
++	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+ 		rc = pSeries_disable_reloc_on_exc();
+ 		if (rc != H_SUCCESS)
+ 			pr_warning("Warning: Failed to disable relocation on "
