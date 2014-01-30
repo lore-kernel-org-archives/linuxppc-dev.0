@@ -1,32 +1,30 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qa0-f48.google.com (mail-qa0-f48.google.com
+ [209.85.216.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 04F922C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 00:01:13 +1100 (EST)
-Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Thu, 30 Jan 2014 11:01:07 -0200
-Received: from d24relay01.br.ibm.com (d24relay01.br.ibm.com [9.8.31.16])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 211081DC0074
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 08:00:54 -0500 (EST)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay01.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0UD0woC4444302
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 11:00:59 -0200
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0UD0ofm030936
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 11:00:50 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/eeh: drop taken reference to driver on eeh_rmv_device
-Date: Thu, 30 Jan 2014 11:00:48 -0200
-Message-Id: <1391086848-11311-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: paulus@samba.org, shangw@linux.vnet.ibm.com,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4BD802C014B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 00:31:58 +1100 (EST)
+Received: by mail-qa0-f48.google.com with SMTP id f11so4279963qae.21
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 05:31:55 -0800 (PST)
+Date: Thu, 30 Jan 2014 08:31:52 -0500 (EST)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 0/6] setting the table for integration of cpuidle with
+ the scheduler
+In-Reply-To: <20140130092835.GL11314@laptop.programming.kicks-ass.net>
+Message-ID: <alpine.LFD.2.11.1401300830340.1652@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <20140130092835.GL11314@laptop.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +34,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit f5c57710dd62dd06f176934a8b4b8accbf00f9f8 ("powerpc/eeh: Use
-partial hotplug for EEH unaware drivers") introduces eeh_rmv_device,
-which may grab a reference to a driver, but not release it.
+On Thu, 30 Jan 2014, Peter Zijlstra wrote:
 
-That prevents a driver from being removed after it has gone through EEH
-recovery.
+> On Wed, Jan 29, 2014 at 12:45:07PM -0500, Nicolas Pitre wrote:
+> > As everyone should know by now, we want to integrate the cpuidle
+> > governor with the scheduler for a more efficient idling of CPUs.
+> > In order to help the transition, this small patch series moves the
+> > existing interaction with cpuidle from architecture code to generic
+> > core code.  The ARM, PPC, SH and X86 architectures are concerned.
+> > No functional change should have occurred yet.
+> > 
+> > @peterz: Are you willing to pick up those patches?
+> 
+> Yeah.. no objections. Should I pick these up or will you be sending
+> another round?
 
-This patch drops the reference in either exit path if it was taken.
+I think you could pick them now, taking care of picking up the amended 
+#1/6.
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_driver.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 7bb30dc..afe7337 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -364,7 +364,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 		return NULL;
- 	driver = eeh_pcid_get(dev);
- 	if (driver && driver->err_handler)
--		return NULL;
-+		goto out;
- 
- 	/* Remove it from PCI subsystem */
- 	pr_debug("EEH: Removing %s without EEH sensitive driver\n",
-@@ -377,6 +377,9 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 	pci_stop_and_remove_bus_device(dev);
- 	pci_unlock_rescan_remove();
- 
-+out:
-+	if (driver)
-+		eeh_pcid_put(dev);
- 	return NULL;
- }
- 
--- 
-1.7.1
+Nicolas
