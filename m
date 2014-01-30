@@ -1,36 +1,35 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qa0-f49.google.com (mail-qa0-f49.google.com
+ [209.85.216.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 790C82C031C
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 06:01:16 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 31 Jan 2014 05:01:16 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5371A3578052
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 06:01:14 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0UIg1fQ51380250
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 05:42:01 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0UJ1Dkt020583
- for <linuxppc-dev@ozlabs.org>; Fri, 31 Jan 2014 06:01:14 +1100
-Subject: [PATCH] powerpc: Fix kdump hang issue on p8 with relocation on
- exception enabled.
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Fri, 31 Jan 2014 00:31:04 +0530
-Message-ID: <20140130190104.19333.86268.stgit@mars>
+ by ozlabs.org (Postfix) with ESMTPS id E29A52C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 06:24:24 +1100 (EST)
+Received: by mail-qa0-f49.google.com with SMTP id w8so4922123qac.22
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 11:24:21 -0800 (PST)
+Date: Thu, 30 Jan 2014 14:24:18 -0500 (EST)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 1/6] idle: move the cpuidle entry point to the generic
+ idle loop
+In-Reply-To: <52EA8BD4.6020803@linaro.org>
+Message-ID: <alpine.LFD.2.11.1401301358040.1652@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-2-git-send-email-nicolas.pitre@linaro.org>
+ <alpine.LFD.2.11.1401291526320.1652@knanqh.ubzr>
+ <52E9C946.50704@linux.vnet.ibm.com>
+ <alpine.LFD.2.11.1401300021530.1652@knanqh.ubzr>
+ <52EA5720.8010000@linaro.org> <alpine.LFD.2.11.1401301056180.1652@knanqh.ubzr>
+ <52EA8BD4.6020803@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Steve Best <sbest@us.ibm.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Hari Bathini <hbathini@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ linux-sh@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+ Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,82 +39,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Thu, 30 Jan 2014, Daniel Lezcano wrote:
 
-On p8 systems, with relocation on exception feature enabled we are seeing
-kdump kernel hang at interrupt vector 0xc*4400. The reason is, with this
-feature enabled, exception are raised with MMU (IR=DR=1) ON with the
-default offset of 0xc*4000. Since exception is raised in virtual mode it
-requires the vector region to be executable without which it fails to
-fetch and execute instruction at 0xc*4xxx. For default kernel since kernel
-is loaded at real 0, the htab mappings sets the entire kernel text region
-executable. But for relocatable kernel (e.g. kdump case) we only copy
-interrupt vectors down to real 0 and never marked that region as
-executable because in p7 and below we always get exception in real mode.
+> On 01/30/2014 05:07 PM, Nicolas Pitre wrote:
+> > On Thu, 30 Jan 2014, Daniel Lezcano wrote:
+> > > But what I don't get with your comment is the local_irq_enable is done
+> > > from
+> > > the cpuidle common framework in 'cpuidle_enter_state' it is not done from
+> > > the
+> > > arch specific backend cpuidle driver.
+> >
+> > Oh well... This certainly means we'll have to clean this mess as some
+> > drivers do it on their own while some others don't.  Some drivers also
+> > loop on !need_resched() while some others simply return on the first
+> > interrupt.
+> 
+> Ok, I think the mess is coming from 'default_idle' which does not re-enable
+> the local_irq but used from different places like amd_e400_idle and
+> apm_cpu_idle.
 
-This patch fixes this issue by marking htab mapping range as executable
-that overlaps with the interrupt vector region for relocatable kernel.
+Yet if you look at the code path before my patches you'll see that IRQs 
+were enabled only after cpuidle_idle_call() had returned success.
 
-Thanks to Ben who helped me to debug this issue and find the root cause.
+> void default_idle(void)
+> {
+>         trace_cpu_idle_rcuidle(1, smp_processor_id());
+>         safe_halt();
+>         trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, smp_processor_id());
+> }
+> 
+> Considering the system configured without cpuidle because this one *always*
+> enable the local irq,
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/sections.h |   12 ++++++++++++
- arch/powerpc/mm/hash_utils_64.c     |   14 ++++++++++++++
- 2 files changed, 26 insertions(+)
+Yet this is discutable. Given that some hardware do have IRQs turned on 
+upon exiting idle mode, I think we should generalize it so that 
+the explicit enabling 
+of IRQs, when needed, should be done as close as possible to the 
+operation that caused idle mode to be entered.
 
-diff --git a/arch/powerpc/include/asm/sections.h b/arch/powerpc/include/asm/sections.h
-index 4ee06fe..d0e784e 100644
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@ -8,6 +8,7 @@
- 
- #ifdef __powerpc64__
- 
-+extern char __start_interrupts[];
- extern char __end_interrupts[];
- 
- extern char __prom_init_toc_start[];
-@@ -21,6 +22,17 @@ static inline int in_kernel_text(unsigned long addr)
- 	return 0;
- }
- 
-+static inline int overlaps_interrupt_vector_text(unsigned long start,
-+							unsigned long end)
-+{
-+	unsigned long real_start, real_end;
-+	real_start = __start_interrupts - _stext;
-+	real_end = __end_interrupts - _stext;
-+
-+	return start < (unsigned long)__va(real_end) &&
-+		(unsigned long)__va(real_start) < end;
-+}
-+
- static inline int overlaps_kernel_text(unsigned long start, unsigned long end)
- {
- 	return start < (unsigned long)__init_end &&
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 6176b3c..50e21af 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -206,6 +206,20 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 		if (overlaps_kernel_text(vaddr, vaddr + step))
- 			tprot &= ~HPTE_R_N;
- 
-+		/*
-+		 * If relocatable, check if it overlaps interrupt vectors that
-+		 * are copied down to real 0. For relocatable kernel
-+		 * (e.g. kdump case) we copy interrupt vectors down to real
-+		 * address 0. Mark that region as executable. This is
-+		 * because on p8 system with relocation on exception feature
-+		 * enabled, exceptions are raised with MMU (IR=DR=1) ON. Hence
-+		 * in order to execute the interrupt handlers in virtual
-+		 * mode the vector region need to be marked as executable.
-+		 */
-+		if ((PHYSICAL_START > MEMORY_START) &&
-+			overlaps_interrupt_vector_text(vaddr, vaddr + step))
-+				tprot &= ~HPTE_R_N;
-+
- 		hash = hpt_hash(vpn, shift, ssize);
- 		hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
- 
+> we have the different cases:
+> 
+> x86_idle = default_idle();
+> ==> local_irq_enable is missing
+
+According to Peter it is not.
+
+> x86_idle = amd_e400_idle();
+> ==> it calls local_irq_disable(); but in the idle loop context where the 
+> local irqs are already disabled.
+
+Since it returned from default_idle() then IRQs are enabled.
+
+> ==> if amd_e400_c1e_detected is true, the local_irq are enabled
+> ==> otherwise no
+> ==> default_idle is called from there and does not enable local_irqs
+
+Again, it does.
+
+> > > So the code above could be:
+> > >
+> > >  if (cpuidle_idle_call())
+> > >   x86_idle();
+> > >
+> > > without the else section, this local_irq_enable is pointless. Or may be I
+> > > missed something ?
+> >
+> > A later patch removes it anyway.  But if it is really necessary to
+> > enable interrupts then the core will do it but with a warning now.
+> 
+> This WARN should disappear. It was there because it was up to the backend
+> cpuidle driver to enable the irq. But in the meantime, that was consolidated
+> into a single place in the cpuidle framework so no need to try to catch
+> errors.
+
+And that consolidation was a mistake IMHO.  We should assume that the 
+exiting of idle mode has IRQs enabled already, and do so manually in the 
+backend driver if it is not the case on particular hardware.  That's the 
+only way to ensure uniformity at a higher level.
+
+Yet, if a code path is buggy in that regard, whether this is through 
+cpuidle when enabled, or the default idle function otherwise, then the 
+warning is there in cpu_idle_loop() to catch them all.
+
+> What about (based on this patchset).
+> 
+> diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+> index 4505e2a..2d60cbb 100644
+> --- a/arch/x86/kernel/process.c
+> +++ b/arch/x86/kernel/process.c
+> @@ -299,6 +299,7 @@ void arch_cpu_idle_dead(void)
+>  void arch_cpu_idle(void)
+>  {
+>         x86_idle();
+> +       local_irq_enable();
+>  }
+
+Again this is redundant.
+
+
+Nicolas
