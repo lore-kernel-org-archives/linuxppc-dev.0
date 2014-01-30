@@ -1,24 +1,9 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6BEBA2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 11:35:27 +1100 (EST)
-Message-ID: <1391042116.8524.84.camel@pasglop>
-Subject: Re: [RFC PATCH 02/10] KVM: PPC: BOOK3S: PR: Emulate virtual
- timebase register
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Thu, 30 Jan 2014 11:35:16 +1100
-In-Reply-To: <1391036081.8524.80.camel@pasglop>
-References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <52E92EC6.2030607@suse.de> <1391036081.8524.80.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Add cpu family documentation
+Date: Thu, 30 Jan 2014 13:38:00 +1100
+Message-Id: <1391049480-29346-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +13,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-01-30 at 09:54 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2014-01-29 at 17:39 +0100, Alexander Graf wrote:
-> > static inline mfvtb(unsigned long)
-> > {
-> > #ifdef CONFIG_PPC_BOOK3S_64
-> >      return mfspr(SPRN_VTB);
-> > #else
-> >      BUG();
-> > #endif
-> > }
-> > 
-> > is a lot easier to read and get right. But reg.h is Ben's call.
-> 
-> Agreed.
+This patch adds some documentation on the different cpu families
+supported by arch/powerpc.
 
-I mean I agree with Alex, his version is nicer :-)
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ Documentation/powerpc/cpu_families.txt | 76 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
+ create mode 100644 Documentation/powerpc/cpu_families.txt
 
-Cheers,
-Ben.
+diff --git a/Documentation/powerpc/cpu_families.txt b/Documentation/powerpc/cpu_families.txt
+new file mode 100644
+index 0000000..df72657
+--- /dev/null
++++ b/Documentation/powerpc/cpu_families.txt
+@@ -0,0 +1,76 @@
++CPU Families
++============
++
++This doco tries to summarise some of the different cpu families that exist and
++are supported by arch/powerpc.
++
++Book3S (aka sPAPR)
++------------------
++
++ - Hash MMU
++ - Mix of 32 & 64 bit
++
++  Old
++ POWER --- 601 --- 603
++   |            |   |
++   |            |   *----- 740
++   |            |   |
++   |            |   *----- 750 (G3) --- 750CX --- 750CL --- 750FX
++   |            |           |
++   |            |           |
++   |           604          *--- 7400 --- 7410 --- 7450 --- 7455 --- 7447 --- 7448
++   |            |
++   |            |
++   |            *---- [620] --- POWER3/630 --- POWER3+ --- POWER4 --- POWER4+ --- POWER5 --- POWER5+ --- POWER5++ --- POWER6 --- POWER7 --- POWER7+ --- POWER8
++   |                 (64bit)                                                   |    .
++   |                                                                           |    .
++   |                                                                           |    *--- Cell
++   |                                                                           |
++   |                                                                           *--- 970 --- 970FX --- 970MP
++   |
++   *--- RS64 (threads)
++
++
++  PA6T (64bit) ...
++
++
++IBM BookE
++---------
++
++ - Software loaded TLB.
++ - All 32 bit
++
++  401 --- 403 --- 405 --- 440 --- 450 --- 460 --- 476
++                                   |
++                                   *--- BG/P
++
++
++Motorola/Freescale 8xx
++----------------------
++
++ - Software loaded with hardware assist.
++ - All 32 bit
++
++  8xx --- 850
++
++
++Freescale BookE
++---------------
++
++ - Software loaded TLB.
++ - e6500 adds HW loaded indirect TLB entries.
++ - Mix of 32 & 64 bit
++
++  e200 --- e500 --- e500v2 --- e500mc --- e5500 --- e6500
++                                         (Book3E)  (HW TLB)
++                                         (64bit)
++
++IBM A2 core
++-----------
++
++ - Book3E, software loaded TLB + HW loaded indirect TLB entries.
++ - 64 bit
++
++  A2 core --- BG/Q
++     |
++     *------- WSP
+-- 
+1.8.3.2
