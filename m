@@ -1,25 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0158.outbound.protection.outlook.com [207.46.163.158])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 579FF2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 07:59:16 +1100 (EST)
-Message-ID: <1391115541.29634.15.camel@pasglop>
-Subject: Re: [PATCH 2/2] Fix compile error of pgtable-ppc64.h
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-Date: Fri, 31 Jan 2014 07:59:01 +1100
-In-Reply-To: <20140130175514.GA29370@kroah.com>
-References: <1390911762-5659-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390911762-5659-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140129184544.GA23204@kroah.com> <1391036256.8524.81.camel@pasglop>
- <20140130123457.GA6571@kroah.com> <8761p15pzn.fsf@linux.vnet.ibm.com>
- <20140130175514.GA29370@kroah.com>
+ by ozlabs.org (Postfix) with ESMTPS id 65C712C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 08:31:30 +1100 (EST)
+Message-ID: <1391117477.6733.39.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/2][v7] driver/memory:Move Freescale IFC driver to a
+ common driver
+From: Scott Wood <scottwood@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Date: Thu, 30 Jan 2014 15:31:17 -0600
+In-Reply-To: <1390886979-9341-1-git-send-email-prabhakar@freescale.com>
+References: <1390886979-9341-1-git-send-email-prabhakar@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, stable@vger.kernel.org,
- Li Zhong <zhong@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,96 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-01-30 at 09:55 -0800, Greg KH wrote:
-> On Thu, Jan 30, 2014 at 11:08:52PM +0530, Aneesh Kumar K.V wrote:
-> > Greg KH <greg@kroah.com> writes:
-> > 
-> > > On Thu, Jan 30, 2014 at 09:57:36AM +1100, Benjamin Herrenschmidt wrote:
-> > >> On Wed, 2014-01-29 at 10:45 -0800, Greg KH wrote:
-> > >> > On Tue, Jan 28, 2014 at 05:52:42PM +0530, Aneesh Kumar K.V wrote:
-> > >> > > From: Li Zhong <zhong@linux.vnet.ibm.com>
-> > >> > > 
-> > >> > > It seems that forward declaration couldn't work well with typedef, use
-> > >> > > struct spinlock directly to avoiding following build errors:
-> > >> > > 
-> > >> > > In file included from include/linux/spinlock.h:81,
-> > >> > >                  from include/linux/seqlock.h:35,
-> > >> > >                  from include/linux/time.h:5,
-> > >> > >                  from include/uapi/linux/timex.h:56,
-> > >> > >                  from include/linux/timex.h:56,
-> > >> > >                  from include/linux/sched.h:17,
-> > >> > >                  from arch/powerpc/kernel/asm-offsets.c:17:
-> > >> > > include/linux/spinlock_types.h:76: error: redefinition of typedef 'spinlock_t'
-> > >> > > /root/linux-next/arch/powerpc/include/asm/pgtable-ppc64.h:563: note: previous declaration of 'spinlock_t' was here
-> > >> > > 
-> > >> > > build fix for upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
-> > >> > > for 3.13 stable series
-> > >> > 
-> > >> > I don't understand, why is this needed?  Is there a corrisponding patch
-> > >> > upstream that already does this?  What went wrong with a "normal"
-> > >> > backport of the patch to 3.13?
-> > >> 
-> > >> There's a corresponding patch in powerpc-next that I'm about to send to
-> > >> Linus today, but for the backport, the "fix" could be folded into the
-> > >> original offending patch.
-> > >
-> > > Oh come on, you know better than to try to send me a patch that isn't in
-> > > Linus's tree already.  Crap, I can't take that at all.
-> > >
-> > > Send me the git commit id when it is in Linus's tree, otherwise I'm not
-> > > taking it.
-> > >
-> > > And no, don't "fold in" anything, that's not ok either.  I'll just go
-> > > drop this patch entirely from all of my -stable trees for now.  Feel
-> > > free to resend them when all of the needed stuff is upstream.
-> > 
-> > The fix for mremap crash is already in Linus tree.
+On Tue, 2014-01-28 at 10:59 +0530, Prabhakar Kushwaha wrote:
+>  Freescale IFC controller has been used for mpc8xxx. It will be used
+>  for ARM-based SoC as well. This patch moves the driver to driver/memory
+>  and fix the header file includes.
 > 
-> What is the git commit id?
-
-Relax Greg :-) The submissions all had the commit ID of the original
-patch upsteam: b3084f4db3aeb991c507ca774337c7e7893ed04f
-
-The only *thing* here is due to churn upstream in 3.13, the backport
-is a bit different for 3.13 vs. earlier versions.
-
-The earlier ones are perfectly kosher and you should have no reason
-not to take them.
-
-The 3.13, well, Mahesh was a bit quick here, he sent you the actual
-patch that went upstream ... and a second patch to fix a problem
-with older gcc's that it introduces. Because it's a simple build fix of
-the previous patch, I suggested folding it in instead.
-
-That build fix is what is not yet upstream, it's in my -next branch
-which Linus hasn't pulled just yet.
-
-If that's an issue for you, just drop the 3.13 variant of the patch and
-we'll send it again with the build fix as soon as Linus has pulled the
-latter.
-
-> > It is the build failure for older gcc compiler version that is not in
-> > linus tree.
+>  Also remove module_platform_driver() and  instead call
+>  platform_driver_register() from subsys_initcall() to make sure this module
+>  has been loaded before MTD partition parsing starts.
 > 
-> That is what I can not take.
-> 
-> > We missed that in the first pull request. Do we really need to drop
-> > the patch from 3.11 and 3.12 trees ?
-> 
-> I already did.
-> 
-> > The patch their is a variant, and don't require this build fix.
-> 
-> Don't give me a "variant", give me the exact same patch, only changed to
-> handle the fuzz/differences of older kernels, don't make different
-> changes to the original patch to make up for things you found out later
-> on, otherwise everyone is confused as to why the fix for the fix is not
-> in the tree.
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
 
-The backport patch is a "variant" because of changes in the affected
-function that went into 3.13.
+When did Arnd ack this?  Especially in v7 form... and I don't see him on
+CC.
 
-> So, when both patches get in Linus's tree, please send me the properly
-> backported patches and I'll be glad to apply them.
+> +config FSL_IFC
+> +	bool "Freescale Integrated Flash Controller"
+> +	depends on FSL_SOC
+> +	help
+> +	  This driver is for the Integrated Flash Controller Controller(IFC)
 
-Ben.
+Controller Controller?
+
+> +	  module available in Freescale SoCs. This controller allows to handle flash
+> +	  devices such as NOR, NAND, FPGA and ASIC etc
+
+FPGA and ASIC are not (necessarily) flash devices.
+
+-Scott
