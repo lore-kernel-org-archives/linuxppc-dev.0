@@ -1,40 +1,42 @@
-Return-Path: <hartb@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AC5B22C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Feb 2014 06:35:03 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 190242C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Feb 2014 07:59:19 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hartb@linux.vnet.ibm.com>;
- Fri, 31 Jan 2014 14:35:00 -0500
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id BA413C9004A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 14:34:54 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0VJYuHl4784628
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 19:34:57 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0VJYuGo026170
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 14:34:56 -0500
-Received: from oc3347516403.ibm.com ([9.80.92.71])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s0VJYr2Q025932
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES128-SHA bits=128 verify=NO)
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 14:34:55 -0500
-Date: Fri, 31 Jan 2014 13:34:53 -0600
-From: Brian W Hart <hartb@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2] Fix coding style errors
-Message-ID: <20140131193451.GA23880@oc3347516403.ibm.com>
-References: <1390878454-4329-1-git-send-email-stewartb2@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Fri, 31 Jan 2014 13:59:17 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3712E3E4004F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 13:59:15 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0VIuimF6947288
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 19:56:45 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s0VL2Vjo005234
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 14:02:32 -0700
+Message-ID: <52EC0E9B.8020406@linux.vnet.ibm.com>
+Date: Fri, 31 Jan 2014 12:59:07 -0800
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1390878454-4329-1-git-send-email-stewartb2@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 0/8] Add support for PowerPC Hypervisor supplied
+ performance counters
+References: <1389916434-2288-1-git-send-email-cody@linux.vnet.ibm.com>
+ <1390354379.11104.3.camel@concordia> <52E05E49.3010903@linux.vnet.ibm.com>
+In-Reply-To: <52E05E49.3010903@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,40 +46,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 27, 2014 at 09:07:34PM -0600, Brandon Stewart wrote:
-> I corrected several coding errors.
-> 
-> Signed-off-by: Brandon Stewart <stewartb2@gmail.com>
-> ---
->  drivers/macintosh/adb.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
-> index 53611de..dd3f49a 100644
-> --- a/drivers/macintosh/adb.c
-> +++ b/drivers/macintosh/adb.c
-> @@ -623,7 +623,7 @@ do_adb_query(struct adb_request *req)
->  {
->  	int	ret = -EINVAL;
-> 
-> -	switch(req->data[1]) {
-> +	switch (req->data[1]) {
->  	case ADB_QUERY_GETDEVINFO:
->  		if (req->nbytes < 3)
->  			break;
-> @@ -792,8 +792,9 @@ static ssize_t adb_write(struct file *file, const char __user *buf,
->  	}
->  	/* Special case for ADB_BUSRESET request, all others are sent to
->  	   the controller */
-> -	else if ((req->data[0] == ADB_PACKET) && (count > 1)
-> -		&& (req->data[1] == ADB_BUSRESET)) {
-> +	else if (req->data[0] == ADB_PACKET &&
-> +		req->data[1] == ADB_BUSRESET &&
-> +		count > 1) {
+On 01/22/2014 04:11 PM, Cody P Schafer wrote:
+> On 01/21/2014 05:32 PM, Michael Ellerman wrote:
+>> On Thu, 2014-01-16 at 15:53 -0800, Cody P Schafer wrote:
+>>> These patches add basic pmus for 2 powerpc hypervisor interfaces to obtain
+>>> performance counters: gpci ("get performance counter info") and 24x7.
 
-Is this re-ordering safe?  Isn't 'count > 1' notionally indicating whether
-req->data[1] exists to be tested in the first place?
-
-On the other hand there's a check at the top of the routine that returns 
-if count < 2, so maybe the check here should be removed altogether (along
-with one a few lines above)?
+Any comments on/things that need fixing for this patch set to be merged?
