@@ -1,19 +1,37 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CBE912C00AB
- for <linuxppc-dev@ozlabs.org>; Sat,  1 Feb 2014 00:32:35 +1100 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [PATCH] powerpc: Add cpu family documentation
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1391049480-29346-1-git-send-email-mpe@ellerman.id.au>
-Date: Fri, 31 Jan 2014 07:32:18 -0600
-Message-Id: <669D726F-25DF-4703-AD30-CAE7CA142970@kernel.crashing.org>
-References: <1391049480-29346-1-git-send-email-mpe@ellerman.id.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id E84E02C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Feb 2014 04:25:12 +1100 (EST)
+Received: from /spool/local
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Fri, 31 Jan 2014 15:25:04 -0200
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 054373520064
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 12:24:59 -0500 (EST)
+Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
+ by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0VHOPhR36897010
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 15:24:26 -0200
+Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
+ by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0VHOxdv007521
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 15:24:59 -0200
+Date: Fri, 31 Jan 2014 15:24:58 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: drop taken reference to driver on
+ eeh_rmv_device
+Message-ID: <20140131172458.GA2039@oc0268524204.ibm.com>
+References: <1391086848-11311-1-git-send-email-cascardo@linux.vnet.ibm.com>
+ <20140131004611.GA6790@shangw.(null)>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140131004611.GA6790@shangw.(null)>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,122 +41,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jan 31, 2014 at 08:46:11AM +0800, Gavin Shan wrote:
+> On Thu, Jan 30, 2014 at 11:00:48AM -0200, Thadeu Lima de Souza Cascardo wrote:
+> >Commit f5c57710dd62dd06f176934a8b4b8accbf00f9f8 ("powerpc/eeh: Use
+> >partial hotplug for EEH unaware drivers") introduces eeh_rmv_device,
+> >which may grab a reference to a driver, but not release it.
+> >
+> >That prevents a driver from being removed after it has gone through EEH
+> >recovery.
+> >
+> >This patch drops the reference in either exit path if it was taken.
+> >
+> >Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+> >---
+> > arch/powerpc/kernel/eeh_driver.c |    5 ++++-
+> > 1 files changed, 4 insertions(+), 1 deletions(-)
+> >
+> >diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+> >index 7bb30dc..afe7337 100644
+> >--- a/arch/powerpc/kernel/eeh_driver.c
+> >+++ b/arch/powerpc/kernel/eeh_driver.c
+> >@@ -364,7 +364,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
+> > 		return NULL;
+> > 	driver = eeh_pcid_get(dev);
+> > 	if (driver && driver->err_handler)
+> >-		return NULL;
+> >+		goto out;
+> >
+> > 	/* Remove it from PCI subsystem */
+> > 	pr_debug("EEH: Removing %s without EEH sensitive driver\n",
+> >@@ -377,6 +377,9 @@ static void *eeh_rmv_device(void *data, void *userdata)
+> 
+> For normal case (driver without EEH support), we probably release the reference
+> to the driver before pci_stop_and_remove_bus_device().
 
-On Jan 29, 2014, at 8:38 PM, Michael Ellerman <mpe@ellerman.id.au> =
-wrote:
+You are right, we need to call it before we call
+pci_stop_and_remove_bus_device, otherwise dev->driver will be NULL, and
+eeh_pcid_put will not do module_put. On the other hand, we could change
+the call to eeh_pcid_put to accept struct pci_driver instead.
 
-> This patch adds some documentation on the different cpu families
-> supported by arch/powerpc.
->=20
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
-> Documentation/powerpc/cpu_families.txt | 76 =
-++++++++++++++++++++++++++++++++++
-> 1 file changed, 76 insertions(+)
-> create mode 100644 Documentation/powerpc/cpu_families.txt
->=20
-> diff --git a/Documentation/powerpc/cpu_families.txt =
-b/Documentation/powerpc/cpu_families.txt
-> new file mode 100644
-> index 0000000..df72657
-> --- /dev/null
-> +++ b/Documentation/powerpc/cpu_families.txt
-> @@ -0,0 +1,76 @@
-> +CPU Families
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +This doco tries to summarise some of the different cpu families that =
-exist and
-> +are supported by arch/powerpc.
-> +
-> +Book3S (aka sPAPR)
-> +------------------
-> +
-> + - Hash MMU
-> + - Mix of 32 & 64 bit
-> +
-> +  Old
-> + POWER --- 601 --- 603
-> +   |            |   |
-> +   |            |   *----- 740
-> +   |            |   |
-> +   |            |   *----- 750 (G3) --- 750CX --- 750CL --- 750FX
-> +   |            |           |
-> +   |            |           |
-> +   |           604          *--- 7400 --- 7410 --- 7450 --- 7455 --- =
-7447 --- 7448
-> +   |            |
-> +   |            |
-> +   |            *---- [620] --- POWER3/630 --- POWER3+ --- POWER4 --- =
-POWER4+ --- POWER5 --- POWER5+ --- POWER5++ --- POWER6 --- POWER7 --- =
-POWER7+ --- POWER8
-> +   |                 (64bit)                                          =
-         |    .
-> +   |                                                                  =
-         |    .
-> +   |                                                                  =
-         |    *--- Cell
-> +   |                                                                  =
-         |
-> +   |                                                                  =
-         *--- 970 --- 970FX --- 970MP
-> +   |
-> +   *--- RS64 (threads)
-> +
-> +
-> +  PA6T (64bit) ...
-> +
-> +
-> +IBM BookE
-> +---------
-> +
-> + - Software loaded TLB.
-> + - All 32 bit
-> +
-> +  401 --- 403 --- 405 --- 440 --- 450 --- 460 --- 476
-> +                                   |
-> +                                   *--- BG/P
-> +
-> +
-> +Motorola/Freescale 8xx
-> +----------------------
-> +
-> + - Software loaded with hardware assist.
-> + - All 32 bit
-> +
-> +  8xx --- 850
-> +
-> +
-> +Freescale BookE
-> +---------------
-> +
-> + - Software loaded TLB.
-> + - e6500 adds HW loaded indirect TLB entries.
-> + - Mix of 32 & 64 bit
-> +
-> +  e200 --- e500 --- e500v2 --- e500mc --- e5500 --- e6500
-> +                                         (Book3E)  (HW TLB)
-> +                                         (64bit)
-> +
+> 
+> > 	pci_stop_and_remove_bus_device(dev);
+> > 	pci_unlock_rescan_remove();
+> >
+> >+out:
+> >+	if (driver)
+> >+		eeh_pcid_put(dev);
+> > 	return NULL;
+> 
+> We needn't "if (driver)" here as eeh_pcid_put() already had the check.
+> 
 
-e200 is its own core family that doesn=92t have any relation to e500 =
-line other than being book-e
+What if try_module_get returned false on eeh_pcid_get?
 
-might want to add multithreaded to e6500.
+How about something like the patch below?
 
-> +IBM A2 core
-> +-----------
-> +
-> + - Book3E, software loaded TLB + HW loaded indirect TLB entries.
-> + - 64 bit
-> +
-> +  A2 core --- BG/Q
-> +     |
-> +     *------- WSP
-> --=20
-> 1.8.3.2
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > }
+> >
+> 
+> Thanks,
+> Gavin
+---
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 7bb30dc..3a397fa 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -352,6 +352,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
+ 	struct eeh_dev *edev = (struct eeh_dev *)data;
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	int *removed = (int *)userdata;
++	bool has_err_handler;
+ 
+ 	/*
+ 	 * Actually, we should remove the PCI bridges as well.
+@@ -362,8 +363,12 @@ static void *eeh_rmv_device(void *data, void *userdata)
+ 	 */
+ 	if (!dev || (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
+ 		return NULL;
++
+ 	driver = eeh_pcid_get(dev);
+-	if (driver && driver->err_handler)
++	has_err_handler = driver && driver->err_handler;
++	if (driver)
++		eeh_pcid_put(dev);
++	if (has_err_handler)
+ 		return NULL;
+ 
+ 	/* Remove it from PCI subsystem */
+---
