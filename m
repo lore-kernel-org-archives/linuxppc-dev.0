@@ -1,22 +1,32 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B47A52C03B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 20:42:45 +1100 (EST)
-Received: from mail32-va3 (localhost [127.0.0.1])	by mail32-va3-R.bigfish.com
- (Postfix) with ESMTP id E4A3C40243	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 31 Jan 2014 09:42:40 +0000 (UTC)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2][v8] powerpc/config: Enable memory driver
-Date: Fri, 31 Jan 2014 15:10:14 +0530
-Message-ID: <1391161214-28054-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2D7042C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:29:23 +1100 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 31 Jan 2014 20:29:23 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7186E2CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:29:17 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0VA9sqZ65536012
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:09:54 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0VATGv3023155
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:29:16 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, stable@vger.kernel.org
+Subject: [PATCH V2 1/2] powerpc/thp: Fix crash on mremap
+Date: Fri, 31 Jan 2014 15:59:00 +0530
+Message-Id: <1391164141-14073-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,79 +36,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As Freescale IFC controller has been moved to driver to driver/memory.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-So enable memory driver in powerpc config
+This patch fix the below crash
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
+LR [c0000000000439ac] .hash_page+0x18c/0x5e0
+...
+Call Trace:
+[c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
+[437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
+[437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
+
+On ppc64 we use the pgtable for storing the hpte slot information and
+store address to the pgtable at a constant offset (PTRS_PER_PMD) from
+pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
+the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
+from new pmd.
+
+We also want to move the withdraw and deposit before the set_pmd so
+that, when page fault find the pmd as trans huge we can be sure that
+pgtable can be located at the offset.
+
+upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
+for 3.13 stable series
+
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- Based upon git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
- Branch next
+ arch/powerpc/include/asm/pgtable-ppc64.h | 14 ++++++++++++++
+ include/asm-generic/pgtable.h            | 12 ++++++++++++
+ mm/huge_memory.c                         | 14 +++++---------
+ 3 files changed, 31 insertions(+), 9 deletions(-)
 
- Changes for v2: Sending as it is
- Changes for v3: Sending as it is
- Changes for v4: Rebased to 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- changes for v5:
- 	- Rebased to branch next of 
-	git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- Changes for v6: Sending as it is
- Changes for v7: Sending as it is
- Changes for v8: Sending as it is
-
- arch/powerpc/configs/corenet32_smp_defconfig |    1 +
- arch/powerpc/configs/corenet64_smp_defconfig |    1 +
- arch/powerpc/configs/mpc85xx_defconfig       |    1 +
- arch/powerpc/configs/mpc85xx_smp_defconfig   |    1 +
- 4 files changed, 4 insertions(+)
-
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..087d437 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -142,6 +142,7 @@ CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_UIO=y
- CONFIG_STAGING=y
-+CONFIG_MEMORY=y
- CONFIG_VIRT_DRIVERS=y
- CONFIG_FSL_HV_MANAGER=y
- CONFIG_EXT2_FS=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..25b03f8 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -129,6 +129,7 @@ CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
- CONFIG_ISO9660_FS=m
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 83d3550..cba638c 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -216,6 +216,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4b68629..e315b8a 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -217,6 +217,7 @@ CONFIG_RTC_DRV_CMOS=y
- CONFIG_RTC_DRV_DS1307=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-+CONFIG_MEMORY=y
- # CONFIG_NET_DMA is not set
- CONFIG_EXT2_FS=y
- CONFIG_EXT3_FS=y
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 4a191c472867..d27960c89a71 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -558,5 +558,19 @@ extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
+ #define __HAVE_ARCH_PMDP_INVALIDATE
+ extern void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+ 			    pmd_t *pmdp);
++
++#define pmd_move_must_withdraw pmd_move_must_withdraw
++typedef struct spinlock spinlock_t;
++static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
++					 spinlock_t *old_pmd_ptl)
++{
++	/*
++	 * Archs like ppc64 use pgtable to store per pmd
++	 * specific information. So when we switch the pmd,
++	 * we should also withdraw and deposit the pgtable
++	 */
++	return true;
++}
++
+ #endif /* __ASSEMBLY__ */
+ #endif /* _ASM_POWERPC_PGTABLE_PPC64_H_ */
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index db0923458940..8e4f41d9af4d 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -558,6 +558,18 @@ static inline pmd_t pmd_read_atomic(pmd_t *pmdp)
+ }
+ #endif
+ 
++#ifndef pmd_move_must_withdraw
++static inline int pmd_move_must_withdraw(spinlock_t *new_pmd_ptl,
++					 spinlock_t *old_pmd_ptl)
++{
++	/*
++	 * With split pmd lock we also need to move preallocated
++	 * PTE page table if new_pmd is on different PMD page table.
++	 */
++	return new_pmd_ptl != old_pmd_ptl;
++}
++#endif
++
+ /*
+  * This function is meant to be used by sites walking pagetables with
+  * the mmap_sem hold in read mode to protect against MADV_DONTNEED and
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 95d1acb0f3d2..5d80c53b87cb 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1502,19 +1502,15 @@ int move_huge_pmd(struct vm_area_struct *vma, struct vm_area_struct *new_vma,
+ 			spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
+ 		pmd = pmdp_get_and_clear(mm, old_addr, old_pmd);
+ 		VM_BUG_ON(!pmd_none(*new_pmd));
+-		set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
+-		if (new_ptl != old_ptl) {
+-			pgtable_t pgtable;
+ 
+-			/*
+-			 * Move preallocated PTE page table if new_pmd is on
+-			 * different PMD page table.
+-			 */
++		if (pmd_move_must_withdraw(new_ptl, old_ptl)) {
++			pgtable_t pgtable;
+ 			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
+ 			pgtable_trans_huge_deposit(mm, new_pmd, pgtable);
+-
+-			spin_unlock(new_ptl);
+ 		}
++		set_pmd_at(mm, new_addr, new_pmd, pmd_mksoft_dirty(pmd));
++		if (new_ptl != old_ptl)
++			spin_unlock(new_ptl);
+ 		spin_unlock(old_ptl);
+ 	}
+ out:
 -- 
-1.7.9.5
+1.8.3.2
