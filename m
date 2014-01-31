@@ -1,32 +1,32 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 77E692C0327
+ by ozlabs.org (Postfix) with ESMTPS id A1FCA2C032C
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Feb 2014 10:58:24 +1100 (EST)
 Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
  Fri, 31 Jan 2014 16:58:22 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4A0551FF001B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:58:19 -0700 (MST)
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 8930C1FF001A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:58:20 -0700 (MST)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
- ESMTP id s0VNw2mR9306454
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Feb 2014 00:58:02 +0100
+ by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+ ESMTP id s0VNwKgC5243388
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 1 Feb 2014 00:58:20 +0100
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0VNwICD013192
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:58:19 -0700
+ s0VNwJAP013265
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:58:20 -0700
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/3] powerpc/pseries: Update dynamic cache nodes for
- suspend/resume operation
-Date: Fri, 31 Jan 2014 15:58:11 -0800
-Message-Id: <1391212692-16217-3-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH v3 3/3] powerpc/pseries: Report in kernel device tree update
+ to drmgr
+Date: Fri, 31 Jan 2014 15:58:12 -0800
+Message-Id: <1391212692-16217-4-git-send-email-tyreld@linux.vnet.ibm.com>
 In-Reply-To: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
 References: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
 Cc: nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
@@ -39,78 +39,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Haren Myneni <hbabu@us.ibm.com>
+Traditionally it has been drmgr's responsibilty to update the device tree
+through the /proc/ppc64/ofdt interface after a suspend/resume operation.
+This patchset however has modified suspend/resume ops to preform that update
+entirely in the kernel during the resume. Therefore, a mechanism is required
+for drmgr to determine who is responsible for the update. This patch adds a
+show function to the "hibernate" attribute that returns 1 if the kernel
+updates the device tree after the resume and 0 if drmgr is responsible.
 
-pHyp can change cache nodes for suspend/resume operation. The current code
-updates the device tree after all non boot CPUs are enabled. Hence, we do not
-modify the cache list based on the latest cache nodes. Also we do not remove
-cache entries for the primary CPU.
-
-This patch removes the cache list for the boot CPU, updates the device tree
-before enabling nonboot CPUs and adds cache list for the boot cpu.
-
-Signed-off-by: Haren Myneni <hbabu@us.ibm.com>
 Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h          |  1 +
- arch/powerpc/platforms/pseries/suspend.c | 19 +++++++++++++++++++
- 2 files changed, 20 insertions(+)
+ arch/powerpc/platforms/pseries/suspend.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 9bd52c6..a0e1add 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -283,6 +283,7 @@ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
- 
- #ifdef CONFIG_PPC_PSERIES
- extern int pseries_devicetree_update(s32 scope);
-+extern void post_mobility_fixup(void);
- #endif
- 
- #ifdef CONFIG_PPC_RTAS_DAEMON
 diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
-index 16a2552..1d9c580 100644
+index 1d9c580..b87b978 100644
 --- a/arch/powerpc/platforms/pseries/suspend.c
 +++ b/arch/powerpc/platforms/pseries/suspend.c
-@@ -26,6 +26,7 @@
- #include <asm/mmu.h>
- #include <asm/rtas.h>
- #include <asm/topology.h>
-+#include "../../kernel/cacheinfo.h"
- 
- static u64 stream_id;
- static struct device suspend_dev;
-@@ -79,6 +80,23 @@ static int pseries_suspend_cpu(void)
+@@ -192,7 +192,30 @@ out:
+ 	return rc;
  }
  
- /**
-+ * pseries_suspend_enable_irqs
-+ *
-+ * Post suspend configuration updates
-+ *
-+ **/
-+static void pseries_suspend_enable_irqs(void)
-+{
-+	/*
-+	 * Update configuration which can be modified based on device tree
-+	 * changes during resume.
-+	 */
-+	cacheinfo_cpu_offline(smp_processor_id());
-+	post_mobility_fixup();
-+	cacheinfo_cpu_online(smp_processor_id());
-+}
+-static DEVICE_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
++#define USER_DT_UPDATE	0
++#define KERN_DT_UPDATE	1
 +
 +/**
-  * pseries_suspend_enter - Final phase of hibernation
-  *
-  * Return value:
-@@ -235,6 +253,7 @@ static int __init pseries_suspend_init(void)
- 		return rc;
++ * show_hibernate - Report device tree update responsibilty
++ * @dev:		subsys root device
++ * @attr:		device attribute struct
++ * @buf:		buffer
++ *
++ * Report whether a device tree update is performed by the kernel after a
++ * resume, or if drmgr must coordinate the update from user space.
++ *
++ * Return value:
++ *	0 if drmgr is to initiate update, and 1 otherwise
++ **/
++static ssize_t show_hibernate(struct device *dev,
++			      struct device_attribute *attr,
++			      char *buf)
++{
++	return sprintf(buf, "%d\n", KERN_DT_UPDATE);
++}
++
++static DEVICE_ATTR(hibernate, S_IWUSR | S_IRUGO,
++		   show_hibernate, store_hibernate);
  
- 	ppc_md.suspend_disable_cpu = pseries_suspend_cpu;
-+	ppc_md.suspend_enable_irqs = pseries_suspend_enable_irqs;
- 	suspend_set_ops(&pseries_suspend_ops);
- 	return 0;
- }
+ static struct bus_type suspend_subsys = {
+ 	.name = "power",
 -- 
 1.7.12.2
