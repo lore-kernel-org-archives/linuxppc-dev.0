@@ -1,23 +1,39 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EF5D22C00C9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 22:28:11 +1100 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [RFC PATCH 03/10] KVM: PPC: BOOK3S: PR: Emulate instruction
- counter
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <87r47ojsu6.fsf@linux.vnet.ibm.com>
-Date: Fri, 31 Jan 2014 12:28:12 +0100
-Message-Id: <6FA0BD31-6428-43B2-A4D3-7267472B4C4A@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id 72BBB2C0232
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 22:28:14 +1100 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 31 Jan 2014 16:58:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6923F3940057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:58:06 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0VBRwMY46071870
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:57:58 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0VBS5TV024326
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:58:06 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH 07/10] KVM: PPC: BOOK3S: PR: Emulate facility status
+ and control register
+In-Reply-To: <20140130060000.GB10611@iris.ozlabs.ibm.com>
 References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <52E92F08.6020803@suse.de> <87r47ojsu6.fsf@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc <kvm-ppc@vger.kernel.org>, kvm-devel <kvm@vger.kernel.org>
+ <1390927455-3312-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140130060000.GB10611@iris.ozlabs.ibm.com>
+Date: Fri, 31 Jan 2014 16:58:05 +0530
+Message-ID: <87ob2sjsqi.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,90 +43,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Paul Mackerras <paulus@samba.org> writes:
 
-On 31.01.2014, at 12:25, Aneesh Kumar K.V =
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> On Tue, Jan 28, 2014 at 10:14:12PM +0530, Aneesh Kumar K.V wrote:
+>> We allow priv-mode update of this. The guest value is saved in fscr,
+>> and the value actually used is saved in shadow_fscr. shadow_fscr
+>> only contains values that are allowed by the host. On
+>> facility unavailable interrupt, if the facility is allowed by fscr
+>> but disabled in shadow_fscr we need to emulate the support. Currently
+>> all but EBB is disabled. We still don't support performance monitoring
+>> in PR guest.
+>
+> ...
+>
+>> +	/*
+>> +	 * Save the current fscr in shadow fscr
+>> +	 */
+>> +	mfspr r3,SPRN_FSCR
+>> +	PPC_STL r3, VCPU_SHADOW_FSCR(r7)
+>
+> I don't think you need to do this.  What could possibly have changed
+> FSCR since we loaded it on the way into the guest?
 
-> Alexander Graf <agraf@suse.de> writes:
->=20
->> On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
->>> Writing to IC is not allowed in the privileged mode.
->>=20
->> This is not a patch description.
->>=20
->>>=20
->>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/include/asm/kvm_host.h | 1 +
->>>  arch/powerpc/kvm/book3s_emulate.c   | 3 +++
->>>  arch/powerpc/kvm/book3s_pr.c        | 2 ++
->>>  3 files changed, 6 insertions(+)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/kvm_host.h =
-b/arch/powerpc/include/asm/kvm_host.h
->>> index 9ebdd12e50a9..e0b13aca98e6 100644
->>> --- a/arch/powerpc/include/asm/kvm_host.h
->>> +++ b/arch/powerpc/include/asm/kvm_host.h
->>> @@ -509,6 +509,7 @@ struct kvm_vcpu_arch {
->>>  	/* Time base value when we entered the guest */
->>>  	u64 entry_tb;
->>>  	u64 entry_vtb;
->>> +	u64 entry_ic;
->>>  	u32 tcr;
->>>  	ulong tsr; /* we need to perform set/clr_bits() which requires =
-ulong */
->>>  	u32 ivor[64];
->>> diff --git a/arch/powerpc/kvm/book3s_emulate.c =
-b/arch/powerpc/kvm/book3s_emulate.c
->>> index 4b58d8a90cb5..abe6f3057e5b 100644
->>> --- a/arch/powerpc/kvm/book3s_emulate.c
->>> +++ b/arch/powerpc/kvm/book3s_emulate.c
->>> @@ -531,6 +531,9 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu =
-*vcpu, int sprn, ulong *spr_val
->>>  	case SPRN_VTB:
->>>  		*spr_val =3D vcpu->arch.vtb;
->>>  		break;
->>> +	case SPRN_IC:
->>> +		*spr_val =3D vcpu->arch.ic;
->>> +		break;
->>>  	case SPRN_GQR0:
->>>  	case SPRN_GQR1:
->>>  	case SPRN_GQR2:
->>> diff --git a/arch/powerpc/kvm/book3s_pr.c =
-b/arch/powerpc/kvm/book3s_pr.c
->>> index b5598e9cdd09..51d469f8c9fd 100644
->>> --- a/arch/powerpc/kvm/book3s_pr.c
->>> +++ b/arch/powerpc/kvm/book3s_pr.c
->>> @@ -121,6 +121,7 @@ void kvmppc_copy_to_svcpu(struct =
-kvmppc_book3s_shadow_vcpu *svcpu,
->>>  	 */
->>>  	vcpu->arch.entry_tb =3D get_tb();
->>>  	vcpu->arch.entry_vtb =3D get_vtb();
->>> +	vcpu->arch.entry_ic =3D mfspr(SPRN_IC);
->>=20
->> Is this implemented on all systems?
->>=20
->>>=20
->>>  }
->>>=20
->>> @@ -174,6 +175,7 @@ out:
->>>  	vcpu->arch.purr +=3D get_tb() - vcpu->arch.entry_tb;
->>>  	vcpu->arch.spurr +=3D get_tb() - vcpu->arch.entry_tb;
->>>  	vcpu->arch.vtb +=3D get_vtb() - vcpu->arch.entry_vtb;
->>> +	vcpu->arch.ic +=3D mfspr(SPRN_IC) - vcpu->arch.entry_ic;
->>=20
->> This is getting quite convoluted. How about we act slightly more =
-fuzzy=20
->> and put all of this into vcpu_load/put?
->>=20
->=20
-> I am not sure whether vcpu_load/put is too early/late to save these
-> context ?
+The reason for facility unavailable interrupt is encoded in FSCR right ?
 
-It'd mean we treat instruction emulation as part of guest overhead and =
-time, but we'd make the entry/exit path faster. Unlike with HV KVM, =
-guest entry/exit is pretty hot due to the massive amounts of instruction =
-emulation we need to do.
-
-
-Alex
+-aneesh
