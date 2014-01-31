@@ -1,23 +1,39 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6C8AE2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:47:48 +1100 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [RFC PATCH 01/10] KVM: PPC: BOOK3S: PR: Fix PURR and SPURR
- emulation
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <87y51wjv0w.fsf@linux.vnet.ibm.com>
-Date: Fri, 31 Jan 2014 11:47:44 +0100
-Message-Id: <5C99D2BA-7E11-4012-B3BD-9B01F4F865ED@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id F2D482C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:57:43 +1100 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 31 Jan 2014 16:27:39 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D29291258054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:29:23 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0VAvUOq38731926
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:27:30 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0VAvbOx003671
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:27:37 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC PATCH 02/10] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
+ register
+In-Reply-To: <20140130054913.GA10611@iris.ozlabs.ibm.com>
 References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <52E92D15.8000901@suse.de> <87y51wjv0w.fsf@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc <kvm-ppc@vger.kernel.org>, kvm-devel <kvm@vger.kernel.org>
+ <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140130054913.GA10611@iris.ozlabs.ibm.com>
+Date: Fri, 31 Jan 2014 16:27:37 +0530
+Message-ID: <87vbx0ju5a.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +43,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Paul Mackerras <paulus@samba.org> writes:
 
-On 31.01.2014, at 11:38, Aneesh Kumar K.V =
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> On Tue, Jan 28, 2014 at 10:14:07PM +0530, Aneesh Kumar K.V wrote:
+>> virtual time base register is a per vm register and need to saved
+>> and restored on vm exit and entry. Writing to VTB is not allowed
+>> in the privileged mode.
+> ...
+>
+>> +#ifdef CONFIG_PPC_BOOK3S_64
+>> +#define mfvtb()		({unsigned long rval;				\
+>> +			asm volatile("mfspr %0, %1" :			\
+>> +				     "=r" (rval) : "i" (SPRN_VTB)); rval;})
+>
+> The mfspr will be a no-op on anything before POWER8, meaning the
+> result will be whatever value was in the destination GPR before the
+> mfspr.  I suppose that may not matter if the result is only ever used
+> when we're running on a POWER8 host, but I would feel more comfortable
+> if we had explicit feature tests to make sure of that, rather than
+> possibly doing computations with unpredictable values.
+>
+> With your patch, a guest on a POWER7 or a PPC970 could do a read from
+> VTB and get garbage -- first, there is nothing to stop userspace from
+> requesting POWER8 emulation on an older machine, and secondly, even if
+> the virtual machine is a PPC970 (say) you don't implement
+> unimplemented SPR semantics for VTB (no-op if PR=0, illegal
+> instruction interrupt if PR=1).
 
-> Alexander Graf <agraf@suse.de> writes:
->=20
->> On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
->>> We definitely don't need to emulate mtspr, because both the =
-registers
->>> are hypervisor resource.
->>=20
->> This patch description doesn't cover what the patch actually does. It=20=
+Ok that means we need to do something like  ?
 
->> changes the implementation from "always tell the guest it uses 100%" =
-to=20
->> "give the guest an accurate amount of cpu time spent inside guest
->> context".
->=20
-> Will fix that
->=20
->>=20
->> Also, I think we either go with full hyp semantics which means we =
-also=20
->> emulate the offset or we go with no hyp awareness in the guest at all=20=
+	struct cpu_spec *s = find_cpuspec(vcpu->arch.pvr);
+        if (s->cpu_features & CPU_FTR_ARCH_207S) {
 
->> which means we also don't emulate SPURR which is a hyp privileged
->> register.
->=20
-> Can you clarify this ?
+        }
 
-In the 2.06 ISA SPURR is hypervisor privileged. That changed for 2.07 =
-where it became supervisor privileged. So I suppose your patch is ok. =
-When reviewing those patches I only had 2.06 around because power.org =
-was broken.
+        
+>
+> On the whole I think it is reasonable to reject an attempt to set the
+> virtual PVR to a POWER8 PVR value if we are not running on a POWER8
+> host, because emulating all the new POWER8 features in software
+> (particularly transactional memory) would not be feasible.  Alex may
+> disagree. :)
 
+That would make it much simpler.
 
-Alex
+-aneesh
