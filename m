@@ -1,42 +1,20 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 190242C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Feb 2014 07:59:19 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Fri, 31 Jan 2014 13:59:17 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3712E3E4004F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 13:59:15 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0VIuimF6947288
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 19:56:45 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s0VL2Vjo005234
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 14:02:32 -0700
-Message-ID: <52EC0E9B.8020406@linux.vnet.ibm.com>
-Date: Fri, 31 Jan 2014 12:59:07 -0800
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 1 Feb 2014 09:17:43 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [RFC PATCH 01/10] KVM: PPC: BOOK3S: PR: Fix PURR and SPURR
+ emulation
+Message-ID: <20140131221743.GA12086@iris.ozlabs.ibm.com>
+References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1390927455-3312-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <52E92D15.8000901@suse.de> <87y51wjv0w.fsf@linux.vnet.ibm.com>
+ <5C99D2BA-7E11-4012-B3BD-9B01F4F865ED@suse.de>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 0/8] Add support for PowerPC Hypervisor supplied
- performance counters
-References: <1389916434-2288-1-git-send-email-cody@linux.vnet.ibm.com>
- <1390354379.11104.3.camel@concordia> <52E05E49.3010903@linux.vnet.ibm.com>
-In-Reply-To: <52E05E49.3010903@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5C99D2BA-7E11-4012-B3BD-9B01F4F865ED@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ kvm-ppc <kvm-ppc@vger.kernel.org>, kvm-devel <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,10 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/22/2014 04:11 PM, Cody P Schafer wrote:
-> On 01/21/2014 05:32 PM, Michael Ellerman wrote:
->> On Thu, 2014-01-16 at 15:53 -0800, Cody P Schafer wrote:
->>> These patches add basic pmus for 2 powerpc hypervisor interfaces to obtain
->>> performance counters: gpci ("get performance counter info") and 24x7.
+On Fri, Jan 31, 2014 at 11:47:44AM +0100, Alexander Graf wrote:
+> 
+> On 31.01.2014, at 11:38, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> 
+> > Alexander Graf <agraf@suse.de> writes:
+> > 
+> >> On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
+> >>> We definitely don't need to emulate mtspr, because both the registers
+> >>> are hypervisor resource.
+> >> 
+> >> This patch description doesn't cover what the patch actually does. It 
+> >> changes the implementation from "always tell the guest it uses 100%" to 
+> >> "give the guest an accurate amount of cpu time spent inside guest
+> >> context".
+> > 
+> > Will fix that
+> > 
+> >> 
+> >> Also, I think we either go with full hyp semantics which means we also 
+> >> emulate the offset or we go with no hyp awareness in the guest at all 
+> >> which means we also don't emulate SPURR which is a hyp privileged
+> >> register.
+> > 
+> > Can you clarify this ?
+> 
+> In the 2.06 ISA SPURR is hypervisor privileged. That changed for 2.07 where it became supervisor privileged. So I suppose your patch is ok. When reviewing those patches I only had 2.06 around because power.org was broken.
 
-Any comments on/things that need fixing for this patch set to be merged?
+It's always been supervisor privilege for reading and hypervisor
+privilege for writing, ever since it was introduced in 2.05, and that
+hasn't changed.  So I think what Aneesh is doing is correct.
+
+Regards,
+Paul.
