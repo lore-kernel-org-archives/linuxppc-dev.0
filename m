@@ -1,23 +1,39 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 924042C009F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 14:47:29 +1100 (EST)
-Message-ID: <1391140038.6733.41.camel@snotra.buserror.net>
-Subject: Re: [PATCH 1/2][v7] driver/memory:Move Freescale IFC driver to a
- common driver
-From: Scott Wood <scottwood@freescale.com>
-To: Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
-Date: Thu, 30 Jan 2014 21:47:18 -0600
-In-Reply-To: <cc597cc6590e4eb7b7d6fbc004fbf749@DM2PR03MB464.namprd03.prod.outlook.com>
-References: <1390886979-9341-1-git-send-email-prabhakar@freescale.com>
- <1391117477.6733.39.camel@snotra.buserror.net>
- <cc597cc6590e4eb7b7d6fbc004fbf749@DM2PR03MB464.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 442572C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 15:13:34 +1100 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 30 Jan 2014 21:13:31 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 02CC63E40026
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 21:13:29 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0V4DS3v4456736
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 05:13:28 +0100
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0V4DRgZ027229
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2014 21:13:28 -0700
+Subject: [PATCH 0/3] powerpc: Free up an IPI message slot for tick broadcast
+ IPIs
+To: deepthi@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, toshi.kani@hp.com,
+ arnd@arndb.de, geoff@infradead.org, mpe@ellerman.id.au,
+ rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+ paul.gortmaker@windriver.com, afleming@freescale.com, anton@samba.org,
+ srivatsa.bhat@linux.vnet.ibm.com, benh@kernel.crashing.org,
+ paulus@samba.org, ady8radu@gmail.com, linuxppc-dev@lists.ozlabs.org
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Fri, 31 Jan 2014 09:39:53 +0530
+Message-ID: <20140131040631.13071.19603.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +43,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-01-30 at 21:23 -0600, Kushwaha Prabhakar-B32579 wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, January 31, 2014 3:01 AM
-> > To: Kushwaha Prabhakar-B32579
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 1/2][v7] driver/memory:Move Freescale IFC driver to a common
-> > driver
-> > 
-> > On Tue, 2014-01-28 at 10:59 +0530, Prabhakar Kushwaha wrote:
-> > >  Freescale IFC controller has been used for mpc8xxx. It will be used
-> > > for ARM-based SoC as well. This patch moves the driver to
-> > > driver/memory  and fix the header file includes.
-> > >
-> > >  Also remove module_platform_driver() and  instead call
-> > >  platform_driver_register() from subsys_initcall() to make sure this
-> > > module  has been loaded before MTD partition parsing starts.
-> > >
-> > > Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> > > Acked-by: Arnd Bergmann <arnd@arndb.de>
-> > 
-> > When did Arnd ack this?  Especially in v7 form... and I don't see him on CC.
-> > 
-> > > +config FSL_IFC
-> > > +	bool "Freescale Integrated Flash Controller"
-> > > +	depends on FSL_SOC
-> > > +	help
-> > > +	  This driver is for the Integrated Flash Controller Controller(IFC)
-> > 
-> > Controller Controller?
-> 
-> I will fix it
-> 
-> > 
-> > > +	  module available in Freescale SoCs. This controller allows to handle
-> > flash
-> > > +	  devices such as NOR, NAND, FPGA and ASIC etc
-> > 
-> > FPGA and ASIC are not (necessarily) flash devices.
-> > 
-> 
-> Yes it true. 
-> I am not sure this folder is only for flash controller.
-> I can see references of FPGA, SRAM in same Kconfigs. 
+This patchset is a precursor for enabling deep idle states on powerpc,
+when the local CPU timers stop. The tick broadcast framework in
+the Linux Kernel today handles wakeup of such CPUs at their next timer event
+by using an external clock device. At the expiry of this clock device, IPIs
+are sent to the CPUs in deep idle states  so that they wakeup to handle their
+respective timers. This patchset frees up one of the IPI slots on powerpc
+so as to be used to handle the tick broadcast IPI.
 
-Right, just fix the help text.
-s/handle flash devices/handle devices/
+On certain implementations of powerpc, such an external clock device is absent.
+Adding support to the tick broadcast framework to handle wakeup of CPUs from
+deep idle states on such implementations is currently under discussion.
+https://lkml.org/lkml/2014/1/15/86
+https://lkml.org/lkml/2014/1/24/28
 
--Scott
+Either way this patchset is essential to enable handling the tick broadcast IPIs.
+---
+
+Preeti U Murthy (1):
+      cpuidle/ppc: Split timer_interrupt() into timer handling and interrupt handling routines
+
+Srivatsa S. Bhat (2):
+      powerpc: Free up the slot of PPC_MSG_CALL_FUNC_SINGLE IPI message
+      powerpc: Implement tick broadcast IPI as a fixed IPI message
+
+
+ arch/powerpc/include/asm/smp.h          |    2 -
+ arch/powerpc/include/asm/time.h         |    1 
+ arch/powerpc/kernel/smp.c               |   23 ++++++--
+ arch/powerpc/kernel/time.c              |   86 ++++++++++++++++++-------------
+ arch/powerpc/platforms/cell/interrupt.c |    2 -
+ arch/powerpc/platforms/ps3/smp.c        |    2 -
+ 6 files changed, 71 insertions(+), 45 deletions(-)
+
+-- 
