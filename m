@@ -1,38 +1,38 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F2D482C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 21:57:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DCF152C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 22:26:05 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 31 Jan 2014 16:27:39 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D29291258054
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:29:23 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s0VAvUOq38731926
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:27:30 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s0VAvbOx003671
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 16:27:37 +0530
+ Fri, 31 Jan 2014 21:26:01 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 468D12CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 22:25:58 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s0VB6Z0Z52101280
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 22:06:35 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s0VBPvsS004965
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 22:25:57 +1100
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [RFC PATCH 02/10] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
- register
-In-Reply-To: <20140130054913.GA10611@iris.ozlabs.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [RFC PATCH 03/10] KVM: PPC: BOOK3S: PR: Emulate instruction
+ counter
+In-Reply-To: <52E92F08.6020803@suse.de>
 References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140130054913.GA10611@iris.ozlabs.ibm.com>
-Date: Fri, 31 Jan 2014 16:27:37 +0530
-Message-ID: <87vbx0ju5a.fsf@linux.vnet.ibm.com>
+ <1390927455-3312-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <52E92F08.6020803@suse.de>
+Date: Fri, 31 Jan 2014 16:55:53 +0530
+Message-ID: <87r47ojsu6.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,48 +43,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+Alexander Graf <agraf@suse.de> writes:
 
-> On Tue, Jan 28, 2014 at 10:14:07PM +0530, Aneesh Kumar K.V wrote:
->> virtual time base register is a per vm register and need to saved
->> and restored on vm exit and entry. Writing to VTB is not allowed
->> in the privileged mode.
-> ...
+> On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
+>> Writing to IC is not allowed in the privileged mode.
 >
->> +#ifdef CONFIG_PPC_BOOK3S_64
->> +#define mfvtb()		({unsigned long rval;				\
->> +			asm volatile("mfspr %0, %1" :			\
->> +				     "=r" (rval) : "i" (SPRN_VTB)); rval;})
+> This is not a patch description.
 >
-> The mfspr will be a no-op on anything before POWER8, meaning the
-> result will be whatever value was in the destination GPR before the
-> mfspr.  I suppose that may not matter if the result is only ever used
-> when we're running on a POWER8 host, but I would feel more comfortable
-> if we had explicit feature tests to make sure of that, rather than
-> possibly doing computations with unpredictable values.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/include/asm/kvm_host.h | 1 +
+>>   arch/powerpc/kvm/book3s_emulate.c   | 3 +++
+>>   arch/powerpc/kvm/book3s_pr.c        | 2 ++
+>>   3 files changed, 6 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+>> index 9ebdd12e50a9..e0b13aca98e6 100644
+>> --- a/arch/powerpc/include/asm/kvm_host.h
+>> +++ b/arch/powerpc/include/asm/kvm_host.h
+>> @@ -509,6 +509,7 @@ struct kvm_vcpu_arch {
+>>   	/* Time base value when we entered the guest */
+>>   	u64 entry_tb;
+>>   	u64 entry_vtb;
+>> +	u64 entry_ic;
+>>   	u32 tcr;
+>>   	ulong tsr; /* we need to perform set/clr_bits() which requires ulong */
+>>   	u32 ivor[64];
+>> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+>> index 4b58d8a90cb5..abe6f3057e5b 100644
+>> --- a/arch/powerpc/kvm/book3s_emulate.c
+>> +++ b/arch/powerpc/kvm/book3s_emulate.c
+>> @@ -531,6 +531,9 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+>>   	case SPRN_VTB:
+>>   		*spr_val = vcpu->arch.vtb;
+>>   		break;
+>> +	case SPRN_IC:
+>> +		*spr_val = vcpu->arch.ic;
+>> +		break;
+>>   	case SPRN_GQR0:
+>>   	case SPRN_GQR1:
+>>   	case SPRN_GQR2:
+>> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+>> index b5598e9cdd09..51d469f8c9fd 100644
+>> --- a/arch/powerpc/kvm/book3s_pr.c
+>> +++ b/arch/powerpc/kvm/book3s_pr.c
+>> @@ -121,6 +121,7 @@ void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
+>>   	 */
+>>   	vcpu->arch.entry_tb = get_tb();
+>>   	vcpu->arch.entry_vtb = get_vtb();
+>> +	vcpu->arch.entry_ic = mfspr(SPRN_IC);
 >
-> With your patch, a guest on a POWER7 or a PPC970 could do a read from
-> VTB and get garbage -- first, there is nothing to stop userspace from
-> requesting POWER8 emulation on an older machine, and secondly, even if
-> the virtual machine is a PPC970 (say) you don't implement
-> unimplemented SPR semantics for VTB (no-op if PR=0, illegal
-> instruction interrupt if PR=1).
-
-Ok that means we need to do something like  ?
-
-	struct cpu_spec *s = find_cpuspec(vcpu->arch.pvr);
-        if (s->cpu_features & CPU_FTR_ARCH_207S) {
-
-        }
-
-        
+> Is this implemented on all systems?
 >
-> On the whole I think it is reasonable to reject an attempt to set the
-> virtual PVR to a POWER8 PVR value if we are not running on a POWER8
-> host, because emulating all the new POWER8 features in software
-> (particularly transactional memory) would not be feasible.  Alex may
-> disagree. :)
+>>   
+>>   }
+>>   
+>> @@ -174,6 +175,7 @@ out:
+>>   	vcpu->arch.purr += get_tb() - vcpu->arch.entry_tb;
+>>   	vcpu->arch.spurr += get_tb() - vcpu->arch.entry_tb;
+>>   	vcpu->arch.vtb += get_vtb() - vcpu->arch.entry_vtb;
+>> +	vcpu->arch.ic += mfspr(SPRN_IC) - vcpu->arch.entry_ic;
+>
+> This is getting quite convoluted. How about we act slightly more fuzzy 
+> and put all of this into vcpu_load/put?
+>
 
-That would make it much simpler.
+I am not sure whether vcpu_load/put is too early/late to save these
+context ?
 
 -aneesh
