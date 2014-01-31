@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <paubert@iram.es>
+Received: from torres.puc.rediris.es (torres.puc.rediris.es
+ [IPv6:2001:720:418:ca00::9])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DC6092C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 23:29:32 +1100 (EST)
-Message-ID: <1391171361.27142.6.camel@pasglop>
-Subject: Re: [PATCH 0/2] Fixes for PCI-E link speed
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kleber Sacilotto de Souza <klebers@linux.vnet.ibm.com>
-Date: Fri, 31 Jan 2014 23:29:21 +1100
-In-Reply-To: <52EB94F6.6000800@linux.vnet.ibm.com>
-References: <1389967012-7774-1-git-send-email-klebers@linux.vnet.ibm.com>
- <52EB94F6.6000800@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Brian King <brking@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id B8F512C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2014 23:56:25 +1100 (EST)
+Date: Fri, 31 Jan 2014 13:31:57 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: "Moese, Michael" <michael.moese@men.de>
+Subject: Re: PCIe Access - achieve bursts without DMA
+Message-ID: <20140131123157.GA6148@visitor2.iram.es>
+References: <2DF74D4E746FF14C8697D5041AAE72D56A2B1420@MEN-EX2.intra.men.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2DF74D4E746FF14C8697D5041AAE72D56A2B1420@MEN-EX2.intra.men.de>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-01-31 at 10:20 -0200, Kleber Sacilotto de Souza wrote:
-> On 01/17/2014 11:56 AM, Kleber Sacilotto de Souza wrote:
-> > These two patches fix problems on the PCI-E link speed detection.
-> > The first one fixes a regression and adds some improvements on the
-> > code, and the second one adds definitions for Gen3 speeds.
-> >
-> > Kleber Sacilotto de Souza (2):
-> >    powerpc/pseries: fix regression on PCI link speed
-> >    powerpc/pseries: add Gen3 definitions for PCIE link speed
-> >
-> >   arch/powerpc/platforms/pseries/pci.c |   22 +++++++++++++++-------
-> >   1 files changed, 15 insertions(+), 7 deletions(-)
-> >
-> 
-> Hi,
-> 
-> Any feedback on this patch series?
+On Thu, Jan 30, 2014 at 12:20:21PM +0000, Moese, Michael wrote:
+> Hello PPC-developers,
+> I'm currently trying to benchmark access speeds to our PCIe-connected IP-cores
+> located inside our FPGA. On x86-based systems I was able to achieve bursts for
+> both read and write access. On PPC32, using an e500v2, I had no success at all 
+> so far. 
+> I tried using ioremap_wc(), like I did on x86, for writing, and it only results in my
+> writes just being single requests, one after another.
 
-Patches on this list are tracked in patchwork so are generally not
-"lost". Plus I was on vacation last week. So there's no need for such
-pings unless much more time has elapsed. I'll probably put it in after
--rc1.
+I believe that on PPC, write-combine is directly mapped to nocache. I can't remember
+if there is a writethrough option for ioremap (but adding it would probably be
+relaively easy).
 
-Ben.
+> For reads, I noticed I could not ioremap_cache() on PPC, so I used simple ioremap()
+> here. 
+
+You might be able to use ioremap_cache and using direct cache control instruction
+(dcbf/dcbi) to achieve your goals. This becomes similar to handling machines with 
+no hardware cache coherency. You have to know the hardware cache line size to make
+this work.
+
+This said, it might be better to mark the memory as guarded and non-coherent 
+(WIMG=0000), I don't know what ioremap_cache does for the MG bits and don't
+have the time to look it up right now.
+
+> I used several ways to read from the device, from simple readl(),memcpy_from_io(), 
+> memcpy()  to cacheable_memcpy() - with no improvements.  Even when just issuing
+> a batch of prefetch()-calls for all the memory to read did not result in read bursts.
+
+If the device data you want to read is supposed to be cacheable (which means basically
+that the data does not change unexpectedly under you, i.e., is not as volatile as
+a typical device I/O register), you don't want to use readl() which adds some
+synchronization to the read.
+
+Prefetch only works on writeback memory, maybe writethrough, expecting it to work on
+cache-inhibited memory is contradictory.
+
+	Regards,
+	Gabriel
