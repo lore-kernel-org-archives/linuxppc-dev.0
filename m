@@ -1,40 +1,50 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 85B2C2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 08:41:15 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A24612C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 10:00:55 +1100 (EST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Mon, 3 Feb 2014 14:41:13 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1E30919D8048
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Feb 2014 14:41:11 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s13LfB2P5177644
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 22:41:11 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s13LiTZm022327
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 14:44:29 -0700
-Message-ID: <52F00CEA.4090706@linux.vnet.ibm.com>
-Date: Mon, 03 Feb 2014 13:40:58 -0800
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 3 Feb 2014 18:00:52 -0500
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D80DF38C803B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Feb 2014 18:00:49 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s13N0nB54391316
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 23:00:49 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s13N0lVI023497
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 18:00:49 -0500
+Date: Mon, 3 Feb 2014 15:00:26 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140203230026.GA15383@linux.vnet.ibm.com>
+References: <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401240946530.12886@nuc>
+ <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+ <20140124232902.GB30361@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
+ <20140125001643.GA25344@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140125011041.GB25344@linux.vnet.ibm.com>
+ <20140127055805.GA2471@lge.com>
+ <20140128182947.GA1591@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 4/8] powerpc: add hv_gpci interface header
-References: <20140201055807.267F12C00BA@ozlabs.org>
-In-Reply-To: <20140201055807.267F12C00BA@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140128182947.GA1591@linux.vnet.ibm.com>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,247 +54,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/31/2014 09:58 PM, Michael Ellerman wrote:
-> On Thu, 2014-16-01 at 23:53:50 UTC, Cody P Schafer wrote:
->> "H_GetPerformanceCounterInfo" (refered to as hv_gpci or just gpci from
->> here on) is an interface to retrieve specific performance counters and
->> other data from the hypervisor. All outputs have a fixed format (and
->> are represented as structs in this patch).
->
-> So how much of this are we actually using? A lot of these seem to be only used
-> in the union at the bottom of this file, and not touched elsewhere - or am I
-> missing something subtle?
->
-> Some of it doesn't seem to be used at all?
+On 28.01.2014 [10:29:47 -0800], Nishanth Aravamudan wrote:
+> On 27.01.2014 [14:58:05 +0900], Joonsoo Kim wrote:
+> > On Fri, Jan 24, 2014 at 05:10:42PM -0800, Nishanth Aravamudan wrote:
+> > > On 24.01.2014 [16:25:58 -0800], David Rientjes wrote:
+> > > > On Fri, 24 Jan 2014, Nishanth Aravamudan wrote:
+> > > > 
+> > > > > Thank you for clarifying and providing  a test patch. I ran with this on
+> > > > > the system showing the original problem, configured to have 15GB of
+> > > > > memory.
+> > > > > 
+> > > > > With your patch after boot:
+> > > > > 
+> > > > > MemTotal:       15604736 kB
+> > > > > MemFree:         8768192 kB
+> > > > > Slab:            3882560 kB
+> > > > > SReclaimable:     105408 kB
+> > > > > SUnreclaim:      3777152 kB
+> > > > > 
+> > > > > With Anton's patch after boot:
+> > > > > 
+> > > > > MemTotal:       15604736 kB
+> > > > > MemFree:        11195008 kB
+> > > > > Slab:            1427968 kB
+> > > > > SReclaimable:     109184 kB
+> > > > > SUnreclaim:      1318784 kB
+> > > > > 
+> > > > > 
+> > > > > I know that's fairly unscientific, but the numbers are reproducible. 
+> > > > > 
+> > 
+> > Hello,
+> > 
+> > I think that there is one mistake on David's patch although I'm not sure
+> > that it is the reason for this result.
+> > 
+> > With David's patch, get_partial() in new_slab_objects() doesn't work
+> > properly, because we only change node id in !node_match() case. If we
+> > meet just !freelist case, we pass node id directly to
+> > new_slab_objects(), so we always try to allocate new slab page
+> > regardless existence of partial pages. We should solve it.
+> > 
+> > Could you try this one?
+> 
+> This helps about the same as David's patch -- but I found the reason
+> why! ppc64 doesn't set CONFIG_HAVE_MEMORYLESS_NODES :) Expect a patch
+> shortly for that and one other case I found.
+> 
+> This patch on its own seems to help on our test system by saving around
+> 1.5GB of slab.
+> 
+> Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> 
+> with the caveat below.
 
-We're using very little of the actual interface. In 24x7 we use 
-cv_system_performance_capabilities, but other than that all the cv_* 
-structures go unused.
+So what's the status of this patch? Christoph, do you think this is fine
+as it is?
 
->
->> diff --git a/arch/powerpc/include/asm/hv_gpci.h b/arch/powerpc/include/asm/hv_gpci.h
->
-> Any reason this can't just live in arch/powerpc/perf ?
->
->> +++ b/arch/powerpc/include/asm/hv_gpci.h
->> @@ -0,0 +1,490 @@
->> +#ifndef LINUX_POWERPC_UAPI_HV_GPCI_H_
->> +#define LINUX_POWERPC_UAPI_HV_GPCI_H_
->> +
->> +#include <linux/types.h>
->> +
->> +/* From the document "H_GetPerformanceCounterInfo Interface" v1.06, paritialy
->> + * updated with v1.07 */
->
-> Is that public?
-
-Nope.
-
->> +
->> +/* H_GET_PERF_COUNTER_INFO argument */
->> +struct hv_get_perf_counter_info_params {
->> +	__be32 counter_request; /* I */
->> +	__be32 starting_index;  /* IO */
->> +	__be16 secondary_index; /* IO */
->> +	__be16 returned_values; /* O */
->> +	__be32 detail_rc; /* O, "only for 32bit clients" */
->> +
->> +	/*
->> +	 * O, size each of counter_value element in bytes, only set for version
->> +	 * >= 0x3
->> +	 */
->> +	__be16 cv_element_size;
->> +
->> +	/* I, funny if version < 0x3 */
->
-> Funny how? Or better still, do we only support operating on some minimum
-> sane version of the API?
-
-Right now the perf stuff is setup to let the user specify the version 
-they want to operate in, and we avoid trying to provide cross-version 
-compatibility.
-
-Funny = must be set to 0x0. I'll update the comment.
-
->
->> +	__u8 counter_info_version_in;
->> +
->> +	/* O, funny if version < 0x3 */
->> +	__u8 counter_info_version_out;
->> +	__u8 reserved[0xC];
->> +	__u8 counter_value[];
->> +} __packed;
->> +
->> +/* 8 => power8 (1.07)
->> + * 6 => TLBIE  (1.07)
->> + * 5 => (1.05)
->> + * 4 => ?
->> + * 3 => ?
->> + * 2 => v7r7m0.phyp (?)
->> + * 1 => v7r6m0.phyp (?)
->> + * 0 => v7r{2,3,4}m0.phyp (?)
->> + */
->
-> I think this is a mapping of version numbers to firmware releases, it should
-> say so.
-
-It is, I'll note it.
-
->
->> +#define COUNTER_INFO_VERSION_CURRENT 0x8
->> +
->> +/* these determine the counter_value[] layout and the meaning of starting_index
->> + * and secondary_index */
->
-> Needs: leading capital, full stop, block comment.
-
-ack
-
->
->> +enum counter_info_requests {
->> +
->> +	/* GENERAL */
->> +
->> +	/* @starting_index: "starting" physical processor index or -1 for
->
-> Why '"starting"' ?
-
-The requests are designed to return a sequence of data blocks. For 
-example, in this case where the index refers to a physical processor id, 
-one can request phys processor 0,1,2,3 in a single hcall (as long as the 
-buffer is sized appropriately. We don't take advantage of this.
-
->
->> +	 *                  current phyical processor. Data is only collected
->> +	 *                  for the processors' "primary" thread.
->> +	 * @secondary_index: unused
->
-> This seems to be true in all cases at least for this enum, can we drop it?
->
-
-CIR_affinity_domain_information_by_virutal_processor uses 
-secondary_index. That said, I'll note that if not mentioned, 
-secondary_index is unused and use that to cut out some of the duplication.
-
-
->> +	 */
->> +	CIR_dispatch_timebase_by_processor = 0x10,
->
-> Any reason for the weird capitialisation? You've obviously learnt the
-> noCamelCase rule, but this is still a bit odd :)
->
-
-Mainly because these end up rather long and I was getting tired of 
-fiddling with caps lock (and this weird capitalization lets macros do 
-fun things without having to specify a long name twice, not that I'm 
-doing that right now). Also, the spec gives them as 
-"Dispatch_timebase_by_processor" (not that this really matters).
-
-I'll properly capitalize them all if that's preferred (I expect it is).
-
->> +
->> +	/* @starting_index: starting partition id or -1 for the current logical
->> +	 *                  partition (virtual machine).
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_entitled_capped_uncapped_donated_idle_timebase_by_partition = 0x20,
->> +
->> +	/* @starting_index: starting partition id or -1 for the current logical
->> +	 *                  partition (virtual machine).
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_run_instructions_run_cycles_by_partition = 0x30,
->> +
->> +	/* @starting_index: must be -1 (to refer to the current partition)
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_system_performance_capabilities = 0x40,
->> +
->> +
->> +	/* Data from this should only be considered valid if
->> +	 * counter_info_version >= 0x3
->> +	 * @starting_index: starting hardware chip id or -1 for the current hw
->> +	 *		    chip id
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_processor_bus_utilization_abc_links = 0x50,
->> +
->> +	/* Data from this should only be considered valid if
->> +	 * counter_info_version >= 0x3
->> +	 * @starting_index: starting hardware chip id or -1 for the current hw
->> +	 *		    chip id
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_processor_bus_utilization_wxyz_links = 0x60,
->> +
->> +
->> +	/* EXPANDED */
->
-> ??
->
-> These are only available if you have the DLC ?
-
-There is a bit set by the hv that lets us get at them. 
-"system_performance_capabilities" lets us get that bit. Unfortunately, 
-we can't just ignore it (the hcall gives us an access error if they 
-aren't enabled). And I'm not sure what the mechanism will be for 
-enabling them on end user boxes. So yes, probably DLC.
-
->> +	/* Avaliable if counter_info_version >= 0x3
->> +	 * @starting_index: starting hardware chip id or -1 for the current hw
->> +	 *		    chip id
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_processor_bus_utilization_gx_links = 0x70,
->> +
->> +	/* Avaliable if counter_info_version >= 0x3
->> +	 * @starting_index: starting hardware chip id or -1 for the current hw
->> +	 *		    chip id
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_processor_bus_utilization_mc_links = 0x80,
->> +
->> +	/* Avaliable if counter_info_version >= 0x3
->> +	 * @starting_index: starting physical processor or -1 for the current
->> +	 *                  physical processor
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_processor_config = 0x90,
->> +
->> +	/* Avaliable if counter_info_version >= 0x3
->> +	 * @starting_index: starting physical processor or -1 for the current
->> +	 *                  physical processor
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_current_processor_frequency = 0x91,
->> +
->> +	CIR_processor_core_utilization = 0x94,
->> +
->> +	CIR_processor_core_power_mode = 0x95,
->> +
->> +	CIR_affinity_domain_information_by_virutal_processor = 0xA0,
->> +
->> +	CIR_affinity_domain_info_by_domain = 0xB0,
->> +
->> +	CIR_affinity_domain_info_by_partition = 0xB1,
->> +
->> +	/* @starting_index: unused
->> +	 * @secondary_index: unused
->> +	 */
->> +	CIR_physical_memory_info = 0xC0,
->> +
->> +	CIR_processor_bus_topology = 0xD0,
->> +
->> +	CIR_partition_hypervisor_queuing_times = 0xE0,
->> +
->> +	CIR_system_hypervisor_times = 0xF0,
->> +
->> +	/* LAB */
->> +
->> +	CIR_set_mmcrh = 0x80001000,
->> +	CIR_get_hpmcx = 0x80002000,
->> +};
->
->
-> cheers
->
+Thanks,
+Nish
