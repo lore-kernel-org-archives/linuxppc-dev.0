@@ -1,19 +1,36 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id B2A1C2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 04:08:51 +1100 (EST)
-Message-ID: <52EFCD26.5070702@ovro.caltech.edu>
-Date: Mon, 03 Feb 2014 09:08:54 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CB0492C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 06:29:11 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Tue, 4 Feb 2014 00:59:05 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E4D61E0059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 01:02:14 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s13JT4fH2752928
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 00:59:05 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s13JT2aK000639
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 00:59:02 +0530
+Received: from [192.168.1.7] ([9.79.188.145])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ s13JT2qg000628
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 00:59:02 +0530
+Subject: [PATCH V4 0/3] powerpc/powernv: Error logging interfaces 
+To: linuxppc-dev@lists.ozlabs.org
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Tue, 04 Feb 2014 00:59:23 +0530
+Message-ID: <20140203192915.7790.20325.stgit@deepthi>
 MIME-Version: 1.0
-To: Michael Moese <michael.moese@men.de>
-Subject: Re: PCIe Access - achieve bursts without DMA
-References: <2DF74D4E746FF14C8697D5041AAE72D56A2B1420@MEN-EX2.intra.men.de>
- <1391208815.27142.38.camel@pasglop> <52EC2F46.7000609@ovro.caltech.edu>
- <20140203082050.GB1970@localhost.intra.men.de>
-In-Reply-To: <20140203082050.GB1970@localhost.intra.men.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +40,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+This patch series defines generic interfaces for error logging to
+push down critical errors from powernv platform to FSP.
 
-> On Fri, Jan 31, 2014 at 03:18:30PM -0800, David Hawkins wrote:
->> 1. Peripheral board DMA (board-to-board)
->> 2. Peripheral board DMA to host memory.
->> 3. Host (root complex) DMA.
->>
->> As far as "verification" of your custom peripheral board FPGA IP is
->> concerned, if I was a customer, and you had data for (1) and (2),
->> I'd be pretty happy (and could care less about (2), since its so
->> system dependent).
->
-> Usually I would totally agree with you and try to implement the benchmark
-> using DMA transfers Unfortunately, we have some boards and IP cores that
-> do not support DMA transfers, or the target system must not do by a
-> requirement, and as I have no influence on these, I had to investigate
-> on how to improve my throughput.
+Also, it contains few minor fixes for the exisiting error logging
+framework that retrieves error logs from FSP.
 
-Ah, I see, that does make your life difficult then.
+Changes from V3:
+* Change memory allocation to GFP_ATOMIC, to generate
+  errors in bad context
+* Move all error log generation related code to arch/powernv
+  rename it from opal_* to pnv_* .
 
-> I've submitted a RFC Patch earlier today, which allowed me to perform
-> PCIe read bursts on IO memory, achieving 18 MB/s instead of the 3 MB/s
-> I got when using non-cached reads. However, I had to ioremap() my
-> memory, like Gabriel said, using write-thru configuration.
+Changes from V2:
+* Review comments from V2 have been addressed
+  includes comment formats, changing naming
+  conventions and incorporated error handling
+  of the buffers.
+* Minor typo fix and use of pr_err/pr_fmt to
+  log errors.
 
-That sounds like a reasonable compromise.
+ Deepthi Dharwar (3):
+      powernv: Push critical error logs to FSP
+      powernv: Correct spell error in opal-elog.c
+      powernv: Have uniform logging of errors in opal-elog.c
 
-Cheers,
-Dave
+
+ arch/powerpc/include/asm/opal.h                |   36 +++++++++
+ arch/powerpc/platforms/powernv/opal-elog.c     |   93 +++++++++++++++++++++---
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    2 -
+ arch/powerpc/platforms/powernv/powernv.h       |   84 ++++++++++++++++++++++
+ 4 files changed, 203 insertions(+), 12 deletions(-)
+
+
+-- Deepthi
