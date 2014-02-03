@@ -1,36 +1,36 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 10B822C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 08:13:27 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0E6612C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 08:19:58 +1100 (EST)
 Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Mon, 3 Feb 2014 14:13:24 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 9A07A1FF001B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Feb 2014 14:13:22 -0700 (MST)
+ Mon, 3 Feb 2014 14:19:56 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4734F19D8048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Feb 2014 14:19:55 -0700 (MST)
 Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s13LD4x326476578
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 22:13:04 +0100
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s13LJtsp3539304
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 22:19:55 +0100
 Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
  by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s13LGeYe016125
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 14:16:41 -0700
-Message-ID: <52F00665.7040907@linux.vnet.ibm.com>
-Date: Mon, 03 Feb 2014 13:13:09 -0800
+ s13LNDsw008344
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Feb 2014 14:23:13 -0700
+Message-ID: <52F007EE.3090500@linux.vnet.ibm.com>
+Date: Mon, 03 Feb 2014 13:19:42 -0800
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Michael Ellerman <mpe@ellerman.id.au>,
  Linux PPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH 6/8] powerpc/perf: add support for the hv gpci (get
- performance counter info) interface
-References: <20140201055808.1829F2C00D3@ozlabs.org>
-In-Reply-To: <20140201055808.1829F2C00D3@ozlabs.org>
+Subject: Re: [PATCH 1/8] perf: add PMU_RANGE_ATTR() helper for use by sw-like
+ pmus
+References: <20140201055805.6FF982C00AF@ozlabs.org>
+In-Reply-To: <20140201055805.6FF982C00AF@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
  Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -46,358 +46,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/31/2014 09:58 PM, Michael Ellerman wrote:
-> On Thu, 2014-16-01 at 23:53:52 UTC, Cody P Schafer wrote:
->> This provides a basic link between perf and hv_gpci. Notably, it does
->> not yet support transactions and does not list any events (they can
->> still be manually composed).
+> On Thu, 2014-16-01 at 23:53:47 UTC, Cody P Schafer wrote:
+>> Add PMU_RANGE_ATTR() and PMU_RANGE_RESV() (for reserved areas) which
+>> generate functions to extract the relevent bits from
+>> event->attr.config{,1,2} for use by sw-like pmus where the
+>> 'config{,1,2}' values don't map directly to hardware registers.
 >
-> What are the plans for listing?
-
-I'm looking at extending the sysfs api for listing perf events. We can't 
-use the existing one as it doesn't let us parametrize the events by 
-anything, meaning we'd need to list an essentially duplicate event for 
-each cpu/core/chip and lpar (guest). The duplication in cpu/core/chip 
-comes from not using the typical cpu parameter to perf_event_open() 
-(which we don't do because it wouldn't make sense when the guest 
-monitored isn't us).
-
-> The manual compose is nice but pretty hairy to use in practice I would think.
+> This is neat.
 >
->> diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
->> new file mode 100644
->> index 0000000..31d9d59
->> --- /dev/null
->> +++ b/arch/powerpc/perf/hv-gpci.c
->> @@ -0,0 +1,235 @@
->> +/*
->> + * Hypervisor supplied "gpci" ("get performance counter info") performance
->> + * counter support
->> + *
->> + * Author: Cody P Schafer <cody@linux.vnet.ibm.com>
->> + * Copyright 2014 IBM Corporation.
->> + *
->> + * This program is free software; you can redistribute it and/or
->> + * modify it under the terms of the GNU General Public License
->> + * as published by the Free Software Foundation; either version
->> + * 2 of the License, or (at your option) any later version.
->> + */
->> +#define pr_fmt(fmt) "hv-gpci: " fmt
->> +
->> +#include <linux/module.h>
->> +#include <linux/perf_event.h>
->> +#include <asm/firmware.h>
->> +#include <asm/hvcall.h>
->> +#include <asm/hv_gpci.h>
->> +#include <asm/io.h>
+> The split of the macros is a bit weird, ie. PMU_RANGE_RESV() doesn't really do
+> what it's name suggests.
 >
-> Needed?
+> I think you want one macro which creates the accessors, with a name that
+> reflects that - yeah I can't think of a good one right now, but "event" should
+> probably be in there because that's what it operates on.
+>
+> Having a macro for the reserved regions is good, but you MUST actually check
+> that the reserved regions are zero. Otherwise you are permitting your caller to
+> pass junk in there and you then can't unreserved them in a future version of
+> the API.
+>
+> So I think a macro that gives you a special reserved region routine would be
+> good, so you can write something like:
+>
+>    if (event_check_reserved1() || event_check_reserved2())
+>    	return -EINVAL;
 >
 
-asm/io.h is for virt_to_phys(). And yes, I need it.
+The way it's set up right now, RESV is just a hint to the user of the 
+PMU_RANGE_ATTR() and PMU_RANGE_RESV() macros to indicate which to use. 
+RESV simply avoids creating an attr format which would go unused only in 
+the case where the range is a reserved one (and gcc would complain about 
+it).
 
->> +/* See arch/powerpc/include/asm/hv_gpci.h for details on the hcall interface */
->> +
->> +PMU_RANGE_ATTR(request, config, 0, 31); /* u32 */
->> +PMU_RANGE_ATTR(starting_index, config, 32, 63); /* u32 */
->> +PMU_RANGE_ATTR(secondary_index, config1, 0, 15); /* u16 */
->> +PMU_RANGE_ATTR(counter_info_version, config1, 16, 23); /* u8 */
->> +PMU_RANGE_ATTR(length, config1, 24, 31); /* u8, bytes of data (1-8) */
->> +PMU_RANGE_ATTR(offset, config1, 32, 63); /* u32, byte offset */
->> +
->> +static struct attribute *format_attr[] = {
->> +	&format_attr_request.attr,
->> +	&format_attr_starting_index.attr,
->> +	&format_attr_secondary_index.attr,
->> +	&format_attr_counter_info_version.attr,
->> +
-> Lonley blank line.
+I don't like the "event_check_foo()" bit because that is actually 
+identical to "event_get_foo()", I don't see a point in generating 
+differently named functions that do exactly the same thing.
 
-Which was seperating "real" attributes from those provided by the kernel 
-(gpci doesn't know about "offset" and "length"). I'll remove.
+The current user (hv-24x7.c) of PMU_RANGE_RESV() already does the 
+appropriate checking:
 
->> +	&format_attr_offset.attr,
->> +	&format_attr_length.attr,
->> +	NULL,
->> +};
->> +
->> +static struct attribute_group format_group = {
->> +	.name = "format",
->> +	.attrs = format_attr,
->> +};
->> +
->> +static const struct attribute_group *attr_groups[] = {
->> +	&format_group,
->> +	NULL,
->> +};
->> +
->> +static unsigned long single_gpci_request(u32 req, u32 starting_index,
->> +		u16 secondary_index, u8 version_in, u32 offset, u8 length,
->> +		u64 *value)
->
-> Passing the event and extracting the values in here would be neater IMHO.
->
-
-Well, I'll at least add a wrapper that does that. The idea here was to 
-separate the perf specific logic from the gpci specific logic. And I'll 
-end up taking advantage of that separation when doing the interface 
-probing (mentioned way down near the end of this email).
-
->> +{
->> +	unsigned long ret;
->> +	size_t i;
->> +	u64 count;
->> +
->> +	struct {
->> +		struct hv_get_perf_counter_info_params params;
->> +		union {
->> +			union h_gpci_cvs data;
->> +			uint8_t bytes[sizeof(union h_gpci_cvs)];
->> +		};
->> +	} arg = {
->> +		.params = {
->> +			.counter_request = cpu_to_be32(req),
->> +			.starting_index = cpu_to_be32(starting_index),
->> +			.secondary_index = cpu_to_be16(secondary_index),
->> +			.counter_info_version_in = version_in,
->> +		}
->> +	};
->> +
->> +	ret = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO,
->> +			virt_to_phys(&arg), sizeof(arg));
->> +	if (ret) {
->> +		pr_devel("hcall failed: 0x%lx\n", ret);
->> +		return ret;
->> +	}
->> +
->> +	/*
->> +	 * we verify offset and length are within the zeroed buffer at event
->> +	 * init.
->> +	 */
->> +	count = 0;
->> +	for (i = offset; i < offset + length; i++)
->> +		count |= arg.bytes[i] << (i - offset);
->> +
->> +	*value = count;
->> +	return ret;
->> +}
->> +
->> +static u64 h_gpci_get_value(struct perf_event *event)
->> +{
->> +	u64 count;
->> +	unsigned long ret = single_gpci_request(event_get_request(event),
->> +					event_get_starting_index(event),
->> +					event_get_secondary_index(event),
->> +					event_get_counter_info_version(event),
->> +					event_get_offset(event),
->> +					event_get_length(event),
->> +					&count);
->> +	if (ret)
->> +		return 0;
->> +	return count;
->> +}
->> +
->> +static void h_gpci_event_update(struct perf_event *event)
->> +{
->> +	s64 prev;
->> +	u64 now = h_gpci_get_value(event);
->> +	prev = local64_xchg(&event->hw.prev_count, now);
->> +	local64_add(now - prev, &event->count);
->> +}
->> +
->> +static void h_gpci_event_start(struct perf_event *event, int flags)
->> +{
->> +	local64_set(&event->hw.prev_count, h_gpci_get_value(event));
->> +	perf_swevent_start_hrtimer(event);
->> +}
->> +
->> +static void h_gpci_event_stop(struct perf_event *event, int flags)
->> +{
->> +	perf_swevent_cancel_hrtimer(event);
->> +	h_gpci_event_update(event);
->> +}
->> +
->> +static int h_gpci_event_add(struct perf_event *event, int flags)
->> +{
->> +	if (flags & PERF_EF_START)
->> +		h_gpci_event_start(event, flags);
->> +
->> +	return 0;
->> +}
->> +
->> +static void h_gpci_event_del(struct perf_event *event, int flags)
->> +{
->> +	h_gpci_event_stop(event, flags);
->> +}
->
-> Can just hook del directly no?
-
-Yep, good point.
-
->
->> +static void h_gpci_event_read(struct perf_event *event)
->> +{
->> +	h_gpci_event_update(event);
->> +}
->
-> Ditto.
-
-Yep, agreed.
-
->
->> +static int h_gpci_event_init(struct perf_event *event)
->> +{
->> +	u64 count;
->> +	u8 length;
->> +
->> +	/* Not our event */
->> +	if (event->attr.type != event->pmu->type)
->> +		return -ENOENT;
-> I don't understand why you need this?
-
-It's part of the standard perf stuff. In perf_init_event() we do an idr 
-lookup to identify the responsible PMU, and it that fails the PMUs get 
-iterated over and need to return -ENOENT for events they don't own. That 
-said, I have no idea what cases the idr lookup would fail.
-
->> +	/* config2 is unused */
->> +	if (event->attr.config2)
->> +		return -EINVAL;
->
-> You must also check the reserved regions of config and config1.
-
-There aren't any (I use all the bits in config and config1).
-
->> +	/* unsupported modes and filters */
->> +	if (event->attr.exclude_user   ||
->> +	    event->attr.exclude_kernel ||
->> +	    event->attr.exclude_hv     ||
->> +	    event->attr.exclude_idle   ||
->> +	    event->attr.exclude_host   ||
->> +	    event->attr.exclude_guest  ||
->> +	    is_sampling_event(event)) /* no sampling */
->
-> I think you should also check sample_type.
-
-Why? Many PMUs don't, I'm not seeing what the need is here.
-
->> +		return -EINVAL;
->
-> Have you thought about inherit, pinned, exclusive?
->
-
-exclusive and pinned don't make any sense because we don't have any 
-actual PMU hw that is being consumed. The event counters are always 
-counting.
-inherit isn't relevant because we forbid all task tracking (via "+ 
-.task_ctx_nr = perf_invalid_context," below).
-
-I haven't forbidden either of these because I'm not sure there is a 
-point in doing so (the exclude_* stuff is used for some permissions 
-checking)
-
->> +
->> +	/* no branch sampling */
->> +	if (has_branch_stack(event))
->> +		return -EOPNOTSUPP;
->> +
->> +	length = event_get_length(event);
->> +	if (length < 1 || length > 8)
->> +		return -EINVAL;
->> +
->> +	/* last byte within the buffer? */
->> +	if ((event_get_offset(event) + length) > sizeof(union h_gpci_cvs))
->> +		return -EINVAL;
->> +
->> +	/* check if the request works... */
->> +	if (single_gpci_request(event_get_request(event),
->> +				event_get_starting_index(event),
->> +				event_get_secondary_index(event),
->> +				event_get_counter_info_version(event),
->> +				event_get_offset(event),
->> +				length,
->> +				&count))
->> +		return -EINVAL;
->> +
->> +	/*
->> +	 * Some of the events are per-cpu, some per-core, some per-chip, some
->> +	 * are global, and some access data from other virtual machines on the
->> +	 * same physical machine. We can't map the cpu value without a lot of
->> +	 * work. Instead, we pick an arbitrary cpu for all events on this pmu.
->> +	 */
->> +	event->cpu = 0;
->
-> OK, but is having them all on cpu zero a good idea?
-
-Probably not. We can remove this line without any real effect on the 
-event output. Ideally, we'd have a way to tell perf that our PMU isn't 
-associated with _any_ cpu (which would also eliminate some cross-cpu 
-calls which trigger IPIs), and that is something I'm looking at, but 
-perf widely assumes that events are tied to cpus (or some cpu mappable 
-unit like a core or socket).
-
->
->> +	perf_swevent_init_hrtimer(event);
->> +	return 0;
->> +}
->> +
->> +struct pmu h_gpci_pmu = {
->> +	.task_ctx_nr = perf_invalid_context,
->> +
->> +	.name = "hv_gpci",
->> +	.attr_groups = attr_groups,
->> +	.event_init = h_gpci_event_init,
->> +	.add = h_gpci_event_add,
->> +	.del = h_gpci_event_del,
->> +	.start = h_gpci_event_start,
->> +	.stop = h_gpci_event_stop,
->> +	.read = h_gpci_event_read,
->
-> Nice to have them align vertically.
-Ack.
-
->
->> +	.event_idx = perf_swevent_event_idx,
->> +};
->> +
->> +static int hv_gpci_init(void)
->> +{
->> +	int r;
->> +
->> +	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
->> +		pr_info("Not running under phyp, not supported\n");
->
-> If only it was that simple :)
->
-> You'll see FW_FEATURE_LPAR in a KVM guest too.
->
-> There are at least two mechanisms for FW to indicate the presence of features,
-> "ibm,hypertas-functions" and "ibm,architecture-vec-5".
-
-I don't _think_ it is exposed in either of those, or if it is the docs 
-don't say so :(.
-
-> If HGPCI is not exposed in either of those then we'd want to do a probe hcall
-> here to try and detect it at runtime.
-
-Yep, having a probing hcall would be the way to go. The only issue there 
-is handling migration between firmware which has or doesn't have support 
-for this hcall. I suppose hooking a migration notifier of some kind 
-would let us get past that bump.
-
->> +		return -ENODEV;
->> +	}
->> +
->> +	r = perf_pmu_register(&h_gpci_pmu, h_gpci_pmu.name, -1);
->> +	if (r)
->> +		return r;
->> +
->> +	return 0;
->> +}
->> +
->> +module_init(hv_gpci_init);
->
-> This is not modular code so you're discouraged from using module_init(),
-> arch_initcall() would probably be fine.
->
-
-Got it.
+	if (event_get_reserved1(event) ||
+	    event_get_reserved2(event) ||
+	    event_get_reserved3(event)) {
+		pr_devel("reserved set when forbidden 0x%llx(0x%llx) 0x%llx(0x%llx) 
+0x%llx(0x%llx)\n",
+				event->attr.config,
+				event_get_reserved1(event),
+				event->attr.config1,
+				event_get_reserved2(event),
+				event->attr.config2,
+				event_get_reserved3(event));
+		return -EINVAL;
+	}
