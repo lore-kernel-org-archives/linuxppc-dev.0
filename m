@@ -1,24 +1,23 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <john.d@servergy.com>
+Received: from mail-ob0-f181.google.com (mail-ob0-f181.google.com
+ [209.85.214.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0D4D32C0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 07:52:22 +1100 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <torvalds@linux-foundation.org>
-Subject: [GIT PULL] tree-wide: clean up no longer required #include
- <linux/init.h>
-Date: Tue, 4 Feb 2014 15:51:58 -0500
-Message-ID: <1391547118-21967-1-git-send-email-paul.gortmaker@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 290F62C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 03:43:27 +1100 (EST)
+Received: by mail-ob0-f181.google.com with SMTP id va2so9712786obc.40
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Feb 2014 08:43:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-m68k@vger.kernel.org, rusty@rustcorp.com.au, linux-ia64@vger.kernel.org,
- kvm@vger.kernel.org, linux-s390@vger.kernel.org, netdev@vger.kernel.org,
- x86@kernel.org, gregkh@linuxfoundation.org,
- Paul Gortmaker <paul.gortmaker@windriver.com>, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, sfr@canb.auug.org.au, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <20140204155921.GA31582@oc0268524204.ibm.com>
+References: <CAGtOQbSJeJ85Nj-M2XB+w3p5+PTVWrpsFKZqCbEqZYkwsa0GGg@mail.gmail.com>
+ <20140204155921.GA31582@oc0268524204.ibm.com>
+Date: Tue, 4 Feb 2014 10:43:23 -0600
+Message-ID: <CAGtOQbR2sL6EkJRVqrG-6V8D_MY05Z3jatE=9LSRtgSe6yJDng@mail.gmail.com>
+Subject: Re: Oops on shutdown : 3.11.0-5-powerpc-e500mc Ubuntu
+From: John Donnelly <john.d@servergy.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Content-Type: multipart/alternative; boundary=089e015369f0b7fe4d04f19756fb
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,393 +27,452 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We've had this in linux-next for 2+ weeks (thanks Stephen!) as a
-linux-stable like queue of patches, and as can be seen here:
+--089e015369f0b7fe4d04f19756fb
+Content-Type: text/plain; charset=ISO-8859-1
 
-  https://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
+Thanks.
+It appears to be a Ubuntu component :
 
-most of the changes in the last week have been trivial adding acks
-or dropping patches that maintainers decided to take themselves.
-
-With -rc1 now containing what was in linux-next, the queue applies
-to that baseline w/o issue, and I've redone comprehensive multi
-arch build testing on the -rc1 baseline as a final sanity check.
-
-Original RFC discussion and patch posting is here, if needed:
-
-  https://lkml.org/lkml/2014/1/21/434
-
-Suggested merge text follows:
-
-   ----------------------------8<-----------------------------
-Summary - We removed cpuinit and devinit, which left ~2000 instances
-of include <linux/init.h> that were no longer needed.  To fully enable
-this removal/cleanup, we relocate module_init() from init.h into
-module.h.  Multi arch/multi config build testing on linux-next has
-been used to find and fix any implicit header dependencies prior to
-deploying the actual init.h --> module.h move, to preserve bisection.
-
-Additional details:
-
-module_init/module_exit and friends moved to module.h
------------------------------------------------------
-Aside from enabling this init.h cleanup to extend into modular files,
-it actually does make sense.  For all modules will use some form of
-our initfunc processing/categorization, but not all initfunc users
-will be necessarily using modular functionality.  So we move these
-module related macros to module.h and ensure module.h sources init.h
+(saucy)root@(none)# dpkg -S /boot/vmlinux-3.11.0-5-powerpc-e500mc
+linux-image-3.11.0-5-powerpc-e500mc: /boot/vmlinux-3.11.0-5-powerpc-e500mc
 
 
-module_init in non modular code:
---------------------------------
-This series uncovered that we are enabling people to use module_init
-in non-modular code.  While that works fine, there are at least three
-reasons why it probably should not be encouraged:
+On Tue, Feb 4, 2014 at 9:59 AM, Thadeu Lima de Souza Cascardo <
+cascardo@linux.vnet.ibm.com> wrote:
 
- 1) it makes a casual reader of the code assume the code is modular
-    even though it is obj-y (builtin) or controlled by a bool Kconfig.
+> On Tue, Feb 04, 2014 at 08:47:14AM -0600, John Donnelly wrote:
+> > Hi,
+> >  Where is a appropriate place to file a bug for this : This is the second
+> > occurrence I have seen.
+> >
+>
+> If this is a Ubuntu kernel, probably report it at Canonical's Launchpad.
+> If it is provided by Freescale, report it to Freescale.
+> If you can run a mainline kernel (best now would be 3.14-rc1) and
+> reproduce that, then best place would be linux-nfs@vger.kernel.org.
+>
+> Hope that helps.
+> Cascardo.
+>
+> >
+> >
+> > saucy)root@(none):/work/svy/tools#  * Stopping MD monitoring service
+> mdadm
+> > --monitor
+> >  [ OK ]
+> >  * Asking all remaining processes to terminate...
+>  [
+> > OK ]
+> >  * All processes ended within 1 seconds...
+> [
+> > OK ]
+> > [65426.692405] Oops: Exception in kernel mode, sig: 11 [#1]
+> > [65426.697721] SMP NR_CPUS=8 P4080 DS
+> > [65426.701122] Modules linked in: btrfs(F) raid6_pq(F) zlib_deflate(F)
+> > xor(F) ufs(F) qnx4(F) hfsplus(F) hfs(F) minix(F) ntfs(F) msdos(F) jfs(F)
+> > xfs(F) libcrc32c(F) reiserfs(F) nls_iso8859_1(F) nls_cp437(F) vfat(F)
+> > fat(F) dm_multipath(F) scsi_dh(F) usb_storage(F) ext2(F)
+> rpcsec_gss_krb5(F)
+> > nfsv4(F) nfsd(F) auth_rpcgss(F) nfs_acl(F) nfs(F) lockd(F) sunrpc(F)
+> > fscache(F) ofpart(F) redboot(F) cmdlinepart(F) cfi_cmdset_0002(F)
+> > cfi_probe(F) cfi_util(F) gen_probe(F) physmap_of(F) map_funcs(F)
+> chipreg(F)
+> > mtd(F) lm90(F) at24(F) caam(F) i2c_mpc(F) mpc85xx_edac(F) edac_core(F)
+> > uio_pdrv_genirq(F) uio(F) ata_generic(F) ahci(F) libahci(F)
+> pata_jmicron(F)
+> > fsl_pq_mdio(F)
+> > [65426.759065] CPU: 6 PID: 19006 Comm: umount.nfs Tainted: GF
+> >  3.11.0-5-powerpc-e500mc #8-Ubuntu
+> > [65426.768461] task: ea0f3900 ti: ea05c000 task.ti: ea05c000
+> > [65426.773858] NIP: f99a0f50 LR: f998250c CTR: c07f85c0
+> > [65426.778820] REGS: ea05dda0 TRAP: 0700   Tainted: GF
+> > (3.11.0-5-powerpc-e500mc)
+> > [65426.786998] MSR: 00029002 <CE,EE,ME>  CR: 24000422  XER: 20000000
+> > [65426.793107]
+> > GPR00: f9982d20 ea05de50 ea0f3900 e7e66ee0 00029002 00000001 00000000
+> > 00000000
+> > GPR08: eadc2504 00000000 00000000 00000001 c07f85c0 1002e3ac 10010000
+> > 00008000
+> > GPR16: 100112e4 1000f3c4 1000f3e0 1000f594 1000f59c 1000f440 c0b4fb6c
+> > 10010000
+> > GPR24: 10010000 00000000 c0089180 ea05de84 f99ab064 ea2bf500 c0b41380
+> > ea54ef00
+> > [65426.822949] NIP [f99a0f50] rpc_remove_client_dir+0x0/0x30 [sunrpc]
+> > [65426.829143] LR [f998250c] __rpc_clnt_remove_pipedir+0x5c/0x80 [sunrpc]
+> > [65426.835668] Call Trace:
+> > [65426.838128] [ea05de50] [f999f9f0] rpc_get_sb_net+0x70/0xa0 [sunrpc]
+> > (unreliable)
+> > [65426.845542] [ea05de60] [f9982d20] rpc_free_client+0x50/0xa0 [sunrpc]
+> > [65426.851910] [ea05de70] [f9982c58] rpc_shutdown_client+0x68/0xe0
+> [sunrpc]
+> > [65426.858647] [ea05dec0] [f9a3fd04] nfs_free_server+0x124/0x190 [nfs]
+> > [65426.864920] [ea05dee0] [c01c5f34] deactivate_locked_super+0x74/0xa0
+> > [65426.871193] [ea05def0] [c01e9184] SyS_umount+0x94/0x3d0
+> > [65426.876422] [ea05df40] [c0010604] ret_from_syscall+0x0/0x3c
+> > [65426.882002] --- Exception: c01 at 0xfec55dc
+> > [65426.882002]     LR = 0xff88d54
+> > [65426.889225] Instruction dump:
+> > [65426.892191] 00001b50 0000aa32 00000706 00000120 0000aa36 00000706
+> > 00001af8 0000aa3a
+> > [65426.899964] 00000706 00001aa0 0000aa46 00000704 <00000058> 0000aa4a
+> > 00000704 00001b74
+> > [65426.907949] udlfb: /dev/fb0 FB_BLANK mode 1 --> 0
+> > [65426.912666] udlfb: set_par mode 1024x768
+> > [65426.927196] ---[ end trace b25b3039b99e0391 ]---
+> > [65426.931816]
+> > umount.nfs: /work: not mounted
+> > [65426.960296] init: idmapd main process (2394) killed by TERM signal
+> > [65426.983998] init: systemd-logind main process (544) killed by TERM
+> signal
+> > [65426.994070] Oops: Exception in kernel mode, sig: 11 [#2]
+> > [65426.999386] SMP NR_CPUS=8 P4080 DS
+> > [65427.002787] Modules linked in: btrfs(F) raid6_pq(F) zlib_deflate(F)
+> > xor(F) ufs(F) qnx4(F) hfsplus(F) hfs(F) minix(F) ntfs(F) msdos(F) jfs(F)
+> > xfs(F) libcrc32c(F) reiserfs(F) nls_iso8859_1(F) nls_cp437(F) vfat(F)
+> > fat(F) dm_multipath(F) scsi_dh(F) usb_storage(F) ext2(F)
+> rpcsec_gss_krb5(F)
+> > nfsv4(F) nfsd(F) auth_rpcgss(F) nfs_acl(F) nfs(F) lockd(F) sunrpc(F)
+> > fscache(F) ofpart(F) redboot(F) cmdlinepart(F) cfi_cmdset_0002(F)
+> > cfi_probe(F) cfi_util(F) gen_probe(F) physmap_of(F) map_funcs(F)
+> chipreg(F)
+> > mtd(F) lm90(F) at24(F) caam(F) i2c_mpc(F) mpc85xx_edac(F) edac_core(F)
+> > uio_pdrv_genirq(F) uio(F) ata_generic(F) ahci(F) libahci(F)
+> pata_jmicron(F)
+> > fsl_pq_mdio(F)
+> > [65427.060734] CPU: 7 PID: 19014 Comm: umount Tainted: GF     D
+> >  3.11.0-5-powerpc-e500mc #8-Ubuntu
+> > [65427.069783] task: e5d55580 ti: ea2f0000 task.ti: ea2f0000
+> > [65427.075180] NIP: f99a0270 LR: c01c5f34 CTR: f99a0270
+> > [65427.080142] REGS: ea2f1e30 TRAP: 0700   Tainted: GF     D
+> > (3.11.0-5-powerpc-e500mc)
+> > [65427.088320] MSR: 00029002 <CE,EE,ME>  CR: 24004424  XER: 00000000
+> > [65427.094430]
+> > GPR00: c01c5f24 ea2f1ee0 e5d55580 ea1e7800 c1d404e0 ea027a80 c01e7b78
+> > 00000001
+> > GPR08: ffffffff f99a0270 ffffffff 0000000d 003fe0f9 100192e0 10010000
+> > 00008000
+> > GPR16: 100112e4 1000f3c4 1000f3e0 1000f594 1000f59c ea027aa0 c0b4fb6c
+> > ea2f1ef8
+> > GPR24: 00000000 ea027a80 00000000 ea027a80 ea027aa0 ea027abc f99aba78
+> > ea1e7800
+> > [65427.124275] NIP [f99a0270] rpc_kill_sb+0x0/0x110 [sunrpc]
+> > [65427.129677] LR [c01c5f34] deactivate_locked_super+0x74/0xa0
+> > [65427.135246] Call Trace:
+> > [65427.137689] [ea2f1ee0] [c01c5f24] deactivate_locked_super+0x64/0xa0
+> > (unreliable)
+> > [65427.145094] [ea2f1ef0] [c01e9184] SyS_umount+0x94/0x3d0
+> > [65427.150322] [ea2f1f40] [c0010604] ret_from_syscall+0x0/0x3c
+> > [65427.155902] --- Exception: c01 at 0xfec45cc
+> > [65427.155902]     LR = 0x10003130
+> > [65427.163212] Instruction dump:
+> > [65427.166178] 0000867e 00000706 00001288 00008682 00000706 00000058
+> > 00008686 00000704
+> > [65427.173952] 00001288 0000868a 00000704 00000058 <00008690> 0006320a
+> > 00000000 00008694
+> > [65427.181901] ---[ end trace b25b3039b99e0392 ]---
+> > [65427.186514]
+> > rpcbind: rpcbind terminating on signal. Restart with "rpcbind -w"
+> > [65427.235270] init: rpcbind main process (2082) terminated with status 2
+> > [65427.294746] init: Disconnected from system bus
+> >  * Deactivating swap...
+>  [
+> > OK ]
+> >  * Unmounting local filesystems...
+> [
+> > OK ]
+> > mount: / is busy
+> >  * Will now restart
+> >
+> > --
+> >
+> > *Regards,*
+> > * John.*
+> >
+> > *--*
+> >
+> > *o* Energy-efficiency is #1 reason data centers look to expand.  --
+> Digital
+> > Realty Trust
+> > *o* Green Data Centers spending to increase 300% worldwide by 2016.  --
+> > Pike Research
+> > *o *Data Centers have become as vital to the functioni
+> > ng of society as power stations.  -- The Economist
+>
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
 
- 2) it makes it too easy to add dead code in a function that is handed
-    to module_exit() -- [more on that below]
 
- 3) it breaks our ability to use priority sorted initcalls properly
-    [more on that below.]
+-- 
 
- 4) on some files, the use of module.h vs. init.h can cost a ~10%
-    increase in the number of lines output from CPP.
+*Regards,*
+* John.*
 
-After this change, a new coder who tries to make use of module_init in
-non modular code would find themselves also needing to include the
-module.h header.  At which point the odds are greater that they would
-ask themselves "Am I doing this right?  I shouldn't need this."
+*--*
 
-Note that existing non-modular code that already includes module.h and
-uses module_init doesn't get fixed here, since they already build w/o
-errors triggered by this change; we'll have to hunt them down later.
+*o* Energy-efficiency is #1 reason data centers look to expand.  -- Digital
+Realty Trust
+*o* Green Data Centers spending to increase 300% worldwide by 2016.  --
+Pike Research
+*o *Data Centers have become as vital to the functioni
+ng of society as power stations.  -- The Economist
 
+--089e015369f0b7fe4d04f19756fb
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-module_init and initcall ordering:
-----------------------------------
-We have a group of about ten priority sorted initcalls, that are
-called in init/main.c after most of the hard coded/direct calls
-have been processed.  These serve the purpose of avoiding everyone
-poking at init/main.c to hook in their init sequence.  The bins are:
+<div dir=3D"ltr">Thanks.<div>It appears to be a Ubuntu component :<div><br>=
+</div><div><div>(saucy)root@(none)# dpkg -S /boot/vmlinux-3.11.0-5-powerpc-=
+e500mc</div><div>linux-image-3.11.0-5-powerpc-e500mc: /boot/vmlinux-3.11.0-=
+5-powerpc-e500mc</div>
+</div></div></div><div class=3D"gmail_extra"><br><br><div class=3D"gmail_qu=
+ote">On Tue, Feb 4, 2014 at 9:59 AM, Thadeu Lima de Souza Cascardo <span di=
+r=3D"ltr">&lt;<a href=3D"mailto:cascardo@linux.vnet.ibm.com" target=3D"_bla=
+nk">cascardo@linux.vnet.ibm.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex"><div class=3D"im">On Tue, Feb 04, 2014 at 08=
+:47:14AM -0600, John Donnelly wrote:<br>
+&gt; Hi,<br>
+&gt; =A0Where is a appropriate place to file a bug for this : This is the s=
+econd<br>
+&gt; occurrence I have seen.<br>
+&gt;<br>
+<br>
+</div>If this is a Ubuntu kernel, probably report it at Canonical&#39;s Lau=
+nchpad.<br>
+If it is provided by Freescale, report it to Freescale.<br>
+If you can run a mainline kernel (best now would be 3.14-rc1) and<br>
+reproduce that, then best place would be <a href=3D"mailto:linux-nfs@vger.k=
+ernel.org">linux-nfs@vger.kernel.org</a>.<br>
+<br>
+Hope that helps.<br>
+Cascardo.<br>
+<div><div class=3D"h5"><br>
+&gt;<br>
+&gt;<br>
+&gt; saucy)root@(none):/work/svy/tools# =A0* Stopping MD monitoring service=
+ mdadm<br>
+&gt; --monitor<br>
+&gt; =A0[ OK ]<br>
+&gt; =A0* Asking all remaining processes to terminate... =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0[<br>
+&gt; OK ]<br>
+&gt; =A0* All processes ended within 1 seconds... =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 [<br>
+&gt; OK ]<br>
+&gt; [65426.692405] Oops: Exception in kernel mode, sig: 11 [#1]<br>
+&gt; [65426.697721] SMP NR_CPUS=3D8 P4080 DS<br>
+&gt; [65426.701122] Modules linked in: btrfs(F) raid6_pq(F) zlib_deflate(F)=
+<br>
+&gt; xor(F) ufs(F) qnx4(F) hfsplus(F) hfs(F) minix(F) ntfs(F) msdos(F) jfs(=
+F)<br>
+&gt; xfs(F) libcrc32c(F) reiserfs(F) nls_iso8859_1(F) nls_cp437(F) vfat(F)<=
+br>
+&gt; fat(F) dm_multipath(F) scsi_dh(F) usb_storage(F) ext2(F) rpcsec_gss_kr=
+b5(F)<br>
+&gt; nfsv4(F) nfsd(F) auth_rpcgss(F) nfs_acl(F) nfs(F) lockd(F) sunrpc(F)<b=
+r>
+&gt; fscache(F) ofpart(F) redboot(F) cmdlinepart(F) cfi_cmdset_0002(F)<br>
+&gt; cfi_probe(F) cfi_util(F) gen_probe(F) physmap_of(F) map_funcs(F) chipr=
+eg(F)<br>
+&gt; mtd(F) lm90(F) at24(F) caam(F) i2c_mpc(F) mpc85xx_edac(F) edac_core(F)=
+<br>
+&gt; uio_pdrv_genirq(F) uio(F) ata_generic(F) ahci(F) libahci(F) pata_jmicr=
+on(F)<br>
+&gt; fsl_pq_mdio(F)<br>
+&gt; [65426.759065] CPU: 6 PID: 19006 Comm: umount.nfs Tainted: GF<br>
+&gt; =A03.11.0-5-powerpc-e500mc #8-Ubuntu<br>
+&gt; [65426.768461] task: ea0f3900 ti: ea05c000 task.ti: ea05c000<br>
+&gt; [65426.773858] NIP: f99a0f50 LR: f998250c CTR: c07f85c0<br>
+&gt; [65426.778820] REGS: ea05dda0 TRAP: 0700 =A0 Tainted: GF<br>
+&gt; (3.11.0-5-powerpc-e500mc)<br>
+&gt; [65426.786998] MSR: 00029002 &lt;CE,EE,ME&gt; =A0CR: 24000422 =A0XER: =
+20000000<br>
+&gt; [65426.793107]<br>
+&gt; GPR00: f9982d20 ea05de50 ea0f3900 e7e66ee0 00029002 00000001 00000000<=
+br>
+&gt; 00000000<br>
+&gt; GPR08: eadc2504 00000000 00000000 00000001 c07f85c0 1002e3ac 10010000<=
+br>
+&gt; 00008000<br>
+&gt; GPR16: 100112e4 1000f3c4 1000f3e0 1000f594 1000f59c 1000f440 c0b4fb6c<=
+br>
+&gt; 10010000<br>
+&gt; GPR24: 10010000 00000000 c0089180 ea05de84 f99ab064 ea2bf500 c0b41380<=
+br>
+&gt; ea54ef00<br>
+&gt; [65426.822949] NIP [f99a0f50] rpc_remove_client_dir+0x0/0x30 [sunrpc]<=
+br>
+&gt; [65426.829143] LR [f998250c] __rpc_clnt_remove_pipedir+0x5c/0x80 [sunr=
+pc]<br>
+&gt; [65426.835668] Call Trace:<br>
+&gt; [65426.838128] [ea05de50] [f999f9f0] rpc_get_sb_net+0x70/0xa0 [sunrpc]=
+<br>
+&gt; (unreliable)<br>
+&gt; [65426.845542] [ea05de60] [f9982d20] rpc_free_client+0x50/0xa0 [sunrpc=
+]<br>
+&gt; [65426.851910] [ea05de70] [f9982c58] rpc_shutdown_client+0x68/0xe0 [su=
+nrpc]<br>
+&gt; [65426.858647] [ea05dec0] [f9a3fd04] nfs_free_server+0x124/0x190 [nfs]=
+<br>
+&gt; [65426.864920] [ea05dee0] [c01c5f34] deactivate_locked_super+0x74/0xa0=
+<br>
+&gt; [65426.871193] [ea05def0] [c01e9184] SyS_umount+0x94/0x3d0<br>
+&gt; [65426.876422] [ea05df40] [c0010604] ret_from_syscall+0x0/0x3c<br>
+&gt; [65426.882002] --- Exception: c01 at 0xfec55dc<br>
+&gt; [65426.882002] =A0 =A0 LR =3D 0xff88d54<br>
+&gt; [65426.889225] Instruction dump:<br>
+&gt; [65426.892191] 00001b50 0000aa32 00000706 00000120 0000aa36 00000706<b=
+r>
+&gt; 00001af8 0000aa3a<br>
+&gt; [65426.899964] 00000706 00001aa0 0000aa46 00000704 &lt;00000058&gt; 00=
+00aa4a<br>
+&gt; 00000704 00001b74<br>
+&gt; [65426.907949] udlfb: /dev/fb0 FB_BLANK mode 1 --&gt; 0<br>
+&gt; [65426.912666] udlfb: set_par mode 1024x768<br>
+&gt; [65426.927196] ---[ end trace b25b3039b99e0391 ]---<br>
+&gt; [65426.931816]<br>
+&gt; umount.nfs: /work: not mounted<br>
+&gt; [65426.960296] init: idmapd main process (2394) killed by TERM signal<=
+br>
+&gt; [65426.983998] init: systemd-logind main process (544) killed by TERM =
+signal<br>
+&gt; [65426.994070] Oops: Exception in kernel mode, sig: 11 [#2]<br>
+&gt; [65426.999386] SMP NR_CPUS=3D8 P4080 DS<br>
+&gt; [65427.002787] Modules linked in: btrfs(F) raid6_pq(F) zlib_deflate(F)=
+<br>
+&gt; xor(F) ufs(F) qnx4(F) hfsplus(F) hfs(F) minix(F) ntfs(F) msdos(F) jfs(=
+F)<br>
+&gt; xfs(F) libcrc32c(F) reiserfs(F) nls_iso8859_1(F) nls_cp437(F) vfat(F)<=
+br>
+&gt; fat(F) dm_multipath(F) scsi_dh(F) usb_storage(F) ext2(F) rpcsec_gss_kr=
+b5(F)<br>
+&gt; nfsv4(F) nfsd(F) auth_rpcgss(F) nfs_acl(F) nfs(F) lockd(F) sunrpc(F)<b=
+r>
+&gt; fscache(F) ofpart(F) redboot(F) cmdlinepart(F) cfi_cmdset_0002(F)<br>
+&gt; cfi_probe(F) cfi_util(F) gen_probe(F) physmap_of(F) map_funcs(F) chipr=
+eg(F)<br>
+&gt; mtd(F) lm90(F) at24(F) caam(F) i2c_mpc(F) mpc85xx_edac(F) edac_core(F)=
+<br>
+&gt; uio_pdrv_genirq(F) uio(F) ata_generic(F) ahci(F) libahci(F) pata_jmicr=
+on(F)<br>
+&gt; fsl_pq_mdio(F)<br>
+&gt; [65427.060734] CPU: 7 PID: 19014 Comm: umount Tainted: GF =A0 =A0 D<br=
+>
+&gt; =A03.11.0-5-powerpc-e500mc #8-Ubuntu<br>
+&gt; [65427.069783] task: e5d55580 ti: ea2f0000 task.ti: ea2f0000<br>
+&gt; [65427.075180] NIP: f99a0270 LR: c01c5f34 CTR: f99a0270<br>
+&gt; [65427.080142] REGS: ea2f1e30 TRAP: 0700 =A0 Tainted: GF =A0 =A0 D<br>
+&gt; (3.11.0-5-powerpc-e500mc)<br>
+&gt; [65427.088320] MSR: 00029002 &lt;CE,EE,ME&gt; =A0CR: 24004424 =A0XER: =
+00000000<br>
+&gt; [65427.094430]<br>
+&gt; GPR00: c01c5f24 ea2f1ee0 e5d55580 ea1e7800 c1d404e0 ea027a80 c01e7b78<=
+br>
+&gt; 00000001<br>
+&gt; GPR08: ffffffff f99a0270 ffffffff 0000000d 003fe0f9 100192e0 10010000<=
+br>
+&gt; 00008000<br>
+&gt; GPR16: 100112e4 1000f3c4 1000f3e0 1000f594 1000f59c ea027aa0 c0b4fb6c<=
+br>
+&gt; ea2f1ef8<br>
+&gt; GPR24: 00000000 ea027a80 00000000 ea027a80 ea027aa0 ea027abc f99aba78<=
+br>
+&gt; ea1e7800<br>
+&gt; [65427.124275] NIP [f99a0270] rpc_kill_sb+0x0/0x110 [sunrpc]<br>
+&gt; [65427.129677] LR [c01c5f34] deactivate_locked_super+0x74/0xa0<br>
+&gt; [65427.135246] Call Trace:<br>
+&gt; [65427.137689] [ea2f1ee0] [c01c5f24] deactivate_locked_super+0x64/0xa0=
+<br>
+&gt; (unreliable)<br>
+&gt; [65427.145094] [ea2f1ef0] [c01e9184] SyS_umount+0x94/0x3d0<br>
+&gt; [65427.150322] [ea2f1f40] [c0010604] ret_from_syscall+0x0/0x3c<br>
+&gt; [65427.155902] --- Exception: c01 at 0xfec45cc<br>
+&gt; [65427.155902] =A0 =A0 LR =3D 0x10003130<br>
+&gt; [65427.163212] Instruction dump:<br>
+&gt; [65427.166178] 0000867e 00000706 00001288 00008682 00000706 00000058<b=
+r>
+&gt; 00008686 00000704<br>
+&gt; [65427.173952] 00001288 0000868a 00000704 00000058 &lt;00008690&gt; 00=
+06320a<br>
+&gt; 00000000 00008694<br>
+&gt; [65427.181901] ---[ end trace b25b3039b99e0392 ]---<br>
+&gt; [65427.186514]<br>
+&gt; rpcbind: rpcbind terminating on signal. Restart with &quot;rpcbind -w&=
+quot;<br>
+&gt; [65427.235270] init: rpcbind main process (2082) terminated with statu=
+s 2<br>
+&gt; [65427.294746] init: Disconnected from system bus<br>
+&gt; =A0* Deactivating swap... =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0[<br>
+&gt; OK ]<br>
+&gt; =A0* Unmounting local filesystems... =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 [<br>
+&gt; OK ]<br>
+&gt; mount: / is busy<br>
+&gt; =A0* Will now restart<br>
+&gt;<br>
+&gt; --<br>
+&gt;<br>
+</div></div>&gt; *Regards,*<br>
+&gt; * John.*<br>
+&gt;<br>
+&gt; *--*<br>
+&gt;<br>
+&gt; *o* Energy-efficiency is #1 reason data centers look to expand. =A0-- =
+Digital<br>
+&gt; Realty Trust<br>
+&gt; *o* Green Data Centers spending to increase 300% worldwide by 2016. =
+=A0--<br>
+&gt; Pike Research<br>
+&gt; *o *Data Centers have become as vital to the functioni<br>
+<div class=3D"im">&gt; ng of society as power stations. =A0-- The Economist=
+<br>
+<br>
+</div>&gt; _______________________________________________<br>
+&gt; Linuxppc-dev mailing list<br>
+&gt; <a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.oz=
+labs.org</a><br>
+&gt; <a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_=
+blank">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br>
+<br>
+</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br><div dir=3D"=
+ltr"><div style=3D"font-family:Arial;font-size:12px"><span style=3D"border-=
+collapse:collapse"><div style=3D"border-collapse:collapse"><div style=3D"ma=
+rgin:0px;display:inline!important">
+<span style=3D"color:rgb(80,0,80);border-collapse:collapse"><font color=3D"=
+#67b545"><b><br></b></font></span></div></div><div style=3D"border-collapse=
+:collapse"><font color=3D"#67b545"><b>Regards,</b></font></div><div style=
+=3D"border-collapse:collapse">
+<font color=3D"#67b545"><b>=A0John.</b></font></div><div style=3D"border-co=
+llapse:collapse"><font color=3D"#67b545"><b><br></b></font></div><div style=
+=3D"border-collapse:collapse"><div style=3D"margin:0px;display:inline!impor=
+tant"><span style=3D"color:rgb(80,0,80);border-collapse:collapse"><font col=
+or=3D"#67b545"><b>--</b></font></span></div>
+</div><div style=3D"border-collapse:collapse"><div style=3D"margin:0px;disp=
+lay:inline!important"><span style=3D"color:rgb(80,0,80);border-collapse:col=
+lapse"><font color=3D"#67b545"><b><br></b></font></span></div></div><div st=
+yle=3D"border-collapse:collapse">
+<div style=3D"margin:0px;display:inline!important"><span style=3D"color:rgb=
+(80,0,80);border-collapse:collapse"><font color=3D"#67b545"><b>o</b></font>=
+=A0</span><span style=3D"border-collapse:collapse"><font color=3D"#000000">=
+Energy-efficiency is #1 reason data centers look to expand. =A0-- Digital R=
+ealty Trust</font></span></div>
+</div><div style=3D"border-collapse:collapse"><div style=3D"margin:0px;disp=
+lay:inline!important"><font style=3D"color:rgb(51,204,0)"><b style=3D"color=
+:rgb(103,181,69)">o</b>=A0</font><font color=3D"#000000">Green Data Centers=
+ spending to increase 300% worldwide by 2016. =A0-- Pike Research</font></d=
+iv>
+</div></span></div><div style=3D"font-family:Arial;font-size:12px"><div sty=
+le=3D"margin:0px"><b style=3D"color:rgb(103,181,69)">o=A0</b><font color=3D=
+"#000000">Data Centers have=A0become as vital to the=A0functioni</font><div=
+ style=3D"margin:0px;display:inline!important">
+<font color=3D"#000000">ng</font><font color=3D"#000000">=A0of society as p=
+ower stations. =A0-- The Economist</font></div></div><div style=3D"margin:0=
+px"><br></div></div></div>
+</div>
 
-        pure_initcall               0
-        core_initcall               1
-        postcore_initcall           2
-        arch_initcall               3
-        subsys_initcall             4
-        fs_initcall                 5
-        device_initcall             6
-        late_initcall               7
-
-These are meant to eventually replace users of the non specific
-priority "__initcall" which currently maps onto device_initcall.
-This is of interest, because in non-modular code, cpp does this:
-
-    module_init -->  __initcall --> device_initcall
-
-So all module_init() land in the device_initcall bucket, rather late
-in the sequence.  That makes sense, since if it was a module, the init
-could be real late (days, weeks after boot).  But now imagine you add
-support for some non-modular bus/arch/infrastructure (say for e.g. PCI)
-and you use module_init for it.  That means anybody else who wants
-to use your subsystem can't do so if they use an initcall of 0 --> 5
-priority.  For a real world example of this, see patch #1 in this series:
-
-	https://lkml.org/lkml/2014/1/14/809
-
-We don't want to force code that is clearly arch or subsys or fs
-specific to have to use the device_initcall just because something
-else has been mistakenly put (or left) in that bucket.  So a couple of
-changes do actually change the initcall level where it is inevitably
-appropriate to do so.  Those are called out explicitly in their
-respective commit logs.
-
-
-module_exit and dead code
--------------------------
-Built in code will never have an opportunity to call functions that
-are registered with module_exit(), so any cases of that uncovered in
-this series delete that dead code.  Note that any built-in code that
-was already including module.h and using module_exit won't have shown
-up as breakage on the build coverage of this series, so we'll have to
-find those independently later.  It looks like there may be quite a
-few that are invisibly created via module_platform_driver -- a macro
-that creates module_init and module_exit automatically.  We may want
-to consider relocating module_platform_driver into module.h later...
-
-
-cpuinit
--------
-To finalize the removal of cpuinit, which was done several releases
-ago, we remove the remaining stub functions from init.h in this
-series.  We've seen one or two "users" try to creep back in, so this
-will close the door on that chapter and prevent creep.
-
-   ----------------------------8<-----------------------------
-
-Thanks,
-Paul.
----
-
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-arch@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-m68k@lists.linux-m68k.org
-Cc: linux-mips@linux-mips.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: x86@kernel.org
-Cc: netdev@vger.kernel.org
-Cc: kvm@vger.kernel.org
-Cc: sfr@canb.auug.org.au
-Cc: rusty@rustcorp.com.au
-Cc: gregkh@linuxfoundation.org
-Cc: akpm@linux-foundation.org
-Cc: torvalds@linux-foundation.org
-
-
-The following changes since commit 38dbfb59d1175ef458d006556061adeaa8751b72:
-
-  Linus 3.14-rc1 (2014-02-02 16:42:13 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/paulg/linux.git tags/init-cleanup
-
-for you to fetch changes up to a830e2e2777c893e5bfdaa370d6375023e8cd2a5:
-
-  include: remove needless instances of <linux/init.h> (2014-02-03 16:39:14 -0500)
-
-----------------------------------------------------------------
-Cleanup of <linux/init.h> for 3.14-rc1
-
-----------------------------------------------------------------
-Paul Gortmaker (77):
-      init: delete the __cpuinit related stubs
-      kernel: audit/fix non-modular users of module_init in core code
-      mm: replace module_init usages with subsys_initcall in nommu.c
-      fs/notify: don't use module_init for non-modular inotify_user code
-      netfilter: don't use module_init/exit in core IPV4 code
-      x86: don't use module_init in non-modular intel_mid_vrtc.c
-      x86: don't use module_init for non-modular core bootflag code
-      x86: replace __init_or_module with __init in non-modular vsmp_64.c
-      x86: don't use module_init in non-modular devicetree.c code
-      drivers/tty/hvc: don't use module_init in non-modular hyp. console code
-      staging: don't use module_init in non-modular ion_dummy_driver.c
-      powerpc: use device_initcall for registering rtc devices
-      powerpc: use subsys_initcall for Freescale Local Bus
-      powerpc: don't use module_init for non-modular core hugetlb code
-      powerpc: don't use module_init in non-modular 83xx suspend code
-      arm: include module.h in drivers/bus/omap_l3_smx.c
-      arm: fix implicit module.h use in mach-at91 gpio.h
-      arm: fix implicit #include <linux/init.h> in entry asm.
-      arm: mach-s3c64xx mach-crag6410-module.c is not modular
-      arm: use subsys_initcall in non-modular pl320 IPC code
-      arm: don't use module_init in non-modular mach-vexpress/spc.c code
-      alpha: don't use module_init for non-modular core code
-      m68k: don't use module_init in non-modular mvme16x/rtc.c code
-      ia64: don't use module_init for non-modular core kernel/mca.c code
-      ia64: don't use module_init in non-modular sim/simscsi.c code
-      mips: make loongsoon serial driver explicitly modular
-      mips: don't use module_init in non-modular sead3-mtd.c code
-      cris: don't use module_init for non-modular core intmem.c code
-      parisc: don't use module_init for non-modular core pdc_cons code
-      parisc64: don't use module_init for non-modular core perf code
-      mn10300: don't use module_init in non-modular flash.c code
-      sh: don't use module_init in non-modular psw.c code
-      sh: mach-highlander/psw.c is tristate and should use module.h
-      xtensa: don't use module_init for non-modular core network.c code
-      drivers/clk: don't use module_init in clk-nomadik.c which is non-modular
-      cpuidle: don't use modular platform register in non-modular ARM drivers
-      drivers/platform: don't use modular register in non-modular pdev_bus.c
-      module: relocate module_init from init.h to module.h
-      logo: emit "#include <linux/init.h> in autogenerated C file
-      arm: delete non-required instances of include <linux/init.h>
-      mips: restore init.h usage to arch/mips/ar7/time.c
-      s390: delete non-required instances of include <linux/init.h>
-      alpha: delete non-required instances of <linux/init.h>
-      powerpc: delete another unrequired instance of <linux/init.h>
-      arm64: delete non-required instances of <linux/init.h>
-      watchdog: delete non-required instances of include <linux/init.h>
-      video: delete non-required instances of include <linux/init.h>
-      rtc: delete non-required instances of include <linux/init.h>
-      scsi: delete non-required instances of include <linux/init.h>
-      spi: delete non-required instances of include <linux/init.h>
-      acpi: delete non-required instances of include <linux/init.h>
-      drivers/power: delete non-required instances of include <linux/init.h>
-      drivers/media: delete non-required instances of include <linux/init.h>
-      drivers/ata: delete non-required instances of include <linux/init.h>
-      drivers/hwmon: delete non-required instances of include <linux/init.h>
-      drivers/pinctrl: delete non-required instances of include <linux/init.h>
-      drivers/isdn: delete non-required instances of include <linux/init.h>
-      drivers/leds: delete non-required instances of include <linux/init.h>
-      drivers/pcmcia: delete non-required instances of include <linux/init.h>
-      drivers/char: delete non-required instances of include <linux/init.h>
-      drivers/infiniband: delete non-required instances of include <linux/init.h>
-      drivers/mfd: delete non-required instances of include <linux/init.h>
-      drivers/gpio: delete non-required instances of include <linux/init.h>
-      drivers/bluetooth: delete non-required instances of include <linux/init.h>
-      drivers/mmc: delete non-required instances of include <linux/init.h>
-      drivers/crypto: delete non-required instances of include <linux/init.h>
-      drivers/platform: delete non-required instances of include <linux/init.h>
-      drivers/misc: delete non-required instances of include <linux/init.h>
-      drivers/edac: delete non-required instances of include <linux/init.h>
-      drivers/macintosh: delete non-required instances of include <linux/init.h>
-      drivers/base: delete non-required instances of include <linux/init.h>
-      drivers/cpufreq: delete non-required instances of <linux/init.h>
-      drivers/pci: delete non-required instances of <linux/init.h>
-      drivers/dma: delete non-required instances of <linux/init.h>
-      drivers/gpu: delete non-required instances of <linux/init.h>
-      drivers: delete remaining non-required instances of <linux/init.h>
-      include: remove needless instances of <linux/init.h>
-
- arch/alpha/kernel/err_ev6.c                        |  1 -
- arch/alpha/kernel/irq.c                            |  1 -
- arch/alpha/kernel/srmcons.c                        |  3 +-
- arch/alpha/kernel/traps.c                          |  1 -
- arch/alpha/oprofile/op_model_ev4.c                 |  1 -
- arch/alpha/oprofile/op_model_ev5.c                 |  1 -
- arch/alpha/oprofile/op_model_ev6.c                 |  1 -
- arch/alpha/oprofile/op_model_ev67.c                |  1 -
- arch/arm/common/dmabounce.c                        |  1 -
- arch/arm/firmware/trusted_foundations.c            |  1 -
- arch/arm/include/asm/arch_timer.h                  |  1 -
- arch/arm/kernel/entry-armv.S                       |  2 +
- arch/arm/kernel/entry-header.S                     |  1 -
- arch/arm/kernel/hyp-stub.S                         |  1 -
- arch/arm/kernel/suspend.c                          |  1 -
- arch/arm/kernel/unwind.c                           |  1 -
- arch/arm/mach-at91/include/mach/gpio.h             |  1 +
- arch/arm/mach-cns3xxx/pm.c                         |  1 -
- arch/arm/mach-exynos/headsmp.S                     |  1 -
- arch/arm/mach-footbridge/personal.c                |  1 -
- arch/arm/mach-imx/headsmp.S                        |  1 -
- arch/arm/mach-imx/iomux-v3.c                       |  1 -
- arch/arm/mach-iop33x/uart.c                        |  1 -
- arch/arm/mach-msm/headsmp.S                        |  1 -
- arch/arm/mach-msm/proc_comm.h                      |  1 -
- arch/arm/mach-mvebu/headsmp.S                      |  1 -
- arch/arm/mach-netx/fb.c                            |  1 -
- arch/arm/mach-netx/pfifo.c                         |  1 -
- arch/arm/mach-netx/xc.c                            |  1 -
- arch/arm/mach-nspire/clcd.c                        |  1 -
- arch/arm/mach-omap1/fpga.c                         |  1 -
- arch/arm/mach-omap1/include/mach/serial.h          |  1 -
- arch/arm/mach-omap2/omap-headsmp.S                 |  1 -
- arch/arm/mach-omap2/omap3-restart.c                |  1 -
- arch/arm/mach-omap2/vc3xxx_data.c                  |  1 -
- arch/arm/mach-omap2/vc44xx_data.c                  |  1 -
- arch/arm/mach-omap2/vp3xxx_data.c                  |  1 -
- arch/arm/mach-omap2/vp44xx_data.c                  |  1 -
- arch/arm/mach-prima2/headsmp.S                     |  1 -
- arch/arm/mach-pxa/clock-pxa2xx.c                   |  1 -
- arch/arm/mach-pxa/clock-pxa3xx.c                   |  1 -
- arch/arm/mach-pxa/corgi_pm.c                       |  1 -
- arch/arm/mach-pxa/mfp-pxa3xx.c                     |  1 -
- arch/arm/mach-pxa/spitz_pm.c                       |  1 -
- arch/arm/mach-s3c24xx/clock-s3c244x.c              |  1 -
- arch/arm/mach-s3c24xx/iotiming-s3c2410.c           |  1 -
- arch/arm/mach-s3c24xx/iotiming-s3c2412.c           |  1 -
- arch/arm/mach-s3c24xx/irq-pm.c                     |  1 -
- arch/arm/mach-s3c24xx/pm.c                         |  1 -
- arch/arm/mach-s3c64xx/mach-crag6410-module.c       |  2 +-
- arch/arm/mach-s5p64x0/clock.c                      |  1 -
- arch/arm/mach-sa1100/ssp.c                         |  1 -
- arch/arm/mach-shmobile/headsmp-scu.S               |  1 -
- arch/arm/mach-shmobile/headsmp.S                   |  1 -
- arch/arm/mach-shmobile/platsmp.c                   |  1 -
- arch/arm/mach-shmobile/sleep-sh7372.S              |  1 -
- arch/arm/mach-socfpga/headsmp.S                    |  1 -
- arch/arm/mach-sti/headsmp.S                        |  1 -
- arch/arm/mach-sunxi/headsmp.S                      |  1 -
- arch/arm/mach-tegra/flowctrl.c                     |  1 -
- arch/arm/mach-tegra/headsmp.S                      |  1 -
- arch/arm/mach-tegra/reset-handler.S                |  1 -
- arch/arm/mach-u300/dummyspichip.c                  |  1 -
- arch/arm/mach-ux500/board-mop500-audio.c           |  1 -
- arch/arm/mach-ux500/headsmp.S                      |  1 -
- arch/arm/mach-versatile/versatile_ab.c             |  1 -
- arch/arm/mach-vexpress/spc.c                       |  2 +-
- arch/arm/mach-zynq/headsmp.S                       |  1 -
- arch/arm/mm/hugetlbpage.c                          |  1 -
- arch/arm/plat-iop/i2c.c                            |  1 -
- arch/arm/plat-samsung/pm-check.c                   |  1 -
- arch/arm/plat-samsung/pm-gpio.c                    |  1 -
- arch/arm/plat-samsung/s5p-irq-pm.c                 |  1 -
- arch/arm/plat-versatile/headsmp.S                  |  1 -
- arch/arm/plat-versatile/platsmp.c                  |  1 -
- arch/arm/vfp/entry.S                               |  2 +
- arch/arm64/include/asm/arch_timer.h                |  1 -
- arch/arm64/kernel/cputable.c                       |  2 -
- arch/arm64/kernel/entry.S                          |  1 -
- arch/arm64/kernel/hyp-stub.S                       |  1 -
- arch/arm64/kernel/process.c                        |  1 -
- arch/arm64/kernel/ptrace.c                         |  1 -
- arch/arm64/kernel/smp_spin_table.c                 |  1 -
- arch/arm64/kernel/vdso/vdso.S                      |  1 -
- arch/arm64/lib/delay.c                             |  1 -
- arch/arm64/mm/cache.S                              |  1 -
- arch/arm64/mm/proc.S                               |  1 -
- arch/cris/arch-v32/mm/intmem.c                     |  3 +-
- arch/ia64/hp/sim/simscsi.c                         | 11 +---
- arch/ia64/sn/kernel/mca.c                          |  3 +-
- arch/m68k/mvme16x/rtc.c                            |  2 +-
- arch/mips/ar7/time.c                               |  1 +
- arch/mips/loongson/common/serial.c                 |  9 ++-
- arch/mips/mti-sead3/sead3-mtd.c                    |  3 +-
- arch/mn10300/unit-asb2303/flash.c                  |  3 +-
- arch/parisc/kernel/pdc_cons.c                      |  3 +-
- arch/parisc/kernel/perf.c                          |  3 +-
- arch/powerpc/kernel/time.c                         |  2 +-
- arch/powerpc/mm/hugetlbpage.c                      |  2 +-
- arch/powerpc/platforms/83xx/suspend.c              |  3 +-
- arch/powerpc/platforms/ps3/time.c                  |  3 +-
- arch/powerpc/sysdev/fsl_lbc.c                      |  2 +-
- arch/powerpc/sysdev/indirect_pci.c                 |  1 -
- arch/sh/boards/mach-highlander/psw.c               |  2 +-
- arch/sh/boards/mach-landisk/psw.c                  |  2 +-
- arch/x86/kernel/bootflag.c                         |  2 +-
- arch/x86/kernel/devicetree.c                       |  2 +-
- arch/x86/kernel/vsmp_64.c                          |  2 +-
- arch/x86/platform/intel-mid/intel_mid_vrtc.c       |  3 +-
- arch/xtensa/platforms/iss/network.c                |  4 +-
- drivers/acpi/apei/apei-base.c                      |  1 -
- drivers/acpi/button.c                              |  1 -
-
- [ ... snip ~1000 lines of trivial driver diffstat ... ]
-
- drivers/watchdog/wdt_pci.c                         |  1 -
- drivers/xen/xen-stub.c                             |  1 -
- fs/notify/inotify/inotify_user.c                   |  4 +-
- include/drm/drmP.h                                 |  1 -
- include/linux/fb.h                                 |  1 -
- include/linux/ide.h                                |  1 -
- include/linux/init.h                               | 77 ----------------------
- include/linux/kdb.h                                |  1 -
- include/linux/linux_logo.h                         |  3 -
- include/linux/lsm_audit.h                          |  1 -
- include/linux/module.h                             | 72 ++++++++++++++++++++
- include/linux/moduleparam.h                        |  1 -
- include/linux/netfilter.h                          |  1 -
- include/linux/nls.h                                |  2 +-
- include/linux/percpu_ida.h                         |  1 -
- include/linux/profile.h                            |  1 -
- include/linux/pstore_ram.h                         |  1 -
- include/linux/usb/gadget.h                         |  1 -
- include/xen/xenbus.h                               |  1 -
- kernel/hung_task.c                                 |  3 +-
- kernel/kexec.c                                     |  4 +-
- kernel/profile.c                                   |  2 +-
- kernel/sched/stats.c                               |  2 +-
- kernel/user.c                                      |  3 +-
- kernel/user_namespace.c                            |  2 +-
- mm/nommu.c                                         |  4 +-
- net/ipv4/netfilter.c                               |  9 +--
- scripts/pnmtologo.c                                |  1 +
- scripts/tags.sh                                    |  2 +-
- 1115 files changed, 148 insertions(+), 1273 deletions(-)
+--089e015369f0b7fe4d04f19756fb--
