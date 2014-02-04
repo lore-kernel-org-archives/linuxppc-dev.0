@@ -1,29 +1,37 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6E30A2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 21:18:25 +1100 (EST)
-Date: Tue, 4 Feb 2014 11:18:02 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 2/2] tick/cpuidle: Initialize hrtimer mode of broadcast
-In-Reply-To: <20140124065820.17564.83076.stgit@preeti>
-Message-ID: <alpine.DEB.2.02.1402041101330.24986@ionos.tec.linutronix.de>
-References: <20140124065501.17564.39363.stgit@preeti.in.ibm.com>
- <20140124065820.17564.83076.stgit@preeti>
+ by ozlabs.org (Postfix) with ESMTPS id 7F10C2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 22:31:34 +1100 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Tue, 4 Feb 2014 17:01:30 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D75C93940058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 17:01:27 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s14BVGPO7077970
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 17:01:16 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s14BVEvo032695
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 17:01:14 +0530
+Received: from deepthi.in.ibm.com (deepthi.in.ibm.com [9.124.35.236] (may be
+ forged))
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ s14BVElq032692
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 17:01:14 +0530
+Subject: [PATCH V5 0/3] powerpc/powernv: Error logging interfaces 
+To: linuxppc-dev@lists.ozlabs.org
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Tue, 04 Feb 2014 17:01:35 +0530
+Message-ID: <20140204113127.19141.21493.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: daniel.lezcano@linaro.org, peterz@infradead.org, fweisbec@gmail.com,
- agraf@suse.de, paul.gortmaker@windriver.com, paulus@samba.org,
- mingo@kernel.org, mikey@neuling.org, shangw@linux.vnet.ibm.com,
- rafael.j.wysocki@intel.com, paulmck@linux.vnet.ibm.com, arnd@arndb.de,
- linux-pm@vger.kernel.org, rostedt@goodmis.org, michael@ellerman.id.au,
- john.stultz@linaro.org, anton@samba.org, chenhui.zhao@freescale.com,
- deepthi@linux.vnet.ibm.com, r58472@freescale.com, geoff@infradead.org,
- linux-kernel@vger.kernel.org, srivatsa.bhat@linux.vnet.ibm.com,
- schwidefsky@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,56 +41,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> +++ b/kernel/time/tick-broadcast-hrtimer.c
-> +/*
-> + * This is called from the guts of the broadcast code when the cpu
-> + * which is about to enter idle has the earliest broadcast timer event.
-> + */
-> +static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
-> +{
-> +	ktime_t now, interval;
-> +	/*
-> +	 * We try to cancel the timer first. If the callback is on
-> +	 * flight on some other cpu then we let it handle it. If we
-> +	 * were able to cancel the timer nothing can rearm it as we
-> +	 * own broadcast_lock.
-> +	 *
-> +	 * However if we are called from the hrtimer interrupt handler
-> +	 * itself, reprogram it.
-> +	 */
-> +	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
-> +		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-> +		/* Bind the "device" to the cpu */
-> +		bc->bound_on = smp_processor_id();
-> +	} else if (bc->bound_on == smp_processor_id()) {
+This patch series defines generic interfaces for error logging to
+push down critical errors from powernv platform to FSP.
 
-This part really wants a proper comment. It took me a while to figure
-out why this is correct and what the call chain is.
+Also, it contains few minor fixes for the exisiting error logging
+framework that retrieves error logs from FSP.
+
+Changes from V4:
+* Reverted OPAL token for ELOG_OPAL_SEND to 92
+* Use __pa() to obtain the physical address of the error log
+  buffer. 
+
+Changes from V3:
+* Change memory allocation to GFP_ATOMIC, to generate
+  errors in bad context
+* Move all error log generation related code to arch/powernv
+  rename it from opal_* to pnv_* .
+
+Changes from V2:
+* Review comments from V2 have been addressed
+  includes comment formats, changing naming
+  conventions and incorporated error handling
+  of the buffers.
+* Minor typo fix and use of pr_err/pr_fmt to
+  log errors.
+
+ Deepthi Dharwar (3):
+      powernv: Push critical error logs to FSP
+      powernv: Correct spell error in opal-elog.c
+      powernv: Have uniform logging of errors in opal-elog.c
 
 
-> +		now = ktime_get();
-> +		interval = ktime_sub(expires, now);
-> +		hrtimer_forward_now(&bctimer, interval);
+ arch/powerpc/include/asm/opal.h                |   36 +++++++++
+ arch/powerpc/platforms/powernv/opal-elog.c     |   92 +++++++++++++++++++++---
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
+ arch/powerpc/platforms/powernv/powernv.h       |   84 ++++++++++++++++++++++
+ 4 files changed, 203 insertions(+), 10 deletions(-)
 
-We are in the event handler called from bc_handler() and expires is
-absolute time. So what's wrong with calling
-hrtimer_set_expires(&bctimer, expires)?
 
-> +static enum hrtimer_restart bc_handler(struct hrtimer *t)
-> +{
-> +	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
-> +	return HRTIMER_RESTART;
-
-We probably want to check whether the timer needs to be restarted at
-all.
-
-	if (ce_broadcast_timer.next_event.tv64 == KTIME_MAX)
-	   return HRTIMER_NORESTART;
-
-	return HRTIMER_RESTART;
-
-Hmm?
-
-Thanks,
-
-	tglx
+-- Deepthi
