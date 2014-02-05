@@ -1,18 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 5 Feb 2014 17:27:23 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ingo Molnar <mingo@kernel.org>
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ea0-x22a.google.com (mail-ea0-x22a.google.com
+ [IPv6:2a00:1450:4013:c01::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C9C072C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 17:41:57 +1100 (EST)
+Received: by mail-ea0-f170.google.com with SMTP id k10so4829654eaj.15
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Feb 2014 22:41:53 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 5 Feb 2014 07:41:50 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: [GIT PULL] tree-wide: clean up no longer required #include
  <linux/init.h>
-Message-Id: <20140205172723.3fa841793b3fa3f3f534937f@canb.auug.org.au>
-In-Reply-To: <20140205060633.GE30094@gmail.com>
+Message-ID: <20140205064150.GA31568@gmail.com>
 References: <1391547118-21967-1-git-send-email-paul.gortmaker@windriver.com>
  <CAP=VYLp+zus5591g-1YQBCJifbk+UY59yJ7rV06ZN3QhhdnK7w@mail.gmail.com>
  <20140205060633.GE30094@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ"
+ <20140205172723.3fa841793b3fa3f3f534937f@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140205172723.3fa841793b3fa3f3f534937f@canb.auug.org.au>
 Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
  linux-m68k@vger.kernel.org, rusty@rustcorp.com.au, linux-ia64@vger.kernel.org,
  kvm@vger.kernel.org, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -30,47 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ingo,
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-On Wed, 5 Feb 2014 07:06:33 +0100 Ingo Molnar <mingo@kernel.org> wrote:
->=20
-> So, if you meant Linus to pull it, you probably want to cite a real=20
-> Git URI along the lines of:
->=20
->    git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
+> Hi Ingo,
+> 
+> On Wed, 5 Feb 2014 07:06:33 +0100 Ingo Molnar <mingo@kernel.org> wrote:
+> > 
+> > So, if you meant Linus to pull it, you probably want to cite a real 
+> > Git URI along the lines of:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
+> 
+> Paul provided the proper git url further down in the mail along with the
+> usual pull request message (I guess he should have put that bit at the
+> top).
 
-Paul provided the proper git url further down in the mail along with the
-usual pull request message (I guess he should have put that bit at the
-top).
+Yeah, indeed, and it even comes with a signed tag, which is an extra 
+nice touch:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+  git://git.kernel.org/pub/scm/linux/kernel/git/paulg/linux.git tags/init-cleanup
 
---Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ
-Content-Type: application/pgp-signature
+(I guess the https was mentioned first to lower expectations.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+Thanks,
 
-iQIcBAEBCAAGBQJS8dnPAAoJEMDTa8Ir7ZwVybEP/31Z6vmdSzqXa6CGStETJw23
-6BXTjf+UbSse//B/vkCLZLm698gmOezpw5NCnCKkK/rYTSJoE89rKmPnXB9H+0mD
-96PWZbw2vTR6TzU9Om85nOdui2ly7mMCvtg7d+U4vqGM4bRzetFxSM0YV3yCKYaq
-J0xttn7NnVnhCJpLVOofz9ulsnygMG6Gn0TSOomANZsBUpxZotvgdWGRZWgg1oVF
-MILuhwwwu0mbgf+a1SSWQvAChiuCP63vveXTiwvjT57lDlJXRODyl912lp0SyGug
-7Av6juPn1van5sXsHVqba3GT+4qeWN4DQkq017KZlJ0lGUiPg3HLCxagUzY64NfX
-HPEVmRBlDpFRgX8ivTJmV/hYkL0aVhTsnqubd+q6E2MH3szdU/Gf3GAo4Dl/7QnG
-nnkSUN0RP93xnM6hEORgGwkSSoEM0E4dvgZeGkPBs223BaEPAL+JLnEgHTXGk8gI
-muoC0oBA1DvmbTYp6UgLTSRdQZYfMb/IdpExQGpEd7lF2DfOOKqm3pcktcG7nCSs
-AaNdRepdtAY9vc2ISzNunqXta4TsOpKI7YPXEFvcuciVmj0lXkdKLCkp/1xj3v9t
-vupSRjKH9tocr8kOS3uc+i9T8wZkHZ5I0/LRNux8AVLAtLKUQeYAt6ZAyrsDvToM
-xuVmB/iHm04LyVGRQ59z
-=XhOK
------END PGP SIGNATURE-----
-
---Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ--
+	Ingo
