@@ -1,31 +1,31 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 22B972C00A3
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Feb 2014 19:07:56 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B44632C020F
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Feb 2014 19:07:58 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 5 Feb 2014 18:07:55 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4BF563578052
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Feb 2014 19:07:53 +1100 (EST)
+ Wed, 5 Feb 2014 18:07:58 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 91DB62CE8052
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Feb 2014 19:07:55 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1587eLl10223940
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Feb 2014 19:07:40 +1100
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s157mQrm590184
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Feb 2014 18:48:26 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1587pT1010806
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Feb 2014 19:07:52 +1100
+ s1587sSv010872
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Feb 2014 19:07:55 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [V5 06/11] perf,
- documentation: Description for conditional branch filter
-Date: Wed,  5 Feb 2014 13:36:17 +0530
-Message-Id: <1391587582-32028-7-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [V5 07/11] powerpc,
+ perf: Change the name of HW PMU branch filter tracking variable
+Date: Wed,  5 Feb 2014 13:36:18 +0530
+Message-Id: <1391587582-32028-8-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1391587582-32028-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1391587582-32028-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, ak@linux.intel.com, eranian@google.com,
@@ -40,29 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding documentation support for conditional branch filter.
+This patch simply changes the name of the variable from 'bhrb_filter' to
+'bhrb_hw_filter' in order to add one more variable which will track SW
+filters in generic powerpc book3s code which will be implemented in the
+subsequent patch. This patch does not change any functionality.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Reviewed-by: Stephane Eranian <eranian@google.com>
 ---
- tools/perf/Documentation/perf-record.txt | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/perf/core-book3s.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-index c71b0f3..d460049 100644
---- a/tools/perf/Documentation/perf-record.txt
-+++ b/tools/perf/Documentation/perf-record.txt
-@@ -184,9 +184,10 @@ following filters are defined:
- 	- in_tx: only when the target is in a hardware transaction
- 	- no_tx: only when the target is not in a hardware transaction
- 	- abort_tx: only when the target is a hardware transaction abort
-+	- cond: conditional branches
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 8a44dc1..468f58c 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -47,7 +47,7 @@ struct cpu_hw_events {
+ 	int n_txn_start;
  
- +
--The option requires at least one branch type among any, any_call, any_ret, ind_call.
-+The option requires at least one branch type among any, any_call, any_ret, ind_call, cond.
- The privilege levels may be omitted, in which case, the privilege levels of the associated
- event are applied to the branch filter. Both kernel (k) and hypervisor (hv) privilege
- levels are subject to permissions.  When sampling on multiple events, branch stack sampling
+ 	/* BHRB bits */
+-	u64				bhrb_filter;	/* BHRB HW branch filter */
++	u64				bhrb_hw_filter;	/* BHRB HW branch filter */
+ 	int				bhrb_users;
+ 	void				*bhrb_context;
+ 	struct	perf_branch_stack	bhrb_stack;
+@@ -1161,7 +1161,7 @@ static void power_pmu_enable(struct pmu *pmu)
+ 
+  out:
+ 	if (cpuhw->bhrb_users)
+-		ppmu->config_bhrb(cpuhw->bhrb_filter);
++		ppmu->config_bhrb(cpuhw->bhrb_hw_filter);
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -1256,7 +1256,7 @@ nocheck:
+  out:
+ 	if (has_branch_stack(event)) {
+ 		power_pmu_bhrb_enable(event);
+-		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
++		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
+ 					event->attr.branch_sample_type);
+ 	}
+ 
+@@ -1639,10 +1639,10 @@ static int power_pmu_event_init(struct perf_event *event)
+ 	err = power_check_constraints(cpuhw, events, cflags, n + 1);
+ 
+ 	if (has_branch_stack(event)) {
+-		cpuhw->bhrb_filter = ppmu->bhrb_filter_map(
++		cpuhw->bhrb_hw_filter = ppmu->bhrb_filter_map(
+ 					event->attr.branch_sample_type);
+ 
+-		if(cpuhw->bhrb_filter == -1)
++		if(cpuhw->bhrb_hw_filter == -1)
+ 			return -EOPNOTSUPP;
+ 	}
+ 
 -- 
 1.7.11.7
