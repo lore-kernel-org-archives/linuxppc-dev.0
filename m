@@ -1,42 +1,40 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 90F8A2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 09:12:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D14402C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 10:14:20 +1100 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 6 Feb 2014 03:42:15 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id A63611258059
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 03:44:02 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s15MC52m47448240
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Feb 2014 03:42:05 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s15MCB8p007593
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Feb 2014 03:42:12 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 13/51] powerpc, sysfs: Fix CPU hotplug callback registration
-To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au,
- peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
-Date: Thu, 06 Feb 2014 03:36:54 +0530
-Message-ID: <20140205220654.19080.11341.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
-References: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Wed, 5 Feb 2014 16:14:17 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 7AAA81FF0043
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 16:14:14 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s15NDtKh39583838
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Feb 2014 00:13:55 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s15NHXUB012313
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Feb 2014 16:17:34 -0700
+Message-ID: <52F2C5BE.5080803@linux.vnet.ibm.com>
+Date: Wed, 05 Feb 2014 15:14:06 -0800
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: ego@linux.vnet.ibm.com, walken@google.com, linux@arm.linux.org.uk,
- linux-kernel@vger.kernel.org, Wang Dongsheng <dongsheng.wang@freescale.com>,
- Olof Johansson <olof@lixom.net>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 4/8] powerpc: add hv_gpci interface header
+References: <20140201055807.267F12C00BA@ozlabs.org>
+In-Reply-To: <20140201055807.267F12C00BA@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,75 +44,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Subsystems that want to register CPU hotplug callbacks, as well as perform
-initialization for the CPUs that are already online, often do it as shown
-below:
 
-	get_online_cpus();
+>> diff --git a/arch/powerpc/include/asm/hv_gpci.h b/arch/powerpc/include/asm/hv_gpci.h
+>
+> Any reason this can't just live in arch/powerpc/perf ?
+>
 
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	register_cpu_notifier(&foobar_cpu_notifier);
-
-	put_online_cpus();
-
-This is wrong, since it is prone to ABBA deadlocks involving the
-cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-with CPU hotplug operations).
-
-Instead, the correct and race-free way of performing the callback
-registration is:
-
-	cpu_maps_update_begin();
-
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
-
-	cpu_maps_update_done();
-
-
-Fix the sysfs code in powerpc by using this latter form of callback
-registration.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Wang Dongsheng <dongsheng.wang@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- arch/powerpc/kernel/sysfs.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 97e1dc9..c29ad44 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -975,7 +975,8 @@ static int __init topology_init(void)
- 	int cpu;
- 
- 	register_nodes();
--	register_cpu_notifier(&sysfs_cpu_nb);
-+
-+	cpu_maps_update_begin();
- 
- 	for_each_possible_cpu(cpu) {
- 		struct cpu *c = &per_cpu(cpu_devices, cpu);
-@@ -999,6 +1000,11 @@ static int __init topology_init(void)
- 		if (cpu_online(cpu))
- 			register_cpu_online(cpu);
- 	}
-+
-+	__register_cpu_notifier(&sysfs_cpu_nb);
-+
-+	cpu_maps_update_done();
-+
- #ifdef CONFIG_PPC64
- 	sysfs_create_dscr_default();
- #endif /* CONFIG_PPC64 */
+Nope, it should be able to keep the header there for now. As this 
+interface allows determination of the HW topology, we may have some code 
+that exposes that (in sysfs) at some point, which doesn't really belong 
+in arch/powerpc/perf (though we could just put it there anyhow).
