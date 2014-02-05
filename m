@@ -1,23 +1,50 @@
-Return-Path: <john.d@servergy.com>
-Received: from mail-ob0-f176.google.com (mail-ob0-f176.google.com
- [209.85.214.176])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C66932C0097
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 09:45:29 +1100 (EST)
-Received: by mail-ob0-f176.google.com with SMTP id gq1so10318852obb.35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Feb 2014 14:45:25 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 1679B2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 11:14:15 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 4 Feb 2014 17:14:10 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 3B1D26E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2014 19:14:03 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s150E7dg6291782
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Feb 2014 00:14:07 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s150E5aA030508
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Feb 2014 19:14:07 -0500
+Date: Tue, 4 Feb 2014 16:13:52 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140205001352.GC10101@linux.vnet.ibm.com>
+References: <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
+ <20140125001643.GA25344@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140125011041.GB25344@linux.vnet.ibm.com>
+ <20140127055805.GA2471@lge.com>
+ <20140128182947.GA1591@linux.vnet.ibm.com>
+ <20140203230026.GA15383@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1402032138070.17997@nuc>
+ <20140204072630.GB10101@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1402041436150.11222@nuc>
 MIME-Version: 1.0
-In-Reply-To: <1391552655.6733.184.camel@snotra.buserror.net>
-References: <CAGtOQbSJeJ85Nj-M2XB+w3p5+PTVWrpsFKZqCbEqZYkwsa0GGg@mail.gmail.com>
- <1391552655.6733.184.camel@snotra.buserror.net>
-Date: Tue, 4 Feb 2014 16:45:25 -0600
-Message-ID: <CAGtOQbRKZLzeup58X8rHz4YiF244TrkRXTqNv_57vEu2Rs8UNg@mail.gmail.com>
-Subject: Re: Oops on shutdown : 3.11.0-5-powerpc-e500mc Ubuntu
-From: John Donnelly <john.d@servergy.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: multipart/alternative; boundary=089e013a18226b5c6b04f19c65df
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1402041436150.11222@nuc>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ David Rientjes <rientjes@google.com>, penberg@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Anton Blanchard <anton@samba.org>, mpm@selenic.com,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,136 +54,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e013a18226b5c6b04f19c65df
-Content-Type: text/plain; charset=ISO-8859-1
+On 04.02.2014 [14:39:32 -0600], Christoph Lameter wrote:
+> On Mon, 3 Feb 2014, Nishanth Aravamudan wrote:
+> 
+> > Yes, sorry for my lack of clarity. I meant Joonsoo's latest patch for
+> > the $SUBJECT issue.
+> 
+> Hmmm... I am not sure that this is a general solution. The fallback to
+> other nodes can not only occur because a node has no memory as his patch
+> assumes.
 
-Hi Scott,
+Thanks, Christoph. I see your point.
 
- This panic was in the kernel related to NFS  , not u-boot;  Unfortunately
-I didn't catch the earlier console message/Oops  but I recall it being
-something similar.
+Something in this area would be nice, though, as it does produce a
+fairly significant bump in the slab usage on our test system.
 
- Can you enlighten me what the errata addresses ? I
+> If the target node allocation fails (for whatever reason) then I would
+> recommend for simplicities sake to change the target node to
+> NUMA_NO_NODE and just take whatever is in the current cpu slab. A more
+> complex solution would be to look through partial lists in increasing
+> distance to find a partially used slab that is reasonable close to the
+> current node. Slab has logic like that in fallback_alloc(). Slubs
+> get_any_partial() function does something close to what you want.
 
- I filed the bug here:
+I apologize for my own ignorance, but I'm having trouble following.
+Anton's original patch did fallback to the current cpu slab, but I'm not
+sure any NUMA_NO_NODE change is necessary there. At the point we're
+deactivating the slab (in the current code, in __slab_alloc()), we have
+successfully allocated from somewhere, it's just not on the node we
+expected to be on.
 
-https://bugs.launchpad.net/ubuntu/+source/linux-ppc/+bug/1276290
+So perhaps you are saying to make a change lower in the code? I'm not
+sure where it makes sense to change the target node in that case. I'd
+appreciate any guidance you can give.
 
-
-
-
-
-On Tue, Feb 4, 2014 at 4:24 PM, Scott Wood <scottwood@freescale.com> wrote:
-
-> On Tue, 2014-02-04 at 08:47 -0600, John Donnelly wrote:
-> >
-> >
-> >
-> >
-> > Hi,
-> >  Where is a appropriate place to file a bug for this : This is the
-> > second occurrence I have seen.
-> >
-> What U-Boot are you running, and what is the output of its "errata"
-> command?  There are some errata (e.g. A-004510) that can cause random
-> corruption if you don't have the workaround.
->
-> Were both crashes similar (same part of the code, same circumstances)?
->
-> -Scott
->
->
->
->
-
-
--- 
-
-*Regards,*
-* John.*
-
-*--*
-
-*o* Energy-efficiency is #1 reason data centers look to expand.  -- Digital
-Realty Trust
-*o* Green Data Centers spending to increase 300% worldwide by 2016.  --
-Pike Research
-*o *Data Centers have become as vital to the functioni
-ng of society as power stations.  -- The Economist
-
---089e013a18226b5c6b04f19c65df
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Hi Scott,<div><br><div>=A0This panic was in the kernel rel=
-ated to NFS =A0, not u-boot; =A0Unfortunately I didn&#39;t catch the earlie=
-r console message/Oops =A0but I recall it being something similar. =A0 =A0<=
-/div><div><br>
-</div><div>=A0Can you enlighten me what the errata addresses ? I=A0</div><d=
-iv><br></div><div>=A0I filed the bug here:</div><div><br></div><div><a href=
-=3D"https://bugs.launchpad.net/ubuntu/+source/linux-ppc/+bug/1276290">https=
-://bugs.launchpad.net/ubuntu/+source/linux-ppc/+bug/1276290</a><br>
-</div><div>=A0</div><div><br></div><div><br></div></div></div><div class=3D=
-"gmail_extra"><br><br><div class=3D"gmail_quote">On Tue, Feb 4, 2014 at 4:2=
-4 PM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"mailto:scottwood@freescal=
-e.com" target=3D"_blank">scottwood@freescale.com</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex"><div class=3D"im">On Tue, 2014-02-04 at 08:4=
-7 -0600, John Donnelly wrote:<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt;<br>
-&gt; Hi,<br>
-&gt; =A0Where is a appropriate place to file a bug for this : This is the<b=
-r>
-&gt; second occurrence I have seen.<br>
-&gt;<br>
-</div>What U-Boot are you running, and what is the output of its &quot;erra=
-ta&quot;<br>
-command? =A0There are some errata (e.g. A-004510) that can cause random<br>
-corruption if you don&#39;t have the workaround.<br>
-<br>
-Were both crashes similar (same part of the code, same circumstances)?<br>
-<span class=3D"HOEnZb"><font color=3D"#888888"><br>
--Scott<br>
-<br>
-<br>
-<br>
-</font></span></blockquote></div><br><br clear=3D"all"><div><br></div>-- <b=
-r><div dir=3D"ltr"><div style=3D"font-family:Arial;font-size:12px"><span st=
-yle=3D"border-collapse:collapse"><div style=3D"border-collapse:collapse"><d=
-iv style=3D"margin:0px;display:inline!important">
-<span style=3D"color:rgb(80,0,80);border-collapse:collapse"><font color=3D"=
-#67b545"><b><br></b></font></span></div></div><div style=3D"border-collapse=
-:collapse"><font color=3D"#67b545"><b>Regards,</b></font></div><div style=
-=3D"border-collapse:collapse">
-<font color=3D"#67b545"><b>=A0John.</b></font></div><div style=3D"border-co=
-llapse:collapse"><font color=3D"#67b545"><b><br></b></font></div><div style=
-=3D"border-collapse:collapse"><div style=3D"margin:0px;display:inline!impor=
-tant"><span style=3D"color:rgb(80,0,80);border-collapse:collapse"><font col=
-or=3D"#67b545"><b>--</b></font></span></div>
-</div><div style=3D"border-collapse:collapse"><div style=3D"margin:0px;disp=
-lay:inline!important"><span style=3D"color:rgb(80,0,80);border-collapse:col=
-lapse"><font color=3D"#67b545"><b><br></b></font></span></div></div><div st=
-yle=3D"border-collapse:collapse">
-<div style=3D"margin:0px;display:inline!important"><span style=3D"color:rgb=
-(80,0,80);border-collapse:collapse"><font color=3D"#67b545"><b>o</b></font>=
-=A0</span><span style=3D"border-collapse:collapse"><font color=3D"#000000">=
-Energy-efficiency is #1 reason data centers look to expand. =A0-- Digital R=
-ealty Trust</font></span></div>
-</div><div style=3D"border-collapse:collapse"><div style=3D"margin:0px;disp=
-lay:inline!important"><font style=3D"color:rgb(51,204,0)"><b style=3D"color=
-:rgb(103,181,69)">o</b>=A0</font><font color=3D"#000000">Green Data Centers=
- spending to increase 300% worldwide by 2016. =A0-- Pike Research</font></d=
-iv>
-</div></span></div><div style=3D"font-family:Arial;font-size:12px"><div sty=
-le=3D"margin:0px"><b style=3D"color:rgb(103,181,69)">o=A0</b><font color=3D=
-"#000000">Data Centers have=A0become as vital to the=A0functioni</font><div=
- style=3D"margin:0px;display:inline!important">
-<font color=3D"#000000">ng</font><font color=3D"#000000">=A0of society as p=
-ower stations. =A0-- The Economist</font></div></div><div style=3D"margin:0=
-px"><br></div></div></div>
-</div>
-
---089e013a18226b5c6b04f19c65df--
+Thanks,
+Nish
