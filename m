@@ -1,26 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 316912C0096
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 20:15:58 +1100 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [RFC PATCH 01/10] KVM: PPC: BOOK3S: PR: Fix PURR and SPURR
- emulation
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20140131221743.GA12086@iris.ozlabs.ibm.com>
-Date: Wed, 5 Feb 2014 10:15:47 +0100
-Message-Id: <046680B9-2422-4F19-85D7-6F9CF8BF6835@suse.de>
-References: <1390927455-3312-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1390927455-3312-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <52E92D15.8000901@suse.de> <87y51wjv0w.fsf@linux.vnet.ibm.com>
- <5C99D2BA-7E11-4012-B3BD-9B01F4F865ED@suse.de>
- <20140131221743.GA12086@iris.ozlabs.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- kvm-ppc <kvm-ppc@vger.kernel.org>, kvm-devel <kvm@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id EDB612C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 01:28:34 +1100 (EST)
+Date: Wed, 5 Feb 2014 09:28:25 -0500
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [GIT PULL] tree-wide: clean up no longer required #include
+ <linux/init.h>
+Message-ID: <20140205142824.GA23780@windriver.com>
+References: <1391547118-21967-1-git-send-email-paul.gortmaker@windriver.com>
+ <CAP=VYLp+zus5591g-1YQBCJifbk+UY59yJ7rV06ZN3QhhdnK7w@mail.gmail.com>
+ <20140205060633.GE30094@gmail.com>
+ <20140205172723.3fa841793b3fa3f3f534937f@canb.auug.org.au>
+ <20140205064150.GA31568@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20140205064150.GA31568@gmail.com>
+Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-m68k@vger.kernel.org, rusty@rustcorp.com.au, linux-ia64@vger.kernel.org,
+ kvm@vger.kernel.org, linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, linux-alpha@vger.kernel.org, netdev@vger.kernel.org,
+ gregkh@linuxfoundation.org, sparclinux@vger.kernel.org,
+ akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +34,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+[Re: [GIT PULL] tree-wide: clean up no longer required #include <linux/init.h>] On 05/02/2014 (Wed 07:41) Ingo Molnar wrote:
 
-On 31.01.2014, at 23:17, Paul Mackerras <paulus@samba.org> wrote:
+> 
+> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> 
+> > Hi Ingo,
+> > 
+> > On Wed, 5 Feb 2014 07:06:33 +0100 Ingo Molnar <mingo@kernel.org> wrote:
+> > > 
+> > > So, if you meant Linus to pull it, you probably want to cite a real 
+> > > Git URI along the lines of:
+> > > 
+> > >    git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
+> > 
+> > Paul provided the proper git url further down in the mail along with the
+> > usual pull request message (I guess he should have put that bit at the
+> > top).
+> 
+> Yeah, indeed, and it even comes with a signed tag, which is an extra 
+> nice touch:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/paulg/linux.git tags/init-cleanup
+> 
+> (I guess the https was mentioned first to lower expectations.)
 
-> On Fri, Jan 31, 2014 at 11:47:44AM +0100, Alexander Graf wrote:
->>=20
->> On 31.01.2014, at 11:38, Aneesh Kumar K.V =
-<aneesh.kumar@linux.vnet.ibm.com> wrote:
->>=20
->>> Alexander Graf <agraf@suse.de> writes:
->>>=20
->>>> On 01/28/2014 05:44 PM, Aneesh Kumar K.V wrote:
->>>>> We definitely don't need to emulate mtspr, because both the =
-registers
->>>>> are hypervisor resource.
->>>>=20
->>>> This patch description doesn't cover what the patch actually does. =
-It=20
->>>> changes the implementation from "always tell the guest it uses =
-100%" to=20
->>>> "give the guest an accurate amount of cpu time spent inside guest
->>>> context".
->>>=20
->>> Will fix that
->>>=20
->>>>=20
->>>> Also, I think we either go with full hyp semantics which means we =
-also=20
->>>> emulate the offset or we go with no hyp awareness in the guest at =
-all=20
->>>> which means we also don't emulate SPURR which is a hyp privileged
->>>> register.
->>>=20
->>> Can you clarify this ?
->>=20
->> In the 2.06 ISA SPURR is hypervisor privileged. That changed for 2.07 =
-where it became supervisor privileged. So I suppose your patch is ok. =
-When reviewing those patches I only had 2.06 around because power.org =
-was broken.
->=20
-> It's always been supervisor privilege for reading and hypervisor
-> privilege for writing, ever since it was introduced in 2.05, and that
-> hasn't changed.  So I think what Aneesh is doing is correct.
+Just to clarify, the init.git was the repo of raw commits+series file
+that was used for testing on linux next; now useless, except for showing
+the last several weeks of history (hence the visual http link).  The
+signed tag [separate repo] is the application of those commits against
+the 3.14-rc1 tag, which was the end goal from the beginning.
 
-This is what ISA 2.06B says:
+Does history matter?  In the case of a cleanup like this, it does only
+in the immediate context of this pull request; to help distinguish this
+work from some short lived half baked idea that also had its testing
+invalidated by arbitrarily rebasing onto the latest shiny tag.
 
-308	SPURR	hypv		hypv		64	S
-309	PURR	hypv		yes		64	S
+I wouldn't have even mentioned the patch repo, except for the fact that
+I know how Linus loves arbitrary rebases [and malformed pull requests]  :)
 
-And this is ISA 2.07:
+Thanks,
+Paul.
+--
 
-308	SPURR	hypv		yes		64	S
-309	PURR	hypv		yes		64	S
-
-So as you can see, from 2.06 to 2.07 SPURR became supervisor readable. =
-Either the spec is wrong, the respective POWER CPUs don't implement the =
-spec correctly or "hypv" doesn't mean "hypv" but means "may be hypv or =
-yes".
-
-I think in the context of this patch it's perfectly reasonable to treat =
-SPURR as supervisor readable.
-
-
-Alex
+> 
+> Thanks,
+> 
+> 	Ingo
