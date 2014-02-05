@@ -1,30 +1,33 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp02.br.ibm.com (e24smtp02.br.ibm.com [32.104.18.86])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EDB612C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 01:28:34 +1100 (EST)
-Date: Wed, 5 Feb 2014 09:28:25 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [GIT PULL] tree-wide: clean up no longer required #include
- <linux/init.h>
-Message-ID: <20140205142824.GA23780@windriver.com>
-References: <1391547118-21967-1-git-send-email-paul.gortmaker@windriver.com>
- <CAP=VYLp+zus5591g-1YQBCJifbk+UY59yJ7rV06ZN3QhhdnK7w@mail.gmail.com>
- <20140205060633.GE30094@gmail.com>
- <20140205172723.3fa841793b3fa3f3f534937f@canb.auug.org.au>
- <20140205064150.GA31568@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140205064150.GA31568@gmail.com>
-Cc: linux-arch@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
- linux-m68k@vger.kernel.org, rusty@rustcorp.com.au, linux-ia64@vger.kernel.org,
- kvm@vger.kernel.org, linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, linux-alpha@vger.kernel.org, netdev@vger.kernel.org,
- gregkh@linuxfoundation.org, sparclinux@vger.kernel.org,
- akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
- linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id D27A02C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 05:20:57 +1100 (EST)
+Received: from /spool/local
+ by e24smtp02.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Wed, 5 Feb 2014 16:20:51 -0200
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp02.br.ibm.com (Postfix) with ESMTP id F14EA1DC006C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 13:20:48 -0500 (EST)
+Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
+ by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s15IKCwq44499032
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Feb 2014 16:20:12 -0200
+Received: from d24av01.br.ibm.com (localhost [127.0.0.1])
+ by d24av01.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s15IKlYH020865
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Feb 2014 16:20:48 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] powerpc/eeh: drop taken reference to driver on
+ eeh_rmv_device
+Date: Wed,  5 Feb 2014 16:20:45 -0200
+Message-Id: <1391624445-9095-1-git-send-email-cascardo@linux.vnet.ibm.com>
+Cc: paulus@samba.org, shangw@linux.vnet.ibm.com,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Re: [GIT PULL] tree-wide: clean up no longer required #include <linux/init.h>] On 05/02/2014 (Wed 07:41) Ingo Molnar wrote:
+Commit f5c57710dd62dd06f176934a8b4b8accbf00f9f8 ("powerpc/eeh: Use
+partial hotplug for EEH unaware drivers") introduces eeh_rmv_device,
+which may grab a reference to a driver, but not release it.
 
-> 
-> * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> > Hi Ingo,
-> > 
-> > On Wed, 5 Feb 2014 07:06:33 +0100 Ingo Molnar <mingo@kernel.org> wrote:
-> > > 
-> > > So, if you meant Linus to pull it, you probably want to cite a real 
-> > > Git URI along the lines of:
-> > > 
-> > >    git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
-> > 
-> > Paul provided the proper git url further down in the mail along with the
-> > usual pull request message (I guess he should have put that bit at the
-> > top).
-> 
-> Yeah, indeed, and it even comes with a signed tag, which is an extra 
-> nice touch:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/paulg/linux.git tags/init-cleanup
-> 
-> (I guess the https was mentioned first to lower expectations.)
+That prevents a driver from being removed after it has gone through EEH
+recovery.
 
-Just to clarify, the init.git was the repo of raw commits+series file
-that was used for testing on linux next; now useless, except for showing
-the last several weeks of history (hence the visual http link).  The
-signed tag [separate repo] is the application of those commits against
-the 3.14-rc1 tag, which was the end goal from the beginning.
+This patch drops the reference if it was taken.
 
-Does history matter?  In the case of a cleanup like this, it does only
-in the immediate context of this pull request; to help distinguish this
-work from some short lived half baked idea that also had its testing
-invalidated by arbitrarily rebasing onto the latest shiny tag.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh_driver.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-I wouldn't have even mentioned the patch repo, except for the fact that
-I know how Linus loves arbitrary rebases [and malformed pull requests]  :)
-
-Thanks,
-Paul.
---
-
-> 
-> Thanks,
-> 
-> 	Ingo
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 7bb30dc..fdc679d 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -362,9 +362,13 @@ static void *eeh_rmv_device(void *data, void *userdata)
+ 	 */
+ 	if (!dev || (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
+ 		return NULL;
++
+ 	driver = eeh_pcid_get(dev);
+-	if (driver && driver->err_handler)
+-		return NULL;
++	if (driver) {
++		eeh_pcid_put(dev);
++		if (driver->err_handler)
++			return NULL;
++	}
+ 
+ 	/* Remove it from PCI subsystem */
+ 	pr_debug("EEH: Removing %s without EEH sensitive driver\n",
+-- 
+1.7.1
