@@ -1,32 +1,26 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-ee0-x22f.google.com (mail-ee0-x22f.google.com
- [IPv6:2a00:1450:4013:c00::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8864C2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 17:06:42 +1100 (EST)
-Received: by mail-ee0-f47.google.com with SMTP id d49so4674584eek.20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Feb 2014 22:06:36 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 5 Feb 2014 07:06:33 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 5 Feb 2014 17:27:23 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ingo Molnar <mingo@kernel.org>
 Subject: Re: [GIT PULL] tree-wide: clean up no longer required #include
  <linux/init.h>
-Message-ID: <20140205060633.GE30094@gmail.com>
+Message-Id: <20140205172723.3fa841793b3fa3f3f534937f@canb.auug.org.au>
+In-Reply-To: <20140205060633.GE30094@gmail.com>
 References: <1391547118-21967-1-git-send-email-paul.gortmaker@windriver.com>
  <CAP=VYLp+zus5591g-1YQBCJifbk+UY59yJ7rV06ZN3QhhdnK7w@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAP=VYLp+zus5591g-1YQBCJifbk+UY59yJ7rV06ZN3QhhdnK7w@mail.gmail.com>
+ <20140205060633.GE30094@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ"
 Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
  linux-m68k@vger.kernel.org, rusty@rustcorp.com.au, linux-ia64@vger.kernel.org,
- kvm@vger.kernel.org, sfr@canb.auug.org.au,
- Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
+ kvm@vger.kernel.org, linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
  linux-alpha@vger.kernel.org, netdev@vger.kernel.org,
  gregkh@linuxfoundation.org, sparclinux@vger.kernel.org,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-s390@vger.kernel.org
+ akpm@linux-foundation.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,35 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+Hi Ingo,
 
-> On Feb 4, 2014 3:52 PM, "Paul Gortmaker" <paul.gortmaker@windriver.com>
-> wrote:
-> >
-> > We've had this in linux-next for 2+ weeks (thanks Stephen!) as a
-> > linux-stable like queue of patches, and as can be seen here:
-> >
-> >   https://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
-> 
-> Argh, above link is meant for cloning, not viewing.
-> 
-> This should be better...
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/paulg/init.git/
+On Wed, 5 Feb 2014 07:06:33 +0100 Ingo Molnar <mingo@kernel.org> wrote:
+>=20
+> So, if you meant Linus to pull it, you probably want to cite a real=20
+> Git URI along the lines of:
+>=20
+>    git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
 
-So, if you meant Linus to pull it, you probably want to cite a real 
-Git URI along the lines of:
+Paul provided the proper git url further down in the mail along with the
+usual pull request message (I guess he should have put that bit at the
+top).
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/paulg/init.git
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-( Otherwise your pull request might be ignored or worse, you might get
-  an honest reply, due to the https transport being considered evil
-  that no free man outside of corporate firewalls should ever consider
-  and all that. )
+--Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ
+Content-Type: application/pgp-signature
 
-Nice cleanups btw.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-Thanks,
+iQIcBAEBCAAGBQJS8dnPAAoJEMDTa8Ir7ZwVybEP/31Z6vmdSzqXa6CGStETJw23
+6BXTjf+UbSse//B/vkCLZLm698gmOezpw5NCnCKkK/rYTSJoE89rKmPnXB9H+0mD
+96PWZbw2vTR6TzU9Om85nOdui2ly7mMCvtg7d+U4vqGM4bRzetFxSM0YV3yCKYaq
+J0xttn7NnVnhCJpLVOofz9ulsnygMG6Gn0TSOomANZsBUpxZotvgdWGRZWgg1oVF
+MILuhwwwu0mbgf+a1SSWQvAChiuCP63vveXTiwvjT57lDlJXRODyl912lp0SyGug
+7Av6juPn1van5sXsHVqba3GT+4qeWN4DQkq017KZlJ0lGUiPg3HLCxagUzY64NfX
+HPEVmRBlDpFRgX8ivTJmV/hYkL0aVhTsnqubd+q6E2MH3szdU/Gf3GAo4Dl/7QnG
+nnkSUN0RP93xnM6hEORgGwkSSoEM0E4dvgZeGkPBs223BaEPAL+JLnEgHTXGk8gI
+muoC0oBA1DvmbTYp6UgLTSRdQZYfMb/IdpExQGpEd7lF2DfOOKqm3pcktcG7nCSs
+AaNdRepdtAY9vc2ISzNunqXta4TsOpKI7YPXEFvcuciVmj0lXkdKLCkp/1xj3v9t
+vupSRjKH9tocr8kOS3uc+i9T8wZkHZ5I0/LRNux8AVLAtLKUQeYAt6ZAyrsDvToM
+xuVmB/iHm04LyVGRQ59z
+=XhOK
+-----END PGP SIGNATURE-----
 
-	Ingo
+--Signature=_Wed__5_Feb_2014_17_27_23_+1100_gh/a8HjiUdsUGOqJ--
