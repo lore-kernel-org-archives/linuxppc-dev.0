@@ -1,56 +1,42 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 02CAC2C03C6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 07:41:55 +1100 (EST)
-Date: Wed, 5 Feb 2014 21:40:53 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH 2/2] clocksource: Make clocksource register functions void
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D46489C@AcuExch.aculab.com>
-Message-ID: <alpine.DEB.2.02.1402052139560.24986@ionos.tec.linutronix.de>
-References: <1390461166-36440-1-git-send-email-wangyijing@huawei.com>
- <52E0C889.6000106@prisktech.co.nz>
- <063D6719AE5E284EB5DD2968C1650D6D46489C@AcuExch.aculab.com>
+ by ozlabs.org (Postfix) with ESMTPS id 90F8A2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 09:12:19 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Thu, 6 Feb 2014 03:42:15 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A63611258059
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 03:44:02 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s15MC52m47448240
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Feb 2014 03:42:05 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s15MCB8p007593
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Feb 2014 03:42:12 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH 13/51] powerpc, sysfs: Fix CPU hotplug callback registration
+To: paulus@samba.org, oleg@redhat.com, rusty@rustcorp.com.au,
+ peterz@infradead.org, tglx@linutronix.de, akpm@linux-foundation.org
+Date: Thu, 06 Feb 2014 03:36:54 +0530
+Message-ID: <20140205220654.19080.11341.stgit@srivatsabhat.in.ibm.com>
+In-Reply-To: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
+References: <20140205220251.19080.92336.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "x86@kernel.org" <x86@kernel.org>, Kevin Hilman <khilman@deeprootsystems.com>,
- "linux@lists.openrisc.net" <linux@lists.openrisc.net>,
- Sekhar Nori <nsekhar@ti.com>, Michal Simek <monstr@monstr.eu>,
- Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Yijing Wang <wangyijing@huawei.com>,
- Daniel Walker <dwalker@fifo99.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jonas Bonn <jonas@southpole.se>,
- Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>,
- Richard Weinberger <richard@nod.at>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Tony Lindgren <tony@atomide.com>,
- Ingo Molnar <mingo@redhat.com>,
- "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
- David Brown <davidb@codeaurora.org>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>,
- "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
- Jeff Dike <jdike@addtoit.com>,
- "davinci-linux-open-source@linux.davincidsp.com"
- <davinci-linux-open-source@linux.davincidsp.com>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- John Stultz <john.stultz@linaro.org>,
- "user-mode-linux-user@lists.sourceforge.net"
- <user-mode-linux-user@lists.sourceforge.net>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Barry Song <baohua@kernel.org>, Jim Cromie <jim.cromie@gmail.com>,
- Hanjun Guo <guohanjun@huawei.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, 'Tony Prisk' <linux@prisktech.co.nz>,
- Bryan Huntsman <bryanh@codeaurora.org>,
- "uclinux-dist-devel@blackfin.uclinux.org"
- <uclinux-dist-devel@blackfin.uclinux.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: ego@linux.vnet.ibm.com, walken@google.com, linux@arm.linux.org.uk,
+ linux-kernel@vger.kernel.org, Wang Dongsheng <dongsheng.wang@freescale.com>,
+ Olof Johansson <olof@lixom.net>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,36 +46,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Yijing,
+Subsystems that want to register CPU hotplug callbacks, as well as perform
+initialization for the CPUs that are already online, often do it as shown
+below:
 
-On Thu, 23 Jan 2014, David Laight wrote:
+	get_online_cpus();
 
-> From: Linuxppc-dev Tony Prisk
-> > On 23/01/14 20:12, Yijing Wang wrote:
-> > > Currently, clocksource_register() and __clocksource_register_scale()
-> > > functions always return 0, it's pointless, make functions void.
-> > > And remove the dead code that check the clocksource_register_hz()
-> > > return value.
-> > ......
-> > > -static inline int clocksource_register_hz(struct clocksource *cs, u32 hz)
-> > > +static inline void clocksource_register_hz(struct clocksource *cs, u32 hz)
-> > >   {
-> > >   	return __clocksource_register_scale(cs, 1, hz);
-> > >   }
-> > 
-> > This doesn't make sense - you are still returning a value on a function
-> > declared void, and the return is now from a function that doesn't return
-> > anything either ?!?!
-> > Doesn't this throw a compile-time warning??
-> 
-> It depends on the compiler.
-> Recent gcc allow it.
-> I don't know if it is actually valid C though.
-> 
-> There is no excuse for it on lines like the above though.
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
 
-Can you please resend with that fixed against 3.14-rc1 ?
+	register_cpu_notifier(&foobar_cpu_notifier);
 
-Thanks,
+	put_online_cpus();
 
-	tglx
+This is wrong, since it is prone to ABBA deadlocks involving the
+cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+with CPU hotplug operations).
+
+Instead, the correct and race-free way of performing the callback
+registration is:
+
+	cpu_maps_update_begin();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	/* Note the use of the double underscored version of the API */
+	__register_cpu_notifier(&foobar_cpu_notifier);
+
+	cpu_maps_update_done();
+
+
+Fix the sysfs code in powerpc by using this latter form of callback
+registration.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/kernel/sysfs.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 97e1dc9..c29ad44 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -975,7 +975,8 @@ static int __init topology_init(void)
+ 	int cpu;
+ 
+ 	register_nodes();
+-	register_cpu_notifier(&sysfs_cpu_nb);
++
++	cpu_maps_update_begin();
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		struct cpu *c = &per_cpu(cpu_devices, cpu);
+@@ -999,6 +1000,11 @@ static int __init topology_init(void)
+ 		if (cpu_online(cpu))
+ 			register_cpu_online(cpu);
+ 	}
++
++	__register_cpu_notifier(&sysfs_cpu_nb);
++
++	cpu_maps_update_done();
++
+ #ifdef CONFIG_PPC64
+ 	sysfs_create_dscr_default();
+ #endif /* CONFIG_PPC64 */
