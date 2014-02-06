@@ -1,33 +1,20 @@
-Return-Path: <js1304@gmail.com>
-Received: from mail-wg0-x22c.google.com (mail-wg0-x22c.google.com
- [IPv6:2a00:1450:400c:c00::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 83C6A2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 21:29:21 +1100 (EST)
-Received: by mail-wg0-f44.google.com with SMTP id l18so1105682wgh.23
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2014 02:29:16 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
-Date: Thu, 6 Feb 2014 19:29:16 +0900
-Message-ID: <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-From: Joonsoo Kim <js1304@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
+ by ozlabs.org (Postfix) with ESMTPS id AF7132C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 21:43:22 +1100 (EST)
+Date: Thu, 6 Feb 2014 11:37:37 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Matt Mackall <mpm@selenic.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux.com>,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH] Convert powerpc simple spinlocks into ticket locks
+Message-ID: <20140206103736.GA18054@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,135 +24,335 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2014-02-06 David Rientjes <rientjes@google.com>:
-> On Thu, 6 Feb 2014, Joonsoo Kim wrote:
->
->> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
->>
->
-> I may be misunderstanding this patch and there's no help because there's
-> no changelog.
+x86 has them, MIPS has them, ARM has them, even ia64 has them:
+ticket locks. They reduce memory bus and cache pressure especially
+for contended spinlocks, increasing performance.
 
-Sorry about that.
-I made this patch just for testing. :)
-Thanks for looking this.
+This patch is a port of the x86 spin locks, mostly written in C,
+to the powerpc, introducing inline asm where needed. The pSeries
+directed yield for vCPUs is taken care of by an additional "holder"
+field in the lock.
 
->> diff --git a/include/linux/topology.h b/include/linux/topology.h
->> index 12ae6ce..a6d5438 100644
->> --- a/include/linux/topology.h
->> +++ b/include/linux/topology.h
->> @@ -233,11 +233,20 @@ static inline int numa_node_id(void)
->>   * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
->>   */
->>  DECLARE_PER_CPU(int, _numa_mem_);
->> +int _node_numa_mem_[MAX_NUMNODES];
->>
->>  #ifndef set_numa_mem
->>  static inline void set_numa_mem(int node)
->>  {
->>       this_cpu_write(_numa_mem_, node);
->> +     _node_numa_mem_[numa_node_id()] = node;
->> +}
->> +#endif
->> +
->> +#ifndef get_numa_mem
->> +static inline int get_numa_mem(int node)
->> +{
->> +     return _node_numa_mem_[node];
->>  }
->>  #endif
->>
->> @@ -260,6 +269,7 @@ static inline int cpu_to_mem(int cpu)
->>  static inline void set_cpu_numa_mem(int cpu, int node)
->>  {
->>       per_cpu(_numa_mem_, cpu) = node;
->> +     _node_numa_mem_[numa_node_id()] = node;
->
-> The intention seems to be that _node_numa_mem_[X] for a node X will return
-> a node Y with memory that has the nearest distance?  In other words,
-> caching the value returned by local_memory_node(X)?
+Signed-off-by: Torsten Duwe <duwe@suse.de>
+--
+ arch/powerpc/include/asm/spinlock_types.h |   27 ++++-
+ arch/powerpc/include/asm/spinlock.h       |  157 +++++++++++++++++++++++-------
+ arch/powerpc/lib/locks.c                  |    6 -
+ 3 files changed, 151 insertions(+), 39 deletions(-)
 
-Yes, you are right.
-
-> That doesn't seem to be what it's doing since numa_node_id() is the node
-> of the cpu that current is running on so this ends up getting initialized
-> to whatever local_memory_node(cpu_to_node(cpu)) is for the last bit set in
-> cpu_possible_mask.
-
-Yes, I made a mistake.
-Thanks for pointer.
-I fix it and attach v2.
-Now I'm out of office, so I'm not sure this second version is correct :(
-
-Thanks.
-
-----------8<--------------
->From bf691e7eb07f966e3aed251eaeb18f229ee32d1f Mon Sep 17 00:00:00 2001
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Date: Thu, 6 Feb 2014 17:07:05 +0900
-Subject: [RFC PATCH 2/3 v2] topology: support node_numa_mem() for
-determining the
- fallback node
-
-We need to determine the fallback node in slub allocator if the allocation
-target node is memoryless node. Without it, the SLUB wrongly select
-the node which has no memory and can't use a partial slab, because of node
-mismatch. Introduced function, node_numa_mem(X), will return
-a node Y with memory that has the nearest distance. If X is memoryless
-node, it will return nearest distance node, but, if
-X is normal node, it will return itself.
-
-We will use this function in following patch to determine the fallback
-node.
-
-Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 12ae6ce..66b19b8 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -233,11 +233,20 @@ static inline int numa_node_id(void)
-  * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
+diff --git a/arch/powerpc/include/asm/spinlock_types.h b/arch/powerpc/include/asm/spinlock_types.h
+index 2351adc..64a98be 100644
+--- a/arch/powerpc/include/asm/spinlock_types.h
++++ b/arch/powerpc/include/asm/spinlock_types.h
+@@ -5,11 +5,30 @@
+ # error "please don't include this file directly"
+ #endif
+ 
+-typedef struct {
+-	volatile unsigned int slock;
+-} arch_spinlock_t;
++typedef u16 __ticket_t;
++typedef u32 __ticketpair_t;
++
++#define TICKET_LOCK_INC	((__ticket_t)1)
++
++#define TICKET_SHIFT	(sizeof(__ticket_t) * 8)
++
++typedef struct arch_spinlock {
++	union {
++		__ticketpair_t head_tail;
++		struct __raw_tickets {
++#ifdef __BIG_ENDIAN__		/* The "tail" part should be in the MSBs */
++			__ticket_t tail, head;
++#else
++			__ticket_t head, tail;
++#endif
++		} tickets;
++	};
++#if defined(CONFIG_PPC64)
++	u32 holder;
++#endif
++} arch_spinlock_t __aligned(8);
+ 
+-#define __ARCH_SPIN_LOCK_UNLOCKED	{ 0 }
++#define __ARCH_SPIN_LOCK_UNLOCKED	{ { 0 }, 0 }
+ 
+ typedef struct {
+ 	volatile signed int lock;
+diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
+index 5f54a74..6e33691 100644
+--- a/arch/powerpc/include/asm/spinlock.h
++++ b/arch/powerpc/include/asm/spinlock.h
+@@ -9,8 +9,7 @@
+  * Copyright (C) 2001 Anton Blanchard <anton@au.ibm.com>, IBM
+  * Copyright (C) 2002 Dave Engebretsen <engebret@us.ibm.com>, IBM
+  *	Rework to support virtual processors
+- *
+- * Type of int is used as a full 64b word is not necessary.
++ * Copyright (C) 2014 Torsten Duwe <duwe@suse.de>, ticket lock port
+  *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -28,7 +27,20 @@
+ #include <asm/synch.h>
+ #include <asm/ppc-opcode.h>
+ 
+-#define arch_spin_is_locked(x)		((x)->slock != 0)
++static inline int arch_spin_is_locked(arch_spinlock_t *lock)
++{
++	struct __raw_tickets tmp = ACCESS_ONCE(lock->tickets);
++
++	return tmp.tail != tmp.head;
++}
++
++static inline int arch_spin_is_contended(arch_spinlock_t *lock)
++{
++	struct __raw_tickets tmp = ACCESS_ONCE(lock->tickets);
++
++	return (__ticket_t)(tmp.tail - tmp.head) > TICKET_LOCK_INC;
++}
++#define arch_spin_is_contended	arch_spin_is_contended
+ 
+ #ifdef CONFIG_PPC64
+ /* use 0x800000yy when locked, where yy == CPU number */
+@@ -37,8 +49,12 @@
+ #else
+ #define LOCK_TOKEN	(*(u32 *)(&get_paca()->paca_index))
+ #endif
++#define SIZE_LETTER	"d"
++#define L64		"1"
+ #else
+ #define LOCK_TOKEN	1
++#define SIZE_LETTER	"w"
++#define L64		"0"
+ #endif
+ 
+ #if defined(CONFIG_PPC64) && defined(CONFIG_SMP)
+@@ -55,33 +71,59 @@
+ #endif
+ 
+ /*
+- * This returns the old value in the lock, so we succeeded
+- * in getting the lock if the return value is 0.
++ * Our own cmpxchg, operating on spinlock_t's.  Returns 0 iff value
++ * read at lock was equal to "old" AND the cmpxchg succeeded
++ * uninterruptedly.
   */
- DECLARE_PER_CPU(int, _numa_mem_);
-+int _node_numa_mem_[MAX_NUMNODES];
-
- #ifndef set_numa_mem
- static inline void set_numa_mem(int node)
+-static inline unsigned long __arch_spin_trylock(arch_spinlock_t *lock)
++static __always_inline int __arch_spin_cmpxchg_eq(arch_spinlock_t *lock,
++					       arch_spinlock_t old,
++					       arch_spinlock_t new)
  {
-  this_cpu_write(_numa_mem_, node);
-+ _node_numa_mem_[numa_node_id()] = node;
+-	unsigned long tmp, token;
++	register int retval = 1;
++	register arch_spinlock_t tmp;
++
++	__asm__ __volatile__ (
++"	li %0,1\n"		/* default to "fail" */
++	PPC_RELEASE_BARRIER
++"1:	l" SIZE_LETTER "arx   %2,0,%5         # __arch_spin_cmpxchg_eq\n"
++"	cmp 0,"L64",%3,%2\n"
++"	bne-    2f\n"
++	PPC405_ERR77(0, "%5")
++"	st" SIZE_LETTER "cx.  %4,0,%5\n"
++"	bne-    1b\n"
++"	isync\n"
++"	li %0,0\n"
++"2:"
++	: "=&r" (retval), "+m" (*lock)
++	: "r" (tmp), "r" (old), "r" (new), "r" (lock)
++	: "cc", "memory");
++
++	return retval;
 +}
++#undef SIZE_LETTER
++#undef L64
+ 
+-	token = LOCK_TOKEN;
+-	__asm__ __volatile__(
+-"1:	" PPC_LWARX(%0,0,%2,1) "\n\
+-	cmpwi		0,%0,0\n\
+-	bne-		2f\n\
+-	stwcx.		%1,0,%2\n\
+-	bne-		1b\n"
+-	PPC_ACQUIRE_BARRIER
+-"2:"
+-	: "=&r" (tmp)
+-	: "r" (token), "r" (&lock->slock)
+-	: "cr0", "memory");
++static __always_inline int __arch_spin_trylock(arch_spinlock_t *lock)
++{
++	arch_spinlock_t old, new;
+ 
+-	return tmp;
++	old.tickets = ACCESS_ONCE(lock->tickets);
++	if (old.tickets.head != old.tickets.tail)
++		return 0;
++
++	new.head_tail = old.head_tail + (TICKET_LOCK_INC << TICKET_SHIFT);
++#if defined(CONFIG_PPC64)
++	old.holder = lock->holder;
++	new.holder = LOCK_TOKEN;
 +#endif
 +
-+#ifndef get_numa_mem
-+static inline int get_numa_mem(int node)
-+{
-+ return _node_numa_mem_[node];
++	return !__arch_spin_cmpxchg_eq(lock, old, new);
  }
- #endif
-
-@@ -260,6 +269,7 @@ static inline int cpu_to_mem(int cpu)
- static inline void set_cpu_numa_mem(int cpu, int node)
+ 
+ static inline int arch_spin_trylock(arch_spinlock_t *lock)
  {
-  per_cpu(_numa_mem_, cpu) = node;
-+ _node_numa_mem_[cpu_to_node(cpu)] = node;
+ 	CLEAR_IO_SYNC;
+-	return __arch_spin_trylock(lock) == 0;
++	return  __arch_spin_trylock(lock);
  }
+ 
+ /*
+@@ -93,9 +135,8 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
+  * rest of our timeslice to the lock holder.
+  *
+  * So that we can tell which virtual processor is holding a lock,
+- * we put 0x80000000 | smp_processor_id() in the lock when it is
+- * held.  Conveniently, we have a word in the paca that holds this
+- * value.
++ * we put 0x80000000 | smp_processor_id() into lock->holder.
++ * Conveniently, we have a word in the paca that holds this value.
+  */
+ 
+ #if defined(CONFIG_PPC_SPLPAR)
+@@ -109,19 +150,59 @@ extern void __rw_yield(arch_rwlock_t *lock);
+ #define SHARED_PROCESSOR	0
  #endif
-
-@@ -273,6 +283,13 @@ static inline int numa_mem_id(void)
- }
- #endif
-
-+#ifndef get_numa_mem
-+static inline int get_numa_mem(int node)
-+{
-+ return node;
-+}
-+#endif
+ 
+-static inline void arch_spin_lock(arch_spinlock_t *lock)
++/*
++ * Ticket locks are conceptually two parts, one indicating the current head of
++ * the queue, and the other indicating the current tail. The lock is acquired
++ * by atomically noting the tail and incrementing it by one (thus adding
++ * ourself to the queue and noting our position), then waiting until the head
++ * becomes equal to the the initial value of the tail.
++ *
++ * We use an asm covering *both* parts of the lock, to increment the tail and
++ * also load the position of the head, which takes care of memory ordering
++ * issues and should be optimal for the uncontended case. Note the tail must be
++ * in the high part, because a wide add increment of the low part would carry
++ * up and contaminate the high part.
++ */
++static __always_inline void arch_spin_lock(arch_spinlock_t *lock)
+ {
++	register struct __raw_tickets old, tmp,
++		inc = { .tail = TICKET_LOCK_INC };
 +
- #ifndef cpu_to_mem
- static inline int cpu_to_mem(int cpu)
+ 	CLEAR_IO_SYNC;
+-	while (1) {
+-		if (likely(__arch_spin_trylock(lock) == 0))
+-			break;
++	__asm__ __volatile__(
++"1:	lwarx   %0,0,%4         # arch_spin_lock\n"
++"	add     %1,%3,%0\n"
++	PPC405_ERR77(0, "%4")
++"	stwcx.  %1,0,%4\n"
++"	bne-    1b"
++	: "=&r" (old), "=&r" (tmp), "+m" (lock->tickets)
++	: "r" (inc), "r" (&lock->tickets)
++	: "cc");
++
++	if (likely(old.head == old.tail)) {
++#if defined(CONFIG_PPC64)
++		lock->holder = LOCK_TOKEN;
++#endif
++		goto out;
++	}
++
++	for (;;) {
++		unsigned count = 100;
++
+ 		do {
++			if (ACCESS_ONCE(lock->tickets.head) == old.tail) {
++#if defined(CONFIG_PPC64)
++				lock->holder = LOCK_TOKEN;
++#endif
++				goto out;
++			}
+ 			HMT_low();
+ 			if (SHARED_PROCESSOR)
+ 				__spin_yield(lock);
+-		} while (unlikely(lock->slock != 0));
++		} while (--count);
+ 		HMT_medium();
+ 	}
++out:	barrier();	/* make sure nothing creeps before the lock is taken */
+ }
+ 
+ static inline
+@@ -131,7 +211,7 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
+ 
+ 	CLEAR_IO_SYNC;
+ 	while (1) {
+-		if (likely(__arch_spin_trylock(lock) == 0))
++		if (likely(__arch_spin_trylock(lock)))
+ 			break;
+ 		local_save_flags(flags_dis);
+ 		local_irq_restore(flags);
+@@ -139,7 +219,7 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
+ 			HMT_low();
+ 			if (SHARED_PROCESSOR)
+ 				__spin_yield(lock);
+-		} while (unlikely(lock->slock != 0));
++		} while (arch_spin_is_locked(lock));
+ 		HMT_medium();
+ 		local_irq_restore(flags_dis);
+ 	}
+@@ -147,10 +227,22 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
+ 
+ static inline void arch_spin_unlock(arch_spinlock_t *lock)
  {
--- 
-1.7.9.5
++	arch_spinlock_t old, new;
++
++#if defined(CONFIG_PPC64)
++	new.holder = 0;
++#endif
++	do {
++		old.tickets = ACCESS_ONCE(lock->tickets);
++#if defined(CONFIG_PPC64)
++		old.holder = lock->holder;
++#endif
++		new.tickets.head = old.tickets.head + TICKET_LOCK_INC;
++		new.tickets.tail = old.tickets.tail;
++	} while (unlikely(__arch_spin_cmpxchg_eq(lock, old, new)));
+ 	SYNC_IO;
+ 	__asm__ __volatile__("# arch_spin_unlock\n\t"
+ 				PPC_RELEASE_BARRIER: : :"memory");
+-	lock->slock = 0;
+ }
+ 
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+index 0c9c8d7..4a57e32 100644
+--- a/arch/powerpc/lib/locks.c
++++ b/arch/powerpc/lib/locks.c
+@@ -27,7 +27,7 @@ void __spin_yield(arch_spinlock_t *lock)
+ {
+ 	unsigned int lock_value, holder_cpu, yield_count;
+ 
+-	lock_value = lock->slock;
++	lock_value = lock->holder;
+ 	if (lock_value == 0)
+ 		return;
+ 	holder_cpu = lock_value & 0xffff;
+@@ -36,7 +36,7 @@ void __spin_yield(arch_spinlock_t *lock)
+ 	if ((yield_count & 1) == 0)
+ 		return;		/* virtual cpu is currently running */
+ 	rmb();
+-	if (lock->slock != lock_value)
++	if (lock->holder != lock_value)
+ 		return;		/* something has changed */
+ 	plpar_hcall_norets(H_CONFER,
+ 		get_hard_smp_processor_id(holder_cpu), yield_count);
+@@ -70,7 +70,7 @@ void __rw_yield(arch_rwlock_t *rw)
+ 
+ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ {
+-	while (lock->slock) {
++	while (arch_spin_is_locked(lock)) {
+ 		HMT_low();
+ 		if (SHARED_PROCESSOR)
+ 			__spin_yield(lock);
