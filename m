@@ -1,42 +1,31 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 02D232C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:52:41 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 7 Feb 2014 02:52:41 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3848A2BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:52:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s16GX7jn28442810
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 03:33:08 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s16Gqam2010146
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 03:52:37 +1100
-Message-ID: <52F3BCFE.3010703@linux.vnet.ibm.com>
-Date: Thu, 06 Feb 2014 22:19:02 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
- <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
-In-Reply-To: <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
- Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
+Return-Path: <cl@linux.com>
+Received: from qmta13.emeryville.ca.mail.comcast.net
+ (qmta13.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:243])
+ by ozlabs.org (Postfix) with ESMTP id 397F22C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 04:25:34 +1100 (EST)
+Date: Thu, 6 Feb 2014 11:25:29 -0600 (CST)
+From: Christoph Lameter <cl@linux.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+In-Reply-To: <20140206020833.GD5433@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1402061124540.5348@nuc>
+References: <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140125011041.GB25344@linux.vnet.ibm.com> <20140127055805.GA2471@lge.com>
+ <20140128182947.GA1591@linux.vnet.ibm.com>
+ <20140203230026.GA15383@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1402032138070.17997@nuc>
+ <20140204072630.GB10101@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1402041436150.11222@nuc>
+ <20140205001352.GC10101@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1402051312430.21661@nuc>
+ <20140206020833.GD5433@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ David Rientjes <rientjes@google.com>, penberg@kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, Anton Blanchard <anton@samba.org>, mpm@selenic.com,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,84 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Daniel,
+On Wed, 5 Feb 2014, Nishanth Aravamudan wrote:
 
-On 02/06/2014 09:55 PM, Daniel Lezcano wrote:
-> Hi Nico,
-> 
-> 
-> On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
-> 
->> The core idle loop now takes care of it.
->>
->> Signed-off-by: Nicolas Pitre <nico@linaro.org>
->> ---
->>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
->>  1 file changed, 1 insertion(+), 12 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/powernv/setup.c
->> b/arch/powerpc/platforms/powernv/setup.c
->> index 21166f65c9..a932feb290 100644
->> --- a/arch/powerpc/platforms/powernv/setup.c
->> +++ b/arch/powerpc/platforms/powernv/setup.c
->> @@ -26,7 +26,6 @@
->>  #include <linux/of_fdt.h>
->>  #include <linux/interrupt.h>
->>  #include <linux/bug.h>
->> -#include <linux/cpuidle.h>
->>
->>  #include <asm/machdep.h>
->>  #include <asm/firmware.h>
->> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
->>         return 1;
->>  }
->>
->> -void powernv_idle(void)
->> -{
->> -       /* Hook to cpuidle framework if available, else
->> -        * call on default platform idle code
->> -        */
->> -       if (cpuidle_idle_call()) {
->> -               power7_idle();
->> -       }
->>
-> 
-> The cpuidle_idle_call is called from arch_cpu_idle in
-> arch/powerpc/kernel/idle.c between a ppc64_runlatch_off|on section.
-> Shouldn't the cpuidle-powernv driver call these functions when entering
-> idle ?
+> > Right so if we are ignoring the node then the simplest thing to do is to
+> > not deactivate the current cpu slab but to take an object from it.
+>
+> Ok, that's what Anton's patch does, I believe. Are you ok with that
+> patch as it is?
 
-Yes they should, I will send out a patch that does that ontop of this.
-There have been cpuidle driver cleanups for powernv and pseries in this
-merge window. While no change would be required in the pseries cpuidle
-driver as a result of Nicolas's cleanup, we would need to add the
-ppc64_runlatch_on and off functions before and after the entry into the
-powernv idle states.
-
-Thanks
-
-Regards
-Preeti U Murthy
-> 
->   -- Daniel
-> 
-> 
->> -}
->> -
->>  define_machine(powernv) {
->>         .name                   = "PowerNV",
->>         .probe                  = pnv_probe,
->> @@ -236,7 +225,7 @@ define_machine(powernv) {
->>         .show_cpuinfo           = pnv_show_cpuinfo,
->>         .progress               = pnv_progress,
->>         .machine_shutdown       = pnv_shutdown,
->> -       .power_save             = powernv_idle,
->> +       .power_save             = power7_idle,
->>         .calibrate_decr         = generic_calibrate_decr,
->>  #ifdef CONFIG_KEXEC
->>         .kexec_cpu_down         = pnv_kexec_cpu_down,
->> --
->> 1.8.4.108.g55ea5f6
->>
->>
-> 
+No. Again his patch only works if the node is memoryless not if there are
+other issues that prevent allocation from that node.
