@@ -1,25 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
+ [IPv6:2607:f8b0:400e:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7FE362C0374
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 07:20:05 +1100 (EST)
-Message-ID: <1391717992.6733.232.camel@snotra.buserror.net>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-From: Scott Wood <scottwood@freescale.com>
-To: Torsten Duwe <duwe@lst.de>
-Date: Thu, 6 Feb 2014 14:19:52 -0600
-In-Reply-To: <20140206173727.GA13048@lst.de>
-References: <20140206103736.GA18054@lst.de>
- <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 3C37E2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 07:52:16 +1100 (EST)
+Received: by mail-pa0-f54.google.com with SMTP id fa1so2198623pad.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2014 12:52:13 -0800 (PST)
+Date: Thu, 6 Feb 2014 12:52:11 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Joonsoo Kim <js1304@gmail.com>
+Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
+ the fallback node
+In-Reply-To: <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
+Message-ID: <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
+References: <20140206020757.GC5433@linux.vnet.ibm.com>
+ <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
+ <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
 MIME-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>, "Paul
- E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Matt Mackall <mpm@selenic.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux.com>,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,41 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-02-06 at 18:37 +0100, Torsten Duwe wrote:
-> On Thu, Feb 06, 2014 at 05:38:37PM +0100, Peter Zijlstra wrote:
-> > On Thu, Feb 06, 2014 at 11:37:37AM +0100, Torsten Duwe wrote:
-> > > x86 has them, MIPS has them, ARM has them, even ia64 has them:
-> > > ticket locks. They reduce memory bus and cache pressure especially
-> > > for contended spinlocks, increasing performance.
-> > > 
-> > > This patch is a port of the x86 spin locks, mostly written in C,
-> > > to the powerpc, introducing inline asm where needed. The pSeries
-> > > directed yield for vCPUs is taken care of by an additional "holder"
-> > > field in the lock.
-> > > 
-> > 
-> > A few questions; what's with the ppc64 holder thing? Not having a 32bit
-> > spinlock_t is sad.
+On Thu, 6 Feb 2014, Joonsoo Kim wrote:
+
+> From bf691e7eb07f966e3aed251eaeb18f229ee32d1f Mon Sep 17 00:00:00 2001
+> From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> Date: Thu, 6 Feb 2014 17:07:05 +0900
+> Subject: [RFC PATCH 2/3 v2] topology: support node_numa_mem() for
+> determining the
+>  fallback node
 > 
-> I must admit that I haven't tested the patch on non-pseries ppc64 nor on
-> ppc32. Only ppc64 has the ldarx and I tried to atomically replace the 
-> holder along with the locks. That might prove unneccessary.
-
-Why is the functionality of holder only required on 64-bit?  We have too
-many 32/64 differences as is.  Perhaps on 32-bit a lower max number of
-CPUs could be assumed, to make it fit in one word.
-
-> > Can you pair lwarx with sthcx ? I couldn't immediately find the answer
-> > in the PowerISA doc. If so I think you can do better by being able to
-> > atomically load both tickets but only storing the head without affecting
-> > the tail.
+> We need to determine the fallback node in slub allocator if the allocation
+> target node is memoryless node. Without it, the SLUB wrongly select
+> the node which has no memory and can't use a partial slab, because of node
+> mismatch. Introduced function, node_numa_mem(X), will return
+> a node Y with memory that has the nearest distance. If X is memoryless
+> node, it will return nearest distance node, but, if
+> X is normal node, it will return itself.
 > 
-> V2.06b, Book II, Chapter 3, "sthcx" says:
-> | If a reservation exists and the length associated [...] is not 2 bytes,
-> | it is undefined whether (RS)_48:63 are stored [...]
+> We will use this function in following patch to determine the fallback
+> node.
 > 
-> That doesn't make me feel comfortable :(
 
-Plus, sthcx doesn't exist on all PPC chips.
+I like the approach and it may fix the problem today, but it may not be 
+sufficient in the future: nodes may not only be memoryless but they may 
+also be cpuless.  It's possible that a node can only have I/O, networking, 
+or storage devices and we can define affinity for them that is remote from 
+every cpu and/or memory by the ACPI specification.
 
--Scott
+It seems like a better approach would be to do this when a node is brought 
+online and determine the fallback node based not on the zonelists as you 
+do here but rather on locality (such as through a SLIT if provided, see 
+node_distance()).
+
+Also, the names aren't very descriptive: {get,set}_numa_mem() doesn't make 
+a lot of sense in generic code.  I'd suggest something like 
+node_to_mem_node().
