@@ -3,21 +3,29 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5CC8C2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:38:47 +1100 (EST)
-Date: Thu, 6 Feb 2014 17:38:37 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 7DF912C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:44:01 +1100 (EST)
+Date: Thu, 6 Feb 2014 17:43:36 +0100
 From: Peter Zijlstra <peterz@infradead.org>
-To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-Message-ID: <20140206163837.GT2936@laptop.programming.kicks-ass.net>
-References: <20140206103736.GA18054@lst.de>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Message-ID: <20140206164336.GU2936@laptop.programming.kicks-ass.net>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+ <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140206103736.GA18054@lst.de>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +35,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 06, 2014 at 11:37:37AM +0100, Torsten Duwe wrote:
-> x86 has them, MIPS has them, ARM has them, even ia64 has them:
-> ticket locks. They reduce memory bus and cache pressure especially
-> for contended spinlocks, increasing performance.
+On Thu, Feb 06, 2014 at 02:09:59PM +0000, Nicolas Pitre wrote:
+> Hi Peter,
 > 
-> This patch is a port of the x86 spin locks, mostly written in C,
-> to the powerpc, introducing inline asm where needed. The pSeries
-> directed yield for vCPUs is taken care of by an additional "holder"
-> field in the lock.
-> 
+> Did you merge those patches in your tree? 
 
-A few questions; what's with the ppc64 holder thing? Not having a 32bit
-spinlock_t is sad.
+tree, tree, what's in a word. Its in my patch stack yes. I should get
+some of that into tip I suppose, been side-tracked a bit this week.
+Sorry for the delay.
 
-Can you pair lwarx with sthcx ? I couldn't immediately find the answer
-in the PowerISA doc. If so I think you can do better by being able to
-atomically load both tickets but only storing the head without affecting
-the tail.
+> If so, is it published somewhere?  
 
-In that case you can avoid the ll/sc on unlock, because only the lock
-owner can modify the tail, so you can use a single half-word store.
+http://programming.kicks-ass.net/sekrit/patches.tar.bz2
+
+It is of varying quality at best.
+
+> That would be a good idea if that could appear in linux-next 
+> so to prevent people from adding more calls to cpuidle_idle_call() from 
+> architecture code.  I'm sending you 2 additional patches right away to 
+> remove those that appeared in v3.14-rc1.
+
+Yeah, once they land in tip they'll end up in -next automagically. I'll
+try and get that sorted tomorrow somewhere.
