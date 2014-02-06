@@ -1,23 +1,32 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 32F772C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 23:36:23 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 3/3] time/cpuidle:Handle failed call to BROADCAST_ENTER
- on archs with CPUIDLE_FLAG_TIMER_STOP set
-Date: Thu, 06 Feb 2014 13:50:50 +0100
-Message-ID: <5055510.EE1aECadbX@vostro.rjw.lan>
-In-Reply-To: <20140206055036.4595.86947.stgit@preeti>
-References: <20140206054158.4595.17827.stgit@preeti>
- <20140206055036.4595.86947.stgit@preeti>
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qc0-f176.google.com (mail-qc0-f176.google.com
+ [209.85.216.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 464622C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 01:10:08 +1100 (EST)
+Received: by mail-qc0-f176.google.com with SMTP id e16so3169356qcx.35
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2014 06:10:02 -0800 (PST)
+Date: Thu, 6 Feb 2014 14:09:59 +0000 (GMT)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+In-Reply-To: <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+Message-ID: <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+ <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: deepthi@linux.vnet.ibm.com, daniel.lezcano@linaro.org,
- linux-pm@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
- srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,121 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, February 06, 2014 11:20:37 AM Preeti U Murthy wrote:
-> Some archs set the CPUIDLE_FLAG_TIMER_STOP flag for idle states in which the
-> local timers stop. The cpuidle_idle_call() currently handles such idle states
-> by calling into the broadcast framework so as to wakeup CPUs at their next
-> wakeup event. With the hrtimer mode of broadcast, the BROADCAST_ENTER call
-> into the broadcast frameowork can fail for archs that do not have an external
-> clock device to handle wakeups and the CPU in question has to thus be made
-> the stand by CPU. This patch handles such cases by failing the call into
-> cpuidle so that the arch can take some default action. The arch will certainly
-> not enter a similar idle state because a failed cpuidle call will also implicitly
-> indicate that the broadcast framework has not registered this CPU to be woken up.
-> Hence we are safe if we fail the cpuidle call.
-> 
-> In the process move the functions that trace idle statistics just before and
-> after the entry and exit into idle states respectively. In other
-> scenarios where the call to cpuidle fails, we end up not tracing idle
-> entry and exit since a decision on an idle state could not be taken. Similarly
-> when the call to broadcast framework fails, we skip tracing idle statistics
-> because we are in no further position to take a decision on an alternative
-> idle state to enter into.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+On Thu, 30 Jan 2014, Peter Zijlstra wrote:
 
-The cpuidle changes in this patch look reasonable to me, but I guess you'd
-like it to go in via tip along with the rest of the series, so
-
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-> ---
+> On Thu, Jan 30, 2014 at 11:03:31AM -0500, Nicolas Pitre wrote:
+> > > This is not a valid patch for PATCH(1). Please try again.
+> > 
+> > Don't you use git?  ;-)
 > 
->  drivers/cpuidle/cpuidle.c |   38 +++++++++++++++++++++++---------------
->  1 file changed, 23 insertions(+), 15 deletions(-)
+> Nah, git and me don't get along well.
 > 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index a55e68f..8f42033 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -117,15 +117,19 @@ int cpuidle_idle_call(void)
->  {
->  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
->  	struct cpuidle_driver *drv;
-> -	int next_state, entered_state;
-> -	bool broadcast;
-> +	int next_state, entered_state, ret = 0;
-> +	bool broadcast = false;
->  
-> -	if (off || !initialized)
-> -		return -ENODEV;
-> +	if (off || !initialized) {
-> +		ret = -ENODEV;
-> +		goto out;
-> +	}
->  
->  	/* check if the device is ready */
-> -	if (!dev || !dev->enabled)
-> -		return -EBUSY;
-> +	if (!dev || !dev->enabled) {
-> +		ret = -EBUSY;
-> +		goto out;
-> +	}
->  
->  	drv = cpuidle_get_cpu_driver(dev);
->  
-> @@ -137,15 +141,18 @@ int cpuidle_idle_call(void)
->  		if (cpuidle_curr_governor->reflect)
->  			cpuidle_curr_governor->reflect(dev, next_state);
->  		local_irq_enable();
-> -		return 0;
-> +		goto out;
->  	}
->  
-> -	trace_cpu_idle_rcuidle(next_state, dev->cpu);
-> -
->  	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
->  
-> -	if (broadcast)
-> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-> +	if (broadcast) {
-> +		ret = clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-> +		if (ret)
-> +			goto out;
-> +	}
-> +
-> +	trace_cpu_idle_rcuidle(next_state, dev->cpu);
->  
->  	if (cpuidle_state_is_coupled(dev, drv, next_state))
->  		entered_state = cpuidle_enter_state_coupled(dev, drv,
-> @@ -153,16 +160,17 @@ int cpuidle_idle_call(void)
->  	else
->  		entered_state = cpuidle_enter_state(dev, drv, next_state);
->  
-> -	if (broadcast)
-> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-> -
->  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->  
->  	/* give the governor an opportunity to reflect on the outcome */
->  	if (cpuidle_curr_governor->reflect)
->  		cpuidle_curr_governor->reflect(dev, entered_state);
->  
-> -	return 0;
-> +out:	if (broadcast)
-> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-> +
-> +
-> +	return ret;
->  }
->  
->  /**
+> > Here's a plain patch:
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Thanks!
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Hi Peter,
+
+Did you merge those patches in your tree?  If so, is it published 
+somewhere?  That would be a good idea if that could appear in linux-next 
+so to prevent people from adding more calls to cpuidle_idle_call() from 
+architecture code.  I'm sending you 2 additional patches right away to 
+remove those that appeared in v3.14-rc1.
+
+
+Nicolas
