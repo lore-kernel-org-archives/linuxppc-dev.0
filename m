@@ -1,41 +1,25 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 951372C009C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:03:37 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 7 Feb 2014 02:03:35 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DBD792CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:03:32 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s16FiBth38797530
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 02:44:11 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s16G3VnE018895
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 03:03:32 +1100
-Message-ID: <52F3B17E.4040209@linux.vnet.ibm.com>
-Date: Thu, 06 Feb 2014 21:29:58 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 777262C02FB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 03:03:59 +1100 (EST)
+Date: Thu, 6 Feb 2014 17:03:45 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 2/3] tick/cpuidle: Initialize hrtimer mode of broadcast
+In-Reply-To: <20140206055012.4595.55692.stgit@preeti>
+Message-ID: <alpine.DEB.2.02.1402061655560.21991@ionos.tec.linutronix.de>
+References: <20140206054158.4595.17827.stgit@preeti>
+ <20140206055012.4595.55692.stgit@preeti>
 MIME-Version: 1.0
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 2/2] ARM64: powernv: remove redundant cpuidle_idle_call()
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
- <1391696188-14540-2-git-send-email-nicolas.pitre@linaro.org>
-In-Reply-To: <1391696188-14540-2-git-send-email-nicolas.pitre@linaro.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-695086802-1391702627=:21991"
+Cc: deepthi@linux.vnet.ibm.com, daniel.lezcano@linaro.org,
+ linux-pm@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
+ srivatsa.bhat@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nicolas,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-powernv in the subject of the patch?
+--8323329-695086802-1391702627=:21991
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 
-Regards
-Preeti U Murthy
-On 02/06/2014 07:46 PM, Nicolas Pitre wrote:
-> The core idle loop now takes care of it.
-> 
-> Signed-off-by: Nicolas Pitre <nico@linaro.org>
-> ---
->  arch/arm64/kernel/process.c | 7 ++-----
->  1 file changed, 2 insertions(+), 5 deletions(-)
-> 
-> diff --git a/arch/arm64/kernel/process.c b/arch/arm64/kernel/process.c
-> index 1c0a9be2ff..9cce0098f4 100644
-> --- a/arch/arm64/kernel/process.c
-> +++ b/arch/arm64/kernel/process.c
-> @@ -33,7 +33,6 @@
->  #include <linux/kallsyms.h>
->  #include <linux/init.h>
->  #include <linux/cpu.h>
-> -#include <linux/cpuidle.h>
->  #include <linux/elfcore.h>
->  #include <linux/pm.h>
->  #include <linux/tick.h>
-> @@ -94,10 +93,8 @@ void arch_cpu_idle(void)
->  	 * This should do all the clock switching and wait for interrupt
->  	 * tricks
->  	 */
-> -	if (cpuidle_idle_call()) {
-> -		cpu_do_idle();
-> -		local_irq_enable();
-> -	}
-> +	cpu_do_idle();
-> +	local_irq_enable();
->  }
-> 
->  #ifdef CONFIG_HOTPLUG_CPU
-> 
+On Thu, 6 Feb 2014, Preeti U Murthy wrote:
+
+Compiler warnings are not so important, right?
+
+kernel/time/tick-broadcast.c: In function ‘tick_broadcast_oneshot_control’:
+kernel/time/tick-broadcast.c:700:3: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
+kernel/time/tick-broadcast.c:711:3: warning: ‘return’ with no value, in function returning non-void [-Wreturn-type]
+
+> +		/*
+> +		 * If the current CPU owns the hrtimer broadcast
+> +		 * mechanism, it cannot go deep idle.
+> +		 */
+> +		ret = broadcast_needs_cpu(bc, cpu);
+
+So we leave the CPU in the broadcast mask, just to force another call
+to the notify code right away to remove it again. Wouldn't it be more
+clever to clear the flag right away? That would make the changes to
+the cpuidle code simpler. Delta patch below.
+
+Thanks,
+
+	tglx
+---
+
+--- tip.orig/kernel/time/tick-broadcast.c
++++ tip/kernel/time/tick-broadcast.c
+@@ -697,7 +697,7 @@ int tick_broadcast_oneshot_control(unsig
+ 	 * states
+ 	 */
+ 	if (tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
+-		return;
++		return 0;
+ 
+ 	/*
+ 	 * We are called with preemtion disabled from the depth of the
+@@ -708,7 +708,7 @@ int tick_broadcast_oneshot_control(unsig
+ 	dev = td->evtdev;
+ 
+ 	if (!(dev->features & CLOCK_EVT_FEAT_C3STOP))
+-		return;
++		return 0;
+ 
+ 	bc = tick_broadcast_device.evtdev;
+ 
+@@ -731,9 +731,14 @@ int tick_broadcast_oneshot_control(unsig
+ 		}
+ 		/*
+ 		 * If the current CPU owns the hrtimer broadcast
+-		 * mechanism, it cannot go deep idle.
++		 * mechanism, it cannot go deep idle and we remove the
++		 * CPU from the broadcast mask. We don't have to go
++		 * through the EXIT path as the local timer is not
++		 * shutdown.
+ 		 */
+ 		ret = broadcast_needs_cpu(bc, cpu);
++		if (ret)
++			cpumask_clear_cpu(cpu, tick_broadcast_oneshot_mask);
+ 	} else {
+ 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
+ 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
+--8323329-695086802-1391702627=:21991--
