@@ -1,20 +1,23 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AF7132C009C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 21:43:22 +1100 (EST)
-Date: Thu, 6 Feb 2014 11:37:37 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH] Convert powerpc simple spinlocks into ticket locks
-Message-ID: <20140206103736.GA18054@lst.de>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 32F772C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 23:36:23 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 3/3] time/cpuidle:Handle failed call to BROADCAST_ENTER
+ on archs with CPUIDLE_FLAG_TIMER_STOP set
+Date: Thu, 06 Feb 2014 13:50:50 +0100
+Message-ID: <5055510.EE1aECadbX@vostro.rjw.lan>
+In-Reply-To: <20140206055036.4595.86947.stgit@preeti>
+References: <20140206054158.4595.17827.stgit@preeti>
+ <20140206055036.4595.86947.stgit@preeti>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: deepthi@linux.vnet.ibm.com, daniel.lezcano@linaro.org,
+ linux-pm@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
+ srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
+ paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,335 +27,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-x86 has them, MIPS has them, ARM has them, even ia64 has them:
-ticket locks. They reduce memory bus and cache pressure especially
-for contended spinlocks, increasing performance.
+On Thursday, February 06, 2014 11:20:37 AM Preeti U Murthy wrote:
+> Some archs set the CPUIDLE_FLAG_TIMER_STOP flag for idle states in which the
+> local timers stop. The cpuidle_idle_call() currently handles such idle states
+> by calling into the broadcast framework so as to wakeup CPUs at their next
+> wakeup event. With the hrtimer mode of broadcast, the BROADCAST_ENTER call
+> into the broadcast frameowork can fail for archs that do not have an external
+> clock device to handle wakeups and the CPU in question has to thus be made
+> the stand by CPU. This patch handles such cases by failing the call into
+> cpuidle so that the arch can take some default action. The arch will certainly
+> not enter a similar idle state because a failed cpuidle call will also implicitly
+> indicate that the broadcast framework has not registered this CPU to be woken up.
+> Hence we are safe if we fail the cpuidle call.
+> 
+> In the process move the functions that trace idle statistics just before and
+> after the entry and exit into idle states respectively. In other
+> scenarios where the call to cpuidle fails, we end up not tracing idle
+> entry and exit since a decision on an idle state could not be taken. Similarly
+> when the call to broadcast framework fails, we skip tracing idle statistics
+> because we are in no further position to take a decision on an alternative
+> idle state to enter into.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-This patch is a port of the x86 spin locks, mostly written in C,
-to the powerpc, introducing inline asm where needed. The pSeries
-directed yield for vCPUs is taken care of by an additional "holder"
-field in the lock.
+The cpuidle changes in this patch look reasonable to me, but I guess you'd
+like it to go in via tip along with the rest of the series, so
 
-Signed-off-by: Torsten Duwe <duwe@suse.de>
---
- arch/powerpc/include/asm/spinlock_types.h |   27 ++++-
- arch/powerpc/include/asm/spinlock.h       |  157 +++++++++++++++++++++++-------
- arch/powerpc/lib/locks.c                  |    6 -
- 3 files changed, 151 insertions(+), 39 deletions(-)
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-diff --git a/arch/powerpc/include/asm/spinlock_types.h b/arch/powerpc/include/asm/spinlock_types.h
-index 2351adc..64a98be 100644
---- a/arch/powerpc/include/asm/spinlock_types.h
-+++ b/arch/powerpc/include/asm/spinlock_types.h
-@@ -5,11 +5,30 @@
- # error "please don't include this file directly"
- #endif
- 
--typedef struct {
--	volatile unsigned int slock;
--} arch_spinlock_t;
-+typedef u16 __ticket_t;
-+typedef u32 __ticketpair_t;
-+
-+#define TICKET_LOCK_INC	((__ticket_t)1)
-+
-+#define TICKET_SHIFT	(sizeof(__ticket_t) * 8)
-+
-+typedef struct arch_spinlock {
-+	union {
-+		__ticketpair_t head_tail;
-+		struct __raw_tickets {
-+#ifdef __BIG_ENDIAN__		/* The "tail" part should be in the MSBs */
-+			__ticket_t tail, head;
-+#else
-+			__ticket_t head, tail;
-+#endif
-+		} tickets;
-+	};
-+#if defined(CONFIG_PPC64)
-+	u32 holder;
-+#endif
-+} arch_spinlock_t __aligned(8);
- 
--#define __ARCH_SPIN_LOCK_UNLOCKED	{ 0 }
-+#define __ARCH_SPIN_LOCK_UNLOCKED	{ { 0 }, 0 }
- 
- typedef struct {
- 	volatile signed int lock;
-diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-index 5f54a74..6e33691 100644
---- a/arch/powerpc/include/asm/spinlock.h
-+++ b/arch/powerpc/include/asm/spinlock.h
-@@ -9,8 +9,7 @@
-  * Copyright (C) 2001 Anton Blanchard <anton@au.ibm.com>, IBM
-  * Copyright (C) 2002 Dave Engebretsen <engebret@us.ibm.com>, IBM
-  *	Rework to support virtual processors
-- *
-- * Type of int is used as a full 64b word is not necessary.
-+ * Copyright (C) 2014 Torsten Duwe <duwe@suse.de>, ticket lock port
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-@@ -28,7 +27,20 @@
- #include <asm/synch.h>
- #include <asm/ppc-opcode.h>
- 
--#define arch_spin_is_locked(x)		((x)->slock != 0)
-+static inline int arch_spin_is_locked(arch_spinlock_t *lock)
-+{
-+	struct __raw_tickets tmp = ACCESS_ONCE(lock->tickets);
-+
-+	return tmp.tail != tmp.head;
-+}
-+
-+static inline int arch_spin_is_contended(arch_spinlock_t *lock)
-+{
-+	struct __raw_tickets tmp = ACCESS_ONCE(lock->tickets);
-+
-+	return (__ticket_t)(tmp.tail - tmp.head) > TICKET_LOCK_INC;
-+}
-+#define arch_spin_is_contended	arch_spin_is_contended
- 
- #ifdef CONFIG_PPC64
- /* use 0x800000yy when locked, where yy == CPU number */
-@@ -37,8 +49,12 @@
- #else
- #define LOCK_TOKEN	(*(u32 *)(&get_paca()->paca_index))
- #endif
-+#define SIZE_LETTER	"d"
-+#define L64		"1"
- #else
- #define LOCK_TOKEN	1
-+#define SIZE_LETTER	"w"
-+#define L64		"0"
- #endif
- 
- #if defined(CONFIG_PPC64) && defined(CONFIG_SMP)
-@@ -55,33 +71,59 @@
- #endif
- 
- /*
-- * This returns the old value in the lock, so we succeeded
-- * in getting the lock if the return value is 0.
-+ * Our own cmpxchg, operating on spinlock_t's.  Returns 0 iff value
-+ * read at lock was equal to "old" AND the cmpxchg succeeded
-+ * uninterruptedly.
-  */
--static inline unsigned long __arch_spin_trylock(arch_spinlock_t *lock)
-+static __always_inline int __arch_spin_cmpxchg_eq(arch_spinlock_t *lock,
-+					       arch_spinlock_t old,
-+					       arch_spinlock_t new)
- {
--	unsigned long tmp, token;
-+	register int retval = 1;
-+	register arch_spinlock_t tmp;
-+
-+	__asm__ __volatile__ (
-+"	li %0,1\n"		/* default to "fail" */
-+	PPC_RELEASE_BARRIER
-+"1:	l" SIZE_LETTER "arx   %2,0,%5         # __arch_spin_cmpxchg_eq\n"
-+"	cmp 0,"L64",%3,%2\n"
-+"	bne-    2f\n"
-+	PPC405_ERR77(0, "%5")
-+"	st" SIZE_LETTER "cx.  %4,0,%5\n"
-+"	bne-    1b\n"
-+"	isync\n"
-+"	li %0,0\n"
-+"2:"
-+	: "=&r" (retval), "+m" (*lock)
-+	: "r" (tmp), "r" (old), "r" (new), "r" (lock)
-+	: "cc", "memory");
-+
-+	return retval;
-+}
-+#undef SIZE_LETTER
-+#undef L64
- 
--	token = LOCK_TOKEN;
--	__asm__ __volatile__(
--"1:	" PPC_LWARX(%0,0,%2,1) "\n\
--	cmpwi		0,%0,0\n\
--	bne-		2f\n\
--	stwcx.		%1,0,%2\n\
--	bne-		1b\n"
--	PPC_ACQUIRE_BARRIER
--"2:"
--	: "=&r" (tmp)
--	: "r" (token), "r" (&lock->slock)
--	: "cr0", "memory");
-+static __always_inline int __arch_spin_trylock(arch_spinlock_t *lock)
-+{
-+	arch_spinlock_t old, new;
- 
--	return tmp;
-+	old.tickets = ACCESS_ONCE(lock->tickets);
-+	if (old.tickets.head != old.tickets.tail)
-+		return 0;
-+
-+	new.head_tail = old.head_tail + (TICKET_LOCK_INC << TICKET_SHIFT);
-+#if defined(CONFIG_PPC64)
-+	old.holder = lock->holder;
-+	new.holder = LOCK_TOKEN;
-+#endif
-+
-+	return !__arch_spin_cmpxchg_eq(lock, old, new);
- }
- 
- static inline int arch_spin_trylock(arch_spinlock_t *lock)
- {
- 	CLEAR_IO_SYNC;
--	return __arch_spin_trylock(lock) == 0;
-+	return  __arch_spin_trylock(lock);
- }
- 
- /*
-@@ -93,9 +135,8 @@ static inline int arch_spin_trylock(arch_spinlock_t *lock)
-  * rest of our timeslice to the lock holder.
-  *
-  * So that we can tell which virtual processor is holding a lock,
-- * we put 0x80000000 | smp_processor_id() in the lock when it is
-- * held.  Conveniently, we have a word in the paca that holds this
-- * value.
-+ * we put 0x80000000 | smp_processor_id() into lock->holder.
-+ * Conveniently, we have a word in the paca that holds this value.
-  */
- 
- #if defined(CONFIG_PPC_SPLPAR)
-@@ -109,19 +150,59 @@ extern void __rw_yield(arch_rwlock_t *lock);
- #define SHARED_PROCESSOR	0
- #endif
- 
--static inline void arch_spin_lock(arch_spinlock_t *lock)
-+/*
-+ * Ticket locks are conceptually two parts, one indicating the current head of
-+ * the queue, and the other indicating the current tail. The lock is acquired
-+ * by atomically noting the tail and incrementing it by one (thus adding
-+ * ourself to the queue and noting our position), then waiting until the head
-+ * becomes equal to the the initial value of the tail.
-+ *
-+ * We use an asm covering *both* parts of the lock, to increment the tail and
-+ * also load the position of the head, which takes care of memory ordering
-+ * issues and should be optimal for the uncontended case. Note the tail must be
-+ * in the high part, because a wide add increment of the low part would carry
-+ * up and contaminate the high part.
-+ */
-+static __always_inline void arch_spin_lock(arch_spinlock_t *lock)
- {
-+	register struct __raw_tickets old, tmp,
-+		inc = { .tail = TICKET_LOCK_INC };
-+
- 	CLEAR_IO_SYNC;
--	while (1) {
--		if (likely(__arch_spin_trylock(lock) == 0))
--			break;
-+	__asm__ __volatile__(
-+"1:	lwarx   %0,0,%4         # arch_spin_lock\n"
-+"	add     %1,%3,%0\n"
-+	PPC405_ERR77(0, "%4")
-+"	stwcx.  %1,0,%4\n"
-+"	bne-    1b"
-+	: "=&r" (old), "=&r" (tmp), "+m" (lock->tickets)
-+	: "r" (inc), "r" (&lock->tickets)
-+	: "cc");
-+
-+	if (likely(old.head == old.tail)) {
-+#if defined(CONFIG_PPC64)
-+		lock->holder = LOCK_TOKEN;
-+#endif
-+		goto out;
-+	}
-+
-+	for (;;) {
-+		unsigned count = 100;
-+
- 		do {
-+			if (ACCESS_ONCE(lock->tickets.head) == old.tail) {
-+#if defined(CONFIG_PPC64)
-+				lock->holder = LOCK_TOKEN;
-+#endif
-+				goto out;
-+			}
- 			HMT_low();
- 			if (SHARED_PROCESSOR)
- 				__spin_yield(lock);
--		} while (unlikely(lock->slock != 0));
-+		} while (--count);
- 		HMT_medium();
- 	}
-+out:	barrier();	/* make sure nothing creeps before the lock is taken */
- }
- 
- static inline
-@@ -131,7 +211,7 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
- 
- 	CLEAR_IO_SYNC;
- 	while (1) {
--		if (likely(__arch_spin_trylock(lock) == 0))
-+		if (likely(__arch_spin_trylock(lock)))
- 			break;
- 		local_save_flags(flags_dis);
- 		local_irq_restore(flags);
-@@ -139,7 +219,7 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
- 			HMT_low();
- 			if (SHARED_PROCESSOR)
- 				__spin_yield(lock);
--		} while (unlikely(lock->slock != 0));
-+		} while (arch_spin_is_locked(lock));
- 		HMT_medium();
- 		local_irq_restore(flags_dis);
- 	}
-@@ -147,10 +227,22 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
- 
- static inline void arch_spin_unlock(arch_spinlock_t *lock)
- {
-+	arch_spinlock_t old, new;
-+
-+#if defined(CONFIG_PPC64)
-+	new.holder = 0;
-+#endif
-+	do {
-+		old.tickets = ACCESS_ONCE(lock->tickets);
-+#if defined(CONFIG_PPC64)
-+		old.holder = lock->holder;
-+#endif
-+		new.tickets.head = old.tickets.head + TICKET_LOCK_INC;
-+		new.tickets.tail = old.tickets.tail;
-+	} while (unlikely(__arch_spin_cmpxchg_eq(lock, old, new)));
- 	SYNC_IO;
- 	__asm__ __volatile__("# arch_spin_unlock\n\t"
- 				PPC_RELEASE_BARRIER: : :"memory");
--	lock->slock = 0;
- }
- 
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index 0c9c8d7..4a57e32 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -27,7 +27,7 @@ void __spin_yield(arch_spinlock_t *lock)
- {
- 	unsigned int lock_value, holder_cpu, yield_count;
- 
--	lock_value = lock->slock;
-+	lock_value = lock->holder;
- 	if (lock_value == 0)
- 		return;
- 	holder_cpu = lock_value & 0xffff;
-@@ -36,7 +36,7 @@ void __spin_yield(arch_spinlock_t *lock)
- 	if ((yield_count & 1) == 0)
- 		return;		/* virtual cpu is currently running */
- 	rmb();
--	if (lock->slock != lock_value)
-+	if (lock->holder != lock_value)
- 		return;		/* something has changed */
- 	plpar_hcall_norets(H_CONFER,
- 		get_hard_smp_processor_id(holder_cpu), yield_count);
-@@ -70,7 +70,7 @@ void __rw_yield(arch_rwlock_t *rw)
- 
- void arch_spin_unlock_wait(arch_spinlock_t *lock)
- {
--	while (lock->slock) {
-+	while (arch_spin_is_locked(lock)) {
- 		HMT_low();
- 		if (SHARED_PROCESSOR)
- 			__spin_yield(lock);
+> ---
+> 
+>  drivers/cpuidle/cpuidle.c |   38 +++++++++++++++++++++++---------------
+>  1 file changed, 23 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a55e68f..8f42033 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -117,15 +117,19 @@ int cpuidle_idle_call(void)
+>  {
+>  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>  	struct cpuidle_driver *drv;
+> -	int next_state, entered_state;
+> -	bool broadcast;
+> +	int next_state, entered_state, ret = 0;
+> +	bool broadcast = false;
+>  
+> -	if (off || !initialized)
+> -		return -ENODEV;
+> +	if (off || !initialized) {
+> +		ret = -ENODEV;
+> +		goto out;
+> +	}
+>  
+>  	/* check if the device is ready */
+> -	if (!dev || !dev->enabled)
+> -		return -EBUSY;
+> +	if (!dev || !dev->enabled) {
+> +		ret = -EBUSY;
+> +		goto out;
+> +	}
+>  
+>  	drv = cpuidle_get_cpu_driver(dev);
+>  
+> @@ -137,15 +141,18 @@ int cpuidle_idle_call(void)
+>  		if (cpuidle_curr_governor->reflect)
+>  			cpuidle_curr_governor->reflect(dev, next_state);
+>  		local_irq_enable();
+> -		return 0;
+> +		goto out;
+>  	}
+>  
+> -	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+> -
+>  	broadcast = !!(drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP);
+>  
+> -	if (broadcast)
+> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+> +	if (broadcast) {
+> +		ret = clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+> +		if (ret)
+> +			goto out;
+> +	}
+> +
+> +	trace_cpu_idle_rcuidle(next_state, dev->cpu);
+>  
+>  	if (cpuidle_state_is_coupled(dev, drv, next_state))
+>  		entered_state = cpuidle_enter_state_coupled(dev, drv,
+> @@ -153,16 +160,17 @@ int cpuidle_idle_call(void)
+>  	else
+>  		entered_state = cpuidle_enter_state(dev, drv, next_state);
+>  
+> -	if (broadcast)
+> -		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+> -
+>  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>  
+>  	/* give the governor an opportunity to reflect on the outcome */
+>  	if (cpuidle_curr_governor->reflect)
+>  		cpuidle_curr_governor->reflect(dev, entered_state);
+>  
+> -	return 0;
+> +out:	if (broadcast)
+> +		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+> +
+> +
+> +	return ret;
+>  }
+>  
+>  /**
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
