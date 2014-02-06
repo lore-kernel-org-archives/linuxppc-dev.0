@@ -1,41 +1,31 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 485D92C0349
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 16:54:24 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 5 Feb 2014 22:54:21 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id F1D7F1FF001A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2014 22:54:19 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s163pgv75243276
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Feb 2014 04:51:47 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s165rwtE001326
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Feb 2014 22:53:59 -0700
-Subject: [PATCH V3 2/3] tick/cpuidle: Initialize hrtimer mode of broadcast
-To: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, peterz@infradead.org,
- fweisbec@gmail.com, daniel.lezcano@linaro.org,
- linux-kernel@vger.kernel.org, paulus@samba.org,
- benh@kernel.crashing.org, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Thu, 06 Feb 2014 11:20:12 +0530
-Message-ID: <20140206055012.4595.55692.stgit@preeti>
-In-Reply-To: <20140206054158.4595.17827.stgit@preeti>
-References: <20140206054158.4595.17827.stgit@preeti>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from lgemrelse6q.lge.com (LGEMRELSE6Q.lge.com [156.147.1.121])
+ by ozlabs.org (Postfix) with ESMTP id 5721E2C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 19:04:09 +1100 (EST)
+Date: Thu, 6 Feb 2014 17:04:18 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] slub: Don't throw away partial remote slabs if there is
+ no local memory
+Message-ID: <20140206080418.GA19913@lge.com>
+References: <alpine.DEB.2.10.1401201612340.28048@nuc>
+ <52e1d960.2715420a.3569.1013SMTPIN_ADDED_BROKEN@mx.google.com>
+ <52e1da8f.86f7440a.120f.25f3SMTPIN_ADDED_BROKEN@mx.google.com>
+ <alpine.DEB.2.10.1401240946530.12886@nuc>
+ <alpine.DEB.2.02.1401241301120.10968@chino.kir.corp.google.com>
+ <20140124232902.GB30361@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241543100.18620@chino.kir.corp.google.com>
+ <20140125001643.GA25344@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1401241618500.20466@chino.kir.corp.google.com>
+ <20140206020757.GC5433@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: deepthi@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- srivatsa.bhat@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140206020757.GC5433@linux.vnet.ibm.com>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,286 +35,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Wed, Feb 05, 2014 at 06:07:57PM -0800, Nishanth Aravamudan wrote:
+> On 24.01.2014 [16:25:58 -0800], David Rientjes wrote:
+> > On Fri, 24 Jan 2014, Nishanth Aravamudan wrote:
+> > 
+> > > Thank you for clarifying and providing  a test patch. I ran with this on
+> > > the system showing the original problem, configured to have 15GB of
+> > > memory.
+> > > 
+> > > With your patch after boot:
+> > > 
+> > > MemTotal:       15604736 kB
+> > > MemFree:         8768192 kB
+> > > Slab:            3882560 kB
+> > > SReclaimable:     105408 kB
+> > > SUnreclaim:      3777152 kB
+> > > 
+> > > With Anton's patch after boot:
+> > > 
+> > > MemTotal:       15604736 kB
+> > > MemFree:        11195008 kB
+> > > Slab:            1427968 kB
+> > > SReclaimable:     109184 kB
+> > > SUnreclaim:      1318784 kB
+> > > 
+> > > 
+> > > I know that's fairly unscientific, but the numbers are reproducible. 
+> > > 
+> > 
+> > I don't think the goal of the discussion is to reduce the amount of slab 
+> > allocated, but rather get the most local slab memory possible by use of 
+> > kmalloc_node().  When a memoryless node is being passed to kmalloc_node(), 
+> > which is probably cpu_to_node() for a cpu bound to a node without memory, 
+> > my patch is allocating it on the most local node; Anton's patch is 
+> > allocating it on whatever happened to be the cpu slab.
+> > 
+> > > > diff --git a/mm/slub.c b/mm/slub.c
+> > > > --- a/mm/slub.c
+> > > > +++ b/mm/slub.c
+> > > > @@ -2278,10 +2278,14 @@ redo:
+> > > > 
+> > > >  	if (unlikely(!node_match(page, node))) {
+> > > >  		stat(s, ALLOC_NODE_MISMATCH);
+> > > > -		deactivate_slab(s, page, c->freelist);
+> > > > -		c->page = NULL;
+> > > > -		c->freelist = NULL;
+> > > > -		goto new_slab;
+> > > > +		if (unlikely(!node_present_pages(node)))
+> > > > +			node = numa_mem_id();
+> > > > +		if (!node_match(page, node)) {
+> > > > +			deactivate_slab(s, page, c->freelist);
+> > > > +			c->page = NULL;
+> > > > +			c->freelist = NULL;
+> > > > +			goto new_slab;
+> > > > +		}
+> > > 
+> > > Semantically, and please correct me if I'm wrong, this patch is saying
+> > > if we have a memoryless node, we expect the page's locality to be that
+> > > of numa_mem_id(), and we still deactivate the slab if that isn't true.
+> > > Just wanting to make sure I understand the intent.
+> > > 
+> > 
+> > Yeah, the default policy should be to fallback to local memory if the node 
+> > passed is memoryless.
+> > 
+> > > What I find odd is that there are only 2 nodes on this system, node 0
+> > > (empty) and node 1. So won't numa_mem_id() always be 1? And every page
+> > > should be coming from node 1 (thus node_match() should always be true?)
+> > > 
+> > 
+> > The nice thing about slub is its debugging ability, what is 
+> > /sys/kernel/slab/cache/objects showing in comparison between the two 
+> > patches?
+> 
+> Ok, I finally got around to writing a script that compares the objects
+> output from both kernels.
+> 
+> log1 is with CONFIG_HAVE_MEMORYLESS_NODES on, my kthread locality patch
+> and Joonsoo's patch.
+> 
+> log2 is with CONFIG_HAVE_MEMORYLESS_NODES on, my kthread locality patch
+> and Anton's patch.
+> 
+> slab                           objects    objects   percent
+>                                log1       log2      change
+> -----------------------------------------------------------
+> :t-0000104                     71190      85680      20.353982 %
+> UDP                            4352       3392       22.058824 %
+> inode_cache                    54302      41923      22.796582 %
+> fscache_cookie_jar             3276       2457       25.000000 %
+> :t-0000896                     438        292        33.333333 %
+> :t-0000080                     310401     195323     37.073978 %
+> ext4_inode_cache               335        201        40.000000 %
+> :t-0000192                     89408      128898     44.168307 %
+> :t-0000184                     151300     81880      45.882353 %
+> :t-0000512                     49698      73648      48.191074 %
+> :at-0000192                    242867     120948     50.199904 %
+> xfs_inode                      34350      15221      55.688501 %
+> :t-0016384                     11005      17257      56.810541 %
+> proc_inode_cache               103868     34717      66.575846 %
+> tw_sock_TCP                    768        256        66.666667 %
+> :t-0004096                     15240      25672      68.451444 %
+> nfs_inode_cache                1008       315        68.750000 %
+> :t-0001024                     14528      24720      70.154185 %
+> :t-0032768                     655        1312       100.305344%
+> :t-0002048                     14242      30720      115.700042%
+> :t-0000640                     1020       2550       150.000000%
+> :t-0008192                     10005      27905      178.910545%
+> 
+> FWIW, the configuration of this LPAR has slightly changed. It is now configured
+> for maximally 400 CPUs, of which 200 are present. The result is that even with
+> Joonsoo's patch (log1 above), we OOM pretty easily and Anton's slab usage
+> script reports:
+> 
+> slab                                   mem     objs    slabs
+>                                       used   active   active
+> ------------------------------------------------------------
+> kmalloc-512                        1182 MB    2.03%  100.00%
+> kmalloc-192                        1182 MB    1.38%  100.00%
+> kmalloc-16384                       966 MB   17.66%  100.00%
+> kmalloc-4096                        353 MB   15.92%  100.00%
+> kmalloc-8192                        259 MB   27.28%  100.00%
+> kmalloc-32768                       207 MB    9.86%  100.00%
+> 
+> In comparison (log2 above):
+> 
+> slab                                   mem     objs    slabs
+>                                       used   active   active
+> ------------------------------------------------------------
+> kmalloc-16384                       273 MB   98.76%  100.00%
+> kmalloc-8192                        225 MB   98.67%  100.00%
+> pgtable-2^11                        114 MB  100.00%  100.00%
+> pgtable-2^12                        109 MB  100.00%  100.00%
+> kmalloc-4096                        104 MB   98.59%  100.00%
+> 
+> I appreciate all the help so far, if anyone has any ideas how best to
+> proceed further, or what they'd like debugged more, I'm happy to get
+> this fixed. We're hitting this on a couple of different systems and I'd
+> like to find a good resolution to the problem.
 
-On some architectures, in certain CPU deep idle states the local timers stop.
-An external clock device is used to wakeup these CPUs. The kernel support for the
-wakeup of these CPUs is provided by the tick broadcast framework by using the
-external clock device as the wakeup source.
+Hello,
 
-However not all implementations of architectures provide such an external
-clock device. This patch includes support in the broadcast framework to handle
-the wakeup of the CPUs in deep idle states on such systems by queuing a hrtimer
-on one of the CPUs, which is meant to handle the wakeup of CPUs in deep idle states.
+I have no memoryless system, so, to debug it, I need your help. :)
+First, please let me know node information on your system.
 
-This patchset introduces a pseudo clock device which can be registered by the
-archs as tick_broadcast_device in the absence of a real external clock
-device. Once registered, the broadcast framework will work as is for these
-architectures as long as the archs take care of the BROADCAST_ENTER
-notification failing for one of the CPUs. This CPU is made the stand by CPU to
-handle wakeup of the CPUs in deep idle and it *must not enter deep idle states*.
+I'm preparing 3 another patches which are nearly same with previous patch,
+but slightly different approach. Could you test them on your system?
+I will send them soon.
 
-The CPU with the earliest wakeup is chosen to be this CPU. Hence this way the
-stand by CPU dynamically moves around and so does the hrtimer which is queued
-to trigger at the next earliest wakeup time. This is consistent with the case where
-an external clock device is present. The smp affinity of this clock device is
-set to the CPU with the earliest wakeup. This patchset handles the hotplug of
-the stand by CPU as well by moving the hrtimer on to the CPU handling the CPU_DEAD
-notification.
+And I think that same problem exists if CONFIG_SLAB is enabled. Could you
+confirm that?
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-[Added Changelog and code to handle reprogramming of hrtimer]
----
+And, could you confirm that your system's numa_mem_id() is properly set?
+And, could you confirm that node_present_pages() test works properly?
+And, with my patches, could you give me more information on slub stat?
+For this, you need to enable CONFIG_SLUB_STATS. Then please send me all the
+slub stat on /proc/sys/kernel/debug/slab.
 
- include/linux/clockchips.h           |    9 +++
- kernel/time/Makefile                 |    2 -
- kernel/time/tick-broadcast-hrtimer.c |  105 ++++++++++++++++++++++++++++++++++
- kernel/time/tick-broadcast.c         |   45 ++++++++++++++-
- 4 files changed, 159 insertions(+), 2 deletions(-)
- create mode 100644 kernel/time/tick-broadcast-hrtimer.c
+Sorry for too many request.
+If it bothers you too much, please ignore it :)
 
-diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
-index e0c5a6c..dbe9e14 100644
---- a/include/linux/clockchips.h
-+++ b/include/linux/clockchips.h
-@@ -62,6 +62,11 @@ enum clock_event_mode {
- #define CLOCK_EVT_FEAT_DYNIRQ		0x000020
- #define CLOCK_EVT_FEAT_PERCPU		0x000040
- 
-+/*
-+ * Clockevent device is based on a hrtimer for broadcast
-+ */
-+#define CLOCK_EVT_FEAT_HRTIMER		0x000080
-+
- /**
-  * struct clock_event_device - clock event device descriptor
-  * @event_handler:	Assigned by the framework to be called by the low
-@@ -83,6 +88,7 @@ enum clock_event_mode {
-  * @name:		ptr to clock event name
-  * @rating:		variable to rate clock event devices
-  * @irq:		IRQ number (only for non CPU local devices)
-+ * @bound_on:		Bound on CPU
-  * @cpumask:		cpumask to indicate for which CPUs this device works
-  * @list:		list head for the management code
-  * @owner:		module reference
-@@ -113,6 +119,7 @@ struct clock_event_device {
- 	const char		*name;
- 	int			rating;
- 	int			irq;
-+	int			bound_on;
- 	const struct cpumask	*cpumask;
- 	struct list_head	list;
- 	struct module		*owner;
-@@ -180,9 +187,11 @@ extern int tick_receive_broadcast(void);
- #endif
- 
- #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
-+extern void tick_setup_hrtimer_broadcast(void);
- extern int tick_check_broadcast_expired(void);
- #else
- static inline int tick_check_broadcast_expired(void) { return 0; }
-+static void tick_setup_hrtimer_broadcast(void) {};
- #endif
- 
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
-diff --git a/kernel/time/Makefile b/kernel/time/Makefile
-index 9250130..06151ef 100644
---- a/kernel/time/Makefile
-+++ b/kernel/time/Makefile
-@@ -3,7 +3,7 @@ obj-y += timeconv.o posix-clock.o alarmtimer.o
- 
- obj-$(CONFIG_GENERIC_CLOCKEVENTS_BUILD)		+= clockevents.o
- obj-$(CONFIG_GENERIC_CLOCKEVENTS)		+= tick-common.o
--obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= tick-broadcast.o
-+obj-$(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST)	+= tick-broadcast.o tick-broadcast-hrtimer.o
- obj-$(CONFIG_GENERIC_SCHED_CLOCK)		+= sched_clock.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-oneshot.o
- obj-$(CONFIG_TICK_ONESHOT)			+= tick-sched.o
-diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
-new file mode 100644
-index 0000000..af1e119
---- /dev/null
-+++ b/kernel/time/tick-broadcast-hrtimer.c
-@@ -0,0 +1,105 @@
-+/*
-+ * linux/kernel/time/tick-broadcast-hrtimer.c
-+ * This file emulates a local clock event device
-+ * via a pseudo clock device.
-+ */
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/hrtimer.h>
-+#include <linux/interrupt.h>
-+#include <linux/percpu.h>
-+#include <linux/profile.h>
-+#include <linux/clockchips.h>
-+#include <linux/sched.h>
-+#include <linux/smp.h>
-+#include <linux/module.h>
-+
-+#include "tick-internal.h"
-+
-+static struct hrtimer bctimer;
-+
-+static void bc_set_mode(enum clock_event_mode mode,
-+			struct clock_event_device *bc)
-+{
-+	switch (mode) {
-+	case CLOCK_EVT_MODE_SHUTDOWN:
-+		/*
-+		 * Note, we cannot cancel the timer here as we might
-+		 * run into the following live lock scenario:
-+		 *
-+		 * cpu 0		cpu1
-+		 * lock(broadcast_lock);
-+		 *			hrtimer_interrupt()
-+		 *			bc_handler()
-+		 *			   tick_handle_oneshot_broadcast();
-+		 *			    lock(broadcast_lock);
-+		 * hrtimer_cancel()
-+		 *  wait_for_callback()
-+		 */
-+		hrtimer_try_to_cancel(&bctimer);
-+		break;
-+	default:
-+		break;
-+	}
-+}
-+
-+/*
-+ * This is called from the guts of the broadcast code when the cpu
-+ * which is about to enter idle has the earliest broadcast timer event.
-+ */
-+static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
-+{
-+	/*
-+	 * We try to cancel the timer first. If the callback is on
-+	 * flight on some other cpu then we let it handle it. If we
-+	 * were able to cancel the timer nothing can rearm it as we
-+	 * own broadcast_lock.
-+	 *
-+	 * However we can also be called from the event handler of
-+	 * ce_broadcast_hrtimer itself when it expires. We cannot therefore
-+	 * restart the timer since it is on flight on the same CPU. But
-+	 * due to the same reason we can reset it.
-+	 */
-+	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
-+		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+		/* Bind the "device" to the cpu */
-+		bc->bound_on = smp_processor_id();
-+	} else if (bc->bound_on == smp_processor_id()) {
-+		hrtimer_set_expires(&bctimer, expires);
-+	}
-+	return 0;
-+}
-+
-+static struct clock_event_device ce_broadcast_hrtimer = {
-+	.set_mode		= bc_set_mode,
-+	.set_next_ktime		= bc_set_next,
-+	.features		= CLOCK_EVT_FEAT_ONESHOT |
-+				  CLOCK_EVT_FEAT_KTIME |
-+				  CLOCK_EVT_FEAT_HRTIMER,
-+	.rating			= 0,
-+	.bound_on		= -1,
-+	.min_delta_ns		= 1,
-+	.max_delta_ns		= KTIME_MAX,
-+	.min_delta_ticks	= 1,
-+	.max_delta_ticks	= KTIME_MAX,
-+	.mult			= 1,
-+	.shift			= 0,
-+	.cpumask		= cpu_all_mask,
-+};
-+
-+static enum hrtimer_restart bc_handler(struct hrtimer *t)
-+{
-+	ce_broadcast_hrtimer.event_handler(&ce_broadcast_hrtimer);
-+
-+	if (ce_broadcast_hrtimer.next_event.tv64 == KTIME_MAX)
-+		return HRTIMER_NORESTART;
-+
-+	return HRTIMER_RESTART;
-+}
-+
-+void tick_setup_hrtimer_broadcast(void)
-+{
-+	hrtimer_init(&bctimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-+	bctimer.function = bc_handler;
-+	clockevents_register_device(&ce_broadcast_hrtimer);
-+}
-diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
-index ddf2ac2..1e46e62f 100644
---- a/kernel/time/tick-broadcast.c
-+++ b/kernel/time/tick-broadcast.c
-@@ -630,6 +630,42 @@ again:
- 	raw_spin_unlock(&tick_broadcast_lock);
- }
- 
-+static int broadcast_needs_cpu(struct clock_event_device *bc, int cpu)
-+{
-+	if (!(bc->features & CLOCK_EVT_FEAT_HRTIMER))
-+		return 0;
-+	if (bc->next_event.tv64 == KTIME_MAX)
-+		return 0;
-+	return bc->bound_on == cpu ? -EBUSY : 0;
-+}
-+
-+static void broadcast_shutdown_local(struct clock_event_device *bc,
-+				     struct clock_event_device *dev)
-+{
-+	/*
-+	 * For hrtimer based broadcasting we cannot shutdown the cpu
-+	 * local device if our own event is the first one to expire or
-+	 * if we own the broadcast timer.
-+	 */
-+	if (bc->features & CLOCK_EVT_FEAT_HRTIMER) {
-+		if (broadcast_needs_cpu(bc, smp_processor_id()))
-+			return;
-+		if (dev->next_event.tv64 < bc->next_event.tv64)
-+			return;
-+	}
-+	clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+}
-+
-+static void broadcast_move_bc(int deadcpu)
-+{
-+	struct clock_event_device *bc = tick_broadcast_device.evtdev;
-+
-+	if (!bc || !broadcast_needs_cpu(bc, deadcpu))
-+		return;
-+	/* This moves the broadcast assignment to this cpu */
-+	clockevents_program_event(bc, bc->next_event, 1);
-+}
-+
- /*
-  * Powerstate information: The system enters/leaves a state, where
-  * affected devices might stop
-@@ -667,7 +703,7 @@ int tick_broadcast_oneshot_control(unsigned long reason)
- 	if (reason == CLOCK_EVT_NOTIFY_BROADCAST_ENTER) {
- 		if (!cpumask_test_and_set_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			WARN_ON_ONCE(cpumask_test_cpu(cpu, tick_broadcast_pending_mask));
--			clockevents_set_mode(dev, CLOCK_EVT_MODE_SHUTDOWN);
-+			broadcast_shutdown_local(bc, dev);
- 			/*
- 			 * We only reprogram the broadcast timer if we
- 			 * did not mark ourself in the force mask and
-@@ -680,6 +716,11 @@ int tick_broadcast_oneshot_control(unsigned long reason)
- 			    dev->next_event.tv64 < bc->next_event.tv64)
- 				tick_broadcast_set_event(bc, cpu, dev->next_event, 1);
- 		}
-+		/*
-+		 * If the current CPU owns the hrtimer broadcast
-+		 * mechanism, it cannot go deep idle.
-+		 */
-+		ret = broadcast_needs_cpu(bc, cpu);
- 	} else {
- 		if (cpumask_test_and_clear_cpu(cpu, tick_broadcast_oneshot_mask)) {
- 			clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
-@@ -853,6 +894,8 @@ void tick_shutdown_broadcast_oneshot(unsigned int *cpup)
- 	cpumask_clear_cpu(cpu, tick_broadcast_pending_mask);
- 	cpumask_clear_cpu(cpu, tick_broadcast_force_mask);
- 
-+	broadcast_move_bc(cpu);
-+
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
- 
+Thanks.
