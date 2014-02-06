@@ -1,29 +1,20 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pb0-x22a.google.com (mail-pb0-x22a.google.com
- [IPv6:2607:f8b0:400e:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <paubert@iram.es>
+Received: from rudy.puc.rediris.es (rudy.puc.rediris.es
+ [IPv6:2001:720:418:ca01::132])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E50DF2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 19:52:53 +1100 (EST)
-Received: by mail-pb0-f42.google.com with SMTP id jt11so1490004pbb.29
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2014 00:52:50 -0800 (PST)
-Date: Thu, 6 Feb 2014 00:52:35 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-In-Reply-To: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
-Message-ID: <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ by ozlabs.org (Postfix) with ESMTPS id 82C092C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2014 20:09:11 +1100 (EST)
+Date: Thu, 6 Feb 2014 09:26:37 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Stephen N Chivers <schivers@csc.com.au>
+Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
+Message-ID: <20140206082635.GA7048@visitor2.iram.es>
+References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, penberg@kernel.org,
- linux-mm@kvack.org, paulus@samba.org, Anton Blanchard <anton@samba.org>,
- mpm@selenic.com, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
+Cc: Chris Proctor <cproctor@csc.com.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,68 +24,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 6 Feb 2014, Joonsoo Kim wrote:
-
-> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+On Thu, Feb 06, 2014 at 12:09:00PM +1000, Stephen N Chivers wrote:
+> I have a MPC8548e based board and an application that makes
+> extensive use of floating point including numerous calls to cos.
+> In the same program there is the use of an sqlite database.
 > 
+> The kernel is derived from 2.6.31 and is compiled with math emulation.
+> 
+> At some point after the reading of the SQLITE database, the
+> return result from cos goes from an in range value to an out
+> of range value.
+> 
+> This is as a result of the FP rounding mode mutating from "round to 
+> nearest"
+> to "round toward zero".
+> 
+> The cos in the glibc version being used is known to be sensitive to 
+> rounding
+> direction and Joseph Myers has previously fixed glibc.
+> 
+> The failure does not occur on a machine that has a hardware floating
+> point unit (a MPC7410 processor).
+> 
+> I have traced the mutation to the following series of instructions:
+> 
+>         mffs            f0
+>         mtfsb1          4*cr7+so
+>         mtfsb0          4*cr7+eq
+>         fadd            f13,f1,f2
+>         mtfsf           1, f0
+> 
+> The instructions are part of the stream emitted by gcc for the conversion
+> of a 128 bit floating point value into an integer in the sqlite database 
+> read.
+> 
+> Immediately before the execution of the mffs instruction the "rounding
+> mode" is "round to nearest".
+> 
+> On the MPC8548 board, the execution of the mtfsf instruction does not
+> restore the rounding mode to "round to nearest".
+> 
+> I believe that the mask computation in mtfsf.c is incorrect and is 
+> reversed.
+> 
+> In the latest version of the file (linux-3.14-rc1), the mask is computed 
+> by:
+> 
+>                  mask = 0;
+>                  if (FM & (1 << 0))
+>                         mask |= 0x90000000;
+>                  if (FM & (1 << 1))
+>                         mask |= 0x0f000000;
+>                  if (FM & (1 << 2))
+>                         mask |= 0x00f00000;
+>                  if (FM & (1 << 3))
+>                         mask |= 0x000f0000;
+>                  if (FM & (1 << 4))
+>                         mask |= 0x0000f000;
+>                  if (FM & (1 << 5))
+>                         mask |= 0x00000f00;
+>                  if (FM & (1 << 6))
+>                         mask |= 0x000000f0;
+>                  if (FM & (1 << 7))
+>                         mask |= 0x0000000f;
+> 
+> I think it should be:
+> 
+>                 mask = 0;
+>                 if (FM & (1 << 0))
+>                         mask |= 0x0000000f;
+>                 if (FM & (1 << 1))
+>                         mask |= 0x000000f0;
+>                 if (FM & (1 << 2))
+>                         mask |= 0x00000f00;
+>                 if (FM & (1 << 3))
+>                         mask |= 0x0000f000;
+>                 if (FM & (1 << 4))
+>                         mask |= 0x000f0000;
+>                 if (FM & (1 << 5))
+>                         mask |= 0x00f00000;
+>                 if (FM & (1 << 6))
+>                         mask |= 0x0f000000;
+>                 if (FM & (1 << 7))
+>                         mask |= 0x90000000;
+> 
+> With the above mask computation I get consistent results for both the 
+> MPC8548
+> and MPC7410 boards.
+> 
+> Am I missing something subtle?
 
-I may be misunderstanding this patch and there's no help because there's 
-no changelog.
+No I think you are correct. This said, this code may probably be optimized 
+to eliminate a lot of the conditional branches. I think that:
 
-> diff --git a/include/linux/topology.h b/include/linux/topology.h
-> index 12ae6ce..a6d5438 100644
-> --- a/include/linux/topology.h
-> +++ b/include/linux/topology.h
-> @@ -233,11 +233,20 @@ static inline int numa_node_id(void)
->   * Use the accessor functions set_numa_mem(), numa_mem_id() and cpu_to_mem().
->   */
->  DECLARE_PER_CPU(int, _numa_mem_);
-> +int _node_numa_mem_[MAX_NUMNODES];
->  
->  #ifndef set_numa_mem
->  static inline void set_numa_mem(int node)
->  {
->  	this_cpu_write(_numa_mem_, node);
-> +	_node_numa_mem_[numa_node_id()] = node;
-> +}
-> +#endif
-> +
-> +#ifndef get_numa_mem
-> +static inline int get_numa_mem(int node)
-> +{
-> +	return _node_numa_mem_[node];
->  }
->  #endif
->  
-> @@ -260,6 +269,7 @@ static inline int cpu_to_mem(int cpu)
->  static inline void set_cpu_numa_mem(int cpu, int node)
->  {
->  	per_cpu(_numa_mem_, cpu) = node;
-> +	_node_numa_mem_[numa_node_id()] = node;
+mask = (FM & 1);
+mask |= (FM << 3) & 0x10;
+mask |= (FM << 6) & 0x100;
+mask |= (FM << 9) & 0x1000;
+mask |= (FM << 12) & 0x10000;
+mask |= (FM << 15) & 0x100000;
+mask |= (FM << 18) & 0x1000000;
+mask |= (FM << 21) & 0x10000000;
+mask *= 15;
 
-The intention seems to be that _node_numa_mem_[X] for a node X will return 
-a node Y with memory that has the nearest distance?  In other words, 
-caching the value returned by local_memory_node(X)?
+should do the job, in less code space and without a single branch.
 
-That doesn't seem to be what it's doing since numa_node_id() is the node 
-of the cpu that current is running on so this ends up getting initialized 
-to whatever local_memory_node(cpu_to_node(cpu)) is for the last bit set in 
-cpu_possible_mask.
+Each one of the "mask |=" lines should be translated into an
+rlwinm instruction followed by an "or". Actually it should be possible
+to transform each of these lines into a single "rlwimi" instruction
+but I don't know how to coerce gcc to reach this level of optimization.
 
->  }
->  #endif
->  
-> @@ -273,6 +283,13 @@ static inline int numa_mem_id(void)
->  }
->  #endif
->  
-> +#ifndef get_numa_mem
-> +static inline int get_numa_mem(int node)
-> +{
-> +	return node;
-> +}
-> +#endif
-> +
->  #ifndef cpu_to_mem
->  static inline int cpu_to_mem(int cpu)
->  {
+Another way of optomizing this could be:
+
+mask = (FM & 0x0f) | ((FM << 12) & 0x000f0000);
+mask = (mask & 0x00030003) | ((mask << 6) & 0x03030303);
+mask = (mask & 0x01010101) | ((mask << 3) & 0x10101010);
+mask *= 15;
+
+It's not easy to see which of the solutions is faster, the second one
+needs to create quite a few constants, but its dependency length is 
+lower. It is very likely that the first solution is faster in cache-cold
+case and the second in cache-hot. 
+
+Regardless, the original code is rather naïve, larger and slower in all cases,
+with timing variation depending on branch mispredictions.
+
+	Regards,
+	Gabriel
