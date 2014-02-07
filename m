@@ -1,26 +1,47 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5D92B2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 20:02:54 +1100 (EST)
-Date: Fri, 7 Feb 2014 10:02:48 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-Message-ID: <20140207090248.GB26811@lst.de>
-References: <20140206103736.GA18054@lst.de>
- <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
- <1391717992.6733.232.camel@snotra.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id 15B2D2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 20:45:45 +1100 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Fri, 7 Feb 2014 19:45:42 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2A03F2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 20:45:37 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s179jNOL2031994
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 20:45:24 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s179jZAh016482
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 20:45:36 +1100
+Message-ID: <52F4AB54.801@linux.vnet.ibm.com>
+Date: Fri, 07 Feb 2014 15:15:56 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1391717992.6733.232.camel@snotra.buserror.net>
-Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+ <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
+ <52F3BCFE.3010703@linux.vnet.ibm.com>
+ <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
+ <52F484D9.6020604@linux.vnet.ibm.com>
+In-Reply-To: <52F484D9.6020604@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
+ Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +51,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 06, 2014 at 02:19:52PM -0600, Scott Wood wrote:
-> On Thu, 2014-02-06 at 18:37 +0100, Torsten Duwe wrote:
-> > On Thu, Feb 06, 2014 at 05:38:37PM +0100, Peter Zijlstra wrote:
+Hi Preeti,
+
+Thanks for the patch.
+
+On 02/07/2014 12:31 PM, Preeti U Murthy wrote:
+> Hi Nicolas,
 > 
-> > > Can you pair lwarx with sthcx ? I couldn't immediately find the answer
-> > > in the PowerISA doc. If so I think you can do better by being able to
-> > > atomically load both tickets but only storing the head without affecting
-> > > the tail.
+> Find below the patch that will need to be squashed with this one.
+> This patch is based on the mainline.Adding Deepthi, the author of
+> the patch which introduced the powernv cpuidle driver. Deepthi,
+> do you think the below patch looks right? We do not need to do an
+> explicit local_irq_enable() since we are in the call path of
+> cpuidle driver and that explicitly enables irqs on exit from
+> idle states.
 
-Can I simply write the half word, without a reservation, or will the HW caches
-mess up the other half? Will it ruin the cache coherency on some (sub)architectures?
+Yes, We enable irqs explicitly while entering snooze loop and we always
+have interrupts enabled in the snooze state.
+For NAP state, we exit out of this state with interrupts enabled so we
+do not need an explicit enable of irqs.
 
-> Plus, sthcx doesn't exist on all PPC chips.
+> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
+>> On Thu, 6 Feb 2014, Preeti U Murthy wrote:
+>>
+>>> Hi Daniel,
+>>>
+>>> On 02/06/2014 09:55 PM, Daniel Lezcano wrote:
+>>>> Hi Nico,
+>>>>
+>>>>
+>>>> On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+>>>>
+>>>>> The core idle loop now takes care of it.
+>>>>>
+>>>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+>>>>> ---
+>>>>>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
+>>>>>  1 file changed, 1 insertion(+), 12 deletions(-)
+>>>>>
+>>>>> diff --git a/arch/powerpc/platforms/powernv/setup.c
+>>>>> b/arch/powerpc/platforms/powernv/setup.c
+>>>>> index 21166f65c9..a932feb290 100644
+>>>>> --- a/arch/powerpc/platforms/powernv/setup.c
+>>>>> +++ b/arch/powerpc/platforms/powernv/setup.c
+>>>>> @@ -26,7 +26,6 @@
+>>>>>  #include <linux/of_fdt.h>
+>>>>>  #include <linux/interrupt.h>
+>>>>>  #include <linux/bug.h>
+>>>>> -#include <linux/cpuidle.h>
+>>>>>
+>>>>>  #include <asm/machdep.h>
+>>>>>  #include <asm/firmware.h>
+>>>>> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
+>>>>>         return 1;
+>>>>>  }
+>>>>>
+>>>>> -void powernv_idle(void)
+>>>>> -{
+>>>>> -       /* Hook to cpuidle framework if available, else
+>>>>> -        * call on default platform idle code
+>>>>> -        */
+>>>>> -       if (cpuidle_idle_call()) {
+>>>>> -               power7_idle();
+>>>>> -       }
+>>>>>
+> 
+>  drivers/cpuidle/cpuidle-powernv.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 78fd174..130f081 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -31,11 +31,13 @@ static int snooze_loop(struct cpuidle_device *dev,
+>  	set_thread_flag(TIF_POLLING_NRFLAG);
+> 
+>  	while (!need_resched()) {
+> +		ppc64_runlatch_off();
+                ^^^^^^^^^^^^^^^
+We could move this before the while() loop.
+It would ideal to turn off latch when we enter snooze and
+turn it on when we are about to exit, rather than doing
+it over and over in the while loop.
 
-Which ones are lacking it? Do all have at least a simple 16-bit store?
+>  		HMT_low();
+>  		HMT_very_low();
+>  	}
+> 
+>  	HMT_medium();
+> +	ppc64_runlatch_on();
+>  	clear_thread_flag(TIF_POLLING_NRFLAG);
+>  	smp_mb();
+>  	return index;
+> @@ -45,7 +47,9 @@ static int nap_loop(struct cpuidle_device *dev,
+>  			struct cpuidle_driver *drv,
+>  			int index)
+>  {
+> +	ppc64_runlatch_off();
+>  	power7_idle();
+> +	ppc64_runlatch_on();
+>  	return index;
+>  }
+> 
+> Thanks
+> 
+> Regards
+> Preeti U Murthy
+> 
 
-	Torsten
+Regards,
+Deepthi
