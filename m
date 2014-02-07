@@ -1,29 +1,32 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nicolas.pitre@linaro.org>
+Received: from mail-qc0-f180.google.com (mail-qc0-f180.google.com
+ [209.85.216.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47EB72C0078
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 21:45:39 +1100 (EST)
-Date: Fri, 7 Feb 2014 11:45:30 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-Message-ID: <20140207104530.GG5126@laptop.programming.kicks-ass.net>
-References: <20140206103736.GA18054@lst.de>
- <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
- <1391717992.6733.232.camel@snotra.buserror.net>
- <20140207090248.GB26811@lst.de>
- <20140207103139.GP5002@laptop.programming.kicks-ass.net>
+ by ozlabs.org (Postfix) with ESMTPS id 968D62C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 21:48:36 +1100 (EST)
+Received: by mail-qc0-f180.google.com with SMTP id i17so5601115qcy.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Feb 2014 02:48:33 -0800 (PST)
+Date: Fri, 7 Feb 2014 10:48:31 +0000 (GMT)
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+In-Reply-To: <52F46EB3.5080403@linux.vnet.ibm.com>
+Message-ID: <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
+References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+ <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
+ <52F3BCFE.3010703@linux.vnet.ibm.com>
+ <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
+ <52F46EB3.5080403@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140207103139.GP5002@laptop.programming.kicks-ass.net>
-Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +36,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 07, 2014 at 11:31:39AM +0100, Peter Zijlstra wrote:
-> Anyway, what might work is something like (please forgive my ppc asm, I
-> can barely read the thing, I've never before attempted writing it):
+On Fri, 7 Feb 2014, Preeti U Murthy wrote:
+
+> Hi Nicolas,
 > 
-> lock:
-> 1:	lharx	%0, 0, &head
-> 	mov	%1, %0
-> 	addic	%0, %0, 1
-> 	stwcd   %0, 0, &head
-> 	bne-	1b
-> 2:	lhax	%0, 0, &tail
-
-That might need to be lhz too, I'm confused on all the load variants.
-
-> 	lwsync
-> 	cmp	0, %0, %0
-
-	cmp	0, %0, %1
-
-So we compare the &tail load to the xadd return %1 above.
-
-> 	bne-	2b
+> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
+> > 
+> > What about creating arch_cpu_idle_enter() and arch_cpu_idle_exit() in 
+> > arch/powerpc/kernel/idle.c and calling ppc64_runlatch_off() and 
+> > ppc64_runlatch_on() respectively from there instead?  Would that work?  
+> > That would make the idle consolidation much easier afterwards.
 > 
+> I would not suggest doing this. The ppc64_runlatch_*() routines need to
+> be called when we are sure that the cpu is about to enter or has exit an
+> idle state. Moving the ppc64_runlatch_on() routine to
+> arch_cpu_idle_enter() for instance is not a good idea because there are
+> places where the cpu can decide not to enter any idle state before the
+> call to cpuidle_idle_call() itself. In that case communicating
+> prematurely that we are in an idle state would not be a good idea.
 > 
-> unlock:
-> 	lhz	%0, 0, &tail
-> 	addic	%0, %0, 1
-> 	lwsync
-> 	sth	%0, 0, &tail
-> 
+> So its best to add the ppc64_runlatch_* calls in the powernv cpuidle
+> driver IMO. We could however create idle_loop_prologue/epilogue()
+> variants inside it so that in addition to the runlatch routines we could
+> potentially add more such similar routines that are powernv specific.
+>   If there are cases where there is work to be done prior to and post an
+> entry into an idle state common to both pseries and powernv, we will
+> probably put them in arch_cpu_idle_enter/exit(). But the runlatch
+> routines are not suitable to be moved there as far as I can see.
+
+OK.
+
+However, one thing we need to do as much as possible is to remove those 
+loops based on need_resched() from idle backend drivers.  A somewhat 
+common pattern is:
+
+my_idle()
+{
+	/* interrupts disabled on entry */
+	while (!need_resched()) {
+		lowpower_wait_for_interrupts();
+		local_irq_enable();
+		/* IRQ serviced from here */
+		local_irq_disable();
+	}
+	local_irq_enable();
+	/* interrupts enabled on exit */
+}
+
+To be able to keep statistics on the actual idleness of the CPU we'd 
+need for all idle backends to always return to generic code on every 
+interrupt similar to this:
+
+my_idle()
+{
+	/* interrupts disabled on entry */
+	lowpower_wait_for_interrupts();
+	local_irq_enable();
+	/* interrupts enabled on exit */
+}
+
+The generic code would be responsible for dealing with need_resched() 
+and call back into the backend right away if necessary after updating 
+some stats.
+
+Do you see a problem with the runlatch calls happening around each 
+interrrupt from such a simplified idle backend?
+
+
+Nicolas
