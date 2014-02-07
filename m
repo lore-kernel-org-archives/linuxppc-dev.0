@@ -3,29 +3,31 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8EB2C2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 23:28:46 +1100 (EST)
-Date: Fri, 7 Feb 2014 13:28:37 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 223AE2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 23:33:00 +1100 (EST)
+Date: Fri, 7 Feb 2014 13:32:38 +0100
 From: Peter Zijlstra <peterz@infradead.org>
-To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-Message-ID: <20140207122837.GA3104@twins.programming.kicks-ass.net>
-References: <20140206103736.GA18054@lst.de>
- <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
- <1391717992.6733.232.camel@snotra.buserror.net>
- <20140207090248.GB26811@lst.de>
- <20140207103139.GP5002@laptop.programming.kicks-ass.net>
- <20140207104530.GG5126@laptop.programming.kicks-ass.net>
- <20140207114949.GA2107@lst.de>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
+Message-ID: <20140207123238.GA9987@twins.programming.kicks-ass.net>
+References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
+ <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
+ <20140130152500.GB5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
+ <20140130162753.GF5002@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
+ <20140206164336.GU2936@laptop.programming.kicks-ass.net>
+ <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140207114949.GA2107@lst.de>
-Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,50 +37,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 07, 2014 at 12:49:49PM +0100, Torsten Duwe wrote:
-> On Fri, Feb 07, 2014 at 11:45:30AM +0100, Peter Zijlstra wrote:
-> > 
-> > That might need to be lhz too, I'm confused on all the load variants.
+On Fri, Feb 07, 2014 at 11:09:23AM +0000, Nicolas Pitre wrote:
+> On Thu, 6 Feb 2014, Peter Zijlstra wrote:
+> > tree, tree, what's in a word.
 > 
-> ;-)
+> Something you may plant on a patch of grass?  "Merging" becomes a 
+> strange concept in that context though.  :-)
+
+I do know some farmers who splice trees thought :-)
+
+> > Its in my patch stack yes. 
 > 
-> > > unlock:
-> > > 	lhz	%0, 0, &tail
-> > > 	addic	%0, %0, 1
+> Quilt I suppose?? (yet another word.)
+
+Yes, I'm one of the refugee Quilt users. Comes in handy when cold too
+:-)
+
+> > I should get some of that into tip I suppose, been side-tracked a bit 
+> > this week. Sorry for the delay.
 > 
-> No carry with this one, I'd say.
+> If you prefer we pile those patches (and future ones after revew) 
+> ourselves just let me know.  Future patches are likely to be more 
+> intimate with the scheduler so I just need to know who to upstream them 
+> through afterwards.
 
-Right you are, add immediate it is.
+Normally I get Ingo to pick up the queue 1-2 times a week so latency
+shouldn't be too bad. But we just had the merge window and then I got
+side-tracked rewriting all atomic implementations.
 
-> Besides, unlock increments the head.
-
-No, unlock increments the tail, lock increments the head and waits until
-the tail matches the pre-inc value.
-
-That said, why do the atomic_inc() primitives do an carry add? (that's
-where I borrowed it from).
-
-> > > 	lwsync
-> > > 	sth	%0, 0, &tail
-> > > 
-> 
-> Given the beauty and simplicity of this, may I ask Ingo:
-> you signed off 314cdbefd1fd0a7acf3780e9628465b77ea6a836;
-> can you explain why head and tail must live on the same cache
-> line? Or is it just a space saver? I just ported it to ppc,
-> I didn't think about alternatives.
-
-spinlock_t should, ideally, be 32bits.
-
-> What about
-> 
-> atomic_t tail;
-> volatile int head; ?
-> 
-> Admittedly, that's usually 8 bytes instead of 4...
-
-That still won't straddle a cacheline unless you do weird alignement
-things which will bloat all the various data structures more still.
-
-Anyway, you can do a version with lwarx/stwcx if you're looking get rid
-of lharx.
+So usually submit patches against tip/master unless you know there's
+other pending bits that conflict, in which case you can grab my queue on
+top of tip/master -- but I try to make sure that's usually not needed.
