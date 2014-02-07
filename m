@@ -1,29 +1,46 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEAMRELO02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
- by ozlabs.org (Postfix) with ESMTP id CF6472C0082
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 16:48:32 +1100 (EST)
-Date: Fri, 7 Feb 2014 14:48:19 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
- determining the fallback node
-Message-ID: <20140207054819.GC28952@lge.com>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0F3342C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 18:05:28 +1100 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Fri, 7 Feb 2014 17:05:27 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A624F2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 18:05:24 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s176jrvn65208514
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 17:45:53 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1775NHk005910
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 18:05:24 +1100
+Message-ID: <52F484D9.6020604@linux.vnet.ibm.com>
+Date: Fri, 07 Feb 2014 12:31:45 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Nicolas Pitre <nicolas.pitre@linaro.org>,
+ Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
+References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
+ <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
+ <52F3BCFE.3010703@linux.vnet.ibm.com>
+ <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
+In-Reply-To: <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +50,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 06, 2014 at 12:52:11PM -0800, David Rientjes wrote:
-> On Thu, 6 Feb 2014, Joonsoo Kim wrote:
+Hi Nicolas,
+
+Find below the patch that will need to be squashed with this one.
+This patch is based on the mainline.Adding Deepthi, the author of
+the patch which introduced the powernv cpuidle driver. Deepthi,
+do you think the below patch looks right? We do not need to do an
+explicit local_irq_enable() since we are in the call path of
+cpuidle driver and that explicitly enables irqs on exit from
+idle states.
+
+On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
+> On Thu, 6 Feb 2014, Preeti U Murthy wrote:
 > 
-> > From bf691e7eb07f966e3aed251eaeb18f229ee32d1f Mon Sep 17 00:00:00 2001
-> > From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> > Date: Thu, 6 Feb 2014 17:07:05 +0900
-> > Subject: [RFC PATCH 2/3 v2] topology: support node_numa_mem() for
-> > determining the
-> >  fallback node
-> > 
-> > We need to determine the fallback node in slub allocator if the allocation
-> > target node is memoryless node. Without it, the SLUB wrongly select
-> > the node which has no memory and can't use a partial slab, because of node
-> > mismatch. Introduced function, node_numa_mem(X), will return
-> > a node Y with memory that has the nearest distance. If X is memoryless
-> > node, it will return nearest distance node, but, if
-> > X is normal node, it will return itself.
-> > 
-> > We will use this function in following patch to determine the fallback
-> > node.
-> > 
-> 
-> I like the approach and it may fix the problem today, but it may not be 
-> sufficient in the future: nodes may not only be memoryless but they may 
-> also be cpuless.  It's possible that a node can only have I/O, networking, 
-> or storage devices and we can define affinity for them that is remote from 
-> every cpu and/or memory by the ACPI specification.
-> 
-> It seems like a better approach would be to do this when a node is brought 
-> online and determine the fallback node based not on the zonelists as you 
-> do here but rather on locality (such as through a SLIT if provided, see 
-> node_distance()).
+>> Hi Daniel,
+>>
+>> On 02/06/2014 09:55 PM, Daniel Lezcano wrote:
+>>> Hi Nico,
+>>>
+>>>
+>>> On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+>>>
+>>>> The core idle loop now takes care of it.
+>>>>
+>>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+>>>> ---
+>>>>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
+>>>>  1 file changed, 1 insertion(+), 12 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/platforms/powernv/setup.c
+>>>> b/arch/powerpc/platforms/powernv/setup.c
+>>>> index 21166f65c9..a932feb290 100644
+>>>> --- a/arch/powerpc/platforms/powernv/setup.c
+>>>> +++ b/arch/powerpc/platforms/powernv/setup.c
+>>>> @@ -26,7 +26,6 @@
+>>>>  #include <linux/of_fdt.h>
+>>>>  #include <linux/interrupt.h>
+>>>>  #include <linux/bug.h>
+>>>> -#include <linux/cpuidle.h>
+>>>>
+>>>>  #include <asm/machdep.h>
+>>>>  #include <asm/firmware.h>
+>>>> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
+>>>>         return 1;
+>>>>  }
+>>>>
+>>>> -void powernv_idle(void)
+>>>> -{
+>>>> -       /* Hook to cpuidle framework if available, else
+>>>> -        * call on default platform idle code
+>>>> -        */
+>>>> -       if (cpuidle_idle_call()) {
+>>>> -               power7_idle();
+>>>> -       }
+>>>>
 
-Hmm...
-I guess that zonelist is base on locality. Zonelist is generated using
-node_distance(), so I think that it reflects locality. But, I'm not expert
-on NUMA, so please let me know what I am missing here :)
+ drivers/cpuidle/cpuidle-powernv.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-> Also, the names aren't very descriptive: {get,set}_numa_mem() doesn't make 
-> a lot of sense in generic code.  I'd suggest something like 
-> node_to_mem_node().
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 78fd174..130f081 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -31,11 +31,13 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 
+ 	while (!need_resched()) {
++		ppc64_runlatch_off();
+ 		HMT_low();
+ 		HMT_very_low();
+ 	}
+ 
+ 	HMT_medium();
++	ppc64_runlatch_on();
+ 	clear_thread_flag(TIF_POLLING_NRFLAG);
+ 	smp_mb();
+ 	return index;
+@@ -45,7 +47,9 @@ static int nap_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
++	ppc64_runlatch_off();
+ 	power7_idle();
++	ppc64_runlatch_on();
+ 	return index;
+ }
+ 
+Thanks
 
-It's much better!
-If this patch eventually will be needed, I will update it.
-
-Thanks.
+Regards
+Preeti U Murthy
