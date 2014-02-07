@@ -1,32 +1,47 @@
-Return-Path: <nicolas.pitre@linaro.org>
-Received: from mail-qc0-f180.google.com (mail-qc0-f180.google.com
- [209.85.216.180])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 968D62C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 21:48:36 +1100 (EST)
-Received: by mail-qc0-f180.google.com with SMTP id i17so5601115qcy.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Feb 2014 02:48:33 -0800 (PST)
-Date: Fri, 7 Feb 2014 10:48:31 +0000 (GMT)
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5DE942C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 22:04:26 +1100 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Fri, 7 Feb 2014 16:34:17 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 53C041258059
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 16:36:06 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s17B4FFe55509076
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 16:34:15 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s17B4DA3028530
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 16:34:14 +0530
+Message-ID: <52F4BCDC.2080005@linux.vnet.ibm.com>
+Date: Fri, 07 Feb 2014 16:30:44 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-In-Reply-To: <52F46EB3.5080403@linux.vnet.ibm.com>
-Message-ID: <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
 References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
  <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
  <52F3BCFE.3010703@linux.vnet.ibm.com>
  <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
- <52F46EB3.5080403@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
+ <52F484D9.6020604@linux.vnet.ibm.com> <52F4AB54.801@linux.vnet.ibm.com>
+In-Reply-To: <52F4AB54.801@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>,
+ Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
  "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
  Peter Zijlstra <peterz@infradead.org>,
  Daniel Lezcano <daniel.lezcano@linaro.org>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
  Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+ linuxppc-dev@lists.ozlabs.org,
+ Linux ARM Kernel ML <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,71 +51,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 7 Feb 2014, Preeti U Murthy wrote:
+Hi Deepthi,
 
-> Hi Nicolas,
+On 02/07/2014 03:15 PM, Deepthi Dharwar wrote:
+> Hi Preeti,
 > 
-> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
-> > 
-> > What about creating arch_cpu_idle_enter() and arch_cpu_idle_exit() in 
-> > arch/powerpc/kernel/idle.c and calling ppc64_runlatch_off() and 
-> > ppc64_runlatch_on() respectively from there instead?  Would that work?  
-> > That would make the idle consolidation much easier afterwards.
+> Thanks for the patch.
 > 
-> I would not suggest doing this. The ppc64_runlatch_*() routines need to
-> be called when we are sure that the cpu is about to enter or has exit an
-> idle state. Moving the ppc64_runlatch_on() routine to
-> arch_cpu_idle_enter() for instance is not a good idea because there are
-> places where the cpu can decide not to enter any idle state before the
-> call to cpuidle_idle_call() itself. In that case communicating
-> prematurely that we are in an idle state would not be a good idea.
+> On 02/07/2014 12:31 PM, Preeti U Murthy wrote:
+>> Hi Nicolas,
+>>
+>> Find below the patch that will need to be squashed with this one.
+>> This patch is based on the mainline.Adding Deepthi, the author of
+>> the patch which introduced the powernv cpuidle driver. Deepthi,
+>> do you think the below patch looks right? We do not need to do an
+>> explicit local_irq_enable() since we are in the call path of
+>> cpuidle driver and that explicitly enables irqs on exit from
+>> idle states.
 > 
-> So its best to add the ppc64_runlatch_* calls in the powernv cpuidle
-> driver IMO. We could however create idle_loop_prologue/epilogue()
-> variants inside it so that in addition to the runlatch routines we could
-> potentially add more such similar routines that are powernv specific.
->   If there are cases where there is work to be done prior to and post an
-> entry into an idle state common to both pseries and powernv, we will
-> probably put them in arch_cpu_idle_enter/exit(). But the runlatch
-> routines are not suitable to be moved there as far as I can see.
+> Yes, We enable irqs explicitly while entering snooze loop and we always
+> have interrupts enabled in the snooze state.
+> For NAP state, we exit out of this state with interrupts enabled so we
+> do not need an explicit enable of irqs.
+> 
+>> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
+>>> On Thu, 6 Feb 2014, Preeti U Murthy wrote:
+>>>
+>>>> Hi Daniel,
+>>>>
+>>>> On 02/06/2014 09:55 PM, Daniel Lezcano wrote:
+>>>>> Hi Nico,
+>>>>>
+>>>>>
+>>>>> On 6 February 2014 14:16, Nicolas Pitre <nicolas.pitre@linaro.org> wrote:
+>>>>>
+>>>>>> The core idle loop now takes care of it.
+>>>>>>
+>>>>>> Signed-off-by: Nicolas Pitre <nico@linaro.org>
+>>>>>> ---
+>>>>>>  arch/powerpc/platforms/powernv/setup.c | 13 +------------
+>>>>>>  1 file changed, 1 insertion(+), 12 deletions(-)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/platforms/powernv/setup.c
+>>>>>> b/arch/powerpc/platforms/powernv/setup.c
+>>>>>> index 21166f65c9..a932feb290 100644
+>>>>>> --- a/arch/powerpc/platforms/powernv/setup.c
+>>>>>> +++ b/arch/powerpc/platforms/powernv/setup.c
+>>>>>> @@ -26,7 +26,6 @@
+>>>>>>  #include <linux/of_fdt.h>
+>>>>>>  #include <linux/interrupt.h>
+>>>>>>  #include <linux/bug.h>
+>>>>>> -#include <linux/cpuidle.h>
+>>>>>>
+>>>>>>  #include <asm/machdep.h>
+>>>>>>  #include <asm/firmware.h>
+>>>>>> @@ -217,16 +216,6 @@ static int __init pnv_probe(void)
+>>>>>>         return 1;
+>>>>>>  }
+>>>>>>
+>>>>>> -void powernv_idle(void)
+>>>>>> -{
+>>>>>> -       /* Hook to cpuidle framework if available, else
+>>>>>> -        * call on default platform idle code
+>>>>>> -        */
+>>>>>> -       if (cpuidle_idle_call()) {
+>>>>>> -               power7_idle();
+>>>>>> -       }
+>>>>>>
+>>
+>>  drivers/cpuidle/cpuidle-powernv.c |    4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>> index 78fd174..130f081 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -31,11 +31,13 @@ static int snooze_loop(struct cpuidle_device *dev,
+>>  	set_thread_flag(TIF_POLLING_NRFLAG);
+>>
+>>  	while (!need_resched()) {
+>> +		ppc64_runlatch_off();
+>                 ^^^^^^^^^^^^^^^
+> We could move this before the while() loop.
+> It would ideal to turn off latch when we enter snooze and
+> turn it on when we are about to exit, rather than doing
+> it over and over in the while loop.
 
-OK.
+You are right, this can be moved out of the loop.
 
-However, one thing we need to do as much as possible is to remove those 
-loops based on need_resched() from idle backend drivers.  A somewhat 
-common pattern is:
+Thanks
 
-my_idle()
-{
-	/* interrupts disabled on entry */
-	while (!need_resched()) {
-		lowpower_wait_for_interrupts();
-		local_irq_enable();
-		/* IRQ serviced from here */
-		local_irq_disable();
-	}
-	local_irq_enable();
-	/* interrupts enabled on exit */
-}
-
-To be able to keep statistics on the actual idleness of the CPU we'd 
-need for all idle backends to always return to generic code on every 
-interrupt similar to this:
-
-my_idle()
-{
-	/* interrupts disabled on entry */
-	lowpower_wait_for_interrupts();
-	local_irq_enable();
-	/* interrupts enabled on exit */
-}
-
-The generic code would be responsible for dealing with need_resched() 
-and call back into the backend right away if necessary after updating 
-some stats.
-
-Do you see a problem with the runlatch calls happening around each 
-interrrupt from such a simplified idle backend?
-
-
-Nicolas
+Regards
+Preeti U Murthy
