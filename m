@@ -1,33 +1,25 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6FB892C0096
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 04:19:07 +1100 (EST)
-Date: Fri, 7 Feb 2014 18:19:00 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-Message-ID: <20140207171900.GS5002@laptop.programming.kicks-ass.net>
-References: <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
- <1391717992.6733.232.camel@snotra.buserror.net>
- <20140207090248.GB26811@lst.de>
- <20140207103139.GP5002@laptop.programming.kicks-ass.net>
- <20140207104530.GG5126@laptop.programming.kicks-ass.net>
- <20140207114949.GA2107@lst.de>
- <20140207122837.GA3104@twins.programming.kicks-ass.net>
- <20140207151847.GB3104@twins.programming.kicks-ass.net>
- <20140207170845.GD2107@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140207170845.GD2107@lst.de>
-Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Return-Path: <cl@linux.com>
+Received: from qmta01.emeryville.ca.mail.comcast.net
+ (qmta01.emeryville.ca.mail.comcast.net [76.96.30.16])
+ by ozlabs.org (Postfix) with ESMTP id F23C42C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 04:50:04 +1100 (EST)
+Date: Fri, 7 Feb 2014 11:49:57 -0600 (CST)
+From: Christoph Lameter <cl@linux.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [RFC PATCH 3/3] slub: fallback to get_numa_mem() node if we want
+ to allocate on memoryless node
+In-Reply-To: <20140207054119.GA28952@lge.com>
+Message-ID: <alpine.DEB.2.10.1402071147390.15168@nuc>
+References: <20140206020757.GC5433@linux.vnet.ibm.com>
+ <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1391674026-20092-3-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.10.1402061127001.5348@nuc> <20140207054119.GA28952@lge.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+ linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,56 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 07, 2014 at 06:08:45PM +0100, Torsten Duwe wrote:
-> > static inline unsigned int xadd(unsigned int *v, unsigned int i)
-> > {
-> > 	int t, ret;
-> > 	
-> > 	__asm__ __volatile__ (
-> > "1:	lwarx	%0, 0, %4\n"
-> > "	mr	%1, %0\n"
-> > "	add	%0, %3, %0\n"
-> > "	stwcx.	%0, %0, %4\n"
-> > "	bne-	1b\n"
-> > 	: "=&r" (t), "=&r" (ret), "+m" (*v)
-> > 	: "r" (i), "r" (v)
-> > 	: "cc");
-> > 
-> > 	return ret;
-> > }
-> > 
-> I don't like this xadd thing -- it's so x86 ;)
-> x86 has its LOCK prefix, ppc has ll/sc.
-> That should be reflected somehow IMHO.
+On Fri, 7 Feb 2014, Joonsoo Kim wrote:
 
-Its the operational semantics I care about; this version is actually
-nicer in that it doesn't actually imply all sorts of barriers :-)
+> > This check wouild need to be something that checks for other contigencies
+> > in the page allocator as well. A simple solution would be to actually run
+> > a GFP_THIS_NODE alloc to see if you can grab a page from the proper node.
+> > If that fails then fallback. See how fallback_alloc() does it in slab.
+> >
+>
+> Hello, Christoph.
+>
+> This !node_present_pages() ensure that allocation on this node cannot succeed.
+> So we can directly use numa_mem_id() here.
 
-> Maybe if xadd became mandatory for some kernel library.
+Yes of course we can use numa_mem_id().
 
-call it fetch_add() its not an uncommon operation and many people
-understand the semantics.
-
-But you can simply include the asm bits in ticket_lock() and be done
-with it. In that case you can also replace the add with an addi which
-might be a little more efficient.
-
-> > void ticket_unlock(tickets_t *lock)
-> > {
-> > 	ticket_t tail = lock->tail + 1;
-> > 
-> > 	/*
-> > 	 * The store is save against the xadd for it will make the ll/sc fail
-> > 	 * and try again. Aside from that PowerISA guarantees single-copy
-> > 	 * atomicy for half-word writes.
-> > 	 *
-> > 	 * And since only the lock owner will ever write the tail, we're good.
-> > 	 */
-> > 	smp_store_release(&lock->tail, tail);
-> > }
-> 
-> Yeah, let's try that on top of v2 (just posted).
-> First, I want to see v2 work as nicely as v1 --
-> compiling a debug kernel takes a while...
-
-Use a faster machine... it can be done < 1 minute :-)
+But the check is only for not having any memory at all on a node. There
+are other reason for allocations to fail on a certain node. The node could
+have memory that cannot be reclaimed, all dirty, beyond certain
+thresholds, not in the current set of allowed nodes etc etc.
