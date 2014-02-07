@@ -1,21 +1,20 @@
-Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta8.messagelabs.com (mail1.bemta8.messagelabs.com
- [216.82.243.207])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <James.Yang@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4315A2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 12:28:09 +1100 (EST)
-In-Reply-To: <20140206082635.GA7048@visitor2.iram.es>
-References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
- <20140206082635.GA7048@visitor2.iram.es>
-To: Gabriel Paubert <paubert@iram.es>
+ by ozlabs.org (Postfix) with ESMTPS id 9E8022C0091
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Feb 2014 13:01:05 +1100 (EST)
+Date: Thu, 6 Feb 2014 20:00:59 -0600
+From: James Yang <James.Yang@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc: Add cpu family documentation
+In-Reply-To: <1391229347-23026-1-git-send-email-mpe@ellerman.id.au>
+Message-ID: <alpine.LRH.2.00.1402061853550.10318@ra8135-ec1.am.freescale.net>
+References: <1391229347-23026-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
-From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
-Date: Fri, 7 Feb 2014 11:27:57 +1000
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Chris Proctor <cproctor@csc.com.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,180 +24,331 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gabriel Paubert <paubert@iram.es> wrote on 02/06/2014 07:26:37 PM:
+On Sat, 1 Feb 2014, Michael Ellerman wrote:
 
-> From: Gabriel Paubert <paubert@iram.es>
-> To: Stephen N Chivers <schivers@csc.com.au>
-> Cc: linuxppc-dev@lists.ozlabs.org, Chris Proctor <cproctor@csc.com.au>
-> Date: 02/06/2014 07:26 PM
-> Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
->=20
-> On Thu, Feb 06, 2014 at 12:09:00PM +1000, Stephen N Chivers wrote:
-> > I have a MPC8548e based board and an application that makes
-> > extensive use of floating point including numerous calls to cos.
-> > In the same program there is the use of an sqlite database.
-> >=20
-> > The kernel is derived from 2.6.31 and is compiled with math emulation.
-> >=20
-> > At some point after the reading of the SQLITE database, the
-> > return result from cos goes from an in range value to an out
-> > of range value.
-> >=20
-> > This is as a result of the FP rounding mode mutating from "round to=20
-> > nearest"
-> > to "round toward zero".
-> >=20
-> > The cos in the glibc version being used is known to be sensitive to=20
-> > rounding
-> > direction and Joseph Myers has previously fixed glibc.
-> >=20
-> > The failure does not occur on a machine that has a hardware floating
-> > point unit (a MPC7410 processor).
-> >=20
-> > I have traced the mutation to the following series of instructions:
-> >=20
-> >         mffs            f0
-> >         mtfsb1          4*cr7+so
-> >         mtfsb0          4*cr7+eq
-> >         fadd            f13,f1,f2
-> >         mtfsf           1, f0
-> >=20
-> > The instructions are part of the stream emitted by gcc for the=20
-conversion
-> > of a 128 bit floating point value into an integer in the sqlite=20
-database=20
-> > read.
-> >=20
-> > Immediately before the execution of the mffs instruction the "rounding
-> > mode" is "round to nearest".
-> >=20
-> > On the MPC8548 board, the execution of the mtfsf instruction does not
-> > restore the rounding mode to "round to nearest".
-> >=20
-> > I believe that the mask computation in mtfsf.c is incorrect and is=20
-> > reversed.
-> >=20
-> > In the latest version of the file (linux-3.14-rc1), the mask is=20
-computed=20
-> > by:
-> >=20
-> >                  mask =3D 0;
-> >                  if (FM & (1 << 0))
-> >                         mask |=3D 0x90000000;
-> >                  if (FM & (1 << 1))
-> >                         mask |=3D 0x0f000000;
-> >                  if (FM & (1 << 2))
-> >                         mask |=3D 0x00f00000;
-> >                  if (FM & (1 << 3))
-> >                         mask |=3D 0x000f0000;
-> >                  if (FM & (1 << 4))
-> >                         mask |=3D 0x0000f000;
-> >                  if (FM & (1 << 5))
-> >                         mask |=3D 0x00000f00;
-> >                  if (FM & (1 << 6))
-> >                         mask |=3D 0x000000f0;
-> >                  if (FM & (1 << 7))
-> >                         mask |=3D 0x0000000f;
-> >=20
-> > I think it should be:
-> >=20
-> >                 mask =3D 0;
-> >                 if (FM & (1 << 0))
-> >                         mask |=3D 0x0000000f;
-> >                 if (FM & (1 << 1))
-> >                         mask |=3D 0x000000f0;
-> >                 if (FM & (1 << 2))
-> >                         mask |=3D 0x00000f00;
-> >                 if (FM & (1 << 3))
-> >                         mask |=3D 0x0000f000;
-> >                 if (FM & (1 << 4))
-> >                         mask |=3D 0x000f0000;
-> >                 if (FM & (1 << 5))
-> >                         mask |=3D 0x00f00000;
-> >                 if (FM & (1 << 6))
-> >                         mask |=3D 0x0f000000;
-> >                 if (FM & (1 << 7))
-> >                         mask |=3D 0x90000000;
-> >=20
-> > With the above mask computation I get consistent results for both the=20
-> > MPC8548
-> > and MPC7410 boards.
-> >=20
-> > Am I missing something subtle?
->=20
-> No I think you are correct. This said, this code may probably be=20
-optimized=20
-> to eliminate a lot of the conditional branches. I think that:
->=20
-> mask =3D (FM & 1);
-> mask |=3D (FM << 3) & 0x10;
-> mask |=3D (FM << 6) & 0x100;
-> mask |=3D (FM << 9) & 0x1000;
-> mask |=3D (FM << 12) & 0x10000;
-> mask |=3D (FM << 15) & 0x100000;
-> mask |=3D (FM << 18) & 0x1000000;
-> mask |=3D (FM << 21) & 0x10000000;
-> mask *=3D 15;
->=20
-> should do the job, in less code space and without a single branch.
->=20
-> Each one of the "mask |=3D" lines should be translated into an
-> rlwinm instruction followed by an "or". Actually it should be possible
-> to transform each of these lines into a single "rlwimi" instruction
-> but I don't know how to coerce gcc to reach this level of optimization.
->=20
-> Another way of optomizing this could be:
->=20
-> mask =3D (FM & 0x0f) | ((FM << 12) & 0x000f0000);
-> mask =3D (mask & 0x00030003) | ((mask << 6) & 0x03030303);
-> mask =3D (mask & 0x01010101) | ((mask << 3) & 0x10101010);
-> mask *=3D 15;
->=20
-> It's not easy to see which of the solutions is faster, the second one
-> needs to create quite a few constants, but its dependency length is=20
-> lower. It is very likely that the first solution is faster in cache-cold
-> case and the second in cache-hot.=20
->=20
-> Regardless, the original code is rather na=EFve, larger and slower in all=
-=20
-cases,
-> with timing variation depending on branch mispredictions.
+> This patch adds some documentation on the different cpu families
+> supported by arch/powerpc.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+> v2: Reworked formatting to avoid wrapping.
+>     Fixed up Freescale details.
+> 
+> 
+>  Documentation/powerpc/cpu_families.txt | 227 +++++++++++++++++++++++++++++++++
+>  1 file changed, 227 insertions(+)
+>  create mode 100644 Documentation/powerpc/cpu_families.txt
+> 
+> diff --git a/Documentation/powerpc/cpu_families.txt b/Documentation/powerpc/cpu_families.txt
+> new file mode 100644
+> index 0000000..fa4f159
+> --- /dev/null
+> +++ b/Documentation/powerpc/cpu_families.txt
+> @@ -0,0 +1,227 @@
+> +CPU Families
+> +============
+> +
+> +This document tries to summarise some of the different cpu families that exist
+> +and are supported by arch/powerpc.
 
-Thanks for the response, it is appreciated.
+I think there are more CPUs that exist(ed), but aren't supported by 
+arch/powerpc.  602, Exponential, and there were a few others.  Did you 
+want to include those?
 
-I have tried simple test versions of the two suggestions above, both
-produce the same results as the original formulation.
+Do the arrows' endpoints have a particular meaning?  
 
-My toolchain is gcc-4.1.2 with binutils 2.17.
+Does the direction of the arrows (left vs. down) have a meaning?
 
-When compiled without optimization I get:
+What's the meaning of the box?
 
-        original        58 instructions 20 memory accesses 9 branches
-        method1 53 instructions 27 memory accesses 0 branches
-        method2 37 instructions 13 memory accesses 0 branches
+Do you want to have all of the minor derivatives or just major 
+implementations?  Some derivatives were just faster versions, others 
+have microarchitectural changes, and some have additional registers or 
+removed interfaces.  
 
-with optimization:
+There are a lot of ways to delineate this. 
 
-        original        25 instructions 0 memory accesses 8 branches
-        method1 18 instructions 0 memory accesses 0 branches
-        method2 21 instructions 0 memory accesses 0 branches
 
-The memory accesses do not include "setup" such as moving FM to
-a register.
 
-The instruction counts for method1 and method2 include an extra
-and operation to preserve the original behaviour wrt the sticky
-FX bit (I think) although maybe that is also something else
-that it is wrong with the original implementation.
+> +
+> +
+> +Book3S (aka sPAPR)
+> +------------------
+> +
+> + - Hash MMU
+> + - Mix of 32 & 64 bit
+> +
+> +   +--------------+                              +----------------+
+> +   |  Old POWER   | ---------------------------> | RS64 (threads) |
+> +   +--------------+                              +----------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+                              +----------------+    +-------+
+> +   |     601      | ---------------------------> |      603       | -> |  740  |
+> +   +--------------+                              +----------------+    +-------+
 
-In my naivety I would go with method2 as it generates fewer
-instructions when  not optimized and isn't far from method1 when
-optimized.
+	There was also at least 603e, 603ev, EC603e, and then offshoot 
+G2 core, then the offshoot of that e300c1/e300c2/e300c3/e300c4.  I 
+might be missing one here.
 
-I will await more comments before providing a patch next week.
->=20
->    Regards,
->    Gabriel
+	740 is a 750 but without the L2, so it would probably fit 
+better off pointing out of the 750 box. Then there is the 755/745 
+which have more BATs, L2 features, etc.  Missing from the IBM side is 
+750CXe, 750GX, 750GL, but I don't know the lineage of those.  Do you 
+want the Nintendo stuff too?  RAD750?
 
-Stephen Chivers,
-CSC Australia Pty. Ltd.
+
+> +          |                                              |
+> +          |                                              |
+> +          v                                              v
+> +   +--------------+                              +----------------+    +-------+
+> +   |     604      |                              |    750 (G3)    | -> | 750CX |
+> +   +--------------+                              +----------------+    +-------+
+
+Also 604e, and I guess 604ev?
+
+
+
+> +          |                                              |                 |
+> +          |                                              |                 |
+> +          v                                              v                 v
+> +   +--------------+                              +----------------+    +-------+
+> +   | 620 (64 bit) |                              |      7400      |    | 750CL |
+> +   +--------------+                              +----------------+    +-------+
+> +          |                                              |                 |
+> +          |                                              |                 |
+> +          v                                              v                 v
+> +   +--------------+                              +----------------+    +-------+
+> +   |  POWER3/630  |                              |      7410      |    | 750FX |
+> +   +--------------+                              +----------------+    +-------+
+
+
+7400/7410 mostly the same thing
+
+
+> +          |                                              |
+> +          |                                              |
+> +          v                                              v
+> +   +--------------+                              +----------------+
+> +   |   POWER3+    |                              |      7450      |
+> +   +--------------+                              +----------------+
+> +          |                                              |
+> +          |                                              |
+> +          v                                              v
+> +   +--------------+                              +----------------+
+> +   |    POWER4    |                              |      7455      |
+> +   +--------------+                              +----------------+
+> +          |                                              |
+> +          |                                              |
+> +          v                                              v
+> +   +--------------+                  +-------+   +----------------+
+> +   |   POWER4+    | ---------------> |  970  |   |      7447      |
+> +   +--------------+                  +-------+   +----------------+
+> +          |                              |               |
+> +          |                              |               |
+> +          v                              v               v
+> +   +--------------+     +-------+    +-------+   +----------------+
+> +   |    POWER5    | --> | Cell  |    | 970FX |   |      7448      |
+> +   +--------------+     +-------+    +-------+   +----------------+
+
+What about Xenon, how would it fit?
+
+
+For 745x: I'd organize it:
+
+column = major derivatives
+row = minor derivatives
+
+7450/7451/7455/7457        <-- L3
+     7441/7445/7447 /7448  <-- no L3
+               7447A/e600  
+
+
+
+> +          |                              |
+> +          |                              |
+> +          v                              v
+> +   +--------------+                  +-------+
+> +   |   POWER5+    |                  | 970MP |
+> +   +--------------+                  +-------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |   POWER5++   |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |    POWER6    |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |    POWER7    |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |   POWER7+    |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |    POWER8    |
+> +   +--------------+
+> +
+> +
+> +   +---------------+
+> +   | PA6T (64 bit) |
+> +   +---------------+
+> +
+> +
+> +IBM BookE
+> +---------
+> +
+> + - Software loaded TLB.
+> + - All 32 bit
+> +
+> +   +--------------+
+> +   |     401      |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |     403      |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |     405      |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |     440      |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+     +----------------+
+> +   |     450      | --> |      BG/P      |
+> +   +--------------+     +----------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |     460      |
+> +   +--------------+
+
+would you want to fit 464/464FP here?
+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |     476      |
+> +   +--------------+
+> +
+
+
+Did Titan ever get arch/powerpc support?
+
+
+> +
+> +Motorola/Freescale 8xx
+> +----------------------
+> +
+> + - Software loaded with hardware assist.
+> + - All 32 bit
+> +
+> +   +--------------+
+> +   |     8xx      |
+> +   +--------------+
+> +          |
+> +          |
+> +          v
+> +   +--------------+
+> +   |     850      |
+> +   +--------------+
+
+I don't know enough about the core in there to say that there is a 
+distinction for 850.  My impression is that it's not a 603-derivative 
+so I agree this lineage of the 8xx/850 is separate from the others.
+
+
+
+> +
+> +
+> +Freescale BookE
+> +---------------
+> +
+> + - Software loaded TLB.
+> + - e6500 adds HW loaded indirect TLB entries.
+> + - Mix of 32 & 64 bit
+> +
+> +   +--------------+
+> +   |     e200     |
+> +   +--------------+
+> +
+> +
+> +   +--------------------------------+
+> +   |              e500              |
+> +   +--------------------------------+
+> +                   |
+> +                   |
+> +                   v
+> +   +--------------------------------+
+> +   |             e500v2             |
+> +   +--------------------------------+
+> +                   |
+> +                   |
+> +                   v
+> +   +--------------------------------+
+> +   |             e500mc             |
+> +   +--------------------------------+
+> +                   |
+> +                   |
+> +                   v
+> +   +--------------------------------+
+> +   |    e5500 (Book3e) (64 bit)     |
+> +   +--------------------------------+
+> +                   |
+> +                   |
+> +                   v
+> +   +--------------------------------+
+> +   | e6500 (HW TLB) (Multithreaded) |
+> +   +--------------------------------+
+
+64-bit for e6500 as well
+
+> +
+> +
+> +IBM A2 core
+> +-----------
+> +
+> + - Book3E, software loaded TLB + HW loaded indirect TLB entries.
+> + - 64 bit
+> +
+> +   +--------------+     +----------------+
+> +   |   A2 core    | --> |      WSP       |
+> +   +--------------+     +----------------+
+> +           |
+> +           |
+> +           v
+> +   +--------------+
+> +   |     BG/Q     |
+> +   +--------------+
+> -- 
+> 1.8.3.2
+> 
+> 
+> 
