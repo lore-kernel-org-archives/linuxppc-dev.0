@@ -1,46 +1,29 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3482A2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 22:45:03 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 7 Feb 2014 21:45:01 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6D79B3578053
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 22:44:58 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s17BPQQR5964212
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 22:25:27 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s17BivvS024935
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 22:44:57 +1100
-Message-ID: <52F4C666.4050308@linux.vnet.ibm.com>
-Date: Fri, 07 Feb 2014 17:11:26 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3ECC52C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 22:49:56 +1100 (EST)
+Date: Fri, 7 Feb 2014 12:49:49 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
+Message-ID: <20140207114949.GA2107@lst.de>
+References: <20140206103736.GA18054@lst.de>
+ <20140206163837.GT2936@laptop.programming.kicks-ass.net>
+ <20140206173727.GA13048@lst.de>
+ <1391717992.6733.232.camel@snotra.buserror.net>
+ <20140207090248.GB26811@lst.de>
+ <20140207103139.GP5002@laptop.programming.kicks-ass.net>
+ <20140207104530.GG5126@laptop.programming.kicks-ass.net>
 MIME-Version: 1.0
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [PATCH 1/2] PPC: powernv: remove redundant cpuidle_idle_call()
-References: <1391696188-14540-1-git-send-email-nicolas.pitre@linaro.org>
- <CAKnoXLxCAqKaniGOwegNcOarS4FpoNKDY5PxOhe6j4wdtUAkLQ@mail.gmail.com>
- <52F3BCFE.3010703@linux.vnet.ibm.com>
- <alpine.LFD.2.11.1402070105170.1906@knanqh.ubzr>
- <52F46EB3.5080403@linux.vnet.ibm.com>
- <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
-In-Reply-To: <alpine.LFD.2.11.1402071022490.1906@knanqh.ubzr>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Lists linaro-kernel <linaro-kernel@lists.linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- Peter Zijlstra <peterz@infradead.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140207104530.GG5126@laptop.programming.kicks-ass.net>
+Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Scott Wood <scottwood@freescale.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,110 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nicolas,
-
-On 02/07/2014 04:18 PM, Nicolas Pitre wrote:
-> On Fri, 7 Feb 2014, Preeti U Murthy wrote:
+On Fri, Feb 07, 2014 at 11:45:30AM +0100, Peter Zijlstra wrote:
 > 
->> Hi Nicolas,
->>
->> On 02/07/2014 06:47 AM, Nicolas Pitre wrote:
->>>
->>> What about creating arch_cpu_idle_enter() and arch_cpu_idle_exit() in 
->>> arch/powerpc/kernel/idle.c and calling ppc64_runlatch_off() and 
->>> ppc64_runlatch_on() respectively from there instead?  Would that work?  
->>> That would make the idle consolidation much easier afterwards.
->>
->> I would not suggest doing this. The ppc64_runlatch_*() routines need to
->> be called when we are sure that the cpu is about to enter or has exit an
->> idle state. Moving the ppc64_runlatch_on() routine to
->> arch_cpu_idle_enter() for instance is not a good idea because there are
->> places where the cpu can decide not to enter any idle state before the
->> call to cpuidle_idle_call() itself. In that case communicating
->> prematurely that we are in an idle state would not be a good idea.
->>
->> So its best to add the ppc64_runlatch_* calls in the powernv cpuidle
->> driver IMO. We could however create idle_loop_prologue/epilogue()
->> variants inside it so that in addition to the runlatch routines we could
->> potentially add more such similar routines that are powernv specific.
->>   If there are cases where there is work to be done prior to and post an
->> entry into an idle state common to both pseries and powernv, we will
->> probably put them in arch_cpu_idle_enter/exit(). But the runlatch
->> routines are not suitable to be moved there as far as I can see.
-> 
-> OK.
-> 
-> However, one thing we need to do as much as possible is to remove those 
-> loops based on need_resched() from idle backend drivers.  A somewhat 
-> common pattern is:
-> 
-> my_idle()
-> {
-> 	/* interrupts disabled on entry */
-> 	while (!need_resched()) {
-> 		lowpower_wait_for_interrupts();
-> 		local_irq_enable();
-> 		/* IRQ serviced from here */
-> 		local_irq_disable();
-> 	}
-> 	local_irq_enable();
-> 	/* interrupts enabled on exit */
-> }
-> 
-> To be able to keep statistics on the actual idleness of the CPU we'd 
-> need for all idle backends to always return to generic code on every 
-> interrupt similar to this:
-> 
-> my_idle()
-> {
-> 	/* interrupts disabled on entry */
-> 	lowpower_wait_for_interrupts();
+> That might need to be lhz too, I'm confused on all the load variants.
 
-You can do this for the idle states which do not have the polling
-nature. IOW, these idle states are capable of doing what you describe as
-"wait_for_interrupts". They do some kind of spinning at the hardware
-level with interrupts enabled. A reschedule IPI or any other interrupt
-will wake them up to enter the generic idle loop where they check for
-the cause of the interrupt.
+;-)
 
-But observe the idle state "snooze" on powerpc. The power that this idle
-state saves is through the lowering of the thread priority of the CPU.
-After it lowers the thread priority, it is done. It cannot
-"wait_for_interrupts". It will exit my_idle(). It is now upto the
-generic idle loop to increase the thread priority if the need_resched
-flag is set. Only an interrupt routine can increase the thread priority.
-Else we will need to do it explicitly. And in such states which have a
-polling nature, the cpu will not receive a reschedule IPI.
+> > unlock:
+> > 	lhz	%0, 0, &tail
+> > 	addic	%0, %0, 1
 
-That is why in the snooze_loop() we poll on need_resched. If it is set
-we up the priority of the thread using HMT_MEDIUM() and then exit the
-my_idle() loop. In case of interrupts, the priority gets automatically
-increased.
+No carry with this one, I'd say.
+Besides, unlock increments the head.
 
-This might not be required to be done for similar idle routines on other
-archs but this is the consequence of applying this idea of simplified
-cpuidle backend driver on powerpc.
+> > 	lwsync
+> > 	sth	%0, 0, &tail
+> > 
 
-I would say you could let the backend cpuidle drivers be in this regard,
-it could complicate the generic idle loop IMO depending on how the
-polling states are implemented in each architecture.
+Given the beauty and simplicity of this, may I ask Ingo:
+you signed off 314cdbefd1fd0a7acf3780e9628465b77ea6a836;
+can you explain why head and tail must live on the same cache
+line? Or is it just a space saver? I just ported it to ppc,
+I didn't think about alternatives.
 
+What about
 
-> The generic code would be responsible for dealing with need_resched() 
-> and call back into the backend right away if necessary after updating 
-> some stats.
-> 
-> Do you see a problem with the runlatch calls happening around each 
-> interrrupt from such a simplified idle backend?
+atomic_t tail;
+volatile int head; ?
 
-The runlatch calls could be moved outside the loop.They do not need to
-be called each time.
+Admittedly, that's usually 8 bytes instead of 4...
 
-Thanks
-
-Regards
-Preeti U Murthy
-> 
-> 
-> Nicolas
-> 
+	Torsten
