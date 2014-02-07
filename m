@@ -3,17 +3,26 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4192E2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 04:12:33 +1100 (EST)
-Date: Fri, 7 Feb 2014 18:12:24 +0100
+ by ozlabs.org (Postfix) with ESMTPS id 6FB892C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 04:19:07 +1100 (EST)
+Date: Fri, 7 Feb 2014 18:19:00 +0100
 From: Peter Zijlstra <peterz@infradead.org>
 To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH v2] powerpc ticket locks
-Message-ID: <20140207171224.GR5002@laptop.programming.kicks-ass.net>
-References: <20140207165801.GC2107@lst.de>
+Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
+Message-ID: <20140207171900.GS5002@laptop.programming.kicks-ass.net>
+References: <20140206163837.GT2936@laptop.programming.kicks-ass.net>
+ <20140206173727.GA13048@lst.de>
+ <1391717992.6733.232.camel@snotra.buserror.net>
+ <20140207090248.GB26811@lst.de>
+ <20140207103139.GP5002@laptop.programming.kicks-ass.net>
+ <20140207104530.GG5126@laptop.programming.kicks-ass.net>
+ <20140207114949.GA2107@lst.de>
+ <20140207122837.GA3104@twins.programming.kicks-ass.net>
+ <20140207151847.GB3104@twins.programming.kicks-ass.net>
+ <20140207170845.GD2107@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140207165801.GC2107@lst.de>
+In-Reply-To: <20140207170845.GD2107@lst.de>
 Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  Scott Wood <scottwood@freescale.com>,
@@ -28,72 +37,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 07, 2014 at 05:58:01PM +0100, Torsten Duwe wrote:
-> +static __always_inline void arch_spin_lock(arch_spinlock_t *lock)
->  {
-> +	register struct __raw_tickets old, tmp,
-> +		inc = { .tail = TICKET_LOCK_INC };
-> +
->  	CLEAR_IO_SYNC;
-> +	__asm__ __volatile__(
-> +"1:	lwarx	%0,0,%4		# arch_spin_lock\n"
-> +"	add	%1,%3,%0\n"
-> +	PPC405_ERR77(0, "%4")
-> +"	stwcx.	%1,0,%4\n"
-> +"	bne-	1b"
-> +	: "=&r" (old), "=&r" (tmp), "+m" (lock->tickets)
-> +	: "r" (inc), "r" (&lock->tickets)
-> +	: "cc");
-> +
-> +	if (likely(old.head == old.tail))
-> +		goto out;
+On Fri, Feb 07, 2014 at 06:08:45PM +0100, Torsten Duwe wrote:
+> > static inline unsigned int xadd(unsigned int *v, unsigned int i)
+> > {
+> > 	int t, ret;
+> > 	
+> > 	__asm__ __volatile__ (
+> > "1:	lwarx	%0, 0, %4\n"
+> > "	mr	%1, %0\n"
+> > "	add	%0, %3, %0\n"
+> > "	stwcx.	%0, %0, %4\n"
+> > "	bne-	1b\n"
+> > 	: "=&r" (t), "=&r" (ret), "+m" (*v)
+> > 	: "r" (i), "r" (v)
+> > 	: "cc");
+> > 
+> > 	return ret;
+> > }
+> > 
+> I don't like this xadd thing -- it's so x86 ;)
+> x86 has its LOCK prefix, ppc has ll/sc.
+> That should be reflected somehow IMHO.
 
-I would have expected an lwsync someplace hereabouts.
+Its the operational semantics I care about; this version is actually
+nicer in that it doesn't actually imply all sorts of barriers :-)
 
-> +	for (;;) {
-> +		unsigned count = 100;
-> +
->  		do {
-> +			if (ACCESS_ONCE(lock->tickets.head) == old.tail)
-> +				goto out;
->  			HMT_low();
->  			if (SHARED_PROCESSOR)
->  				__spin_yield(lock);
-> +		} while (--count);
->  		HMT_medium();
->  	}
-> +out:
-> +#if defined(CONFIG_PPC_SPLPAR)
-> +	lock->holder = LOCK_TOKEN;
-> +#endif
-> +	barrier();	/* make sure nothing creeps before the lock is taken */
->  }
->  
->  static inline
+> Maybe if xadd became mandatory for some kernel library.
 
-> @@ -147,10 +220,21 @@ void arch_spin_lock_flags(arch_spinlock_t *lock, unsigned long flags)
->  
->  static inline void arch_spin_unlock(arch_spinlock_t *lock)
->  {
-> +	arch_spinlock_t old, new;
-> +
-> +#if defined(CONFIG_PPC_SPLPAR)
-> +	lock->holder = 0;
-> +#endif
-> +	do {
-> +		old.tickets = ACCESS_ONCE(lock->tickets);
-> +		new.tickets.head = old.tickets.head + TICKET_LOCK_INC;
-> +		new.tickets.tail = old.tickets.tail;
-> +	} while (unlikely(__arch_spin_cmpxchg_eq(lock,
-> +						 old.head_tail,
-> +						 new.head_tail)));
->  	SYNC_IO;
->  	__asm__ __volatile__("# arch_spin_unlock\n\t"
->  				PPC_RELEASE_BARRIER: : :"memory");
+call it fetch_add() its not an uncommon operation and many people
+understand the semantics.
 
-Doens't your cmpxchg_eq not already imply a lwsync?
+But you can simply include the asm bits in ticket_lock() and be done
+with it. In that case you can also replace the add with an addi which
+might be a little more efficient.
 
-> -	lock->slock = 0;
->  }
+> > void ticket_unlock(tickets_t *lock)
+> > {
+> > 	ticket_t tail = lock->tail + 1;
+> > 
+> > 	/*
+> > 	 * The store is save against the xadd for it will make the ll/sc fail
+> > 	 * and try again. Aside from that PowerISA guarantees single-copy
+> > 	 * atomicy for half-word writes.
+> > 	 *
+> > 	 * And since only the lock owner will ever write the tail, we're good.
+> > 	 */
+> > 	smp_store_release(&lock->tail, tail);
+> > }
+> 
+> Yeah, let's try that on top of v2 (just posted).
+> First, I want to see v2 work as nicely as v1 --
+> compiling a debug kernel takes a while...
 
-I'm still failing to see why you need an ll/sc pair for unlock.
+Use a faster machine... it can be done < 1 minute :-)
