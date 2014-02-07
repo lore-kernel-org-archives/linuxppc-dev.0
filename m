@@ -1,27 +1,38 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7CC2B2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 02:54:27 +1100 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <20140207090248.GB26811@lst.de>
-Date: Fri, 7 Feb 2014 09:51:16 -0600
-Message-Id: <87C29DBB-41E7-4B6C-9089-3C7756FBAE07@kernel.crashing.org>
-References: <20140206103736.GA18054@lst.de>
- <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
- <1391717992.6733.232.camel@snotra.buserror.net>
- <20140207090248.GB26811@lst.de>
-To: Torsten Duwe <duwe@lst.de>
-Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 326FE2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 02:59:48 +1100 (EST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Fri, 7 Feb 2014 15:59:45 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 423AB1B08066
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 15:59:15 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s17FxUH353608536
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 15:59:30 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s17FxfbU013451
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 08:59:42 -0700
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [RFC PATCH 01/18] powerpc/boot: fix do_div for 64bit wrapper
+Date: Fri,  7 Feb 2014 16:59:14 +0100
+Message-Id: <1391788771-16405-2-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
+References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,34 +42,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When the boot wrapper is compiled in 64bit, there is no need to
+use __div64_32.
 
-On Feb 7, 2014, at 3:02 AM, Torsten Duwe <duwe@lst.de> wrote:
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+ arch/powerpc/boot/stdio.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-> On Thu, Feb 06, 2014 at 02:19:52PM -0600, Scott Wood wrote:
->> On Thu, 2014-02-06 at 18:37 +0100, Torsten Duwe wrote:
->>> On Thu, Feb 06, 2014 at 05:38:37PM +0100, Peter Zijlstra wrote:
->>=20
->>>> Can you pair lwarx with sthcx ? I couldn't immediately find the =
-answer
->>>> in the PowerISA doc. If so I think you can do better by being able =
-to
->>>> atomically load both tickets but only storing the head without =
-affecting
->>>> the tail.
->=20
-> Can I simply write the half word, without a reservation, or will the =
-HW caches
-> mess up the other half? Will it ruin the cache coherency on some =
-(sub)architectures?
-
-The coherency should be fine, I just can=92t remember if you=92ll lose =
-the reservation by doing this.
-
->> Plus, sthcx doesn't exist on all PPC chips.
->=20
-> Which ones are lacking it? Do all have at least a simple 16-bit store?
-
-Everything implements a simple 16-bit store, just not everything =
-implements the store conditional of 16-bit data.
-
-- k=
+diff --git a/arch/powerpc/boot/stdio.c b/arch/powerpc/boot/stdio.c
+index 5b57800bbc67..a701261b1781 100644
+--- a/arch/powerpc/boot/stdio.c
++++ b/arch/powerpc/boot/stdio.c
+@@ -21,6 +21,18 @@ size_t strnlen(const char * s, size_t count)
+ 	return sc - s;
+ }
+ 
++#ifdef __powerpc64__
++
++# define do_div(n, base) ({						\
++	unsigned int __base = (base);					\
++	unsigned int __rem;						\
++	__rem = ((unsigned long long)(n)) % __base;			\
++	(n) = ((unsigned long long)(n)) / __base;			\
++	__rem;								\
++})
++
++#else
++
+ extern unsigned int __div64_32(unsigned long long *dividend,
+ 			       unsigned int divisor);
+ 
+@@ -39,6 +51,8 @@ extern unsigned int __div64_32(unsigned long long *dividend,
+ 	__rem;								\
+  })
+ 
++#endif /* __powerpc64__ */
++
+ static int skip_atoi(const char **s)
+ {
+ 	int i, c;
+-- 
+1.7.10.4
