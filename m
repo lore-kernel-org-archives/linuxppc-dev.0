@@ -1,34 +1,18 @@
-Return-Path: <nicolas.pitre@linaro.org>
-Received: from mail-qc0-f180.google.com (mail-qc0-f180.google.com
- [209.85.216.180])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og105.obsmtp.com (exprod5og105.obsmtp.com [64.18.0.180])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E9CCD2C0078
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 22:09:28 +1100 (EST)
-Received: by mail-qc0-f180.google.com with SMTP id i17so5466347qcy.25
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Feb 2014 03:09:25 -0800 (PST)
-Date: Fri, 7 Feb 2014 11:09:23 +0000 (GMT)
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 6/6] cpu/idle.c: move to sched/idle.c
-In-Reply-To: <20140206164336.GU2936@laptop.programming.kicks-ass.net>
-Message-ID: <alpine.LFD.2.11.1402071051140.1906@knanqh.ubzr>
-References: <1391017513-12995-1-git-send-email-nicolas.pitre@linaro.org>
- <1391017513-12995-7-git-send-email-nicolas.pitre@linaro.org>
- <20140130152500.GB5002@laptop.programming.kicks-ass.net>
- <alpine.LFD.2.11.1401301102210.1652@knanqh.ubzr>
- <20140130162753.GF5002@laptop.programming.kicks-ass.net>
- <alpine.LFD.2.11.1402061152550.1906@knanqh.ubzr>
- <20140206164336.GU2936@laptop.programming.kicks-ass.net>
+ by ozlabs.org (Postfix) with ESMTPS id 736DD2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 22:34:49 +1100 (EST)
+Message-ID: <52F4C23C.5050600@ge.com>
+Date: Fri, 7 Feb 2014 11:23:40 +0000
+From: Martyn Welch <martyn.welch@ge.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
- linux-sh@vger.kernel.org, linux-pm@vger.kernel.org,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- Paul Mundt <lethal@linux-sh.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: ppc9a board support
+References: <CAOB9jCJmXTo7NVR4jdV+3AkRsZviR447PKi2_TFyDdjoO0to8g@mail.gmail.com>
+In-Reply-To: <CAOB9jCJmXTo7NVR4jdV+3AkRsZviR447PKi2_TFyDdjoO0to8g@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,29 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 6 Feb 2014, Peter Zijlstra wrote:
+Hi Chris,
 
-> On Thu, Feb 06, 2014 at 02:09:59PM +0000, Nicolas Pitre wrote:
-> > Hi Peter,
-> > 
-> > Did you merge those patches in your tree? 
-> 
-> tree, tree, what's in a word.
+Support for the PPC9A is already in the Linux kernel, along with VME 
+drivers.
 
-Something you may plant on a patch of grass?  "Merging" becomes a 
-strange concept in that context though.  :-)
+Martyn
 
-> Its in my patch stack yes. 
+On 04/02/14 14:47, Chris Enrique wrote:
+> hello,
+>
+> sorry if this message doesn't clearly hit the topic of this list but i
+> would like to ask if anybody has information about bringing a linux-3.10
+> or later kernel to ge fanuc ppc9a powerpc board (existing bsp? vme
+> drivers? etc.?) to prevent starting from scratch for this task.
+>
+> any ideas would be much appreciated.
+>
+>
+> kind regards,
+> chris
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
-Quilt I suppose?? (yet another word.)
-
-> I should get some of that into tip I suppose, been side-tracked a bit 
-> this week. Sorry for the delay.
-
-If you prefer we pile those patches (and future ones after revew) 
-ourselves just let me know.  Future patches are likely to be more 
-intimate with the scheduler so I just need to know who to upstream them 
-through afterwards.
-
-
-Nicolas
+-- 
+--
+Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
+GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
+T +44(0)1327322748                     | Manchester, M2 3AB
+E martyn.welch@ge.com                  | VAT:GB 927559189
