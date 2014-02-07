@@ -1,38 +1,29 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 441C42C0300
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 02:59:58 +1100 (EST)
-Received: from /spool/local
- by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Fri, 7 Feb 2014 15:59:56 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 42DE91B08066
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 15:59:25 +0000 (GMT)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s17FxerZ393686
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 15:59:40 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s17FxprK031328
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 08:59:52 -0700
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [RFC PATCH 18/18] powerpc/boot: add PPC64_BOOT_WRAPPER config option
-Date: Fri,  7 Feb 2014 16:59:31 +0100
-Message-Id: <1391788771-16405-19-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
-References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 413022C139B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 03:10:14 +1100 (EST)
+Date: Fri, 7 Feb 2014 17:10:04 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
+Message-ID: <20140207161004.GD9987@twins.programming.kicks-ass.net>
+References: <20140206103736.GA18054@lst.de>
+ <20140206163837.GT2936@laptop.programming.kicks-ass.net>
+ <20140206173727.GA13048@lst.de>
+ <1391717992.6733.232.camel@snotra.buserror.net>
+ <20140207090248.GB26811@lst.de>
+ <87C29DBB-41E7-4B6C-9089-3C7756FBAE07@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <87C29DBB-41E7-4B6C-9089-3C7756FBAE07@kernel.crashing.org>
+Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
+ Torsten Duwe <duwe@lst.de>, Anton Blanchard <anton@samba.org>,
+ Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,104 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch broke compatibility for 64bit big endian kernels.
+On Fri, Feb 07, 2014 at 09:51:16AM -0600, Kumar Gala wrote:
+> 
+> On Feb 7, 2014, at 3:02 AM, Torsten Duwe <duwe@lst.de> wrote:
+> 
+> > On Thu, Feb 06, 2014 at 02:19:52PM -0600, Scott Wood wrote:
+> >> On Thu, 2014-02-06 at 18:37 +0100, Torsten Duwe wrote:
+> >>> On Thu, Feb 06, 2014 at 05:38:37PM +0100, Peter Zijlstra wrote:
+> >> 
+> >>>> Can you pair lwarx with sthcx ? I couldn't immediately find the answer
+> >>>> in the PowerISA doc. If so I think you can do better by being able to
+> >>>> atomically load both tickets but only storing the head without affecting
+> >>>> the tail.
+> > 
+> > Can I simply write the half word, without a reservation, or will the HW caches
+> > mess up the other half? Will it ruin the cache coherency on some (sub)architectures?
+> 
+> The coherency should be fine, I just can’t remember if you’ll lose the reservation by doing this.
 
-This patch adds a config option to compile the boot wrapper in 64bit
-only when CPU_LITTLE_ENDIAN is selected. It restores 32bit compilation
-and linking for the big endian kernel.
+It should; I suppose; seeing how you 'destroy' the state it got from the
+load.
 
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- arch/powerpc/boot/Makefile             |    2 +-
- arch/powerpc/boot/wrapper              |    2 +-
- arch/powerpc/boot/zImage.lds.S         |    8 ++++----
- arch/powerpc/platforms/Kconfig.cputype |    5 +++++
- 4 files changed, 11 insertions(+), 6 deletions(-)
+> >> Plus, sthcx doesn't exist on all PPC chips.
+> > 
+> > Which ones are lacking it? Do all have at least a simple 16-bit store?
+> 
+> Everything implements a simple 16-bit store, just not everything implements the store conditional of 16-bit data.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index de71d2a0af3b..7870620033c5 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -23,7 +23,7 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -Os -msoft-float -pipe \
- 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
- 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
--ifdef CONFIG_PPC64
-+ifdef CONFIG_PPC64_BOOT_WRAPPER
- BOOTCFLAGS	+= -m64
- endif
- ifdef CONFIG_CPU_BIG_ENDIAN
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index a1654b510ff3..299f327fb510 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -140,7 +140,7 @@ fi
- elfformat="`${CROSS}objdump -p "$kernel" | grep 'file format' | awk '{print $4}'`"
- case "$elfformat" in
-     elf64-powerpcle)	format=elf64lppc	;;
--    elf64-powerpc)	format=elf64ppc	;;
-+    elf64-powerpc)	format=elf32ppc	;;
-     elf32-powerpc)	format=elf32ppc	;;
- esac
- 
-diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
-index afecab0aff5c..861e72109df2 100644
---- a/arch/powerpc/boot/zImage.lds.S
-+++ b/arch/powerpc/boot/zImage.lds.S
-@@ -1,6 +1,6 @@
- #include <asm-generic/vmlinux.lds.h>
- 
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
- OUTPUT_ARCH(powerpc:common64)
- #else
- OUTPUT_ARCH(powerpc:common)
-@@ -22,7 +22,7 @@ SECTIONS
-     *(.rodata*)
-     *(.data*)
-     *(.sdata*)
--#ifdef CONFIG_PPC32
-+#ifndef CONFIG_PPC64_BOOT_WRAPPER
-     *(.got2)
- #endif
-   }
-@@ -37,7 +37,7 @@ SECTIONS
-   .interp : { *(.interp) }
-   .rela.dyn :
-   {
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
-     __rela_dyn_start = .;
- #endif
-     *(.rela*)
-@@ -67,7 +67,7 @@ SECTIONS
-     _initrd_end =  .;
-   }
- 
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
-   .got :
-   {
-     __toc_start = .;
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index bca2465a9c34..9476aacf59f6 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -420,6 +420,7 @@ config CPU_BIG_ENDIAN
- 
- config CPU_LITTLE_ENDIAN
- 	bool "Build little endian kernel"
-+	select PPC64_BOOT_WRAPPER
- 	help
- 	  Build a little endian kernel.
- 
-@@ -428,3 +429,7 @@ config CPU_LITTLE_ENDIAN
- 	  little endian powerpc.
- 
- endchoice
-+
-+config PPC64_BOOT_WRAPPER
-+	def_bool n
-+	depends on CPU_LITTLE_ENDIAN
--- 
-1.7.10.4
+Ok, so then the last version I posted should work on those machines.
