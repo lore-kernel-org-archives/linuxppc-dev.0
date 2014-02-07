@@ -1,32 +1,32 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5D6C02C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 02:59:52 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6572B2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2014 02:59:53 +1100 (EST)
 Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Fri, 7 Feb 2014 15:59:48 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 63301219005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 15:59:44 +0000 (GMT)
+ Fri, 7 Feb 2014 15:59:49 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3A7011B08066
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2014 15:59:21 +0000 (GMT)
 Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
  [9.149.37.213])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s17FxYQj66584818
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 15:59:34 GMT
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s17FxaEF393490
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 15:59:36 GMT
 Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s17FxjOQ000437
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 08:59:46 -0700
+ s17FxlvT000496
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Feb 2014 08:59:47 -0700
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [RFC PATCH 08/18] powerpc/boot: fix compile warning in 64bit
-Date: Fri,  7 Feb 2014 16:59:21 +0100
-Message-Id: <1391788771-16405-9-git-send-email-clg@fr.ibm.com>
+Subject: [RFC PATCH 11/18] powerpc/boot: add little endian support to elf utils
+Date: Fri,  7 Feb 2014 16:59:24 +0100
+Message-Id: <1391788771-16405-12-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
 References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
@@ -42,33 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
- arch/powerpc/boot/oflib.c:211:9: warning: cast to pointer from integer of \
-		  different size [-Wint-to-pointer-cast]
-  return (phandle) of_call_prom("finddevice", 1, 1, name);
-
-This is a work around. The definite solution would be to define the
-phandle typedef as a u32, as in the kernel, but this would break the
-device tree ops API.
-
-Let it be for the moment.
-
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/oflib.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/boot/elf_util.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 5ab9cb57cd31..e8697df2df27 100644
---- a/arch/powerpc/boot/oflib.c
-+++ b/arch/powerpc/boot/oflib.c
-@@ -203,7 +203,7 @@ void of_exit(void)
-  */
- void *of_finddevice(const char *name)
- {
--	return (phandle) of_call_prom("finddevice", 1, 1, name);
-+	return (void *) (unsigned long) of_call_prom("finddevice", 1, 1, name);
- }
- 
- int of_getprop(const void *phandle, const char *name, void *buf,
+diff --git a/arch/powerpc/boot/elf_util.c b/arch/powerpc/boot/elf_util.c
+index 1567a0c0f05c..316552dea4d8 100644
+--- a/arch/powerpc/boot/elf_util.c
++++ b/arch/powerpc/boot/elf_util.c
+@@ -26,7 +26,11 @@ int parse_elf64(void *hdr, struct elf_info *info)
+ 	      elf64->e_ident[EI_MAG2]  == ELFMAG2	&&
+ 	      elf64->e_ident[EI_MAG3]  == ELFMAG3	&&
+ 	      elf64->e_ident[EI_CLASS] == ELFCLASS64	&&
++#ifdef __LITTLE_ENDIAN__
++	      elf64->e_ident[EI_DATA]  == ELFDATA2LSB	&&
++#else
+ 	      elf64->e_ident[EI_DATA]  == ELFDATA2MSB	&&
++#endif
+ 	      (elf64->e_type            == ET_EXEC ||
+ 	       elf64->e_type            == ET_DYN)	&&
+ 	      elf64->e_machine         == EM_PPC64))
 -- 
 1.7.10.4
