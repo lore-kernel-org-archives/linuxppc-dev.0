@@ -1,56 +1,32 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 76F262C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 12:26:31 +1100 (EST)
-Message-ID: <52F827D3.5080906@huawei.com>
-Date: Mon, 10 Feb 2014 09:13:55 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from LGEMRELSE1Q.lge.com (LGEMRELSE1Q.lge.com [156.147.1.111])
+ by ozlabs.org (Postfix) with ESMTP id D27EB2C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 12:29:22 +1100 (EST)
+Date: Mon, 10 Feb 2014 10:29:18 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
+ determining the fallback node
+Message-ID: <20140210012918.GD12574@lge.com>
+References: <20140206020757.GC5433@linux.vnet.ibm.com>
+ <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
+ <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
+ <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
+ <20140207054819.GC28952@lge.com>
+ <alpine.DEB.2.10.1402071150090.15168@nuc>
+ <alpine.DEB.2.10.1402071245040.20246@nuc>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, David Laight
- <David.Laight@ACULAB.COM>
-Subject: Re: [PATCH 2/2] clocksource: Make clocksource register functions void
-References: <1390461166-36440-1-git-send-email-wangyijing@huawei.com>
- <52E0C889.6000106@prisktech.co.nz>
- <063D6719AE5E284EB5DD2968C1650D6D46489C@AcuExch.aculab.com>
- <alpine.DEB.2.02.1402052139560.24986@ionos.tec.linutronix.de>
-In-Reply-To: <alpine.DEB.2.02.1402052139560.24986@ionos.tec.linutronix.de>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "x86@kernel.org" <x86@kernel.org>, Kevin Hilman <khilman@deeprootsystems.com>,
- "linux@lists.openrisc.net" <linux@openrisc.net>,
- Hanjun Guo <guohanjun@huawei.com>, Sekhar Nori <nsekhar@ti.com>,
- Michal Simek <monstr@monstr.eu>, Paul Mackerras <paulus@samba.org>,
- Ralf Baechle <ralf@linux-mips.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Daniel Walker <dwalker@fifo99.com>,
- Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jonas
- Bonn <jonas@southpole.se>, Kukjin Kim <kgene.kim@samsung.com>,
- Russell King <linux@arm.linux.org.uk>, Richard Weinberger <richard@nod.at>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, Tony Lindgren <tony@atomide.com>,
- Ingo Molnar <mingo@redhat.com>,
- "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
- David Brown <davidb@codeaurora.org>,
- Haavard Skinnemoen <hskinnemoen@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
- "user-mode-linux-devel@lists.sourceforge.net"
- <user-mode-linux-devel@lists.sourceforge.net>,
- "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
- Jeff Dike <jdike@addtoit.com>,
- "davinci-linux-open-source@linux.davincidsp.com"
- <davinci-linux-open-source@linux.davincidsp.com>,
- "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
- John Stultz <john.stultz@linaro.org>,
- "user-mode-linux-user@lists.sourceforge.net"
- <user-mode-linux-user@lists.sourceforge.net>,
- "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Barry Song <baohua@kernel.org>, Jim Cromie <jim.cromie@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, 'Tony Prisk' <linux@prisktech.co.nz>,
- Bryan Huntsman <bryanh@codeaurora.org>,
- "uclinux-dist-devel@blackfin.uclinux.org"
- <uclinux-dist-devel@blackfin.uclinux.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1402071245040.20246@nuc>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -60,48 +36,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2014/2/6 4:40, Thomas Gleixner wrote:
-> Yijing,
+On Fri, Feb 07, 2014 at 12:51:07PM -0600, Christoph Lameter wrote:
+> Here is a draft of a patch to make this work with memoryless nodes.
 > 
-> On Thu, 23 Jan 2014, David Laight wrote:
-> 
->> From: Linuxppc-dev Tony Prisk
->>> On 23/01/14 20:12, Yijing Wang wrote:
->>>> Currently, clocksource_register() and __clocksource_register_scale()
->>>> functions always return 0, it's pointless, make functions void.
->>>> And remove the dead code that check the clocksource_register_hz()
->>>> return value.
->>> ......
->>>> -static inline int clocksource_register_hz(struct clocksource *cs, u32 hz)
->>>> +static inline void clocksource_register_hz(struct clocksource *cs, u32 hz)
->>>>   {
->>>>   	return __clocksource_register_scale(cs, 1, hz);
->>>>   }
->>>
->>> This doesn't make sense - you are still returning a value on a function
->>> declared void, and the return is now from a function that doesn't return
->>> anything either ?!?!
->>> Doesn't this throw a compile-time warning??
->>
->> It depends on the compiler.
->> Recent gcc allow it.
->> I don't know if it is actually valid C though.
->>
->> There is no excuse for it on lines like the above though.
-> 
-> Can you please resend with that fixed against 3.14-rc1 ?
+> The first thing is that we modify node_match to also match if we hit an
+> empty node. In that case we simply take the current slab if its there.
 
-OK, I will resend later.
-
-Thanks!
-Yijing.
-
+Why not inspecting whether we can get the page on the best node such as
+numa_mem_id() node?
 
 > 
-> .
+> If there is no current slab then a regular allocation occurs with the
+> memoryless node. The page allocator will fallback to a possible node and
+> that will become the current slab. Next alloc from a memoryless node
+> will then use that slab.
 > 
+> For that we also add some tracking of allocations on nodes that were not
+> satisfied using the empty_node[] array. A successful alloc on a node
+> clears that flag.
+> 
+> I would rather avoid the empty_node[] array since its global and there may
+> be thread specific allocation restrictions but it would be expensive to do
+> an allocation attempt via the page allocator to make sure that there is
+> really no page available from the page allocator.
+> 
+> Index: linux/mm/slub.c
+> ===================================================================
+> --- linux.orig/mm/slub.c	2014-02-03 13:19:22.896853227 -0600
+> +++ linux/mm/slub.c	2014-02-07 12:44:49.311494806 -0600
+> @@ -132,6 +132,8 @@ static inline bool kmem_cache_has_cpu_pa
+>  #endif
+>  }
+> 
+> +static int empty_node[MAX_NUMNODES];
+> +
+>  /*
+>   * Issues still to be resolved:
+>   *
+> @@ -1405,16 +1407,22 @@ static struct page *new_slab(struct kmem
+>  	void *last;
+>  	void *p;
+>  	int order;
+> +	int alloc_node;
+> 
+>  	BUG_ON(flags & GFP_SLAB_BUG_MASK);
+> 
+>  	page = allocate_slab(s,
+>  		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
+> -	if (!page)
+> +	if (!page) {
+> +		if (node != NUMA_NO_NODE)
+> +			empty_node[node] = 1;
+>  		goto out;
+> +	}
 
+empty_node cannot be set on memoryless node, since page allocation would
+succeed on different node.
 
--- 
-Thanks!
-Yijing
+Thanks.
