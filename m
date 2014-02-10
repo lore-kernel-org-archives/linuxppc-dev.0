@@ -1,23 +1,22 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-qa0-x236.google.com (mail-qa0-x236.google.com
- [IPv6:2607:f8b0:400d:c00::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CB3362C00B1
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Feb 2014 06:39:55 +1100 (EST)
-Received: by mail-qa0-f54.google.com with SMTP id i13so10300785qae.27
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Feb 2014 11:39:52 -0800 (PST)
-Date: Mon, 10 Feb 2014 11:39:48 -0800
-From: Brian Norris <computersforpeace@gmail.com>
-To: Hou Zhiqiang <b48286@freescale.com>
-Subject: Re: [PATCH v2] mtd: m25p80: Make the name of mtd_info fixed
-Message-ID: <20140210193948.GD18440@ld-irv-0074>
-References: <1390717003-28699-1-git-send-email-b48286@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1390717003-28699-1-git-send-email-b48286@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, mingkai.hu@freescale.com,
- linux-mtd@lists.infradead.org, linux-spi@vger.kernel.org
+Return-Path: <shuah.kh@samsung.com>
+Received: from qmta15.emeryville.ca.mail.comcast.net
+ (qmta15.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:228])
+ by ozlabs.org (Postfix) with ESMTP id C66982C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 03:21:02 +1100 (EST)
+From: Shuah Khan <shuah.kh@samsung.com>
+To: rjw@rjwysocki.net,
+	benh@kernel.crashing.org
+Subject: [RFT][PATCH 04/12] drivers/macintosh/adb: change platform power
+ management to use dev_pm_ops
+Date: Mon, 10 Feb 2014 09:12:27 -0700
+Message-Id: <9637dc390002d58de22b21c8ae4aeaf60dfb72df.1392040067.git.shuah.kh@samsung.com>
+In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
+References: <cover.1392040064.git.shuah.kh@samsung.com>
+In-Reply-To: <cover.1392040064.git.shuah.kh@samsung.com>
+References: <cover.1392040064.git.shuah.kh@samsung.com>
+Cc: shuahkhan@gmail.com, Shuah Khan <shuah.kh@samsung.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +26,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 26, 2014 at 02:16:43PM +0800, Hou Zhiqiang wrote:
-> To give spi flash layout using "mtdparts=..." in cmdline, we must
-> give mtd_info a fixed name,because the cmdlinepart's parser will
-> match the name given in cmdline with the mtd_info.
-> 
-> Now, if use OF node, mtd_info's name will be spi->dev->name. It
-> consists of spi_master->bus_num, and the spi_master->bus_num maybe
-> dynamically fetched.
-> So, give the mtd_info a new fiexd name "name.cs", "name" is name of
-> spi_device_id and "cs" is chip-select in spi_dev.
-> 
-> Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
-> ---
-> v2:
->  - add check for return value of function kasprintf.
->  - whether the spi_master->bus_num is dynamical is determined by spi
->    controller driver, and it can't be check in this driver. So, we can
->    not initial the mtd_info's name by distinguishing the spi_master
->    bus_num dynamically-allocated or not.
+Change adb platform driver to register pm ops using dev_pm_ops instead of
+legacy pm_ops. .pm hooks call existing legacy suspend and resume interfaces
+by passing in the right pm state.
 
-How about spi->master->bus_num < 0 ?
+Signed-off-by: Shuah Khan <shuah.kh@samsung.com>
+---
+ drivers/macintosh/adb.c |   41 ++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 36 insertions(+), 5 deletions(-)
 
->  drivers/mtd/devices/m25p80.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-> index eb558e8..1f494d2 100644
-> --- a/drivers/mtd/devices/m25p80.c
-> +++ b/drivers/mtd/devices/m25p80.c
-> @@ -1011,8 +1011,12 @@ static int m25p_probe(struct spi_device *spi)
->  
->  	if (data && data->name)
->  		flash->mtd.name = data->name;
-> -	else
-> -		flash->mtd.name = dev_name(&spi->dev);
-> +	else {
-> +		flash->mtd.name = kasprintf(GFP_KERNEL, "%s.%d",
-> +				id->name, spi->chip_select);
-
-I don't think this name is specific enough. What if there are more than
-one SPI controller? Then there could be one chip with the same
-chip-select. You probably still need to incorporate the SPI master
-somehow, even if it's not by using the bus number directly (because it's
-dynamic).
-
-> +		if (!flash->mtd.name)
-> +			return -ENOMEM;
-> +	}
->  
->  	flash->mtd.type = MTD_NORFLASH;
->  	flash->mtd.writesize = 1;
-
-Brian
+diff --git a/drivers/macintosh/adb.c b/drivers/macintosh/adb.c
+index 04a5049..df6b201 100644
+--- a/drivers/macintosh/adb.c
++++ b/drivers/macintosh/adb.c
+@@ -263,7 +263,7 @@ adb_reset_bus(void)
+ /*
+  * notify clients before sleep
+  */
+-static int adb_suspend(struct platform_device *dev, pm_message_t state)
++static int __adb_suspend(struct platform_device *dev, pm_message_t state)
+ {
+ 	adb_got_sleep = 1;
+ 	/* We need to get a lock on the probe thread */
+@@ -276,10 +276,25 @@ static int adb_suspend(struct platform_device *dev, pm_message_t state)
+ 	return 0;
+ }
+ 
++static int adb_suspend(struct device *dev)
++{
++	return __adb_suspend(to_platform_device(dev), PMSG_SUSPEND);
++}
++
++static int adb_freeze(struct device *dev)
++{
++	return __adb_suspend(to_platform_device(dev), PMSG_FREEZE);
++}
++
++static int adb_poweroff(struct device *dev)
++{
++	return __adb_suspend(to_platform_device(dev), PMSG_HIBERNATE);
++}
++
+ /*
+  * reset bus after sleep
+  */
+-static int adb_resume(struct platform_device *dev)
++static int __adb_resume(struct platform_device *dev)
+ {
+ 	adb_got_sleep = 0;
+ 	up(&adb_probe_mutex);
+@@ -287,6 +302,11 @@ static int adb_resume(struct platform_device *dev)
+ 
+ 	return 0;
+ }
++
++static int adb_resume(struct device *dev)
++{
++	return __adb_resume(to_platform_device(dev));
++}
+ #endif /* CONFIG_PM */
+ 
+ static int __init adb_init(void)
+@@ -831,14 +851,25 @@ static const struct file_operations adb_fops = {
+ 	.release	= adb_release,
+ };
+ 
++#ifdef CONFIG_PM
++static const struct dev_pm_ops adb_dev_pm_ops = {
++	.suspend = adb_suspend,
++	.resume = adb_resume,
++	/* Hibernate hooks */
++	.freeze = adb_freeze,
++	.thaw = adb_resume,
++	.poweroff = adb_poweroff,
++	.restore = adb_resume,
++};
++#endif
++
+ static struct platform_driver adb_pfdrv = {
+ 	.driver = {
+ 		.name = "adb",
+-	},
+ #ifdef CONFIG_PM
+-	.suspend = adb_suspend,
+-	.resume = adb_resume,
++		.pm = &adb_dev_pm_ops,
+ #endif
++	},
+ };
+ 
+ static struct platform_device adb_pfdev = {
+-- 
+1.7.10.4
