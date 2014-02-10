@@ -1,23 +1,26 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <James.Yang@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4F7EF2C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 02:52:24 +1100 (EST)
-Date: Mon, 10 Feb 2014 16:52:17 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc ticket locks
-Message-ID: <20140210155217.GF2107@lst.de>
-References: <20140207165801.GC2107@lst.de> <1392001823.3996.21.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 3982A2C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 03:51:09 +1100 (EST)
+Date: Mon, 10 Feb 2014 10:50:45 -0600
+From: James Yang <James.Yang@freescale.com>
+To: Stephen N Chivers <schivers@csc.com.au>
+Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
+In-Reply-To: <OF80E982EC.BE15A034-ONCA257C7A.006B58B5-CA257C7A.006C3EA8@csc.com>
+Message-ID: <alpine.LRH.2.00.1402101031540.10318@ra8135-ec1.am.freescale.net>
+References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
+ <20140206082635.GA7048@visitor2.iram.es>
+ <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
+ <20140207101036.GA823@visitor2.iram.es>
+ <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
+ <OF80E982EC.BE15A034-ONCA257C7A.006B58B5-CA257C7A.006C3EA8@csc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1392001823.3996.21.camel@pasglop>
-Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: James Yang <James.Yang@freescale.com>, Chris Proctor <cproctor@csc.com.au>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,52 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 10, 2014 at 02:10:23PM +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2014-02-07 at 17:58 +0100, Torsten Duwe wrote:
-> >  typedef struct {
-> > -       volatile unsigned int slock;
-> > -} arch_spinlock_t;
-> > +       union {
-> > +               __ticketpair_t head_tail;
-> > +               struct __raw_tickets {
-> > +#ifdef __BIG_ENDIAN__          /* The "tail" part should be in the MSBs */
-> > +                       __ticket_t tail, head;
-> > +#else
-> > +                       __ticket_t head, tail;
-> > +#endif
-> > +               } tickets;
-> > +       };
-> > +#if defined(CONFIG_PPC_SPLPAR)
-> > +       u32 holder;
-> > +#endif
-> > +} arch_spinlock_t __aligned(4);
+On Sun, 9 Feb 2014, Stephen N Chivers wrote:
+
+> James Yang <James.Yang@freescale.com> wrote on 02/08/2014 07:49:40 AM:
 > 
-> That's still broken with lockref (which we just merged).
+> > From: James Yang <James.Yang@freescale.com>
+> > To: Gabriel Paubert <paubert@iram.es>
+> > Cc: Stephen N Chivers <schivers@csc.com.au>, Chris Proctor 
+> > <cproctor@csc.com.au>, <linuxppc-dev@lists.ozlabs.org>
+> > Date: 02/08/2014 07:49 AM
+> > Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
+> > 
+> > On Fri, 7 Feb 2014, Gabriel Paubert wrote:
+> > 
+> > >    Hi Stephen,
+> > > 
+> > > On Fri, Feb 07, 2014 at 11:27:57AM +1000, Stephen N Chivers wrote:
+> > > > Gabriel Paubert <paubert@iram.es> wrote on 02/06/2014 07:26:37 PM:
+> > > > 
+> > > > > From: Gabriel Paubert <paubert@iram.es>
+> > > > > To: Stephen N Chivers <schivers@csc.com.au>
+> > > > > Cc: linuxppc-dev@lists.ozlabs.org, Chris Proctor 
+> <cproctor@csc.com.au>
+> > > > > Date: 02/06/2014 07:26 PM
+> > > > > Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
+> > > > > 
+> > > > > On Thu, Feb 06, 2014 at 12:09:00PM +1000, Stephen N Chivers wrote:
+> > > > > > With the above mask computation I get consistent results for 
+> > > > > > both the MPC8548 and MPC7410 boards.
+> > > > > > 
+> > > > > > Am I missing something subtle?
+> > > > > 
+> > > > > No I think you are correct. This said, this code may probably be 
+> > > > optimized 
+> > > > > to eliminate a lot of the conditional branches. I think that:
+> > 
+> > 
+> > If the compiler is enabled to generate isel instructions, it would not 
+> > use a conditional branch for this code. (ignore the andi's values, 
+> > this is an old compile)
+> > 
+> From limited research, the 440GP is a processor
+> that doesn't implement the isel instruction and it does
+> not implement floating point.
 > 
-> We must have the arch_spinlock_t and the ref in the same 64-bit word
-> otherwise it will break.
+> The kernel emulates isel and so using that instruction
+> for the 440GP would have a double trap penalty.
 
-Well, as far as I can see you'll just not be able to
-USE_CMPXCHG_LOCKREF -- with the appropriate performance hit --
-the code just falls back into lock&ref on pSeries.
-What again was the intention of directed yield in the first place...?
+Are you writing about something outside the scope of this thread?  OP 
+was using MPC8548 not a 440GP.  The compiler should not be using or 
+targeting 8548 for a 440GP so having to emulate isel shouldn't be an 
+issue because there wouldn't be any.  (The assembly listing I posted 
+was generated by gcc targeting 8548.)  Anyway, I had measured the 
+non-isel routines to be faster and that works without illop traps.
 
-> We can make it work in theory since the holder doesn't have to be
-> accessed atomically, but the practicals are a complete mess ...
-> lockref would essentially have to re-implement the holder handling
-> of the spinlocks and use lower level ticket stuff.
-> 
-> Unless you can find a sneaky trick ... :-(
+ 
+> Correct me if I am wrong, the isel instruction first appears
+> in PowerPC ISA v2.04 around mid 2007. 
 
-What if I squeeze the bits a little?
-4k vCPUs, and 256 physical, as a limit to stay within 32 bits?
-At the cost that unlock may become an ll/sc operation again.
-I could think about a trick against that.
-But alas, hw_cpu_id is 16 bit, which makes a lookup table neccessary :-/
 
-Doing another round of yields for lockrefs now doesn't
-sound so bad any more.
-
-Opinions, anyone?
-
-	Torsten
+isel appeared in 2003 in the e500 (v1) core that is in the MPC8540.  
+The instruction is Power ISA 2.03 (9/2006).
