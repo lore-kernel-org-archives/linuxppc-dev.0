@@ -2,26 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D66132C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 14:06:59 +1100 (EST)
-Message-ID: <1392001526.3996.17.camel@pasglop>
-Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
+ by ozlabs.org (Postfix) with ESMTPS id C32192C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 14:11:05 +1100 (EST)
+Message-ID: <1392001823.3996.21.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc ticket locks
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Mon, 10 Feb 2014 14:05:26 +1100
-In-Reply-To: <87C29DBB-41E7-4B6C-9089-3C7756FBAE07@kernel.crashing.org>
-References: <20140206103736.GA18054@lst.de>
- <20140206163837.GT2936@laptop.programming.kicks-ass.net>
- <20140206173727.GA13048@lst.de>
- <1391717992.6733.232.camel@snotra.buserror.net>
- <20140207090248.GB26811@lst.de>
- <87C29DBB-41E7-4B6C-9089-3C7756FBAE07@kernel.crashing.org>
+To: Torsten Duwe <duwe@lst.de>
+Date: Mon, 10 Feb 2014 14:10:23 +1100
+In-Reply-To: <20140207165801.GC2107@lst.de>
+References: <20140207165801.GC2107@lst.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- linux-kernel@vger.kernel.org, Torsten Duwe <duwe@lst.de>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
  Anton Blanchard <anton@samba.org>, Scott Wood <scottwood@freescale.com>,
- Paul Mackerras <paulus@samba.org>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,35 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-02-07 at 09:51 -0600, Kumar Gala wrote:
-> On Feb 7, 2014, at 3:02 AM, Torsten Duwe <duwe@lst.de> wrote:
-> 
-> > On Thu, Feb 06, 2014 at 02:19:52PM -0600, Scott Wood wrote:
-> >> On Thu, 2014-02-06 at 18:37 +0100, Torsten Duwe wrote:
-> >>> On Thu, Feb 06, 2014 at 05:38:37PM +0100, Peter Zijlstra wrote:
-> >> 
-> >>>> Can you pair lwarx with sthcx ? I couldn't immediately find the answer
-> >>>> in the PowerISA doc. If so I think you can do better by being able to
-> >>>> atomically load both tickets but only storing the head without affecting
-> >>>> the tail.
-> > 
-> > Can I simply write the half word, without a reservation, or will the HW caches
-> > mess up the other half? Will it ruin the cache coherency on some (sub)architectures?
-> 
-> The coherency should be fine, I just can’t remember if you’ll lose the reservation by doing this.
+On Fri, 2014-02-07 at 17:58 +0100, Torsten Duwe wrote:
+>  typedef struct {
+> -       volatile unsigned int slock;
+> -} arch_spinlock_t;
+> +       union {
+> +               __ticketpair_t head_tail;
+> +               struct __raw_tickets {
+> +#ifdef __BIG_ENDIAN__          /* The "tail" part should be in the MSBs */
+> +                       __ticket_t tail, head;
+> +#else
+> +                       __ticket_t head, tail;
+> +#endif
+> +               } tickets;
+> +       };
+> +#if defined(CONFIG_PPC_SPLPAR)
+> +       u32 holder;
+> +#endif
+> +} arch_spinlock_t __aligned(4);
 
-Yes you do.
+That's still broken with lockref (which we just merged).
 
-> >> Plus, sthcx doesn't exist on all PPC chips.
-> > 
-> > Which ones are lacking it? Do all have at least a simple 16-bit store?
-> 
-> Everything implements a simple 16-bit store, just not everything implements the store conditional of 16-bit data.
+We must have the arch_spinlock_t and the ref in the same 64-bit word
+otherwise it will break.
+
+We can make it work in theory since the holder doesn't have to be
+accessed atomically, but the practicals are a complete mess ...
+lockref would essentially have to re-implement the holder handling
+of the spinlocks and use lower level ticket stuff.
+
+Unless you can find a sneaky trick ... :-(
 
 Ben.
-
-> - k--
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
