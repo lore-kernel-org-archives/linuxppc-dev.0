@@ -1,25 +1,31 @@
-Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta7.messagelabs.com (mail1.bemta7.messagelabs.com
- [216.82.254.100])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CDFFA2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 06:42:30 +1100 (EST)
-In-Reply-To: <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
-References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
- <20140206082635.GA7048@visitor2.iram.es>
- <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
- <20140207101036.GA823@visitor2.iram.es>
- <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
-To: James Yang <James.Yang@freescale.com>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
+ by ozlabs.org (Postfix) with ESMTP id 31B572C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 12:09:32 +1100 (EST)
+Date: Mon, 10 Feb 2014 10:09:36 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
+ determining the fallback node
+Message-ID: <20140210010936.GA12574@lge.com>
+References: <20140206020757.GC5433@linux.vnet.ibm.com>
+ <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
+ <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
+ <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
+ <20140207054819.GC28952@lge.com>
+ <alpine.DEB.2.02.1402080154140.9668@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
-From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OF80E982EC.BE15A034-ONCA257C7A.006B58B5-CA257C7A.006C3EA8@csc.com>
-Date: Mon, 10 Feb 2014 05:42:19 +1000
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Chris Proctor <cproctor@csc.com.au>, linuxppc-dev@lists.ozlabs.org,
- Stephen N Chivers <schivers@csc.com.au>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.02.1402080154140.9668@chino.kir.corp.google.com>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
+ linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,73 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-James Yang <James.Yang@freescale.com> wrote on 02/08/2014 07:49:40 AM:
-
-> From: James Yang <James.Yang@freescale.com>
-> To: Gabriel Paubert <paubert@iram.es>
-> Cc: Stephen N Chivers <schivers@csc.com.au>, Chris Proctor 
-> <cproctor@csc.com.au>, <linuxppc-dev@lists.ozlabs.org>
-> Date: 02/08/2014 07:49 AM
-> Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
+On Sat, Feb 08, 2014 at 01:57:39AM -0800, David Rientjes wrote:
+> On Fri, 7 Feb 2014, Joonsoo Kim wrote:
 > 
-> On Fri, 7 Feb 2014, Gabriel Paubert wrote:
-> 
-> >    Hi Stephen,
+> > > It seems like a better approach would be to do this when a node is brought 
+> > > online and determine the fallback node based not on the zonelists as you 
+> > > do here but rather on locality (such as through a SLIT if provided, see 
+> > > node_distance()).
 > > 
-> > On Fri, Feb 07, 2014 at 11:27:57AM +1000, Stephen N Chivers wrote:
-> > > Gabriel Paubert <paubert@iram.es> wrote on 02/06/2014 07:26:37 PM:
-> > > 
-> > > > From: Gabriel Paubert <paubert@iram.es>
-> > > > To: Stephen N Chivers <schivers@csc.com.au>
-> > > > Cc: linuxppc-dev@lists.ozlabs.org, Chris Proctor 
-<cproctor@csc.com.au>
-> > > > Date: 02/06/2014 07:26 PM
-> > > > Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
-> > > > 
-> > > > On Thu, Feb 06, 2014 at 12:09:00PM +1000, Stephen N Chivers wrote:
+> > Hmm...
+> > I guess that zonelist is base on locality. Zonelist is generated using
+> > node_distance(), so I think that it reflects locality. But, I'm not expert
+> > on NUMA, so please let me know what I am missing here :)
+> > 
 > 
-> > > > > 
-> > > > >                 mask = 0;
-> > > > >                 if (FM & (1 << 0))
-> > > > >                         mask |= 0x0000000f;
-> > > > >                 if (FM & (1 << 1))
-> > > > >                         mask |= 0x000000f0;
-> > > > >                 if (FM & (1 << 2))
-> > > > >                         mask |= 0x00000f00;
-> > > > >                 if (FM & (1 << 3))
-> > > > >                         mask |= 0x0000f000;
-> > > > >                 if (FM & (1 << 4))
-> > > > >                         mask |= 0x000f0000;
-> > > > >                 if (FM & (1 << 5))
-> > > > >                         mask |= 0x00f00000;
-> > > > >                 if (FM & (1 << 6))
-> > > > >                         mask |= 0x0f000000;
-> > > > >                 if (FM & (1 << 7))
-> > > > >                         mask |= 0x90000000;
-> > > > > 
-> > > > > With the above mask computation I get consistent results for 
-> > > > > both the MPC8548 and MPC7410 boards.
-> > > > > 
-> > > > > Am I missing something subtle?
-> > > > 
-> > > > No I think you are correct. This said, this code may probably be 
-> > > optimized 
-> > > > to eliminate a lot of the conditional branches. I think that:
+> The zonelist is, yes, but I'm talking about memoryless and cpuless nodes.  
+> If your solution is going to become the generic kernel API that determines 
+> what node has local memory for a particular node, then it will have to 
+> support all definitions of node.  That includes nodes that consist solely 
+> of I/O, chipsets, networking, or storage devices.  These nodes may not 
+> have memory or cpus, so doing it as part of onlining cpus isn't going to 
+> be generic enough.  You want a node_to_mem_node() API for all possible 
+> node types (the possible node types listed above are straight from the 
+> ACPI spec).  For 99% of people, node_to_mem_node(X) is always going to be 
+> X and we can optimize for that, but any solution that relies on cpu online 
+> is probably shortsighted right now.
 > 
-> 
-> If the compiler is enabled to generate isel instructions, it would not 
-> use a conditional branch for this code. (ignore the andi's values, 
-> this is an old compile)
-> 
->From limited research, the 440GP is a processor
-that doesn't implement the isel instruction and it does
-not implement floating point.
+> I think it would be much better to do this as a part of setting a node to 
+> be online.
 
-The kernel emulates isel and so using that instruction
-for the 440GP would have a double trap penalty.
+Okay. I got your point.
+I will change it to rely on node online if this patch is really needed.
 
-Correct me if I am wrong, the isel instruction first appears
-in PowerPC ISA v2.04 around mid 2007. 
-
-Stephen Chivers,
-CSC Australia Pty. Ltd. 
+Thanks!
