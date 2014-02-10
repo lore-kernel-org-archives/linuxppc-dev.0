@@ -1,25 +1,28 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-ie0-x235.google.com (mail-ie0-x235.google.com
+ [IPv6:2607:f8b0:4001:c03::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DFA262C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 04:53:36 +1100 (EST)
-Date: Mon, 10 Feb 2014 18:53:25 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [PATCH v2] powerpc ticket locks
-Message-ID: <20140210175325.GA27965@twins.programming.kicks-ass.net>
-References: <20140207165801.GC2107@lst.de> <1392001823.3996.21.camel@pasglop>
- <20140210155217.GF2107@lst.de>
+ by ozlabs.org (Postfix) with ESMTPS id A5BC82C00B0
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Feb 2014 05:47:34 +1100 (EST)
+Received: by mail-ie0-f181.google.com with SMTP id to1so3828049ieb.40
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Feb 2014 10:47:30 -0800 (PST)
+Date: Mon, 10 Feb 2014 10:47:26 -0800
+From: Brian Norris <computersforpeace@gmail.com>
+To: "B48286@freescale.com" <B48286@freescale.com>
+Subject: Re: [PATCH] mtd: m25p80: Make the name of mtd_info fixed
+Message-ID: <20140210184726.GC18440@ld-irv-0074>
+References: <1388990069-27066-1-git-send-email-b48286@freescale.com>
+ <20140123021213.GZ8919@ld-irv-0074>
+ <66941b677b7e4b8d9ce4cc44304b0955@DM2PR03MB301.namprd03.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140210155217.GF2107@lst.de>
-Cc: Tom Musta <tommusta@gmail.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <66941b677b7e4b8d9ce4cc44304b0955@DM2PR03MB301.namprd03.prod.outlook.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "Mingkai.Hu@freescale.com" <Mingkai.Hu@freescale.com>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ Ezequiel Garcia <ezequiel.garcia@free-electrons.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,38 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 10, 2014 at 04:52:17PM +0100, Torsten Duwe wrote:
-> Opinions, anyone?
+Hi Hou,
 
-Since the holder thing is a performance thing, not a correctness thing;
-one thing you could do is something like:
+On Thu, Jan 23, 2014 at 03:29:41AM +0000, B48286@freescale.com wrote:
+> > -----Original Message-----
+> > From: Brian Norris [mailto:computersforpeace@gmail.com]
+> > Sent: Thursday, January 23, 2014 10:12 AM
+> > To: Hou Zhiqiang-B48286
+> > Cc: linux-mtd@lists.infradead.org; linuxppc-dev@ozlabs.org; Wood Scott-
+> > B07421; Hu Mingkai-B21284; Ezequiel Garcia
+> > Subject: Re: [PATCH] mtd: m25p80: Make the name of mtd_info fixed
+> > 
+> > On Mon, Jan 06, 2014 at 02:34:29PM +0800, Hou Zhiqiang wrote:
+> > > --- a/drivers/mtd/devices/m25p80.c
+> > > +++ b/drivers/mtd/devices/m25p80.c
+> > > @@ -1012,7 +1012,8 @@ static int m25p_probe(struct spi_device *spi)
+> > >  	if (data && data->name)
+> > >  		flash->mtd.name = data->name;
+> > >  	else
+> > > -		flash->mtd.name = dev_name(&spi->dev);
+> > > +		flash->mtd.name = kasprintf(GFP_KERNEL, "%s.%d",
+> > > +				id->name, spi->chip_select);
+> > 
+> > Changing the mtd.name may have far-reaching consequences for users who
+> > already have mtdparts= command lines. But your concern is probably valid
+> > for dynamically-determined bus numbers. Perhaps you can edit this patch
+> > to only change the name when the busnum is dynamically-allocated?
+> >
+> It's a good idea, but in the case of mtd_info's name dynamically-allocated
+> using "mtdparts=..." in command lines is illegal obviously.
 
-static const int OWNER_HASH_SIZE = CONFIG_NR_CPUS * 4;
-static const int OWNER_HASH_BITS = ilog2(OWNER_HASH_SIZE);
+I agree that users should never have relied on the dynamically-allocated
+name. But changing the name for non-dynamic schemes (e.g., where the SPI
+busnum is a fixed value) is not pleasant for users.
 
-u16 lock_owner_array[OWNER_HASH_SIZE] = { 0, };
+> Would you tell
+> me what side-effect will be brought by the change of mtd_info's name.
 
-void set_owner(struct arch_spinlock_t *lock, int owner)
-{
-	int hash = hash_ptr(lock, OWNER_HASH_BITS);
-	lock_owner_array[hash] = owner;
-}
+I can only think of the mtdparts= command line. Otherwise, I don't think
+the name is very important.
 
-void yield_to_owner(struct arch_spinlock_t *lock)
-{
-	int hash = hash_ptr(lock, OWNER_HASH_BITS);
-	int owner = lock_owner_array[hash];
-	yield_to_cpu(owner);
-}
-
-And call set_owner() after the ticket lock is acquired, and don't bother
-clearing it again; a new acquire will overwrite, a collision we have to
-live with.
-
-It should on average get you the right yield and does away with having
-to track the owner field in place.
-
-It does however get you an extra cacheline miss on acquire :/
-
-One could consider patching it out when you know your kernel is not
-running on an overloaded partition.
+Brian
