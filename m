@@ -1,27 +1,56 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEAMRELO01.lge.com (lgeamrelo01.lge.com [156.147.1.125])
- by ozlabs.org (Postfix) with ESMTP id 6AB302C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 12:22:09 +1100 (EST)
-Date: Mon, 10 Feb 2014 10:22:03 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC PATCH 3/3] slub: fallback to get_numa_mem() node if we want
- to allocate on memoryless node
-Message-ID: <20140210012203.GC12574@lge.com>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-3-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.10.1402061127001.5348@nuc>
- <20140207054119.GA28952@lge.com>
- <alpine.DEB.2.10.1402071147390.15168@nuc>
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 76F262C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 12:26:31 +1100 (EST)
+Message-ID: <52F827D3.5080906@huawei.com>
+Date: Mon, 10 Feb 2014 09:13:55 +0800
+From: Yijing Wang <wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.10.1402071147390.15168@nuc>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, mpm@selenic.com,
- penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>, David Laight
+ <David.Laight@ACULAB.COM>
+Subject: Re: [PATCH 2/2] clocksource: Make clocksource register functions void
+References: <1390461166-36440-1-git-send-email-wangyijing@huawei.com>
+ <52E0C889.6000106@prisktech.co.nz>
+ <063D6719AE5E284EB5DD2968C1650D6D46489C@AcuExch.aculab.com>
+ <alpine.DEB.2.02.1402052139560.24986@ionos.tec.linutronix.de>
+In-Reply-To: <alpine.DEB.2.02.1402052139560.24986@ionos.tec.linutronix.de>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "x86@kernel.org" <x86@kernel.org>, Kevin Hilman <khilman@deeprootsystems.com>,
+ "linux@lists.openrisc.net" <linux@openrisc.net>,
+ Hanjun Guo <guohanjun@huawei.com>, Sekhar Nori <nsekhar@ti.com>,
+ Michal Simek <monstr@monstr.eu>, Paul Mackerras <paulus@samba.org>,
+ Ralf Baechle <ralf@linux-mips.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Daniel Walker <dwalker@fifo99.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>, Jonas
+ Bonn <jonas@southpole.se>, Kukjin Kim <kgene.kim@samsung.com>,
+ Russell King <linux@arm.linux.org.uk>, Richard Weinberger <richard@nod.at>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, Tony Lindgren <tony@atomide.com>,
+ Ingo Molnar <mingo@redhat.com>,
+ "microblaze-uclinux@itee.uq.edu.au" <microblaze-uclinux@itee.uq.edu.au>,
+ David Brown <davidb@codeaurora.org>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
+ "user-mode-linux-devel@lists.sourceforge.net"
+ <user-mode-linux-devel@lists.sourceforge.net>,
+ "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>,
+ Jeff Dike <jdike@addtoit.com>,
+ "davinci-linux-open-source@linux.davincidsp.com"
+ <davinci-linux-open-source@linux.davincidsp.com>,
+ "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>,
+ John Stultz <john.stultz@linaro.org>,
+ "user-mode-linux-user@lists.sourceforge.net"
+ <user-mode-linux-user@lists.sourceforge.net>,
+ "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Barry Song <baohua@kernel.org>, Jim Cromie <jim.cromie@gmail.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, 'Tony Prisk' <linux@prisktech.co.nz>,
+ Bryan Huntsman <bryanh@codeaurora.org>,
+ "uclinux-dist-devel@blackfin.uclinux.org"
+ <uclinux-dist-devel@blackfin.uclinux.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,29 +60,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 07, 2014 at 11:49:57AM -0600, Christoph Lameter wrote:
-> On Fri, 7 Feb 2014, Joonsoo Kim wrote:
+On 2014/2/6 4:40, Thomas Gleixner wrote:
+> Yijing,
 > 
-> > > This check wouild need to be something that checks for other contigencies
-> > > in the page allocator as well. A simple solution would be to actually run
-> > > a GFP_THIS_NODE alloc to see if you can grab a page from the proper node.
-> > > If that fails then fallback. See how fallback_alloc() does it in slab.
-> > >
-> >
-> > Hello, Christoph.
-> >
-> > This !node_present_pages() ensure that allocation on this node cannot succeed.
-> > So we can directly use numa_mem_id() here.
+> On Thu, 23 Jan 2014, David Laight wrote:
 > 
-> Yes of course we can use numa_mem_id().
+>> From: Linuxppc-dev Tony Prisk
+>>> On 23/01/14 20:12, Yijing Wang wrote:
+>>>> Currently, clocksource_register() and __clocksource_register_scale()
+>>>> functions always return 0, it's pointless, make functions void.
+>>>> And remove the dead code that check the clocksource_register_hz()
+>>>> return value.
+>>> ......
+>>>> -static inline int clocksource_register_hz(struct clocksource *cs, u32 hz)
+>>>> +static inline void clocksource_register_hz(struct clocksource *cs, u32 hz)
+>>>>   {
+>>>>   	return __clocksource_register_scale(cs, 1, hz);
+>>>>   }
+>>>
+>>> This doesn't make sense - you are still returning a value on a function
+>>> declared void, and the return is now from a function that doesn't return
+>>> anything either ?!?!
+>>> Doesn't this throw a compile-time warning??
+>>
+>> It depends on the compiler.
+>> Recent gcc allow it.
+>> I don't know if it is actually valid C though.
+>>
+>> There is no excuse for it on lines like the above though.
 > 
-> But the check is only for not having any memory at all on a node. There
-> are other reason for allocations to fail on a certain node. The node could
-> have memory that cannot be reclaimed, all dirty, beyond certain
-> thresholds, not in the current set of allowed nodes etc etc.
+> Can you please resend with that fixed against 3.14-rc1 ?
 
-Yes. There are many other cases, but I prefer that we think them separately.
-Maybe they needs another approach. For now, to solve memoryless node problem,
-my solution is enough and safe.
+OK, I will resend later.
 
-Thanks.
+Thanks!
+Yijing.
+
+
+> 
+> .
+> 
+
+
+-- 
+Thanks!
+Yijing
