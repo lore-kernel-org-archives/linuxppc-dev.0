@@ -1,39 +1,26 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 866B02C0456
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 13:42:06 +1100 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Sun, 9 Feb 2014 21:42:03 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2B6B938C8027
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2014 21:42:02 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1A2g26G3735946
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 02:42:02 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1A2g1gi026180
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Feb 2014 21:42:01 -0500
-Subject: [RESEND PATCH 3/3] cpuidle/ppc: Split timer_interrupt() into timer
- handling and interrupt handling routines
-To: benh@kernel.crashing.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Mon, 10 Feb 2014 08:08:25 +0530
-Message-ID: <20140210023824.19345.48767.stgit@preeti>
-In-Reply-To: <20140210023503.19345.30567.stgit@preeti>
-References: <20140210023503.19345.30567.stgit@preeti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: deepthi@linux.vnet.ibm.com, arnd@arndb.de, geoff@infradead.org,
- paul.gortmaker@windriver.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 3C9132C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2014 13:55:07 +1100 (EST)
+Message-ID: <1392000853.3996.13.camel@pasglop>
+Subject: Re: [PATCH] Convert powerpc simple spinlocks into ticket locks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tom Musta <tommusta@gmail.com>
+Date: Mon, 10 Feb 2014 13:54:13 +1100
+In-Reply-To: <52F3E255.5050906@gmail.com>
+References: <20140206103736.GA18054@lst.de>
+ <20140206163837.GT2936@laptop.programming.kicks-ass.net>
+ <20140206173727.GA13048@lst.de>
+ <20140206180826.GI5002@laptop.programming.kicks-ass.net>
+ <52F3E255.5050906@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Torsten Duwe <duwe@lst.de>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,133 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+On Thu, 2014-02-06 at 13:28 -0600, Tom Musta wrote:
+> My read is consistent with Torsten's ... this looks like a bad idea.
+> 
+> Look at the RTL for sthcx. on page 692 (Power ISA V2.06) and you will
+> see this:
+> 
+> if RESERVE then
+>   if RESERVE_LENGTH = 2 then
+>      ...
+>   else
+>      undefined_case <- 1
+> else
+>   ...
+> 
+> A legal implementation might never perform the store.
 
-Split timer_interrupt(), which is the local timer interrupt handler on ppc
-into routines called during regular interrupt handling and __timer_interrupt(),
-which takes care of running local timers and collecting time related stats.
+This is an area where we definitely want to check with the implementors
+and if the implementations happen to do what we want (they likely do),
+get the architecture changed for future chips and use it anyway.
 
-This will enable callers interested only in running expired local timers to
-directly call into __timer_interupt(). One of the use cases of this is the
-tick broadcast IPI handling in which the sleeping CPUs need to handle the local
-timers that have expired.
+There's a a *significant* benefit in avoiding an atomic operation in the
+unlock case .
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+The reservation mechanism being based on a granule that is generally a
+cache line, I doubt implementations will ever check the actual access
+size, but we need to double check.
 
- arch/powerpc/kernel/time.c |   81 +++++++++++++++++++++++++-------------------
- 1 file changed, 46 insertions(+), 35 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 3ff97db..df2989b 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -478,6 +478,47 @@ void arch_irq_work_raise(void)
- 
- #endif /* CONFIG_IRQ_WORK */
- 
-+void __timer_interrupt(void)
-+{
-+	struct pt_regs *regs = get_irq_regs();
-+	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
-+	struct clock_event_device *evt = &__get_cpu_var(decrementers);
-+	u64 now;
-+
-+	trace_timer_interrupt_entry(regs);
-+
-+	if (test_irq_work_pending()) {
-+		clear_irq_work_pending();
-+		irq_work_run();
-+	}
-+
-+	now = get_tb_or_rtc();
-+	if (now >= *next_tb) {
-+		*next_tb = ~(u64)0;
-+		if (evt->event_handler)
-+			evt->event_handler(evt);
-+		__get_cpu_var(irq_stat).timer_irqs_event++;
-+	} else {
-+		now = *next_tb - now;
-+		if (now <= DECREMENTER_MAX)
-+			set_dec((int)now);
-+		/* We may have raced with new irq work */
-+		if (test_irq_work_pending())
-+			set_dec(1);
-+		__get_cpu_var(irq_stat).timer_irqs_others++;
-+	}
-+
-+#ifdef CONFIG_PPC64
-+	/* collect purr register values often, for accurate calculations */
-+	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-+		struct cpu_usage *cu = &__get_cpu_var(cpu_usage_array);
-+		cu->current_tb = mfspr(SPRN_PURR);
-+	}
-+#endif
-+
-+	trace_timer_interrupt_exit(regs);
-+}
-+
- /*
-  * timer_interrupt - gets called when the decrementer overflows,
-  * with interrupts disabled.
-@@ -486,8 +527,6 @@ void timer_interrupt(struct pt_regs * regs)
- {
- 	struct pt_regs *old_regs;
- 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
--	struct clock_event_device *evt = &__get_cpu_var(decrementers);
--	u64 now;
- 
- 	/* Ensure a positive value is written to the decrementer, or else
- 	 * some CPUs will continue to take decrementer exceptions.
-@@ -519,39 +558,7 @@ void timer_interrupt(struct pt_regs * regs)
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
- 
--	trace_timer_interrupt_entry(regs);
--
--	if (test_irq_work_pending()) {
--		clear_irq_work_pending();
--		irq_work_run();
--	}
--
--	now = get_tb_or_rtc();
--	if (now >= *next_tb) {
--		*next_tb = ~(u64)0;
--		if (evt->event_handler)
--			evt->event_handler(evt);
--		__get_cpu_var(irq_stat).timer_irqs_event++;
--	} else {
--		now = *next_tb - now;
--		if (now <= DECREMENTER_MAX)
--			set_dec((int)now);
--		/* We may have raced with new irq work */
--		if (test_irq_work_pending())
--			set_dec(1);
--		__get_cpu_var(irq_stat).timer_irqs_others++;
--	}
--
--#ifdef CONFIG_PPC64
--	/* collect purr register values often, for accurate calculations */
--	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
--		struct cpu_usage *cu = &__get_cpu_var(cpu_usage_array);
--		cu->current_tb = mfspr(SPRN_PURR);
--	}
--#endif
--
--	trace_timer_interrupt_exit(regs);
--
-+	__timer_interrupt();
- 	irq_exit();
- 	set_irq_regs(old_regs);
- }
-@@ -828,6 +835,10 @@ static void decrementer_set_mode(enum clock_event_mode mode,
- /* Interrupt handler for the timer broadcast IPI */
- void tick_broadcast_ipi_handler(void)
- {
-+	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
-+
-+	*next_tb = get_tb_or_rtc();
-+	__timer_interrupt();
- }
- 
- static void register_decrementer_clockevent(int cpu)
+Cheers,
+Ben.
