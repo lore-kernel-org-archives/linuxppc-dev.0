@@ -1,20 +1,21 @@
 Return-Path: <raghavendra.kt.linux@gmail.com>
-Received: from mail-qa0-x22a.google.com (mail-qa0-x22a.google.com
- [IPv6:2607:f8b0:400d:c00::22a])
+Received: from mail-qc0-x22e.google.com (mail-qc0-x22e.google.com
+ [IPv6:2607:f8b0:400d:c01::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F008E2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 20:39:32 +1100 (EST)
-Received: by mail-qa0-f42.google.com with SMTP id k4so11534440qaq.29
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 01:39:23 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id F34042C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 20:53:54 +1100 (EST)
+Received: by mail-qc0-f174.google.com with SMTP id x13so12609663qcv.33
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 01:53:51 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20140207165801.GC2107@lst.de>
-References: <20140207165801.GC2107@lst.de>
-Date: Tue, 11 Feb 2014 15:09:23 +0530
-Message-ID: <CAC4Lta0=DojhnvPta5Rj3z61UzoEXO4H78iApa4nhNqmZcU+3g@mail.gmail.com>
+In-Reply-To: <1392001823.3996.21.camel@pasglop>
+References: <20140207165801.GC2107@lst.de> <1392001823.3996.21.camel@pasglop>
+Date: Tue, 11 Feb 2014 15:23:51 +0530
+Message-ID: <CAC4Lta2Pssu5QY_QLmy5C3Fm2G3fwpiuc5BNOLBnQTmmRH+W4Q@mail.gmail.com>
 Subject: Re: [PATCH v2] powerpc ticket locks
 From: Raghavendra KT <raghavendra.kt.linux@gmail.com>
-To: Torsten Duwe <duwe@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Torsten Duwe <duwe@lst.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
  Raghavendra KT <raghavendra.kt@linux.vnet.ibm.com>,
@@ -32,38 +33,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 7, 2014 at 10:28 PM, Torsten Duwe <duwe@lst.de> wrote:
-> Ticket locks for ppc, version 2. Changes since v1:
-> * The atomically exchanged entity is always 32 bits.
-> * asm inline string variations thus removed.
-> * Carry the additional holder hint only #if defined(CONFIG_PPC_SPLPAR)
+On Mon, Feb 10, 2014 at 8:40 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2014-02-07 at 17:58 +0100, Torsten Duwe wrote:
+>>  typedef struct {
+>> -       volatile unsigned int slock;
+>> -} arch_spinlock_t;
+>> +       union {
+>> +               __ticketpair_t head_tail;
+>> +               struct __raw_tickets {
+>> +#ifdef __BIG_ENDIAN__          /* The "tail" part should be in the MSBs */
+>> +                       __ticket_t tail, head;
+>> +#else
+>> +                       __ticket_t head, tail;
+>> +#endif
+>> +               } tickets;
+>> +       };
+>> +#if defined(CONFIG_PPC_SPLPAR)
+>> +       u32 holder;
+>> +#endif
+>> +} arch_spinlock_t __aligned(4);
 >
-> Signed-off-by: Torsten Duwe <duwe@suse.de>
-> --
-[...]
-> +static __always_inline void arch_spin_lock(arch_spinlock_t *lock)
->  {
-> +       register struct __raw_tickets old, tmp,
-> +               inc = { .tail = TICKET_LOCK_INC };
-> +
->         CLEAR_IO_SYNC;
-> -       while (1) {
-> -               if (likely(__arch_spin_trylock(lock) == 0))
-> -                       break;
-> +       __asm__ __volatile__(
-> +"1:    lwarx   %0,0,%4         # arch_spin_lock\n"
-> +"      add     %1,%3,%0\n"
-> +       PPC405_ERR77(0, "%4")
-> +"      stwcx.  %1,0,%4\n"
-> +"      bne-    1b"
-> +       : "=&r" (old), "=&r" (tmp), "+m" (lock->tickets)
-> +       : "r" (inc), "r" (&lock->tickets)
-> +       : "cc");
-> +
-> +       if (likely(old.head == old.tail))
-> +               goto out;
-> +
-> +       for (;;) {
-> +               unsigned count = 100;
+> That's still broken with lockref (which we just merged).
+>
+> We must have the arch_spinlock_t and the ref in the same 64-bit word
+> otherwise it will break.
+>
+> We can make it work in theory since the holder doesn't have to be
+> accessed atomically, but the practicals are a complete mess ...
+> lockref would essentially have to re-implement the holder handling
+> of the spinlocks and use lower level ticket stuff.
+>
 
-I am sure you wanted to tune the total loops to typical lock holding time ...
+Probably very basic and stupid question from me.
+How much important to have holder information for PPC? From my
+previous experiment
+on x86, it was lock-waiter preemption which is problematic rather than
+lock-holder preemption.
