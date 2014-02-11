@@ -1,29 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <schivers@csc.com.au>
+Received: from mail1.bemta8.messagelabs.com (mail1.bemta8.messagelabs.com
+ [216.82.243.200])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D91622C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 07:36:55 +1100 (EST)
-Message-ID: <1392147268.3835.11.camel@pasglop>
-Subject: Re: [PATCH v2] powerpc ticket locks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Wed, 12 Feb 2014 06:34:28 +1100
-In-Reply-To: <1392143455.6733.386.camel@snotra.buserror.net>
-References: <20140207165801.GC2107@lst.de> <1392001823.3996.21.camel@pasglop>
- <CAC4Lta2Pssu5QY_QLmy5C3Fm2G3fwpiuc5BNOLBnQTmmRH+W4Q@mail.gmail.com>
- <20140211104030.GG2107@lst.de>
- <1392143455.6733.386.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- Raghavendra KT <raghavendra.kt.linux@gmail.com>,
- Raghavendra KT <raghavendra.kt@linux.vnet.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Torsten Duwe <duwe@lst.de>, Anton Blanchard <anton@samba.org>,
- Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 9202C2C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 08:04:33 +1100 (EST)
+Received: from amer-gw15.amer.csc.com (amer-gw15.amer.csc.com [20.137.2.189])
+ by amer-mta112.csc.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with
+ ESMTP id s1BKvvE4022099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 15:57:58 -0500
+In-Reply-To: <20140211072606.GA26514@visitor2.iram.es>
+References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
+ <20140206082635.GA7048@visitor2.iram.es>
+ <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
+ <20140207101036.GA823@visitor2.iram.es>
+ <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
+ <20140210110342.GA15806@visitor2.iram.es>
+ <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
+ <20140211072606.GA26514@visitor2.iram.es>
+To: linuxppc-dev@lists.ozlabs.org
+MIME-Version: 1.0
+Subject: Linux-3.14-rc2: Order of serial node compatibles in DTS files.
+From: Stephen N Chivers <schivers@csc.com.au>
+Message-ID: <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
+Date: Wed, 12 Feb 2014 06:57:56 +1000
+Content-Type: text/plain; charset="US-ASCII"
+Cc: Chris Proctor <cproctor@csc.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,27 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-02-11 at 12:30 -0600, Scott Wood wrote:
-> > It's something very special to IBM pSeries: the hypervisor can assign
-> > fractions of physical CPUs to guests. Sometimes a guest with 4 quarter
-> > CPUs will be faster than 1 monoprocessor. (correct me if I'm wrong).
-> > 
-> > The directed yield resolves the silly situation when holder and waiter
-> > reside on the same physical CPU, as I understand it.
-> > 
-> > x86 has nothing comparable.
-> 
-> How is this different from the very ordinary case of an SMP KVM guest
-> whose vcpus are not bound to host cpus, and thus you could have multiple
-> vcpus running on the same host cpu?
+I have been trial booting a 3.14-rc2 kernel for a 85xx platform 
+(dtbImage).
 
-It's not really ... though I can see drawbacks with the scheme as well
-and I think in KVM we should be careful to only confer if the owner
-vcpu last scheduled on the same physical cpu where the waiter is, other
-wise, there's too much chances of us bouncing things around the machine
-for minor contention cases.
+After mounting the root filesystem there are no messages from the init 
+scripts
+and the serial console is not available for login.
 
-Paul, what's your policy today ?
+In the kernel log messages there is:
 
-Cheers,
-Ben.
+of_serial f1004500.serial: Unknown serial port found, ignored.
+
+The serial nodes in boards dts file are specified as:
+
+        serial0: serial@4500 {
+                        cell-index = <0>;
+                        device_type = "serial";
+                        compatible = "fsl,ns16550", "ns16550";
+                        reg = <0x4500 0x100>;
+                        clock-frequency = <0>;
+                        interrupts = <0x2a 0x2>;
+                        interrupt-parent = <&mpic>;
+                };
+
+Reversing the order of the compatible:
+
+        compatible = "ns16550", "fsl,ns16550";
+
+restores the serial console.
+
+Linux-3.13 does not have this behaviour.
+
+There are 49 dts files in Linux-3.14-rc2 that have the fsl,ns16550 
+compatible first.
+
+Stephen Chivers,
+CSC Australia Pty. Ltd.
