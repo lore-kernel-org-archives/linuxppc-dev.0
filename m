@@ -1,31 +1,29 @@
-Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta8.messagelabs.com (mail1.bemta8.messagelabs.com
- [216.82.243.200])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wi0-f180.google.com (mail-wi0-f180.google.com
+ [209.85.212.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9202C2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 08:04:33 +1100 (EST)
-Received: from amer-gw15.amer.csc.com (amer-gw15.amer.csc.com [20.137.2.189])
- by amer-mta112.csc.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with
- ESMTP id s1BKvvE4022099
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 15:57:58 -0500
-In-Reply-To: <20140211072606.GA26514@visitor2.iram.es>
-References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
- <20140206082635.GA7048@visitor2.iram.es>
- <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
- <20140207101036.GA823@visitor2.iram.es>
- <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
- <20140210110342.GA15806@visitor2.iram.es>
- <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
- <20140211072606.GA26514@visitor2.iram.es>
-To: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 4A4A52C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 09:01:25 +1100 (EST)
+Received: by mail-wi0-f180.google.com with SMTP id hm4so5471426wib.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 14:01:20 -0800 (PST)
+Message-ID: <52FA9DAE.1040603@linaro.org>
+Date: Tue, 11 Feb 2014 23:01:18 +0100
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Subject: Linux-3.14-rc2: Order of serial node compatibles in DTS files.
-From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
-Date: Wed, 12 Feb 2014 06:57:56 +1000
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Chris Proctor <cproctor@csc.com.au>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH V4 2/3] tick/cpuidle: Initialize hrtimer mode of broadcast
+References: <20140207075618.17187.20149.stgit@preeti.in.ibm.com>
+ <20140207080632.17187.80532.stgit@preeti.in.ibm.com>
+ <52F9F896.4020402@linaro.org>
+ <alpine.DEB.2.02.1402111654190.21991@ionos.tec.linutronix.de>
+In-Reply-To: <alpine.DEB.2.02.1402111654190.21991@ionos.tec.linutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: deepthi@linux.vnet.ibm.com, linux-pm@vger.kernel.org, peterz@infradead.org,
+ rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
+ srivatsa.bhat@linux.vnet.ibm.com, fweisbec@gmail.com,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,39 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have been trial booting a 3.14-rc2 kernel for a 85xx platform 
-(dtbImage).
+On 02/11/2014 04:58 PM, Thomas Gleixner wrote:
+> On Tue, 11 Feb 2014, Daniel Lezcano wrote:
+>> On 02/07/2014 09:06 AM, Preeti U Murthy wrote:
+>> Setting the smp affinity on the earliest timer should be handled automatically
+>> with the CLOCK_EVT_FEAT_DYNIRQ flag. Did you look at using this flag ?
+>
+> How should this flag help? Not at all, because the hrtimer based
+> broadcast device cannot assign affinities.
+>
+>> Another comment is the overall approach. We enter the cpuidle idle framework
+>> with a specific state to go to and it is the tick framework telling us we
+>> mustn't go to this state. IMO the logic is wrong, the decision to not enter
+>> this state should be moved somewhere else.
+>>
+>> Why don't you create a cpuidle driver with the shallow idle states assigned to
+>> a cpu (let's say cpu0) and another one with all the deeper idle states for the
+>> rest of the cpus ? Using the multiple cpuidle driver support makes it
+>> possible. The timer won't be moving around and a cpu will be dedicated to act
+>> as the broadcast timer.
+>>
+>> Wouldn't make sense and be less intrusive than the patchset you proposed ?
+>
+> How do you arm the broadcast timer on CPU0 from CPU1? You can't!
+>
+> You cannot access the cpu local timer on a different cpu. So you would
+> have to send an IPI over to CPU0 so that it can reevaluate and
+> schedule the broadcast. That's even more backwards than telling the
+> cpuidle code that the CPU is not in a state to go deep.
 
-After mounting the root filesystem there are no messages from the init 
-scripts
-and the serial console is not available for login.
+Indeed :)
 
-In the kernel log messages there is:
+Thanks for the clarification.
 
-of_serial f1004500.serial: Unknown serial port found, ignored.
+   -- Daniel
 
-The serial nodes in boards dts file are specified as:
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-        serial0: serial@4500 {
-                        cell-index = <0>;
-                        device_type = "serial";
-                        compatible = "fsl,ns16550", "ns16550";
-                        reg = <0x4500 0x100>;
-                        clock-frequency = <0>;
-                        interrupts = <0x2a 0x2>;
-                        interrupt-parent = <&mpic>;
-                };
-
-Reversing the order of the compatible:
-
-        compatible = "ns16550", "fsl,ns16550";
-
-restores the serial console.
-
-Linux-3.13 does not have this behaviour.
-
-There are 49 dts files in Linux-3.14-rc2 that have the fsl,ns16550 
-compatible first.
-
-Stephen Chivers,
-CSC Australia Pty. Ltd.
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
