@@ -1,23 +1,20 @@
-Return-Path: <shuah.kh@samsung.com>
-Received: from qmta13.emeryville.ca.mail.comcast.net
- (qmta13.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:243])
- by ozlabs.org (Postfix) with ESMTP id C660B2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 03:21:02 +1100 (EST)
-From: Shuah Khan <shuah.kh@samsung.com>
-To: rjw@rjwysocki.net
-Subject: [RFT][PATCH 00/12] change drivers power management to use dev_pm_ops 
-Date: Mon, 10 Feb 2014 09:12:23 -0700
-Message-Id: <cover.1392040064.git.shuah.kh@samsung.com>
-Cc: Shuah Khan <shuah.kh@samsung.com>, heiko.carstens@de.ibm.com,
- chris@printf.net, shuahkhan@gmail.com, dwalker@fifo99.com,
- ingo.tuchscherer@de.ibm.com, sonic.zhang@analog.com,
- linux-s390@vger.kernel.org, linux@arm.linux.org.uk, davidb@codeaurora.org,
- linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-pcmcia@lists.infradead.org, adi-buildroot-devel@lists.sourceforge.net,
- mirq-linux@rere.qmqm.pl, ian@mnementh.co.uk, manuel.lauss@gmail.com,
- linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org,
- linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org,
- schwidefsky@de.ibm.com, linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9B38F2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 11:20:04 +1100 (EST)
+Message-ID: <1392077986.3996.34.camel@pasglop>
+Subject: Re: [PATCH] Handle vmalloc addresses
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 11 Feb 2014 11:19:46 +1100
+In-Reply-To: <52E92DB0.1050902@linux.vnet.ibm.com>
+References: <52E92DB0.1050902@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Rong Song Shen <shenrs@cn.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +24,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change drivers to register pm ops using dev_pm_ops instead of legacy pm_ops.
-.pm hooks call existing legacy suspend and resume interfaces by passing in
-the right pm state. Bus drivers suspend and resume routines call .pm driver
-hooks if found.
+Hi Nathan !
 
-Shuah Khan (12):
-  arm: change locomo platform and bus power management to use
-    dev_pm_ops
-  arm: change sa1111 platform and bus power management to use
-    dev_pm_ops
-  arm: change scoop platform power management to use dev_pm_ops
-  drivers/macintosh/adb: change platform power managemnet to use
-    dev_pm_ops
-  mmc: change au1xmmc platform power management to use dev_pm_ops
-  mmc: change bfin_sdh platform power management to use dev_pm_ops
-  isa: change isa bus power managemnet to use dev_pm_ops
-  mmc: change cb710-mmc platform power management to use dev_pm_ops
-  mmc: change msm_sdcc platform power management to use dev_pm_ops
-  mmc: change tmio_mmc platform power management to use dev_pm_ops
-  drivers/pcmcia: change ds driver power management to use dev_pm_ops
-  drivers/s390/crypto: change ap_bus driver power management to use
-    dev_pm_ops
+Please do a better submission :-)
 
- arch/arm/common/locomo.c     |   93 +++++++++++++++++++++++++++++++++++-------
- arch/arm/common/sa1111.c     |   88 +++++++++++++++++++++++++++++++--------
- arch/arm/common/scoop.c      |   44 ++++++++++++++++----
- drivers/base/isa.c           |   30 ++++++++++++--
- drivers/macintosh/adb.c      |   41 ++++++++++++++++---
- drivers/mmc/host/au1xmmc.c   |   43 +++++++++++++++----
- drivers/mmc/host/bfin_sdh.c  |   40 +++++++++++++++---
- drivers/mmc/host/cb710-mmc.c |   37 +++++++++++++++--
- drivers/mmc/host/msm_sdcc.c  |   42 +++++++++++++++----
- drivers/mmc/host/tmio_mmc.c  |   42 +++++++++++++++----
- drivers/pcmcia/ds.c          |   36 +++++++++++++---
- drivers/s390/crypto/ap_bus.c |   30 ++++++++++++--
- 12 files changed, 481 insertions(+), 85 deletions(-)
+Your subject is to be honest, crap. Something like
 
--- 
-1.7.10.4
+[PATCH] crypto/nx/nx-842: Fix handling of vmalloc addresses
+
+Would have been much more informative.
+
+Additionally, this is a patch for drivers/crypto, and while that driver
+is powerpc-specific meaning I *could* take that patch, it should at
+least be CCed to the crypto list/maintainer since that would
+be the normal path for such a patch to be applied.
+
+I'm taking it this time around but I know you can do better !
+
+Cheers,
+Ben.
+
+On Wed, 2014-01-29 at 10:34 -0600, Nathan Fontenot wrote:
+> The nx-842 compression driver does not currently handle getting
+> a physical address for vmalloc addresses. The current driver
+> uses __pa() for all addresses which does not properly handle
+> vmalloc addresses and thus causes a failure since we do not pass
+> a proper physical address to phyp.
+> 
+> This patch adds a routine to convert an address to a physical
+> address by checking for vmalloc addresses and handling them properly.
+> 
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+>  ---
+>  drivers/crypto/nx/nx-842.c |   29 +++++++++++++++++++----------
+>  1 file changed, 19 insertions(+), 10 deletions(-)
+> 
+> Index: linux/drivers/crypto/nx/nx-842.c
+> ===================================================================
+> --- linux.orig/drivers/crypto/nx/nx-842.c	2014-01-22 08:52:55.000000000 -0600
+> +++ linux/drivers/crypto/nx/nx-842.c	2014-01-29 08:25:33.000000000 -0600
+> @@ -158,6 +158,15 @@
+>  	return sl->entry_nr * sizeof(struct nx842_slentry);
+>  }
+>  
+> +static inline unsigned long nx842_get_pa(void *addr)
+> +{
+> +	if (is_vmalloc_addr(addr))
+> +		return page_to_phys(vmalloc_to_page(addr))
+> +		       + offset_in_page(addr);
+> +	else
+> +		return __pa(addr);
+> +}
+> +
+>  static int nx842_build_scatterlist(unsigned long buf, int len,
+>  			struct nx842_scatterlist *sl)
+>  {
+> @@ -168,7 +177,7 @@
+>  
+>  	entry = sl->entries;
+>  	while (len) {
+> -		entry->ptr = __pa(buf);
+> +		entry->ptr = nx842_get_pa((void *)buf);
+>  		nextpage = ALIGN(buf + 1, NX842_HW_PAGE_SIZE);
+>  		if (nextpage < buf + len) {
+>  			/* we aren't at the end yet */
+> @@ -370,8 +379,8 @@
+>  	op.flags = NX842_OP_COMPRESS;
+>  	csbcpb = &workmem->csbcpb;
+>  	memset(csbcpb, 0, sizeof(*csbcpb));
+> -	op.csbcpb = __pa(csbcpb);
+> -	op.out = __pa(slout.entries);
+> +	op.csbcpb = nx842_get_pa(csbcpb);
+> +	op.out = nx842_get_pa(slout.entries);
+>  
+>  	for (i = 0; i < hdr->blocks_nr; i++) {
+>  		/*
+> @@ -401,13 +410,13 @@
+>  		 */
+>  		if (likely(max_sync_size == NX842_HW_PAGE_SIZE)) {
+>  			/* Create direct DDE */
+> -			op.in = __pa(inbuf);
+> +			op.in = nx842_get_pa((void *)inbuf);
+>  			op.inlen = max_sync_size;
+>  
+>  		} else {
+>  			/* Create indirect DDE (scatterlist) */
+>  			nx842_build_scatterlist(inbuf, max_sync_size, &slin);
+> -			op.in = __pa(slin.entries);
+> +			op.in = nx842_get_pa(slin.entries);
+>  			op.inlen = -nx842_get_scatterlist_size(&slin);
+>  		}
+>  
+> @@ -565,7 +574,7 @@
+>  	op.flags = NX842_OP_DECOMPRESS;
+>  	csbcpb = &workmem->csbcpb;
+>  	memset(csbcpb, 0, sizeof(*csbcpb));
+> -	op.csbcpb = __pa(csbcpb);
+> +	op.csbcpb = nx842_get_pa(csbcpb);
+>  
+>  	/*
+>  	 * max_sync_size may have changed since compression,
+> @@ -597,12 +606,12 @@
+>  		if (likely((inbuf & NX842_HW_PAGE_MASK) ==
+>  			((inbuf + hdr->sizes[i] - 1) & NX842_HW_PAGE_MASK))) {
+>  			/* Create direct DDE */
+> -			op.in = __pa(inbuf);
+> +			op.in = nx842_get_pa((void *)inbuf);
+>  			op.inlen = hdr->sizes[i];
+>  		} else {
+>  			/* Create indirect DDE (scatterlist) */
+>  			nx842_build_scatterlist(inbuf, hdr->sizes[i] , &slin);
+> -			op.in = __pa(slin.entries);
+> +			op.in = nx842_get_pa(slin.entries);
+>  			op.inlen = -nx842_get_scatterlist_size(&slin);
+>  		}
+>  
+> @@ -613,12 +622,12 @@
+>  		 */
+>  		if (likely(max_sync_size == NX842_HW_PAGE_SIZE)) {
+>  			/* Create direct DDE */
+> -			op.out = __pa(outbuf);
+> +			op.out = nx842_get_pa((void *)outbuf);
+>  			op.outlen = max_sync_size;
+>  		} else {
+>  			/* Create indirect DDE (scatterlist) */
+>  			nx842_build_scatterlist(outbuf, max_sync_size, &slout);
+> -			op.out = __pa(slout.entries);
+> +			op.out = nx842_get_pa(slout.entries);
+>  			op.outlen = -nx842_get_scatterlist_size(&slout);
+>  		}
+>  
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
