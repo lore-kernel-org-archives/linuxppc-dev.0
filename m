@@ -1,26 +1,16 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <prvs=011988102b=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3CED92C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 21:40:38 +1100 (EST)
-Date: Tue, 11 Feb 2014 11:40:30 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Raghavendra KT <raghavendra.kt.linux@gmail.com>
-Subject: Re: [PATCH v2] powerpc ticket locks
-Message-ID: <20140211104030.GG2107@lst.de>
-References: <20140207165801.GC2107@lst.de> <1392001823.3996.21.camel@pasglop>
- <CAC4Lta2Pssu5QY_QLmy5C3Fm2G3fwpiuc5BNOLBnQTmmRH+W4Q@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAC4Lta2Pssu5QY_QLmy5C3Fm2G3fwpiuc5BNOLBnQTmmRH+W4Q@mail.gmail.com>
-Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
- Raghavendra KT <raghavendra.kt@linux.vnet.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Scott Wood <scottwood@freescale.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 0660C2C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 22:50:25 +1100 (EST)
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
+To: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 0/2] Support of the kmcoge4 board
+Date: Tue, 11 Feb 2014 12:50:05 +0100
+Message-Id: <1392119407-29490-1-git-send-email-valentin.longchamp@keymile.com>
+Cc: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,19 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 11, 2014 at 03:23:51PM +0530, Raghavendra KT wrote:
-> How much important to have holder information for PPC? From my
-> previous experiment
-> on x86, it was lock-waiter preemption which is problematic rather than
-> lock-holder preemption.
+This series adds support for Keymile's COGE4 board, called kmcoge4. This
+board is the reference design for further designs at Keymile around the
+P2040/P2041 SoCs from Freescale. This reference design is internally
+called kmp204x.
 
-It's something very special to IBM pSeries: the hypervisor can assign
-fractions of physical CPUs to guests. Sometimes a guest with 4 quarter
-CPUs will be faster than 1 monoprocessor. (correct me if I'm wrong).
+Changes in v2:
+- add a patch so that the Zarlink vendor prefix is defined
+- add some nodes on the localbus CS when possible
+- only use the corenet_generic machine and add kmcoge4 to the supported
+  boards instead of defining a new kmp204x machine
+- set better and more precise device nodes for the spi devices
+- remove the partion layout for the spi_flash@0
 
-The directed yield resolves the silly situation when holder and waiter
-reside on the same physical CPU, as I understand it.
+Valentin Longchamp (2):
+  devicetree: bindings: add Zarlink to the vendor prefixes
+  powerpc/mpc85xx: add support for Keymile's kmcoge4 board
 
-x86 has nothing comparable.
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ arch/powerpc/boot/dts/kmcoge4.dts                  | 161 +++++++++++++++
+ arch/powerpc/configs/85xx/kmp204x_defconfig        | 227 +++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig                |   2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c      |   3 +-
+ 5 files changed, 392 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/kmcoge4.dts
+ create mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
 
-	Torsten
+-- 
+1.8.0.1
