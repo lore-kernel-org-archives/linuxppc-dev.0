@@ -1,32 +1,27 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEAMRELO02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
- by ozlabs.org (Postfix) with ESMTP id 4015E2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 18:42:08 +1100 (EST)
-Date: Tue, 11 Feb 2014 16:42:00 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
- determining the fallback node
-Message-ID: <20140211074159.GB27870@lge.com>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com>
- <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com>
+Return-Path: <paubert@iram.es>
+Received: from marchena.puc.rediris.es (marchena.puc.rediris.es
+ [IPv6:2001:720:418:ca00::4])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 033982C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 18:51:22 +1100 (EST)
+Date: Tue, 11 Feb 2014 08:26:07 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: James Yang <James.Yang@freescale.com>
+Subject: Re: arch/powerpc/math-emu/mtfsf.c - incorrect mask?
+Message-ID: <20140211072606.GA26514@visitor2.iram.es>
+References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
+ <20140206082635.GA7048@visitor2.iram.es>
+ <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
+ <20140207101036.GA823@visitor2.iram.es>
+ <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
+ <20140210110342.GA15806@visitor2.iram.es>
+ <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140210191321.GD1558@linux.vnet.ibm.com>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+In-Reply-To: <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
+Cc: Chris Proctor <cproctor@csc.com.au>,
+ Stephen N Chivers <schivers@csc.com.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,100 +31,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 10, 2014 at 11:13:21AM -0800, Nishanth Aravamudan wrote:
-> Hi Christoph,
+	Hi James,
+
+On Mon, Feb 10, 2014 at 11:03:07AM -0600, James Yang wrote:
+
+[snipped]
+> > Ok, if you have measured that method1 is faster than method2, let us go for it.
+> > I believe method2 would be faster if you had a large out-of-order execution
+> > window, because more parallelism can be extracted from it, but this is probably
+> > only true for high end cores, which do not need FPU emulation in the first place.
 > 
-> On 07.02.2014 [12:51:07 -0600], Christoph Lameter wrote:
-> > Here is a draft of a patch to make this work with memoryless nodes.
+> Yeah, 8548 can issue 2 SFX instructions per cycle which is what the 
+> compiler generated.   
+> 
+
+Then it is method1.
+
+>  
+> > The other place where we can optimize is the generation of FEX. Here is 
+> > my current patch:
 > > 
-> > The first thing is that we modify node_match to also match if we hit an
-> > empty node. In that case we simply take the current slab if its there.
 > > 
-> > If there is no current slab then a regular allocation occurs with the
-> > memoryless node. The page allocator will fallback to a possible node and
-> > that will become the current slab. Next alloc from a memoryless node
-> > will then use that slab.
+> > diff --git a/arch/powerpc/math-emu/mtfsf.c b/arch/powerpc/math-emu/mtfsf.c
+> > index dbce92e..b57b3fa8 100644
+> > --- a/arch/powerpc/math-emu/mtfsf.c
+> > +++ b/arch/powerpc/math-emu/mtfsf.c
+> > @@ -11,48 +11,35 @@ mtfsf(unsigned int FM, u32 *frB)
+> >  	u32 mask;
+> >  	u32 fpscr;
+> >  
+> > -	if (FM == 0)
+> > +	if (likely(FM == 0xff))
+> > +		mask = 0xffffffff;
+> > +	else if (unlikely(FM == 0))
+> >  		return 0;
+> > -
+> > -	if (FM == 0xff)
+> > -		mask = 0x9fffffff;
+> >  	else {
+> > -		mask = 0;
+> > -		if (FM & (1 << 0))
+> > -			mask |= 0x90000000;
+> > -		if (FM & (1 << 1))
+> > -			mask |= 0x0f000000;
+> > -		if (FM & (1 << 2))
+> > -			mask |= 0x00f00000;
+> > -		if (FM & (1 << 3))
+> > -			mask |= 0x000f0000;
+> > -		if (FM & (1 << 4))
+> > -			mask |= 0x0000f000;
+> > -		if (FM & (1 << 5))
+> > -			mask |= 0x00000f00;
+> > -		if (FM & (1 << 6))
+> > -			mask |= 0x000000f0;
+> > -		if (FM & (1 << 7))
+> > -			mask |= 0x0000000f;
+> > +		mask = (FM & 1);
+> > +		mask |= (FM << 3) & 0x10;
+> > +		mask |= (FM << 6) & 0x100;
+> > +		mask |= (FM << 9) & 0x1000;
+> > +		mask |= (FM << 12) & 0x10000;
+> > +		mask |= (FM << 15) & 0x100000;
+> > +		mask |= (FM << 18) & 0x1000000;
+> > +		mask |= (FM << 21) & 0x10000000;
+> > +		mask *= 15;
+> 
+> 
+> Needs to also mask out bits 1 and 2, they aren't to be set from frB.
+> 
+> 		mask &= 0x9FFFFFFF;
+> 
+> 
+
+Look at the following lines:
+
+> 
+> 
+> >  	}
+> >  
+> > -	__FPU_FPSCR &= ~(mask);
+> > -	__FPU_FPSCR |= (frB[1] & mask);
+> > +	fpscr = ((__FPU_FPSCR & ~mask) | (frB[1] & mask)) &
+> > +		~(FPSCR_VX | FPSCR_FEX);
+ 
+It's here (masking FPSCR_VX and FPSCR_FEX).
+
+Actually the previous code was redundant, it cleared FEX and VX in the
+mask computation and later again when recomputing them. Clearing them
+once should be enough.
+
+> >  
+> > -	__FPU_FPSCR &= ~(FPSCR_VX);
+> > -	if (__FPU_FPSCR & (FPSCR_VXSNAN | FPSCR_VXISI | FPSCR_VXIDI |
+> > +	if (fpscr & (FPSCR_VXSNAN | FPSCR_VXISI | FPSCR_VXIDI |
+> >  		     FPSCR_VXZDZ | FPSCR_VXIMZ | FPSCR_VXVC |
+> >  		     FPSCR_VXSOFT | FPSCR_VXSQRT | FPSCR_VXCVI))
+> > -		__FPU_FPSCR |= FPSCR_VX;
+> > -
+> > -	fpscr = __FPU_FPSCR;
+> > -	fpscr &= ~(FPSCR_FEX);
+> > -	if (((fpscr & FPSCR_VX) && (fpscr & FPSCR_VE)) ||
+> > -	    ((fpscr & FPSCR_OX) && (fpscr & FPSCR_OE)) ||
+> > -	    ((fpscr & FPSCR_UX) && (fpscr & FPSCR_UE)) ||
+> > -	    ((fpscr & FPSCR_ZX) && (fpscr & FPSCR_ZE)) ||
+> > -	    ((fpscr & FPSCR_XX) && (fpscr & FPSCR_XE)))
+> > -		fpscr |= FPSCR_FEX;
+> > +		fpscr |= FPSCR_VX;
+> > +
+> > +	/* The bit order of exception enables and exception status
+> > +	 * is the same. Simply shift and mask to check for enabled
+> > +	 * exceptions.
+> > +	 */
+> > +	if (fpscr & (fpscr >> 22) &  0xf8) fpscr |= FPSCR_FEX;
+> >  	__FPU_FPSCR = fpscr;
+> >  
+> >  #ifdef DEBUG
+> >  mtfsf.c |   57 ++++++++++++++++++++++-----------------------------------
+> >  1 file changed, 22 insertions(+), 35 deletions(-)
 > > 
-> > For that we also add some tracking of allocations on nodes that were not
-> > satisfied using the empty_node[] array. A successful alloc on a node
-> > clears that flag.
 > > 
-> > I would rather avoid the empty_node[] array since its global and there may
-> > be thread specific allocation restrictions but it would be expensive to do
-> > an allocation attempt via the page allocator to make sure that there is
-> > really no page available from the page allocator.
+> > Notes: 
+> > 
+> > 1) I'm really unsure on whether 0xff is frequent or not. So the likely()
+> > statement at the beginning may be wrong. Actually, if it is not very likely,
+> > it might be better to remove the special casef for FM==0xff. A look at 
+> > GCC sources shows that it never generates a mask of 0xff. From glibc
+> > sources, there vast majority of cases uses 0x1, only isnan() uses 0xff.
 > 
-> With this patch on our test system (I pulled out the numa_mem_id()
-> change, since you Acked Joonsoo's already), on top of 3.13.0 + my
-> kthread locality change + CONFIG_HAVE_MEMORYLESS_NODES + Joonsoo's RFC
-> patch 1):
-> 
-> MemTotal:        8264704 kB
-> MemFree:         5924608 kB
-> ...
-> Slab:            1402496 kB
-> SReclaimable:     102848 kB
-> SUnreclaim:      1299648 kB
-> 
-> And Anton's slabusage reports:
-> 
-> slab                                   mem     objs    slabs
->                                       used   active   active
-> ------------------------------------------------------------
-> kmalloc-16384                       207 MB   98.60%  100.00%
-> task_struct                         134 MB   97.82%  100.00%
-> kmalloc-8192                        117 MB  100.00%  100.00%
-> pgtable-2^12                        111 MB  100.00%  100.00%
-> pgtable-2^10                        104 MB  100.00%  100.00%
-> 
-> For comparison, Anton's patch applied at the same point in the series:
-> 
-> meminfo:
-> 
-> MemTotal:        8264704 kB
-> MemFree:         4150464 kB
-> ...
-> Slab:            1590336 kB
-> SReclaimable:     208768 kB
-> SUnreclaim:      1381568 kB
-> 
-> slabusage:
-> 
-> slab                                   mem     objs    slabs
->                                       used   active   active
-> ------------------------------------------------------------
-> kmalloc-16384                       227 MB   98.63%  100.00%
-> kmalloc-8192                        130 MB  100.00%  100.00%
-> task_struct                         129 MB   97.73%  100.00%
-> pgtable-2^12                        112 MB  100.00%  100.00%
-> pgtable-2^10                        106 MB  100.00%  100.00%
-> 
-> 
-> Consider this patch:
-> 
-> Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Can't handle all cases here.  
 
-Hello,
+That's why I would go for the simplest possible code. Conditionals are
+expensive and minimizing cache footprint is often the best measure of 
+performance for infrequently used code. With this in mind, I would get 
+rid of all the tests for special FM values and rely on the optimized
+generic case.
 
-I still think that there is another problem.
-Your report about CONFIG_SLAB said that SLAB uses just 200MB.
-Below is your previous report.
 
-  Ok, with your patches applied and CONFIG_SLAB enabled:
+>  
+> > 2) it may be better to remove the check for FM==0, after all, the instruction
+> > effectively becomes a nop, and generating the instruction in the first place
+> > would be too stupid for words.
+> 
+> Hmm a heavy no-op.  I wonder if it is heavier than a sync.
 
-  MemTotal:        8264640 kB
-  MemFree:         7119680 kB
-  Slab:             207232 kB
-  SReclaimable:      32896 kB
-  SUnreclaim:       174336 kB
+In theory not. It contains the equivalent of several isync (taking an exception
+and returning from it), but not any synchronization wrt the memory accesses.
 
-The number on CONFIG_SLUB with these patches tell us that SLUB uses 1.4GB.
-There is large difference on slab usage.
-
-And, I should note that number of active objects on slabinfo can be wrong
-on some situation, since it doesn't consider cpu slab (and cpu partial slab).
-
-I recommend to confirm page_to_nid() and other things as I mentioned earlier.
-
-Thanks.
+	Gabriel
