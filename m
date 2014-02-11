@@ -1,21 +1,17 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 21B212C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 04:07:29 +1100 (EST)
-Date: Tue, 11 Feb 2014 17:07:24 +0000
-From: Mel Gorman <mgorman@suse.de>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id B33A72C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 04:30:14 +1100 (EST)
+Date: Tue, 11 Feb 2014 09:31:29 -0800
+From: Greg KH <gregkh@linuxfoundation.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] mm: Use ptep/pmdp_set_numa for updating _PAGE_NUMA bit
-Message-ID: <20140211170724.GM6732@suse.de>
-References: <1392114895-14997-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1392114895-14997-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2] powerpc: thp: Fix crash on mremap
+Message-ID: <20140211173129.GB30336@kroah.com>
+References: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <1392114895-14997-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: riel@redhat.com, linux-mm@kvack.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 11, 2014 at 04:04:55PM +0530, Aneesh Kumar K.V wrote:
+On Fri, Feb 07, 2014 at 07:21:57PM +0530, Aneesh Kumar K.V wrote:
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> Archs like ppc64 doesn't do tlb flush in set_pte/pmd functions. ppc64 also doesn't implement
-> flush_tlb_range. ppc64 require the tlb flushing to be batched within ptl locks. The reason
-> to do that is to ensure that the hash page table is in sync with linux page table.
-> We track the hpte index in linux pte and if we clear them without flushing hash and drop the
-> ptl lock, we can have another cpu update the pte and can end up with double hash. We also want
-> to keep set_pte_at simpler by not requiring them to do hash flush for performance reason.
-> Hence cannot use them while updating _PAGE_NUMA bit. Add new functions for marking pte/pmd numa
+> This patch fix the below crash
 > 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
+> LR [c0000000000439ac] .hash_page+0x18c/0x5e0
+> ...
+> Call Trace:
+> [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
+> [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
+> [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
+> 
+> On ppc64 we use the pgtable for storing the hpte slot information and
+> store address to the pgtable at a constant offset (PTRS_PER_PMD) from
+> pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
+> the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
+> from new pmd.
+> 
+> We also want to move the withdraw and deposit before the set_pmd so
+> that, when page fault find the pmd as trans huge we can be sure that
+> pgtable can be located at the offset.
+> 
+> variant of upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
+> for 3.12 stable series
 
-Acked-by: Mel Gorman <mgorman@suse.de>
+This doesn't look like a "variant", it looks totally different.  Why
+can't I just take the b3084f4db3aeb991c507ca774337c7e7893ed04f patch
+(and follow-on fix) for 3.12?
 
--- 
-Mel Gorman
-SUSE Labs
+I _REALLY_ dislike patches that are totally different from Linus's tree
+in stable trees, it has caused nothing but problems in the past.
+
+greg k-h
