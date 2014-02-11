@@ -1,32 +1,23 @@
-Return-Path: <cl@linux.com>
-Received: from qmta13.emeryville.ca.mail.comcast.net
- (qmta13.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:243])
- by ozlabs.org (Postfix) with ESMTP id E80FF2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 05:45:33 +1100 (EST)
-Date: Tue, 11 Feb 2014 12:45:28 -0600 (CST)
-From: Christoph Lameter <cl@linux.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-In-Reply-To: <20140210012918.GD12574@lge.com>
-Message-ID: <alpine.DEB.2.10.1402111244381.28186@nuc>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210012918.GD12574@lge.com>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A6D062C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 05:49:56 +1100 (EST)
+Message-ID: <1392144570.23418.8.camel@pasglop>
+Subject: Re: [PATCH 3/3] mm: Use ptep/pmdp_set_numa for updating _PAGE_NUMA bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mel Gorman <mgorman@suse.de>
+Date: Wed, 12 Feb 2014 05:49:30 +1100
+In-Reply-To: <20140211170724.GM6732@suse.de>
+References: <1392114895-14997-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1392114895-14997-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140211170724.GM6732@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: riel@redhat.com, linux-mm@kvack.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,20 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Feb 2014, Joonsoo Kim wrote:
+On Tue, 2014-02-11 at 17:07 +0000, Mel Gorman wrote:
+> On Tue, Feb 11, 2014 at 04:04:55PM +0530, Aneesh Kumar K.V wrote:
+> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> > 
+> > Archs like ppc64 doesn't do tlb flush in set_pte/pmd functions. ppc64 also doesn't implement
+> > flush_tlb_range. ppc64 require the tlb flushing to be batched within ptl locks. The reason
+> > to do that is to ensure that the hash page table is in sync with linux page table.
+> > We track the hpte index in linux pte and if we clear them without flushing hash and drop the
+> > ptl lock, we can have another cpu update the pte and can end up with double hash. We also want
+> > to keep set_pte_at simpler by not requiring them to do hash flush for performance reason.
+> > Hence cannot use them while updating _PAGE_NUMA bit. Add new functions for marking pte/pmd numa
+> > 
+> > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> Acked-by: Mel Gorman <mgorman@suse.de>
+> 
 
-> On Fri, Feb 07, 2014 at 12:51:07PM -0600, Christoph Lameter wrote:
-> > Here is a draft of a patch to make this work with memoryless nodes.
-> >
-> > The first thing is that we modify node_match to also match if we hit an
-> > empty node. In that case we simply take the current slab if its there.
->
-> Why not inspecting whether we can get the page on the best node such as
-> numa_mem_id() node?
+How do you guys want me to proceed ? Will you (or Andrew) send these to
+Linus or should I do it myself ?
 
-Its expensive to do so.
-
-> empty_node cannot be set on memoryless node, since page allocation would
-> succeed on different node.
-
-Ok then we need to add a check for being on the rignt node there too.
+Cheers,
+Ben.
