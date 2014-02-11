@@ -2,20 +2,28 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D85572C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 05:53:04 +1100 (EST)
-Message-ID: <1392144772.23418.11.camel@pasglop>
-Subject: Re: [PATCH V2] powerpc: thp: Fix crash on mremap
+ by ozlabs.org (Postfix) with ESMTPS id D91622C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 07:36:55 +1100 (EST)
+Message-ID: <1392147268.3835.11.camel@pasglop>
+Subject: Re: [PATCH v2] powerpc ticket locks
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <gregkh@linuxfoundation.org>
-Date: Wed, 12 Feb 2014 05:52:52 +1100
-In-Reply-To: <20140211173129.GB30336@kroah.com>
-References: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140211173129.GB30336@kroah.com>
+To: Scott Wood <scottwood@freescale.com>
+Date: Wed, 12 Feb 2014 06:34:28 +1100
+In-Reply-To: <1392143455.6733.386.camel@snotra.buserror.net>
+References: <20140207165801.GC2107@lst.de> <1392001823.3996.21.camel@pasglop>
+ <CAC4Lta2Pssu5QY_QLmy5C3Fm2G3fwpiuc5BNOLBnQTmmRH+W4Q@mail.gmail.com>
+ <20140211104030.GG2107@lst.de>
+ <1392143455.6733.386.camel@snotra.buserror.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, stable@vger.kernel.org
+Cc: Tom Musta <tommusta@gmail.com>, Peter Zijlstra <peterz@infradead.org>,
+ Raghavendra KT <raghavendra.kt.linux@gmail.com>,
+ Raghavendra KT <raghavendra.kt@linux.vnet.ibm.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Torsten Duwe <duwe@lst.de>, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-02-11 at 09:31 -0800, Greg KH wrote:
-> On Fri, Feb 07, 2014 at 07:21:57PM +0530, Aneesh Kumar K.V wrote:
-> > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Tue, 2014-02-11 at 12:30 -0600, Scott Wood wrote:
+> > It's something very special to IBM pSeries: the hypervisor can assign
+> > fractions of physical CPUs to guests. Sometimes a guest with 4 quarter
+> > CPUs will be faster than 1 monoprocessor. (correct me if I'm wrong).
 > > 
-> > This patch fix the below crash
+> > The directed yield resolves the silly situation when holder and waiter
+> > reside on the same physical CPU, as I understand it.
 > > 
-> > NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
-> > LR [c0000000000439ac] .hash_page+0x18c/0x5e0
-> > ...
-> > Call Trace:
-> > [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
-> > [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
-> > [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
-> > 
-> > On ppc64 we use the pgtable for storing the hpte slot information and
-> > store address to the pgtable at a constant offset (PTRS_PER_PMD) from
-> > pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
-> > the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
-> > from new pmd.
-> > 
-> > We also want to move the withdraw and deposit before the set_pmd so
-> > that, when page fault find the pmd as trans huge we can be sure that
-> > pgtable can be located at the offset.
-> > 
-> > variant of upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
-> > for 3.12 stable series
+> > x86 has nothing comparable.
 > 
-> This doesn't look like a "variant", it looks totally different.  Why
-> can't I just take the b3084f4db3aeb991c507ca774337c7e7893ed04f patch
-> (and follow-on fix) for 3.12?
-> 
-> I _REALLY_ dislike patches that are totally different from Linus's tree
-> in stable trees, it has caused nothing but problems in the past.
+> How is this different from the very ordinary case of an SMP KVM guest
+> whose vcpus are not bound to host cpus, and thus you could have multiple
+> vcpus running on the same host cpu?
 
-I don't think it applies... (I tried on an internal tree) but the
-affected function changed in 3.13 in various ways. Aneesh, please
-provide a more details explanation and whether we should backport those
-other changes too or whether this is not necessary.
+It's not really ... though I can see drawbacks with the scheme as well
+and I think in KVM we should be careful to only confer if the owner
+vcpu last scheduled on the same physical cpu where the waiter is, other
+wise, there's too much chances of us bouncing things around the machine
+for minor contention cases.
 
-BTW. Aneesh, we need a 3.11.x one too
+Paul, what's your policy today ?
 
 Cheers,
 Ben.
