@@ -1,34 +1,37 @@
-Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta7.messagelabs.com (mail1.bemta7.messagelabs.com
- [216.82.254.102])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2B08C2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 11:22:17 +1100 (EST)
-In-Reply-To: <52FAB65C.4090201@gmail.com>
-References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
- <20140206082635.GA7048@visitor2.iram.es>
- <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
- <20140207101036.GA823@visitor2.iram.es>
- <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
- <20140210110342.GA15806@visitor2.iram.es>
- <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
- <20140211072606.GA26514@visitor2.iram.es>
- <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
- <63AEBD99-AA87-4FD7-BBDA-0CE419959F14@kernel.crashing.org>
- <52FAA97F.4060600@gmail.com> <1392162080.6733.404.camel@snotra.buserror.net>
- <52FAB65C.4090201@gmail.com>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 907682C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 13:52:25 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 12 Feb 2014 12:52:09 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5DDE62BB0059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 13:52:08 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1C2WdwL57081964
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 13:32:40 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1C2q6aH027402
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 13:52:06 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Greg KH <gregkh@linuxfoundation.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH V2] powerpc: thp: Fix crash on mremap
+In-Reply-To: <20140211173129.GB30336@kroah.com>
+References: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140211173129.GB30336@kroah.com>
+Date: Wed, 12 Feb 2014 08:22:02 +0530
+Message-ID: <87ioslt54d.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Subject: Re: Linux-3.14-rc2: Order of serial node compatibles in DTS files.
-From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OF9BA019D5.46DA1E29-ONCA257C7D.000089EA-CA257C7D.00020333@csc.com>
-Date: Wed, 12 Feb 2014 10:21:58 +1000
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Chris Proctor <cproctor@csc.com.au>, Arnd Bergmann <arnd@arndb.de>,
- devicetree <devicetree@vger.kernel.org>,
- Stephen N Chivers <schivers@csc.com.au>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,92 +41,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com> wrote on 
-02/12/2014 10:46:36 AM:
+Greg KH <gregkh@linuxfoundation.org> writes:
 
-> From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> To: Scott Wood <scottwood@freescale.com>
-> Cc: Kumar Gala <galak@kernel.crashing.org>, Stephen N Chivers 
-> <schivers@csc.com.au>, Chris Proctor <cproctor@csc.com.au>, 
-> linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>, 
-> devicetree <devicetree@vger.kernel.org>
-> Date: 02/12/2014 11:04 AM
-> Subject: Re: Linux-3.14-rc2: Order of serial node compatibles in DTS 
-files.
-> 
-> On 02/12/2014 12:41 AM, Scott Wood wrote:
-> > On Tue, 2014-02-11 at 23:51 +0100, Sebastian Hesselbarth wrote:
-> >> On 02/11/2014 11:33 PM, Kumar Gala wrote:
-> >>> Hmm,
-> >>>
-> >>> Wondering if this caused the issue:
-> >>>
-> >>> commit 105353145eafb3ea919f5cdeb652a9d8f270228e
-> >>> Author: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> >>> Date:   Tue Dec 3 14:52:00 2013 +0100
-> >>>
-> >>>       OF: base: match each node compatible against all given matches 
-first
-> >>
-> >> [adding Arnd on Cc]
-> >>
-> >> Could be. I checked tty/serial/of_serial.c and it does not provide a
-> >> compatible for "fsl,ns16550". Does reverting the patch fix the issue
-> >> observed?
-> >>
-> >> I don't think the missing compatible is causing it, but of_serial
-> >> provides a DT match for .type = "serial" just to fail later on
-> >> with the error seen above.
-> >>
-> >> The commit in question reorders of_match_device in a way that match
-> >> table order is not relevant anymore. This can cause it to match
-> >> .type = "serial" first here.
-> >>
-> >> Rather than touching the commit, I suggest to remove the problematic
-> >> .type = "serial" from the match table. It is of no use anyway.
-> >
-> > Regardless of whether .type = "serial" gets removed, it seems wrong 
-for
-> > of_match_node() to accept a .type-only match (or .name, or anything 
-else
-> > that doesn't involve .compatible) before it accepts a compatible match
-> > other than the first in the compatible property.
-> 
-> Right, I thought about it and came to the same conclusion. I sent a
-> patch a second ago to prefer .compatible != NULL matches over those
-> with .compatible == NULL.
-> 
-> Would be great if Stephen can re-test that. If it solves the issue, I
-> can send a patch tomorrow.
-Done.
+> On Fri, Feb 07, 2014 at 07:21:57PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> This patch fix the below crash
+>> 
+>> NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
+>> LR [c0000000000439ac] .hash_page+0x18c/0x5e0
+>> ...
+>> Call Trace:
+>> [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
+>> [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
+>> [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
+>> 
+>> On ppc64 we use the pgtable for storing the hpte slot information and
+>> store address to the pgtable at a constant offset (PTRS_PER_PMD) from
+>> pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
+>> the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
+>> from new pmd.
+>> 
+>> We also want to move the withdraw and deposit before the set_pmd so
+>> that, when page fault find the pmd as trans huge we can be sure that
+>> pgtable can be located at the offset.
+>> 
+>> variant of upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
+>> for 3.12 stable series
+>
+> This doesn't look like a "variant", it looks totally different.  Why
+> can't I just take the b3084f4db3aeb991c507ca774337c7e7893ed04f patch
+> (and follow-on fix) for 3.12?
 
-But, the Interrupt Controller (MPIC)
-goes AWOL and it is down hill from there.
+Because the code in that function changed in 3.13. Kirill added split
+ptl locks for huge pte, and we decide whether to withdraw and
+deposit again based on the ptl locks in 3.13. In 3.12 we do that only
+for ppc64 using #ifdef
 
-The MPIC is specified in the DTS as:
 
-        mpic: pic@40000 {
-                        interrupt-controller;
-                        #address-cells = <0>;
-                        #interrupt-cells = <2>;
-                        reg = <0x40000 0x40000>;
-                        compatible = "chrp,open-pic";
-                        device_type = "open-pic";
-                        big-endian;
-                };
+>
+> I _REALLY_ dislike patches that are totally different from Linus's tree
+> in stable trees, it has caused nothing but problems in the past.
+>
 
-The board support file has the standard mechanism for allocating
-the PIC:
-
-        struct mpic *mpic;
-
-        mpic = mpic_alloc(NULL, 0, 0, 0, 256, " OpenPIC  ");
-        BUG_ON(mpic == NULL);
-
-        mpic_init(mpic);
-
-I checked for damage in applying the patch and it has applied
-correctly.
-
-Stephen Chivers,
-CSC Australia Pty. Ltd.
+-aneesh
