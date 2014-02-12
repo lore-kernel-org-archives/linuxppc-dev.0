@@ -1,18 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 025032C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 15:34:56 +1100 (EST)
-Message-ID: <1392179682.3835.76.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 12 Feb 2014 15:34:42 +1100
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Date: Wed, 12 Feb 2014 16:22:51 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix "attempt to move .org backwards" error
+Message-Id: <20140212162251.57472ed024ace170b49ec2fa@canb.auug.org.au>
+In-Reply-To: <1386631570.32037.40.camel@pasglop>
+References: <20131209191015.22974.31604.stgit@mars>
+ <20131210101031.82b02468d32ddb89481b24b9@canb.auug.org.au>
+ <1386631570.32037.40.camel@pasglop>
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__12_Feb_2014_16_22_51_+1100_rlRrq_CgXz3Z8bzS"
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linux-next <linux-next@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,97 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+--Signature=_Wed__12_Feb_2014_16_22_51_+1100_rlRrq_CgXz3Z8bzS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here is some powerpc goodness for -rc2. Arguably -rc1 material more than
--rc2 but I was travelling (again !)
+Hi all,
 
-It's mostly bug fixes including regressions, but there are a couple of
-new things that I decided to drop-in.
+On Tue, 10 Dec 2013 10:26:10 +1100 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> On Tue, 2013-12-10 at 10:10 +1100, Stephen Rothwell wrote:
+> > Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> > Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> >=20
+> > Works for me.  Thanks.  I will add this to linux-next today if Ben
+> > doesn't add it to his tree.
+>=20
+> I will but probably not soon enough for your cut today
 
-One is a straightforward patch from Michael to add a bunch of P8 cache
-events to perf.
+As noted elsewhere, this did not completely fix the problem and I have
+been still getting this error from my allyesconfig builds for some time:
 
-The other one is a patch by myself to add the direct DMA (iommu bypass)
-for PCIe on Power8 for 64-bit capable devices. This has been around for
-a while, I had lost track of it. However it's been in our internal
-kernels we use for testing P8 already and it affects only P8 related
-code. Since P8 is still unreleased the risk is pretty much nil at this
-point.
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org back=
+wards
 
+Could someone please fix this?
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-The following changes since commit b28a960c42fcd9cfc987441fa6d1c1a471f0f9ed:
+--Signature=_Wed__12_Feb_2014_16_22_51_+1100_rlRrq_CgXz3Z8bzS
+Content-Type: application/pgp-signature
 
-  Linux 3.14-rc2 (2014-02-09 18:15:47 -0800)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-are available in the git repository at:
+iQIcBAEBCAAGBQJS+wUvAAoJEMDTa8Ir7ZwVWe4P/A1XEMQbgN4KUHbAsM5RH7wz
+YIOmJ8NJdEZOLgP7WXgoPEJ2dy9ZU0K/wNBXANcuiZEpQ7MBRl0/r2VpCJIhOmdq
+Dk7dJH/SUOZ8T8f/gMmE20vXuJkBbmt7+ycmKHSH7QHaCfxHnqzPfeFDXOeHWF9a
+8WDr066+lu2K4N3TdennMHa38BQhzZTdD/XqZytuI3XwywUwDZeqc1lVj9oe0c7m
+7Mtjx8xGnbY7HWnTfCBEdvD78L+83m6gvlvluC7S1Iiy3BarrKbUCTftdlT9AuIA
+DLovvSLnieu3d11wnaxolExCLcWKr+kLDRfj/9CiKiOUVmR16k/oKF+ddpBZDuWM
+ExFtzOSsDRxT9HRvDrSIUmFWKq+YJv2VBCZzG9pSY5LabwDmeJNbwSIJGbXwyZyA
+HwEVKKQDE/eJuOSeejFbPz1JaO9CoInnc+6miXFrIIpYinEC8UtkxCQvzFpLyqz+
+eXMNHRcKkW3yRp9BGeHTG4ojWPdj4IquthXrUOuhkMEKPjtiGxEVv7rjUya4zCqG
+80mLm9xV/syRe4fHNJ8wPg56FkZNS5CeWLmNZq276eyVLPlUc6RHnpA0jnesePx/
+SoEhTAXGRAoDvWLBtuEiqKlMa31ASW8TGc89Agof1jy5sYh1w6UFnDgz0nYOrIIO
+grQY8QnnWmeQ0ppEC1Ym
+=Yeot
+-----END PGP SIGNATURE-----
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to cd15b048445d0a54f7147c35a86c5a16ef231554:
-
-  powerpc/powernv: Add iommu DMA bypass support for IODA2 (2014-02-11 16:07:37 +1100)
-
-----------------------------------------------------------------
-Anshuman Khandual (1):
-      powerpc/perf: Configure BHRB filter before enabling PMU interrupts
-
-Anton Blanchard (1):
-      powerpc: Fix endian issues in kexec and crash dump code
-
-Benjamin Herrenschmidt (1):
-      powerpc/powernv: Add iommu DMA bypass support for IODA2
-
-Kevin Hao (1):
-      powerpc/ppc32: Fix the bug in the init of non-base exception stack for UP
-
-Laurent Dufour (1):
-      powerpc/relocate fix relocate processing in LE mode
-
-Mahesh Salgaonkar (2):
-      powerpc/pseries: Disable relocation on exception while going down during crash.
-      powerpc: Fix kdump hang issue on p8 with relocation on exception enabled.
-
-Michael Ellerman (5):
-      powerpc/perf: Add Power8 cache & TLB events
-      powerpc/pseries: Select ARCH_RANDOM on pseries
-      powerpc/xmon: Don't loop forever in get_output_lock()
-      powerpc/xmon: Fix timeout loop in get_output_lock()
-      powerpc/xmon: Don't signal we've entered until we're finished printing
-
-Nathan Fontenot (1):
-      crypto/nx/nx-842: Fix handling of vmalloc addresses
-
-Paul Gortmaker (1):
-      powerpc: Fix build failure in sysdev/mpic.c for MPIC_WEIRD=y
-
-Thadeu Lima de Souza Cascardo (1):
-      powerpc/eeh: Drop taken reference to driver on eeh_rmv_device
-
- arch/powerpc/include/asm/dma-mapping.h    |   1 +
- arch/powerpc/include/asm/iommu.h          |   1 +
- arch/powerpc/include/asm/sections.h       |  12 +++
- arch/powerpc/kernel/dma.c                 |  10 ++-
- arch/powerpc/kernel/eeh_driver.c          |   8 +-
- arch/powerpc/kernel/iommu.c               |  12 +++
- arch/powerpc/kernel/irq.c                 |   5 ++
- arch/powerpc/kernel/machine_kexec.c       |  14 ++-
- arch/powerpc/kernel/machine_kexec_64.c    |   6 +-
- arch/powerpc/kernel/reloc_64.S            |   4 +-
- arch/powerpc/kernel/setup_32.c            |   5 ++
- arch/powerpc/mm/hash_utils_64.c           |  14 +++
- arch/powerpc/perf/core-book3s.c           |   5 +-
- arch/powerpc/perf/power8-pmu.c            | 144 ++++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/pci-ioda.c |  84 +++++++++++++++++
- arch/powerpc/platforms/powernv/pci.c      |  10 +++
- arch/powerpc/platforms/powernv/pci.h      |   6 +-
- arch/powerpc/platforms/powernv/powernv.h  |   8 ++
- arch/powerpc/platforms/powernv/setup.c    |   9 ++
- arch/powerpc/platforms/pseries/Kconfig    |   1 +
- arch/powerpc/platforms/pseries/setup.c    |   3 +-
- arch/powerpc/sysdev/mpic.c                |  38 ++++----
- arch/powerpc/xmon/xmon.c                  |  24 +++--
- drivers/crypto/nx/nx-842.c                |  29 +++---
- 24 files changed, 398 insertions(+), 55 deletions(-)
+--Signature=_Wed__12_Feb_2014_16_22_51_+1100_rlRrq_CgXz3Z8bzS--
