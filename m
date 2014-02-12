@@ -1,32 +1,35 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ee0-x236.google.com (mail-ee0-x236.google.com
+ [IPv6:2a00:1450:4013:c00::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8ACA72C0142
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2014 18:25:43 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 12 Feb 2014 00:25:41 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5821D19D8041
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2014 00:25:37 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1C7PWlH4129098
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2014 08:25:37 +0100
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1C7PH29010037
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Feb 2014 00:25:17 -0700
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] powerpc/powernv: Rework EEH reset
-Date: Wed, 12 Feb 2014 15:24:54 +0800
-Message-Id: <1392189896-18882-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, stable@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 524052C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 19:25:41 +1100 (EST)
+Received: by mail-ee0-f54.google.com with SMTP id e53so4115534eek.41
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 00:25:37 -0800 (PST)
+Message-ID: <52FB2FF4.6060905@gmail.com>
+Date: Wed, 12 Feb 2014 09:25:24 +0100
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Stephen N Chivers <schivers@csc.com.au>
+Subject: Re: Linux-3.14-rc2: Order of serial node compatibles in DTS files.
+References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
+ <20140206082635.GA7048@visitor2.iram.es>
+ <OFA4C1AF9F.B23E83EC-ONCA257C78.00044235-CA257C78.00080D50@csc.com>
+ <20140207101036.GA823@visitor2.iram.es>
+ <alpine.LRH.2.00.1402071348380.10318@ra8135-ec1.am.freescale.net>
+ <20140210110342.GA15806@visitor2.iram.es>
+ <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
+ <20140211072606.GA26514@visitor2.iram.es>
+ <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
+ <63AEBD99-AA87-4FD7-BBDA-0CE419959F14@kernel.crashing.org>
+ <52FAA97F.4060600@gmail.com> <1392162080.6733.404.camel@snotra.buserror.net>
+ <52FAB65C.4090201@gmail.com>
+ <OF9BA019D5.46DA1E29-ONCA257C7D.000089EA-CA257C7D.00020333@csc.com>
+In-Reply-To: <OF9BA019D5.46DA1E29-ONCA257C7D.000089EA-CA257C7D.00020333@csc.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Chris Proctor <cproctor@csc.com.au>, Arnd Bergmann <arnd@arndb.de>,
+ devicetree <devicetree@vger.kernel.org>, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,71 +39,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When doing reset in order to recover the affected PE, we issue
-hot reset on PE primary bus if it's not root bus. Otherwise, we
-issue hot or fundamental reset on root port or PHB accordingly.
-For the later case, we didn't cover the situation where PE only
-includes root port and it potentially causes kernel crash upon
-EEH error to the PE.
+On 02/12/2014 01:21 AM, Stephen N Chivers wrote:
+> Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com> wrote on
+> 02/12/2014 10:46:36 AM:
+>
+>> From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+>> To: Scott Wood <scottwood@freescale.com>
+>> Cc: Kumar Gala <galak@kernel.crashing.org>, Stephen N Chivers
+>> <schivers@csc.com.au>, Chris Proctor <cproctor@csc.com.au>,
+>> linuxppc-dev@lists.ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+>> devicetree <devicetree@vger.kernel.org>
+>> Date: 02/12/2014 11:04 AM
+>> Subject: Re: Linux-3.14-rc2: Order of serial node compatibles in DTS
+> files.
+>>
+>> On 02/12/2014 12:41 AM, Scott Wood wrote:
+>>>
+>>> Regardless of whether .type = "serial" gets removed, it seems wrong for
+>>> of_match_node() to accept a .type-only match (or .name, or anything else
+>>> that doesn't involve .compatible) before it accepts a compatible match
+>>> other than the first in the compatible property.
+>>
+>> Right, I thought about it and came to the same conclusion. I sent a
+>> patch a second ago to prefer .compatible != NULL matches over those
+>> with .compatible == NULL.
+>>
+>> Would be great if Stephen can re-test that. If it solves the issue, I
+>> can send a patch tomorrow.
+> Done.
+>
+> But, the Interrupt Controller (MPIC)
+> goes AWOL and it is down hill from there.
+>
+> The MPIC is specified in the DTS as:
+>
+>          mpic: pic@40000 {
+>                          interrupt-controller;
+>                          #address-cells = <0>;
+>                          #interrupt-cells = <2>;
+>                          reg = <0x40000 0x40000>;
+>                          compatible = "chrp,open-pic";
+>                          device_type = "open-pic";
+>                          big-endian;
+>                  };
+>
+> The board support file has the standard mechanism for allocating
+> the PIC:
+>
+>          struct mpic *mpic;
+>
+>          mpic = mpic_alloc(NULL, 0, 0, 0, 256, " OpenPIC  ");
+>          BUG_ON(mpic == NULL);
+>
+>          mpic_init(mpic);
+>
+> I checked for damage in applying the patch and it has applied
+> correctly.
 
-The patch reworks the logic of EEH reset to improve the code
-readability and also avoid the kernel crash.
+Hmm, I did a mistake in the patch:
 
-Cc: stable@vger.kernel.org
-Reported-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-ioda.c |   29 ++++-------------------------
- 1 file changed, 4 insertions(+), 25 deletions(-)
+-	while (m->name[0] || m->type[0]) {
++	while (m->compatible[0] || m->name[0] || m->type[0]) {
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index e1e7161..fcb79cf 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -489,8 +489,7 @@ static int ioda_eeh_bridge_reset(struct pci_controller *hose,
- static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- {
- 	struct pci_controller *hose = pe->phb;
--	struct eeh_dev *edev;
--	struct pci_dev *dev;
-+	struct pci_bus *bus;
- 	int ret;
- 
- 	/*
-@@ -519,31 +518,11 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- 	if (pe->type & EEH_PE_PHB) {
- 		ret = ioda_eeh_phb_reset(hose, option);
- 	} else {
--		if (pe->type & EEH_PE_DEVICE) {
--			/*
--			 * If it's device PE, we didn't refer to the parent
--			 * PCI bus yet. So we have to figure it out indirectly.
--			 */
--			edev = list_first_entry(&pe->edevs,
--					struct eeh_dev, list);
--			dev = eeh_dev_to_pci_dev(edev);
--			dev = dev->bus->self;
--		} else {
--			/*
--			 * If it's bus PE, the parent PCI bus is already there
--			 * and just pick it up.
--			 */
--			dev = pe->bus->self;
--		}
--
--		/*
--		 * Do reset based on the fact that the direct upstream bridge
--		 * is root bridge (port) or not.
--		 */
--		if (dev->bus->number == 0)
-+		bus = eeh_pe_bus_get(pe);
-+		if (pci_is_root_bus(bus))
- 			ret = ioda_eeh_root_reset(hose, option);
- 		else
--			ret = ioda_eeh_bridge_reset(hose, dev, option);
-+			ret = ioda_eeh_bridge_reset(hose, bus->self, option);
- 	}
- 
- 	return ret;
--- 
-1.7.10.4
+for the second added match. Otherwise, the matches are not
+evaluated down to the sentinel but the loop quits on the first
+match table entry without .name and .type set.
+
+Sebastian
