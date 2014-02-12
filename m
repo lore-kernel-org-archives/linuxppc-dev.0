@@ -1,24 +1,33 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <sebastian.hesselbarth@gmail.com>
+Received: from mail-ee0-x22f.google.com (mail-ee0-x22f.google.com
+ [IPv6:2a00:1450:4013:c00::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 865B92C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 22:13:40 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5BD162C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 22:26:25 +1100 (EST)
+Received: by mail-ee0-f47.google.com with SMTP id d49so4230514eek.6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 03:26:19 -0800 (PST)
+Message-ID: <52FB5A56.2050402@gmail.com>
+Date: Wed, 12 Feb 2014 12:26:14 +0100
+From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Kevin Hao <haokexin@gmail.com>
 Subject: Re: Linux-3.14-rc2: Order of serial node compatibles in DTS files.
-Date: Wed, 12 Feb 2014 12:00:04 +0100
-References: <OF784BA598.ACFE9DA4-ONCA257C76.00827472-CA257C77.000BCFAD@csc.com>
- <OFB203CA90.B048F8AA-ONCA257C7C.0081A816-CA257C7C.0081DCE3@csc.com>
- <52FAB5A7.7080208@gmail.com>
-In-Reply-To: <52FAB5A7.7080208@gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <201402121200.05074.arnd@arndb.de>
-Cc: Chris Proctor <cproctor@csc.com.au>, linuxppc-dev@lists.ozlabs.org,
- Stephen N Chivers <schivers@csc.com.au>,
- devicetree <devicetree@vger.kernel.org>
+References: <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
+ <20140211072606.GA26514@visitor2.iram.es>
+ <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
+ <63AEBD99-AA87-4FD7-BBDA-0CE419959F14@kernel.crashing.org>
+ <52FAA97F.4060600@gmail.com> <1392162080.6733.404.camel@snotra.buserror.net>
+ <52FAB65C.4090201@gmail.com>
+ <OF9BA019D5.46DA1E29-ONCA257C7D.000089EA-CA257C7D.00020333@csc.com>
+ <20140212052816.GA15434@pek-khao-d1.corp.ad.wrs.com>
+ <52FB3108.3000202@gmail.com>
+ <20140212103153.GC15434@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20140212103153.GC15434@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Chris Proctor <cproctor@csc.com.au>, Arnd Bergmann <arnd@arndb.de>,
+ devicetree <devicetree@vger.kernel.org>,
+ Stephen N Chivers <schivers@csc.com.au>, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +37,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 12 February 2014, Sebastian Hesselbarth wrote:
-> On 02/12/2014 12:38 AM, Stephen N Chivers wrote:
-> > Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com> wrote on
+On 02/12/14 11:31, Kevin Hao wrote:
+> On Wed, Feb 12, 2014 at 09:30:00AM +0100, Sebastian Hesselbarth wrote:
+>> On 02/12/2014 06:28 AM, Kevin Hao wrote:
+>>> On Wed, Feb 12, 2014 at 10:21:58AM +1000, Stephen N Chivers wrote:
+>>>> But, the Interrupt Controller (MPIC)
+>>>> goes AWOL and it is down hill from there.
+>>>>
+>>>> The MPIC is specified in the DTS as:
+>>>>
+>>>>          mpic: pic@40000 {
+>>>>                          interrupt-controller;
+>>>>                          #address-cells = <0>;
+>>>>                          #interrupt-cells = <2>;
+>>>>                          reg = <0x40000 0x40000>;
+>>>>                          compatible = "chrp,open-pic";
+>>>>                          device_type = "open-pic";
+>>>>                          big-endian;
+>>>>                  };
+>>>>
+>>>> The board support file has the standard mechanism for allocating
+>>>> the PIC:
+>>>>
+>>>>          struct mpic *mpic;
+>>>>
+>>>>          mpic = mpic_alloc(NULL, 0, 0, 0, 256, " OpenPIC  ");
+>>>>          BUG_ON(mpic == NULL);
+>>>>
+>>>>          mpic_init(mpic);
+>>>>
+>>>> I checked for damage in applying the patch and it has applied
+>>>> correctly.
+>>>
+>>> How about the following fix?
+>>>
+>>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+>>> index ff85450d5683..ca91984d3c4b 100644
+>>> --- a/drivers/of/base.c
+>>> +++ b/drivers/of/base.c
+>>> @@ -730,32 +730,40 @@ out:
+>>>   }
+>>>   EXPORT_SYMBOL(of_find_node_with_property);
+>>>
+>>> +static int of_match_type_name(const struct device_node *node,
+>>> +				const struct of_device_id *m)
+>>
+>> I am fine with having a sub-function here, but it should rather be
+>> named of_match_type_or_name.
+>
+> OK.
+>
+>>
+>>> +{
+>>> +	int match = 1;
+>>> +
+>>> +	if (m->name[0])
+>>> +		match &= node->name && !strcmp(m->name, node->name);
+>>> +
+>>> +	if (m->type[0])
+>>> +		match &= node->type && !strcmp(m->type, node->type);
+>>> +
+>>> +	return match;
+>>> +}
+>> [...]
+>>> +	/* Check against matches without compatible string */
+>>> +	m = matches;
+>>> +	while (!m->compatible[0] && (m->name[0] || m->type[0])) {
+>>
+>> We shouldn't check for anything else than the sentinel here.
+>> Although I guess yours will not quit early as mine did but that
+>> way we don't have to worry about it.
+>
+> Yes, this is still buggy. I will change something like this:
+>
+> 	m = matches;
+> 	/* Check against matches without compatible string */
+> 	while (m->name[0] || m->type[0] || m->compatible[0]) {
+> 		if (m->compatible[0]) {
+> 			m++;
+> 			continue;
+> 		}
+>
+> 		match = of_match_type_name(node, m);
+> 		if (match)
+> 			return m;
+> 		m++;
+> 	}
 
-> >> I don't think the missing compatible is causing it, but of_serial
-> >> provides a DT match for .type = "serial" just to fail later on
-> >> with the error seen above.
-> >>
-> >> The commit in question reorders of_match_device in a way that match
-> >> table order is not relevant anymore. This can cause it to match
-> >> .type = "serial" first here.
-> >>
-> >> Rather than touching the commit, I suggest to remove the problematic
-> >> .type = "serial" from the match table. It is of no use anyway.
-> > Deleting the "serial" line from the match table fixes the problem.
-> > I tested it for both orderings of compatible.
-> 
-> I revert my statement about removing anything from of_serial.c. Instead
-> we should try to prefer matches with compatibles over type/name without
-> compatibles. Something like the patch below (compile tested only)
+You can cook it down to:
 
-That would probably be a good idea. However, I think in this
-case we also want to remove the line from the driver, as it clearly
-never works on any hardware and the driver just errors out for the
-device_type match.
-
-	Arnd
+	m = matches;
+	/* Check against matches without compatible string */
+	while (m->name[0] || m->type[0] || m->compatible[0]) {
+		if (!m->compatible[0] && of_match_type_or_name(node, m)
+			return m;
+		m++;
+	}
