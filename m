@@ -1,20 +1,36 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 0D26D2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 01:21:26 +1100 (EST)
-Date: Wed, 12 Feb 2014 06:23:34 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] powerpc: thp: Fix crash on mremap
-Message-ID: <20140212142334.GB7688@kroah.com>
-References: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140211173129.GB30336@kroah.com>
- <87ioslt54d.fsf@linux.vnet.ibm.com>
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9E82E2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 02:01:43 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 12 Feb 2014 20:31:38 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0DC0F1258059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 20:33:31 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1CF1UOM63504408
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 20:31:31 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1CF1RZT022481
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 20:31:27 +0530
+Message-ID: <52FB8CC6.2010005@linux.vnet.ibm.com>
+Date: Wed, 12 Feb 2014 20:31:26 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87ioslt54d.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, stable@vger.kernel.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH v2] powerpc/powernv: Platform dump interface
+References: <20140116121411.624.55662.stgit@hegdevasant.in.ibm.com>
+ <20140209082034.0329833d@kryten>
+In-Reply-To: <20140209082034.0329833d@kryten>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +40,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 12, 2014 at 08:22:02AM +0530, Aneesh Kumar K.V wrote:
-> Greg KH <gregkh@linuxfoundation.org> writes:
-> 
-> > On Fri, Feb 07, 2014 at 07:21:57PM +0530, Aneesh Kumar K.V wrote:
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >> 
-> >> This patch fix the below crash
-> >> 
-> >> NIP [c00000000004cee4] .__hash_page_thp+0x2a4/0x440
-> >> LR [c0000000000439ac] .hash_page+0x18c/0x5e0
-> >> ...
-> >> Call Trace:
-> >> [c000000736103c40] [00001ffffb000000] 0x1ffffb000000(unreliable)
-> >> [437908.479693] [c000000736103d50] [c0000000000439ac] .hash_page+0x18c/0x5e0
-> >> [437908.479699] [c000000736103e30] [c00000000000924c] .do_hash_page+0x4c/0x58
-> >> 
-> >> On ppc64 we use the pgtable for storing the hpte slot information and
-> >> store address to the pgtable at a constant offset (PTRS_PER_PMD) from
-> >> pmd. On mremap, when we switch the pmd, we need to withdraw and deposit
-> >> the pgtable again, so that we find the pgtable at PTRS_PER_PMD offset
-> >> from new pmd.
-> >> 
-> >> We also want to move the withdraw and deposit before the set_pmd so
-> >> that, when page fault find the pmd as trans huge we can be sure that
-> >> pgtable can be located at the offset.
-> >> 
-> >> variant of upstream SHA1: b3084f4db3aeb991c507ca774337c7e7893ed04f
-> >> for 3.12 stable series
-> >
-> > This doesn't look like a "variant", it looks totally different.  Why
-> > can't I just take the b3084f4db3aeb991c507ca774337c7e7893ed04f patch
-> > (and follow-on fix) for 3.12?
-> 
-> Because the code in that function changed in 3.13. Kirill added split
-> ptl locks for huge pte, and we decide whether to withdraw and
-> deposit again based on the ptl locks in 3.13. In 3.12 we do that only
-> for ppc64 using #ifdef
+On 02/09/2014 02:50 AM, Anton Blanchard wrote:
+>
+> Hi Vasant,
+>
+>> +static void free_dump_sg_list(struct opal_sg_list *list)
+>> +{
+>> +	struct opal_sg_list *sg1;
+>> +	while (list) {
+>> +		sg1 = list->next;
+>> +		kfree(list);
+>> +		list = sg1;
+>> +	}
+>> +	list = NULL;
+>> +}
+>> +
+>> +/*
+>> + * Build dump buffer scatter gather list
+>> + */
+>> +static struct opal_sg_list *dump_data_to_sglist(void)
+>> +{
+>> +	struct opal_sg_list *sg1, *list = NULL;
+>> +	void *addr;
+>> +	int64_t size;
+>> +
+>> +	addr = dump_record.buffer;
+>> +	size = dump_record.size;
+>> +
+>> +	sg1 = kzalloc(PAGE_SIZE, GFP_KERNEL);
+>> +	if (!sg1)
+>> +		goto nomem;
+>> +
+>> +	list = sg1;
+>> +	sg1->num_entries = 0;
+>> +	while (size > 0) {
+>> +		/* Translate virtual address to physical address */
+>> +		sg1->entry[sg1->num_entries].data =
+>> +			(void *)(vmalloc_to_pfn(addr) << PAGE_SHIFT);
+>> +
+>> +		if (size > PAGE_SIZE)
+>> +			sg1->entry[sg1->num_entries].length =
+>> PAGE_SIZE;
+>> +		else
+>> +			sg1->entry[sg1->num_entries].length = size;
+>> +
+>> +		sg1->num_entries++;
+>> +		if (sg1->num_entries >= SG_ENTRIES_PER_NODE) {
+>> +			sg1->next = kzalloc(PAGE_SIZE, GFP_KERNEL);
+>> +			if (!sg1->next)
+>> +				goto nomem;
+>> +
+>> +			sg1 = sg1->next;
+>> +			sg1->num_entries = 0;
+>> +		}
+>> +		addr += PAGE_SIZE;
+>> +		size -= PAGE_SIZE;
+>> +	}
+>> +	return list;
+>> +
+>> +nomem:
+>> +	pr_err("%s : Failed to allocate memory\n", __func__);
+>> +	free_dump_sg_list(list);
+>> +	return NULL;
+>> +}
+>> +
+>> +/*
+>> + * Translate sg list address to absolute
+>> + */
+>> +static void sglist_to_phy_addr(struct opal_sg_list *list)
+>> +{
+>> +	struct opal_sg_list *sg, *next;
+>> +
+>> +	for (sg = list; sg; sg = next) {
+>> +		next = sg->next;
+>> +		/* Don't translate NULL pointer for last entry */
+>> +		if (sg->next)
+>> +			sg->next = (struct opal_sg_list
+>> *)__pa(sg->next);
+>> +		else
+>> +			sg->next = NULL;
+>> +
+>> +		/* Convert num_entries to length */
+>> +		sg->num_entries =
+>> +			sg->num_entries * sizeof(struct
+>> opal_sg_entry) + 16;
+>> +	}
+>> +}
+>> +
+>> +static void free_dump_data_buf(void)
+>> +{
+>> +	vfree(dump_record.buffer);
+>> +	dump_record.size = 0;
+>> +}
+>
 
-I have no idea what that means...
+Anton,
 
-If you want this patch applied, please be specific as to what is going
-on, why the code is _very_ different, and all of that.  Make it
-_obvious_ as to what is happening, and why I would be a fool not to take
-it in the stable tree.
+> This looks identical to the code in opal-flash.c. Considering how
+> complicated it is, can we put it somewhere common?
 
-As it is, the code in this patch looks so different that I'm just
-assuming you got something wrong and are trying to really send me
-something else, so I'll just ignore it.
+Thanks for the review.. Will look into it next week.
 
-greg k-h
+-Vasant
+
+>
+> Anton
+>
