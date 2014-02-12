@@ -1,36 +1,32 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 69A982C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 08:43:29 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 12 Feb 2014 16:43:26 -0500
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id D700A6E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 16:43:18 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1CLhNE89699778
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 21:43:23 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1CLhM3K000744
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 16:43:23 -0500
-Message-ID: <52FBEAF9.5080206@linux.vnet.ibm.com>
-Date: Wed, 12 Feb 2014 13:43:21 -0800
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v3 0/3] powerpc/pseries: fix issues in suspend/resume code
-References: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: nfont@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Return-Path: <cl@linux.com>
+Received: from qmta11.emeryville.ca.mail.comcast.net
+ (qmta11.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:211])
+ by ozlabs.org (Postfix) with ESMTP id 143E52C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 09:24:31 +1100 (EST)
+Date: Wed, 12 Feb 2014 16:16:11 -0600 (CST)
+From: Christoph Lameter <cl@linux.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
+ the fallback node
+In-Reply-To: <20140211074159.GB27870@lge.com>
+Message-ID: <alpine.DEB.2.10.1402121612270.8183@nuc>
+References: <20140206020757.GC5433@linux.vnet.ibm.com>
+ <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
+ <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
+ <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
+ <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
+ <alpine.DEB.2.10.1402071245040.20246@nuc>
+ <20140210191321.GD1558@linux.vnet.ibm.com> <20140211074159.GB27870@lge.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +36,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/31/2014 03:58 PM, Tyrel Datwyler wrote:
-> This patchset fixes a couple of issues encountered in the suspend/resume code
-> base. First when using the kernel device tree update code update-nodes is
-> unnecessarily called more than once. Second the cpu cache lists are not
-> updated after a suspend/resume which under certain conditions may cause a
-> panic. Finally, since the cache list fix utilzes in kernel device tree update
-> code a means for telling drmgr not to perform a device tree update from
-> userspace is required.
-> 
-> Changes from v2:
-> - Moved dynamic configuration update code into pseries specific routine
->   per Nathan's suggestion.
-> 
-> Changes from v1:
-> - Fixed several commit message typos
-> - Fixed authorship of first two patches
-> 
-> Haren Myneni (2):
->   powerpc/pseries: Device tree should only be updated once after
->     suspend/migrate
->   powerpc/pseries: Update dynamic cache nodes for suspend/resume
->     operation
-> 
-> Tyrel Datwyler (1):
->   powerpc/pseries: Report in kernel device tree update to drmgr
-> 
->  arch/powerpc/include/asm/rtas.h           |  1 +
->  arch/powerpc/platforms/pseries/mobility.c | 26 +++++++-----------
->  arch/powerpc/platforms/pseries/suspend.c  | 44 ++++++++++++++++++++++++++++++-
->  3 files changed, 54 insertions(+), 17 deletions(-)
-> 
+Here is another patch with some fixes. The additional logic is only
+compiled in if CONFIG_HAVE_MEMORYLESS_NODES is set.
 
-Ping?
+Subject: slub: Memoryless node support
 
-Nathan, can I at least get your ack on this v3 patchset. We really need
-to get these upstream.
+Support memoryless nodes by tracking which allocations are failing.
+Allocations targeted to the nodes without memory fall back to the
+current available per cpu objects and if that is not available will
+create a new slab using the page allocator to fallback from the
+memoryless node to some other node.
 
--Tyrel
+Signed-off-by: Christoph Lameter <cl@linux.com>
+
+Index: linux/mm/slub.c
+===================================================================
+--- linux.orig/mm/slub.c	2014-02-12 16:07:48.957869570 -0600
++++ linux/mm/slub.c	2014-02-12 16:09:22.198928260 -0600
+@@ -134,6 +134,10 @@ static inline bool kmem_cache_has_cpu_pa
+ #endif
+ }
+
++#ifdef CONFIG_HAVE_MEMORYLESS_NODES
++static nodemask_t empty_nodes;
++#endif
++
+ /*
+  * Issues still to be resolved:
+  *
+@@ -1405,16 +1409,28 @@ static struct page *new_slab(struct kmem
+ 	void *last;
+ 	void *p;
+ 	int order;
++	int alloc_node;
+
+ 	BUG_ON(flags & GFP_SLAB_BUG_MASK);
+
+ 	page = allocate_slab(s,
+ 		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
+-	if (!page)
++	if (!page) {
++#ifdef CONFIG_HAVE_MEMORYLESS_NODES
++		if (node != NUMA_NO_NODE)
++			node_set(node, empty_nodes);
++#endif
+ 		goto out;
++	}
+
+ 	order = compound_order(page);
+-	inc_slabs_node(s, page_to_nid(page), page->objects);
++	alloc_node = page_to_nid(page);
++#ifdef CONFIG_HAVE_MEMORYLESS_NODES
++	node_clear(alloc_node, empty_nodes);
++	if (node != NUMA_NO_NODE && alloc_node != node)
++		node_set(node, empty_nodes);
++#endif
++	inc_slabs_node(s, alloc_node, page->objects);
+ 	memcg_bind_pages(s, order);
+ 	page->slab_cache = s;
+ 	__SetPageSlab(page);
+@@ -1722,7 +1738,7 @@ static void *get_partial(struct kmem_cac
+ 		struct kmem_cache_cpu *c)
+ {
+ 	void *object;
+-	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
++	int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
+
+ 	object = get_partial_node(s, get_node(s, searchnode), c, flags);
+ 	if (object || node != NUMA_NO_NODE)
+@@ -2117,8 +2133,19 @@ static void flush_all(struct kmem_cache
+ static inline int node_match(struct page *page, int node)
+ {
+ #ifdef CONFIG_NUMA
+-	if (!page || (node != NUMA_NO_NODE && page_to_nid(page) != node))
++	int page_node = page_to_nid(page);
++
++	if (!page)
+ 		return 0;
++
++	if (node != NUMA_NO_NODE) {
++#ifdef CONFIG_HAVE_MEMORYLESS_NODES
++		if (node_isset(node, empty_nodes))
++			return 1;
++#endif
++		if (page_node != node)
++			return 0;
++	}
+ #endif
+ 	return 1;
+ }
