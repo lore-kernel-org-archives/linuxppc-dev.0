@@ -1,35 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 042BE2C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 14:43:55 +1100 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 12 Feb 2014 09:13:52 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8E4E2E005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 09:17:10 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1C3hk2m56164512
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 09:13:46 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1C3hoc0020090
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 09:13:50 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, riel@redhat.com,
- mgorman@suse.de, mpe@ellerman.id.au
-Subject: [PATCH V2 3/3] mm: Use ptep/pmdp_set_numa for updating _PAGE_NUMA bit
-Date: Wed, 12 Feb 2014 09:13:38 +0530
-Message-Id: <1392176618-23667-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 025032C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 15:34:56 +1100 (EST)
+Message-ID: <1392179682.3835.76.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 12 Feb 2014 15:34:42 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,190 +22,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Hi Linus !
 
-Archs like ppc64 doesn't do tlb flush in set_pte/pmd functions. ppc64 also doesn't implement
-flush_tlb_range. ppc64 require the tlb flushing to be batched within ptl locks. The reason
-to do that is to ensure that the hash page table is in sync with linux page table.
-We track the hpte index in linux pte and if we clear them without flushing hash and drop the
-ptl lock, we can have another cpu update the pte and can end up with double hash. We also want
-to keep set_pte_at simpler by not requiring them to do hash flush for performance reason.
-Hence cannot use them while updating _PAGE_NUMA bit. Add new functions for marking pte/pmd numa
+Here is some powerpc goodness for -rc2. Arguably -rc1 material more than
+-rc2 but I was travelling (again !)
 
-Acked-by: Mel Gorman <mgorman@suse.de>
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-Changes from V1:
- * Build fix for non numa balancing config
- 
- arch/powerpc/include/asm/pgtable.h | 22 +++++++++++++++++++++
- include/asm-generic/pgtable.h      | 39 ++++++++++++++++++++++++++++++++++++++
- mm/huge_memory.c                   |  9 ++-------
- mm/mprotect.c                      |  4 +---
- 4 files changed, 64 insertions(+), 10 deletions(-)
+It's mostly bug fixes including regressions, but there are a couple of
+new things that I decided to drop-in.
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index f83b6f3e1b39..3ebb188c3ff5 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -75,12 +75,34 @@ static inline pte_t pte_mknuma(pte_t pte)
- 	return pte;
- }
- 
-+#define ptep_set_numa ptep_set_numa
-+static inline void ptep_set_numa(struct mm_struct *mm, unsigned long addr,
-+				 pte_t *ptep)
-+{
-+	if ((pte_val(*ptep) & _PAGE_PRESENT) == 0)
-+		VM_BUG_ON(1);
-+
-+	pte_update(mm, addr, ptep, _PAGE_PRESENT, _PAGE_NUMA, 0);
-+	return;
-+}
-+
- #define pmd_numa pmd_numa
- static inline int pmd_numa(pmd_t pmd)
- {
- 	return pte_numa(pmd_pte(pmd));
- }
- 
-+#define pmdp_set_numa pmdp_set_numa
-+static inline void pmdp_set_numa(struct mm_struct *mm, unsigned long addr,
-+				 pmd_t *pmdp)
-+{
-+	if ((pmd_val(*pmdp) & _PAGE_PRESENT) == 0)
-+		VM_BUG_ON(1);
-+
-+	pmd_hugepage_update(mm, addr, pmdp, _PAGE_PRESENT, _PAGE_NUMA);
-+	return;
-+}
-+
- #define pmd_mknonnuma pmd_mknonnuma
- static inline pmd_t pmd_mknonnuma(pmd_t pmd)
- {
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index 8e4f41d9af4d..34c7bdc06014 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -701,6 +701,18 @@ static inline pte_t pte_mknuma(pte_t pte)
- }
- #endif
- 
-+#ifndef ptep_set_numa
-+static inline void ptep_set_numa(struct mm_struct *mm, unsigned long addr,
-+				 pte_t *ptep)
-+{
-+	pte_t ptent = *ptep;
-+
-+	ptent = pte_mknuma(ptent);
-+	set_pte_at(mm, addr, ptep, ptent);
-+	return;
-+}
-+#endif
-+
- #ifndef pmd_mknuma
- static inline pmd_t pmd_mknuma(pmd_t pmd)
- {
-@@ -708,6 +720,18 @@ static inline pmd_t pmd_mknuma(pmd_t pmd)
- 	return pmd_clear_flags(pmd, _PAGE_PRESENT);
- }
- #endif
-+
-+#ifndef pmdp_set_numa
-+static inline void pmdp_set_numa(struct mm_struct *mm, unsigned long addr,
-+				 pmd_t *pmdp)
-+{
-+	pmd_t pmd = *pmdp;
-+
-+	pmd = pmd_mknuma(pmd);
-+	set_pmd_at(mm, addr, pmdp, pmd);
-+	return;
-+}
-+#endif
- #else
- extern int pte_numa(pte_t pte);
- extern int pmd_numa(pmd_t pmd);
-@@ -715,6 +739,8 @@ extern pte_t pte_mknonnuma(pte_t pte);
- extern pmd_t pmd_mknonnuma(pmd_t pmd);
- extern pte_t pte_mknuma(pte_t pte);
- extern pmd_t pmd_mknuma(pmd_t pmd);
-+extern void ptep_set_numa(struct mm_struct *mm, unsigned long addr, pte_t *ptep);
-+extern void pmdp_set_numa(struct mm_struct *mm, unsigned long addr, pmd_t *pmdp);
- #endif /* CONFIG_ARCH_USES_NUMA_PROT_NONE */
- #else
- static inline int pmd_numa(pmd_t pmd)
-@@ -742,10 +768,23 @@ static inline pte_t pte_mknuma(pte_t pte)
- 	return pte;
- }
- 
-+static inline void ptep_set_numa(struct mm_struct *mm, unsigned long addr,
-+				 pte_t *ptep)
-+{
-+	return;
-+}
-+
-+
- static inline pmd_t pmd_mknuma(pmd_t pmd)
- {
- 	return pmd;
- }
-+
-+static inline void pmdp_set_numa(struct mm_struct *mm, unsigned long addr,
-+				 pmd_t *pmdp)
-+{
-+	return ;
-+}
- #endif /* CONFIG_NUMA_BALANCING */
- 
- #endif /* CONFIG_MMU */
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 82166bf974e1..da23eb96779f 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1545,6 +1545,7 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
- 				entry = pmd_mknonnuma(entry);
- 			entry = pmd_modify(entry, newprot);
- 			ret = HPAGE_PMD_NR;
-+			set_pmd_at(mm, addr, pmd, entry);
- 			BUG_ON(pmd_write(entry));
- 		} else {
- 			struct page *page = pmd_page(*pmd);
-@@ -1557,16 +1558,10 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
- 			 */
- 			if (!is_huge_zero_page(page) &&
- 			    !pmd_numa(*pmd)) {
--				entry = *pmd;
--				entry = pmd_mknuma(entry);
-+				pmdp_set_numa(mm, addr, pmd);
- 				ret = HPAGE_PMD_NR;
- 			}
- 		}
--
--		/* Set PMD if cleared earlier */
--		if (ret == HPAGE_PMD_NR)
--			set_pmd_at(mm, addr, pmd, entry);
--
- 		spin_unlock(ptl);
- 	}
- 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 33eab902f10e..769a67a15803 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -69,12 +69,10 @@ static unsigned long change_pte_range(struct vm_area_struct *vma, pmd_t *pmd,
- 			} else {
- 				struct page *page;
- 
--				ptent = *pte;
- 				page = vm_normal_page(vma, addr, oldpte);
- 				if (page && !PageKsm(page)) {
- 					if (!pte_numa(oldpte)) {
--						ptent = pte_mknuma(ptent);
--						set_pte_at(mm, addr, pte, ptent);
-+						ptep_set_numa(mm, addr, pte);
- 						updated = true;
- 					}
- 				}
--- 
-1.8.3.2
+One is a straightforward patch from Michael to add a bunch of P8 cache
+events to perf.
+
+The other one is a patch by myself to add the direct DMA (iommu bypass)
+for PCIe on Power8 for 64-bit capable devices. This has been around for
+a while, I had lost track of it. However it's been in our internal
+kernels we use for testing P8 already and it affects only P8 related
+code. Since P8 is still unreleased the risk is pretty much nil at this
+point.
+
+Cheers,
+Ben.
+
+The following changes since commit b28a960c42fcd9cfc987441fa6d1c1a471f0f9ed:
+
+  Linux 3.14-rc2 (2014-02-09 18:15:47 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to cd15b048445d0a54f7147c35a86c5a16ef231554:
+
+  powerpc/powernv: Add iommu DMA bypass support for IODA2 (2014-02-11 16:07:37 +1100)
+
+----------------------------------------------------------------
+Anshuman Khandual (1):
+      powerpc/perf: Configure BHRB filter before enabling PMU interrupts
+
+Anton Blanchard (1):
+      powerpc: Fix endian issues in kexec and crash dump code
+
+Benjamin Herrenschmidt (1):
+      powerpc/powernv: Add iommu DMA bypass support for IODA2
+
+Kevin Hao (1):
+      powerpc/ppc32: Fix the bug in the init of non-base exception stack for UP
+
+Laurent Dufour (1):
+      powerpc/relocate fix relocate processing in LE mode
+
+Mahesh Salgaonkar (2):
+      powerpc/pseries: Disable relocation on exception while going down during crash.
+      powerpc: Fix kdump hang issue on p8 with relocation on exception enabled.
+
+Michael Ellerman (5):
+      powerpc/perf: Add Power8 cache & TLB events
+      powerpc/pseries: Select ARCH_RANDOM on pseries
+      powerpc/xmon: Don't loop forever in get_output_lock()
+      powerpc/xmon: Fix timeout loop in get_output_lock()
+      powerpc/xmon: Don't signal we've entered until we're finished printing
+
+Nathan Fontenot (1):
+      crypto/nx/nx-842: Fix handling of vmalloc addresses
+
+Paul Gortmaker (1):
+      powerpc: Fix build failure in sysdev/mpic.c for MPIC_WEIRD=y
+
+Thadeu Lima de Souza Cascardo (1):
+      powerpc/eeh: Drop taken reference to driver on eeh_rmv_device
+
+ arch/powerpc/include/asm/dma-mapping.h    |   1 +
+ arch/powerpc/include/asm/iommu.h          |   1 +
+ arch/powerpc/include/asm/sections.h       |  12 +++
+ arch/powerpc/kernel/dma.c                 |  10 ++-
+ arch/powerpc/kernel/eeh_driver.c          |   8 +-
+ arch/powerpc/kernel/iommu.c               |  12 +++
+ arch/powerpc/kernel/irq.c                 |   5 ++
+ arch/powerpc/kernel/machine_kexec.c       |  14 ++-
+ arch/powerpc/kernel/machine_kexec_64.c    |   6 +-
+ arch/powerpc/kernel/reloc_64.S            |   4 +-
+ arch/powerpc/kernel/setup_32.c            |   5 ++
+ arch/powerpc/mm/hash_utils_64.c           |  14 +++
+ arch/powerpc/perf/core-book3s.c           |   5 +-
+ arch/powerpc/perf/power8-pmu.c            | 144 ++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |  84 +++++++++++++++++
+ arch/powerpc/platforms/powernv/pci.c      |  10 +++
+ arch/powerpc/platforms/powernv/pci.h      |   6 +-
+ arch/powerpc/platforms/powernv/powernv.h  |   8 ++
+ arch/powerpc/platforms/powernv/setup.c    |   9 ++
+ arch/powerpc/platforms/pseries/Kconfig    |   1 +
+ arch/powerpc/platforms/pseries/setup.c    |   3 +-
+ arch/powerpc/sysdev/mpic.c                |  38 ++++----
+ arch/powerpc/xmon/xmon.c                  |  24 +++--
+ drivers/crypto/nx/nx-842.c                |  29 +++---
+ 24 files changed, 398 insertions(+), 55 deletions(-)
