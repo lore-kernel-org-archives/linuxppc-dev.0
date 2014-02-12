@@ -1,29 +1,31 @@
-Return-Path: <sebastian.hesselbarth@gmail.com>
-Received: from mail-ee0-x22f.google.com (mail-ee0-x22f.google.com
- [IPv6:2a00:1450:4013:c00::22f])
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x232.google.com (mail-pb0-x232.google.com
+ [IPv6:2607:f8b0:400e:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5BD162C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 22:26:25 +1100 (EST)
-Received: by mail-ee0-f47.google.com with SMTP id d49so4230514eek.6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 03:26:19 -0800 (PST)
-Message-ID: <52FB5A56.2050402@gmail.com>
-Date: Wed, 12 Feb 2014 12:26:14 +0100
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-To: Kevin Hao <haokexin@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7ACCC2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 22:33:17 +1100 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id rq2so9145970pbb.37
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 03:33:12 -0800 (PST)
+Date: Wed, 12 Feb 2014 19:32:52 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 Subject: Re: Linux-3.14-rc2: Order of serial node compatibles in DTS files.
-References: <alpine.LRH.2.00.1402101056410.10318@ra8135-ec1.am.freescale.net>
- <20140211072606.GA26514@visitor2.iram.es>
- <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
+Message-ID: <20140212113252.GE15434@pek-khao-d1.corp.ad.wrs.com>
+References: <OF6F6A0029.3B20EF5B-ONCA257C7C.0071BFDA-CA257C7C.00732AD3@csc.com>
  <63AEBD99-AA87-4FD7-BBDA-0CE419959F14@kernel.crashing.org>
- <52FAA97F.4060600@gmail.com> <1392162080.6733.404.camel@snotra.buserror.net>
+ <52FAA97F.4060600@gmail.com>
+ <1392162080.6733.404.camel@snotra.buserror.net>
  <52FAB65C.4090201@gmail.com>
  <OF9BA019D5.46DA1E29-ONCA257C7D.000089EA-CA257C7D.00020333@csc.com>
  <20140212052816.GA15434@pek-khao-d1.corp.ad.wrs.com>
  <52FB3108.3000202@gmail.com>
  <20140212103153.GC15434@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20140212103153.GC15434@pek-khao-d1.corp.ad.wrs.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+ <52FB5A56.2050402@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="EXKGNeO8l0xGFBjy"
+In-Reply-To: <52FB5A56.2050402@gmail.com>
 Cc: Chris Proctor <cproctor@csc.com.au>, Arnd Bergmann <arnd@arndb.de>,
  devicetree <devicetree@vger.kernel.org>,
  Stephen N Chivers <schivers@csc.com.au>, Scott Wood <scottwood@freescale.com>,
@@ -37,99 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/12/14 11:31, Kevin Hao wrote:
-> On Wed, Feb 12, 2014 at 09:30:00AM +0100, Sebastian Hesselbarth wrote:
->> On 02/12/2014 06:28 AM, Kevin Hao wrote:
->>> On Wed, Feb 12, 2014 at 10:21:58AM +1000, Stephen N Chivers wrote:
->>>> But, the Interrupt Controller (MPIC)
->>>> goes AWOL and it is down hill from there.
->>>>
->>>> The MPIC is specified in the DTS as:
->>>>
->>>>          mpic: pic@40000 {
->>>>                          interrupt-controller;
->>>>                          #address-cells = <0>;
->>>>                          #interrupt-cells = <2>;
->>>>                          reg = <0x40000 0x40000>;
->>>>                          compatible = "chrp,open-pic";
->>>>                          device_type = "open-pic";
->>>>                          big-endian;
->>>>                  };
->>>>
->>>> The board support file has the standard mechanism for allocating
->>>> the PIC:
->>>>
->>>>          struct mpic *mpic;
->>>>
->>>>          mpic = mpic_alloc(NULL, 0, 0, 0, 256, " OpenPIC  ");
->>>>          BUG_ON(mpic == NULL);
->>>>
->>>>          mpic_init(mpic);
->>>>
->>>> I checked for damage in applying the patch and it has applied
->>>> correctly.
->>>
->>> How about the following fix?
->>>
->>> diff --git a/drivers/of/base.c b/drivers/of/base.c
->>> index ff85450d5683..ca91984d3c4b 100644
->>> --- a/drivers/of/base.c
->>> +++ b/drivers/of/base.c
->>> @@ -730,32 +730,40 @@ out:
->>>   }
->>>   EXPORT_SYMBOL(of_find_node_with_property);
->>>
->>> +static int of_match_type_name(const struct device_node *node,
->>> +				const struct of_device_id *m)
->>
->> I am fine with having a sub-function here, but it should rather be
->> named of_match_type_or_name.
->
-> OK.
->
->>
->>> +{
->>> +	int match = 1;
->>> +
->>> +	if (m->name[0])
->>> +		match &= node->name && !strcmp(m->name, node->name);
->>> +
->>> +	if (m->type[0])
->>> +		match &= node->type && !strcmp(m->type, node->type);
->>> +
->>> +	return match;
->>> +}
->> [...]
->>> +	/* Check against matches without compatible string */
->>> +	m = matches;
->>> +	while (!m->compatible[0] && (m->name[0] || m->type[0])) {
->>
->> We shouldn't check for anything else than the sentinel here.
->> Although I guess yours will not quit early as mine did but that
->> way we don't have to worry about it.
->
-> Yes, this is still buggy. I will change something like this:
->
-> 	m = matches;
+
+--EXKGNeO8l0xGFBjy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Feb 12, 2014 at 12:26:14PM +0100, Sebastian Hesselbarth wrote:
+> You can cook it down to:
+>=20
+> 	m =3D matches;
 > 	/* Check against matches without compatible string */
 > 	while (m->name[0] || m->type[0] || m->compatible[0]) {
-> 		if (m->compatible[0]) {
-> 			m++;
-> 			continue;
-> 		}
->
-> 		match = of_match_type_name(node, m);
-> 		if (match)
+> 		if (!m->compatible[0] && of_match_type_or_name(node, m)
 > 			return m;
 > 		m++;
 > 	}
 
-You can cook it down to:
+Will do.
 
-	m = matches;
-	/* Check against matches without compatible string */
-	while (m->name[0] || m->type[0] || m->compatible[0]) {
-		if (!m->compatible[0] && of_match_type_or_name(node, m)
-			return m;
-		m++;
-	}
+Thanks,
+Kevin
+
+--EXKGNeO8l0xGFBjy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJS+1vkAAoJEJNY7TDerrFxuPAH/35IeHA5uhRgxvf6ivmqyALw
+KocnO/HzKq55W94q57jrqMlflZFKUe0wBGeF33fdJZD7g1ugdQXDXSGESiMWjIUh
+jW3KNq164Fz5DbU17lWMX66pOzOgKzCFlotmQJkOKWFTnPSUOU9HXf6Ff0RtRdRT
+1xcotJKHFekTv8ug2VCmcQiU/k7b4SXBrS+7PDYoXWNtRHrOhYb020mzR75EIVe2
+Cml9dU4YpXzlo/nOXWt5Fl++MgDQhClt95eZP8xIuXSu117OuC2RleBww55A8W+h
+E+/V5dkso+dRB50U0xB0i2lyxzbBfUzpLT6nRKs09gTMRu3bgAcOqvIQYeVEmTo=
+=qUn6
+-----END PGP SIGNATURE-----
+
+--EXKGNeO8l0xGFBjy--
