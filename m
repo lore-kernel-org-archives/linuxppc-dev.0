@@ -1,31 +1,34 @@
 Return-Path: <anton@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 381062C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:17:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A1B982C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:19:12 +1100 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <anton@au1.ibm.com>;
- Wed, 12 Feb 2014 16:17:26 +1000
+ Wed, 12 Feb 2014 16:19:12 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B03FD2CE8055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:17:23 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E862F2BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:19:09 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1C5vt2q3408342
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 16:57:55 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1C6HM4O012535
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:17:23 +1100
-Date: Wed, 12 Feb 2014 17:17:05 +1100
+ s1C5xfZT1179990
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 16:59:41 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1C6J8GH017905
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:19:09 +1100
+Date: Wed, 12 Feb 2014 17:18:50 +1100
 From: Anton Blanchard <anton@au1.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  amodra@gmail.com
-Subject: [PATCH 1/2] powerpc: Link VDSOs at 0x0
-Message-ID: <20140212171705.71d2bd7c@kryten>
+Subject: [PATCH 2/2] powerpc: Use unstripped VDSO image for more accurate
+ profiling data
+Message-ID: <20140212171850.2b209e47@kryten>
+In-Reply-To: <20140212171705.71d2bd7c@kryten>
+References: <20140212171705.71d2bd7c@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -39,51 +42,60 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-perf is failing to resolve symbols in the VDSO. A while (1)
-gettimeofday() loop shows:
+We are seeing a lot of hits in the VDSO that are not resolved by perf.
+A while(1) gettimeofday() loop shows the issue:
 
-93.99%  [vdso]  [.] 0x00000000000005e0
- 3.12%  test    [.] 00000037.plt_call.gettimeofday@@GLIBC_2.18
- 2.81%  test    [.] main
-
-The reason for this is that we are linking our VDSO shared libraries
-at 1MB, which is a little weird. Even though this is uncommon, Alan
-points out that it is valid and we should probably fix perf userspace.
-
-Regardless, I can't see a reason why we are doing this. The code
-is all position independent and we never rely on the VDSO ending
-up at 1M (and we never place it there on 64bit tasks).
-
-Changing our link address to 0x0 fixes perf VDSO symbol resolution:
-
-73.18%  [vdso]  [.] 0x000000000000060c
-12.39%  [vdso]  [.] __kernel_gettimeofday
+27.64%  [vdso]  [.] 0x000000000000060c                        
+22.57%  [vdso]  [.] 0x0000000000000628                        
+16.88%  [vdso]  [.] 0x0000000000000610                        
+12.39%  [vdso]  [.] __kernel_gettimeofday                     
+ 6.09%  [vdso]  [.] 0x00000000000005f8                        
  3.58%  test    [.] 00000037.plt_call.gettimeofday@@GLIBC_2.18
- 2.94%  [vdso]  [.] __kernel_datapage_offset
- 2.90%  test    [.] main
+ 2.94%  [vdso]  [.] __kernel_datapage_offset                  
+ 2.90%  test    [.] main                                      
 
-We still have some local symbol resolution issues that will be
-fixed in a subsequent patch.
+We are using a stripped VDSO image which means only symbols with
+relocation info can be resolved. There isn't a lot of point to
+stripping the VDSO, the debug info is only about 1kB:
+
+4680 arch/powerpc/kernel/vdso64/vdso64.so
+5815 arch/powerpc/kernel/vdso64/vdso64.so.dbg
+
+By using the unstripped image, we can resolve all the symbols in the
+VDSO and the perf profile data looks much better:
+
+76.53%  [vdso]  [.] __do_get_tspec                            
+12.20%  [vdso]  [.] __kernel_gettimeofday                     
+ 5.05%  [vdso]  [.] __get_datapage                            
+ 3.20%  test    [.] main                                      
+ 2.92%  test    [.] 00000037.plt_call.gettimeofday@@GLIBC_2.18
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
-index 0d9cecd..c53f5f6 100644
---- a/arch/powerpc/include/asm/vdso.h
-+++ b/arch/powerpc/include/asm/vdso.h
-@@ -4,11 +4,11 @@
- #ifdef __KERNEL__
+diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+index 6e8f507..37e2e13 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
++++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+@@ -7,7 +7,7 @@
+ 	.globl vdso32_start, vdso32_end
+ 	.balign PAGE_SIZE
+ vdso32_start:
+-	.incbin "arch/powerpc/kernel/vdso32/vdso32.so"
++	.incbin "arch/powerpc/kernel/vdso32/vdso32.so.dbg"
+ 	.balign PAGE_SIZE
+ vdso32_end:
  
- /* Default link addresses for the vDSOs */
--#define VDSO32_LBASE	0x100000
--#define VDSO64_LBASE	0x100000
-+#define VDSO32_LBASE	0x0
-+#define VDSO64_LBASE	0x0
- 
- /* Default map addresses for 32bit vDSO */
--#define VDSO32_MBASE	VDSO32_LBASE
-+#define VDSO32_MBASE	0x100000
- 
- #define VDSO_VERSION_STRING	LINUX_2.6.15
+diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+index b8553d6..01e7799 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
++++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+@@ -7,7 +7,7 @@
+ 	.globl vdso64_start, vdso64_end
+ 	.balign PAGE_SIZE
+ vdso64_start:
+-	.incbin "arch/powerpc/kernel/vdso64/vdso64.so"
++	.incbin "arch/powerpc/kernel/vdso64/vdso64.so.dbg"
+ 	.balign PAGE_SIZE
+ vdso64_end:
  
