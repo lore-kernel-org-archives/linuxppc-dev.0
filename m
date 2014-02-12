@@ -1,27 +1,34 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <anton@au1.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2538E2C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 16:52:04 +1100 (EST)
-Received: by mail-pa0-f45.google.com with SMTP id lf10so8679093pab.18
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Feb 2014 21:52:02 -0800 (PST)
-Date: Wed, 12 Feb 2014 13:51:51 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: set the correct ksp_limit on ppc32 when
- switching to irq stack
-Message-ID: <20140212055151.GB15434@pek-khao-d1.corp.ad.wrs.com>
-References: <1389932728-25178-1-git-send-email-haokexin@gmail.com>
- <20140121161450.GA3311@roeck-us.net>
- <1390340928.9227.13.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="eJnRUKwClWJh1Khz"
-In-Reply-To: <1390340928.9227.13.camel@pasglop>
-Cc: linuxppc <linuxppc-dev@lists.ozlabs.org>,
- Guenter Roeck <linux@roeck-us.net>
+ by ozlabs.org (Postfix) with ESMTPS id 381062C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:17:29 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <anton@au1.ibm.com>;
+ Wed, 12 Feb 2014 16:17:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B03FD2CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:17:23 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1C5vt2q3408342
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 16:57:55 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1C6HM4O012535
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 17:17:23 +1100
+Date: Wed, 12 Feb 2014 17:17:05 +1100
+From: Anton Blanchard <anton@au1.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ amodra@gmail.com
+Subject: [PATCH 1/2] powerpc: Link VDSOs at 0x0
+Message-ID: <20140212171705.71d2bd7c@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +39,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---eJnRUKwClWJh1Khz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+perf is failing to resolve symbols in the VDSO. A while (1)
+gettimeofday() loop shows:
 
-On Wed, Jan 22, 2014 at 08:48:48AM +1100, Benjamin Herrenschmidt wrote:
-> It will be merged when I come back from vacation. It was too late for
-> 3.13 so I'll send it to Linus next week and will CC -stable.
+93.99%  [vdso]  [.] 0x00000000000005e0
+ 3.12%  test    [.] 00000037.plt_call.gettimeofday@@GLIBC_2.18
+ 2.81%  test    [.] main
 
-Hi Ben,
+The reason for this is that we are linking our VDSO shared libraries
+at 1MB, which is a little weird. Even though this is uncommon, Alan
+points out that it is valid and we should probably fix perf userspace.
 
-Any reason why this is still not merged yet?
+Regardless, I can't see a reason why we are doing this. The code
+is all position independent and we never rely on the VDSO ending
+up at 1M (and we never place it there on 64bit tasks).
 
-Thanks,
-Kevin
->=20
-> Cheers,
-> Ben.
->=20
->=20
+Changing our link address to 0x0 fixes perf VDSO symbol resolution:
 
---eJnRUKwClWJh1Khz
-Content-Type: application/pgp-signature
+73.18%  [vdso]  [.] 0x000000000000060c
+12.39%  [vdso]  [.] __kernel_gettimeofday
+ 3.58%  test    [.] 00000037.plt_call.gettimeofday@@GLIBC_2.18
+ 2.94%  [vdso]  [.] __kernel_datapage_offset
+ 2.90%  test    [.] main
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+We still have some local symbol resolution issues that will be
+fixed in a subsequent patch.
 
-iQEcBAEBAgAGBQJS+wv3AAoJEJNY7TDerrFxzM4H/RfYUe0LqpSaAr5NWOmOuXHx
-kZ5NxAXQq3H3DGgeXJsPKsg4wyx2Av56eyNPCZDLAEGFIIjrqSte9/HMl5PnbBc3
-+wvT9zge9xO+Sljf8VOxmUMCvwruZosW8p1GvU9x/e6jsqWrTGEd6BFolDZD+jaV
-qQeSuGcrf+XiQdQW80aF5w21ovbrpi7m4iof9ZcdeS9giTVD1EVcIaIBPqoIEjvG
-99wN0bQVXHX5ZYtKdUswnj6X4WnJ4Nnv2O9/2USPRP4FZzpOVUWfoZ23nrW+XDbJ
-eyHb/3kgJ1V6iWe54v5c+SZw7i6W1+sFb2SytY5xcpFjQjWED6k2MVbR7sFF0EU=
-=aLOV
------END PGP SIGNATURE-----
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
---eJnRUKwClWJh1Khz--
+diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
+index 0d9cecd..c53f5f6 100644
+--- a/arch/powerpc/include/asm/vdso.h
++++ b/arch/powerpc/include/asm/vdso.h
+@@ -4,11 +4,11 @@
+ #ifdef __KERNEL__
+ 
+ /* Default link addresses for the vDSOs */
+-#define VDSO32_LBASE	0x100000
+-#define VDSO64_LBASE	0x100000
++#define VDSO32_LBASE	0x0
++#define VDSO64_LBASE	0x0
+ 
+ /* Default map addresses for 32bit vDSO */
+-#define VDSO32_MBASE	VDSO32_LBASE
++#define VDSO32_MBASE	0x100000
+ 
+ #define VDSO_VERSION_STRING	LINUX_2.6.15
+ 
