@@ -1,18 +1,25 @@
-Return-Path: <hrai@nmglablinux22.freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Return-Path: <B48286@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 118A72C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 18:29:30 +1100 (EST)
-From: Harninder Rai <harninder.rai@freescale.com>
-To: <scottwood@freescale.com>, <devicetree@vger.kernel.org>
-Subject: [PATCH][v2] powerpc/fsl: Add/update miscellaneous missing bindings
-Date: Thu, 13 Feb 2014 12:59:14 +0530
-Message-ID: <1392276554-10368-1-git-send-email-harninder.rai@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 581E42C00A5
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Feb 2014 19:08:39 +1100 (EST)
+From: "B48286@freescale.com" <B48286@freescale.com>
+To: 'Brian Norris' <computersforpeace@gmail.com>
+Subject: RE: [PATCH v2] mtd: m25p80: Make the name of mtd_info fixed
+Date: Thu, 13 Feb 2014 08:08:33 +0000
+Message-ID: <f5fa7d36121e4939b99115dc4a3154f5@DM2PR03MB301.namprd03.prod.outlook.com>
+References: <1390717003-28699-1-git-send-email-b48286@freescale.com>
+ <20140210193948.GD18440@ld-irv-0074>
+In-Reply-To: <20140210193948.GD18440@ld-irv-0074>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "Mingkai.Hu@freescale.com" <Mingkai.Hu@freescale.com>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,95 +29,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Missing bindings were found on running checkpatch.pl on bsc9132
-device tree. This patch add/update the following
+Hi Brian,
 
-- Add bindings for L2 cache controller
-- Add bindings for memory controller
-- Update bindings for USB controller
+> -----Original Message-----
+> From: Brian Norris [mailto:computersforpeace@gmail.com]
+> Sent: Tuesday, February 11, 2014 3:40 AM
+> To: Hou Zhiqiang-B48286
+> Cc: linux-mtd@lists.infradead.org; linuxppc-dev@ozlabs.org; Wood Scott-
+> B07421; Hu Mingkai-B21284; linux-spi@vger.kernel.org
+> Subject: Re: [PATCH v2] mtd: m25p80: Make the name of mtd_info fixed
+>=20
+> On Sun, Jan 26, 2014 at 02:16:43PM +0800, Hou Zhiqiang wrote:
+> > To give spi flash layout using "mtdparts=3D..." in cmdline, we must giv=
+e
+> > mtd_info a fixed name,because the cmdlinepart's parser will match the
+> > name given in cmdline with the mtd_info.
+> >
+> > Now, if use OF node, mtd_info's name will be spi->dev->name. It
+> > consists of spi_master->bus_num, and the spi_master->bus_num maybe
+> > dynamically fetched.
+> > So, give the mtd_info a new fiexd name "name.cs", "name" is name of
+> > spi_device_id and "cs" is chip-select in spi_dev.
+> >
+> > Signed-off-by: Hou Zhiqiang <b48286@freescale.com>
+> > ---
+> > v2:
+> >  - add check for return value of function kasprintf.
+> >  - whether the spi_master->bus_num is dynamical is determined by spi
+> >    controller driver, and it can't be check in this driver. So, we can
+> >    not initial the mtd_info's name by distinguishing the spi_master
+> >    bus_num dynamically-allocated or not.
+>=20
+> How about spi->master->bus_num < 0 ?
+>=20
+In spi slave driver, we can not see this case. The spi->master->bus_num=20
+must be greater than 0, because before loading spi slave driver, the spi
+controller driver will check spi->master->bus_num, if it is less than 0,
+the spi controller driver will allocate a new bus_num dynamically. So it
+is always greater than 0 in m25p80.c.
 
-Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
----
-Changes since base version:
-Incorporated Scott's comments
-- Rename l2cc.txt to l2cache.txt
-- Add information about ePAPR compliance
-- Add missing "cache" in compatible
-- Miscellaneous minors
+> >  drivers/mtd/devices/m25p80.c | 8 ++++++--
+> >  1 file changed, 6 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/mtd/devices/m25p80.c
+> > b/drivers/mtd/devices/m25p80.c index eb558e8..1f494d2 100644
+> > --- a/drivers/mtd/devices/m25p80.c
+> > +++ b/drivers/mtd/devices/m25p80.c
+> > @@ -1011,8 +1011,12 @@ static int m25p_probe(struct spi_device *spi)
+> >
+> >  	if (data && data->name)
+> >  		flash->mtd.name =3D data->name;
+> > -	else
+> > -		flash->mtd.name =3D dev_name(&spi->dev);
+> > +	else {
+> > +		flash->mtd.name =3D kasprintf(GFP_KERNEL, "%s.%d",
+> > +				id->name, spi->chip_select);
+>=20
+> I don't think this name is specific enough. What if there are more than
+> one SPI controller? Then there could be one chip with the same chip-
+> select. You probably still need to incorporate the SPI master somehow,
+> even if it's not by using the bus number directly (because it's dynamic).
+>
+Yeah, you're right. Actually the bus_num is used to distinguish different
+spi controller. If the controller driver give a dynamically-allocated
+bus_num, yourself should take the risk to use mtdparts in command line.
+I think, it is spi controller driver's responsibility to assign a
+reasonable bus_num to make sure using command line mtdparts riskless, then
+it is unnecessary to change mtdinfo's name.
+=20
+> > +		if (!flash->mtd.name)
+> > +			return -ENOMEM;
+> > +	}
+> >
+> >  	flash->mtd.type =3D MTD_NORFLASH;
+> >  	flash->mtd.writesize =3D 1;
+>=20
+> Brian
+>=20
 
- .../devicetree/bindings/powerpc/fsl/l2cache.txt    |   26 ++++++++++++++++++++
- .../devicetree/bindings/powerpc/fsl/mem-ctrlr.txt  |   16 ++++++++++++
- Documentation/devicetree/bindings/usb/fsl-usb.txt  |    2 +
- 3 files changed, 44 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-new file mode 100644
-index 0000000..79ef4a1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-@@ -0,0 +1,26 @@
-+Freescale L2 Cache Controller
-+
-+L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
-+The cache bindings explained below are ePAPR compliant
-+
-+Required Properties:
-+
-+- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
-+		  where chip is the processor (bsc9132, npc8572 etc.)
-+- reg		: Address and size of L2 cache controller registers
-+- cache-size	: Size of the entire L2 cache
-+- interrupts	: Error interrupt of L2 controller
-+
-+Optional Properties:
-+
-+- cache-line-size : Size of L2 cache lines
-+
-+Example:
-+
-+	L2: l2-cache-controller@20000 {
-+		compatible = "fsl,bsc9132-l2-cache-controller", "cache";
-+		reg = <0x20000 0x1000>;
-+		cache-line-size = <32>; // 32 bytes
-+		cache-size = <0x40000>; // L2,256K
-+		interrupts = <16 2 1 0>;
-+	};
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
-new file mode 100644
-index 0000000..70b42bb
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
-@@ -0,0 +1,16 @@
-+Freescale DDR memory controller
-+
-+Properties:
-+
-+- compatible	: Should include "fsl,chip-memory-controller" where
-+		  chip is the processor (bsc9132, mpc8572 etc.)
-+- reg		: Address and size of DDR controller registers
-+- interrupts	: Error interrupt of DDR controller
-+
-+Example:
-+
-+	memory-controller@2000 {
-+		compatible = "fsl,bsc9132-memory-controller";
-+		reg = <0x2000 0x1000>;
-+		interrupts = <16 2 1 8>;
-+	};
-diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
-index bd5723f..afa5809 100644
---- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
-+++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
-@@ -9,6 +9,8 @@ Required properties :
-  - compatible : Should be "fsl-usb2-mph" for multi port host USB
-    controllers, or "fsl-usb2-dr" for dual role USB controllers
-    or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121
-+   Wherever applicable, the IP version of the USB controller should
-+   also be mentioned (for eg. fsl-usb2-dr-v2.2 for bsc9132).
-  - phy_type : For multi port host USB controllers, should be one of
-    "ulpi", or "serial". For dual role USB controllers, should be
-    one of "ulpi", "utmi", "utmi_wide", or "serial".
--- 
-1.7.6.GIT
+Zhiqiang Hou
