@@ -1,14 +1,14 @@
 Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 86B472C032F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 00:15:22 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 445922C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 00:15:29 +1100 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 5/6] PCI/pcmcia: Use list_for_each_entry() for bus traversal
-Date: Thu, 13 Feb 2014 21:14:02 +0800
-Message-ID: <1392297243-61848-5-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH 6/6] PCI: Remove pci_bus_b() and use list_entry() directly
+Date: Thu, 13 Feb 2014 21:14:03 +0800
+Message-ID: <1392297243-61848-6-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
 References: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -26,37 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace list_for_each() + pci_bus_b() with the simpler
-list_for_each_entry().
+Replace pci_bus_b() with list_entry(), so we can remove
+pci_bus_b().
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/pcmcia/yenta_socket.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/pci/pci.c    |    6 +++---
+ drivers/pci/search.c |   10 +++++-----
+ include/linux/pci.h  |    1 -
+ 3 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/pcmcia/yenta_socket.c b/drivers/pcmcia/yenta_socket.c
-index 8485761..d16fb12 100644
---- a/drivers/pcmcia/yenta_socket.c
-+++ b/drivers/pcmcia/yenta_socket.c
-@@ -1076,7 +1076,7 @@ static void yenta_config_init(struct yenta_socket *socket)
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 1febe90..6f5ed88 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -108,12 +108,12 @@ static bool pcie_ari_disabled;
   */
- static void yenta_fixup_parent_bridge(struct pci_bus *cardbus_bridge)
+ unsigned char pci_bus_max_busnr(struct pci_bus* bus)
  {
 -	struct list_head *tmp;
-+	struct pci_bus *silbling;
- 	unsigned char upper_limit;
- 	/*
- 	 * We only check and fix the parent bridge: All systems which need
-@@ -1096,8 +1096,8 @@ static void yenta_fixup_parent_bridge(struct pci_bus *cardbus_bridge)
- 	upper_limit = bridge_to_fix->parent->busn_res.end;
++	struct pci_bus *tmp;
+ 	unsigned char max, n;
  
- 	/* check the bus ranges of all silbling bridges to prevent overlap */
--	list_for_each(tmp, &bridge_to_fix->parent->children) {
--		struct pci_bus *silbling = pci_bus_b(tmp);
-+	list_for_each_entry(silbling, &bridge_to_fix->parent->children,
-+			node) {
- 		/*
- 		 * If the silbling has a higher secondary bus number
- 		 * and it's secondary is equal or smaller than our
+ 	max = bus->busn_res.end;
+-	list_for_each(tmp, &bus->children) {
+-		n = pci_bus_max_busnr(pci_bus_b(tmp));
++	list_for_each_entry(tmp, &bus->children, node) {
++		n = pci_bus_max_busnr(tmp);
+ 		if(n > max)
+ 			max = n;
+ 	}
+diff --git a/drivers/pci/search.c b/drivers/pci/search.c
+index 3ff2ac7..4a1b972 100644
+--- a/drivers/pci/search.c
++++ b/drivers/pci/search.c
+@@ -54,14 +54,14 @@ pci_find_upstream_pcie_bridge(struct pci_dev *pdev)
+ 
+ static struct pci_bus *pci_do_find_bus(struct pci_bus *bus, unsigned char busnr)
+ {
+-	struct pci_bus* child;
+-	struct list_head *tmp;
++	struct pci_bus *child;
++	struct pci_bus *tmp;
+ 
+ 	if(bus->number == busnr)
+ 		return bus;
+ 
+-	list_for_each(tmp, &bus->children) {
+-		child = pci_do_find_bus(pci_bus_b(tmp), busnr);
++	list_for_each_entry(tmp, &bus->children, node) {
++		child = pci_do_find_bus(tmp, busnr);
+ 		if(child)
+ 			return child;
+ 	}
+@@ -111,7 +111,7 @@ pci_find_next_bus(const struct pci_bus *from)
+ 	down_read(&pci_bus_sem);
+ 	n = from ? from->node.next : pci_root_buses.next;
+ 	if (n != &pci_root_buses)
+-		b = pci_bus_b(n);
++		b = list_entry(n, struct pci_bus, node);
+ 	up_read(&pci_bus_sem);
+ 	return b;
+ }
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index fb57c89..e1b5752 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -461,7 +461,6 @@ struct pci_bus {
+ 	unsigned int		is_added:1;
+ };
+ 
+-#define pci_bus_b(n)	list_entry(n, struct pci_bus, node)
+ #define to_pci_bus(n)	container_of(n, struct pci_bus, dev)
+ 
+ /*
 -- 
 1.7.1
