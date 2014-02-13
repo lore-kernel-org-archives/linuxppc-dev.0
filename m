@@ -1,27 +1,19 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pb0-x234.google.com (mail-pb0-x234.google.com
- [IPv6:2607:f8b0:400e:c01::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 97B352C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 09:45:54 +1100 (EST)
-Received: by mail-pb0-f52.google.com with SMTP id jt11so11425737pbb.25
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 14:45:51 -0800 (PST)
-Date: Thu, 13 Feb 2014 14:45:49 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: enable CONFIG_HAVE_MEMORYLESS_NODES
-In-Reply-To: <20140213214131.GB12409@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.02.1402131444440.13899@chino.kir.corp.google.com>
-References: <20140128183457.GA9315@linux.vnet.ibm.com>
- <20140213214131.GB12409@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Pekka Enberg <penberg@kernel.org>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Matt Mackall <mpm@selenic.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux.com>,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 32E4B2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:06:42 +1100 (EST)
+Date: Thu, 13 Feb 2014 15:06:39 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 0/3]  powerpc: Fix random application crashes with
+ NUMA_BALANCING enabled
+Message-Id: <20140213150639.2b9124797ac4975b6119f6f0@linux-foundation.org>
+In-Reply-To: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: riel@redhat.com, linux-mm@kvack.org, paulus@samba.org, mgorman@suse.de,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 13 Feb 2014, Nishanth Aravamudan wrote:
+On Wed, 12 Feb 2014 09:13:35 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-> > Anton Blanchard found an issue with an LPAR that had no memory in Node
-> > 0. Christoph Lameter recommended, as one possible solution, to use
-> > numa_mem_id() for locality of the nearest memory node-wise. However,
-> > numa_mem_id() [and the other related APIs] are only useful if
-> > CONFIG_HAVE_MEMORYLESS_NODES is set. This is only the case for ia64
-> > currently, but clearly we can have memoryless nodes on ppc64. Add the
-> > Kconfig option and define it to be the same value as CONFIG_NUMA.
-> > 
-> > On the LPAR in question, which was very inefficiently using slabs, this
-> > took the slab consumption at boot from roughly 7GB to roughly 4GB.
+> Hello,
 > 
-> Err, this should have been
+> This patch series fix random application crashes observed on ppc64 with numa
+> balancing enabled. Without the patch we see crashes like
 > 
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> anacron[14551]: unhandled signal 11 at 0000000000000041 nip 000000003cfd54b4 lr 000000003cfd5464 code 30001
+> anacron[14599]: unhandled signal 11 at 0000000000000041 nip 000000003efc54b4 lr 000000003efc5464 code 30001
 > 
-> !
-> 
-> Sorry about that Ben!
->     
-> > ---
-> > Ben, the only question I have wrt this change is if it's appropriate to
-> > change it for all powerpc configs (that have NUMA on)?
-> > 
 
-I'm suspecting that Ben will request that the proper set_numa_mem() calls 
-are done for ppc init to make this actually do anything other than return 
-numa_mem_id() == numa_node_id().
+Random application crashes are bad.  Which kernel version(s) do you think
+need fixing here?
 
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 25493a0..bb2d5fe 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -447,6 +447,9 @@ config NODES_SHIFT
-> >  	default "4"
-> >  	depends on NEED_MULTIPLE_NODES
-> >  
-> > +config HAVE_MEMORYLESS_NODES
-> > +	def_bool NUMA
-> > +
-> >  config ARCH_SELECT_MEMORY_MODEL
-> >  	def_bool y
-> >  	depends on PPC64
+I grabbed the patches but would like to hear from Ben (or something
+approximating him) before doing anything with them, please.
