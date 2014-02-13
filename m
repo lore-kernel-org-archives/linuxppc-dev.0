@@ -1,20 +1,21 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 6C6712C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:20:11 +1100 (EST)
-Date: Thu, 13 Feb 2014 15:20:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Liu Ping Fan <qemulist@gmail.com>
-Subject: Re: [PATCH] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
-Message-Id: <20140213152009.b16a30d2a5b5c5706fc8952a@linux-foundation.org>
-In-Reply-To: <1391563546-26052-1-git-send-email-pingfank@linux.vnet.ibm.com>
-References: <1391563546-26052-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 10F542C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:40:07 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 1/6] PCI,
+ acpiphp: Use list_for_each_entry() for bus traversal
+Date: Fri, 14 Feb 2014 00:54:46 +0100
+Message-ID: <2601738.3Ek05F9oo5@vostro.rjw.lan>
+In-Reply-To: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
+References: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Russell King <linux@arm.linux.org.uk>, David Airlie <airlied@linux.ie>,
+ linux-pcmcia@lists.infradead.org, Hanjun Guo <guohanjun@huawei.com>,
+ dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org,
+ Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  5 Feb 2014 09:25:46 +0800 Liu Ping Fan <qemulist@gmail.com> wrote:
+On Thursday, February 13, 2014 09:13:58 PM Yijing Wang wrote:
+> Replace list_for_each() + pci_bus_b() with the simpler
+> list_for_each_entry().
+> 
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 
-> When doing some numa tests on powerpc, I triggered an oops bug. I find
-> it is caused by using page->_last_cpupid.  It should be initialized as
-> "-1 & LAST_CPUPID_MASK", but not "-1". Otherwise, in task_numa_fault(),
-> we will miss the checking (last_cpupid == (-1 & LAST_CPUPID_MASK)).
-> And finally cause an oops bug in task_numa_group(), since the online cpu is
-> less than possible cpu.
+Looks reasonable to me.
 
-I grabbed this.  I added this to the changelog:
+Does it conflict with anything currently in linux-next (the linux-next branch
+of linux-pm.git in particular)?
 
-: PPC needs the LAST_CPUPID_NOT_IN_PAGE_FLAGS case because ppc needs to
-: support a large physical address region, up to 2^46 but small section size
-: (2^24).  So when NR_CPUS grows up, it is easily to cause
-: not-in-page-flags.
+> ---
+>  drivers/pci/hotplug/acpiphp_glue.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+> index cd929ae..aee6a0a 100644
+> --- a/drivers/pci/hotplug/acpiphp_glue.c
+> +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> @@ -450,7 +450,7 @@ static void cleanup_bridge(struct acpiphp_bridge *bridge)
+>   */
+>  static unsigned char acpiphp_max_busnr(struct pci_bus *bus)
+>  {
+> -	struct list_head *tmp;
+> +	struct pci_bus *tmp;
+>  	unsigned char max, n;
+>  
+>  	/*
+> @@ -463,8 +463,8 @@ static unsigned char acpiphp_max_busnr(struct pci_bus *bus)
+>  	 */
+>  	max = bus->busn_res.start;
+>  
+> -	list_for_each(tmp, &bus->children) {
+> -		n = pci_bus_max_busnr(pci_bus_b(tmp));
+> +	list_for_each_entry(tmp, &bus->children, node) {
+> +		n = pci_bus_max_busnr(tmp);
+>  		if (n > max)
+>  			max = n;
+>  	}
+> 
 
-to hopefully address Peter's observation.
-
-How should we proceed with this?  I'm getting the impression that numa
-balancing on ppc is a dead duck in 3.14, so perhaps this and 
-
-powerpc-mm-add-new-set-flag-argument-to-pte-pmd-update-function.patch
-mm-dirty-accountable-change-only-apply-to-non-prot-numa-case.patch
-mm-use-ptep-pmdp_set_numa-for-updating-_page_numa-bit.patch
-
-are 3.15-rc1 material?
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
