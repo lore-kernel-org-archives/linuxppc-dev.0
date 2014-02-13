@@ -1,18 +1,19 @@
 Return-Path: <akpm@linux-foundation.org>
 Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 32E4B2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:06:42 +1100 (EST)
-Date: Thu, 13 Feb 2014 15:06:39 -0800
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 6C6712C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:20:11 +1100 (EST)
+Date: Thu, 13 Feb 2014 15:20:09 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 0/3]  powerpc: Fix random application crashes with
- NUMA_BALANCING enabled
-Message-Id: <20140213150639.2b9124797ac4975b6119f6f0@linux-foundation.org>
-In-Reply-To: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+To: Liu Ping Fan <qemulist@gmail.com>
+Subject: Re: [PATCH] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
+Message-Id: <20140213152009.b16a30d2a5b5c5706fc8952a@linux-foundation.org>
+In-Reply-To: <1391563546-26052-1-git-send-email-pingfank@linux.vnet.ibm.com>
+References: <1391563546-26052-1-git-send-email-pingfank@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: riel@redhat.com, linux-mm@kvack.org, paulus@samba.org, mgorman@suse.de,
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,19 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 12 Feb 2014 09:13:35 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Wed,  5 Feb 2014 09:25:46 +0800 Liu Ping Fan <qemulist@gmail.com> wrote:
 
-> Hello,
-> 
-> This patch series fix random application crashes observed on ppc64 with numa
-> balancing enabled. Without the patch we see crashes like
-> 
-> anacron[14551]: unhandled signal 11 at 0000000000000041 nip 000000003cfd54b4 lr 000000003cfd5464 code 30001
-> anacron[14599]: unhandled signal 11 at 0000000000000041 nip 000000003efc54b4 lr 000000003efc5464 code 30001
-> 
+> When doing some numa tests on powerpc, I triggered an oops bug. I find
+> it is caused by using page->_last_cpupid.  It should be initialized as
+> "-1 & LAST_CPUPID_MASK", but not "-1". Otherwise, in task_numa_fault(),
+> we will miss the checking (last_cpupid == (-1 & LAST_CPUPID_MASK)).
+> And finally cause an oops bug in task_numa_group(), since the online cpu is
+> less than possible cpu.
 
-Random application crashes are bad.  Which kernel version(s) do you think
-need fixing here?
+I grabbed this.  I added this to the changelog:
 
-I grabbed the patches but would like to hear from Ben (or something
-approximating him) before doing anything with them, please.
+: PPC needs the LAST_CPUPID_NOT_IN_PAGE_FLAGS case because ppc needs to
+: support a large physical address region, up to 2^46 but small section size
+: (2^24).  So when NR_CPUS grows up, it is easily to cause
+: not-in-page-flags.
+
+to hopefully address Peter's observation.
+
+How should we proceed with this?  I'm getting the impression that numa
+balancing on ppc is a dead duck in 3.14, so perhaps this and 
+
+powerpc-mm-add-new-set-flag-argument-to-pte-pmd-update-function.patch
+mm-dirty-accountable-change-only-apply-to-non-prot-numa-case.patch
+mm-use-ptep-pmdp_set_numa-for-updating-_page_numa-bit.patch
+
+are 3.15-rc1 material?
