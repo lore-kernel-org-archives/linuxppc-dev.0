@@ -1,51 +1,18 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hrai@nmglablinux22.freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D8BCB2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 17:52:20 +1100 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 12 Feb 2014 23:52:17 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E83021FF001A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 23:52:13 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1D6pfEs62718120
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 07:51:46 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1D6pqdi016673
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2014 23:51:53 -0700
-Date: Wed, 12 Feb 2014 22:51:37 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
- determining the fallback node
-Message-ID: <20140213065137.GA10860@linux.vnet.ibm.com>
-References: <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com>
- <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com>
- <20140211074159.GB27870@lge.com>
+ by ozlabs.org (Postfix) with ESMTPS id 118A72C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 18:29:30 +1100 (EST)
+From: Harninder Rai <harninder.rai@freescale.com>
+To: <scottwood@freescale.com>, <devicetree@vger.kernel.org>
+Subject: [PATCH][v2] powerpc/fsl: Add/update miscellaneous missing bindings
+Date: Thu, 13 Feb 2014 12:59:14 +0530
+Message-ID: <1392276554-10368-1-git-send-email-harninder.rai@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140211074159.GB27870@lge.com>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,120 +22,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joonsoo,
+Missing bindings were found on running checkpatch.pl on bsc9132
+device tree. This patch add/update the following
 
-On 11.02.2014 [16:42:00 +0900], Joonsoo Kim wrote:
-> On Mon, Feb 10, 2014 at 11:13:21AM -0800, Nishanth Aravamudan wrote:
-> > Hi Christoph,
-> > 
-> > On 07.02.2014 [12:51:07 -0600], Christoph Lameter wrote:
-> > > Here is a draft of a patch to make this work with memoryless nodes.
-> > > 
-> > > The first thing is that we modify node_match to also match if we hit an
-> > > empty node. In that case we simply take the current slab if its there.
-> > > 
-> > > If there is no current slab then a regular allocation occurs with the
-> > > memoryless node. The page allocator will fallback to a possible node and
-> > > that will become the current slab. Next alloc from a memoryless node
-> > > will then use that slab.
-> > > 
-> > > For that we also add some tracking of allocations on nodes that were not
-> > > satisfied using the empty_node[] array. A successful alloc on a node
-> > > clears that flag.
-> > > 
-> > > I would rather avoid the empty_node[] array since its global and there may
-> > > be thread specific allocation restrictions but it would be expensive to do
-> > > an allocation attempt via the page allocator to make sure that there is
-> > > really no page available from the page allocator.
-> > 
-> > With this patch on our test system (I pulled out the numa_mem_id()
-> > change, since you Acked Joonsoo's already), on top of 3.13.0 + my
-> > kthread locality change + CONFIG_HAVE_MEMORYLESS_NODES + Joonsoo's RFC
-> > patch 1):
-> > 
-> > MemTotal:        8264704 kB
-> > MemFree:         5924608 kB
-> > ...
-> > Slab:            1402496 kB
-> > SReclaimable:     102848 kB
-> > SUnreclaim:      1299648 kB
-> > 
-> > And Anton's slabusage reports:
-> > 
-> > slab                                   mem     objs    slabs
-> >                                       used   active   active
-> > ------------------------------------------------------------
-> > kmalloc-16384                       207 MB   98.60%  100.00%
-> > task_struct                         134 MB   97.82%  100.00%
-> > kmalloc-8192                        117 MB  100.00%  100.00%
-> > pgtable-2^12                        111 MB  100.00%  100.00%
-> > pgtable-2^10                        104 MB  100.00%  100.00%
-> > 
-> > For comparison, Anton's patch applied at the same point in the series:
-> > 
-> > meminfo:
-> > 
-> > MemTotal:        8264704 kB
-> > MemFree:         4150464 kB
-> > ...
-> > Slab:            1590336 kB
-> > SReclaimable:     208768 kB
-> > SUnreclaim:      1381568 kB
-> > 
-> > slabusage:
-> > 
-> > slab                                   mem     objs    slabs
-> >                                       used   active   active
-> > ------------------------------------------------------------
-> > kmalloc-16384                       227 MB   98.63%  100.00%
-> > kmalloc-8192                        130 MB  100.00%  100.00%
-> > task_struct                         129 MB   97.73%  100.00%
-> > pgtable-2^12                        112 MB  100.00%  100.00%
-> > pgtable-2^10                        106 MB  100.00%  100.00%
-> > 
-> > 
-> > Consider this patch:
-> > 
-> > Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> > Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> 
-> Hello,
-> 
-> I still think that there is another problem.
-> Your report about CONFIG_SLAB said that SLAB uses just 200MB.
-> Below is your previous report.
-> 
->   Ok, with your patches applied and CONFIG_SLAB enabled:
-> 
->   MemTotal:        8264640 kB
->   MemFree:         7119680 kB
->   Slab:             207232 kB
->   SReclaimable:      32896 kB
->   SUnreclaim:       174336 kB
-> 
-> The number on CONFIG_SLUB with these patches tell us that SLUB uses 1.4GB.
-> There is large difference on slab usage.
+- Add bindings for L2 cache controller
+- Add bindings for memory controller
+- Update bindings for USB controller
 
-Agreed. But, at least for now, this gets us to not OOM all the time :) I
-think that's significant progress. I will continue to look at this
-issue for where the other gaps are, but would like to see Christoph's
-latest patch get merged (pending my re-testing).
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+---
+Changes since base version:
+Incorporated Scott's comments
+- Rename l2cc.txt to l2cache.txt
+- Add information about ePAPR compliance
+- Add missing "cache" in compatible
+- Miscellaneous minors
 
-> And, I should note that number of active objects on slabinfo can be
-> wrong on some situation, since it doesn't consider cpu slab (and cpu
-> partial slab).
+ .../devicetree/bindings/powerpc/fsl/l2cache.txt    |   26 ++++++++++++++++++++
+ .../devicetree/bindings/powerpc/fsl/mem-ctrlr.txt  |   16 ++++++++++++
+ Documentation/devicetree/bindings/usb/fsl-usb.txt  |    2 +
+ 3 files changed, 44 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
 
-Well, I grabbed everything from /sys/kernel/slab for you in the
-tarballs, I believe.
-
-> I recommend to confirm page_to_nid() and other things as I mentioned
-> earlier.
-
-I believe these all work once CONFIG_HAVE_MEMORYLESS_NODES was set for
-ppc64, but will test it again when I have access to the test system.
-
-Also, given that only ia64 and (hopefuly soon) ppc64 can set
-CONFIG_HAVE_MEMORYLESS_NODES, does that mean x86_64 can't have
-memoryless nodes present? Even with fakenuma? Just curious.
-
--Nish
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+new file mode 100644
+index 0000000..79ef4a1
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+@@ -0,0 +1,26 @@
++Freescale L2 Cache Controller
++
++L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
++The cache bindings explained below are ePAPR compliant
++
++Required Properties:
++
++- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
++		  where chip is the processor (bsc9132, npc8572 etc.)
++- reg		: Address and size of L2 cache controller registers
++- cache-size	: Size of the entire L2 cache
++- interrupts	: Error interrupt of L2 controller
++
++Optional Properties:
++
++- cache-line-size : Size of L2 cache lines
++
++Example:
++
++	L2: l2-cache-controller@20000 {
++		compatible = "fsl,bsc9132-l2-cache-controller", "cache";
++		reg = <0x20000 0x1000>;
++		cache-line-size = <32>; // 32 bytes
++		cache-size = <0x40000>; // L2,256K
++		interrupts = <16 2 1 0>;
++	};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
+new file mode 100644
+index 0000000..70b42bb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
+@@ -0,0 +1,16 @@
++Freescale DDR memory controller
++
++Properties:
++
++- compatible	: Should include "fsl,chip-memory-controller" where
++		  chip is the processor (bsc9132, mpc8572 etc.)
++- reg		: Address and size of DDR controller registers
++- interrupts	: Error interrupt of DDR controller
++
++Example:
++
++	memory-controller@2000 {
++		compatible = "fsl,bsc9132-memory-controller";
++		reg = <0x2000 0x1000>;
++		interrupts = <16 2 1 8>;
++	};
+diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+index bd5723f..afa5809 100644
+--- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
++++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+@@ -9,6 +9,8 @@ Required properties :
+  - compatible : Should be "fsl-usb2-mph" for multi port host USB
+    controllers, or "fsl-usb2-dr" for dual role USB controllers
+    or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121
++   Wherever applicable, the IP version of the USB controller should
++   also be mentioned (for eg. fsl-usb2-dr-v2.2 for bsc9132).
+  - phy_type : For multi port host USB controllers, should be one of
+    "ulpi", or "serial". For dual role USB controllers, should be
+    one of "ulpi", "utmi", "utmi_wide", or "serial".
+-- 
+1.7.6.GIT
