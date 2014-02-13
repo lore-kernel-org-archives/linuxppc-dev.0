@@ -1,22 +1,25 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
+ [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DD4EB2C020F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 00:15:40 +1100 (EST)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 2/6] PCI/arm: Use list_for_each_entry() for bus traversal
-Date: Thu, 13 Feb 2014 21:13:59 +0800
-Message-ID: <1392297243-61848-2-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
+ by ozlabs.org (Postfix) with ESMTPS id 34AAC2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 01:46:27 +1100 (EST)
+Date: Thu, 13 Feb 2014 14:46:03 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 2/6] PCI/arm: Use list_for_each_entry() for bus traversal
+Message-ID: <20140213144603.GX26684@n2100.arm.linux.org.uk>
 References: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
+ <1392297243-61848-2-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Russell King <linux@arm.linux.org.uk>, David Airlie <airlied@linux.ie>,
- linux-pcmcia@lists.infradead.org, Hanjun Guo <guohanjun@huawei.com>,
- dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org,
- Yijing Wang <wangyijing@huawei.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1392297243-61848-2-git-send-email-wangyijing@huawei.com>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: David Airlie <airlied@linux.ie>, linux-pcmcia@lists.infradead.org,
+ Hanjun Guo <guohanjun@huawei.com>, dri-devel@lists.freedesktop.org,
+ linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace list_for_each() + pci_bus_b() with the simpler
-list_for_each_entry().
+On Thu, Feb 13, 2014 at 09:13:59PM +0800, Yijing Wang wrote:
+> Replace list_for_each() + pci_bus_b() with the simpler
+> list_for_each_entry().
+> 
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
----
- arch/arm/kernel/bios32.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
-diff --git a/arch/arm/kernel/bios32.c b/arch/arm/kernel/bios32.c
-index 317da88..0a77858 100644
---- a/arch/arm/kernel/bios32.c
-+++ b/arch/arm/kernel/bios32.c
-@@ -57,13 +57,10 @@ static void pcibios_bus_report_status(struct pci_bus *bus, u_int status_mask, in
- 
- void pcibios_report_status(u_int status_mask, int warn)
- {
--	struct list_head *l;
--
--	list_for_each(l, &pci_root_buses) {
--		struct pci_bus *bus = pci_bus_b(l);
-+	struct pci_bus *bus;
- 
-+	list_for_each_entry(bus, &pci_root_buses, node)
- 		pcibios_bus_report_status(bus, status_mask, warn);
--	}
- }
- 
- /*
 -- 
-1.7.1
+FTTC broadband for 0.8mile line: 5.8Mbps down 500kbps up.  Estimation
+in database were 13.1 to 19Mbit for a good line, about 7.5+ for a bad.
+Estimate before purchase was "up to 13.2Mbit".
