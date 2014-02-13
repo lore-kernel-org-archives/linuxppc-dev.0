@@ -1,32 +1,23 @@
-Return-Path: <cl@linux.com>
-Received: from qmta11.emeryville.ca.mail.comcast.net
- (qmta11.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:211])
- by ozlabs.org (Postfix) with ESMTP id 143E52C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 09:24:31 +1100 (EST)
-Date: Wed, 12 Feb 2014 16:16:11 -0600 (CST)
-From: Christoph Lameter <cl@linux.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-In-Reply-To: <20140211074159.GB27870@lge.com>
-Message-ID: <alpine.DEB.2.10.1402121612270.8183@nuc>
-References: <20140206020757.GC5433@linux.vnet.ibm.com>
- <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com> <20140211074159.GB27870@lge.com>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 820622C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 11:07:49 +1100 (EST)
+Date: Thu, 13 Feb 2014 01:07:43 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v7 2/6] dma: mpc512x: add support for peripheral
+ transfers
+Message-ID: <20140213000743.GI4524@book.gsilab.sittig.org>
+References: <1392211508-23615-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1392211508-23615-3-git-send-email-a13xp0p0v88@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1392211508-23615-3-git-send-email-a13xp0p0v88@gmail.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,92 +27,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Here is another patch with some fixes. The additional logic is only
-compiled in if CONFIG_HAVE_MEMORYLESS_NODES is set.
+[ removed DT from Cc: ]
 
-Subject: slub: Memoryless node support
+On Wed, Feb 12, 2014 at 17:25 +0400, Alexander Popov wrote:
+> 
+> Introduce support for slave s/g transfer preparation and the associated
+> device control callback in the MPC512x DMA controller driver, which adds
+> support for data transfers between memory and peripheral I/O to the
+> previously supported mem-to-mem transfers.
+> 
+> [ ... ]
 
-Support memoryless nodes by tracking which allocations are failing.
-Allocations targeted to the nodes without memory fall back to the
-current available per cpu objects and if that is not available will
-create a new slab using the page allocator to fallback from the
-memoryless node to some other node.
+> --- a/drivers/dma/mpc512x_dma.c
+> +++ b/drivers/dma/mpc512x_dma.c
+> [ ... ]
 
-Signed-off-by: Christoph Lameter <cl@linux.com>
+> @@ -29,8 +30,15 @@
+>   */
+>  
+>  /*
+> - * This is initial version of MPC5121 DMA driver. Only memory to memory
+> - * transfers are supported (tested using dmatest module).
+> + * MPC512x and MPC8308 DMA driver. It supports
+> + * memory to memory data transfers (tested using dmatest module) and
+> + * data transfers between memory and peripheral I/O memory
+> + * by means of slave s/g with these limitations:
+> + * - chunked transfers (transfers with more than one part) are refused
+> + * as long as proper support for scatter/gather is missing;
+> + * - transfers on MPC8308 always start from software as this SoC appears
+> + * not to have external request lines for peripheral flow control;
+> + * - minimal memory <-> I/O memory transfer size is 4 bytes.
+>   */
 
-Index: linux/mm/slub.c
-===================================================================
---- linux.orig/mm/slub.c	2014-02-12 16:07:48.957869570 -0600
-+++ linux/mm/slub.c	2014-02-12 16:09:22.198928260 -0600
-@@ -134,6 +134,10 @@ static inline bool kmem_cache_has_cpu_pa
- #endif
- }
+Often I assume people would notice themselves, and apparently I'm
+wrong. :)  Can you adjust the formatting such (here and
+elsewhere) that the bullet list is clearly visible as such?
+Flowing text like above obfuscates the fact that the content may
+have a structure ...
 
-+#ifdef CONFIG_HAVE_MEMORYLESS_NODES
-+static nodemask_t empty_nodes;
-+#endif
-+
- /*
-  * Issues still to be resolved:
-  *
-@@ -1405,16 +1409,28 @@ static struct page *new_slab(struct kmem
- 	void *last;
- 	void *p;
- 	int order;
-+	int alloc_node;
+There are known limitations which are not listed here, "minimal
+transfer size" is incomplete.  It appears that you assume
+constraints on start addresses as well as sizes/lengths.  Can you
+update the documentation to match the implementation?
 
- 	BUG_ON(flags & GFP_SLAB_BUG_MASK);
+> @@ -251,8 +264,21 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+>  	struct mpc_dma_desc *mdesc;
+>  	int cid = mchan->chan.chan_id;
+>  
+> -	/* Move all queued descriptors to active list */
+> -	list_splice_tail_init(&mchan->queued, &mchan->active);
+> +	while (!list_empty(&mchan->queued)) {
+> +		mdesc = list_first_entry(&mchan->queued,
+> +						struct mpc_dma_desc, node);
+> +
+> +		/* Grab either several mem-to-mem transfer descriptors
+> +		 * or one peripheral transfer descriptor,
+> +		 * don't mix mem-to-mem and peripheral transfer descriptors
+> +		 * within the same 'active' list. */
+> +		if (mdesc->will_access_peripheral) {
+> +			if (list_empty(&mchan->active))
+> +				list_move_tail(&mdesc->node, &mchan->active);
+> +			break;
+> +		} else
+> +			list_move_tail(&mdesc->node, &mchan->active);
+> +	}
+>  
+>  	/* Chain descriptors into one transaction */
+>  	list_for_each_entry(mdesc, &mchan->active, node) {
 
- 	page = allocate_slab(s,
- 		flags & (GFP_RECLAIM_MASK | GFP_CONSTRAINT_MASK), node);
--	if (!page)
-+	if (!page) {
-+#ifdef CONFIG_HAVE_MEMORYLESS_NODES
-+		if (node != NUMA_NO_NODE)
-+			node_set(node, empty_nodes);
-+#endif
- 		goto out;
-+	}
+There are style issues.  Both in multi line comments, and in the
+braces of the if/else block.
 
- 	order = compound_order(page);
--	inc_slabs_node(s, page_to_nid(page), page->objects);
-+	alloc_node = page_to_nid(page);
-+#ifdef CONFIG_HAVE_MEMORYLESS_NODES
-+	node_clear(alloc_node, empty_nodes);
-+	if (node != NUMA_NO_NODE && alloc_node != node)
-+		node_set(node, empty_nodes);
-+#endif
-+	inc_slabs_node(s, alloc_node, page->objects);
- 	memcg_bind_pages(s, order);
- 	page->slab_cache = s;
- 	__SetPageSlab(page);
-@@ -1722,7 +1738,7 @@ static void *get_partial(struct kmem_cac
- 		struct kmem_cache_cpu *c)
- {
- 	void *object;
--	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
-+	int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
+> @@ -643,6 +680,186 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+>  	return &mdesc->desc;
+>  }
+>  
+> +static struct dma_async_tx_descriptor *
+> +mpc_dma_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
+> +		unsigned int sg_len, enum dma_transfer_direction direction,
+> +		unsigned long flags, void *context)
+> +{
+> +	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
+> +	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
+> +	struct mpc_dma_desc *mdesc = NULL;
+> +	dma_addr_t per_paddr;
+> +	u32 tcd_nunits;
+> +	struct mpc_dma_tcd *tcd;
+> +	unsigned long iflags;
+> +	struct scatterlist *sg;
+> +	size_t len;
+> +	int iter, i;
 
- 	object = get_partial_node(s, get_node(s, searchnode), c, flags);
- 	if (object || node != NUMA_NO_NODE)
-@@ -2117,8 +2133,19 @@ static void flush_all(struct kmem_cache
- static inline int node_match(struct page *page, int node)
- {
- #ifdef CONFIG_NUMA
--	if (!page || (node != NUMA_NO_NODE && page_to_nid(page) != node))
-+	int page_node = page_to_nid(page);
-+
-+	if (!page)
- 		return 0;
-+
-+	if (node != NUMA_NO_NODE) {
-+#ifdef CONFIG_HAVE_MEMORYLESS_NODES
-+		if (node_isset(node, empty_nodes))
-+			return 1;
-+#endif
-+		if (page_node != node)
-+			return 0;
-+	}
- #endif
- 	return 1;
- }
+Personally I much dislike this style of mixing declarations and
+instructions.  But others may disagree, and strongly so.
+
+> +
+> +	/* currently there is no proper support for scatter/gather */
+> +	if (sg_len != 1)
+> +		return NULL;
+> +
+> +	for_each_sg(sgl, sg, sg_len, i) {
+> +		spin_lock_irqsave(&mchan->lock, iflags);
+> +
+> +		mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
+> +									node);
+
+style (continuation and indentation)
+
+> +		if (!mdesc) {
+> +			spin_unlock_irqrestore(&mchan->lock, iflags);
+> +			/* try to free completed descriptors */
+> +			mpc_dma_process_completed(mdma);
+> +			return NULL;
+> +		}
+> +
+> +		list_del(&mdesc->node);
+> +
+> +		per_paddr = mchan->per_paddr;
+> +		tcd_nunits = mchan->tcd_nunits;
+> +
+> +		spin_unlock_irqrestore(&mchan->lock, iflags);
+> +
+> +		if (per_paddr == 0 || tcd_nunits == 0)
+> +			goto err_prep;
+> +
+> +		mdesc->error = 0;
+> +		mdesc->will_access_peripheral = 1;
+> +		tcd = mdesc->tcd;
+> +
+> +		/* Prepare Transfer Control Descriptor for this transaction */
+> +
+> +		memset(tcd, 0, sizeof(struct mpc_dma_tcd));
+> +
+> +		if (!IS_ALIGNED(sg_dma_address(sg), 4))
+> +			goto err_prep;
+
+You found multiple ways of encoding the "4 byte alignment", using
+both the fixed number as well as (several) symbolic identifiers.
+Can you look into making them use the same condition if the same
+motivation is behind the test?
+
+> +
+> +		if (direction == DMA_DEV_TO_MEM) {
+> +			tcd->saddr = per_paddr;
+> +			tcd->daddr = sg_dma_address(sg);
+> +			tcd->soff = 0;
+> +			tcd->doff = 4;
+> +		} else if (direction == DMA_MEM_TO_DEV) {
+> +			tcd->saddr = sg_dma_address(sg);
+> +			tcd->daddr = per_paddr;
+> +			tcd->soff = 4;
+> +			tcd->doff = 0;
+> +		} else
+> +			goto err_prep;
+> +
+> +		tcd->ssize = MPC_DMA_TSIZE_4;
+> +		tcd->dsize = MPC_DMA_TSIZE_4;
+> +
+> +		len = sg_dma_len(sg);
+> +		tcd->nbytes = tcd_nunits * 4;
+> +		if (!IS_ALIGNED(len, tcd->nbytes))
+> +			goto err_prep;
+> +
+> +		iter = len / tcd->nbytes;
+> +		if (iter >= 1 << 15) {
+> +			/* len is too big */
+> +			goto err_prep;
+> +		} else {
+> +			/* citer_linkch contains the high bits of iter */
+> +			tcd->biter = iter & 0x1ff;
+> +			tcd->biter_linkch = iter >> 9;
+> +			tcd->citer = tcd->biter;
+> +			tcd->citer_linkch = tcd->biter_linkch;
+> +		}
+> +
+> +		tcd->e_sg = 0;
+> +		tcd->d_req = 1;
+> +
+> +		/* Place descriptor in prepared list */
+> +		spin_lock_irqsave(&mchan->lock, iflags);
+> +		list_add_tail(&mdesc->node, &mchan->prepared);
+> +		spin_unlock_irqrestore(&mchan->lock, iflags);
+> +	}
+> +
+> +	return &mdesc->desc;
+> +
+> +err_prep:
+> +	/* Put the descriptor back */
+> +	spin_lock_irqsave(&mchan->lock, iflags);
+> +	list_add_tail(&mdesc->node, &mchan->free);
+> +	spin_unlock_irqrestore(&mchan->lock, iflags);
+> +
+> +	return NULL;
+> +}
+
+
+virtually yours
+Gerhard Sittig
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
