@@ -1,25 +1,38 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5BBCF2C03E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 16:25:17 +1100 (EST)
-Received: by mail-pd0-f179.google.com with SMTP id fp1so11117534pdb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Feb 2014 21:25:14 -0800 (PST)
-From: Kevin Hao <haokexin@gmail.com>
-To: devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] of: search the best compatible match first in
- __of_match_node()
-Date: Fri, 14 Feb 2014 13:22:46 +0800
-Message-Id: <1392355366-1445-3-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1392355366-1445-1-git-send-email-haokexin@gmail.com>
-References: <1392355366-1445-1-git-send-email-haokexin@gmail.com>
-Cc: Grant Likely <grant.likely@linaro.org>,
- Stephen N Chivers <schivers@csc.com.au>, Rob Herring <robh+dt@kernel.org>,
- Kevin Hao <haokexin@gmail.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1A0D62C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 16:31:37 +1100 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 14 Feb 2014 15:31:33 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 776352CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 16:31:30 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1E5VHht9437588
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 16:31:17 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1E5VTpg009295
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 16:31:30 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH V2 0/3] powerpc: Fix random application crashes with
+ NUMA_BALANCING enabled
+In-Reply-To: <20140213150639.2b9124797ac4975b6119f6f0@linux-foundation.org>
+References: <1392176618-23667-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140213150639.2b9124797ac4975b6119f6f0@linux-foundation.org>
+Date: Fri, 14 Feb 2014 11:01:25 +0530
+Message-ID: <87sirm2rbm.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: riel@redhat.com, linux-mm@kvack.org, paulus@samba.org, mgorman@suse.de,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,94 +42,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, of_match_node compares each given match against all node's
-compatible strings with of_device_is_compatible.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-To achieve multiple compatible strings per node with ordering from
-specific to generic, this requires given matches to be ordered from
-specific to generic. For most of the drivers this is not true and also
-an alphabetical ordering is more sane there.
+> On Wed, 12 Feb 2014 09:13:35 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Hello,
+>> 
+>> This patch series fix random application crashes observed on ppc64 with numa
+>> balancing enabled. Without the patch we see crashes like
+>> 
+>> anacron[14551]: unhandled signal 11 at 0000000000000041 nip 000000003cfd54b4 lr 000000003cfd5464 code 30001
+>> anacron[14599]: unhandled signal 11 at 0000000000000041 nip 000000003efc54b4 lr 000000003efc5464 code 30001
+>> 
+>
+> Random application crashes are bad.  Which kernel version(s) do you think
+> need fixing here?
+>
+> I grabbed the patches but would like to hear from Ben (or something
+> approximating him) before doing anything with them, please.
+>
 
-Therefore, this patch introduces a function to match each of the node's
-compatible strings against all given compatible matches without type and
-name first, before checking the next compatible string. This implies
-that node's compatibles are ordered from specific to generic while
-given matches can be in any order. If we fail to find such a match
-entry, then fall-back to the old method in order to keep compatibility.
+Considering this impact only ppc64 and also only when numa balancing is enabled, we
+only need to send this upstream. (no need to backport to any other
+kernel versions)
 
-Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
- drivers/of/base.c | 43 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 42 insertions(+), 1 deletion(-)
+We merged numa balancing support for ppc64
+(c34a51ce49b40b9667cd7f5cc2e40475af8b4c3d) only in this merge window.
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index ba195fbce4c6..10b51106c854 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -730,13 +730,49 @@ out:
- }
- EXPORT_SYMBOL(of_find_node_with_property);
- 
-+static const struct of_device_id *
-+of_match_compatible(const struct of_device_id *matches,
-+			const struct device_node *node)
-+{
-+	const char *cp;
-+	int cplen, l;
-+	const struct of_device_id *m;
-+
-+	cp = __of_get_property(node, "compatible", &cplen);
-+	while (cp && (cplen > 0)) {
-+		m = matches;
-+		while (m->name[0] || m->type[0] || m->compatible[0]) {
-+			/* Only match for the entries without type and name */
-+			if (m->name[0] || m->type[0] ||
-+				of_compat_cmp(m->compatible, cp,
-+					 strlen(m->compatible)))
-+				m++;
-+			else
-+				return m;
-+		}
-+
-+		/* Get node's next compatible string */
-+		l = strlen(cp) + 1;
-+		cp += l;
-+		cplen -= l;
-+	}
-+
-+	return NULL;
-+}
-+
- static
- const struct of_device_id *__of_match_node(const struct of_device_id *matches,
- 					   const struct device_node *node)
- {
-+	const struct of_device_id *m;
-+
- 	if (!matches)
- 		return NULL;
- 
-+	m = of_match_compatible(matches, node);
-+	if (m)
-+		return m;
-+
- 	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
- 		int match = 1;
- 		if (matches->name[0])
-@@ -760,7 +796,12 @@ const struct of_device_id *__of_match_node(const struct of_device_id *matches,
-  *	@matches:	array of of device match structures to search in
-  *	@node:		the of device structure to match against
-  *
-- *	Low level utility function used by device matching.
-+ *	Low level utility function used by device matching. We have two ways
-+ *	of matching:
-+ *	- Try to find the best compatible match by comparing each compatible
-+ *	  string of device node with all the given matches respectively.
-+ *	- If the above method failed, then try to match the compatible by using
-+ *	  __of_device_is_compatible() besides the match in type and name.
-  */
- const struct of_device_id *of_match_node(const struct of_device_id *matches,
- 					 const struct device_node *node)
--- 
-1.8.5.3
+$git describe --contains c34a51ce49b40b9667cd7f5cc2e40475af8b4c3d
+v3.14-rc1~80^2~35
+
+
+-aneesh
