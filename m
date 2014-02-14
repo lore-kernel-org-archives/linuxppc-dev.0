@@ -1,26 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
+ [IPv6:2607:f8b0:4001:c03::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7A4A12C0359
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 03:28:11 +1100 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
-Subject: Re: [PATCH 2/2] of: search the best compatible match first in
- __of_match_node()
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CAL_JsqKq4_1K8EF+PZoP=0=H6tiRxbgdzs9UHHVdbHS014n74Q@mail.gmail.com>
-Date: Fri, 14 Feb 2014 10:23:42 -0600
-Message-Id: <A27612FE-F84F-460D-B573-F891B75A70F2@kernel.crashing.org>
-References: <1392355366-1445-1-git-send-email-haokexin@gmail.com>
- <1392355366-1445-3-git-send-email-haokexin@gmail.com>
- <CAL_JsqKq4_1K8EF+PZoP=0=H6tiRxbgdzs9UHHVdbHS014n74Q@mail.gmail.com>
-To: Rob Herring <robherring2@gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Kevin Hao <haokexin@gmail.com>, Stephen N Chivers <schivers@csc.com.au>,
- Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 33FCE2C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 05:23:23 +1100 (EST)
+Received: by mail-ie0-f182.google.com with SMTP id lx4so7620101iec.27
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:23:19 -0800 (PST)
+Date: Fri, 14 Feb 2014 11:23:16 -0700
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Yijing Wang <wangyijing@huawei.com>
+Subject: Re: [PATCH 1/6] PCI,acpiphp: Use list_for_each_entry() for bus
+ traversal
+Message-ID: <20140214182316.GB31093@google.com>
+References: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
+Cc: Russell King <linux@arm.linux.org.uk>, David Airlie <airlied@linux.ie>,
+ linux-pcmcia@lists.infradead.org, Hanjun Guo <guohanjun@huawei.com>,
+ dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +30,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Feb 13, 2014 at 09:13:58PM +0800, Yijing Wang wrote:
+> Replace list_for_each() + pci_bus_b() with the simpler
+> list_for_each_entry().
+> 
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 
-On Feb 14, 2014, at 9:53 AM, Rob Herring <robherring2@gmail.com> wrote:
+I applied all six of these (please include a 0/6 cover letter in the
+future; that's a nice place to note that I applied things) to
+pci/list-for-each-entry for v3.15, thanks!
 
-> On Thu, Feb 13, 2014 at 11:22 PM, Kevin Hao <haokexin@gmail.com> =
-wrote:
->> Currently, of_match_node compares each given match against all node's
->> compatible strings with of_device_is_compatible.
->>=20
->> To achieve multiple compatible strings per node with ordering from
->> specific to generic, this requires given matches to be ordered from
->> specific to generic. For most of the drivers this is not true and =
-also
->> an alphabetical ordering is more sane there.
->>=20
->> Therefore, this patch introduces a function to match each of the =
-node's
->> compatible strings against all given compatible matches without type =
-and
->> name first, before checking the next compatible string. This implies
->> that node's compatibles are ordered from specific to generic while
->> given matches can be in any order. If we fail to find such a match
->> entry, then fall-back to the old method in order to keep =
-compatibility.
->>=20
->> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->> Signed-off-by: Kevin Hao <haokexin@gmail.com>
->=20
-> Looks good to me. I'll put this in next for a few days. I'd really
-> like to see some acks and tested-by's before sending to Linus.
->=20
-> We could be a bit more strict here and fallback to the old matching if
-> the match table has any entries with name or type. I don't think that
-> should be necessary though.
->=20
-> Rob
->=20
-
-
-Can you push the revert to Linus sooner, since currently a ton of boards =
-wouldn=92t be working on the PPC side, so at least -rc3 has the =
-possibility of working for them.
-
-- k
+> ---
+>  drivers/pci/hotplug/acpiphp_glue.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+> index cd929ae..aee6a0a 100644
+> --- a/drivers/pci/hotplug/acpiphp_glue.c
+> +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> @@ -450,7 +450,7 @@ static void cleanup_bridge(struct acpiphp_bridge *bridge)
+>   */
+>  static unsigned char acpiphp_max_busnr(struct pci_bus *bus)
+>  {
+> -	struct list_head *tmp;
+> +	struct pci_bus *tmp;
+>  	unsigned char max, n;
+>  
+>  	/*
+> @@ -463,8 +463,8 @@ static unsigned char acpiphp_max_busnr(struct pci_bus *bus)
+>  	 */
+>  	max = bus->busn_res.start;
+>  
+> -	list_for_each(tmp, &bus->children) {
+> -		n = pci_bus_max_busnr(pci_bus_b(tmp));
+> +	list_for_each_entry(tmp, &bus->children, node) {
+> +		n = pci_bus_max_busnr(tmp);
+>  		if (n > max)
+>  			max = n;
+>  	}
+> -- 
+> 1.7.1
+> 
+> 
