@@ -1,33 +1,32 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 191232C0335
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 09:03:25 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F08CD2C040D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 09:03:38 +1100 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Fri, 14 Feb 2014 17:03:23 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 91384C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:03:17 -0500 (EST)
+ Fri, 14 Feb 2014 15:03:36 -0700
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id E633138C8027
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:03:32 -0500 (EST)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1EM3Kc16095110
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 22:03:20 GMT
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1EM3WlL10027302
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 22:03:32 GMT
 Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1EM3JFj030569
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:03:20 -0500
+ s1EM3VC5031340
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:03:32 -0500
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 To: Linux PPC <linuxppc-dev@lists.ozlabs.org>,
  Cody P Schafer <cody@linux.vnet.ibm.com>
-Subject: [PATCH v2 08/11] powerpc/perf: add support for the hv gpci (get
- performance counter info) interface
-Date: Fri, 14 Feb 2014 14:02:12 -0800
-Message-Id: <1392415338-16288-9-git-send-email-cody@linux.vnet.ibm.com>
+Subject: [PATCH v2 09/11] powerpc/perf: add support for the hv 24x7 interface
+Date: Fri, 14 Feb 2014 14:02:13 -0800
+Message-Id: <1392415338-16288-10-git-send-email-cody@linux.vnet.ibm.com>
 In-Reply-To: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
 References: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -43,25 +42,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This provides a basic link between perf and hv_gpci. Notably, it does
-not yet support transactions and does not list any events (they can
-still be manually composed).
+This provides a basic interface between hv_24x7 and perf. Similar to
+the one provided for gpci, it lacks transaction support and does not
+list any events.
 
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-gpci.c | 290 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 290 insertions(+)
- create mode 100644 arch/powerpc/perf/hv-gpci.c
+ arch/powerpc/perf/hv-24x7.c | 491 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 491 insertions(+)
+ create mode 100644 arch/powerpc/perf/hv-24x7.c
 
-diff --git a/arch/powerpc/perf/hv-gpci.c b/arch/powerpc/perf/hv-gpci.c
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
 new file mode 100644
-index 0000000..1f5d96d
+index 0000000..13de140
 --- /dev/null
-+++ b/arch/powerpc/perf/hv-gpci.c
-@@ -0,0 +1,290 @@
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -0,0 +1,491 @@
 +/*
-+ * Hypervisor supplied "gpci" ("get performance counter info") performance
-+ * counter support
++ * Hypervisor supplied "24x7" performance counter support
 + *
 + * Author: Cody P Schafer <cody@linux.vnet.ibm.com>
 + * Copyright 2014 IBM Corporation.
@@ -71,32 +69,52 @@ index 0000000..1f5d96d
 + * as published by the Free Software Foundation; either version
 + * 2 of the License, or (at your option) any later version.
 + */
-+#define pr_fmt(fmt) "hv-gpci: " fmt
 +
-+#include <linux/init.h>
++#define pr_fmt(fmt) "hv-24x7: " fmt
++
 +#include <linux/perf_event.h>
++#include <linux/module.h>
++#include <linux/slab.h>
 +#include <asm/firmware.h>
 +#include <asm/hvcall.h>
 +#include <asm/io.h>
 +
-+#include "hv-gpci.h"
++#include "hv-24x7.h"
 +#include "hv-common.h"
 +
-+PMU_RANGE_ATTR(request, config, 0, 31); /* u32 */
-+PMU_RANGE_ATTR(starting_index, config, 32, 63); /* u32 */
-+PMU_RANGE_ATTR(secondary_index, config1, 0, 15); /* u16 */
-+PMU_RANGE_ATTR(counter_info_version, config1, 16, 23); /* u8 */
-+PMU_RANGE_ATTR(length, config1, 24, 31); /* u8, bytes of data (1-8) */
-+PMU_RANGE_ATTR(offset, config1, 32, 63); /* u32, byte offset */
++/*
++ * TODO: Merging events:
++ * - Think of the hcall as an interface to a 4d array of counters:
++ *   - x = domains
++ *   - y = indexes in the domain (core, chip, vcpu, node, etc)
++ *   - z = offset into the counter space
++ *   - w = lpars (guest vms, "logical partitions")
++ * - A single request is: x,y,y_last,z,z_last,w,w_last
++ *   - this means we can retrieve a rectangle of counters in y,z for a single x.
++ *
++ * - Things to consider (ignoring w):
++ *   - input  cost_per_request = 16
++ *   - output cost_per_result(ys,zs)  = 8 + 8 * ys + ys * zs
++ *   - limited number of requests per hcall (must fit into 4K bytes)
++ *     - 4k = 16 [buffer header] - 16 [request size] * request_count
++ *     - 255 requests per hcall
++ *   - sometimes it will be more efficient to read extra data and discard
++ */
++
++PMU_RANGE_ATTR(domain, config, 0, 3); /* u3 0-6, one of HV_24X7_PERF_DOMAIN */
++PMU_RANGE_ATTR(starting_index, config, 16, 31); /* u16 */
++PMU_RANGE_ATTR(offset, config, 32, 63); /* u32, see "data_offset" */
++PMU_RANGE_ATTR(lpar, config1, 0, 15); /* u16 */
++
++PMU_RANGE_RESV(reserved1, config,   4, 15);
++PMU_RANGE_RESV(reserved2, config1, 16, 63);
++PMU_RANGE_RESV(reserved3, config2,  0, 63);
 +
 +static struct attribute *format_attrs[] = {
-+	&format_attr_request.attr,
-+	&format_attr_starting_index.attr,
-+	&format_attr_secondary_index.attr,
-+	&format_attr_counter_info_version.attr,
-+
++	&format_attr_domain.attr,
 +	&format_attr_offset.attr,
-+	&format_attr_length.attr,
++	&format_attr_starting_index.attr,
++	&format_attr_lpar.attr,
 +	NULL,
 +};
 +
@@ -105,162 +123,294 @@ index 0000000..1f5d96d
 +	.attrs = format_attrs,
 +};
 +
-+#define HV_CAPS_ATTR(_name, _format)				\
-+static ssize_t _name##_show(struct device *dev,			\
-+			    struct device_attribute *attr,	\
-+			    char *page)				\
-+{								\
-+	struct hv_perf_caps caps;				\
-+	unsigned long hret = hv_perf_caps_get(&caps);		\
-+	if (hret)						\
-+		return -EIO;					\
-+								\
-+	return sprintf(page, _format, caps._name);		\
-+}								\
-+static struct device_attribute hv_caps_attr_##_name = __ATTR_RO(_name)
-+
-+static ssize_t kernel_version_show(struct device *dev,
-+				   struct device_attribute *attr,
-+				   char *page)
++/*
++ * read_offset_data - copy data from one buffer to another while treating the
++ *                    source buffer as a small view on the total avaliable
++ *                    source data.
++ *
++ * @dest: buffer to copy into
++ * @dest_len: length of @dest in bytes
++ * @requested_offset: the offset within the source data we want. Must be > 0
++ * @src: buffer to copy data from
++ * @src_len: length of @src in bytes
++ * @source_offset: the offset in the sorce data that (src,src_len) refers to.
++ *                 Must be > 0
++ *
++ * returns the number of bytes copied.
++ *
++ * '.' areas in d are written to.
++ *
++ *                       u
++ *   x         w	 v  z
++ * d           |.........|
++ * s |----------------------|
++ *
++ *                      u
++ *   x         w	z     v
++ * d           |........------|
++ * s |------------------|
++ *
++ *   x         w        u,z,v
++ * d           |........|
++ * s |------------------|
++ *
++ *   x,w                u,v,z
++ * d |------------------|
++ * s |------------------|
++ *
++ *   x        u
++ *   w        v		z
++ * d |........|
++ * s |------------------|
++ *
++ *   x      z   w      v
++ * d            |------|
++ * s |------|
++ *
++ * x = source_offset
++ * w = requested_offset
++ * z = source_offset + src_len
++ * v = requested_offset + dest_len
++ *
++ * w_offset_in_s = w - x = requested_offset - source_offset
++ * z_offset_in_s = z - x = src_len
++ * v_offset_in_s = v - x = request_offset + dest_len - src_len
++ * u_offset_in_s = min(z_offset_in_s, v_offset_in_s)
++ *
++ * copy_len = u_offset_in_s - w_offset_in_s = min(z_offset_in_s, v_offset_in_s)
++ *						- w_offset_in_s
++ */
++static ssize_t read_offset_data(void *dest, size_t dest_len,
++				loff_t requested_offset, void *src,
++				size_t src_len, loff_t source_offset)
 +{
-+	return sprintf(page, "0x%x\n", COUNTER_INFO_VERSION_CURRENT);
++	size_t w_offset_in_s = requested_offset - source_offset;
++	size_t z_offset_in_s = src_len;
++	size_t v_offset_in_s = requested_offset + dest_len - src_len;
++	size_t u_offset_in_s = min(z_offset_in_s, v_offset_in_s);
++	size_t copy_len = u_offset_in_s - w_offset_in_s;
++
++	if (requested_offset < 0 || source_offset < 0)
++		return -EINVAL;
++
++	if (z_offset_in_s <= w_offset_in_s)
++		return 0;
++
++	memcpy(dest, src + w_offset_in_s, copy_len);
++	return copy_len;
 +}
 +
-+DEVICE_ATTR_RO(kernel_version);
-+HV_CAPS_ATTR(version, "0x%x\n");
-+HV_CAPS_ATTR(ga, "%d\n");
-+HV_CAPS_ATTR(expanded, "%d\n");
-+HV_CAPS_ATTR(lab, "%d\n");
-+HV_CAPS_ATTR(collect_privileged, "%d\n");
++static unsigned long h_get_24x7_catalog_page(char page[static 4096],
++					     u32 version, u32 index)
++{
++	WARN_ON(!IS_ALIGNED((unsigned long)page, 4096));
++	return plpar_hcall_norets(H_GET_24X7_CATALOG_PAGE,
++			virt_to_phys(page),
++			version,
++			index);
++}
 +
-+static struct attribute *interface_attrs[] = {
-+	&dev_attr_kernel_version.attr,
-+	&hv_caps_attr_version.attr,
-+	&hv_caps_attr_ga.attr,
-+	&hv_caps_attr_expanded.attr,
-+	&hv_caps_attr_lab.attr,
-+	&hv_caps_attr_collect_privileged.attr,
++static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
++			    struct bin_attribute *bin_attr, char *buf,
++			    loff_t offset, size_t count)
++{
++	unsigned long hret;
++	ssize_t ret = 0;
++	size_t catalog_len = 0, catalog_page_len = 0, page_count = 0;
++	loff_t page_offset = 0;
++	uint32_t catalog_version_num = 0;
++	void *page = kmalloc(4096, GFP_USER);
++	struct hv_24x7_catalog_page_0 *page_0 = page;
++	if (!page)
++		return -ENOMEM;
++
++
++	hret = h_get_24x7_catalog_page(page, 0, 0);
++	if (hret) {
++		ret = -EIO;
++		goto e_free;
++	}
++
++	catalog_version_num = be32_to_cpu(page_0->version);
++	catalog_page_len = be32_to_cpu(page_0->length);
++	catalog_len = catalog_page_len * 4096;
++
++	page_offset = offset / 4096;
++	page_count  = count  / 4096;
++
++	if (page_offset >= catalog_page_len)
++		goto e_free;
++
++	if (page_offset != 0) {
++		hret = h_get_24x7_catalog_page(page, catalog_version_num,
++					       page_offset);
++		if (hret) {
++			ret = -EIO;
++			goto e_free;
++		}
++	}
++
++	ret = read_offset_data(buf, count, offset,
++				page, 4096, page_offset * 4096);
++e_free:
++	if (hret)
++		pr_err("h_get_24x7_catalog_page(ver=%d, page=%lld) failed: rc=%ld\n",
++				catalog_version_num, page_offset, hret);
++	kfree(page);
++
++	pr_devel("catalog_read: offset=%lld(%lld) count=%zu(%zu) catalog_len=%zu(%zu) => %zd\n",
++			offset, page_offset, count, page_count, catalog_len,
++			catalog_page_len, ret);
++
++	return ret;
++}
++
++#define PAGE_0_ATTR(_name, _fmt, _expr)				\
++static ssize_t _name##_show(struct device *dev,			\
++			    struct device_attribute *dev_attr,	\
++			    char *buf)				\
++{								\
++	unsigned long hret;					\
++	ssize_t ret = 0;					\
++	void *page = kmalloc(4096, GFP_USER);			\
++	struct hv_24x7_catalog_page_0 *page_0 = page;		\
++	if (!page)						\
++		return -ENOMEM;					\
++	hret = h_get_24x7_catalog_page(page, 0, 0);		\
++	if (hret) {						\
++		ret = -EIO;					\
++		goto e_free;					\
++	}							\
++	ret = sprintf(buf, _fmt, _expr);			\
++e_free:								\
++	kfree(page);						\
++	return ret;						\
++}								\
++static DEVICE_ATTR_RO(_name)
++
++PAGE_0_ATTR(catalog_version, "%lld\n",
++		(unsigned long long)be32_to_cpu(page_0->version));
++PAGE_0_ATTR(catalog_len, "%lld\n",
++		(unsigned long long)be32_to_cpu(page_0->length) * 4096);
++static BIN_ATTR_RO(catalog, 0/* real length varies */);
++
++static struct bin_attribute *if_bin_attrs[] = {
++	&bin_attr_catalog,
 +	NULL,
 +};
 +
-+static struct attribute_group interface_group = {
++static struct attribute *if_attrs[] = {
++	&dev_attr_catalog_len.attr,
++	&dev_attr_catalog_version.attr,
++	NULL,
++};
++
++static struct attribute_group if_group = {
 +	.name = "interface",
-+	.attrs = interface_attrs,
++	.bin_attrs = if_bin_attrs,
++	.attrs = if_attrs,
 +};
 +
 +static const struct attribute_group *attr_groups[] = {
 +	&format_group,
-+	&interface_group,
++	&if_group,
 +	NULL,
 +};
 +
-+#define GPCI_MAX_DATA_BYTES \
-+	(1024 - sizeof(struct hv_get_perf_counter_info_params))
++static bool is_physical_domain(int domain)
++{
++	return  domain == HV_24X7_PERF_DOMAIN_PHYSICAL_CHIP ||
++		domain == HV_24X7_PERF_DOMAIN_PHYSICAL_CORE;
++}
 +
-+static unsigned long single_gpci_request(u32 req, u32 starting_index,
-+		u16 secondary_index, u8 version_in, u32 offset, u8 length,
-+		u64 *value)
++static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
++					 u16 lpar, u64 *res,
++					 bool success_expected)
 +{
 +	unsigned long ret;
-+	size_t i;
-+	u64 count;
 +
-+	struct {
-+		struct hv_get_perf_counter_info_params params;
-+		uint8_t bytes[GPCI_MAX_DATA_BYTES];
-+	} __packed __aligned(sizeof(uint64_t)) arg = {
-+		.params = {
-+			.counter_request = cpu_to_be32(req),
-+			.starting_index = cpu_to_be32(starting_index),
-+			.secondary_index = cpu_to_be16(secondary_index),
-+			.counter_info_version_in = version_in,
++	/*
++	 * request_buffer and result_buffer are not required to be 4k aligned,
++	 * but are not allowed to cross any 4k boundary. Aligning them to 4k is
++	 * the simplest way to ensure that.
++	 */
++	struct reqb {
++		struct hv_24x7_request_buffer buf;
++		struct hv_24x7_request req;
++	} __packed __aligned(4096) request_buffer = {
++		.buf = {
++			.interface_version = HV_24X7_IF_VERSION_CURRENT,
++			.num_requests = 1,
++		},
++		.req = {
++			.performance_domain = domain,
++			.data_size = cpu_to_be16(8),
++			.data_offset = cpu_to_be32(offset),
++			.starting_lpar_ix = cpu_to_be16(lpar),
++			.max_num_lpars = cpu_to_be16(1),
++			.starting_ix = cpu_to_be16(ix),
++			.max_ix = cpu_to_be16(1),
 +		}
 +	};
 +
-+	ret = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO,
-+			virt_to_phys(&arg), sizeof(arg));
++	struct resb {
++		struct hv_24x7_data_result_buffer buf;
++		struct hv_24x7_result res;
++		struct hv_24x7_result_element elem;
++		__be64 result;
++	} __packed __aligned(4096) result_buffer = {};
++
++	ret = plpar_hcall_norets(H_GET_24X7_DATA,
++			virt_to_phys(&request_buffer), sizeof(request_buffer),
++			virt_to_phys(&result_buffer),  sizeof(result_buffer));
++
 +	if (ret) {
-+		pr_devel("hcall failed: 0x%lx\n", ret);
++		if (success_expected)
++			pr_err_ratelimited("hcall failed: %d %#x %#x %d => 0x%lx (%ld) detail=0x%x failing ix=%x\n",
++					domain, offset, ix, lpar,
++					ret, ret,
++					result_buffer.buf.detailed_rc,
++					result_buffer.buf.failing_request_ix);
 +		return ret;
 +	}
 +
-+	/*
-+	 * we verify offset and length are within the zeroed buffer at event
-+	 * init.
-+	 */
-+	count = 0;
-+	for (i = offset; i < offset + length; i++)
-+		count |= arg.bytes[i] << (i - offset);
-+
-+	*value = count;
++	*res = be64_to_cpu(result_buffer.result);
 +	return ret;
 +}
 +
-+static u64 h_gpci_get_value(struct perf_event *event)
++static unsigned long event_24x7_request(struct perf_event *event, u64 *res,
++		bool success_expected)
 +{
-+	u64 count;
-+	unsigned long ret = single_gpci_request(event_get_request(event),
-+					event_get_starting_index(event),
-+					event_get_secondary_index(event),
-+					event_get_counter_info_version(event),
-+					event_get_offset(event),
-+					event_get_length(event),
-+					&count);
-+	if (ret)
-+		return 0;
-+	return count;
++	return single_24x7_request(event_get_domain(event),
++				event_get_offset(event),
++				event_get_starting_index(event),
++				event_get_lpar(event),
++				res,
++				success_expected);
 +}
 +
-+static void h_gpci_event_update(struct perf_event *event)
++static int h_24x7_event_init(struct perf_event *event)
 +{
-+	s64 prev;
-+	u64 now = h_gpci_get_value(event);
-+	prev = local64_xchg(&event->hw.prev_count, now);
-+	local64_add(now - prev, &event->count);
-+}
-+
-+static void h_gpci_event_start(struct perf_event *event, int flags)
-+{
-+	local64_set(&event->hw.prev_count, h_gpci_get_value(event));
-+	perf_swevent_start_hrtimer(event);
-+}
-+
-+static void h_gpci_event_stop(struct perf_event *event, int flags)
-+{
-+	perf_swevent_cancel_hrtimer(event);
-+	h_gpci_event_update(event);
-+}
-+
-+static int h_gpci_event_add(struct perf_event *event, int flags)
-+{
-+	if (flags & PERF_EF_START)
-+		h_gpci_event_start(event, flags);
-+
-+	return 0;
-+}
-+
-+static void h_gpci_event_del(struct perf_event *event, int flags)
-+{
-+	h_gpci_event_stop(event, flags);
-+}
-+
-+static void h_gpci_event_read(struct perf_event *event)
-+{
-+	h_gpci_event_update(event);
-+}
-+
-+static int h_gpci_event_init(struct perf_event *event)
-+{
-+	u64 count;
-+	u8 length;
++	struct hv_perf_caps caps;
++	unsigned domain;
++	unsigned long hret;
++	u64 ct;
 +
 +	/* Not our event */
 +	if (event->attr.type != event->pmu->type)
 +		return -ENOENT;
 +
-+	/* config2 is unused */
-+	if (event->attr.config2) {
-+		pr_devel("config2 set when reserved\n");
++	/* Unused areas must be 0 */
++	if (event_get_reserved1(event) ||
++	    event_get_reserved2(event) ||
++	    event_get_reserved3(event)) {
++		pr_devel("reserved set when forbidden 0x%llx(0x%llx) 0x%llx(0x%llx) 0x%llx(0x%llx)\n",
++				event->attr.config,
++				event_get_reserved1(event),
++				event->attr.config1,
++				event_get_reserved2(event),
++				event->attr.config2,
++				event_get_reserved3(event));
 +		return -EINVAL;
 +	}
 +
@@ -278,52 +428,102 @@ index 0000000..1f5d96d
 +	if (has_branch_stack(event))
 +		return -EOPNOTSUPP;
 +
-+	length = event_get_length(event);
-+	if (length < 1 || length > 8) {
-+		pr_devel("length invalid\n");
++	/* offset must be 8 byte aligned */
++	if (event_get_offset(event) % 8) {
++		pr_devel("bad alignment\n");
 +		return -EINVAL;
 +	}
 +
-+	/* last byte within the buffer? */
-+	if ((event_get_offset(event) + length) > GPCI_MAX_DATA_BYTES) {
-+		pr_devel("request outside of buffer: %zu > %zu\n",
-+				(size_t)event_get_offset(event) + length,
-+				GPCI_MAX_DATA_BYTES);
++	/* Domains above 6 are invalid */
++	domain = event_get_domain(event);
++	if (domain > 6) {
++		pr_devel("invalid domain %d\n", domain);
 +		return -EINVAL;
 +	}
 +
-+	/* check if the request works... */
-+	if (single_gpci_request(event_get_request(event),
-+				event_get_starting_index(event),
-+				event_get_secondary_index(event),
-+				event_get_counter_info_version(event),
-+				event_get_offset(event),
-+				length,
-+				&count)) {
-+		pr_devel("gpci hcall failed\n");
-+		return -EINVAL;
++	hret = hv_perf_caps_get(&caps);
++	if (hret) {
++		pr_devel("could not get capabilities: rc=%ld\n", hret);
++		return -EIO;
++	}
++
++	/* PHYSICAL domains & other lpars require extra capabilities */
++	if (!caps.collect_privileged && (is_physical_domain(domain) ||
++		(event_get_lpar(event) != event_get_lpar_max()))) {
++		pr_devel("hv permisions disallow: is_physical_domain:%d, lpar=0x%llx\n",
++				is_physical_domain(domain),
++				event_get_lpar(event));
++		return -EACCES;
++	}
++
++	/* see if the event complains */
++	if (event_24x7_request(event, &ct, false)) {
++		pr_devel("test hcall failed\n");
++		return -EIO;
 +	}
 +
 +	perf_swevent_init_hrtimer(event);
 +	return 0;
 +}
 +
-+static struct pmu h_gpci_pmu = {
++static u64 h_24x7_get_value(struct perf_event *event)
++{
++	unsigned long ret;
++	u64 ct;
++	ret = event_24x7_request(event, &ct, true);
++	if (ret)
++		/* We checked this in event init, shouldn't fail here... */
++		return 0;
++
++	return ct;
++}
++
++static void h_24x7_event_update(struct perf_event *event)
++{
++	s64 prev;
++	u64 now;
++	now = h_24x7_get_value(event);
++	prev = local64_xchg(&event->hw.prev_count, now);
++	local64_add(now - prev, &event->count);
++}
++
++static void h_24x7_event_start(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_RELOAD)
++		local64_set(&event->hw.prev_count, h_24x7_get_value(event));
++	perf_swevent_start_hrtimer(event);
++}
++
++static void h_24x7_event_stop(struct perf_event *event, int flags)
++{
++	perf_swevent_cancel_hrtimer(event);
++	h_24x7_event_update(event);
++}
++
++static int h_24x7_event_add(struct perf_event *event, int flags)
++{
++	if (flags & PERF_EF_START)
++		h_24x7_event_start(event, flags);
++
++	return 0;
++}
++
++static struct pmu h_24x7_pmu = {
 +	.task_ctx_nr = perf_invalid_context,
 +
-+	.name = "hv_gpci",
++	.name = "hv_24x7",
 +	.attr_groups = attr_groups,
-+	.event_init  = h_gpci_event_init,
-+	.add         = h_gpci_event_add,
-+	.del         = h_gpci_event_del,
-+	.start       = h_gpci_event_start,
-+	.stop        = h_gpci_event_stop,
-+	.read        = h_gpci_event_read,
++	.event_init  = h_24x7_event_init,
++	.add         = h_24x7_event_add,
++	.del         = h_24x7_event_stop,
++	.start       = h_24x7_event_start,
++	.stop        = h_24x7_event_stop,
++	.read        = h_24x7_event_update,
 +
 +	.event_idx = perf_swevent_event_idx,
 +};
 +
-+static int hv_gpci_init(void)
++static int hv_24x7_init(void)
 +{
 +	int r;
 +	unsigned long hret;
@@ -341,13 +541,13 @@ index 0000000..1f5d96d
 +		return -ENODEV;
 +	}
 +
-+	r = perf_pmu_register(&h_gpci_pmu, h_gpci_pmu.name, -1);
++	r = perf_pmu_register(&h_24x7_pmu, h_24x7_pmu.name, -1);
 +	if (r)
 +		return r;
 +
 +	return 0;
 +}
 +
-+device_initcall(hv_gpci_init);
++device_initcall(hv_24x7_init);
 -- 
 1.8.5.4
