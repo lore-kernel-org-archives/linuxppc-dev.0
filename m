@@ -1,40 +1,42 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6CD2A2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 09:02:33 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9A6DB2C0301
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 09:02:36 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Fri, 14 Feb 2014 17:02:30 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id CC03938C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:02:27 -0500 (EST)
+ Fri, 14 Feb 2014 17:02:33 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id DE3806E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:02:25 -0500 (EST)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1EM2RoX6160852
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 22:02:27 GMT
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1EM2UeL7471552
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 22:02:30 GMT
 Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1EM2PfI026722
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:02:27 -0500
+ s1EM2Td3026988
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:02:30 -0500
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
-To: Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH v2 03/11] sysfs: create bin_attributes under the requested
- group
-Date: Fri, 14 Feb 2014 14:02:07 -0800
-Message-Id: <1392415338-16288-4-git-send-email-cody@linux.vnet.ibm.com>
+To: Linux PPC <linuxppc-dev@lists.ozlabs.org>, Alexander Graf <agraf@suse.de>,
+ Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH v2 04/11] powerpc: add hvcalls for 24x7 and gpci (get
+ performance counter info)
+Date: Fri, 14 Feb 2014 14:02:08 -0800
+Message-Id: <1392415338-16288-5-git-send-email-cody@linux.vnet.ibm.com>
 In-Reply-To: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
 References: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <michael@ellerman.id.au>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
  Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Cody P Schafer <cody@linux.vnet.ibm.com>
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,41 +46,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-bin_attributes created/updated in create_files() (such as those listed
-via (struct device).attribute_groups) were not placed under the
-specified group, and instead appeared in the base kobj directory.
-
-Fix this by making bin_attributes use creating code similar to normal
-attributes.
-
-A quick grep shows that no one is using bin_attrs in a named attribute
-group yet, so we can do this without breaking anything in usespace.
-
-Note that I do not add is_visible() support to
-bin_attributes, though that could be done as well.
-
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 ---
- fs/sysfs/group.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/hvcall.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 6b57938..aa04068 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -70,8 +70,11 @@ static int create_files(struct kernfs_node *parent, struct kobject *kobj,
- 	if (grp->bin_attrs) {
- 		for (bin_attr = grp->bin_attrs; *bin_attr; bin_attr++) {
- 			if (update)
--				sysfs_remove_bin_file(kobj, *bin_attr);
--			error = sysfs_create_bin_file(kobj, *bin_attr);
-+				kernfs_remove_by_name(parent,
-+						(*bin_attr)->attr.name);
-+			error = sysfs_add_file_mode_ns(parent,
-+					&(*bin_attr)->attr, true,
-+					(*bin_attr)->attr.mode, NULL);
- 			if (error)
- 				break;
- 		}
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index d8b600b..652f7e4 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -274,6 +274,11 @@
+ /* Platform specific hcalls, used by KVM */
+ #define H_RTAS			0xf000
+ 
++/* "Platform specific hcalls", provided by PHYP */
++#define H_GET_24X7_CATALOG_PAGE 0xF078
++#define H_GET_24X7_DATA		0xF07C
++#define H_GET_PERF_COUNTER_INFO 0xF080
++
+ #ifndef __ASSEMBLY__
+ 
+ /**
 -- 
 1.8.5.4
