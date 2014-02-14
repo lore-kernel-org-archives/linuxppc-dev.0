@@ -1,23 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1584B2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 08:34:42 +1100 (EST)
-Message-ID: <1392413659.10050.14.camel@pasglop>
-Subject: Re: [PATCH V2] powerpc: thp: Fix crash on mremap
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <gregkh@linuxfoundation.org>
-Date: Sat, 15 Feb 2014 08:34:19 +1100
-In-Reply-To: <1392239014.3835.148.camel@pasglop>
-References: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140211173129.GB30336@kroah.com> <87ioslt54d.fsf@linux.vnet.ibm.com>
- <20140212142334.GB7688@kroah.com> <1392239014.3835.148.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, "Kirill A.
- Shutemov" <kirill.shutemov@linux.intel.com>
+ by ozlabs.org (Postfix) with ESMTPS id D713C2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 09:02:31 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Fri, 14 Feb 2014 17:02:28 -0500
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 556F1C90042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:02:23 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1EM2QE46357274
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 22:02:26 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1EM2OK2026639
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 17:02:26 -0500
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
+To: Linux PPC <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v2 00/11] powerpc: Add support for Power Hypervisor supplied
+ performance counters
+Date: Fri, 14 Feb 2014 14:02:04 -0800
+Message-Id: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <michael@ellerman.id.au>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +41,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-02-13 at 08:03 +1100, Benjamin Herrenschmidt wrote:
+These patches add basic pmus for 2 powerpc hypervisor interfaces to obtain
+performance counters: gpci ("get performance counter info") and 24x7.
 
-> It looks very different because the function that needs to be fixed
-> changed a lot upstream in 3.13.
+The counters supplied by these interfaces are continually counting and never
+need to be (and cannot be) disabled or enabled. They additionally do not
+generate any interrupts. This makes them in some regards similar to software
+counters, and as a result their implimentation shares some common code (which
+an initial patch exposes) with the sw counters.
 
- .../...
+There is ongoing work to support transactions for each of these pmus.
 
-Hi Greg !
+These 2 PMUs end up providing access to some cpu, core, and chip level counters
+not exposed via other interfaces, and additionally allow monitoring the
+performance of other lpars (guests) on the same host system. Because it
+provides access to core and chip level counters, this pair of PMUs could be
+thought of as powerpc's counterpart to x86's uncore events.
 
-You didn't say if that explanation was to your liking :-)
+As an example, "processor_bus_utilization_abc" and
+"processor_bus_utilization_wxyz" (in hv_gpci.h) allow retreval of total cycles
+and idle cycles for various inter-chip buses.
 
-If it is, do you want Aneesh to re-submit the patch with such an
-explanation in the changelog ?
+GPCI is an interface that already exists on some power6 and power7 machines
+(depending on the fw version), but is rather in-flexible and code intensive to
+add additional counters to.  The 24x7 interfaces currently are designed to
+co-exist with the gpci interface while replacing most of gpci's functionality
+on newer systems. Right now, the 24x7 code I've submitted uses the gpci calls
+to check if it has permission to access certain classes of counters.
 
-Cheers,
-Ben.
+Example perf usage:
 
-> In practice it's *not* very different in behaviour. It's just that
-> on powerpc we need to unconditionally call withdraw and deposit when
-> moving PTEs or it will crash, due to how we keep the transparent
-> huge page in sync with the hash table.
-> 
-> With the 3.13 code, due to lock breaking introduced by Kirill in
-> 3.13-rc's, there's already a generic case for doing that (if we dropped
-> the lock). So we just changed the condition to essentially force the
-> condition to true to always do it under control of an arch helper.
-> 
-> The pre-3.13 code didn't do the withdraw and deposit at all in that
-> function however, so in that case, the patch (this 3.12 one) basically
-> just adds the calls to withdraw and deposit under control of an ifdef
-> which is only enabled for powerpc64.
-> 
-> So you are taking 0 risk with other architecture and as the powerpc
-> maintainer I'm happy with the patch.
-> 
-> Cheers,
-> Ben.
-> 
-> 
+perf stat -e 'hv_gpci/counter_info_version=3,offset=0,length=8,secondary_index=0,starting_index=0xffffffff,request=0x10/' -r 0 -C 0 -x ' ' sleep 0.1
+
+perf stat -e 'hv_24x7/domain=2,offset=8,starting_index=0,lpar=0xffffffff/' -r 0 -C 0 -x ' ' sleep 0.1
+
+--
+
+Changes since v1:
+ - add a few attributes to hv_gpci and hv_24x7 that expose some info about the interfaces
+ - so the attributes show up in the right place, fix bin_attr creation in sysfs groups.
+ - move hv_gpci.h and hv_24x7.h interface headers into arch/powerpc/perf
+ - fix bit ordering in hv_gpci.h
+ - split out hv_perf_caps_get() and use it to probe for the interface before registering
+ - ensure proper alignment of hypervisor args
+ - add a few missing counter requests to hv_gpci.h
+ - s/CIR_xxx/CIR_XXX/ in hv_gpci.h
+ - s/modules_init/device_initcall/
+ - Don't set event->cpu, use the user provided one
+ - remove the union of gpci events, just give the user 1024 bytes to play with
+ - clarify some comments (the list of fw versions is now labeled)
+ - provide and event_24x7_request() that wraps single_24x7_request()
+ - probably some other small fixes I'm forgetting.
+
+
+Cody P Schafer (11):
+  perf: add PMU_RANGE_ATTR() helper for use by sw-like pmus
+  perf core: export swevent hrtimer helpers
+  sysfs: create bin_attributes under the requested group
+  powerpc: add hvcalls for 24x7 and gpci (get performance counter info)
+  powerpc: add hv_gpci interface header
+  powerpc: add 24x7 interface header
+  powerpc: add a shared interface to get gpci version and capabilities
+  powerpc/perf: add support for the hv gpci (get performance counter
+    info) interface
+  powerpc/perf: add support for the hv 24x7 interface
+  powerpc/perf: add kconfig option for hypervisor provided counters
+  powerpc/perf/hv_{gpci,24x7}: add documentation of device attributes
+
+ .../testing/sysfs-bus-event_source-devices-hv_24x7 |  22 +
+ .../testing/sysfs-bus-event_source-devices-hv_gpci |  43 ++
+ arch/powerpc/include/asm/hvcall.h                  |   5 +
+ arch/powerpc/perf/Makefile                         |   2 +
+ arch/powerpc/perf/hv-24x7.c                        | 491 +++++++++++++++++++
+ arch/powerpc/perf/hv-24x7.h                        | 239 ++++++++++
+ arch/powerpc/perf/hv-common.c                      |  39 ++
+ arch/powerpc/perf/hv-common.h                      |  17 +
+ arch/powerpc/perf/hv-gpci.c                        | 290 ++++++++++++
+ arch/powerpc/perf/hv-gpci.h                        | 521 +++++++++++++++++++++
+ arch/powerpc/platforms/Kconfig.cputype             |   6 +
+ fs/sysfs/group.c                                   |   7 +-
+ include/linux/perf_event.h                         |  22 +-
+ kernel/events/core.c                               |   8 +-
+ 14 files changed, 1705 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
+ create mode 100644 arch/powerpc/perf/hv-24x7.c
+ create mode 100644 arch/powerpc/perf/hv-24x7.h
+ create mode 100644 arch/powerpc/perf/hv-common.c
+ create mode 100644 arch/powerpc/perf/hv-common.h
+ create mode 100644 arch/powerpc/perf/hv-gpci.c
+ create mode 100644 arch/powerpc/perf/hv-gpci.h
+
+-- 
+1.8.5.4
