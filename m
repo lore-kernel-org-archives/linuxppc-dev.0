@@ -1,26 +1,23 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
- [IPv6:2607:f8b0:4001:c03::236])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 33FCE2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 05:23:23 +1100 (EST)
-Received: by mail-ie0-f182.google.com with SMTP id lx4so7620101iec.27
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2014 10:23:19 -0800 (PST)
-Date: Fri, 14 Feb 2014 11:23:16 -0700
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Yijing Wang <wangyijing@huawei.com>
-Subject: Re: [PATCH 1/6] PCI,acpiphp: Use list_for_each_entry() for bus
- traversal
-Message-ID: <20140214182316.GB31093@google.com>
-References: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1392297243-61848-1-git-send-email-wangyijing@huawei.com>
-Cc: Russell King <linux@arm.linux.org.uk>, David Airlie <airlied@linux.ie>,
- linux-pcmcia@lists.infradead.org, Hanjun Guo <guohanjun@huawei.com>,
- dri-devel@lists.freedesktop.org, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 1584B2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 08:34:42 +1100 (EST)
+Message-ID: <1392413659.10050.14.camel@pasglop>
+Subject: Re: [PATCH V2] powerpc: thp: Fix crash on mremap
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <gregkh@linuxfoundation.org>
+Date: Sat, 15 Feb 2014 08:34:19 +1100
+In-Reply-To: <1392239014.3835.148.camel@pasglop>
+References: <1391781117-19045-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140211173129.GB30336@kroah.com> <87ioslt54d.fsf@linux.vnet.ibm.com>
+ <20140212142334.GB7688@kroah.com> <1392239014.3835.148.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, "Kirill A.
+ Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 13, 2014 at 09:13:58PM +0800, Yijing Wang wrote:
-> Replace list_for_each() + pci_bus_b() with the simpler
-> list_for_each_entry().
-> 
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+On Thu, 2014-02-13 at 08:03 +1100, Benjamin Herrenschmidt wrote:
 
-I applied all six of these (please include a 0/6 cover letter in the
-future; that's a nice place to note that I applied things) to
-pci/list-for-each-entry for v3.15, thanks!
+> It looks very different because the function that needs to be fixed
+> changed a lot upstream in 3.13.
 
-> ---
->  drivers/pci/hotplug/acpiphp_glue.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+ .../...
+
+Hi Greg !
+
+You didn't say if that explanation was to your liking :-)
+
+If it is, do you want Aneesh to re-submit the patch with such an
+explanation in the changelog ?
+
+Cheers,
+Ben.
+
+> In practice it's *not* very different in behaviour. It's just that
+> on powerpc we need to unconditionally call withdraw and deposit when
+> moving PTEs or it will crash, due to how we keep the transparent
+> huge page in sync with the hash table.
 > 
-> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-> index cd929ae..aee6a0a 100644
-> --- a/drivers/pci/hotplug/acpiphp_glue.c
-> +++ b/drivers/pci/hotplug/acpiphp_glue.c
-> @@ -450,7 +450,7 @@ static void cleanup_bridge(struct acpiphp_bridge *bridge)
->   */
->  static unsigned char acpiphp_max_busnr(struct pci_bus *bus)
->  {
-> -	struct list_head *tmp;
-> +	struct pci_bus *tmp;
->  	unsigned char max, n;
->  
->  	/*
-> @@ -463,8 +463,8 @@ static unsigned char acpiphp_max_busnr(struct pci_bus *bus)
->  	 */
->  	max = bus->busn_res.start;
->  
-> -	list_for_each(tmp, &bus->children) {
-> -		n = pci_bus_max_busnr(pci_bus_b(tmp));
-> +	list_for_each_entry(tmp, &bus->children, node) {
-> +		n = pci_bus_max_busnr(tmp);
->  		if (n > max)
->  			max = n;
->  	}
-> -- 
-> 1.7.1
+> With the 3.13 code, due to lock breaking introduced by Kirill in
+> 3.13-rc's, there's already a generic case for doing that (if we dropped
+> the lock). So we just changed the condition to essentially force the
+> condition to true to always do it under control of an arch helper.
+> 
+> The pre-3.13 code didn't do the withdraw and deposit at all in that
+> function however, so in that case, the patch (this 3.12 one) basically
+> just adds the calls to withdraw and deposit under control of an ifdef
+> which is only enabled for powerpc64.
+> 
+> So you are taking 0 risk with other architecture and as the powerpc
+> maintainer I'm happy with the patch.
+> 
+> Cheers,
+> Ben.
 > 
 > 
