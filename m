@@ -1,27 +1,26 @@
-Return-Path: <schivers@csc.com.au>
-Received: from mail1.bemta12.messagelabs.com (mail1.bemta12.messagelabs.com
- [216.82.251.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5CAEF2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 16:19:22 +1100 (EST)
-In-Reply-To: <CAL_JsqKq4_1K8EF+PZoP=0=H6tiRxbgdzs9UHHVdbHS014n74Q@mail.gmail.com>
-References: <1392355366-1445-1-git-send-email-haokexin@gmail.com>	<1392355366-1445-3-git-send-email-haokexin@gmail.com>
- <CAL_JsqKq4_1K8EF+PZoP=0=H6tiRxbgdzs9UHHVdbHS014n74Q@mail.gmail.com>
-To: Rob Herring <robherring2@gmail.com>
+Return-Path: <anand.mistry@Spectross.com>
+Received: from gateway02.websitewelcome.com (gateway02.websitewelcome.com
+ [67.18.80.20]) by ozlabs.org (Postfix) with ESMTP id 7B3382C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 23:56:18 +1100 (EST)
+Received: from gator4114.hostgator.com (gator4114.hostgator.com
+ [192.185.4.126])
+ by gateway02.websitewelcome.com (Postfix) with ESMTP id EBC5370A4B7A6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 06:33:32 -0600 (CST)
+Received: from [122.160.159.72] (port=27831 helo=Spectross.com)
+ by gator4114.hostgator.com with esmtp (Exim 4.80)
+ (envelope-from <anand.mistry@Spectross.com>) id 1WEeR1-0005CW-1l
+ for linuxppc-dev@lists.ozlabs.org; Sat, 15 Feb 2014 06:33:32 -0600
+Received: from Spectross.com (localhost [127.0.0.1])
+ by Spectross.com (Postfix) with ESMTP id 30CA4C264C2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2014 18:03:29 +0530 (IST)
+From: "Anand Mistry" <anand.mistry@Spectross.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: PCI-PCI bridge configuration in linux device tree
+Date: Sat, 15 Feb 2014 18:03:29 +0530
+Message-Id: <20140215115045.M44796@Spectross.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH 2/2] of: search the best compatible match first in
- __of_match_node()
-From: Stephen N Chivers <schivers@csc.com.au>
-Message-ID: <OFE7538F6F.94B14E09-ONCA257C80.001BB296-CA257C80.001D350B@csc.com>
-Date: Sat, 15 Feb 2014 15:19:01 +1000
-Content-Type: text/plain; charset="US-ASCII"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Kevin Hao <haokexin@gmail.com>, Chris Proctor <cproctor@csc.com.au>,
- Stephen N Chivers <schivers@csc.com.au>, Kumar Gala <galak@codeaurora.org>,
- Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="----=OPENWEBMAIL_ATT_0.0186498275465681"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,184 +30,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rob Herring <robherring2@gmail.com> wrote on 02/15/2014 02:53:40 AM:
+This is a multi-part message in MIME format.
 
-> From: Rob Herring <robherring2@gmail.com>
-> To: Kevin Hao <haokexin@gmail.com>
-> Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, 
-> linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Sebastian Hesselbarth 
-> <sebastian.hesselbarth@gmail.com>, Stephen N Chivers 
-> <schivers@csc.com.au>, Grant Likely <grant.likely@linaro.org>, Rob 
-> Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>
-> Date: 02/15/2014 02:53 AM
-> Subject: Re: [PATCH 2/2] of: search the best compatible match first 
-> in __of_match_node()
-> 
-> On Thu, Feb 13, 2014 at 11:22 PM, Kevin Hao <haokexin@gmail.com> wrote:
-> > Currently, of_match_node compares each given match against all node's
-> > compatible strings with of_device_is_compatible.
-> >
-> > To achieve multiple compatible strings per node with ordering from
-> > specific to generic, this requires given matches to be ordered from
-> > specific to generic. For most of the drivers this is not true and also
-> > an alphabetical ordering is more sane there.
-> >
-> > Therefore, this patch introduces a function to match each of the 
-node's
-> > compatible strings against all given compatible matches without type 
-and
-> > name first, before checking the next compatible string. This implies
-> > that node's compatibles are ordered from specific to generic while
-> > given matches can be in any order. If we fail to find such a match
-> > entry, then fall-back to the old method in order to keep 
-compatibility.
-> >
-> > Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> 
-> Looks good to me. I'll put this in next for a few days. I'd really
-> like to see some acks and tested-by's before sending to Linus.
-> 
-Tested-by: Stephen Chivers <schivers@csc.com>
+------=OPENWEBMAIL_ATT_0.0186498275465681
+Content-Type: text/plain;
+	charset=iso-8859-1
 
-I have tested the patch for the four PowerPC platforms
-available to me.
+Hello,
 
-They are:
+We are working on a cPCI based application involving MPC8313 processor. The
+cPCI back-plane has a PCI-PCI bridge on it. 
 
-MPC8349_MITXGP - Works.
-MVME5100        - Works.
-MVME4100 - Works.
-SAM440EP - Works.
+While booting, the linux kernel(2.6.23) crashes while allocating resources for
+devices
+beyong the bridge. After examination we came to know that if we program the
+PCI-PCI bridge's memory windows in u-boot (memory base and limit registers
+manually using u-boot commands), the kernel won't crash and allocate resources. 
 
-The MPC8349_MITXGP platform is present in Linux-3.13 and previous 
-releases.
-The MVME5100 is a "revived" platform that is in Linux-3.14-rc2.
-The MVME4100 is a work in progress and is the 85xx platform that the
-original failure report was for.
-The SAM440EP is present in Linux-3.13 and previous releases.
+Our understanding is that programming of PCI-PCI bridges's memory windows
+should be done automatically either by u-boot or by linux during boot (not
+considering hot-swap right now) and no special driver is required for PCI-PCI
+bridges. 
 
-The MPC8349_MITXGP is one of the 49 DTS files with the serial compatible:
-
-compatible = "fsl,ns16550", "ns16550";
-
-For the SAM440EP, the patch improves things from Linux-3.13. In that
-release the same sort of problem as reported in:
-
-"Linux-3.14-rc2: Order of serial node compatibles in DTS files."
-
-occurs with slightly different symptoms:
-
-of_serial ef600300.serial: Port found
-of_serial ef600300.serial: Port found
-of_serial ef600300.serial: Unknown serial port found, ignored
-of_serial ef600400.serial: Port found
-of_serial ef600400.serial: Port found
-of_serial ef600400.serial: Unknown serial port found, ignored
-of_serial ef600500.serial: Port found
-of_serial ef600500.serial: Port found
-of_serial ef600500.serial: Unknown serial port found, ignored
-of_serial ef600600.serial: Port found
-of_serial ef600600.serial: Port found
-of_serial ef600600.serial: Unknown serial port found, ignored
-
-The SAM440EP has a IBM/AMCC 440EP PowerPC CPU and so simply has
-"ns16550" as its serial compatible.
+Is our understanding correct? Can somebody help us find out the way to achieve
+automatic configuration of PCI-PCI bridge memory windows for resource allocation?
+ 
+Attachments,
+	log_pci_bridge.txt :  kernel crash log
+	pci_dts.txt :  PCI config part of the DTS file 
 
 
-> We could be a bit more strict here and fallback to the old matching if
-> the match table has any entries with name or type. I don't think that
-> should be necessary though.
-> 
-> Rob
-Stephen Chivers,
-CSC Australia Pty. Ltd.
-> 
-> > ---
-> >  drivers/of/base.c | 43 ++++++++++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 42 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/of/base.c b/drivers/of/base.c
-> > index ba195fbce4c6..10b51106c854 100644
-> > --- a/drivers/of/base.c
-> > +++ b/drivers/of/base.c
-> > @@ -730,13 +730,49 @@ out:
-> >  }
-> >  EXPORT_SYMBOL(of_find_node_with_property);
-> >
-> > +static const struct of_device_id *
-> > +of_match_compatible(const struct of_device_id *matches,
-> > +                       const struct device_node *node)
-> > +{
-> > +       const char *cp;
-> > +       int cplen, l;
-> > +       const struct of_device_id *m;
-> > +
-> > +       cp = __of_get_property(node, "compatible", &cplen);
-> > +       while (cp && (cplen > 0)) {
-> > +               m = matches;
-> > +               while (m->name[0] || m->type[0] || m->compatible[0]) {
-> > +                       /* Only match for the entries without type
-> and name */
-> > +                       if (m->name[0] || m->type[0] ||
-> > +                               of_compat_cmp(m->compatible, cp,
-> > +                                        strlen(m->compatible)))
-> > +                               m++;
-> > +                       else
-> > +                               return m;
-> > +               }
-> > +
-> > +               /* Get node's next compatible string */
-> > +               l = strlen(cp) + 1;
-> > +               cp += l;
-> > +               cplen -= l;
-> > +       }
-> > +
-> > +       return NULL;
-> > +}
-> > +
-> >  static
-> >  const struct of_device_id *__of_match_node(const struct 
-> of_device_id *matches,
-> >                                            const struct device_node 
-*node)
-> >  {
-> > +       const struct of_device_id *m;
-> > +
-> >         if (!matches)
-> >                 return NULL;
-> >
-> > +       m = of_match_compatible(matches, node);
-> > +       if (m)
-> > +               return m;
-> > +
-> >         while (matches->name[0] || matches->type[0] || 
-> matches->compatible[0]) {
-> >                 int match = 1;
-> >                 if (matches->name[0])
-> > @@ -760,7 +796,12 @@ const struct of_device_id *__of_match_node
-> (const struct of_device_id *matches,
-> >   *     @matches:       array of of device match structures to search 
-in
-> >   *     @node:          the of device structure to match against
-> >   *
-> > - *     Low level utility function used by device matching.
-> > + *     Low level utility function used by device matching. We have 
-two ways
-> > + *     of matching:
-> > + *     - Try to find the best compatible match by comparing each 
-compatible
-> > + *       string of device node with all the given matches 
-respectively.
-> > + *     - If the above method failed, then try to match the 
-> compatible by using
-> > + *       __of_device_is_compatible() besides the match in type and 
-name.
-> >   */
-> >  const struct of_device_id *of_match_node(const struct 
-> of_device_id *matches,
-> >                                          const struct device_node 
-*node)
-> > --
-> > 1.8.5.3
-> >
+Thanks and Regards,
+
+Anand Mistry,
+Spectross Digital Systems, New Delhi
+
+
+------=OPENWEBMAIL_ATT_0.0186498275465681
+Content-Type: text/plain;
+	name="pci_dts.txt"
+Content-Disposition: attachment; filename="pci_dts.txt"
+Content-Transfer-Encoding: base64
+
+cGNpQDg1MDAgewkJLy8gc2RzLWFtIDogY29udHJvbGxlciBjYXJkIGNvbmZpZyBvbmx5CglidXMt
+cmFuZ2UgPSA8MCAwPjsKCXJhbmdlcyA9IDwwMjAwMDAwMCAwIDkwMDAwMDAwIDkwMDAwMDAwIDAg
+MTAwMDAwMDAKCSAgICAgICAgICA0MjAwMDAwMCAwIDgwMDAwMDAwIDgwMDAwMDAwIDAgMTAwMDAw
+MDAKCSAgICAgICAgICAwMTAwMDAwMCAwIDAwMDAwMDAwIGUyMDAwMDAwIDAgMDAxMDAwMDA+OwoJ
+Y2xvY2stZnJlcXVlbmN5ID0gPDNmOTQwYWE+OwoJI2ludGVycnVwdC1jZWxscyA9IDwxPjsKCSNz
+aXplLWNlbGxzID0gPDI+OwoJI2FkZHJlc3MtY2VsbHMgPSA8Mz47CglyZWcgPSA8ODUwMCAxMDA+
+OwoJY29tcGF0aWJsZSA9ICJmc2wsbXBjODM0OS1wY2kiOwoJZGV2aWNlX3R5cGUgPSAicGNpIjsK
+CWludGVycnVwdC1wYXJlbnQgPSA8ICZpcGljID47CglpbnRlcnJ1cHRzID0gPDQyIDg+OwoJaW50
+ZXJydXB0LW1hcC1tYXNrID0gPDBGODAwIDAgMCA3PjsKCWludGVycnVwdC1tYXAgPSA8CgoJCQkv
+LyAqKiBGb3IgcmVmZXJlbmNlICoqCgkJCS8vIElOVEEgPSBJUlExID0gMHgxMQoJCQkvLyBJTlRC
+ID0gSVJRMiA9IDB4MTIKCQkJLy8gSU5UQyA9IElSUTAgPSAweDMwCgkJCS8vIElOVEQgPSBJUlE0
+ID0gMHgxNAoKCQkJLy8gQlVTIDAgSURTRUwgMHgxOCAoSURTRUwgPSBBRDI0KQoJCQkwYzAwMCAw
+IDAgMSAmaXBpYyAxMSA4ICAvLyBQQ0lfSU5UQSAKCQkJMGMwMDAgMCAwIDIgJmlwaWMgMTIgOCAg
+Ly8gUENJX0lOVEIgc2xvdCAxMyBpIGd1ZXNzIAoJCQkwYzAwMCAwIDAgMyAmaXBpYyAzMCA4ICAv
+LyBQQ0lfSU5UQyBzbG90IDE0IGkgZ3Vlc3MgCgkJCTBjMDAwIDAgMCA0ICZpcGljIDE0IDggIC8v
+IFBDSV9JTlREIHNsb3QgMTUgaSBndWVzcwoKCQkJPjsKfTsgCgoKCg==
+
+------=OPENWEBMAIL_ATT_0.0186498275465681
+Content-Type: text/plain;
+	name="log_pci_bridge.txt"
+Content-Disposition: attachment; filename="log_pci_bridge.txt"
+Content-Transfer-Encoding: base64
+
+ICAgQm9vdGluZyB1c2luZyB0aGUgZmR0IGF0IDB4NDAwMDAwClsgICAgMC4wMDAwMDBdICAtPiBl
+YXJseV9pbml0X2RldnRyZWUoYzA0MDAwMDApClsgICAgMC4wMDAwMDBdIHNlYXJjaCAiY2hvc2Vu
+IiwgZGVwdGg6IDAsIHVuYW1lOiAKWyAgICAwLjAwMDAwMF0gc2VhcmNoICJjaG9zZW4iLCBkZXB0
+aDogMSwgdW5hbWU6IGNob3NlbgpbICAgIDAuMDAwMDAwXSBMb29raW5nIGZvciBpbml0cmQgcHJv
+cGVydGllcy4uLiA8Mz5pbml0cmRfc3RhcnQ9MHgwICBpbml0cmRfZW5kPTB4MApbICAgIDAuMDAw
+MDAwXSBDb21tYW5kIGxpbmUgaXM6IHJvb3Q9L2Rldi9uZnMgcncgbmZzcm9vdD0xOTIuMTY4LjEu
+MTE6L25mcy9yb290ZnMvZmNlX3Rlc3QgaXA9MTkyLjE2OC4xLjExMToxOTIuMTY4LjEuMTE6MTky
+LjE2OC4xLjE6MjU1LjI1NS4yNTUuMDptcGM4MzEzZXJkYjpldGgwOm9mZiBwYW5pYz0xIGxvZ2xl
+dmVsPTcKWyAgICAwLjAwMDAwMF0gZHRfcm9vdF9zaXplX2NlbGxzID0gMQpbICAgIDAuMDAwMDAw
+XSBkdF9yb290X2FkZHJfY2VsbHMgPSAxClsgICAgMC4wMDAwMDBdIG1lbW9yeSBzY2FuIG5vZGUg
+bWVtb3J5LCByZWcgc2l6ZSA4LCBkYXRhOiAwIDEwMDAwMDAwIDIgMSwKWyAgICAwLjAwMDAwMF0g
+IC0gMCAsICAxMDAwMDAwMApbICAgIDAuMDAwMDAwXSBQaHlzLiBtZW06IDEwMDAwMDAwClsgICAg
+MC4wMDAwMDBdIC0+IG1vdmVfZGV2aWNlX3RyZWUKWyAgICAwLjAwMDAwMF0gPC0gbW92ZV9kZXZp
+Y2VfdHJlZQpbICAgIDAuMDAwMDAwXSBTY2FubmluZyBDUFVzIC4uLgpbICAgIDAuMDAwMDAwXSBi
+b290IGNwdTogbG9naWNhbCAwIHBoeXNpY2FsIDAKWyAgICAwLjAwMDAwMF0gIDwtIGVhcmx5X2lu
+aXRfZGV2dHJlZSgpClsgICAgMC4wMDAwMDBdIFVzaW5nIE1QQzgzMTMgUkRCIG1hY2hpbmUgZGVz
+Y3JpcHRpb24KWyAgICAwLjAwMDAwMF0gTGludXggdmVyc2lvbiAyLjYuMjMtZ2QyYzcxOWMwLWRp
+cnR5IChhbmFuZEBhbmFuZC1kZXNrdG9wKSAoZ2NjIHZlcnNpb24gNC4yLjIpICMzMiBXZWQgRmVi
+IDUgMTg6NTA6MDMgSVNUIDIwMTQKWyAgICAwLjAwMDAwMF0gIC0+IHVuZmxhdHRlbl9kZXZpY2Vf
+dHJlZSgpClsgICAgMC4wMDAwMDBdICAgc2l6ZSBpcyBmNDQsIGFsbG9jYXRpbmcuLi4KWyAgICAw
+LjAwMDAwMF0gICB1bmZsYXR0ZW5pbmcgY2ZmZmYwYjguLi4KWyAgICAwLjAwMDAwMF0gZml4ZWQg
+dXAgbmFtZSBmb3IgIC0+IApbICAgIDAuMDAwMDAwXSBmaXhlZCB1cCBuYW1lIGZvciBjaG9zZW4g
+LT4gY2hvc2VuClsgICAgMC4wMDAwMDBdIGZpeGVkIHVwIG5hbWUgZm9yIGNwdXMgLT4gY3B1cwpb
+ICAgIDAuMDAwMDAwXSBmaXhlZCB1cCBuYW1lIGZvciBQb3dlclBDLDgzMTNAMCAtPiBQb3dlclBD
+LDgzMTMKWyAgICAwLjAwMDAwMF0gZml4ZWQgdXAgbmFtZSBmb3IgbWVtb3J5IC0+IG1lbW9yeQpb
+ICAgIDAuMDAwMDAwXSBmaXhlZCB1cCBuYW1lIGZvciBuYW5kQGUyODAwMDAwIC0+IG5hbmQKWyAg
+ICAwLjAwMDAwMF0gZml4ZWQgdXAgbmFtZSBmb3Igc29jODMxM0BlMDAwMDAwMCAtPiBzb2M4MzEz
+ClsgICAgMC4wMDAwMDBdIGZpeGVkIHVwIG5hbWUgZm9yIHdkdEAyMDAgLT4gd2R0ClsgICAgMC4w
+MDAwMDBdIGZpeGVkIHVwIG5hbWUgZm9yIHVzYkAyMzAwMCAtPiB1c2IKWyAgICAwLjAwMDAwMF0g
+Zml4ZWQgdXAgbmFtZSBmb3IgbWRpb0AyNDUyMCAtPiBtZGlvClsgICAgMC4wMDAwMDBdIGZpeGVk
+IHVwIG5hbWUgZm9yIGV0aGVybmV0LXBoeUAxIC0+IGV0aGVybmV0LXBoeQpbICAgIDAuMDAwMDAw
+XSBmaXhlZCB1cCBuYW1lIGZvciBwdGltZXJAMjRlMDAgLT4gcHRpbWVyClsgICAgMC4wMDAwMDBd
+IGZpeGVkIHVwIG5hbWUgZm9yIGV0aGVybmV0QDI0MDAwIC0+IGV0aGVybmV0ClsgICAgMC4wMDAw
+MDBdIGZpeGVkIHVwIG5hbWUgZm9yIHNlcmlhbEA0NTAwIC0+IHNlcmlhbApbICAgIDAuMDAwMDAw
+XSBmaXhlZCB1cCBuYW1lIGZvciBwY2lAODUwMCAtPiBwY2kKWyAgICAwLjAwMDAwMF0gZml4ZWQg
+dXAgbmFtZSBmb3IgcGljQDcwMCAtPiBwaWMKWyAgICAwLjAwMDAwMF0gZml4ZWQgdXAgbmFtZSBm
+b3IgZWxiY0A1MDAwIC0+IGVsYmMKWyAgICAwLjAwMDAwMF0gZml4ZWQgdXAgbmFtZSBmb3IgcG93
+ZXJAYjAwIC0+IHBvd2VyClsgICAgMC4wMDAwMDBdIGZpeGVkIHVwIG5hbWUgZm9yIHRpbWVyQDUw
+MCAtPiB0aW1lcgpbICAgIDAuMDAwMDAwXSAgPC0gdW5mbGF0dGVuX2RldmljZV90cmVlKCkKWyAg
+ICAwLjAwMDAwMF0gY29uc29sZSBbdWRiZzBdIGVuYWJsZWQKc2V0dXBfYXJjaDogYm9vdG1lbQpt
+cGM4MzEzX3JkYl9zZXR1cF9hcmNoKCkKWyAgICAwLjAwMDAwMF0gRm91bmQgTVBDODN4eCBQQ0kg
+aG9zdCBicmlkZ2UgYXQgMHgwMDAwMDAwMGUwMDA4NTAwLiBGaXJtd2FyZSBidXMgbnVtYmVyOiAw
+LT4yClsgICAgMC4wMDAwMDBdIFBDSTogTUVNWzBdIDB4OTAwMDAwMDAgLT4gMHg5ZmZmZmZmZgpb
+ICAgIDAuMDAwMDAwXSBQQ0k6IE1FTVsxXSAweDgwMDAwMDAwIC0+IDB4OGZmZmZmZmYKWyAgICAw
+LjAwMDAwMF0gUENJOiBJTyAweDAgLT4gMHhmZmZmZgphcmNoOiBleGl0ClsgICAgMC4wMDAwMDBd
+IFpvbmUgUEZOIHJhbmdlczoKWyAgICAwLjAwMDAwMF0gICBETUEgICAgICAgICAgICAgMCAtPiAg
+ICA2NTUzNgpbICAgIDAuMDAwMDAwXSAgIE5vcm1hbCAgICAgIDY1NTM2IC0+ICAgIDY1NTM2Clsg
+ICAgMC4wMDAwMDBdIE1vdmFibGUgem9uZSBzdGFydCBQRk4gZm9yIGVhY2ggbm9kZQpbICAgIDAu
+MDAwMDAwXSBlYXJseV9ub2RlX21hcFsxXSBhY3RpdmUgUEZOIHJhbmdlcwpbICAgIDAuMDAwMDAw
+XSAgICAgMDogICAgICAgIDAgLT4gICAgNjU1MzYKWyAgICAwLjAwMDAwMF0gQnVpbHQgMSB6b25l
+bGlzdHMgaW4gWm9uZSBvcmRlci4gIFRvdGFsIHBhZ2VzOiA2NTAyNApbICAgIDAuMDAwMDAwXSBL
+ZXJuZWwgY29tbWFuZCBsaW5lOiByb290PS9kZXYvbmZzIHJ3IG5mc3Jvb3Q9MTkyLjE2OC4xLjEx
+Oi9uZnMvcm9vdGZzL2ZjZV90ZXN0IGlwPTE5Mi4xNjguMS4xMTE6MTkyLjE2OC4xLjExOjE5Mi4x
+NjguMS4xOjI1NS4yNTUuMjU1LjA6bXBjODMxM2VyZGI6ZXRoMDpvZmYgcGFuaWM9MSBsb2dsZXZl
+bD03ClsgICAgMC4wMDAwMDBdIElQSUMgKDEyOCBJUlEgc291cmNlcykgYXQgZmRlZjk3MDAKWyAg
+ICAwLjAwMDAwMF0gUElEIGhhc2ggdGFibGUgZW50cmllczogMTAyNCAob3JkZXI6IDEwLCA0MDk2
+IGJ5dGVzKQpbICAgIDAuMDAxMDkyXSBEZW50cnkgY2FjaGUgaGFzaCB0YWJsZSBlbnRyaWVzOiAz
+Mjc2OCAob3JkZXI6IDUsIDEzMTA3MiBieXRlcykKWyAgICAwLjAwOTkxOV0gSW5vZGUtY2FjaGUg
+aGFzaCB0YWJsZSBlbnRyaWVzOiAxNjM4NCAob3JkZXI6IDQsIDY1NTM2IGJ5dGVzKQpbICAgIDAu
+MDQ5MTM4XSBNZW1vcnk6IDI1NjI1NmsvMjYyMTQ0ayBhdmFpbGFibGUgKDMxMTJrIGtlcm5lbCBj
+b2RlLCA1NjQ0ayByZXNlcnZlZCwgMTQwayBkYXRhLCA5M2sgYnNzLCAxNTJrIGluaXQpClsgICAg
+MC4xNDQzMDNdIE1vdW50LWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogNTEyClsgICAgMC4xNTI0
+MjldIE5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTYKICAgICAgICAgICAgIApbICAg
+IDAuMTU5ODU2XSBvZl9pcnFfbWFwX3JhdzogcGFyPS9zb2M4MzEzQGUwMDAwMDAwL3BpY0A3MDAs
+aW50c3BlYz1bMHgwMDAwMDAyNiAweDAwMDAwMDA4Li4uXSxvaW50c2l6ZT0yClsgICAgMC4xNjkx
+NDVdIG9mX2lycV9tYXBfcmF3OiBpcGFyPS9zb2M4MzEzQGUwMDAwMDAwL3BpY0A3MDAsIHNpemU9
+MgpbICAgIDAuMTc1MjIxXSAgLT4gYWRkcnNpemU9MApbICAgIDAuMTc3ODkzXSAgLT4gZ290IGl0
+ICEsIGludHNwZWM9MjYgClsgICAgMC4xODE1NzNdICMjIyMgYXJjaC9wb3dlcnBjL2tlcm5lbC9w
+cm9tX3BhcnNlLmM6MTA0OSBpcnE9MzgKWyAgICAwLjE4NzUwMV0gb2ZfaXJxX21hcF9yYXc6IHBh
+cj0vc29jODMxM0BlMDAwMDAwMC9waWNANzAwLGludHNwZWM9WzB4MDAwMDAwMjAgMHgwMDAwMDAw
+OC4uLl0sb2ludHNpemU9MgpbICAgIDAuMTk2NzY0XSBvZl9pcnFfbWFwX3JhdzogaXBhcj0vc29j
+ODMxM0BlMDAwMDAwMC9waWNANzAwLCBzaXplPTIKWyAgICAwLjIwMjg1OV0gIC0+IGFkZHJzaXpl
+PTAKWyAgICAwLjIwNTUzN10gIC0+IGdvdCBpdCAhLCBpbnRzcGVjPTIwIApbICAgIDAuMjA5MjEx
+XSAjIyMjIGFyY2gvcG93ZXJwYy9rZXJuZWwvcHJvbV9wYXJzZS5jOjEwNDkgaXJxPTMyClsgICAg
+MC4yMTQ4OTRdIG9mX2lycV9tYXBfcmF3OiBwYXI9L3NvYzgzMTNAZTAwMDAwMDAvcGljQDcwMCxp
+bnRzcGVjPVsweDAwMDAwMDIxIDB4MDAwMDAwMDguLi5dLG9pbnRzaXplPTIKWyAgICAwLjIyNDIy
+MV0gb2ZfaXJxX21hcF9yYXc6IGlwYXI9L3NvYzgzMTNAZTAwMDAwMDAvcGljQDcwMCwgc2l6ZT0y
+ClsgICAgMC4yMzAzMzRdICAtPiBhZGRyc2l6ZT0wClsgICAgMC4yMzMwMTJdICAtPiBnb3QgaXQg
+ISwgaW50c3BlYz0yMSAKWyAgICAwLjIzNjY3OV0gIyMjIyBhcmNoL3Bvd2VycGMva2VybmVsL3By
+b21fcGFyc2UuYzoxMDQ5IGlycT0zMwpbICAgIDAuMjQyMzY4XSBvZl9pcnFfbWFwX3JhdzogcGFy
+PS9zb2M4MzEzQGUwMDAwMDAwL3BpY0A3MDAsaW50c3BlYz1bMHgwMDAwMDAyMiAweDAwMDAwMDA4
+Li4uXSxvaW50c2l6ZT0yClsgICAgMC4yNTE2ODldIG9mX2lycV9tYXBfcmF3OiBpcGFyPS9zb2M4
+MzEzQGUwMDAwMDAwL3BpY0A3MDAsIHNpemU9MgpbICAgIDAuMjU3ODE3XSAgLT4gYWRkcnNpemU9
+MApbICAgIDAuMjYwNDg3XSAgLT4gZ290IGl0ICEsIGludHNwZWM9MjIgClsgICAgMC4yNjQxNTNd
+ICMjIyMgYXJjaC9wb3dlcnBjL2tlcm5lbC9wcm9tX3BhcnNlLmM6MTA0OSBpcnE9MzQKWyAgICAw
+LjI3MDA4OF0gb2ZfaXJxX21hcF9yYXc6IHBhcj0vc29jODMxM0BlMDAwMDAwMC9waWNANzAwLGlu
+dHNwZWM9WzB4MDAwMDAwMTQgMHgwMDAwMDAwOC4uLl0sb2ludHNpemU9MgpbICAgIDAuMjc5MzQy
+XSBvZl9pcnFfbWFwX3JhdzogaXBhcj0vc29jODMxM0BlMDAwMDAwMC9waWNANzAwLCBzaXplPTIK
+WyAgICAwLjI4NTQ1Ml0gIC0+IGFkZHJzaXplPTAKWyAgICAwLjI4ODEyM10gIC0+IGdvdCBpdCAh
+LCBpbnRzcGVjPTE0IApbICAgIDAuMjkxODY4XSBvZl9pcnFfbWFwX3JhdzogcGFyPS9zb2M4MzEz
+QGUwMDAwMDAwL3BpY0A3MDAsaW50c3BlYz1bMHgwMDAwMDA0ZCAweDAwMDAwMDA4Li4uXSxvaW50
+c2l6ZT0yClsgICAgMC4zMDExMjVdIG9mX2lycV9tYXBfcmF3OiBpcGFyPS9zb2M4MzEzQGUwMDAw
+MDAwL3BpY0A3MDAsIHNpemU9MgpbICAgIDAuMzA3MjIwXSAgLT4gYWRkcnNpemU9MApbICAgIDAu
+MzA5ODk5XSAgLT4gZ290IGl0ICEsIGludHNwZWM9NGQgClsgICAgMC4zMTM4MjNdIFBDSTogUHJv
+YmluZyBQQ0kgaGFyZHdhcmUKWyAgICAwLjMxNzkyNF0gcGNpX2J1c2Rldl90b19PRl9ub2RlKDAs
+MHhjMCkKWyAgICAwLjMyMTgwMV0gc2Nhbl9PRl9mb3JfcGNpX2J1cwpbICAgIDAuMzI0OTM0XSAg
+cGFyZW50IGlzIC9zb2M4MzEzQGUwMDAwMDAwL3BjaUA4NTAwClsgICAgMC4zMjk1NjFdIHNjYW5f
+T0ZfZm9yX3BjaV9kZXYsIGRldmZuID0gYzAKWyAgICAwLjMzMzcwMF0gbm90IGZvdW5kClsgICAg
+MC4zMzU5MjNdICByZXN1bHQgaXMgPE5VTEw+ClsgICAgMC4zMzk1NjVdIHBjaV9idXNkZXZfdG9f
+T0Zfbm9kZSgxLDB4NDgpClsgICAgMC4zNDM0NDFdIHNjYW5fT0ZfZm9yX3BjaV9idXMKWyAgICAw
+LjM0NjU0M10gc2Nhbl9PRl9mb3JfcGNpX2J1cwpbICAgIDAuMzQ5NjQ2XSBzY2FuX09GX2Zvcl9w
+Y2lfZGV2LCBkZXZmbiA9IGMwClsgICAgMC4zNTM3ODZdIG5vdCBmb3VuZApbICAgIDAuMzU2MDMy
+XSAgbm8gcGFyZW50IGZvdW5kClsgICAgMC4zNTg4NjddIHBjaV9idXNkZXZfdG9fT0Zfbm9kZSgx
+LDB4NTgpClsgICAgMC4zNjI4NjBdIHNjYW5fT0ZfZm9yX3BjaV9idXMKWyAgICAwLjM2NTk2N10g
+c2Nhbl9PRl9mb3JfcGNpX2J1cwpbICAgIDAuMzY5MDgwXSBzY2FuX09GX2Zvcl9wY2lfZGV2LCBk
+ZXZmbiA9IGMwClsgICAgMC4zNzMyMjVdIG5vdCBmb3VuZApbICAgIDAuMzc1NDQ3XSAgbm8gcGFy
+ZW50IGZvdW5kClsgICAgMC4zNzgzMjldIHBjaV9idXNkZXZfdG9fT0Zfbm9kZSgwLDB4YzApClsg
+ICAgMC4zODIyOTldIHNjYW5fT0ZfZm9yX3BjaV9idXMKWyAgICAwLjM4NTQwOV0gIHBhcmVudCBp
+cyAvc29jODMxM0BlMDAwMDAwMC9wY2lAODUwMApbICAgIDAuMzkwMDc1XSBzY2FuX09GX2Zvcl9w
+Y2lfZGV2LCBkZXZmbiA9IGMwClsgICAgMC4zOTQyMjBdIG5vdCBmb3VuZApbICAgIDAuMzk2NDY5
+XSAgcmVzdWx0IGlzIDxOVUxMPgpbICAgIDAuMzk5Mzg4XSBvZl9pcnFfbWFwX3JhdzogcGFyPS9z
+b2M4MzEzQGUwMDAwMDAwL3BjaUA4NTAwLGludHNwZWM9WzB4MDAwMDAwMDQgMHgwMDAwYzAwMC4u
+Ll0sb2ludHNpemU9MQpbICAgIDAuNDA4ODQ2XSBvZl9pcnFfbWFwX3JhdzogaXBhcj0vc29jODMx
+M0BlMDAwMDAwMC9wY2lAODUwMCwgc2l6ZT0xClsgICAgMC40MTUwNDhdICAtPiBhZGRyc2l6ZT0z
+ClsgICAgMC40MTc3MzVdICAtPiBtYXRjaD0wIChpbWFwbGVuPTI0KQpbICAgIDAuNDIxMjc3XSAg
+LT4gbmV3aW50c2l6ZT0yLCBuZXdhZGRyc2l6ZT0wClsgICAgMC40MjU0MTJdICAtPiBpbWFwbGVu
+PTIxClsgICAgMC40MjgwOTJdICAtPiBtYXRjaD0wIChpbWFwbGVuPTE3KQpbICAgIDAuNDMxNjEy
+XSAgLT4gbmV3aW50c2l6ZT0yLCBuZXdhZGRyc2l6ZT0wClsgICAgMC40MzU3ODBdICAtPiBpbWFw
+bGVuPTE0ClsgICAgMC40Mzg0NjBdICAtPiBtYXRjaD0wIChpbWFwbGVuPTEwKQpbICAgIDAuNDQy
+MDA2XSAgLT4gbmV3aW50c2l6ZT0yLCBuZXdhZGRyc2l6ZT0wClsgICAgMC40NDYxNDhdICAtPiBp
+bWFwbGVuPTcKWyAgICAwLjQ0ODc0Ml0gIC0+IG1hdGNoPTEgKGltYXBsZW49MykKWyAgICAwLjQ1
+MjIwMV0gIC0+IG5ld2ludHNpemU9MiwgbmV3YWRkcnNpemU9MApbICAgIDAuNDU2MzQyXSAgLT4g
+aW1hcGxlbj0wClsgICAgMC40NTg5MTJdICAtPiBuZXcgcGFyZW50OiAvc29jODMxM0BlMDAwMDAw
+MC9waWNANzAwClsgICAgMC40NjM5NDldICAtPiBnb3QgaXQgISwgaW50c3BlYz0xNCAKWyAgICAw
+LjQ2ODI5NF0gcGNpX2J1c2Rldl90b19PRl9ub2RlKDIsMHg2MCkKWyAgICAwLjQ3MjE4Ml0gc2Nh
+bl9PRl9mb3JfcGNpX2J1cwpbICAgIDAuNDc1MjMxXSBzY2FuX09GX2Zvcl9wY2lfYnVzClsgICAg
+MC40NzgzNzBdIHNjYW5fT0ZfZm9yX3BjaV9idXMKWyAgICAwLjQ4MTQ3OV0gc2Nhbl9PRl9mb3Jf
+cGNpX2RldiwgZGV2Zm4gPSBjMApbICAgIDAuNDg1NjI1XSBub3QgZm91bmQKWyAgICAwLjQ4Nzg0
+N10gIG5vIHBhcmVudCBmb3VuZApbICAgIDAuNDkwNzMwXSBwY2lfYnVzZGV2X3RvX09GX25vZGUo
+MSwweDQ4KQpbICAgIDAuNDk0Njk4XSBzY2FuX09GX2Zvcl9wY2lfYnVzClsgICAgMC40OTc4MDZd
+IHNjYW5fT0ZfZm9yX3BjaV9idXMKWyAgICAwLjUwMDkxOV0gc2Nhbl9PRl9mb3JfcGNpX2Rldiwg
+ZGV2Zm4gPSBjMApbICAgIDAuNTA1MDY0XSBub3QgZm91bmQKWyAgICAwLjUwNzI4Nl0gIG5vIHBh
+cmVudCBmb3VuZApbICAgIDAuNTEwMTY1XSBwY2lfYnVzZGV2X3RvX09GX25vZGUoMCwweGMwKQpb
+ICAgIDAuNTE0MTM2XSBzY2FuX09GX2Zvcl9wY2lfYnVzClsgICAgMC41MTcyNDhdICBwYXJlbnQg
+aXMgL3NvYzgzMTNAZTAwMDAwMDAvcGNpQDg1MDAKWyAgICAwLjUyMTkxNF0gc2Nhbl9PRl9mb3Jf
+cGNpX2RldiwgZGV2Zm4gPSBjMApbICAgIDAuNTI2MDU5XSBub3QgZm91bmQKWyAgICAwLjUyODMw
+N10gIHJlc3VsdCBpcyA8TlVMTD4KWyAgICAwLjUzMTIyNl0gb2ZfaXJxX21hcF9yYXc6IHBhcj0v
+c29jODMxM0BlMDAwMDAwMC9wY2lAODUwMCxpbnRzcGVjPVsweDAwMDAwMDAyIDB4MDAwMGMwMDAu
+Li5dLG9pbnRzaXplPTEKWyAgICAwLjU0MDY4NV0gb2ZfaXJxX21hcF9yYXc6IGlwYXI9L3NvYzgz
+MTNAZTAwMDAwMDAvcGNpQDg1MDAsIHNpemU9MQpbICAgIDAuNTQ2ODg3XSAgLT4gYWRkcnNpemU9
+MwpbICAgIDAuNTQ5NTc0XSAgLT4gbWF0Y2g9MCAoaW1hcGxlbj0yNCkKWyAgICAwLjU1MzExNV0g
+IC0+IG5ld2ludHNpemU9MiwgbmV3YWRkcnNpemU9MApbICAgIDAuNTU3MjUxXSAgLT4gaW1hcGxl
+bj0yMQpbICAgIDAuNTU5OTA2XSAgLT4gbWF0Y2g9MSAoaW1hcGxlbj0xNykKWyAgICAwLjU2MzQ3
+Nl0gIC0+IG5ld2ludHNpemU9MiwgbmV3YWRkcnNpemU9MApbICAgIDAuNTY3NjE5XSAgLT4gaW1h
+cGxlbj0xNApbICAgIDAuNTcwMjk3XSAgLT4gbmV3IHBhcmVudDogL3NvYzgzMTNAZTAwMDAwMDAv
+cGljQDcwMApbICAgIDAuNTc1MzEyXSAgLT4gZ290IGl0ICEsIGludHNwZWM9MTIgClsgICAgMC41
+ODEwNTRdIFBDSS0+T0YgYnVzIG1hcDoKWyAgICAwLjU4Mzc2M10gMCAtPiAwClsgICAgMC41ODU4
+MTldIFBDSTogYnJpZGdlIHJzcmMgMC4uZmZmZmYgKDEwMCksIHBhcmVudCBjMDMwZjQ0YwpbICAg
+IDAuNTkxNDAzXSBQQ0k6IGJyaWRnZSByc3JjIDkwMDAwMDAwLi45ZmZmZmZmZiAoMjAwKSwgcGFy
+ZW50IGMwMzBmNDMwClsgICAgMC41OTc4ODRdIFBDSTogYnJpZGdlIHJzcmMgODAwMDAwMDAuLjhm
+ZmZmZmZmICgxMjAwKSwgcGFyZW50IGMwMzBmNDMwClsgICAgMC42MDQ0OTBdIFBDSTowMDAwOjAx
+OjBiLjA6IFJlc291cmNlIDA6IDAwMDAwMDAwMDAwMDAwMDAtMDAwMDAwMDAwMDAwMWZmZiAoZj0y
+MDApClsgICAgMC42MTIwNTldIFBDSTogQ2Fubm90IGFsbG9jYXRlIHJlc291cmNlIHJlZ2lvbiAw
+IG9mIGRldmljZSAwMDAwOjAxOjBiLjAKWyAgICAwLjYxODc5NV0gUENJOjAwMDA6MDI6MGMuMDog
+UmVzb3VyY2UgMDogMDAwMDAwMDAwMDAwMDAwMC0wMDAwMDAwMDAwMDAxZmZmIChmPTIwMCkKWyAg
+ICAwLjYyNjQwMF0gUENJOiBDYW5ub3QgYWxsb2NhdGUgcmVzb3VyY2UgcmVnaW9uIDAgb2YgZGV2
+aWNlIDAwMDA6MDI6MGMuMApbICAgIDAuNjU2NDMwXSBQQ0k6IEZhaWxlZCB0byBhbGxvY2F0ZSBt
+ZW0gcmVzb3VyY2UgIzA6MjAwMEAwIGZvciAwMDAwOjAxOjBiLjAKWyAgICAwLjY2MzM2OF0gLS0t
+LS0tLS0tLS0tWyBjdXQgaGVyZSBdLS0tLS0tLS0tLS0tClsgICAgMC42Njc5MThdIGtlcm5lbCBC
+VUcgYXQgYXJjaC9wb3dlcnBjL2tlcm5lbC9wY2lfMzIuYzo1ODkhClsgICAgMC42NzM0NTFdIE9v
+cHM6IEV4Y2VwdGlvbiBpbiBrZXJuZWwgbW9kZSwgc2lnOiA1IFsjMV0KWyAgICAwLjY3ODYyN10g
+TVBDODMxMyBSREIKWyAgICAwLjY4MTA0Nl0gTW9kdWxlcyBsaW5rZWQgaW46ClsgICAgMC42ODQw
+NzVdIE5JUDogYzAyZWViNDggTFI6IGMwMmVlYjQ4IENUUjogYzAwMGZmZTQKWyAgICAwLjY4OTAw
+Ml0gUkVHUzogY2ZmYzFlODAgVFJBUDogMDcwMCAgIE5vdCB0YWludGVkICAoMi42LjIzLWdkMmM3
+MTljMC1kaXJ0eSkKWyAgICAwLjY5NjA4MF0gTVNSOiAwMDAyOTAzMiA8RUUsTUUsSVIsRFI+ICBD
+UjogMjIwNDQwMjIgIFhFUjogMDAwMDAwMDAKWyAgICAwLjcwMjM5Ml0gVEFTSyA9IGNmZmUwYmEw
+WzFdICdzd2FwcGVyJyBUSFJFQUQ6IGNmZmMwMDAwClsgICAgMC43MDc1NzJdIEdQUjAwOiBjMDJl
+ZWI0OCBjZmZjMWYzMCBjZmZlMGJhMCBmZmZmZmZmNCAwMDAwMjkzMSBmZmZmZmZmZiAwMDAwNDAw
+MCAwMDAwMjkzMSAKWyAgICAwLjcxNTg2Nl0gR1BSMDg6IDAwMDAwMDMzIGMwMzMwMDAwIDAwMDAy
+OTMxIGZkZmZlNTA1IDQyMDQ0MDIyIDNiMDYzNjQ0IGMwMjk4YjkwIGMwMjk4YjgwIApbICAgIDAu
+NzI0MTYxXSBHUFIxNjogYzAyOThiZGMgY2ZmYzFmOTggYzAyOThiYzQgYzAzMDZlMjggYzAyOThi
+ZjAgYzAyOThjMDQgYzAzMDAwMDAgMDAwMDAwMDAgClsgICAgMC43MzI0NTVdIEdQUjI0OiBjMDMz
+MDAwMCBjMDMzMDAwMCBjMDMzMDAwMCBjMDMyYzI0YyBjMDMzNGM0YyBjZmZlYTAwMCAwMDAwMDAw
+MCBjZmZlYTAwMCAKWyAgICAwLjc0MDkyMl0gQ2FsbCBUcmFjZToKWyAgICAwLjc0MzM0NF0gW2Nm
+ZmMxZjMwXSBbYzAyZWViNDhdICAodW5yZWxpYWJsZSkKWyAgICAwLjc0NzgzNl0gW2NmZmMxZjYw
+XSBbYzAyZTQxZjRdIApbICAgIDAuNzUxMjA1XSBbY2ZmYzFmZjBdIFtjMDAwZmVjNF0gClsgICAg
+MC43NTQ1NzNdIEluc3RydWN0aW9uIGR1bXA6ClsgICAgMC43NTc1MTJdIDJmODAwMDAwIDQxOWUw
+MDE4IDdjMDkwM2E2IDRlODAwNDIxIDJmODMwMDAwIDQwOWUwMDIwIDgxM2YwMWE0IDU1MjAwMGMy
+IApbICAgIDAuNzY1MjAwXSA3ZmEzZWI3OCA5MDFmMDFhNCA3ZmM0ZjM3OCA0YmU2MmQ2ZCA8MGYw
+MzAwMDA+IDJmOWUwMDA1IDNiZmYwMDFjIDNiZGUwMDAxIApbICAgIDAuNzczMDY5XSBLZXJuZWwg
+cGFuaWMgLSBub3Qgc3luY2luZzogQXR0ZW1wdGVkIHRvIGtpbGwgaW5pdCEKWyAgICAwLjc3ODk0
+MF0gUmVib290aW5nIGluIDEgc2Vjb25kcy4uCgo=
+
+------=OPENWEBMAIL_ATT_0.0186498275465681--
