@@ -1,23 +1,23 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id E6C4B2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Feb 2014 07:13:55 +1100 (EST)
-Date: Sat, 15 Feb 2014 12:15:15 -0800
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 03/11] sysfs: create bin_attributes under the
- requested group
-Message-ID: <20140215201515.GA28316@kroah.com>
-References: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
- <1392415338-16288-4-git-send-email-cody@linux.vnet.ibm.com>
+Return-Path: <paul.gortmaker@gmail.com>
+Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
+ [IPv6:2a00:1450:400c:c05::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 55F5C2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 02:57:01 +1100 (EST)
+Received: by mail-wi0-f175.google.com with SMTP id hm4so1694880wib.14
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Feb 2014 07:56:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1392415338-16288-4-git-send-email-cody@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- LKML <linux-kernel@vger.kernel.org>, Michael Ellerman <michael@ellerman.id.au>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>
+Sender: paul.gortmaker@gmail.com
+In-Reply-To: <CAGtOQbTRSk32p7U=v9V9GPb_ro+WYbKLLCCfrmdypePcHA++mw@mail.gmail.com>
+References: <CAGtOQbTRSk32p7U=v9V9GPb_ro+WYbKLLCCfrmdypePcHA++mw@mail.gmail.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Sun, 16 Feb 2014 10:56:24 -0500
+Message-ID: <CAP=VYLpgMYaSVjTwJ2Q15XB+nozz=OhAPU85Nb9xG_FdP5dcyA@mail.gmail.com>
+Subject: Re: Anyone using SysRQ key sequences on console serial port ?
+To: John Donnelly <john.d@servergy.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 14, 2014 at 02:02:07PM -0800, Cody P Schafer wrote:
-> bin_attributes created/updated in create_files() (such as those listed
-> via (struct device).attribute_groups) were not placed under the
-> specified group, and instead appeared in the base kobj directory.
-> 
-> Fix this by making bin_attributes use creating code similar to normal
-> attributes.
-> 
-> A quick grep shows that no one is using bin_attrs in a named attribute
-> group yet, so we can do this without breaking anything in usespace.
-> 
-> Note that I do not add is_visible() support to
-> bin_attributes, though that could be done as well.
+On Fri, Feb 14, 2014 at 3:42 PM, John Donnelly <john.d@servergy.com> wrote:
+> Hi,
+>
+>  I tried using the SysRq hotkey sequence on a serial console -
+> 3.11.0-5-powerpc-e500mc system, by issuing a " break " and the system
+> immediately wedges after displaying "SysRQ : HELP : " using both "Putty" and
+> "Teraterm"  terminal emulators. I know the system is dead because my ssh
+> sessions stopped too.
 
-is_visible() support would be nice to add if you get a chance.
+Yes it does work -- or at least it _did_ work.  Make sure your dts has an entry
 
-thanks,
+                        compatible = "fsl,ns16550", "ns16550";
 
-greg k-h
+since that enables a workaround I'd added for a hardware errata relating
+to sending breaks over the serial console.   What you describe above
+makes me think you aren't getting the workaround enabled.
+
+Paul.
+--
+
+>
+> http://en.wikipedia.org/wiki/Magic_SysRq_key .
+>
+>
+>
+>
+> --
+>
+> Regards,
+>  John.
+>
+> --
+>
+> o Energy-efficiency is #1 reason data centers look to expand.  -- Digital
+> Realty Trust
+> o Green Data Centers spending to increase 300% worldwide by 2016.  -- Pike
+> Research
+> o Data Centers have become as vital to the functioni
+> ng of society as power stations.  -- The Economist
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
