@@ -1,23 +1,37 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
- [IPv6:2a00:1450:400c:c05::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 55F5C2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 02:57:01 +1100 (EST)
-Received: by mail-wi0-f175.google.com with SMTP id hm4so1694880wib.14
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Feb 2014 07:56:55 -0800 (PST)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <CAGtOQbTRSk32p7U=v9V9GPb_ro+WYbKLLCCfrmdypePcHA++mw@mail.gmail.com>
-References: <CAGtOQbTRSk32p7U=v9V9GPb_ro+WYbKLLCCfrmdypePcHA++mw@mail.gmail.com>
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Sun, 16 Feb 2014 10:56:24 -0500
-Message-ID: <CAP=VYLpgMYaSVjTwJ2Q15XB+nozz=OhAPU85Nb9xG_FdP5dcyA@mail.gmail.com>
-Subject: Re: Anyone using SysRQ key sequences on console serial port ?
-To: John Donnelly <john.d@servergy.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id E0F992C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:22:51 +1100 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Mon, 17 Feb 2014 10:22:45 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2B5552BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:22:42 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1H02wG512124620
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:02:59 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1H0Mfhj027226
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:22:41 +1100
+Message-ID: <1392596560.24061.12.camel@pasglop>
+Subject: Re: [PATCH v3 3/3] powerpc/pseries: Report in kernel device tree
+ update to drmgr
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Mon, 17 Feb 2014 11:22:40 +1100
+In-Reply-To: <1391212692-16217-4-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1391212692-16217-4-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,48 +41,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 14, 2014 at 3:42 PM, John Donnelly <john.d@servergy.com> wrote:
-> Hi,
->
->  I tried using the SysRq hotkey sequence on a serial console -
-> 3.11.0-5-powerpc-e500mc system, by issuing a " break " and the system
-> immediately wedges after displaying "SysRQ : HELP : " using both "Putty" and
-> "Teraterm"  terminal emulators. I know the system is dead because my ssh
-> sessions stopped too.
+On Fri, 2014-01-31 at 15:58 -0800, Tyrel Datwyler wrote:
+> Traditionally it has been drmgr's responsibilty to update the device tree
+> through the /proc/ppc64/ofdt interface after a suspend/resume operation.
+> This patchset however has modified suspend/resume ops to preform that update
+> entirely in the kernel during the resume. Therefore, a mechanism is required
+> for drmgr to determine who is responsible for the update. This patch adds a
+> show function to the "hibernate" attribute that returns 1 if the kernel
+> updates the device tree after the resume and 0 if drmgr is responsible.
 
-Yes it does work -- or at least it _did_ work.  Make sure your dts has an entry
+This is not right.
 
-                        compatible = "fsl,ns16550", "ns16550";
+We cannot change the kernel behaviour in a way that is incompatible with
+existing userspace, and unless you can explain me why that is not the
+case, it feels like this patch set does just that ....
 
-since that enables a workaround I'd added for a hardware errata relating
-to sending breaks over the serial console.   What you describe above
-makes me think you aren't getting the workaround enabled.
+What happens if you have an older drmgr which still does the update
+itself ?
 
-Paul.
---
+You can't just change user visible behaviours and interface without at
+least explaining why it's ok to do so at the very least (and ensuring
+that of course) without breaking existing userspace.
 
->
-> http://en.wikipedia.org/wiki/Magic_SysRq_key .
->
->
->
->
-> --
->
-> Regards,
->  John.
->
-> --
->
-> o Energy-efficiency is #1 reason data centers look to expand.  -- Digital
-> Realty Trust
-> o Green Data Centers spending to increase 300% worldwide by 2016.  -- Pike
-> Research
-> o Data Centers have become as vital to the functioni
-> ng of society as power stations.  -- The Economist
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Now it's possible that the double update caused by this series is
+harmless, in which case please explain it in the changeset, I certainly
+can't assume it and if it's not, you'll need some other way for drmgr to
+signal the kernel to indicate it supports the new behaviour before you
+enable it.
+
+Ben.
+
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/pseries/suspend.c | 25 ++++++++++++++++++++++++-
+>  1 file changed, 24 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
+> index 1d9c580..b87b978 100644
+> --- a/arch/powerpc/platforms/pseries/suspend.c
+> +++ b/arch/powerpc/platforms/pseries/suspend.c
+> @@ -192,7 +192,30 @@ out:
+>  	return rc;
+>  }
+>  
+> -static DEVICE_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
+> +#define USER_DT_UPDATE	0
+> +#define KERN_DT_UPDATE	1
+> +
+> +/**
+> + * show_hibernate - Report device tree update responsibilty
+> + * @dev:		subsys root device
+> + * @attr:		device attribute struct
+> + * @buf:		buffer
+> + *
+> + * Report whether a device tree update is performed by the kernel after a
+> + * resume, or if drmgr must coordinate the update from user space.
+> + *
+> + * Return value:
+> + *	0 if drmgr is to initiate update, and 1 otherwise
+> + **/
+> +static ssize_t show_hibernate(struct device *dev,
+> +			      struct device_attribute *attr,
+> +			      char *buf)
+> +{
+> +	return sprintf(buf, "%d\n", KERN_DT_UPDATE);
+> +}
+> +
+> +static DEVICE_ATTR(hibernate, S_IWUSR | S_IRUGO,
+> +		   show_hibernate, store_hibernate);
+>  
+>  static struct bus_type suspend_subsys = {
+>  	.name = "power",
