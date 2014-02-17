@@ -1,32 +1,27 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEMRELSE1Q.lge.com (LGEMRELSE1Q.lge.com [156.147.1.111])
- by ozlabs.org (Postfix) with ESMTP id 1F8BA2C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 18:00:50 +1100 (EST)
-Date: Mon, 17 Feb 2014 16:00:51 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
- determining the fallback node
-Message-ID: <20140217070051.GE3468@lge.com>
-References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com>
- <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com>
- <20140211074159.GB27870@lge.com>
- <20140213065137.GA10860@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140213065137.GA10860@linux.vnet.ibm.com>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1392621108.8740.5.camel@concordia>
+Subject: Re: [PATCH v2 10/11] powerpc/perf: add kconfig option for
+ hypervisor provided counters
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Cody P Schafer <cody@linux.vnet.ibm.com>
+Date: Mon, 17 Feb 2014 18:11:48 +1100
+In-Reply-To: <20140215002505.GA2991@negative>
+References: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
+ <1392415338-16288-11-git-send-email-cody@linux.vnet.ibm.com>
+ <1392417133.6733.624.camel@snotra.buserror.net>
+ <20140215002505.GA2991@negative>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Bolle <pebolle@tiscali.nl>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Tang Yuantian <yuantian.tang@freescale.com>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Scott Wood <scottwood@freescale.com>, Lijun Pan <Lijun.Pan@freescale.com>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>, Anton Blanchard <anton@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,14 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 12, 2014 at 10:51:37PM -0800, Nishanth Aravamudan wrote:
-> Hi Joonsoo,
-> Also, given that only ia64 and (hopefuly soon) ppc64 can set
-> CONFIG_HAVE_MEMORYLESS_NODES, does that mean x86_64 can't have
-> memoryless nodes present? Even with fakenuma? Just curious.
+On Fri, 2014-02-14 at 16:25 -0800, Cody P Schafer wrote:
+> On Fri, Feb 14, 2014 at 04:32:13PM -0600, Scott Wood wrote:
+> > On Fri, 2014-02-14 at 14:02 -0800, Cody P Schafer wrote:
+> > > diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> > > index 434fda3..dcc67cd 100644
+> > > --- a/arch/powerpc/platforms/Kconfig.cputype
+> > > +++ b/arch/powerpc/platforms/Kconfig.cputype
+> > > @@ -364,6 +364,12 @@ config PPC_PERF_CTRS
+> > >         help
+> > >           This enables the powerpc-specific perf_event back-end.
+> > >  
+> > > +config HV_PERF_CTRS
+> > > +       def_bool y
+> > > +       depends on PERF_EVENTS && PPC_HAVE_PMU_SUPPORT
+> > > +       help
+> > > +         Enable access to perf counters provided by the hypervisor
+> > 
+> > Please don't add default-y stuff that is platform-specific, and
+> > definitely point out that platform dependency in the config description
+> > -- I have to look elsewhere in the patchset to determine that this is
+> > for "Power Hypervisor".  PPC_HAVE_PMU_SUPPORT is enabled by all 6xx
+> > builds, even for hardware like e300 that doesn't have PMU at all (it has
+> > the FSL embedded perfmon instead), much less this hv interface.
+> > 
+> > And yes, PPC_PERF_CTRS has the same problem and should be fixed. :-)
+> 
+> Yep, I just based this one on what PPC_PERF_CTRS was doing.
+> 
+> How about the following:
+> 
+> +config HV_PERF_CTRS
+> +       bool "Perf Hypervisor supplied counters"
 
-I don't know, because I'm not expert on NUMA system :)
-At first glance, fakenuma can't be used for testing
-CONFIG_HAVE_MEMORYLESS_NODES. Maybe some modification is needed.
+"Support for Hypervisor supplied PMU events (24x7 & GPCI)" ?
 
-Thanks.
+> +       default y
+> +       depends on PERF_EVENTS && PPC_HAVE_PMU_SUPPORT && PPC_PSERIES
+
+I think you just want:
+
+	depends on PERF_EVENTS && PPC_PSERIES
+
+
+Because you're adding two completely new PMUs, they're not a "struct power_pmu"
+backend for the existing powerpc PMU implementation.
+
+cheers
