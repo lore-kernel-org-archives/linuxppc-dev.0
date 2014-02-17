@@ -1,27 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1392621108.8740.5.camel@concordia>
-Subject: Re: [PATCH v2 10/11] powerpc/perf: add kconfig option for
- hypervisor provided counters
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>
-Date: Mon, 17 Feb 2014 18:11:48 +1100
-In-Reply-To: <20140215002505.GA2991@negative>
-References: <1392415338-16288-1-git-send-email-cody@linux.vnet.ibm.com>
- <1392415338-16288-11-git-send-email-cody@linux.vnet.ibm.com>
- <1392417133.6733.624.camel@snotra.buserror.net>
- <20140215002505.GA2991@negative>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Bolle <pebolle@tiscali.nl>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Priyanka Jain <Priyanka.Jain@freescale.com>,
- LKML <linux-kernel@vger.kernel.org>,
- Tang Yuantian <yuantian.tang@freescale.com>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Scott Wood <scottwood@freescale.com>, Lijun Pan <Lijun.Pan@freescale.com>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>, Anton Blanchard <anton@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wi0-f176.google.com (mail-wi0-f176.google.com
+ [209.85.212.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3644F2C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2014 04:58:45 +1100 (EST)
+Received: by mail-wi0-f176.google.com with SMTP id hi5so2676152wib.15
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 09:58:40 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH 2/2] of: search the best compatible match first in
+ __of_match_node()
+To: Kevin Hao <haokexin@gmail.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1392355366-1445-3-git-send-email-haokexin@gmail.com>
+References: <1392355366-1445-1-git-send-email-haokexin@gmail.com> <
+ 1392355366-1445-3-git-send-email-haokexin@gmail.com>
+Date: Mon, 17 Feb 2014 17:58:34 +0000
+Message-Id: <20140217175834.62ED6C403C8@trevor.secretlab.ca>
+Cc: Stephen N Chivers <schivers@csc.com.au>, Rob Herring <robh+dt@kernel.org>,
+ Kevin Hao <haokexin@gmail.com>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +30,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-02-14 at 16:25 -0800, Cody P Schafer wrote:
-> On Fri, Feb 14, 2014 at 04:32:13PM -0600, Scott Wood wrote:
-> > On Fri, 2014-02-14 at 14:02 -0800, Cody P Schafer wrote:
-> > > diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-> > > index 434fda3..dcc67cd 100644
-> > > --- a/arch/powerpc/platforms/Kconfig.cputype
-> > > +++ b/arch/powerpc/platforms/Kconfig.cputype
-> > > @@ -364,6 +364,12 @@ config PPC_PERF_CTRS
-> > >         help
-> > >           This enables the powerpc-specific perf_event back-end.
-> > >  
-> > > +config HV_PERF_CTRS
-> > > +       def_bool y
-> > > +       depends on PERF_EVENTS && PPC_HAVE_PMU_SUPPORT
-> > > +       help
-> > > +         Enable access to perf counters provided by the hypervisor
-> > 
-> > Please don't add default-y stuff that is platform-specific, and
-> > definitely point out that platform dependency in the config description
-> > -- I have to look elsewhere in the patchset to determine that this is
-> > for "Power Hypervisor".  PPC_HAVE_PMU_SUPPORT is enabled by all 6xx
-> > builds, even for hardware like e300 that doesn't have PMU at all (it has
-> > the FSL embedded perfmon instead), much less this hv interface.
-> > 
-> > And yes, PPC_PERF_CTRS has the same problem and should be fixed. :-)
+On Fri, 14 Feb 2014 13:22:46 +0800, Kevin Hao <haokexin@gmail.com> wrote:
+> Currently, of_match_node compares each given match against all node's
+> compatible strings with of_device_is_compatible.
 > 
-> Yep, I just based this one on what PPC_PERF_CTRS was doing.
+> To achieve multiple compatible strings per node with ordering from
+> specific to generic, this requires given matches to be ordered from
+> specific to generic. For most of the drivers this is not true and also
+> an alphabetical ordering is more sane there.
 > 
-> How about the following:
+> Therefore, this patch introduces a function to match each of the node's
+> compatible strings against all given compatible matches without type and
+> name first, before checking the next compatible string. This implies
+> that node's compatibles are ordered from specific to generic while
+> given matches can be in any order. If we fail to find such a match
+> entry, then fall-back to the old method in order to keep compatibility.
 > 
-> +config HV_PERF_CTRS
-> +       bool "Perf Hypervisor supplied counters"
+> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> ---
+>  drivers/of/base.c | 43 ++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 42 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index ba195fbce4c6..10b51106c854 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -730,13 +730,49 @@ out:
+>  }
+>  EXPORT_SYMBOL(of_find_node_with_property);
+>  
+> +static const struct of_device_id *
+> +of_match_compatible(const struct of_device_id *matches,
+> +			const struct device_node *node)
+> +{
+> +	const char *cp;
+> +	int cplen, l;
+> +	const struct of_device_id *m;
+> +
+> +	cp = __of_get_property(node, "compatible", &cplen);
+> +	while (cp && (cplen > 0)) {
+> +		m = matches;
+> +		while (m->name[0] || m->type[0] || m->compatible[0]) {
+> +			/* Only match for the entries without type and name */
+> +			if (m->name[0] || m->type[0] ||
+> +				of_compat_cmp(m->compatible, cp,
+> +					 strlen(m->compatible)))
+> +				m++;
 
-"Support for Hypervisor supplied PMU events (24x7 & GPCI)" ?
+This seems wrong also. The compatible order should be checked for even
+when m->name or m->type are set.  You actually need to score the entries
+to do this properly. The pseudo-code should look like this:
 
-> +       default y
-> +       depends on PERF_EVENTS && PPC_HAVE_PMU_SUPPORT && PPC_PSERIES
+uint best_score = ~0;
+of_device_id *best_match = NULL;
+for_each(matches) {
+	uint score = ~0;
+	for_each_compatible(index) {
+		if (match->compatible == compatible[index])
+			score = index * 10;
+	}
 
-I think you just want:
+	/* Matching name is a bit better than not */
+	if (match->name == node->name)
+		score--;
 
-	depends on PERF_EVENTS && PPC_PSERIES
+	/* Matching type is better than matching name */
+	/* (but matching both is even better than that */
+	if (match->type == node->type)
+		score -= 2;
 
+	if (score < best_score)
+		best_match = match;
+}
+return best_match;
 
-Because you're adding two completely new PMUs, they're not a "struct power_pmu"
-backend for the existing powerpc PMU implementation.
+This is actually very similar to the original code. It is an easy
+modification. This is very similar to how the of_fdt_is_compatible()
+function works.
 
-cheers
+g.
