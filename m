@@ -1,37 +1,19 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E0F992C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:22:51 +1100 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Mon, 17 Feb 2014 10:22:45 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2B5552BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:22:42 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1H02wG512124620
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:02:59 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1H0Mfhj027226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 11:22:41 +1100
-Message-ID: <1392596560.24061.12.camel@pasglop>
-Subject: Re: [PATCH v3 3/3] powerpc/pseries: Report in kernel device tree
- update to drmgr
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 17 Feb 2014 11:22:40 +1100
-In-Reply-To: <1391212692-16217-4-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1391212692-16217-4-git-send-email-tyreld@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id AB71F2C0086
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Feb 2014 12:17:04 +1100 (EST)
+Message-ID: <1392599810.24061.20.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 17 Feb 2014 12:16:50 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,74 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-01-31 at 15:58 -0800, Tyrel Datwyler wrote:
-> Traditionally it has been drmgr's responsibilty to update the device tree
-> through the /proc/ppc64/ofdt interface after a suspend/resume operation.
-> This patchset however has modified suspend/resume ops to preform that update
-> entirely in the kernel during the resume. Therefore, a mechanism is required
-> for drmgr to determine who is responsible for the update. This patch adds a
-> show function to the "hibernate" attribute that returns 1 if the kernel
-> updates the device tree after the resume and 0 if drmgr is responsible.
+Hi Linus !
 
-This is not right.
+Here are some more powerpc fixes for 3.14
 
-We cannot change the kernel behaviour in a way that is incompatible with
-existing userspace, and unless you can explain me why that is not the
-case, it feels like this patch set does just that ....
+The main one is a nasty issue with the NUMA balancing support
+which requires a small generic change and the addition of a new
+accessor to set _PAGE_NUMA. Both have been reviewed and acked by
+Mel and Rik.
 
-What happens if you have an older drmgr which still does the update
-itself ?
+The changelog should have plenty of details but basically,
+without this fix, we get random user segfaults and/or
+corruptions due to missing TLB/hash flushes. Aneesh series
+of 3 patches fixes it.
 
-You can't just change user visible behaviours and interface without at
-least explaining why it's ok to do so at the very least (and ensuring
-that of course) without breaking existing userspace.
+We have some vDSO vs. perf fixes from Anton, some small EEH
+fixes from Gavin, a ppc32 regression vs. the stack overflow
+detector, and a fix for the way we handle PCIe host bridge
+speed settings on pseries (which is needed for proper
+operations of AMD graphics cards on Power8).
 
-Now it's possible that the double update caused by this series is
-harmless, in which case please explain it in the changeset, I certainly
-can't assume it and if it's not, you'll need some other way for drmgr to
-signal the kernel to indicate it supports the new behaviour before you
-enable it.
-
+Cheers,
 Ben.
 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/suspend.c | 25 ++++++++++++++++++++++++-
->  1 file changed, 24 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
-> index 1d9c580..b87b978 100644
-> --- a/arch/powerpc/platforms/pseries/suspend.c
-> +++ b/arch/powerpc/platforms/pseries/suspend.c
-> @@ -192,7 +192,30 @@ out:
->  	return rc;
->  }
->  
-> -static DEVICE_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
-> +#define USER_DT_UPDATE	0
-> +#define KERN_DT_UPDATE	1
-> +
-> +/**
-> + * show_hibernate - Report device tree update responsibilty
-> + * @dev:		subsys root device
-> + * @attr:		device attribute struct
-> + * @buf:		buffer
-> + *
-> + * Report whether a device tree update is performed by the kernel after a
-> + * resume, or if drmgr must coordinate the update from user space.
-> + *
-> + * Return value:
-> + *	0 if drmgr is to initiate update, and 1 otherwise
-> + **/
-> +static ssize_t show_hibernate(struct device *dev,
-> +			      struct device_attribute *attr,
-> +			      char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", KERN_DT_UPDATE);
-> +}
-> +
-> +static DEVICE_ATTR(hibernate, S_IWUSR | S_IRUGO,
-> +		   show_hibernate, store_hibernate);
->  
->  static struct bus_type suspend_subsys = {
->  	.name = "power",
+The following changes since commit cd15b048445d0a54f7147c35a86c5a16ef231554:
+
+  powerpc/powernv: Add iommu DMA bypass support for IODA2 (2014-02-11 16:07:37 +1100)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 66f9af83e56bfa12964d251df9d60fb571579913:
+
+  powerpc/eeh: Disable EEH on reboot (2014-02-17 11:19:39 +1100)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (3):
+      powerpc/mm: Add new "set" flag argument to pte/pmd update function
+      mm: Dirty accountable change only apply to non prot numa case
+      mm: Use ptep/pmdp_set_numa() for updating _PAGE_NUMA bit
+
+Anton Blanchard (2):
+      powerpc: Link VDSOs at 0x0
+      powerpc: Use unstripped VDSO image for more accurate profiling data
+
+Gavin Shan (3):
+      powerpc/powernv: Rework EEH reset
+      powerpc/eeh: Cleanup on eeh_subsystem_enabled
+      powerpc/eeh: Disable EEH on reboot
+
+Kevin Hao (1):
+      powerpc: Set the correct ksp_limit on ppc32 when switching to irq stack
+
+Kleber Sacilotto de Souza (2):
+      powerpc/pseries: Fix regression on PCI link speed
+      powerpc/pseries: Add Gen3 definitions for PCIE link speed
+
+ arch/powerpc/include/asm/eeh.h               | 21 +++++++++++++--
+ arch/powerpc/include/asm/hugetlb.h           |  2 +-
+ arch/powerpc/include/asm/pgtable-ppc64.h     | 26 +++++++++++--------
+ arch/powerpc/include/asm/pgtable.h           | 22 ++++++++++++++++
+ arch/powerpc/include/asm/vdso.h              |  6 ++---
+ arch/powerpc/kernel/eeh.c                    | 32 ++++++++++++++++++-----
+ arch/powerpc/kernel/misc_32.S                |  5 +++-
+ arch/powerpc/kernel/vdso32/vdso32_wrapper.S  |  2 +-
+ arch/powerpc/kernel/vdso64/vdso64_wrapper.S  |  2 +-
+ arch/powerpc/mm/pgtable_64.c                 | 12 +++++----
+ arch/powerpc/mm/subpage-prot.c               |  2 +-
+ arch/powerpc/platforms/powernv/eeh-ioda.c    | 32 +++++------------------
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  2 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c |  2 +-
+ arch/powerpc/platforms/pseries/pci.c         | 22 +++++++++++-----
+ include/asm-generic/pgtable.h                | 39 ++++++++++++++++++++++++++++
+ mm/huge_memory.c                             |  9 ++-----
+ mm/mprotect.c                                | 25 ++++++------------
+ 18 files changed, 172 insertions(+), 91 deletions(-)
