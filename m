@@ -1,19 +1,33 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AB71F2C0086
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Feb 2014 12:17:04 +1100 (EST)
-Message-ID: <1392599810.24061.20.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 17 Feb 2014 12:16:50 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from LGEAMRELO02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
+ by ozlabs.org (Postfix) with ESMTP id CC76A2C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2014 17:52:57 +1100 (EST)
+Date: Mon, 17 Feb 2014 15:52:57 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
+ determining the fallback node
+Message-ID: <20140217065257.GD3468@lge.com>
+References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
+ <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
+ <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
+ <20140207054819.GC28952@lge.com>
+ <alpine.DEB.2.10.1402071150090.15168@nuc>
+ <alpine.DEB.2.10.1402071245040.20246@nuc>
+ <20140210191321.GD1558@linux.vnet.ibm.com>
+ <20140211074159.GB27870@lge.com>
+ <alpine.DEB.2.10.1402121612270.8183@nuc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.10.1402121612270.8183@nuc>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
+ Pekka Enberg <penberg@kernel.org>,
+ Linux Memory Management List <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,79 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Wed, Feb 12, 2014 at 04:16:11PM -0600, Christoph Lameter wrote:
+> Here is another patch with some fixes. The additional logic is only
+> compiled in if CONFIG_HAVE_MEMORYLESS_NODES is set.
+> 
+> Subject: slub: Memoryless node support
+> 
+> Support memoryless nodes by tracking which allocations are failing.
 
-Here are some more powerpc fixes for 3.14
+I still don't understand why this tracking is needed.
+All we need for allcation targeted to memoryless node is to fallback proper
+node, that it, numa_mem_id() node of targeted node. My previous patch
+implements it and use proper fallback node on every allocation code path.
+Why this tracking is needed? Please elaborate more on this.
 
-The main one is a nasty issue with the NUMA balancing support
-which requires a small generic change and the addition of a new
-accessor to set _PAGE_NUMA. Both have been reviewed and acked by
-Mel and Rik.
+> Allocations targeted to the nodes without memory fall back to the
+> current available per cpu objects and if that is not available will
+> create a new slab using the page allocator to fallback from the
+> memoryless node to some other node.
+> 
+> Signed-off-by: Christoph Lameter <cl@linux.com>
+> 
+> @@ -1722,7 +1738,7 @@ static void *get_partial(struct kmem_cac
+>  		struct kmem_cache_cpu *c)
+>  {
+>  	void *object;
+> -	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
+> +	int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
+> 
+>  	object = get_partial_node(s, get_node(s, searchnode), c, flags);
+>  	if (object || node != NUMA_NO_NODE)
 
-The changelog should have plenty of details but basically,
-without this fix, we get random user segfaults and/or
-corruptions due to missing TLB/hash flushes. Aneesh series
-of 3 patches fixes it.
+This isn't enough.
+Consider that allcation targeted to memoryless node.
+get_partial_node() always fails even if there are some partial slab on
+memoryless node's neareast node.
+We should fallback to some proper node in this case, since there is no slab
+on memoryless node.
 
-We have some vDSO vs. perf fixes from Anton, some small EEH
-fixes from Gavin, a ppc32 regression vs. the stack overflow
-detector, and a fix for the way we handle PCIe host bridge
-speed settings on pseries (which is needed for proper
-operations of AMD graphics cards on Power8).
-
-Cheers,
-Ben.
-
-The following changes since commit cd15b048445d0a54f7147c35a86c5a16ef231554:
-
-  powerpc/powernv: Add iommu DMA bypass support for IODA2 (2014-02-11 16:07:37 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 66f9af83e56bfa12964d251df9d60fb571579913:
-
-  powerpc/eeh: Disable EEH on reboot (2014-02-17 11:19:39 +1100)
-
-----------------------------------------------------------------
-Aneesh Kumar K.V (3):
-      powerpc/mm: Add new "set" flag argument to pte/pmd update function
-      mm: Dirty accountable change only apply to non prot numa case
-      mm: Use ptep/pmdp_set_numa() for updating _PAGE_NUMA bit
-
-Anton Blanchard (2):
-      powerpc: Link VDSOs at 0x0
-      powerpc: Use unstripped VDSO image for more accurate profiling data
-
-Gavin Shan (3):
-      powerpc/powernv: Rework EEH reset
-      powerpc/eeh: Cleanup on eeh_subsystem_enabled
-      powerpc/eeh: Disable EEH on reboot
-
-Kevin Hao (1):
-      powerpc: Set the correct ksp_limit on ppc32 when switching to irq stack
-
-Kleber Sacilotto de Souza (2):
-      powerpc/pseries: Fix regression on PCI link speed
-      powerpc/pseries: Add Gen3 definitions for PCIE link speed
-
- arch/powerpc/include/asm/eeh.h               | 21 +++++++++++++--
- arch/powerpc/include/asm/hugetlb.h           |  2 +-
- arch/powerpc/include/asm/pgtable-ppc64.h     | 26 +++++++++++--------
- arch/powerpc/include/asm/pgtable.h           | 22 ++++++++++++++++
- arch/powerpc/include/asm/vdso.h              |  6 ++---
- arch/powerpc/kernel/eeh.c                    | 32 ++++++++++++++++++-----
- arch/powerpc/kernel/misc_32.S                |  5 +++-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S  |  2 +-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S  |  2 +-
- arch/powerpc/mm/pgtable_64.c                 | 12 +++++----
- arch/powerpc/mm/subpage-prot.c               |  2 +-
- arch/powerpc/platforms/powernv/eeh-ioda.c    | 32 +++++------------------
- arch/powerpc/platforms/powernv/eeh-powernv.c |  2 +-
- arch/powerpc/platforms/pseries/eeh_pseries.c |  2 +-
- arch/powerpc/platforms/pseries/pci.c         | 22 +++++++++++-----
- include/asm-generic/pgtable.h                | 39 ++++++++++++++++++++++++++++
- mm/huge_memory.c                             |  9 ++-----
- mm/mprotect.c                                | 25 ++++++------------
- 18 files changed, 172 insertions(+), 91 deletions(-)
+Thanks.
