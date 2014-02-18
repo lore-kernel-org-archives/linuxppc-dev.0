@@ -1,15 +1,15 @@
 Return-Path: <cl@linux.com>
 Received: from qmta07.emeryville.ca.mail.comcast.net
  (qmta07.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:64])
- by ozlabs.org (Postfix) with ESMTP id 6C8752C0142
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 03:38:07 +1100 (EST)
-Date: Tue, 18 Feb 2014 10:38:01 -0600 (CST)
+ by ozlabs.org (Postfix) with ESMTP id 520BA2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 03:57:13 +1100 (EST)
+Date: Tue, 18 Feb 2014 10:57:09 -0600 (CST)
 From: Christoph Lameter <cl@linux.com>
 To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
  the fallback node
-In-Reply-To: <20140217065257.GD3468@lge.com>
-Message-ID: <alpine.DEB.2.10.1402181033480.28964@nuc>
+In-Reply-To: <20140217070051.GE3468@lge.com>
+Message-ID: <alpine.DEB.2.10.1402181051560.1291@nuc>
 References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
  <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
  <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
@@ -17,8 +17,8 @@ References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
  <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
  <alpine.DEB.2.10.1402071245040.20246@nuc>
  <20140210191321.GD1558@linux.vnet.ibm.com> <20140211074159.GB27870@lge.com>
- <alpine.DEB.2.10.1402121612270.8183@nuc>
- <20140217065257.GD3468@lge.com>
+ <20140213065137.GA10860@linux.vnet.ibm.com>
+ <20140217070051.GE3468@lge.com>
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
  Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
@@ -38,60 +38,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Mon, 17 Feb 2014, Joonsoo Kim wrote:
 
-> On Wed, Feb 12, 2014 at 04:16:11PM -0600, Christoph Lameter wrote:
-> > Here is another patch with some fixes. The additional logic is only
-> > compiled in if CONFIG_HAVE_MEMORYLESS_NODES is set.
-> >
-> > Subject: slub: Memoryless node support
-> >
-> > Support memoryless nodes by tracking which allocations are failing.
->
-> I still don't understand why this tracking is needed.
+> On Wed, Feb 12, 2014 at 10:51:37PM -0800, Nishanth Aravamudan wrote:
+> > Hi Joonsoo,
+> > Also, given that only ia64 and (hopefuly soon) ppc64 can set
+> > CONFIG_HAVE_MEMORYLESS_NODES, does that mean x86_64 can't have
+> > memoryless nodes present? Even with fakenuma? Just curious.
 
-Its an optimization to avoid calling the page allocator to figure out if
-there is memory available on a particular node.
+x86_64 currently does not support memoryless nodes otherwise it would
+have set CONFIG_HAVE_MEMORYLESS_NODES in the kconfig. Memoryless nodes are
+a bit strange given that the NUMA paradigm is to have NUMA nodes (meaning
+memory) with processors. MEMORYLESS nodes means that we have a fake NUMA
+node without memory but just processors. Not very efficient. Not sure why
+people use these configurations.
 
-> All we need for allcation targeted to memoryless node is to fallback proper
-> node, that it, numa_mem_id() node of targeted node. My previous patch
-> implements it and use proper fallback node on every allocation code path.
-> Why this tracking is needed? Please elaborate more on this.
+> I don't know, because I'm not expert on NUMA system :)
+> At first glance, fakenuma can't be used for testing
+> CONFIG_HAVE_MEMORYLESS_NODES. Maybe some modification is needed.
 
-Its too slow to do that on every alloc. One needs to be able to satisfy
-most allocations without switching percpu slabs for optimal performance.
-
-> > Allocations targeted to the nodes without memory fall back to the
-> > current available per cpu objects and if that is not available will
-> > create a new slab using the page allocator to fallback from the
-> > memoryless node to some other node.
-
-And what about the next alloc? Assuem there are N allocs from a memoryless
-node this means we push back the partial slab on each alloc and then fall
-back?
-
-> >  {
-> >  	void *object;
-> > -	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
-> > +	int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
-> >
-> >  	object = get_partial_node(s, get_node(s, searchnode), c, flags);
-> >  	if (object || node != NUMA_NO_NODE)
->
-> This isn't enough.
-> Consider that allcation targeted to memoryless node.
-
-It will not common get there because of the tracking. Instead a per cpu
-object will be used.
-
-> get_partial_node() always fails even if there are some partial slab on
-> memoryless node's neareast node.
-
-Correct and that leads to a page allocator action whereupon the node will
-be marked as empty.
-
-> We should fallback to some proper node in this case, since there is no slab
-> on memoryless node.
-
-NUMA is about optimization of memory allocations. It is often *not* about
-correctness but heuristics are used in many cases. F.e. see the zone
-reclaim logic, zone reclaim mode, fallback scenarios in the page allocator
-etc etc.
+Well yeah. You'd have to do some mods to enable that testing.
