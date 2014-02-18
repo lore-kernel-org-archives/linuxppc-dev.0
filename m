@@ -1,26 +1,37 @@
-Return-Path: <turtle.in.the.kernel@gmail.com>
-Received: from mail-qc0-x22a.google.com (mail-qc0-x22a.google.com
- [IPv6:2607:f8b0:400d:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 649FC2C01AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 10:28:38 +1100 (EST)
-Received: by mail-qc0-f170.google.com with SMTP id e9so26811150qcy.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2014 15:28:33 -0800 (PST)
-Message-ID: <5303EC9E.7070507@gmail.com>
-Date: Tue, 18 Feb 2014 15:28:30 -0800
-From: Tyrel Datwyler <turtle.in.the.kernel@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id A6CC92C00D5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 10:34:15 +1100 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 18 Feb 2014 18:34:13 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 852FD6E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2014 18:34:04 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1INY9e68651236
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2014 23:34:09 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1INY9JO022543
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2014 18:34:09 -0500
+Date: Tue, 18 Feb 2014 15:34:05 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: ppc: RECLAIM_DISTANCE 10?
+Message-ID: <20140218233404.GB10844@linux.vnet.ibm.com>
+References: <20140218090658.GA28130@dhcp22.suse.cz>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/3] powerpc/pseries: Report in kernel device tree
- update to drmgr
-References: <1391212692-16217-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1391212692-16217-4-git-send-email-tyreld@linux.vnet.ibm.com>
- <1392596560.24061.12.camel@pasglop>
-In-Reply-To: <1392596560.24061.12.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140218090658.GA28130@dhcp22.suse.cz>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,91 +41,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/16/2014 04:22 PM, Benjamin Herrenschmidt wrote:
-> On Fri, 2014-01-31 at 15:58 -0800, Tyrel Datwyler wrote:
->> Traditionally it has been drmgr's responsibilty to update the device tree
->> through the /proc/ppc64/ofdt interface after a suspend/resume operation.
->> This patchset however has modified suspend/resume ops to preform that update
->> entirely in the kernel during the resume. Therefore, a mechanism is required
->> for drmgr to determine who is responsible for the update. This patch adds a
->> show function to the "hibernate" attribute that returns 1 if the kernel
->> updates the device tree after the resume and 0 if drmgr is responsible.
-> 
-> This is not right.
-> 
-> We cannot change the kernel behaviour in a way that is incompatible with
-> existing userspace, and unless you can explain me why that is not the
-> case, it feels like this patch set does just that ....
-> 
-> What happens if you have an older drmgr which still does the update
-> itself ?
-> 
+Hi Michal,
 
-In this case we get a double update which I clearly neglected to mention
-in the patch. The first patch in this series actually removes an
-unnecessary double update from the existing kernel implementation. The
-same information is returned by the update-nodes/properties call the
-second time around and aside from being a waste of a few cycles is harmless.
+On 18.02.2014 [10:06:58 +0100], Michal Hocko wrote:
+> Hi,
+> I have just noticed that ppc has RECLAIM_DISTANCE reduced to 10 set by
+> 56608209d34b (powerpc/numa: Set a smaller value for RECLAIM_DISTANCE to
+> enable zone reclaim). The commit message suggests that the zone reclaim
+> is desirable for all NUMA configurations.
+> 
+> History has shown that the zone reclaim is more often harmful than
+> helpful and leads to performance problems. The default RECLAIM_DISTANCE
+> for generic case has been increased from 20 to 30 around 3.0
+> (32e45ff43eaf mm: increase RECLAIM_DISTANCE to 30).
 
-Tyrel
+Interesting.
 
-> You can't just change user visible behaviours and interface without at
-> least explaining why it's ok to do so at the very least (and ensuring
-> that of course) without breaking existing userspace.
+> I strongly suspect that the patch is incorrect and it should be
+> reverted. Before I will send a revert I would like to understand what
+> led to the patch in the first place. I do not see why would PPC use only
+> LOCAL_DISTANCE and REMOTE_DISTANCE distances and in fact machines I have
+> seen use different values.
 > 
-> Now it's possible that the double update caused by this series is
-> harmless, in which case please explain it in the changeset, I certainly
-> can't assume it and if it's not, you'll need some other way for drmgr to
-> signal the kernel to indicate it supports the new behaviour before you
-> enable it.
-> 
-> Ben.
-> 
->> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/suspend.c | 25 ++++++++++++++++++++++++-
->>  1 file changed, 24 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/suspend.c b/arch/powerpc/platforms/pseries/suspend.c
->> index 1d9c580..b87b978 100644
->> --- a/arch/powerpc/platforms/pseries/suspend.c
->> +++ b/arch/powerpc/platforms/pseries/suspend.c
->> @@ -192,7 +192,30 @@ out:
->>  	return rc;
->>  }
->>  
->> -static DEVICE_ATTR(hibernate, S_IWUSR, NULL, store_hibernate);
->> +#define USER_DT_UPDATE	0
->> +#define KERN_DT_UPDATE	1
->> +
->> +/**
->> + * show_hibernate - Report device tree update responsibilty
->> + * @dev:		subsys root device
->> + * @attr:		device attribute struct
->> + * @buf:		buffer
->> + *
->> + * Report whether a device tree update is performed by the kernel after a
->> + * resume, or if drmgr must coordinate the update from user space.
->> + *
->> + * Return value:
->> + *	0 if drmgr is to initiate update, and 1 otherwise
->> + **/
->> +static ssize_t show_hibernate(struct device *dev,
->> +			      struct device_attribute *attr,
->> +			      char *buf)
->> +{
->> +	return sprintf(buf, "%d\n", KERN_DT_UPDATE);
->> +}
->> +
->> +static DEVICE_ATTR(hibernate, S_IWUSR | S_IRUGO,
->> +		   show_hibernate, store_hibernate);
->>  
->>  static struct bus_type suspend_subsys = {
->>  	.name = "power",
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+> Anton, could you comment please?
+
+I'll let Anton comment here, but in looking into this issue in working
+on CONFIG_HAVE_MEMORYLESS_NODE support, I realized that any LPAR with
+memoryless nodes will set zone_reclaim_mode to 1. I think we want to
+ignore memoryless nodes when we set up the reclaim mode like the
+following? I'll send it as a proper patch if you agree?
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 5de4337..4f6ff6f 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1853,8 +1853,9 @@ static void __paginginit init_zone_allows_reclaim(int nid)
+ {
+        int i;
+ 
+-       for_each_online_node(i)
+-               if (node_distance(nid, i) <= RECLAIM_DISTANCE)
++       for_each_online_node(i) {
++               if (node_distance(nid, i) <= RECLAIM_DISTANCE ||
++                                       local_memory_node(nid) != nid)
+                        node_set(i, NODE_DATA(nid)->reclaim_nodes);
+                else
+                        zone_reclaim_mode = 1;
+
+Note, this won't actually do anything if CONFIG_HAVE_MEMORYLESS_NODES is
+not set, but if it is, I think semantically it will indicate that
+memoryless nodes *have* to reclaim remotely.
+
+And actually the above won't work, because the callpath is
+
+start_kernel -> setup_arch -> paging_init [-> free_area_init_nodes ->
+free_area_init_node -> init_zone_allows_reclaim] which is called before
+build_all_zonelists. This is a similar ordering problem as I'm having
+with the MEMORYLESS_NODE support, will work on it.
+
+Thanks,
+Nish
