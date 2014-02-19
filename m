@@ -1,28 +1,28 @@
 Return-Path: <rientjes@google.com>
-Received: from mail-pb0-x22a.google.com (mail-pb0-x22a.google.com
- [IPv6:2607:f8b0:400e:c01::22a])
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 29B042C00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 09:03:23 +1100 (EST)
-Received: by mail-pb0-f42.google.com with SMTP id jt11so978545pbb.15
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 14:03:21 -0800 (PST)
-Date: Wed, 19 Feb 2014 14:03:19 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 6C6CF2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 09:04:42 +1100 (EST)
+Received: by mail-pa0-f44.google.com with SMTP id kq14so980414pab.31
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 14:04:39 -0800 (PST)
+Date: Wed, 19 Feb 2014 14:04:37 -0800 (PST)
 From: David Rientjes <rientjes@google.com>
 To: Christoph Lameter <cl@linux.com>
 Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
  the fallback node
-In-Reply-To: <alpine.DEB.2.10.1402181356120.2910@nuc>
-Message-ID: <alpine.DEB.2.02.1402191400400.31921@chino.kir.corp.google.com>
-References: <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
+In-Reply-To: <alpine.DEB.2.10.1402181033480.28964@nuc>
+Message-ID: <alpine.DEB.2.02.1402191404030.31921@chino.kir.corp.google.com>
+References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
+ <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
  <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
  <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
  <alpine.DEB.2.10.1402071245040.20246@nuc>
  <20140210191321.GD1558@linux.vnet.ibm.com> <20140211074159.GB27870@lge.com>
- <20140213065137.GA10860@linux.vnet.ibm.com> <20140217070051.GE3468@lge.com>
- <alpine.DEB.2.10.1402181051560.1291@nuc>
- <20140218172832.GD31998@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1402181356120.2910@nuc>
+ <alpine.DEB.2.10.1402121612270.8183@nuc> <20140217065257.GD3468@lge.com>
+ <alpine.DEB.2.10.1402181033480.28964@nuc>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
@@ -43,11 +43,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Tue, 18 Feb 2014, Christoph Lameter wrote:
 
-> Ok but since you have a virtualized environment: Why not provide a fake
-> home node with fake memory that could be anywhere? This would avoid the
-> whole problem of supporting such a config at the kernel level.
+> Its an optimization to avoid calling the page allocator to figure out if
+> there is memory available on a particular node.
 > 
 
-By acpi, the abstraction of a NUMA node can include any combination of 
-cpus, memory, I/O resources, networking, or storage devices.  This allows 
-two memoryless nodes, for example, to have different proximity to memory.
+Thus this patch breaks with memory hot-add for a memoryless node.
