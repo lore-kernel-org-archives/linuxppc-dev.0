@@ -1,26 +1,21 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8CA922C0098
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 12:43:42 +1100 (EST)
-Received: by mail-pa0-f47.google.com with SMTP id kp14so17550793pab.20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2014 17:43:40 -0800 (PST)
-Date: Tue, 18 Feb 2014 17:43:38 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 754D12C02FA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 19:16:50 +1100 (EST)
+Date: Wed, 19 Feb 2014 09:16:44 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: David Rientjes <rientjes@google.com>
 Subject: Re: ppc: RECLAIM_DISTANCE 10?
-In-Reply-To: <20140218235800.GC10844@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.02.1402181737530.17521@chino.kir.corp.google.com>
+Message-ID: <20140219081644.GA14783@dhcp22.suse.cz>
 References: <20140218090658.GA28130@dhcp22.suse.cz>
- <20140218233404.GB10844@linux.vnet.ibm.com>
- <20140218235800.GC10844@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1402181424490.20772@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.02.1402181424490.20772@chino.kir.corp.google.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Feb 2014, Nishanth Aravamudan wrote:
-
-> How about the following?
+On Tue 18-02-14 14:27:11, David Rientjes wrote:
+> On Tue, 18 Feb 2014, Michal Hocko wrote:
 > 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 5de4337..1a0eced 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1854,7 +1854,8 @@ static void __paginginit init_zone_allows_reclaim(int nid)
->         int i;
->  
->         for_each_online_node(i)
-> -               if (node_distance(nid, i) <= RECLAIM_DISTANCE)
-> +               if (node_distance(nid, i) <= RECLAIM_DISTANCE ||
-> +                                       !NODE_DATA(i)->node_present_pages)
->                         node_set(i, NODE_DATA(nid)->reclaim_nodes);
->                 else
->                         zone_reclaim_mode = 1;
-
- [ I changed the above from NODE_DATA(nid) -> NODE_DATA(i) as you caught 
-   so we're looking at the right code. ]
-
-That can't be right, it would allow reclaiming from a memoryless node.  I 
-think what you want is
-
-	for_each_online_node(i) {
-		if (!node_present_pages(i))
-			continue;
-		if (node_distance(nid, i) <= RECLAIM_DISTANCE) {
-			node_set(i, NODE_DATA(nid)->reclaim_nodes);
-			continue;
-		}
-		/* Always try to reclaim locally */
-		zone_reclaim_mode = 1;
-	}
-
-but we really should be able to do for_each_node_state(i, N_MEMORY) here 
-and memoryless nodes should already be excluded from that mask.
-
-> @@ -4901,13 +4902,13 @@ void __paginginit free_area_init_node(int nid, unsigned long *zones_size,
->  
->         pgdat->node_id = nid;
->         pgdat->node_start_pfn = node_start_pfn;
-> -       init_zone_allows_reclaim(nid);
->  #ifdef CONFIG_HAVE_MEMBLOCK_NODE_MAP
->         get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
->  #endif
->         calculate_node_totalpages(pgdat, start_pfn, end_pfn,
->                                   zones_size, zholes_size);
->  
-> +       init_zone_allows_reclaim(nid);
->         alloc_node_mem_map(pgdat);
->  #ifdef CONFIG_FLAT_NODE_MEM_MAP
->         printk(KERN_DEBUG "free_area_init_node: node %d, pgdat %08lx, node_mem_map %08lx\n",
+> > Hi,
+> > I have just noticed that ppc has RECLAIM_DISTANCE reduced to 10 set by
+> > 56608209d34b (powerpc/numa: Set a smaller value for RECLAIM_DISTANCE to
+> > enable zone reclaim). The commit message suggests that the zone reclaim
+> > is desirable for all NUMA configurations.
+> > 
+> > History has shown that the zone reclaim is more often harmful than
+> > helpful and leads to performance problems. The default RECLAIM_DISTANCE
+> > for generic case has been increased from 20 to 30 around 3.0
+> > (32e45ff43eaf mm: increase RECLAIM_DISTANCE to 30).
+> > 
+> > I strongly suspect that the patch is incorrect and it should be
+> > reverted. Before I will send a revert I would like to understand what
+> > led to the patch in the first place. I do not see why would PPC use only
+> > LOCAL_DISTANCE and REMOTE_DISTANCE distances and in fact machines I have
+> > seen use different values.
+> > 
 > 
-> I think it's safe to move init_zone_allows_reclaim, because I don't
-> think any allocates are occurring here that could cause us to reclaim
-> anyways, right? Moving it allows us to safely reference
-> node_present_pages.
-> 
+> I strongly suspect that the patch is correct since powerpc node distances 
+> are different than the architectures you're talking about and get doubled 
+> for every NUMA domain that the hardware supports.
 
-Yeah, this is fine.
+Even if the units of the distance is different on PPC should every NUMA
+machine have zone_reclaim enabled? That doesn't right to me.
+
+-- 
+Michal Hocko
+SUSE Labs
