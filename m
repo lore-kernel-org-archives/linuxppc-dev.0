@@ -1,24 +1,32 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-we0-f170.google.com (mail-we0-f170.google.com
+ [74.125.82.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EC2262C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 09:25:06 +1100 (EST)
-Message-ID: <53052F6A.4050400@windriver.com>
-Date: Wed, 19 Feb 2014 17:25:46 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc: select MEMORY for FSL_IFC to not break existing
- .config files
-References: <1392847641-63777-1-git-send-email-paul.gortmaker@windriver.com>
- <1392848350.6733.809.camel@snotra.buserror.net>
-In-Reply-To: <1392848350.6733.809.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Prabhakar Kushwaha <prabhakar@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9C0392C00B8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 09:41:02 +1100 (EST)
+Received: by mail-we0-f170.google.com with SMTP id w62so880611wes.29
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 14:40:56 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH] of: give priority to the compatible match in
+ __of_match_node()
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Rob Herring <robherring2@gmail.com>
+In-Reply-To: <530520B6.8050205@windriver.com>
+References: <1392205084-2351-1-git-send-email-haokexin@gmail.com> <
+ CAL_JsqKMi2H=vwoxrOt8QRA2xJeiLqBKKfLtt4QRCRoFk6JUHg@mail.gmail.com> <
+ CAP=VYLr7hqnzW2HLS4GCMFeghCgPmrQZHYst+AUfZc_WNT-Wog@mail.gmail.com> <
+ 20140219204134.E4A2DC4088D@trevor.secretlab.ca> <530520B6.8050205@windriver
+ .com>
+Date: Wed, 19 Feb 2014 22:40:51 +0000
+Message-Id: <20140219224051.65BB7C4077A@trevor.secretlab.ca>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Kevin Hao <haokexin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
+ Chris Proctor <cproctor@csc.com.au>, Stephen N Chivers <schivers@csc.com.au>,
+ Rob Herring <robh+dt@kernel.org>, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,73 +36,269 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14-02-19 05:19 PM, Scott Wood wrote:
-> On Wed, 2014-02-19 at 17:07 -0500, Paul Gortmaker wrote:
->> commit d2ae2e20fbdde5a65f3a5a153044ab1e5c53f7cc ("driver/memory:Move
->> Freescale IFC driver to a common driver") introduces this build
->> regression into the mpc85xx_defconfig:
->>
->>  drivers/built-in.o: In function `fsl_ifc_nand_remove':
->>  drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/built-in.o: In function `fsl_ifc_nand_probe':
->>  drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/built-in.o: In function `match_bank':
->>  drivers/mtd/nand/fsl_ifc_nand.c:1013: undefined reference to `convert_ifc_address'
->>  drivers/built-in.o: In function `fsl_ifc_nand_probe':
->>  drivers/mtd/nand/fsl_ifc_nand.c:1059: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/mtd/nand/fsl_ifc_nand.c:1080: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
->>  drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
->>  make: *** [vmlinux] Error 1
->>
->> This happens because there is nothing to descend us into the
->> drivers/memory directory in the mpc85xx_defconfig.  It wasn't
->> selecting CONFIG_MEMORY.  So we never built drivers/memory/fsl_ifc.o
->> even with CONFIG_FSL_IFC=y, and so we have nothing to link against.
->>
->> In order to remain compatible with old config files and to avoid
->> such build failures, make CONFIG_FSL_IFC select CONFIG_MEMORY.
->> Also fix the whitespace issue (spaces vs. a tab) in the Kconfig.
->>
->> Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->> ---
->>
->> [This probably makes sense to go in via Greg's char-misc/char-misc-next
->>  (vs. powerpc-next) since that is where the regression was introduced.]
->>
->>  arch/powerpc/Kconfig | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 957bf344c0f5..d2d8d8f50610 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -738,7 +738,8 @@ config FSL_LBC
->>  
->>  config FSL_IFC
->>  	bool
->> -        depends on FSL_SOC
->> +	depends on FSL_SOC
->> +	select MEMORY
+On Wed, 19 Feb 2014 16:23:02 -0500, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> On 14-02-19 03:41 PM, Grant Likely wrote:
+> > On Wed, 19 Feb 2014 13:25:54 -0500, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> >> On Thu, Feb 13, 2014 at 2:01 PM, Rob Herring <robherring2@gmail.com> wrote:
+> >>> On Wed, Feb 12, 2014 at 5:38 AM, Kevin Hao <haokexin@gmail.com> wrote:
+> >>>> When the device node do have a compatible property, we definitely
+> >>>> prefer the compatible match besides the type and name. Only if
+> >>>> there is no such a match, we then consider the candidate which
+> >>>> doesn't have compatible entry but do match the type or name with
+> >>>> the device node.
+> >>>>
+> >>>> This is based on a patch from Sebastian Hesselbarth.
+> >>>>   http://patchwork.ozlabs.org/patch/319434/
+> >>>>
+> >>>> I did some code refactoring and also fixed a bug in the original patch.
+> >>>
+> >>> I'm inclined to just revert this once again and avoid possibly
+> >>> breaking yet another platform.
+> >>
+> >> Well, for what it is worth, today's (Feb19th) linux-next tree fails to boot
+> >> on my sbc8548.   It fails with:
+> > 
+> > I think I've got it fixed now with the latest series. Please try the
+> > devicetree/merge branch on git://git.secretlab.ca/git/linux
 > 
-> Why do we still have FSL_IFC in arch/powerpc/Kconfig if the driver has
-> been moved?  The NAND driver and other selectors of FSL_IFC can select
-> MEMORY.
+> That seems to work.
 
-At the risk of a slightly larger footprint to the regression fix,
-I'd agree that is a better overall solution.  I'll code that up.
+Great, thanks for the testing. Can I add a Tested-by line for you?
 
-Unless folks want the regression fix as-is, and then the move?
-
-Paul.
---
+g.
 
 > 
-> -Scott
+> libphy: Freescale PowerQUICC MII Bus: probed
+> libphy: Freescale PowerQUICC MII Bus: probed
+> fsl-gianfar e0024000.ethernet: enabled errata workarounds, flags: 0x4
+> fsl-gianfar e0024000.ethernet eth0: mac: 02:e0:0c:00:05:fd
+> fsl-gianfar e0024000.ethernet eth0: Running with NAPI enabled
+> fsl-gianfar e0024000.ethernet eth0: RX BD ring size for Q[0]: 256
+> fsl-gianfar e0024000.ethernet eth0: TX BD ring size for Q[0]: 256
+> fsl-gianfar e0025000.ethernet: enabled errata workarounds, flags: 0x4
+> fsl-gianfar e0025000.ethernet eth1: mac: 02:e0:0c:00:06:fd
+> fsl-gianfar e0025000.ethernet eth1: Running with NAPI enabled
+> fsl-gianfar e0025000.ethernet eth1: RX BD ring size for Q[0]: 256
+> fsl-gianfar e0025000.ethernet eth1: TX BD ring size for Q[0]: 256
+> TCP: cubic registered
+> Initializing XFRM netlink socket
+> NET: Registered protocol family 17
 > 
+> ...
 > 
+> root@sbc8548:~# cat /proc/version 
+> Linux version 3.14.0-rc3-00024-g7119f42057c6 (paul@yow-lpgnfs-02) (gcc version 4.5.2 (GCC) ) #1 Wed Feb 19 16:08:17 EST 2014
+> root@sbc8548:~#
+> 
+> Paul.
+> --
+> 
+> > 
+> > g.
+> > 
+> >> -----------------------------------------------
+> >> libphy: Freescale PowerQUICC MII Bus: probed
+> >> mdio_bus ethernet@e002400: /soc8548@e0000000/ethernet@24000/mdio@520
+> >> PHY address 1312 is too large
+> >> libphy: Freescale PowerQUICC MII Bus: probed
+> >> libphy: Freescale PowerQUICC MII Bus: probed
+> >> mdio_bus ethernet@e002500: /soc8548@e0000000/ethernet@25000/mdio@520
+> >> PHY address 1312 is too large
+> >> libphy: Freescale PowerQUICC MII Bus: probed
+> >> TCP: cubic registered
+> >> Initializing XFRM netlink socket
+> >> NET: Registered protocol family 17
+> >> <fail nfs mount>
+> >> -----------------------------------------------
+> >>
+> >> On a normal boot, we should see this:
+> >> -----------------------------------------------
+> >> libphy: Freescale PowerQUICC MII Bus: probed
+> >> libphy: Freescale PowerQUICC MII Bus: probed
+> >> fsl-gianfar e0024000.ethernet: enabled errata workarounds, flags: 0x4
+> >> fsl-gianfar e0024000.ethernet eth0: mac: 02:e0:0c:00:05:fd
+> >> fsl-gianfar e0024000.ethernet eth0: Running with NAPI enabled
+> >> fsl-gianfar e0024000.ethernet eth0: RX BD ring size for Q[0]: 256
+> >> fsl-gianfar e0024000.ethernet eth0: TX BD ring size for Q[0]: 256
+> >> fsl-gianfar e0025000.ethernet: enabled errata workarounds, flags: 0x4
+> >> fsl-gianfar e0025000.ethernet eth1: mac: 02:e0:0c:00:06:fd
+> >> fsl-gianfar e0025000.ethernet eth1: Running with NAPI enabled
+> >> fsl-gianfar e0025000.ethernet eth1: RX BD ring size for Q[0]: 256
+> >> fsl-gianfar e0025000.ethernet eth1: TX BD ring size for Q[0]: 256
+> >> TCP: cubic registered
+> >> Initializing XFRM netlink socket
+> >> NET: Registered protocol family 17
+> >> -----------------------------------------------
+> >>
+> >>
+> >> Git bisect says:
+> >>
+> >> ee8b26ad943aa34acc03ae6cde2b81d8d3d483d4 is the first bad commit
+> >> commit ee8b26ad943aa34acc03ae6cde2b81d8d3d483d4
+> >> Author: Kevin Hao <haokexin@gmail.com>
+> >> Date:   Tue Feb 18 15:57:30 2014 +0800
+> >>
+> >>     of: reimplement the matching method for __of_match_node()
+> >>
+> >>     In the current implementation of __of_match_node(), it will compare
+> >>     each given match entry against all the node's compatible strings
+> >>     with of_device_is_compatible().
+> >>
+> >>     To achieve multiple compatible strings per node with ordering from
+> >>     specific to generic, this requires given matches to be ordered from
+> >>     specific to generic. For most of the drivers this is not true and
+> >>     also an alphabetical ordering is more sane there.
+> >>
+> >>     Therefore, we define a following priority order for the match, and
+> >>     then scan all the entries to find the best match.
+> >>       1. specific compatible && type && name
+> >>       2. specific compatible && type
+> >>       3. specific compatible && name
+> >>       4. specific compatible
+> >>       5. general compatible && type && name
+> >>       6. general compatible && type
+> >>       7. general compatible && name
+> >>       8. general compatible
+> >>       9. type && name
+> >>       10. type
+> >>       11. name
+> >>
+> >>     This is based on some pseudo-codes provided by Grant Likely.
+> >>
+> >>     Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> >>     [grant.likely: Changed multiplier to 4 which makes more sense]
+> >>     Signed-off-by: Grant Likely <grant.likely@linaro.org>
+> >>
+> >> :040000 040000 8f5dd19174417aece63b308ff299a5dbe2efa5a0
+> >> 8401b0e3903e23e973845ee75b26b04345d803d2 M      drivers
+> >>
+> >> As a double check, I checked out the head of linux-next, and did a
+> >> revert of the above commit, and my sbc8548 can then boot properly.
+> >>
+> >> Not doing anything fancy ; using the defconfig exactly as-is, and
+> >> ensuring the dtb is fresh from linux-next HEAD of today.
+> >>
+> >> Thanks,
+> >> Paul.
+> >> --
+> >>
+> >>>
+> >>> However, I think I would like to see this structured differently. We
+> >>> basically have 2 ways of matching: the existing pre-3.14 way and the
+> >>> desired match on best compatible only. All new bindings should match
+> >>> with the new way and the old way needs to be kept for compatibility.
+> >>> So lets structure the code that way. Search the match table first for
+> >>> best compatible with name and type NULL, then search the table the old
+> >>> way. I realize it appears you are doing this, but it is not clear this
+> >>> is the intent of the code. I would like to see this written as a patch
+> >>> with commit 105353145eafb3ea919 reverted first and you add a new match
+> >>> function to call first and then fallback to the existing function.
+> >>>
+> >>> Rob
+> >>>
+> >>>>
+> >>>> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> >>>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+> >>>> ---
+> >>>>  drivers/of/base.c | 55 +++++++++++++++++++++++++++++++++++++------------------
+> >>>>  1 file changed, 37 insertions(+), 18 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> >>>> index ff85450d5683..9d655df458bd 100644
+> >>>> --- a/drivers/of/base.c
+> >>>> +++ b/drivers/of/base.c
+> >>>> @@ -730,32 +730,45 @@ out:
+> >>>>  }
+> >>>>  EXPORT_SYMBOL(of_find_node_with_property);
+> >>>>
+> >>>> +static int of_match_type_or_name(const struct device_node *node,
+> >>>> +                               const struct of_device_id *m)
+> >>>> +{
+> >>>> +       int match = 1;
+> >>>> +
+> >>>> +       if (m->name[0])
+> >>>> +               match &= node->name && !strcmp(m->name, node->name);
+> >>>> +
+> >>>> +       if (m->type[0])
+> >>>> +               match &= node->type && !strcmp(m->type, node->type);
+> >>>> +
+> >>>> +       return match;
+> >>>> +}
+> >>>> +
+> >>>>  static
+> >>>>  const struct of_device_id *__of_match_node(const struct of_device_id *matches,
+> >>>>                                            const struct device_node *node)
+> >>>>  {
+> >>>>         const char *cp;
+> >>>>         int cplen, l;
+> >>>> +       const struct of_device_id *m;
+> >>>> +       int match;
+> >>>>
+> >>>>         if (!matches)
+> >>>>                 return NULL;
+> >>>>
+> >>>>         cp = __of_get_property(node, "compatible", &cplen);
+> >>>> -       do {
+> >>>> -               const struct of_device_id *m = matches;
+> >>>> +       while (cp && (cplen > 0)) {
+> >>>> +               m = matches;
+> >>>>
+> >>>>                 /* Check against matches with current compatible string */
+> >>>>                 while (m->name[0] || m->type[0] || m->compatible[0]) {
+> >>>> -                       int match = 1;
+> >>>> -                       if (m->name[0])
+> >>>> -                               match &= node->name
+> >>>> -                                       && !strcmp(m->name, node->name);
+> >>>> -                       if (m->type[0])
+> >>>> -                               match &= node->type
+> >>>> -                                       && !strcmp(m->type, node->type);
+> >>>> -                       if (m->compatible[0])
+> >>>> -                               match &= cp
+> >>>> -                                       && !of_compat_cmp(m->compatible, cp,
+> >>>> +                       if (!m->compatible[0]) {
+> >>>> +                               m++;
+> >>>> +                               continue;
+> >>>> +                       }
+> >>>> +
+> >>>> +                       match = of_match_type_or_name(node, m);
+> >>>> +                       match &= cp && !of_compat_cmp(m->compatible, cp,
+> >>>>                                                         strlen(m->compatible));
+> >>>>                         if (match)
+> >>>>                                 return m;
+> >>>> @@ -763,12 +776,18 @@ const struct of_device_id *__of_match_node(const struct of_device_id *matches,
+> >>>>                 }
+> >>>>
+> >>>>                 /* Get node's next compatible string */
+> >>>> -               if (cp) {
+> >>>> -                       l = strlen(cp) + 1;
+> >>>> -                       cp += l;
+> >>>> -                       cplen -= l;
+> >>>> -               }
+> >>>> -       } while (cp && (cplen > 0));
+> >>>> +               l = strlen(cp) + 1;
+> >>>> +               cp += l;
+> >>>> +               cplen -= l;
+> >>>> +       }
+> >>>> +
+> >>>> +       m = matches;
+> >>>> +       /* Check against matches without compatible string */
+> >>>> +       while (m->name[0] || m->type[0] || m->compatible[0]) {
+> >>>> +               if (!m->compatible[0] && of_match_type_or_name(node, m))
+> >>>> +                       return m;
+> >>>> +               m++;
+> >>>> +       }
+> >>>>
+> >>>>         return NULL;
+> >>>>  }
+> >>>> --
+> >>>> 1.8.5.3
+> >>>>
+> >>>> --
+> >>>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> >>>> the body of a message to majordomo@vger.kernel.org
+> >>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >>> _______________________________________________
+> >>> Linuxppc-dev mailing list
+> >>> Linuxppc-dev@lists.ozlabs.org
+> >>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > 
