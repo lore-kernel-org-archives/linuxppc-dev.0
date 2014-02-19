@@ -1,28 +1,20 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-x22e.google.com (mail-wg0-x22e.google.com
- [IPv6:2a00:1450:400c:c00::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <sudeep.holla@arm.com>
+Received: from cam-smtp0.cambridge.arm.com (fw-tnat.cambridge.arm.com
+ [217.140.96.21])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A0EFC2C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 01:45:24 +1100 (EST)
-Received: by mail-wg0-f46.google.com with SMTP id x13so402940wgg.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 06:45:17 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <20140213000743.GI4524@book.gsilab.sittig.org>
-References: <1392211508-23615-1-git-send-email-a13xp0p0v88@gmail.com>
- <1392211508-23615-3-git-send-email-a13xp0p0v88@gmail.com>
- <20140213000743.GI4524@book.gsilab.sittig.org>
-Date: Wed, 19 Feb 2014 18:45:17 +0400
-Message-ID: <CAF0T0X4CSVqRN79tcnNFZWCtT2ighEt5QvOjVOvzHSRgtwQuoQ@mail.gmail.com>
-Subject: Re: [PATCH RFC v7 2/6] dma: mpc512x: add support for peripheral
- transfers
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, dmaengine@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 665C12C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 03:06:21 +1100 (EST)
+From: Sudeep Holla <sudeep.holla@arm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH RFC/RFT v3 6/9] powerpc: move cacheinfo sysfs to generic
+ cacheinfo infrastructure
+Date: Wed, 19 Feb 2014 16:06:13 +0000
+Message-Id: <1392825976-17633-7-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <1392825976-17633-1-git-send-email-sudeep.holla@arm.com>
+References: <1392825976-17633-1-git-send-email-sudeep.holla@arm.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ sudeep.holla@arm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,122 +24,999 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ adding dmaengine ML to Cc: ]
+From: Sudeep Holla <sudeep.holla@arm.com>
 
-Thanks for your feedback, Gerhard
+This patch removes the redundant sysfs cacheinfo code by making use of
+the newly introduced generic cacheinfo infrastructure.
 
-2014-02-13 4:07 GMT+04:00 Gerhard Sittig <gsi@denx.de>:
-> On Wed, Feb 12, 2014 at 17:25 +0400, Alexander Popov wrote:
->>  /*
->> - * This is initial version of MPC5121 DMA driver. Only memory to memory
->> - * transfers are supported (tested using dmatest module).
->> + * MPC512x and MPC8308 DMA driver. It supports
->> + * memory to memory data transfers (tested using dmatest module) and
->> + * data transfers between memory and peripheral I/O memory
->> + * by means of slave s/g with these limitations:
->> + * - chunked transfers (transfers with more than one part) are refused
->> + * as long as proper support for scatter/gather is missing;
->> + * - transfers on MPC8308 always start from software as this SoC appears
->> + * not to have external request lines for peripheral flow control;
->> + * - minimal memory <-> I/O memory transfer size is 4 bytes.
->>   */
->
-> Often I assume people would notice themselves, and apparently I'm
-> wrong. :)  Can you adjust the formatting such (here and
-> elsewhere) that the bullet list is clearly visible as such?
-> Flowing text like above obfuscates the fact that the content may
-> have a structure ...
-Ok, thanks :)
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/cacheinfo.c | 831 ++++++----------------------------------
+ arch/powerpc/kernel/cacheinfo.h |   8 -
+ arch/powerpc/kernel/sysfs.c     |   4 -
+ 3 files changed, 109 insertions(+), 734 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/cacheinfo.h
 
-> There are known limitations which are not listed here, "minimal
-> transfer size" is incomplete.  It appears that you assume
-> constraints on start addresses as well as sizes/lengths.  Can you
-> update the documentation to match the implementation?
-Ok, I see. How about that?
-* - minimal memory <-> I/O memory transfer chunk is 4 bytes and consequently
-*     source and destination addresses must be 4-byte aligned
-*     and transfer size must be aligned on (4 * maxburst) boundary;
-
->> +             /* Grab either several mem-to-mem transfer descriptors
->> +              * or one peripheral transfer descriptor,
->> +              * don't mix mem-to-mem and peripheral transfer descriptors
->> +              * within the same 'active' list. */
->> +             if (mdesc->will_access_peripheral) {
->> +                     if (list_empty(&mchan->active))
->> +                             list_move_tail(&mdesc->node, &mchan->active);
->> +                     break;
->> +             } else
->> +                     list_move_tail(&mdesc->node, &mchan->active);
->> +     }
-> There are style issues.  Both in multi line comments, and in the
-> braces of the if/else block.
-Ah, thanks! I'll fix that.
-
->> +     struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
->> +     struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
->> +     struct mpc_dma_desc *mdesc = NULL;
->> +     dma_addr_t per_paddr;
->> +     u32 tcd_nunits;
->> +     struct mpc_dma_tcd *tcd;
->> +     unsigned long iflags;
->> +     struct scatterlist *sg;
->> +     size_t len;
->> +     int iter, i;
-> Personally I much dislike this style of mixing declarations and
-> instructions.  But others may disagree, and strongly so.
-Excuse me, I would like to keep it similar to other parts of this driver
-and not to change that style.
-
->> +             mdesc = list_first_entry(&mchan->free, struct mpc_dma_desc,
->> +                                                                     node);
-> style (continuation and indentation)
-Thanks! I'll fix that.
-
->
->> +             if (!mdesc) {
->> +                     spin_unlock_irqrestore(&mchan->lock, iflags);
->> +                     /* try to free completed descriptors */
->> +                     mpc_dma_process_completed(mdma);
->> +                     return NULL;
->> +             }
->> +
->> +             list_del(&mdesc->node);
->> +
->> +             per_paddr = mchan->per_paddr;
->> +             tcd_nunits = mchan->tcd_nunits;
->> +
->> +             spin_unlock_irqrestore(&mchan->lock, iflags);
->> +
->> +             if (per_paddr == 0 || tcd_nunits == 0)
->> +                     goto err_prep;
->> +
->> +             mdesc->error = 0;
->> +             mdesc->will_access_peripheral = 1;
->> +             tcd = mdesc->tcd;
->> +
->> +             /* Prepare Transfer Control Descriptor for this transaction */
->> +
->> +             memset(tcd, 0, sizeof(struct mpc_dma_tcd));
->> +
->> +             if (!IS_ALIGNED(sg_dma_address(sg), 4))
->> +                     goto err_prep;
->
-> You found multiple ways of encoding the "4 byte alignment", using
-> both the fixed number as well as (several) symbolic identifiers.
-> Can you look into making them use the same condition if the same
-> motivation is behind the test?
-Gerhard, I don't see checks which can be kind of "merged"
-since they have different motivation behind:
-1) src_addr_width and dst_addr_width have type "enum dma_slave_buswidth"
-and are compared with DMA_SLAVE_BUSWIDTH_4_BYTES which has
-the same type;
-2) source and destination addresses are checked to be 4-byte aligned;
-3) transfer size is checked to be aligned on nbytes boundary
-which is (4 * maxburst).
-
-I think the code provides good readability. What do you think?
-
-Thank you!
-
-Best regards,
-Alexander
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index 2912b87..05b7580 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -10,38 +10,10 @@
+  * 2 as published by the Free Software Foundation.
+  */
+ 
++#include <linux/cacheinfo.h>
+ #include <linux/cpu.h>
+-#include <linux/cpumask.h>
+ #include <linux/kernel.h>
+-#include <linux/kobject.h>
+-#include <linux/list.h>
+-#include <linux/notifier.h>
+ #include <linux/of.h>
+-#include <linux/percpu.h>
+-#include <linux/slab.h>
+-#include <asm/prom.h>
+-
+-#include "cacheinfo.h"
+-
+-/* per-cpu object for tracking:
+- * - a "cache" kobject for the top-level directory
+- * - a list of "index" objects representing the cpu's local cache hierarchy
+- */
+-struct cache_dir {
+-	struct kobject *kobj; /* bare (not embedded) kobject for cache
+-			       * directory */
+-	struct cache_index_dir *index; /* list of index objects */
+-};
+-
+-/* "index" object: each cpu's cache directory has an index
+- * subdirectory corresponding to a cache object associated with the
+- * cpu.  This object's lifetime is managed via the embedded kobject.
+- */
+-struct cache_index_dir {
+-	struct kobject kobj;
+-	struct cache_index_dir *next; /* next index in parent directory */
+-	struct cache *cache;
+-};
+ 
+ /* Template for determining which OF properties to query for a given
+  * cache type */
+@@ -60,11 +32,6 @@ struct cache_type_info {
+ 	const char *nr_sets_prop;
+ };
+ 
+-/* These are used to index the cache_type_info array. */
+-#define CACHE_TYPE_UNIFIED     0
+-#define CACHE_TYPE_INSTRUCTION 1
+-#define CACHE_TYPE_DATA        2
+-
+ static const struct cache_type_info cache_type_info[] = {
+ 	{
+ 		/* PowerPC Processor binding says the [di]-cache-*
+@@ -77,246 +44,115 @@ static const struct cache_type_info cache_type_info[] = {
+ 		.nr_sets_prop    = "d-cache-sets",
+ 	},
+ 	{
+-		.name            = "Instruction",
+-		.size_prop       = "i-cache-size",
+-		.line_size_props = { "i-cache-line-size",
+-				     "i-cache-block-size", },
+-		.nr_sets_prop    = "i-cache-sets",
+-	},
+-	{
+ 		.name            = "Data",
+ 		.size_prop       = "d-cache-size",
+ 		.line_size_props = { "d-cache-line-size",
+ 				     "d-cache-block-size", },
+ 		.nr_sets_prop    = "d-cache-sets",
+ 	},
++	{
++		.name            = "Instruction",
++		.size_prop       = "i-cache-size",
++		.line_size_props = { "i-cache-line-size",
++				     "i-cache-block-size", },
++		.nr_sets_prop    = "i-cache-sets",
++	},
+ };
+ 
+-/* Cache object: each instance of this corresponds to a distinct cache
+- * in the system.  There are separate objects for Harvard caches: one
+- * each for instruction and data, and each refers to the same OF node.
+- * The refcount of the OF node is elevated for the lifetime of the
+- * cache object.  A cache object is released when its shared_cpu_map
+- * is cleared (see cache_cpu_clear).
+- *
+- * A cache object is on two lists: an unsorted global list
+- * (cache_list) of cache objects; and a singly-linked list
+- * representing the local cache hierarchy, which is ordered by level
+- * (e.g. L1d -> L1i -> L2 -> L3).
+- */
+-struct cache {
+-	struct device_node *ofnode;    /* OF node for this cache, may be cpu */
+-	struct cpumask shared_cpu_map; /* online CPUs using this cache */
+-	int type;                      /* split cache disambiguation */
+-	int level;                     /* level not explicit in device tree */
+-	struct list_head list;         /* global list of cache objects */
+-	struct cache *next_local;      /* next cache of >= level */
+-};
+-
+-static DEFINE_PER_CPU(struct cache_dir *, cache_dir_pcpu);
+-
+-/* traversal/modification of this list occurs only at cpu hotplug time;
+- * access is serialized by cpu hotplug locking
+- */
+-static LIST_HEAD(cache_list);
+-
+-static struct cache_index_dir *kobj_to_cache_index_dir(struct kobject *k)
+-{
+-	return container_of(k, struct cache_index_dir, kobj);
+-}
+-
+-static const char *cache_type_string(const struct cache *cache)
++static inline int get_cacheinfo_idx(enum cache_type type)
+ {
+-	return cache_type_info[cache->type].name;
+-}
+-
+-static void cache_init(struct cache *cache, int type, int level,
+-		       struct device_node *ofnode)
+-{
+-	cache->type = type;
+-	cache->level = level;
+-	cache->ofnode = of_node_get(ofnode);
+-	INIT_LIST_HEAD(&cache->list);
+-	list_add(&cache->list, &cache_list);
+-}
+-
+-static struct cache *new_cache(int type, int level, struct device_node *ofnode)
+-{
+-	struct cache *cache;
+-
+-	cache = kzalloc(sizeof(*cache), GFP_KERNEL);
+-	if (cache)
+-		cache_init(cache, type, level, ofnode);
+-
+-	return cache;
+-}
+-
+-static void release_cache_debugcheck(struct cache *cache)
+-{
+-	struct cache *iter;
+-
+-	list_for_each_entry(iter, &cache_list, list)
+-		WARN_ONCE(iter->next_local == cache,
+-			  "cache for %s(%s) refers to cache for %s(%s)\n",
+-			  iter->ofnode->full_name,
+-			  cache_type_string(iter),
+-			  cache->ofnode->full_name,
+-			  cache_type_string(cache));
+-}
+-
+-static void release_cache(struct cache *cache)
+-{
+-	if (!cache)
+-		return;
+-
+-	pr_debug("freeing L%d %s cache for %s\n", cache->level,
+-		 cache_type_string(cache), cache->ofnode->full_name);
+-
+-	release_cache_debugcheck(cache);
+-	list_del(&cache->list);
+-	of_node_put(cache->ofnode);
+-	kfree(cache);
+-}
+-
+-static void cache_cpu_set(struct cache *cache, int cpu)
+-{
+-	struct cache *next = cache;
+-
+-	while (next) {
+-		WARN_ONCE(cpumask_test_cpu(cpu, &next->shared_cpu_map),
+-			  "CPU %i already accounted in %s(%s)\n",
+-			  cpu, next->ofnode->full_name,
+-			  cache_type_string(next));
+-		cpumask_set_cpu(cpu, &next->shared_cpu_map);
+-		next = next->next_local;
+-	}
++	if (type == CACHE_TYPE_UNIFIED)
++		return 0;
++	else
++		return type;
+ }
+ 
+-static int cache_size(const struct cache *cache, unsigned int *ret)
++static int cache_size(struct cache_info *this_leaf)
+ {
+ 	const char *propname;
+ 	const __be32 *cache_size;
++	int ct_idx;
+ 
+-	propname = cache_type_info[cache->type].size_prop;
+-
+-	cache_size = of_get_property(cache->ofnode, propname, NULL);
+-	if (!cache_size)
+-		return -ENODEV;
+-
+-	*ret = of_read_number(cache_size, 1);
+-	return 0;
+-}
+-
+-static int cache_size_kb(const struct cache *cache, unsigned int *ret)
+-{
+-	unsigned int size;
++	ct_idx = get_cacheinfo_idx(this_leaf->type);
++	propname = cache_type_info[ct_idx].size_prop;
+ 
+-	if (cache_size(cache, &size))
++	cache_size = of_get_property(this_leaf->of_node, propname, NULL);
++	if (!cache_size) {
++		this_leaf->size = 0;
+ 		return -ENODEV;
+-
+-	*ret = size / 1024;
+-	return 0;
++	} else {
++		this_leaf->size = of_read_number(cache_size, 1);
++		return 0;
++	}
+ }
+ 
+ /* not cache_line_size() because that's a macro in include/linux/cache.h */
+-static int cache_get_line_size(const struct cache *cache, unsigned int *ret)
++static int cache_get_line_size(struct cache_info *this_leaf)
+ {
+ 	const __be32 *line_size;
+-	int i, lim;
++	int i, lim, ct_idx;
+ 
+-	lim = ARRAY_SIZE(cache_type_info[cache->type].line_size_props);
++	ct_idx = get_cacheinfo_idx(this_leaf->type);
++	lim = ARRAY_SIZE(cache_type_info[ct_idx].line_size_props);
+ 
+ 	for (i = 0; i < lim; i++) {
+ 		const char *propname;
+ 
+-		propname = cache_type_info[cache->type].line_size_props[i];
+-		line_size = of_get_property(cache->ofnode, propname, NULL);
++		propname = cache_type_info[ct_idx].line_size_props[i];
++		line_size = of_get_property(this_leaf->of_node, propname, NULL);
+ 		if (line_size)
+ 			break;
+ 	}
+ 
+-	if (!line_size)
++	if (!line_size) {
++		this_leaf->coherency_line_size = 0;
+ 		return -ENODEV;
+-
+-	*ret = of_read_number(line_size, 1);
+-	return 0;
++	} else {
++		this_leaf->coherency_line_size = of_read_number(line_size, 1);
++		return 0;
++	}
+ }
+ 
+-static int cache_nr_sets(const struct cache *cache, unsigned int *ret)
++static int cache_nr_sets(struct cache_info *this_leaf)
+ {
+ 	const char *propname;
+ 	const __be32 *nr_sets;
++	int ct_idx;
+ 
+-	propname = cache_type_info[cache->type].nr_sets_prop;
++	ct_idx = get_cacheinfo_idx(this_leaf->type);
++	propname = cache_type_info[ct_idx].nr_sets_prop;
+ 
+-	nr_sets = of_get_property(cache->ofnode, propname, NULL);
+-	if (!nr_sets)
++	nr_sets = of_get_property(this_leaf->of_node, propname, NULL);
++	if (!nr_sets) {
++		this_leaf->number_of_sets = 0;
+ 		return -ENODEV;
+-
+-	*ret = of_read_number(nr_sets, 1);
+-	return 0;
++	} else {
++		this_leaf->number_of_sets = of_read_number(nr_sets, 1);
++		return 0;
++	}
+ }
+ 
+-static int cache_associativity(const struct cache *cache, unsigned int *ret)
++static int cache_associativity(struct cache_info *this_leaf)
+ {
+-	unsigned int line_size;
+-	unsigned int nr_sets;
+-	unsigned int size;
+-
+-	if (cache_nr_sets(cache, &nr_sets))
+-		goto err;
++	unsigned int line_size = this_leaf->coherency_line_size;
++	unsigned int nr_sets = this_leaf->number_of_sets;
++	unsigned int size = this_leaf->size;
+ 
+ 	/* If the cache is fully associative, there is no need to
+ 	 * check the other properties.
+ 	 */
+ 	if (nr_sets == 1) {
+-		*ret = 0;
++		this_leaf->ways_of_associativity = 0;
+ 		return 0;
+ 	}
+ 
+-	if (cache_get_line_size(cache, &line_size))
+-		goto err;
+-	if (cache_size(cache, &size))
+-		goto err;
+-
+-	if (!(nr_sets > 0 && size > 0 && line_size > 0))
+-		goto err;
+-
+-	*ret = (size / nr_sets) / line_size;
+-	return 0;
+-err:
+-	return -ENODEV;
+-}
+-
+-/* helper for dealing with split caches */
+-static struct cache *cache_find_first_sibling(struct cache *cache)
+-{
+-	struct cache *iter;
+-
+-	if (cache->type == CACHE_TYPE_UNIFIED)
+-		return cache;
+-
+-	list_for_each_entry(iter, &cache_list, list)
+-		if (iter->ofnode == cache->ofnode && iter->next_local == cache)
+-			return iter;
+-
+-	return cache;
+-}
+-
+-/* return the first cache on a local list matching node */
+-static struct cache *cache_lookup_by_node(const struct device_node *node)
+-{
+-	struct cache *cache = NULL;
+-	struct cache *iter;
+-
+-	list_for_each_entry(iter, &cache_list, list) {
+-		if (iter->ofnode != node)
+-			continue;
+-		cache = cache_find_first_sibling(iter);
+-		break;
++	if (!(nr_sets > 0 && size > 0 && line_size > 0)) {
++		this_leaf->ways_of_associativity = 0;
++		return -ENODEV;
++	} else {
++		this_leaf->ways_of_associativity = (size / nr_sets) / line_size;
++		return 0;
+ 	}
+-
+-	return cache;
+ }
+ 
+ static bool cache_node_is_unified(const struct device_node *np)
+@@ -324,523 +160,74 @@ static bool cache_node_is_unified(const struct device_node *np)
+ 	return of_get_property(np, "cache-unified", NULL);
+ }
+ 
+-static struct cache *cache_do_one_devnode_unified(struct device_node *node,
+-						  int level)
+-{
+-	struct cache *cache;
+-
+-	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
+-
+-	cache = new_cache(CACHE_TYPE_UNIFIED, level, node);
+-
+-	return cache;
+-}
+-
+-static struct cache *cache_do_one_devnode_split(struct device_node *node,
+-						int level)
+-{
+-	struct cache *dcache, *icache;
+-
+-	pr_debug("creating L%d dcache and icache for %s\n", level,
+-		 node->full_name);
+-
+-	dcache = new_cache(CACHE_TYPE_DATA, level, node);
+-	icache = new_cache(CACHE_TYPE_INSTRUCTION, level, node);
+-
+-	if (!dcache || !icache)
+-		goto err;
+-
+-	dcache->next_local = icache;
+-
+-	return dcache;
+-err:
+-	release_cache(dcache);
+-	release_cache(icache);
+-	return NULL;
+-}
+-
+-static struct cache *cache_do_one_devnode(struct device_node *node, int level)
+-{
+-	struct cache *cache;
+-
+-	if (cache_node_is_unified(node))
+-		cache = cache_do_one_devnode_unified(node, level);
+-	else
+-		cache = cache_do_one_devnode_split(node, level);
+-
+-	return cache;
+-}
+-
+-static struct cache *cache_lookup_or_instantiate(struct device_node *node,
+-						 int level)
+-{
+-	struct cache *cache;
+-
+-	cache = cache_lookup_by_node(node);
+-
+-	WARN_ONCE(cache && cache->level != level,
+-		  "cache level mismatch on lookup (got %d, expected %d)\n",
+-		  cache->level, level);
+-
+-	if (!cache)
+-		cache = cache_do_one_devnode(node, level);
+-
+-	return cache;
+-}
+-
+-static void link_cache_lists(struct cache *smaller, struct cache *bigger)
+-{
+-	while (smaller->next_local) {
+-		if (smaller->next_local == bigger)
+-			return; /* already linked */
+-		smaller = smaller->next_local;
+-	}
+-
+-	smaller->next_local = bigger;
+-}
+-
+-static void do_subsidiary_caches_debugcheck(struct cache *cache)
+-{
+-	WARN_ON_ONCE(cache->level != 1);
+-	WARN_ON_ONCE(strcmp(cache->ofnode->type, "cpu"));
+-}
+-
+-static void do_subsidiary_caches(struct cache *cache)
+-{
+-	struct device_node *subcache_node;
+-	int level = cache->level;
+-
+-	do_subsidiary_caches_debugcheck(cache);
+-
+-	while ((subcache_node = of_find_next_cache_node(cache->ofnode))) {
+-		struct cache *subcache;
+-
+-		level++;
+-		subcache = cache_lookup_or_instantiate(subcache_node, level);
+-		of_node_put(subcache_node);
+-		if (!subcache)
+-			break;
+-
+-		link_cache_lists(cache, subcache);
+-		cache = subcache;
+-	}
+-}
+-
+-static struct cache *cache_chain_instantiate(unsigned int cpu_id)
+-{
+-	struct device_node *cpu_node;
+-	struct cache *cpu_cache = NULL;
+-
+-	pr_debug("creating cache object(s) for CPU %i\n", cpu_id);
+-
+-	cpu_node = of_get_cpu_node(cpu_id, NULL);
+-	WARN_ONCE(!cpu_node, "no OF node found for CPU %i\n", cpu_id);
+-	if (!cpu_node)
+-		goto out;
+-
+-	cpu_cache = cache_lookup_or_instantiate(cpu_node, 1);
+-	if (!cpu_cache)
+-		goto out;
+-
+-	do_subsidiary_caches(cpu_cache);
+-
+-	cache_cpu_set(cpu_cache, cpu_id);
+-out:
+-	of_node_put(cpu_node);
+-
+-	return cpu_cache;
+-}
+-
+-static struct cache_dir *cacheinfo_create_cache_dir(unsigned int cpu_id)
+-{
+-	struct cache_dir *cache_dir;
+-	struct device *dev;
+-	struct kobject *kobj = NULL;
+-
+-	dev = get_cpu_device(cpu_id);
+-	WARN_ONCE(!dev, "no dev for CPU %i\n", cpu_id);
+-	if (!dev)
+-		goto err;
+-
+-	kobj = kobject_create_and_add("cache", &dev->kobj);
+-	if (!kobj)
+-		goto err;
+-
+-	cache_dir = kzalloc(sizeof(*cache_dir), GFP_KERNEL);
+-	if (!cache_dir)
+-		goto err;
+-
+-	cache_dir->kobj = kobj;
+-
+-	WARN_ON_ONCE(per_cpu(cache_dir_pcpu, cpu_id) != NULL);
+-
+-	per_cpu(cache_dir_pcpu, cpu_id) = cache_dir;
+-
+-	return cache_dir;
+-err:
+-	kobject_put(kobj);
+-	return NULL;
+-}
+-
+-static void cache_index_release(struct kobject *kobj)
+-{
+-	struct cache_index_dir *index;
+-
+-	index = kobj_to_cache_index_dir(kobj);
+-
+-	pr_debug("freeing index directory for L%d %s cache\n",
+-		 index->cache->level, cache_type_string(index->cache));
+-
+-	kfree(index);
+-}
+-
+-static ssize_t cache_index_show(struct kobject *k, struct attribute *attr, char *buf)
++static void ci_leaf_init(struct cache_info *this_leaf,
++				enum cache_type type, unsigned int level)
+ {
+-	struct kobj_attribute *kobj_attr;
+-
+-	kobj_attr = container_of(attr, struct kobj_attribute, attr);
+-
+-	return kobj_attr->show(k, kobj_attr, buf);
+-}
+-
+-static struct cache *index_kobj_to_cache(struct kobject *k)
+-{
+-	struct cache_index_dir *index;
+-
+-	index = kobj_to_cache_index_dir(k);
+-
+-	return index->cache;
++	this_leaf->level = level;
++	this_leaf->type = type;
++	cache_size(this_leaf);
++	cache_get_line_size(this_leaf);
++	cache_nr_sets(this_leaf);
++	cache_associativity(this_leaf);
+ }
+ 
+-static ssize_t size_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
++int init_cache_level(unsigned int cpu)
+ {
+-	unsigned int size_kb;
+-	struct cache *cache;
++	struct device_node *np;
++	struct device *cpu_dev = get_cpu_device(cpu);
++	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
++	unsigned int level = 0, leaves = 0;
+ 
+-	cache = index_kobj_to_cache(k);
+-
+-	if (cache_size_kb(cache, &size_kb))
++	if (!cpu_dev) {
++		pr_err("No cpu device for CPU %d\n", cpu);
+ 		return -ENODEV;
+-
+-	return sprintf(buf, "%uK\n", size_kb);
+-}
+-
+-static struct kobj_attribute cache_size_attr =
+-	__ATTR(size, 0444, size_show, NULL);
+-
+-
+-static ssize_t line_size_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
+-{
+-	unsigned int line_size;
+-	struct cache *cache;
+-
+-	cache = index_kobj_to_cache(k);
+-
+-	if (cache_get_line_size(cache, &line_size))
+-		return -ENODEV;
+-
+-	return sprintf(buf, "%u\n", line_size);
+-}
+-
+-static struct kobj_attribute cache_line_size_attr =
+-	__ATTR(coherency_line_size, 0444, line_size_show, NULL);
+-
+-static ssize_t nr_sets_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
+-{
+-	unsigned int nr_sets;
+-	struct cache *cache;
+-
+-	cache = index_kobj_to_cache(k);
+-
+-	if (cache_nr_sets(cache, &nr_sets))
+-		return -ENODEV;
+-
+-	return sprintf(buf, "%u\n", nr_sets);
+-}
+-
+-static struct kobj_attribute cache_nr_sets_attr =
+-	__ATTR(number_of_sets, 0444, nr_sets_show, NULL);
+-
+-static ssize_t associativity_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
+-{
+-	unsigned int associativity;
+-	struct cache *cache;
+-
+-	cache = index_kobj_to_cache(k);
+-
+-	if (cache_associativity(cache, &associativity))
+-		return -ENODEV;
+-
+-	return sprintf(buf, "%u\n", associativity);
+-}
+-
+-static struct kobj_attribute cache_assoc_attr =
+-	__ATTR(ways_of_associativity, 0444, associativity_show, NULL);
+-
+-static ssize_t type_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
+-{
+-	struct cache *cache;
+-
+-	cache = index_kobj_to_cache(k);
+-
+-	return sprintf(buf, "%s\n", cache_type_string(cache));
+-}
+-
+-static struct kobj_attribute cache_type_attr =
+-	__ATTR(type, 0444, type_show, NULL);
+-
+-static ssize_t level_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
+-{
+-	struct cache_index_dir *index;
+-	struct cache *cache;
+-
+-	index = kobj_to_cache_index_dir(k);
+-	cache = index->cache;
+-
+-	return sprintf(buf, "%d\n", cache->level);
+-}
+-
+-static struct kobj_attribute cache_level_attr =
+-	__ATTR(level, 0444, level_show, NULL);
+-
+-static ssize_t shared_cpu_map_show(struct kobject *k, struct kobj_attribute *attr, char *buf)
+-{
+-	struct cache_index_dir *index;
+-	struct cache *cache;
+-	int len;
+-	int n = 0;
+-
+-	index = kobj_to_cache_index_dir(k);
+-	cache = index->cache;
+-	len = PAGE_SIZE - 2;
+-
+-	if (len > 1) {
+-		n = cpumask_scnprintf(buf, len, &cache->shared_cpu_map);
+-		buf[n++] = '\n';
+-		buf[n] = '\0';
+ 	}
+-	return n;
+-}
+-
+-static struct kobj_attribute cache_shared_cpu_map_attr =
+-	__ATTR(shared_cpu_map, 0444, shared_cpu_map_show, NULL);
+-
+-/* Attributes which should always be created -- the kobject/sysfs core
+- * does this automatically via kobj_type->default_attrs.  This is the
+- * minimum data required to uniquely identify a cache.
+- */
+-static struct attribute *cache_index_default_attrs[] = {
+-	&cache_type_attr.attr,
+-	&cache_level_attr.attr,
+-	&cache_shared_cpu_map_attr.attr,
+-	NULL,
+-};
+-
+-/* Attributes which should be created if the cache device node has the
+- * right properties -- see cacheinfo_create_index_opt_attrs
+- */
+-static struct kobj_attribute *cache_index_opt_attrs[] = {
+-	&cache_size_attr,
+-	&cache_line_size_attr,
+-	&cache_nr_sets_attr,
+-	&cache_assoc_attr,
+-};
+-
+-static const struct sysfs_ops cache_index_ops = {
+-	.show = cache_index_show,
+-};
+-
+-static struct kobj_type cache_index_type = {
+-	.release = cache_index_release,
+-	.sysfs_ops = &cache_index_ops,
+-	.default_attrs = cache_index_default_attrs,
+-};
+-
+-static void cacheinfo_create_index_opt_attrs(struct cache_index_dir *dir)
+-{
+-	const char *cache_name;
+-	const char *cache_type;
+-	struct cache *cache;
+-	char *buf;
+-	int i;
+-
+-	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-	if (!buf)
+-		return;
+-
+-	cache = dir->cache;
+-	cache_name = cache->ofnode->full_name;
+-	cache_type = cache_type_string(cache);
+-
+-	/* We don't want to create an attribute that can't provide a
+-	 * meaningful value.  Check the return value of each optional
+-	 * attribute's ->show method before registering the
+-	 * attribute.
+-	 */
+-	for (i = 0; i < ARRAY_SIZE(cache_index_opt_attrs); i++) {
+-		struct kobj_attribute *attr;
+-		ssize_t rc;
+-
+-		attr = cache_index_opt_attrs[i];
+-
+-		rc = attr->show(&dir->kobj, attr, buf);
+-		if (rc <= 0) {
+-			pr_debug("not creating %s attribute for "
+-				 "%s(%s) (rc = %zd)\n",
+-				 attr->attr.name, cache_name,
+-				 cache_type, rc);
+-			continue;
+-		}
+-		if (sysfs_create_file(&dir->kobj, &attr->attr))
+-			pr_debug("could not create %s attribute for %s(%s)\n",
+-				 attr->attr.name, cache_name, cache_type);
++	np = cpu_dev->of_node;
++	if (!np) {
++		pr_err("Failed to find cpu%d device node\n", cpu);
++		return -ENOENT;
+ 	}
+ 
+-	kfree(buf);
+-}
+-
+-static void cacheinfo_create_index_dir(struct cache *cache, int index,
+-				       struct cache_dir *cache_dir)
+-{
+-	struct cache_index_dir *index_dir;
+-	int rc;
+-
+-	index_dir = kzalloc(sizeof(*index_dir), GFP_KERNEL);
+-	if (!index_dir)
+-		goto err;
+-
+-	index_dir->cache = cache;
+-
+-	rc = kobject_init_and_add(&index_dir->kobj, &cache_index_type,
+-				  cache_dir->kobj, "index%d", index);
+-	if (rc)
+-		goto err;
+-
+-	index_dir->next = cache_dir->index;
+-	cache_dir->index = index_dir;
+-
+-	cacheinfo_create_index_opt_attrs(index_dir);
+-
+-	return;
+-err:
+-	kfree(index_dir);
+-}
+-
+-static void cacheinfo_sysfs_populate(unsigned int cpu_id,
+-				     struct cache *cache_list)
+-{
+-	struct cache_dir *cache_dir;
+-	struct cache *cache;
+-	int index = 0;
+-
+-	cache_dir = cacheinfo_create_cache_dir(cpu_id);
+-	if (!cache_dir)
+-		return;
+-
+-	cache = cache_list;
+-	while (cache) {
+-		cacheinfo_create_index_dir(cache, index, cache_dir);
+-		index++;
+-		cache = cache->next_local;
++	while (np) {
++		leaves += cache_node_is_unified(np) ? 1 : 2;
++		level++;
++		of_node_put(np);
++		np = of_find_next_cache_node(np);
+ 	}
+-}
+-
+-void cacheinfo_cpu_online(unsigned int cpu_id)
+-{
+-	struct cache *cache;
+-
+-	cache = cache_chain_instantiate(cpu_id);
+-	if (!cache)
+-		return;
+-
+-	cacheinfo_sysfs_populate(cpu_id, cache);
+-}
+-
+-#ifdef CONFIG_HOTPLUG_CPU /* functions needed for cpu offline */
+-
+-static struct cache *cache_lookup_by_cpu(unsigned int cpu_id)
+-{
+-	struct device_node *cpu_node;
+-	struct cache *cache;
+-
+-	cpu_node = of_get_cpu_node(cpu_id, NULL);
+-	WARN_ONCE(!cpu_node, "no OF node found for CPU %i\n", cpu_id);
+-	if (!cpu_node)
+-		return NULL;
+-
+-	cache = cache_lookup_by_node(cpu_node);
+-	of_node_put(cpu_node);
++	this_cpu_ci->num_levels = level;
++	this_cpu_ci->num_leaves = leaves;
+ 
+-	return cache;
++	return 0;
+ }
+ 
+-static void remove_index_dirs(struct cache_dir *cache_dir)
++int populate_cache_leaves(unsigned int cpu)
+ {
+-	struct cache_index_dir *index;
+-
+-	index = cache_dir->index;
++	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
++	struct cache_info *this_leaf = this_cpu_ci->info_list;
++	struct device *cpu_dev = get_cpu_device(cpu);
++	struct device_node *np;
++	unsigned int level, idx;
+ 
+-	while (index) {
+-		struct cache_index_dir *next;
+-
+-		next = index->next;
+-		kobject_put(&index->kobj);
+-		index = next;
++	np = of_node_get(cpu_dev->of_node);
++	if (!np) {
++		pr_err("Failed to find cpu%d device node\n", cpu);
++		return -ENOENT;
+ 	}
+-}
+-
+-static void remove_cache_dir(struct cache_dir *cache_dir)
+-{
+-	remove_index_dirs(cache_dir);
+ 
+-	/* Remove cache dir from sysfs */
+-	kobject_del(cache_dir->kobj);
+-
+-	kobject_put(cache_dir->kobj);
+-
+-	kfree(cache_dir);
+-}
+-
+-static void cache_cpu_clear(struct cache *cache, int cpu)
+-{
+-	while (cache) {
+-		struct cache *next = cache->next_local;
+-
+-		WARN_ONCE(!cpumask_test_cpu(cpu, &cache->shared_cpu_map),
+-			  "CPU %i not accounted in %s(%s)\n",
+-			  cpu, cache->ofnode->full_name,
+-			  cache_type_string(cache));
+-
+-		cpumask_clear_cpu(cpu, &cache->shared_cpu_map);
+-
+-		/* Release the cache object if all the cpus using it
+-		 * are offline */
+-		if (cpumask_empty(&cache->shared_cpu_map))
+-			release_cache(cache);
+-
+-		cache = next;
++	for (idx = 0, level = 1; level <= this_cpu_ci->num_levels &&
++			idx < this_cpu_ci->num_leaves; idx++, level++) {
++		if (!this_leaf)
++			return -EINVAL;
++
++		this_leaf->of_node = np;
++		if (cache_node_is_unified(np)) {
++			ci_leaf_init(this_leaf++, CACHE_TYPE_UNIFIED, level);
++		} else {
++			ci_leaf_init(this_leaf++, CACHE_TYPE_DATA, level);
++			ci_leaf_init(this_leaf++, CACHE_TYPE_INST, level);
++		}
++		np = of_find_next_cache_node(np);
+ 	}
++	return 0;
+ }
+ 
+-void cacheinfo_cpu_offline(unsigned int cpu_id)
+-{
+-	struct cache_dir *cache_dir;
+-	struct cache *cache;
+-
+-	/* Prevent userspace from seeing inconsistent state - remove
+-	 * the sysfs hierarchy first */
+-	cache_dir = per_cpu(cache_dir_pcpu, cpu_id);
+-
+-	/* careful, sysfs population may have failed */
+-	if (cache_dir)
+-		remove_cache_dir(cache_dir);
+-
+-	per_cpu(cache_dir_pcpu, cpu_id) = NULL;
+-
+-	/* clear the CPU's bit in its cache chain, possibly freeing
+-	 * cache objects */
+-	cache = cache_lookup_by_cpu(cpu_id);
+-	if (cache)
+-		cache_cpu_clear(cache, cpu_id);
+-}
+-#endif /* CONFIG_HOTPLUG_CPU */
+diff --git a/arch/powerpc/kernel/cacheinfo.h b/arch/powerpc/kernel/cacheinfo.h
+deleted file mode 100644
+index a7b74d3..0000000
+--- a/arch/powerpc/kernel/cacheinfo.h
++++ /dev/null
+@@ -1,8 +0,0 @@
+-#ifndef _PPC_CACHEINFO_H
+-#define _PPC_CACHEINFO_H
+-
+-/* These are just hooks for sysfs.c to use. */
+-extern void cacheinfo_cpu_online(unsigned int cpu_id);
+-extern void cacheinfo_cpu_offline(unsigned int cpu_id);
+-
+-#endif /* _PPC_CACHEINFO_H */
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index 97e1dc9..2bc61d3 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -19,8 +19,6 @@
+ #include <asm/pmc.h>
+ #include <asm/firmware.h>
+ 
+-#include "cacheinfo.h"
+-
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #include <asm/lppaca.h>
+@@ -730,7 +728,6 @@ static void register_cpu_online(unsigned int cpu)
+ 		device_create_file(s, &dev_attr_altivec_idle_wait_time);
+ 	}
+ #endif
+-	cacheinfo_cpu_online(cpu);
+ }
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -811,7 +808,6 @@ static void unregister_cpu_online(unsigned int cpu)
+ 		device_remove_file(s, &dev_attr_altivec_idle_wait_time);
+ 	}
+ #endif
+-	cacheinfo_cpu_offline(cpu);
+ }
+ 
+ #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+-- 
+1.8.3.2
