@@ -1,23 +1,18 @@
-Return-Path: <mhocko@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hrai@nmglablinux22.freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 964D32C008F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 20:20:04 +1100 (EST)
-Date: Wed, 19 Feb 2014 10:19:59 +0100
-From: Michal Hocko <mhocko@suse.cz>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: ppc: RECLAIM_DISTANCE 10?
-Message-ID: <20140219091959.GD14783@dhcp22.suse.cz>
-References: <20140218090658.GA28130@dhcp22.suse.cz>
- <alpine.DEB.2.02.1402181424490.20772@chino.kir.corp.google.com>
- <20140219081644.GA14783@dhcp22.suse.cz>
- <alpine.DEB.2.02.1402190017480.7280@chino.kir.corp.google.com>
+ by ozlabs.org (Postfix) with ESMTPS id A54E42C00C7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 23:41:40 +1100 (EST)
+From: Harninder Rai <harninder.rai@freescale.com>
+To: <scottwood@freescale.com>, <devicetree@vger.kernel.org>
+Subject: [PATCH][v3] powerpc/fsl: Add/update miscellaneous missing binding
+Date: Wed, 19 Feb 2014 18:11:26 +0530
+Message-ID: <1392813686-10249-1-git-send-email-harninder.rai@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.02.1402190017480.7280@chino.kir.corp.google.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Content-Type: text/plain
+Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +22,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 19-02-14 00:20:21, David Rientjes wrote:
-> On Wed, 19 Feb 2014, Michal Hocko wrote:
-> 
-> > > I strongly suspect that the patch is correct since powerpc node distances 
-> > > are different than the architectures you're talking about and get doubled 
-> > > for every NUMA domain that the hardware supports.
-> > 
-> > Even if the units of the distance is different on PPC should every NUMA
-> > machine have zone_reclaim enabled? That doesn't right to me.
-> > 
-> 
-> In my experience on powerpc it's very correct, there's typically a 
-> significant latency in remote access and we don't have the benefit of a 
-> SLIT that actually defines the locality between proximity domains like we 
-> do on other architectures. 
+Missing bindings were found on running checkpatch.pl on bsc9132
+device tree. This patch add/update the following
 
-Interesting. So is the PPC NUMA basically about local vs. very distant?
-Should REMOTE_DISTANCE reflect that as well? Or can we have 
-distance < REMOTE_DISTANCE and it would still make sense to have
-zone_reclaim enabled?
+- Add bindings for L2 cache controller
+- Add bindings for memory controller
+- Update bindings for USB controller
 
-[...]
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+---
+* Changes in v3:
+Incorporated Scott's comments
+- Move cache-line-size property under required properties
+- Update compatible for mem-ctrl to reflect "fsl,qoriq-memory-controller"
+- One minor
 
-Thanks!
+* Changes since base version:
+Incorporated Scott's comments
+- Rename l2cc.txt to l2cache.txt
+- Add information about ePAPR compliance
+- Add missing "cache" in compatible
+- Miscellaneous minors
+
+ .../devicetree/bindings/powerpc/fsl/l2cache.txt    |   23 +++++++++++++++++
+ .../devicetree/bindings/powerpc/fsl/mem-ctrlr.txt  |   27 ++++++++++++++++++++
+ Documentation/devicetree/bindings/usb/fsl-usb.txt  |    4 ++-
+ 3 files changed, 53 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+new file mode 100644
+index 0000000..c41b218
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
+@@ -0,0 +1,23 @@
++Freescale L2 Cache Controller
++
++L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
++The cache bindings explained below are ePAPR compliant
++
++Required Properties:
++
++- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
++		  where chip is the processor (bsc9132, npc8572 etc.)
++- reg		: Address and size of L2 cache controller registers
++- cache-size	: Size of the entire L2 cache
++- interrupts	: Error interrupt of L2 controller
++- cache-line-size : Size of L2 cache lines
++
++Example:
++
++	L2: l2-cache-controller@20000 {
++		compatible = "fsl,bsc9132-l2-cache-controller", "cache";
++		reg = <0x20000 0x1000>;
++		cache-line-size = <32>; // 32 bytes
++		cache-size = <0x40000>; // L2,256K
++		interrupts = <16 2 1 0>;
++	};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
+new file mode 100644
+index 0000000..f87856f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
+@@ -0,0 +1,27 @@
++Freescale DDR memory controller
++
++Properties:
++
++- compatible	: Should include "fsl,chip-memory-controller" where
++		  chip is the processor (bsc9132, mpc8572 etc.), or
++		  "fsl,qoriq-memory-controller".
++- reg		: Address and size of DDR controller registers
++- interrupts	: Error interrupt of DDR controller
++
++Example 1:
++
++	memory-controller@2000 {
++		compatible = "fsl,bsc9132-memory-controller";
++		reg = <0x2000 0x1000>;
++		interrupts = <16 2 1 8>;
++	};
++
++
++Example 2:
++
++	ddr1: memory-controller@8000 {
++		compatible = "fsl,qoriq-memory-controller-v4.7",
++				"fsl,qoriq-memory-controller";
++		reg = <0x8000 0x1000>;
++		interrupts = <16 2 1 23>;
++	};
+diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+index bd5723f..4779c02 100644
+--- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
++++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+@@ -8,7 +8,9 @@ and additions :
+ Required properties :
+  - compatible : Should be "fsl-usb2-mph" for multi port host USB
+    controllers, or "fsl-usb2-dr" for dual role USB controllers
+-   or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121
++   or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121.
++   Wherever applicable, the IP version of the USB controller should
++   also be mentioned (for eg. fsl-usb2-dr-v2.2 for bsc9132).
+  - phy_type : For multi port host USB controllers, should be one of
+    "ulpi", or "serial". For dual role USB controllers, should be
+    one of "ulpi", "utmi", "utmi_wide", or "serial".
 -- 
-Michal Hocko
-SUSE Labs
+1.7.6.GIT
