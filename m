@@ -1,28 +1,27 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 73F442C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 08:22:32 +1100 (EST)
-Message-ID: <530520B6.8050205@windriver.com>
-Date: Wed, 19 Feb 2014 16:23:02 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id CFFA02C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 08:45:20 +1100 (EST)
+Received: by mail-pd0-f172.google.com with SMTP id p10so915491pdj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 13:45:16 -0800 (PST)
+Date: Wed, 19 Feb 2014 13:45:14 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: ppc: RECLAIM_DISTANCE 10?
+In-Reply-To: <20140219091959.GD14783@dhcp22.suse.cz>
+Message-ID: <alpine.DEB.2.02.1402191339000.31921@chino.kir.corp.google.com>
+References: <20140218090658.GA28130@dhcp22.suse.cz>
+ <alpine.DEB.2.02.1402181424490.20772@chino.kir.corp.google.com>
+ <20140219081644.GA14783@dhcp22.suse.cz>
+ <alpine.DEB.2.02.1402190017480.7280@chino.kir.corp.google.com>
+ <20140219091959.GD14783@dhcp22.suse.cz>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@linaro.org>, Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] of: give priority to the compatible match in
- __of_match_node()
-References: <1392205084-2351-1-git-send-email-haokexin@gmail.com> <
- CAL_JsqKMi2H=vwoxrOt8QRA2xJeiLqBKKfLtt4QRCRoFk6JUHg@mail.gmail.com> <
- CAP=VYLr7hqnzW2HLS4GCMFeghCgPmrQZHYst+AUfZc_WNT-Wog@mail.gmail.com>
- <20140219204134.E4A2DC4088D@trevor.secretlab.ca>
-In-Reply-To: <20140219204134.E4A2DC4088D@trevor.secretlab.ca>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Kevin Hao <haokexin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Chris Proctor <cproctor@csc.com.au>, Stephen N Chivers <schivers@csc.com.au>,
- Rob Herring <robh+dt@kernel.org>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,263 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14-02-19 03:41 PM, Grant Likely wrote:
-> On Wed, 19 Feb 2014 13:25:54 -0500, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
->> On Thu, Feb 13, 2014 at 2:01 PM, Rob Herring <robherring2@gmail.com> wrote:
->>> On Wed, Feb 12, 2014 at 5:38 AM, Kevin Hao <haokexin@gmail.com> wrote:
->>>> When the device node do have a compatible property, we definitely
->>>> prefer the compatible match besides the type and name. Only if
->>>> there is no such a match, we then consider the candidate which
->>>> doesn't have compatible entry but do match the type or name with
->>>> the device node.
->>>>
->>>> This is based on a patch from Sebastian Hesselbarth.
->>>>   http://patchwork.ozlabs.org/patch/319434/
->>>>
->>>> I did some code refactoring and also fixed a bug in the original patch.
->>>
->>> I'm inclined to just revert this once again and avoid possibly
->>> breaking yet another platform.
->>
->> Well, for what it is worth, today's (Feb19th) linux-next tree fails to boot
->> on my sbc8548.   It fails with:
+On Wed, 19 Feb 2014, Michal Hocko wrote:
+
+> Interesting. So is the PPC NUMA basically about local vs. very distant?
+
+The point is that it's impossible to tell how distant they are from one 
+NUMA domain to the next NUMA domain.
+
+> Should REMOTE_DISTANCE reflect that as well? Or can we have 
+> distance < REMOTE_DISTANCE and it would still make sense to have
+> zone_reclaim enabled?
 > 
-> I think I've got it fixed now with the latest series. Please try the
-> devicetree/merge branch on git://git.secretlab.ca/git/linux
 
-That seems to work.
-
-libphy: Freescale PowerQUICC MII Bus: probed
-libphy: Freescale PowerQUICC MII Bus: probed
-fsl-gianfar e0024000.ethernet: enabled errata workarounds, flags: 0x4
-fsl-gianfar e0024000.ethernet eth0: mac: 02:e0:0c:00:05:fd
-fsl-gianfar e0024000.ethernet eth0: Running with NAPI enabled
-fsl-gianfar e0024000.ethernet eth0: RX BD ring size for Q[0]: 256
-fsl-gianfar e0024000.ethernet eth0: TX BD ring size for Q[0]: 256
-fsl-gianfar e0025000.ethernet: enabled errata workarounds, flags: 0x4
-fsl-gianfar e0025000.ethernet eth1: mac: 02:e0:0c:00:06:fd
-fsl-gianfar e0025000.ethernet eth1: Running with NAPI enabled
-fsl-gianfar e0025000.ethernet eth1: RX BD ring size for Q[0]: 256
-fsl-gianfar e0025000.ethernet eth1: TX BD ring size for Q[0]: 256
-TCP: cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 17
-
-...
-
-root@sbc8548:~# cat /proc/version 
-Linux version 3.14.0-rc3-00024-g7119f42057c6 (paul@yow-lpgnfs-02) (gcc version 4.5.2 (GCC) ) #1 Wed Feb 19 16:08:17 EST 2014
-root@sbc8548:~#
-
-Paul.
---
-
-> 
-> g.
-> 
->> -----------------------------------------------
->> libphy: Freescale PowerQUICC MII Bus: probed
->> mdio_bus ethernet@e002400: /soc8548@e0000000/ethernet@24000/mdio@520
->> PHY address 1312 is too large
->> libphy: Freescale PowerQUICC MII Bus: probed
->> libphy: Freescale PowerQUICC MII Bus: probed
->> mdio_bus ethernet@e002500: /soc8548@e0000000/ethernet@25000/mdio@520
->> PHY address 1312 is too large
->> libphy: Freescale PowerQUICC MII Bus: probed
->> TCP: cubic registered
->> Initializing XFRM netlink socket
->> NET: Registered protocol family 17
->> <fail nfs mount>
->> -----------------------------------------------
->>
->> On a normal boot, we should see this:
->> -----------------------------------------------
->> libphy: Freescale PowerQUICC MII Bus: probed
->> libphy: Freescale PowerQUICC MII Bus: probed
->> fsl-gianfar e0024000.ethernet: enabled errata workarounds, flags: 0x4
->> fsl-gianfar e0024000.ethernet eth0: mac: 02:e0:0c:00:05:fd
->> fsl-gianfar e0024000.ethernet eth0: Running with NAPI enabled
->> fsl-gianfar e0024000.ethernet eth0: RX BD ring size for Q[0]: 256
->> fsl-gianfar e0024000.ethernet eth0: TX BD ring size for Q[0]: 256
->> fsl-gianfar e0025000.ethernet: enabled errata workarounds, flags: 0x4
->> fsl-gianfar e0025000.ethernet eth1: mac: 02:e0:0c:00:06:fd
->> fsl-gianfar e0025000.ethernet eth1: Running with NAPI enabled
->> fsl-gianfar e0025000.ethernet eth1: RX BD ring size for Q[0]: 256
->> fsl-gianfar e0025000.ethernet eth1: TX BD ring size for Q[0]: 256
->> TCP: cubic registered
->> Initializing XFRM netlink socket
->> NET: Registered protocol family 17
->> -----------------------------------------------
->>
->>
->> Git bisect says:
->>
->> ee8b26ad943aa34acc03ae6cde2b81d8d3d483d4 is the first bad commit
->> commit ee8b26ad943aa34acc03ae6cde2b81d8d3d483d4
->> Author: Kevin Hao <haokexin@gmail.com>
->> Date:   Tue Feb 18 15:57:30 2014 +0800
->>
->>     of: reimplement the matching method for __of_match_node()
->>
->>     In the current implementation of __of_match_node(), it will compare
->>     each given match entry against all the node's compatible strings
->>     with of_device_is_compatible().
->>
->>     To achieve multiple compatible strings per node with ordering from
->>     specific to generic, this requires given matches to be ordered from
->>     specific to generic. For most of the drivers this is not true and
->>     also an alphabetical ordering is more sane there.
->>
->>     Therefore, we define a following priority order for the match, and
->>     then scan all the entries to find the best match.
->>       1. specific compatible && type && name
->>       2. specific compatible && type
->>       3. specific compatible && name
->>       4. specific compatible
->>       5. general compatible && type && name
->>       6. general compatible && type
->>       7. general compatible && name
->>       8. general compatible
->>       9. type && name
->>       10. type
->>       11. name
->>
->>     This is based on some pseudo-codes provided by Grant Likely.
->>
->>     Signed-off-by: Kevin Hao <haokexin@gmail.com>
->>     [grant.likely: Changed multiplier to 4 which makes more sense]
->>     Signed-off-by: Grant Likely <grant.likely@linaro.org>
->>
->> :040000 040000 8f5dd19174417aece63b308ff299a5dbe2efa5a0
->> 8401b0e3903e23e973845ee75b26b04345d803d2 M      drivers
->>
->> As a double check, I checked out the head of linux-next, and did a
->> revert of the above commit, and my sbc8548 can then boot properly.
->>
->> Not doing anything fancy ; using the defconfig exactly as-is, and
->> ensuring the dtb is fresh from linux-next HEAD of today.
->>
->> Thanks,
->> Paul.
->> --
->>
->>>
->>> However, I think I would like to see this structured differently. We
->>> basically have 2 ways of matching: the existing pre-3.14 way and the
->>> desired match on best compatible only. All new bindings should match
->>> with the new way and the old way needs to be kept for compatibility.
->>> So lets structure the code that way. Search the match table first for
->>> best compatible with name and type NULL, then search the table the old
->>> way. I realize it appears you are doing this, but it is not clear this
->>> is the intent of the code. I would like to see this written as a patch
->>> with commit 105353145eafb3ea919 reverted first and you add a new match
->>> function to call first and then fallback to the existing function.
->>>
->>> Rob
->>>
->>>>
->>>> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->>>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
->>>> ---
->>>>  drivers/of/base.c | 55 +++++++++++++++++++++++++++++++++++++------------------
->>>>  1 file changed, 37 insertions(+), 18 deletions(-)
->>>>
->>>> diff --git a/drivers/of/base.c b/drivers/of/base.c
->>>> index ff85450d5683..9d655df458bd 100644
->>>> --- a/drivers/of/base.c
->>>> +++ b/drivers/of/base.c
->>>> @@ -730,32 +730,45 @@ out:
->>>>  }
->>>>  EXPORT_SYMBOL(of_find_node_with_property);
->>>>
->>>> +static int of_match_type_or_name(const struct device_node *node,
->>>> +                               const struct of_device_id *m)
->>>> +{
->>>> +       int match = 1;
->>>> +
->>>> +       if (m->name[0])
->>>> +               match &= node->name && !strcmp(m->name, node->name);
->>>> +
->>>> +       if (m->type[0])
->>>> +               match &= node->type && !strcmp(m->type, node->type);
->>>> +
->>>> +       return match;
->>>> +}
->>>> +
->>>>  static
->>>>  const struct of_device_id *__of_match_node(const struct of_device_id *matches,
->>>>                                            const struct device_node *node)
->>>>  {
->>>>         const char *cp;
->>>>         int cplen, l;
->>>> +       const struct of_device_id *m;
->>>> +       int match;
->>>>
->>>>         if (!matches)
->>>>                 return NULL;
->>>>
->>>>         cp = __of_get_property(node, "compatible", &cplen);
->>>> -       do {
->>>> -               const struct of_device_id *m = matches;
->>>> +       while (cp && (cplen > 0)) {
->>>> +               m = matches;
->>>>
->>>>                 /* Check against matches with current compatible string */
->>>>                 while (m->name[0] || m->type[0] || m->compatible[0]) {
->>>> -                       int match = 1;
->>>> -                       if (m->name[0])
->>>> -                               match &= node->name
->>>> -                                       && !strcmp(m->name, node->name);
->>>> -                       if (m->type[0])
->>>> -                               match &= node->type
->>>> -                                       && !strcmp(m->type, node->type);
->>>> -                       if (m->compatible[0])
->>>> -                               match &= cp
->>>> -                                       && !of_compat_cmp(m->compatible, cp,
->>>> +                       if (!m->compatible[0]) {
->>>> +                               m++;
->>>> +                               continue;
->>>> +                       }
->>>> +
->>>> +                       match = of_match_type_or_name(node, m);
->>>> +                       match &= cp && !of_compat_cmp(m->compatible, cp,
->>>>                                                         strlen(m->compatible));
->>>>                         if (match)
->>>>                                 return m;
->>>> @@ -763,12 +776,18 @@ const struct of_device_id *__of_match_node(const struct of_device_id *matches,
->>>>                 }
->>>>
->>>>                 /* Get node's next compatible string */
->>>> -               if (cp) {
->>>> -                       l = strlen(cp) + 1;
->>>> -                       cp += l;
->>>> -                       cplen -= l;
->>>> -               }
->>>> -       } while (cp && (cplen > 0));
->>>> +               l = strlen(cp) + 1;
->>>> +               cp += l;
->>>> +               cplen -= l;
->>>> +       }
->>>> +
->>>> +       m = matches;
->>>> +       /* Check against matches without compatible string */
->>>> +       while (m->name[0] || m->type[0] || m->compatible[0]) {
->>>> +               if (!m->compatible[0] && of_match_type_or_name(node, m))
->>>> +                       return m;
->>>> +               m++;
->>>> +       }
->>>>
->>>>         return NULL;
->>>>  }
->>>> --
->>>> 1.8.5.3
->>>>
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> _______________________________________________
->>> Linuxppc-dev mailing list
->>> Linuxppc-dev@lists.ozlabs.org
->>> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Ppc doesn't want to allocate in a different NUMA domain unless required, 
+the latency of a remote access is too high.  Everything that isn't in the 
+same domain has a distance >10 and is setup as 2^(domain hops) * 10.  We 
+don't have the ability like with a SLIT to define remote nodes to have 
+local latency vs remote or costly latency so the safe setting is a 
+RECLAIM_DISTANCE of 10.
