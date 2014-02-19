@@ -1,41 +1,39 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 859D92C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 04:24:18 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 74CB82C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 04:52:05 +1100 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 19 Feb 2014 12:24:15 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2085A38C8047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 12:24:12 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1JHNmnO8323544
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 17:24:12 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1JGTrPK024056
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 11:29:53 -0500
-Date: Wed, 19 Feb 2014 08:24:38 -0800
+ Wed, 19 Feb 2014 12:52:00 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id BEF2D6E803A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 12:51:53 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1JHiw4j47317222
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 17:51:58 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1JGVRjd010817
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 11:31:28 -0500
+Date: Wed, 19 Feb 2014 08:26:04 -0800
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
+To: Michal Hocko <mhocko@suse.cz>
 Subject: Re: ppc: RECLAIM_DISTANCE 10?
-Message-ID: <20140219162438.GB27108@linux.vnet.ibm.com>
+Message-ID: <20140219162604.GC27108@linux.vnet.ibm.com>
 References: <20140218090658.GA28130@dhcp22.suse.cz>
  <20140218233404.GB10844@linux.vnet.ibm.com>
- <20140218235800.GC10844@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1402181737530.17521@chino.kir.corp.google.com>
+ <20140219082313.GB14783@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.02.1402181737530.17521@chino.kir.corp.google.com>
-Cc: Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20140219082313.GB14783@dhcp22.suse.cz>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,60 +43,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 18.02.2014 [17:43:38 -0800], David Rientjes wrote:
-> On Tue, 18 Feb 2014, Nishanth Aravamudan wrote:
-> 
-> > How about the following?
+On 19.02.2014 [09:23:13 +0100], Michal Hocko wrote:
+> On Tue 18-02-14 15:34:05, Nishanth Aravamudan wrote:
+> > Hi Michal,
 > > 
+> > On 18.02.2014 [10:06:58 +0100], Michal Hocko wrote:
+> > > Hi,
+> > > I have just noticed that ppc has RECLAIM_DISTANCE reduced to 10 set by
+> > > 56608209d34b (powerpc/numa: Set a smaller value for RECLAIM_DISTANCE to
+> > > enable zone reclaim). The commit message suggests that the zone reclaim
+> > > is desirable for all NUMA configurations.
+> > > 
+> > > History has shown that the zone reclaim is more often harmful than
+> > > helpful and leads to performance problems. The default RECLAIM_DISTANCE
+> > > for generic case has been increased from 20 to 30 around 3.0
+> > > (32e45ff43eaf mm: increase RECLAIM_DISTANCE to 30).
+> > 
+> > Interesting.
+> > 
+> > > I strongly suspect that the patch is incorrect and it should be
+> > > reverted. Before I will send a revert I would like to understand what
+> > > led to the patch in the first place. I do not see why would PPC use only
+> > > LOCAL_DISTANCE and REMOTE_DISTANCE distances and in fact machines I have
+> > > seen use different values.
+> > > 
+> > > Anton, could you comment please?
+> > 
+> > I'll let Anton comment here, but in looking into this issue in working
+> > on CONFIG_HAVE_MEMORYLESS_NODE support, I realized that any LPAR with
+> > memoryless nodes will set zone_reclaim_mode to 1. I think we want to
+> > ignore memoryless nodes when we set up the reclaim mode like the
+> > following? I'll send it as a proper patch if you agree?
+> 
+> Funny enough, ppc memoryless node setup is what led me to this code.
+> We had a setup like this:
+> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+> node 0 size: 0 MB
+> node 0 free: 0 MB
+> node 2 cpus:
+> node 2 size: 7168 MB
+> node 2 free: 6019 MB
+> node distances:
+> node   0   2
+> 0:  10  40
+> 2:  40  10
+
+Yeah, I think this happens fairly often ... and we didn't properly
+support it (particularly with SLUB) on powerpc. I'll cc you on my
+patchset.
+
+> Which ends up enabling zone_reclaim although there is only a single node
+> with memory. Not that RECLAIM_DISTANCE would make any difference here as
+> the distance is even above default RECLAIM_DISTANCE.
+> 
 > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 5de4337..1a0eced 100644
+> > index 5de4337..4f6ff6f 100644
 > > --- a/mm/page_alloc.c
 > > +++ b/mm/page_alloc.c
-> > @@ -1854,7 +1854,8 @@ static void __paginginit init_zone_allows_reclaim(int nid)
+> > @@ -1853,8 +1853,9 @@ static void __paginginit init_zone_allows_reclaim(int nid)
+> >  {
 > >         int i;
 > >  
-> >         for_each_online_node(i)
+> > -       for_each_online_node(i)
 > > -               if (node_distance(nid, i) <= RECLAIM_DISTANCE)
+> > +       for_each_online_node(i) {
 > > +               if (node_distance(nid, i) <= RECLAIM_DISTANCE ||
-> > +                                       !NODE_DATA(i)->node_present_pages)
+> > +                                       local_memory_node(nid) != nid)
 > >                         node_set(i, NODE_DATA(nid)->reclaim_nodes);
 > >                 else
 > >                         zone_reclaim_mode = 1;
-> 
->  [ I changed the above from NODE_DATA(nid) -> NODE_DATA(i) as you caught 
->    so we're looking at the right code. ]
-> 
-> That can't be right, it would allow reclaiming from a memoryless node.  I 
-> think what you want is
-
-Gah, you're right.
-
-> 	for_each_online_node(i) {
-> 		if (!node_present_pages(i))
-> 			continue;
-> 		if (node_distance(nid, i) <= RECLAIM_DISTANCE) {
-> 			node_set(i, NODE_DATA(nid)->reclaim_nodes);
-> 			continue;
-> 		}
-> 		/* Always try to reclaim locally */
-> 		zone_reclaim_mode = 1;
-> 	}
-> 
-> but we really should be able to do for_each_node_state(i, N_MEMORY) here 
-> and memoryless nodes should already be excluded from that mask.
-
-Yep, I found that afterwards, which simplifies the logic. I'll add this
-to my series :)
-
-<snip>
-
-> > I think it's safe to move init_zone_allows_reclaim, because I don't
-> > think any allocates are occurring here that could cause us to reclaim
-> > anyways, right? Moving it allows us to safely reference
-> > node_present_pages.
 > > 
+> > Note, this won't actually do anything if CONFIG_HAVE_MEMORYLESS_NODES is
+> > not set, but if it is, I think semantically it will indicate that
+> > memoryless nodes *have* to reclaim remotely.
+> > 
+> > And actually the above won't work, because the callpath is
+> > 
+> > start_kernel -> setup_arch -> paging_init [-> free_area_init_nodes ->
+> > free_area_init_node -> init_zone_allows_reclaim] which is called before
+> > build_all_zonelists. This is a similar ordering problem as I'm having
+> > with the MEMORYLESS_NODE support, will work on it.
 > 
-> Yeah, this is fine.
+> I think you just want for_each_node_state(nid, N_MEMORY) and skip all
+> the memory less nodes, no?
 
-Thanks,
-Nish
+Yep, thanks!
+-Nish
