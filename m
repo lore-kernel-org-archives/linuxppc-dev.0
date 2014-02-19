@@ -1,18 +1,26 @@
-Return-Path: <hrai@nmglablinux22.freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-wi0-x232.google.com (mail-wi0-x232.google.com
+ [IPv6:2a00:1450:400c:c05::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A54E42C00C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 23:41:40 +1100 (EST)
-From: Harninder Rai <harninder.rai@freescale.com>
-To: <scottwood@freescale.com>, <devicetree@vger.kernel.org>
-Subject: [PATCH][v3] powerpc/fsl: Add/update miscellaneous missing binding
-Date: Wed, 19 Feb 2014 18:11:26 +0530
-Message-ID: <1392813686-10249-1-git-send-email-harninder.rai@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4A86F2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 00:17:43 +1100 (EST)
+Received: by mail-wi0-f178.google.com with SMTP id cc10so570090wib.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 05:17:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20140213003253.GL4524@book.gsilab.sittig.org>
+References: <1392211508-23615-1-git-send-email-a13xp0p0v88@gmail.com>
+ <20140213003253.GL4524@book.gsilab.sittig.org>
+Date: Wed, 19 Feb 2014 17:17:36 +0400
+Message-ID: <CAF0T0X5cQcdXU5-XEA2uZAoYSLyk4eONy+Jj6d4GeE-SrBpG2Q@mail.gmail.com>
+Subject: Re: [PATCH RFC v7 0/6] MPC512x DMA slave s/g support, OF DMA lookup
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Vinod Koul <vinod.koul@intel.com>,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,111 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Missing bindings were found on running checkpatch.pl on bsc9132
-device tree. This patch add/update the following
+Hello, Gerhard
 
-- Add bindings for L2 cache controller
-- Add bindings for memory controller
-- Update bindings for USB controller
+2014-02-13 4:32 GMT+04:00 Gerhard Sittig <gsi@denx.de>:
+> For some reason you have kept the DMA maintainers, but dropped
+> the dmaengine ML from Cc: -- was this intentional, given that the
+> series is specifically about DMA and you want to get feedback?
+No, it was not done by intention, I'll fix that in the new version of the
+series.
 
-Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
----
-* Changes in v3:
-Incorporated Scott's comments
-- Move cache-line-size property under required properties
-- Update compatible for mem-ctrl to reflect "fsl,qoriq-memory-controller"
-- One minor
+> And you may want to help DT people by not sending purely Linux
+> implementation related stuff to them (they already are drinking
+> from the firehose).  DT reviewers are foremost interested in
+> bindings and policy and remaining OS agnostic, and leave
+> mechanical .dts file updates to subsystem maintainers.
+Do you mean I should better Cc to devicetree@vger.kernel.org
+only parts 3, 4 and 5 of this series? How about cover letter?
 
-* Changes since base version:
-Incorporated Scott's comments
-- Rename l2cc.txt to l2cache.txt
-- Add information about ePAPR compliance
-- Add missing "cache" in compatible
-- Miscellaneous minors
+Thank you.
 
- .../devicetree/bindings/powerpc/fsl/l2cache.txt    |   23 +++++++++++++++++
- .../devicetree/bindings/powerpc/fsl/mem-ctrlr.txt  |   27 ++++++++++++++++++++
- Documentation/devicetree/bindings/usb/fsl-usb.txt  |    4 ++-
- 3 files changed, 53 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-new file mode 100644
-index 0000000..c41b218
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/l2cache.txt
-@@ -0,0 +1,23 @@
-+Freescale L2 Cache Controller
-+
-+L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
-+The cache bindings explained below are ePAPR compliant
-+
-+Required Properties:
-+
-+- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
-+		  where chip is the processor (bsc9132, npc8572 etc.)
-+- reg		: Address and size of L2 cache controller registers
-+- cache-size	: Size of the entire L2 cache
-+- interrupts	: Error interrupt of L2 controller
-+- cache-line-size : Size of L2 cache lines
-+
-+Example:
-+
-+	L2: l2-cache-controller@20000 {
-+		compatible = "fsl,bsc9132-l2-cache-controller", "cache";
-+		reg = <0x20000 0x1000>;
-+		cache-line-size = <32>; // 32 bytes
-+		cache-size = <0x40000>; // L2,256K
-+		interrupts = <16 2 1 0>;
-+	};
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
-new file mode 100644
-index 0000000..f87856f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/mem-ctrlr.txt
-@@ -0,0 +1,27 @@
-+Freescale DDR memory controller
-+
-+Properties:
-+
-+- compatible	: Should include "fsl,chip-memory-controller" where
-+		  chip is the processor (bsc9132, mpc8572 etc.), or
-+		  "fsl,qoriq-memory-controller".
-+- reg		: Address and size of DDR controller registers
-+- interrupts	: Error interrupt of DDR controller
-+
-+Example 1:
-+
-+	memory-controller@2000 {
-+		compatible = "fsl,bsc9132-memory-controller";
-+		reg = <0x2000 0x1000>;
-+		interrupts = <16 2 1 8>;
-+	};
-+
-+
-+Example 2:
-+
-+	ddr1: memory-controller@8000 {
-+		compatible = "fsl,qoriq-memory-controller-v4.7",
-+				"fsl,qoriq-memory-controller";
-+		reg = <0x8000 0x1000>;
-+		interrupts = <16 2 1 23>;
-+	};
-diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
-index bd5723f..4779c02 100644
---- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
-+++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
-@@ -8,7 +8,9 @@ and additions :
- Required properties :
-  - compatible : Should be "fsl-usb2-mph" for multi port host USB
-    controllers, or "fsl-usb2-dr" for dual role USB controllers
--   or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121
-+   or "fsl,mpc5121-usb2-dr" for dual role USB controllers of MPC5121.
-+   Wherever applicable, the IP version of the USB controller should
-+   also be mentioned (for eg. fsl-usb2-dr-v2.2 for bsc9132).
-  - phy_type : For multi port host USB controllers, should be one of
-    "ulpi", or "serial". For dual role USB controllers, should be
-    one of "ulpi", "utmi", "utmi_wide", or "serial".
--- 
-1.7.6.GIT
+Alexander
