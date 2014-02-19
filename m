@@ -1,40 +1,41 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C565A2C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 10:18:11 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B77432C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 10:24:38 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 19 Feb 2014 18:18:08 -0500
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3715F38C8027
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 18:18:07 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1JNI7Jx4587956
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 23:18:07 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1JNI6wo022901
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 18:18:07 -0500
-Date: Wed, 19 Feb 2014 15:18:00 -0800
+ Wed, 19 Feb 2014 16:24:36 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 4913F3E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 16:24:34 -0700 (MST)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1JNO3EM10289530
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 00:24:04 +0100
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1JNMQiP032630
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 16:22:27 -0700
+Date: Wed, 19 Feb 2014 15:22:21 -0800
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 To: Michal Hocko <mhocko@suse.cz>, Mel Gorman <mgorman@suse.de>,
  linux-mm@kvack.org, Christoph Lameter <cl@linux.com>,
  David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
  Ben Herrenschmidt <benh@kernel.crashing.org>,
  Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] powerpc: enable CONFIG_HAVE_PERCPU_NUMA_NODE_ID
-Message-ID: <20140219231800.GC413@linux.vnet.ibm.com>
+Subject: [PATCH 2/3 v2] powerpc: enable CONFIG_HAVE_PERCPU_NUMA_NODE_ID
+Message-ID: <20140219232221.GD413@linux.vnet.ibm.com>
 References: <20140219231641.GA413@linux.vnet.ibm.com>
  <20140219231714.GB413@linux.vnet.ibm.com>
+ <20140219231800.GC413@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140219231714.GB413@linux.vnet.ibm.com>
+In-Reply-To: <20140219231800.GC413@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,15 +45,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+[Apologies, I sent a stale version of this patch a moment ago...]
+
 In order to enable CONFIG_HAVE_MEMORYLESS_NODES, it is necessary to have
 somewhere to store the cpu <-> local-memory-node mapping. We could
 create another powerpc-specific lookup table, but the generic functions
 in include/linux/topology.h (protected by HAVE_PERCPU_NUMA_NODE_ID) are
 sufficient. This also allows us to remove the existing powerpc-specific
 cpu <-> node lookup table.
-    
-Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: Ben Herrenschmidt <benh@kernel.crashing.org>
+Cc: Christoph Lameter <cl@linux.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 957bf34..a84816c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -449,6 +449,10 @@ config NODES_SHIFT
+ 	default "4"
+ 	depends on NEED_MULTIPLE_NODES
+ 
++config USE_PERCPU_NUMA_NODE_ID
++	def_bool y
++	depends on NUMA
++
+ config ARCH_SELECT_MEMORY_MODEL
+ 	def_bool y
+ 	depends on PPC64
 diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
 index 7b58917..c8fbd1c 100644
 --- a/arch/powerpc/include/asm/mmzone.h
