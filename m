@@ -1,31 +1,20 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-wg0-x229.google.com (mail-wg0-x229.google.com
- [IPv6:2a00:1450:400c:c00::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B89B62C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 05:26:30 +1100 (EST)
-Received: by mail-wg0-f41.google.com with SMTP id l18so4346378wgh.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 10:26:25 -0800 (PST)
-MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <CAL_JsqKMi2H=vwoxrOt8QRA2xJeiLqBKKfLtt4QRCRoFk6JUHg@mail.gmail.com>
-References: <1392205084-2351-1-git-send-email-haokexin@gmail.com>
- <CAL_JsqKMi2H=vwoxrOt8QRA2xJeiLqBKKfLtt4QRCRoFk6JUHg@mail.gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id C8B432C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 05:41:50 +1100 (EST)
+Message-ID: <5304FB19.4050208@windriver.com>
+Date: Wed, 19 Feb 2014 13:42:33 -0500
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Wed, 19 Feb 2014 13:25:54 -0500
-Message-ID: <CAP=VYLr7hqnzW2HLS4GCMFeghCgPmrQZHYst+AUfZc_WNT-Wog@mail.gmail.com>
-Subject: Re: [PATCH] of: give priority to the compatible match in
- __of_match_node()
-To: Rob Herring <robherring2@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Kevin Hao <haokexin@gmail.com>, Arnd Bergmann <arnd@arndb.de>,
- Chris Proctor <cproctor@csc.com.au>, Stephen N Chivers <schivers@csc.com.au>,
- Scott Wood <scottwood@freescale.com>, Rob Herring <robh+dt@kernel.org>,
- Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+MIME-Version: 1.0
+To: John Donnelly <john.d@servergy.com>, Scott Wood <scottwood@freescale.com>
+Subject: Re: Anyone using SysRQ key sequences on console serial port ?
+References: <CAGtOQbTRSk32p7U=v9V9GPb_ro+WYbKLLCCfrmdypePcHA++mw@mail.gmail.com>	<CAP=VYLpgMYaSVjTwJ2Q15XB+nozz=OhAPU85Nb9xG_FdP5dcyA@mail.gmail.com>	<1392665821.6733.630.camel@snotra.buserror.net>
+ <CAGtOQbQXLpdzAzxgwtzisEJ1MAeND8057103oUO-v9x4Ki8qYQ@mail.gmail.com>
+In-Reply-To: <CAGtOQbQXLpdzAzxgwtzisEJ1MAeND8057103oUO-v9x4Ki8qYQ@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,226 +24,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 13, 2014 at 2:01 PM, Rob Herring <robherring2@gmail.com> wrote:
-> On Wed, Feb 12, 2014 at 5:38 AM, Kevin Hao <haokexin@gmail.com> wrote:
->> When the device node do have a compatible property, we definitely
->> prefer the compatible match besides the type and name. Only if
->> there is no such a match, we then consider the candidate which
->> doesn't have compatible entry but do match the type or name with
->> the device node.
->>
->> This is based on a patch from Sebastian Hesselbarth.
->>   http://patchwork.ozlabs.org/patch/319434/
->>
->> I did some code refactoring and also fixed a bug in the original patch.
->
-> I'm inclined to just revert this once again and avoid possibly
-> breaking yet another platform.
+[BTW, your html mail may be ignored by most people ; for example most of
+ the linux lists on vger.kernel.org actively reject it; top posting isn't
+ going to help either... ]
 
-Well, for what it is worth, today's (Feb19th) linux-next tree fails to boot
-on my sbc8548.   It fails with:
------------------------------------------------
-libphy: Freescale PowerQUICC MII Bus: probed
-mdio_bus ethernet@e002400: /soc8548@e0000000/ethernet@24000/mdio@520
-PHY address 1312 is too large
-libphy: Freescale PowerQUICC MII Bus: probed
-libphy: Freescale PowerQUICC MII Bus: probed
-mdio_bus ethernet@e002500: /soc8548@e0000000/ethernet@25000/mdio@520
-PHY address 1312 is too large
-libphy: Freescale PowerQUICC MII Bus: probed
-TCP: cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 17
-<fail nfs mount>
------------------------------------------------
+On 14-02-18 02:47 PM, John Donnelly wrote:
+> I am enable to get one keyboard sequence responded to with the noted change
+> in the dts .
+> 
+>  for instance:
+> 
+>    SysRQ ( Break)   c
+> 
+>   Panics .. Which is a good response, and since it doesn't require a return
+> to user mode ( I suspect )  it appears to work.
+> 
+> Any other requests fail to report any information :
+> 
+>  SysRQ (break )  l - list active processes
+>                          m - list memory
+> 
+>   Any additional SysRQ are ignored., and the system appears hung.
 
-On a normal boot, we should see this:
------------------------------------------------
-libphy: Freescale PowerQUICC MII Bus: probed
-libphy: Freescale PowerQUICC MII Bus: probed
-fsl-gianfar e0024000.ethernet: enabled errata workarounds, flags: 0x4
-fsl-gianfar e0024000.ethernet eth0: mac: 02:e0:0c:00:05:fd
-fsl-gianfar e0024000.ethernet eth0: Running with NAPI enabled
-fsl-gianfar e0024000.ethernet eth0: RX BD ring size for Q[0]: 256
-fsl-gianfar e0024000.ethernet eth0: TX BD ring size for Q[0]: 256
-fsl-gianfar e0025000.ethernet: enabled errata workarounds, flags: 0x4
-fsl-gianfar e0025000.ethernet eth1: mac: 02:e0:0c:00:06:fd
-fsl-gianfar e0025000.ethernet eth1: Running with NAPI enabled
-fsl-gianfar e0025000.ethernet eth1: RX BD ring size for Q[0]: 256
-fsl-gianfar e0025000.ethernet eth1: TX BD ring size for Q[0]: 256
-TCP: cubic registered
-Initializing XFRM netlink socket
-NET: Registered protocol family 17
------------------------------------------------
+It must be something specific about your particular platform, or the
+custom patches you have applied then.  I just tested today's linux-next
+tree (i.e. the latest bleeding edge stuff) and it still works for the
+sbc8548 (defconfig + enable magic SYSRQ option).  I did "s" (sync) multiple
+times and "?" then "m" for memory dump (obviously those chars don't get
+echo'd to the console....
+
+ ---------------------------------------
+root@sbc8548:~# cat /proc/cpuinfo |grep cpu
+cpu             : e500v2
+root@sbc8548:~# SysRq : Emergency Sync
+Emergency Sync complete
+SysRq : Emergency Sync
+Emergency Sync complete
+SysRq : HELP : loglevel(0-9) reboot(b) crash(c) terminate-all-tasks(e) memory-full-oom-kill(f) kill-all-tasks(i) thaw-filesystems(j) show-memory-usage(m) nice-all-RT-tasks(n) poweroff(o) show-registers(p) show-all-timers(q) sync(s) show-task-states(t) unmount(u) show-blocked-tasks(w)
+SysRq : Show Memory
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:  186, btch:  31 usd: 132
+active_anon:738 inactive_anon:29 isolated_anon:0
+ active_file:915 inactive_file:2219 isolated_file:0
+ unevictable:0 dirty:0 writeback:0 unstable:0
+ free:188325 slab_reclaimable:488 slab_unreclaimable:778
+ mapped:1006 shmem:44 pagetables:83 bounce:0
+ free_cma:0
+DMA free:753300kB min:3520kB low:4400kB high:5280kB active_anon:2952kB inactive_anon:116kB active_file:3660kB inactive_file:8876kB unevictable:0kB isolated(anon):0kB isolated(file):0kB 
+present:786432kB managed:775916kB mlocked:0kB dirty:0kB writeback:0kB mapped:4024kB shmem:176kB slab_reclaimable:1952kB slab_unreclaimable:3112kB kernel_stack:264kB pagetables:332kB uns
+table:0kB bounce:0kB free_cma:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+DMA: 403*4kB (UEM) 271*8kB (UEM) 131*16kB (UM) 35*32kB (UM) 15*64kB (UEM) 1*128kB (M) 1*256kB (M) 1*512kB (U) 1*1024kB (U) 3*2048kB (UEM) 180*4096kB (MR) = 753300kB
+3178 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 0kB
+Total swap = 0kB
+196608 pages RAM
+0 pages HighMem/MovableOnly
+2629 pages reserved
+ ---------------------------------------
 
 
-Git bisect says:
-
-ee8b26ad943aa34acc03ae6cde2b81d8d3d483d4 is the first bad commit
-commit ee8b26ad943aa34acc03ae6cde2b81d8d3d483d4
-Author: Kevin Hao <haokexin@gmail.com>
-Date:   Tue Feb 18 15:57:30 2014 +0800
-
-    of: reimplement the matching method for __of_match_node()
-
-    In the current implementation of __of_match_node(), it will compare
-    each given match entry against all the node's compatible strings
-    with of_device_is_compatible().
-
-    To achieve multiple compatible strings per node with ordering from
-    specific to generic, this requires given matches to be ordered from
-    specific to generic. For most of the drivers this is not true and
-    also an alphabetical ordering is more sane there.
-
-    Therefore, we define a following priority order for the match, and
-    then scan all the entries to find the best match.
-      1. specific compatible && type && name
-      2. specific compatible && type
-      3. specific compatible && name
-      4. specific compatible
-      5. general compatible && type && name
-      6. general compatible && type
-      7. general compatible && name
-      8. general compatible
-      9. type && name
-      10. type
-      11. name
-
-    This is based on some pseudo-codes provided by Grant Likely.
-
-    Signed-off-by: Kevin Hao <haokexin@gmail.com>
-    [grant.likely: Changed multiplier to 4 which makes more sense]
-    Signed-off-by: Grant Likely <grant.likely@linaro.org>
-
-:040000 040000 8f5dd19174417aece63b308ff299a5dbe2efa5a0
-8401b0e3903e23e973845ee75b26b04345d803d2 M      drivers
-
-As a double check, I checked out the head of linux-next, and did a
-revert of the above commit, and my sbc8548 can then boot properly.
-
-Not doing anything fancy ; using the defconfig exactly as-is, and
-ensuring the dtb is fresh from linux-next HEAD of today.
-
-Thanks,
 Paul.
 --
 
->
-> However, I think I would like to see this structured differently. We
-> basically have 2 ways of matching: the existing pre-3.14 way and the
-> desired match on best compatible only. All new bindings should match
-> with the new way and the old way needs to be kept for compatibility.
-> So lets structure the code that way. Search the match table first for
-> best compatible with name and type NULL, then search the table the old
-> way. I realize it appears you are doing this, but it is not clear this
-> is the intent of the code. I would like to see this written as a patch
-> with commit 105353145eafb3ea919 reverted first and you add a new match
-> function to call first and then fallback to the existing function.
->
-> Rob
->
+> 
+>  On an reference Intel platform, multiple SyqRQ can be issued and the
+> system remains healthy .
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> On Mon, Feb 17, 2014 at 1:37 PM, Scott Wood <scottwood@freescale.com> wrote:
+> 
+>> On Sun, 2014-02-16 at 10:56 -0500, Paul Gortmaker wrote:
+>>> On Fri, Feb 14, 2014 at 3:42 PM, John Donnelly <john.d@servergy.com>
+>> wrote:
+>>>> Hi,
+>>>>
+>>>>  I tried using the SysRq hotkey sequence on a serial console -
+>>>> 3.11.0-5-powerpc-e500mc system, by issuing a " break " and the system
+>>>> immediately wedges after displaying "SysRQ : HELP : " using both
+>> "Putty" and
+>>>> "Teraterm"  terminal emulators. I know the system is dead because my
+>> ssh
+>>>> sessions stopped too.
+>>>
+>>> Yes it does work -- or at least it _did_ work.  Make sure your dts has
+>> an entry
+>>>
+>>>                         compatible = "fsl,ns16550", "ns16550";
+>>>
+>>> since that enables a workaround I'd added for a hardware errata relating
+>>> to sending breaks over the serial console.   What you describe above
+>>> makes me think you aren't getting the workaround enabled.
 >>
->> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
->> Signed-off-by: Kevin Hao <haokexin@gmail.com>
->> ---
->>  drivers/of/base.c | 55 +++++++++++++++++++++++++++++++++++++------------------
->>  1 file changed, 37 insertions(+), 18 deletions(-)
+>> Also make sure CONFIG_SERIAL_8250_FSL is enabled.
 >>
->> diff --git a/drivers/of/base.c b/drivers/of/base.c
->> index ff85450d5683..9d655df458bd 100644
->> --- a/drivers/of/base.c
->> +++ b/drivers/of/base.c
->> @@ -730,32 +730,45 @@ out:
->>  }
->>  EXPORT_SYMBOL(of_find_node_with_property);
+>> -Scott
 >>
->> +static int of_match_type_or_name(const struct device_node *node,
->> +                               const struct of_device_id *m)
->> +{
->> +       int match = 1;
->> +
->> +       if (m->name[0])
->> +               match &= node->name && !strcmp(m->name, node->name);
->> +
->> +       if (m->type[0])
->> +               match &= node->type && !strcmp(m->type, node->type);
->> +
->> +       return match;
->> +}
->> +
->>  static
->>  const struct of_device_id *__of_match_node(const struct of_device_id *matches,
->>                                            const struct device_node *node)
->>  {
->>         const char *cp;
->>         int cplen, l;
->> +       const struct of_device_id *m;
->> +       int match;
 >>
->>         if (!matches)
->>                 return NULL;
 >>
->>         cp = __of_get_property(node, "compatible", &cplen);
->> -       do {
->> -               const struct of_device_id *m = matches;
->> +       while (cp && (cplen > 0)) {
->> +               m = matches;
->>
->>                 /* Check against matches with current compatible string */
->>                 while (m->name[0] || m->type[0] || m->compatible[0]) {
->> -                       int match = 1;
->> -                       if (m->name[0])
->> -                               match &= node->name
->> -                                       && !strcmp(m->name, node->name);
->> -                       if (m->type[0])
->> -                               match &= node->type
->> -                                       && !strcmp(m->type, node->type);
->> -                       if (m->compatible[0])
->> -                               match &= cp
->> -                                       && !of_compat_cmp(m->compatible, cp,
->> +                       if (!m->compatible[0]) {
->> +                               m++;
->> +                               continue;
->> +                       }
->> +
->> +                       match = of_match_type_or_name(node, m);
->> +                       match &= cp && !of_compat_cmp(m->compatible, cp,
->>                                                         strlen(m->compatible));
->>                         if (match)
->>                                 return m;
->> @@ -763,12 +776,18 @@ const struct of_device_id *__of_match_node(const struct of_device_id *matches,
->>                 }
->>
->>                 /* Get node's next compatible string */
->> -               if (cp) {
->> -                       l = strlen(cp) + 1;
->> -                       cp += l;
->> -                       cplen -= l;
->> -               }
->> -       } while (cp && (cplen > 0));
->> +               l = strlen(cp) + 1;
->> +               cp += l;
->> +               cplen -= l;
->> +       }
->> +
->> +       m = matches;
->> +       /* Check against matches without compatible string */
->> +       while (m->name[0] || m->type[0] || m->compatible[0]) {
->> +               if (!m->compatible[0] && of_match_type_or_name(node, m))
->> +                       return m;
->> +               m++;
->> +       }
->>
->>         return NULL;
->>  }
->> --
->> 1.8.5.3
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> 
