@@ -1,37 +1,21 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6C6CF2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 09:04:42 +1100 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id kq14so980414pab.31
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2014 14:04:39 -0800 (PST)
-Date: Wed, 19 Feb 2014 14:04:37 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-In-Reply-To: <alpine.DEB.2.10.1402181033480.28964@nuc>
-Message-ID: <alpine.DEB.2.02.1402191404030.31921@chino.kir.corp.google.com>
-References: <1391674026-20092-2-git-send-email-iamjoonsoo.kim@lge.com>
- <alpine.DEB.2.02.1402060041040.21148@chino.kir.corp.google.com>
- <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com> <20140211074159.GB27870@lge.com>
- <alpine.DEB.2.10.1402121612270.8183@nuc> <20140217065257.GD3468@lge.com>
- <alpine.DEB.2.10.1402181033480.28964@nuc>
+ by ozlabs.org (Postfix) with ESMTPS id B32252C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 09:07:44 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH] powerpc: select MEMORY for FSL_IFC to not break existing
+ .config files
+Date: Wed, 19 Feb 2014 17:07:21 -0500
+Message-ID: <1392847641-63777-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Matt Mackall <mpm@selenic.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- linuxppc-dev@lists.ozlabs.org, Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: Arnd Bergmann <arnd@arndb.de>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,10 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 18 Feb 2014, Christoph Lameter wrote:
+commit d2ae2e20fbdde5a65f3a5a153044ab1e5c53f7cc ("driver/memory:Move
+Freescale IFC driver to a common driver") introduces this build
+regression into the mpc85xx_defconfig:
 
-> Its an optimization to avoid calling the page allocator to figure out if
-> there is memory available on a particular node.
-> 
+ drivers/built-in.o: In function `fsl_ifc_nand_remove':
+ drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/built-in.o: In function `fsl_ifc_nand_probe':
+ drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/built-in.o: In function `match_bank':
+ drivers/mtd/nand/fsl_ifc_nand.c:1013: undefined reference to `convert_ifc_address'
+ drivers/built-in.o: In function `fsl_ifc_nand_probe':
+ drivers/mtd/nand/fsl_ifc_nand.c:1059: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/mtd/nand/fsl_ifc_nand.c:1080: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
+ drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
+ make: *** [vmlinux] Error 1
 
-Thus this patch breaks with memory hot-add for a memoryless node.
+This happens because there is nothing to descend us into the
+drivers/memory directory in the mpc85xx_defconfig.  It wasn't
+selecting CONFIG_MEMORY.  So we never built drivers/memory/fsl_ifc.o
+even with CONFIG_FSL_IFC=y, and so we have nothing to link against.
+
+In order to remain compatible with old config files and to avoid
+such build failures, make CONFIG_FSL_IFC select CONFIG_MEMORY.
+Also fix the whitespace issue (spaces vs. a tab) in the Kconfig.
+
+Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+
+[This probably makes sense to go in via Greg's char-misc/char-misc-next
+ (vs. powerpc-next) since that is where the regression was introduced.]
+
+ arch/powerpc/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 957bf344c0f5..d2d8d8f50610 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -738,7 +738,8 @@ config FSL_LBC
+ 
+ config FSL_IFC
+ 	bool
+-        depends on FSL_SOC
++	depends on FSL_SOC
++	select MEMORY
+ 
+ config FSL_GTM
+ 	bool
+-- 
+1.8.5.2
