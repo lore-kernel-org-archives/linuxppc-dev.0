@@ -1,42 +1,26 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ruchika.k@servergy.com>
+Received: from mail-oa0-f49.google.com (mail-oa0-f49.google.com
+ [209.85.219.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 017DF2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 05:29:05 +1100 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 20 Feb 2014 11:29:02 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 0F12C3E40063
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 11:29:00 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1KISxXW1049038
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 19:29:00 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1KISx5i029830
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 11:28:59 -0700
-Date: Thu, 20 Feb 2014 10:28:47 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [PATCH 1/3] mm: return NUMA_NO_NODE in local_memory_node if
- zonelists are not setup
-Message-ID: <20140220182847.GA24745@linux.vnet.ibm.com>
-References: <20140219231641.GA413@linux.vnet.ibm.com>
- <20140219231714.GB413@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1402201004460.11829@nuc>
+ by ozlabs.org (Postfix) with ESMTPS id D26B92C030A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 05:56:20 +1100 (EST)
+Received: by mail-oa0-f49.google.com with SMTP id i4so350672oah.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 10:56:16 -0800 (PST)
+Received: from [10.10.0.165] ([72.34.182.10])
+ by mx.google.com with ESMTPSA id g4sm1605304obe.5.2014.02.20.10.56.15
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
+ Thu, 20 Feb 2014 10:56:15 -0800 (PST)
+Message-ID: <53064FC9.8070908@servergy.com>
+Date: Thu, 20 Feb 2014 12:56:09 -0600
+From: Ruchika <ruchika.k@servergy.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.10.1402201004460.11829@nuc>
-Cc: Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org,
- Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Question about EHCI on P4080
+References: <530598D7.5080602@servergy.com>
+In-Reply-To: <530598D7.5080602@servergy.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,34 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 20.02.2014 [10:05:39 -0600], Christoph Lameter wrote:
-> On Wed, 19 Feb 2014, Nishanth Aravamudan wrote:
-> 
-> > We can call local_memory_node() before the zonelists are setup. In that
-> > case, first_zones_zonelist() will not set zone and the reference to
-> > zone->node will Oops. Catch this case, and, since we presumably running
-> > very early, just return that any node will do.
-> 
-> Really? Isnt there some way to avoid this call if zonelists are not setup
-> yet?
+linuxppc,
+Is there another mailing list which is more appropriate ?
+If so I'd be happy to get a recommendation.
 
-How do I best determine if zonelists aren't setup yet?
+Thank you
+Regards
+ruchika
 
-The call-path in question (after my series is applied) is:
 
-arch/powerpc/kernel/setup_64.c::setup_arch ->
-	arch/powerpc/mm/numa.c::do_init_bootmem() ->
-		cpu_numa_callback() ->
-			numa_setup_cpu() ->
-				map_cpu_to_node() ->
-					update_numa_cpu_node() ->
-						set_cpu_numa_mem()
-
-and setup_arch() is called before build_all_zonelists(NULL, NULL) in
-start_kernel(). This seemed like the most reasonable path, as it's used
-on hotplug as well.
-
-I'm open to suggestsions!
-
-Thanks,
-Nish
+On 2/19/2014 11:55 PM, Ruchika wrote:
+> Hi,
+> I've been trying to understand why the uboot code is unable to work with
+> USB1.1 devices.
+> On a USB analyzer:
+> I notice on an analyzer that there are no SOF or IN tokens seen on the
+> bus at all. The only  after the very first setup packet is sent and ACK'd.
+>
+> The board has a hub chip on it connected to the USB controller via a
+> Ulpi interface.
+>
+> Uboot debug indicates that the transfer times out and was still "Active"
+>
+> The kernel code indicates that a companion driver handles 1.1 devices.
+> Does this mean there are 2 HCD's, one for HS and one for FS/LS in the
+> kernel ?
+> Thank you
+>
+>
+> ruchika
