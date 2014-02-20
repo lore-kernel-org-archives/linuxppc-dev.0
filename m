@@ -1,15 +1,18 @@
-Return-Path: <htejun@gmail.com>
-Sender: Tejun Heo <htejun@gmail.com>
-From: Tejun Heo <tj@kernel.org>
-To: laijs@cn.fujitsu.com
-Subject: [PATCH 2/9] ps3-vuart: don't use PREPARE_WORK
-Date: Thu, 20 Feb 2014 15:44:24 -0500
-Message-Id: <1392929071-16555-3-git-send-email-tj@kernel.org>
-In-Reply-To: <1392929071-16555-1-git-send-email-tj@kernel.org>
-References: <1392929071-16555-1-git-send-email-tj@kernel.org>
-Cc: Tejun Heo <tj@kernel.org>, Geoff Levand <geoff@infradead.org>,
- cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D89162C0318
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 07:48:33 +1100 (EST)
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc: 85xx rdb: move np pointer to avoid builderror
+Date: Thu, 20 Feb 2014 21:48:16 +0100
+Message-Id: <1392929297-12837-1-git-send-email-bigeasy@linutronix.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,50 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PREPARE_[DELAYED_]WORK() are being phased out.  They have few users
-and a nasty surprise in terms of reentrancy guarantee as workqueue
-considers work items to be different if they don't have the same work
-function.
+If CONFIG_UCC_GETH or CONFIG_SERIAL_QE is not defined then we get a
+warning about an used variable which leads to a build error.
 
-ps3_vuart wasn't overriding the work item with multiple work functions
-but was using NULL for INIT_WORK() and then single PREPARE_WORK() to
-set the work function.  We can simply invoke INIT_WORK() with the work
-function and remove the PREPARE_WORK() usage.
-
-Not tested at all.
-
-It would probably be best to route this with other related updates
-through the workqueue tree.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Geoff Levand <geoff@infradead.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: cbe-oss-dev@lists.ozlabs.org
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/ps3/ps3-vuart.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
-index fb73008..bc1e513 100644
---- a/drivers/ps3/ps3-vuart.c
-+++ b/drivers/ps3/ps3-vuart.c
-@@ -699,8 +699,6 @@ int ps3_vuart_read_async(struct ps3_system_bus_device *dev, unsigned int bytes)
- 
- 	BUG_ON(!bytes);
- 
--	PREPARE_WORK(&priv->rx_list.work.work, ps3_vuart_work);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e15bdd1..232a6a7 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -86,10 +86,6 @@ void __init mpc85xx_rdb_pic_init(void)
+  */
+ static void __init mpc85xx_rdb_setup_arch(void)
+ {
+-#ifdef CONFIG_QUICC_ENGINE
+-	struct device_node *np;
+-#endif
 -
- 	spin_lock_irqsave(&priv->rx_list.lock, flags);
- 	if (priv->rx_list.bytes_held >= bytes) {
- 		dev_dbg(&dev->core, "%s:%d: schedule_work %xh bytes\n",
-@@ -1052,7 +1050,7 @@ static int ps3_vuart_probe(struct ps3_system_bus_device *dev)
- 	INIT_LIST_HEAD(&priv->rx_list.head);
- 	spin_lock_init(&priv->rx_list.lock);
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_rdb_setup_arch()", 0);
  
--	INIT_WORK(&priv->rx_list.work.work, NULL);
-+	INIT_WORK(&priv->rx_list.work.work, ps3_vuart_work);
- 	priv->rx_list.work.trigger = 0;
- 	priv->rx_list.work.dev = dev;
+@@ -101,6 +97,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 	mpc85xx_qe_init();
+ #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
+ 	if (machine_is(p1025_rdb)) {
++		struct device_node *np;
+ 
+ 		struct ccsr_guts __iomem *guts;
  
 -- 
-1.8.5.3
+1.9.0.rc3
