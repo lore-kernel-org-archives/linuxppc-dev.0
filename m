@@ -1,24 +1,15 @@
-Return-Path: <ruchika.k@servergy.com>
-Received: from mail-oa0-f42.google.com (mail-oa0-f42.google.com
- [209.85.219.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 19AD72C0236
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Feb 2014 06:36:13 +1100 (EST)
-Received: by mail-oa0-f42.google.com with SMTP id j17so413158oag.1
- for <linuxppc-dev@ozlabs.org>; Thu, 20 Feb 2014 11:36:10 -0800 (PST)
-Received: from [10.10.0.165] ([72.34.182.10])
- by mx.google.com with ESMTPSA id su13sm31319925oeb.1.2014.02.20.11.36.09
- for <linuxppc-dev@ozlabs.org>
- (version=TLSv1 cipher=ECDHE-RSA-RC4-SHA bits=128/128);
- Thu, 20 Feb 2014 11:36:09 -0800 (PST)
-Message-ID: <53065925.7020300@servergy.com>
-Date: Thu, 20 Feb 2014 13:36:05 -0600
-From: Ruchika <ruchika.k@servergy.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: P4080 + EHCI controller question
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <htejun@gmail.com>
+Sender: Tejun Heo <htejun@gmail.com>
+From: Tejun Heo <tj@kernel.org>
+To: laijs@cn.fujitsu.com
+Subject: [PATCH 2/9] ps3-vuart: don't use PREPARE_WORK
+Date: Thu, 20 Feb 2014 15:44:24 -0500
+Message-Id: <1392929071-16555-3-git-send-email-tj@kernel.org>
+In-Reply-To: <1392929071-16555-1-git-send-email-tj@kernel.org>
+References: <1392929071-16555-1-git-send-email-tj@kernel.org>
+Cc: Tejun Heo <tj@kernel.org>, Geoff Levand <geoff@infradead.org>,
+ cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-I've been trying to understand why the uboot code is unable to work with
-USB1.1 devices.
-On a USB analyzer:
-I notice on an analyzer that there are no SOF or IN tokens seen on the
-bus at all. The only  after the very first setup packet is sent and ACK'd.
+PREPARE_[DELAYED_]WORK() are being phased out.  They have few users
+and a nasty surprise in terms of reentrancy guarantee as workqueue
+considers work items to be different if they don't have the same work
+function.
 
-The board has a hub chip on it connected to the USB controller via a
-Ulpi interface.
+ps3_vuart wasn't overriding the work item with multiple work functions
+but was using NULL for INIT_WORK() and then single PREPARE_WORK() to
+set the work function.  We can simply invoke INIT_WORK() with the work
+function and remove the PREPARE_WORK() usage.
 
-Uboot debug indicates that the transfer times out and was still "Active"
+Not tested at all.
 
-The kernel code indicates that a companion driver handles 1.1 devices.
-Does this mean there are 2 HCD's, one for HS and one for FS/LS in the
-kernel ?
-Thank you
+It would probably be best to route this with other related updates
+through the workqueue tree.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Geoff Levand <geoff@infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: cbe-oss-dev@lists.ozlabs.org
+---
+ drivers/ps3/ps3-vuart.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/ps3/ps3-vuart.c b/drivers/ps3/ps3-vuart.c
+index fb73008..bc1e513 100644
+--- a/drivers/ps3/ps3-vuart.c
++++ b/drivers/ps3/ps3-vuart.c
+@@ -699,8 +699,6 @@ int ps3_vuart_read_async(struct ps3_system_bus_device *dev, unsigned int bytes)
+ 
+ 	BUG_ON(!bytes);
+ 
+-	PREPARE_WORK(&priv->rx_list.work.work, ps3_vuart_work);
+-
+ 	spin_lock_irqsave(&priv->rx_list.lock, flags);
+ 	if (priv->rx_list.bytes_held >= bytes) {
+ 		dev_dbg(&dev->core, "%s:%d: schedule_work %xh bytes\n",
+@@ -1052,7 +1050,7 @@ static int ps3_vuart_probe(struct ps3_system_bus_device *dev)
+ 	INIT_LIST_HEAD(&priv->rx_list.head);
+ 	spin_lock_init(&priv->rx_list.lock);
+ 
+-	INIT_WORK(&priv->rx_list.work.work, NULL);
++	INIT_WORK(&priv->rx_list.work.work, ps3_vuart_work);
+ 	priv->rx_list.work.trigger = 0;
+ 	priv->rx_list.work.dev = dev;
+ 
+-- 
+1.8.5.3
