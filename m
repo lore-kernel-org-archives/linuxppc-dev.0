@@ -1,26 +1,26 @@
-Return-Path: <prabhakar@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0D12C2C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 17:06:22 +1100 (EST)
-Message-ID: <53059B47.8000103@freescale.com>
-Date: Thu, 20 Feb 2014 11:35:59 +0530
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id B061D2C00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2014 20:55:40 +1100 (EST)
+Date: Thu, 20 Feb 2014 10:55:34 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: ppc: RECLAIM_DISTANCE 10?
+Message-ID: <20140220095534.GC12451@dhcp22.suse.cz>
+References: <20140218090658.GA28130@dhcp22.suse.cz>
+ <20140218233404.GB10844@linux.vnet.ibm.com>
+ <20140218235800.GC10844@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1402181737530.17521@chino.kir.corp.google.com>
+ <20140219162438.GB27108@linux.vnet.ibm.com>
+ <20140219163345.GD27108@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2] powerpc: select MEMORY for FSL_IFC to not break
- existing .config files
-References: <1392848350.6733.809.camel@snotra.buserror.net>
- <1392850000-4601-1-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1392850000-4601-1-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-next@vger.kernel.org,
- linux-mtd@lists.infradead.org, Scott Wood <scottwood@freescale.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Woodhouse <dwmw2@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140219163345.GD27108@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+ David Rientjes <rientjes@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,107 +30,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed 19-02-14 08:33:45, Nishanth Aravamudan wrote:
+> On 19.02.2014 [08:24:38 -0800], Nishanth Aravamudan wrote:
+> > On 18.02.2014 [17:43:38 -0800], David Rientjes wrote:
+> > > On Tue, 18 Feb 2014, Nishanth Aravamudan wrote:
+> > > 
+> > > > How about the following?
+> > > > 
+> > > > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > > > index 5de4337..1a0eced 100644
+> > > > --- a/mm/page_alloc.c
+> > > > +++ b/mm/page_alloc.c
+> > > > @@ -1854,7 +1854,8 @@ static void __paginginit init_zone_allows_reclaim(int nid)
+> > > >         int i;
+> > > >  
+> > > >         for_each_online_node(i)
+> > > > -               if (node_distance(nid, i) <= RECLAIM_DISTANCE)
+> > > > +               if (node_distance(nid, i) <= RECLAIM_DISTANCE ||
+> > > > +                                       !NODE_DATA(i)->node_present_pages)
+> > > >                         node_set(i, NODE_DATA(nid)->reclaim_nodes);
+> > > >                 else
+> > > >                         zone_reclaim_mode = 1;
+> > > 
+> > >  [ I changed the above from NODE_DATA(nid) -> NODE_DATA(i) as you caught 
+> > >    so we're looking at the right code. ]
+> > > 
+> > > That can't be right, it would allow reclaiming from a memoryless node.  I 
+> > > think what you want is
+> > 
+> > Gah, you're right.
+> > 
+> > > 	for_each_online_node(i) {
+> > > 		if (!node_present_pages(i))
+> > > 			continue;
+> > > 		if (node_distance(nid, i) <= RECLAIM_DISTANCE) {
+> > > 			node_set(i, NODE_DATA(nid)->reclaim_nodes);
+> > > 			continue;
+> > > 		}
+> > > 		/* Always try to reclaim locally */
+> > > 		zone_reclaim_mode = 1;
+> > > 	}
+> > > 
+> > > but we really should be able to do for_each_node_state(i, N_MEMORY) here 
+> > > and memoryless nodes should already be excluded from that mask.
+> > 
+> > Yep, I found that afterwards, which simplifies the logic. I'll add this
+> > to my series :)
+> 
+> In looking at the code, I am wondering about the following:
+> 
+> init_zone_allows_reclaim() is called for each nid from
+> free_area_init_node(). Which means that calculate_node_totalpages for
+> other "later" nids and check_for_memory() [which sets up the N_MEMORY
+> nodemask] hasn't been called yet.
+> 
+> So, would it make sense to pull up the
+>                 /* Any memory on that node */
+>                 if (pgdat->node_present_pages)
+>                         node_set_state(nid, N_MEMORY);
+>                 check_for_memory(pgdat, nid);
+> into free_area_init_node()?
 
-On 2/20/2014 4:16 AM, Paul Gortmaker wrote:
-> commit d2ae2e20fbdde5a65f3a5a153044ab1e5c53f7cc ("driver/memory:Move
-> Freescale IFC driver to a common driver") introduces this build
-> regression into the mpc85xx_defconfig:
->
->   drivers/built-in.o: In function `fsl_ifc_nand_remove':
->   drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/built-in.o: In function `fsl_ifc_nand_probe':
->   drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/built-in.o: In function `match_bank':
->   drivers/mtd/nand/fsl_ifc_nand.c:1013: undefined reference to `convert_ifc_address'
->   drivers/built-in.o: In function `fsl_ifc_nand_probe':
->   drivers/mtd/nand/fsl_ifc_nand.c:1059: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/mtd/nand/fsl_ifc_nand.c:1080: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
->   drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
->   make: *** [vmlinux] Error 1
->
-> This happens because there is nothing to descend us into the
-> drivers/memory directory in the mpc85xx_defconfig.  It wasn't
-> selecting CONFIG_MEMORY.  So we never built drivers/memory/fsl_ifc.o
-> and so we have nothing to link the above symbols against.
->
-> Since the goal of the original commit was to relocate the driver to
-> an arch independent location, it only makes sense to relocate the
-> Kconfig setting there as well.  But that alone won't fix the build
-> failure; for that we ensure whoever selects FSL_IFC also selects MEMORY.
->
-> Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
-> Cc: Scott Wood <scottwood@freescale.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
->
-> [v2: fix the mislocated FSL_IFC as per Scott's comment.  It still
->   probably makes sense to go in via Greg's char-misc/char-misc-next
->   (vs. powerpc-next) since that is where the regression was introduced.]
->
->   arch/powerpc/Kconfig     | 4 ----
->   drivers/memory/Kconfig   | 4 ++++
->   drivers/mtd/nand/Kconfig | 1 +
->   3 files changed, 5 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 957bf344c0f5..b9fcecc706ab 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -736,10 +736,6 @@ config FSL_LBC
->   	  controller.  Also contains some common code used by
->   	  drivers for specific local bus peripherals.
->   
-> -config FSL_IFC
-> -	bool
-> -        depends on FSL_SOC
-> -
->   config FSL_GTM
->   	bool
->   	depends on PPC_83xx || QUICC_ENGINE || CPM2
-> diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
-> index 29a11db365bc..a3640fe9852f 100644
-> --- a/drivers/memory/Kconfig
-> +++ b/drivers/memory/Kconfig
-> @@ -50,4 +50,8 @@ config TEGRA30_MC
->   	  analysis, especially for IOMMU/SMMU(System Memory Management
->   	  Unit) module.
->   
-> +config FSL_IFC
-> +	bool
-> +	depends on FSL_SOC
-> +
->   endif
-> diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-> index 90ff447bf043..a4bee41ad5cb 100644
-> --- a/drivers/mtd/nand/Kconfig
-> +++ b/drivers/mtd/nand/Kconfig
-> @@ -428,6 +428,7 @@ config MTD_NAND_FSL_IFC
->   	tristate "NAND support for Freescale IFC controller"
->   	depends on MTD_NAND && FSL_SOC
->   	select FSL_IFC
-> +	select MEMORY
->   	help
->   	  Various Freescale chips e.g P1010, include a NAND Flash machine
->   	  with built-in hardware ECC capabilities.
+Dunno, but it shouldn't be needed because nodes are set N_MEMORY earlier
+in early_calculate_totalpages as mentioned in other email.
 
-Hi All,
-
-I am not sure which version of patch is being picked here.
-
-Latest version is v8 and it is a "patch set" and it do enable 
-CONFIG_MEMORY in powerpc/configs
-
-1.  driver/memory:Move Freescale IFC driver to a common driver
-http://patchwork.ozlabs.org/patch/315531/
-
-2. powerpc/config: Enable memory driver
-http://patchwork.ozlabs.org/patch/315532/
-
-Regards,
-Prabhakar
+-- 
+Michal Hocko
+SUSE Labs
