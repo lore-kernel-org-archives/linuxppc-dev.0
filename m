@@ -1,21 +1,26 @@
 Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
- [212.227.126.187]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.9])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 653702C0322
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 01:20:33 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0FACE2C031B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 01:21:58 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 1/7] IBM Akebono: Add a SDHCI platform driver
-Date: Fri, 21 Feb 2014 15:14:30 +0100
-Message-ID: <1773685.WfxOP0FuHM@wuerfel>
-In-Reply-To: <1392964293-13687-2-git-send-email-alistair@popple.id.au>
-References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
- <1392964293-13687-2-git-send-email-alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 4/7] ECHI Platform: Merge ppc-of EHCI driver into the
+ ehci-platform driver
+Date: Fri, 21 Feb 2014 15:21:32 +0100
+Message-ID: <9352625.f2QvCl1mNy@wuerfel>
+In-Reply-To: <20140221114803.GB8783@e106331-lin.cambridge.arm.com>
+References: <20140221114803.GB8783@e106331-lin.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree@vger.kernel.org, cjb@laptop.org, linux-mmc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Alistair Popple <alistair@popple.id.au>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Tony Prisk <linux@prisktech.co.nz>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 21 February 2014 17:31:27 Alistair Popple wrote:
+On Friday 21 February 2014 11:48:03 Mark Rutland wrote:
+> > +
+> > +       np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
+> > +       if (np != NULL) {
+> > +               /* claim we really affected by usb23 erratum */
+> > +               if (!of_address_to_resource(np, 0, &res))
+> > +                       ehci->ohci_hcctrl_reg =
+> > +                               devm_ioremap(&pdev->dev,
+> > +                                            res.start + OHCI_HCCTRL_OFFSET,
+> > +                                            OHCI_HCCTRL_LEN);
+> > +               else
+> > +                       ehci_dbg(ehci, "%s: no ohci offset in fdt\n", __FILE__);
+> > +               if (!ehci->ohci_hcctrl_reg) {
+> > +                       ehci_dbg(ehci, "%s: ioremap for ohci hcctrl failed\n",
+> > +                               __FILE__);
+> > +               } else {
+> > +                       ehci->has_amcc_usb23 = 1;
+> > +               }
+> > +       }
+> 
+> As this is being dropped into a generic driver, it would be nice to have
+> a comment explaining why we need to do this -- not everyone using this
+> will know the powerpc history. It certainly seems odd to look for
+> another node in the tree that this driver isn't necessarily handling,
+> and that should probably be explained.
+> 
+> As this bit of fixup is only needed for powerpc, it would be nice to not
+> have to do it elsewhere. Perhaps these could be factored out into a
+> ppc_platform_reset function that could be empty stub for other
+> architectures.
 
->  
-> +config MMC_SDHCI_OF_476GTR
-> +	tristate "SDHCI OF support for the IBM PPC476GTR SoC"
-> +	depends on MMC_SDHCI_PLTFM
-> +	depends on PPC_OF
-> +	help
-> +	  This selects the Secure Digital Host Controller Interface (SDHCI)
-> +	  found on the PPC476GTR SoC.
-> +
-> +	  If you have a controller with this interface, say Y or M here.
-> +
-> +	  If unsure, say N.
-
-Your driver doesn't actually do anything beyond what is in the common
-sdhci-pltfm.c infrastructure. IMHO you really shoulnd't need a SoC
-specific abstraction for it at all and instead add a generic
-platform driver registration into sdhci-pltfm.c. I'd suggest
-you use "generic-sdhci" (similar to what we do for usb-ohci and usb-ehci
-now) as the compatible string and change your device tree to claim
-compatibility with that and your soc-specific string.
+How about using the .data field of the of_device_id array to point to
+a structure of functions? That way you don't even have to call
+of_device_is_compatible() here. Note that using of_find_compatible_node()
+is the wrong approach anyway, you want to check the current device
+for compatibility, not just any device I assume.
 
 	Arnd
