@@ -1,19 +1,22 @@
-Return-Path: <stern+53040a98@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by ozlabs.org (Postfix) with SMTP id BCE1E2C0459
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 02:41:52 +1100 (EST)
-Date: Fri, 21 Feb 2014 10:41:50 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 4/7] ECHI Platform: Merge ppc-of EHCI driver into the
- ehci-platform driver
-In-Reply-To: <1392964293-13687-5-git-send-email-alistair@popple.id.au>
-Message-ID: <Pine.LNX.4.44L0.1402211037300.1273-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9B2292C0338
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 02:57:41 +1100 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.1 \(1827\))
+Subject: Re: [PATCH] PPC: KVM: Introduce hypervisor call H_GET_TCE
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20140221153110.8190.6271.stgit@nimbus>
+Date: Fri, 21 Feb 2014 16:57:31 +0100
+Message-Id: <75FB1EEB-910A-49A9-A4CC-0A2E5403C54C@suse.de>
+References: <20140221153110.8190.6271.stgit@nimbus>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ Gleb Natapov <gleb@kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,28 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 21 Feb 2014, Alistair Popple wrote:
 
-> Currently the ppc-of driver uses the compatibility string
-> "usb-ehci". This means platforms that use device-tree and implement an
-> EHCI compatible interface have to either use the ppc-of driver or add
-> a compatible line to the ehci-platform driver. It would be more
-> appropriate for the platform driver to be compatible with "usb-ehci"
-> as non-powerpc platforms are also beginning to utilise device-tree.
-> 
-> This patch merges the device tree property parsing from ehci-ppc-of
-> into the platform driver and adds a "usb-ehci" compatibility
-> string. The existing ehci-ppc-of driver is removed and the 440EPX
-> specific quirks are added to the ehci-platform driver.
-> 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+On 21.02.2014, at 16:31, Laurent Dufour <ldufour@linux.vnet.ibm.com> =
+wrote:
 
-This patch is also out of date.  The compatibility string used by the 
-ehci-platform driver is "generic-ehci".
+> This fix introduces the H_GET_TCE hypervisor call which is basically =
+the
+> reverse of H_PUT_TCE, as defined in the Power Architecture Platform
+> Requirements (PAPR).
+>=20
+> The hcall H_GET_TCE is required by the kdump kernel which is calling =
+it to
+> retrieve the TCE set up by the panicing kernel.
+>=20
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 
-There remains the question of whether to merge ehci-ppc-of into
-ehci-platform.  This would be a rather invasive change, but I suppose
-we could do it.  With adjustments along the lines suggested by Mark
-Rutland.
+Thanks, applied to kvm-ppc-queue. Btw, why exactly are we using struct =
+page pointers and alloc_page rather than __get_free_page() and simple =
+page start pointers?
 
-Alan Stern
+
+Alex
