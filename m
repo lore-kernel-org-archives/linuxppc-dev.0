@@ -1,22 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 453B92C0335
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 06:24:27 +1100 (EST)
-Message-ID: <1393010638.6771.74.camel@pasglop>
-Subject: Re: [PATCH] PPC: KVM: Introduce hypervisor call H_GET_TCE
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Date: Sat, 22 Feb 2014 06:23:58 +1100
-In-Reply-To: <20140221153110.8190.6271.stgit@nimbus>
-References: <20140221153110.8190.6271.stgit@nimbus>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
- Gleb Natapov <gleb@kernel.org>, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 564D92C0320
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 06:28:02 +1100 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rapidio/tsi721: fix tasklet termination in dma channel release
+Date: Fri, 21 Feb 2014 14:19:18 -0500
+Message-Id: <1393010358-6837-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Mike Galbraith <bitbucket@online.de>, stable@vger.kernel.org,
+ Alexandre Bounine <alexandre.bounine@idt.com>,
+ Xiaotian Feng <xtfeng@gmail.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,83 +22,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-02-21 at 16:31 +0100, Laurent Dufour wrote:
-> This fix introduces the H_GET_TCE hypervisor call which is basically the
-> reverse of H_PUT_TCE, as defined in the Power Architecture Platform
-> Requirements (PAPR).
-> 
-> The hcall H_GET_TCE is required by the kdump kernel which is calling it to
-> retrieve the TCE set up by the panicing kernel.
 
-Alexey, will that work for VFIO ? Or are those patches *still* not
-upstream ?
+This patch is a modification of the patch originally proposed
+by Xiaotian Feng <xtfeng@gmail.com>: https://lkml.org/lkml/2012/11/5/413
+This new version disables DMA channel interrupts and ensures that the tasklet
+wil not be scheduled again before calling tasklet_kill().
 
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kvm_ppc.h      |    2 ++
->  arch/powerpc/kvm/book3s_64_vio_hv.c     |   28 ++++++++++++++++++++++++++++
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S |    2 +-
->  3 files changed, 31 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-> index fcd53f0..4096f16 100644
-> --- a/arch/powerpc/include/asm/kvm_ppc.h
-> +++ b/arch/powerpc/include/asm/kvm_ppc.h
-> @@ -129,6 +129,8 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->  				struct kvm_create_spapr_tce *args);
->  extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->  			     unsigned long ioba, unsigned long tce);
-> +extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-> +			     unsigned long ioba);
->  extern struct kvm_rma_info *kvm_alloc_rma(void);
->  extern void kvm_release_rma(struct kvm_rma_info *ri);
->  extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
-> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> index 2c25f54..89e96b3 100644
-> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
-> @@ -75,3 +75,31 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->  	return H_TOO_HARD;
->  }
->  EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
-> +
-> +long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
-> +		      unsigned long ioba)
-> +{
-> +	struct kvm *kvm = vcpu->kvm;
-> +	struct kvmppc_spapr_tce_table *stt;
-> +
-> +	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
-> +		if (stt->liobn == liobn) {
-> +			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
-> +			struct page *page;
-> +			u64 *tbl;
-> +
-> +			if (ioba >= stt->window_size)
-> +				return H_PARAMETER;
-> +
-> +			page = stt->pages[idx / TCES_PER_PAGE];
-> +			tbl = (u64 *)page_address(page);
-> +
-> +			vcpu->arch.gpr[4] = tbl[idx % TCES_PER_PAGE];
-> +			return H_SUCCESS;
-> +		}
-> +	}
-> +
-> +	/* Didn't find the liobn, punt it to userspace */
-> +	return H_TOO_HARD;
-> +}
-> +EXPORT_SYMBOL_GPL(kvmppc_h_get_tce);
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index e66d4ec..7d4fe2a 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -1758,7 +1758,7 @@ hcall_real_table:
->  	.long	0		/* 0x10 - H_CLEAR_MOD */
->  	.long	0		/* 0x14 - H_CLEAR_REF */
->  	.long	.kvmppc_h_protect - hcall_real_table
-> -	.long	0		/* 0x1c - H_GET_TCE */
-> +	.long	.kvmppc_h_get_tce - hcall_real_table
->  	.long	.kvmppc_h_put_tce - hcall_real_table
->  	.long	0		/* 0x24 - H_SET_SPRG0 */
->  	.long	.kvmppc_h_set_dabr - hcall_real_table
+Unfortunately the updated patch was not released at that time due to planned
+rework of Tsi721 mport driver to use threaded interrupts (which has yet to
+happen).
+Recently the issue was reported again: https://lkml.org/lkml/2014/2/19/762.
+
+Description from the original Xiaotian's patch:
+
+"Some drivers use tasklet_disable in device remove/release process, 
+tasklet_disable will inc tasklet->count and return. If the tasklet is 
+not handled yet under some softirq pressure, the tasklet will be 
+placed on the tasklet_vec, never have a chance to be excuted. This 
+might lead to a heavy loaded ksoftirqd, wakeup with pending_softirq, 
+but tasklet is disabled. tasklet_kill should be used in this case."
+
+This patch is applicable to kernel versions starting from v3.5.
+
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Xiaotian Feng <xtfeng@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mike Galbraith <bitbucket@online.de>
+Cc: <stable@vger.kernel.org>
+---
+ drivers/rapidio/devices/tsi721.h     |    1 +
+ drivers/rapidio/devices/tsi721_dma.c |   25 ++++++++++++++++++-------
+ 2 files changed, 19 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/rapidio/devices/tsi721.h b/drivers/rapidio/devices/tsi721.h
+index b4b0d83..7061ac0 100644
+--- a/drivers/rapidio/devices/tsi721.h
++++ b/drivers/rapidio/devices/tsi721.h
+@@ -678,6 +678,7 @@ struct tsi721_bdma_chan {
+ 	struct list_head	free_list;
+ 	dma_cookie_t		completed_cookie;
+ 	struct tasklet_struct	tasklet;
++	bool			active;
+ };
+ 
+ #endif /* CONFIG_RAPIDIO_DMA_ENGINE */
+diff --git a/drivers/rapidio/devices/tsi721_dma.c b/drivers/rapidio/devices/tsi721_dma.c
+index 502663f..b57f650 100644
+--- a/drivers/rapidio/devices/tsi721_dma.c
++++ b/drivers/rapidio/devices/tsi721_dma.c
+@@ -206,8 +206,8 @@ void tsi721_bdma_handler(struct tsi721_bdma_chan *bdma_chan)
+ {
+ 	/* Disable BDMA channel interrupts */
+ 	iowrite32(0, bdma_chan->regs + TSI721_DMAC_INTE);
+-
+-	tasklet_schedule(&bdma_chan->tasklet);
++	if (bdma_chan->active)
++		tasklet_schedule(&bdma_chan->tasklet);
+ }
+ 
+ #ifdef CONFIG_PCI_MSI
+@@ -562,7 +562,7 @@ static int tsi721_alloc_chan_resources(struct dma_chan *dchan)
+ 	}
+ #endif /* CONFIG_PCI_MSI */
+ 
+-	tasklet_enable(&bdma_chan->tasklet);
++	bdma_chan->active = true;
+ 	tsi721_bdma_interrupt_enable(bdma_chan, 1);
+ 
+ 	return bdma_chan->bd_num - 1;
+@@ -589,14 +589,25 @@ static void tsi721_free_chan_resources(struct dma_chan *dchan)
+ 	BUG_ON(!list_empty(&bdma_chan->active_list));
+ 	BUG_ON(!list_empty(&bdma_chan->queue));
+ 
+-	tasklet_disable(&bdma_chan->tasklet);
++	tsi721_bdma_interrupt_enable(bdma_chan, 0);
++	bdma_chan->active = false;
++
++#ifdef CONFIG_PCI_MSI
++	if (priv->flags & TSI721_USING_MSIX) {
++		synchronize_irq(priv->msix[TSI721_VECT_DMA0_DONE +
++					   bdma_chan->id].vector);
++		synchronize_irq(priv->msix[TSI721_VECT_DMA0_INT +
++					   bdma_chan->id].vector);
++	} else
++#endif
++	synchronize_irq(priv->pdev->irq);
++
++	tasklet_kill(&bdma_chan->tasklet);
+ 
+ 	spin_lock_bh(&bdma_chan->lock);
+ 	list_splice_init(&bdma_chan->free_list, &list);
+ 	spin_unlock_bh(&bdma_chan->lock);
+ 
+-	tsi721_bdma_interrupt_enable(bdma_chan, 0);
+-
+ #ifdef CONFIG_PCI_MSI
+ 	if (priv->flags & TSI721_USING_MSIX) {
+ 		free_irq(priv->msix[TSI721_VECT_DMA0_DONE +
+@@ -790,6 +801,7 @@ int tsi721_register_dma(struct tsi721_device *priv)
+ 		bdma_chan->dchan.cookie = 1;
+ 		bdma_chan->dchan.chan_id = i;
+ 		bdma_chan->id = i;
++		bdma_chan->active = false;
+ 
+ 		spin_lock_init(&bdma_chan->lock);
+ 
+@@ -799,7 +811,6 @@ int tsi721_register_dma(struct tsi721_device *priv)
+ 
+ 		tasklet_init(&bdma_chan->tasklet, tsi721_dma_tasklet,
+ 			     (unsigned long)bdma_chan);
+-		tasklet_disable(&bdma_chan->tasklet);
+ 		list_add_tail(&bdma_chan->dchan.device_node,
+ 			      &mport->dma.channels);
+ 	}
+-- 
+1.7.8.4
