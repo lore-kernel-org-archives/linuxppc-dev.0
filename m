@@ -1,22 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8ADE32C0333
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 07:41:41 +1100 (EST)
-Message-ID: <1393015286.6771.110.camel@pasglop>
-Subject: Re: [PATCH 7/7] powerpc: Added PCI MSI support using the HSTA module
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Date: Sat, 22 Feb 2014 07:41:26 +1100
-In-Reply-To: <1574137.lzDhNaVqIe@wuerfel>
-References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
- <1392964293-13687-8-git-send-email-alistair@popple.id.au>
- <1574137.lzDhNaVqIe@wuerfel>
+ by ozlabs.org (Postfix) with ESMTPS id B96D72C0333
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 08:08:20 +1100 (EST)
+Message-ID: <1393016887.6733.871.camel@snotra.buserror.net>
+Subject: Re: Question about EHCI on P4080
+From: Scott Wood <scottwood@freescale.com>
+To: Ruchika <ruchika.k@servergy.com>
+Date: Fri, 21 Feb 2014 15:08:07 -0600
+In-Reply-To: <53064FC9.8070908@servergy.com>
+References: <530598D7.5080602@servergy.com> <53064FC9.8070908@servergy.com>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,72 +24,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-02-21 at 15:33 +0100, Arnd Bergmann wrote:
+On Thu, 2014-02-20 at 12:56 -0600, Ruchika wrote:
+> linuxppc,
+> Is there another mailing list which is more appropriate ?
+> If so I'd be happy to get a recommendation.
 
-> > @@ -242,8 +264,10 @@
-> >  			ranges = <0x02000000 0x00000000 0x80000000 0x00000110 0x80000000 0x0 0x80000000
-> >  			          0x01000000 0x0        0x0        0x00000140 0x0        0x0 0x00010000>;
-> >  
-> > -			/* Inbound starting at 0 to memsize filled in by zImage */
-> > -			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x0>;
-> > +			/* Inbound starting at 0x0 to 0x40000000000. In order to use MSI
-> > +			 * PCI devices must be able to write to the HSTA module.
-> > +			 */
-> > +			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x400 0x0>;
+If you're asking about U-Boot support, the list is u-boot@lists.denx.de
 
-Should we (provided it's possible in HW) create two ranges instead ? One
-covering RAM and one covering MSIs ? To avoid stray DMAs whacking random
-HW registers in the chip ...
+Be sure to mention what version of U-Boot you're using, and that you're
+using a recent U-Boot.  Also, don't top post or post the same thing
+twice.
 
-> >  			/* This drives busses 0 to 0xf */
-> >  			bus-range = <0x0 0xf>;
+If you're using U-Boot from the Freescale SDK rather than from upstream,
+then instead get support from support@freescale.com or
+https://community.freescale.com/  It might be a good idea to go that
+route regardless, given that this sounds like it may be a hardware
+compatibility issue.
+
+I don't think there is a separate host controller or driver for USB 1.1
+(or lower speed USB 2.0) devices on p4080 (though this is common on
+PCs).
+
+-Scott
+
 > 
-> Ah, I first only saw the line you are removing and was about
-> to suggest what you do anyway. Great!
+> Thank you
+> Regards
+> ruchika
 > 
-> > diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-> > index 54ec1d5..7cc3acc 100644
-> > --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> > +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> > @@ -176,8 +176,12 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
-> >  		return -ENXIO;
-> >  	}
-> >  
-> > -	/* Check that we are fully contained within 32 bits space */
-> > -	if (res->end > 0xffffffff) {
-> > +	/* Check that we are fully contained within 32 bits space if we are not
-> > +	 * running on a 460sx or 476fpe which have 64 bit bus addresses.
-> > +	 */
-> > +	if (res->end > 0xffffffff &&
-> > +	    !(of_device_is_compatible(hose->dn, "ibm,plb-pciex-460sx")
-> > +	      || of_device_is_compatible(hose->dn, "ibm,plb-pciex-476fpe"))) {
-> >  		printk(KERN_ERR "%s: dma-ranges outside of 32 bits space\n",
-> >  		       hose->dn->full_name);
-> >  		return -ENXIO;
 > 
-> A more general question for BenH: Apparently this PCI implementation is
-> getting reused on arm64 for APM X-Gene. Do you see any value in trying to
-> share host controller drivers like this one across powerpc and arm64?
-
-I would start duplicating, and see how much common code remains... Then
-eventually merge.
-
-> It's possible we are going to see the same situation with fsl_pci in the
-> future, if arm and powerpc qoriq chips use the same peripherals. My
-> plan for arm64 right now is to make PCI work without any code in arch/,
-> just using new helper functions in drivers/pci and sticking the host
-> drivers into drivers/pci/host as we started doing for arm32, but it
-> can require significant work to make those drivers compatible with
-> the powerpc pci-common.c.
-
-powerpc pci-common.c is shrinking :-) At least the address remapping is
-all in the core now, we could move more over I suppose...
-
-Cheers,
-Ben.
-
-> 	Arnd
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> On 2/19/2014 11:55 PM, Ruchika wrote:
+> > Hi,
+> > I've been trying to understand why the uboot code is unable to work with
+> > USB1.1 devices.
+> > On a USB analyzer:
+> > I notice on an analyzer that there are no SOF or IN tokens seen on the
+> > bus at all. The only  after the very first setup packet is sent and ACK'd.
+> >
+> > The board has a hub chip on it connected to the USB controller via a
+> > Ulpi interface.
+> >
+> > Uboot debug indicates that the transfer times out and was still "Active"
+> >
+> > The kernel code indicates that a companion driver handles 1.1 devices.
+> > Does this mean there are 2 HCD's, one for HS and one for FS/LS in the
+> > kernel ?
+> > Thank you
+> >
+> >
+> > ruchika
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> 
