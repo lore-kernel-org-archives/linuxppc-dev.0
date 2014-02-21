@@ -1,21 +1,37 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
- [212.227.126.171]) (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7777B2C022C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 01:34:19 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 7/7] powerpc: Added PCI MSI support using the HSTA module
-Date: Fri, 21 Feb 2014 15:33:58 +0100
-Message-ID: <1574137.lzDhNaVqIe@wuerfel>
-In-Reply-To: <1392964293-13687-8-git-send-email-alistair@popple.id.au>
-References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
- <1392964293-13687-8-git-send-email-alistair@popple.id.au>
+ by ozlabs.org (Postfix) with ESMTPS id B27012C0334
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 02:31:19 +1100 (EST)
+Received: from /spool/local
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Fri, 21 Feb 2014 15:31:15 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id D77881B0805F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 15:30:51 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1LFV0BP721252
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 15:31:01 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1LFVCrr017479
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 08:31:12 -0700
+Subject: [PATCH] PPC: KVM: Introduce hypervisor call H_GET_TCE
+To: Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Fri, 21 Feb 2014 16:31:10 +0100
+Message-ID: <20140221153110.8190.6271.stgit@nimbus>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,79 +41,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 21 February 2014 17:31:33 Alistair Popple wrote:
->  
-> +		HSTA0: hsta@310000e0000 {
-> +			compatible = "ibm,476gtr-hsta-msi", "ibm,hsta-msi";
-> +			reg = <0x310 0x000e0000 0x0 0xf0>;
-> +			interrupt-parent = <&MPIC>;
-> +			interrupts = <108 0
-> +				      109 0
-> +				      110 0
-> +				      111 0
-> +				      112 0
-> +				      113 0
-> +				      114 0
-> +				      115 0
-> +				      116 0
-> +				      117 0
-> +				      118 0
-> +				      119 0
-> +				      120 0
-> +				      121 0
-> +				      122 0
-> +				      123 0>;
-> +		};
+This fix introduces the H_GET_TCE hypervisor call which is basically the
+reverse of H_PUT_TCE, as defined in the Power Architecture Platform
+Requirements (PAPR).
 
-Please add a binding to Documentation/devicetree for this device.
+The hcall H_GET_TCE is required by the kdump kernel which is calling it to
+retrieve the TCE set up by the panicing kernel.
 
-> @@ -242,8 +264,10 @@
->  			ranges = <0x02000000 0x00000000 0x80000000 0x00000110 0x80000000 0x0 0x80000000
->  			          0x01000000 0x0        0x0        0x00000140 0x0        0x0 0x00010000>;
->  
-> -			/* Inbound starting at 0 to memsize filled in by zImage */
-> -			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x0>;
-> +			/* Inbound starting at 0x0 to 0x40000000000. In order to use MSI
-> +			 * PCI devices must be able to write to the HSTA module.
-> +			 */
-> +			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x400 0x0>;
->  
->  			/* This drives busses 0 to 0xf */
->  			bus-range = <0x0 0xf>;
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_ppc.h      |    2 ++
+ arch/powerpc/kvm/book3s_64_vio_hv.c     |   28 ++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |    2 +-
+ 3 files changed, 31 insertions(+), 1 deletion(-)
 
-Ah, I first only saw the line you are removing and was about
-to suggest what you do anyway. Great!
-
-> diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
-> index 54ec1d5..7cc3acc 100644
-> --- a/arch/powerpc/sysdev/ppc4xx_pci.c
-> +++ b/arch/powerpc/sysdev/ppc4xx_pci.c
-> @@ -176,8 +176,12 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
->  		return -ENXIO;
->  	}
->  
-> -	/* Check that we are fully contained within 32 bits space */
-> -	if (res->end > 0xffffffff) {
-> +	/* Check that we are fully contained within 32 bits space if we are not
-> +	 * running on a 460sx or 476fpe which have 64 bit bus addresses.
-> +	 */
-> +	if (res->end > 0xffffffff &&
-> +	    !(of_device_is_compatible(hose->dn, "ibm,plb-pciex-460sx")
-> +	      || of_device_is_compatible(hose->dn, "ibm,plb-pciex-476fpe"))) {
->  		printk(KERN_ERR "%s: dma-ranges outside of 32 bits space\n",
->  		       hose->dn->full_name);
->  		return -ENXIO;
-
-A more general question for BenH: Apparently this PCI implementation is
-getting reused on arm64 for APM X-Gene. Do you see any value in trying to
-share host controller drivers like this one across powerpc and arm64?
-
-It's possible we are going to see the same situation with fsl_pci in the
-future, if arm and powerpc qoriq chips use the same peripherals. My
-plan for arm64 right now is to make PCI work without any code in arch/,
-just using new helper functions in drivers/pci and sticking the host
-drivers into drivers/pci/host as we started doing for arm32, but it
-can require significant work to make those drivers compatible with
-the powerpc pci-common.c.
-
-	Arnd
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index fcd53f0..4096f16 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -129,6 +129,8 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+ 				struct kvm_create_spapr_tce *args);
+ extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 			     unsigned long ioba, unsigned long tce);
++extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
++			     unsigned long ioba);
+ extern struct kvm_rma_info *kvm_alloc_rma(void);
+ extern void kvm_release_rma(struct kvm_rma_info *ri);
+ extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
+diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+index 2c25f54..89e96b3 100644
+--- a/arch/powerpc/kvm/book3s_64_vio_hv.c
++++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+@@ -75,3 +75,31 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+ 	return H_TOO_HARD;
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
++
++long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
++		      unsigned long ioba)
++{
++	struct kvm *kvm = vcpu->kvm;
++	struct kvmppc_spapr_tce_table *stt;
++
++	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
++		if (stt->liobn == liobn) {
++			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
++			struct page *page;
++			u64 *tbl;
++
++			if (ioba >= stt->window_size)
++				return H_PARAMETER;
++
++			page = stt->pages[idx / TCES_PER_PAGE];
++			tbl = (u64 *)page_address(page);
++
++			vcpu->arch.gpr[4] = tbl[idx % TCES_PER_PAGE];
++			return H_SUCCESS;
++		}
++	}
++
++	/* Didn't find the liobn, punt it to userspace */
++	return H_TOO_HARD;
++}
++EXPORT_SYMBOL_GPL(kvmppc_h_get_tce);
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index e66d4ec..7d4fe2a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1758,7 +1758,7 @@ hcall_real_table:
+ 	.long	0		/* 0x10 - H_CLEAR_MOD */
+ 	.long	0		/* 0x14 - H_CLEAR_REF */
+ 	.long	.kvmppc_h_protect - hcall_real_table
+-	.long	0		/* 0x1c - H_GET_TCE */
++	.long	.kvmppc_h_get_tce - hcall_real_table
+ 	.long	.kvmppc_h_put_tce - hcall_real_table
+ 	.long	0		/* 0x24 - H_SET_SPRG0 */
+ 	.long	.kvmppc_h_set_dabr - hcall_real_table
