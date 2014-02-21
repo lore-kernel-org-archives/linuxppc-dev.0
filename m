@@ -1,38 +1,27 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prabhakar@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BCD442C033A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 14:34:42 +1100 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Fri, 21 Feb 2014 13:34:41 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 390192BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 14:34:39 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1L3YPTx7012686
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 14:34:25 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1L3YcZi028169
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 14:34:38 +1100
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH v2] powernv: don't attempt to refetch the FSP dump until
- the user has explicitly acked it.
-In-Reply-To: <21091.1392951172@ale.ozlabs.ibm.com>
-References: <20140116121411.624.55662.stgit@hegdevasant.in.ibm.com>
- <1392941701-2871-1-git-send-email-stewart@linux.vnet.ibm.com>
- <21091.1392951172@ale.ozlabs.ibm.com>
-Date: Fri, 21 Feb 2014 14:34:36 +1100
-Message-ID: <87vbw9m94j.fsf@river.au.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 52F1B2C033E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 15:00:36 +1100 (EST)
+Message-ID: <5306CF49.1030206@freescale.com>
+Date: Fri, 21 Feb 2014 09:30:09 +0530
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: hegdevasant@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] powerpc: select MEMORY for FSL_IFC to not break
+ existing .config files
+References: <1392848350.6733.809.camel@snotra.buserror.net>
+ <1392850000-4601-1-git-send-email-paul.gortmaker@windriver.com>
+ <53059B47.8000103@freescale.com> <530613CD.2080309@windriver.com>
+In-Reply-To: <530613CD.2080309@windriver.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-next@vger.kernel.org,
+ linux-mtd@lists.infradead.org, Scott Wood <scottwood@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,23 +31,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
-> Stewart Smith <stewart@linux.vnet.ibm.com> wrote:
->
->> This fixes a bug where we would get two events from OPAL with DUMP_AVAIL
->> set (which is valid for OPAL to do) and in the second run of extract_dump()
->> we would fail to free the memory previously allocated for the dump
->> (leaking ~6MB+) as well as on the second dump_read_data() call OPAL
->> would not retrieve the dump, leaving us with a dump in linux that was
->> the correct size but all zeros.
->> 
->> Changes since v1: fixed typo
->> 
->> Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
->> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->
-> Should we CC stable on this?
 
-we don't need to as the code this patches hasn't made it to stable
-yet. Hopefully Vasant resends a version of the patch incorporating my
-fix :)
+On 2/20/2014 8:10 PM, Paul Gortmaker wrote:
+> On 14-02-20 01:05 AM, Prabhakar Kushwaha wrote:
+>> On 2/20/2014 4:16 AM, Paul Gortmaker wrote:
+>>> commit d2ae2e20fbdde5a65f3a5a153044ab1e5c53f7cc ("driver/memory:Move
+>>> Freescale IFC driver to a common driver") introduces this build
+>>> regression into the mpc85xx_defconfig:
+>>>
+>>>    drivers/built-in.o: In function `fsl_ifc_nand_remove':
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1147: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/built-in.o: In function `fsl_ifc_nand_probe':
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1031: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/built-in.o: In function `match_bank':
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1013: undefined reference to `convert_ifc_address'
+>>>    drivers/built-in.o: In function `fsl_ifc_nand_probe':
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1059: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1080: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    drivers/mtd/nand/fsl_ifc_nand.c:1069: undefined reference to `fsl_ifc_ctrl_dev'
+>>>    make: *** [vmlinux] Error 1
+>>>
+>>> This happens because there is nothing to descend us into the
+>>> drivers/memory directory in the mpc85xx_defconfig.  It wasn't
+>>> selecting CONFIG_MEMORY.  So we never built drivers/memory/fsl_ifc.o
+>>> and so we have nothing to link the above symbols against.
+>>>
+>>> Since the goal of the original commit was to relocate the driver to
+>>> an arch independent location, it only makes sense to relocate the
+>>> Kconfig setting there as well.  But that alone won't fix the build
+>>> failure; for that we ensure whoever selects FSL_IFC also selects MEMORY.
+>>>
+>>> Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
+>>> Cc: Scott Wood <scottwood@freescale.com>
+>>> Cc: Arnd Bergmann <arnd@arndb.de>
+>>> Cc: David Woodhouse <dwmw2@infradead.org>
+>>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>>> ---
+>>>
+>>> [v2: fix the mislocated FSL_IFC as per Scott's comment.  It still
+>>>    probably makes sense to go in via Greg's char-misc/char-misc-next
+>>>    (vs. powerpc-next) since that is where the regression was introduced.]
+>>>
+>>>    arch/powerpc/Kconfig     | 4 ----
+>>>    drivers/memory/Kconfig   | 4 ++++
+>>>    drivers/mtd/nand/Kconfig | 1 +
+>>>    3 files changed, 5 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index 957bf344c0f5..b9fcecc706ab 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -736,10 +736,6 @@ config FSL_LBC
+>>>    	  controller.  Also contains some common code used by
+>>>    	  drivers for specific local bus peripherals.
+>>>    
+>>> -config FSL_IFC
+>>> -	bool
+>>> -        depends on FSL_SOC
+>>> -
+>>>    config FSL_GTM
+>>>    	bool
+>>>    	depends on PPC_83xx || QUICC_ENGINE || CPM2
+>>> diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
+>>> index 29a11db365bc..a3640fe9852f 100644
+>>> --- a/drivers/memory/Kconfig
+>>> +++ b/drivers/memory/Kconfig
+>>> @@ -50,4 +50,8 @@ config TEGRA30_MC
+>>>    	  analysis, especially for IOMMU/SMMU(System Memory Management
+>>>    	  Unit) module.
+>>>    
+>>> +config FSL_IFC
+>>> +	bool
+>>> +	depends on FSL_SOC
+>>> +
+>>>    endif
+>>> diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
+>>> index 90ff447bf043..a4bee41ad5cb 100644
+>>> --- a/drivers/mtd/nand/Kconfig
+>>> +++ b/drivers/mtd/nand/Kconfig
+>>> @@ -428,6 +428,7 @@ config MTD_NAND_FSL_IFC
+>>>    	tristate "NAND support for Freescale IFC controller"
+>>>    	depends on MTD_NAND && FSL_SOC
+>>>    	select FSL_IFC
+>>> +	select MEMORY
+>>>    	help
+>>>    	  Various Freescale chips e.g P1010, include a NAND Flash machine
+>>>    	  with built-in hardware ECC capabilities.
+>> Hi All,
+>>
+>> I am not sure which version of patch is being picked here.
+>>
+>> Latest version is v8 and it is a "patch set" and it do enable
+>> CONFIG_MEMORY in powerpc/configs
+> It really doesn't matter what the latest version is, if the
+> maintainer has already taken an earlier version and merged it.
+> In that case one needs to work with the maintainer to determine
+> whether they want a new version, or a delta/fixup commit on the
+> old one.
+I think, I got the reason of this issue.
+I thought this patch will be picked by powerpc.git and updated version 
+were sent on linuxppc-dev mail list after initial version review on both 
+powerpc and linux-kernel mailing list. It should have sent on both the 
+list "always".   A learning for future :)
+
+I am OK with the current patch and modification  because it  full fill 
+my requirements.
+I will sent separate patch to fix other things.
+
+
+>> 1.  driver/memory:Move Freescale IFC driver to a common driver
+>> http://patchwork.ozlabs.org/patch/315531/
+> So, this has the Kconfig move part, but the one currently in
+> char-misc does not.  And it still needs the "select".
+>
+>> 2. powerpc/config: Enable memory driver
+>> http://patchwork.ozlabs.org/patch/315532/
+> Updating the defconfigs is fine, but incomplete in itself.  You
+> still need the IFC users to select MEMORY, otherwise you still
+> introduce build failures for anyone else who chooses IFC but
+> does not choose MEMORY.
+>
+> In short, the char-misc tree still needs the v2 patch above.
+>
+>
+
+Yes,  this patch still required.
+
+Thanks,
+Prabhakar
