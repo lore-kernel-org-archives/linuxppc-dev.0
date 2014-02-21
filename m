@@ -1,18 +1,17 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
  [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id 6DB8F2C0343
+ by ozlabs.org (Postfix) with ESMTP id 87C4D2C0342
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 17:35:30 +1100 (EST)
 From: Alistair Popple <alistair@popple.id.au>
-To: linux-mmc@vger.kernel.org,
-	cjb@laptop.org
-Subject: =?UTF-8?q?=5BPATCH=201/7=5D=20IBM=20Akebono=3A=20Add=20a=20SDHCI=20platform=20driver?=
-Date: Fri, 21 Feb 2014 17:31:27 +1100
-Message-Id: <1392964293-13687-2-git-send-email-alistair@popple.id.au>
+To: gregkh@linuxfoundation.org,
+	linux-usb@vger.kernel.org
+Subject: [PATCH 3/7] IBM Akebono: Add support to the OHCI platform driver for
+ PPC476GTR
+Date: Fri, 21 Feb 2014 17:31:29 +1100
+Message-Id: <1392964293-13687-4-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
 References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,117 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a SDHCI platform driver for the new IBM PPC476GTR SoC
-which is on the Akebono board.
+The IBM Akebono board uses the PPC476GTR SoC which has a OHCI
+compliant USB host interface. This patch adds support for it to the
+OHCI platform driver.
+
+As we use device tree to pass platform specific data instead of
+platform data we remove the check for platform data and instead
+provide reasonable defaults if no platform data is present. This is
+similar to what is currently done in ehci-platform.c.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- drivers/mmc/host/Kconfig           |   12 ++++++++
- drivers/mmc/host/Makefile          |    1 +
- drivers/mmc/host/sdhci-of-476gtr.c |   60 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 73 insertions(+)
- create mode 100644 drivers/mmc/host/sdhci-of-476gtr.c
+ drivers/usb/host/ohci-platform.c |   22 +++++++++++++++++-----
+ 1 file changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 7fc5099..14210df 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -130,6 +130,18 @@ config MMC_SDHCI_OF_HLWD
+diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
+index f351ff5..e5a5979 100644
+--- a/drivers/usb/host/ohci-platform.c
++++ b/drivers/usb/host/ohci-platform.c
+@@ -23,6 +23,8 @@
+ #include <linux/usb/ohci_pdriver.h>
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
++#include <linux/slab.h>
++#include <linux/of.h>
  
- 	  If unsure, say N.
+ #include "ohci.h"
  
-+config MMC_SDHCI_OF_476GTR
-+	tristate "SDHCI OF support for the IBM PPC476GTR SoC"
-+	depends on MMC_SDHCI_PLTFM
-+	depends on PPC_OF
-+	help
-+	  This selects the Secure Digital Host Controller Interface (SDHCI)
-+	  found on the PPC476GTR SoC.
-+
-+	  If you have a controller with this interface, say Y or M here.
-+
-+	  If unsure, say N.
-+
- config MMC_SDHCI_CNS3XXX
- 	tristate "SDHCI support on the Cavium Networks CNS3xxx SoC"
- 	depends on ARCH_CNS3XXX
-diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
-index c41d0c3..92beff3 100644
---- a/drivers/mmc/host/Makefile
-+++ b/drivers/mmc/host/Makefile
-@@ -59,6 +59,7 @@ obj-$(CONFIG_MMC_SDHCI_DOVE)		+= sdhci-dove.o
- obj-$(CONFIG_MMC_SDHCI_TEGRA)		+= sdhci-tegra.o
- obj-$(CONFIG_MMC_SDHCI_OF_ESDHC)	+= sdhci-of-esdhc.o
- obj-$(CONFIG_MMC_SDHCI_OF_HLWD)		+= sdhci-of-hlwd.o
-+obj-$(CONFIG_MMC_SDHCI_OF_476GTR)	+= sdhci-of-476gtr.o
- obj-$(CONFIG_MMC_SDHCI_BCM_KONA)	+= sdhci-bcm-kona.o
- obj-$(CONFIG_MMC_SDHCI_BCM2835)		+= sdhci-bcm2835.o
+@@ -55,6 +57,8 @@ static const struct ohci_driver_overrides platform_overrides __initconst = {
+ 	.reset =	ohci_platform_reset,
+ };
  
-diff --git a/drivers/mmc/host/sdhci-of-476gtr.c b/drivers/mmc/host/sdhci-of-476gtr.c
-new file mode 100644
-index 0000000..1310f8c
---- /dev/null
-+++ b/drivers/mmc/host/sdhci-of-476gtr.c
-@@ -0,0 +1,60 @@
-+/*
-+ * drivers/mmc/host/sdhci-of-476gtr.c
-+ *
-+ * Copyright © 2013 Alistair Popple <alistair@popple.id.au> IBM Corporation
-+ *
-+ * Based on sdhci-of-hlwd.c
-+ *
-+ * Copyright (C) 2009 The GameCube Linux Team
-+ * Copyright (C) 2009 Albert Herranz
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or (at
-+ * your option) any later version.
-+ */
++static struct usb_ohci_pdata ohci_platform_defaults;
 +
-+#include <linux/delay.h>
-+#include <linux/module.h>
-+#include <linux/mmc/host.h>
-+#include "sdhci-pltfm.h"
+ static int ohci_platform_probe(struct platform_device *dev)
+ {
+ 	struct usb_hcd *hcd;
+@@ -63,14 +67,16 @@ static int ohci_platform_probe(struct platform_device *dev)
+ 	int irq;
+ 	int err = -ENOMEM;
+ 
+-	if (!pdata) {
+-		WARN_ON(1);
+-		return -ENODEV;
+-	}
+-
+ 	if (usb_disabled())
+ 		return -ENODEV;
+ 
++	/*
++	 * Platforms using DT don't always provide platform data.
++	 * This should provide reasonable defaults.
++	 */
++	if (!pdata)
++		dev->dev.platform_data = pdata = &ohci_platform_defaults;
 +
-+static const struct sdhci_ops sdhci_476gtr_ops = {
+ 	irq = platform_get_irq(dev, 0);
+ 	if (irq < 0) {
+ 		dev_err(&dev->dev, "no irq provided");
+@@ -178,6 +184,11 @@ static int ohci_platform_resume(struct device *dev)
+ #define ohci_platform_resume	NULL
+ #endif /* CONFIG_PM */
+ 
++static const struct of_device_id ohci_of_match[] = {
++	{ .compatible = "usb-ohci", },
++	{},
 +};
 +
-+static const struct sdhci_pltfm_data sdhci_476gtr_pdata = {
-+	.ops = &sdhci_476gtr_ops,
-+};
-+
-+static int sdhci_476gtr_probe(struct platform_device *pdev)
-+{
-+	return sdhci_pltfm_register(pdev, &sdhci_476gtr_pdata, 0);
-+}
-+
-+static int sdhci_476gtr_remove(struct platform_device *pdev)
-+{
-+	return sdhci_pltfm_unregister(pdev);
-+}
-+
-+static const struct of_device_id sdhci_476gtr_of_match[] = {
-+	{ .compatible = "ibm,476gtr-sdhci" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sdhci_476gtr_of_match);
-+
-+static struct platform_driver sdhci_476gtr_driver = {
-+	.driver = {
-+		.name = "sdhci-476gtr",
-+		.owner = THIS_MODULE,
-+		.of_match_table = sdhci_476gtr_of_match,
-+		.pm = SDHCI_PLTFM_PMOPS,
-+	},
-+	.probe = sdhci_476gtr_probe,
-+	.remove = sdhci_476gtr_remove,
-+};
-+
-+module_platform_driver(sdhci_476gtr_driver);
-+
-+MODULE_DESCRIPTION("PPC476GTR SDHCI OF driver");
-+MODULE_AUTHOR("Alistair Popple");
-+MODULE_LICENSE("GPL v2");
+ static const struct platform_device_id ohci_platform_table[] = {
+ 	{ "ohci-platform", 0 },
+ 	{ }
+@@ -198,6 +209,7 @@ static struct platform_driver ohci_platform_driver = {
+ 		.owner	= THIS_MODULE,
+ 		.name	= "ohci-platform",
+ 		.pm	= &ohci_platform_pm_ops,
++		.of_match_table = ohci_of_match,
+ 	}
+ };
+ 
 -- 
 1.7.10.4
