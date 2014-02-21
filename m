@@ -1,22 +1,32 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id E29D82C030F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 22:48:06 +1100 (EST)
-Date: Fri, 21 Feb 2014 11:48:03 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 4/7] ECHI Platform: Merge ppc-of EHCI driver into the
- ehci-platform driver
-Message-ID: <20140221114803.GB8783@e106331-lin.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1392964293-13687-5-git-send-email-alistair@popple.id.au>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Tony Prisk <linux@prisktech.co.nz>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 314442C01AE
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Feb 2014 22:53:52 +1100 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Fri, 21 Feb 2014 06:53:50 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 7AAE4C90026
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Feb 2014 06:53:45 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1LBrmtu7799116
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Feb 2014 11:53:48 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1LBrmln031184
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Feb 2014 06:53:48 -0500
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/5] powerpc/eeh: Remove EEH_PE_PHB_DEAD
+Date: Fri, 21 Feb 2014 19:53:28 +0800
+Message-Id: <1392983613-10090-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,127 +36,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Adding Tony Prisk to Cc]
+The PE state (for eeh_pe instance) EEH_PE_PHB_DEAD is duplicate to
+EEH_PE_ISOLATED. Originally, those PHB (PHB PE) with EEH_PE_PHB_DEAD
+would be removed from the system. However, it's safe to replace
+that with EEH_PE_ISOLATED.
 
-On Fri, Feb 21, 2014 at 06:31:30AM +0000, Alistair Popple wrote:
-> Currently the ppc-of driver uses the compatibility string
-> "usb-ehci". This means platforms that use device-tree and implement an
-> EHCI compatible interface have to either use the ppc-of driver or add
-> a compatible line to the ehci-platform driver. It would be more
-> appropriate for the platform driver to be compatible with "usb-ehci"
-> as non-powerpc platforms are also beginning to utilise device-tree.
->
-> This patch merges the device tree property parsing from ehci-ppc-of
-> into the platform driver and adds a "usb-ehci" compatibility
-> string. The existing ehci-ppc-of driver is removed and the 440EPX
-> specific quirks are added to the ehci-platform driver.
->
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> ---
->  drivers/usb/host/Kconfig         |    7 +-
->  drivers/usb/host/ehci-hcd.c      |    5 -
->  drivers/usb/host/ehci-platform.c |   87 +++++++++++++-
->  drivers/usb/host/ehci-ppc-of.c   |  238 --------------------------------------
->  4 files changed, 89 insertions(+), 248 deletions(-)
->  delete mode 100644 drivers/usb/host/ehci-ppc-of.c
+The patch also clear EEH_PE_RECOVERING after fenced PHB has been handled,
+either failure or success. It makes the PHB PE state consistent with:
 
-[...]
+	PHB functions normally		  NONE
+	PHB has been removed		  EEH_PE_ISOLATED
+	PHB fenced, recovery in progress  EEH_PE_ISOLATED | RECOVERING
 
-> +       /* Device tree properties if available will override platform data. */
-> +       dn = hcd_to_bus(hcd)->controller->of_node;
-> +       if (dn) {
-> +               if (of_get_property(dn, "big-endian", NULL)) {
-> +                       ehci->big_endian_mmio = 1;
-> +                       ehci->big_endian_desc = 1;
-> +               }
-> +               if (of_get_property(dn, "big-endian-regs", NULL))
-> +                       ehci->big_endian_mmio = 1;
-> +               if (of_get_property(dn, "big-endian-desc", NULL))
-> +                       ehci->big_endian_desc = 1;
-> +       }
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h   |    1 -
+ arch/powerpc/kernel/eeh.c        |   10 ++--------
+ arch/powerpc/kernel/eeh_driver.c |   10 +++++-----
+ 3 files changed, 7 insertions(+), 14 deletions(-)
 
-Please use of_property_read_bool for these.
-
-This driver already handles "via,vt8500-ehci" and "wm,prizm-ehci" which
-aren't documented to handle these properties, but now gain support for
-them. It might be worth unifying the binding documents if there's
-nothing special about those two host controllers.
-
-We seem to have two binding documents for "via,vt8500-ehci", so some
-cleanup is definitely in order.
-
-Tony, you seem to have written both documents judging by 95e9fd10f06c
-and 8ad551d150e3. Do you have any issue with merging both of these into
-a common usb-ehci document?
-
-> +
-> +       np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-> +       if (np != NULL) {
-> +               /* claim we really affected by usb23 erratum */
-> +               if (!of_address_to_resource(np, 0, &res))
-> +                       ehci->ohci_hcctrl_reg =
-> +                               devm_ioremap(&pdev->dev,
-> +                                            res.start + OHCI_HCCTRL_OFFSET,
-> +                                            OHCI_HCCTRL_LEN);
-> +               else
-> +                       ehci_dbg(ehci, "%s: no ohci offset in fdt\n", __FILE__);
-> +               if (!ehci->ohci_hcctrl_reg) {
-> +                       ehci_dbg(ehci, "%s: ioremap for ohci hcctrl failed\n",
-> +                               __FILE__);
-> +               } else {
-> +                       ehci->has_amcc_usb23 = 1;
-> +               }
-> +       }
-
-As this is being dropped into a generic driver, it would be nice to have
-a comment explaining why we need to do this -- not everyone using this
-will know the powerpc history. It certainly seems odd to look for
-another node in the tree that this driver isn't necessarily handling,
-and that should probably be explained.
-
-As this bit of fixup is only needed for powerpc, it would be nice to not
-have to do it elsewhere. Perhaps these could be factored out into a
-ppc_platform_reset function that could be empty stub for other
-architectures.
-
-> +
-> +       if (of_device_is_compatible(dn, "ibm,usb-ehci-440epx")) {
-> +               retval = ppc44x_enable_bmt(dn);
-> +               ehci_dbg(ehci, "Break Memory Transfer (BMT) is %senabled!\n",
-> +                       retval ? "NOT " : "");
-> +       }
-> +
-
-Likewise.
-
-[...]
-
-> +       /* use request_mem_region to test if the ohci driver is loaded.  if so
-> +        * ensure the ohci core is operational.
-> +        */
-
-Nit: comment code style (should have a newline after the /* according to
-Documentation/CodingStyle).
-
-> +       if (ehci->has_amcc_usb23) {
-> +               np = of_find_compatible_node(NULL, NULL, "ibm,usb-ohci-440epx");
-> +               if (np != NULL) {
-> +                       if (!of_address_to_resource(np, 0, &res))
-> +                               if (!request_mem_region(res.start,
-> +                                                           0x4, hcd_name))
-> +                                       set_ohci_hcfs(ehci, 1);
-> +                               else
-> +                                       release_mem_region(res.start, 0x4);
-> +                       else
-> +                               ehci_dbg(ehci, "%s: no ohci offset in fdt\n",
-> +                                       __FILE__);
-> +                       of_node_put(np);
-> +               }
-> +       }
-
-As with the earlier comment, this looks a bit odd. A comment explaining
-why we're looking for another node would help. Also, we should only need
-this for powerpc.
-
-Cheers,
-Mark.
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index d4dd41f..a61b06f 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -53,7 +53,6 @@ struct device_node;
+ 
+ #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
+ #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
+-#define EEH_PE_PHB_DEAD		(1 << 2)	/* Dead PHB		*/
+ 
+ #define EEH_PE_KEEP		(1 << 8)	/* Keep PE on hotplug	*/
+ 
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index e7b76a6..f167676 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -232,7 +232,6 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+ {
+ 	size_t loglen = 0;
+ 	struct eeh_dev *edev, *tmp;
+-	bool valid_cfg_log = true;
+ 
+ 	/*
+ 	 * When the PHB is fenced or dead, it's pointless to collect
+@@ -240,12 +239,7 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+ 	 * 0xFF's. For ER, we still retrieve the data from the PCI
+ 	 * config space.
+ 	 */
+-	if (eeh_probe_mode_dev() &&
+-	    (pe->type & EEH_PE_PHB) &&
+-	    (pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)))
+-		valid_cfg_log = false;
+-
+-	if (valid_cfg_log) {
++	if (!(pe->type & EEH_PE_PHB)) {
+ 		eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
+ 		eeh_ops->configure_bridge(pe);
+ 		eeh_pe_restore_bars(pe);
+@@ -309,7 +303,7 @@ static int eeh_phb_check_failure(struct eeh_pe *pe)
+ 
+ 	/* If the PHB has been in problematic state */
+ 	eeh_serialize_lock(&flags);
+-	if (phb_pe->state & (EEH_PE_ISOLATED | EEH_PE_PHB_DEAD)) {
++	if (phb_pe->state & EEH_PE_ISOLATED) {
+ 		ret = 0;
+ 		goto out;
+ 	}
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 7bb30dc..5f50f9c 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -661,8 +661,7 @@ static void eeh_handle_special_event(void)
+ 				phb_pe = eeh_phb_pe_get(hose);
+ 				if (!phb_pe) continue;
+ 
+-				eeh_pe_state_mark(phb_pe,
+-					EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++				eeh_pe_state_mark(phb_pe, EEH_PE_ISOLATED);
+ 			}
+ 
+ 			eeh_serialize_unlock(flags);
+@@ -678,8 +677,7 @@ static void eeh_handle_special_event(void)
+ 			eeh_remove_event(pe);
+ 
+ 			if (rc == EEH_NEXT_ERR_DEAD_PHB)
+-				eeh_pe_state_mark(pe,
+-					EEH_PE_ISOLATED | EEH_PE_PHB_DEAD);
++				eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
+ 			else
+ 				eeh_pe_state_mark(pe,
+ 					EEH_PE_ISOLATED | EEH_PE_RECOVERING);
+@@ -703,12 +701,14 @@ static void eeh_handle_special_event(void)
+ 		if (rc == EEH_NEXT_ERR_FROZEN_PE ||
+ 		    rc == EEH_NEXT_ERR_FENCED_PHB) {
+ 			eeh_handle_normal_event(pe);
++			eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+ 		} else {
+ 			pci_lock_rescan_remove();
+ 			list_for_each_entry(hose, &hose_list, list_node) {
+ 				phb_pe = eeh_phb_pe_get(hose);
+ 				if (!phb_pe ||
+-				    !(phb_pe->state & EEH_PE_PHB_DEAD))
++				    !(phb_pe->state & EEH_PE_ISOLATED) ||
++				    (phb_pe->state & EEH_PE_RECOVERING))
+ 					continue;
+ 
+ 				/* Notify all devices to be down */
+-- 
+1.7.10.4
