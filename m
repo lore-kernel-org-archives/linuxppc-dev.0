@@ -1,24 +1,39 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id D271C2C02FA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 09:42:05 +1100 (EST)
-Date: Fri, 21 Feb 2014 14:42:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] mm: return NUMA_NO_NODE in local_memory_node if
- zonelists are not setup
-Message-Id: <20140221144203.8d7b0d7039846c0304f86141@linux-foundation.org>
-In-Reply-To: <20140220182847.GA24745@linux.vnet.ibm.com>
-References: <20140219231641.GA413@linux.vnet.ibm.com>
- <20140219231714.GB413@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1402201004460.11829@nuc>
- <20140220182847.GA24745@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org,
- Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, Anton Blanchard <anton@samba.org>
+Return-Path: <michael_barry@ie.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F1F582C0309
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 09:56:53 +1100 (EST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
+ Fri, 21 Feb 2014 22:56:48 -0000
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 40EFB17D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 22:57:17 +0000 (GMT)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1LMuXDM786782
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 22:56:34 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1LMujaw006432
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 15:56:45 -0700
+Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
+ [9.149.104.171])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ s1LMuiwG006423
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 15:56:45 -0700
+Subject: AUTO: Michael Barry is out of the office (returning 25/02/2014)
+From: Michael Barry <michael_barry@ie.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF56FC5EF8.131F0734-ON80257C86.007E06D8-80257C86.007E06D8@ie.ibm.com>
+Date: Fri, 21 Feb 2014 22:56:32 +0000
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +43,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 20 Feb 2014 10:28:47 -0800 Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
 
-> On 20.02.2014 [10:05:39 -0600], Christoph Lameter wrote:
-> > On Wed, 19 Feb 2014, Nishanth Aravamudan wrote:
-> > 
-> > > We can call local_memory_node() before the zonelists are setup. In that
-> > > case, first_zones_zonelist() will not set zone and the reference to
-> > > zone->node will Oops. Catch this case, and, since we presumably running
-> > > very early, just return that any node will do.
-> > 
-> > Really? Isnt there some way to avoid this call if zonelists are not setup
-> > yet?
-> 
-> How do I best determine if zonelists aren't setup yet?
-> 
-> The call-path in question (after my series is applied) is:
-> 
-> arch/powerpc/kernel/setup_64.c::setup_arch ->
-> 	arch/powerpc/mm/numa.c::do_init_bootmem() ->
-> 		cpu_numa_callback() ->
-> 			numa_setup_cpu() ->
-> 				map_cpu_to_node() ->
-> 					update_numa_cpu_node() ->
-> 						set_cpu_numa_mem()
-> 
-> and setup_arch() is called before build_all_zonelists(NULL, NULL) in
-> start_kernel(). This seemed like the most reasonable path, as it's used
-> on hotplug as well.
-> 
+I am out of the office until 25/02/2014.
 
-But the call to local_memory_node() you added was in start_secondary(),
-which isn't in that trace.
 
-I do agree that calling local_memory_node() too early then trying to
-fudge around the consequences seems rather wrong.
+
+
+Note: This is an automated response to your message  "Linuxppc-dev Digest,
+Vol 114, Issue 105" sent on 21/02/2014 19:24:30.
+
+This is the only notification you will receive while this person is away.
