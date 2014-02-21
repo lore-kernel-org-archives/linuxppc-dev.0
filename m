@@ -1,14 +1,14 @@
 Return-Path: <stern+53040a98@rowland.harvard.edu>
 Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by ozlabs.org (Postfix) with SMTP id E4BA92C0323
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 02:41:10 +1100 (EST)
-Date: Fri, 21 Feb 2014 10:34:28 -0500 (EST)
+ by ozlabs.org (Postfix) with SMTP id BCE1E2C0459
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 02:41:52 +1100 (EST)
+Date: Fri, 21 Feb 2014 10:41:50 -0500 (EST)
 From: Alan Stern <stern@rowland.harvard.edu>
 To: Alistair Popple <alistair@popple.id.au>
-Subject: Re: [PATCH 3/7] IBM Akebono: Add support to the OHCI platform driver
- for PPC476GTR
-In-Reply-To: <1392964293-13687-4-git-send-email-alistair@popple.id.au>
-Message-ID: <Pine.LNX.4.44L0.1402211032080.1273-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH 4/7] ECHI Platform: Merge ppc-of EHCI driver into the
+ ehci-platform driver
+In-Reply-To: <1392964293-13687-5-git-send-email-alistair@popple.id.au>
+Message-ID: <Pine.LNX.4.44L0.1402211037300.1273-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
@@ -25,24 +25,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Fri, 21 Feb 2014, Alistair Popple wrote:
 
-> The IBM Akebono board uses the PPC476GTR SoC which has a OHCI
-> compliant USB host interface. This patch adds support for it to the
-> OHCI platform driver.
+> Currently the ppc-of driver uses the compatibility string
+> "usb-ehci". This means platforms that use device-tree and implement an
+> EHCI compatible interface have to either use the ppc-of driver or add
+> a compatible line to the ehci-platform driver. It would be more
+> appropriate for the platform driver to be compatible with "usb-ehci"
+> as non-powerpc platforms are also beginning to utilise device-tree.
 > 
-> As we use device tree to pass platform specific data instead of
-> platform data we remove the check for platform data and instead
-> provide reasonable defaults if no platform data is present. This is
-> similar to what is currently done in ehci-platform.c.
+> This patch merges the device tree property parsing from ehci-ppc-of
+> into the platform driver and adds a "usb-ehci" compatibility
+> string. The existing ehci-ppc-of driver is removed and the 440EPX
+> specific quirks are added to the ehci-platform driver.
 > 
 > Signed-off-by: Alistair Popple <alistair@popple.id.au>
-> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-As Arnd pointed out, this patch is out of date.  See
+This patch is also out of date.  The compatibility string used by the 
+ehci-platform driver is "generic-ehci".
 
-https://git.kernel.org/cgit/linux/kernel/git/gregkh/usb.git/commit/drivers/usb/host/ohci-platform.c?h=usb-next&id=ca52a17ba975dbf47e87c9bc63086aca0cf92806
-
-and
-
-https://git.kernel.org/cgit/linux/kernel/git/gregkh/usb.git/commit/drivers/usb/host/ohci-platform.c?h=usb-next&id=ce149c30b9f89d0c9addd1d71ccdb57c1051553b
+There remains the question of whether to merge ehci-ppc-of into
+ehci-platform.  This would be a rather invasive change, but I suppose
+we could do it.  With adjustments along the lines suggested by Mark
+Rutland.
 
 Alan Stern
