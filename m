@@ -1,13 +1,13 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
  [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id AF0AF2C0345
+ by ozlabs.org (Postfix) with ESMTP id D0ED02C0344
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 17:35:30 +1100 (EST)
 From: Alistair Popple <alistair@popple.id.au>
 To: benh@kernel.crashing.org
-Subject: =?UTF-8?q?=5BPATCH=205/7=5D=20IBM=20Currituck=3A=20Clean=20up=20board=20specific=20code=20before=20adding=20Akebono=20code?=
-Date: Fri, 21 Feb 2014 17:31:31 +1100
-Message-Id: <1392964293-13687-6-git-send-email-alistair@popple.id.au>
+Subject: =?UTF-8?q?=5BPATCH=207/7=5D=20powerpc=3A=20Added=20PCI=20MSI=20support=20using=20the=20HSTA=20module?=
+Date: Fri, 21 Feb 2014 17:31:33 +1100
+Message-Id: <1392964293-13687-8-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
 References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
 MIME-Version: 1.0
@@ -23,292 +23,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The IBM Akebono code uses the same initialisation functions as the
-earlier Currituck board. Rather than create a copy of this code for
-Akebono we will instead integrate support for it into the same file as
-the Currituck code.
+The PPC476GTR SoC supports message signalled interrupts (MSI) by writing
+to special addresses within the High Speed Transfer Assist (HSTA) module.
 
-This patch just renames the board support file and updates the Makefile.
+This patch adds support for PCI MSI with a new system device. The DMA
+window is also updated to allow access to the entire 42-bit address range
+to allow PCI devices write access to the HSTA module.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/platforms/44x/Makefile    |    2 +-
- arch/powerpc/platforms/44x/currituck.c |  233 --------------------------------
- arch/powerpc/platforms/44x/ppc476.c    |  233 ++++++++++++++++++++++++++++++++
- 3 files changed, 234 insertions(+), 234 deletions(-)
- delete mode 100644 arch/powerpc/platforms/44x/currituck.c
- create mode 100644 arch/powerpc/platforms/44x/ppc476.c
+ arch/powerpc/boot/dts/akebono.dts     |   46 +++++--
+ arch/powerpc/boot/treeboot-akebono.c  |   15 ---
+ arch/powerpc/platforms/44x/Kconfig    |    2 +
+ arch/powerpc/sysdev/Kconfig           |    6 +
+ arch/powerpc/sysdev/Makefile          |    1 +
+ arch/powerpc/sysdev/ppc4xx_hsta_msi.c |  215 +++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/ppc4xx_pci.c      |    8 +-
+ 7 files changed, 268 insertions(+), 25 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/ppc4xx_hsta_msi.c
 
-diff --git a/arch/powerpc/platforms/44x/Makefile b/arch/powerpc/platforms/44x/Makefile
-index d03833a..f896b89 100644
---- a/arch/powerpc/platforms/44x/Makefile
-+++ b/arch/powerpc/platforms/44x/Makefile
-@@ -10,4 +10,4 @@ obj-$(CONFIG_XILINX_VIRTEX_5_FXT) += virtex.o
- obj-$(CONFIG_XILINX_ML510) += virtex_ml510.o
- obj-$(CONFIG_ISS4xx)	+= iss4xx.o
- obj-$(CONFIG_CANYONLANDS)+= canyonlands.o
--obj-$(CONFIG_CURRITUCK)	+= currituck.o
-+obj-$(CONFIG_CURRITUCK)	+= ppc476.o
-diff --git a/arch/powerpc/platforms/44x/currituck.c b/arch/powerpc/platforms/44x/currituck.c
-deleted file mode 100644
-index 7f1b71a..0000000
---- a/arch/powerpc/platforms/44x/currituck.c
-+++ /dev/null
-@@ -1,233 +0,0 @@
--/*
-- * Currituck board specific routines
-- *
-- * Copyright © 2011 Tony Breeds IBM Corporation
-- *
-- * Based on earlier code:
-- *    Matt Porter <mporter@kernel.crashing.org>
-- *    Copyright 2002-2005 MontaVista Software Inc.
-- *
-- *    Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-- *    Copyright (c) 2003-2005 Zultys Technologies
-- *
-- *    Rewritten and ported to the merged powerpc tree:
-- *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
-- *    Copyright © 2011 David Kliekamp IBM Corporation
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--#include <linux/init.h>
--#include <linux/of.h>
--#include <linux/of_platform.h>
--#include <linux/rtc.h>
--
--#include <asm/machdep.h>
--#include <asm/prom.h>
--#include <asm/udbg.h>
--#include <asm/time.h>
--#include <asm/uic.h>
--#include <asm/ppc4xx.h>
--#include <asm/mpic.h>
--#include <asm/mmu.h>
--
--#include <linux/pci.h>
--
--static __initdata struct of_device_id ppc47x_of_bus[] = {
--	{ .compatible = "ibm,plb4", },
--	{ .compatible = "ibm,plb6", },
--	{ .compatible = "ibm,opb", },
--	{ .compatible = "ibm,ebc", },
--	{},
--};
--
--/* The EEPROM is missing and the default values are bogus.  This forces USB in
-- * to EHCI mode */
--static void quirk_ppc_currituck_usb_fixup(struct pci_dev *dev)
--{
--	if (of_machine_is_compatible("ibm,currituck")) {
--		pci_write_config_dword(dev, 0xe0, 0x0114231f);
--		pci_write_config_dword(dev, 0xe4, 0x00006c40);
--	}
--}
--DECLARE_PCI_FIXUP_HEADER(0x1033, 0x0035, quirk_ppc_currituck_usb_fixup);
--
--static int __init ppc47x_device_probe(void)
--{
--	of_platform_bus_probe(NULL, ppc47x_of_bus, NULL);
--
--	return 0;
--}
--machine_device_initcall(ppc47x, ppc47x_device_probe);
--
--/* We can have either UICs or MPICs */
--static void __init ppc47x_init_irq(void)
--{
--	struct device_node *np;
--
--	/* Find top level interrupt controller */
--	for_each_node_with_property(np, "interrupt-controller") {
--		if (of_get_property(np, "interrupts", NULL) == NULL)
--			break;
--	}
--	if (np == NULL)
--		panic("Can't find top level interrupt controller");
--
--	/* Check type and do appropriate initialization */
--	if (of_device_is_compatible(np, "chrp,open-pic")) {
--		/* The MPIC driver will get everything it needs from the
--		 * device-tree, just pass 0 to all arguments
--		 */
--		struct mpic *mpic =
--			mpic_alloc(np, 0, MPIC_NO_RESET, 0, 0, " MPIC     ");
--		BUG_ON(mpic == NULL);
--		mpic_init(mpic);
--		ppc_md.get_irq = mpic_get_irq;
--	} else
--		panic("Unrecognized top level interrupt controller");
--}
--
--#ifdef CONFIG_SMP
--static void smp_ppc47x_setup_cpu(int cpu)
--{
--	mpic_setup_this_cpu();
--}
--
--static int smp_ppc47x_kick_cpu(int cpu)
--{
--	struct device_node *cpunode = of_get_cpu_node(cpu, NULL);
--	const u64 *spin_table_addr_prop;
--	u32 *spin_table;
--	extern void start_secondary_47x(void);
--
--	BUG_ON(cpunode == NULL);
--
--	/* Assume spin table. We could test for the enable-method in
--	 * the device-tree but currently there's little point as it's
--	 * our only supported method
--	 */
--	spin_table_addr_prop =
--		of_get_property(cpunode, "cpu-release-addr", NULL);
--
--	if (spin_table_addr_prop == NULL) {
--		pr_err("CPU%d: Can't start, missing cpu-release-addr !\n",
--		       cpu);
--		return 1;
--	}
--
--	/* Assume it's mapped as part of the linear mapping. This is a bit
--	 * fishy but will work fine for now
--	 *
--	 * XXX: Is there any reason to assume differently?
--	 */
--	spin_table = (u32 *)__va(*spin_table_addr_prop);
--	pr_debug("CPU%d: Spin table mapped at %p\n", cpu, spin_table);
--
--	spin_table[3] = cpu;
--	smp_wmb();
--	spin_table[1] = __pa(start_secondary_47x);
--	mb();
--
--	return 0;
--}
--
--static struct smp_ops_t ppc47x_smp_ops = {
--	.probe		= smp_mpic_probe,
--	.message_pass	= smp_mpic_message_pass,
--	.setup_cpu	= smp_ppc47x_setup_cpu,
--	.kick_cpu	= smp_ppc47x_kick_cpu,
--	.give_timebase	= smp_generic_give_timebase,
--	.take_timebase	= smp_generic_take_timebase,
--};
--
--static void __init ppc47x_smp_init(void)
--{
--	if (mmu_has_feature(MMU_FTR_TYPE_47x))
--		smp_ops = &ppc47x_smp_ops;
--}
--
--#else /* CONFIG_SMP */
--static void __init ppc47x_smp_init(void) { }
--#endif /* CONFIG_SMP */
--
--static void __init ppc47x_setup_arch(void)
--{
--
--	/* No need to check the DMA config as we /know/ our windows are all of
-- 	 * RAM.  Lets hope that doesn't change */
--	swiotlb_detect_4g();
--
--	ppc47x_smp_init();
--}
--
--/*
-- * Called very early, MMU is off, device-tree isn't unflattened
-- */
--static int __init ppc47x_probe(void)
--{
--	unsigned long root = of_get_flat_dt_root();
--
--	if (!of_flat_dt_is_compatible(root, "ibm,currituck"))
--		return 0;
--
--	return 1;
--}
--
--static int board_rev = -1;
--static int __init ppc47x_get_board_rev(void)
--{
--	u8 fpga_reg0;
--	void *fpga;
--	struct device_node *np;
--
--	np = of_find_compatible_node(NULL, NULL, "ibm,currituck-fpga");
--	if (!np)
--		goto fail;
--
--	fpga = of_iomap(np, 0);
--	of_node_put(np);
--	if (!fpga)
--		goto fail;
--
--	fpga_reg0 = ioread8(fpga);
--	board_rev = fpga_reg0 & 0x03;
--	pr_info("%s: Found board revision %d\n", __func__, board_rev);
--	iounmap(fpga);
--	return 0;
--
--fail:
--	pr_info("%s: Unable to find board revision\n", __func__);
--	return 0;
--}
--machine_arch_initcall(ppc47x, ppc47x_get_board_rev);
--
--/* Use USB controller should have been hardware swizzled but it wasn't :( */
--static void ppc47x_pci_irq_fixup(struct pci_dev *dev)
--{
--	if (dev->vendor == 0x1033 && (dev->device == 0x0035 ||
--	                              dev->device == 0x00e0)) {
--		if (board_rev == 0) {
--			dev->irq = irq_create_mapping(NULL, 47);
--			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
--		} else if (board_rev == 2) {
--			dev->irq = irq_create_mapping(NULL, 49);
--			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
--		} else {
--			pr_alert("%s: Unknown board revision\n", __func__);
+diff --git a/arch/powerpc/boot/dts/akebono.dts b/arch/powerpc/boot/dts/akebono.dts
+index 9a21f58..3d14027 100644
+--- a/arch/powerpc/boot/dts/akebono.dts
++++ b/arch/powerpc/boot/dts/akebono.dts
+@@ -82,6 +82,28 @@
+ 		ranges;
+ 		clock-frequency = <200000000>; // 200Mhz
+ 
++		HSTA0: hsta@310000e0000 {
++			compatible = "ibm,476gtr-hsta-msi", "ibm,hsta-msi";
++			reg = <0x310 0x000e0000 0x0 0xf0>;
++			interrupt-parent = <&MPIC>;
++			interrupts = <108 0
++				      109 0
++				      110 0
++				      111 0
++				      112 0
++				      113 0
++				      114 0
++				      115 0
++				      116 0
++				      117 0
++				      118 0
++				      119 0
++				      120 0
++				      121 0
++				      122 0
++				      123 0>;
++		};
++
+ 		MAL0: mcmal {
+ 			compatible = "ibm,mcmal-476gtr", "ibm,mcmal2";
+ 			dcr-reg = <0xc0000000 0x062>;
+@@ -242,8 +264,10 @@
+ 			ranges = <0x02000000 0x00000000 0x80000000 0x00000110 0x80000000 0x0 0x80000000
+ 			          0x01000000 0x0        0x0        0x00000140 0x0        0x0 0x00010000>;
+ 
+-			/* Inbound starting at 0 to memsize filled in by zImage */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x0>;
++			/* Inbound starting at 0x0 to 0x40000000000. In order to use MSI
++			 * PCI devices must be able to write to the HSTA module.
++			 */
++			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x400 0x0>;
+ 
+ 			/* This drives busses 0 to 0xf */
+ 			bus-range = <0x0 0xf>;
+@@ -280,8 +304,10 @@
+ 			ranges = <0x02000000 0x00000000 0x80000000 0x00000210 0x80000000 0x0 0x80000000
+ 			          0x01000000 0x0        0x0        0x00000240 0x0        0x0 0x00010000>;
+ 
+-			/* Inbound starting at 0 to memsize filled in by zImage */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x0>;
++			/* Inbound starting at 0x0 to 0x40000000000. In order to use MSI
++			 * PCI devices must be able to write to the HSTA module.
++			 */
++			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x400 0x0>;
+ 
+ 			/* This drives busses 0 to 0xf */
+ 			bus-range = <0x0 0xf>;
+@@ -318,8 +344,10 @@
+ 			ranges = <0x02000000 0x00000000 0x80000000 0x00000190 0x80000000 0x0 0x80000000
+ 			          0x01000000 0x0        0x0        0x000001c0 0x0        0x0 0x00010000>;
+ 
+-			/* Inbound starting at 0 to memsize filled in by zImage */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x0>;
++			/* Inbound starting at 0x0 to 0x40000000000. In order to use MSI
++			 * PCI devices must be able to write to the HSTA module.
++			 */
++			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x400 0x0>;
+ 
+ 			/* This drives busses 0 to 0xf */
+ 			bus-range = <0x0 0xf>;
+@@ -356,8 +384,10 @@
+ 			ranges = <0x02000000 0x00000000 0x80000000 0x00000290 0x80000000 0x0 0x80000000
+ 			          0x01000000 0x0        0x0        0x000002c0 0x0        0x0 0x00010000>;
+ 
+-			/* Inbound starting at 0 to memsize filled in by zImage */
+-			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x0 0x0>;
++			/* Inbound starting at 0x0 to 0x40000000000. In order to use MSI
++			 * PCI devices must be able to write to the HSTA module.
++			 */
++			dma-ranges = <0x42000000 0x0 0x0 0x0 0x0 0x400 0x0>;
+ 
+ 			/* This drives busses 0 to 0xf */
+ 			bus-range = <0x0 0xf>;
+diff --git a/arch/powerpc/boot/treeboot-akebono.c b/arch/powerpc/boot/treeboot-akebono.c
+index d42ef8a..ac2837f 100644
+--- a/arch/powerpc/boot/treeboot-akebono.c
++++ b/arch/powerpc/boot/treeboot-akebono.c
+@@ -75,24 +75,9 @@ static void ibm_akebono_fixups(void)
+ {
+ 	void *emac;
+ 	u32 reg;
+-	void *devp = finddevice("/");
+-	u32 dma_ranges[7];
+ 
+ 	dt_fixup_memory(0x0ULL,  ibm_akebono_memsize);
+ 
+-	while ((devp = find_node_by_devtype(devp, "pci"))) {
+-		if (getprop(devp, "dma-ranges", dma_ranges,
+-			    sizeof(dma_ranges)) < 0) {
+-			printf("%s: Failed to get dma-ranges\r\n", __func__);
+-			continue;
 -		}
--	}
--}
 -
--define_machine(ppc47x) {
--	.name			= "PowerPC 47x",
--	.probe			= ppc47x_probe,
--	.progress		= udbg_progress,
--	.init_IRQ		= ppc47x_init_irq,
--	.setup_arch		= ppc47x_setup_arch,
--	.pci_irq_fixup		= ppc47x_pci_irq_fixup,
--	.restart		= ppc4xx_reset_system,
--	.calibrate_decr		= generic_calibrate_decr,
--};
-diff --git a/arch/powerpc/platforms/44x/ppc476.c b/arch/powerpc/platforms/44x/ppc476.c
+-		dma_ranges[5] = ibm_akebono_memsize >> 32;
+-		dma_ranges[6] = ibm_akebono_memsize & 0xffffffffUL;
+-
+-		setprop(devp, "dma-ranges", dma_ranges, sizeof(dma_ranges));
+-	}
+-
+ 	/* Fixup the SD timeout frequency */
+ 	mtdcrx(CCTL0_MCO4, 0x1);
+ 
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index b734df0..f460225 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -206,6 +206,8 @@ config AKEBONO
+ 	select SWIOTLB
+ 	select 476FPE
+ 	select PPC4xx_PCI_EXPRESS
++	select PCI_MSI
++	select PPC4xx_HSTA_MSI
+ 	select I2C
+ 	select I2C_IBM_IIC
+ 	select NETDEVICES
+diff --git a/arch/powerpc/sysdev/Kconfig b/arch/powerpc/sysdev/Kconfig
+index 13ec968..d743bae 100644
+--- a/arch/powerpc/sysdev/Kconfig
++++ b/arch/powerpc/sysdev/Kconfig
+@@ -7,6 +7,12 @@ config PPC4xx_PCI_EXPRESS
+ 	depends on PCI && 4xx
+ 	default n
+ 
++config PPC4xx_HSTA_MSI
++	bool
++	depends on PCI_MSI
++	depends on PCI && 4xx
++	default n
++
+ config PPC4xx_MSI
+ 	bool
+ 	depends on PCI_MSI
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index f67ac90..7657fb7 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -46,6 +46,7 @@ obj-$(CONFIG_OF_RTC)		+= of_rtc.o
+ ifeq ($(CONFIG_PCI),y)
+ obj-$(CONFIG_4xx)		+= ppc4xx_pci.o
+ endif
++obj-$(CONFIG_PPC4xx_HSTA_MSI)	+= ppc4xx_hsta_msi.o
+ obj-$(CONFIG_PPC4xx_MSI)	+= ppc4xx_msi.o
+ obj-$(CONFIG_PPC4xx_CPM)	+= ppc4xx_cpm.o
+ obj-$(CONFIG_PPC4xx_GPIO)	+= ppc4xx_gpio.o
+diff --git a/arch/powerpc/sysdev/ppc4xx_hsta_msi.c b/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
 new file mode 100644
-index 0000000..c6c5a6f
+index 0000000..11c8884
 --- /dev/null
-+++ b/arch/powerpc/platforms/44x/ppc476.c
-@@ -0,0 +1,233 @@
++++ b/arch/powerpc/sysdev/ppc4xx_hsta_msi.c
+@@ -0,0 +1,215 @@
 +/*
-+ * PowerPC 476FPE board specific routines
++ * MSI support for PPC4xx SoCs using High Speed Transfer Assist (HSTA) for
++ * generation of the interrupt.
 + *
-+ * Copyright © 2011 Tony Breeds IBM Corporation
-+ *
-+ * Based on earlier code:
-+ *    Matt Porter <mporter@kernel.crashing.org>
-+ *    Copyright 2002-2005 MontaVista Software Inc.
-+ *
-+ *    Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-+ *    Copyright (c) 2003-2005 Zultys Technologies
-+ *
-+ *    Rewritten and ported to the merged powerpc tree:
-+ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
-+ *    Copyright © 2011 David Kliekamp IBM Corporation
++ * Copyright © 2013 Alistair Popple <alistair@popple.id.au> IBM Corporation
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -316,216 +216,227 @@ index 0000000..c6c5a6f
 + * option) any later version.
 + */
 +
-+#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/interrupt.h>
++#include <linux/msi.h>
 +#include <linux/of.h>
 +#include <linux/of_platform.h>
-+#include <linux/rtc.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+#include <asm/ppc4xx.h>
-+#include <asm/mpic.h>
-+#include <asm/mmu.h>
-+
 +#include <linux/pci.h>
++#include <linux/semaphore.h>
++#include <asm/msi_bitmap.h>
 +
-+static struct of_device_id ppc47x_of_bus[] __initdata = {
-+	{ .compatible = "ibm,plb4", },
-+	{ .compatible = "ibm,plb6", },
-+	{ .compatible = "ibm,opb", },
-+	{ .compatible = "ibm,ebc", },
-+	{},
++struct ppc4xx_hsta_msi {
++	struct device *dev;
++
++	/* The ioremapped HSTA MSI IO space */
++	u32 __iomem *data;
++
++	/* Physical address of HSTA MSI IO space */
++	u64 address;
++	struct msi_bitmap bmp;
++
++	/* An array mapping offsets to hardware IRQs */
++	int *irq_map;
++
++	/* Number of hwirqs supported */
++	int irq_count;
 +};
++static struct ppc4xx_hsta_msi ppc4xx_hsta_msi;
 +
-+/* The EEPROM is missing and the default values are bogus.  This forces USB in
-+ * to EHCI mode */
-+static void quirk_ppc_currituck_usb_fixup(struct pci_dev *dev)
++static int hsta_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
 +{
-+	if (of_machine_is_compatible("ibm,currituck")) {
-+		pci_write_config_dword(dev, 0xe0, 0x0114231f);
-+		pci_write_config_dword(dev, 0xe4, 0x00006c40);
-+	}
-+}
-+DECLARE_PCI_FIXUP_HEADER(0x1033, 0x0035, quirk_ppc_currituck_usb_fixup);
++	struct msi_msg msg;
++	struct msi_desc *entry;
++	int irq, hwirq;
++	u64 addr;
 +
-+static int __init ppc47x_device_probe(void)
-+{
-+	of_platform_bus_probe(NULL, ppc47x_of_bus, NULL);
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		irq = msi_bitmap_alloc_hwirqs(&ppc4xx_hsta_msi.bmp, 1);
++		if (irq < 0) {
++			pr_debug("%s: Failed to allocate msi interrupt\n",
++				 __func__);
++			return irq;
++		}
 +
-+	return 0;
-+}
-+machine_device_initcall(ppc47x, ppc47x_device_probe);
++		hwirq = ppc4xx_hsta_msi.irq_map[irq];
++		if (hwirq == NO_IRQ) {
++			pr_err("%s: Failed mapping irq %d\n", __func__, irq);
++			return -EINVAL;
++		}
 +
-+/* We can have either UICs or MPICs */
-+static void __init ppc47x_init_irq(void)
-+{
-+	struct device_node *np;
-+
-+	/* Find top level interrupt controller */
-+	for_each_node_with_property(np, "interrupt-controller") {
-+		if (of_get_property(np, "interrupts", NULL) == NULL)
-+			break;
-+	}
-+	if (np == NULL)
-+		panic("Can't find top level interrupt controller");
-+
-+	/* Check type and do appropriate initialization */
-+	if (of_device_is_compatible(np, "chrp,open-pic")) {
-+		/* The MPIC driver will get everything it needs from the
-+		 * device-tree, just pass 0 to all arguments
++		/*
++		 * HSTA generates interrupts on writes to 128-bit aligned
++		 * addresses.
 +		 */
-+		struct mpic *mpic =
-+			mpic_alloc(np, 0, MPIC_NO_RESET, 0, 0, " MPIC     ");
-+		BUG_ON(mpic == NULL);
-+		mpic_init(mpic);
-+		ppc_md.get_irq = mpic_get_irq;
-+	} else
-+		panic("Unrecognized top level interrupt controller");
-+}
++		addr = ppc4xx_hsta_msi.address + irq*0x10;
++		msg.address_hi = upper_32_bits(addr);
++		msg.address_lo = lower_32_bits(addr);
 +
-+#ifdef CONFIG_SMP
-+static void smp_ppc47x_setup_cpu(int cpu)
-+{
-+	mpic_setup_this_cpu();
-+}
++		/* Data is not used by the HSTA. */
++		msg.data = 0;
 +
-+static int smp_ppc47x_kick_cpu(int cpu)
-+{
-+	struct device_node *cpunode = of_get_cpu_node(cpu, NULL);
-+	const u64 *spin_table_addr_prop;
-+	u32 *spin_table;
-+	extern void start_secondary_47x(void);
++		pr_debug("%s: Setup irq %d (0x%0llx)\n", __func__, hwirq,
++			 (((u64) msg.address_hi) << 32) | msg.address_lo);
 +
-+	BUG_ON(cpunode == NULL);
-+
-+	/* Assume spin table. We could test for the enable-method in
-+	 * the device-tree but currently there's little point as it's
-+	 * our only supported method
-+	 */
-+	spin_table_addr_prop =
-+		of_get_property(cpunode, "cpu-release-addr", NULL);
-+
-+	if (spin_table_addr_prop == NULL) {
-+		pr_err("CPU%d: Can't start, missing cpu-release-addr !\n",
-+		       cpu);
-+		return 1;
++		if (irq_set_msi_desc(hwirq, entry)) {
++			pr_err(
++			"%s: Invalid hwirq %d specified in device tree\n",
++			__func__, hwirq);
++			msi_bitmap_free_hwirqs(&ppc4xx_hsta_msi.bmp, irq, 1);
++			return -EINVAL;
++		}
++		write_msi_msg(hwirq, &msg);
 +	}
 +
-+	/* Assume it's mapped as part of the linear mapping. This is a bit
-+	 * fishy but will work fine for now
-+	 *
-+	 * XXX: Is there any reason to assume differently?
-+	 */
-+	spin_table = (u32 *)__va(*spin_table_addr_prop);
-+	pr_debug("CPU%d: Spin table mapped at %p\n", cpu, spin_table);
++	return 0;
++}
 +
-+	spin_table[3] = cpu;
-+	smp_wmb();
-+	spin_table[1] = __pa(start_secondary_47x);
-+	mb();
++static int hsta_find_hwirq_offset(int hwirq)
++{
++	int irq;
++
++	/* Find the offset given the hwirq */
++	for (irq = 0; irq < ppc4xx_hsta_msi.irq_count; irq++)
++		if (ppc4xx_hsta_msi.irq_map[irq] == hwirq)
++			return irq;
++
++	return -EINVAL;
++}
++
++static void hsta_teardown_msi_irqs(struct pci_dev *dev)
++{
++	struct msi_desc *entry;
++	int irq;
++
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		if (entry->irq == NO_IRQ)
++			continue;
++
++		irq = hsta_find_hwirq_offset(entry->irq);
++
++		/* entry->irq should always be in irq_map */
++		BUG_ON(irq < 0);
++		irq_set_msi_desc(entry->irq, NULL);
++		msi_bitmap_free_hwirqs(&ppc4xx_hsta_msi.bmp, irq, 1);
++		pr_debug("%s: Teardown IRQ %u (index %u)\n", __func__,
++			 entry->irq, irq);
++	}
++}
++
++static int hsta_msi_check_device(struct pci_dev *pdev, int nvec, int type)
++{
++	/* We don't support MSI-X */
++	if (type == PCI_CAP_ID_MSIX) {
++		pr_debug("%s: MSI-X not supported.\n", __func__);
++		return -EINVAL;
++	}
 +
 +	return 0;
 +}
 +
-+static struct smp_ops_t ppc47x_smp_ops = {
-+	.probe		= smp_mpic_probe,
-+	.message_pass	= smp_mpic_message_pass,
-+	.setup_cpu	= smp_ppc47x_setup_cpu,
-+	.kick_cpu	= smp_ppc47x_kick_cpu,
-+	.give_timebase	= smp_generic_give_timebase,
-+	.take_timebase	= smp_generic_take_timebase,
-+};
-+
-+static void __init ppc47x_smp_init(void)
++static int hsta_msi_probe(struct platform_device *pdev)
 +{
-+	if (mmu_has_feature(MMU_FTR_TYPE_47x))
-+		smp_ops = &ppc47x_smp_ops;
-+}
++	struct device *dev = &pdev->dev;
++	struct resource *mem;
++	int irq, ret, irq_count;
 +
-+#else /* CONFIG_SMP */
-+static void __init ppc47x_smp_init(void) { }
-+#endif /* CONFIG_SMP */
++	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (IS_ERR(mem)) {
++		dev_err(dev, "Unable to get mmio space\n");
++		return -EINVAL;
++	}
 +
-+static void __init ppc47x_setup_arch(void)
-+{
++	irq_count = of_irq_count(dev->of_node);
++	if (!irq_count) {
++		dev_err(dev, "Unable to find IRQ range\n");
++		return -EINVAL;
++	}
 +
-+	/* No need to check the DMA config as we /know/ our windows are all of
-+	 * RAM.  Lets hope that doesn't change */
-+	swiotlb_detect_4g();
++	ppc4xx_hsta_msi.dev = dev;
++	ppc4xx_hsta_msi.address = mem->start;
++	ppc4xx_hsta_msi.data = ioremap(mem->start, resource_size(mem));
++	ppc4xx_hsta_msi.irq_count = irq_count;
++	if (IS_ERR(ppc4xx_hsta_msi.data)) {
++		dev_err(dev, "Unable to map memory\n");
++		return -ENOMEM;
++	}
 +
-+	ppc47x_smp_init();
-+}
++	ret = msi_bitmap_alloc(&ppc4xx_hsta_msi.bmp, irq_count, dev->of_node);
++	if (ret)
++		goto out;
 +
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init ppc47x_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
++	ppc4xx_hsta_msi.irq_map = kmalloc(sizeof(int) * irq_count, GFP_KERNEL);
++	if (IS_ERR(ppc4xx_hsta_msi.irq_map)) {
++		ret = -ENOMEM;
++		goto out1;
++	}
 +
-+	if (!of_flat_dt_is_compatible(root, "ibm,currituck"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static int board_rev = -1;
-+static int __init ppc47x_get_board_rev(void)
-+{
-+	u8 fpga_reg0;
-+	void *fpga;
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "ibm,currituck-fpga");
-+	if (!np)
-+		goto fail;
-+
-+	fpga = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!fpga)
-+		goto fail;
-+
-+	fpga_reg0 = ioread8(fpga);
-+	board_rev = fpga_reg0 & 0x03;
-+	pr_info("%s: Found board revision %d\n", __func__, board_rev);
-+	iounmap(fpga);
-+	return 0;
-+
-+fail:
-+	pr_info("%s: Unable to find board revision\n", __func__);
-+	return 0;
-+}
-+machine_arch_initcall(ppc47x, ppc47x_get_board_rev);
-+
-+/* Use USB controller should have been hardware swizzled but it wasn't :( */
-+static void ppc47x_pci_irq_fixup(struct pci_dev *dev)
-+{
-+	if (dev->vendor == 0x1033 && (dev->device == 0x0035 ||
-+				      dev->device == 0x00e0)) {
-+		if (board_rev == 0) {
-+			dev->irq = irq_create_mapping(NULL, 47);
-+			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
-+		} else if (board_rev == 2) {
-+			dev->irq = irq_create_mapping(NULL, 49);
-+			pr_info("%s: Mapping irq %d\n", __func__, dev->irq);
-+		} else {
-+			pr_alert("%s: Unknown board revision\n", __func__);
++	/* Setup a mapping from irq offsets to hardware irq numbers */
++	for (irq = 0; irq < irq_count; irq++) {
++		ppc4xx_hsta_msi.irq_map[irq] =
++			irq_of_parse_and_map(dev->of_node, irq);
++		if (ppc4xx_hsta_msi.irq_map[irq] == NO_IRQ) {
++			dev_err(dev, "Unable to map IRQ\n");
++			ret = -EINVAL;
++			goto out2;
 +		}
 +	}
++
++	ppc_md.setup_msi_irqs = hsta_setup_msi_irqs;
++	ppc_md.teardown_msi_irqs = hsta_teardown_msi_irqs;
++	ppc_md.msi_check_device = hsta_msi_check_device;
++	return 0;
++
++out2:
++	kfree(ppc4xx_hsta_msi.irq_map);
++
++out1:
++	msi_bitmap_free(&ppc4xx_hsta_msi.bmp);
++
++out:
++	iounmap(ppc4xx_hsta_msi.data);
++	return ret;
 +}
 +
-+define_machine(ppc47x) {
-+	.name			= "PowerPC 47x",
-+	.probe			= ppc47x_probe,
-+	.progress		= udbg_progress,
-+	.init_IRQ		= ppc47x_init_irq,
-+	.setup_arch		= ppc47x_setup_arch,
-+	.pci_irq_fixup		= ppc47x_pci_irq_fixup,
-+	.restart		= ppc4xx_reset_system,
-+	.calibrate_decr		= generic_calibrate_decr,
++static const struct of_device_id hsta_msi_ids[] = {
++	{
++		.compatible = "ibm,hsta-msi",
++	},
++	{}
 +};
++
++static struct platform_driver hsta_msi_driver = {
++	.probe = hsta_msi_probe,
++	.driver = {
++		.name = "hsta-msi",
++		.owner = THIS_MODULE,
++		.of_match_table = hsta_msi_ids,
++	},
++};
++
++static int hsta_msi_init(void)
++{
++	return platform_driver_register(&hsta_msi_driver);
++}
++subsys_initcall(hsta_msi_init);
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 54ec1d5..7cc3acc 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -176,8 +176,12 @@ static int __init ppc4xx_parse_dma_ranges(struct pci_controller *hose,
+ 		return -ENXIO;
+ 	}
+ 
+-	/* Check that we are fully contained within 32 bits space */
+-	if (res->end > 0xffffffff) {
++	/* Check that we are fully contained within 32 bits space if we are not
++	 * running on a 460sx or 476fpe which have 64 bit bus addresses.
++	 */
++	if (res->end > 0xffffffff &&
++	    !(of_device_is_compatible(hose->dn, "ibm,plb-pciex-460sx")
++	      || of_device_is_compatible(hose->dn, "ibm,plb-pciex-476fpe"))) {
+ 		printk(KERN_ERR "%s: dma-ranges outside of 32 bits space\n",
+ 		       hose->dn->full_name);
+ 		return -ENXIO;
 -- 
 1.7.10.4
