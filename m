@@ -1,39 +1,27 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
+ [209.85.220.52])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 70F6C2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 11:14:59 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Fri, 21 Feb 2014 19:14:56 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 463846E8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 19:14:49 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1M0EsXD59506910
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 00:14:54 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1M0ErJ8014087
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 19:14:53 -0500
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0D1532C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 11:28:42 +1100 (EST)
+Received: by mail-pa0-f52.google.com with SMTP id bj1so4165766pad.39
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2014 16:28:39 -0800 (PST)
+Message-ID: <5307EF2F.9090100@ozlabs.ru>
+Date: Sat, 22 Feb 2014 11:28:31 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Cody P Schafer <cody@linux.vnet.ibm.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Olof Johansson <olof@lixom.net>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Wang Dongsheng <dongsheng.wang@freescale.com>
-Subject: [PATCH] powerpc: warn users of smt-snooze-delay that the API isn't
- there anymore
-Date: Fri, 21 Feb 2014 16:14:31 -0800
-Message-Id: <1393028074-26797-1-git-send-email-cody@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH] PPC: KVM: Introduce hypervisor call H_GET_TCE
+References: <20140221153110.8190.6271.stgit@nimbus>
+ <1393010638.6771.74.camel@pasglop>
+In-Reply-To: <1393010638.6771.74.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, kvm@vger.kernel.org,
+ Gleb Natapov <gleb@kernel.org>, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,45 +31,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-/sys/devices/system/cpu/cpu*/smt-snooze-delay was converted into a NOP
-in commit 3fa8cad82b94d0bed002571bd246f2299ffc876b, and now does
-nothing. Add a pr_warn() to convince any users that they should stop
-using it.
+On 02/22/2014 06:23 AM, Benjamin Herrenschmidt wrote:
+> On Fri, 2014-02-21 at 16:31 +0100, Laurent Dufour wrote:
+>> This fix introduces the H_GET_TCE hypervisor call which is basically the
+>> reverse of H_PUT_TCE, as defined in the Power Architecture Platform
+>> Requirements (PAPR).
+>>
+>> The hcall H_GET_TCE is required by the kdump kernel which is calling it to
+>> retrieve the TCE set up by the panicing kernel.
+> 
+> Alexey, will that work for VFIO ?
 
-The commit message from the removing commit notes that this
-functionality should move into the cpuidle driver, essentially by
-adjusting target_residency to the specified value. At the moment,
-target_residency is not exposed by cpuidle's sysfs, so there isn't a
-drop in replacement for this.
+Yes.
 
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/sysfs.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+> Or are those patches *still* not
+> upstream ?
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 97e1dc9..84097b4 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -50,6 +50,9 @@ static ssize_t store_smt_snooze_delay(struct device *dev,
- 	if (ret != 1)
- 		return -EINVAL;
- 
-+	pr_warn_ratelimited("%s (%d): /sys/devices/system/cpu/cpu%d/smt-snooze-delay is deprecated and is a NOP\n",
-+		  current->comm, task_pid_nr(current), cpu->dev.id);
-+
- 	per_cpu(smt_snooze_delay, cpu->dev.id) = snooze;
- 	return count;
- }
-@@ -60,6 +63,9 @@ static ssize_t show_smt_snooze_delay(struct device *dev,
- {
- 	struct cpu *cpu = container_of(dev, struct cpu, dev);
- 
-+	pr_warn_ratelimited("%s (%d): /sys/devices/system/cpu/cpu%d/smt-snooze-delay is deprecated and is a NOP\n",
-+		  current->comm, task_pid_nr(current), cpu->dev.id);
-+
- 	return sprintf(buf, "%ld\n", per_cpu(smt_snooze_delay, cpu->dev.id));
- }
- 
+Yes.
+
+
+> 
+>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/kvm_ppc.h      |    2 ++
+>>  arch/powerpc/kvm/book3s_64_vio_hv.c     |   28 ++++++++++++++++++++++++++++
+>>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |    2 +-
+>>  3 files changed, 31 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+>> index fcd53f0..4096f16 100644
+>> --- a/arch/powerpc/include/asm/kvm_ppc.h
+>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
+>> @@ -129,6 +129,8 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
+>>  				struct kvm_create_spapr_tce *args);
+>>  extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  			     unsigned long ioba, unsigned long tce);
+>> +extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>> +			     unsigned long ioba);
+>>  extern struct kvm_rma_info *kvm_alloc_rma(void);
+>>  extern void kvm_release_rma(struct kvm_rma_info *ri);
+>>  extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
+>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> index 2c25f54..89e96b3 100644
+>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
+>> @@ -75,3 +75,31 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>>  	return H_TOO_HARD;
+>>  }
+>>  EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
+>> +
+>> +long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
+>> +		      unsigned long ioba)
+>> +{
+>> +	struct kvm *kvm = vcpu->kvm;
+>> +	struct kvmppc_spapr_tce_table *stt;
+>> +
+>> +	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
+>> +		if (stt->liobn == liobn) {
+>> +			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
+>> +			struct page *page;
+>> +			u64 *tbl;
+>> +
+>> +			if (ioba >= stt->window_size)
+>> +				return H_PARAMETER;
+>> +
+>> +			page = stt->pages[idx / TCES_PER_PAGE];
+>> +			tbl = (u64 *)page_address(page);
+>> +
+>> +			vcpu->arch.gpr[4] = tbl[idx % TCES_PER_PAGE];
+>> +			return H_SUCCESS;
+>> +		}
+>> +	}
+>> +
+>> +	/* Didn't find the liobn, punt it to userspace */
+>> +	return H_TOO_HARD;
+>> +}
+>> +EXPORT_SYMBOL_GPL(kvmppc_h_get_tce);
+>> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> index e66d4ec..7d4fe2a 100644
+>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>> @@ -1758,7 +1758,7 @@ hcall_real_table:
+>>  	.long	0		/* 0x10 - H_CLEAR_MOD */
+>>  	.long	0		/* 0x14 - H_CLEAR_REF */
+>>  	.long	.kvmppc_h_protect - hcall_real_table
+>> -	.long	0		/* 0x1c - H_GET_TCE */
+>> +	.long	.kvmppc_h_get_tce - hcall_real_table
+>>  	.long	.kvmppc_h_put_tce - hcall_real_table
+>>  	.long	0		/* 0x24 - H_SET_SPRG0 */
+>>  	.long	.kvmppc_h_set_dabr - hcall_real_table
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+
+
 -- 
-1.9.0
+Alexey
