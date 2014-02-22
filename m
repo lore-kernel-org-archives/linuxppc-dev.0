@@ -1,41 +1,23 @@
-Return-Path: <aik@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 65B4D2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 11:48:56 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@au1.ibm.com>;
- Sat, 22 Feb 2014 10:48:54 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 147FE3578053
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 11:48:50 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1M0T1BR5964260
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 11:29:01 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1M0mntY009093
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 11:48:49 +1100
-Message-ID: <5307F3EF.1050200@au1.ibm.com>
-Date: Sat, 22 Feb 2014 11:48:47 +1100
-From: Alexey Kardashevskiy <aik@au1.ibm.com>
+Return-Path: <linux@prisktech.co.nz>
+Received: from server.prisktech.co.nz (server.prisktech.co.nz [115.188.14.127])
+ by ozlabs.org (Postfix) with ESMTP id A4E0D2C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2014 13:32:49 +1100 (EST)
+Message-ID: <53080C55.3070001@prisktech.co.nz>
+Date: Sat, 22 Feb 2014 15:32:53 +1300
+From: Tony Prisk <linux@prisktech.co.nz>
 MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH] PPC: KVM: Introduce hypervisor call H_GET_TCE
-References: <20140221153110.8190.6271.stgit@nimbus>
- <1393010638.6771.74.camel@pasglop> <5307EF2F.9090100@ozlabs.ru>
-In-Reply-To: <5307EF2F.9090100@ozlabs.ru>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+To: Mark Rutland <mark.rutland@arm.com>,
+ Alistair Popple <alistair@popple.id.au>
+Subject: Re: [PATCH 4/7] ECHI Platform: Merge ppc-of EHCI driver into the
+ ehci-platform driver
+References: <20140221114803.GB8783@e106331-lin.cambridge.arm.com>
+In-Reply-To: <20140221114803.GB8783@e106331-lin.cambridge.arm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,121 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/22/2014 11:28 AM, Alexey Kardashevskiy wrote:
-> On 02/22/2014 06:23 AM, Benjamin Herrenschmidt wrote:
->> On Fri, 2014-02-21 at 16:31 +0100, Laurent Dufour wrote:
->>> This fix introduces the H_GET_TCE hypervisor call which is basically the
->>> reverse of H_PUT_TCE, as defined in the Power Architecture Platform
->>> Requirements (PAPR).
->>>
->>> The hcall H_GET_TCE is required by the kdump kernel which is calling it to
->>> retrieve the TCE set up by the panicing kernel.
+
+On 22/02/14 00:48, Mark Rutland wrote:
+> [Adding Tony Prisk to Cc]
+>
+> On Fri, Feb 21, 2014 at 06:31:30AM +0000, Alistair Popple wrote:
+>> Currently the ppc-of driver uses the compatibility string
+>> "usb-ehci". This means platforms that use device-tree and implement an
+>> EHCI compatible interface have to either use the ppc-of driver or add
+>> a compatible line to the ehci-platform driver. It would be more
+>> appropriate for the platform driver to be compatible with "usb-ehci"
+>> as non-powerpc platforms are also beginning to utilise device-tree.
 >>
->> Alexey, will that work for VFIO ?
-> 
-> Yes.
-
-
-Oh! My bad, this is _G_et. Not, this won't support VFIO but this should not
-break the current "slow" VFIO support in upstream.
-
-
->> Or are those patches *still* not
->> upstream ?
-> 
-> Yes.
-
-This part is still true. I cannot get Alex Graf attention even on much
-simpler things for several months.
-
-
-
-> 
-> 
+>> This patch merges the device tree property parsing from ehci-ppc-of
+>> into the platform driver and adds a "usb-ehci" compatibility
+>> string. The existing ehci-ppc-of driver is removed and the 440EPX
+>> specific quirks are added to the ehci-platform driver.
 >>
->>> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
->>> ---
->>>  arch/powerpc/include/asm/kvm_ppc.h      |    2 ++
->>>  arch/powerpc/kvm/book3s_64_vio_hv.c     |   28 ++++++++++++++++++++++++++++
->>>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |    2 +-
->>>  3 files changed, 31 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
->>> index fcd53f0..4096f16 100644
->>> --- a/arch/powerpc/include/asm/kvm_ppc.h
->>> +++ b/arch/powerpc/include/asm/kvm_ppc.h
->>> @@ -129,6 +129,8 @@ extern long kvm_vm_ioctl_create_spapr_tce(struct kvm *kvm,
->>>  				struct kvm_create_spapr_tce *args);
->>>  extern long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>>  			     unsigned long ioba, unsigned long tce);
->>> +extern long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>> +			     unsigned long ioba);
->>>  extern struct kvm_rma_info *kvm_alloc_rma(void);
->>>  extern void kvm_release_rma(struct kvm_rma_info *ri);
->>>  extern struct page *kvm_alloc_hpt(unsigned long nr_pages);
->>> diff --git a/arch/powerpc/kvm/book3s_64_vio_hv.c b/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> index 2c25f54..89e96b3 100644
->>> --- a/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> +++ b/arch/powerpc/kvm/book3s_64_vio_hv.c
->>> @@ -75,3 +75,31 @@ long kvmppc_h_put_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>>  	return H_TOO_HARD;
->>>  }
->>>  EXPORT_SYMBOL_GPL(kvmppc_h_put_tce);
->>> +
->>> +long kvmppc_h_get_tce(struct kvm_vcpu *vcpu, unsigned long liobn,
->>> +		      unsigned long ioba)
->>> +{
->>> +	struct kvm *kvm = vcpu->kvm;
->>> +	struct kvmppc_spapr_tce_table *stt;
->>> +
->>> +	list_for_each_entry(stt, &kvm->arch.spapr_tce_tables, list) {
->>> +		if (stt->liobn == liobn) {
->>> +			unsigned long idx = ioba >> SPAPR_TCE_SHIFT;
->>> +			struct page *page;
->>> +			u64 *tbl;
->>> +
->>> +			if (ioba >= stt->window_size)
->>> +				return H_PARAMETER;
->>> +
->>> +			page = stt->pages[idx / TCES_PER_PAGE];
->>> +			tbl = (u64 *)page_address(page);
->>> +
->>> +			vcpu->arch.gpr[4] = tbl[idx % TCES_PER_PAGE];
->>> +			return H_SUCCESS;
->>> +		}
->>> +	}
->>> +
->>> +	/* Didn't find the liobn, punt it to userspace */
->>> +	return H_TOO_HARD;
->>> +}
->>> +EXPORT_SYMBOL_GPL(kvmppc_h_get_tce);
->>> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>> index e66d4ec..7d4fe2a 100644
->>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>> @@ -1758,7 +1758,7 @@ hcall_real_table:
->>>  	.long	0		/* 0x10 - H_CLEAR_MOD */
->>>  	.long	0		/* 0x14 - H_CLEAR_REF */
->>>  	.long	.kvmppc_h_protect - hcall_real_table
->>> -	.long	0		/* 0x1c - H_GET_TCE */
->>> +	.long	.kvmppc_h_get_tce - hcall_real_table
->>>  	.long	.kvmppc_h_put_tce - hcall_real_table
->>>  	.long	0		/* 0x24 - H_SET_SPRG0 */
->>>  	.long	.kvmppc_h_set_dabr - hcall_real_table
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
-> 
-> 
+>> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+>> ---
+>>   drivers/usb/host/Kconfig         |    7 +-
+>>   drivers/usb/host/ehci-hcd.c      |    5 -
+>>   drivers/usb/host/ehci-platform.c |   87 +++++++++++++-
+>>   drivers/usb/host/ehci-ppc-of.c   |  238 --------------------------------------
+>>   4 files changed, 89 insertions(+), 248 deletions(-)
+>>   delete mode 100644 drivers/usb/host/ehci-ppc-of.c
+> Please use of_property_read_bool for these.
+>
+> This driver already handles "via,vt8500-ehci" and "wm,prizm-ehci" which
+> aren't documented to handle these properties, but now gain support for
+> them. It might be worth unifying the binding documents if there's
+> nothing special about those two host controllers.
+>
+> We seem to have two binding documents for "via,vt8500-ehci", so some
+> cleanup is definitely in order.
+>
+> Tony, you seem to have written both documents judging by 95e9fd10f06c
+> and 8ad551d150e3. Do you have any issue with merging both of these into
+> a common usb-ehci document?
+......
+> Cheers,
+> Mark.
 
+I'm not sure how we ended up with two bindings for the driver anyway. I 
+think this was an error on my part somewhere.
 
--- 
-Alexey Kardashevskiy
-IBM OzLabs, LTC Team
+None of the in-tree dts files use "wm,prizm-ehci".
 
-e-mail: aik@au1.ibm.com
-notes: Alexey Kardashevskiy/Australia/IBM
+I have no issue with merging all the documentation into a single 
+usb-ehci binding.
+
+Regards
+Tony Prisk
