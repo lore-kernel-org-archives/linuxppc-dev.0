@@ -1,37 +1,37 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 929E22C0307
- for <linuxppc-dev@ozlabs.org>; Sun, 23 Feb 2014 15:53:10 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E49612C00B2
+ for <linuxppc-dev@ozlabs.org>; Sun, 23 Feb 2014 15:56:06 +1100 (EST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 22 Feb 2014 21:53:07 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0B8CD1FF003F
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Feb 2014 21:53:05 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1N4qXCv5439988
- for <linuxppc-dev@ozlabs.org>; Sun, 23 Feb 2014 05:52:33 +0100
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1N4r4uF022761
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Feb 2014 21:53:04 -0700
-Date: Sun, 23 Feb 2014 12:52:50 +0800
+ Sat, 22 Feb 2014 21:56:04 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 407C96E8040
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Feb 2014 23:55:58 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1N4u3kA6422874
+ for <linuxppc-dev@ozlabs.org>; Sun, 23 Feb 2014 04:56:03 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1N4u21T020705
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Feb 2014 23:56:03 -0500
+Date: Sun, 23 Feb 2014 12:55:48 +0800
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/5] powerpc/powernv: Cache PHB diag-data
-Message-ID: <20140223045250.GA24324@shangw.(null)>
+Subject: Re: [PATCH 5/5] powerpc/powernv: Make PHB diag-data output short
+Message-ID: <20140223045548.GB24324@shangw.(null)>
 References: <1392983613-10090-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1392983613-10090-4-git-send-email-shangw@linux.vnet.ibm.com>
- <1393012887.6771.94.camel@pasglop>
+ <1392983613-10090-5-git-send-email-shangw@linux.vnet.ibm.com>
+ <1393013115.6771.98.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1393012887.6771.94.camel@pasglop>
+In-Reply-To: <1393013115.6771.98.camel@pasglop>
 Cc: linuxppc-dev@ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
 Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,251 +43,343 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Feb 22, 2014 at 07:01:27AM +1100, Benjamin Herrenschmidt wrote:
+On Sat, Feb 22, 2014 at 07:05:15AM +1100, Benjamin Herrenschmidt wrote:
 >On Fri, 2014-02-21 at 19:53 +0800, Gavin Shan wrote:
->> EEH core tries to recover from fenced PHB or frozen PE. Unfortunately,
->> the log isn't consistent with the site because enabling IO path for
->> the frozen PE before collecting log would ruin the site. The patch
->> solves the problem to cache the PHB diag-data in advance with the
->> help of additional flag PNV_PHB_FLAG_DIAG to pnv_phb::flags.
+>> According to Ben's suggestion, the patch makes the PHB diag-data
+>> dump looks a bit short by printing multiple values in one line
+>> and outputing "-" for zero fields.
+>> 
+>> After the patch applied, the PHB diag-data dump looks like:
 >
->Ok, so correct me if I'm wrong, but you are
->
->  - Collecting the diag data in get_state, as a sort of side effect
->(what happens if get_state is called multiple times ?)
->
->  - Dumping it later on
+>Actually, I wouldn't do that "-" thing, I would leave zeros as
+>zeros but I would remove lines that have all zeros.
 >
 
-Yeah, the patch would have some problems when get_state gets called
-for multiple times: the log could be much more than what we expected
-in case that frozen PE#1 detected and in progress to handle it (we
-don't dump it yet), frozen PE#2 detected. The log would include all
-information for frozen PE#1 and PE#2 and it's not expected.
+Ok. I'll change it in next revision :-)
 
-Another case is get_state called for multiple times on frozen PE#1
-and we can check EEH_PE_ISOLATED to avoid diag-data over-writting.
-
-I'm thinking of a new mechanism (please refer to the reply below).
-
->Any reason why we can't instead dump it immediately ? Also do we have a
->clean trigger for when we detect an error condition ? It can either be
->the result of an interrupt or a driver called get_state following an
->ffffffff. Are both path eventually going into the same function to
->handle a "new" error condition ? That's where I would both collect and
->dump the EEH state..
+>Additionally, we might want to consider what if we can get rid
+>of more fields for INF, or maybe even not dump them by default
+>and just count them (should we have counters in sysfs ?)
 >
 
-The reason I don't want dump it immediately is that I would keep
-struct pnv_eeh_ops::get_log() to dump diag-data to guest in the
-future.
+Yes, I'll remove dumping for INF and have a sysfs entry for the
+INF counter, which would be separate patch in next revision.
 
-The problem is that we have only one PHB diag-data instance in
-struct pnv_phb::diag.blob[]. I'm thinking of to have each PE
-to have diag-data for itself and the things would look like
-followings. Ben, please comment :-)
+>One thing I'm tempted to do is turn the full logs into actual
+>error logs (sent to FSP) and only display a "analyzed" version
+>in the kernel, something that decodes the PEST for example
+>and indicates if it's an DMA or MMIO error, the address, etc...
+>
 
-- Extend "struct eeh_pe" to have a platform pointer (void *data).
-  And we still collect diag-data in get_state() or next_error(),
-  which will be dumped in pnv_eeh_ops->get_log(). The disadvantage
-  could be lots of memory (extra 8KB usually) consumed by each PE
-  instance.
-- For PCI config accessors and informative (also dead PHB, dead
-  P7IOC), we still use pnv_phb::diag.blob[].
+Ok. I'll try to do it in next revision :-)
 
 Thanks,
 Gavin
 
+>> PHB3 PHB#3 Diag-data (Version: 1)
+>> 
+>>   brdgCtl:     00000002
+>>   UtlSts:      - - -
+>>   RootSts:     0000000f 00400000 b0830008 00100147 00002000
+>>   RootErrSts:  - - -
+>>   RootErrLog:  - - - -
+>>   RootErrLog1: - - -
+>>   nFir:        - 0030006e00000000 -
+>>   PhbSts:      0000001c00000000 -
+>>   Lem:         0000000000100000 42498e327f502eae -
+>>   PhbErr:      - - - -
+>>   OutErr:      - - - -
+>>   InAErr:      8000000000000000 8000000000000000 0402030000000000 -
+>>   InBErr:      - - - -
+>>   PE[  8] A/B: 8480002b00000000 8000000000000000
+>> 
 >> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 >> ---
->>  arch/powerpc/platforms/powernv/eeh-ioda.c |   65 ++++++++++++++++++-----------
->>  arch/powerpc/platforms/powernv/pci.c      |   21 ++++++----
->>  arch/powerpc/platforms/powernv/pci.h      |    1 +
->>  3 files changed, 55 insertions(+), 32 deletions(-)
+>>  arch/powerpc/platforms/powernv/pci.c |  238 ++++++++++++++++++++--------------
+>>  1 file changed, 143 insertions(+), 95 deletions(-)
 >> 
->> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
->> index 04b4710..3ed8d22 100644
->> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
->> @@ -114,6 +114,27 @@ DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_inbB_dbgfs_ops, ioda_eeh_inbB_dbgfs_get,
->>  			ioda_eeh_inbB_dbgfs_set, "0x%llx\n");
->>  #endif /* CONFIG_DEBUG_FS */
->>  
->> +static void ioda_eeh_phb_diag(struct pci_controller *hose)
->> +{
->> +	struct pnv_phb *phb = hose->private_data;
->> +	unsigned long flags;
->> +	long rc;
->> +
->> +	spin_lock_irqsave(&phb->lock, flags);
->> +
->> +	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
->> +					 PNV_PCI_DIAG_BUF_SIZE);
->> +	if (rc == OPAL_SUCCESS) {
->> +		phb->flags |= PNV_PHB_FLAG_DIAG;
->> +	} else {
->> +		pr_warn("%s: Can't get diag-data for PHB#%x (%ld)\n",
->> +			__func__, hose->global_number, rc);
->> +		phb->flags &= ~PNV_PHB_FLAG_DIAG;
->> +	}
->> +
->> +	spin_unlock_irqrestore(&phb->lock, flags);
->> +}
->> +
->>  /**
->>   * ioda_eeh_post_init - Chip dependent post initialization
->>   * @hose: PCI controller
->> @@ -272,6 +293,8 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
->>  			result |= EEH_STATE_DMA_ACTIVE;
->>  			result |= EEH_STATE_MMIO_ENABLED;
->>  			result |= EEH_STATE_DMA_ENABLED;
->> +		} else {
->> +			ioda_eeh_phb_diag(hose);
->>  		}
->>  
->>  		return result;
->> @@ -541,24 +564,13 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
->>  static int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
->>  			    char *drv_log, unsigned long len)
->>  {
->> -	s64 ret;
->> +	struct pnv_phb *phb = pe->phb->private_data;
->>  	unsigned long flags;
->> -	struct pci_controller *hose = pe->phb;
->> -	struct pnv_phb *phb = hose->private_data;
->>  
->>  	spin_lock_irqsave(&phb->lock, flags);
->>  
->> -	ret = opal_pci_get_phb_diag_data2(phb->opal_id,
->> -			phb->diag.blob, PNV_PCI_DIAG_BUF_SIZE);
->> -	if (ret) {
->> -		spin_unlock_irqrestore(&phb->lock, flags);
->> -		pr_warning("%s: Can't get log for PHB#%x-PE#%x (%lld)\n",
->> -			   __func__, hose->global_number, pe->addr, ret);
->> -		return -EIO;
->> -	}
->> -
->> -	/* The PHB diag-data is always indicative */
->> -	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
->> +	pnv_pci_dump_phb_diag_data(pe->phb, phb->diag.blob);
->> +	phb->flags &= ~PNV_PHB_FLAG_DIAG;
->>  
->>  	spin_unlock_irqrestore(&phb->lock, flags);
->>  
->> @@ -646,19 +658,11 @@ static void ioda_eeh_hub_diag(struct pci_controller *hose)
->>  	}
->>  }
->>  
->> -static void ioda_eeh_phb_diag(struct pci_controller *hose)
->> +static void ioda_eeh_phb_diag_dump(struct pci_controller *hose)
->>  {
->>  	struct pnv_phb *phb = hose->private_data;
->> -	long rc;
->> -
->> -	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
->> -					 PNV_PCI_DIAG_BUF_SIZE);
->> -	if (rc != OPAL_SUCCESS) {
->> -		pr_warning("%s: Failed to get diag-data for PHB#%x (%ld)\n",
->> -			    __func__, hose->global_number, rc);
->> -		return;
->> -	}
->>  
->> +	ioda_eeh_phb_diag(hose);
->>  	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
->>  }
->>  
->> @@ -778,7 +782,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
->>  				pr_info("EEH: PHB#%x informative error "
->>  					"detected\n",
->>  					hose->global_number);
->> -				ioda_eeh_phb_diag(hose);
->> +				ioda_eeh_phb_diag_dump(hose);
->>  				ret = EEH_NEXT_ERR_NONE;
->>  			}
->>  
->> @@ -809,6 +813,17 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
->>  		}
->>  
->>  		/*
->> +		 * EEH core will try recover from fenced PHB or
->> +		 * frozen PE. In the time for frozen PE, EEH core
->> +		 * enable IO path for that before collecting logs,
->> +		 * but it ruins the site. So we have to cache the
->> +		 * log in advance here.
->> +		 */
->> +		if (ret == EEH_NEXT_ERR_FROZEN_PE ||
->> +		    ret == EEH_NEXT_ERR_FENCED_PHB)
->> +			ioda_eeh_phb_diag(hose);
->> +
->> +		/*
->>  		 * If we have no errors on the specific PHB or only
->>  		 * informative error there, we continue poking it.
->>  		 * Otherwise, we need actions to be taken by upper
 >> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> index 437c37d..67b2254 100644
+>> index 67b2254..a5f236a 100644
 >> --- a/arch/powerpc/platforms/powernv/pci.c
 >> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -259,11 +259,15 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
->>  void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
->>  				unsigned char *log_buff)
->>  {
->> +	struct pnv_phb *phb = hose->private_data;
->>  	struct OpalIoPhbErrorCommon *common;
+>> @@ -124,67 +124,103 @@ static void pnv_teardown_msi_irqs(struct pci_dev *pdev)
+>>  }
+>>  #endif /* CONFIG_PCI_MSI */
 >>  
->>  	if (!hose || !log_buff)
->>  		return;
->>  
->> +	if (!(phb->flags & PNV_PHB_FLAG_DIAG))
->> +		return;
+>> +static char *pnv_pci_diag_field(char *buf, int fmt, u64 val64)
+>> +{
+>> +	u32 val32 = (u32)val64;
 >> +
->>  	common = (struct OpalIoPhbErrorCommon *)log_buff;
->>  	switch (common->ioType) {
->>  	case OPAL_PHB_ERROR_DATA_TYPE_P7IOC:
->> @@ -281,13 +285,19 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
->>  static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
->>  {
->>  	unsigned long flags, rc;
->> -	int has_diag;
->> +	bool has_diag = false;
->>  
->>  	spin_lock_irqsave(&phb->lock, flags);
->>  
->> -	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
->> -					 PNV_PCI_DIAG_BUF_SIZE);
->> -	has_diag = (rc == OPAL_SUCCESS);
->> +	if (!(phb->flags & PNV_PHB_FLAG_DIAG)) {
->> +		rc = opal_pci_get_phb_diag_data2(phb->opal_id,
->> +						 phb->diag.blob,
->> +						 PNV_PCI_DIAG_BUF_SIZE);
->> +		if (rc == OPAL_SUCCESS) {
->> +			phb->flags |= PNV_PHB_FLAG_DIAG;
->> +			has_diag = true;
->> +		}
+>> +	memset(buf, 0, 24);
+>> +	switch (fmt) {
+>> +	case 8:
+>> +		if (val32)
+>> +			sprintf(buf, "%08x", val32);
+>> +		else
+>> +			sprintf(buf, "%s", "-");
+>> +		break;
+>> +	case 16:
+>> +		if (val64)
+>> +			sprintf(buf, "%016llx", val64);
+>> +		else
+>> +			sprintf(buf, "%s", "-");
+>> +		break;
+>> +	default:
+>> +		sprintf(buf, "%s", "-");
 >> +	}
+>> +
+>> +	return buf;
+>> +}
+>> +
+>>  static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
+>>  					 struct OpalIoPhbErrorCommon *common)
+>>  {
+>>  	struct OpalIoP7IOCPhbErrorData *data;
+>> +	char buf[120];
+>>  	int i;
 >>  
->>  	rc = opal_pci_eeh_freeze_clear(phb->opal_id, pe_no,
->>  				       OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
->> @@ -303,9 +313,6 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
->>  		 */
->>  		if (has_diag)
->>  			pnv_pci_dump_phb_diag_data(phb->hose, phb->diag.blob);
->> -		else
->> -			pr_warning("PCI %d: No diag data available\n",
->> -				   phb->hose->global_number);
+>>  	data = (struct OpalIoP7IOCPhbErrorData *)common;
+>>  	pr_info("P7IOC PHB#%d Diag-data (Version: %d)\n\n",
+>>  		hose->global_number, common->version);
+>>  
+>> -	pr_info("  brdgCtl:              %08x\n", data->brdgCtl);
+>> -
+>> -	pr_info("  portStatusReg:        %08x\n", data->portStatusReg);
+>> -	pr_info("  rootCmplxStatus:      %08x\n", data->rootCmplxStatus);
+>> -	pr_info("  busAgentStatus:       %08x\n", data->busAgentStatus);
+>> -
+>> -	pr_info("  deviceStatus:         %08x\n", data->deviceStatus);
+>> -	pr_info("  slotStatus:           %08x\n", data->slotStatus);
+>> -	pr_info("  linkStatus:           %08x\n", data->linkStatus);
+>> -	pr_info("  devCmdStatus:         %08x\n", data->devCmdStatus);
+>> -	pr_info("  devSecStatus:         %08x\n", data->devSecStatus);
+>> -
+>> -	pr_info("  rootErrorStatus:      %08x\n", data->rootErrorStatus);
+>> -	pr_info("  uncorrErrorStatus:    %08x\n", data->uncorrErrorStatus);
+>> -	pr_info("  corrErrorStatus:      %08x\n", data->corrErrorStatus);
+>> -	pr_info("  tlpHdr1:              %08x\n", data->tlpHdr1);
+>> -	pr_info("  tlpHdr2:              %08x\n", data->tlpHdr2);
+>> -	pr_info("  tlpHdr3:              %08x\n", data->tlpHdr3);
+>> -	pr_info("  tlpHdr4:              %08x\n", data->tlpHdr4);
+>> -	pr_info("  sourceId:             %08x\n", data->sourceId);
+>> -	pr_info("  errorClass:           %016llx\n", data->errorClass);
+>> -	pr_info("  correlator:           %016llx\n", data->correlator);
+>> -	pr_info("  p7iocPlssr:           %016llx\n", data->p7iocPlssr);
+>> -	pr_info("  p7iocCsr:             %016llx\n", data->p7iocCsr);
+>> -	pr_info("  lemFir:               %016llx\n", data->lemFir);
+>> -	pr_info("  lemErrorMask:         %016llx\n", data->lemErrorMask);
+>> -	pr_info("  lemWOF:               %016llx\n", data->lemWOF);
+>> -	pr_info("  phbErrorStatus:       %016llx\n", data->phbErrorStatus);
+>> -	pr_info("  phbFirstErrorStatus:  %016llx\n", data->phbFirstErrorStatus);
+>> -	pr_info("  phbErrorLog0:         %016llx\n", data->phbErrorLog0);
+>> -	pr_info("  phbErrorLog1:         %016llx\n", data->phbErrorLog1);
+>> -	pr_info("  mmioErrorStatus:      %016llx\n", data->mmioErrorStatus);
+>> -	pr_info("  mmioFirstErrorStatus: %016llx\n", data->mmioFirstErrorStatus);
+>> -	pr_info("  mmioErrorLog0:        %016llx\n", data->mmioErrorLog0);
+>> -	pr_info("  mmioErrorLog1:        %016llx\n", data->mmioErrorLog1);
+>> -	pr_info("  dma0ErrorStatus:      %016llx\n", data->dma0ErrorStatus);
+>> -	pr_info("  dma0FirstErrorStatus: %016llx\n", data->dma0FirstErrorStatus);
+>> -	pr_info("  dma0ErrorLog0:        %016llx\n", data->dma0ErrorLog0);
+>> -	pr_info("  dma0ErrorLog1:        %016llx\n", data->dma0ErrorLog1);
+>> -	pr_info("  dma1ErrorStatus:      %016llx\n", data->dma1ErrorStatus);
+>> -	pr_info("  dma1FirstErrorStatus: %016llx\n", data->dma1FirstErrorStatus);
+>> -	pr_info("  dma1ErrorLog0:        %016llx\n", data->dma1ErrorLog0);
+>> -	pr_info("  dma1ErrorLog1:        %016llx\n", data->dma1ErrorLog1);
+>> +	pr_info("  brdgCtl:     %s\n",
+>> +		pnv_pci_diag_field(&buf[0], 8, data->brdgCtl));
+>> +	pr_info("  UtlSts:      %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->portStatusReg),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->rootCmplxStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->busAgentStatus));
+>> +	pr_info("  RootSts:     %s %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->deviceStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->slotStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->linkStatus),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 8, data->devCmdStatus),
+>> +		pnv_pci_diag_field(&buf[4 * 24], 8, data->devSecStatus));
+>> +	pr_info("  RootErrSts:  %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->rootErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->uncorrErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->corrErrorStatus));
+>> +	pr_info("  RootErrLog:  %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->tlpHdr1),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->tlpHdr2),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->tlpHdr3),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 8, data->tlpHdr4));
+>> +	pr_info("  RootErrLog1: %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],       8, data->sourceId),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->errorClass),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->correlator));
+>> +	pr_info("  PhbSts:      %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->p7iocPlssr),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->p7iocCsr));
+>> +	pr_info("  Lem:         %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->lemFir),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->lemErrorMask),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->lemWOF));
+>> +	pr_info("  PhbErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->phbErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->phbFirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->phbErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->phbErrorLog1));
+>> +	pr_info("  OutErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->mmioErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->mmioFirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->mmioErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->mmioErrorLog1));
+>> +	pr_info("  InAErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->dma0ErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->dma0FirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->dma0ErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->dma0ErrorLog1));
+>> +	pr_info("  InBErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->dma1ErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->dma1FirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->dma1ErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->dma1ErrorLog1));
+>>  
+>>  	for (i = 0; i < OPAL_P7IOC_NUM_PEST_REGS; i++) {
+>>  		if ((data->pestA[i] >> 63) == 0 &&
+>>  		    (data->pestB[i] >> 63) == 0)
+>>  			continue;
+>>  
+>> -		pr_info("  PE[%3d] PESTA:        %016llx\n", i, data->pestA[i]);
+>> -		pr_info("          PESTB:        %016llx\n", data->pestB[i]);
+>> +		pr_info("  PE[%3d] A/B: %s %s\n",
+>> +			i, pnv_pci_diag_field(&buf[0], 16, data->pestA[i]),
+>> +			pnv_pci_diag_field(&buf[1 * 24], 16, data->pestB[i]));
 >>  	}
+>>  }
 >>  
->>  	spin_unlock_irqrestore(&phb->lock, flags);
->> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->> index adeb3c4..153af9a 100644
->> --- a/arch/powerpc/platforms/powernv/pci.h
->> +++ b/arch/powerpc/platforms/powernv/pci.h
->> @@ -82,6 +82,7 @@ struct pnv_eeh_ops {
->>  #endif /* CONFIG_EEH */
+>> @@ -192,67 +228,79 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
+>>  					struct OpalIoPhbErrorCommon *common)
+>>  {
+>>  	struct OpalIoPhb3ErrorData *data;
+>> -	int i;
+>> +	char buf[120];
+>> +	int i = 0;
 >>  
->>  #define PNV_PHB_FLAG_EEH	(1 << 0)
->> +#define PNV_PHB_FLAG_DIAG	(1 << 1)
+>> +	memset(buf, 0, 120);
+>>  	data = (struct OpalIoPhb3ErrorData*)common;
+>>  	pr_info("PHB3 PHB#%d Diag-data (Version: %d)\n\n",
+>>  		hose->global_number, common->version);
 >>  
->>  struct pnv_phb {
->>  	struct pci_controller	*hose;
+>> -	pr_info("  brdgCtl:              %08x\n", data->brdgCtl);
+>> -
+>> -	pr_info("  portStatusReg:        %08x\n", data->portStatusReg);
+>> -	pr_info("  rootCmplxStatus:      %08x\n", data->rootCmplxStatus);
+>> -	pr_info("  busAgentStatus:       %08x\n", data->busAgentStatus);
+>> -
+>> -	pr_info("  deviceStatus:         %08x\n", data->deviceStatus);
+>> -	pr_info("  slotStatus:           %08x\n", data->slotStatus);
+>> -	pr_info("  linkStatus:           %08x\n", data->linkStatus);
+>> -	pr_info("  devCmdStatus:         %08x\n", data->devCmdStatus);
+>> -	pr_info("  devSecStatus:         %08x\n", data->devSecStatus);
+>> -
+>> -	pr_info("  rootErrorStatus:      %08x\n", data->rootErrorStatus);
+>> -	pr_info("  uncorrErrorStatus:    %08x\n", data->uncorrErrorStatus);
+>> -	pr_info("  corrErrorStatus:      %08x\n", data->corrErrorStatus);
+>> -	pr_info("  tlpHdr1:              %08x\n", data->tlpHdr1);
+>> -	pr_info("  tlpHdr2:              %08x\n", data->tlpHdr2);
+>> -	pr_info("  tlpHdr3:              %08x\n", data->tlpHdr3);
+>> -	pr_info("  tlpHdr4:              %08x\n", data->tlpHdr4);
+>> -	pr_info("  sourceId:             %08x\n", data->sourceId);
+>> -	pr_info("  errorClass:           %016llx\n", data->errorClass);
+>> -	pr_info("  correlator:           %016llx\n", data->correlator);
+>> -
+>> -	pr_info("  nFir:                 %016llx\n", data->nFir);
+>> -	pr_info("  nFirMask:             %016llx\n", data->nFirMask);
+>> -	pr_info("  nFirWOF:              %016llx\n", data->nFirWOF);
+>> -	pr_info("  PhbPlssr:             %016llx\n", data->phbPlssr);
+>> -	pr_info("  PhbCsr:               %016llx\n", data->phbCsr);
+>> -	pr_info("  lemFir:               %016llx\n", data->lemFir);
+>> -	pr_info("  lemErrorMask:         %016llx\n", data->lemErrorMask);
+>> -	pr_info("  lemWOF:               %016llx\n", data->lemWOF);
+>> -	pr_info("  phbErrorStatus:       %016llx\n", data->phbErrorStatus);
+>> -	pr_info("  phbFirstErrorStatus:  %016llx\n", data->phbFirstErrorStatus);
+>> -	pr_info("  phbErrorLog0:         %016llx\n", data->phbErrorLog0);
+>> -	pr_info("  phbErrorLog1:         %016llx\n", data->phbErrorLog1);
+>> -	pr_info("  mmioErrorStatus:      %016llx\n", data->mmioErrorStatus);
+>> -	pr_info("  mmioFirstErrorStatus: %016llx\n", data->mmioFirstErrorStatus);
+>> -	pr_info("  mmioErrorLog0:        %016llx\n", data->mmioErrorLog0);
+>> -	pr_info("  mmioErrorLog1:        %016llx\n", data->mmioErrorLog1);
+>> -	pr_info("  dma0ErrorStatus:      %016llx\n", data->dma0ErrorStatus);
+>> -	pr_info("  dma0FirstErrorStatus: %016llx\n", data->dma0FirstErrorStatus);
+>> -	pr_info("  dma0ErrorLog0:        %016llx\n", data->dma0ErrorLog0);
+>> -	pr_info("  dma0ErrorLog1:        %016llx\n", data->dma0ErrorLog1);
+>> -	pr_info("  dma1ErrorStatus:      %016llx\n", data->dma1ErrorStatus);
+>> -	pr_info("  dma1FirstErrorStatus: %016llx\n", data->dma1FirstErrorStatus);
+>> -	pr_info("  dma1ErrorLog0:        %016llx\n", data->dma1ErrorLog0);
+>> -	pr_info("  dma1ErrorLog1:        %016llx\n", data->dma1ErrorLog1);
+>> +	pr_info("  brdgCtl:     %s\n",
+>> +		pnv_pci_diag_field(&buf[0], 8, data->brdgCtl));
+>> +	pr_info("  UtlSts:      %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->portStatusReg),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->rootCmplxStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->busAgentStatus));
+>> +	pr_info("  RootSts:     %s %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->deviceStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->slotStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->linkStatus),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 8, data->devCmdStatus),
+>> +		pnv_pci_diag_field(&buf[4 * 24], 8, data->devSecStatus));
+>> +	pr_info("  RootErrSts:  %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->rootErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->uncorrErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->corrErrorStatus));
+>> +	pr_info("  RootErrLog:  %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      8, data->tlpHdr1),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 8, data->tlpHdr2),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 8, data->tlpHdr3),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 8, data->tlpHdr4));
+>> +	pr_info("  RootErrLog1: %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],       8, data->sourceId),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->errorClass),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->correlator));
+>> +	pr_info("  nFir:        %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->nFir),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->nFirMask),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->nFirWOF));
+>> +	pr_info("  PhbSts:      %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->phbPlssr),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->phbCsr));
+>> +	pr_info("  Lem:         %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->lemFir),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->lemErrorMask),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->lemWOF));
+>> +	pr_info("  PhbErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->phbErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->phbFirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->phbErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->phbErrorLog1));
+>> +	pr_info("  OutErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->mmioErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->mmioFirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->mmioErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->mmioErrorLog1));
+>> +	pr_info("  InAErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->dma0ErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->dma0FirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->dma0ErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->dma0ErrorLog1));
+>> +	pr_info("  InBErr:      %s %s %s %s\n",
+>> +		pnv_pci_diag_field(&buf[0],      16, data->dma1ErrorStatus),
+>> +		pnv_pci_diag_field(&buf[1 * 24], 16, data->dma1FirstErrorStatus),
+>> +		pnv_pci_diag_field(&buf[2 * 24], 16, data->dma1ErrorLog0),
+>> +		pnv_pci_diag_field(&buf[3 * 24], 16, data->dma1ErrorLog1));
+>>  
+>>  	for (i = 0; i < OPAL_PHB3_NUM_PEST_REGS; i++) {
+>>  		if ((data->pestA[i] >> 63) == 0 &&
+>>  		    (data->pestB[i] >> 63) == 0)
+>>  			continue;
+>>  
+>> -		pr_info("  PE[%3d] PESTA:        %016llx\n", i, data->pestA[i]);
+>> -		pr_info("          PESTB:        %016llx\n", data->pestB[i]);
+>> +		pr_info("  PE[%3d] A/B: %s %s\n",
+>> +			i, pnv_pci_diag_field(&buf[0], 16, data->pestA[i]),
+>> +			pnv_pci_diag_field(&buf[1 * 24], 16, data->pestB[i]));
+>>  	}
+>>  }
+>>  
 >
 >
