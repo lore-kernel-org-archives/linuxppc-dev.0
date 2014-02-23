@@ -3,17 +3,16 @@ Received: from Galois.linutronix.de (Galois.linutronix.de
  [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A1DDC2C031B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 08:40:11 +1100 (EST)
-Message-Id: <20140223212736.451970660@linutronix.de>
-Date: Sun, 23 Feb 2014 21:40:08 -0000
+ by ozlabs.org (Postfix) with ESMTPS id 08E552C0331
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 08:40:12 +1100 (EST)
+Message-Id: <20140223212736.562906212@linutronix.de>
+Date: Sun, 23 Feb 2014 21:40:09 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch 02/26] powerpc:evh_pic: Kill irq_desc abuse
+Subject: [patch 03/26] powerpc: eeh: Kill another abuse of irq_desc
 References: <20140223212703.511977310@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Ashish Kalra <ashish.kalra@freescale.com>, Ingo Molnar <mingo@elte.hu>,
- ppc <linuxppc-dev@lists.ozlabs.org>, Timur Tabi <timur@freescale.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+ ppc <linuxppc-dev@lists.ozlabs.org>, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,75 +22,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm really grumpy about this one. The line:
+commit 91150af3a (powerpc/eeh: Fix unbalanced enable for IRQ) is
+another brilliant example of trainwreck engineering.
 
-#include "../../../kernel/irq/settings.h"
+The patch "fixes" the issue of an unbalanced call to irq_enable()
+which causes a prominent warning by checking the disabled state of the
+interrupt line and call conditionally into the core code.
 
-should have been an alarm sign for all people who added their SOB to
-this trainwreck.
+This is wrong in two aspects:
 
-When I cleaned up the mess people made with interrupt descriptors a
-few years ago, I warned that I'm going to hunt down new offenders and
-treat them with stinking trouts. In this case I'll use frozen shark
-for a better educational value.
+1) The warning is there to tell users, that they need to fix their
+   asymetric enable/disable patterns by finding the root cause and
+   solving it there.
 
-The whole idiocy which was done there could have been avoided with two
-lines of perfectly fine code. And do not complain about the lack of
-correct examples in tree.
+   It's definitely not meant to work around it by conditionally
+   calling into the core code depending on the random state of the irq
+   line.
 
-The solution is simple:
+   Asymetric irq_disable/enable calls are a clear sign of wrong usage
+   of the interfaces which have to be cured at the root and not by
+   somehow hacking around it.
 
-  Remove the brainfart and use the proper functions, which should
-  have been used in the first place
+2) The abuse of core internal data structure instead of using the
+   proper interfaces for retrieving the information for the 'hack
+   around'
+
+   irq_desc is core internal and it's clear enough stated.
+
+Replace at least the irq_desc abuse with the proper functions and add
+a big fat comment why this is absurd and completely wrong.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Ashish Kalra <ashish.kalra@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
 Cc: ppc <linuxppc-dev@lists.ozlabs.org>
 ---
- arch/powerpc/sysdev/ehv_pic.c |   10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/eeh_driver.c |   26 +++++++++++++++++++++-----
+ 1 file changed, 21 insertions(+), 5 deletions(-)
 
-Index: tip/arch/powerpc/sysdev/ehv_pic.c
+Index: tip/arch/powerpc/kernel/eeh_driver.c
 ===================================================================
---- tip.orig/arch/powerpc/sysdev/ehv_pic.c
-+++ tip/arch/powerpc/sysdev/ehv_pic.c
-@@ -28,8 +28,6 @@
- #include <asm/ehv_pic.h>
- #include <asm/fsl_hcalls.h>
- 
--#include "../../../kernel/irq/settings.h"
--
- static struct ehv_pic *global_ehv_pic;
- static DEFINE_SPINLOCK(ehv_pic_lock);
- 
-@@ -113,17 +111,13 @@ static unsigned int ehv_pic_type_to_vecp
- int ehv_pic_set_irq_type(struct irq_data *d, unsigned int flow_type)
+--- tip.orig/arch/powerpc/kernel/eeh_driver.c
++++ tip/arch/powerpc/kernel/eeh_driver.c
+@@ -143,15 +143,31 @@ static void eeh_disable_irq(struct pci_d
+ static void eeh_enable_irq(struct pci_dev *dev)
  {
- 	unsigned int src = virq_to_hw(d->irq);
--	struct irq_desc *desc = irq_to_desc(d->irq);
- 	unsigned int vecpri, vold, vnew, prio, cpu_dest;
- 	unsigned long flags;
+ 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+-	struct irq_desc *desc;
  
- 	if (flow_type == IRQ_TYPE_NONE)
- 		flow_type = IRQ_TYPE_LEVEL_LOW;
- 
--	irq_settings_clr_level(desc);
--	irq_settings_set_trigger_mask(desc, flow_type);
--	if (flow_type & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW))
--		irq_settings_set_level(desc);
-+	irqd_set_trigger_type(d, flow_type);
- 
- 	vecpri = ehv_pic_type_to_vecpri(flow_type);
- 
-@@ -144,7 +138,7 @@ int ehv_pic_set_irq_type(struct irq_data
- 	ev_int_set_config(src, vecpri, prio, cpu_dest);
- 
- 	spin_unlock_irqrestore(&ehv_pic_lock, flags);
--	return 0;
-+	return IRQ_SET_MASK_OK_NOCOPY;
+ 	if ((edev->mode) & EEH_DEV_IRQ_DISABLED) {
+ 		edev->mode &= ~EEH_DEV_IRQ_DISABLED;
+-
+-		desc = irq_to_desc(dev->irq);
+-		if (desc && desc->depth > 0)
++		/*
++		 * FIXME !!!!!
++		 *
++		 * This is just ass backwards. This maze has
++		 * unbalanced irq_enable/disable calls. So instead of
++		 * finding the root cause it works around the warning
++		 * in the irq_enable code by conditionally calling
++		 * into it.
++		 *
++		 * That's just wrong.The warning in the core code is
++		 * there to tell people to fix their assymetries in
++		 * their own code, not by abusing the core information
++		 * to avoid it.
++		 *
++		 * I so wish that the assymetry would be the other way
++		 * round and a few more irq_disable calls render that
++		 * shit unusable forever.
++		 *
++		 *	tglx
++		 */
++		if (irqd_irq_disabled(irq_get_irq_data(dev->irq))
+ 			enable_irq(dev->irq);
+-	}
  }
  
- static struct irq_chip ehv_pic_irq_chip = {
+ /**
