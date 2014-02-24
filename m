@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 19AB42C0256
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 12:53:23 +1100 (EST)
-Message-ID: <1393206791.6771.157.camel@pasglop>
-Subject: Re: [PATCH v4 0/3] powerpc/pseries: fix issues in suspend/resume code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Date: Mon, 24 Feb 2014 12:53:11 +1100
-In-Reply-To: <1392843415-17153-1-git-send-email-tyreld@linux.vnet.ibm.com>
-References: <1392843415-17153-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:4])
+ by ozlabs.org (Postfix) with ESMTP id 301412C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 13:09:22 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 2/7] IBM Akebono: Add support for a new PHY interface to
+ the IBM emac driver
+Date: Mon, 24 Feb 2014 13:09:19 +1100
+Message-ID: <7545458.ltLKFumBkZ@mexican>
+In-Reply-To: <20140221111823.GA8783@e106331-lin.cambridge.arm.com>
+References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
+ <1392964293-13687-3-git-send-email-alistair@popple.id.au>
+ <20140221111823.GA8783@e106331-lin.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-02-19 at 12:56 -0800, Tyrel Datwyler wrote:
-> This patchset fixes a couple of issues encountered in the suspend/resume code
-> base. First when using the kernel device tree update code update-nodes is
-> unnecessarily called more than once. Second the cpu cache lists are not
-> updated after a suspend/resume which under certain conditions may cause a
-> panic. Finally, since the cache list fix utilzes in kernel device tree update
-> code a means for telling drmgr that updating the device tree from userspace
-> is unnecessary.
+On Fri, 21 Feb 2014 11:18:23 Mark Rutland wrote:
+> On Fri, Feb 21, 2014 at 06:31:28AM +0000, Alistair Popple wrote:
 
-This series breaks the !SMP build.
+[...]
 
-Cheers,
-Ben.
+> 
+> > +       /* Check for RGMII flags */
+> > +       if (of_get_property(ofdev->dev.of_node, "has-mdio", NULL))
+> > +               dev->flags |= EMAC_RGMII_FLAG_HAS_MDIO;
+> 
+> You can use of_property_read_bool here.
 
-> Changes from v3:
-> - Updated patch descriptions to better reflect the behavior/interface changes
->   and why they are acceptable per Ben's concerns.
+Thanks. I will update it.
+
+Regards,
+
+Alistair
+
 > 
-> Changes from v2:
-> - Moved dynamic configuration update code into pseries specific routine
->   per Nathan's suggestion.
-> 
-> Changes from v1:
-> - Fixed several commit message typos
-> - Fixed authorship of first two patches
-> 
-> Haren Myneni (2):
->   powerpc/pseries: Device tree should only be updated once after
->     suspend/migrate
->   powerpc/pseries: Update dynamic cache nodes for suspend/resume
->     operation
-> 
-> Tyrel Datwyler (1):
->   powerpc/pseries: Report in kernel device tree update to drmgr
-> 
->  arch/powerpc/include/asm/rtas.h           |  1 +
->  arch/powerpc/platforms/pseries/mobility.c | 26 +++++++-----------
->  arch/powerpc/platforms/pseries/suspend.c  | 44 ++++++++++++++++++++++++++++++-
->  3 files changed, 54 insertions(+), 17 deletions(-)
-> 
+> Cheers,
+> Mark.
