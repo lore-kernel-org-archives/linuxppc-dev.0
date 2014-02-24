@@ -1,15 +1,15 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 540932C032B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 21:26:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A164B2C0378
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 21:26:29 +1100 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] dts: mpc512x: adjust clock specs for FEC nodes
-Date: Mon, 24 Feb 2014 11:25:56 +0100
-Message-Id: <1393237557-31406-2-git-send-email-gsi@denx.de>
+Subject: [PATCH 3/3] dt/bindings: fsl-fec: add "per" to clock properties
+Date: Mon, 24 Feb 2014 11:25:57 +0100
+Message-Id: <1393237557-31406-3-git-send-email-gsi@denx.de>
 In-Reply-To: <1393237557-31406-1-git-send-email-gsi@denx.de>
 References: <1393237557-31406-1-git-send-email-gsi@denx.de>
 Cc: Mark Rutland <mark.rutland@arm.com>, Anatolij Gustschin <agust@denx.de>,
@@ -29,44 +29,34 @@ a recent FEC binding document update that was motivated by i.MX
 development revealed that ARM and PowerPC implementations in Linux
 did not agree on the clock names to use for the FEC nodes
 
-change clock names from "per" to "ipg" in the FEC nodes of the
-mpc5121.dtsi include file such that the .dts specs comply with
-the common FEC binding
-
-this "incompatible" change does not break operation, because
-- COMMON_CLK support for MPC5121/23/25 and adjusted .dts files
-  were only introduced in Linux v3.14-rc1, no mainline release
-  provided these specs before
-- if this change won't make it for v3.14, the MPC512x CCF support
-  provides full backwards compability, and keeps operating with
-  device trees which lack clock specs or don't match in the names
+update the FEC (fast ethernet controller) binding to document the
+"per" clock name as an obsolete alias for "ipg"
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- arch/powerpc/boot/dts/mpc5121.dtsi |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 2c0e1552d20b..a5a375598ed8 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -281,7 +281,7 @@
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			clocks = <&clks MPC512x_CLK_FEC>;
--			clock-names = "per";
-+			clock-names = "ipg";
- 		};
+this patch depends on "dt/bindings: fsl-fec: add clock properties"
+by Shawn Guo which introduces the context of this patch
+
+the patch only is necessary if the MPC5121 .dtsi update (switch
+FEC nodes from "per" to "ipg") won't make it for v3.14
+
+---
+ Documentation/devicetree/bindings/net/fsl-fec.txt |    2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/net/fsl-fec.txt b/Documentation/devicetree/bindings/net/fsl-fec.txt
+index 468736d4323d..f59b58e29da6 100644
+--- a/Documentation/devicetree/bindings/net/fsl-fec.txt
++++ b/Documentation/devicetree/bindings/net/fsl-fec.txt
+@@ -24,6 +24,8 @@ Optional properties:
+      or external oscillator via pad depending on board design.
+    - "enet_out": the phy reference clock provided by SoC via pad, which
+      is available on SoC like i.MX28.
++   - "per": obsolete alias for "ipg" for compatibility with early
++     MPC5121 implementations, not recommended for new .dts files
+ - clock-names: Must contain the clock names described just above
  
- 		eth0: ethernet@2800 {
-@@ -291,7 +291,7 @@
- 			local-mac-address = [ 00 00 00 00 00 00 ];
- 			interrupts = <4 0x8>;
- 			clocks = <&clks MPC512x_CLK_FEC>;
--			clock-names = "per";
-+			clock-names = "ipg";
- 		};
- 
- 		/* USB1 using external ULPI PHY */
+ Example:
 -- 
 1.7.10.4
