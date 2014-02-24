@@ -1,25 +1,23 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-x22f.google.com (mail-la0-x22f.google.com
- [IPv6:2a00:1450:4010:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0F39C2C030C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 22:09:56 +1100 (EST)
-Received: by mail-la0-f47.google.com with SMTP id y1so1065069lam.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 03:09:52 -0800 (PST)
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org
-Subject: [PATCH RFC v8 5/5] dma: mpc512x: register for device tree channel
- lookup
-Date: Mon, 24 Feb 2014 15:09:32 +0400
-Message-Id: <1393240172-18769-6-git-send-email-a13xp0p0v88@gmail.com>
-In-Reply-To: <1393240172-18769-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1393240172-18769-1-git-send-email-a13xp0p0v88@gmail.com>
-Cc: devicetree@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id C24BB2C0212
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 22:32:49 +1100 (EST)
+Date: Mon, 24 Feb 2014 12:32:46 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [patch 03/26] powerpc: eeh: Kill another abuse of irq_desc
+In-Reply-To: <20140224075607.GA20727@shangw.(null)>
+Message-ID: <alpine.DEB.2.02.1402241232030.21251@ionos.tec.linutronix.de>
+References: <20140223212703.511977310@linutronix.de>
+ <20140223212736.562906212@linutronix.de>
+ <20140224075607.GA20727@shangw.(null)>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+ ppc <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gerhard Sittig <gsi@denx.de>
+On Mon, 24 Feb 2014, Gavin Shan wrote:
+> On Sun, Feb 23, 2014 at 09:40:09PM -0000, Thomas Gleixner wrote:
+> >commit 91150af3a (powerpc/eeh: Fix unbalanced enable for IRQ) is
+> >another brilliant example of trainwreck engineering.
+> >
+> >The patch "fixes" the issue of an unbalanced call to irq_enable()
+> >which causes a prominent warning by checking the disabled state of the
+> >interrupt line and call conditionally into the core code.
+> >
+> >This is wrong in two aspects:
+> >
+> >1) The warning is there to tell users, that they need to fix their
+> >   asymetric enable/disable patterns by finding the root cause and
+> >   solving it there.
+> >
+> >   It's definitely not meant to work around it by conditionally
+> >   calling into the core code depending on the random state of the irq
+> >   line.
+> >
+> >   Asymetric irq_disable/enable calls are a clear sign of wrong usage
+> >   of the interfaces which have to be cured at the root and not by
+> >   somehow hacking around it.
+> >
+> >2) The abuse of core internal data structure instead of using the
+> >   proper interfaces for retrieving the information for the 'hack
+> >   around'
+> >
+> >   irq_desc is core internal and it's clear enough stated.
+> >
+> >Replace at least the irq_desc abuse with the proper functions and add
+> >a big fat comment why this is absurd and completely wrong.
+> >
+> 
+> Thanks for pointing it out. I think we might have this patch for now
+> and I'll look into individual drivers to fix the unbalanced function
+> calls later one by one.
 
-register the controller for device tree based lookup of DMA channels
-(non-fatal for backwards compatibility with older device trees) and
-provide the '#dma-cells' property in the shared mpc5121.dtsi file
+Fine with me. You wont escape my scan scripts :)
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
-[ a13xp0p0v88@gmail.com: resolve little patch conflict and put
-  MPC512x DMA controller bindings document to a separate patch ]
----
- arch/powerpc/boot/dts/mpc5121.dtsi |  1 +
- drivers/dma/mpc512x_dma.c          | 21 ++++++++++++++++++---
- 2 files changed, 19 insertions(+), 3 deletions(-)
+Thanks,
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 2c0e155..7f9d14f 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -498,6 +498,7 @@
- 			compatible = "fsl,mpc5121-dma";
- 			reg = <0x14000 0x1800>;
- 			interrupts = <65 0x8>;
-+			#dma-cells = <1>;
- 		};
- 	};
- 
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 8f504cb..d9f8740 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -52,6 +52,7 @@
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
-+#include <linux/of_dma.h>
- #include <linux/of_platform.h>
- 
- #include <linux/random.h>
-@@ -1018,11 +1019,23 @@ static int mpc_dma_probe(struct platform_device *op)
- 	/* Register DMA engine */
- 	dev_set_drvdata(dev, mdma);
- 	retval = dma_async_device_register(dma);
--	if (retval) {
--		devm_free_irq(dev, mdma->irq, mdma);
--		irq_dispose_mapping(mdma->irq);
-+	if (retval)
-+		goto out_irq;
-+
-+	/* register with OF helpers for DMA lookups (nonfatal) */
-+	if (dev->of_node) {
-+		retval = of_dma_controller_register(dev->of_node,
-+						    of_dma_xlate_by_chan_id,
-+						    mdma);
-+		if (retval)
-+			dev_warn(dev, "could not register for OF lookup\n");
- 	}
- 
-+	return 0;
-+
-+out_irq:
-+	devm_free_irq(dev, mdma->irq, mdma);
-+	irq_dispose_mapping(mdma->irq);
- 	return retval;
- }
- 
-@@ -1031,6 +1044,8 @@ static int mpc_dma_remove(struct platform_device *op)
- 	struct device *dev = &op->dev;
- 	struct mpc_dma *mdma = dev_get_drvdata(dev);
- 
-+	if (dev->of_node)
-+		of_dma_controller_free(dev->of_node);
- 	dma_async_device_unregister(&mdma->dma);
- 	devm_free_irq(dev, mdma->irq, mdma);
- 	irq_dispose_mapping(mdma->irq);
--- 
-1.8.4.2
+	tglx
