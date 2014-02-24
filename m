@@ -1,15 +1,17 @@
 Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 172DD2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 21:26:14 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 540932C032B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 21:26:19 +1100 (EST)
 From: Gerhard Sittig <gsi@denx.de>
 To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/3] fs_enet: update clock names to comply with FEC binding
-Date: Mon, 24 Feb 2014 11:25:55 +0100
-Message-Id: <1393237557-31406-1-git-send-email-gsi@denx.de>
+Subject: [PATCH 2/3] dts: mpc512x: adjust clock specs for FEC nodes
+Date: Mon, 24 Feb 2014 11:25:56 +0100
+Message-Id: <1393237557-31406-2-git-send-email-gsi@denx.de>
+In-Reply-To: <1393237557-31406-1-git-send-email-gsi@denx.de>
+References: <1393237557-31406-1-git-send-email-gsi@denx.de>
 Cc: Mark Rutland <mark.rutland@arm.com>, Anatolij Gustschin <agust@denx.de>,
  Mike Turquette <mturquette@linaro.org>, Pawel Moll <pawel.moll@arm.com>,
  Ian Campbell <ijc+devicetree@hellion.org.uk>, Gerhard Sittig <gsi@denx.de>,
@@ -27,41 +29,44 @@ a recent FEC binding document update that was motivated by i.MX
 development revealed that ARM and PowerPC implementations in Linux
 did not agree on the clock names to use for the FEC nodes
 
-change the OF clock lookup to prefer "ipg" over "per", which
-improves compliance with the binding, and keeps compatibility
-with former device trees
+change clock names from "per" to "ipg" in the FEC nodes of the
+mpc5121.dtsi include file such that the .dts specs comply with
+the common FEC binding
+
+this "incompatible" change does not break operation, because
+- COMMON_CLK support for MPC5121/23/25 and adjusted .dts files
+  were only introduced in Linux v3.14-rc1, no mainline release
+  provided these specs before
+- if this change won't make it for v3.14, the MPC512x CCF support
+  provides full backwards compability, and keeps operating with
+  device trees which lack clock specs or don't match in the names
 
 Signed-off-by: Gerhard Sittig <gsi@denx.de>
 ---
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/mpc5121.dtsi |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index 62f042d4aaa9..ce20184b96cb 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -1037,11 +1037,20 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 			fpi->use_rmii = 1;
- 	}
+diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
+index 2c0e1552d20b..a5a375598ed8 100644
+--- a/arch/powerpc/boot/dts/mpc5121.dtsi
++++ b/arch/powerpc/boot/dts/mpc5121.dtsi
+@@ -281,7 +281,7 @@
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+ 			clocks = <&clks MPC512x_CLK_FEC>;
+-			clock-names = "per";
++			clock-names = "ipg";
+ 		};
  
--	/* make clock lookup non-fatal (the driver is shared among platforms),
-+	/* the driver is shared across several PowerPC platforms, not all
-+	 * of them provide COMMON_CLK support, and newer kernels are supposed
-+	 * to keep working with older DT blobs, so clock lookup is non-fatal
-+	 *
- 	 * but require enable to succeed when a clock was specified/found,
- 	 * keep a reference to the clock upon successful acquisition
-+	 *
-+	 * the FEC binding is shared with ARM platforms, so we lookup several
-+	 * clock names to prefer the common naming convention yet support
-+	 * names that were used before unification
- 	 */
--	clk = devm_clk_get(&ofdev->dev, "per");
-+	clk = devm_clk_get(&ofdev->dev, "ipg");
-+	if (IS_ERR(clk))
-+		clk = devm_clk_get(&ofdev->dev, "per");
- 	if (!IS_ERR(clk)) {
- 		err = clk_prepare_enable(clk);
- 		if (err) {
+ 		eth0: ethernet@2800 {
+@@ -291,7 +291,7 @@
+ 			local-mac-address = [ 00 00 00 00 00 00 ];
+ 			interrupts = <4 0x8>;
+ 			clocks = <&clks MPC512x_CLK_FEC>;
+-			clock-names = "per";
++			clock-names = "ipg";
+ 		};
+ 
+ 		/* USB1 using external ULPI PHY */
 -- 
 1.7.10.4
