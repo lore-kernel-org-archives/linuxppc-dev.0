@@ -1,33 +1,14 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from LGEAMRELO02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
- by ozlabs.org (Postfix) with ESMTP id 8A4082C00D5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 16:08:45 +1100 (EST)
-Date: Mon, 24 Feb 2014 14:08:51 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for
- determining the fallback node
-Message-ID: <20140224050851.GB14814@lge.com>
-References: <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com>
- <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com>
- <20140211074159.GB27870@lge.com>
- <alpine.DEB.2.10.1402121612270.8183@nuc>
- <20140217065257.GD3468@lge.com>
- <alpine.DEB.2.10.1402181033480.28964@nuc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.10.1402181033480.28964@nuc>
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail05.adl6.internode.on.net (ipmail05.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:5])
+ by ozlabs.org (Postfix) with ESMTP id 69EFD2C022C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 18:01:14 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: benh@kernel.crashing.org
+Subject: [PATCH] ppc476: Enable a linker work around for IBM errata #46
+Date: Mon, 24 Feb 2014 18:00:56 +1100
+Message-Id: <1393225256-21122-1-git-send-email-alistair@popple.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,77 +18,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 18, 2014 at 10:38:01AM -0600, Christoph Lameter wrote:
-> On Mon, 17 Feb 2014, Joonsoo Kim wrote:
-> 
-> > On Wed, Feb 12, 2014 at 04:16:11PM -0600, Christoph Lameter wrote:
-> > > Here is another patch with some fixes. The additional logic is only
-> > > compiled in if CONFIG_HAVE_MEMORYLESS_NODES is set.
-> > >
-> > > Subject: slub: Memoryless node support
-> > >
-> > > Support memoryless nodes by tracking which allocations are failing.
-> >
-> > I still don't understand why this tracking is needed.
-> 
-> Its an optimization to avoid calling the page allocator to figure out if
-> there is memory available on a particular node.
-> 
-> > All we need for allcation targeted to memoryless node is to fallback proper
-> > node, that it, numa_mem_id() node of targeted node. My previous patch
-> > implements it and use proper fallback node on every allocation code path.
-> > Why this tracking is needed? Please elaborate more on this.
-> 
-> Its too slow to do that on every alloc. One needs to be able to satisfy
-> most allocations without switching percpu slabs for optimal performance.
+This patch adds an option to enable a work around for an icache bug on
+476 that can cause execution of stale instructions when falling
+through pages (IBM errata #46). It requires a recent version of
+binutils which supports the --ppc476-workaround option.
 
-I don't think that we need to switch percpu slabs on every alloc.
-Allocation targeted to specific node is rare. And most of these allocations
-may be targeted to either numa_node_id() or numa_mem_id(). My patch considers
-these cases, so most of allocations are processed by percpu slabs. There is
-no suboptimal performance.
+The work around enables the appropriate linker options and ensures
+that all module output sections are aligned to 4K page boundaries. The
+work around is only required when building modules.
 
-> 
-> > > Allocations targeted to the nodes without memory fall back to the
-> > > current available per cpu objects and if that is not available will
-> > > create a new slab using the page allocator to fallback from the
-> > > memoryless node to some other node.
-> 
-> And what about the next alloc? Assuem there are N allocs from a memoryless
-> node this means we push back the partial slab on each alloc and then fall
-> back?
-> 
-> > >  {
-> > >  	void *object;
-> > > -	int searchnode = (node == NUMA_NO_NODE) ? numa_node_id() : node;
-> > > +	int searchnode = (node == NUMA_NO_NODE) ? numa_mem_id() : node;
-> > >
-> > >  	object = get_partial_node(s, get_node(s, searchnode), c, flags);
-> > >  	if (object || node != NUMA_NO_NODE)
-> >
-> > This isn't enough.
-> > Consider that allcation targeted to memoryless node.
-> 
-> It will not common get there because of the tracking. Instead a per cpu
-> object will be used.
-> > get_partial_node() always fails even if there are some partial slab on
-> > memoryless node's neareast node.
-> 
-> Correct and that leads to a page allocator action whereupon the node will
-> be marked as empty.
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ arch/powerpc/Makefile                         |    5 +++++
+ arch/powerpc/platforms/44x/Kconfig            |   14 ++++++++++++++
+ arch/powerpc/platforms/44x/ppc476_modules.lds |   15 +++++++++++++++
+ 3 files changed, 34 insertions(+)
+ create mode 100644 arch/powerpc/platforms/44x/ppc476_modules.lds
 
-Why do we need to request to a page allocator if there is partial slab?
-Checking whether node is memoryless or not is really easy, so we don't need
-to skip this. To skip this is suboptimal solution.
-
-> > We should fallback to some proper node in this case, since there is no slab
-> > on memoryless node.
-> 
-> NUMA is about optimization of memory allocations. It is often *not* about
-> correctness but heuristics are used in many cases. F.e. see the zone
-> reclaim logic, zone reclaim mode, fallback scenarios in the page allocator
-> etc etc.
-
-Okay. But, 'do our best' is preferable to me.
-
-Thanks.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 0f4344e..2b13616 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -158,6 +158,11 @@ CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)
+ 
+ KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
+ 
++ifeq ($(CONFIG_476FPE_ERR46),y)
++	KBUILD_LDFLAGS_MODULE += --ppc476-workaround \
++		-T $(srctree)/arch/powerpc/platforms/44x/ppc476_modules.lds
++endif
++
+ # No AltiVec or VSX instructions when building kernel
+ KBUILD_CFLAGS += $(call cc-option,-mno-altivec)
+ KBUILD_CFLAGS += $(call cc-option,-mno-vsx)
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index d6c7506..b817bf58 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -324,6 +324,20 @@ config APM821xx
+ 	select IBM_EMAC_EMAC4
+ 	select IBM_EMAC_TAH
+ 
++config 476FPE_ERR46
++	depends on 476FPE
++	bool "Enable linker work around for PPC476FPE errata #46"
++	help
++	  This option enables a work around for an icache bug on 476
++	  that can cause execution of stale instructions when falling
++	  through pages (IBM errata #46). It requires a recent version
++	  of binutils which supports the --ppc476-workaround option.
++
++	  The work around enables the appropriate linker options and
++	  ensures that all module output sections are aligned to 4K
++	  page boundaries. The work around is only required when
++	  building modules.
++
+ # 44x errata/workaround config symbols, selected by the CPU models above
+ config IBM440EP_ERR42
+ 	bool
+diff --git a/arch/powerpc/platforms/44x/ppc476_modules.lds b/arch/powerpc/platforms/44x/ppc476_modules.lds
+new file mode 100644
+index 0000000..9fec5d3
+--- /dev/null
++++ b/arch/powerpc/platforms/44x/ppc476_modules.lds
+@@ -0,0 +1,15 @@
++SECTIONS
++{
++	.text : ALIGN(4096)
++	{
++		*(.text .text.* .fixup)
++	}
++	.init.text : ALIGN(4096)
++	{
++		*(.init.text .init.text.*)
++	}
++	.exit.text : ALIGN(4096)
++	{
++		*(.exit.text .exit.text.*)
++	}
++}
+-- 
+1.7.10.4
