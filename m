@@ -1,21 +1,19 @@
-Return-Path: <alistair@popple.id.au>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id 9C8482C0212
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 11:38:36 +1100 (EST)
-From: Alistair Popple <alistair@popple.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/7] IBM Akebono: Add a SDHCI platform driver
-Date: Mon, 24 Feb 2014 11:38:30 +1100
-Message-ID: <278655068.asy5NBOYab@mexican>
-In-Reply-To: <1773685.WfxOP0FuHM@wuerfel>
-References: <1392964293-13687-1-git-send-email-alistair@popple.id.au>
- <1392964293-13687-2-git-send-email-alistair@popple.id.au>
- <1773685.WfxOP0FuHM@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree@vger.kernel.org, cjb@laptop.org, linux-mmc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 19AB42C0256
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 12:53:23 +1100 (EST)
+Message-ID: <1393206791.6771.157.camel@pasglop>
+Subject: Re: [PATCH v4 0/3] powerpc/pseries: fix issues in suspend/resume code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Mon, 24 Feb 2014 12:53:11 +1100
+In-Reply-To: <1392843415-17153-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1392843415-17153-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 21 Feb 2014 15:14:30 Arnd Bergmann wrote:
-> On Friday 21 February 2014 17:31:27 Alistair Popple wrote:
-> > +config MMC_SDHCI_OF_476GTR
-> > +	tristate "SDHCI OF support for the IBM PPC476GTR SoC"
-> > +	depends on MMC_SDHCI_PLTFM
-> > +	depends on PPC_OF
-> > +	help
-> > +	  This selects the Secure Digital Host Controller Interface (SDHCI)
-> > +	  found on the PPC476GTR SoC.
-> > +
-> > +	  If you have a controller with this interface, say Y or M here.
-> > +
-> > +	  If unsure, say N.
+On Wed, 2014-02-19 at 12:56 -0800, Tyrel Datwyler wrote:
+> This patchset fixes a couple of issues encountered in the suspend/resume code
+> base. First when using the kernel device tree update code update-nodes is
+> unnecessarily called more than once. Second the cpu cache lists are not
+> updated after a suspend/resume which under certain conditions may cause a
+> panic. Finally, since the cache list fix utilzes in kernel device tree update
+> code a means for telling drmgr that updating the device tree from userspace
+> is unnecessary.
+
+This series breaks the !SMP build.
+
+Cheers,
+Ben.
+
+> Changes from v3:
+> - Updated patch descriptions to better reflect the behavior/interface changes
+>   and why they are acceptable per Ben's concerns.
 > 
-> Your driver doesn't actually do anything beyond what is in the common
-> sdhci-pltfm.c infrastructure. IMHO you really shoulnd't need a SoC
-> specific abstraction for it at all and instead add a generic
-> platform driver registration into sdhci-pltfm.c. I'd suggest
-> you use "generic-sdhci" (similar to what we do for usb-ohci and usb-ehci
-> now) as the compatible string and change your device tree to claim
-> compatibility with that and your soc-specific string.
-
-That's a reasonable point. I guess I was just following the example set by the 
-other sdhci-* drivers. However on review they're not as generic as this one so 
-I will merge this into sdhci-pltfm.c as suggested.
-
-- Alistair
-
-> 	Arnd
+> Changes from v2:
+> - Moved dynamic configuration update code into pseries specific routine
+>   per Nathan's suggestion.
+> 
+> Changes from v1:
+> - Fixed several commit message typos
+> - Fixed authorship of first two patches
+> 
+> Haren Myneni (2):
+>   powerpc/pseries: Device tree should only be updated once after
+>     suspend/migrate
+>   powerpc/pseries: Update dynamic cache nodes for suspend/resume
+>     operation
+> 
+> Tyrel Datwyler (1):
+>   powerpc/pseries: Report in kernel device tree update to drmgr
+> 
+>  arch/powerpc/include/asm/rtas.h           |  1 +
+>  arch/powerpc/platforms/pseries/mobility.c | 26 +++++++-----------
+>  arch/powerpc/platforms/pseries/suspend.c  | 44 ++++++++++++++++++++++++++++++-
+>  3 files changed, 54 insertions(+), 17 deletions(-)
+> 
