@@ -1,30 +1,21 @@
-Return-Path: <cl@linux.com>
-Received: from qmta14.emeryville.ca.mail.comcast.net
- (qmta14.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:44:76:96:27:212])
- by ozlabs.org (Postfix) with ESMTP id 1E3BF2C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 07:02:54 +1100 (EST)
-Date: Mon, 24 Feb 2014 13:54:35 -0600 (CST)
-From: Christoph Lameter <cl@linux.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [RFC PATCH 2/3] topology: support node_numa_mem() for determining
- the fallback node
-In-Reply-To: <20140224050851.GB14814@lge.com>
-Message-ID: <alpine.DEB.2.10.1402241353070.20839@nuc>
-References: <CAAmzW4PXkdpNi5pZ=4BzdXNvqTEAhcuw-x0pWidqrxzdePxXxA@mail.gmail.com>
- <alpine.DEB.2.02.1402061248450.9567@chino.kir.corp.google.com>
- <20140207054819.GC28952@lge.com> <alpine.DEB.2.10.1402071150090.15168@nuc>
- <alpine.DEB.2.10.1402071245040.20246@nuc>
- <20140210191321.GD1558@linux.vnet.ibm.com> <20140211074159.GB27870@lge.com>
- <alpine.DEB.2.10.1402121612270.8183@nuc> <20140217065257.GD3468@lge.com>
- <alpine.DEB.2.10.1402181033480.28964@nuc> <20140224050851.GB14814@lge.com>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, Matt Mackall <mpm@selenic.com>,
- Pekka Enberg <penberg@kernel.org>,
- Linux Memory Management List <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>, linuxppc-dev@lists.ozlabs.org,
- Wanpeng Li <liwanp@linux.vnet.ibm.com>
+Return-Path: <wimvs@spo001.leaseweb.com>
+Received: from spo001.leaseweb.com (ns1.pc-advies.be [83.149.101.17])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7FE3C2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 07:18:30 +1100 (EST)
+Date: Mon, 24 Feb 2014 20:51:27 +0100
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] watchdog: mpc8xxx_wdt: MPC8xx is HW enabled
+Message-ID: <20140224195127.GA20712@spo001.leaseweb.com>
+References: <20131130154540.E83D743E15@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20131130154540.E83D743E15@localhost.localdomain>
+Sender: <wimvs@spo001.leaseweb.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 24 Feb 2014, Joonsoo Kim wrote:
+Hi Christophe,
 
-> > It will not common get there because of the tracking. Instead a per cpu
-> > object will be used.
-> > > get_partial_node() always fails even if there are some partial slab on
-> > > memoryless node's neareast node.
-> >
-> > Correct and that leads to a page allocator action whereupon the node will
-> > be marked as empty.
->
-> Why do we need to request to a page allocator if there is partial slab?
-> Checking whether node is memoryless or not is really easy, so we don't need
-> to skip this. To skip this is suboptimal solution.
+> MPC8xx watchdog is enabled at startup by HW.
+> If the bootloader disables it, it cannot be reenabled.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> diff -ur a/drivers/watchdog/mpc8xxx_wdt.c b/drivers/watchdog/mpc8xxx_wdt.c
+> --- a/drivers/watchdog/mpc8xxx_wdt.c	2013-05-11 22:57:46.000000000 +0200
+> +++ b/drivers/watchdog/mpc8xxx_wdt.c	2013-08-08 02:12:15.000000000 +0200
+> @@ -273,6 +310,7 @@
+>  		.compatible = "fsl,mpc823-wdt",
+>  		.data = &(struct mpc8xxx_wdt_type) {
+>  			.prescaler = 0x800,
+> +			.hw_enabled = true,
+>  		},
+>  	},
+>  	{},
+> 
+> ---
+> Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
+> http://www.avast.com
+> 
 
-The page allocator action is also used to determine to which other node we
-should fall back if the node is empty. So we need to call the page
-allocator when the per cpu slab is exhaused with the node of the
-memoryless node to get memory from the proper fallback node.
+This patch has been added to linux-watchdog-next.
+
+Kind regards,
+Wim.
