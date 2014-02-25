@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 100B62C00C3
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 18:28:56 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 892052C0316
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 18:28:57 +1100 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 02:28:54 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id EE855C90026
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 02:28:48 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1P7SqK56029798
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 07:28:52 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1P7Spb6031678
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 02:28:51 -0500
+ Tue, 25 Feb 2014 00:28:55 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 71EAD1FF003B
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 00:28:53 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1P7Srwt4588000
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 08:28:53 +0100
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1P7Sqd2018039
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 00:28:53 -0700
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 4/5] powerpc/powernv: Dump PHB diag-data immediately
-Date: Tue, 25 Feb 2014 15:28:37 +0800
-Message-Id: <1393313318-6341-5-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 5/5] powerpc/powernv: Refactor PHB diag-data dump
+Date: Tue, 25 Feb 2014 15:28:38 +0800
+Message-Id: <1393313318-6341-6-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1393313318-6341-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1393313318-6341-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,144 +38,277 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PHB diag-data is useful to help locating the root cause for
-frozen PE or fenced PHB. However, EEH core enables IO path by clearing
-part of HW registers before collecting it and eventually we got broken
-PHB diag-data.
+As Ben suggested, the patch prints PHB diag-data with multiple
+fields in one line and omits the line if the fields of that
+line are all zero.
 
-The patch intends to fix it by dumping the PHB diag-data immediately
-when frozen/fenced state on PE or PHB is detected for the first time
-in eeh_ops::get_state() or next_error() backend.
+With the patch applied, the PHB3 diag-data dump looks like:
+
+PHB3 PHB#3 Diag-data (Version: 1)
+
+  brdgCtl:     00000002
+  RootSts:     0000000f 00400000 b0830008 00100147 00002000
+  nFir:        0000000000000000 0030006e00000000 0000000000000000
+  PhbSts:      0000001c00000000 0000000000000000
+  Lem:         0000000000100000 42498e327f502eae 0000000000000000
+  InAErr:      8000000000000000 8000000000000000 0402030000000000 \
+               0000000000000000
+  PE[  8] A/B: 8480002b00000000 8000000000000000
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c |   79 +++++++++++++++--------------
- 1 file changed, 42 insertions(+), 37 deletions(-)
+ arch/powerpc/platforms/powernv/pci.c |  220 +++++++++++++++++++---------------
+ 1 file changed, 125 insertions(+), 95 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 04b4710..6dba684 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -114,6 +114,22 @@ DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_inbB_dbgfs_ops, ioda_eeh_inbB_dbgfs_get,
- 			ioda_eeh_inbB_dbgfs_set, "0x%llx\n");
- #endif /* CONFIG_DEBUG_FS */
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 3955fc0..114e1a7 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -134,57 +134,72 @@ static void pnv_pci_dump_p7ioc_diag_data(struct pci_controller *hose,
+ 	pr_info("P7IOC PHB#%d Diag-data (Version: %d)\n\n",
+ 		hose->global_number, common->version);
  
-+static void ioda_eeh_phb_diag(struct pci_controller *hose)
-+{
-+	struct pnv_phb *phb = hose->private_data;
-+	long rc;
-+
-+	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
-+					 PNV_PCI_DIAG_BUF_SIZE);
-+	if (rc != OPAL_SUCCESS) {
-+		pr_warn("%s: Failed to get diag-data for PHB#%x (%ld)\n",
-+			__func__, hose->global_number, rc);
-+		return;
-+	}
-+
-+	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
-+}
-+
- /**
-  * ioda_eeh_post_init - Chip dependent post initialization
-  * @hose: PCI controller
-@@ -272,6 +288,9 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- 			result |= EEH_STATE_DMA_ACTIVE;
- 			result |= EEH_STATE_MMIO_ENABLED;
- 			result |= EEH_STATE_DMA_ENABLED;
-+		} else if (!(pe->state & EEH_PE_ISOLATED)) {
-+			eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
-+			ioda_eeh_phb_diag(hose);
- 		}
+-	pr_info("  brdgCtl:              %08x\n", data->brdgCtl);
+-
+-	pr_info("  portStatusReg:        %08x\n", data->portStatusReg);
+-	pr_info("  rootCmplxStatus:      %08x\n", data->rootCmplxStatus);
+-	pr_info("  busAgentStatus:       %08x\n", data->busAgentStatus);
+-
+-	pr_info("  deviceStatus:         %08x\n", data->deviceStatus);
+-	pr_info("  slotStatus:           %08x\n", data->slotStatus);
+-	pr_info("  linkStatus:           %08x\n", data->linkStatus);
+-	pr_info("  devCmdStatus:         %08x\n", data->devCmdStatus);
+-	pr_info("  devSecStatus:         %08x\n", data->devSecStatus);
+-
+-	pr_info("  rootErrorStatus:      %08x\n", data->rootErrorStatus);
+-	pr_info("  uncorrErrorStatus:    %08x\n", data->uncorrErrorStatus);
+-	pr_info("  corrErrorStatus:      %08x\n", data->corrErrorStatus);
+-	pr_info("  tlpHdr1:              %08x\n", data->tlpHdr1);
+-	pr_info("  tlpHdr2:              %08x\n", data->tlpHdr2);
+-	pr_info("  tlpHdr3:              %08x\n", data->tlpHdr3);
+-	pr_info("  tlpHdr4:              %08x\n", data->tlpHdr4);
+-	pr_info("  sourceId:             %08x\n", data->sourceId);
+-	pr_info("  errorClass:           %016llx\n", data->errorClass);
+-	pr_info("  correlator:           %016llx\n", data->correlator);
+-	pr_info("  p7iocPlssr:           %016llx\n", data->p7iocPlssr);
+-	pr_info("  p7iocCsr:             %016llx\n", data->p7iocCsr);
+-	pr_info("  lemFir:               %016llx\n", data->lemFir);
+-	pr_info("  lemErrorMask:         %016llx\n", data->lemErrorMask);
+-	pr_info("  lemWOF:               %016llx\n", data->lemWOF);
+-	pr_info("  phbErrorStatus:       %016llx\n", data->phbErrorStatus);
+-	pr_info("  phbFirstErrorStatus:  %016llx\n", data->phbFirstErrorStatus);
+-	pr_info("  phbErrorLog0:         %016llx\n", data->phbErrorLog0);
+-	pr_info("  phbErrorLog1:         %016llx\n", data->phbErrorLog1);
+-	pr_info("  mmioErrorStatus:      %016llx\n", data->mmioErrorStatus);
+-	pr_info("  mmioFirstErrorStatus: %016llx\n", data->mmioFirstErrorStatus);
+-	pr_info("  mmioErrorLog0:        %016llx\n", data->mmioErrorLog0);
+-	pr_info("  mmioErrorLog1:        %016llx\n", data->mmioErrorLog1);
+-	pr_info("  dma0ErrorStatus:      %016llx\n", data->dma0ErrorStatus);
+-	pr_info("  dma0FirstErrorStatus: %016llx\n", data->dma0FirstErrorStatus);
+-	pr_info("  dma0ErrorLog0:        %016llx\n", data->dma0ErrorLog0);
+-	pr_info("  dma0ErrorLog1:        %016llx\n", data->dma0ErrorLog1);
+-	pr_info("  dma1ErrorStatus:      %016llx\n", data->dma1ErrorStatus);
+-	pr_info("  dma1FirstErrorStatus: %016llx\n", data->dma1FirstErrorStatus);
+-	pr_info("  dma1ErrorLog0:        %016llx\n", data->dma1ErrorLog0);
+-	pr_info("  dma1ErrorLog1:        %016llx\n", data->dma1ErrorLog1);
++	if (data->brdgCtl)
++		pr_info("  brdgCtl:     %08x\n",
++			data->brdgCtl);
++	if (data->portStatusReg || data->rootCmplxStatus ||
++	    data->busAgentStatus)
++		pr_info("  UtlSts:      %08x %08x %08x\n",
++			data->portStatusReg, data->rootCmplxStatus,
++			data->busAgentStatus);
++	if (data->deviceStatus || data->slotStatus   ||
++	    data->linkStatus   || data->devCmdStatus ||
++	    data->devSecStatus)
++		pr_info("  RootSts:     %08x %08x %08x %08x %08x\n",
++			data->deviceStatus, data->slotStatus,
++			data->linkStatus, data->devCmdStatus,
++			data->devSecStatus);
++	if (data->rootErrorStatus   || data->uncorrErrorStatus ||
++	    data->corrErrorStatus)
++		pr_info("  RootErrSts:  %08x %08x %08x\n",
++			data->rootErrorStatus, data->uncorrErrorStatus,
++			data->corrErrorStatus);
++	if (data->tlpHdr1 || data->tlpHdr2 ||
++	    data->tlpHdr3 || data->tlpHdr4)
++		pr_info("  RootErrLog:  %08x %08x %08x %08x\n",
++			data->tlpHdr1, data->tlpHdr2,
++			data->tlpHdr3, data->tlpHdr4);
++	if (data->sourceId || data->errorClass ||
++	    data->correlator)
++		pr_info("  RootErrLog1: %08x %016llx %016llx\n",
++			data->sourceId, data->errorClass,
++			data->correlator);
++	if (data->p7iocPlssr || data->p7iocCsr)
++		pr_info("  PhbSts:      %016llx %016llx\n",
++			data->p7iocPlssr, data->p7iocCsr);
++	if (data->lemFir || data->lemErrorMask ||
++	    data->lemWOF)
++		pr_info("  Lem:         %016llx %016llx %016llx\n",
++			data->lemFir, data->lemErrorMask,
++			data->lemWOF);
++	if (data->phbErrorStatus || data->phbFirstErrorStatus ||
++	    data->phbErrorLog0   || data->phbErrorLog1)
++		pr_info("  PhbErr:      %016llx %016llx %016llx %016llx\n",
++			data->phbErrorStatus, data->phbFirstErrorStatus,
++			data->phbErrorLog0, data->phbErrorLog1);
++	if (data->mmioErrorStatus || data->mmioFirstErrorStatus ||
++	    data->mmioErrorLog0   || data->mmioErrorLog1)
++		pr_info("  OutErr:      %016llx %016llx %016llx %016llx\n",
++			data->mmioErrorStatus, data->mmioFirstErrorStatus,
++			data->mmioErrorLog0, data->mmioErrorLog1);
++	if (data->dma0ErrorStatus || data->dma0FirstErrorStatus ||
++	    data->dma0ErrorLog0   || data->dma0ErrorLog1)
++		pr_info("  InAErr:      %016llx %016llx %016llx %016llx\n",
++			data->dma0ErrorStatus, data->dma0FirstErrorStatus,
++			data->dma0ErrorLog0, data->dma0ErrorLog1);
++	if (data->dma1ErrorStatus || data->dma1FirstErrorStatus ||
++	    data->dma1ErrorLog0   || data->dma1ErrorLog1)
++		pr_info("  InBErr:      %016llx %016llx %016llx %016llx\n",
++			data->dma1ErrorStatus, data->dma1FirstErrorStatus,
++			data->dma1ErrorLog0, data->dma1ErrorLog1);
  
- 		return result;
-@@ -315,6 +334,15 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- 			   __func__, fstate, hose->global_number, pe_no);
+ 	for (i = 0; i < OPAL_P7IOC_NUM_PEST_REGS; i++) {
+ 		if ((data->pestA[i] >> 63) == 0 &&
+ 		    (data->pestB[i] >> 63) == 0)
+ 			continue;
+ 
+-		pr_info("  PE[%3d] PESTA:        %016llx\n", i, data->pestA[i]);
+-		pr_info("          PESTB:        %016llx\n", data->pestB[i]);
++		pr_info("  PE[%3d] A/B: %016llx %016llx\n",
++			i, data->pestA[i], data->pestB[i]);
  	}
- 
-+	/* Dump PHB diag-data for frozen PE */
-+	if (result != EEH_STATE_NOT_SUPPORT &&
-+	    (result & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) !=
-+	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE) &&
-+	    !(pe->state & EEH_PE_ISOLATED)) {
-+		eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
-+		ioda_eeh_phb_diag(hose);
-+	}
-+
- 	return result;
  }
  
-@@ -541,27 +569,6 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- static int ioda_eeh_get_log(struct eeh_pe *pe, int severity,
- 			    char *drv_log, unsigned long len)
- {
--	s64 ret;
--	unsigned long flags;
--	struct pci_controller *hose = pe->phb;
--	struct pnv_phb *phb = hose->private_data;
+@@ -197,62 +212,77 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
+ 	data = (struct OpalIoPhb3ErrorData*)common;
+ 	pr_info("PHB3 PHB#%d Diag-data (Version: %d)\n\n",
+ 		hose->global_number, common->version);
 -
--	spin_lock_irqsave(&phb->lock, flags);
+-	pr_info("  brdgCtl:              %08x\n", data->brdgCtl);
 -
--	ret = opal_pci_get_phb_diag_data2(phb->opal_id,
--			phb->diag.blob, PNV_PCI_DIAG_BUF_SIZE);
--	if (ret) {
--		spin_unlock_irqrestore(&phb->lock, flags);
--		pr_warning("%s: Can't get log for PHB#%x-PE#%x (%lld)\n",
--			   __func__, hose->global_number, pe->addr, ret);
--		return -EIO;
--	}
+-	pr_info("  portStatusReg:        %08x\n", data->portStatusReg);
+-	pr_info("  rootCmplxStatus:      %08x\n", data->rootCmplxStatus);
+-	pr_info("  busAgentStatus:       %08x\n", data->busAgentStatus);
 -
--	/* The PHB diag-data is always indicative */
--	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
+-	pr_info("  deviceStatus:         %08x\n", data->deviceStatus);
+-	pr_info("  slotStatus:           %08x\n", data->slotStatus);
+-	pr_info("  linkStatus:           %08x\n", data->linkStatus);
+-	pr_info("  devCmdStatus:         %08x\n", data->devCmdStatus);
+-	pr_info("  devSecStatus:         %08x\n", data->devSecStatus);
 -
--	spin_unlock_irqrestore(&phb->lock, flags);
+-	pr_info("  rootErrorStatus:      %08x\n", data->rootErrorStatus);
+-	pr_info("  uncorrErrorStatus:    %08x\n", data->uncorrErrorStatus);
+-	pr_info("  corrErrorStatus:      %08x\n", data->corrErrorStatus);
+-	pr_info("  tlpHdr1:              %08x\n", data->tlpHdr1);
+-	pr_info("  tlpHdr2:              %08x\n", data->tlpHdr2);
+-	pr_info("  tlpHdr3:              %08x\n", data->tlpHdr3);
+-	pr_info("  tlpHdr4:              %08x\n", data->tlpHdr4);
+-	pr_info("  sourceId:             %08x\n", data->sourceId);
+-	pr_info("  errorClass:           %016llx\n", data->errorClass);
+-	pr_info("  correlator:           %016llx\n", data->correlator);
 -
- 	return 0;
- }
+-	pr_info("  nFir:                 %016llx\n", data->nFir);
+-	pr_info("  nFirMask:             %016llx\n", data->nFirMask);
+-	pr_info("  nFirWOF:              %016llx\n", data->nFirWOF);
+-	pr_info("  PhbPlssr:             %016llx\n", data->phbPlssr);
+-	pr_info("  PhbCsr:               %016llx\n", data->phbCsr);
+-	pr_info("  lemFir:               %016llx\n", data->lemFir);
+-	pr_info("  lemErrorMask:         %016llx\n", data->lemErrorMask);
+-	pr_info("  lemWOF:               %016llx\n", data->lemWOF);
+-	pr_info("  phbErrorStatus:       %016llx\n", data->phbErrorStatus);
+-	pr_info("  phbFirstErrorStatus:  %016llx\n", data->phbFirstErrorStatus);
+-	pr_info("  phbErrorLog0:         %016llx\n", data->phbErrorLog0);
+-	pr_info("  phbErrorLog1:         %016llx\n", data->phbErrorLog1);
+-	pr_info("  mmioErrorStatus:      %016llx\n", data->mmioErrorStatus);
+-	pr_info("  mmioFirstErrorStatus: %016llx\n", data->mmioFirstErrorStatus);
+-	pr_info("  mmioErrorLog0:        %016llx\n", data->mmioErrorLog0);
+-	pr_info("  mmioErrorLog1:        %016llx\n", data->mmioErrorLog1);
+-	pr_info("  dma0ErrorStatus:      %016llx\n", data->dma0ErrorStatus);
+-	pr_info("  dma0FirstErrorStatus: %016llx\n", data->dma0FirstErrorStatus);
+-	pr_info("  dma0ErrorLog0:        %016llx\n", data->dma0ErrorLog0);
+-	pr_info("  dma0ErrorLog1:        %016llx\n", data->dma0ErrorLog1);
+-	pr_info("  dma1ErrorStatus:      %016llx\n", data->dma1ErrorStatus);
+-	pr_info("  dma1FirstErrorStatus: %016llx\n", data->dma1FirstErrorStatus);
+-	pr_info("  dma1ErrorLog0:        %016llx\n", data->dma1ErrorLog0);
+-	pr_info("  dma1ErrorLog1:        %016llx\n", data->dma1ErrorLog1);
++	if (data->brdgCtl)
++		pr_info("  brdgCtl:     %08x\n",
++			data->brdgCtl);
++	if (data->portStatusReg || data->rootCmplxStatus ||
++	    data->busAgentStatus)
++		pr_info("  UtlSts:      %08x %08x %08x\n",
++			data->portStatusReg, data->rootCmplxStatus,
++			data->busAgentStatus);
++	if (data->deviceStatus || data->slotStatus   ||
++	    data->linkStatus   || data->devCmdStatus ||
++	    data->devSecStatus)
++		pr_info("  RootSts:     %08x %08x %08x %08x %08x\n",
++			data->deviceStatus, data->slotStatus,
++			data->linkStatus, data->devCmdStatus,
++			data->devSecStatus);
++	if (data->rootErrorStatus || data->uncorrErrorStatus ||
++	    data->corrErrorStatus)
++		pr_info("  RootErrSts:  %08x %08x %08x\n",
++			data->rootErrorStatus, data->uncorrErrorStatus,
++			data->corrErrorStatus);
++	if (data->tlpHdr1 || data->tlpHdr2 ||
++	    data->tlpHdr3 || data->tlpHdr4)
++		pr_info("  RootErrLog:  %08x %08x %08x %08x\n",
++			data->tlpHdr1, data->tlpHdr2,
++			data->tlpHdr3, data->tlpHdr4);
++	if (data->sourceId || data->errorClass ||
++	    data->correlator)
++		pr_info("  RootErrLog1: %08x %016llx %016llx\n",
++			data->sourceId, data->errorClass,
++			data->correlator);
++	if (data->nFir || data->nFirMask ||
++	    data->nFirWOF)
++		pr_info("  nFir:        %016llx %016llx %016llx\n",
++			data->nFir, data->nFirMask,
++			data->nFirWOF);
++	if (data->phbPlssr || data->phbCsr)
++		pr_info("  PhbSts:      %016llx %016llx\n",
++			data->phbPlssr, data->phbCsr);
++	if (data->lemFir || data->lemErrorMask ||
++	    data->lemWOF)
++		pr_info("  Lem:         %016llx %016llx %016llx\n",
++			data->lemFir, data->lemErrorMask,
++			data->lemWOF);
++	if (data->phbErrorStatus || data->phbFirstErrorStatus ||
++	    data->phbErrorLog0   || data->phbErrorLog1)
++		pr_info("  PhbErr:      %016llx %016llx %016llx %016llx\n",
++			data->phbErrorStatus, data->phbFirstErrorStatus,
++			data->phbErrorLog0, data->phbErrorLog1);
++	if (data->mmioErrorStatus || data->mmioFirstErrorStatus ||
++	    data->mmioErrorLog0   || data->mmioErrorLog1)
++		pr_info("  OutErr:      %016llx %016llx %016llx %016llx\n",
++			data->mmioErrorStatus, data->mmioFirstErrorStatus,
++			data->mmioErrorLog0, data->mmioErrorLog1);
++	if (data->dma0ErrorStatus || data->dma0FirstErrorStatus ||
++	    data->dma0ErrorLog0   || data->dma0ErrorLog1)
++		pr_info("  InAErr:      %016llx %016llx %016llx %016llx\n",
++			data->dma0ErrorStatus, data->dma0FirstErrorStatus,
++			data->dma0ErrorLog0, data->dma0ErrorLog1);
++	if (data->dma1ErrorStatus || data->dma1FirstErrorStatus ||
++	    data->dma1ErrorLog0   || data->dma1ErrorLog1)
++		pr_info("  InBErr:      %016llx %016llx %016llx %016llx\n",
++			data->dma1ErrorStatus, data->dma1FirstErrorStatus,
++			data->dma1ErrorLog0, data->dma1ErrorLog1);
  
-@@ -646,22 +653,6 @@ static void ioda_eeh_hub_diag(struct pci_controller *hose)
+ 	for (i = 0; i < OPAL_PHB3_NUM_PEST_REGS; i++) {
+ 		if ((data->pestA[i] >> 63) == 0 &&
+ 		    (data->pestB[i] >> 63) == 0)
+ 			continue;
+ 
+-		pr_info("  PE[%3d] PESTA:        %016llx\n", i, data->pestA[i]);
+-		pr_info("          PESTB:        %016llx\n", data->pestB[i]);
++		pr_info("  PE[%3d] A/B: %016llx %016llx\n",
++			i, data->pestA[i], data->pestB[i]);
  	}
  }
  
--static void ioda_eeh_phb_diag(struct pci_controller *hose)
--{
--	struct pnv_phb *phb = hose->private_data;
--	long rc;
--
--	rc = opal_pci_get_phb_diag_data2(phb->opal_id, phb->diag.blob,
--					 PNV_PCI_DIAG_BUF_SIZE);
--	if (rc != OPAL_SUCCESS) {
--		pr_warning("%s: Failed to get diag-data for PHB#%x (%ld)\n",
--			    __func__, hose->global_number, rc);
--		return;
--	}
--
--	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
--}
--
- static int ioda_eeh_get_pe(struct pci_controller *hose,
- 			   u16 pe_no, struct eeh_pe **pe)
- {
-@@ -809,6 +800,20 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		}
- 
- 		/*
-+		 * EEH core will try recover from fenced PHB or
-+		 * frozen PE. In the time for frozen PE, EEH core
-+		 * enable IO path for that before collecting logs,
-+		 * but it ruins the site. So we have to dump the
-+		 * log in advance here.
-+		 */
-+		if ((ret == EEH_NEXT_ERR_FROZEN_PE  ||
-+		    ret == EEH_NEXT_ERR_FENCED_PHB) &&
-+		    !((*pe)->state & EEH_PE_ISOLATED)) {
-+			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
-+			ioda_eeh_phb_diag(hose);
-+		}
-+
-+		/*
- 		 * If we have no errors on the specific PHB or only
- 		 * informative error there, we continue poking it.
- 		 * Otherwise, we need actions to be taken by upper
 -- 
 1.7.10.4
