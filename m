@@ -1,42 +1,25 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0F17C2C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 09:19:34 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 15:19:32 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id EA89719D8040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 15:19:28 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1PMJUZu10551612
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 23:19:30 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s1PMMuZR031196
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 15:22:57 -0700
-Message-ID: <530D16E2.9060108@linux.vnet.ibm.com>
-Date: Tue, 25 Feb 2014 14:19:14 -0800
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v2 01/11] perf: add PMU_RANGE_ATTR() helper for use by
- sw-like pmus
-References: <20140225033326.135BB2C0227@ozlabs.org>
- <530CFE30.70803@linux.vnet.ibm.com>
-In-Reply-To: <530CFE30.70803@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: LKML <linux-kernel@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 59E8E2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 09:40:20 +1100 (EST)
+Message-ID: <1393368002.6314.10.camel@pasglop>
+Subject: Re: [PATCH] powerpc: warn users of smt-snooze-delay that the API
+ isn't there anymore
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Date: Wed, 26 Feb 2014 09:40:02 +1100
+In-Reply-To: <530C4D57.1030905@linux.vnet.ibm.com>
+References: <1393028074-26797-1-git-send-email-cody@linux.vnet.ibm.com>
+ <530C4D57.1030905@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Wang Dongsheng <dongsheng.wang@freescale.com>,
+ linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Paul Mackerras <paulus@samba.org>, Olof Johansson <olof@lixom.net>,
+ Cody P Schafer <cody@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,68 +29,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/25/2014 12:33 PM, Cody P Schafer wrote:
-> On 02/24/2014 07:33 PM, Michael Ellerman wrote:
->> On Fri, 2014-14-02 at 22:02:05 UTC, Cody P Schafer wrote:
->>> Add PMU_RANGE_ATTR() and PMU_RANGE_RESV() (for reserved areas) which
->>> generate functions to extract the relevent bits from
->>> event->attr.config{,1,2} for use by sw-like pmus where the
->>> 'config{,1,2}' values don't map directly to hardware registers.
->>>
->>> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
->>> ---
->>>   include/linux/perf_event.h | 17 +++++++++++++++++
->>>   1 file changed, 17 insertions(+)
->>>
->>> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
->>> index e56b07f..2702e91 100644
->>> --- a/include/linux/perf_event.h
->>> +++ b/include/linux/perf_event.h
->>> @@ -871,4 +871,21 @@ _name##_show(struct device
->>> *dev,                    \
->>>                                       \
->>>   static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
->>>
->>> +#define PMU_RANGE_ATTR(name, attr_var, bit_start, bit_end)        \
->>> +PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);        \
->>> +PMU_RANGE_RESV(name, attr_var, bit_start, bit_end)
->>> +
->>> +#define PMU_RANGE_RESV(name, attr_var, bit_start, bit_end)        \
->>> +static u64 event_get_##name##_max(void)                    \
->>> +{                                    \
->>> +    int bits = (bit_end) - (bit_start) + 1;                \
->>> +    return ((0x1ULL << (bits - 1ULL)) - 1ULL) |            \
->>> +        (0xFULL << (bits - 4ULL));                \
->>> +}                                    \
->>> +static u64 event_get_##name(struct perf_event *event)            \
->>> +{                                    \
->>> +    return (event->attr.attr_var >> (bit_start)) &            \
->>> +        event_get_##name##_max();                \
->>> +}
->>
->> I still don't like the names.
->>
->> EVENT_GETTER_AND_FORMAT()
->
-> EVENT_RANGE()
->
-> I'd prefer to describe the intended usage rather than what is generated
-> both in case we change some of the specifics later, and to provide
-> additional information to the developers beyond what a simple code
-> reading gives.
->
->> EVENT_RESERVED()
->
-> Sure. The PMU_* naming was just based on the PMU_FORMAT_ATTR() naming,
-> so I kept it for continuity with the existing API. Maybe
-> EVENT_RANGE_RESERVED() would be more appropriate?
->
+On Tue, 2014-02-25 at 13:29 +0530, Deepthi Dharwar wrote:
+> We currently do not use smt-snooze-delay in the kernel.
+> The sysfs entries needs to  be retained until we do a clean up
+> ppc64_cpu
+> util that uses these entries to determine SMT,
+> clean up patch for this has already been posted out by Prerna.
+> Once, we have the ppc64_cpu changes in, we can look to clean up these
+> parts from the kernel.
 
-Thinking about this a bit more, EVENT_RANGE() and EVENT_RANGE_RESERVED() 
-aren't quite ideal either. The "EVENT" name collides with the files we 
-put in the event/ dir, which these macros generate files for the format/ 
-dir. Maybe:
+We generally shouldn't change user visible interfaces.
 
-FORMAT_RANGE() and FORMAT_RANGE_RESERVED()
-or
-PMU_FORMAT_RANGE(), PMU_FORMAT_RANGE_RESERVED()
+People still have old versions of ppc64_cpu, we must not break them
+
+Cheers,
+Ben.
