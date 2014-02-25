@@ -1,41 +1,33 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mattst88@gmail.com>
+Received: from mail-qc0-x231.google.com (mail-qc0-x231.google.com
+ [IPv6:2607:f8b0:400d:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6A0A42C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 03:01:01 +1100 (EST)
-Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 16:00:57 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2C4F11B08061
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 16:00:34 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1PG0faj66256974
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 16:00:41 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1PG0qA0026286
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 09:00:52 -0700
-Message-ID: <530CBE34.4000004@linux.vnet.ibm.com>
-Date: Tue, 25 Feb 2014 17:00:52 +0100
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6276E2C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 04:40:39 +1100 (EST)
+Received: by mail-qc0-f177.google.com with SMTP id m20so2632533qcx.22
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 09:40:36 -0800 (PST)
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] PPC: KVM: Introduce hypervisor call H_GET_TCE
-References: <20140221153110.8190.6271.stgit@nimbus>
- <75FB1EEB-910A-49A9-A4CC-0A2E5403C54C@suse.de>
-In-Reply-To: <75FB1EEB-910A-49A9-A4CC-0A2E5403C54C@suse.de>
+In-Reply-To: <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
+References: <1391407232-4623-1-git-send-email-takahiro.akashi@linaro.org>
+ <1393319784-2758-1-git-send-email-takahiro.akashi@linaro.org>
+ <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
+From: Matt Turner <mattst88@gmail.com>
+Date: Tue, 25 Feb 2014 09:40:15 -0800
+Message-ID: <CAEdQ38Hf=vEXEKhYaduR8HAcXyChQ-Wo7rHPGs20DirVwkDAxw@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] audit: Add CONFIG_HAVE_ARCH_AUDITSYSCALL
+To: AKASHI Takahiro <takahiro.akashi@linaro.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- Gleb Natapov <gleb@kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, linaro-kernel@lists.linaro.org,
+ linux-ia64@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
+ linux-sh@vger.kernel.org, rgb@redhat.com, catalin.marinas@arm.com,
+ x86@kernel.org, Will Deacon <will.deacon@arm.com>, arndb@arndb.de,
+ eparis@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+ linux-alpha <linux-alpha@vger.kernel.org>, dsaxena@linaro.org,
+ Al Viro <viro@zeniv.linux.org.uk>, user-mode-linux-user@lists.sourceforge.net,
+ linux-audit@redhat.com, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,26 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21/02/2014 16:57, Alexander Graf wrote:
-> 
-> On 21.02.2014, at 16:31, Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
-> 
->> This fix introduces the H_GET_TCE hypervisor call which is basically the
->> reverse of H_PUT_TCE, as defined in the Power Architecture Platform
->> Requirements (PAPR).
->>
->> The hcall H_GET_TCE is required by the kdump kernel which is calling it to
->> retrieve the TCE set up by the panicing kernel.
->>
->> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> 
-> Thanks, applied to kvm-ppc-queue. Btw, why exactly are we using struct page pointers and alloc_page rather than __get_free_page() and simple page start pointers?
+On Tue, Feb 25, 2014 at 1:16 AM, AKASHI Takahiro
+<takahiro.akashi@linaro.org> wrote:
+> Currently AUDITSYSCALL has a long list of architecture depencency:
+>        depends on AUDIT && (X86 || PARISC || PPC || S390 || IA64 || UML ||
+>                 SPARC64 || SUPERH || (ARM && AEABI && !OABI_COMPAT) || ALPHA)
+> The purpose of this patch is to replace it with HAVE_ARCH_AUDITSYSCALL
+> for simplicity.
+>
+> Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+> ---
+>  arch/alpha/Kconfig     |    1 +
+>  arch/arm/Kconfig       |    1 +
+>  arch/ia64/Kconfig      |    1 +
+>  arch/parisc/Kconfig    |    1 +
+>  arch/powerpc/Kconfig   |    1 +
+>  arch/s390/Kconfig      |    1 +
+>  arch/sh/Kconfig        |    1 +
+>  arch/sparc/Kconfig     |    1 +
+>  arch/um/Kconfig.common |    1 +
+>  arch/x86/Kconfig       |    1 +
+>  init/Kconfig           |    5 ++++-
+>  11 files changed, 14 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+> index f6c6b34..b7ff9a3 100644
+> --- a/arch/alpha/Kconfig
+> +++ b/arch/alpha/Kconfig
+> @@ -22,6 +22,7 @@ config ALPHA
+>         select GENERIC_SMP_IDLE_THREAD
+>         select GENERIC_STRNCPY_FROM_USER
+>         select GENERIC_STRNLEN_USER
+> +       select HAVE_ARCH_AUDITSYSCALL
+>         select HAVE_MOD_ARCH_SPECIFIC
+>         select MODULES_USE_ELF_RELA
+>         select ODD_RT_SIGACTION
 
-FWIW, I'm not so familiar with that part of code, it seems that this is
-due to the page fault handler (kvm_spapr_tce_fault) which is part of the
-mmap file operation handlers associated to the fd returned by
-kvm_vm_ioctl_create_spapr_tce. Underlying vma's operation requires the
-page fault handler to return a struct page value in the vm_fault structure.
+Thanks.
 
-Cheers,
-Laurent.
+Acked-by: Matt Turner <mattst88@gmail.com>
