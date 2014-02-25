@@ -1,31 +1,33 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B4FDA2C0142
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 18:28:55 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id AC6962C00D5
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 18:28:56 +1100 (EST)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 00:28:53 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C32B319D8041
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 00:28:48 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1P7SOep3015148
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 08:28:24 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1P7SnIC017928
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 00:28:50 -0700
+ Tue, 25 Feb 2014 02:28:53 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7FA3B6E8040
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 02:28:47 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1P7SqI6786904
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 07:28:52 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1P7Spja024579
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 02:28:52 -0500
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 0/5] EEH improvement
-Date: Tue, 25 Feb 2014 15:28:33 +0800
-Message-Id: <1393313318-6341-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/5] powerpc/powernv: Remove PNV_EEH_STATE_REMOVED
+Date: Tue, 25 Feb 2014 15:28:35 +0800
+Message-Id: <1393313318-6341-3-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1393313318-6341-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1393313318-6341-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,41 +38,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The series of patches intends to improve reliability of EEH on PowerNV
-platform. First all, we have had multiple duplicate states (flags) for
-PHB and PE, so we remove those duplicate states to simplify the code.
-Besides, we had corrupted PHB diag-data for case of frozen PE. In order
-to solve the problem, we introduce eeh_ops->event() and notifications
-are sent from EEH core to (PowerNV) platform on creating or destroying
-PE instance so that we can allocate or free PHB diag-data backend. Then
-we cache the PHB diag-data on the first call to eeh_ops->get_state()
-and dump it afterwards, which helps to get correct PHB diag-data.
+The PHB state PNV_EEH_STATE_REMOVED maintained in pnv_phb isn't
+so useful any more and it's duplicated to EEH_PE_ISOLATED. The
+patch replaces PNV_EEH_STATE_REMOVED with EEH_PE_ISOLATED.
 
-With the patchset applied, we never dump PHB diag-data for INF errors.
-Instead, we just maintain statistics in /proc/powerpc/eeh_inf_err. Also,
-we changed the PHB diag-data dump format for a bit to have multiple
-fields per line and omits the line with all zero'd fields as Ben suggested.
-
-v2 -> v3:
-	* We don't cache the PHB diag-data, instead we just grab and
-	  dump PHB diag-data on the first catch-up to avoid broken
-	  PHB diag-data.
-v1 -> v2:
-	* Amending commit logs
-	* Support eeh_ops->event() and maintain PHB diag-data on basis
-	  of PE instance
-	* When dumping PHB diag-data, to replace "-" with "00000000" and
-	  omit the line if the fields of it are all zeros.
-
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
+ arch/powerpc/platforms/powernv/eeh-ioda.c |   56 ++++++++---------------------
+ arch/powerpc/platforms/powernv/pci.h      |    1 -
+ 2 files changed, 15 insertions(+), 42 deletions(-)
 
-arch/powerpc/include/asm/eeh.h            |    1 -
-arch/powerpc/kernel/eeh.c                 |   10 +---
-arch/powerpc/kernel/eeh_driver.c          |   10 ++--
-arch/powerpc/platforms/powernv/eeh-ioda.c |  137 ++++++++++++++++++++--------------------------
-arch/powerpc/platforms/powernv/pci.c      |  228 ++++++++++++++++++++++++++++++++++++++++++---------------------------
-arch/powerpc/platforms/powernv/pci.h      |    8 +--
-6 files changed, 195 insertions(+), 199 deletions(-)
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index f514743..0d1d424 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -662,22 +662,6 @@ static void ioda_eeh_phb_diag(struct pci_controller *hose)
+ 	pnv_pci_dump_phb_diag_data(hose, phb->diag.blob);
+ }
+ 
+-static int ioda_eeh_get_phb_pe(struct pci_controller *hose,
+-			       struct eeh_pe **pe)
+-{
+-	struct eeh_pe *phb_pe;
+-
+-	phb_pe = eeh_phb_pe_get(hose);
+-	if (!phb_pe) {
+-		pr_warning("%s Can't find PE for PHB#%d\n",
+-			   __func__, hose->global_number);
+-		return -EEXIST;
+-	}
+-
+-	*pe = phb_pe;
+-	return 0;
+-}
+-
+ static int ioda_eeh_get_pe(struct pci_controller *hose,
+ 			   u16 pe_no, struct eeh_pe **pe)
+ {
+@@ -685,7 +669,8 @@ static int ioda_eeh_get_pe(struct pci_controller *hose,
+ 	struct eeh_dev dev;
+ 
+ 	/* Find the PHB PE */
+-	if (ioda_eeh_get_phb_pe(hose, &phb_pe))
++	phb_pe = eeh_phb_pe_get(hose);
++	if (!phb_pe)
+ 		return -EEXIST;
+ 
+ 	/* Find the PE according to PE# */
+@@ -713,6 +698,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ {
+ 	struct pci_controller *hose;
+ 	struct pnv_phb *phb;
++	struct eeh_pe *phb_pe;
+ 	u64 frozen_pe_no;
+ 	u16 err_type, severity;
+ 	long rc;
+@@ -729,10 +715,12 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 	list_for_each_entry(hose, &hose_list, list_node) {
+ 		/*
+ 		 * If the subordinate PCI buses of the PHB has been
+-		 * removed, we needn't take care of it any more.
++		 * removed or is exactly under error recovery, we
++		 * needn't take care of it any more.
+ 		 */
+ 		phb = hose->private_data;
+-		if (phb->eeh_state & PNV_EEH_STATE_REMOVED)
++		phb_pe = eeh_phb_pe_get(hose);
++		if (!phb_pe || (phb_pe->state & EEH_PE_ISOLATED))
+ 			continue;
+ 
+ 		rc = opal_pci_next_error(phb->opal_id,
+@@ -765,12 +753,6 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 		switch (err_type) {
+ 		case OPAL_EEH_IOC_ERROR:
+ 			if (severity == OPAL_EEH_SEV_IOC_DEAD) {
+-				list_for_each_entry(hose, &hose_list,
+-						    list_node) {
+-					phb = hose->private_data;
+-					phb->eeh_state |= PNV_EEH_STATE_REMOVED;
+-				}
+-
+ 				pr_err("EEH: dead IOC detected\n");
+ 				ret = EEH_NEXT_ERR_DEAD_IOC;
+ 			} else if (severity == OPAL_EEH_SEV_INF) {
+@@ -783,17 +765,12 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 			break;
+ 		case OPAL_EEH_PHB_ERROR:
+ 			if (severity == OPAL_EEH_SEV_PHB_DEAD) {
+-				if (ioda_eeh_get_phb_pe(hose, pe))
+-					break;
+-
++				*pe = phb_pe;
+ 				pr_err("EEH: dead PHB#%x detected\n",
+ 					hose->global_number);
+-				phb->eeh_state |= PNV_EEH_STATE_REMOVED;
+ 				ret = EEH_NEXT_ERR_DEAD_PHB;
+ 			} else if (severity == OPAL_EEH_SEV_PHB_FENCED) {
+-				if (ioda_eeh_get_phb_pe(hose, pe))
+-					break;
+-
++				*pe = phb_pe;
+ 				pr_err("EEH: fenced PHB#%x detected\n",
+ 					hose->global_number);
+ 				ret = EEH_NEXT_ERR_FENCED_PHB;
+@@ -813,15 +790,12 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 			 * fenced PHB so that it can be recovered.
+ 			 */
+ 			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe)) {
+-				if (!ioda_eeh_get_phb_pe(hose, pe)) {
+-					pr_err("EEH: Escalated fenced PHB#%x "
+-					       "detected for PE#%llx\n",
+-						hose->global_number,
+-						frozen_pe_no);
+-					ret = EEH_NEXT_ERR_FENCED_PHB;
+-				} else {
+-					ret = EEH_NEXT_ERR_NONE;
+-				}
++				*pe = phb_pe;
++				pr_err("EEH: Escalated fenced PHB#%x "
++				       "detected for PE#%llx\n",
++					hose->global_number,
++					frozen_pe_no);
++				ret = EEH_NEXT_ERR_FENCED_PHB;
+ 			} else {
+ 				pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
+ 					(*pe)->addr, (*pe)->phb->global_number);
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index cde1694..6870f60 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -83,7 +83,6 @@ struct pnv_eeh_ops {
+ };
+ 
+ #define PNV_EEH_STATE_ENABLED	(1 << 0)	/* EEH enabled	*/
+-#define PNV_EEH_STATE_REMOVED	(1 << 1)	/* PHB removed	*/
+ 
+ #endif /* CONFIG_EEH */
+ 
+-- 
+1.7.10.4
