@@ -1,33 +1,41 @@
-Return-Path: <mattst88@gmail.com>
-Received: from mail-qc0-x231.google.com (mail-qc0-x231.google.com
- [IPv6:2607:f8b0:400d:c01::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6276E2C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 04:40:39 +1100 (EST)
-Received: by mail-qc0-f177.google.com with SMTP id m20so2632533qcx.22
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 09:40:36 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 6FF5A2C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 07:34:11 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Tue, 25 Feb 2014 13:34:09 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7552B19D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 13:34:05 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1PKY7OI786768
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 21:34:07 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s1PKbX54014547
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 13:37:34 -0700
+Message-ID: <530CFE30.70803@linux.vnet.ibm.com>
+Date: Tue, 25 Feb 2014 12:33:52 -0800
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
-References: <1391407232-4623-1-git-send-email-takahiro.akashi@linaro.org>
- <1393319784-2758-1-git-send-email-takahiro.akashi@linaro.org>
- <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
-From: Matt Turner <mattst88@gmail.com>
-Date: Tue, 25 Feb 2014 09:40:15 -0800
-Message-ID: <CAEdQ38Hf=vEXEKhYaduR8HAcXyChQ-Wo7rHPGs20DirVwkDAxw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/1] audit: Add CONFIG_HAVE_ARCH_AUDITSYSCALL
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linaro-kernel@lists.linaro.org,
- linux-ia64@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- linux-sh@vger.kernel.org, rgb@redhat.com, catalin.marinas@arm.com,
- x86@kernel.org, Will Deacon <will.deacon@arm.com>, arndb@arndb.de,
- eparis@redhat.com, LKML <linux-kernel@vger.kernel.org>,
- linux-alpha <linux-alpha@vger.kernel.org>, dsaxena@linaro.org,
- Al Viro <viro@zeniv.linux.org.uk>, user-mode-linux-user@lists.sourceforge.net,
- linux-audit@redhat.com, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH v2 01/11] perf: add PMU_RANGE_ATTR() helper for use by
+ sw-like pmus
+References: <20140225033326.135BB2C0227@ozlabs.org>
+In-Reply-To: <20140225033326.135BB2C0227@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,42 +45,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 25, 2014 at 1:16 AM, AKASHI Takahiro
-<takahiro.akashi@linaro.org> wrote:
-> Currently AUDITSYSCALL has a long list of architecture depencency:
->        depends on AUDIT && (X86 || PARISC || PPC || S390 || IA64 || UML ||
->                 SPARC64 || SUPERH || (ARM && AEABI && !OABI_COMPAT) || ALPHA)
-> The purpose of this patch is to replace it with HAVE_ARCH_AUDITSYSCALL
-> for simplicity.
+On 02/24/2014 07:33 PM, Michael Ellerman wrote:
+> On Fri, 2014-14-02 at 22:02:05 UTC, Cody P Schafer wrote:
+>> Add PMU_RANGE_ATTR() and PMU_RANGE_RESV() (for reserved areas) which
+>> generate functions to extract the relevent bits from
+>> event->attr.config{,1,2} for use by sw-like pmus where the
+>> 'config{,1,2}' values don't map directly to hardware registers.
+>>
+>> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+>> ---
+>>   include/linux/perf_event.h | 17 +++++++++++++++++
+>>   1 file changed, 17 insertions(+)
+>>
+>> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+>> index e56b07f..2702e91 100644
+>> --- a/include/linux/perf_event.h
+>> +++ b/include/linux/perf_event.h
+>> @@ -871,4 +871,21 @@ _name##_show(struct device *dev,					\
+>>   									\
+>>   static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
+>>
+>> +#define PMU_RANGE_ATTR(name, attr_var, bit_start, bit_end)		\
+>> +PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);		\
+>> +PMU_RANGE_RESV(name, attr_var, bit_start, bit_end)
+>> +
+>> +#define PMU_RANGE_RESV(name, attr_var, bit_start, bit_end)		\
+>> +static u64 event_get_##name##_max(void)					\
+>> +{									\
+>> +	int bits = (bit_end) - (bit_start) + 1;				\
+>> +	return ((0x1ULL << (bits - 1ULL)) - 1ULL) |			\
+>> +		(0xFULL << (bits - 4ULL));				\
+>> +}									\
+>> +static u64 event_get_##name(struct perf_event *event)			\
+>> +{									\
+>> +	return (event->attr.attr_var >> (bit_start)) &			\
+>> +		event_get_##name##_max();				\
+>> +}
 >
-> Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
-> ---
->  arch/alpha/Kconfig     |    1 +
->  arch/arm/Kconfig       |    1 +
->  arch/ia64/Kconfig      |    1 +
->  arch/parisc/Kconfig    |    1 +
->  arch/powerpc/Kconfig   |    1 +
->  arch/s390/Kconfig      |    1 +
->  arch/sh/Kconfig        |    1 +
->  arch/sparc/Kconfig     |    1 +
->  arch/um/Kconfig.common |    1 +
->  arch/x86/Kconfig       |    1 +
->  init/Kconfig           |    5 ++++-
->  11 files changed, 14 insertions(+), 1 deletion(-)
+> I still don't like the names.
 >
-> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-> index f6c6b34..b7ff9a3 100644
-> --- a/arch/alpha/Kconfig
-> +++ b/arch/alpha/Kconfig
-> @@ -22,6 +22,7 @@ config ALPHA
->         select GENERIC_SMP_IDLE_THREAD
->         select GENERIC_STRNCPY_FROM_USER
->         select GENERIC_STRNLEN_USER
-> +       select HAVE_ARCH_AUDITSYSCALL
->         select HAVE_MOD_ARCH_SPECIFIC
->         select MODULES_USE_ELF_RELA
->         select ODD_RT_SIGACTION
+> EVENT_GETTER_AND_FORMAT()
 
-Thanks.
+EVENT_RANGE()
 
-Acked-by: Matt Turner <mattst88@gmail.com>
+I'd prefer to describe the intended usage rather than what is generated 
+both in case we change some of the specifics later, and to provide 
+additional information to the developers beyond what a simple code 
+reading gives.
+
+> EVENT_RESERVED()
+
+Sure. The PMU_* naming was just based on the PMU_FORMAT_ATTR() naming, 
+so I kept it for continuity with the existing API. Maybe 
+EVENT_RANGE_RESERVED() would be more appropriate?
+
+> ?
+>
+> It's not clear to me the max routine is useful in general. Can't we just do:
+>
+>> +#define EVENT_RESERVED(name, attr_var, bit_start, bit_end)		\
+>> +static u64 event_get_##name(struct perf_event *event)		\
+>> +{									\
+>> +	return (event->attr.attr_var >> (bit_start)) &			\
+>> +		((0x1ULL << ((bit_end) - (bit_start) + 1)) - 1ULL);	\
+>> +}
+
+I use event_get_*_max() for some checking of parameters in event_init(). 
+Having it lets me avoid specifying the maximum explicitly (0x7ffff = 
+0-19, for example). Specifying it explicitly would mean we'd have the 
+bit width of the field in question encoded in two places instead of one, 
+and I'd prefer to avoid unneeded duplication.
