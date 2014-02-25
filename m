@@ -1,20 +1,37 @@
-Return-Path: <amurray@embedded-bits.co.uk>
-Received: from mail-we0-f181.google.com (mail-we0-f181.google.com
- [74.125.82.181])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A65BE2C0228
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:32:28 +1100 (EST)
-Received: by mail-we0-f181.google.com with SMTP id w61so5465937wes.40
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2014 22:32:24 -0800 (PST)
-From: Andrew Murray <amurray@embedded-bits.co.uk>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pci: Use of_pci_range_parser helper in
- pci_process_bridge_OF_ranges
-Date: Tue, 25 Feb 2014 06:32:11 +0000
-Message-Id: <1393309931-20405-1-git-send-email-amurray@embedded-bits.co.uk>
-Cc: linux-pci@vger.kernel.org, bhelgass@google.com,
- Andrew Murray <amurray@embedded-bits.co.uk>
+ by ozlabs.org (Postfix) with ESMTPS id 0BFF92C00D5
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 18:26:48 +1100 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 25 Feb 2014 02:26:45 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id BCB60C90026
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 02:26:39 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1P7QgBJ51904638
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 07:26:42 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1P7Qgje027632
+ for <linuxppc-dev@ozlabs.org>; Tue, 25 Feb 2014 02:26:42 -0500
+Date: Tue, 25 Feb 2014 15:26:26 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 0/9] EEH improvement
+Message-ID: <20140225072626.GA30401@shangw.(null)>
+References: <1393306670-17435-1-git-send-email-shangw@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1393306670-17435-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,171 +41,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch updates the implementation of pci_process_bridge_OF_ranges to use
-the of_pci_range_parser helpers.
+On Tue, Feb 25, 2014 at 01:37:41PM +0800, Gavin Shan wrote:
+>The series of patches intends to improve reliability of EEH on PowerNV
+>platform. First all, we have had multiple duplicate states (flags) for
+>PHB and PE, so we remove those duplicate states to simplify the code.
+>Besides, we had corrupted PHB diag-data for case of frozen PE. In order
+>to solve the problem, we introduce eeh_ops->event() and notifications
+>are sent from EEH core to (PowerNV) platform on creating or destroying
+>PE instance so that we can allocate or free PHB diag-data backend. Then
+>we cache the PHB diag-data on the first call to eeh_ops->get_state()
+>and dump it afterwards, which helps to get correct PHB diag-data.
+>
+>With the patchset applied, we never dump PHB diag-data for INF errors.
+>Instead, we just maintain statistics in /proc/powerpc/eeh_inf_err. Also,
+>we changed the PHB diag-data dump format for a bit to have multiple
+>fields per line and omits the line with all zero'd fields as Ben suggested.
+>
+>
+>v1 -> v2:
+>	* Amending commit logs
+>	* Support eeh_ops->event() and maintain PHB diag-data on basis
+>	  of PE instance
+>	* When dumping PHB diag-data, to replace "-" with "00000000" and
+>	  omit the line if the fields of it are all zeros.
+>
 
-Signed-off-by: Andrew Murray <amurray@embedded-bits.co.uk>
----
-I've verified that this builds, however I have no hardware to test this.
----
- arch/powerpc/kernel/pci-common.c | 88 +++++++++++++---------------------------
- 1 file changed, 29 insertions(+), 59 deletions(-)
+Please ignore this and I'm going to send out v3 where we just
+grab and dump the PHB diag-data (without cache any more) as
+Ben suggested :-)
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index d9476c1..a05fe18 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -666,60 +666,36 @@ void pci_resource_to_user(const struct pci_dev *dev, int bar,
- void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 				  struct device_node *dev, int primary)
- {
--	const __be32 *ranges;
--	int rlen;
--	int pna = of_n_addr_cells(dev);
--	int np = pna + 5;
- 	int memno = 0;
--	u32 pci_space;
--	unsigned long long pci_addr, cpu_addr, pci_next, cpu_next, size;
- 	struct resource *res;
-+	struct of_pci_range range;
-+	struct of_pci_range_parser parser;
- 
- 	printk(KERN_INFO "PCI host bridge %s %s ranges:\n",
- 	       dev->full_name, primary ? "(primary)" : "");
- 
--	/* Get ranges property */
--	ranges = of_get_property(dev, "ranges", &rlen);
--	if (ranges == NULL)
-+	/* Check for ranges property */
-+	if (of_pci_range_parser_init(&parser, dev))
- 		return;
- 
- 	/* Parse it */
--	while ((rlen -= np * 4) >= 0) {
--		/* Read next ranges element */
--		pci_space = of_read_number(ranges, 1);
--		pci_addr = of_read_number(ranges + 1, 2);
--		cpu_addr = of_translate_address(dev, ranges + 3);
--		size = of_read_number(ranges + pna + 3, 2);
--		ranges += np;
--
-+	for_each_of_pci_range(&parser, &range) {
- 		/* If we failed translation or got a zero-sized region
- 		 * (some FW try to feed us with non sensical zero sized regions
- 		 * such as power3 which look like some kind of attempt at exposing
- 		 * the VGA memory hole)
- 		 */
--		if (cpu_addr == OF_BAD_ADDR || size == 0)
-+		if (range.cpu_addr == OF_BAD_ADDR || range.size == 0)
- 			continue;
- 
--		/* Now consume following elements while they are contiguous */
--		for (; rlen >= np * sizeof(u32);
--		     ranges += np, rlen -= np * 4) {
--			if (of_read_number(ranges, 1) != pci_space)
--				break;
--			pci_next = of_read_number(ranges + 1, 2);
--			cpu_next = of_translate_address(dev, ranges + 3);
--			if (pci_next != pci_addr + size ||
--			    cpu_next != cpu_addr + size)
--				break;
--			size += of_read_number(ranges + pna + 3, 2);
--		}
--
- 		/* Act based on address space type */
- 		res = NULL;
--		switch ((pci_space >> 24) & 0x3) {
--		case 1:		/* PCI IO space */
-+		switch (range.flags & IORESOURCE_TYPE_BITS) {
-+		case IORESOURCE_IO:
- 			printk(KERN_INFO
- 			       "  IO 0x%016llx..0x%016llx -> 0x%016llx\n",
--			       cpu_addr, cpu_addr + size - 1, pci_addr);
-+			       range.cpu_addr, range.cpu_addr + range.size - 1,
-+			       range.pci_addr);
- 
- 			/* We support only one IO range */
- 			if (hose->pci_io_size) {
-@@ -729,11 +705,12 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			}
- #ifdef CONFIG_PPC32
- 			/* On 32 bits, limit I/O space to 16MB */
--			if (size > 0x01000000)
--				size = 0x01000000;
-+			if (range.size > 0x01000000)
-+				range.size = 0x01000000;
- 
- 			/* 32 bits needs to map IOs here */
--			hose->io_base_virt = ioremap(cpu_addr, size);
-+			hose->io_base_virt = ioremap(range.cpu_addr,
-+						range.size);
- 
- 			/* Expect trouble if pci_addr is not 0 */
- 			if (primary)
-@@ -743,20 +720,20 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			/* pci_io_size and io_base_phys always represent IO
- 			 * space starting at 0 so we factor in pci_addr
- 			 */
--			hose->pci_io_size = pci_addr + size;
--			hose->io_base_phys = cpu_addr - pci_addr;
-+			hose->pci_io_size = range.pci_addr + range.size;
-+			hose->io_base_phys = range.cpu_addr - range.pci_addr;
- 
- 			/* Build resource */
- 			res = &hose->io_resource;
--			res->flags = IORESOURCE_IO;
--			res->start = pci_addr;
-+			range.cpu_addr = range.pci_addr;
- 			break;
--		case 2:		/* PCI Memory space */
--		case 3:		/* PCI 64 bits Memory space */
-+		case IORESOURCE_MEM:
- 			printk(KERN_INFO
- 			       " MEM 0x%016llx..0x%016llx -> 0x%016llx %s\n",
--			       cpu_addr, cpu_addr + size - 1, pci_addr,
--			       (pci_space & 0x40000000) ? "Prefetch" : "");
-+			       range.cpu_addr, range.cpu_addr + range.size - 1,
-+			       range.pci_addr,
-+			       (range.pci_space & 0x40000000) ?
-+			       "Prefetch" : "");
- 
- 			/* We support only 3 memory ranges */
- 			if (memno >= 3) {
-@@ -765,28 +742,21 @@ void pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 				continue;
- 			}
- 			/* Handles ISA memory hole space here */
--			if (pci_addr == 0) {
-+			if (range.pci_addr == 0) {
- 				if (primary || isa_mem_base == 0)
--					isa_mem_base = cpu_addr;
--				hose->isa_mem_phys = cpu_addr;
--				hose->isa_mem_size = size;
-+					isa_mem_base = range.cpu_addr;
-+				hose->isa_mem_phys = range.cpu_addr;
-+				hose->isa_mem_size = range.size;
- 			}
- 
- 			/* Build resource */
--			hose->mem_offset[memno] = cpu_addr - pci_addr;
-+			hose->mem_offset[memno] = range.cpu_addr -
-+							range.pci_addr;
- 			res = &hose->mem_resources[memno++];
--			res->flags = IORESOURCE_MEM;
--			if (pci_space & 0x40000000)
--				res->flags |= IORESOURCE_PREFETCH;
--			res->start = cpu_addr;
- 			break;
- 		}
- 		if (res != NULL) {
--			res->name = dev->full_name;
--			res->end = res->start + size - 1;
--			res->parent = NULL;
--			res->sibling = NULL;
--			res->child = NULL;
-+			of_pci_range_to_resource(&range, dev, res);
- 		}
- 	}
- }
--- 
-1.8.3.2
+Thanks,
+Gavin
+
+>---
+>
+>arch/powerpc/include/asm/eeh.h               |    7 ++-
+>arch/powerpc/kernel/eeh.c                    |   10 +---
+>arch/powerpc/kernel/eeh_driver.c             |   10 ++--
+>arch/powerpc/kernel/eeh_pe.c                 |   39 ++++++++++++-
+>arch/powerpc/platforms/powernv/eeh-ioda.c    |  193 ++++++++++++++++++++++++++++++++++++-------------------------
+>arch/powerpc/platforms/powernv/eeh-powernv.c |   74 +++++++++++++++++++-----
+>arch/powerpc/platforms/powernv/pci.c         |  228 +++++++++++++++++++++++++++++++++++++++++-------------------------
+>arch/powerpc/platforms/powernv/pci.h         |   11 ++--
+>arch/powerpc/platforms/pseries/eeh_pseries.c |    3 +-
+>9 files changed, 358 insertions(+), 217 deletions(-)
+>
+>Thanks,
+>Gavin
+>
