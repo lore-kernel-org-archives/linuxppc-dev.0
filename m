@@ -1,40 +1,26 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9281A2C00B3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 07:35:31 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 13:35:29 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 41FB53E40048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 13:35:27 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1PIWkoW6947094
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 19:32:46 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s1PKcr5H018560
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 13:38:54 -0700
-Message-ID: <530CFE7F.7030300@linux.vnet.ibm.com>
-Date: Tue, 25 Feb 2014 12:35:11 -0800
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+Return-Path: <rgb@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 790412C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 02:26:16 +1100 (EST)
+Date: Tue, 25 Feb 2014 10:25:35 -0500
+From: Richard Guy Briggs <rgb@redhat.com>
+To: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Subject: Re: [PATCH v2 1/1] audit: Add CONFIG_HAVE_ARCH_AUDITSYSCALL
+Message-ID: <20140225152535.GG16640@madcap2.tricolour.ca>
+References: <1391407232-4623-1-git-send-email-takahiro.akashi@linaro.org>
+ <1393319784-2758-1-git-send-email-takahiro.akashi@linaro.org>
+ <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v2 05/11] powerpc: add hv_gpci interface header
-References: <20140225033328.1D5652C030B@ozlabs.org>
-In-Reply-To: <20140225033328.1D5652C030B@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
+Cc: linux-s390@vger.kernel.org, linaro-kernel@lists.linaro.org,
+ linux-ia64@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ catalin.marinas@arm.com, x86@kernel.org, will.deacon@arm.com,
+ linux-kernel@vger.kernel.org, eparis@redhat.com, linux-audit@redhat.com,
+ user-mode-linux-user@lists.sourceforge.net, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,16 +30,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/24/2014 07:33 PM, Michael Ellerman wrote:
-> On Fri, 2014-14-02 at 22:02:09 UTC, Cody P Schafer wrote:
->> "H_GetPerformanceCounterInfo" (refered to as hv_gpci or just gpci from
->> here on) is an interface to retrieve specific performance counters and
->> other data from the hypervisor. All outputs have a fixed format (and
->> are represented as structs in this patch).
->
-> I still see unused stuff in here, can you strip it back to just what we need.
-> Same goes for the next patch.
->
+On 14/02/25, AKASHI Takahiro wrote:
+> Currently AUDITSYSCALL has a long list of architecture depencency:
+>        depends on AUDIT && (X86 || PARISC || PPC || S390 || IA64 || UML ||
+> 		SPARC64 || SUPERH || (ARM && AEABI && !OABI_COMPAT) || ALPHA)
+> The purpose of this patch is to replace it with HAVE_ARCH_AUDITSYSCALL
+> for simplicity.
+> 
+> Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
 
-Sure, I can remove the unused structures and enum entries (hadn't 
-realized you wanted that in the last review).
+Acked-by: Richard Guy Briggs <rgb@redhat.com>
+
+> ---
+>  arch/alpha/Kconfig     |    1 +
+>  arch/arm/Kconfig       |    1 +
+>  arch/ia64/Kconfig      |    1 +
+>  arch/parisc/Kconfig    |    1 +
+>  arch/powerpc/Kconfig   |    1 +
+>  arch/s390/Kconfig      |    1 +
+>  arch/sh/Kconfig        |    1 +
+>  arch/sparc/Kconfig     |    1 +
+>  arch/um/Kconfig.common |    1 +
+>  arch/x86/Kconfig       |    1 +
+>  init/Kconfig           |    5 ++++-
+>  11 files changed, 14 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+> index f6c6b34..b7ff9a3 100644
+> --- a/arch/alpha/Kconfig
+> +++ b/arch/alpha/Kconfig
+> @@ -22,6 +22,7 @@ config ALPHA
+>  	select GENERIC_SMP_IDLE_THREAD
+>  	select GENERIC_STRNCPY_FROM_USER
+>  	select GENERIC_STRNLEN_USER
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  	select HAVE_MOD_ARCH_SPECIFIC
+>  	select MODULES_USE_ELF_RELA
+>  	select ODD_RT_SIGACTION
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index e254198..ca79340 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -24,6 +24,7 @@ config ARM
+>  	select GENERIC_STRNCPY_FROM_USER
+>  	select GENERIC_STRNLEN_USER
+>  	select HARDIRQS_SW_RESEND
+> +	select HAVE_ARCH_AUDITSYSCALL if (AEABI && !OABI_COMPAT)
+>  	select HAVE_ARCH_JUMP_LABEL if !XIP_KERNEL
+>  	select HAVE_ARCH_KGDB
+>  	select HAVE_ARCH_SECCOMP_FILTER if (AEABI && !OABI_COMPAT)
+> diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+> index 0c8e553..5409bf4 100644
+> --- a/arch/ia64/Kconfig
+> +++ b/arch/ia64/Kconfig
+> @@ -44,6 +44,7 @@ config IA64
+>  	select HAVE_MOD_ARCH_SPECIFIC
+>  	select MODULES_USE_ELF_RELA
+>  	select ARCH_USE_CMPXCHG_LOCKREF
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  	default y
+>  	help
+>  	  The Itanium Processor Family is Intel's 64-bit successor to
+> diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+> index bb2a8ec..1faefed 100644
+> --- a/arch/parisc/Kconfig
+> +++ b/arch/parisc/Kconfig
+> @@ -28,6 +28,7 @@ config PARISC
+>  	select CLONE_BACKWARDS
+>  	select TTY # Needed for pdc_cons.c
+>  	select HAVE_DEBUG_STACKOVERFLOW
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  
+>  	help
+>  	  The PA-RISC microprocessor is designed by Hewlett-Packard and used
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 957bf34..7b3b8fe 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -141,6 +141,7 @@ config PPC
+>  	select HAVE_DEBUG_STACKOVERFLOW
+>  	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+>  	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  
+>  config GENERIC_CSUM
+>  	def_bool CPU_LITTLE_ENDIAN
+> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+> index 65a0775..1b58568 100644
+> --- a/arch/s390/Kconfig
+> +++ b/arch/s390/Kconfig
+> @@ -103,6 +103,7 @@ config S390
+>  	select GENERIC_SMP_IDLE_THREAD
+>  	select GENERIC_TIME_VSYSCALL
+>  	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  	select HAVE_ARCH_JUMP_LABEL if !MARCH_G5
+>  	select HAVE_ARCH_SECCOMP_FILTER
+>  	select HAVE_ARCH_TRACEHOOK
+> diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+> index 6357710..4addd87 100644
+> --- a/arch/sh/Kconfig
+> +++ b/arch/sh/Kconfig
+> @@ -42,6 +42,7 @@ config SUPERH
+>  	select MODULES_USE_ELF_RELA
+>  	select OLD_SIGSUSPEND
+>  	select OLD_SIGACTION
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  	help
+>  	  The SuperH is a RISC processor targeted for use in embedded systems
+>  	  and consumer electronics; it was also used in the Sega Dreamcast
+> diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
+> index c51efdc..9c74d6b 100644
+> --- a/arch/sparc/Kconfig
+> +++ b/arch/sparc/Kconfig
+> @@ -77,6 +77,7 @@ config SPARC64
+>  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>  	select HAVE_C_RECORDMCOUNT
+>  	select NO_BOOTMEM
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  
+>  config ARCH_DEFCONFIG
+>  	string
+> diff --git a/arch/um/Kconfig.common b/arch/um/Kconfig.common
+> index 21ca44c..6915d28 100644
+> --- a/arch/um/Kconfig.common
+> +++ b/arch/um/Kconfig.common
+> @@ -1,6 +1,7 @@
+>  config UML
+>  	bool
+>  	default y
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  	select HAVE_UID16
+>  	select GENERIC_IRQ_SHOW
+>  	select GENERIC_CPU_DEVICES
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 0af5250..2938365 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -127,6 +127,7 @@ config X86
+>  	select HAVE_DEBUG_STACKOVERFLOW
+>  	select HAVE_IRQ_EXIT_ON_IRQ_STACK if X86_64
+>  	select HAVE_CC_STACKPROTECTOR
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  
+>  config INSTRUCTION_DECODER
+>  	def_bool y
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 009a797..d4ec53d 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -282,9 +282,12 @@ config AUDIT
+>  	  logging of avc messages output).  Does not do system-call
+>  	  auditing without CONFIG_AUDITSYSCALL.
+>  
+> +config HAVE_ARCH_AUDITSYSCALL
+> +	bool
+> +
+>  config AUDITSYSCALL
+>  	bool "Enable system-call auditing support"
+> -	depends on AUDIT && (X86 || PARISC || PPC || S390 || IA64 || UML || SPARC64 || SUPERH || (ARM && AEABI && !OABI_COMPAT) || ALPHA)
+> +	depends on AUDIT && HAVE_ARCH_AUDITSYSCALL
+>  	default y if SECURITY_SELINUX
+>  	help
+>  	  Enable low-overhead system-call auditing infrastructure that
+> -- 
+> 1.7.9.5
+> 
+
+- RGB
+
+--
+Richard Guy Briggs <rbriggs@redhat.com>
+Senior Software Engineer, Kernel Security, AMER ENG Base Operating Systems, Red Hat
+Remote, Ottawa, Canada
+Voice: +1.647.777.2635, Internal: (81) 32635, Alt: +1.613.693.0684x3545
