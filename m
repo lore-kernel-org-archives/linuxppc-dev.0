@@ -1,16 +1,25 @@
 Return-Path: <michael@ozlabs.org>
-In-Reply-To: <1392415338-16288-10-git-send-email-cody@linux.vnet.ibm.com>
+In-Reply-To: <1392415338-16288-11-git-send-email-cody@linux.vnet.ibm.com>
 To: Cody P Schafer <cody@linux.vnet.ibm.com>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Kumar Gala <galak@kernel.crashing.org>, Lijun Pan <Lijun.Pan@freescale.com>,
+ Li Yang <leoli@freescale.com>, Paul Bolle <pebolle@tiscali.nl>,
+ Priyanka Jain <Priyanka.Jain@freescale.com>,
+ Scott Wood <scottwood@freescale.com>,
+ Tang Yuantian <yuantian.tang@freescale.com>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 09/11] powerpc/perf: add support for the hv 24x7
- interface
-Message-Id: <20140225033329.BBB492C033B@ozlabs.org>
-Date: Tue, 25 Feb 2014 14:33:29 +1100 (EST)
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: [PATCH v2 10/11] powerpc/perf: add kconfig option for hypervisor
+ provided counters
+Message-Id: <20140225033330.54F332C02FB@ozlabs.org>
+Date: Tue, 25 Feb 2014 14:33:30 +1100 (EST)
+Cc: Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,231 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-14-02 at 22:02:13 UTC, Cody P Schafer wrote:
-> This provides a basic interface between hv_24x7 and perf. Similar to
-> the one provided for gpci, it lacks transaction support and does not
-> list any events.
-> 
+On Fri, 2014-14-02 at 22:02:14 UTC, Cody P Schafer wrote:
 > Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/perf/hv-24x7.c | 491 ++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 491 insertions(+)
->  create mode 100644 arch/powerpc/perf/hv-24x7.c
+>  arch/powerpc/perf/Makefile             | 2 ++
+>  arch/powerpc/platforms/Kconfig.cputype | 6 ++++++
+>  2 files changed, 8 insertions(+)
 > 
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> new file mode 100644
-> index 0000000..13de140
-> --- /dev/null
-> +++ b/arch/powerpc/perf/hv-24x7.c
-...
+> diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
+> index 60d71ee..f9c083a 100644
+> --- a/arch/powerpc/perf/Makefile
+> +++ b/arch/powerpc/perf/Makefile
+> @@ -11,5 +11,7 @@ obj32-$(CONFIG_PPC_PERF_CTRS)	+= mpc7450-pmu.o
+>  obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
+>  obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
+>  
+> +obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o
 > +
-> +/*
-> + * read_offset_data - copy data from one buffer to another while treating the
-> + *                    source buffer as a small view on the total avaliable
-> + *                    source data.
-> + *
-> + * @dest: buffer to copy into
-> + * @dest_len: length of @dest in bytes
-> + * @requested_offset: the offset within the source data we want. Must be > 0
-> + * @src: buffer to copy data from
-> + * @src_len: length of @src in bytes
-> + * @source_offset: the offset in the sorce data that (src,src_len) refers to.
-> + *                 Must be > 0
-> + *
-> + * returns the number of bytes copied.
-> + *
-> + * '.' areas in d are written to.
-> + *
-> + *                       u
-> + *   x         w	 v  z
-> + * d           |.........|
-> + * s |----------------------|
-> + *
-> + *                      u
-> + *   x         w	z     v
-> + * d           |........------|
-> + * s |------------------|
-> + *
-> + *   x         w        u,z,v
-> + * d           |........|
-> + * s |------------------|
-> + *
-> + *   x,w                u,v,z
-> + * d |------------------|
-> + * s |------------------|
-> + *
-> + *   x        u
-> + *   w        v		z
-> + * d |........|
-> + * s |------------------|
-> + *
-> + *   x      z   w      v
-> + * d            |------|
-> + * s |------|
-> + *
-> + * x = source_offset
-> + * w = requested_offset
-> + * z = source_offset + src_len
-> + * v = requested_offset + dest_len
-> + *
-> + * w_offset_in_s = w - x = requested_offset - source_offset
-> + * z_offset_in_s = z - x = src_len
-> + * v_offset_in_s = v - x = request_offset + dest_len - src_len
-> + * u_offset_in_s = min(z_offset_in_s, v_offset_in_s)
-> + *
-> + * copy_len = u_offset_in_s - w_offset_in_s = min(z_offset_in_s, v_offset_in_s)
-> + *						- w_offset_in_s
+>  obj-$(CONFIG_PPC64)		+= $(obj64-y)
+>  obj-$(CONFIG_PPC32)		+= $(obj32-y)
+> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> index 434fda3..dcc67cd 100644
+> --- a/arch/powerpc/platforms/Kconfig.cputype
+> +++ b/arch/powerpc/platforms/Kconfig.cputype
+> @@ -364,6 +364,12 @@ config PPC_PERF_CTRS
+>         help
+>           This enables the powerpc-specific perf_event back-end.
+>  
+> +config HV_PERF_CTRS
+> +       def_bool y
 
-Comments are great, especially for complicated code like this. But at a glance
-I don't actually understand what this comment is trying to tell me.
+This was bool, why did you change it?
 
-> + */
-> +static ssize_t read_offset_data(void *dest, size_t dest_len,
-> +				loff_t requested_offset, void *src,
-> +				size_t src_len, loff_t source_offset)
-> +{
-> +	size_t w_offset_in_s = requested_offset - source_offset;
-> +	size_t z_offset_in_s = src_len;
-> +	size_t v_offset_in_s = requested_offset + dest_len - src_len;
-> +	size_t u_offset_in_s = min(z_offset_in_s, v_offset_in_s);
-> +	size_t copy_len = u_offset_in_s - w_offset_in_s;
-> +
-> +	if (requested_offset < 0 || source_offset < 0)
-> +		return -EINVAL;
-> +
-> +	if (z_offset_in_s <= w_offset_in_s)
-> +		return 0;
-> +
-> +	memcpy(dest, src + w_offset_in_s, copy_len);
-> +	return copy_len;
-> +}
-> +
-> +static unsigned long h_get_24x7_catalog_page(char page[static 4096],
-> +					     u32 version, u32 index)
-> +{
-> +	WARN_ON(!IS_ALIGNED((unsigned long)page, 4096));
-> +	return plpar_hcall_norets(H_GET_24X7_CATALOG_PAGE,
-> +			virt_to_phys(page),
-> +			version,
-> +			index);
-> +}
-> +
-> +static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
-> +			    struct bin_attribute *bin_attr, char *buf,
-> +			    loff_t offset, size_t count)
-> +{
-> +	unsigned long hret;
-> +	ssize_t ret = 0;
-> +	size_t catalog_len = 0, catalog_page_len = 0, page_count = 0;
-> +	loff_t page_offset = 0;
-> +	uint32_t catalog_version_num = 0;
-> +	void *page = kmalloc(4096, GFP_USER);
-> +	struct hv_24x7_catalog_page_0 *page_0 = page;
-> +	if (!page)
-> +		return -ENOMEM;
-> +
-> +
-> +	hret = h_get_24x7_catalog_page(page, 0, 0);
-> +	if (hret) {
-> +		ret = -EIO;
-> +		goto e_free;
-> +	}
-> +
-> +	catalog_version_num = be32_to_cpu(page_0->version);
-> +	catalog_page_len = be32_to_cpu(page_0->length);
-> +	catalog_len = catalog_page_len * 4096;
-> +
-> +	page_offset = offset / 4096;
-> +	page_count  = count  / 4096;
-> +
-> +	if (page_offset >= catalog_page_len)
-> +		goto e_free;
-> +
-> +	if (page_offset != 0) {
-> +		hret = h_get_24x7_catalog_page(page, catalog_version_num,
-> +					       page_offset);
-> +		if (hret) {
-> +			ret = -EIO;
-> +			goto e_free;
-> +		}
-> +	}
-> +
-> +	ret = read_offset_data(buf, count, offset,
-> +				page, 4096, page_offset * 4096);
-> +e_free:
-> +	if (hret)
-> +		pr_err("h_get_24x7_catalog_page(ver=%d, page=%lld) failed: rc=%ld\n",
-> +				catalog_version_num, page_offset, hret);
-> +	kfree(page);
-> +
-> +	pr_devel("catalog_read: offset=%lld(%lld) count=%zu(%zu) catalog_len=%zu(%zu) => %zd\n",
-> +			offset, page_offset, count, page_count, catalog_len,
-> +			catalog_page_len, ret);
-> +
-> +	return ret;
-> +}
-> +
-> +#define PAGE_0_ATTR(_name, _fmt, _expr)				\
-> +static ssize_t _name##_show(struct device *dev,			\
-> +			    struct device_attribute *dev_attr,	\
-> +			    char *buf)				\
-> +{								\
-> +	unsigned long hret;					\
-> +	ssize_t ret = 0;					\
-> +	void *page = kmalloc(4096, GFP_USER);			\
-> +	struct hv_24x7_catalog_page_0 *page_0 = page;		\
-> +	if (!page)						\
-> +		return -ENOMEM;					\
-> +	hret = h_get_24x7_catalog_page(page, 0, 0);		\
-> +	if (hret) {						\
-> +		ret = -EIO;					\
-> +		goto e_free;					\
-> +	}							\
-> +	ret = sprintf(buf, _fmt, _expr);			\
-> +e_free:								\
-> +	kfree(page);						\
-> +	return ret;						\
-> +}								\
-> +static DEVICE_ATTR_RO(_name)
-> +
-> +PAGE_0_ATTR(catalog_version, "%lld\n",
-> +		(unsigned long long)be32_to_cpu(page_0->version));
-> +PAGE_0_ATTR(catalog_len, "%lld\n",
-> +		(unsigned long long)be32_to_cpu(page_0->length) * 4096);
-> +static BIN_ATTR_RO(catalog, 0/* real length varies */);
+> +       depends on PERF_EVENTS && PPC_HAVE_PMU_SUPPORT
 
-So we're dumping the catalog out as a binary blob.
+Should be:
 
-Why do we want to do that?
+	depends on PERF_EVENTS && PPC_PSERIES
 
-It clearly violates the sysfs rule-of-sorts of ASCII and one value per file.
-Obviously there can be exceptions, but what's our justification?
-
-> +static struct bin_attribute *if_bin_attrs[] = {
-> +	&bin_attr_catalog,
-> +	NULL,
-> +};
+> +       help
+> +         Enable access to perf counters provided by the hypervisor
 > +
-> +static struct attribute *if_attrs[] = {
-> +	&dev_attr_catalog_len.attr,
-> +	&dev_attr_catalog_version.attr,
-> +	NULL,
-> +};
-> +
-> +static struct attribute_group if_group = {
-> +	.name = "interface",
-> +	.bin_attrs = if_bin_attrs,
-> +	.attrs = if_attrs,
-> +};
-
-Both pmus have an "interface" directory, but they don't seem to have anything
-in common? Its feels a little ad-hoc.
-
-> +static const struct attribute_group *attr_groups[] = {
-> +	&format_group,
-> +	&if_group,
-> +	NULL,
-> +};
-
 
 cheers
