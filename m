@@ -1,43 +1,41 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BE65E2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 08:14:17 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4BE622C00A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 08:21:19 +1100 (EST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 14:14:15 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 035041FF003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 14:14:14 -0700 (MST)
+ Tue, 25 Feb 2014 14:21:17 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 910D219D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 14:21:13 -0700 (MST)
 Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1PLEDQN7995680
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 22:14:13 +0100
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1PJIYmi6881544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 20:18:34 +0100
 Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
  by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s1PLHeXf031905
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 14:17:41 -0700
-Message-ID: <530D0796.6020704@linux.vnet.ibm.com>
-Date: Tue, 25 Feb 2014 13:13:58 -0800
+ s1PLOfh0023079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 14:24:42 -0700
+Message-ID: <530D093B.1040500@linux.vnet.ibm.com>
+Date: Tue, 25 Feb 2014 13:20:59 -0800
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Michael Ellerman <mpe@ellerman.id.au>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>, Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH v2 04/11] powerpc: add hvcalls for 24x7 and gpci (get
- performance counter info)
-References: <20140225033327.878F52C0256@ozlabs.org>
-In-Reply-To: <20140225033327.878F52C0256@ozlabs.org>
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH v2 07/11] powerpc: add a shared interface to get gpci
+ version and capabilities
+References: <20140225033328.C5A9E2C0324@ozlabs.org>
+In-Reply-To: <20140225033328.C5A9E2C0324@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Ingo Molnar <mingo@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,25 +46,104 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 02/24/2014 07:33 PM, Michael Ellerman wrote:
-> On Fri, 2014-14-02 at 22:02:08 UTC, Cody P Schafer wrote:
+> [PATCH v2 07/11] powerpc: add a shared interface to get gpci version and capabilities
+>
+> All the patches that touch perf should be "powerpc/perf: foo"
+
+Ok.
+
+> On Fri, 2014-14-02 at 22:02:11 UTC, Cody P Schafer wrote:
+>> ...
+>
+> I realise this is a fairly small patch but a changelog is still nice. You could
+> for example mention that we don't currently use .ga, .expanded or .lab but
+> we're adding the logic anyway because ...
+>
+
+Well, we do use them to expose some more information to the user (via 
+sysfs attributes). Always nice to know what capabilities are enabled.
+
+But sure, I can explain why each bit in that structure is a good idea.
+
+>
 >> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 >> ---
->>   arch/powerpc/include/asm/hvcall.h | 5 +++++
->>   1 file changed, 5 insertions(+)
+>>   arch/powerpc/perf/hv-common.c | 39 +++++++++++++++++++++++++++++++++++++++
+>>   arch/powerpc/perf/hv-common.h | 17 +++++++++++++++++
+>>   2 files changed, 56 insertions(+)
+>>   create mode 100644 arch/powerpc/perf/hv-common.c
+>>   create mode 100644 arch/powerpc/perf/hv-common.h
 >>
->> diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
->> index d8b600b..652f7e4 100644
->> --- a/arch/powerpc/include/asm/hvcall.h
->> +++ b/arch/powerpc/include/asm/hvcall.h
->> @@ -274,6 +274,11 @@
->>   /* Platform specific hcalls, used by KVM */
->>   #define H_RTAS			0xf000
+>> diff --git a/arch/powerpc/perf/hv-common.c b/arch/powerpc/perf/hv-common.c
+>> new file mode 100644
+>> index 0000000..47e02b3
+>> --- /dev/null
+>> +++ b/arch/powerpc/perf/hv-common.c
+>> @@ -0,0 +1,39 @@
+>> +#include <asm/io.h>
+>> +#include <asm/hvcall.h>
+>> +
+>> +#include "hv-gpci.h"
+>> +#include "hv-common.h"
+>> +
+>> +unsigned long hv_perf_caps_get(struct hv_perf_caps *caps)
+>> +{
+>> +	unsigned long r;
+>> +	struct p {
+>> +		struct hv_get_perf_counter_info_params params;
+>> +		struct cv_system_performance_capabilities caps;
+>> +	} __packed __aligned(sizeof(uint64_t));
+>> +
+>> +	struct p arg = {
+>> +		.params = {
+>> +			.counter_request = cpu_to_be32(
+>> +					CIR_SYSTEM_PERFORMANCE_CAPABILITIES),
+>> +			.starting_index = cpu_to_be32(-1),
+>> +			.counter_info_version_in = 0,
+>> +		}
+>> +	};
+>> +
+>> +	r = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO,
+>> +			       virt_to_phys(&arg), sizeof(arg));
+>> +
+>> +	if (r)
+>> +		return r;
+>> +
+>> +	pr_devel("capability_mask: 0x%x\n", arg.caps.capability_mask);
+>> +
+>> +	caps->version = arg.params.counter_info_version_out;
+>> +	caps->collect_privileged = !!arg.caps.perf_collect_privileged;
+>> +	caps->ga = !!(arg.caps.capability_mask & CV_CM_GA);
+>> +	caps->expanded = !!(arg.caps.capability_mask & CV_CM_EXPANDED);
+>> +	caps->lab = !!(arg.caps.capability_mask & CV_CM_LAB);
+>> +
+>> +	return r;
+>> +}
+>> diff --git a/arch/powerpc/perf/hv-common.h b/arch/powerpc/perf/hv-common.h
+>> new file mode 100644
+>> index 0000000..7e615bd
+>> --- /dev/null
+>> +++ b/arch/powerpc/perf/hv-common.h
+>> @@ -0,0 +1,17 @@
+>> +#ifndef LINUX_POWERPC_PERF_HV_COMMON_H_
+>> +#define LINUX_POWERPC_PERF_HV_COMMON_H_
+>> +
+>> +#include <linux/types.h>
+>> +
+>> +struct hv_perf_caps {
+>> +	u16 version;
+>> +	u16 collect_privileged:1,
+>> +	    ga:1,
+>> +	    expanded:1,
+>> +	    lab:1,
+>> +	    unused:12;
+>> +};
+>> +
+>> +unsigned long hv_perf_caps_get(struct hv_perf_caps *caps);
+>> +
+>> +#endif
+>> --
+>> 1.8.5.4
 >>
->> +/* "Platform specific hcalls", provided by PHYP */
->> +#define H_GET_24X7_CATALOG_PAGE 0xF078
->> +#define H_GET_24X7_DATA		0xF07C
->> +#define H_GET_PERF_COUNTER_INFO 0xF080
+>>
 >
-> Some tabs some spaces, use tabs.
-
-Ack.
