@@ -1,39 +1,18 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A0672C0710
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 11:13:11 +1100 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 17:13:09 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 350C91FF003D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:13:06 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1PMAP867668050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 23:10:25 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1Q0D4T1028690
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:13:06 -0700
-Subject: [PATCH 7/7] cpuidle/powernv: Parse device tree to setup idle states
-To: linux-pm@vger.kernel.org, geoff@infradead.org, fweisbec@gmail.com,
- daniel.lezcano@linaro.org, srivatsa.bhat@linux.vnet.ibm.com,
- benh@kernel.crashing.org, tglx@linutronix.de,
- svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 26 Feb 2014 05:39:20 +0530
-Message-ID: <20140226000919.17879.87737.stgit@preeti>
-In-Reply-To: <20140226000310.17879.67295.stgit@preeti>
-References: <20140226000310.17879.67295.stgit@preeti>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: paulmck@linux.vnet.ibm.com, rafael.j.wysocki@intel.com
+ by ozlabs.org (Postfix) with ESMTPS id 8AAFB2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 13:21:09 +1100 (EST)
+Received: by mail-pa0-f52.google.com with SMTP id fb1so289005pad.25
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 18:21:05 -0800 (PST)
+From: Liu Ping Fan <kernelfans@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: ftrace: bugfix for test_24bit_addr
+Date: Wed, 26 Feb 2014 10:23:01 +0800
+Message-Id: <1393381381-30179-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,141 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add deep idle states such as nap and fast sleep to the cpuidle state table
-only if they are discovered from the device tree during cpuidle initialization.
+The branch target should be the func addr, not the addr of func_descr_t.
+So using ppc_function_entry() to generate the right target addr.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 ---
+This bug will make ftrace fail to work. It can be triggered when the kernel
+size grows up.
+---
+ arch/powerpc/kernel/ftrace.c | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/cpuidle/cpuidle-powernv.c |   82 +++++++++++++++++++++++++++++--------
- 1 file changed, 65 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 4fb97ce..fdae1c4 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -12,10 +12,17 @@
- #include <linux/cpu.h>
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
-+#include <linux/of.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
- 
-+/* Flags and constants used in PowerNV platform */
-+
-+#define MAX_POWERNV_IDLE_STATES	8
-+#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
-+#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
-+
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
- 	.owner            = THIS_MODULE,
-@@ -79,7 +86,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- /*
-  * States for dedicated partition case.
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 9b27b29..b0ded97 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -74,6 +74,7 @@ ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
   */
--static struct cpuidle_state powernv_states[] = {
-+static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
- 	{ /* Snooze */
- 		.name = "snooze",
- 		.desc = "snooze",
-@@ -87,20 +94,6 @@ static struct cpuidle_state powernv_states[] = {
- 		.exit_latency = 0,
- 		.target_residency = 0,
- 		.enter = &snooze_loop },
--	{ /* NAP */
--		.name = "NAP",
--		.desc = "NAP",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &nap_loop },
--	 { /* Fastsleep */
--		.name = "fastsleep",
--		.desc = "fastsleep",
--		.flags = CPUIDLE_FLAG_TIME_VALID,
--		.exit_latency = 10,
--		.target_residency = 100,
--		.enter = &fastsleep_loop },
- };
- 
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-@@ -161,19 +154,74 @@ static int powernv_cpuidle_driver_init(void)
- 	return 0;
- }
- 
-+static int powernv_add_idle_states(void)
-+{
-+	struct device_node *power_mgt;
-+	struct property *prop;
-+	int nr_idle_states = 1; /* Snooze */
-+	int dt_idle_states;
-+	u32 *flags;
-+	int i;
-+
-+	/* Currently we have snooze statically defined */
-+
-+	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
-+	if (!power_mgt) {
-+		pr_warn("opal: PowerMgmt Node not found\n");
-+		return nr_idle_states;
-+	}
-+
-+	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
-+	if (!prop) {
-+		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
-+		return nr_idle_states;
-+	}
-+
-+	dt_idle_states = prop->length / sizeof(u32);
-+	flags = (u32 *) prop->value;
-+
-+	for (i = 0; i < dt_idle_states; i++) {
-+
-+		if (flags[i] & IDLE_USE_INST_NAP) {
-+			/* Add NAP state */
-+			strcpy(powernv_states[nr_idle_states].name, "Nap");
-+			strcpy(powernv_states[nr_idle_states].desc, "Nap");
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
-+			powernv_states[nr_idle_states].exit_latency = 10;
-+			powernv_states[nr_idle_states].target_residency = 100;
-+			powernv_states[nr_idle_states].enter = &nap_loop;
-+			nr_idle_states++;
-+		}
-+
-+		if (flags[i] & IDLE_USE_INST_SLEEP) {
-+			/* Add FASTSLEEP state */
-+			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-+			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-+			powernv_states[nr_idle_states].flags =
-+				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
-+			powernv_states[nr_idle_states].exit_latency = 300;
-+			powernv_states[nr_idle_states].target_residency = 1000000;
-+			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			nr_idle_states++;
-+		}
-+	}
-+
-+	return nr_idle_states;
-+}
-+
- /*
-  * powernv_idle_probe()
-  * Choose state table for shared versus dedicated partition
-  */
- static int powernv_idle_probe(void)
+ static int test_24bit_addr(unsigned long ip, unsigned long addr)
  {
--
- 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
- 		return -ENODEV;
++	addr = ppc_function_entry((void *)addr);
  
- 	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
- 		cpuidle_state_table = powernv_states;
--		max_idle_state = ARRAY_SIZE(powernv_states);
-+		/* Device tree can indicate more idle states */
-+		max_idle_state = powernv_add_idle_states();
-  	} else
-  		return -ENODEV;
- 
+ 	/* use the create_branch to verify that this offset can be branched */
+ 	return create_branch((unsigned int *)ip, addr, 0);
+-- 
+1.8.1.4
