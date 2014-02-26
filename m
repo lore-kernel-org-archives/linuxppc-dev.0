@@ -1,35 +1,35 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6E8172C03FD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 11:11:32 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4EE322C04A5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 11:12:02 +1100 (EST)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 17:11:30 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 250DF19D8039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:11:27 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1Q0BSUE8913348
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 01:11:28 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s1Q0EsjZ007783
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:14:56 -0700
-Subject: [PATCH 2/7] powerpc: Implement tick broadcast IPI as a fixed IPI
- message
+ Tue, 25 Feb 2014 19:11:59 -0500
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 2971B6E803A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 19:11:52 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1Q0BvPw8257868
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 00:11:57 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1Q0Btoo030185
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 19:11:57 -0500
+Subject: [PATCH 3/7] cpuidle/ppc: Split timer_interrupt() into timer
+ handling and interrupt handling routines
 To: linux-pm@vger.kernel.org, geoff@infradead.org, fweisbec@gmail.com,
  daniel.lezcano@linaro.org, srivatsa.bhat@linux.vnet.ibm.com,
  benh@kernel.crashing.org, tglx@linutronix.de,
  svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 26 Feb 2014 05:37:43 +0530
-Message-ID: <20140226000742.17879.2821.stgit@preeti>
+Date: Wed, 26 Feb 2014 05:38:01 +0530
+Message-ID: <20140226000756.17879.32136.stgit@preeti>
 In-Reply-To: <20140226000310.17879.67295.stgit@preeti>
 References: <20140226000310.17879.67295.stgit@preeti>
 MIME-Version: 1.0
@@ -44,164 +44,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Split timer_interrupt(), which is the local timer interrupt handler on ppc
+into routines called during regular interrupt handling and __timer_interrupt(),
+which takes care of running local timers and collecting time related stats.
 
-For scalability and performance reasons, we want the tick broadcast IPIs
-to be handled as efficiently as possible. Fixed IPI messages
-are one of the most efficient mechanisms available - they are faster than
-the smp_call_function mechanism because the IPI handlers are fixed and hence
-they don't involve costly operations such as adding IPI handlers to the target
-CPU's function queue, acquiring locks for synchronization etc.
+This will enable callers interested only in running expired local timers to
+directly call into __timer_interupt(). One of the use cases of this is the
+tick broadcast IPI handling in which the sleeping CPUs need to handle the local
+timers that have expired.
 
-Luckily we have an unused IPI message slot, so use that to implement
-tick broadcast IPIs efficiently.
-
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-[Functions renamed to tick_broadcast* and Changelog modified by
- Preeti U. Murthy<preeti@linux.vnet.ibm.com>]
-Signed-off-by: Preeti U. Murthy <preeti@linux.vnet.ibm.com>
-Acked-by: Geoff Levand <geoff@infradead.org> [For the PS3 part]
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/include/asm/smp.h          |    2 +-
- arch/powerpc/include/asm/time.h         |    1 +
- arch/powerpc/kernel/smp.c               |   21 +++++++++++++++++----
- arch/powerpc/kernel/time.c              |    5 +++++
- arch/powerpc/platforms/cell/interrupt.c |    2 +-
- arch/powerpc/platforms/ps3/smp.c        |    2 +-
- 6 files changed, 26 insertions(+), 7 deletions(-)
+ arch/powerpc/kernel/time.c |   81 +++++++++++++++++++++++++-------------------
+ 1 file changed, 46 insertions(+), 35 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index 9f7356b..ff51046 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -120,7 +120,7 @@ extern int cpu_to_core_id(int cpu);
-  * in /proc/interrupts will be wrong!!! --Troy */
- #define PPC_MSG_CALL_FUNCTION   0
- #define PPC_MSG_RESCHEDULE      1
--#define PPC_MSG_UNUSED		2
-+#define PPC_MSG_TICK_BROADCAST	2
- #define PPC_MSG_DEBUGGER_BREAK  3
- 
- /* for irq controllers that have dedicated ipis per message (4) */
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index c1f2676..1d428e6 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -28,6 +28,7 @@ extern struct clock_event_device decrementer_clockevent;
- struct rtc_time;
- extern void to_tm(int tim, struct rtc_time * tm);
- extern void GregorianDay(struct rtc_time *tm);
-+extern void tick_broadcast_ipi_handler(void);
- 
- extern void generic_calibrate_decr(void);
- 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index ee7d76b..e2a4232 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -35,6 +35,7 @@
- #include <asm/ptrace.h>
- #include <linux/atomic.h>
- #include <asm/irq.h>
-+#include <asm/hw_irq.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/prom.h>
-@@ -145,9 +146,9 @@ static irqreturn_t reschedule_action(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static irqreturn_t unused_action(int irq, void *data)
-+static irqreturn_t tick_broadcast_ipi_action(int irq, void *data)
- {
--	/* This slot is unused and hence available for use, if needed */
-+	tick_broadcast_ipi_handler();
- 	return IRQ_HANDLED;
- }
- 
-@@ -168,14 +169,14 @@ static irqreturn_t debug_ipi_action(int irq, void *data)
- static irq_handler_t smp_ipi_action[] = {
- 	[PPC_MSG_CALL_FUNCTION] =  call_function_action,
- 	[PPC_MSG_RESCHEDULE] = reschedule_action,
--	[PPC_MSG_UNUSED] = unused_action,
-+	[PPC_MSG_TICK_BROADCAST] = tick_broadcast_ipi_action,
- 	[PPC_MSG_DEBUGGER_BREAK] = debug_ipi_action,
- };
- 
- const char *smp_ipi_name[] = {
- 	[PPC_MSG_CALL_FUNCTION] =  "ipi call function",
- 	[PPC_MSG_RESCHEDULE] = "ipi reschedule",
--	[PPC_MSG_UNUSED] = "ipi unused",
-+	[PPC_MSG_TICK_BROADCAST] = "ipi tick-broadcast",
- 	[PPC_MSG_DEBUGGER_BREAK] = "ipi debugger",
- };
- 
-@@ -251,6 +252,8 @@ irqreturn_t smp_ipi_demux(void)
- 			generic_smp_call_function_interrupt();
- 		if (all & IPI_MESSAGE(PPC_MSG_RESCHEDULE))
- 			scheduler_ipi();
-+		if (all & IPI_MESSAGE(PPC_MSG_TICK_BROADCAST))
-+			tick_broadcast_ipi_handler();
- 		if (all & IPI_MESSAGE(PPC_MSG_DEBUGGER_BREAK))
- 			debug_ipi_action(0, NULL);
- 	} while (info->messages);
-@@ -289,6 +292,16 @@ void arch_send_call_function_ipi_mask(const struct cpumask *mask)
- 		do_message_pass(cpu, PPC_MSG_CALL_FUNCTION);
- }
- 
-+#ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
-+void tick_broadcast(const struct cpumask *mask)
-+{
-+	unsigned int cpu;
-+
-+	for_each_cpu(cpu, mask)
-+		do_message_pass(cpu, PPC_MSG_TICK_BROADCAST);
-+}
-+#endif
-+
- #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
- void smp_send_debugger_break(void)
- {
 diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index b3dab20..3ff97db 100644
+index 3ff97db..df2989b 100644
 --- a/arch/powerpc/kernel/time.c
 +++ b/arch/powerpc/kernel/time.c
-@@ -825,6 +825,11 @@ static void decrementer_set_mode(enum clock_event_mode mode,
- 		decrementer_set_next_event(DECREMENTER_MAX, dev);
- }
+@@ -478,6 +478,47 @@ void arch_irq_work_raise(void)
  
-+/* Interrupt handler for the timer broadcast IPI */
-+void tick_broadcast_ipi_handler(void)
+ #endif /* CONFIG_IRQ_WORK */
+ 
++void __timer_interrupt(void)
 +{
++	struct pt_regs *regs = get_irq_regs();
++	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
++	struct clock_event_device *evt = &__get_cpu_var(decrementers);
++	u64 now;
++
++	trace_timer_interrupt_entry(regs);
++
++	if (test_irq_work_pending()) {
++		clear_irq_work_pending();
++		irq_work_run();
++	}
++
++	now = get_tb_or_rtc();
++	if (now >= *next_tb) {
++		*next_tb = ~(u64)0;
++		if (evt->event_handler)
++			evt->event_handler(evt);
++		__get_cpu_var(irq_stat).timer_irqs_event++;
++	} else {
++		now = *next_tb - now;
++		if (now <= DECREMENTER_MAX)
++			set_dec((int)now);
++		/* We may have raced with new irq work */
++		if (test_irq_work_pending())
++			set_dec(1);
++		__get_cpu_var(irq_stat).timer_irqs_others++;
++	}
++
++#ifdef CONFIG_PPC64
++	/* collect purr register values often, for accurate calculations */
++	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
++		struct cpu_usage *cu = &__get_cpu_var(cpu_usage_array);
++		cu->current_tb = mfspr(SPRN_PURR);
++	}
++#endif
++
++	trace_timer_interrupt_exit(regs);
 +}
 +
- static void register_decrementer_clockevent(int cpu)
+ /*
+  * timer_interrupt - gets called when the decrementer overflows,
+  * with interrupts disabled.
+@@ -486,8 +527,6 @@ void timer_interrupt(struct pt_regs * regs)
  {
- 	struct clock_event_device *dec = &per_cpu(decrementers, cpu);
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index adf3726..8a106b4 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -215,7 +215,7 @@ void iic_request_IPIs(void)
+ 	struct pt_regs *old_regs;
+ 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+-	struct clock_event_device *evt = &__get_cpu_var(decrementers);
+-	u64 now;
+ 
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continue to take decrementer exceptions.
+@@ -519,39 +558,7 @@ void timer_interrupt(struct pt_regs * regs)
+ 	old_regs = set_irq_regs(regs);
+ 	irq_enter();
+ 
+-	trace_timer_interrupt_entry(regs);
+-
+-	if (test_irq_work_pending()) {
+-		clear_irq_work_pending();
+-		irq_work_run();
+-	}
+-
+-	now = get_tb_or_rtc();
+-	if (now >= *next_tb) {
+-		*next_tb = ~(u64)0;
+-		if (evt->event_handler)
+-			evt->event_handler(evt);
+-		__get_cpu_var(irq_stat).timer_irqs_event++;
+-	} else {
+-		now = *next_tb - now;
+-		if (now <= DECREMENTER_MAX)
+-			set_dec((int)now);
+-		/* We may have raced with new irq work */
+-		if (test_irq_work_pending())
+-			set_dec(1);
+-		__get_cpu_var(irq_stat).timer_irqs_others++;
+-	}
+-
+-#ifdef CONFIG_PPC64
+-	/* collect purr register values often, for accurate calculations */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+-		struct cpu_usage *cu = &__get_cpu_var(cpu_usage_array);
+-		cu->current_tb = mfspr(SPRN_PURR);
+-	}
+-#endif
+-
+-	trace_timer_interrupt_exit(regs);
+-
++	__timer_interrupt();
+ 	irq_exit();
+ 	set_irq_regs(old_regs);
+ }
+@@ -828,6 +835,10 @@ static void decrementer_set_mode(enum clock_event_mode mode,
+ /* Interrupt handler for the timer broadcast IPI */
+ void tick_broadcast_ipi_handler(void)
  {
- 	iic_request_ipi(PPC_MSG_CALL_FUNCTION);
- 	iic_request_ipi(PPC_MSG_RESCHEDULE);
--	iic_request_ipi(PPC_MSG_UNUSED);
-+	iic_request_ipi(PPC_MSG_TICK_BROADCAST);
- 	iic_request_ipi(PPC_MSG_DEBUGGER_BREAK);
++	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
++
++	*next_tb = get_tb_or_rtc();
++	__timer_interrupt();
  }
  
-diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
-index 00d1a7c..b358bec 100644
---- a/arch/powerpc/platforms/ps3/smp.c
-+++ b/arch/powerpc/platforms/ps3/smp.c
-@@ -76,7 +76,7 @@ static int __init ps3_smp_probe(void)
- 
- 		BUILD_BUG_ON(PPC_MSG_CALL_FUNCTION    != 0);
- 		BUILD_BUG_ON(PPC_MSG_RESCHEDULE       != 1);
--		BUILD_BUG_ON(PPC_MSG_UNUSED	      != 2);
-+		BUILD_BUG_ON(PPC_MSG_TICK_BROADCAST   != 2);
- 		BUILD_BUG_ON(PPC_MSG_DEBUGGER_BREAK   != 3);
- 
- 		for (i = 0; i < MSG_COUNT; i++) {
+ static void register_decrementer_clockevent(int cpu)
