@@ -1,34 +1,34 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 54B1B2C06D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 11:12:59 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8A0672C0710
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 11:13:11 +1100 (EST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 25 Feb 2014 17:12:57 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A61BB19D8036
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:12:52 -0700 (MST)
+ Tue, 25 Feb 2014 17:13:09 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 350C91FF003D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:13:06 -0700 (MST)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1Q0CSHY4915546
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 01:12:28 +0100
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1PMAP867668050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 23:10:25 +0100
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1Q0CpP4027929
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:12:53 -0700
-Subject: [PATCH 6/7] cpuidle/powernv: Add "Fast-Sleep" CPU idle state
+ s1Q0D4T1028690
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2014 17:13:06 -0700
+Subject: [PATCH 7/7] cpuidle/powernv: Parse device tree to setup idle states
 To: linux-pm@vger.kernel.org, geoff@infradead.org, fweisbec@gmail.com,
  daniel.lezcano@linaro.org, srivatsa.bhat@linux.vnet.ibm.com,
  benh@kernel.crashing.org, tglx@linutronix.de,
  svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 26 Feb 2014 05:39:06 +0530
-Message-ID: <20140226000905.17879.44235.stgit@preeti>
+Date: Wed, 26 Feb 2014 05:39:20 +0530
+Message-ID: <20140226000919.17879.87737.stgit@preeti>
 In-Reply-To: <20140226000310.17879.67295.stgit@preeti>
 References: <20140226000310.17879.67295.stgit@preeti>
 MIME-Version: 1.0
@@ -43,118 +43,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fast sleep is one of the deep idle states on Power8 in which local timers of
-CPUs stop. On PowerPC we do not have an external clock device which can
-handle wakeup of such CPUs. Now that we have the support in the tick broadcast
-framework for archs that do not sport such a device and the low level support
-for fast sleep, enable it in the cpuidle framework on PowerNV.
+Add deep idle states such as nap and fast sleep to the cpuidle state table
+only if they are discovered from the device tree during cpuidle initialization.
 
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/Kconfig              |    2 ++
- arch/powerpc/kernel/time.c        |    4 +++-
- drivers/cpuidle/cpuidle-powernv.c |   34 ++++++++++++++++++++++++++++++++++
- 3 files changed, 39 insertions(+), 1 deletion(-)
+ drivers/cpuidle/cpuidle-powernv.c |   82 +++++++++++++++++++++++++++++--------
+ 1 file changed, 65 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 957bf34..b841420 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -130,6 +130,8 @@ config PPC
- 	select GENERIC_CMOS_UPDATE
- 	select GENERIC_TIME_VSYSCALL_OLD
- 	select GENERIC_CLOCKEVENTS
-+	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
-+	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
- 	select GENERIC_STRNCPY_FROM_USER
- 	select GENERIC_STRNLEN_USER
- 	select HAVE_MOD_ARCH_SPECIFIC
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index df2989b..122a580 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -42,6 +42,7 @@
- #include <linux/timex.h>
- #include <linux/kernel_stat.h>
- #include <linux/time.h>
-+#include <linux/clockchips.h>
- #include <linux/init.h>
- #include <linux/profile.h>
- #include <linux/cpu.h>
-@@ -106,7 +107,7 @@ struct clock_event_device decrementer_clockevent = {
- 	.irq            = 0,
- 	.set_next_event = decrementer_set_next_event,
- 	.set_mode       = decrementer_set_mode,
--	.features       = CLOCK_EVT_FEAT_ONESHOT,
-+	.features       = CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_C3STOP,
- };
- EXPORT_SYMBOL(decrementer_clockevent);
- 
-@@ -944,6 +945,7 @@ void __init time_init(void)
- 	clocksource_init();
- 
- 	init_decrementer_clockevent();
-+	tick_setup_hrtimer_broadcast();
- }
- 
- 
 diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 78fd174..4fb97ce 100644
+index 4fb97ce..fdae1c4 100644
 --- a/drivers/cpuidle/cpuidle-powernv.c
 +++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -11,6 +11,7 @@
- #include <linux/cpuidle.h>
+@@ -12,10 +12,17 @@
  #include <linux/cpu.h>
  #include <linux/notifier.h>
-+#include <linux/clockchips.h>
+ #include <linux/clockchips.h>
++#include <linux/of.h>
  
  #include <asm/machdep.h>
  #include <asm/firmware.h>
-@@ -49,6 +50,32 @@ static int nap_loop(struct cpuidle_device *dev,
- 	return index;
- }
  
-+static int fastsleep_loop(struct cpuidle_device *dev,
-+				struct cpuidle_driver *drv,
-+				int index)
-+{
-+	unsigned long old_lpcr = mfspr(SPRN_LPCR);
-+	unsigned long new_lpcr;
++/* Flags and constants used in PowerNV platform */
 +
-+	if (unlikely(system_state < SYSTEM_RUNNING))
-+		return index;
++#define MAX_POWERNV_IDLE_STATES	8
++#define IDLE_USE_INST_NAP	0x00010000 /* Use nap instruction */
++#define IDLE_USE_INST_SLEEP	0x00020000 /* Use sleep instruction */
 +
-+	new_lpcr = old_lpcr;
-+	new_lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-+
-+	/* exit powersave upon external interrupt, but not decrementer
-+	 * interrupt.
-+	 */
-+	new_lpcr |= LPCR_PECE0;
-+
-+	mtspr(SPRN_LPCR, new_lpcr);
-+	power7_sleep();
-+
-+	mtspr(SPRN_LPCR, old_lpcr);
-+
-+	return index;
-+}
-+
+ struct cpuidle_driver powernv_idle_driver = {
+ 	.name             = "powernv_idle",
+ 	.owner            = THIS_MODULE,
+@@ -79,7 +86,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
  /*
   * States for dedicated partition case.
   */
-@@ -67,6 +94,13 @@ static struct cpuidle_state powernv_states[] = {
- 		.exit_latency = 10,
- 		.target_residency = 100,
- 		.enter = &nap_loop },
-+	 { /* Fastsleep */
-+		.name = "fastsleep",
-+		.desc = "fastsleep",
-+		.flags = CPUIDLE_FLAG_TIME_VALID,
-+		.exit_latency = 10,
-+		.target_residency = 100,
-+		.enter = &fastsleep_loop },
+-static struct cpuidle_state powernv_states[] = {
++static struct cpuidle_state powernv_states[MAX_POWERNV_IDLE_STATES] = {
+ 	{ /* Snooze */
+ 		.name = "snooze",
+ 		.desc = "snooze",
+@@ -87,20 +94,6 @@ static struct cpuidle_state powernv_states[] = {
+ 		.exit_latency = 0,
+ 		.target_residency = 0,
+ 		.enter = &snooze_loop },
+-	{ /* NAP */
+-		.name = "NAP",
+-		.desc = "NAP",
+-		.flags = CPUIDLE_FLAG_TIME_VALID,
+-		.exit_latency = 10,
+-		.target_residency = 100,
+-		.enter = &nap_loop },
+-	 { /* Fastsleep */
+-		.name = "fastsleep",
+-		.desc = "fastsleep",
+-		.flags = CPUIDLE_FLAG_TIME_VALID,
+-		.exit_latency = 10,
+-		.target_residency = 100,
+-		.enter = &fastsleep_loop },
  };
  
  static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
+@@ -161,19 +154,74 @@ static int powernv_cpuidle_driver_init(void)
+ 	return 0;
+ }
+ 
++static int powernv_add_idle_states(void)
++{
++	struct device_node *power_mgt;
++	struct property *prop;
++	int nr_idle_states = 1; /* Snooze */
++	int dt_idle_states;
++	u32 *flags;
++	int i;
++
++	/* Currently we have snooze statically defined */
++
++	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
++	if (!power_mgt) {
++		pr_warn("opal: PowerMgmt Node not found\n");
++		return nr_idle_states;
++	}
++
++	prop = of_find_property(power_mgt, "ibm,cpu-idle-state-flags", NULL);
++	if (!prop) {
++		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
++		return nr_idle_states;
++	}
++
++	dt_idle_states = prop->length / sizeof(u32);
++	flags = (u32 *) prop->value;
++
++	for (i = 0; i < dt_idle_states; i++) {
++
++		if (flags[i] & IDLE_USE_INST_NAP) {
++			/* Add NAP state */
++			strcpy(powernv_states[nr_idle_states].name, "Nap");
++			strcpy(powernv_states[nr_idle_states].desc, "Nap");
++			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
++			powernv_states[nr_idle_states].exit_latency = 10;
++			powernv_states[nr_idle_states].target_residency = 100;
++			powernv_states[nr_idle_states].enter = &nap_loop;
++			nr_idle_states++;
++		}
++
++		if (flags[i] & IDLE_USE_INST_SLEEP) {
++			/* Add FASTSLEEP state */
++			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
++			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
++			powernv_states[nr_idle_states].flags =
++				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
++			powernv_states[nr_idle_states].exit_latency = 300;
++			powernv_states[nr_idle_states].target_residency = 1000000;
++			powernv_states[nr_idle_states].enter = &fastsleep_loop;
++			nr_idle_states++;
++		}
++	}
++
++	return nr_idle_states;
++}
++
+ /*
+  * powernv_idle_probe()
+  * Choose state table for shared versus dedicated partition
+  */
+ static int powernv_idle_probe(void)
+ {
+-
+ 	if (cpuidle_disable != IDLE_NO_OVERRIDE)
+ 		return -ENODEV;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_OPALv3)) {
+ 		cpuidle_state_table = powernv_states;
+-		max_idle_state = ARRAY_SIZE(powernv_states);
++		/* Device tree can indicate more idle states */
++		max_idle_state = powernv_add_idle_states();
+  	} else
+  		return -ENODEV;
+ 
