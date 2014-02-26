@@ -1,13 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 26 Feb 2014 17:07:38 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Increase stack redzone for 64-bit userspace to 512
- bytes
-Message-ID: <20140226060738.GF28143@iris.ozlabs.ibm.com>
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CFB0C2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 18:38:43 +1100 (EST)
+Message-ID: <530D99EB.3090900@freescale.com>
+Date: Wed, 26 Feb 2014 15:38:19 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Anton Blanchard <anton@samba.org>
+To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
+ <dmaengine@vger.kernel.org>
+Subject: Re: [PATCH 0/7] DMA: Freescale: driver cleanups and enhancements
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,101 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new ELFv2 little-endian ABI increases the stack redzone -- the
-area below the stack pointer that can be used for storing data --
-from 288 bytes to 512 bytes.  This means that we need to allow more
-space on the user stack when delivering a signal to a 64-bit process.
+Hi Vinod,
+How about these patches?
+Thanks.
 
-To make the code a bit clearer, we define new USER_REDZONE_SIZE and
-KERNEL_REDZONE_SIZE symbols in ptrace.h.  For now, we leave the
-kernel redzone size at 288 bytes, since increasing it to 512 bytes
-would increase the size of interrupt stack frames correspondingly.
-Gcc currently only makes use of 288 bytes of redzone, even when
-compiling for little-endian.  In future, hopefully gcc will provide
-an option to control the amount of redzone used, and then we could
-reduce it even more.
 
-This also changes the code in arch_compat_alloc_user_space() to
-preserve the expanded redzone.  It is not clear why this function would
-ever be used on a 64-bit process, though.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/include/asm/compat.h |  5 +++--
- arch/powerpc/include/asm/ptrace.h | 16 +++++++++++++++-
- arch/powerpc/kernel/signal_64.c   |  4 ++--
- 3 files changed, 20 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index 84fdf68..a613d2c 100644
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -200,10 +200,11 @@ static inline void __user *arch_compat_alloc_user_space(long len)
- 
- 	/*
- 	 * We can't access below the stack pointer in the 32bit ABI and
--	 * can access 288 bytes in the 64bit ABI
-+	 * can access 288 bytes in the 64bit big-endian ABI,
-+	 * or 512 bytes with the new ELFv2 little-endian ABI.
- 	 */
- 	if (!is_32bit_task())
--		usp -= 288;
-+		usp -= USER_REDZONE_SIZE;
- 
- 	return (void __user *) (usp - len);
- }
-diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
-index becc08e..279b80f 100644
---- a/arch/powerpc/include/asm/ptrace.h
-+++ b/arch/powerpc/include/asm/ptrace.h
-@@ -28,11 +28,23 @@
- 
- #ifdef __powerpc64__
- 
-+/*
-+ * Size of redzone that userspace is allowed to use below the stack
-+ * pointer.  This is 288 in the 64-bit big-endian ELF ABI, and 512 in
-+ * the new ELFv2 little-endian ABI, so we allow the larger amount.
-+ *
-+ * For kernel code we allow a 288-byte redzone, in order to conserve
-+ * kernel stack space; gcc currently only uses 288 bytes, and will
-+ * hopefully allow explicit control of the redzone size in future.
-+ */
-+#define USER_REDZONE_SIZE	512
-+#define KERNEL_REDZONE_SIZE	288
-+
- #define STACK_FRAME_OVERHEAD	112	/* size of minimum stack frame */
- #define STACK_FRAME_LR_SAVE	2	/* Location of LR in stack frame */
- #define STACK_FRAME_REGS_MARKER	ASM_CONST(0x7265677368657265)
- #define STACK_INT_FRAME_SIZE	(sizeof(struct pt_regs) + \
--					STACK_FRAME_OVERHEAD + 288)
-+				 STACK_FRAME_OVERHEAD + KERNEL_REDZONE_SIZE)
- #define STACK_FRAME_MARKER	12
- 
- /* Size of dummy stack frame allocated when calling signal handler. */
-@@ -41,6 +53,8 @@
- 
- #else /* __powerpc64__ */
- 
-+#define USER_REDZONE_SIZE	0
-+#define KERNEL_REDZONE_SIZE	0
- #define STACK_FRAME_OVERHEAD	16	/* size of minimum stack frame */
- #define STACK_FRAME_LR_SAVE	1	/* Location of LR in stack frame */
- #define STACK_FRAME_REGS_MARKER	ASM_CONST(0x72656773)
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index e35bf77..8d253c2 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -65,8 +65,8 @@ struct rt_sigframe {
- 	struct siginfo __user *pinfo;
- 	void __user *puc;
- 	struct siginfo info;
--	/* 64 bit ABI allows for 288 bytes below sp before decrementing it. */
--	char abigap[288];
-+	/* New 64 bit little-endian ABI allows redzone of 512 bytes below sp */
-+	char abigap[USER_REDZONE_SIZE];
- } __attribute__ ((aligned (16)));
- 
- static const char fmt32[] = KERN_INFO \
--- 
-1.9.rc1
+On 01/16/2014 01:47 PM, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>
+> Hi Vinod Koul and Dan Williams,
+> Please have a look at these patches.
+>
+> Note that patch 2~6 had beed sent out for upstream before, but were together
+> with other storage patches at that time, that was not easy for being reviewed
+> and merged, so I send them separately this time.
+>
+> Thanks.
+>
+> Hongbo Zhang (7):
+>    DMA: Freescale: unify register access methods
+>    DMA: Freescale: remove attribute DMA_INTERRUPT of dmaengine
+>    DMA: Freescale: add fsl_dma_free_descriptor() to reduce code
+>      duplication
+>    DMA: Freescale: move functions to avoid forward declarations
+>    DMA: Freescale: change descriptor release process for supporting
+>      async_tx
+>    DMA: Freescale: use spin_lock_bh instead of spin_lock_irqsave
+>    DMA: Freescale: add suspend resume functions for DMA driver
+>
+>   drivers/dma/fsldma.c |  592 ++++++++++++++++++++++++++++++++------------------
+>   drivers/dma/fsldma.h |   33 ++-
+>   2 files changed, 412 insertions(+), 213 deletions(-)
+>
