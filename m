@@ -1,24 +1,39 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1393417896.17341.2.camel@concordia>
-Subject: Re: [PATCH v2 1/1] audit: Add CONFIG_HAVE_ARCH_AUDITSYSCALL
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: AKASHI Takahiro <takahiro.akashi@linaro.org>
-Date: Wed, 26 Feb 2014 23:31:36 +1100
-In-Reply-To: <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
-References: <1391407232-4623-1-git-send-email-takahiro.akashi@linaro.org>
- <1393319784-2758-1-git-send-email-takahiro.akashi@linaro.org>
- <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, linaro-kernel@lists.linaro.org,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- rgb@redhat.com, catalin.marinas@arm.com, x86@kernel.org, will.deacon@arm.com,
- arndb@arndb.de, eparis@redhat.com, linux-kernel@vger.kernel.org,
- dsaxena@linaro.org, viro@zeniv.linux.org.uk,
- user-mode-linux-user@lists.sourceforge.net, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-audit@redhat.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3F2392C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 01:04:46 +1100 (EST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 26 Feb 2014 14:04:41 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3CD0717D804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 14:05:12 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1QE4QIA64422122
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 14:04:27 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1QE4cPG009859
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2014 07:04:38 -0700
+Message-ID: <530DF475.2040507@linux.vnet.ibm.com>
+Date: Wed, 26 Feb 2014 15:04:37 +0100
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/crashdump : fix page frame number check in
+ copy_oldmem_page
+References: <20140224163055.7263.86979.stgit@nimbus>
+ <1393292822.13244.5.camel@concordia>
+In-Reply-To: <1393292822.13244.5.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-02-25 at 18:16 +0900, AKASHI Takahiro wrote:
-> Currently AUDITSYSCALL has a long list of architecture depencency:
->        depends on AUDIT && (X86 || PARISC || PPC || S390 || IA64 || UML ||
-> 		SPARC64 || SUPERH || (ARM && AEABI && !OABI_COMPAT) || ALPHA)
-> The purpose of this patch is to replace it with HAVE_ARCH_AUDITSYSCALL
-> for simplicity.
+On 25/02/2014 02:47, Michael Ellerman wrote:
+> On Mon, 2014-02-24 at 17:30 +0100, Laurent Dufour wrote:
+>> In copy_oldmem_page, the current check using max_pfn and min_low_pfn to
+>> decide if the page is backed or not, is not valid when the memory layout is
+>> not continuous.
+>>
+>> This happens when running as a QEMU/KVM guest, where RTAS is mapped higher
+>> in the memory. In that case max_pfn points to the end of RTAS, and a hole
+>> between the end of the kdump kernel and RTAS is not backed by PTEs. As a
+>> consequence, the kdump kernel is crashing in copy_oldmem_page when accessing
+>> in a direct way the pages in that hole.
+>>
+>> This fix relies on the memblock's service memblock_is_region_memory to
+>> check if the read page is part or not of the directly accessible memory.
 > 
-> Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 957bf34..7b3b8fe 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -141,6 +141,7 @@ config PPC
->  	select HAVE_DEBUG_STACKOVERFLOW
->  	select HAVE_IRQ_EXIT_ON_IRQ_STACK
->  	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
-> +	select HAVE_ARCH_AUDITSYSCALL
->  
->  config GENERIC_CSUM
->  	def_bool CPU_LITTLE_ENDIAN
+> Hi Laurent,
+> 
+> This looks good to me, assuming you've tested it on a PowerVM system as well as
+> under KVM.
 
-Looks good for powerpc.
+Hi Michael,
 
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Yes I tested it on PowerVM (BE), KVM (BE) and Qemu TCG (BE).
 
-cheers
+Cheers,
+Laurent.
