@@ -1,16 +1,24 @@
 Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1393417336.17341.0.camel@concordia>
-Subject: Re: [PATCH] powerpc: ftrace: bugfix for test_24bit_addr
+Message-ID: <1393417896.17341.2.camel@concordia>
+Subject: Re: [PATCH v2 1/1] audit: Add CONFIG_HAVE_ARCH_AUDITSYSCALL
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: ananth@in.ibm.com
-Date: Wed, 26 Feb 2014 23:22:16 +1100
-In-Reply-To: <20140226043552.GA14672@in.ibm.com>
-References: <1393381381-30179-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <20140226043552.GA14672@in.ibm.com>
+To: AKASHI Takahiro <takahiro.akashi@linaro.org>
+Date: Wed, 26 Feb 2014 23:31:36 +1100
+In-Reply-To: <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
+References: <1391407232-4623-1-git-send-email-takahiro.akashi@linaro.org>
+ <1393319784-2758-1-git-send-email-takahiro.akashi@linaro.org>
+ <1393319784-2758-2-git-send-email-takahiro.akashi@linaro.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Liu Ping Fan <kernelfans@gmail.com>
+Cc: linux-s390@vger.kernel.org, linaro-kernel@lists.linaro.org,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ rgb@redhat.com, catalin.marinas@arm.com, x86@kernel.org, will.deacon@arm.com,
+ arndb@arndb.de, eparis@redhat.com, linux-kernel@vger.kernel.org,
+ dsaxena@linaro.org, viro@zeniv.linux.org.uk,
+ user-mode-linux-user@lists.sourceforge.net, linux-alpha@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-audit@redhat.com,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,31 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-02-26 at 10:05 +0530, Ananth N Mavinakayanahalli wrote:
-> On Wed, Feb 26, 2014 at 10:23:01AM +0800, Liu Ping Fan wrote:
-> > The branch target should be the func addr, not the addr of func_descr_t.
-> > So using ppc_function_entry() to generate the right target addr.
-> > 
-> > Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> > ---
-> > This bug will make ftrace fail to work. It can be triggered when the kernel
-> > size grows up.
-> > ---
-> >  arch/powerpc/kernel/ftrace.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> > index 9b27b29..b0ded97 100644
-> > --- a/arch/powerpc/kernel/ftrace.c
-> > +++ b/arch/powerpc/kernel/ftrace.c
-> > @@ -74,6 +74,7 @@ ftrace_modify_code(unsigned long ip, unsigned int old, unsigned int new)
-> >   */
-> >  static int test_24bit_addr(unsigned long ip, unsigned long addr)
-> >  {
-> > +	addr = ppc_function_entry((void *)addr);
+On Tue, 2014-02-25 at 18:16 +0900, AKASHI Takahiro wrote:
+> Currently AUDITSYSCALL has a long list of architecture depencency:
+>        depends on AUDIT && (X86 || PARISC || PPC || S390 || IA64 || UML ||
+> 		SPARC64 || SUPERH || (ARM && AEABI && !OABI_COMPAT) || ALPHA)
+> The purpose of this patch is to replace it with HAVE_ARCH_AUDITSYSCALL
+> for simplicity.
 > 
-> Won't this break on LE?
+> Signed-off-by: AKASHI Takahiro <takahiro.akashi@linaro.org>
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 957bf34..7b3b8fe 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -141,6 +141,7 @@ config PPC
+>  	select HAVE_DEBUG_STACKOVERFLOW
+>  	select HAVE_IRQ_EXIT_ON_IRQ_STACK
+>  	select ARCH_USE_CMPXCHG_LOCKREF if PPC64
+> +	select HAVE_ARCH_AUDITSYSCALL
+>  
+>  config GENERIC_CSUM
+>  	def_bool CPU_LITTLE_ENDIAN
 
-ppc_function_entry() just needs to be a nop on LE, as it already is on 32-bit.
+Looks good for powerpc.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 
 cheers
