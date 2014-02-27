@@ -1,16 +1,43 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Thu, 27 Feb 2014 17:17:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [RFC PATCH] powerpc: allow allyesconfig to build more
-Message-Id: <20140227171719.01d7de4be01559dd02968f7c@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__27_Feb_2014_17_17_19_+1100_elp7SMB56G19+.Rn"
-Cc: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Michael Neuling <mikey@neuling.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- paulus@samba.org
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 63EB52C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 06:33:37 +1100 (EST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Thu, 27 Feb 2014 12:33:34 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 7C2D51FF0043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 12:33:31 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1RJX5Us10224004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 20:33:05 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s1RJawbE022122
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 12:36:59 -0700
+Message-ID: <530F9307.40400@linux.vnet.ibm.com>
+Date: Thu, 27 Feb 2014 11:33:27 -0800
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 02/11] perf core: export swevent hrtimer helpers
+References: <1392415338-16288-3-git-send-email-cody@linux.vnet.ibm.com>
+ <20140225033326.7BB942C0228@ozlabs.org>
+ <20140225102008.GI9987@twins.programming.kicks-ass.net>
+ <530D0D57.4030704@linux.vnet.ibm.com>
+ <20140226082943.GC18404@twins.programming.kicks-ass.net>
+In-Reply-To: <20140226082943.GC18404@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,93 +47,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__27_Feb_2014_17_17_19_+1100_elp7SMB56G19+.Rn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 02/26/2014 12:29 AM, Peter Zijlstra wrote:
+> On Tue, Feb 25, 2014 at 01:38:31PM -0800, Cody P Schafer wrote:
+>> On 02/25/2014 02:20 AM, Peter Zijlstra wrote:
+>>> On Tue, Feb 25, 2014 at 02:33:26PM +1100, Michael Ellerman wrote:
+>>>> On Fri, 2014-14-02 at 22:02:06 UTC, Cody P Schafer wrote:
+>>>>> Export the swevent hrtimer helpers currently only used in events/core.c
+>>>>> to allow the addition of architecture specific sw-like pmus.
+>>>>
+>>>> Peter, Ingo, can we get your ACK on this please?
+>>>
+>>> How are they used? I saw some usage in patch 9 or so; but its not
+>>> explained anywhere. All patches have non-existent Changelogs and the few
+>>> comments that are there are pretty hardware specific.
+>>>
+>>> So please do tell; what do you need this for?
+>>
+>>  From this patch's change log:
+>>
+>>> Export the swevent hrtimer helpers currently only used in events/core.c to allow the addition of architecture specific sw-like pmus.
+>>
+>> The key part here is "architecture specific sw-like pmus", where the
+>> announcement explains why these pmus are sw-like:
+>
+> I don't read announcements for crucial patch details; announcements are
+> lost and therefore unimportant.
 
-Fixes this build error:
+And I'll be sure to elaborate further in the changelog next time (if I 
+don't drop this change entirely).
+This is the first comment I've got on this particular patch.
 
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org back=
-wards
+>>> The counters supplied by these interfaces are continually counting and never
+>>> need to be (and cannot be) disabled or enabled. They additionally do not
+>>> generate any interrupts. This makes them in some regards similar to software
+>>> counters, and as a result their implimentation shares some common code (which
+>>> an initial patch exposes) with the sw counters.
+>>
+>> Essentially, these pmus just provide access to a big array of counters which
+>> don't generate interrupts, and are all 64bit (and assumed to never
+>> overflow). Rather than duplicate the code that we already have for managing
+>> timing when reading from counters that don't have interrupts (the functions
+>> that are exposed by this patch), I've reused it.
+>
+> So note that all the software counters generate interrupts in their own
+> measuring domain. The hrtimer ones measure time and generate time based
+> interrupts, the event based ones generate 'interrupts' on their events.
+>
+> What you have here is a hw pmu without interrupt capability. That's
+> fine, they don't get to generate interrupt. We have plenty of those
+> already.
+>
+> But what you propose to do is add interrupt in another domain entirely.
+> That's not fine. Don't do that.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/exceptions-64s.S | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+Ok, so it looks like I misunderstood the need for an interrupt. The 
+intention in using the swevent_hrtimer code was to enable setting up the 
+events as frequency sampled. After taking another look at the gpci and 
+24x7 pmus, I'm forbidding sampling events anyhow in event init, so the 
+timer code isn't even taken advantage of. I'll drop this patch in the 
+next set.
 
-This builds allyesconfig better (we still have RELOC failures in the
-link) and hopefully fixes the allmodconfig build, but I don't know if
-it is semantically OK.
-
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exc=
-eptions-64s.S
-index 38d507306a11..b87859ffc8e7 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1294,16 +1294,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	.globl	__end_handlers
- __end_handlers:
-=20
--	/* Equivalents to the above handlers for relocation-on interrupt vectors =
-*/
--	STD_RELON_EXCEPTION_HV_OOL(0xe40, emulation_assist)
--	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell)
--
--	STD_RELON_EXCEPTION_PSERIES_OOL(0xf00, performance_monitor)
--	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
--	STD_RELON_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
--	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
--	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
--
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
- /*
-  * Data area reserved for FWNMI option.
-@@ -1325,6 +1315,16 @@ fwnmi_data_area:
- initial_stab:
- 	.space	4096
-=20
-+	/* Equivalents to the above handlers for relocation-on interrupt vectors =
-*/
-+	STD_RELON_EXCEPTION_HV_OOL(0xe40, emulation_assist)
-+	MASKABLE_RELON_EXCEPTION_HV_OOL(0xe80, h_doorbell)
-+
-+	STD_RELON_EXCEPTION_PSERIES_OOL(0xf00, performance_monitor)
-+	STD_RELON_EXCEPTION_PSERIES_OOL(0xf20, altivec_unavailable)
-+	STD_RELON_EXCEPTION_PSERIES_OOL(0xf40, vsx_unavailable)
-+	STD_RELON_EXCEPTION_PSERIES_OOL(0xf60, facility_unavailable)
-+	STD_RELON_EXCEPTION_HV_OOL(0xf80, hv_facility_unavailable)
-+
- #ifdef CONFIG_PPC_POWERNV
- _GLOBAL(opal_mc_secondary_handler)
- 	HMT_MEDIUM_PPR_DISCARD
---=20
-1.9.0
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Thu__27_Feb_2014_17_17_19_+1100_elp7SMB56G19+.Rn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJTDthzAAoJEMDTa8Ir7ZwVBQoP/R8uHHSgcEp4vQW+1wZLbcdo
-m/x4lFAfuG6teibDV8gD201eNqSdZIrDwkqBR0JmcfiY2iOOsnJySc8V0CgSG0W9
-peTXUOWJ4oRG0LB/YxopmUJWLjwCGr6hMKu08OHRjW7ytg6nOLRj3IPetGjx3zMi
-JR8AXXUthBrrOX0MOcY/iiMKDanMA0ZVe/gFekeXxy5KAxP1K9guSSIgRlJ7rTQp
-hZBwVrDhc26PYzQ9v97ddNFH38a/1DL7SLbWK4yOJX6bxlGYJkVAUDK4fHmtS7NP
-lHgUVq3v4j/r9ePJcq5JcjM5QBVvCNMpgp1ANujZEbdZoA4XOIEZ5EmgsI4emOlh
-LyRo0kzUhuz9+FPtMqWXsjzEEdP+QkG/cCnfvqca6XOh8FUARhCJvDBrT5UsgakP
-wW087DjSlvsKX2gz4tTF5QqsVKZPlSLLIzTtRIDUUmaAU1X0ixdVwPLdCATsW0Kx
-f+ftntmTKdbF7FERa8zkra7i//h9IarLZFlC7DrfxVK7pogfSBtWi1qklz6Uxhc/
-SeN5+OpyCTfGu8KPSzX74gkdAxtTtYHuyxh1egExuO+Es2IAXefGzr1GQUT2ETQp
-q/ulX/tALlHu40EzHQRt3NVwC90f6Cq7JU9MM4ZWJXrdoGwm/NlDsoPmTYHiB9X2
-+qRw3CoZNwkyk3m6mclp
-=I3XM
------END PGP SIGNATURE-----
-
---Signature=_Thu__27_Feb_2014_17_17_19_+1100_elp7SMB56G19+.Rn--
+>
+> You also try and conceal this information; so you suck.
+>
