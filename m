@@ -1,32 +1,33 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0A4102C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 08:32:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 82C6E2C034E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 08:32:30 +1100 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Thu, 27 Feb 2014 16:32:17 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id ED539C90046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 16:32:11 -0500 (EST)
+ Thu, 27 Feb 2014 16:32:27 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id AFF9038C8027
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 16:32:24 -0500 (EST)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1RLWFJL9830844
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 21:32:15 GMT
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1RLWOwW1769818
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 21:32:24 GMT
 Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1RLWEil000993
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 16:32:15 -0500
+ s1RLWN2Y001719
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 16:32:24 -0500
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 To: Linux PPC <linuxppc-dev@lists.ozlabs.org>,
  Cody P Schafer <cody@linux.vnet.ibm.com>
-Subject: [PATCH v3 06/11] powerpc/perf: add 24x7 interface headers
-Date: Thu, 27 Feb 2014 13:04:59 -0800
-Message-Id: <1393535105-7528-7-git-send-email-cody@linux.vnet.ibm.com>
+Subject: [PATCH v3 07/11] powerpc/perf: add a shared interface to get gpci
+ version and capabilities
+Date: Thu, 27 Feb 2014 13:05:00 -0800
+Message-Id: <1393535105-7528-8-git-send-email-cody@linux.vnet.ibm.com>
 In-Reply-To: <1393535105-7528-1-git-send-email-cody@linux.vnet.ibm.com>
 References: <1393535105-7528-1-git-send-email-cody@linux.vnet.ibm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
@@ -42,181 +43,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-24x7 (also called hv_24x7 or H_24X7) is an interface to obtain
-performance counters from the hypervisor. These counters do not have a
-fixed format/possition and are instead documented in a "24x7 Catalog",
-which is provided by the hypervisor (that interface is also documented
-paritialy in the included hv-24x7-catalog.h and fully in at
-https://raw.githubusercontent.com/jmesmon/catalog-24x7/master/hv-24x7-catalog.h ).
+This exposes a simple way to grab the firmware provided
+collect_priveliged, ga, expanded, and lab capability bits. All of these
+bits come in from the same gpci request, so we've exposed all of them.
 
-The 24x7 data access is simply a copy operation into a 4 dimentional
-array of 64bit counters (from hypervisor to kernel memory). There is no
-interupt triggered on overflow, these are completely disjoint from the
-typical power pmu.
-
-This method of obtaining performance counters from the hypervisor is
-intended to paritialy replace the gpci interface.
+Only the collect_priveliged bit is really used by the hv-gpci/hv-24x7
+code, the other bits are simply exposed in sysfs to inform the user.
 
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7-catalog.h |  33 +++++++++++
- arch/powerpc/perf/hv-24x7.h         | 109 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 142 insertions(+)
- create mode 100644 arch/powerpc/perf/hv-24x7-catalog.h
- create mode 100644 arch/powerpc/perf/hv-24x7.h
+ arch/powerpc/perf/hv-common.c | 39 +++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/hv-common.h | 17 +++++++++++++++++
+ 2 files changed, 56 insertions(+)
+ create mode 100644 arch/powerpc/perf/hv-common.c
+ create mode 100644 arch/powerpc/perf/hv-common.h
 
-diff --git a/arch/powerpc/perf/hv-24x7-catalog.h b/arch/powerpc/perf/hv-24x7-catalog.h
+diff --git a/arch/powerpc/perf/hv-common.c b/arch/powerpc/perf/hv-common.c
 new file mode 100644
-index 0000000..21b19dd
+index 0000000..47e02b3
 --- /dev/null
-+++ b/arch/powerpc/perf/hv-24x7-catalog.h
-@@ -0,0 +1,33 @@
-+#ifndef LINUX_POWERPC_PERF_HV_24X7_CATALOG_H_
-+#define LINUX_POWERPC_PERF_HV_24X7_CATALOG_H_
++++ b/arch/powerpc/perf/hv-common.c
+@@ -0,0 +1,39 @@
++#include <asm/io.h>
++#include <asm/hvcall.h>
++
++#include "hv-gpci.h"
++#include "hv-common.h"
++
++unsigned long hv_perf_caps_get(struct hv_perf_caps *caps)
++{
++	unsigned long r;
++	struct p {
++		struct hv_get_perf_counter_info_params params;
++		struct cv_system_performance_capabilities caps;
++	} __packed __aligned(sizeof(uint64_t));
++
++	struct p arg = {
++		.params = {
++			.counter_request = cpu_to_be32(
++					CIR_SYSTEM_PERFORMANCE_CAPABILITIES),
++			.starting_index = cpu_to_be32(-1),
++			.counter_info_version_in = 0,
++		}
++	};
++
++	r = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO,
++			       virt_to_phys(&arg), sizeof(arg));
++
++	if (r)
++		return r;
++
++	pr_devel("capability_mask: 0x%x\n", arg.caps.capability_mask);
++
++	caps->version = arg.params.counter_info_version_out;
++	caps->collect_privileged = !!arg.caps.perf_collect_privileged;
++	caps->ga = !!(arg.caps.capability_mask & CV_CM_GA);
++	caps->expanded = !!(arg.caps.capability_mask & CV_CM_EXPANDED);
++	caps->lab = !!(arg.caps.capability_mask & CV_CM_LAB);
++
++	return r;
++}
+diff --git a/arch/powerpc/perf/hv-common.h b/arch/powerpc/perf/hv-common.h
+new file mode 100644
+index 0000000..7e615bd
+--- /dev/null
++++ b/arch/powerpc/perf/hv-common.h
+@@ -0,0 +1,17 @@
++#ifndef LINUX_POWERPC_PERF_HV_COMMON_H_
++#define LINUX_POWERPC_PERF_HV_COMMON_H_
 +
 +#include <linux/types.h>
 +
-+/* From document "24x7 Event and Group Catalog Formats Proposal" v0.15 */
++struct hv_perf_caps {
++	u16 version;
++	u16 collect_privileged:1,
++	    ga:1,
++	    expanded:1,
++	    lab:1,
++	    unused:12;
++};
 +
-+struct hv_24x7_catalog_page_0 {
-+#define HV_24X7_CATALOG_MAGIC 0x32347837 /* "24x7" in ASCII */
-+	__be32 magic;
-+	__be32 length; /* In 4096 byte pages */
-+	__be64 version; /* XXX: arbitrary? what's the meaning/useage/purpose? */
-+	__u8 build_time_stamp[16]; /* "YYYYMMDDHHMMSS\0\0" */
-+	__u8 reserved2[32];
-+	__be16 schema_data_offs; /* in 4096 byte pages */
-+	__be16 schema_data_len;  /* in 4096 byte pages */
-+	__be16 schema_entry_count;
-+	__u8 reserved3[2];
-+	__be16 event_data_offs;
-+	__be16 event_data_len;
-+	__be16 event_entry_count;
-+	__u8 reserved4[2];
-+	__be16 group_data_offs; /* in 4096 byte pages */
-+	__be16 group_data_len;  /* in 4096 byte pages */
-+	__be16 group_entry_count;
-+	__u8 reserved5[2];
-+	__be16 formula_data_offs; /* in 4096 byte pages */
-+	__be16 formula_data_len;  /* in 4096 byte pages */
-+	__be16 formula_entry_count;
-+	__u8 reserved6[2];
-+} __packed;
-+
-+#endif
-diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
-new file mode 100644
-index 0000000..720ebce
---- /dev/null
-+++ b/arch/powerpc/perf/hv-24x7.h
-@@ -0,0 +1,109 @@
-+#ifndef LINUX_POWERPC_PERF_HV_24X7_H_
-+#define LINUX_POWERPC_PERF_HV_24X7_H_
-+
-+#include <linux/types.h>
-+
-+struct hv_24x7_request {
-+	/* PHYSICAL domains require enabling via phyp/hmc. */
-+#define HV_24X7_PERF_DOMAIN_PHYSICAL_CHIP 0x01
-+#define HV_24X7_PERF_DOMAIN_PHYSICAL_CORE 0x02
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_HOME_CORE   0x03
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_HOME_CHIP   0x04
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_HOME_NODE   0x05
-+#define HV_24X7_PERF_DOMAIN_VIRTUAL_PROCESSOR_REMOTE_NODE 0x06
-+	__u8 performance_domain;
-+	__u8 reserved[0x1];
-+
-+	/* bytes to read starting at @data_offset. must be a multiple of 8 */
-+	__be16 data_size;
-+
-+	/*
-+	 * byte offset within the perf domain to read from. must be 8 byte
-+	 * aligned
-+	 */
-+	__be32 data_offset;
-+
-+	/*
-+	 * only valid for VIRTUAL_PROCESSOR domains, ignored for others.
-+	 * -1 means "current partition only"
-+	 *  Enabling via phyp/hmc required for non-"-1" values. 0 forbidden
-+	 *  unless requestor is 0.
-+	 */
-+	__be16 starting_lpar_ix;
-+
-+	/*
-+	 * Ignored when @starting_lpar_ix == -1
-+	 * Ignored when @performance_domain is not VIRTUAL_PROCESSOR_*
-+	 * -1 means "infinite" or all
-+	 */
-+	__be16 max_num_lpars;
-+
-+	/* chip, core, or virtual processor based on @performance_domain */
-+	__be16 starting_ix;
-+	__be16 max_ix;
-+} __packed;
-+
-+struct hv_24x7_request_buffer {
-+	/* 0 - ? */
-+	/* 1 - ? */
-+#define HV_24X7_IF_VERSION_CURRENT 0x01
-+	__u8 interface_version;
-+	__u8 num_requests;
-+	__u8 reserved[0xE];
-+	struct hv_24x7_request requests[];
-+} __packed;
-+
-+struct hv_24x7_result_element {
-+	__be16 lpar_ix;
-+
-+	/*
-+	 * represents the core, chip, or virtual processor based on the
-+	 * request's @performance_domain
-+	 */
-+	__be16 domain_ix;
-+
-+	/* -1 if @performance_domain does not refer to a virtual processor */
-+	__be32 lpar_cfg_instance_id;
-+
-+	/* size = @result_element_data_size of cointaining result. */
-+	__u8 element_data[];
-+} __packed;
-+
-+struct hv_24x7_result {
-+	__u8 result_ix;
-+
-+	/*
-+	 * 0 = not all result elements fit into the buffer, additional requests
-+	 *     required
-+	 * 1 = all result elements were returned
-+	 */
-+	__u8 results_complete;
-+	__be16 num_elements_returned;
-+
-+	/* This is a copy of @data_size from the coresponding hv_24x7_request */
-+	__be16 result_element_data_size;
-+	__u8 reserved[0x2];
-+
-+	/* WARNING: only valid for first result element due to variable sizes
-+	 *          of result elements */
-+	/* struct hv_24x7_result_element[@num_elements_returned] */
-+	struct hv_24x7_result_element elements[];
-+} __packed;
-+
-+struct hv_24x7_data_result_buffer {
-+	/* See versioning for request buffer */
-+	__u8 interface_version;
-+
-+	__u8 num_results;
-+	__u8 reserved[0x1];
-+	__u8 failing_request_ix;
-+	__be32 detailed_rc;
-+	__be64 cec_cfg_instance_id;
-+	__be64 catalog_version_num;
-+	__u8 reserved2[0x8];
-+	/* WARNING: only valid for the first result due to variable sizes of
-+	 *	    results */
-+	struct hv_24x7_result results[]; /* [@num_results] */
-+} __packed;
++unsigned long hv_perf_caps_get(struct hv_perf_caps *caps);
 +
 +#endif
 -- 
