@@ -1,19 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1E77A2C00E5
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Feb 2014 16:20:44 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s1S5Kd73012685
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Feb 2014 23:20:41 -0600
-Message-ID: <1393564838.14012.71.camel@pasglop>
-Subject: [PATCH 2/2] powerpc/powernv: Fix indirect XSCOM unmangling
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Date: Fri, 28 Feb 2014 16:20:38 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id E86572C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 16:28:29 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 28 Feb 2014 10:58:25 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id DC3E0394003E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 10:58:22 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1S5S5lR4849978
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 10:58:05 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1S5SL3a022283
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 10:58:22 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, akpm@linux-foundation.org,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH V2] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
+Date: Fri, 28 Feb 2014 10:58:12 +0530
+Message-Id: <1393565292-13377-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <877g8fn8qw.fsf@linux.vnet.ibm.com>
+References: <877g8fn8qw.fsf@linux.vnet.ibm.com>
+Cc: Liu Ping Fan <pingfank@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Liu Ping Fan <qemulist@gmail.com>, linux-mm@kvack.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,70 +41,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to unmangle the full address, not just the register
-number, and we also need to support the real indirect bit
-being set for in-kernel uses.
+From: Liu Ping Fan <qemulist@gmail.com>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org> [v3.13]
+When doing some numa tests on powerpc, I triggered an oops bug. I find
+it is caused by using page->_last_cpupid.  It should be initialized as
+"-1 & LAST_CPUPID_MASK", but not "-1". Otherwise, in task_numa_fault(),
+we will miss the checking (last_cpupid == (-1 & LAST_CPUPID_MASK)).
+And finally cause an oops bug in task_numa_group(), since the online cpu is
+less than possible cpu. This happen with CONFIG_SPARSE_VMEMMAP disabled
+
+Call trace:
+[   55.978091] SMP NR_CPUS=64 NUMA PowerNV
+[   55.978118] Modules linked in:
+[   55.978145] CPU: 24 PID: 804 Comm: systemd-udevd Not tainted3.13.0-rc1+ #32
+[   55.978183] task: c000001e2746aa80 ti: c000001e32c50000 task.ti:c000001e32c50000
+[   55.978219] NIP: c0000000000f5ad0 LR: c0000000000f5ac8 CTR:c000000000913cf0
+[   55.978256] REGS: c000001e32c53510 TRAP: 0300   Not tainted(3.13.0-rc1+)
+[   55.978286] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR:28024424  XER: 20000000
+[   55.978380] CFAR: c000000000009324 DAR: 7265717569726857 DSISR:40000000 SOFTE: 1
+GPR00: c0000000000f5ac8 c000001e32c53790 c000000001f343380000000000000021
+GPR04: 0000000000000000 0000000000000031 c000000001f743380000ffffffffffff
+GPR08: 0000000000000001 7265717569726573 00000000000000000000000000000000
+GPR12: 0000000028024422 c00000000ffdd800 00000000296b2e640000000000000020
+GPR16: 0000000000000002 0000000000000003 c000001e2f8e4658c000001e25c1c1d8
+GPR20: c000001e2f8e4000 c000000001f7a858 00000000000006580000000040000392
+GPR24: 00000000000000a8 c000001e33c1a400 00000000000001d8c000001e25c1c000
+GPR28: c000001e33c37ff0 0007837840000392 000000000000003fc000001e32c53790
+[   55.978903] NIP [c0000000000f5ad0] .task_numa_fault+0x1470/0x2370
+[   55.978934] LR [c0000000000f5ac8] .task_numa_fault+0x1468/0x2370
+[   55.978964] Call Trace:
+[   55.978978] [c000001e32c53790] [c0000000000f5ac8].task_numa_fault+0x1468/0x2370 (unreliable)
+[   55.979036] [c000001e32c539e0] [c00000000020a820].do_numa_page+0x480/0x4a0
+[   55.979072] [c000001e32c53b10] [c00000000020bfec].handle_mm_fault+0x4ec/0xc90
+[   55.979123] [c000001e32c53c00] [c000000000e88c98].do_page_fault+0x3a8/0x890
+[   55.979161] [c000001e32c53e30] [c000000000009568]handle_page_fault+0x10/0x30
+[   55.979197] Instruction dump:
+[   55.979216] 3c82fefb 3884b138 48d9cff1 60000000 48000574 3c62fefb3863af78 3c82fefb
+[   55.979277] 3884b138 48d9cfd5 60000000 e93f0100 <812902e4> 7d2907b45529063e 7d2a07b4
+[   55.979354] ---[ end trace 15f2510da5ae07cf ]---
+
+Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-xscom.c | 21 ++++++++++++---------
- 1 file changed, 12 insertions(+), 9 deletions(-)
+ include/linux/mm.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-xscom.c b/arch/powerpc/platforms/powernv/opal-xscom.c
-index 4fbf276..4cd2ea6 100644
---- a/arch/powerpc/platforms/powernv/opal-xscom.c
-+++ b/arch/powerpc/platforms/powernv/opal-xscom.c
-@@ -71,11 +71,11 @@ static int opal_xscom_err_xlate(int64_t rc)
- 	}
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index f28f46eade6a..1a0ea24ff972 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -766,7 +766,7 @@ static inline int page_cpupid_last(struct page *page)
  }
- 
--static u64 opal_scom_unmangle(u64 reg)
-+static u64 opal_scom_unmangle(u64 addr)
+ static inline void page_cpupid_reset_last(struct page *page)
  {
- 	/*
- 	 * XSCOM indirect addresses have the top bit set. Additionally
--	 * the reset of the top 3 nibbles is always 0.
-+	 * the rest of the top 3 nibbles is always 0.
- 	 *
- 	 * Because the debugfs interface uses signed offsets and shifts
- 	 * the address left by 3, we basically cannot use the top 4 bits
-@@ -86,10 +86,13 @@ static u64 opal_scom_unmangle(u64 reg)
- 	 * conversion here. To leave room for further xscom address
- 	 * expansion, we only clear out the top byte
- 	 *
-+	 * For in-kernel use, we also support the real indirect bit, so
-+	 * we test for any of the top 5 bits
-+	 *
- 	 */
--	if (reg & (1ull << 59))
--		reg = (reg & ~(0xffull << 56)) | (1ull << 63);
--	return reg;
-+	if (addr & (0x1full << 59))
-+		addr = (addr & ~(0xffull << 56)) | (1ull << 63);
-+	return addr;
+-	page->_last_cpupid = -1;
++	page->_last_cpupid = -1 & LAST_CPUPID_MASK;
  }
- 
- static int opal_scom_read(scom_map_t map, u64 reg, u64 *value)
-@@ -98,8 +101,8 @@ static int opal_scom_read(scom_map_t map, u64 reg, u64 *value)
- 	int64_t rc;
- 	__be64 v;
- 
--	reg = opal_scom_unmangle(reg);
--	rc = opal_xscom_read(m->chip, m->addr + reg, (__be64 *)__pa(&v));
-+	reg = opal_scom_unmangle(m->addr + reg);
-+	rc = opal_xscom_read(m->chip, reg, (__be64 *)__pa(&v));
- 	*value = be64_to_cpu(v);
- 	return opal_xscom_err_xlate(rc);
- }
-@@ -109,8 +112,8 @@ static int opal_scom_write(scom_map_t map, u64 reg, u64 value)
- 	struct opal_scom_map *m = map;
- 	int64_t rc;
- 
--	reg = opal_scom_unmangle(reg);
--	rc = opal_xscom_write(m->chip, m->addr + reg, value);
-+	reg = opal_scom_unmangle(m->addr + reg);
-+	rc = opal_xscom_write(m->chip, reg, value);
- 	return opal_xscom_err_xlate(rc);
- }
- 
+ #else
+ static inline int page_cpupid_last(struct page *page)
+-- 
+1.8.3.2
