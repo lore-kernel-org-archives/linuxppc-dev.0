@@ -1,21 +1,34 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 76B632C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 19:52:23 +1100 (EST)
-Received: from mail129-ch1 (localhost [127.0.0.1])	by
- mail129-ch1-R.bigfish.com (Postfix) with ESMTP id 23C162A0092	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 08:52:18 +0000 (UTC)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
-Subject: [PATCH] Corenet: Add QE platform support for Corenet
-Date: Fri, 28 Feb 2014 16:48:29 +0800
-Message-ID: <1393577309-41445-1-git-send-email-B45475@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
+ by ozlabs.org (Postfix) with ESMTPS id ABE322C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:02:22 +1100 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 28 Feb 2014 19:02:17 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2CDED2CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:02:15 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s1S8gIqY11075878
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 19:42:18 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s1S92Drw018361
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:02:14 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, akpm@linux-foundation.org,
+ Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH V3] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
+Date: Fri, 28 Feb 2014 14:32:02 +0530
+Message-Id: <1393578122-6500-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, Liu Ping Fan <pingfank@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,89 +38,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is QE on platform T104x, add support.
-Call funcs qe_ic_init and qe_init if CONFIG_QUICC_ENGINE is defined.
+From: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
 
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
+When doing some numa tests on powerpc, I triggered an oops bug. I find
+it is caused by using page->_last_cpupid.  It should be initialized as
+"-1 & LAST_CPUPID_MASK", but not "-1". Otherwise, in task_numa_fault(),
+we will miss the checking (last_cpupid == (-1 & LAST_CPUPID_MASK)).
+And finally cause an oops bug in task_numa_group(), since the online cpu is
+less than possible cpu. This happen with CONFIG_SPARSE_VMEMMAP disabled
+
+Call trace:
+[   55.978091] SMP NR_CPUS=64 NUMA PowerNV
+[   55.978118] Modules linked in:
+[   55.978145] CPU: 24 PID: 804 Comm: systemd-udevd Not tainted3.13.0-rc1+ #32
+[   55.978183] task: c000001e2746aa80 ti: c000001e32c50000 task.ti:c000001e32c50000
+[   55.978219] NIP: c0000000000f5ad0 LR: c0000000000f5ac8 CTR:c000000000913cf0
+[   55.978256] REGS: c000001e32c53510 TRAP: 0300   Not tainted(3.13.0-rc1+)
+[   55.978286] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR:28024424  XER: 20000000
+[   55.978380] CFAR: c000000000009324 DAR: 7265717569726857 DSISR:40000000 SOFTE: 1
+GPR00: c0000000000f5ac8 c000001e32c53790 c000000001f343380000000000000021
+GPR04: 0000000000000000 0000000000000031 c000000001f743380000ffffffffffff
+GPR08: 0000000000000001 7265717569726573 00000000000000000000000000000000
+GPR12: 0000000028024422 c00000000ffdd800 00000000296b2e640000000000000020
+GPR16: 0000000000000002 0000000000000003 c000001e2f8e4658c000001e25c1c1d8
+GPR20: c000001e2f8e4000 c000000001f7a858 00000000000006580000000040000392
+GPR24: 00000000000000a8 c000001e33c1a400 00000000000001d8c000001e25c1c000
+GPR28: c000001e33c37ff0 0007837840000392 000000000000003fc000001e32c53790
+[   55.978903] NIP [c0000000000f5ad0] .task_numa_fault+0x1470/0x2370
+[   55.978934] LR [c0000000000f5ac8] .task_numa_fault+0x1468/0x2370
+[   55.978964] Call Trace:
+[   55.978978] [c000001e32c53790] [c0000000000f5ac8].task_numa_fault+0x1468/0x2370 (unreliable)
+[   55.979036] [c000001e32c539e0] [c00000000020a820].do_numa_page+0x480/0x4a0
+[   55.979072] [c000001e32c53b10] [c00000000020bfec].handle_mm_fault+0x4ec/0xc90
+[   55.979123] [c000001e32c53c00] [c000000000e88c98].do_page_fault+0x3a8/0x890
+[   55.979161] [c000001e32c53e30] [c000000000009568]handle_page_fault+0x10/0x30
+[   55.979197] Instruction dump:
+[   55.979216] 3c82fefb 3884b138 48d9cff1 60000000 48000574 3c62fefb3863af78 3c82fefb
+[   55.979277] 3884b138 48d9cfd5 60000000 e93f0100 <812902e4> 7d2907b45529063e 7d2a07b4
+[   55.979354] ---[ end trace 15f2510da5ae07cf ]---
+
+Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/85xx/corenet_generic.c | 32 +++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+Changes from V2:
+* Also updated cpupid_xchg_last to use LAST_CPUPID_MASK. We use the
+  that function with value -1
+* Update Author information after taking to Liu
+  
+ include/linux/mm.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index fbd871e..f8c8e0c 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -26,6 +26,8 @@
- #include <asm/udbg.h>
- #include <asm/mpic.h>
- #include <asm/ehv_pic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
- 
- #include <linux/of_platform.h>
- #include <sysdev/fsl_soc.h>
-@@ -38,6 +40,10 @@ void __init corenet_gen_pic_init(void)
- 	unsigned int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
- 		MPIC_NO_RESET;
- 
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
-+
- 	if (ppc_md.get_irq == mpic_get_coreint_irq)
- 		flags |= MPIC_ENABLE_COREINT;
- 
-@@ -45,6 +51,16 @@ void __init corenet_gen_pic_init(void)
- 	BUG_ON(mpic == NULL);
- 
- 	mpic_init(mpic);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+	}
-+#endif
-+
- }
- 
- /*
-@@ -52,11 +68,24 @@ void __init corenet_gen_pic_init(void)
-  */
- void __init corenet_gen_setup_arch(void)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index f28f46eade6a..86245839c9fa 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -757,7 +757,7 @@ static inline bool __cpupid_match_pid(pid_t task_pid, int cpupid)
+ #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
+ static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
  {
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
- 	mpc85xx_smp_init();
- 
- 	swiotlb_detect_4g();
- 
- 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
-+
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-+	if (!np) {
-+		pr_err("%s: Could not find Quicc Engine node\n", __func__);
-+		return;
-+	}
-+	qe_reset();
-+	of_node_put(np);
-+#endif
+-	return xchg(&page->_last_cpupid, cpupid);
++	return xchg(&page->_last_cpupid, cpupid & LAST_CPUPID_MASK);
  }
  
- static const struct of_device_id of_device_ids[] = {
-@@ -81,6 +110,9 @@ static const struct of_device_id of_device_ids[] = {
- 	{
- 		.compatible	= "fsl,qoriq-pcie-v3.0",
- 	},
-+	{
-+		.compatible	= "fsl,qe",
-+	},
- 	/* The following two are for the Freescale hypervisor */
- 	{
- 		.name		= "hypervisor",
+ static inline int page_cpupid_last(struct page *page)
+@@ -766,7 +766,7 @@ static inline int page_cpupid_last(struct page *page)
+ }
+ static inline void page_cpupid_reset_last(struct page *page)
+ {
+-	page->_last_cpupid = -1;
++	page->_last_cpupid = -1 & LAST_CPUPID_MASK;
+ }
+ #else
+ static inline int page_cpupid_last(struct page *page)
 -- 
-1.8.5
+1.8.3.2
