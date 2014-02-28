@@ -1,42 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B0FD42C0086
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:04:41 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 28 Feb 2014 19:04:41 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id BF1262CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:04:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s1S94O1u10944780
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:04:25 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s1S94b6Y008569
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 20:04:37 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: liu ping fan <qemulist@gmail.com>
-Subject: Re: [PATCH] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
-In-Reply-To: <CAJnKYQkVziWMmCL=rTakSA4955VMvFnaFtFdmexQAKUfTuVv_Q@mail.gmail.com>
-References: <1391563546-26052-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <20140213152009.b16a30d2a5b5c5706fc8952a@linux-foundation.org>
- <87k3cifgzz.fsf@linux.vnet.ibm.com>
- <20140227154104.4e3572f1d9e2692d431d1a4e@linux-foundation.org>
- <877g8fn8qw.fsf@linux.vnet.ibm.com>
- <CAJnKYQkVziWMmCL=rTakSA4955VMvFnaFtFdmexQAKUfTuVv_Q@mail.gmail.com>
-Date: Fri, 28 Feb 2014 14:34:31 +0530
-Message-ID: <871tynmwv4.fsf@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6A4502C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 22:32:01 +1100 (EST)
+Date: Fri, 28 Feb 2014 12:31:46 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
+Message-ID: <20140228113146.GJ27965@twins.programming.kicks-ass.net>
+References: <1393578122-6500-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1393578122-6500-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: Liu Ping Fan <pingfank@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,18 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-liu ping fan <qemulist@gmail.com> writes:
+On Fri, Feb 28, 2014 at 02:32:02PM +0530, Aneesh Kumar K.V wrote:
+> From: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+> 
+> When doing some numa tests on powerpc, I triggered an oops bug. I find
+> it is caused by using page->_last_cpupid.  It should be initialized as
+> "-1 & LAST_CPUPID_MASK", but not "-1". Otherwise, in task_numa_fault(),
+> we will miss the checking (last_cpupid == (-1 & LAST_CPUPID_MASK)).
+> And finally cause an oops bug in task_numa_group(), since the online cpu is
+> less than possible cpu. This happen with CONFIG_SPARSE_VMEMMAP disabled
+> 
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> On Fri, Feb 28, 2014 at 12:47 PM, Aneesh Kumar K.V
-> <aneesh.kumar@linux.vnet.ibm.com> wrote:
->> Andrew Morton <akpm@linux-foundation.org> writes:
->>
-> Thanks for sending V2.  Since the ppc machine env is changed by
-> others, I am blocking on setting up the env for re-test this patch.
-> And not send out it quickly.
 
-I sent an updated v3 also taking care of xchg
+Acked-by: Peter Zijlstra <peterz@infradead.org>
 
-http://article.gmane.org/gmane.linux.kernel/1657613
-
--aneesh
+> ---
+>   
+>  include/linux/mm.h | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index f28f46eade6a..86245839c9fa 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -757,7 +757,7 @@ static inline bool __cpupid_match_pid(pid_t task_pid, int cpupid)
+>  #ifdef LAST_CPUPID_NOT_IN_PAGE_FLAGS
+>  static inline int page_cpupid_xchg_last(struct page *page, int cpupid)
+>  {
+> -	return xchg(&page->_last_cpupid, cpupid);
+> +	return xchg(&page->_last_cpupid, cpupid & LAST_CPUPID_MASK);
+>  }
+>  
+>  static inline int page_cpupid_last(struct page *page)
+> @@ -766,7 +766,7 @@ static inline int page_cpupid_last(struct page *page)
+>  }
+>  static inline void page_cpupid_reset_last(struct page *page)
+>  {
+> -	page->_last_cpupid = -1;
+> +	page->_last_cpupid = -1 & LAST_CPUPID_MASK;
+>  }
+>  #else
+>  static inline int page_cpupid_last(struct page *page)
+> -- 
+> 1.8.3.2
+> 
