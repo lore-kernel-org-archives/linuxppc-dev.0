@@ -1,11 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/2] powerpc/perf: Add lost exception workaround
-Date: Fri, 28 Feb 2014 17:29:06 +1100
-Message-Id: <1393568946-4136-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1393568946-4136-1-git-send-email-mpe@ellerman.id.au>
-References: <1393568946-4136-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <qemulist@gmail.com>
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 030C12C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Feb 2014 17:36:44 +1100 (EST)
+Received: by mail-la0-f51.google.com with SMTP id pv20so1603792lab.24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2014 22:36:38 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <877g8fn8qw.fsf@linux.vnet.ibm.com>
+References: <1391563546-26052-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <20140213152009.b16a30d2a5b5c5706fc8952a@linux-foundation.org>
+ <87k3cifgzz.fsf@linux.vnet.ibm.com>
+ <20140227154104.4e3572f1d9e2692d431d1a4e@linux-foundation.org>
+ <877g8fn8qw.fsf@linux.vnet.ibm.com>
+From: liu ping fan <qemulist@gmail.com>
+Date: Fri, 28 Feb 2014 14:36:18 +0800
+Message-ID: <CAJnKYQkVziWMmCL=rTakSA4955VMvFnaFtFdmexQAKUfTuVv_Q@mail.gmail.com>
+Subject: Re: [PATCH] mm: numa: bugfix for LAST_CPUPID_NOT_IN_PAGE_FLAGS
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,195 +32,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some power8 revisions have a hardware bug where we can lose a PMU
-exception, this commit adds a workaround to detect the bad condition and
-rectify the situation.
+On Fri, Feb 28, 2014 at 12:47 PM, Aneesh Kumar K.V
+<aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+>
+>> On Wed, 26 Feb 2014 13:22:16 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>>
+>>> Andrew Morton <akpm@linux-foundation.org> writes:
+>>>
+>>> > On Wed,  5 Feb 2014 09:25:46 +0800 Liu Ping Fan <qemulist@gmail.com> wrote:
+>>> >
+>>> >> When doing some numa tests on powerpc, I triggered an oops bug. I find
+>>> >> it is caused by using page->_last_cpupid.  It should be initialized as
+>>> >> "-1 & LAST_CPUPID_MASK", but not "-1". Otherwise, in task_numa_fault(),
+>>> >> we will miss the checking (last_cpupid == (-1 & LAST_CPUPID_MASK)).
+>>> >> And finally cause an oops bug in task_numa_group(), since the online cpu is
+>>> >> less than possible cpu.
+>>> >
+>>> > I grabbed this.  I added this to the changelog:
+>>> >
+>>> > : PPC needs the LAST_CPUPID_NOT_IN_PAGE_FLAGS case because ppc needs to
+>>> > : support a large physical address region, up to 2^46 but small section size
+>>> > : (2^24).  So when NR_CPUS grows up, it is easily to cause
+>>> > : not-in-page-flags.
+>>> >
+>>> > to hopefully address Peter's observation.
+>>> >
+>>> > How should we proceed with this?  I'm getting the impression that numa
+>>> > balancing on ppc is a dead duck in 3.14, so perhaps this and
+>>> >
+>>> > powerpc-mm-add-new-set-flag-argument-to-pte-pmd-update-function.patch
+>>> > mm-dirty-accountable-change-only-apply-to-non-prot-numa-case.patch
+>>> > mm-use-ptep-pmdp_set_numa-for-updating-_page_numa-bit.patch
+>>> >
+>>>
+>>> All these are already in 3.14  ?
+>>
+>> Yes.
+>>
+>>> > are 3.15-rc1 material?
+>>> >
+>>>
+>>> We should push the first hunk to 3.14. I will wait for Liu to redo the
+>>> patch. BTW this should happen only when SPARSE_VMEMMAP is not
+>>> specified. Srikar had reported the issue here
+>>>
+>>> http://mid.gmane.org/20140219180200.GA29257@linux.vnet.ibm.com
+>>>
+>>> #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
+>>> #define SECTIONS_WIDTH               SECTIONS_SHIFT
+>>> #else
+>>> #define SECTIONS_WIDTH               0
+>>> #endif
+>>>
+>>
+>> I'm lost.  What patch are you talking about?  The first hunk of what?
+>
+> The patch in this thread.
+>
+>>
+>> I assume we're talking about
+>> mm-numa-bugfix-for-last_cpupid_not_in_page_flags.patch, which I had
+>> queued for 3.14.  I'll put it on hold until there's some clarity here.
+>
+> We don't need the complete patch, it is just the first hunk that we need
+> to fix the crash ie. we only need
+>
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index a7b4e31..ddc66df4 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -727,7 +727,7 @@ static inline int page_cpupid_last(struct page *page)
+>  }
+>  static inline void page_cpupid_reset_last(struct page *page)
+>  {
+> -       page->_last_cpupid = -1;
+> +       page->_last_cpupid = -1 & LAST_CPUPID_MASK;
+>  }
+>  #else
+>  static inline int page_cpupid_last(struct page *page)
+>
+> Also the issue will only happen when SPARSE_VMEMMAP is not enabled. I
+> will send a proper patch with updated changelog. I was hoping Liu will
+> get to that quickly
+>
+Thanks for sending V2.  Since the ppc machine env is changed by
+others, I am blocking on setting up the env for re-test this patch.
+And not send out it quickly.
 
-See the comment in the commit for a full description.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/reg.h  |   2 +
- arch/powerpc/perf/core-book3s.c | 100 +++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/perf/power8-pmu.c  |   5 ++
- 3 files changed, 105 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 90c06ec..3003472 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -670,6 +670,7 @@
- #define   MMCR0_PMC1CE	0x00008000UL /* PMC1 count enable*/
- #define   MMCR0_PMCjCE	0x00004000UL /* PMCj count enable*/
- #define   MMCR0_TRIGGER	0x00002000UL /* TRIGGER enable */
-+#define   MMCR0_PMAO_SYNC 0x00000800UL /* PMU interrupt is synchronous */
- #define   MMCR0_PMAO	0x00000080UL /* performance monitor alert has occurred, set to 0 after handling exception */
- #define   MMCR0_SHRFC	0x00000040UL /* SHRre freeze conditions between threads */
- #define   MMCR0_FC56	0x00000010UL /* freeze counters 5 and 6 */
-@@ -703,6 +704,7 @@
- #define SPRN_EBBHR	804	/* Event based branch handler register */
- #define SPRN_EBBRR	805	/* Event based branch return register */
- #define SPRN_BESCR	806	/* Branch event status and control register */
-+#define   BESCR_GE	0x8000000000000000ULL /* Global Enable */
- #define SPRN_WORT	895	/* Workload optimization register - thread */
- 
- #define SPRN_PMC1	787
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 67cf220..72cdd05 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -120,6 +120,7 @@ static inline void power_pmu_bhrb_enable(struct perf_event *event) {}
- static inline void power_pmu_bhrb_disable(struct perf_event *event) {}
- void power_pmu_flush_branch_stack(void) {}
- static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
-+static void pmao_restore_workaround(bool ebb) { }
- #endif /* CONFIG_PPC32 */
- 
- static bool regs_use_siar(struct pt_regs *regs)
-@@ -545,10 +546,18 @@ static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
- 	/* Enable EBB and read/write to all 6 PMCs for userspace */
- 	mmcr0 |= MMCR0_EBE | MMCR0_PMCC_U6;
- 
--	/* Add any bits from the user reg, FC or PMAO */
-+	/*
-+	 * Add any bits from the user MMCR0, FC or PMAO. This is compatible
-+	 * with pmao_restore_workaround() because we may add PMAO but we never
-+	 * clear it here.
-+	 */
- 	mmcr0 |= current->thread.mmcr0;
- 
--	/* Be careful not to set PMXE if userspace had it cleared */
-+	/*
-+	 * Be careful not to set PMXE if userspace had it cleared. This is also
-+	 * compatible with pmao_restore_workaround() because it has already
-+	 * cleared PMXE and we leave PMAO alone.
-+	 */
- 	if (!(current->thread.mmcr0 & MMCR0_PMXE))
- 		mmcr0 &= ~MMCR0_PMXE;
- 
-@@ -559,6 +568,91 @@ static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
- out:
- 	return mmcr0;
- }
-+
-+static void pmao_restore_workaround(bool ebb)
-+{
-+	unsigned pmcs[6];
-+
-+	if (!cpu_has_feature(CPU_FTR_PMAO_BUG))
-+		return;
-+
-+	/*
-+	 * On POWER8 there is a hardware defect which affects the PMU context
-+	 * switch logic, ie. power_pmu_disable/enable().
-+	 *
-+	 * When a counter overflows PMXE is cleared and FC/PMAO is set in MMCR0
-+	 * by the hardware. Sometime later the actual PMU exception is
-+	 * delivered.
-+	 *
-+	 * If we context switch, or simply disable/enable, the PMU prior to the
-+	 * exception arriving, the exception will be lost when we clear PMAO.
-+	 *
-+	 * When we reenable the PMU, we will write the saved MMCR0 with PMAO
-+	 * set, and this _should_ generate an exception. However because of the
-+	 * defect no exception is generated when we write PMAO, and we get
-+	 * stuck with no counters counting but no exception delivered.
-+	 *
-+	 * The workaround is to detect this case and tweak the hardware to
-+	 * create another pending PMU exception.
-+	 *
-+	 * We do that by setting up PMC6 (cycles) for an imminent overflow and
-+	 * enabling the PMU. That causes a new exception to be generated in the
-+	 * chip, but we don't take it yet because we have interrupts hard
-+	 * disabled. We then write back the PMU state as we want it to be seen
-+	 * by the exception handler. When we reenable interrupts the exception
-+	 * handler will be called and see the correct state.
-+	 *
-+	 * The logic is the same for EBB, except that the exception is gated by
-+	 * us having interrupts hard disabled as well as the fact that we are
-+	 * not in userspace. The exception is finally delivered when we return
-+	 * to userspace.
-+	 */
-+
-+	/* Only if PMAO is set and PMAO_SYNC is clear */
-+	if ((current->thread.mmcr0 & (MMCR0_PMAO | MMCR0_PMAO_SYNC)) != MMCR0_PMAO)
-+		return;
-+
-+	/* If we're doing EBB, only if BESCR[GE] is set */
-+	if (ebb && !(current->thread.bescr & BESCR_GE))
-+		return;
-+
-+	/*
-+	 * We are already soft-disabled in power_pmu_enable(). We need to hard
-+	 * enable to actually prevent the PMU exception from firing.
-+	 */
-+	hard_irq_disable();
-+
-+	/*
-+	 * This is a bit gross, but we know we're on POWER8 and have 6 PMCs.
-+	 * Using read/write_pmc() in a for loop adds 12 function calls and
-+	 * almost doubles our code size.
-+	 */
-+	pmcs[0] = mfspr(SPRN_PMC1);
-+	pmcs[1] = mfspr(SPRN_PMC2);
-+	pmcs[2] = mfspr(SPRN_PMC3);
-+	pmcs[3] = mfspr(SPRN_PMC4);
-+	pmcs[4] = mfspr(SPRN_PMC5);
-+	pmcs[5] = mfspr(SPRN_PMC6);
-+
-+	/* Ensure all freeze bits are unset */
-+	mtspr(SPRN_MMCR2, 0);
-+
-+	/* Set up PMC6 to overflow in one cycle */
-+	mtspr(SPRN_PMC6, 0x7FFFFFFE);
-+
-+	/* Enable exceptions and unfreeze PMC6 */
-+	mtspr(SPRN_MMCR0, MMCR0_PMXE | MMCR0_PMCjCE | MMCR0_PMAO);
-+
-+	/* Now we need to refreeze and restore the PMCs */
-+	mtspr(SPRN_MMCR0, MMCR0_FC | MMCR0_PMAO);
-+
-+	mtspr(SPRN_PMC1, pmcs[0]);
-+	mtspr(SPRN_PMC2, pmcs[1]);
-+	mtspr(SPRN_PMC3, pmcs[2]);
-+	mtspr(SPRN_PMC4, pmcs[3]);
-+	mtspr(SPRN_PMC5, pmcs[4]);
-+	mtspr(SPRN_PMC6, pmcs[5]);
-+}
- #endif /* CONFIG_PPC64 */
- 
- static void perf_event_interrupt(struct pt_regs *regs);
-@@ -1144,6 +1238,8 @@ static void power_pmu_enable(struct pmu *pmu)
- 	cpuhw->mmcr[0] |= MMCR0_PMXE | MMCR0_FCECE;
- 
-  out_enable:
-+	pmao_restore_workaround(ebb);
-+
- 	mmcr0 = ebb_switch_in(ebb, cpuhw->mmcr[0]);
- 
- 	mb();
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 96cee20..64f04cf 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -10,6 +10,8 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
-+#define pr_fmt(fmt)	"power8-pmu: " fmt
-+
- #include <linux/kernel.h>
- #include <linux/perf_event.h>
- #include <asm/firmware.h>
-@@ -774,6 +776,9 @@ static int __init init_power8_pmu(void)
- 	/* Tell userspace that EBB is supported */
- 	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_EBB;
- 
-+	if (cpu_has_feature(CPU_FTR_PMAO_BUG))
-+		pr_info("PMAO restore workaround active.\n");
-+
- 	return 0;
- }
- early_initcall(init_power8_pmu);
--- 
-1.8.3.2
+Best regards,
+Fan
+>
+> -aneesh
+>
