@@ -1,36 +1,24 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43CBE2C00D5
- for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 19:34:09 +1100 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 3 Mar 2014 14:04:06 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 41A8DE005C
- for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 14:07:40 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s238Y6ZS63766588
- for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:06 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s238Y0cH016684
- for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:02 +0530
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, Ben Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
- "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] powernv:cpufreq: Implement the driver->get() method
-Date: Mon,  3 Mar 2014 14:03:45 +0530
-Message-Id: <1393835625-25102-5-git-send-email-ego@linux.vnet.ibm.com>
-In-Reply-To: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 365092C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Mar 2014 20:22:37 +1100 (EST)
+Date: Mon, 3 Mar 2014 10:22:31 +0100
+From: Gerhard Sittig <gsi@denx.de>
+To: devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/3] dts: mpc512x: adjust clock specs for FEC nodes
+Message-ID: <20140303092231.GS3327@book.gsilab.sittig.org>
+References: <1393237557-31406-1-git-send-email-gsi@denx.de>
+ <1393237557-31406-2-git-send-email-gsi@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1393237557-31406-2-git-send-email-gsi@denx.de>
+Cc: Mark Rutland <mark.rutland@arm.com>, Shawn Guo <shawn.guo@linaro.org>,
+ Mike Turquette <mturquette@linaro.org>, Pawel Moll <pawel.moll@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>,
+ Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,79 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Mon, Feb 24, 2014 at 11:25 +0100, Gerhard Sittig wrote:
+> 
+> a recent FEC binding document update that was motivated by i.MX
+> development revealed that ARM and PowerPC implementations in Linux
+> did not agree on the clock names to use for the FEC nodes
+> 
+> change clock names from "per" to "ipg" in the FEC nodes of the
+> mpc5121.dtsi include file such that the .dts specs comply with
+> the common FEC binding
+> 
+> this "incompatible" change does not break operation, because
+> - COMMON_CLK support for MPC5121/23/25 and adjusted .dts files
+>   were only introduced in Linux v3.14-rc1, no mainline release
+>   provided these specs before
+> - if this change won't make it for v3.14, the MPC512x CCF support
+>   provides full backwards compability, and keeps operating with
+>   device trees which lack clock specs or don't match in the names
+> 
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
 
-The current frequency of a cpu is reported through the sysfs file
-cpuinfo_cur_freq. This requires the driver to implement a
-"->get(unsigned int cpu)" method which will return the current
-operating frequency.
+ping
 
-Implement a function named powernv_cpufreq_get() which corresponds to
-the required ->get() method.
+Are there opinions about making PowerPC users of FEC use the same
+clock names as ARM users do, to re-use (actually: keep sharing)
+the FEC binding?  The alternative would be to fragment the FEC
+binding into several bindings for ARM and PowerPC, which I feel
+would be undesirable, and is not necessary.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 41 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+It would be nice to ship v3.14 (the first release with proper CCF
+support for MPC512x) in a shape that is consistent with other FEC
+users (ARM i.MX).  We are lucky to have noticed the difference
+before the release, and need not introduce the incompatibility,
+and need not document and support obsolete conditions but can fix
+them instead.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index f0dae6f..5f43e4f 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -218,6 +218,46 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
- 	BUG();
- }
- 
-+/**
-+ * Computes the current frequency on this cpu
-+ * and stores the result in *ret_freq.
-+ */
-+static void powernv_get_cpu_freq(void *ret_freq)
-+{
-+	unsigned long pmspr_val;
-+	long pstate_id;
-+	int *cur_freq, freq;
-+
-+	cur_freq = (int *)ret_freq;
-+	pmspr_val = get_pmspr(SPRN_PMSR);
-+	pstate_id = pmspr_val;
-+	pstate_id = pstate_id >> 56;
-+	WARN_ON(pstate_id > 0);
-+	freq = pstate_id_to_freq(pstate_id);
-+	pr_debug("cpu %d pmsr %lx pstate_id %ld frequency %d \n",
-+		smp_processor_id(), pmspr_val, pstate_id, freq);
-+	*cur_freq = freq;
-+}
-+
-+/**
-+ * Returns the cpu frequency as reported by the firmware for 'cpu'.
-+ * This value is reported through the sysfs file cpuinfo_cur_freq.
-+ */
-+unsigned int powernv_cpufreq_get(unsigned int cpu)
-+{
-+	int ret_freq;
-+	cpumask_var_t sibling_mask;
-+
-+	if (!zalloc_cpumask_var(&sibling_mask, GFP_KERNEL))
-+		return -ENOMEM;
-+
-+	powernv_cpu_to_core_mask(cpu, sibling_mask);
-+	smp_call_function_any(sibling_mask, powernv_get_cpu_freq, &ret_freq, 1);
-+
-+	free_cpumask_var(sibling_mask);
-+	return ret_freq;
-+}
-+
- static void set_pstate(void *pstate)
- {
- 	unsigned long val;
-@@ -310,6 +350,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.verify		= powernv_cpufreq_verify,
- 	.target		= powernv_cpufreq_target,
-+	.get		= powernv_cpufreq_get,
- 	.init		= powernv_cpufreq_cpu_init,
- 	.exit		= powernv_cpufreq_cpu_exit,
- 	.name		= "powernv-cpufreq",
+> ---
+>  arch/powerpc/boot/dts/mpc5121.dtsi |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
+> index 2c0e1552d20b..a5a375598ed8 100644
+> --- a/arch/powerpc/boot/dts/mpc5121.dtsi
+> +++ b/arch/powerpc/boot/dts/mpc5121.dtsi
+> @@ -281,7 +281,7 @@
+>  			#address-cells = <1>;
+>  			#size-cells = <0>;
+>  			clocks = <&clks MPC512x_CLK_FEC>;
+> -			clock-names = "per";
+> +			clock-names = "ipg";
+>  		};
+>  
+>  		eth0: ethernet@2800 {
+> @@ -291,7 +291,7 @@
+>  			local-mac-address = [ 00 00 00 00 00 00 ];
+>  			interrupts = <4 0x8>;
+>  			clocks = <&clks MPC512x_CLK_FEC>;
+> -			clock-names = "per";
+> +			clock-names = "ipg";
+>  		};
+>  
+>  		/* USB1 using external ULPI PHY */
+> -- 
+> 1.7.10.4
+
+
+virtually yours
+Gerhard Sittig
 -- 
-1.8.3.1
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
