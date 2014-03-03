@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 02A412C00BC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 02:51:22 +1100 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.2 \(1874\))
-Subject: Re: [PATCH] Corenet: Add QE platform support for Corenet
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1393577309-41445-1-git-send-email-B45475@freescale.com>
-Date: Mon, 3 Mar 2014 09:51:08 -0600
-Message-Id: <62FC0C4F-26FD-44B4-BC07-BDF1904AE637@kernel.crashing.org>
-References: <1393577309-41445-1-git-send-email-B45475@freescale.com>
-To: Zhao Qiang <B45475@freescale.com>
-Cc: B07421@freescale.com, R63061@freescale.com, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 588DF2C00D5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 04:26:58 +1100 (EST)
+Date: Mon, 3 Mar 2014 17:26:49 +0000
+From: Mel Gorman <mgorman@suse.de>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: Panic on ppc64 with numa_balancing and !sparsemem_vmemmap
+Message-ID: <20140303172649.GU6732@suse.de>
+References: <20140219180200.GA29257@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20140219180200.GA29257@linux.vnet.ibm.com>
+Cc: riel@redhat.com, Peter Zijlstra <peterz@infradead.org>, linux-mm@kvack.org,
+ paulus@samba.org, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,110 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Feb 19, 2014 at 11:32:00PM +0530, Srikar Dronamraju wrote:
+> 
+> On a powerpc machine with CONFIG_NUMA_BALANCING=y and CONFIG_SPARSEMEM_VMEMMAP
+> not enabled,  kernel panics.
+> 
 
-On Feb 28, 2014, at 2:48 AM, Zhao Qiang <B45475@freescale.com> wrote:
+This?
 
-> There is QE on platform T104x, add support.
-> Call funcs qe_ic_init and qe_init if CONFIG_QUICC_ENGINE is defined.
->=20
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
-> arch/powerpc/platforms/85xx/corenet_generic.c | 32 =
-+++++++++++++++++++++++++++
-> 1 file changed, 32 insertions(+)
+---8<---
+sched: numa: Do not group tasks if last cpu is not set
 
-Can you use mpc85xx_qe_init() instead?
+On configurations with vmemmap disabled, the following partial is observed
 
->=20
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c =
-b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index fbd871e..f8c8e0c 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -26,6 +26,8 @@
-> #include <asm/udbg.h>
-> #include <asm/mpic.h>
-> #include <asm/ehv_pic.h>
-> +#include <asm/qe.h>
-> +#include <asm/qe_ic.h>
->=20
-> #include <linux/of_platform.h>
-> #include <sysdev/fsl_soc.h>
-> @@ -38,6 +40,10 @@ void __init corenet_gen_pic_init(void)
-> 	unsigned int flags =3D MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
-> 		MPIC_NO_RESET;
->=20
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	struct device_node *np;
-> +#endif
-> +
-> 	if (ppc_md.get_irq =3D=3D mpic_get_coreint_irq)
-> 		flags |=3D MPIC_ENABLE_COREINT;
->=20
-> @@ -45,6 +51,16 @@ void __init corenet_gen_pic_init(void)
-> 	BUG_ON(mpic =3D=3D NULL);
->=20
-> 	mpic_init(mpic);
-> +
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-> +	if (np) {
-> +		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-> +				qe_ic_cascade_high_mpic);
-> +		of_node_put(np);
-> +	}
-> +#endif
-> +
-> }
->=20
-> /*
-> @@ -52,11 +68,24 @@ void __init corenet_gen_pic_init(void)
->  */
-> void __init corenet_gen_setup_arch(void)
-> {
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	struct device_node *np;
-> +#endif
-> 	mpc85xx_smp_init();
->=20
-> 	swiotlb_detect_4g();
->=20
-> 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
-> +
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe");
-> +	if (!np) {
-> +		pr_err("%s: Could not find Quicc Engine node\n", =
-__func__);
-> +		return;
+[  299.268623] CPU: 47 PID: 4366 Comm: numa01 Tainted: G      D      3.14.0-rc5-vanilla #4
+[  299.278295] Hardware name: Dell Inc. PowerEdge R810/0TT6JF, BIOS 2.7.4 04/26/2012
+[  299.287452] task: ffff880c670bc110 ti: ffff880c66db6000 task.ti: ffff880c66db6000
+[  299.296642] RIP: 0010:[<ffffffff8109013f>]  [<ffffffff8109013f>] task_numa_fault+0x50f/0x8b0
+[  299.306778] RSP: 0000:ffff880c66db7670  EFLAGS: 00010282
+[  299.313769] RAX: 00000000000033ee RBX: ffff880c670bc110 RCX: 0000000000000001
+[  299.322590] RDX: 0000000000000001 RSI: 0000000000000003 RDI: 00000000ffffffff
+[  299.331394] RBP: ffff880c66db76c8 R08: 0000000000000000 R09: 00000000000166b0
+[  299.340203] R10: ffff880c7ffecd80 R11: 0000000000000000 R12: 00000000000001ff
+[  299.348989] R13: 00000000000000ff R14: 00000000ffffffff R15: 0000000000000003
+[  299.357763] FS:  00007f5a60a3f700(0000) GS:ffff88106f2c0000(0000) knlGS:0000000000000000
+[  299.367510] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  299.374913] CR2: 00000000000037da CR3: 0000000868ed4000 CR4: 00000000000007e0
+[  299.383726] Stack:
+[  299.387414]  0000000000000003 0000000000000000 0000000100000003 0000000100000003
+[  299.396564]  ffffffff811888f4 ffff880c66db7698 0000000000000003 ffff880c7f9b3ac0
+[  299.405730]  ffff880c66ccebd8 00000000ffffffff 0000000000000003 ffff880c66db7718
+[  299.414907] Call Trace:
+[  299.419095]  [<ffffffff811888f4>] ? migrate_misplaced_page+0xb4/0x140
+[  299.427301]  [<ffffffff8115950c>] do_numa_page+0x18c/0x1f0
+[  299.434554]  [<ffffffff8115a6f7>] handle_mm_fault+0x617/0xf70
+[  ..........]  SNIPPED
 
-This doesn=92t seem like an reasonable error message for common corenet =
-platform.  It seems reasonable to build QE support but boot on a chip =
-w/o QE.
+The oops occurs in task_numa_group looking up cpu_rq(LAST__CPU_MASK). The
+bug exists for all configurations but will manifest differently. On vmemmap
+configurations, it looks up garbage and on !vmemmap configuraitons it
+will oops. This patch adds the necessary check and also fixes the type
+for LAST__PID_MASK and LAST__CPU_MASK which are currently signed instead
+of unsigned integers.
 
-> +	}
-> +	qe_reset();
-> +	of_node_put(np);
-> +#endif
-> }
->=20
-> static const struct of_device_id of_device_ids[] =3D {
-> @@ -81,6 +110,9 @@ static const struct of_device_id of_device_ids[] =3D =
-{
-> 	{
-> 		.compatible	=3D "fsl,qoriq-pcie-v3.0",
-> 	},
-> +	{
-> +		.compatible	=3D "fsl,qe",
-> +	},
-> 	/* The following two are for the Freescale hypervisor */
-> 	{
-> 		.name		=3D "hypervisor",
-> --=20
-> 1.8.5
->=20
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Signed-off-by: Mel Gorman <mgorman@suse.de>
+Cc: stable@vger.kernel.org
+
+diff --git a/include/linux/page-flags-layout.h b/include/linux/page-flags-layout.h
+index da52366..6f661d9 100644
+--- a/include/linux/page-flags-layout.h
++++ b/include/linux/page-flags-layout.h
+@@ -63,10 +63,10 @@
+ 
+ #ifdef CONFIG_NUMA_BALANCING
+ #define LAST__PID_SHIFT 8
+-#define LAST__PID_MASK  ((1 << LAST__PID_SHIFT)-1)
++#define LAST__PID_MASK  ((1UL << LAST__PID_SHIFT)-1)
+ 
+ #define LAST__CPU_SHIFT NR_CPUS_BITS
+-#define LAST__CPU_MASK  ((1 << LAST__CPU_SHIFT)-1)
++#define LAST__CPU_MASK  ((1UL << LAST__CPU_SHIFT)-1)
+ 
+ #define LAST_CPUPID_SHIFT (LAST__PID_SHIFT+LAST__CPU_SHIFT)
+ #else
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 7815709..b44a8b1 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -1463,6 +1463,9 @@ static void task_numa_group(struct task_struct *p, int cpupid, int flags,
+ 	int cpu = cpupid_to_cpu(cpupid);
+ 	int i;
+ 
++	if (unlikely(cpu == LAST__CPU_MASK && !cpu_online(cpu)))
++		return;
++
+ 	if (unlikely(!p->numa_group)) {
+ 		unsigned int size = sizeof(struct numa_group) +
+ 				    2*nr_node_ids*sizeof(unsigned long);
