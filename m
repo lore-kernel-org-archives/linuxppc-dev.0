@@ -1,35 +1,34 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9EE382C0142
+ by ozlabs.org (Postfix) with ESMTPS id 9D32B2C00E8
  for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 19:34:08 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 3 Mar 2014 14:04:04 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 808B9E0057
- for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 14:07:40 +0530 (IST)
+ Mon, 3 Mar 2014 14:04:06 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id E8C291258056
+ for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 14:06:12 +0530 (IST)
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s238Y4t65177758
- for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:04 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s238XxCs10485986
+ for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:00 +0530
 Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s238Xxwc016643
- for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:00 +0530
+ s238Xxp3016640
+ for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:01 +0530
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, Ben Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
  "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 1/4] powernv:cpufreq: Create pstate_id_to_freq() helper
-Date: Mon,  3 Mar 2014 14:03:42 +0530
-Message-Id: <1393835625-25102-2-git-send-email-ego@linux.vnet.ibm.com>
-In-Reply-To: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
-References: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH 0/4] powernv:cpufreq: Export nominal and current frequency via
+ sysfs
+Date: Mon,  3 Mar 2014 14:03:41 +0530
+Message-Id: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
 Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,66 +41,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Create a helper routine that can return the cpu-frequency for the
-corresponding pstate_id.
+Hi,
 
-Also, cache the values of the pstate_max, pstate_min and
-pstate_nominal and nr_pstates in a static structure so that they can
-be reused in the future to perform any validations.
+On IBM POWERNV platforms[1], presently we do not report the current
+operating frequency of the processor through the sysfs interface
+"cpuinfo_cur_freq" since the cpu frequency driver[1] has not
+implemented the ->get(unsigned int cpu) method. Fix this by
+implementing the ->get(unsigned int cpu) method which will report the
+frequency corresponding to the pstate_id on PMSR on "cpu".
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+Also, export the nominal frequency of the processor through the sysfs
+interface "cpuinfo_nominal_freq" by defining it as a driver attribute.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 345501e..d0a8dee 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -37,6 +37,15 @@ static DEFINE_PER_CPU(struct mutex, freq_switch_lock);
- #define POWERNV_MAX_PSTATES	256
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-+struct powernv_pstate_info {
-+	int pstate_min_id;
-+	int pstate_max_id;
-+	int pstate_nominal_id;
-+	int nr_pstates;
-+};
-+
-+static struct powernv_pstate_info powernv_pstate_info;
-+
- 
- /*
-  * Initialize the freq table based on data obtained
-@@ -106,9 +115,28 @@ static int init_powernv_pstates(void)
- 	powernv_freqs[i].driver_data = 0;
- 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
- 
-+	powernv_pstate_info.pstate_min_id = pstate_min;
-+	powernv_pstate_info.pstate_max_id = pstate_max;
-+	powernv_pstate_info.pstate_nominal_id = pstate_nominal;
-+	powernv_pstate_info.nr_pstates = nr_pstates;
-+
- 	return 0;
- }
- 
-+/**
-+ * Returns the cpu frequency corresponding to the pstate_id.
-+ */
-+static unsigned int pstate_id_to_freq(int pstate_id)
-+{
-+	int i;
-+
-+	i = powernv_pstate_info.pstate_max_id - pstate_id;
-+
-+	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
-+	WARN_ON(powernv_freqs[i].driver_data != pstate_id);
-+	return powernv_freqs[i].frequency;
-+}
-+
- static struct freq_attr *powernv_cpu_freq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
- 	NULL,
+The patch series depends on the cpu-frequency driver patch-series[1].
+
+[1] http://comments.gmane.org/gmane.linux.ports.ppc.embedded/67905
+
+Thanks and Regards
+gautham.
+
+Summary:
+==========================
+Gautham R. Shenoy (4):
+  powernv:cpufreq: Create pstate_id_to_freq() helper
+  powernv:cpufreq: Export nominal frequency via sysfs.
+  powernv:cpufreq: Create a powernv_cpu_to_core_mask() helper.
+  powernv:cpufreq: Implement the driver->get() method
+
+ drivers/cpufreq/powernv-cpufreq.c | 115 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 110 insertions(+), 5 deletions(-)
+
 -- 
 1.8.3.1
