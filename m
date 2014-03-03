@@ -1,17 +1,37 @@
-Return-Path: <adogcalledsummer@hotmail.co.uk>
-Received: from dub0-omc3-s31.dub0.hotmail.com (dub0-omc3-s31.dub0.hotmail.com
- [157.55.2.40]) by ozlabs.org (Postfix) with ESMTP id 87E7C2C00C5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Mar 2014 00:49:54 +1100 (EST)
-Message-ID: <DUB118-W536724D5668F74D2FA9C88D8C0@phx.gbl>
-Content-Type: multipart/alternative;
- boundary="_0ec40bda-d707-45fa-802f-61fc4ce02d63_"
-From: Adam Smith <adogcalledsummer@hotmail.co.uk>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: =?windows-1256?Q?Sound_on_P?= =?windows-1256?Q?owerBook_a?=
- =?windows-1256?Q?nd_iBook_(?= =?windows-1256?Q?snd=5Fpowerm?=
- =?windows-1256?Q?ac/snd=5Faoa?= =?windows-1256?Q?)=FE?=
-Date: Sun, 2 Mar 2014 13:44:34 +0000
-MIME-Version: 1.0
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3FF432C00D5
+ for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 19:34:07 +1100 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Mon, 3 Mar 2014 14:04:04 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5BDA53940049
+ for <linuxppc-dev@ozlabs.org>; Mon,  3 Mar 2014 14:04:02 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s238XxPk9372022
+ for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:03:59 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s238Y0AZ016660
+ for <linuxppc-dev@ozlabs.org>; Mon, 3 Mar 2014 14:04:02 +0530
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, Ben Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+ "Srivatsa S . Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH 3/4] powernv:cpufreq: Create a powernv_cpu_to_core_mask()
+ helper.
+Date: Mon,  3 Mar 2014 14:03:44 +0530
+Message-Id: <1393835625-25102-4-git-send-email-ego@linux.vnet.ibm.com>
+In-Reply-To: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1393835625-25102-1-git-send-email-ego@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,139 +41,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_0ec40bda-d707-45fa-802f-61fc4ce02d63_
-Content-Type: text/plain; charset="windows-1256"
-Content-Transfer-Encoding: base64
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-SGkgbGlzdCwNCg0KSSB3YXMgaG9waW5nIHRvIHBpY2sgeW91ciBicmFpbnMgcmVnYXJkaW5nIHRo
-ZSBzb3VuZCBvbiBBcHBsZSBQb3dlclBDIG1hY2hpbmVzLiBGb3IgYSBsb25nIHRpbWUgbm93LCBz
-b3VuZCBoYXMgYmVlbiBicm9rZW4gb24gYSBudW1iZXIgb2YgdGhlc2UgbWFjaGluZXMuIFRoaXMs
-IEkgdGhpbmssIGlzIGR1ZSB0byBpMmMgY2hhbmdlcyB0aGF0IHN0YXJ0ZWQgaW4gQXByaWwgMjAx
-Mi4gQSBudW1iZXIgb2YgYnVnIHJlcG9ydHMgaGF2ZSBiZWVuIHJhaXNlZCBieSB1c2VycyBhdCBh
-IGRpc3RyaWJ1dGlvbiBsZXZlbCAoZS5nLiBodHRwczovL2J1Z3MuZGViaWFuLm9yZy9jZ2ktYmlu
-L2J1Z3JlcG9ydC5jZ2k/YnVnPTcxNDM0NSApIGJ1dCBhcyBvZiB5ZXQgbm8gcHJvZ3Jlc3MgaGFz
-IGJlZW4gbWFkZSBvbiB0aGVzZS4NCg0KVWJ1bnR1IGhhcyBiZWVuIGhpdCBieSBhICJGaXhpbmcg
-cmVjdXJzaXZlIGZhdWx0LCBidXQgcmVib290IGlzIG5lZWRlZCEiIGJ1ZyB0aGF0IGlzIGNhdXNl
-ZCBieSBzbmRfcG93ZXJtYWMgKCBodHRwczovL2J1Z3MubGF1bmNocGFkLm5ldC91YnVudHUvK3Nv
-dXJjZS9saW51eC8rYnVnLzEwNjY0MzUgKS4gSSB0cmllZCB0aGUgbGF0ZXN0IGRhaWx5IGJ1aWxk
-IG9mIEx1YnVudHUgeWVzdGVyZGF5IGFuZCB0aGUgcHJvYmxlbSBhcHBlYXJzIHRvIGJlIGdvbmUs
-IGJ1dCBzaW5jZSB0aGUgYnVnIGlzIGEgYml0IHRlbXBlcmFtZW50YWwsIEknbSB3b25kZXJpbmcg
-aWYgaXQgd2FzIGEgZmx1a2U/IEhhcyBhbnkgd29yayBiZWVuIGRvbmUgb24gdGhpcywgYW5kIGNh
-biB3ZSBnZW51aW5lbHkgbWFyayBpdCBhcyBzb2x2ZWQ/IEhvd2V2ZXIsIEkgY291bGQgbm90IGdl
-dCBzb3VuZCB3b3JraW5nIG9uIG15IEc0IGlCb29rLg0KDQpVYnVudHUgKGFuZCBJIHRoaW5rIERl
-YmlhbikgYWRkIHNuZF9wb3dlcm1hYyB0byAvZXRjL21vZHVsZXMuIElzIHRoaXMgc3RpbGwgbmVj
-ZXNzYXJ5IG9yIGRvZXMgdGhlIG1vZHVsZSBub3cgYXV0by1sb2FkPyBUaGUgaW5zdGFsbGVyIGhh
-cyBhIGNvbXBsaWNhdGVkIHJvdXRpbmUgKC9iaW4vZGlzY292ZXItbWFjLWlvKSB0byBsb2FkIGNl
-cnRhaW4gc291bmQgbW9kdWxlcyBhbmQgYmxhY2tsaXN0IG90aGVycy4gQ2FuIHdlIHJlbW92ZSB0
-aGlzIG5vdz8NCg0KSSBzZWVtIHRvIHJlbWVtYmVyIHJlYWRpbmcgc29tZXdoZXJlIHRoYXQgY2Vy
-dGFpbiBtYWNoaW5lcyB3aWxsIGJlIG1pZ3JhdGluZyBmcm9tIHNuZF9wb3dlcm1hYyB0byBzbmRf
-YW9hLCBhbHRob3VnaCBJIGNhbid0IHNlZW0gdG8gZmluZCB0aGUgcmVmZXJlbmNlIHRvIHRoYXQg
-bm93LiBJZiB0aGlzIGlzIHRoZSBjYXNlLCBJIHRoaW5rIGEgY2VydGFpbiBudW1iZXIgb2YgbWFj
-aGluZXMgaGF2ZSBzbGlwcGVkIHRocm91Z2ggdGhlIG5ldC4gQXMgdXNlcnMsIHdoYXQgaW5mb3Jt
-YXRpb24gZG8gd2UgbmVlZCB0byBwcm92aWRlIHRvIGdldCB0aGlzIGZpeGVkPyBBdHRhY2hlZCBp
-cyBhIHBhdGNoIHRoYXQgd2FzIHNlbnQgYnkgU3RlZmFuIEdhcnRuZXIgdG8gdGhlIERlYmlhbiBt
-YWlsaW5nIGxpc3QgKCBodHRwczovL2xpc3RzLmRlYmlhbi5vcmcvZGViaWFuLXBvd2VycGMvMjAx
-My8wOS9tc2cwMDAzMS5odG1sICkuIElzIHRoaXMgcGF0Y2ggb2theT8gSSdtIGFmcmFpZCBJIGRv
-bid0IGtub3cgaG93IHRvIGNoZWNrIHRoZSBkZXZpY2UgaWQvY29kZWMgdXNlZCBieSBteSBvd24g
-bWFjaGluZSwgYXMgYXQgYSBrZXJuZWwgbGV2ZWwgSSdtIGEgYml0IGNsdWVsZXNzLiBXb3VsZCBp
-dCBiZSBwb3NzaWJsZSB0byBwcm92aWRlIGluc3RydWN0aW9ucyBvbiBob3cgdG8gZG8gdGhpcz8g
-SSBjb3VsZCB0aGVuIGNpcmN1bGF0ZSB0aGUgaW5zdHJ1Y3Rpb25zIHRvIG90aGVyIHVzZXJzIHdo
-byBhbHNvIGhhdmUgbm8gc291bmQuIFRoYXQgd2F5IHdlIGNvdWxkIGhvcGVmdWxseSBmaXggYWxs
-IGJyb2tlbiBtYWNoaW5lcy4NCg0KSWYgeW91IG5lZWQgYW55IG1vcmUgaW5mbyB0aGVuIEkgd2ls
-bCBiZSBoYXBweSB0byBwcm92aWRlIGl0LCBhbHRob3VnaCB5b3UgbWF5IGhhdmUgdG8gZ2l2ZSBt
-ZSBhIGZldyBkYXlzIHRvIGRvIGl0IChubyBpbnRlcm5ldCBjb25uZWN0aW9uIS4uLikNCg0KTWFu
-eSB0aGFua3MNCg0KQWRhbQ0KDQoNCg0KLS0tIGEvc291bmQvYW9hL2ZhYnJpY3MvbGF5b3V0LmMJ
-MjAxMy0wOS0xOCAyMTowOTo0MS45MTA2NzI5NzAgKzAyMDAKKysrIGIvc291bmQvYW9hL2ZhYnJp
-Y3MvbGF5b3V0LmMJMjAxMy0wOS0xOCAyMzoyMzo1OC4yMzA1MTEyNzMgKzAyMDAKQEAgLTExMyw2
-ICsxMTMsOCBAQAogTU9EVUxFX0FMSUFTKCJhb2EtZGV2aWNlLWlkLTE0Iik7CiBNT0RVTEVfQUxJ
-QVMoImFvYS1kZXZpY2UtaWQtMjIiKTsKIE1PRFVMRV9BTElBUygiYW9hLWRldmljZS1pZC0zNSIp
-OworTU9EVUxFX0FMSUFTKCJhb2EtZGV2aWNlLWlkLTM4Iik7CitNT0RVTEVfQUxJQVMoImFvYS1k
-ZXZpY2UtaWQtNDAiKTsKIE1PRFVMRV9BTElBUygiYW9hLWRldmljZS1pZC00NCIpOwogCiAvKiBv
-bnl4IHdpdGggYWxsIGJ1dCBtaWNyb3Bob25lIGNvbm5lY3RlZCAqLwpAQCAtMzYyLDcgKzM2NCwy
-MCBAQAogCQkuY29ubmVjdGlvbnMgPSB0YXNfY29ubmVjdGlvbnNfbm9saW5lb3V0LAogCSAgfSwK
-IAl9LAorCS8qIFBvd2VyQm9vazYsNCAqLworCXsgLmRldmljZV9pZCA9IDQwLAorCSAgLmNvZGVj
-c1swXSA9IHsKKwkJLm5hbWUgPSAidGFzIiwKKwkJLmNvbm5lY3Rpb25zID0gdGFzX2Nvbm5lY3Rp
-b25zX2FsbCwKKwkgIH0sCisJfSwKIAkvKiBQb3dlckJvb2s2LDUgKi8KKwl7IC5kZXZpY2VfaWQg
-PSAzOCwKKwkgIC5jb2RlY3NbMF0gPSB7CisJCS5uYW1lID0gInRhcyIsCisJCS5jb25uZWN0aW9u
-cyA9IHRhc19jb25uZWN0aW9uc19hbGwsCisJICB9LAorCX0sCiAJeyAuZGV2aWNlX2lkID0gNDQs
-CiAJICAuY29kZWNzWzBdID0gewogCQkubmFtZSA9ICJ0YXMiLAotLS0gYS9zb3VuZC9hb2Evc291
-bmRidXMvaTJzYnVzL2NvcmUuYwkyMDEzLTA5LTE4IDIwOjI0OjAzLjk2MjM0ODc0MSArMDIwMAor
-KysgYi9zb3VuZC9hb2Evc291bmRidXMvaTJzYnVzL2NvcmUuYwkyMDEzLTA5LTE4IDIzOjM0OjQx
-LjkzNDU1MDExNiArMDIwMApAQCAtMjAxLDcgKzIwMSw3IEBACiAJCQkgKiBzbyByZXN0cmljdCB0
-byB0aG9zZSB3ZSBkbyBoYW5kbGUgZm9yIG5vdy4KIAkJCSAqLwogCQkJaWYgKGlkICYmICgqaWQg
-PT0gMjIgfHwgKmlkID09IDE0IHx8ICppZCA9PSAzNSB8fAotCQkJCSAgICppZCA9PSA0NCkpIHsK
-KwkJCQkgICAqaWQgPT0gNDQgfHwgKmlkID09IDQwIHx8ICppZCA9PSAzOCkpIHsKIAkJCQlzbnBy
-aW50ZihkZXYtPnNvdW5kLm1vZGFsaWFzLCAzMiwKIAkJCQkJICJhb2EtZGV2aWNlLWlkLSVkIiwg
-KmlkKTsKIAkJCQlvayA9IDE7DQogCQkgCSAgIAkJICA=
+Move the code that computes the cpumask corresponding to the
+thread-siblings of a cpu to a new method named
+powernv_cpu_to_core_mask() so that it can be used by other places in
+the code.
 
---_0ec40bda-d707-45fa-802f-61fc4ce02d63_
-Content-Type: text/html; charset="windows-1256"
-Content-Transfer-Encoding: base64
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 24 +++++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 5 deletions(-)
 
-PGh0bWw+DQo8aGVhZD4NCjxzdHlsZT48IS0tDQouaG1tZXNzYWdlIFANCnsNCm1hcmdpbjowcHg7
-DQpwYWRkaW5nOjBweA0KfQ0KYm9keS5obW1lc3NhZ2UNCnsNCmZvbnQtc2l6ZTogMTJwdDsNCmZv
-bnQtZmFtaWx5OkNhbGlicmkNCn0NCi0tPjwvc3R5bGU+PC9oZWFkPg0KPGJvZHkgY2xhc3M9J2ht
-bWVzc2FnZSc+PGRpdiBkaXI9J2x0cic+SGkgbGlzdCw8YnI+PGJyPkkgd2FzIGhvcGluZyB0byBw
-aWNrIHlvdXIgYnJhaW5zIHJlZ2FyZGluZyB0aGUgc291bmQgb24gQXBwbGUgUG93ZXJQQyBtYWNo
-aW5lcy4gRm9yIGEgbG9uZyB0aW1lIG5vdywgc291bmQgaGFzIGJlZW4gYnJva2VuIG9uIGEgbnVt
-YmVyIG9mIHRoZXNlIG1hY2hpbmVzLiBUaGlzLCBJIHRoaW5rLCBpcyBkdWUgdG8gaTJjIGNoYW5n
-ZXMgdGhhdCBzdGFydGVkIGluIEFwcmlsIDIwMTIuIEEgbnVtYmVyIG9mIGJ1ZyByZXBvcnRzIGhh
-dmUgYmVlbiByYWlzZWQgYnkgdXNlcnMgYXQgYSBkaXN0cmlidXRpb24gbGV2ZWwgKGUuZy4gaHR0
-cHM6Ly9idWdzLmRlYmlhbi5vcmcvY2dpLWJpbi9idWdyZXBvcnQuY2dpP2J1Zz03MTQzNDUgKSBi
-dXQgYXMgb2YgeWV0IG5vIHByb2dyZXNzIGhhcyBiZWVuIG1hZGUgb24gdGhlc2UuPGJyPjxicj5V
-YnVudHUgaGFzIGJlZW4gaGl0IGJ5IGEgIkZpeGluZyByZWN1cnNpdmUgZmF1bHQsIGJ1dCByZWJv
-b3QgaXMgbmVlZGVkISIgYnVnIHRoYXQgaXMgY2F1c2VkIGJ5IHNuZF9wb3dlcm1hYyAoIGh0dHBz
-Oi8vYnVncy5sYXVuY2hwYWQubmV0L3VidW50dS8rc291cmNlL2xpbnV4LytidWcvMTA2NjQzNSAp
-LiBJIHRyaWVkIHRoZSBsYXRlc3QgZGFpbHkgYnVpbGQgb2YgTHVidW50dSB5ZXN0ZXJkYXkgYW5k
-IHRoZSBwcm9ibGVtIGFwcGVhcnMgdG8gYmUgZ29uZSwgYnV0IHNpbmNlIHRoZSBidWcgaXMgYSBi
-aXQgdGVtcGVyYW1lbnRhbCwgSSdtIHdvbmRlcmluZyBpZiBpdCB3YXMgYSBmbHVrZT8gSGFzIGFu
-eSB3b3JrIGJlZW4gZG9uZSBvbiB0aGlzLCBhbmQgY2FuIHdlIGdlbnVpbmVseSBtYXJrIGl0IGFz
-IHNvbHZlZD8gSG93ZXZlciwgSSBjb3VsZCBub3QgZ2V0IHNvdW5kIHdvcmtpbmcgb24gbXkgRzQg
-aUJvb2suPGJyPjxicj5VYnVudHUgKGFuZCBJIHRoaW5rIERlYmlhbikgYWRkIHNuZF9wb3dlcm1h
-YyB0byAvZXRjL21vZHVsZXMuIElzIHRoaXMgc3RpbGwgbmVjZXNzYXJ5IG9yIGRvZXMgdGhlIG1v
-ZHVsZSBub3cgYXV0by1sb2FkPyBUaGUgaW5zdGFsbGVyIGhhcyBhIGNvbXBsaWNhdGVkIHJvdXRp
-bmUgKC9iaW4vZGlzY292ZXItbWFjLWlvKSB0byBsb2FkIGNlcnRhaW4gc291bmQgbW9kdWxlcyBh
-bmQgYmxhY2tsaXN0IG90aGVycy4gQ2FuIHdlIHJlbW92ZSB0aGlzIG5vdz88YnI+PGJyPkkgc2Vl
-bSB0byByZW1lbWJlciByZWFkaW5nIHNvbWV3aGVyZSB0aGF0IGNlcnRhaW4gbWFjaGluZXMgd2ls
-bCBiZSBtaWdyYXRpbmcgZnJvbSBzbmRfcG93ZXJtYWMgdG8gc25kX2FvYSwgYWx0aG91Z2ggSSBj
-YW4ndCBzZWVtIHRvIGZpbmQgdGhlIHJlZmVyZW5jZSB0byB0aGF0IG5vdy4gSWYgdGhpcyBpcyB0
-aGUgY2FzZSwgSSB0aGluayBhIGNlcnRhaW4gbnVtYmVyIG9mIG1hY2hpbmVzIGhhdmUgc2xpcHBl
-ZCB0aHJvdWdoIHRoZSBuZXQuIEFzIHVzZXJzLCB3aGF0IGluZm9ybWF0aW9uIGRvIHdlIG5lZWQg
-dG8gcHJvdmlkZSB0byBnZXQgdGhpcyBmaXhlZD8gQXR0YWNoZWQgaXMgYSBwYXRjaCB0aGF0IHdh
-cyBzZW50IGJ5IFN0ZWZhbiBHYXJ0bmVyIHRvIHRoZSBEZWJpYW4gbWFpbGluZyBsaXN0ICggaHR0
-cHM6Ly9saXN0cy5kZWJpYW4ub3JnL2RlYmlhbi1wb3dlcnBjLzIwMTMvMDkvbXNnMDAwMzEuaHRt
-bCApLiBJcyB0aGlzIHBhdGNoIG9rYXk/IEknbSBhZnJhaWQgSSBkb24ndCBrbm93IGhvdyB0byBj
-aGVjayB0aGUgZGV2aWNlIGlkL2NvZGVjIHVzZWQgYnkgbXkgb3duIG1hY2hpbmUsIGFzIGF0IGEg
-a2VybmVsIGxldmVsIEknbSBhIGJpdCBjbHVlbGVzcy4gV291bGQgaXQgYmUgcG9zc2libGUgdG8g
-cHJvdmlkZSBpbnN0cnVjdGlvbnMgb24gaG93IHRvIGRvIHRoaXM/IEkgY291bGQgdGhlbiBjaXJj
-dWxhdGUgdGhlIGluc3RydWN0aW9ucyB0byBvdGhlciB1c2VycyB3aG8gYWxzbyBoYXZlIG5vIHNv
-dW5kLiBUaGF0IHdheSB3ZSBjb3VsZCBob3BlZnVsbHkgZml4IGFsbCBicm9rZW4gbWFjaGluZXMu
-PGJyPjxicj5JZiB5b3UgbmVlZCBhbnkgbW9yZSBpbmZvIHRoZW4gSSB3aWxsIGJlIGhhcHB5IHRv
-IHByb3ZpZGUgaXQsIGFsdGhvdWdoIHlvdSBtYXkgaGF2ZSB0byBnaXZlIG1lIGEgZmV3IGRheXMg
-dG8gZG8gaXQgKG5vIGludGVybmV0IGNvbm5lY3Rpb24hLi4uKTxicj48YnI+TWFueSB0aGFua3M8
-YnI+PGJyPkFkYW08YnI+PGJyPjxicj48YnI+PHByZT4tLS0gYS9zb3VuZC9hb2EvZmFicmljcy9s
-YXlvdXQuYwkyMDEzLTA5LTE4IDIxOjA5OjQxLjkxMDY3Mjk3MCArMDIwMAorKysgYi9zb3VuZC9h
-b2EvZmFicmljcy9sYXlvdXQuYwkyMDEzLTA5LTE4IDIzOjIzOjU4LjIzMDUxMTI3MyArMDIwMApA
-QCAtMTEzLDYgKzExMyw4IEBACiBNT0RVTEVfQUxJQVMoImFvYS1kZXZpY2UtaWQtMTQiKTsKIE1P
-RFVMRV9BTElBUygiYW9hLWRldmljZS1pZC0yMiIpOwogTU9EVUxFX0FMSUFTKCJhb2EtZGV2aWNl
-LWlkLTM1Iik7CitNT0RVTEVfQUxJQVMoImFvYS1kZXZpY2UtaWQtMzgiKTsKK01PRFVMRV9BTElB
-UygiYW9hLWRldmljZS1pZC00MCIpOwogTU9EVUxFX0FMSUFTKCJhb2EtZGV2aWNlLWlkLTQ0Iik7
-CiAKIC8qIG9ueXggd2l0aCBhbGwgYnV0IG1pY3JvcGhvbmUgY29ubmVjdGVkICovCkBAIC0zNjIs
-NyArMzY0LDIwIEBACiAJCS5jb25uZWN0aW9ucyA9IHRhc19jb25uZWN0aW9uc19ub2xpbmVvdXQs
-CiAJICB9LAogCX0sCisJLyogUG93ZXJCb29rNiw0ICovCisJeyAuZGV2aWNlX2lkID0gNDAsCisJ
-ICAuY29kZWNzWzBdID0geworCQkubmFtZSA9ICJ0YXMiLAorCQkuY29ubmVjdGlvbnMgPSB0YXNf
-Y29ubmVjdGlvbnNfYWxsLAorCSAgfSwKKwl9LAogCS8qIFBvd2VyQm9vazYsNSAqLworCXsgLmRl
-dmljZV9pZCA9IDM4LAorCSAgLmNvZGVjc1swXSA9IHsKKwkJLm5hbWUgPSAidGFzIiwKKwkJLmNv
-bm5lY3Rpb25zID0gdGFzX2Nvbm5lY3Rpb25zX2FsbCwKKwkgIH0sCisJfSwKIAl7IC5kZXZpY2Vf
-aWQgPSA0NCwKIAkgIC5jb2RlY3NbMF0gPSB7CiAJCS5uYW1lID0gInRhcyIsCi0tLSBhL3NvdW5k
-L2FvYS9zb3VuZGJ1cy9pMnNidXMvY29yZS5jCTIwMTMtMDktMTggMjA6MjQ6MDMuOTYyMzQ4NzQx
-ICswMjAwCisrKyBiL3NvdW5kL2FvYS9zb3VuZGJ1cy9pMnNidXMvY29yZS5jCTIwMTMtMDktMTgg
-MjM6MzQ6NDEuOTM0NTUwMTE2ICswMjAwCkBAIC0yMDEsNyArMjAxLDcgQEAKIAkJCSAqIHNvIHJl
-c3RyaWN0IHRvIHRob3NlIHdlIGRvIGhhbmRsZSBmb3Igbm93LgogCQkJICovCiAJCQlpZiAoaWQg
-JmFtcDsmYW1wOyAoKmlkID09IDIyIHx8ICppZCA9PSAxNCB8fCAqaWQgPT0gMzUgfHwKLQkJCQkg
-ICAqaWQgPT0gNDQpKSB7CisJCQkJICAgKmlkID09IDQ0IHx8ICppZCA9PSA0MCB8fCAqaWQgPT0g
-MzgpKSB7CiAJCQkJc25wcmludGYoZGV2LSZndDtzb3VuZC5tb2RhbGlhcywgMzIsCiAJCQkJCSAi
-YW9hLWRldmljZS1pZC0lZCIsICppZCk7CiAJCQkJb2sgPSAxOzwvcHJlPjxicj4gCQkgCSAgIAkJ
-ICA8L2Rpdj48L2JvZHk+DQo8L2h0bWw+
-
---_0ec40bda-d707-45fa-802f-61fc4ce02d63_--
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index c59eb26..f0dae6f 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -166,6 +166,23 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 
+ /* Helper routines */
+ 
++/**
++ * Sets the bits corresponding to the thread-siblings of cpu in its core
++ * in 'cpus'.
++ */
++static void powernv_cpu_to_core_mask(unsigned int cpu, cpumask_var_t cpus)
++{
++	int base, i;
++
++	base = cpu_first_thread_sibling(cpu);
++
++	for (i = 0; i < threads_per_core; i++) {
++		cpumask_set_cpu(base + i, cpus);
++	}
++
++	return;
++}
++
+ /* Access helpers to power mgt SPR */
+ 
+ static inline unsigned long get_pmspr(unsigned long sprn)
+@@ -231,13 +248,10 @@ static int powernv_set_freq(cpumask_var_t cpus, unsigned int new_index)
+ 
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i;
++	int i;
+ 
+ #ifdef CONFIG_SMP
+-	base = cpu_first_thread_sibling(policy->cpu);
+-
+-	for (i = 0; i < threads_per_core; i++)
+-		cpumask_set_cpu(base + i, policy->cpus);
++	powernv_cpu_to_core_mask(policy->cpu, policy->cpus);
+ #endif
+ 	policy->cpuinfo.transition_latency = 25000;
+ 
+-- 
+1.8.3.1
