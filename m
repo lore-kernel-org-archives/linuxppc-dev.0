@@ -1,42 +1,18 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Poonam.Aggrwal@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id ED8342C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 19:09:39 +1100 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 4 Mar 2014 01:09:36 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 964A819D8036
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 01:09:31 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s24895iq10879470
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 09:09:05 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s248D2ge006700
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 01:13:03 -0700
-Message-ID: <53158A2F.8050605@linux.vnet.ibm.com>
-Date: Tue, 04 Mar 2014 00:09:19 -0800
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5683F2C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 19:07:35 +1100 (EST)
+From: "Poonam.Aggrwal@freescale.com" <Poonam.Aggrwal@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: UART Fifo mode
+Date: Tue, 4 Mar 2014 07:52:40 +0000
+Message-ID: <c41dba60851342d78609649a76a5980c@BY2PR03MB363.namprd03.prod.outlook.com>
+Content-Type: multipart/alternative;
+ boundary="_000_c41dba60851342d78609649a76a5980cBY2PR03MB363namprd03pro_"
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v3 02/11] perf: add PMU_FORMAT_RANGE() helper for use
- by sw-like pmus
-References: <20140304051936.33A712C01AB@ozlabs.org>
-In-Reply-To: <20140304051936.33A712C01AB@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Peter Zijlstra <peterz@infradead.org>, scottwood@freescale.com,
- LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,85 +22,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/03/2014 09:19 PM, Michael Ellerman wrote:
-> On Thu, 2014-27-02 at 21:04:55 UTC, Cody P Schafer wrote:
->> Add PMU_FORMAT_RANGE() and PMU_FORMAT_RANGE_RESERVED() (for reserved
->> areas) which generate functions to extract the relevent bits from
->> event->attr.config{,1,2} for use by sw-like pmus where the
->> 'config{,1,2}' values don't map directly to hardware registers.
->>
->> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
->> ---
->>   include/linux/perf_event.h | 17 +++++++++++++++++
->>   1 file changed, 17 insertions(+)
->>
->> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
->> index e56b07f..3da5081 100644
->> --- a/include/linux/perf_event.h
->> +++ b/include/linux/perf_event.h
->> @@ -871,4 +871,21 @@ _name##_show(struct device *dev,					\
->>   									\
->>   static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
->>
->> +#define PMU_FORMAT_RANGE(name, attr_var, bit_start, bit_end)		\
->> +PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);		\
->> +PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)
+--_000_c41dba60851342d78609649a76a5980cBY2PR03MB363namprd03pro_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+Hello All
+
+I am debugging a UART issue on a Freescale PowerPC SOC.
+
+My observations are:
+
+When FiFo mode is enabled FCR[FEN]=3D1, and the Fifo size is 16byte. I see =
+console prints not coming properly, lot of missing characters.
+
+But here when I change the tx_loadsz to 8, the UART works fine.
+
+        [PORT_16550A] =3D {
+                .name           =3D "16550A",
+                .fifo_size      =3D 16,
+-               .tx_loadsz      =3D 16,
++               .tx_loadsz      =3D 8,
+                .fcr            =3D UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_=
+10,
+                .flags          =3D UART_CAP_FIFO,
+        },
+
+Can anybody help to understand what is the significance of tx_loadsz. From =
+the code (drivers/serial/tty/8250/8250.c), looks like this parameter contro=
+ls the bytes we write to the UART Tx register at one  time.
+So ideally this should be equal to the Fifo size.
+
+I also see certain UARTs where tx_loadsz is not equal to fifo_size, less th=
+an fifo_size.
+
+Please help me to understand how should tx_loadsz be determined?
+
+Many Thanks
+Poonam
+
+--_000_c41dba60851342d78609649a76a5980cBY2PR03MB363namprd03pro_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
 >
-> I really think these should have event in the name.
->
-> Someone looking at the code is going to see event_get_foo() and wonder where
-> that is defined. Grep won't find a definition, tags won't find a definition,
-> the least you can do is have the macro name give some hint.
->
+<meta name=3D"Generator" content=3D"Microsoft Word 12 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+	{mso-style-priority:34;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+/* List Definitions */
+@list l0
+	{mso-list-id:1869485235;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1638543822 67698703 67698713 67698715 67698703 67698=
+713 67698715 67698703 67698713 67698715;}
+@list l0:level1
+	{mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">Hello All<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">I am debugging a UART issue on a Freescale PowerPC S=
+OC.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">My observations are:<o:p></o:p></p>
+<p class=3D"MsoListParagraph">When FiFo mode is enabled FCR[FEN]=3D1, and t=
+he Fifo size is 16byte. I see console prints not coming properly, lot of mi=
+ssing characters.<o:p></o:p></p>
+<p class=3D"MsoListParagraph">But here when I change the tx_loadsz to 8, th=
+e UART works fine.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [PORT_165=
+50A] =3D {<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D &quot;16550A&quot;,<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .fifo_size&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp; =3D 16,<o:p></o:p></p>
+<p class=3D"MsoNormal">-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .tx_loadsz&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+=3D 16,<o:p></o:p></p>
+<p class=3D"MsoNormal">&#43;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .tx_loadsz&nbsp;&nbsp;&nbsp;&nbsp;&nb=
+sp; =3D 8,<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .fcr&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =3D UART_FCR_ENABLE_FIFO | UART_FCR_R_TR=
+IG_10,<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; .flags&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp;&nbsp;&nbsp; =3D UART_CAP_FIFO,<o:p></o:p></p>
+<p class=3D"MsoNormal">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; },<o:p></=
+o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Can anybody help to understand what is the significa=
+nce of tx_loadsz. From the code (drivers/serial/tty/8250/8250.c), looks lik=
+e this parameter controls the bytes we write to the UART Tx register at one=
+ &nbsp;time.<o:p></o:p></p>
+<p class=3D"MsoNormal">So ideally this should be equal to the Fifo size.<o:=
+p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal"><i></i>I also see certain UARTs where tx_loadsz is n=
+ot equal to fifo_size, less than fifo_size.<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Please help me to understand how should tx_loadsz be=
+ determined?<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p class=3D"MsoNormal">Many Thanks<o:p></o:p></p>
+<p class=3D"MsoNormal">Poonam <o:p></o:p></p>
+</div>
+</body>
+</html>
 
-That is a good point (grep-ability). Let me think about this. There is 
-also the possibility that I could adjust the event_get_*() naming to 
-something else. format_get_*()? event_get_format_*()? (these names keep 
-growing...)
-
->> +#define PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)	\
->
-> It doesn't generate a format attribute.
-
-This was done with the idea that the term "format" didn't just refer to 
-the attribute exposed in sysfs, it referred to "some subset of bits 
-extractable from attr.config{,1,2}". Which is also the reasoning for the 
-above naming.
-
->> +static u64 event_get_##name##_max(void)					\
->> +{									\
->> +	int bits = (bit_end) - (bit_start) + 1;				\
->> +	return ((0x1ULL << (bits - 1ULL)) - 1ULL) |			\
->> +		(0xFULL << (bits - 4ULL));				\
->
-> What's wrong with:
->
-> 	(0x1ULL << ((bit_end) - (bit_start) + 1)) - 1ULL;
-
-Overflowing the << when bit_end = 63 and bit_start = 0 results in max(0, 
-63) = 0.
-That said, the current implementation is wrong when (bits < 4). Here's 
-one that actually works (without overflowing):
-
-         return (((1ull << (bit_end - bit_start)) - 1) << 1) + 1;
-
-And an examination of the problematic case:
-
-         #if 0
-         typedef unsigned long long ull;
-         ull a = bits - 1; /* 63 */
-         ull b = 1 << a;   /* 0x8000000000000000 */
-         ull c = b - 1;    /* 0x7fffffffffffffff */
-         ull d = b << 1;   /* 0xfffffffffffffffe */
-         ull e = d + 1;    /* 0xffffffffffffffff */
-         return e;
-         #endif
-
-Small number of valid inputs, so I also tested it for all of them using
-
-	unsigned bits = (bit_end) - (bit_start) + 1;
-	return (bits < (sizeof(0ULL) * CHAR_BIT))
-			? ((1ULL << bits) - 1ULL)
-			: ~0ULL;
-
-As the baseline correct one.
+--_000_c41dba60851342d78609649a76a5980cBY2PR03MB363namprd03pro_--
