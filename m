@@ -1,26 +1,23 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <tipbot@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BAA912C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 09:12:13 +1100 (EST)
-Date: Tue, 4 Mar 2014 23:12:09 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 1/2] sched: Remove unused mc_capable() and
- smt_capable()
-In-Reply-To: <20140304210737.16893.54289.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Message-ID: <alpine.DEB.2.02.1403042311480.18573@ionos.tec.linutronix.de>
-References: <20140304210621.16893.8772.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20140304210737.16893.54289.stgit@bhelgaas-glaptop.roam.corp.google.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2F2432C0228
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 10:17:00 +1100 (EST)
+Date: Tue, 4 Mar 2014 15:15:51 -0800
+Sender: tip tree robot <tipbot@zytor.com>
+From: tip-bot for Thomas Gleixner <tipbot@zytor.com>
+Message-ID: <tip-57310c3c99eb6fab2ecbd63aa3f7c323341ca77e@git.kernel.org>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:irq/core] powerpc: eeh:
+ Fixup the brown paperbag fallout of the "cleanup"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Cc: shangw@linux.vnet.ibm.com, peterz@infradead.org, hpa@zytor.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Reply-To: linux-kernel@vger.kernel.org, mingo@kernel.org, hpa@zytor.com,
+ peterz@infradead.org, linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
+ tglx@linutronix.de, shangw@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,24 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit-ID:  57310c3c99eb6fab2ecbd63aa3f7c323341ca77e
+Gitweb:     http://git.kernel.org/tip/57310c3c99eb6fab2ecbd63aa3f7c323341ca77e
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Wed, 5 Mar 2014 00:06:11 +0100
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Wed, 5 Mar 2014 00:13:33 +0100
 
+powerpc: eeh: Fixup the brown paperbag fallout of the "cleanup"
 
-On Tue, 4 Mar 2014, Bjorn Helgaas wrote:
+Commit b8a9a11b9 (powerpc: eeh: Kill another abuse of irq_desc) is
+missing some brackets .....
 
-> Remove mc_capable() and smt_capable().  Neither is used.
-> 
-> Both were added by 5c45bf279d37 ("sched: mc/smt power savings sched
-> policy").  Uses of both were removed by 8e7fbcbc22c1 ("sched: Remove stale
-> power aware scheduling remnants and dysfunctional knobs").
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  arch/arm/include/asm/topology.h      |    3 ---
->  arch/ia64/include/asm/topology.h     |    1 -
->  arch/mips/include/asm/topology.h     |    4 ----
->  arch/powerpc/include/asm/topology.h  |    1 -
->  arch/sparc/include/asm/topology_64.h |    2 --
->  arch/x86/include/asm/topology.h      |    6 ------
->  6 files changed, 17 deletions(-)
+It's not a good idea to write patches in grumpy mode and then forget
+to at least compile test them or rely on the few eyeballs discussing
+that patch to spot it.....
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Reported-by: fengguang.wu@intel.com
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: ppc <linuxppc-dev@lists.ozlabs.org>
+---
+ arch/powerpc/kernel/eeh_driver.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 3e1d7de..bb61ca5 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -166,8 +166,9 @@ static void eeh_enable_irq(struct pci_dev *dev)
+ 		 *
+ 		 *	tglx
+ 		 */
+-		if (irqd_irq_disabled(irq_get_irq_data(dev->irq))
++		if (irqd_irq_disabled(irq_get_irq_data(dev->irq)))
+ 			enable_irq(dev->irq);
++	}
+ }
+ 
+ /**
