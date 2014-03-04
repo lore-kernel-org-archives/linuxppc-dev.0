@@ -1,42 +1,33 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5CF5C2C0099
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 18:01:46 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F2B292C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 18:35:41 +1100 (EST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 4 Mar 2014 00:01:42 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7B8A019D804C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 00:01:37 -0700 (MST)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s24713N69306618
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 08:01:03 +0100
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s24758Wj001244
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 00:05:09 -0700
-Message-ID: <53157A45.4080600@linux.vnet.ibm.com>
-Date: Mon, 03 Mar 2014 23:01:25 -0800
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v3 03/11] perf: provide a common perf_event_nop_0() for
- use with .event_idx
-References: <20140304051936.97CBF2C020A@ozlabs.org>
-In-Reply-To: <20140304051936.97CBF2C020A@ozlabs.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Peter Zijlstra <peterz@infradead.org>, scottwood@freescale.com,
- LKML <linux-kernel@vger.kernel.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Tue, 4 Mar 2014 02:35:38 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 730476E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 02:35:31 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s247ZamR29491248
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 07:35:36 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s247Za2U004118
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 02:35:36 -0500
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] net/mlx4: Support shutdown() interface
+Date: Tue,  4 Mar 2014 15:35:20 +0800
+Message-Id: <1393918520-3268-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: weiyang@linux.vnet.ibm.com, amirv@mellanox.com, davem@davemloft.net,
+ Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,16 +37,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/03/2014 09:19 PM, Michael Ellerman wrote:
-> On Thu, 2014-27-02 at 21:04:56 UTC, Cody P Schafer wrote:
->> Rather an having every pmu that needs a function that just returns 0 for
->> .event_idx define their own copy, reuse the one in kernel/events/core.c.
->>
->> Rename from perf_swevent_event_idx() because we're no longer using it
->> for just software events. Naming is based on the perf_pmu_nop_*()
->> functions.
->
-> You could just use perf_pmu_nop_int() directly.
+In kexec scenario, we failed to load the mlx4 driver in the
+second kernel because the ownership bit was hold by the first
+kernel without release correctly.
 
-No, .event_idx needs something that takes a (struct perf_event *), 
-perf_pmu_nop_int() takes a (struct pmu *).
+The patch adds shutdown() interface so that the ownership can
+be released correctly in the first kernel. It also helps avoiding
+EEH error happened during boot stage of the second kernel because
+of undesired traffic, which can't be handled by hardware during
+that stage on Power platform.
+
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Tested-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+---
+ drivers/net/ethernet/mellanox/mlx4/main.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c b/drivers/net/ethernet/mellanox/mlx4/main.c
+index d711158..5a6105f 100644
+--- a/drivers/net/ethernet/mellanox/mlx4/main.c
++++ b/drivers/net/ethernet/mellanox/mlx4/main.c
+@@ -2684,6 +2684,7 @@ static struct pci_driver mlx4_driver = {
+ 	.name		= DRV_NAME,
+ 	.id_table	= mlx4_pci_table,
+ 	.probe		= mlx4_init_one,
++	.shutdown	= mlx4_remove_one,
+ 	.remove		= mlx4_remove_one,
+ 	.err_handler    = &mlx4_err_handler,
+ };
+-- 
+1.7.10.4
