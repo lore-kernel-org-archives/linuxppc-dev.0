@@ -1,12 +1,9 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 4 Mar 2014 08:31:24 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, ldufour@linux.vnet.ibm.com
-Subject: [PATCH] powerpc: Align p_dyn, p_rela and p_st symbols
-Message-ID: <20140304083124.0c7c29a2@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Check that all cpu features are in the possible map
+Date: Tue,  4 Mar 2014 13:44:39 +1100
+Message-Id: <1393901079-25319-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,24 +13,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+cpu_has_feature() has an optimisation where it maintains a map of
+possible cpu features. This allows the compiler to determine at compile
+time that some cpu_has_feature() checks will always return 0, and
+therefore the code guarded by the check can be elided.
 
-The 64bit relocation code places a few symbols in the text segment.
-These symbols are only 4 byte aligned where they need to be 8 byte
-aligned. Add an explicit alignment.
+However we have no logic to check whether the set of cpu features in the
+current cpu spec are in the possible map. Although that should never
+happen, if it does things are likely to go badly. So add a check and
+print a warning.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@vger.kernel.org
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
+ arch/powerpc/kernel/cputable.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/kernel/reloc_64.S b/arch/powerpc/kernel/reloc_64.S
-index 1482327..d88736f 100644
---- a/arch/powerpc/kernel/reloc_64.S
-+++ b/arch/powerpc/kernel/reloc_64.S
-@@ -81,6 +81,7 @@ _GLOBAL(relocate)
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 6c8dd5d..eb31713 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -2255,6 +2255,15 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
+ 	}
+ #endif /* CONFIG_PPC64 || CONFIG_BOOKE */
  
- 6:	blr
++	/*
++	 * Check that all CPU features are in the possible mask. We don't want
++	 * to WARN() because we're called very early, and doing so will kill
++	 * the machine, so just printk() instead.
++	 */
++	if (t->cpu_features != (t->cpu_features & CPU_FTRS_POSSIBLE))
++		printk("WARNING: cpu spec contains impossible features! 0x%lx\n",
++			(t->cpu_features & ~CPU_FTRS_POSSIBLE));
++
+ 	return t;
+ }
  
-+.balign 8
- p_dyn:	.llong	__dynamic_start - 0b
- p_rela:	.llong	__rela_dyn_start - 0b
- p_st:	.llong	_stext - 0b
+-- 
+1.8.3.2
