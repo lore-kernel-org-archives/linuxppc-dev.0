@@ -1,17 +1,9 @@
 Return-Path: <michael@ozlabs.org>
-In-Reply-To: <1393535105-7528-4-git-send-email-cody@linux.vnet.ibm.com>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 03/11] perf: provide a common perf_event_nop_0() for
- use with .event_idx
-Message-Id: <20140304051936.97CBF2C020A@ozlabs.org>
-Date: Tue,  4 Mar 2014 16:19:36 +1100 (EST)
-Cc: Peter Zijlstra <peterz@infradead.org>, scottwood@freescale.com,
- Cody P Schafer <cody@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v3 1/2] powerpc: Add a cpu feature CPU_FTR_PMAO_BUG
+Date: Tue,  4 Mar 2014 16:31:32 +1100
+Message-Id: <1393911093-8248-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,91 +13,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-27-02 at 21:04:56 UTC, Cody P Schafer wrote:
-> Rather an having every pmu that needs a function that just returns 0 for
-> .event_idx define their own copy, reuse the one in kernel/events/core.c.
-> 
-> Rename from perf_swevent_event_idx() because we're no longer using it
-> for just software events. Naming is based on the perf_pmu_nop_*()
-> functions.
+Some power8 revisions have a hardware bug where we can lose a
+Performance Monitor (PMU) exception under certain circumstances.
 
-You could just use perf_pmu_nop_int() directly.
+We will be adding a workaround for this case, see the next commit for
+details. The observed behaviour is that writing PMAO doesn't cause an
+exception as we would expect, hence the name of the feature.
 
-Peterz, OK by you?
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/cputable.h | 6 ++++--
+ arch/powerpc/kernel/cputable.c      | 2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-cheers
+v3: Add CPU_FTRS_POWER8E to the possible map!
+v2: Set the bit directly via the cputable entry for POWER8E.
 
-> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> ---
->  include/linux/perf_event.h |  1 +
->  kernel/events/core.c       | 10 +++++-----
->  2 files changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index 3da5081..24a7b45 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -560,6 +560,7 @@ extern void perf_pmu_migrate_context(struct pmu *pmu,
->  extern u64 perf_event_read_value(struct perf_event *event,
->  				 u64 *enabled, u64 *running);
->  
-> +extern int perf_event_nop_0(struct perf_event *event);
->  
->  struct perf_sample_data {
->  	u64				type;
-> diff --git a/kernel/events/core.c b/kernel/events/core.c
-> index 56003c6..2938a77 100644
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -5816,7 +5816,7 @@ static int perf_swevent_init(struct perf_event *event)
->  	return 0;
->  }
->  
-> -static int perf_swevent_event_idx(struct perf_event *event)
-> +int perf_event_nop_0(struct perf_event *event)
->  {
->  	return 0;
->  }
-> @@ -5831,7 +5831,7 @@ static struct pmu perf_swevent = {
->  	.stop		= perf_swevent_stop,
->  	.read		= perf_swevent_read,
->  
-> -	.event_idx	= perf_swevent_event_idx,
-> +	.event_idx	= perf_event_nop_0,
->  };
->  
->  #ifdef CONFIG_EVENT_TRACING
-> @@ -5950,7 +5950,7 @@ static struct pmu perf_tracepoint = {
->  	.stop		= perf_swevent_stop,
->  	.read		= perf_swevent_read,
->  
-> -	.event_idx	= perf_swevent_event_idx,
-> +	.event_idx	= perf_event_nop_0,
->  };
->  
->  static inline void perf_tp_register(void)
-> @@ -6177,7 +6177,7 @@ static struct pmu perf_cpu_clock = {
->  	.stop		= cpu_clock_event_stop,
->  	.read		= cpu_clock_event_read,
->  
-> -	.event_idx	= perf_swevent_event_idx,
-> +	.event_idx	= perf_event_nop_0,
->  };
->  
->  /*
-> @@ -6257,7 +6257,7 @@ static struct pmu perf_task_clock = {
->  	.stop		= task_clock_event_stop,
->  	.read		= task_clock_event_read,
->  
-> -	.event_idx	= perf_swevent_event_idx,
-> +	.event_idx	= perf_event_nop_0,
->  };
->  
->  static void perf_pmu_nop_void(struct pmu *pmu)
-> -- 
-> 1.9.0
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 617cc76..bc23477 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -189,6 +189,7 @@ extern const char *powerpc_base_platform;
+ #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
+ #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
+ #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
++#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -445,6 +446,7 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+ 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+ 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
++#define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
+ #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -466,8 +468,8 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+ 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+-	    CPU_FTRS_POWER7 | CPU_FTRS_POWER8 | CPU_FTRS_CELL |		\
+-	    CPU_FTRS_PA6T | CPU_FTR_VSX)
++	    CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 |	\
++	    CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_VSX)
+ #endif
+ #else
+ enum {
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 6c8dd5d..c1faade 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -510,7 +510,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x004b0000,
+ 		.cpu_name		= "POWER8E (raw)",
+-		.cpu_features		= CPU_FTRS_POWER8,
++		.cpu_features		= CPU_FTRS_POWER8E,
+ 		.cpu_user_features	= COMMON_USER_POWER8,
+ 		.cpu_user_features2	= COMMON_USER2_POWER8,
+ 		.mmu_features		= MMU_FTRS_POWER8,
+-- 
+1.8.3.2
