@@ -1,19 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from [10.61.2.158] (ibmaus65.lnk.telstra.net [165.228.126.9])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPSA id 9F4622C00CB
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Mar 2014 14:38:51 +1100 (EST)
-Message-ID: <1393904329.11997.3.camel@concordia>
-Subject: Re: [PATCH] powerpc: Check that all cpu features are in the
- possible map
+Return-Path: <michael@ozlabs.org>
+In-Reply-To: <1393535105-7528-3-git-send-email-cody@linux.vnet.ibm.com>
+To: Cody P Schafer <cody@linux.vnet.ibm.com>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 04 Mar 2014 14:38:49 +1100
-In-Reply-To: <1393901079-25319-1-git-send-email-mpe@ellerman.id.au>
-References: <1393901079-25319-1-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Subject: Re: [PATCH v3 02/11] perf: add PMU_FORMAT_RANGE() helper for use by
+ sw-like pmus
+Message-Id: <20140304051936.33A712C01AB@ozlabs.org>
+Date: Tue,  4 Mar 2014 16:19:36 +1100 (EST)
+Cc: Peter Zijlstra <peterz@infradead.org>, scottwood@freescale.com,
+ Cody P Schafer <cody@linux.vnet.ibm.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-04 at 13:44 +1100, Michael Ellerman wrote:
-> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-> index 6c8dd5d..eb31713 100644
-> --- a/arch/powerpc/kernel/cputable.c
-> +++ b/arch/powerpc/kernel/cputable.c
-> @@ -2255,6 +2255,15 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
->  	}
->  #endif /* CONFIG_PPC64 || CONFIG_BOOKE */
+On Thu, 2014-27-02 at 21:04:55 UTC, Cody P Schafer wrote:
+> Add PMU_FORMAT_RANGE() and PMU_FORMAT_RANGE_RESERVED() (for reserved
+> areas) which generate functions to extract the relevent bits from
+> event->attr.config{,1,2} for use by sw-like pmus where the
+> 'config{,1,2}' values don't map directly to hardware registers.
+> 
+> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+> ---
+>  include/linux/perf_event.h | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+> 
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index e56b07f..3da5081 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -871,4 +871,21 @@ _name##_show(struct device *dev,					\
+>  									\
+>  static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
 >  
-> +	/*
-> +	 * Check that all CPU features are in the possible mask. We don't want
-> +	 * to WARN() because we're called very early, and doing so will kill
-> +	 * the machine, so just printk() instead.
-> +	 */
-> +	if (t->cpu_features != (t->cpu_features & CPU_FTRS_POSSIBLE))
-> +		printk("WARNING: cpu spec contains impossible features! 0x%lx\n",
-> +			(t->cpu_features & ~CPU_FTRS_POSSIBLE));
+> +#define PMU_FORMAT_RANGE(name, attr_var, bit_start, bit_end)		\
+> +PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);		\
+> +PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)
 
+I really think these should have event in the name.
 
-Actually even this is not safe.
+Someone looking at the code is going to see event_get_foo() and wonder where
+that is defined. Grep won't find a definition, tags won't find a definition,
+the least you can do is have the macro name give some hint.
 
-printk() takes the logbuf_lock, but we don't have a paca yet, so our LOCK_TOKEN
-will be some random guff in low memory. And although that's OK, we're single
-threaded, it's a bit fishy.
+> +#define PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)	\
 
-What's worse is printk() does local_irq_save(), which will _store_ to our paca
-(soft_enabled), and so we risk flipping a value somewhere.
+It doesn't generate a format attribute.
 
-Interestingly lockdep appears to be OK, even though we haven't initialised it
-yet. printk() helpfully turns lockdep off before doing any locking.
+> +static u64 event_get_##name##_max(void)					\
+> +{									\
+> +	int bits = (bit_end) - (bit_start) + 1;				\
+> +	return ((0x1ULL << (bits - 1ULL)) - 1ULL) |			\
+> +		(0xFULL << (bits - 4ULL));				\
+
+What's wrong with:
+
+	(0x1ULL << ((bit_end) - (bit_start) + 1)) - 1ULL;
 
 cheers
