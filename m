@@ -1,23 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 255B02C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 05:53:52 +1100 (EST)
-Message-ID: <1393959220.2697.177.camel@snotra.buserror.net>
-Subject: Re: [PATCH] Corenet: Add QE platform support for Corenet
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-Date: Tue, 4 Mar 2014 12:53:40 -0600
-In-Reply-To: <ef9ee88dd9e548f380abb7512dc1814c@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1393577309-41445-1-git-send-email-B45475@freescale.com>
- <62FC0C4F-26FD-44B4-BC07-BDF1904AE637@kernel.crashing.org>
- <ef9ee88dd9e548f380abb7512dc1814c@BLUPR03MB341.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Xiaobo-R63061 <X.Xie@freescale.com>
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0204.hostedemail.com
+ [216.40.44.204]) by ozlabs.org (Postfix) with ESMTP id 231CA2C00BC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 07:23:19 +1100 (EST)
+Message-ID: <1393964591.20435.58.camel@joe-AO722>
+Subject: [RFC PATCH] Remove CONFIG_DCACHE_WORD_ACCESS
+From: Joe Perches <joe@perches.com>
+To: linux-arch <linux-arch@vger.kernel.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>
+Date: Tue, 04 Mar 2014 12:23:11 -0800
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ "H. Peter
+ Anvin" <hpa@zytor.com>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,72 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-04 at 03:09 -0600, Zhao Qiang-B45475 wrote:
-> On Mar 3, 2014, at 11:51 PM, Kumar Gala [galak@kernel.crashing.org] wrote:
-> 
-> 
-> 
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Monday, March 03, 2014 11:51 PM
-> > To: Zhao Qiang-B45475
-> > Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Xie Xiaobo-R63061
-> > Subject: Re: [PATCH] Corenet: Add QE platform support for Corenet
-> > 
-> > 
-> > On Feb 28, 2014, at 2:48 AM, Zhao Qiang <B45475@freescale.com> wrote:
-> > 
-> > > There is QE on platform T104x, add support.
-> > > Call funcs qe_ic_init and qe_init if CONFIG_QUICC_ENGINE is defined.
-> > >
-> > > Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> > > ---
-> > > arch/powerpc/platforms/85xx/corenet_generic.c | 32
-> > > +++++++++++++++++++++++++++
-> > > 1 file changed, 32 insertions(+)
-> > 
-> > Can you use mpc85xx_qe_init() instead?
-> 
-> 
-> mpc85xx_qe_init() is for old QE which is different from new QE.
-> New QE has no par_io, and it is not correct to init 
-> par_io(par_io_init() called in mpc85xx_qe_init()) for new QE. 
+It seems to duplicate CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+so use that instead.
 
-So split that function into mpc85xx_qe_init() and
-mpc85xx_qe_par_io_init().
+This changes the !CPU_LITTLE_ENDIAN powerpc arch to use unaligned
+accesses in fs/dcache.c and fs/namei.c as
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is enabled for that arch.
 
-> > >
-> > > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c
-> > > b/arch/powerpc/platforms/85xx/corenet_generic.c
-> > > index fbd871e..f8c8e0c 100644
-> > > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> > > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> > >
-> > > /*
-> > > @@ -52,11 +68,24 @@ void __init corenet_gen_pic_init(void)  */ void
-> > > __init corenet_gen_setup_arch(void) {
-> > > +#ifdef CONFIG_QUICC_ENGINE
-> > > +	struct device_node *np;
-> > > +#endif
-> > > 	mpc85xx_smp_init();
-> > >
-> > > 	swiotlb_detect_4g();
-> > >
-> > > 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
-> > > +
-> > > +#ifdef CONFIG_QUICC_ENGINE
-> > > +	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
-> > > +	if (!np) {
-> > > +		pr_err("%s: Could not find Quicc Engine node\n", __func__);
-> > > +		return;
-> > 
-> > This doesn't seem like an reasonable error message for common corenet
-> > platform.  It seems reasonable to build QE support but boot on a chip w/o
-> > QE.
+Remove the now unused DCACHE_WORD_ACCESS defines & uses.
 
-mpc85xx_qe_init() has a similar problem regarding the error message, but
-the above is worse because it does an early return from
-corenet_gen_setup_arch() rather than just from mpc85xx_qe_init() -- what
-if someone added non-QE things after this point?
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/arm/Kconfig                      | 1 -
+ arch/arm/include/asm/word-at-a-time.h | 4 ++--
+ arch/arm64/Kconfig                    | 1 -
+ arch/x86/Kconfig                      | 1 -
+ fs/Kconfig                            | 4 ----
+ fs/dcache.c                           | 2 +-
+ fs/namei.c                            | 2 +-
+ 7 files changed, 4 insertions(+), 11 deletions(-)
 
--Scott
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 623a272..d5a2e60 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -12,7 +12,6 @@ config ARM
+ 	select BUILDTIME_EXTABLE_SORT if MMU
+ 	select CLONE_BACKWARDS
+ 	select CPU_PM if (SUSPEND || CPU_IDLE)
+-	select DCACHE_WORD_ACCESS if HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 	select GENERIC_ATOMIC64 if (CPU_V7M || CPU_V6 || !CPU_32v6K || !AEABI)
+ 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+ 	select GENERIC_IDLE_POLL_SETUP
+diff --git a/arch/arm/include/asm/word-at-a-time.h b/arch/arm/include/asm/word-at-a-time.h
+index a6d0a29..778b2ad 100644
+--- a/arch/arm/include/asm/word-at-a-time.h
++++ b/arch/arm/include/asm/word-at-a-time.h
+@@ -54,7 +54,7 @@ static inline unsigned long find_zero(unsigned long mask)
+ #include <asm-generic/word-at-a-time.h>
+ #endif
+ 
+-#ifdef CONFIG_DCACHE_WORD_ACCESS
++#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 
+ /*
+  * Load an unaligned word from kernel space.
+@@ -94,5 +94,5 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
+ 	return ret;
+ }
+ 
+-#endif	/* DCACHE_WORD_ACCESS */
++#endif	/* HAVE_EFFICIENT_UNALIGNED_ACCESS */
+ #endif /* __ASM_ARM_WORD_AT_A_TIME_H */
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 764d682..2d6978c 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -13,7 +13,6 @@ config ARM64
+ 	select CLONE_BACKWARDS
+ 	select COMMON_CLK
+ 	select CPU_PM if (SUSPEND || CPU_IDLE)
+-	select DCACHE_WORD_ACCESS
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+ 	select GENERIC_IOMAP
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index abb261e..60cfa073 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -98,7 +98,6 @@ config X86
+ 	select CLKEVT_I8253
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select GENERIC_IOMAP
+-	select DCACHE_WORD_ACCESS
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select ARCH_WANT_IPC_PARSE_VERSION if X86_32
+ 	select HAVE_ARCH_SECCOMP_FILTER
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 312393f..7511271 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -4,10 +4,6 @@
+ 
+ menu "File systems"
+ 
+-# Use unaligned word dcache accesses
+-config DCACHE_WORD_ACCESS
+-       bool
+-
+ if BLOCK
+ 
+ source "fs/ext2/Kconfig"
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 265e0ce..4e3c195 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -163,7 +163,7 @@ int proc_nr_dentry(ctl_table *table, int write, void __user *buffer,
+  * Compare 2 name strings, return 0 if they match, otherwise non-zero.
+  * The strings are both count bytes long, and count is non-zero.
+  */
+-#ifdef CONFIG_DCACHE_WORD_ACCESS
++#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 
+ #include <asm/word-at-a-time.h>
+ /*
+diff --git a/fs/namei.c b/fs/namei.c
+index 385f781..1ee33ca 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1618,7 +1618,7 @@ static inline int nested_symlink(struct path *path, struct nameidata *nd)
+  *   the final mask". Again, that could be replaced with a
+  *   efficient population count instruction or similar.
+  */
+-#ifdef CONFIG_DCACHE_WORD_ACCESS
++#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 
+ #include <asm/word-at-a-time.h>
+ 
