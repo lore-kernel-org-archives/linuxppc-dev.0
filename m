@@ -1,33 +1,42 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F2B292C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 18:35:41 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id ED8342C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 19:09:39 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Tue, 4 Mar 2014 02:35:38 -0500
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 730476E8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 02:35:31 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s247ZamR29491248
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 07:35:36 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s247Za2U004118
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 02:35:36 -0500
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] net/mlx4: Support shutdown() interface
-Date: Tue,  4 Mar 2014 15:35:20 +0800
-Message-Id: <1393918520-3268-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: weiyang@linux.vnet.ibm.com, amirv@mellanox.com, davem@davemloft.net,
- Gavin Shan <shangw@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Tue, 4 Mar 2014 01:09:36 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 964A819D8036
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2014 01:09:31 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s24895iq10879470
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 09:09:05 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s248D2ge006700
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Mar 2014 01:13:03 -0700
+Message-ID: <53158A2F.8050605@linux.vnet.ibm.com>
+Date: Tue, 04 Mar 2014 00:09:19 -0800
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH v3 02/11] perf: add PMU_FORMAT_RANGE() helper for use
+ by sw-like pmus
+References: <20140304051936.33A712C01AB@ozlabs.org>
+In-Reply-To: <20140304051936.33A712C01AB@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Peter Zijlstra <peterz@infradead.org>, scottwood@freescale.com,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,33 +46,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In kexec scenario, we failed to load the mlx4 driver in the
-second kernel because the ownership bit was hold by the first
-kernel without release correctly.
+On 03/03/2014 09:19 PM, Michael Ellerman wrote:
+> On Thu, 2014-27-02 at 21:04:55 UTC, Cody P Schafer wrote:
+>> Add PMU_FORMAT_RANGE() and PMU_FORMAT_RANGE_RESERVED() (for reserved
+>> areas) which generate functions to extract the relevent bits from
+>> event->attr.config{,1,2} for use by sw-like pmus where the
+>> 'config{,1,2}' values don't map directly to hardware registers.
+>>
+>> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+>> ---
+>>   include/linux/perf_event.h | 17 +++++++++++++++++
+>>   1 file changed, 17 insertions(+)
+>>
+>> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+>> index e56b07f..3da5081 100644
+>> --- a/include/linux/perf_event.h
+>> +++ b/include/linux/perf_event.h
+>> @@ -871,4 +871,21 @@ _name##_show(struct device *dev,					\
+>>   									\
+>>   static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
+>>
+>> +#define PMU_FORMAT_RANGE(name, attr_var, bit_start, bit_end)		\
+>> +PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);		\
+>> +PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)
+>
+> I really think these should have event in the name.
+>
+> Someone looking at the code is going to see event_get_foo() and wonder where
+> that is defined. Grep won't find a definition, tags won't find a definition,
+> the least you can do is have the macro name give some hint.
+>
 
-The patch adds shutdown() interface so that the ownership can
-be released correctly in the first kernel. It also helps avoiding
-EEH error happened during boot stage of the second kernel because
-of undesired traffic, which can't be handled by hardware during
-that stage on Power platform.
+That is a good point (grep-ability). Let me think about this. There is 
+also the possibility that I could adjust the event_get_*() naming to 
+something else. format_get_*()? event_get_format_*()? (these names keep 
+growing...)
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-Tested-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- drivers/net/ethernet/mellanox/mlx4/main.c |    1 +
- 1 file changed, 1 insertion(+)
+>> +#define PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)	\
+>
+> It doesn't generate a format attribute.
 
-diff --git a/drivers/net/ethernet/mellanox/mlx4/main.c b/drivers/net/ethernet/mellanox/mlx4/main.c
-index d711158..5a6105f 100644
---- a/drivers/net/ethernet/mellanox/mlx4/main.c
-+++ b/drivers/net/ethernet/mellanox/mlx4/main.c
-@@ -2684,6 +2684,7 @@ static struct pci_driver mlx4_driver = {
- 	.name		= DRV_NAME,
- 	.id_table	= mlx4_pci_table,
- 	.probe		= mlx4_init_one,
-+	.shutdown	= mlx4_remove_one,
- 	.remove		= mlx4_remove_one,
- 	.err_handler    = &mlx4_err_handler,
- };
--- 
-1.7.10.4
+This was done with the idea that the term "format" didn't just refer to 
+the attribute exposed in sysfs, it referred to "some subset of bits 
+extractable from attr.config{,1,2}". Which is also the reasoning for the 
+above naming.
+
+>> +static u64 event_get_##name##_max(void)					\
+>> +{									\
+>> +	int bits = (bit_end) - (bit_start) + 1;				\
+>> +	return ((0x1ULL << (bits - 1ULL)) - 1ULL) |			\
+>> +		(0xFULL << (bits - 4ULL));				\
+>
+> What's wrong with:
+>
+> 	(0x1ULL << ((bit_end) - (bit_start) + 1)) - 1ULL;
+
+Overflowing the << when bit_end = 63 and bit_start = 0 results in max(0, 
+63) = 0.
+That said, the current implementation is wrong when (bits < 4). Here's 
+one that actually works (without overflowing):
+
+         return (((1ull << (bit_end - bit_start)) - 1) << 1) + 1;
+
+And an examination of the problematic case:
+
+         #if 0
+         typedef unsigned long long ull;
+         ull a = bits - 1; /* 63 */
+         ull b = 1 << a;   /* 0x8000000000000000 */
+         ull c = b - 1;    /* 0x7fffffffffffffff */
+         ull d = b << 1;   /* 0xfffffffffffffffe */
+         ull e = d + 1;    /* 0xffffffffffffffff */
+         return e;
+         #endif
+
+Small number of valid inputs, so I also tested it for all of them using
+
+	unsigned bits = (bit_end) - (bit_start) + 1;
+	return (bits < (sizeof(0ULL) * CHAR_BIT))
+			? ((1ULL << bits) - 1ULL)
+			: ~0ULL;
+
+As the baseline correct one.
