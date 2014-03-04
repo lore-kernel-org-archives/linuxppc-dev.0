@@ -1,22 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91F4F2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 10:19:29 +1100 (EST)
-Message-ID: <1393975112.10727.103.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id E83D92C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 10:29:12 +1100 (EST)
+Date: Wed, 5 Mar 2014 00:29:04 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [tip:irq/core] powerpc: eeh: Fixup the brown paperbag fallout
  of the "cleanup"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-kernel@vger.kernel.org, mingo@kernel.org, hpa@zytor.com,
- peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
- tglx@linutronix.de, shangw@linux.vnet.ibm.com
-Date: Wed, 05 Mar 2014 10:18:32 +1100
-In-Reply-To: <tip-57310c3c99eb6fab2ecbd63aa3f7c323341ca77e@git.kernel.org>
+In-Reply-To: <1393975112.10727.103.camel@pasglop>
+Message-ID: <alpine.DEB.2.02.1403050027560.18573@ionos.tec.linutronix.de>
 References: <tip-57310c3c99eb6fab2ecbd63aa3f7c323341ca77e@git.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-tip-commits@vger.kernel.org
+ <1393975112.10727.103.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: shangw@linux.vnet.ibm.com, linux-tip-commits@vger.kernel.org,
+ peterz@infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-04 at 15:15 -0800, tip-bot for Thomas Gleixner wrote:
-> Commit-ID:  57310c3c99eb6fab2ecbd63aa3f7c323341ca77e
-> Gitweb:     http://git.kernel.org/tip/57310c3c99eb6fab2ecbd63aa3f7c323341ca77e
-> Author:     Thomas Gleixner <tglx@linutronix.de>
-> AuthorDate: Wed, 5 Mar 2014 00:06:11 +0100
-> Committer:  Thomas Gleixner <tglx@linutronix.de>
-> CommitDate: Wed, 5 Mar 2014 00:13:33 +0100
-> 
-> powerpc: eeh: Fixup the brown paperbag fallout of the "cleanup"
-> 
-> Commit b8a9a11b9 (powerpc: eeh: Kill another abuse of irq_desc) is
-> missing some brackets .....
-> 
-> It's not a good idea to write patches in grumpy mode and then forget
-> to at least compile test them or rely on the few eyeballs discussing
-> that patch to spot it.....
+On Wed, 5 Mar 2014, Benjamin Herrenschmidt wrote:
 
-Ouch :-)
-
-Next time you have a series like that, if you want I'll throw it at my
-build tester.
-
-Cheers,
-Ben.
-
-> Reported-by: fengguang.wu@intel.com
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: ppc <linuxppc-dev@lists.ozlabs.org>
-> ---
->  arch/powerpc/kernel/eeh_driver.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> On Tue, 2014-03-04 at 15:15 -0800, tip-bot for Thomas Gleixner wrote:
+> > Commit-ID:  57310c3c99eb6fab2ecbd63aa3f7c323341ca77e
+> > Gitweb:     http://git.kernel.org/tip/57310c3c99eb6fab2ecbd63aa3f7c323341ca77e
+> > Author:     Thomas Gleixner <tglx@linutronix.de>
+> > AuthorDate: Wed, 5 Mar 2014 00:06:11 +0100
+> > Committer:  Thomas Gleixner <tglx@linutronix.de>
+> > CommitDate: Wed, 5 Mar 2014 00:13:33 +0100
+> > 
+> > powerpc: eeh: Fixup the brown paperbag fallout of the "cleanup"
+> > 
+> > Commit b8a9a11b9 (powerpc: eeh: Kill another abuse of irq_desc) is
+> > missing some brackets .....
+> > 
+> > It's not a good idea to write patches in grumpy mode and then forget
+> > to at least compile test them or rely on the few eyeballs discussing
+> > that patch to spot it.....
 > 
-> diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-> index 3e1d7de..bb61ca5 100644
-> --- a/arch/powerpc/kernel/eeh_driver.c
-> +++ b/arch/powerpc/kernel/eeh_driver.c
-> @@ -166,8 +166,9 @@ static void eeh_enable_irq(struct pci_dev *dev)
->  		 *
->  		 *	tglx
->  		 */
-> -		if (irqd_irq_disabled(irq_get_irq_data(dev->irq))
-> +		if (irqd_irq_disabled(irq_get_irq_data(dev->irq)))
->  			enable_irq(dev->irq);
-> +	}
->  }
->  
->  /**
+> Ouch :-)
+> 
+> Next time you have a series like that, if you want I'll throw it at my
+> build tester.
+
+You simply could have been less lazy and picked up the whole ppc
+related stuff instead of ignoring it....
+
+Thanks,
+
+	tglx
