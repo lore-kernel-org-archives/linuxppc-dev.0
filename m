@@ -1,39 +1,19 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 78FA32C034F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 14:26:47 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Wed, 5 Mar 2014 08:56:45 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id DF360E0056
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 09:00:22 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s253QkWq56492248
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 08:56:46 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s253Qg7W006608
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 08:56:43 +0530
-Message-ID: <53169971.8050607@linux.vnet.ibm.com>
-Date: Wed, 05 Mar 2014 08:56:41 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Read OPAL error log and export it through
- sysfs
-References: <87k3cin5kd.fsf@river.au.ibm.com>
- <1393549112-6101-1-git-send-email-stewart@linux.vnet.ibm.com>
- <5315C7B6.1030602@linux.vnet.ibm.com> <87vbvtjtmh.fsf@river.au.ibm.com>
-In-Reply-To: <87vbvtjtmh.fsf@river.au.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <anton@samba.org>
+Date: Wed, 5 Mar 2014 14:51:37 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Joe Perches <joe@perches.com>, Alexander Graf <agraf@suse.de>, Ben
+ Herrenschmidt <benh@kernel.crashing.org>, Dinar Valeev <dvaleev@suse.com>,
+ Santiago Leon <santil@linux.vnet.ibm.com>, tony@bakeyournoodle.com
+Subject: ibmveth: Fix endian issues with MAC addresses
+Message-ID: <20140305145137.3460dbe7@kryten>
+In-Reply-To: <20131224125529.58970f1b@kryten>
+References: <1387762163-39662-1-git-send-email-agraf@suse.de>
+ <20131223173833.0a9a6705@kryten>
+ <1387810329.22671.66.camel@joe-AO722>
+ <20131224125529.58970f1b@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,19 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/05/2014 07:26 AM, Stewart Smith wrote:
-> Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
->>> +int64_t opal_send_ack_elog(uint64_t log_id);
->>
->> Stewart,
->>
->> Why are you creating 64bit log ID  when actual ID is 32bit ?
->
-> IIRC it's what OPAL gives us, even though FSP MBOX spec says 32bit.
->
 
-Stewart,
+The code to load a MAC address into a u64 for passing to the
+hypervisor via a register is broken on little endian.
 
-Better ask OPAL folks to fix in firmware ?
+Create a helper function called ibmveth_encode_mac_addr
+which does the right thing in both big and little endian.
 
--Vasant
+We were storing the MAC address in a long in struct ibmveth_adapter.
+It's never used so remove it - we don't need another place in the
+driver where we create endian issues with MAC addresses.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@vger.kernel.org
+---
+
+Index: b/drivers/net/ethernet/ibm/ibmveth.c
+===================================================================
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -522,10 +522,21 @@ retry:
+ 	return rc;
+ }
+ 
++static u64 ibmveth_encode_mac_addr(u8 *mac)
++{
++	int i;
++	u64 encoded = 0;
++
++	for (i = 0; i < ETH_ALEN; i++)
++		encoded = (encoded << 8) | mac[i];
++
++	return encoded;
++}
++
+ static int ibmveth_open(struct net_device *netdev)
+ {
+ 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+-	u64 mac_address = 0;
++	u64 mac_address;
+ 	int rxq_entries = 1;
+ 	unsigned long lpar_rc;
+ 	int rc;
+@@ -579,8 +590,7 @@ static int ibmveth_open(struct net_devic
+ 	adapter->rx_queue.num_slots = rxq_entries;
+ 	adapter->rx_queue.toggle = 1;
+ 
+-	memcpy(&mac_address, netdev->dev_addr, netdev->addr_len);
+-	mac_address = mac_address >> 16;
++	mac_address = ibmveth_encode_mac_addr(netdev->dev_addr);
+ 
+ 	rxq_desc.fields.flags_len = IBMVETH_BUF_VALID |
+ 					adapter->rx_queue.queue_len;
+@@ -1183,8 +1193,8 @@ static void ibmveth_set_multicast_list(s
+ 		/* add the addresses to the filter table */
+ 		netdev_for_each_mc_addr(ha, netdev) {
+ 			/* add the multicast address to the filter table */
+-			unsigned long mcast_addr = 0;
+-			memcpy(((char *)&mcast_addr)+2, ha->addr, ETH_ALEN);
++			u64 mcast_addr;
++			mcast_addr = ibmveth_encode_mac_addr(ha->addr);
+ 			lpar_rc = h_multicast_ctrl(adapter->vdev->unit_address,
+ 						   IbmVethMcastAddFilter,
+ 						   mcast_addr);
+@@ -1372,9 +1382,6 @@ static int ibmveth_probe(struct vio_dev
+ 
+ 	netif_napi_add(netdev, &adapter->napi, ibmveth_poll, 16);
+ 
+-	adapter->mac_addr = 0;
+-	memcpy(&adapter->mac_addr, mac_addr_p, ETH_ALEN);
+-
+ 	netdev->irq = dev->irq;
+ 	netdev->netdev_ops = &ibmveth_netdev_ops;
+ 	netdev->ethtool_ops = &netdev_ethtool_ops;
+@@ -1383,7 +1390,7 @@ static int ibmveth_probe(struct vio_dev
+ 		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
+ 	netdev->features |= netdev->hw_features;
+ 
+-	memcpy(netdev->dev_addr, &adapter->mac_addr, netdev->addr_len);
++	memcpy(netdev->dev_addr, mac_addr_p, ETH_ALEN);
+ 
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
+ 		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
+Index: b/drivers/net/ethernet/ibm/ibmveth.h
+===================================================================
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -138,7 +138,6 @@ struct ibmveth_adapter {
+     struct napi_struct napi;
+     struct net_device_stats stats;
+     unsigned int mcastFilterSize;
+-    unsigned long mac_addr;
+     void * buffer_list_addr;
+     void * filter_list_addr;
+     dma_addr_t buffer_list_dma;
