@@ -1,21 +1,22 @@
-Return-Path: <qiang.zhao@freescale.com>
+Return-Path: <Shengzhou.Liu@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
  (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46EED2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 18:26:07 +1100 (EST)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>,
- <galak@kernel.crashing.org>
-Subject: [PATCh v2 2/2] Corenet: Add QE platform support for Corenet
-Date: Wed, 5 Mar 2014 15:21:32 +0800
-Message-ID: <1394004092-4622-2-git-send-email-B45475@freescale.com>
-In-Reply-To: <1394004092-4622-1-git-send-email-B45475@freescale.com>
-References: <1394004092-4622-1-git-send-email-B45475@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0DFFF2C01AE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 20:23:20 +1100 (EST)
+Received: from mail185-tx2 (localhost [127.0.0.1])	by
+ mail185-tx2-R.bigfish.com (Postfix) with ESMTP id 6CB99260512	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 09:23:16 +0000 (UTC)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH] net/phy: Add Cortina CS43xx PHY support
+Date: Wed, 5 Mar 2014 16:16:31 +0800
+Message-ID: <1394007391-32256-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
+Cc: YongHua Cao <B43619@freescale.com>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,84 +26,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is QE on platform T104x, add support.
-Call funcs qe_ic_init and qe_init if CONFIG_QUICC_ENGINE is defined.
+Add support for Cortina CS4315/CS4340 10G PHY.
+(Tested with CS4315 on T2080RDB and CS4340 on T4240RDB).
 
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
+Signed-off-by: YongHua Cao <B43619@freescale.com>
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
-Changes for v2:
-	- use mpc85xx_qe_init() instead
- arch/powerpc/platforms/85xx/corenet_generic.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/net/phy/Kconfig   |  5 +++
+ drivers/net/phy/Makefile  |  1 +
+ drivers/net/phy/cortina.c | 92 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 98 insertions(+)
+ create mode 100644 drivers/net/phy/cortina.c
 
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index fbd871e..f1f4575 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -26,11 +26,14 @@
- #include <asm/udbg.h>
- #include <asm/mpic.h>
- #include <asm/ehv_pic.h>
-+#include <asm/qe.h>
-+#include <asm/qe_ic.h>
+diff --git a/drivers/net/phy/Kconfig b/drivers/net/phy/Kconfig
+index 1d18443..f7d6c8c 100644
+--- a/drivers/net/phy/Kconfig
++++ b/drivers/net/phy/Kconfig
+@@ -60,6 +60,11 @@ config VITESSE_PHY
+         ---help---
+           Currently supports the vsc8244
  
- #include <linux/of_platform.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include "smp.h"
-+#include "mpc85xx.h"
- 
- void __init corenet_gen_pic_init(void)
- {
-@@ -38,6 +41,10 @@ void __init corenet_gen_pic_init(void)
- 	unsigned int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
- 		MPIC_NO_RESET;
- 
-+#ifdef CONFIG_QUICC_ENGINE
-+	struct device_node *np;
-+#endif
++config CORTINA_PHY
++	tristate "Drivers for the Cortina PHYs"
++	---help---
++	  Currently supports the CS4315 and CS4340 PHY.
 +
- 	if (ppc_md.get_irq == mpic_get_coreint_irq)
- 		flags |= MPIC_ENABLE_COREINT;
- 
-@@ -45,6 +52,16 @@ void __init corenet_gen_pic_init(void)
- 	BUG_ON(mpic == NULL);
- 
- 	mpic_init(mpic);
+ config SMSC_PHY
+ 	tristate "Drivers for SMSC PHYs"
+ 	---help---
+diff --git a/drivers/net/phy/Makefile b/drivers/net/phy/Makefile
+index a4f96b7..4047042 100644
+--- a/drivers/net/phy/Makefile
++++ b/drivers/net/phy/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_LXT_PHY)		+= lxt.o
+ obj-$(CONFIG_QSEMI_PHY)		+= qsemi.o
+ obj-$(CONFIG_SMSC_PHY)		+= smsc.o
+ obj-$(CONFIG_VITESSE_PHY)	+= vitesse.o
++obj-$(CONFIG_CORTINA_PHY)	+= cortina.o
+ obj-$(CONFIG_BROADCOM_PHY)	+= broadcom.o
+ obj-$(CONFIG_BCM63XX_PHY)	+= bcm63xx.o
+ obj-$(CONFIG_BCM87XX_PHY)	+= bcm87xx.o
+diff --git a/drivers/net/phy/cortina.c b/drivers/net/phy/cortina.c
+new file mode 100644
+index 0000000..154827c
+--- /dev/null
++++ b/drivers/net/phy/cortina.c
+@@ -0,0 +1,92 @@
++/* Driver for Cortina PHYs
++ *
++ * Copyright 2013-2014 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ */
 +
-+#ifdef CONFIG_QUICC_ENGINE
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-+	if (np) {
-+		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-+				qe_ic_cascade_high_mpic);
-+		of_node_put(np);
-+	}
-+#endif
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mii.h>
++#include <linux/ethtool.h>
++#include <linux/phy.h>
 +
- }
- 
- /*
-@@ -57,6 +74,11 @@ void __init corenet_gen_setup_arch(void)
- 	swiotlb_detect_4g();
- 
- 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
++#define PHY_ID_CS4340	0x13e51002
 +
-+#ifdef CONFIG_QUICC_ENGINE
-+	mpc85xx_qe_init();
-+#endif
++MODULE_DESCRIPTION("Cortina PHY driver");
++MODULE_AUTHOR("Caoyh");
++MODULE_LICENSE("GPL");
 +
- }
- 
- static const struct of_device_id of_device_ids[] = {
-@@ -81,6 +103,9 @@ static const struct of_device_id of_device_ids[] = {
- 	{
- 		.compatible	= "fsl,qoriq-pcie-v3.0",
- 	},
-+	{
-+		.compatible	= "fsl,qe",
-+	},
- 	/* The following two are for the Freescale hypervisor */
- 	{
- 		.name		= "hypervisor",
++static int cs4340_config_init(struct phy_device *phydev)
++{
++	phydev->supported = SUPPORTED_10000baseT_Full;
++	phydev->advertising = SUPPORTED_10000baseT_Full;
++
++	return 0;
++}
++
++static int cs4340_config_aneg(struct phy_device *phydev)
++{
++	return 0;
++}
++
++static int cs4340_read_status(struct phy_device *phydev)
++{
++	phydev->link = 1;
++	phydev->speed = 10000;
++	phydev->duplex = DUPLEX_FULL;
++	return 0;
++}
++
++static int cs4340_ack_interrupt(struct phy_device *phydev)
++{
++	return 0;
++}
++
++static int cs4340_config_intr(struct phy_device *phydev)
++{
++	return 0;
++}
++
++static struct phy_driver cs4340_driver = {
++	.phy_id		= PHY_ID_CS4340,
++	.phy_id_mask	= 0xffffffff,
++	.name		= "Cortina CS4315/CS4340",
++	.features	= 0,
++	.config_init	= &cs4340_config_init,
++	.config_aneg	= &cs4340_config_aneg,
++	.read_status	= &cs4340_read_status,
++	.ack_interrupt	= &cs4340_ack_interrupt,
++	.config_intr	= &cs4340_config_intr,
++	.driver		= { .owner = THIS_MODULE,},
++};
++
++static int __init cs4340_init(void)
++{
++	int err;
++
++	err = phy_driver_register(&cs4340_driver);
++	if (err < 0)
++			return err;
++
++	return 0;
++}
++
++static void __exit cs4340_exit(void)
++{
++	phy_driver_unregister(&cs4340_driver);
++}
++
++module_init(cs4340_init);
++module_exit(cs4340_exit);
++
++static struct mdio_device_id __maybe_unused cortina_tbl[] = {
++	{ PHY_ID_CS4340, 0xffffffff},
++	{},
++};
++
++MODULE_DEVICE_TABLE(mdio, cortina_tbl);
 -- 
-1.8.5
+1.8.0
