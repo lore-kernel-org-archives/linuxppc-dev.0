@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6C67C2C01A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 15:37:39 +1100 (EST)
-Message-ID: <1393994178.11372.2.camel@pasglop>
-Subject: Re: [PATCH 1/2] sched: Remove unused mc_capable() and smt_capable()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 05 Mar 2014 15:36:18 +1100
-In-Reply-To: <20140304210737.16893.54289.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <20140304210621.16893.8772.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20140304210737.16893.54289.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by ozlabs.org (Postfix) with ESMTPS id 6BDD62C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 18:25:55 +1100 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>,
+ <galak@kernel.crashing.org>
+Subject: [PATCh v2 1/2] QE: split function mpc85xx_qe_init() into two
+ functions.
+Date: Wed, 5 Mar 2014 15:21:31 +0800
+Message-ID: <1394004092-4622-1-git-send-email-B45475@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-04 at 14:07 -0700, Bjorn Helgaas wrote:
-> Remove mc_capable() and smt_capable().  Neither is used.
-> 
-> Both were added by 5c45bf279d37 ("sched: mc/smt power savings sched
-> policy").  Uses of both were removed by 8e7fbcbc22c1 ("sched: Remove stale
-> power aware scheduling remnants and dysfunctional knobs").
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+New QE doesn't have par_io, it doesn't need to init par_io
+for new QE.
+Split function mpc85xx_qe_init() into mpc85xx_qe_init()
+and mpc85xx_qe_par_io_init().
+Call mpc85xx_qe_init() for both new and old while
+mpc85xx_qe_par_io_init() after mpc85xx_qe_init() for old.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+Changes for v2:
+	-no
+
+ arch/powerpc/platforms/85xx/common.c      | 6 ++++++
+ arch/powerpc/platforms/85xx/mpc85xx.h     | 2 ++
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c | 1 +
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 1 +
+ arch/powerpc/platforms/85xx/twr_p102x.c   | 1 +
+ 5 files changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+index 3b085c7..b564b5e 100644
+--- a/arch/powerpc/platforms/85xx/common.c
++++ b/arch/powerpc/platforms/85xx/common.c
+@@ -107,6 +107,12 @@ void __init mpc85xx_qe_init(void)
+ 	qe_reset();
+ 	of_node_put(np);
+ 
++}
++
++void __init mpc85xx_qe_par_io_init(void)
++{
++	struct device_node *np;
++
+ 	np = of_find_node_by_name(NULL, "par_io");
+ 	if (np) {
+ 		struct device_node *ucc;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx.h b/arch/powerpc/platforms/85xx/mpc85xx.h
+index fc51dd4..39056f6 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx.h
++++ b/arch/powerpc/platforms/85xx/mpc85xx.h
+@@ -10,8 +10,10 @@ static inline void __init mpc85xx_cpm2_pic_init(void) {}
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+ extern void mpc85xx_qe_init(void);
++extern void mpc85xx_qe_par_io_init(void);
+ #else
+ static inline void __init mpc85xx_qe_init(void) {}
++static inline void __init mpc85xx_qe_par_io_init(void) {}
+ #endif
+ 
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 34f3c5e..3c190b4 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -239,6 +239,7 @@ static void __init mpc85xx_mds_qe_init(void)
+ 	struct device_node *np;
+ 
+ 	mpc85xx_qe_init();
++	mpc85xx_qe_par_io_init();
+ 	mpc85xx_mds_reset_ucc_phys();
+ 
+ 	if (machine_is(p1021_mds)) {
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e15bdd1..f9668ed 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -99,6 +99,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+ 	mpc85xx_qe_init();
++	mpc85xx_qe_par_io_init();
+ #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
+ 	if (machine_is(p1025_rdb)) {
+ 
+diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+index c25ff10..1eadb6d 100644
+--- a/arch/powerpc/platforms/85xx/twr_p102x.c
++++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+@@ -77,6 +77,7 @@ static void __init twr_p1025_setup_arch(void)
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+ 	mpc85xx_qe_init();
++	mpc85xx_qe_par_io_init();
+ 
+ #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
+ 	if (machine_is(twr_p1025)) {
+-- 
+1.8.5
