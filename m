@@ -1,20 +1,37 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B681F2C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 04:14:44 +1100 (EST)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.2 \(1874\))
-Subject: Re: [PATCh v2 2/2] Corenet: Add QE platform support for Corenet
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1394004092-4622-2-git-send-email-B45475@freescale.com>
-Date: Wed, 5 Mar 2014 11:14:35 -0600
-Message-Id: <72DA70B0-15AF-4774-8179-20DC1B275ADB@kernel.crashing.org>
-References: <1394004092-4622-1-git-send-email-B45475@freescale.com>
- <1394004092-4622-2-git-send-email-B45475@freescale.com>
-To: Zhao Qiang <B45475@freescale.com>
-Cc: B07421@freescale.com, R63061@freescale.com, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 01B5F2C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 04:20:16 +1100 (EST)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Wed, 5 Mar 2014 17:20:11 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 70C1E219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 17:20:05 +0000 (GMT)
+Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
+ [9.149.37.249])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s25HJvsI5963912
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 17:19:57 GMT
+Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s25HK8BF024507
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 10:20:08 -0700
+Subject: [PATCH] powerpc/le: fix endianness of the arguments passed to the
+ ppc_rtas() syscall
+To: benh@kernel.crashing.org, paulus@samba.org
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2014 18:20:06 +0100
+Message-ID: <20140305172006.26117.57219.stgit@bahia.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,97 +41,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+RTAS manipulates its input and output arguments in big endian order.
 
-On Mar 5, 2014, at 1:21 AM, Zhao Qiang <B45475@freescale.com> wrote:
+I have looked at factoring some lines with rtas_call() but it is not really
+worth it because of the variable arguments.
 
-> There is QE on platform T104x, add support.
-> Call funcs qe_ic_init and qe_init if CONFIG_QUICC_ENGINE is defined.
->=20
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
-> Changes for v2:
-> 	- use mpc85xx_qe_init() instead
-> arch/powerpc/platforms/85xx/corenet_generic.c | 25 =
-+++++++++++++++++++++++++
-> 1 file changed, 25 insertions(+)
->=20
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c =
-b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index fbd871e..f1f4575 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -26,11 +26,14 @@
-> #include <asm/udbg.h>
-> #include <asm/mpic.h>
-> #include <asm/ehv_pic.h>
-> +#include <asm/qe.h>
-> +#include <asm/qe_ic.h>
->=20
-> #include <linux/of_platform.h>
-> #include <sysdev/fsl_soc.h>
-> #include <sysdev/fsl_pci.h>
-> #include "smp.h"
-> +#include "mpc85xx.h"
->=20
-> void __init corenet_gen_pic_init(void)
-> {
-> @@ -38,6 +41,10 @@ void __init corenet_gen_pic_init(void)
-> 	unsigned int flags =3D MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
-> 		MPIC_NO_RESET;
->=20
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	struct device_node *np;
-> +#endif
-> +
-> 	if (ppc_md.get_irq =3D=3D mpic_get_coreint_irq)
-> 		flags |=3D MPIC_ENABLE_COREINT;
->=20
-> @@ -45,6 +52,16 @@ void __init corenet_gen_pic_init(void)
-> 	BUG_ON(mpic =3D=3D NULL);
->=20
-> 	mpic_init(mpic);
-> +
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	np =3D of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
-> +	if (np) {
-> +		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
-> +				qe_ic_cascade_high_mpic);
-> +		of_node_put(np);
-> +	}
-> +#endif
-> +
+Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/rtas.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-remove the #ifdef, they aren=92t really needed.
-
-> }
->=20
-> /*
-> @@ -57,6 +74,11 @@ void __init corenet_gen_setup_arch(void)
-> 	swiotlb_detect_4g();
->=20
-> 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
-> +
-> +#ifdef CONFIG_QUICC_ENGINE
-> +	mpc85xx_qe_init();
-> +#endif
-
-ifdef not needed
-
-> +
-> }
->=20
-> static const struct of_device_id of_device_ids[] =3D {
-> @@ -81,6 +103,9 @@ static const struct of_device_id of_device_ids[] =3D =
-{
-> 	{
-> 		.compatible	=3D "fsl,qoriq-pcie-v3.0",
-> 	},
-> +	{
-> +		.compatible	=3D "fsl,qe",
-> +	},
-> 	/* The following two are for the Freescale hypervisor */
-> 	{
-> 		.name		=3D "hypervisor",
-> --=20
-> 1.8.5
->=20
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 4cf674d..00dbe36 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -1020,6 +1020,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+ 	char *buff_copy, *errbuf = NULL;
+ 	int nargs;
+ 	int rc;
++	int i;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+@@ -1056,9 +1057,19 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+ 
+ 	flags = lock_rtas();
+ 
+-	rtas.args = args;
++	rtas.args.token = cpu_to_be32(args.token);
++	rtas.args.nargs = cpu_to_be32(args.nargs);
++	rtas.args.nret  = cpu_to_be32(args.nret);
++	for (i = 0; i < nargs; ++i)
++		rtas.args.args[i] = cpu_to_be32(args.args[i]);
++	rtas.args.rets  = &rtas.args.args[nargs];
++	for (i = 0; i < args.nret; ++i)
++		rtas.args.rets[i] = 0;
++
+ 	enter_rtas(__pa(&rtas.args));
+-	args = rtas.args;
++
++	for (i = 0; i < args.nret; ++i)
++		args.rets[i] = be32_to_cpu(rtas.args.rets[i]);
+ 
+ 	/* A -1 return code indicates that the last command couldn't
+ 	   be completed due to a hardware error. */
