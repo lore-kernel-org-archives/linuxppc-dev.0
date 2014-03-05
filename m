@@ -1,26 +1,37 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AC13D2C01AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 12:49:02 +1100 (EST)
-Date: Wed, 5 Mar 2014 09:48:39 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: [PATCH 2/3] dts: mpc512x: adjust clock specs for FEC nodes
-Message-ID: <20140305014836.GC8784@S2101-09.ap.freescale.net>
-References: <1393237557-31406-1-git-send-email-gsi@denx.de>
- <1393237557-31406-2-git-send-email-gsi@denx.de>
- <20140303092231.GS3327@book.gsilab.sittig.org>
+ by ozlabs.org (Postfix) with ESMTPS id 519F52C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 12:51:29 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 5 Mar 2014 07:21:23 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2EB66E0044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 07:24:59 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s251pMSb1179964
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 07:21:22 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s251pJue028366
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 07:21:19 +0530
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3] powerpc/powernv Platform dump interface
+In-Reply-To: <5315C592.4050605@linux.vnet.ibm.com>
+References: <1393393321-9902-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1393802742-3891-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <5315C592.4050605@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2014 12:51:16 +1100
+Message-ID: <871tyhl8ff.fsf@river.au.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140303092231.GS3327@book.gsilab.sittig.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Mike Turquette <mturquette@linaro.org>, Pawel Moll <pawel.moll@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +41,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 03, 2014 at 10:22:31AM +0100, Gerhard Sittig wrote:
-> On Mon, Feb 24, 2014 at 11:25 +0100, Gerhard Sittig wrote:
-> > 
-> > a recent FEC binding document update that was motivated by i.MX
-> > development revealed that ARM and PowerPC implementations in Linux
-> > did not agree on the clock names to use for the FEC nodes
-> > 
-> > change clock names from "per" to "ipg" in the FEC nodes of the
-> > mpc5121.dtsi include file such that the .dts specs comply with
-> > the common FEC binding
-> > 
-> > this "incompatible" change does not break operation, because
-> > - COMMON_CLK support for MPC5121/23/25 and adjusted .dts files
-> >   were only introduced in Linux v3.14-rc1, no mainline release
-> >   provided these specs before
-> > - if this change won't make it for v3.14, the MPC512x CCF support
-> >   provides full backwards compability, and keeps operating with
-> >   device trees which lack clock specs or don't match in the names
-> > 
-> > Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> 
-> ping
-> 
-> Are there opinions about making PowerPC users of FEC use the same
-> clock names as ARM users do, to re-use (actually: keep sharing)
-> the FEC binding?  The alternative would be to fragment the FEC
-> binding into several bindings for ARM and PowerPC, which I feel
-> would be undesirable, and is not necessary.
+Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
+>> +		Each dump has the following files:
+>> +		id:		An ASCII representation of the dump ID
+>> +				in hex (e.g. '0x01')
+>> +		type:		An ASCII representation of the type of
+>> +				dump in the format "0x%x %s" with the ID
+>
+> Better 0x%x - %s ?
 
-As I already said, Documentation/devicetree/bindings/net/fsl-fec.txt
-was created specifically for i.MX FEC controller from day one.  And even
-as of today, it doesn't serve PowerPC, because for example the property
-'phy-mode' documented as required one is not required by PowerPC FEC.
-My opinion would be to patch fsl-fec.txt a little bit to make it clear
-that it's a binding doc for i.MX FEC, and create the other one for
-PowerPC FEC.  This is the way less confusing to people and easier for
-binding maintenance.
-
-Shawn
+I thought of that, but figured that a simple space is probably slightly
+easier to parse programatically.
