@@ -1,35 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sha@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 51A6E2C031A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 21:36:34 +1100 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 6 Mar 2014 16:06:31 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 65289E0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 16:10:09 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s26AaTjQ57540682
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Mar 2014 16:06:29 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s26AaPfR021188
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Mar 2014 16:06:25 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 2/2] KVM: PPC: Book3S HV: Fix register usage when
- loading/saving VRSAVE
-Date: Thu,  6 Mar 2014 16:06:10 +0530
-Message-Id: <1394102170-22126-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1394102170-22126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1394102170-22126-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id C10F62C031B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 21:38:22 +1100 (EST)
+Date: Thu, 6 Mar 2014 11:21:29 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Gerhard Sittig <gsi@denx.de>
+Subject: Re: [PATCH 2/3] dts: mpc512x: adjust clock specs for FEC nodes
+Message-ID: <20140306102129.GB17250@pengutronix.de>
+References: <1393237557-31406-1-git-send-email-gsi@denx.de>
+ <1393237557-31406-2-git-send-email-gsi@denx.de>
+ <20140303092231.GS3327@book.gsilab.sittig.org>
+ <20140305014836.GC8784@S2101-09.ap.freescale.net>
+ <20140305105209.GZ3327@book.gsilab.sittig.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140305105209.GZ3327@book.gsilab.sittig.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ Anatolij Gustschin <agust@denx.de>, Mike Turquette <mturquette@linaro.org>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,45 +32,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
+On Wed, Mar 05, 2014 at 11:52:09AM +0100, Gerhard Sittig wrote:
+> On Wed, Mar 05, 2014 at 09:48 +0800, Shawn Guo wrote:
+> > 
+> > On Mon, Mar 03, 2014 at 10:22:31AM +0100, Gerhard Sittig wrote:
+> > > On Mon, Feb 24, 2014 at 11:25 +0100, Gerhard Sittig wrote:
+> > > > 
+> > > > a recent FEC binding document update that was motivated by i.MX
+> > > > development revealed that ARM and PowerPC implementations in Linux
+> > > > did not agree on the clock names to use for the FEC nodes
+> > > > 
+> > > > change clock names from "per" to "ipg" in the FEC nodes of the
+> > > > mpc5121.dtsi include file such that the .dts specs comply with
+> > > > the common FEC binding
+> > > > 
+> > > > this "incompatible" change does not break operation, because
+> > > > - COMMON_CLK support for MPC5121/23/25 and adjusted .dts files
+> > > >   were only introduced in Linux v3.14-rc1, no mainline release
+> > > >   provided these specs before
+> > > > - if this change won't make it for v3.14, the MPC512x CCF support
+> > > >   provides full backwards compability, and keeps operating with
+> > > >   device trees which lack clock specs or don't match in the names
+> > > > 
+> > > > Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> > > 
+> > > ping
+> > > 
+> > > Are there opinions about making PowerPC users of FEC use the same
+> > > clock names as ARM users do, to re-use (actually: keep sharing)
+> > > the FEC binding?  The alternative would be to fragment the FEC
+> > > binding into several bindings for ARM and PowerPC, which I feel
+> > > would be undesirable, and is not necessary.
+> > 
+> > As I already said, Documentation/devicetree/bindings/net/fsl-fec.txt
+> > was created specifically for i.MX FEC controller from day one.  And even
+> > as of today, it doesn't serve PowerPC, because for example the property
+> > 'phy-mode' documented as required one is not required by PowerPC FEC.
+> > My opinion would be to patch fsl-fec.txt a little bit to make it clear
+> > that it's a binding doc for i.MX FEC, and create the other one for
+> > PowerPC FEC.  This is the way less confusing to people and easier for
+> > binding maintenance.
+> 
+> Should we still try to have a common behaviour where possible?
+> Such that even if there are two bindings, they don't diverge in
+> "unnecessary" ways?
 
-Commit 595e4f7e697e ("KVM: PPC: Book3S HV: Use load/store_fp_state functions
-in HV guest entry/exit") changed the register usage in kvmppc_save_fp() and
-kvmppc_load_fp() but omitted changing the instructions that load and save VRSAVE.
-The result is that the VRSAVE value was loaded from a constant address, and
-saved to a location past the end of the vcpu struct, causing host kernel memory
-corruption and various kinds of host kernel crashes.
+Maybe the long term goal should be to share the code. The MPC5200 FEC
+and the i.MX FEC are very similar. Only the DMA engine is quite
+different.
 
-This fixes the problem by using register r31, which contains the
-vcpu pointer, instead of r3 and r4.
+Sascha
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 557a47800ca1..6962d38c76f5 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2132,7 +2132,7 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif
- 	mfspr	r6,SPRN_VRSAVE
--	stw	r6,VCPU_VRSAVE(r3)
-+	stw	r6,VCPU_VRSAVE(r31)
- 	mtlr	r30
- 	mtmsrd	r5
- 	isync
-@@ -2169,7 +2169,7 @@ BEGIN_FTR_SECTION
- 	bl	.load_vr_state
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif
--	lwz	r7,VCPU_VRSAVE(r4)
-+	lwz	r7,VCPU_VRSAVE(r31)
- 	mtspr	SPRN_VRSAVE,r7
- 	mtlr	r30
- 	mr	r4,r31
 -- 
-1.8.3.2
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
