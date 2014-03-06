@@ -1,21 +1,26 @@
 Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 6A0D72C0324
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2014 04:49:45 +1100 (EST)
-Date: Thu, 6 Mar 2014 18:49:17 +0100
+ by ozlabs.org (Postfix) with ESMTP id AB8AA2C032B
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2014 06:31:59 +1100 (EST)
+Date: Thu, 6 Mar 2014 18:06:48 +0100
 From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/3] powerpc/perf: Enable linking with libunwind
-Message-ID: <20140306174917.GC1269@krava.brq.redhat.com>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [PATCH 3/3] perf: Use 64-bit value when comparing sample_regs
+Message-ID: <20140306170648.GA1269@krava.brq.redhat.com>
 References: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1394080919-17957-4-git-send-email-sukadev@linux.vnet.ibm.com>
+ <063D6719AE5E284EB5DD2968C1650D6D0F6D3983@AcuExch.aculab.com>
+ <20140306113332.GA7827@visitor2.iram.es>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
+In-Reply-To: <20140306113332.GA7827@visitor2.iram.es>
+Cc: Michael Ellerman <michaele@au1.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
  Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Jean Pihet <jean.pihet@linaro.org>
+ 'Sukadev Bhattiprolu' <sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,131 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 05, 2014 at 08:41:56PM -0800, Sukadev Bhattiprolu wrote:
-> When we try to create backtraces (call-graphs) with the perf tool
+On Thu, Mar 06, 2014 at 12:33:32PM +0100, Gabriel Paubert wrote:
+> On Thu, Mar 06, 2014 at 09:44:47AM +0000, David Laight wrote:
+> > From: Sukadev Bhattiprolu
+> > > When checking whether a bit representing a register is set in
+> > > sample_regs, a 64-bit mask, use 64-bit value (1LL).
+> > > 
+> > > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> > > ---
+> > >  tools/perf/util/unwind.c |    4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/tools/perf/util/unwind.c b/tools/perf/util/unwind.c
+> > > index 742f23b..2b888c6 100644
+> > > --- a/tools/perf/util/unwind.c
+> > > +++ b/tools/perf/util/unwind.c
+> > > @@ -396,11 +396,11 @@ static int reg_value(unw_word_t *valp, struct regs_dump *regs, int id,
+> > >  {
+> > >  	int i, idx = 0;
+> > > 
+> > > -	if (!(sample_regs & (1 << id)))
+> > > +	if (!(sample_regs & (1LL << id)))
+> > >  		return -EINVAL;
+> > > 
+> > >  	for (i = 0; i < id; i++) {
+> > > -		if (sample_regs & (1 << i))
+> > > +		if (sample_regs & (1LL << i))
+> > >  			idx++;
+> > >  	}
+> > 
+> > There are much faster ways to count the number of set bits, especially
+> > if you might need to check a significant number of bits.
+> > There might even be a function defined somewhere to do it.
 > 
-> 	perf record -g /tmp/sprintft
+> Indeed, look for Hamming weight (hweight family of functions)
+> in asm/hweight.h and what is included from there.
 > 
-> we get backtraces with duplicate arcs for sprintft[1]:
+> Besides that, many modern processors also have a machine instruction
+> to perform this task. In the processor manuals the instruction is 
+> described as population count and the mnemonic starts with "popcnt"
+> on x86 and ppc.
 > 
->     14.61%  sprintft  libc-2.18.so       [.] __random                            
->             |
->             --- __random
->                |
->                |--61.09%-- __random
->                |          |
->                |          |--97.18%-- rand
->                |          |          do_my_sprintf
->                |          |          main
->                |          |          generic_start_main.isra.0
->                |          |          __libc_start_main
->                |          |          0x0
->                |          |
->                |           --2.82%-- do_my_sprintf
->                |                     main
->                |                     generic_start_main.isra.0
->                |                     __libc_start_main
->                |                     0x0
->                |
->                 --38.91%-- rand
->                           |          
->                           |--92.90%-- rand
->                           |          |
->                           |          |--99.87%-- do_my_sprintf
->                           |          |          main
->                           |          |          generic_start_main.isra.0
->                           |          |          __libc_start_main
->                           |          |          0x0
->                           |           --0.13%-- [...]
->                           |
->                            --7.10%-- do_my_sprintf
->                                      main
->                                      generic_start_main.isra.0
->                                      __libc_start_main
->                                      0x0
+> 	Gabriel
 > 
-> (where the two arcs both have the same backtrace but are not merged).
-> 
-> Linking with libunwind seems to create better backtraces. While x86 and
-> ARM processors have support for linking with libunwind but Power does not.
-> This patchset is an RFC for linking with libunwind.
-> 
-> With this patchset and running:
-> 
-> 	/tmp/perf record --call-graph=dwarf,8192 /tmp/sprintft
-> 
-> the backtrace is:
-> 
->     14.94%  sprintft  libc-2.18.so       [.] __random                            
->             |
->             --- __random
->                 rand
->                 do_my_sprintf
->                 main
->                 generic_start_main.isra.0
->                 __libc_start_main
->                 (nil)
-> 
-> This appears better.
-> 
-> One downside is that we now need the kernel to save the entire user stack
-> (the 8192 in the command line is the default user stack size).
-> 
-> A second issue is that this invocation of perf (with --call-graph=dwarf,8192)
-> seems to fail for backtraces involving tail-calls[2]
-> 
-> 	/tmp/perf record -g ./tailcall
-> gives 
-> 
->     20.00%  tailcall  tailcall           [.] work2
->             |
->             --- work2
->                 work
-> 
-> shows the tail function 'work2' as "called from" 'work()'
-> 
-> But with libunwind:
-> 
-> 	/tmp/perf record --call-graph=dwarf,8192 ./tailcall
-> we get:
-> 
->    20.50%  tailcall  tailcall           [.] work2
->             |
->             --- work2
-> 
-> the caller of 'work' is not shown.
-> 
-> I am debugging this, but would appreciate any feedback/pointers on the
-> patchset/direction:
-> 
-> 	- Does libunwind need the entire user stack to work or are there
-> 	  optimizations we can do to save the minimal entries for it to
-> 	  perform the unwind.
+> > Basically you just add up the bits, for 16 bit it would be:
+> > 	val = (val & 0x5555) + (val >> 1) & 0x5555;
+> > 	val = (val & 0x3333) + (val >> 2) & 0x3333;
+> > 	val = (val & 0x0f0f) + (val >> 4) & 0x0f0f;
+> > 	val = (val & 0x00ff) + (val >> 8) & 0x00ff;
+> > As the size of the work increases the improvement is more significant.
+> > (Some of the later masking can probably be proven unnecessary.)
 
-AFAIK you dont need to provide whole stack, but the more
-you have the bigger chance you'll get full(er) backtrace
+right I think the loop could be replaced by:
 
-> 
-> 	- Does libunwind work with tailcalls like the one above ?
+  idx = hweight(mask & ((1 << id) - 1))
 
-not sure, but if you have x86 alternative to your tailcall (i cannot
-read ppc assembly) I could try on x86 ;-)
+Sukadev,
+please also rebase against latest Arnaldo's perf/core,
+this code has changed just recently, it's now in:
+  util/perf_regs.c:perf_reg_value
 
-CC-ing Jean, as he might have seen this issue..
-
-
-> 
-> 	- Are there benefits to linking with libunwind (even if it does not
-> 	  yet solve the tailcall problem)
-
-provides backtrace for binaries/distros/archs compiled without framepointer
-
-> 
-> 	- Are there any examples of using libdwarf to solve the tailcall
-> 	  issue ?
-
-
-btw there's now remote unwinder in elfutils (version 0.158)
-the perf supprot is in Arnaldo's perf/core tree
-
+thanks,
 jirka
