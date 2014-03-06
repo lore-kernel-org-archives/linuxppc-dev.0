@@ -1,12 +1,21 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 6 Mar 2014 16:10:11 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: compat: 32 bit little endian machine name is
- ppcle, not ppc
-Message-ID: <20140306161011.4b6bd05b@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AD45F2C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 16:44:05 +1100 (EST)
+Message-ID: <1394084634.26321.23.camel@pasglop>
+Subject: Re: [PATCH] powerpc/le: fix endianness of the arguments passed to
+ the ppc_rtas() syscall
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Date: Thu, 06 Mar 2014 16:43:54 +1100
+In-Reply-To: <20140305172006.26117.57219.stgit@bahia.local>
+References: <20140305172006.26117.57219.stgit@bahia.local>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, anton@samba.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,27 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2014-03-05 at 18:20 +0100, Greg Kurz wrote:
+> RTAS manipulates its input and output arguments in big endian order.
+> 
+> I have looked at factoring some lines with rtas_call() but it is not really
+> worth it because of the variable arguments.
 
-I noticed this when testing setarch. No, we don't magically
-support a big endian userspace on a little endian kernel.
+I'm not sure about that one ...
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@vger.kernel.org # v3.10+
----
+So this assumes that userspace will pass the RTAS arguments LE...
 
-diff --git a/arch/powerpc/include/asm/compat.h b/arch/powerpc/include/asm/compat.h
-index 84fdf68..ef22898 100644
---- a/arch/powerpc/include/asm/compat.h
-+++ b/arch/powerpc/include/asm/compat.h
-@@ -8,7 +8,11 @@
- #include <linux/sched.h>
- 
- #define COMPAT_USER_HZ		100
-+#ifdef __BIG_ENDIAN__
- #define COMPAT_UTS_MACHINE	"ppc\0\0"
-+#else
-+#define COMPAT_UTS_MACHINE	"ppcle\0\0"
-+#endif
- 
- typedef u32		compat_size_t;
- typedef s32		compat_ssize_t;
+This will work only as long as the arguments are indeed just an array
+of u32's. The minute userspace tries to crap something like two u16's
+in one argument or a u64 accross two arguments, it has the potential
+to be broken depending on how it has been done.
+
+I would have done it the other way around which is to define that
+ppc_rtas takes a BE structure since this is what RTAS expects (and
+the bit of RMA memory we expose to userspace for communicating with
+it also has to be handled BE so userspace has to know anyway).
+
+That means that the only things we need to fix here is when we interpret
+the args.nargs etc... we need a be32_to_cpu
+
+Cheers,
+Ben.
+
+> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/rtas.c |   15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 4cf674d..00dbe36 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -1020,6 +1020,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  	char *buff_copy, *errbuf = NULL;
+>  	int nargs;
+>  	int rc;
+> +	int i;
+>  
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+> @@ -1056,9 +1057,19 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  
+>  	flags = lock_rtas();
+>  
+> -	rtas.args = args;
+> +	rtas.args.token = cpu_to_be32(args.token);
+> +	rtas.args.nargs = cpu_to_be32(args.nargs);
+> +	rtas.args.nret  = cpu_to_be32(args.nret);
+> +	for (i = 0; i < nargs; ++i)
+> +		rtas.args.args[i] = cpu_to_be32(args.args[i]);
+> +	rtas.args.rets  = &rtas.args.args[nargs];
+> +	for (i = 0; i < args.nret; ++i)
+> +		rtas.args.rets[i] = 0;
+> +
+>  	enter_rtas(__pa(&rtas.args));
+> -	args = rtas.args;
+> +
+> +	for (i = 0; i < args.nret; ++i)
+> +		args.rets[i] = be32_to_cpu(rtas.args.rets[i]);
+>  
+>  	/* A -1 return code indicates that the last command couldn't
+>  	   be completed due to a hardware error. */
