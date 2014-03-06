@@ -2,33 +2,30 @@ Return-Path: <sukadev@linux.vnet.ibm.com>
 Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DA7892C0099
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2014 15:42:18 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 738052C0098
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2014 15:42:20 +1100 (EST)
 Received: from /spool/local
  by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 5 Mar 2014 21:42:16 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2A3D61FF0044
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2014 21:42:15 -0700 (MST)
+ Wed, 5 Mar 2014 21:42:18 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 926E919D8036
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Mar 2014 21:42:12 -0700 (MST)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
- ESMTP id s264fk5N66977906
- for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2014 05:41:46 +0100
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
+ ESMTP id s264gEfB8061400
+ for <linuxppc-dev@ozlabs.org>; Thu, 6 Mar 2014 05:42:14 +0100
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s264gERQ007998
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2014 21:42:15 -0700
+ s264gDaM007967
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Mar 2014 21:42:14 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [RFC][PATCH 1/3] power: perf: Enable saving the user stack in a
- sample.
-Date: Wed,  5 Mar 2014 20:41:57 -0800
-Message-Id: <1394080919-17957-2-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 0/3] powerpc/perf: Enable linking with libunwind
+Date: Wed,  5 Mar 2014 20:41:56 -0800
+Message-Id: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
  Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
  Paul Mackerras <paulus@samba.org>, Jiri Olsa <jolsa@redhat.com>
@@ -41,237 +38,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When requested, have the kernel save the user stack in each perf sample
-so 'perf report' can use libunwind and produce better backtraces.
+When we try to create backtraces (call-graphs) with the perf tool
 
-The downside of course is that the kernel has to copy the user-stack
-on each sample which has both performance and file-size implications
-(of the perf.data file).
+	perf record -g /tmp/sprintft
 
-But we save the user-stack only when user explicitly requests it:
+we get backtraces with duplicate arcs for sprintft[1]:
 
-	perf record --call-graph=dwarf,8192 <application>
+    14.61%  sprintft  libc-2.18.so       [.] __random                            
+            |
+            --- __random
+               |
+               |--61.09%-- __random
+               |          |
+               |          |--97.18%-- rand
+               |          |          do_my_sprintf
+               |          |          main
+               |          |          generic_start_main.isra.0
+               |          |          __libc_start_main
+               |          |          0x0
+               |          |
+               |           --2.82%-- do_my_sprintf
+               |                     main
+               |                     generic_start_main.isra.0
+               |                     __libc_start_main
+               |                     0x0
+               |
+                --38.91%-- rand
+                          |          
+                          |--92.90%-- rand
+                          |          |
+                          |          |--99.87%-- do_my_sprintf
+                          |          |          main
+                          |          |          generic_start_main.isra.0
+                          |          |          __libc_start_main
+                          |          |          0x0
+                          |           --0.13%-- [...]
+                          |
+                           --7.10%-- do_my_sprintf
+                                     main
+                                     generic_start_main.isra.0
+                                     __libc_start_main
+                                     0x0
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig                      |    2 +
- arch/powerpc/include/uapi/asm/perf_regs.h |   70 +++++++++++++++++++
- arch/powerpc/perf/Makefile                |    1 +
- arch/powerpc/perf/perf-regs.c             |  104 +++++++++++++++++++++++++++++
- 4 files changed, 177 insertions(+)
+(where the two arcs both have the same backtrace but are not merged).
+
+Linking with libunwind seems to create better backtraces. While x86 and
+ARM processors have support for linking with libunwind but Power does not.
+This patchset is an RFC for linking with libunwind.
+
+With this patchset and running:
+
+	/tmp/perf record --call-graph=dwarf,8192 /tmp/sprintft
+
+the backtrace is:
+
+    14.94%  sprintft  libc-2.18.so       [.] __random                            
+            |
+            --- __random
+                rand
+                do_my_sprintf
+                main
+                generic_start_main.isra.0
+                __libc_start_main
+                (nil)
+
+This appears better.
+
+One downside is that we now need the kernel to save the entire user stack
+(the 8192 in the command line is the default user stack size).
+
+A second issue is that this invocation of perf (with --call-graph=dwarf,8192)
+seems to fail for backtraces involving tail-calls[2]
+
+	/tmp/perf record -g ./tailcall
+gives 
+
+    20.00%  tailcall  tailcall           [.] work2
+            |
+            --- work2
+                work
+
+shows the tail function 'work2' as "called from" 'work()'
+
+But with libunwind:
+
+	/tmp/perf record --call-graph=dwarf,8192 ./tailcall
+we get:
+
+   20.50%  tailcall  tailcall           [.] work2
+            |
+            --- work2
+
+the caller of 'work' is not shown.
+
+I am debugging this, but would appreciate any feedback/pointers on the
+patchset/direction:
+
+	- Does libunwind need the entire user stack to work or are there
+	  optimizations we can do to save the minimal entries for it to
+	  perform the unwind.
+
+	- Does libunwind work with tailcalls like the one above ?
+
+	- Are there benefits to linking with libunwind (even if it does not
+	  yet solve the tailcall problem)
+
+	- Are there any examples of using libdwarf to solve the tailcall
+	  issue ?
+
+[1] sprintft (excerpt from a test program by Maynard Johnson).
+
+	char * do_my_sprintf(char * strx, int num)
+	{
+		int i;
+		for (i = 0; i < inner_iterations; i++) {
+			int r = rand() % 10;
+			sprintf(my_string, "%s ...%d\n", strx+r, num);
+			if (strlen(my_string) > 15)
+				num = 15;
+		}
+		return my_string;
+	}
+
+[2] tailcall (Powerpc assembly, from Anton Blanchard)
+
+    Build with: gcc -O2 --static -nostdlib -o tailcall tailcall.S
+
+	#define ITERATIONS 1000000000
+
+		.align 2
+		.globl _start
+		.globl ._start
+		.section ".opd","aw"
+	_start:
+		.quad ._start
+		.quad .TOC.@tocbase
+		.quad 0;
+
+		.text;
+	._start:
+		lis     4,ITERATIONS@h
+		ori     4,4,ITERATIONS@l
+		mtctr   4
+
+	1:      bl      work
+		bdnz    1b
+
+		li 0,1  /* sys_exit */
+		sc
+
+	work:
+		mflr    30
+		bl      work2
+		mtlr    30
+		blr
+
+	work2:
+		blr
+
+
+Sukadev Bhattiprolu (3):
+  power: perf: Enable saving the user stack in a sample.
+  power: perf tool: Add libunwind support for Power
+  perf: Use 64-bit value when comparing sample_regs
+
+ arch/powerpc/Kconfig                        |    2 +
+ arch/powerpc/include/uapi/asm/perf_regs.h   |   70 ++++++++++++++++++
+ arch/powerpc/perf/Makefile                  |    1 +
+ arch/powerpc/perf/perf-regs.c               |  104 +++++++++++++++++++++++++++
+ tools/perf/arch/powerpc/Makefile            |    5 ++
+ tools/perf/arch/powerpc/include/perf_regs.h |   69 ++++++++++++++++++
+ tools/perf/arch/powerpc/util/unwind.c       |   63 ++++++++++++++++
+ tools/perf/config/Makefile                  |    7 ++
+ tools/perf/util/unwind.c                    |    4 +-
+ 9 files changed, 323 insertions(+), 2 deletions(-)
  create mode 100644 arch/powerpc/include/uapi/asm/perf_regs.h
  create mode 100644 arch/powerpc/perf/perf-regs.c
+ create mode 100644 tools/perf/arch/powerpc/include/perf_regs.h
+ create mode 100644 tools/perf/arch/powerpc/util/unwind.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 957bf34..e79ce6e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -113,6 +113,8 @@ config PPC
- 	select GENERIC_ATOMIC64 if PPC32
- 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
- 	select HAVE_PERF_EVENTS
-+	select HAVE_PERF_REGS
-+	select HAVE_PERF_USER_STACK_DUMP
- 	select HAVE_REGS_AND_STACK_ACCESS_API
- 	select HAVE_HW_BREAKPOINT if PERF_EVENTS && PPC_BOOK3S_64
- 	select ARCH_WANT_IPC_PARSE_VERSION
-diff --git a/arch/powerpc/include/uapi/asm/perf_regs.h b/arch/powerpc/include/uapi/asm/perf_regs.h
-new file mode 100644
-index 0000000..b6120dc
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/perf_regs.h
-@@ -0,0 +1,70 @@
-+#ifndef _ASM_POWERPC_PERF_REGS_H
-+#define _ASM_POWERPC_PERF_REGS_H
-+
-+#ifndef __powerpc64__
-+#error Support for 32bit processors is TBD.
-+#endif
-+
-+enum perf_event_powerpc_regs {
-+	/*
-+	 * The order of these values are based on the corresponding
-+	 * macros in arch/powerpc/include/uapi/asm/ptrace.h .
-+	 */
-+	PERF_REG_POWERPC_GPR0,
-+	PERF_REG_POWERPC_GPR1,
-+	PERF_REG_POWERPC_GPR2,
-+	PERF_REG_POWERPC_GPR3,
-+	PERF_REG_POWERPC_GPR4,
-+	PERF_REG_POWERPC_GPR5,
-+	PERF_REG_POWERPC_GPR6,
-+	PERF_REG_POWERPC_GPR7,
-+	PERF_REG_POWERPC_GPR8,
-+	PERF_REG_POWERPC_GPR9,
-+
-+	PERF_REG_POWERPC_GPR10,
-+	PERF_REG_POWERPC_GPR11,
-+	PERF_REG_POWERPC_GPR12,
-+	PERF_REG_POWERPC_GPR13,
-+	PERF_REG_POWERPC_GPR14,
-+	PERF_REG_POWERPC_GPR15,
-+	PERF_REG_POWERPC_GPR16,
-+	PERF_REG_POWERPC_GPR17,
-+	PERF_REG_POWERPC_GPR18,
-+	PERF_REG_POWERPC_GPR19,
-+
-+	PERF_REG_POWERPC_GPR20,
-+	PERF_REG_POWERPC_GPR21,
-+	PERF_REG_POWERPC_GPR22,
-+	PERF_REG_POWERPC_GPR23,
-+	PERF_REG_POWERPC_GPR24,
-+	PERF_REG_POWERPC_GPR25,
-+	PERF_REG_POWERPC_GPR26,
-+	PERF_REG_POWERPC_GPR27,
-+	PERF_REG_POWERPC_GPR28,
-+	PERF_REG_POWERPC_GPR29,
-+
-+	PERF_REG_POWERPC_GPR30,
-+	PERF_REG_POWERPC_GPR31,
-+
-+	PERF_REG_POWERPC_NIP,
-+	PERF_REG_POWERPC_MSR,
-+	PERF_REG_POWERPC_ORIG_GPR3,
-+	PERF_REG_POWERPC_CTR,		/* 35 */
-+
-+	PERF_REG_POWERPC_LINK,
-+	PERF_REG_POWERPC_XER,
-+	PERF_REG_POWERPC_CCR,
-+#ifdef __powerpc64__
-+	PERF_REG_POWERPC_SOFTE,
-+#else
-+	PERF_REG_POWERPC_MQ, 
-+#endif
-+	PERF_REG_POWERPC_TRAP,		/* 40 */
-+
-+	PERF_REG_POWERPC_DAR,
-+	PERF_REG_POWERPC_DSISR,
-+	PERF_REG_POWERPC_RESULT,
-+	PERF_REG_POWERPC_DSCR,
-+	PERF_REG_POWERPC_MAX
-+};
-+#endif
-diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-index 60d71ee..44fec45 100644
---- a/arch/powerpc/perf/Makefile
-+++ b/arch/powerpc/perf/Makefile
-@@ -2,6 +2,7 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
- obj-$(CONFIG_PERF_EVENTS)	+= callchain.o
- 
-+obj-$(CONFIG_HAVE_PERF_REGS)	+= perf-regs.o
- obj-$(CONFIG_PPC_PERF_CTRS)	+= core-book3s.o bhrb.o
- obj64-$(CONFIG_PPC_PERF_CTRS)	+= power4-pmu.o ppc970-pmu.o power5-pmu.o \
- 				   power5+-pmu.o power6-pmu.o power7-pmu.o \
-diff --git a/arch/powerpc/perf/perf-regs.c b/arch/powerpc/perf/perf-regs.c
-new file mode 100644
-index 0000000..3963038
---- /dev/null
-+++ b/arch/powerpc/perf/perf-regs.c
-@@ -0,0 +1,104 @@
-+#include <linux/errno.h>
-+#include <linux/sched.h>
-+#include <linux/types.h>
-+#include <linux/stddef.h>
-+#include <asm/perf_regs.h>
-+
-+#define PT_REGS_GPR_OFFSET(g)	\
-+	[PERF_REG_POWERPC_GPR##g] = offsetof(struct pt_regs, gpr[g])
-+
-+#define PT_REGS_OFFSET(n, r) 	\
-+	[PERF_REG_POWERPC_##n] = offsetof(struct pt_regs, r)
-+
-+/*
-+ * An enum in arch/powerpc/include/uapi/asm/perf_regs.h assigns an "id" to
-+ * each register in Power. Build a table mapping each register id to its
-+ * offset in 'struct pt_regs', that we can use to quickly read-from or
-+ * write-to the register in pt_regs.
-+ */
-+static unsigned int pt_regs_offset[PERF_REG_POWERPC_MAX] = {
-+	PT_REGS_GPR_OFFSET(0),
-+	PT_REGS_GPR_OFFSET(1),
-+	PT_REGS_GPR_OFFSET(2),
-+	PT_REGS_GPR_OFFSET(3),
-+	PT_REGS_GPR_OFFSET(4),
-+	PT_REGS_GPR_OFFSET(5),
-+	PT_REGS_GPR_OFFSET(6),
-+	PT_REGS_GPR_OFFSET(7),
-+	PT_REGS_GPR_OFFSET(8),
-+	PT_REGS_GPR_OFFSET(9),
-+	PT_REGS_GPR_OFFSET(10),
-+
-+	PT_REGS_GPR_OFFSET(11),
-+	PT_REGS_GPR_OFFSET(12),
-+	PT_REGS_GPR_OFFSET(13),
-+	PT_REGS_GPR_OFFSET(14),
-+	PT_REGS_GPR_OFFSET(15),
-+	PT_REGS_GPR_OFFSET(16),
-+	PT_REGS_GPR_OFFSET(17),
-+	PT_REGS_GPR_OFFSET(18),
-+	PT_REGS_GPR_OFFSET(19),
-+	PT_REGS_GPR_OFFSET(20),
-+
-+	PT_REGS_GPR_OFFSET(21),
-+	PT_REGS_GPR_OFFSET(22),
-+	PT_REGS_GPR_OFFSET(23),
-+	PT_REGS_GPR_OFFSET(24),
-+	PT_REGS_GPR_OFFSET(25),
-+	PT_REGS_GPR_OFFSET(26),
-+	PT_REGS_GPR_OFFSET(27),
-+	PT_REGS_GPR_OFFSET(28),
-+	PT_REGS_GPR_OFFSET(29),
-+	PT_REGS_GPR_OFFSET(30),
-+
-+	PT_REGS_GPR_OFFSET(31),
-+
-+	PT_REGS_OFFSET(NIP, nip),
-+	PT_REGS_OFFSET(MSR, msr),
-+	PT_REGS_OFFSET(ORIG_GPR3, orig_gpr3),
-+	PT_REGS_OFFSET(CTR, ctr),
-+
-+	PT_REGS_OFFSET(LINK, link),
-+	PT_REGS_OFFSET(XER, xer),
-+	PT_REGS_OFFSET(CCR, ccr),
-+#ifdef __powerpc64__
-+	PT_REGS_OFFSET(SOFTE, softe),
-+#else
-+	PT_REGS_OFFSET(MQ, mq),
-+#endif
-+
-+	PT_REGS_OFFSET(TRAP, trap),
-+	PT_REGS_OFFSET(DAR, dar),
-+	PT_REGS_OFFSET(DSISR, dsisr),
-+	PT_REGS_OFFSET(RESULT, result),
-+};
-+
-+u64 perf_reg_value(struct pt_regs *regs, int idx)
-+{
-+	if (WARN_ON_ONCE(idx >= ARRAY_SIZE(pt_regs_offset)))
-+		return 0;
-+
-+	return regs_get_register(regs, pt_regs_offset[idx]);
-+}
-+
-+u64 perf_reg_validate(u64 mask)
-+{
-+	/*
-+	 * TODO: Are there any registers to ignore/check here ?
-+	 */
-+	if (!mask)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+u64 perf_reg_abi(struct task_struct *task)
-+{
-+	/*
-+	 * TODO: WHAT SHOULD WE RETURN HERE ????
-+	 *
-+	 * 	x86 returns PERF_SAMPLE_REGS_ABI_32
-+	 * 	perf tool needs this to be non-zero to process registers.
-+	 */
-+        return 1;
-+}
 -- 
 1.7.9.5
