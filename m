@@ -1,21 +1,21 @@
-Return-Path: <yoush@cs.msu.su>
-Received: from mail.lvk.cs.msu.su (lvk-gate.cs.msu.ru [188.44.42.233])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E45B12C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 01:36:13 +1100 (EST)
-From: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
-To: kexec@lists.infradead.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] kexec/powerpc: fix exporting memory limit
-Date: Thu,  6 Mar 2014 18:24:14 +0400
-Message-Id: <1394115854-11709-1-git-send-email-nyushchenko@dev.rtsoft.ru>
-Cc: yadviga@dev.rtsoft.ru, nyushchenko@dev.rtsoft.ru, lugovskoy@dev.rtsoft.ru,
- linux-kernel@vger.kernel.org
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 6A0D72C0324
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2014 04:49:45 +1100 (EST)
+Date: Thu, 6 Mar 2014 18:49:17 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] powerpc/perf: Enable linking with libunwind
+Message-ID: <20140306174917.GC1269@krava.brq.redhat.com>
+References: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <michaele@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Jean Pihet <jean.pihet@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +25,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When preparing dump-capturing kernel, kexec userspace tool needs to know
-actual amount of memory used by the running kernel. This may differ from
-extire available DRAM for a couple of reasons. To address this issue,
-kdump kernel support code injects several attributes into device tree that
-are later captured by userspace kexec tool via /proc interface.
+On Wed, Mar 05, 2014 at 08:41:56PM -0800, Sukadev Bhattiprolu wrote:
+> When we try to create backtraces (call-graphs) with the perf tool
+> 
+> 	perf record -g /tmp/sprintft
+> 
+> we get backtraces with duplicate arcs for sprintft[1]:
+> 
+>     14.61%  sprintft  libc-2.18.so       [.] __random                            
+>             |
+>             --- __random
+>                |
+>                |--61.09%-- __random
+>                |          |
+>                |          |--97.18%-- rand
+>                |          |          do_my_sprintf
+>                |          |          main
+>                |          |          generic_start_main.isra.0
+>                |          |          __libc_start_main
+>                |          |          0x0
+>                |          |
+>                |           --2.82%-- do_my_sprintf
+>                |                     main
+>                |                     generic_start_main.isra.0
+>                |                     __libc_start_main
+>                |                     0x0
+>                |
+>                 --38.91%-- rand
+>                           |          
+>                           |--92.90%-- rand
+>                           |          |
+>                           |          |--99.87%-- do_my_sprintf
+>                           |          |          main
+>                           |          |          generic_start_main.isra.0
+>                           |          |          __libc_start_main
+>                           |          |          0x0
+>                           |           --0.13%-- [...]
+>                           |
+>                            --7.10%-- do_my_sprintf
+>                                      main
+>                                      generic_start_main.isra.0
+>                                      __libc_start_main
+>                                      0x0
+> 
+> (where the two arcs both have the same backtrace but are not merged).
+> 
+> Linking with libunwind seems to create better backtraces. While x86 and
+> ARM processors have support for linking with libunwind but Power does not.
+> This patchset is an RFC for linking with libunwind.
+> 
+> With this patchset and running:
+> 
+> 	/tmp/perf record --call-graph=dwarf,8192 /tmp/sprintft
+> 
+> the backtrace is:
+> 
+>     14.94%  sprintft  libc-2.18.so       [.] __random                            
+>             |
+>             --- __random
+>                 rand
+>                 do_my_sprintf
+>                 main
+>                 generic_start_main.isra.0
+>                 __libc_start_main
+>                 (nil)
+> 
+> This appears better.
+> 
+> One downside is that we now need the kernel to save the entire user stack
+> (the 8192 in the command line is the default user stack size).
+> 
+> A second issue is that this invocation of perf (with --call-graph=dwarf,8192)
+> seems to fail for backtraces involving tail-calls[2]
+> 
+> 	/tmp/perf record -g ./tailcall
+> gives 
+> 
+>     20.00%  tailcall  tailcall           [.] work2
+>             |
+>             --- work2
+>                 work
+> 
+> shows the tail function 'work2' as "called from" 'work()'
+> 
+> But with libunwind:
+> 
+> 	/tmp/perf record --call-graph=dwarf,8192 ./tailcall
+> we get:
+> 
+>    20.50%  tailcall  tailcall           [.] work2
+>             |
+>             --- work2
+> 
+> the caller of 'work' is not shown.
+> 
+> I am debugging this, but would appreciate any feedback/pointers on the
+> patchset/direction:
+> 
+> 	- Does libunwind need the entire user stack to work or are there
+> 	  optimizations we can do to save the minimal entries for it to
+> 	  perform the unwind.
 
-One such attrubute is 'chosen/linux,memory_limit' that is used to pass
-memory limit of the running kernel.
+AFAIK you dont need to provide whole stack, but the more
+you have the bigger chance you'll get full(er) backtrace
 
-This was initialized using kernel's 'memory_limit' variable, that is set
-by early init code based on mem= kernel parameter and other reasons.
+> 
+> 	- Does libunwind work with tailcalls like the one above ?
 
-But there are cases when memory_limit variable does not contain proper
-information. One such case is when !CONFIG_HIGHMEM kernel runs on system
-with memory large enough not to fit into lowmem.
+not sure, but if you have x86 alternative to your tailcall (i cannot
+read ppc assembly) I could try on x86 ;-)
 
-This patch fixes initialization of 'chosen/linux,memory_limit' to use
-values from memblock subsystem. These are adjusted at kernel memory
-management init and thus always contain values that match reality.
+CC-ing Jean, as he might have seen this issue..
 
-Signed-off-by: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
----
- arch/powerpc/kernel/machine_kexec.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 015ae55..372cda5 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -250,8 +250,14 @@ static void __init export_crashk_values(struct device_node *node)
- 	/*
- 	 * memory_limit is required by the kexec-tools to limit the
- 	 * crash regions to the actual memory used.
-+	 *
-+	 * There are cases when memory_limit variable does not hold actual
-+	 * limit, for example when memory was limited by no kernel support
-+	 * for HIGHMEM. Reliable information is known by memblock because
-+	 * memory management init adjusts it.
- 	 */
--	mem_limit = cpu_to_be_ulong(memory_limit);
-+	mem_limit = cpu_to_be_ulong(memblock_end_of_DRAM() -
-+					memblock_start_of_DRAM());
- 	of_update_property(node, &memory_limit_prop);
- }
- 
--- 
-1.7.10.4
+> 
+> 	- Are there benefits to linking with libunwind (even if it does not
+> 	  yet solve the tailcall problem)
+
+provides backtrace for binaries/distros/archs compiled without framepointer
+
+> 
+> 	- Are there any examples of using libdwarf to solve the tailcall
+> 	  issue ?
+
+
+btw there's now remote unwinder in elfutils (version 0.158)
+the perf supprot is in Arnaldo's perf/core tree
+
+jirka
