@@ -1,17 +1,16 @@
 Return-Path: <qiang.zhao@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B0F9D2C0306
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 12:42:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DD90C2C030C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 12:43:22 +1100 (EST)
 From: Zhao Qiang <B45475@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>,
  <galak@kernel.crashing.org>
-Subject: [PATCH v3 1/2] QE: split function mpc85xx_qe_init() into two
- functions.
-Date: Thu, 6 Mar 2014 09:38:12 +0800
-Message-ID: <1394069893-20622-1-git-send-email-B45475@freescale.com>
+Subject: [PATCH v3 2/2] Corenet: Add QE platform support for Corenet
+Date: Thu, 6 Mar 2014 09:39:24 +0800
+Message-ID: <1394069964-20721-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
@@ -24,94 +23,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-New QE doesn't have par_io, it doesn't need to init par_io
-for new QE.
-Split function mpc85xx_qe_init() into mpc85xx_qe_init()
-and mpc85xx_qe_par_io_init().
-Call mpc85xx_qe_init() for both new and old while
-mpc85xx_qe_par_io_init() after mpc85xx_qe_init() for old.
+There is QE on platform T104x, add support.
+Call funcs qe_ic_init and qe_init if CONFIG_QUICC_ENGINE is defined.
 
 Signed-off-by: Zhao Qiang <B45475@freescale.com>
 ---
 Changes for v2:
-	- no
+	- use mpc85xx_qe_init() instead
 Changes for v3:
-	- no
+	- remove #ifdef which aren't really needed
 
- arch/powerpc/platforms/85xx/common.c      | 6 ++++++
- arch/powerpc/platforms/85xx/mpc85xx.h     | 2 ++
- arch/powerpc/platforms/85xx/mpc85xx_mds.c | 1 +
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 1 +
- arch/powerpc/platforms/85xx/twr_p102x.c   | 1 +
- 5 files changed, 11 insertions(+)
+ arch/powerpc/platforms/85xx/corenet_generic.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
-index 3b085c7..b564b5e 100644
---- a/arch/powerpc/platforms/85xx/common.c
-+++ b/arch/powerpc/platforms/85xx/common.c
-@@ -107,6 +107,12 @@ void __init mpc85xx_qe_init(void)
- 	qe_reset();
- 	of_node_put(np);
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index fbd871e..19420ef 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -26,11 +26,13 @@
+ #include <asm/udbg.h>
+ #include <asm/mpic.h>
+ #include <asm/ehv_pic.h>
++#include <asm/qe_ic.h>
  
-+}
-+
-+void __init mpc85xx_qe_par_io_init(void)
-+{
+ #include <linux/of_platform.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+ #include "smp.h"
++#include "mpc85xx.h"
+ 
+ void __init corenet_gen_pic_init(void)
+ {
+@@ -38,6 +40,8 @@ void __init corenet_gen_pic_init(void)
+ 	unsigned int flags = MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU |
+ 		MPIC_NO_RESET;
+ 
 +	struct device_node *np;
 +
- 	np = of_find_node_by_name(NULL, "par_io");
- 	if (np) {
- 		struct device_node *ucc;
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx.h b/arch/powerpc/platforms/85xx/mpc85xx.h
-index fc51dd4..39056f6 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx.h
-+++ b/arch/powerpc/platforms/85xx/mpc85xx.h
-@@ -10,8 +10,10 @@ static inline void __init mpc85xx_cpm2_pic_init(void) {}
+ 	if (ppc_md.get_irq == mpic_get_coreint_irq)
+ 		flags |= MPIC_ENABLE_COREINT;
  
- #ifdef CONFIG_QUICC_ENGINE
- extern void mpc85xx_qe_init(void);
-+extern void mpc85xx_qe_par_io_init(void);
- #else
- static inline void __init mpc85xx_qe_init(void) {}
-+static inline void __init mpc85xx_qe_par_io_init(void) {}
- #endif
+@@ -45,6 +49,14 @@ void __init corenet_gen_pic_init(void)
+ 	BUG_ON(mpic == NULL);
  
- #endif
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 34f3c5e..3c190b4 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -239,6 +239,7 @@ static void __init mpc85xx_mds_qe_init(void)
- 	struct device_node *np;
+ 	mpic_init(mpic);
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,qe-ic");
++	if (np) {
++		qe_ic_init(np, 0, qe_ic_cascade_low_mpic,
++				qe_ic_cascade_high_mpic);
++		of_node_put(np);
++	}
++
+ }
  
- 	mpc85xx_qe_init();
-+	mpc85xx_qe_par_io_init();
- 	mpc85xx_mds_reset_ucc_phys();
+ /*
+@@ -57,6 +69,8 @@ void __init corenet_gen_setup_arch(void)
+ 	swiotlb_detect_4g();
  
- 	if (machine_is(p1021_mds)) {
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index e15bdd1..f9668ed 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -99,6 +99,7 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
++
++	mpc85xx_qe_init();
+ }
  
- #ifdef CONFIG_QUICC_ENGINE
- 	mpc85xx_qe_init();
-+	mpc85xx_qe_par_io_init();
- #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
- 	if (machine_is(p1025_rdb)) {
- 
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index c25ff10..1eadb6d 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -77,6 +77,7 @@ static void __init twr_p1025_setup_arch(void)
- 
- #ifdef CONFIG_QUICC_ENGINE
- 	mpc85xx_qe_init();
-+	mpc85xx_qe_par_io_init();
- 
- #if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
- 	if (machine_is(twr_p1025)) {
+ static const struct of_device_id of_device_ids[] = {
+@@ -81,6 +95,9 @@ static const struct of_device_id of_device_ids[] = {
+ 	{
+ 		.compatible	= "fsl,qoriq-pcie-v3.0",
+ 	},
++	{
++		.compatible	= "fsl,qe",
++	},
+ 	/* The following two are for the Freescale hypervisor */
+ 	{
+ 		.name		= "hypervisor",
 -- 
 1.8.5
