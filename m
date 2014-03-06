@@ -1,26 +1,20 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id AB8AA2C032B
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Mar 2014 06:31:59 +1100 (EST)
-Date: Thu, 6 Mar 2014 18:06:48 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCH 3/3] perf: Use 64-bit value when comparing sample_regs
-Message-ID: <20140306170648.GA1269@krava.brq.redhat.com>
-References: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1394080919-17957-4-git-send-email-sukadev@linux.vnet.ibm.com>
- <063D6719AE5E284EB5DD2968C1650D6D0F6D3983@AcuExch.aculab.com>
- <20140306113332.GA7827@visitor2.iram.es>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140306113332.GA7827@visitor2.iram.es>
-Cc: Michael Ellerman <michaele@au1.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Stephane Eranian <eranian@google.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- David Laight <David.Laight@ACULAB.COM>, Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- 'Sukadev Bhattiprolu' <sukadev@linux.vnet.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id 64C962C032E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 08:27:42 +1100 (EST)
+Date: Thu, 06 Mar 2014 16:27:37 -0500 (EST)
+Message-Id: <20140306.162737.1605594893806967606.davem@davemloft.net>
+To: anton@samba.org
+Subject: Re: ibmveth: Fix endian issues with MAC addresses
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20140305145137.3460dbe7@kryten>
+References: <1387810329.22671.66.camel@joe-AO722>
+ <20131224125529.58970f1b@kryten> <20140305145137.3460dbe7@kryten>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, dvaleev@suse.com, agraf@suse.de,
+ netdev@vger.kernel.org, joe@perches.com, santil@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 06, 2014 at 12:33:32PM +0100, Gabriel Paubert wrote:
-> On Thu, Mar 06, 2014 at 09:44:47AM +0000, David Laight wrote:
-> > From: Sukadev Bhattiprolu
-> > > When checking whether a bit representing a register is set in
-> > > sample_regs, a 64-bit mask, use 64-bit value (1LL).
-> > > 
-> > > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > > ---
-> > >  tools/perf/util/unwind.c |    4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/tools/perf/util/unwind.c b/tools/perf/util/unwind.c
-> > > index 742f23b..2b888c6 100644
-> > > --- a/tools/perf/util/unwind.c
-> > > +++ b/tools/perf/util/unwind.c
-> > > @@ -396,11 +396,11 @@ static int reg_value(unw_word_t *valp, struct regs_dump *regs, int id,
-> > >  {
-> > >  	int i, idx = 0;
-> > > 
-> > > -	if (!(sample_regs & (1 << id)))
-> > > +	if (!(sample_regs & (1LL << id)))
-> > >  		return -EINVAL;
-> > > 
-> > >  	for (i = 0; i < id; i++) {
-> > > -		if (sample_regs & (1 << i))
-> > > +		if (sample_regs & (1LL << i))
-> > >  			idx++;
-> > >  	}
-> > 
-> > There are much faster ways to count the number of set bits, especially
-> > if you might need to check a significant number of bits.
-> > There might even be a function defined somewhere to do it.
-> 
-> Indeed, look for Hamming weight (hweight family of functions)
-> in asm/hweight.h and what is included from there.
-> 
-> Besides that, many modern processors also have a machine instruction
-> to perform this task. In the processor manuals the instruction is 
-> described as population count and the mnemonic starts with "popcnt"
-> on x86 and ppc.
-> 
-> 	Gabriel
-> 
-> > Basically you just add up the bits, for 16 bit it would be:
-> > 	val = (val & 0x5555) + (val >> 1) & 0x5555;
-> > 	val = (val & 0x3333) + (val >> 2) & 0x3333;
-> > 	val = (val & 0x0f0f) + (val >> 4) & 0x0f0f;
-> > 	val = (val & 0x00ff) + (val >> 8) & 0x00ff;
-> > As the size of the work increases the improvement is more significant.
-> > (Some of the later masking can probably be proven unnecessary.)
+From: Anton Blanchard <anton@samba.org>
+Date: Wed, 5 Mar 2014 14:51:37 +1100
 
-right I think the loop could be replaced by:
+> The code to load a MAC address into a u64 for passing to the
+> hypervisor via a register is broken on little endian.
+> 
+> Create a helper function called ibmveth_encode_mac_addr
+> which does the right thing in both big and little endian.
+> 
+> We were storing the MAC address in a long in struct ibmveth_adapter.
+> It's never used so remove it - we don't need another place in the
+> driver where we create endian issues with MAC addresses.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Cc: stable@vger.kernel.org
 
-  idx = hweight(mask & ((1 << id) - 1))
+Applied, thanks Anton.
 
-Sukadev,
-please also rebase against latest Arnaldo's perf/core,
-this code has changed just recently, it's now in:
-  util/perf_regs.c:perf_reg_value
+> -	memcpy(&adapter->mac_addr, mac_addr_p, ETH_ALEN);
+ ...
+> -    unsigned long mac_addr;
 
-thanks,
-jirka
+That's some scary stuff right there.
