@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AD45F2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 16:44:05 +1100 (EST)
-Message-ID: <1394084634.26321.23.camel@pasglop>
-Subject: Re: [PATCH] powerpc/le: fix endianness of the arguments passed to
- the ppc_rtas() syscall
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Date: Thu, 06 Mar 2014 16:43:54 +1100
-In-Reply-To: <20140305172006.26117.57219.stgit@bahia.local>
-References: <20140305172006.26117.57219.stgit@bahia.local>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, anton@samba.org,
- linux-kernel@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/5] powerpc/perf: Reject EBB events which specify a
+ sample_type
+Date: Thu,  6 Mar 2014 17:59:08 +1100
+Message-Id: <1394089152-603-1-git-send-email-mpe@ellerman.id.au>
+Cc: ymanton@ca.ibm.com, Paul Mackerras <paulus@samba.org>,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +16,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-05 at 18:20 +0100, Greg Kurz wrote:
-> RTAS manipulates its input and output arguments in big endian order.
-> 
-> I have looked at factoring some lines with rtas_call() but it is not really
-> worth it because of the variable arguments.
+Although we already block EBB events which request sampling using
+sample_period, technically it's possible for an event to set sample_type
+but not sample_period.
 
-I'm not sure about that one ...
+Nothing terrible will happen if an EBB event does specify sample_type,
+but it signals a major confusion on the part of userspace, and so we do
+them the favor of rejecting it.
 
-So this assumes that userspace will pass the RTAS arguments LE...
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/perf/core-book3s.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-This will work only as long as the arguments are indeed just an array
-of u32's. The minute userspace tries to crap something like two u16's
-in one argument or a u64 accross two arguments, it has the potential
-to be broken depending on how it has been done.
-
-I would have done it the other way around which is to define that
-ppc_rtas takes a BE structure since this is what RTAS expects (and
-the bit of RMA memory we expose to userspace for communicating with
-it also has to be handled BE so userspace has to know anyway).
-
-That means that the only things we need to fix here is when we interpret
-the args.nargs etc... we need a be32_to_cpu
-
-Cheers,
-Ben.
-
-> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/rtas.c |   15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index 4cf674d..00dbe36 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -1020,6 +1020,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
->  	char *buff_copy, *errbuf = NULL;
->  	int nargs;
->  	int rc;
-> +	int i;
->  
->  	if (!capable(CAP_SYS_ADMIN))
->  		return -EPERM;
-> @@ -1056,9 +1057,19 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
->  
->  	flags = lock_rtas();
->  
-> -	rtas.args = args;
-> +	rtas.args.token = cpu_to_be32(args.token);
-> +	rtas.args.nargs = cpu_to_be32(args.nargs);
-> +	rtas.args.nret  = cpu_to_be32(args.nret);
-> +	for (i = 0; i < nargs; ++i)
-> +		rtas.args.args[i] = cpu_to_be32(args.args[i]);
-> +	rtas.args.rets  = &rtas.args.args[nargs];
-> +	for (i = 0; i < args.nret; ++i)
-> +		rtas.args.rets[i] = 0;
-> +
->  	enter_rtas(__pa(&rtas.args));
-> -	args = rtas.args;
-> +
-> +	for (i = 0; i < args.nret; ++i)
-> +		args.rets[i] = be32_to_cpu(rtas.args.rets[i]);
->  
->  	/* A -1 return code indicates that the last command couldn't
->  	   be completed due to a hardware error. */
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 67cf220..4b2ba0c 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -502,8 +502,11 @@ static int ebb_event_check(struct perf_event *event)
+ 		if (!leader->attr.pinned || !leader->attr.exclusive)
+ 			return -EINVAL;
+ 
+-		if (event->attr.inherit || event->attr.sample_period ||
+-		    event->attr.enable_on_exec || event->attr.freq)
++		if (event->attr.freq ||
++		    event->attr.inherit ||
++		    event->attr.sample_type ||
++		    event->attr.sample_period ||
++		    event->attr.enable_on_exec)
+ 			return -EINVAL;
+ 	}
+ 
+-- 
+1.8.3.2
