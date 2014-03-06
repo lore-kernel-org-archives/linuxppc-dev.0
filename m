@@ -1,17 +1,19 @@
 Return-Path: <alistair@popple.id.au>
 Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
  [IPv6:2001:44b8:8060:ff02:300:1:6:4])
- by ozlabs.org (Postfix) with ESMTP id F13FC2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 14:54:21 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 1545E2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 14:54:22 +1100 (EST)
 From: Alistair Popple <alistair@popple.id.au>
-To: benh@kernel.crashing.org, netdev@vger.kernel.org,
- linux-mmc@vger.kernel.org, chris@printf.net, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net
-Subject: [PATCH 0/5] V2 IBM Akebono/PPC46GTR Support
-Date: Thu,  6 Mar 2014 14:52:23 +1100
-Message-Id: <1394077948-8395-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
+To: linux-mmc@vger.kernel.org,
+	chris@printf.net
+Subject: [PATCH 1/5] SDHCI: Add a generic registration to the SDHCI platform
+ driver
+Date: Thu,  6 Mar 2014 14:52:24 +1100
+Message-Id: <1394077948-8395-2-git-send-email-alistair@popple.id.au>
+In-Reply-To: <1394077948-8395-1-git-send-email-alistair@popple.id.au>
+References: <1394077948-8395-1-git-send-email-alistair@popple.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,58 +23,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The IBM Akebono board is a development board for the new PPC476GTR
-system on chip (SoC).
+This patch adds a generic platform driver registration to the exiting SDHCI
+platform driver using the devicetree compatibility string "generic-sdhci".
 
-This version of the series updates the device tree and drops the USB
-patches as the equivalent functionality is already in linux-next. It
-also addresses feedback from the previous submission.
-
-Alistair Popple (5):
-  SDHCI: Add a generic registration to the SDHCI platform driver
-  IBM Akebono: Add support for a new PHY interface to the IBM emac
-    driver
-  IBM Currituck: Clean up board specific code before adding Akebono code
-  IBM Akebono: Add the Akebono platform
-  powerpc: Added PCI MSI support using the HSTA module
-
- .../devicetree/bindings/mmc/sdhci-pltfm.txt        |  16 +
- .../devicetree/bindings/powerpc/4xx/akebono.txt    |  54 +++
- .../devicetree/bindings/powerpc/4xx/emac.txt       |   9 +
- .../devicetree/bindings/powerpc/4xx/hsta.txt       |  19 +
- arch/powerpc/boot/Makefile                         |   3 +
- arch/powerpc/boot/dcr.h                            |   4 +
- arch/powerpc/boot/dts/akebono.dts                  | 415 +++++++++++++++++++++
- arch/powerpc/boot/treeboot-akebono.c               | 163 ++++++++
- arch/powerpc/boot/wrapper                          |   3 +
- arch/powerpc/configs/44x/akebono_defconfig         | 148 ++++++++
- arch/powerpc/platforms/44x/Kconfig                 |  28 ++
- arch/powerpc/platforms/44x/Makefile                |   3 +-
- arch/powerpc/platforms/44x/currituck.c             | 233 ------------
- arch/powerpc/platforms/44x/ppc476.c                | 299 +++++++++++++++
- arch/powerpc/sysdev/Kconfig                        |   6 +
- arch/powerpc/sysdev/Makefile                       |   1 +
- arch/powerpc/sysdev/ppc4xx_hsta_msi.c              | 215 +++++++++++
- arch/powerpc/sysdev/ppc4xx_pci.c                   |  21 +-
- drivers/mmc/host/sdhci-pltfm.c                     |  28 ++
- drivers/net/ethernet/ibm/emac/Kconfig              |   4 +
- drivers/net/ethernet/ibm/emac/Makefile             |   1 +
- drivers/net/ethernet/ibm/emac/core.c               |  50 ++-
- drivers/net/ethernet/ibm/emac/core.h               |  12 +
- drivers/net/ethernet/ibm/emac/rgmii_wol.c          | 244 ++++++++++++
- drivers/net/ethernet/ibm/emac/rgmii_wol.h          |  62 +++
- 25 files changed, 1796 insertions(+), 245 deletions(-)
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+---
+ .../devicetree/bindings/mmc/sdhci-pltfm.txt        | 16 +++++++++++++
+ drivers/mmc/host/sdhci-pltfm.c                     | 28 ++++++++++++++++++++++
+ 2 files changed, 44 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-pltfm.txt
- create mode 100644 Documentation/devicetree/bindings/powerpc/4xx/akebono.txt
- create mode 100644 Documentation/devicetree/bindings/powerpc/4xx/hsta.txt
- create mode 100644 arch/powerpc/boot/dts/akebono.dts
- create mode 100644 arch/powerpc/boot/treeboot-akebono.c
- create mode 100644 arch/powerpc/configs/44x/akebono_defconfig
- delete mode 100644 arch/powerpc/platforms/44x/currituck.c
- create mode 100644 arch/powerpc/platforms/44x/ppc476.c
- create mode 100644 arch/powerpc/sysdev/ppc4xx_hsta_msi.c
- create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.c
- create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.h
 
+diff --git a/Documentation/devicetree/bindings/mmc/sdhci-pltfm.txt b/Documentation/devicetree/bindings/mmc/sdhci-pltfm.txt
+new file mode 100644
+index 0000000..3940659
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mmc/sdhci-pltfm.txt
+@@ -0,0 +1,16 @@
++Generic SHDCI platform driver
++
++The generic SDHCI platform driver should support most SDHCI host
++controllers. It uses the compatible="generic-sdhci" property and
++supports the following device tree properties as described in mmc.txt.
++
++Supported properties (described in mmc.txt):
++- reg
++- interrupts
++- wp-inverted
++- broken-cd
++- no-1-8-v
++- keep-power-in-suspend
++- enable-sdio-wakeup
++- bus-width
++- clock-frequency
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index bef250e..696d1f6 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -260,6 +260,34 @@ const struct dev_pm_ops sdhci_pltfm_pmops = {
+ EXPORT_SYMBOL_GPL(sdhci_pltfm_pmops);
+ #endif	/* CONFIG_PM */
+ 
++static int sdhci_generic_probe(struct platform_device *pdev)
++{
++	return sdhci_pltfm_register(pdev, NULL, 0);
++}
++
++static int sdhci_generic_remove(struct platform_device *pdev)
++{
++	return sdhci_pltfm_unregister(pdev);
++}
++
++static const struct of_device_id sdhci_generic_of_match[] = {
++	{ .compatible = "generic-sdhci" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, sdhci_generic_of_match);
++
++static struct platform_driver sdhci_generic_driver = {
++	.driver = {
++		.name = "sdhci-generic",
++		.owner = THIS_MODULE,
++		.of_match_table = sdhci_generic_of_match,
++		.pm = SDHCI_PLTFM_PMOPS,
++	},
++	.probe = sdhci_generic_probe,
++	.remove = sdhci_generic_remove,
++};
++module_platform_driver(sdhci_generic_driver);
++
+ static int __init sdhci_pltfm_drv_init(void)
+ {
+ 	pr_info("sdhci-pltfm: SDHCI platform and OF driver helper\n");
 -- 
 1.8.3.2
