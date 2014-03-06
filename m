@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/5] powerpc/perf: Clean up the EBB hash defines a little
-Date: Thu,  6 Mar 2014 17:59:09 +1100
-Message-Id: <1394089152-603-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/5] powerpc/perf: Avoid mutating event in
+ power8_get_constraint()
+Date: Thu,  6 Mar 2014 17:59:10 +1100
+Message-Id: <1394089152-603-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1394089152-603-1-git-send-email-mpe@ellerman.id.au>
 References: <1394089152-603-1-git-send-email-mpe@ellerman.id.au>
 Cc: ymanton@ca.ibm.com, Paul Mackerras <paulus@samba.org>,
@@ -17,47 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rather than using PERF_EVENT_CONFIG_EBB_SHIFT everywhere, add an
-EVENT_EBB_SHIFT like every other event and use that.
+We only need to mask the EBB bit out of the event for the check of the
+special PMC 5 & 6 events. So use a local to do it just for that code,
+rather than changing the event value for the life of the function.
+
+While we're there move the set of mask and value after all the checks.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/perf/power8-pmu.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/perf/power8-pmu.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 96cee20..26905ce 100644
+index 26905ce..04c1c77 100644
 --- a/arch/powerpc/perf/power8-pmu.c
 +++ b/arch/powerpc/perf/power8-pmu.c
-@@ -117,6 +117,7 @@
-  */
- 
- #define EVENT_EBB_MASK		1ull
-+#define EVENT_EBB_SHIFT		PERF_EVENT_CONFIG_EBB_SHIFT
- #define EVENT_THR_CMP_SHIFT	40	/* Threshold CMP value */
- #define EVENT_THR_CMP_MASK	0x3ff
- #define EVENT_THR_CTL_SHIFT	32	/* Threshold control value (start/stop) */
-@@ -149,7 +150,7 @@
- 	 (EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
- 	 (EVENT_COMBINE_MASK   << EVENT_COMBINE_SHIFT)		|	\
- 	 (EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
--	 (EVENT_EBB_MASK       << PERF_EVENT_CONFIG_EBB_SHIFT)	|	\
-+	 (EVENT_EBB_MASK       << EVENT_EBB_SHIFT)		|	\
- 	  EVENT_PSEL_MASK)
- 
- /* MMCRA IFM bits - POWER8 */
-@@ -265,10 +266,10 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
- 	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
- 	unit  = (event >> EVENT_UNIT_SHIFT)       & EVENT_UNIT_MASK;
+@@ -268,18 +268,20 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
  	cache = (event >> EVENT_CACHE_SEL_SHIFT)  & EVENT_CACHE_SEL_MASK;
--	ebb   = (event >> PERF_EVENT_CONFIG_EBB_SHIFT) & EVENT_EBB_MASK;
-+	ebb   = (event >> EVENT_EBB_SHIFT)        & EVENT_EBB_MASK;
+ 	ebb   = (event >> EVENT_EBB_SHIFT)        & EVENT_EBB_MASK;
  
- 	/* Clear the EBB bit in the event, so event checks work below */
--	event &= ~(EVENT_EBB_MASK << PERF_EVENT_CONFIG_EBB_SHIFT);
-+	event &= ~(EVENT_EBB_MASK << EVENT_EBB_SHIFT);
- 
+-	/* Clear the EBB bit in the event, so event checks work below */
+-	event &= ~(EVENT_EBB_MASK << EVENT_EBB_SHIFT);
+-
  	if (pmc) {
++		u64 base_event;
++
  		if (pmc > 6)
+ 			return -1;
+ 
+-		mask  |= CNST_PMC_MASK(pmc);
+-		value |= CNST_PMC_VAL(pmc);
++		/* Ignore Linux defined bits when checking event below */
++		base_event = event & ~(EVENT_EBB_MASK << EVENT_EBB_SHIFT);
+ 
+-		if (pmc >= 5 && event != 0x500fa && event != 0x600f4)
++		if (pmc >= 5 && base_event != 0x500fa && base_event != 0x600f4)
+ 			return -1;
++
++		mask  |= CNST_PMC_MASK(pmc);
++		value |= CNST_PMC_VAL(pmc);
+ 	}
+ 
+ 	if (pmc <= 4) {
 -- 
 1.8.3.2
