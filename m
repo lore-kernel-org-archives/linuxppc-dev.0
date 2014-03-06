@@ -1,41 +1,17 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A3C492C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 13:24:02 +1100 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 5 Mar 2014 19:24:00 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 85AFE1FF0043
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 19:23:58 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s262NMUh8782272
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Mar 2014 03:23:22 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s262Nuou014205
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 19:23:58 -0700
-Message-ID: <5317DB5B.60109@linux.vnet.ibm.com>
-Date: Thu, 06 Mar 2014 07:50:11 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 1/2] sched: Remove unused mc_capable() and smt_capable()
-References: <20140304210621.16893.8772.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20140304210737.16893.54289.stgit@bhelgaas-glaptop.roam.corp.google.com>
-In-Reply-To: <20140304210737.16893.54289.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:4])
+ by ozlabs.org (Postfix) with ESMTP id F13FC2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 14:54:21 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: benh@kernel.crashing.org, netdev@vger.kernel.org,
+ linux-mmc@vger.kernel.org, chris@printf.net, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
+Subject: [PATCH 0/5] V2 IBM Akebono/PPC46GTR Support
+Date: Thu,  6 Mar 2014 14:52:23 +1100
+Message-Id: <1394077948-8395-1-git-send-email-alistair@popple.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,109 +21,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/05/2014 02:37 AM, Bjorn Helgaas wrote:
-> Remove mc_capable() and smt_capable().  Neither is used.
-> 
-> Both were added by 5c45bf279d37 ("sched: mc/smt power savings sched
-> policy").  Uses of both were removed by 8e7fbcbc22c1 ("sched: Remove stale
-> power aware scheduling remnants and dysfunctional knobs").
-> 
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  arch/arm/include/asm/topology.h      |    3 ---
->  arch/ia64/include/asm/topology.h     |    1 -
->  arch/mips/include/asm/topology.h     |    4 ----
->  arch/powerpc/include/asm/topology.h  |    1 -
->  arch/sparc/include/asm/topology_64.h |    2 --
->  arch/x86/include/asm/topology.h      |    6 ------
->  6 files changed, 17 deletions(-)
-> 
-> diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-> index 58b8b84adcd2..2fe85fff5cca 100644
-> --- a/arch/arm/include/asm/topology.h
-> +++ b/arch/arm/include/asm/topology.h
-> @@ -20,9 +20,6 @@ extern struct cputopo_arm cpu_topology[NR_CPUS];
->  #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
->  #define topology_thread_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
->  
-> -#define mc_capable()	(cpu_topology[0].socket_id != -1)
-> -#define smt_capable()	(cpu_topology[0].thread_id != -1)
-> -
->  void init_cpu_topology(void);
->  void store_cpu_topology(unsigned int cpuid);
->  const struct cpumask *cpu_coregroup_mask(int cpu);
-> diff --git a/arch/ia64/include/asm/topology.h b/arch/ia64/include/asm/topology.h
-> index a2496e449b75..5cb55a1e606b 100644
-> --- a/arch/ia64/include/asm/topology.h
-> +++ b/arch/ia64/include/asm/topology.h
-> @@ -77,7 +77,6 @@ void build_cpu_to_node_map(void);
->  #define topology_core_id(cpu)			(cpu_data(cpu)->core_id)
->  #define topology_core_cpumask(cpu)		(&cpu_core_map[cpu])
->  #define topology_thread_cpumask(cpu)		(&per_cpu(cpu_sibling_map, cpu))
-> -#define smt_capable() 				(smp_num_siblings > 1)
->  #endif
->  
->  extern void arch_fix_phys_package_id(int num, u32 slot);
-> diff --git a/arch/mips/include/asm/topology.h b/arch/mips/include/asm/topology.h
-> index 12609a17dc8b..20ea4859c822 100644
-> --- a/arch/mips/include/asm/topology.h
-> +++ b/arch/mips/include/asm/topology.h
-> @@ -10,8 +10,4 @@
->  
->  #include <topology.h>
->  
-> -#ifdef CONFIG_SMP
-> -#define smt_capable()	(smp_num_siblings > 1)
-> -#endif
-> -
->  #endif /* __ASM_TOPOLOGY_H */
-> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
-> index d0b5fca6b077..c9202151079f 100644
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -99,7 +99,6 @@ static inline int prrn_is_enabled(void)
->  
->  #ifdef CONFIG_SMP
->  #include <asm/cputable.h>
-> -#define smt_capable()		(cpu_has_feature(CPU_FTR_SMT))
->  
->  #ifdef CONFIG_PPC64
->  #include <asm/smp.h>
-> diff --git a/arch/sparc/include/asm/topology_64.h b/arch/sparc/include/asm/topology_64.h
-> index 1754390a426f..a2d10fc64faf 100644
-> --- a/arch/sparc/include/asm/topology_64.h
-> +++ b/arch/sparc/include/asm/topology_64.h
-> @@ -42,8 +42,6 @@ static inline int pcibus_to_node(struct pci_bus *pbus)
->  #define topology_core_id(cpu)			(cpu_data(cpu).core_id)
->  #define topology_core_cpumask(cpu)		(&cpu_core_map[cpu])
->  #define topology_thread_cpumask(cpu)		(&per_cpu(cpu_sibling_map, cpu))
-> -#define mc_capable()				(sparc64_multi_core)
-> -#define smt_capable()				(sparc64_multi_core)
->  #endif /* CONFIG_SMP */
->  
->  extern cpumask_t cpu_core_map[NR_CPUS];
-> diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-> index d35f24e231cd..9bcc724cafdd 100644
-> --- a/arch/x86/include/asm/topology.h
-> +++ b/arch/x86/include/asm/topology.h
-> @@ -133,12 +133,6 @@ static inline void arch_fix_phys_package_id(int num, u32 slot)
->  struct pci_bus;
->  void x86_pci_root_bus_resources(int bus, struct list_head *resources);
->  
-> -#ifdef CONFIG_SMP
-> -#define mc_capable()	((boot_cpu_data.x86_max_cores > 1) && \
-> -			(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids))
-> -#define smt_capable()			(smp_num_siblings > 1)
-> -#endif
-> -
->  #ifdef CONFIG_NUMA
->  extern int get_mp_bus_to_node(int busnum);
->  extern void set_mp_bus_to_node(int busnum, int node);
-> 
+The IBM Akebono board is a development board for the new PPC476GTR
+system on chip (SoC).
 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+This version of the series updates the device tree and drops the USB
+patches as the equivalent functionality is already in linux-next. It
+also addresses feedback from the previous submission.
+
+Alistair Popple (5):
+  SDHCI: Add a generic registration to the SDHCI platform driver
+  IBM Akebono: Add support for a new PHY interface to the IBM emac
+    driver
+  IBM Currituck: Clean up board specific code before adding Akebono code
+  IBM Akebono: Add the Akebono platform
+  powerpc: Added PCI MSI support using the HSTA module
+
+ .../devicetree/bindings/mmc/sdhci-pltfm.txt        |  16 +
+ .../devicetree/bindings/powerpc/4xx/akebono.txt    |  54 +++
+ .../devicetree/bindings/powerpc/4xx/emac.txt       |   9 +
+ .../devicetree/bindings/powerpc/4xx/hsta.txt       |  19 +
+ arch/powerpc/boot/Makefile                         |   3 +
+ arch/powerpc/boot/dcr.h                            |   4 +
+ arch/powerpc/boot/dts/akebono.dts                  | 415 +++++++++++++++++++++
+ arch/powerpc/boot/treeboot-akebono.c               | 163 ++++++++
+ arch/powerpc/boot/wrapper                          |   3 +
+ arch/powerpc/configs/44x/akebono_defconfig         | 148 ++++++++
+ arch/powerpc/platforms/44x/Kconfig                 |  28 ++
+ arch/powerpc/platforms/44x/Makefile                |   3 +-
+ arch/powerpc/platforms/44x/currituck.c             | 233 ------------
+ arch/powerpc/platforms/44x/ppc476.c                | 299 +++++++++++++++
+ arch/powerpc/sysdev/Kconfig                        |   6 +
+ arch/powerpc/sysdev/Makefile                       |   1 +
+ arch/powerpc/sysdev/ppc4xx_hsta_msi.c              | 215 +++++++++++
+ arch/powerpc/sysdev/ppc4xx_pci.c                   |  21 +-
+ drivers/mmc/host/sdhci-pltfm.c                     |  28 ++
+ drivers/net/ethernet/ibm/emac/Kconfig              |   4 +
+ drivers/net/ethernet/ibm/emac/Makefile             |   1 +
+ drivers/net/ethernet/ibm/emac/core.c               |  50 ++-
+ drivers/net/ethernet/ibm/emac/core.h               |  12 +
+ drivers/net/ethernet/ibm/emac/rgmii_wol.c          | 244 ++++++++++++
+ drivers/net/ethernet/ibm/emac/rgmii_wol.h          |  62 +++
+ 25 files changed, 1796 insertions(+), 245 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-pltfm.txt
+ create mode 100644 Documentation/devicetree/bindings/powerpc/4xx/akebono.txt
+ create mode 100644 Documentation/devicetree/bindings/powerpc/4xx/hsta.txt
+ create mode 100644 arch/powerpc/boot/dts/akebono.dts
+ create mode 100644 arch/powerpc/boot/treeboot-akebono.c
+ create mode 100644 arch/powerpc/configs/44x/akebono_defconfig
+ delete mode 100644 arch/powerpc/platforms/44x/currituck.c
+ create mode 100644 arch/powerpc/platforms/44x/ppc476.c
+ create mode 100644 arch/powerpc/sysdev/ppc4xx_hsta_msi.c
+ create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.c
+ create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.h
+
+-- 
+1.8.3.2
