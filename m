@@ -1,13 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 5/5] powerpc/perf: Enable BHRB access for EBB events
-Date: Thu,  6 Mar 2014 17:59:12 +1100
-Message-Id: <1394089152-603-5-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1394089152-603-1-git-send-email-mpe@ellerman.id.au>
-References: <1394089152-603-1-git-send-email-mpe@ellerman.id.au>
-Cc: ymanton@ca.ibm.com, Paul Mackerras <paulus@samba.org>,
- khandual@linux.vnet.ibm.com
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 00FFD2C00BB
+ for <linuxppc-dev@ozlabs.org>; Thu,  6 Mar 2014 20:51:59 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 01127-01 for <linuxppc-dev@ozlabs.org>;
+ Thu,  6 Mar 2014 09:45:17 +0000 (GMT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Sukadev Bhattiprolu' <sukadev@linux.vnet.ibm.com>, "Arnaldo Carvalho de
+ Melo" <acme@ghostprotocols.net>
+Subject: RE: [PATCH 3/3] perf: Use 64-bit value when comparing sample_regs
+Date: Thu, 6 Mar 2014 09:44:47 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6D3983@AcuExch.aculab.com>
+References: <1394080919-17957-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1394080919-17957-4-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1394080919-17957-4-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Michael Ellerman <michaele@au1.ibm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Stephane Eranian <eranian@google.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,69 +31,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous commit added constraint and register handling to allow
-processes using EBB (Event Based Branches) to request access to the BHRB
-(Branch History Rolling Buffer).
-
-With that in place we can allow processes using EBB to access the BHRB.
-This is achieved by setting BHRBA in MMCR0 when we enable EBB access. We
-must also clear BHRBA when we are disabling.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/reg.h  |  1 +
- arch/powerpc/perf/core-book3s.c | 10 ++++++----
- 2 files changed, 7 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 90c06ec..d48ce94 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -664,6 +664,7 @@
- #define   MMCR0_PMXE	0x04000000UL /* performance monitor exception enable */
- #define   MMCR0_FCECE	0x02000000UL /* freeze ctrs on enabled cond or event */
- #define   MMCR0_TBEE	0x00400000UL /* time base exception enable */
-+#define   MMCR0_BHRBA	0x00200000UL /* BHRB Access allowed in userspace */
- #define   MMCR0_EBE	0x00100000UL /* Event based branch enable */
- #define   MMCR0_PMCC	0x000c0000UL /* PMC control */
- #define   MMCR0_PMCC_U6	0x00080000UL /* PMC1-6 are R/W by user (PR) */
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 4b2ba0c..a75bb69 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -78,6 +78,7 @@ static unsigned int freeze_events_kernel = MMCR0_FCS;
- #define MMCR0_FC56		0
- #define MMCR0_PMAO		0
- #define MMCR0_EBE		0
-+#define MMCR0_BHRBA		0
- #define MMCR0_PMCC		0
- #define MMCR0_PMCC_U6		0
- 
-@@ -545,8 +546,8 @@ static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
- 	if (!ebb)
- 		goto out;
- 
--	/* Enable EBB and read/write to all 6 PMCs for userspace */
--	mmcr0 |= MMCR0_EBE | MMCR0_PMCC_U6;
-+	/* Enable EBB and read/write to all 6 PMCs and BHRB for userspace */
-+	mmcr0 |= MMCR0_EBE | MMCR0_BHRBA | MMCR0_PMCC_U6;
- 
- 	/* Add any bits from the user reg, FC or PMAO */
- 	mmcr0 |= current->thread.mmcr0;
-@@ -976,11 +977,12 @@ static void power_pmu_disable(struct pmu *pmu)
- 		}
- 
- 		/*
--		 * Set the 'freeze counters' bit, clear EBE/PMCC/PMAO/FC56.
-+		 * Set the 'freeze counters' bit, clear EBE/BHRBA/PMCC/PMAO/FC56
- 		 */
- 		val  = mmcr0 = mfspr(SPRN_MMCR0);
- 		val |= MMCR0_FC;
--		val &= ~(MMCR0_EBE | MMCR0_PMCC | MMCR0_PMAO | MMCR0_FC56);
-+		val &= ~(MMCR0_EBE | MMCR0_BHRBA | MMCR0_PMCC | MMCR0_PMAO |
-+			 MMCR0_FC56);
- 
- 		/*
- 		 * The barrier is to make sure the mtspr has been
--- 
-1.8.3.2
+RnJvbTogU3VrYWRldiBCaGF0dGlwcm9sdQ0KPiBXaGVuIGNoZWNraW5nIHdoZXRoZXIgYSBiaXQg
+cmVwcmVzZW50aW5nIGEgcmVnaXN0ZXIgaXMgc2V0IGluDQo+IHNhbXBsZV9yZWdzLCBhIDY0LWJp
+dCBtYXNrLCB1c2UgNjQtYml0IHZhbHVlICgxTEwpLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogU3Vr
+YWRldiBCaGF0dGlwcm9sdSA8c3VrYWRldkBsaW51eC52bmV0LmlibS5jb20+DQo+IC0tLQ0KPiAg
+dG9vbHMvcGVyZi91dGlsL3Vud2luZC5jIHwgICAgNCArKy0tDQo+ICAxIGZpbGUgY2hhbmdlZCwg
+MiBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL3Rvb2xz
+L3BlcmYvdXRpbC91bndpbmQuYyBiL3Rvb2xzL3BlcmYvdXRpbC91bndpbmQuYw0KPiBpbmRleCA3
+NDJmMjNiLi4yYjg4OGM2IDEwMDY0NA0KPiAtLS0gYS90b29scy9wZXJmL3V0aWwvdW53aW5kLmMN
+Cj4gKysrIGIvdG9vbHMvcGVyZi91dGlsL3Vud2luZC5jDQo+IEBAIC0zOTYsMTEgKzM5NiwxMSBA
+QCBzdGF0aWMgaW50IHJlZ192YWx1ZSh1bndfd29yZF90ICp2YWxwLCBzdHJ1Y3QgcmVnc19kdW1w
+ICpyZWdzLCBpbnQgaWQsDQo+ICB7DQo+ICAJaW50IGksIGlkeCA9IDA7DQo+IA0KPiAtCWlmICgh
+KHNhbXBsZV9yZWdzICYgKDEgPDwgaWQpKSkNCj4gKwlpZiAoIShzYW1wbGVfcmVncyAmICgxTEwg
+PDwgaWQpKSkNCj4gIAkJcmV0dXJuIC1FSU5WQUw7DQo+IA0KPiAgCWZvciAoaSA9IDA7IGkgPCBp
+ZDsgaSsrKSB7DQo+IC0JCWlmIChzYW1wbGVfcmVncyAmICgxIDw8IGkpKQ0KPiArCQlpZiAoc2Ft
+cGxlX3JlZ3MgJiAoMUxMIDw8IGkpKQ0KPiAgCQkJaWR4Kys7DQo+ICAJfQ0KDQpUaGVyZSBhcmUg
+bXVjaCBmYXN0ZXIgd2F5cyB0byBjb3VudCB0aGUgbnVtYmVyIG9mIHNldCBiaXRzLCBlc3BlY2lh
+bGx5DQppZiB5b3UgbWlnaHQgbmVlZCB0byBjaGVjayBhIHNpZ25pZmljYW50IG51bWJlciBvZiBi
+aXRzLg0KVGhlcmUgbWlnaHQgZXZlbiBiZSBhIGZ1bmN0aW9uIGRlZmluZWQgc29tZXdoZXJlIHRv
+IGRvIGl0Lg0KQmFzaWNhbGx5IHlvdSBqdXN0IGFkZCB1cCB0aGUgYml0cywgZm9yIDE2IGJpdCBp
+dCB3b3VsZCBiZToNCgl2YWwgPSAodmFsICYgMHg1NTU1KSArICh2YWwgPj4gMSkgJiAweDU1NTU7
+DQoJdmFsID0gKHZhbCAmIDB4MzMzMykgKyAodmFsID4+IDIpICYgMHgzMzMzOw0KCXZhbCA9ICh2
+YWwgJiAweDBmMGYpICsgKHZhbCA+PiA0KSAmIDB4MGYwZjsNCgl2YWwgPSAodmFsICYgMHgwMGZm
+KSArICh2YWwgPj4gOCkgJiAweDAwZmY7DQpBcyB0aGUgc2l6ZSBvZiB0aGUgd29yayBpbmNyZWFz
+ZXMgdGhlIGltcHJvdmVtZW50IGlzIG1vcmUgc2lnbmlmaWNhbnQuDQooU29tZSBvZiB0aGUgbGF0
+ZXIgbWFza2luZyBjYW4gcHJvYmFibHkgYmUgcHJvdmVuIHVubmVjZXNzYXJ5LikNCg0KCURhdmlk
+DQoNCg==
