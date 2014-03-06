@@ -1,40 +1,43 @@
 Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CB0862C0374
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 11:03:27 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 96BA72C0385
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Mar 2014 11:06:03 +1100 (EST)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Wed, 5 Mar 2014 19:03:25 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 43594C90040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 19:03:18 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2603Lfv4784482
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Mar 2014 00:03:21 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2603JeS003931
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 19:03:21 -0500
+ Wed, 5 Mar 2014 17:06:01 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id AD7941FF003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2014 17:05:57 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2605TZK3015062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Mar 2014 01:05:29 +0100
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s2609Rs5010161
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Mar 2014 17:09:28 -0700
+Message-ID: <5317BBE1.4050001@linux.vnet.ibm.com>
+Date: Wed, 05 Mar 2014 16:05:53 -0800
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
-To: Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- Cody P Schafer <cody@linux.vnet.ibm.com>
-Subject: [PATCH v4 11/11] powerpc/perf/hv_{gpci,
- 24x7}: add documentation of device attributes
-Date: Wed,  5 Mar 2014 16:01:10 -0800
-Message-Id: <1394064082-6242-12-git-send-email-cody@linux.vnet.ibm.com>
-In-Reply-To: <1394064082-6242-1-git-send-email-cody@linux.vnet.ibm.com>
-References: <1394064082-6242-1-git-send-email-cody@linux.vnet.ibm.com>
-Cc: Rob Landley <rob@landley.net>, linux-doc@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Michael Ellerman <michael@ellerman.id.au>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>, scottwood@freescale.com
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH v3 02/11] perf: add PMU_FORMAT_RANGE() helper for use
+ by sw-like pmus
+References: <20140304051936.33A712C01AB@ozlabs.org>
+ <53158A2F.8050605@linux.vnet.ibm.com>
+In-Reply-To: <53158A2F.8050605@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Peter Zijlstra <peterz@infradead.org>, scottwood@freescale.com,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,94 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gpci and 24x7 expose some device specific attributes. Add some
-documentation for them.
+On 03/04/2014 12:09 AM, Cody P Schafer wrote:
+> On 03/03/2014 09:19 PM, Michael Ellerman wrote:
+>> On Thu, 2014-27-02 at 21:04:55 UTC, Cody P Schafer wrote:
+>>> Add PMU_FORMAT_RANGE() and PMU_FORMAT_RANGE_RESERVED() (for reserved
+>>> areas) which generate functions to extract the relevent bits from
+>>> event->attr.config{,1,2} for use by sw-like pmus where the
+>>> 'config{,1,2}' values don't map directly to hardware registers.
+>>>
+>>> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+>>> ---
+>>>   include/linux/perf_event.h | 17 +++++++++++++++++
+>>>   1 file changed, 17 insertions(+)
+>>>
+>>> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+>>> index e56b07f..3da5081 100644
+>>> --- a/include/linux/perf_event.h
+>>> +++ b/include/linux/perf_event.h
+>>> @@ -871,4 +871,21 @@ _name##_show(struct device
+>>> *dev,                    \
+>>>                                       \
+>>>   static struct device_attribute format_attr_##_name = __ATTR_RO(_name)
+>>>
+>>> +#define PMU_FORMAT_RANGE(name, attr_var, bit_start, bit_end)        \
+>>> +PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);        \
+>>> +PMU_FORMAT_RANGE_RESERVED(name, attr_var, bit_start, bit_end)
+>>
+>> I really think these should have event in the name.
+>>
+>> Someone looking at the code is going to see event_get_foo() and wonder
+>> where
+>> that is defined. Grep won't find a definition, tags won't find a
+>> definition,
+>> the least you can do is have the macro name give some hint.
+>>
+>
+> That is a good point (grep-ability). Let me think about this. There is
+> also the possibility that I could adjust the event_get_*() naming to
+> something else. format_get_*()? event_get_format_*()? (these names keep
+> growing...)
+>
 
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
----
- .../testing/sysfs-bus-event_source-devices-hv_24x7 | 23 ++++++++++++
- .../testing/sysfs-bus-event_source-devices-hv_gpci | 43 ++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
- create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-new file mode 100644
-index 0000000..e78ee79
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-@@ -0,0 +1,23 @@
-+What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		Provides access to the binary "24x7 catalog" provided by the
-+		hypervisor on POWER7 and 8 systems. This catalog lists events
-+		avaliable from the powerpc "hv_24x7" pmu. Its format is
-+		documented here:
-+		https://raw.githubusercontent.com/jmesmon/catalog-24x7/master/hv-24x7-catalog.h
-+
-+What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog_length
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		A number equal to the length in bytes of the catalog. This is
-+		also extractable from the provided binary "catalog" sysfs entry.
-+
-+What:		/sys/bus/event_source/devices/hv_24x7/interface/catalog_version
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		Exposes the "version" field of the 24x7 catalog. This is also
-+		extractable from the provided binary "catalog" sysfs entry.
-diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-new file mode 100644
-index 0000000..3fa58c2
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci
-@@ -0,0 +1,43 @@
-+What:		/sys/bus/event_source/devices/hv_gpci/interface/collect_privileged
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		'0' if the hypervisor is configured to forbid access to event
-+		counters being accumulated by other guests and to physical
-+		domain event counters.
-+		'1' if that access is allowed.
-+
-+What:		/sys/bus/event_source/devices/hv_gpci/interface/ga
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		0 or 1. Indicates whether we have access to "GA" events (listed
-+		in arch/powerpc/perf/hv-gpci.h).
-+
-+What:		/sys/bus/event_source/devices/hv_gpci/interface/expanded
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		0 or 1. Indicates whether we have access to "EXPANDED" events (listed
-+		in arch/powerpc/perf/hv-gpci.h).
-+
-+What:		/sys/bus/event_source/devices/hv_gpci/interface/lab
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		0 or 1. Indicates whether we have access to "LAB" events (listed
-+		in arch/powerpc/perf/hv-gpci.h).
-+
-+What:		/sys/bus/event_source/devices/hv_gpci/interface/version
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		A number indicating the version of the gpci interface that the
-+		hypervisor reports supporting.
-+
-+What:		/sys/bus/event_source/devices/hv_gpci/interface/kernel_version
-+Date:		February 2014
-+Contact:	Cody P Schafer <cody@linux.vnet.ibm.com>
-+Description:
-+		A number indicating the latest version of the gpci interface
-+		that the kernel is aware of.
--- 
-1.9.0
+I've gone with a format_get(name, event) style macro (making it more 
+grep-able), in v4.
+Feel free to direct further discussion to the v4 posting.
