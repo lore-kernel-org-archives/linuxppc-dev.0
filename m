@@ -1,24 +1,18 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0060.hostedemail.com
- [216.40.44.60]) by ozlabs.org (Postfix) with ESMTP id 1D7032C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Mar 2014 08:02:50 +1100 (EST)
-Message-ID: <1394226164.16156.96.camel@joe-AO722>
-Subject: rfc: checkpatch logical line continuations (was IBM Akebono: Add
- support for a new PHY interface to the IBM emac driver)
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Date: Fri, 07 Mar 2014 13:02:44 -0800
-In-Reply-To: <20140307.154142.488351276799532264.davem@davemloft.net>
-References: <1394077948-8395-1-git-send-email-alistair@popple.id.au>
- <1394077948-8395-3-git-send-email-alistair@popple.id.au>
- <20140307.154142.488351276799532264.davem@davemloft.net>
-Content-Type: text/plain; charset="ISO-8859-1"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9CD6B2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Mar 2014 08:05:05 +1100 (EST)
+Message-ID: <1394226295.14642.28.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 08 Mar 2014 08:04:55 +1100
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, devicetree@vger.kernel.org,
- Dan Carpenter <error27@gmail.com>, alistair@popple.id.au,
- linux-kernel@vger.kernel.org, Josh Triplett <josh@joshtriplett.org>,
- netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(added some cc's)
+Hi Linus !
 
-On Fri, 2014-03-07 at 15:41 -0500, David Miller wrote:
-> From: Alistair Popple <alistair@popple.id.au>
-> Date: Thu,  6 Mar 2014 14:52:25 +1100
-> 
-> > +	out_be32(dev->reg, in_be32(dev->reg) | WKUP_ETH_RGMIIEN
-> > +		 | WKUP_ETH_TX_OE | WKUP_ETH_RX_IE);
-> 
-> When an expression spans multiple lines, the lines should end with
-> operators rather than begin with them.
+Here are a couple of powerpc fixes for 3.14. One is (another !) nasty TM
+problem, we can crash the kernel by forking inside a transaction. The
+other one is a simple fix for an alignment issue which can hurt in LE
+mode.
 
-That's not in CodingStyle currently.
+Cheers,
+Ben.
 
-Right now, checkpatch emits a --strict only warning on "&&" or "||"
-at the beginning of line but that could be changed to any "$Operators"
+The following changes since commit e0cf957614976896111e676e5134ac98ee227d3d:
 
-our $Arithmetic = qr{\+|-|\*|\/|%};
-our $Operators	= qr{
-			<=|>=|==|!=|
-			=>|->|<<|>>|<|>|!|~|
-			&&|\|\||,|\^|\+\+|--|&|\||$Arithmetic
-		  }x;
+  powerpc/powernv: Fix indirect XSCOM unmangling (2014-02-28 19:15:49 +1100)
 
-The ones that likely have a too high false positive rates
-are the negation "!" and bitwise "~".
+are available in the git repository at:
 
-Also, using perl, it's hard to distinguish between a
-logical "&" and the address-of "&" as well as the
-multiplication "*" and indirection "*" so maybe those
-should be excluded too.
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
-And I think it should only be added as a --strict test.
+for you to fetch changes up to a5b2cf5b1af424ee3dd9e3ce6d5cea18cb927e67:
+
+  powerpc: Align p_dyn, p_rela and p_st symbols (2014-03-07 13:50:19 +1100)
+
+----------------------------------------------------------------
+Anton Blanchard (1):
+      powerpc: Align p_dyn, p_rela and p_st symbols
+
+Michael Neuling (1):
+      powerpc/tm: Fix crash when forking inside a transaction
+
+ arch/powerpc/kernel/process.c  | 9 +++++++++
+ arch/powerpc/kernel/reloc_64.S | 1 +
+ 2 files changed, 10 insertions(+)
