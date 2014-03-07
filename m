@@ -1,39 +1,48 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0B7582C032A
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 17:16:18 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 399D72C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 17:22:15 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 7 Mar 2014 11:46:17 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4C8393940049
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 11:46:14 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s276G5YH6095184
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Mar 2014 11:46:05 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s276GCHD012331
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Mar 2014 11:46:12 +0530
-Message-ID: <531963D9.5040701@linux.vnet.ibm.com>
-Date: Fri, 07 Mar 2014 11:44:49 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 7 Mar 2014 01:22:12 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 94499C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 01:22:06 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s276M91I9503052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Mar 2014 06:22:09 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s276M7Ml028368
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Mar 2014 01:22:09 -0500
+Date: Fri, 7 Mar 2014 11:51:58 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 14/52] powerpc, sysfs: Fix CPU hotplug callback
+ registration
+Message-ID: <20140307062157.GA2737@in.ibm.com>
+References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
+ <20140214075215.22701.23653.stgit@srivatsabhat.in.ibm.com>
+ <1394161051.26321.71.camel@pasglop>
 MIME-Version: 1.0
-To: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH RFC/RFT v3 6/9] powerpc: move cacheinfo sysfs to generic
- cacheinfo infrastructure
-References: <1392825976-17633-1-git-send-email-sudeep.holla@arm.com>
- <1392825976-17633-7-git-send-email-sudeep.holla@arm.com>
- <531945D1.7010503@linux.vnet.ibm.com>
-In-Reply-To: <531945D1.7010503@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1394161051.26321.71.camel@pasglop>
+Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
+ linux@arm.linux.org.uk, akpm@linux-foundation.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, peterz@infradead.org,
+ rusty@rustcorp.com.au, rjw@rjwysocki.net, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, paulus@samba.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org
+Reply-To: ego@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,215 +52,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/07/2014 09:36 AM, Anshuman Khandual wrote:
-> On 02/19/2014 09:36 PM, Sudeep Holla wrote:
->> From: Sudeep Holla <sudeep.holla@arm.com>
->>
->> This patch removes the redundant sysfs cacheinfo code by making use of
->> the newly introduced generic cacheinfo infrastructure.
->>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> ---
->>  arch/powerpc/kernel/cacheinfo.c | 831 ++++++----------------------------------
->>  arch/powerpc/kernel/cacheinfo.h |   8 -
->>  arch/powerpc/kernel/sysfs.c     |   4 -
->>  3 files changed, 109 insertions(+), 734 deletions(-)
->>  delete mode 100644 arch/powerpc/kernel/cacheinfo.h
->>
->> diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
->> index 2912b87..05b7580 100644
->> --- a/arch/powerpc/kernel/cacheinfo.c
->> +++ b/arch/powerpc/kernel/cacheinfo.c
->> @@ -10,38 +10,10 @@
->>   * 2 as published by the Free Software Foundation.
->>   */
->>
->> +#include <linux/cacheinfo.h>
->>  #include <linux/cpu.h>
->> -#include <linux/cpumask.h>
->>  #include <linux/kernel.h>
->> -#include <linux/kobject.h>
->> -#include <linux/list.h>
->> -#include <linux/notifier.h>
->>  #include <linux/of.h>
->> -#include <linux/percpu.h>
->> -#include <linux/slab.h>
->> -#include <asm/prom.h>
->> -
->> -#include "cacheinfo.h"
->> -
->> -/* per-cpu object for tracking:
->> - * - a "cache" kobject for the top-level directory
->> - * - a list of "index" objects representing the cpu's local cache hierarchy
->> - */
->> -struct cache_dir {
->> -	struct kobject *kobj; /* bare (not embedded) kobject for cache
->> -			       * directory */
->> -	struct cache_index_dir *index; /* list of index objects */
->> -};
->> -
->> -/* "index" object: each cpu's cache directory has an index
->> - * subdirectory corresponding to a cache object associated with the
->> - * cpu.  This object's lifetime is managed via the embedded kobject.
->> - */
->> -struct cache_index_dir {
->> -	struct kobject kobj;
->> -	struct cache_index_dir *next; /* next index in parent directory */
->> -	struct cache *cache;
->> -};
->>
->>  /* Template for determining which OF properties to query for a given
->>   * cache type */
->> @@ -60,11 +32,6 @@ struct cache_type_info {
->>  	const char *nr_sets_prop;
->>  };
->>
->> -/* These are used to index the cache_type_info array. */
->> -#define CACHE_TYPE_UNIFIED     0
->> -#define CACHE_TYPE_INSTRUCTION 1
->> -#define CACHE_TYPE_DATA        2
->> -
->>  static const struct cache_type_info cache_type_info[] = {
->>  	{
->>  		/* PowerPC Processor binding says the [di]-cache-*
->> @@ -77,246 +44,115 @@ static const struct cache_type_info cache_type_info[] = {
->>  		.nr_sets_prop    = "d-cache-sets",
->>  	},
->>  	{
->> -		.name            = "Instruction",
->> -		.size_prop       = "i-cache-size",
->> -		.line_size_props = { "i-cache-line-size",
->> -				     "i-cache-block-size", },
->> -		.nr_sets_prop    = "i-cache-sets",
->> -	},
->> -	{
->>  		.name            = "Data",
->>  		.size_prop       = "d-cache-size",
->>  		.line_size_props = { "d-cache-line-size",
->>  				     "d-cache-block-size", },
->>  		.nr_sets_prop    = "d-cache-sets",
->>  	},
->> +	{
->> +		.name            = "Instruction",
->> +		.size_prop       = "i-cache-size",
->> +		.line_size_props = { "i-cache-line-size",
->> +				     "i-cache-block-size", },
->> +		.nr_sets_prop    = "i-cache-sets",
->> +	},
->>  };
+Hello Ben,
+
+On Fri, Mar 07, 2014 at 01:57:31PM +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2014-02-14 at 13:22 +0530, Srivatsa S. Bhat wrote:
+> > Subsystems that want to register CPU hotplug callbacks, as well as perform
+> > initialization for the CPUs that are already online, often do it as shown
+> > below:
+> > 
+> > 	get_online_cpus();
+> > 
+> > 	for_each_online_cpu(cpu)
+> > 		init_cpu(cpu);
+> > 
+> > 	register_cpu_notifier(&foobar_cpu_notifier);
+> > 
+> > 	put_online_cpus();
 > 
+> This patch breaks a good half of my test configs with:
 > 
-> Hey Sudeep,
-> 
-> After applying this patch, the cache_type_info array looks like this.
-> 
-> static const struct cache_type_info cache_type_info[] = {
->         {
->                 /* 
->                  * PowerPC Processor binding says the [di]-cache-*
->                  * must be equal on unified caches, so just use
->                  * d-cache properties.
->                  */
->                 .name            = "Unified",
->                 .size_prop       = "d-cache-size",
->                 .line_size_props = { "d-cache-line-size",
->                                      "d-cache-block-size", },
->                 .nr_sets_prop    = "d-cache-sets",
->         },
->         {
->                 .name            = "Data",
->                 .size_prop       = "d-cache-size",
->                 .line_size_props = { "d-cache-line-size",
->                                      "d-cache-block-size", },
->                 .nr_sets_prop    = "d-cache-sets",
->         },
->         {
->                 .name            = "Instruction",
->                 .size_prop       = "i-cache-size",
->                 .line_size_props = { "i-cache-line-size",
->                                      "i-cache-block-size", },
->                 .nr_sets_prop    = "i-cache-sets",
->         },
-> };
-> 
-> and this function computes the the array index for any given cache type
-> define for PowerPC.
-> 
-> static inline int get_cacheinfo_idx(enum cache_type type)
-> {
->         if (type == CACHE_TYPE_UNIFIED)
->                 return 0;
->         else
->                 return type;
-> }
-> 
-> These types are define in include/linux/cacheinfo.h as
-> 
-> enum cache_type {
->         CACHE_TYPE_NOCACHE = 0,
->         CACHE_TYPE_INST = BIT(0),		---> 1
->         CACHE_TYPE_DATA = BIT(1),		---> 2
->         CACHE_TYPE_SEPARATE = CACHE_TYPE_INST | CACHE_TYPE_DATA,
->         CACHE_TYPE_UNIFIED = BIT(2),
-> };
-> 
-> When it is UNIFIED we return index 0, which is correct. But the index
-> for instruction and data cache seems to be swapped which wrong. This
-> will fetch invalid properties for any given cache type.
-> 
-> I have done some initial review and testing for this patch's impact on
-> PowerPC (ppc64 POWER specifically). I am trying to do some code clean-up
-> and re-arrangements. Will post out soon. Thanks !
+> /home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c: In function 'topology_init':
+> /home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c:979:2: error: implicit declaration of function 'cpu_notifier_register_begin' [-Werror=implicit-function-declaration]
+> /home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c:1004:2: error: implicit declaration of function '__register_cpu_notifier' [-Werror=implicit-function-declaration]
+> /home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c:1006:2: error: implicit declaration of function 'cpu_notifier_register_done' [-Werror=implicit-function-declaration]
+> cc1: all warnings being treated as errors
+> make[2]: *** [arch/powerpc/kernel/sysfs.o] Error 1
+> make[2]: *** Waiting for unfinished jobs....
 
-It does not work correctly on POWER.
+This patch depends on
+"[PATCH v2 02/52] CPU hotplug: Provide lockless versions of callback registration functions" 
+of the series (Can be found here: https://lkml.org/lkml/2014/2/14/59).
+This particular patch defines 'cpu_notifier_register_begin',
+'__register_cpu_notifier', and 'cpu_notifier_register_done' in the
+cpu-hotplug core. Are you seeing the build breakage with this patch on
+?
 
-The new patchset adds some more attributes for every cache entry apart from
-what we used to have on PowerPC before. From the ABI perspective, the old ones
-should reflect the correct value in the same manner as before. Looks like
-the generic code will make any attribute as "Unknown" if the arch code does
-not populate them in the respective callback.
-
-Here are some problems found on a POWER7 system
-
-(1) L1 instruction cache (cpu<N>/cache/index1/)
-
-	====== Before patch ======
-
-	coherency_line_size: 	128
-	level:			1
-	shared_cpu_map:		00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-        			00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-				00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-				00000000,00000000,00000000,00000000,00000f00
-	size:			32K
-	type:			Instruction 
-
-	===== After patch ========
-
-	coherency_line_size:	Unknown						----> Wrong
-	level:			1
-	shared_cpu_map:		00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-        			00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-				00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,
-				00000000,00000000,00000000,00000000,00ffffff	----> Wrong
-	size:			0K						----> Wrong
-	type:			Instruction	
-
-(2) L3 cache (cpu<N>/cache/index3/)
-
-	====== Before patch ======
-
-	number_of_sets:		1
-	size:			4096K
-	ways_of_associativity:	0
-
-	===== After patch ========
-
-	number_of_sets:		1
-	size:			4096K
-	ways_of_associativity:	Unknown		----> Wrong
-
-Need to revisit this implementation on PowerPC and figure out the cause of these problems.
+--
+Thanks and Regards
+gautham.
