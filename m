@@ -1,20 +1,19 @@
 Return-Path: <chenhui.zhao@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6469C2C03B2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 15:58:38 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B44CE2C03C3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 15:58:43 +1100 (EST)
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 6/9] powerpc/85xx: support sleep feature on QorIQ SoCs with
- RCPM
-Date: Fri, 7 Mar 2014 12:58:02 +0800
-Message-ID: <1394168285-32275-6-git-send-email-chenhui.zhao@freescale.com>
+Subject: =?UTF-8?q?=5BPATCH=207/9=5D=20fsl=3A=20add=20EPU=20FSM=20configuration=20for=20deep=20sleep?=
+Date: Fri, 7 Mar 2014 12:58:03 +0800
+Message-ID: <1394168285-32275-7-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Cc: scottwood@freescale.com, linux-kernel@vger.kernel.org,
  Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,141 +25,539 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In sleep mode, the clocks of e500 cores and unused IP blocks is
-turned off. The IP blocks which are allowed to wake up the processor
-are still running.
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-The sleep mode is equal to the Standby state in Linux. Use the
-command to enter sleep mode:
-  echo standby > /sys/power/state
+In the last stage of deep sleep, software will trigger a Finite
+State Machine (FSM) to control the hardware precedure, such as
+board isolation, killing PLLs, removing power, and so on.
 
+When the system is waked up by an interrupt, the FSM controls the
+hardware to complete the early resume precedure.
+
+This patch configure the EPU FSM preparing for deep sleep.
+
+Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
 Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
 ---
- arch/powerpc/Kconfig                   |    4 +-
- arch/powerpc/platforms/85xx/Makefile   |    3 +
- arch/powerpc/platforms/85xx/qoriq_pm.c |   78 ++++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
+ arch/powerpc/platforms/85xx/Kconfig |    1 +
+ arch/powerpc/sysdev/fsl_soc.h       |    3 +
+ drivers/platform/Kconfig            |    4 +
+ drivers/platform/Makefile           |    1 +
+ drivers/platform/fsl/Kconfig        |   10 +
+ drivers/platform/fsl/Makefile       |    5 +
+ drivers/platform/fsl/sleep_fsm.c    |  415 +++++++++++++++++++++++++++++=
+++++++
+ 7 files changed, 439 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/platform/fsl/Kconfig
+ create mode 100644 drivers/platform/fsl/Makefile
+ create mode 100644 drivers/platform/fsl/sleep_fsm.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 05f6323..e1d6510 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -222,7 +222,7 @@ config ARCH_HIBERNATION_POSSIBLE
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
--		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
-+		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
- 		   || 44x || 40x
- 
- config PPC_DCR_NATIVE
-@@ -709,7 +709,7 @@ config FSL_PCI
- config FSL_PMC
- 	bool
- 	default y
--	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-+	depends on SUSPEND && (PPC_85xx && !PPC_E500MC || PPC_86xx)
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms=
+/85xx/Kconfig
+index 54d8843..27e2174 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -261,6 +261,7 @@ config CORENET_GENERIC
+ 	select GPIO_MPC8XXX
+ 	select HAS_RAPIDIO
+ 	select PPC_EPAPR_HV_PIC
++	select FSL_SLEEP_FSM if SUSPEND
  	help
- 	  Freescale MPC85xx/MPC86xx power management controller support
- 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 25cebe7..7fae817 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -2,6 +2,9 @@
- # Makefile for the PowerPC 85xx linux kernel.
- #
- obj-$(CONFIG_SMP) += smp.o
-+ifeq ($(CONFIG_FSL_CORENET_RCPM), y)
-+obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o
+ 	  This option enables support for the FSL CoreNet based boards.
+ 	  For 32bit kernel, the following boards are supported:
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.=
+h
+index 9b9a34a..eb83a30 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -69,5 +69,8 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
+=20
+ extern int fsl_rcpm_init(void);
+=20
++extern void fsl_dp_fsm_setup(void *dcsr_base);
++extern void fsl_dp_fsm_clean(void *dcsr_base);
++
+ #endif
+ #endif
+diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
+index 09fde58..6539e6d 100644
+--- a/drivers/platform/Kconfig
++++ b/drivers/platform/Kconfig
+@@ -6,3 +6,7 @@ source "drivers/platform/goldfish/Kconfig"
+ endif
+=20
+ source "drivers/platform/chrome/Kconfig"
++
++if FSL_SOC
++source "drivers/platform/fsl/Kconfig"
 +endif
- 
- obj-y += common.o
- 
-diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
+diff --git a/drivers/platform/Makefile b/drivers/platform/Makefile
+index 3656b7b..37c6f72 100644
+--- a/drivers/platform/Makefile
++++ b/drivers/platform/Makefile
+@@ -6,3 +6,4 @@ obj-$(CONFIG_X86)		+=3D x86/
+ obj-$(CONFIG_OLPC)		+=3D olpc/
+ obj-$(CONFIG_GOLDFISH)		+=3D goldfish/
+ obj-$(CONFIG_CHROME_PLATFORMS)	+=3D chrome/
++obj-$(CONFIG_FSL_SOC)		+=3D fsl/
+diff --git a/drivers/platform/fsl/Kconfig b/drivers/platform/fsl/Kconfig
 new file mode 100644
-index 0000000..915b13b
+index 0000000..72ed053
 --- /dev/null
-+++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
-@@ -0,0 +1,78 @@
++++ b/drivers/platform/fsl/Kconfig
+@@ -0,0 +1,10 @@
++#
++# Freescale Specific Power Management Drivers
++#
++
++config FSL_SLEEP_FSM
++	bool
++	help
++	  This driver configures a hardware FSM (Finite State Machine) for deep=
+ sleep.
++	  The FSM is used to finish clean-ups at the last stage of system enter=
+ing deep
++	  sleep, and also wakes up system when a wake up event happens.
+diff --git a/drivers/platform/fsl/Makefile b/drivers/platform/fsl/Makefil=
+e
+new file mode 100644
+index 0000000..d99ca0e
+--- /dev/null
++++ b/drivers/platform/fsl/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for linux/drivers/platform/fsl
++# Freescale Specific Power Management Drivers
++#
++obj-$(CONFIG_FSL_SLEEP_FSM)	+=3D sleep_fsm.o
+diff --git a/drivers/platform/fsl/sleep_fsm.c b/drivers/platform/fsl/slee=
+p_fsm.c
+new file mode 100644
+index 0000000..1033332
+--- /dev/null
++++ b/drivers/platform/fsl/sleep_fsm.c
+@@ -0,0 +1,415 @@
 +/*
-+ * Support Power Management feature
++ * Freescale deep sleep FSM (finite-state machine) configuration
 + *
 + * Copyright 2014 Freescale Semiconductor Inc.
 + *
-+ * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
++ * Author: Hongbo Zhang <hongbo.zhang@freescale.com>
++ *         Chenhui Zhao <chenhui.zhao@freescale.com>
 + *
-+ * This program is free software; you can redistribute	it and/or modify it
-+ * under  the terms of	the GNU General	 Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * This program is free software; you can redistribute  it and/or modify=
+ it
++ * under  the terms of  the GNU General  Public License as published by =
+the
++ * Free Software Foundation;  either version 2 of the  License, or (at y=
+our
 + * option) any later version.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/suspend.h>
-+#include <linux/of_platform.h>
++#include <linux/io.h>
++#include <linux/types.h>
 +
-+#include <sysdev/fsl_soc.h>
++#define FSL_STRIDE_4B	4
++#define FSL_STRIDE_8B	8
 +
-+#define FSL_SLEEP		0x1
-+#define FSL_DEEP_SLEEP		0x2
++/* Event Processor Global Control Register */
++#define	EPGCR		0x000
 +
-+/* specify the sleep state of the present platform */
-+int sleep_pm_state;
-+/* supported sleep modes by the present platform */
-+static unsigned int sleep_modes;
++/* Event Processor EVT Pin Control Registers */
++#define	EPEVTCR0	0x050
++#define	EPEVTCR1	0x054
++#define	EPEVTCR2	0x058
++#define	EPEVTCR3	0x05C
++#define	EPEVTCR4	0x060
++#define	EPEVTCR5	0x064
++#define	EPEVTCR6	0x068
++#define	EPEVTCR7	0x06C
++#define	EPEVTCR8	0x070
++#define	EPEVTCR9	0x074
 +
-+static int qoriq_suspend_enter(suspend_state_t state)
++/* Event Processor Crosstrigger Control Register */
++#define	EPXTRIGCR	0x090
++
++/* Event Processor Input Mux Control Registers */
++#define	EPIMCR0		0x100
++#define	EPIMCR1		0x104
++#define	EPIMCR2		0x108
++#define	EPIMCR3		0x10C
++#define	EPIMCR4		0x110
++#define	EPIMCR5		0x114
++#define	EPIMCR6		0x118
++#define	EPIMCR7		0x11C
++#define	EPIMCR8		0x120
++#define	EPIMCR9		0x124
++#define	EPIMCR10	0x128
++#define	EPIMCR11	0x12C
++#define	EPIMCR12	0x130
++#define	EPIMCR13	0x134
++#define	EPIMCR14	0x138
++#define	EPIMCR15	0x13C
++#define	EPIMCR16	0x140
++#define	EPIMCR17	0x144
++#define	EPIMCR18	0x148
++#define	EPIMCR19	0x14C
++#define	EPIMCR20	0x150
++#define	EPIMCR21	0x154
++#define	EPIMCR22	0x158
++#define	EPIMCR23	0x15C
++#define	EPIMCR24	0x160
++#define	EPIMCR25	0x164
++#define	EPIMCR26	0x168
++#define	EPIMCR27	0x16C
++#define	EPIMCR28	0x170
++#define	EPIMCR29	0x174
++#define	EPIMCR30	0x178
++#define	EPIMCR31	0x17C
++
++/* Event Processor SCU Mux Control Registers */
++#define	EPSMCR0		0x200
++#define	EPSMCR1		0x208
++#define	EPSMCR2		0x210
++#define	EPSMCR3		0x218
++#define	EPSMCR4		0x220
++#define	EPSMCR5		0x228
++#define	EPSMCR6		0x230
++#define	EPSMCR7		0x238
++#define	EPSMCR8		0x240
++#define	EPSMCR9		0x248
++#define	EPSMCR10	0x250
++#define	EPSMCR11	0x258
++#define	EPSMCR12	0x260
++#define	EPSMCR13	0x268
++#define	EPSMCR14	0x270
++#define	EPSMCR15	0x278
++
++/* Event Processor Event Control Registers */
++#define	EPECR0		0x300
++#define	EPECR1		0x304
++#define	EPECR2		0x308
++#define	EPECR3		0x30C
++#define	EPECR4		0x310
++#define	EPECR5		0x314
++#define	EPECR6		0x318
++#define	EPECR7		0x31C
++#define	EPECR8		0x320
++#define	EPECR9		0x324
++#define	EPECR10		0x328
++#define	EPECR11		0x32C
++#define	EPECR12		0x330
++#define	EPECR13		0x334
++#define	EPECR14		0x338
++#define	EPECR15		0x33C
++
++/* Event Processor Action Control Registers */
++#define	EPACR0		0x400
++#define	EPACR1		0x404
++#define	EPACR2		0x408
++#define	EPACR3		0x40C
++#define	EPACR4		0x410
++#define	EPACR5		0x414
++#define	EPACR6		0x418
++#define	EPACR7		0x41C
++#define	EPACR8		0x420
++#define	EPACR9		0x424
++#define	EPACR10		0x428
++#define	EPACR11		0x42C
++#define	EPACR12		0x430
++#define	EPACR13		0x434
++#define	EPACR14		0x438
++#define	EPACR15		0x43C
++
++/* Event Processor Counter Control Registers */
++#define	EPCCR0		0x800
++#define	EPCCR1		0x804
++#define	EPCCR2		0x808
++#define	EPCCR3		0x80C
++#define	EPCCR4		0x810
++#define	EPCCR5		0x814
++#define	EPCCR6		0x818
++#define	EPCCR7		0x81C
++#define	EPCCR8		0x820
++#define	EPCCR9		0x824
++#define	EPCCR10		0x828
++#define	EPCCR11		0x82C
++#define	EPCCR12		0x830
++#define	EPCCR13		0x834
++#define	EPCCR14		0x838
++#define	EPCCR15		0x83C
++
++/* Event Processor Counter Compare Registers */
++#define	EPCMPR0		0x900
++#define	EPCMPR1		0x904
++#define	EPCMPR2		0x908
++#define	EPCMPR3		0x90C
++#define	EPCMPR4		0x910
++#define	EPCMPR5		0x914
++#define	EPCMPR6		0x918
++#define	EPCMPR7		0x91C
++#define	EPCMPR8		0x920
++#define	EPCMPR9		0x924
++#define	EPCMPR10	0x928
++#define	EPCMPR11	0x92C
++#define	EPCMPR12	0x930
++#define	EPCMPR13	0x934
++#define	EPCMPR14	0x938
++#define	EPCMPR15	0x93C
++
++/* Event Processor Counter Register */
++#define EPCTR0		0xA00
++#define EPCTR1		0xA04
++#define EPCTR2		0xA08
++#define EPCTR3		0xA0C
++#define EPCTR4		0xA10
++#define EPCTR5		0xA14
++#define EPCTR6		0xA18
++#define EPCTR7		0xA1C
++#define EPCTR8		0xA20
++#define EPCTR9		0xA24
++#define EPCTR10		0xA28
++#define EPCTR11		0xA2C
++#define EPCTR12		0xA30
++#define EPCTR13		0xA34
++#define EPCTR14		0xA38
++#define EPCTR15		0xA3C
++#define EPCTR16		0xA40
++#define EPCTR17		0xA44
++#define EPCTR18		0xA48
++#define EPCTR19		0xA4C
++#define EPCTR20		0xA50
++#define EPCTR21		0xA54
++#define EPCTR22		0xA58
++#define EPCTR23		0xA5C
++#define EPCTR24		0xA60
++#define EPCTR25		0xA64
++#define EPCTR26		0xA68
++#define EPCTR27		0xA6C
++#define EPCTR28		0xA70
++#define EPCTR29		0xA74
++#define EPCTR30		0xA78
++#define EPCTR31		0xA7C
++
++/* NPC triggered Memory-Mapped Access Registers */
++#define	NCR		0x000
++#define MCCR1		0x0CC
++#define	MCSR1		0x0D0
++#define	MMAR1LO		0x0D4
++#define	MMAR1HI		0x0D8
++#define	MMDR1		0x0DC
++#define	MCSR2		0x0E0
++#define	MMAR2LO		0x0E4
++#define	MMAR2HI		0x0E8
++#define	MMDR2		0x0EC
++#define	MCSR3		0x0F0
++#define	MMAR3LO		0x0F4
++#define	MMAR3HI		0x0F8
++#define	MMDR3		0x0FC
++
++/* RCPM Core State Action Control Register 0 */
++#define	CSTTACR0	0xB00
++
++/* RCPM Core Group 1 Configuration Register 0 */
++#define	CG1CR0		0x31C
++
++/* Block offsets */
++#define	RCPM_BLOCK_OFFSET	0x00022000
++#define	EPU_BLOCK_OFFSET	0x00000000
++#define	NPC_BLOCK_OFFSET	0x00001000
++
++static void *g_dcsr_base;
++
++static inline void rcpm_write(u32 offset, u32 val)
 +{
-+	int ret = 0;
-+
-+	switch (state) {
-+	case PM_SUSPEND_STANDBY:
-+
-+		if (cur_cpu_spec->cpu_flush_caches)
-+			cur_cpu_spec->cpu_flush_caches();
-+
-+		ret = qoriq_pm_ops->plat_enter_state(sleep_pm_state);
-+
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+
-+	}
-+
-+	return ret;
++	out_be32(g_dcsr_base + RCPM_BLOCK_OFFSET + offset, val);
 +}
 +
-+static int qoriq_suspend_valid(suspend_state_t state)
++static inline void epu_write(u32 offset, u32 val)
 +{
-+	if (state == PM_SUSPEND_STANDBY && (sleep_modes & FSL_SLEEP))
-+		return 1;
-+
-+	return 0;
++	out_be32(g_dcsr_base + EPU_BLOCK_OFFSET + offset, val);
 +}
 +
-+static const struct platform_suspend_ops qoriq_suspend_ops = {
-+	.valid = qoriq_suspend_valid,
-+	.enter = qoriq_suspend_enter,
-+};
-+
-+static int __init qoriq_suspend_init(void)
++static inline void npc_write(u32 offset, u32 val)
 +{
-+	struct device_node *np;
-+
-+	sleep_modes = FSL_SLEEP;
-+	sleep_pm_state = PLAT_PM_SLEEP;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-rcpm-2.0");
-+	if (np)
-+		sleep_pm_state = PLAT_PM_LPM20;
-+
-+	suspend_set_ops(&qoriq_suspend_ops);
-+
-+	return 0;
++	out_be32(g_dcsr_base + NPC_BLOCK_OFFSET + offset, val);
 +}
-+arch_initcall(qoriq_suspend_init);
--- 
++
++/**
++ * fsl_dp_fsm_setup - Configure EPU's FSM
++ * @dcsr_base: the base address of DCSR registers
++ */
++void fsl_dp_fsm_setup(void *dcsr_base)
++{
++	u32 offset;
++
++	/*
++	 * Globle static variable is safe here, becsuse this function is only
++	 * called once at the last stage of suspend, when there is only one CPU
++	 * running and task switching is also disabled.
++	 */
++	g_dcsr_base =3D dcsr_base;
++
++	/* Disable All SCU Actions */
++	for (offset =3D EPACR0; offset <=3D EPACR15; offset +=3D FSL_STRIDE_4B)
++		epu_write(offset, 0);
++
++	/* Clear EPEVTCRn */
++	for (offset =3D EPEVTCR0; offset <=3D EPEVTCR9; offset +=3D FSL_STRIDE_=
+4B)
++		epu_write(offset, 0);
++
++	/* Clear Event Processor Global Control Register */
++	epu_write(EPGCR, 0);
++
++	/* Clear EPSMCRn */
++	for (offset =3D EPSMCR0; offset <=3D EPSMCR15; offset +=3D FSL_STRIDE_8=
+B)
++		epu_write(offset, 0);
++
++	/* Clear EPCCRn */
++	for (offset =3D EPCCR0; offset <=3D EPCCR15; offset +=3D FSL_STRIDE_4B)
++		epu_write(offset, 0);
++
++	/* Clear EPCMPRn */
++	for (offset =3D EPCMPR0; offset <=3D EPCMPR15; offset +=3D FSL_STRIDE_4=
+B)
++		epu_write(offset, 0);
++
++	/*
++	 * Clear EPCTRn
++	 * Warm Device Reset does NOT reset these counter, so clear them
++	 * explicitly. Or, the second time entering deep sleep will fail.
++	 */
++	for (offset =3D EPCTR0; offset <=3D EPCTR31; offset +=3D FSL_STRIDE_4B)
++		epu_write(offset, 0);
++
++	/* Clear EPIMCRn */
++	for (offset =3D EPIMCR0; offset <=3D EPIMCR31; offset +=3D FSL_STRIDE_4=
+B)
++		epu_write(offset, 0);
++
++	/* Clear EPXTRIGCRn */
++	epu_write(EPXTRIGCR, 0);
++
++	/* Disable all SCUs EPECRn */
++	for (offset =3D EPECR0; offset <=3D EPECR15; offset +=3D FSL_STRIDE_4B)
++		epu_write(offset, 0);
++
++	/* Set up the SCU chaining */
++	epu_write(EPECR15, 0x00000004);
++	epu_write(EPECR14, 0x02000084);
++	epu_write(EPECR13, 0x08000084);
++	epu_write(EPECR12, 0x80000084);
++	epu_write(EPECR11, 0x90000084);
++	epu_write(EPECR10, 0x42000084);
++	epu_write(EPECR9, 0x08000084);
++	epu_write(EPECR8, 0x60000084);
++	epu_write(EPECR7, 0x80000084);
++	epu_write(EPECR6, 0x80000084);
++	epu_write(EPECR5, 0x08000004);
++	epu_write(EPECR4, 0x20000084);
++	epu_write(EPECR3, 0x80000084);
++	epu_write(EPECR2, 0xF0004004);
++
++	/* EVT Pin Configuration. SCU8 triger EVT2, and SCU11 triger EVT9 */
++	epu_write(EPEVTCR2, 0x80000001);
++	epu_write(EPEVTCR9, 0xB0000001);
++
++	/* Configure the EPU Counter Values */
++	epu_write(EPCMPR15, 0x000000FF);
++	epu_write(EPCMPR14, 0x000000FF);
++	epu_write(EPCMPR12, 0x000000FF);
++	epu_write(EPCMPR11, 0x000000FF);
++	epu_write(EPCMPR10, 0x000000FF);
++	epu_write(EPCMPR9, 0x000000FF);
++	epu_write(EPCMPR8, 0x000000FF);
++	epu_write(EPCMPR5, 0x00000020);
++	epu_write(EPCMPR4, 0x000000FF);
++	epu_write(EPCMPR2, 0x000000FF);
++
++	/* Configure the EPU Counters */
++	epu_write(EPCCR15, 0x92840000);
++	epu_write(EPCCR14, 0x92840000);
++	epu_write(EPCCR12, 0x92840000);
++	epu_write(EPCCR11, 0x92840000);
++	epu_write(EPCCR10, 0x92840000);
++	epu_write(EPCCR9, 0x92840000);
++	epu_write(EPCCR8, 0x92840000);
++	epu_write(EPCCR5, 0x92840000);
++	epu_write(EPCCR4, 0x92840000);
++	epu_write(EPCCR2, 0x92840000);
++
++	/* Configure the SCUs Inputs */
++	epu_write(EPSMCR15, 0x76000000);
++	epu_write(EPSMCR14, 0x00000031);
++	epu_write(EPSMCR13, 0x00003100);
++	epu_write(EPSMCR12, 0x7F000000);
++	epu_write(EPSMCR11, 0x31740000);
++	epu_write(EPSMCR10, 0x65000030);
++	epu_write(EPSMCR9, 0x00003000);
++	epu_write(EPSMCR8, 0x64300000);
++	epu_write(EPSMCR7, 0x30000000);
++	epu_write(EPSMCR6, 0x7C000000);
++	epu_write(EPSMCR5, 0x00002E00);
++	epu_write(EPSMCR4, 0x002F0000);
++	epu_write(EPSMCR3, 0x2F000000);
++	epu_write(EPSMCR2, 0x6C700000);
++
++	/* Configure the SCUs Actions */
++	epu_write(EPACR15, 0x02000000);
++	epu_write(EPACR14, 0x04000000);
++	epu_write(EPACR13, 0x06000000);
++	epu_write(EPACR12, 0x00000003);
++	epu_write(EPACR10, 0x00000020);
++	epu_write(EPACR9, 0x0000001C);
++	epu_write(EPACR5, 0x00000040);
++	epu_write(EPACR3, 0x00000080);
++
++	/* Configure the SCUs and Timers Mux */
++	epu_write(EPIMCR31, 0x76000000);
++	epu_write(EPIMCR28, 0x76000000);
++	epu_write(EPIMCR22, 0x6C000000);
++	epu_write(EPIMCR20, 0x48000000);
++	epu_write(EPIMCR16, 0x6A000000);
++	epu_write(EPIMCR12, 0x44000000);
++	epu_write(EPIMCR5, 0x40000000);
++	epu_write(EPIMCR4, 0x44000000);
++
++	/* Configure pulse or level triggers */
++	epu_write(EPXTRIGCR, 0x0000FFDF);
++
++	/* Configure the NPC tMMA registers*/
++	npc_write(NCR, 0x80000000);
++	npc_write(MCCR1, 0);
++	npc_write(MCSR1, 0);
++	npc_write(MMAR1LO, 0);
++	npc_write(MMAR1HI, 0);
++	npc_write(MMDR1, 0);
++	npc_write(MCSR2, 0);
++	npc_write(MMAR2LO, 0);
++	npc_write(MMAR2HI, 0);
++	npc_write(MMDR2, 0);
++	npc_write(MCSR3, 0x80000000);
++	npc_write(MMAR3LO, 0x000E2130);
++	npc_write(MMAR3HI, 0x00030000);
++	npc_write(MMDR3, 0x00020000);
++
++	/* Configure RCPM for detecting Core0=E2=80=99s PH15 state */
++	rcpm_write(CSTTACR0, 0x00001001);
++	rcpm_write(CG1CR0, 0x00000001);
++
++}
++
++void fsl_dp_fsm_clean(void *dcsr_base)
++{
++
++	epu_write(EPEVTCR2, 0);
++	epu_write(EPEVTCR9, 0);
++
++	epu_write(EPGCR, 0);
++	epu_write(EPECR15, 0);
++
++	rcpm_write(CSTTACR0, 0);
++	rcpm_write(CG1CR0, 0);
++
++}
+--=20
 1.7.3
