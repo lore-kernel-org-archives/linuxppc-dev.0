@@ -1,20 +1,18 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id 64C962C032E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 08:27:42 +1100 (EST)
-Date: Thu, 06 Mar 2014 16:27:37 -0500 (EST)
-Message-Id: <20140306.162737.1605594893806967606.davem@davemloft.net>
-To: anton@samba.org
-Subject: Re: ibmveth: Fix endian issues with MAC addresses
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20140305145137.3460dbe7@kryten>
-References: <1387810329.22671.66.camel@joe-AO722>
- <20131224125529.58970f1b@kryten> <20140305145137.3460dbe7@kryten>
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1394153258.21206.1.camel@concordia>
+Subject: Re: [PATCH] kexec/powerpc: fix exporting memory limit
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
+Date: Fri, 07 Mar 2014 11:47:38 +1100
+In-Reply-To: <1394115854-11709-1-git-send-email-nyushchenko@dev.rtsoft.ru>
+References: <1394115854-11709-1-git-send-email-nyushchenko@dev.rtsoft.ru>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, dvaleev@suse.com, agraf@suse.de,
- netdev@vger.kernel.org, joe@perches.com, santil@linux.vnet.ibm.com
+Cc: yadviga@dev.rtsoft.ru, lugovskoy@dev.rtsoft.ru, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Hari Bathini <hbathini@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
-Date: Wed, 5 Mar 2014 14:51:37 +1100
-
-> The code to load a MAC address into a u64 for passing to the
-> hypervisor via a register is broken on little endian.
+On Thu, 2014-03-06 at 18:24 +0400, Nikita Yushchenko wrote:
+> When preparing dump-capturing kernel, kexec userspace tool needs to know
+> actual amount of memory used by the running kernel. This may differ from
+> extire available DRAM for a couple of reasons. To address this issue,
+> kdump kernel support code injects several attributes into device tree that
+> are later captured by userspace kexec tool via /proc interface.
 > 
-> Create a helper function called ibmveth_encode_mac_addr
-> which does the right thing in both big and little endian.
+> One such attrubute is 'chosen/linux,memory_limit' that is used to pass
+> memory limit of the running kernel.
 > 
-> We were storing the MAC address in a long in struct ibmveth_adapter.
-> It's never used so remove it - we don't need another place in the
-> driver where we create endian issues with MAC addresses.
+> This was initialized using kernel's 'memory_limit' variable, that is set
+> by early init code based on mem= kernel parameter and other reasons.
 > 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> Cc: stable@vger.kernel.org
+> But there are cases when memory_limit variable does not contain proper
+> information. One such case is when !CONFIG_HIGHMEM kernel runs on system
+> with memory large enough not to fit into lowmem.
 
-Applied, thanks Anton.
+Why doesn't the !CONFIG_HIGHMEM code update memory_limit to reflect reality.
 
-> -	memcpy(&adapter->mac_addr, mac_addr_p, ETH_ALEN);
- ...
-> -    unsigned long mac_addr;
-
-That's some scary stuff right there.
+cheers
