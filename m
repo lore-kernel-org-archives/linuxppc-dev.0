@@ -1,19 +1,19 @@
 Return-Path: <chenhui.zhao@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B44CE2C03C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 15:58:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 144C22C03FF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 15:58:46 +1100 (EST)
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: =?UTF-8?q?=5BPATCH=207/9=5D=20fsl=3A=20add=20EPU=20FSM=20configuration=20for=20deep=20sleep?=
-Date: Fri, 7 Mar 2014 12:58:03 +0800
-Message-ID: <1394168285-32275-7-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Date: Fri, 7 Mar 2014 12:58:05 +0800
+Message-ID: <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Cc: scottwood@freescale.com, linux-kernel@vger.kernel.org,
  Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,539 +25,747 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
 
-In the last stage of deep sleep, software will trigger a Finite
-State Machine (FSM) to control the hardware precedure, such as
-board isolation, killing PLLs, removing power, and so on.
+T1040 supports deep sleep feature, which can switch off most parts of
+the SoC when it is in deep sleep mode. This way, it becomes more
+energy-efficient.
 
-When the system is waked up by an interrupt, the FSM controls the
-hardware to complete the early resume precedure.
+The DDR controller will also be powered off in deep sleep. Therefore,
+the last stage (the latter part of fsl_dp_enter_low) will run without DDR
+access. This piece of code and related TLBs will be prefetched.
 
-This patch configure the EPU FSM preparing for deep sleep.
+Due to the different initialization code between 32-bit and 64-bit, they
+have seperate resume entry and precedure.
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+The feature supports 32-bit and 64-bit kernel mode.
+
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig |    1 +
- arch/powerpc/sysdev/fsl_soc.h       |    3 +
- drivers/platform/Kconfig            |    4 +
- drivers/platform/Makefile           |    1 +
- drivers/platform/fsl/Kconfig        |   10 +
- drivers/platform/fsl/Makefile       |    5 +
- drivers/platform/fsl/sleep_fsm.c    |  415 +++++++++++++++++++++++++++++=
-++++++
- 7 files changed, 439 insertions(+), 0 deletions(-)
- create mode 100644 drivers/platform/fsl/Kconfig
- create mode 100644 drivers/platform/fsl/Makefile
- create mode 100644 drivers/platform/fsl/sleep_fsm.c
+ arch/powerpc/include/asm/booke_save_regs.h |    3 +
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   17 ++
+ arch/powerpc/kernel/head_fsl_booke.S       |   30 +++
+ arch/powerpc/platforms/85xx/Makefile       |    2 +-
+ arch/powerpc/platforms/85xx/deepsleep.c    |  201 +++++++++++++++++++
+ arch/powerpc/platforms/85xx/qoriq_pm.c     |   38 ++++
+ arch/powerpc/platforms/85xx/sleep.S        |  295 ++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h              |    7 +
+ 8 files changed, 592 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+ create mode 100644 arch/powerpc/platforms/85xx/sleep.S
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms=
-/85xx/Kconfig
-index 54d8843..27e2174 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -261,6 +261,7 @@ config CORENET_GENERIC
- 	select GPIO_MPC8XXX
- 	select HAS_RAPIDIO
- 	select PPC_EPAPR_HV_PIC
-+	select FSL_SLEEP_FSM if SUSPEND
- 	help
- 	  This option enables support for the FSL CoreNet based boards.
- 	  For 32bit kernel, the following boards are supported:
-diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.=
-h
-index 9b9a34a..eb83a30 100644
---- a/arch/powerpc/sysdev/fsl_soc.h
-+++ b/arch/powerpc/sysdev/fsl_soc.h
-@@ -69,5 +69,8 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
-=20
- extern int fsl_rcpm_init(void);
-=20
-+extern void fsl_dp_fsm_setup(void *dcsr_base);
-+extern void fsl_dp_fsm_clean(void *dcsr_base);
+diff --git a/arch/powerpc/include/asm/booke_save_regs.h b/arch/powerpc/include/asm/booke_save_regs.h
+index 87c357a..37c1f6c 100644
+--- a/arch/powerpc/include/asm/booke_save_regs.h
++++ b/arch/powerpc/include/asm/booke_save_regs.h
+@@ -88,6 +88,9 @@
+ #define HIBERNATION_FLAG	1
+ #define DEEPSLEEP_FLAG		2
+ 
++#define CPLD_FLAG	1
++#define FPGA_FLAG	2
 +
+ #ifndef __ASSEMBLY__
+ extern void booke_cpu_state_save(void *buf, int type);
+ extern void *booke_cpu_state_restore(void *buf, int type);
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index e59d6de..ea9bc28 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -318,6 +318,23 @@ flush_backside_L2_cache:
+ 2:
+ 	blr
+ 
++#define CPC_CPCCSR0		0x0
++#define CPC_CPCCSR0_CPCFL	0x800
++
++/* r3 : the base address of CPC  */
++_GLOBAL(fsl_flush_cpc_cache)
++	lwz	r6, CPC_CPCCSR0(r3)
++	ori	r6, r6, CPC_CPCCSR0_CPCFL
++	stw	r6, CPC_CPCCSR0(r3)
++	sync
++
++	/* Wait until completing the flush */
++1:	lwz	r6, CPC_CPCCSR0(r3)
++	andi.	r6, r6, CPC_CPCCSR0_CPCFL
++	bne	1b
++
++	blr
++
+ _GLOBAL(__flush_caches_e500v2)
+ 	mflr r0
+ 	bl	flush_dcache_L1
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 20204fe..3285752 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -162,6 +162,19 @@ _ENTRY(__early_start)
+ #include "fsl_booke_entry_mapping.S"
+ #undef ENTRY_MAPPING_BOOT_SETUP
+ 
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
++	/* if deep_sleep_flag != 0, jump to the deep sleep resume entry */
++	LOAD_REG_ADDR(r4, deep_sleep_flag)
++	lwz	r3, 0(r4)
++	cmpwi	r3, 0
++	beq	11f
++	/* clear deep_sleep_flag */
++	li	r3, 0
++	stw	r3, 0(r4)
++	b	fsl_deepsleep_resume
++11:
++#endif
++
+ set_ivor:
+ 	/* Establish the interrupt vector offsets */
+ 	SET_IVOR(0,  CriticalInput);
+@@ -343,6 +356,23 @@ set_ivor:
+ 	lwz	r11, 0(r12);		/* Get Linux PTE */
  #endif
- #endif
-diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
-index 09fde58..6539e6d 100644
---- a/drivers/platform/Kconfig
-+++ b/drivers/platform/Kconfig
-@@ -6,3 +6,7 @@ source "drivers/platform/goldfish/Kconfig"
- endif
-=20
- source "drivers/platform/chrome/Kconfig"
-+
-+if FSL_SOC
-+source "drivers/platform/fsl/Kconfig"
-+endif
-diff --git a/drivers/platform/Makefile b/drivers/platform/Makefile
-index 3656b7b..37c6f72 100644
---- a/drivers/platform/Makefile
-+++ b/drivers/platform/Makefile
-@@ -6,3 +6,4 @@ obj-$(CONFIG_X86)		+=3D x86/
- obj-$(CONFIG_OLPC)		+=3D olpc/
- obj-$(CONFIG_GOLDFISH)		+=3D goldfish/
- obj-$(CONFIG_CHROME_PLATFORMS)	+=3D chrome/
-+obj-$(CONFIG_FSL_SOC)		+=3D fsl/
-diff --git a/drivers/platform/fsl/Kconfig b/drivers/platform/fsl/Kconfig
-new file mode 100644
-index 0000000..72ed053
---- /dev/null
-+++ b/drivers/platform/fsl/Kconfig
-@@ -0,0 +1,10 @@
-+#
-+# Freescale Specific Power Management Drivers
-+#
-+
-+config FSL_SLEEP_FSM
-+	bool
-+	help
-+	  This driver configures a hardware FSM (Finite State Machine) for deep=
- sleep.
-+	  The FSM is used to finish clean-ups at the last stage of system enter=
-ing deep
-+	  sleep, and also wakes up system when a wake up event happens.
-diff --git a/drivers/platform/fsl/Makefile b/drivers/platform/fsl/Makefil=
-e
-new file mode 100644
-index 0000000..d99ca0e
---- /dev/null
-+++ b/drivers/platform/fsl/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for linux/drivers/platform/fsl
-+# Freescale Specific Power Management Drivers
-+#
-+obj-$(CONFIG_FSL_SLEEP_FSM)	+=3D sleep_fsm.o
-diff --git a/drivers/platform/fsl/sleep_fsm.c b/drivers/platform/fsl/slee=
-p_fsm.c
-new file mode 100644
-index 0000000..1033332
---- /dev/null
-+++ b/drivers/platform/fsl/sleep_fsm.c
-@@ -0,0 +1,415 @@
+ 
++#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
++_ENTRY(__entry_deep_sleep)
 +/*
-+ * Freescale deep sleep FSM (finite-state machine) configuration
++ * Bootloader will jump to here when resuming from deep sleep.
++ * After executing the init code in fsl_booke_entry_mapping.S,
++ * will jump to the real resume entry.
++ */
++	li	r8, 1
++	bl	12f
++12:	mflr	r9
++	addi	r9, r9, (deep_sleep_flag - 12b)
++	stw	r8, 0(r9)
++	b __early_start
++deep_sleep_flag:
++	.long	0
++#endif
++
+ /*
+  * Interrupt vector entry code
+  *
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 7fae817..9a4ea86 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -3,7 +3,7 @@
+ #
+ obj-$(CONFIG_SMP) += smp.o
+ ifeq ($(CONFIG_FSL_CORENET_RCPM), y)
+-obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o
++obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o deepsleep.o sleep.o
+ endif
+ 
+ obj-y += common.o
+diff --git a/arch/powerpc/platforms/85xx/deepsleep.c b/arch/powerpc/platforms/85xx/deepsleep.c
+new file mode 100644
+index 0000000..ddd7185
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/deepsleep.c
+@@ -0,0 +1,201 @@
++/*
++ * Support deep sleep feature
 + *
 + * Copyright 2014 Freescale Semiconductor Inc.
 + *
-+ * Author: Hongbo Zhang <hongbo.zhang@freescale.com>
-+ *         Chenhui Zhao <chenhui.zhao@freescale.com>
++ * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
 + *
-+ * This program is free software; you can redistribute  it and/or modify=
- it
-+ * under  the terms of  the GNU General  Public License as published by =
-the
-+ * Free Software Foundation;  either version 2 of the  License, or (at y=
-our
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
 + */
 +
-+#include <linux/io.h>
-+#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/of_platform.h>
++#include <linux/of_address.h>
++#include <asm/machdep.h>
++#include <sysdev/fsl_soc.h>
++#include <asm/booke_save_regs.h>
 +
-+#define FSL_STRIDE_4B	4
-+#define FSL_STRIDE_8B	8
++#define SIZE_1MB	0x100000
++#define SIZE_2MB	0x200000
 +
-+/* Event Processor Global Control Register */
-+#define	EPGCR		0x000
++#define CCSR_SCFG_DPSLPCR	0xfc000
++#define CCSR_SCFG_DPSLPCR_WDRR_EN	0x1
++#define CCSR_SCFG_SPARECR2	0xfc504
++#define CCSR_SCFG_SPARECR3	0xfc508
 +
-+/* Event Processor EVT Pin Control Registers */
-+#define	EPEVTCR0	0x050
-+#define	EPEVTCR1	0x054
-+#define	EPEVTCR2	0x058
-+#define	EPEVTCR3	0x05C
-+#define	EPEVTCR4	0x060
-+#define	EPEVTCR5	0x064
-+#define	EPEVTCR6	0x068
-+#define	EPEVTCR7	0x06C
-+#define	EPEVTCR8	0x070
-+#define	EPEVTCR9	0x074
++#define CCSR_GPIO1_GPDIR	0x130000
++#define CCSR_GPIO1_GPODR	0x130004
++#define CCSR_GPIO1_GPDAT	0x130008
++#define CCSR_GPIO1_GPDIR_29		0x4
 +
-+/* Event Processor Crosstrigger Control Register */
-+#define	EPXTRIGCR	0x090
++/* 128 bytes buffer for restoring data broke by DDR training initialization */
++#define DDR_BUF_SIZE	128
++static u8 ddr_buff[DDR_BUF_SIZE] __aligned(64);
 +
-+/* Event Processor Input Mux Control Registers */
-+#define	EPIMCR0		0x100
-+#define	EPIMCR1		0x104
-+#define	EPIMCR2		0x108
-+#define	EPIMCR3		0x10C
-+#define	EPIMCR4		0x110
-+#define	EPIMCR5		0x114
-+#define	EPIMCR6		0x118
-+#define	EPIMCR7		0x11C
-+#define	EPIMCR8		0x120
-+#define	EPIMCR9		0x124
-+#define	EPIMCR10	0x128
-+#define	EPIMCR11	0x12C
-+#define	EPIMCR12	0x130
-+#define	EPIMCR13	0x134
-+#define	EPIMCR14	0x138
-+#define	EPIMCR15	0x13C
-+#define	EPIMCR16	0x140
-+#define	EPIMCR17	0x144
-+#define	EPIMCR18	0x148
-+#define	EPIMCR19	0x14C
-+#define	EPIMCR20	0x150
-+#define	EPIMCR21	0x154
-+#define	EPIMCR22	0x158
-+#define	EPIMCR23	0x15C
-+#define	EPIMCR24	0x160
-+#define	EPIMCR25	0x164
-+#define	EPIMCR26	0x168
-+#define	EPIMCR27	0x16C
-+#define	EPIMCR28	0x170
-+#define	EPIMCR29	0x174
-+#define	EPIMCR30	0x178
-+#define	EPIMCR31	0x17C
++static void *dcsr_base, *ccsr_base, *pld_base;
++static int pld_flag;
 +
-+/* Event Processor SCU Mux Control Registers */
-+#define	EPSMCR0		0x200
-+#define	EPSMCR1		0x208
-+#define	EPSMCR2		0x210
-+#define	EPSMCR3		0x218
-+#define	EPSMCR4		0x220
-+#define	EPSMCR5		0x228
-+#define	EPSMCR6		0x230
-+#define	EPSMCR7		0x238
-+#define	EPSMCR8		0x240
-+#define	EPSMCR9		0x248
-+#define	EPSMCR10	0x250
-+#define	EPSMCR11	0x258
-+#define	EPSMCR12	0x260
-+#define	EPSMCR13	0x268
-+#define	EPSMCR14	0x270
-+#define	EPSMCR15	0x278
-+
-+/* Event Processor Event Control Registers */
-+#define	EPECR0		0x300
-+#define	EPECR1		0x304
-+#define	EPECR2		0x308
-+#define	EPECR3		0x30C
-+#define	EPECR4		0x310
-+#define	EPECR5		0x314
-+#define	EPECR6		0x318
-+#define	EPECR7		0x31C
-+#define	EPECR8		0x320
-+#define	EPECR9		0x324
-+#define	EPECR10		0x328
-+#define	EPECR11		0x32C
-+#define	EPECR12		0x330
-+#define	EPECR13		0x334
-+#define	EPECR14		0x338
-+#define	EPECR15		0x33C
-+
-+/* Event Processor Action Control Registers */
-+#define	EPACR0		0x400
-+#define	EPACR1		0x404
-+#define	EPACR2		0x408
-+#define	EPACR3		0x40C
-+#define	EPACR4		0x410
-+#define	EPACR5		0x414
-+#define	EPACR6		0x418
-+#define	EPACR7		0x41C
-+#define	EPACR8		0x420
-+#define	EPACR9		0x424
-+#define	EPACR10		0x428
-+#define	EPACR11		0x42C
-+#define	EPACR12		0x430
-+#define	EPACR13		0x434
-+#define	EPACR14		0x438
-+#define	EPACR15		0x43C
-+
-+/* Event Processor Counter Control Registers */
-+#define	EPCCR0		0x800
-+#define	EPCCR1		0x804
-+#define	EPCCR2		0x808
-+#define	EPCCR3		0x80C
-+#define	EPCCR4		0x810
-+#define	EPCCR5		0x814
-+#define	EPCCR6		0x818
-+#define	EPCCR7		0x81C
-+#define	EPCCR8		0x820
-+#define	EPCCR9		0x824
-+#define	EPCCR10		0x828
-+#define	EPCCR11		0x82C
-+#define	EPCCR12		0x830
-+#define	EPCCR13		0x834
-+#define	EPCCR14		0x838
-+#define	EPCCR15		0x83C
-+
-+/* Event Processor Counter Compare Registers */
-+#define	EPCMPR0		0x900
-+#define	EPCMPR1		0x904
-+#define	EPCMPR2		0x908
-+#define	EPCMPR3		0x90C
-+#define	EPCMPR4		0x910
-+#define	EPCMPR5		0x914
-+#define	EPCMPR6		0x918
-+#define	EPCMPR7		0x91C
-+#define	EPCMPR8		0x920
-+#define	EPCMPR9		0x924
-+#define	EPCMPR10	0x928
-+#define	EPCMPR11	0x92C
-+#define	EPCMPR12	0x930
-+#define	EPCMPR13	0x934
-+#define	EPCMPR14	0x938
-+#define	EPCMPR15	0x93C
-+
-+/* Event Processor Counter Register */
-+#define EPCTR0		0xA00
-+#define EPCTR1		0xA04
-+#define EPCTR2		0xA08
-+#define EPCTR3		0xA0C
-+#define EPCTR4		0xA10
-+#define EPCTR5		0xA14
-+#define EPCTR6		0xA18
-+#define EPCTR7		0xA1C
-+#define EPCTR8		0xA20
-+#define EPCTR9		0xA24
-+#define EPCTR10		0xA28
-+#define EPCTR11		0xA2C
-+#define EPCTR12		0xA30
-+#define EPCTR13		0xA34
-+#define EPCTR14		0xA38
-+#define EPCTR15		0xA3C
-+#define EPCTR16		0xA40
-+#define EPCTR17		0xA44
-+#define EPCTR18		0xA48
-+#define EPCTR19		0xA4C
-+#define EPCTR20		0xA50
-+#define EPCTR21		0xA54
-+#define EPCTR22		0xA58
-+#define EPCTR23		0xA5C
-+#define EPCTR24		0xA60
-+#define EPCTR25		0xA64
-+#define EPCTR26		0xA68
-+#define EPCTR27		0xA6C
-+#define EPCTR28		0xA70
-+#define EPCTR29		0xA74
-+#define EPCTR30		0xA78
-+#define EPCTR31		0xA7C
-+
-+/* NPC triggered Memory-Mapped Access Registers */
-+#define	NCR		0x000
-+#define MCCR1		0x0CC
-+#define	MCSR1		0x0D0
-+#define	MMAR1LO		0x0D4
-+#define	MMAR1HI		0x0D8
-+#define	MMDR1		0x0DC
-+#define	MCSR2		0x0E0
-+#define	MMAR2LO		0x0E4
-+#define	MMAR2HI		0x0E8
-+#define	MMDR2		0x0EC
-+#define	MCSR3		0x0F0
-+#define	MMAR3LO		0x0F4
-+#define	MMAR3HI		0x0F8
-+#define	MMDR3		0x0FC
-+
-+/* RCPM Core State Action Control Register 0 */
-+#define	CSTTACR0	0xB00
-+
-+/* RCPM Core Group 1 Configuration Register 0 */
-+#define	CG1CR0		0x31C
-+
-+/* Block offsets */
-+#define	RCPM_BLOCK_OFFSET	0x00022000
-+#define	EPU_BLOCK_OFFSET	0x00000000
-+#define	NPC_BLOCK_OFFSET	0x00001000
-+
-+static void *g_dcsr_base;
-+
-+static inline void rcpm_write(u32 offset, u32 val)
++int fsl_dp_iomap(void)
 +{
-+	out_be32(g_dcsr_base + RCPM_BLOCK_OFFSET + offset, val);
++	struct device_node *np;
++	const u32 *prop;
++	int ret = 0;
++	u64 ccsr_phy_addr, dcsr_phy_addr;
++
++	np = of_find_node_by_type(NULL, "soc");
++	if (!np) {
++		pr_err("%s: Can't find the node of \"soc\"\n", __func__);
++		ret = -EINVAL;
++		goto ccsr_err;
++	}
++	prop = of_get_property(np, "ranges", NULL);
++	if (!prop) {
++		pr_err("%s: Can't find the property of \"ranges\"\n", __func__);
++		of_node_put(np);
++		ret = -EINVAL;
++		goto ccsr_err;
++	}
++	ccsr_phy_addr = of_translate_address(np, prop + 1);
++	ccsr_base = ioremap((phys_addr_t)ccsr_phy_addr, SIZE_2MB);
++	of_node_put(np);
++	if (!ccsr_base) {
++		ret = -ENOMEM;
++		goto ccsr_err;
++	}
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,dcsr");
++	if (!np) {
++		pr_err("%s: Can't find the node of \"fsl,dcsr\"\n", __func__);
++		ret = -EINVAL;
++		goto dcsr_err;
++	}
++	prop = of_get_property(np, "ranges", NULL);
++	if (!prop) {
++		pr_err("%s: Can't find the property of \"ranges\"\n", __func__);
++		of_node_put(np);
++		ret = -EINVAL;
++		goto dcsr_err;
++	}
++	dcsr_phy_addr = of_translate_address(np, prop + 1);
++	dcsr_base = ioremap((phys_addr_t)dcsr_phy_addr, SIZE_1MB);
++	of_node_put(np);
++	if (!dcsr_base) {
++		ret = -ENOMEM;
++		goto dcsr_err;
++	}
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,fpga-qixis");
++	if (np) {
++		pld_flag = FPGA_FLAG;
++	} else {
++		np = of_find_compatible_node(NULL, NULL, "fsl,p104xrdb-cpld");
++		if (np) {
++			pld_flag = CPLD_FLAG;
++		} else {
++			pr_err("%s: Can't find the FPGA/CPLD node\n",
++					__func__);
++			ret = -EINVAL;
++			goto pld_err;
++		}
++	}
++	pld_base = of_iomap(np, 0);
++	of_node_put(np);
++
++	return 0;
++
++pld_err:
++	iounmap(dcsr_base);
++dcsr_err:
++	iounmap(ccsr_base);
++ccsr_err:
++	ccsr_base = NULL;
++	dcsr_base = NULL;
++	pld_base = NULL;
++	return ret;
 +}
 +
-+static inline void epu_write(u32 offset, u32 val)
++void fsl_dp_iounmap(void)
 +{
-+	out_be32(g_dcsr_base + EPU_BLOCK_OFFSET + offset, val);
++	if (dcsr_base) {
++		iounmap(dcsr_base);
++		dcsr_base = NULL;
++	}
++
++	if (ccsr_base) {
++		iounmap(ccsr_base);
++		ccsr_base = NULL;
++	}
++
++	if (pld_base) {
++		iounmap(pld_base);
++		pld_base = NULL;
++	}
 +}
 +
-+static inline void npc_write(u32 offset, u32 val)
++static void fsl_dp_ddr_save(void *ccsr_base)
 +{
-+	out_be32(g_dcsr_base + NPC_BLOCK_OFFSET + offset, val);
++	u32 ddr_buff_addr;
++
++	/*
++	 * DDR training initialization will break 128 bytes at the beginning
++	 * of DDR, therefore, save them so that the bootloader will restore
++	 * them. Assume that DDR is mapped to the address space started with
++	 * CONFIG_PAGE_OFFSET.
++	 */
++	memcpy(ddr_buff, (void *)CONFIG_PAGE_OFFSET, DDR_BUF_SIZE);
++
++	/* assume ddr_buff is in the physical address space of 4GB */
++	ddr_buff_addr = (u32)(__pa(ddr_buff) & 0xffffffff);
++
++	/*
++	 * the bootloader will restore the first 128 bytes of DDR from
++	 * the location indicated by the register SPARECR3
++	 */
++	out_be32(ccsr_base + CCSR_SCFG_SPARECR3, ddr_buff_addr);
 +}
 +
-+/**
-+ * fsl_dp_fsm_setup - Configure EPU's FSM
-+ * @dcsr_base: the base address of DCSR registers
++static void fsl_dp_set_resume_pointer(void *ccsr_base)
++{
++	u32 resume_addr;
++
++	/* the bootloader will finally jump to this address to return kernel */
++#ifdef CONFIG_PPC32
++	resume_addr = (u32)(__pa(__entry_deep_sleep));
++#else
++	resume_addr = (u32)(__pa(*(u64 *)__entry_deep_sleep) & 0xffffffff);
++#endif
++
++	/* use the register SPARECR2 to save the resume address */
++	out_be32(ccsr_base + CCSR_SCFG_SPARECR2, resume_addr);
++
++}
++
++int fsl_enter_epu_deepsleep(void)
++{
++
++	fsl_dp_ddr_save(ccsr_base);
++
++	fsl_dp_set_resume_pointer(ccsr_base);
++
++	/*  enable Warm Device Reset request. */
++	setbits32(ccsr_base + CCSR_SCFG_DPSLPCR, CCSR_SCFG_DPSLPCR_WDRR_EN);
++
++	/* set GPIO1_29 as an output pin (not open-drain), and output 0 */
++	clrbits32(ccsr_base + CCSR_GPIO1_GPDAT, CCSR_GPIO1_GPDIR_29);
++	clrbits32(ccsr_base + CCSR_GPIO1_GPODR, CCSR_GPIO1_GPDIR_29);
++	setbits32(ccsr_base + CCSR_GPIO1_GPDIR, CCSR_GPIO1_GPDIR_29);
++
++	fsl_dp_fsm_setup(dcsr_base);
++
++	fsl_dp_enter_low(ccsr_base, dcsr_base, pld_base, pld_flag);
++
++	/* disable Warm Device Reset request */
++	clrbits32(ccsr_base + CCSR_SCFG_DPSLPCR, CCSR_SCFG_DPSLPCR_WDRR_EN);
++
++	fsl_dp_fsm_clean(dcsr_base);
++
++	return 0;
++}
+diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
+index 915b13b..5f2c016 100644
+--- a/arch/powerpc/platforms/85xx/qoriq_pm.c
++++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
+@@ -20,6 +20,8 @@
+ #define FSL_SLEEP		0x1
+ #define FSL_DEEP_SLEEP		0x2
+ 
++int (*fsl_enter_deepsleep)(void);
++
+ /* specify the sleep state of the present platform */
+ int sleep_pm_state;
+ /* supported sleep modes by the present platform */
+@@ -28,6 +30,7 @@ static unsigned int sleep_modes;
+ static int qoriq_suspend_enter(suspend_state_t state)
+ {
+ 	int ret = 0;
++	int cpu;
+ 
+ 	switch (state) {
+ 	case PM_SUSPEND_STANDBY:
+@@ -39,6 +42,17 @@ static int qoriq_suspend_enter(suspend_state_t state)
+ 
+ 		break;
+ 
++	case PM_SUSPEND_MEM:
++
++		cpu = smp_processor_id();
++		qoriq_pm_ops->irq_mask(cpu);
++
++		ret = fsl_enter_deepsleep();
++
++		qoriq_pm_ops->irq_unmask(cpu);
++
++		break;
++
+ 	default:
+ 		ret = -EINVAL;
+ 
+@@ -52,12 +66,30 @@ static int qoriq_suspend_valid(suspend_state_t state)
+ 	if (state == PM_SUSPEND_STANDBY && (sleep_modes & FSL_SLEEP))
+ 		return 1;
+ 
++	if (state == PM_SUSPEND_MEM && (sleep_modes & FSL_DEEP_SLEEP))
++		return 1;
++
+ 	return 0;
+ }
+ 
++static int qoriq_suspend_begin(suspend_state_t state)
++{
++	if (state == PM_SUSPEND_MEM)
++		return fsl_dp_iomap();
++
++	return 0;
++}
++
++static void qoriq_suspend_end(void)
++{
++	fsl_dp_iounmap();
++}
++
+ static const struct platform_suspend_ops qoriq_suspend_ops = {
+ 	.valid = qoriq_suspend_valid,
+ 	.enter = qoriq_suspend_enter,
++	.begin = qoriq_suspend_begin,
++	.end = qoriq_suspend_end,
+ };
+ 
+ static int __init qoriq_suspend_init(void)
+@@ -71,6 +103,12 @@ static int __init qoriq_suspend_init(void)
+ 	if (np)
+ 		sleep_pm_state = PLAT_PM_LPM20;
+ 
++	np = of_find_compatible_node(NULL, NULL, "fsl,t1040-rcpm");
++	if (np) {
++		fsl_enter_deepsleep = fsl_enter_epu_deepsleep;
++		sleep_modes |= FSL_DEEP_SLEEP;
++	}
++
+ 	suspend_set_ops(&qoriq_suspend_ops);
+ 
+ 	return 0;
+diff --git a/arch/powerpc/platforms/85xx/sleep.S b/arch/powerpc/platforms/85xx/sleep.S
+new file mode 100644
+index 0000000..95a5746
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/sleep.S
+@@ -0,0 +1,295 @@
++/*
++ * Implement the low level part of deep sleep
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute	it and/or modify it
++ * under  the terms of	the GNU General	 Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
-+void fsl_dp_fsm_setup(void *dcsr_base)
-+{
-+	u32 offset;
++
++#include <asm/page.h>
++#include <asm/ppc_asm.h>
++#include <asm/reg.h>
++#include <asm/asm-offsets.h>
++#include <asm/booke_save_regs.h>
++#include <asm/mmu.h>
++
++#define FSLDELAY(count)		\
++	li	r3, (count)@l;	\
++	slwi	r3, r3, 10;	\
++	mtctr	r3;		\
++101:	nop;			\
++	bdnz	101b;
++
++#define FSL_DIS_ALL_IRQ		\
++	mfmsr	r8;			\
++	rlwinm	r8, r8, 0, ~MSR_CE;	\
++	rlwinm	r8, r8, 0, ~MSR_ME;	\
++	rlwinm	r8, r8, 0, ~MSR_EE;	\
++	rlwinm	r8, r8, 0, ~MSR_DE;	\
++	mtmsr	r8;			\
++	isync
++
++
++	.section .data
++	.align	6
++booke_regs_buffer:
++	.space REGS_BUFFER_SIZE
++
++	.section .txt
++	.align 6
++
++_GLOBAL(fsl_dp_enter_low)
++deepsleep_start:
++	LOAD_REG_ADDR(r9, buf_tmp)
++	PPC_STL	r3, 0(r9)
++	PPC_STL	r4, 8(r9)
++	PPC_STL	r5, 16(r9)
++	PPC_STL	r6, 24(r9)
++
++	LOAD_REG_ADDR(r3, booke_regs_buffer)
++	/* save the return address */
++	mflr	r5
++	PPC_STL r5, SR_LR(r3)
++	mfmsr	r5
++	PPC_STL r5, SR_MSR(r3)
++	li	r4, DEEPSLEEP_FLAG
++	bl	booke_cpu_state_save
++
++	LOAD_REG_ADDR(r9, buf_tmp)
++	PPC_LL	r31, 0(r9)
++	PPC_LL	r30, 8(r9)
++	PPC_LL	r29, 16(r9)
++	PPC_LL	r28, 24(r9)
++
++	/* flush caches */
++	LOAD_REG_ADDR(r3, cur_cpu_spec)
++	PPC_LL	r3, 0(r3)
++	PPC_LL	r3, CPU_FLUSH_CACHES(r3)
++	PPC_LCMPI  0, r3, 0
++	beq	6f
++#ifdef CONFIG_PPC64
++	PPC_LL	r3, 0(r3)
++#endif
++	mtctr	r3
++	bctrl
++6:
++#define CPC_OFFSET	0x10000
++	mr	r3, r31
++	addis	r3, r3, CPC_OFFSET@h
++	bl	fsl_flush_cpc_cache
++
++	LOAD_REG_ADDR(r8, deepsleep_start)
++	LOAD_REG_ADDR(r9, deepsleep_end)
++
++	/* prefecth TLB */
++#define CCSR_GPIO1_GPDAT	0x130008
++#define CCSR_GPIO1_GPDAT_29	0x4
++	LOAD_REG_IMMEDIATE(r11, CCSR_GPIO1_GPDAT)
++	add	r11, r31, r11
++	lwz	r10, 0(r11)
++
++#define CCSR_RCPM_PCPH15SETR	0xe20b4
++#define CCSR_RCPM_PCPH15SETR_CORE0	0x1
++	LOAD_REG_IMMEDIATE(r12, CCSR_RCPM_PCPH15SETR)
++	add	r12, r31, r12
++	lwz	r10, 0(r12)
++
++#define CCSR_DDR_SDRAM_CFG_2	0x8114
++#define CCSR_DDR_SDRAM_CFG_2_FRC_SR	0x80000000
++	LOAD_REG_IMMEDIATE(r13, CCSR_DDR_SDRAM_CFG_2)
++	add	r13, r31, r13
++	lwz	r10, 0(r13)
++
++#define	DCSR_EPU_EPGCR		0x000
++#define DCSR_EPU_EPGCR_GCE	0x80000000
++	li	r14, DCSR_EPU_EPGCR
++	add	r14, r30, r14
++	lwz	r10, 0(r14)
++
++#define	DCSR_EPU_EPECR15	0x33C
++#define DCSR_EPU_EPECR15_IC0	0x80000000
++	li	r15, DCSR_EPU_EPECR15
++	add	r15, r30, r15
++	lwz	r10, 0(r15)
++
++#define CCSR_SCFG_QMCRDTRSTCR		0xfc40c
++#define CCSR_SCFG_QMCRDTRSTCR_CRDTRST	0x80000000
++	LOAD_REG_IMMEDIATE(r16, CCSR_SCFG_QMCRDTRSTCR)
++	add	r16, r31, r16
++	lwz	r10, 0(r16)
++
++/*
++ * There are two kind of register maps, one for CPLD and the other for FPGA
++ */
++#define CPLD_MISCCSR		0x17
++#define CPLD_MISCCSR_SLEEPEN	0x40
++#define QIXIS_PWR_CTL2		0x21
++#define QIXIS_PWR_CTL2_PCTL	0x2
++	PPC_LCMPI  0, r28, FPGA_FLAG
++	beq	20f
++	addi	r29, r29, CPLD_MISCCSR
++20:
++	addi	r29, r29, QIXIS_PWR_CTL2
++	lbz	r10, 0(r29)
++
++	/* prefecth code to cache so that executing code after disable DDR */
++1:	lwz	r3, 0(r8)
++	addi	r8, r8, 4
++	cmpw	r8, r9
++	blt	1b
++	msync
++
++	FSL_DIS_ALL_IRQ
 +
 +	/*
-+	 * Globle static variable is safe here, becsuse this function is only
-+	 * called once at the last stage of suspend, when there is only one CPU
-+	 * running and task switching is also disabled.
++	 * Place DDR controller in self refresh mode.
++	 * From here on, DDR can't be access any more.
 +	 */
-+	g_dcsr_base =3D dcsr_base;
++	lwz	r10, 0(r13)
++	oris	r10, r10, CCSR_DDR_SDRAM_CFG_2_FRC_SR@h
++	stw	r10, 0(r13)
 +
-+	/* Disable All SCU Actions */
-+	for (offset =3D EPACR0; offset <=3D EPACR15; offset +=3D FSL_STRIDE_4B)
-+		epu_write(offset, 0);
-+
-+	/* Clear EPEVTCRn */
-+	for (offset =3D EPEVTCR0; offset <=3D EPEVTCR9; offset +=3D FSL_STRIDE_=
-4B)
-+		epu_write(offset, 0);
-+
-+	/* Clear Event Processor Global Control Register */
-+	epu_write(EPGCR, 0);
-+
-+	/* Clear EPSMCRn */
-+	for (offset =3D EPSMCR0; offset <=3D EPSMCR15; offset +=3D FSL_STRIDE_8=
-B)
-+		epu_write(offset, 0);
-+
-+	/* Clear EPCCRn */
-+	for (offset =3D EPCCR0; offset <=3D EPCCR15; offset +=3D FSL_STRIDE_4B)
-+		epu_write(offset, 0);
-+
-+	/* Clear EPCMPRn */
-+	for (offset =3D EPCMPR0; offset <=3D EPCMPR15; offset +=3D FSL_STRIDE_4=
-B)
-+		epu_write(offset, 0);
++	/* can't call udelay() here, so use a macro to delay */
++	FSLDELAY(50)
 +
 +	/*
-+	 * Clear EPCTRn
-+	 * Warm Device Reset does NOT reset these counter, so clear them
-+	 * explicitly. Or, the second time entering deep sleep will fail.
++	 * Enable deep sleep signals by write external CPLD/FPGA register.
++	 * The bootloader will disable them when wakeup from deep sleep.
 +	 */
-+	for (offset =3D EPCTR0; offset <=3D EPCTR31; offset +=3D FSL_STRIDE_4B)
-+		epu_write(offset, 0);
++	lbz	r10, 0(r29)
++	PPC_LCMPI  0, r28, FPGA_FLAG
++	beq	22f
++	ori	r10, r10, CPLD_MISCCSR_SLEEPEN
++22:
++	ori	r10, r10, QIXIS_PWR_CTL2_PCTL
++	stb	r10, 0(r29)
 +
-+	/* Clear EPIMCRn */
-+	for (offset =3D EPIMCR0; offset <=3D EPIMCR31; offset +=3D FSL_STRIDE_4=
-B)
-+		epu_write(offset, 0);
++	/*
++	 * Set GPIO1_29 to lock the signal MCKE down during deep sleep.
++	 * The bootloader will clear it when wakeup.
++	 */
++	lwz	r10, 0(r11)
++	ori	r10, r10, CCSR_GPIO1_GPDAT_29
++	stw	r10, 0(r11)
 +
-+	/* Clear EPXTRIGCRn */
-+	epu_write(EPXTRIGCR, 0);
++	FSLDELAY(10)
 +
-+	/* Disable all SCUs EPECRn */
-+	for (offset =3D EPECR0; offset <=3D EPECR15; offset +=3D FSL_STRIDE_4B)
-+		epu_write(offset, 0);
++	/* Clear the QMan CITI Credits */
++	lwz	r10, 0(r16)
++	oris	r10, r10, CCSR_SCFG_QMCRDTRSTCR_CRDTRST@h
++	stw	r10, 0(r16)
 +
-+	/* Set up the SCU chaining */
-+	epu_write(EPECR15, 0x00000004);
-+	epu_write(EPECR14, 0x02000084);
-+	epu_write(EPECR13, 0x08000084);
-+	epu_write(EPECR12, 0x80000084);
-+	epu_write(EPECR11, 0x90000084);
-+	epu_write(EPECR10, 0x42000084);
-+	epu_write(EPECR9, 0x08000084);
-+	epu_write(EPECR8, 0x60000084);
-+	epu_write(EPECR7, 0x80000084);
-+	epu_write(EPECR6, 0x80000084);
-+	epu_write(EPECR5, 0x08000004);
-+	epu_write(EPECR4, 0x20000084);
-+	epu_write(EPECR3, 0x80000084);
-+	epu_write(EPECR2, 0xF0004004);
++	/* Enable all EPU Counters */
++	li	r10, 0
++	oris	r10, r10, DCSR_EPU_EPGCR_GCE@h
++	stw	r10, 0(r14)
 +
-+	/* EVT Pin Configuration. SCU8 triger EVT2, and SCU11 triger EVT9 */
-+	epu_write(EPEVTCR2, 0x80000001);
-+	epu_write(EPEVTCR9, 0xB0000001);
++	/* Enable SCU15 to trigger on RCPM Concentrator 0 */
++	lwz	r10, 0(r15)
++	oris	r10, r10, DCSR_EPU_EPECR15_IC0@h
++	stw	r10, 0(r15)
 +
-+	/* Configure the EPU Counter Values */
-+	epu_write(EPCMPR15, 0x000000FF);
-+	epu_write(EPCMPR14, 0x000000FF);
-+	epu_write(EPCMPR12, 0x000000FF);
-+	epu_write(EPCMPR11, 0x000000FF);
-+	epu_write(EPCMPR10, 0x000000FF);
-+	epu_write(EPCMPR9, 0x000000FF);
-+	epu_write(EPCMPR8, 0x000000FF);
-+	epu_write(EPCMPR5, 0x00000020);
-+	epu_write(EPCMPR4, 0x000000FF);
-+	epu_write(EPCMPR2, 0x000000FF);
++	/* put Core0 in PH15 mode, trigger EPU FSM */
++	lwz	r10, 0(r12)
++	ori	r10, r10, CCSR_RCPM_PCPH15SETR_CORE0
++	stw	r10, 0(r12)
 +
-+	/* Configure the EPU Counters */
-+	epu_write(EPCCR15, 0x92840000);
-+	epu_write(EPCCR14, 0x92840000);
-+	epu_write(EPCCR12, 0x92840000);
-+	epu_write(EPCCR11, 0x92840000);
-+	epu_write(EPCCR10, 0x92840000);
-+	epu_write(EPCCR9, 0x92840000);
-+	epu_write(EPCCR8, 0x92840000);
-+	epu_write(EPCCR5, 0x92840000);
-+	epu_write(EPCCR4, 0x92840000);
-+	epu_write(EPCCR2, 0x92840000);
++2:
++	b 2b
 +
-+	/* Configure the SCUs Inputs */
-+	epu_write(EPSMCR15, 0x76000000);
-+	epu_write(EPSMCR14, 0x00000031);
-+	epu_write(EPSMCR13, 0x00003100);
-+	epu_write(EPSMCR12, 0x7F000000);
-+	epu_write(EPSMCR11, 0x31740000);
-+	epu_write(EPSMCR10, 0x65000030);
-+	epu_write(EPSMCR9, 0x00003000);
-+	epu_write(EPSMCR8, 0x64300000);
-+	epu_write(EPSMCR7, 0x30000000);
-+	epu_write(EPSMCR6, 0x7C000000);
-+	epu_write(EPSMCR5, 0x00002E00);
-+	epu_write(EPSMCR4, 0x002F0000);
-+	epu_write(EPSMCR3, 0x2F000000);
-+	epu_write(EPSMCR2, 0x6C700000);
++	/*
++	 * Leave some space to prevent prefeching instruction
++	 * beyond deepsleep_end. The space also can be used as heap.
++	 */
++buf_tmp:
++	.space 128
++	.align 6
++deepsleep_end:
 +
-+	/* Configure the SCUs Actions */
-+	epu_write(EPACR15, 0x02000000);
-+	epu_write(EPACR14, 0x04000000);
-+	epu_write(EPACR13, 0x06000000);
-+	epu_write(EPACR12, 0x00000003);
-+	epu_write(EPACR10, 0x00000020);
-+	epu_write(EPACR9, 0x0000001C);
-+	epu_write(EPACR5, 0x00000040);
-+	epu_write(EPACR3, 0x00000080);
++#ifdef CONFIG_PPC32
++_GLOBAL(fsl_deepsleep_resume)
++	/* disable interrupts */
++	FSL_DIS_ALL_IRQ
 +
-+	/* Configure the SCUs and Timers Mux */
-+	epu_write(EPIMCR31, 0x76000000);
-+	epu_write(EPIMCR28, 0x76000000);
-+	epu_write(EPIMCR22, 0x6C000000);
-+	epu_write(EPIMCR20, 0x48000000);
-+	epu_write(EPIMCR16, 0x6A000000);
-+	epu_write(EPIMCR12, 0x44000000);
-+	epu_write(EPIMCR5, 0x40000000);
-+	epu_write(EPIMCR4, 0x44000000);
++	li	r3, 0
++	mfspr   r4, SPRN_PIR
++	bl	call_setup_cpu
 +
-+	/* Configure pulse or level triggers */
-+	epu_write(EPXTRIGCR, 0x0000FFDF);
++	/* Load each CAM entry */
++	LOAD_REG_ADDR(r3, tlbcam_index)
++	lwz	r3, 0(r3)
++	mtctr	r3
++	li	r0, 0
++3:	mr	r3, r0
++	bl	loadcam_entry
++	addi	r0, r0, 1
++	bdnz	3b
 +
-+	/* Configure the NPC tMMA registers*/
-+	npc_write(NCR, 0x80000000);
-+	npc_write(MCCR1, 0);
-+	npc_write(MCSR1, 0);
-+	npc_write(MMAR1LO, 0);
-+	npc_write(MMAR1HI, 0);
-+	npc_write(MMDR1, 0);
-+	npc_write(MCSR2, 0);
-+	npc_write(MMAR2LO, 0);
-+	npc_write(MMAR2HI, 0);
-+	npc_write(MMDR2, 0);
-+	npc_write(MCSR3, 0x80000000);
-+	npc_write(MMAR3LO, 0x000E2130);
-+	npc_write(MMAR3HI, 0x00030000);
-+	npc_write(MMDR3, 0x00020000);
++	/* restore cpu registers */
++	LOAD_REG_ADDR(r3, booke_regs_buffer)
++	li	r4, DEEPSLEEP_FLAG
++	bl	booke_cpu_state_restore
 +
-+	/* Configure RCPM for detecting Core0=E2=80=99s PH15 state */
-+	rcpm_write(CSTTACR0, 0x00001001);
-+	rcpm_write(CG1CR0, 0x00000001);
++	LOAD_REG_ADDR(r3, booke_regs_buffer)
++	lwz	r4, SR_MSR(r3)
++	mtmsr	r4
++	lwz	r4, SR_LR(r3)
++	mtlr	r4
 +
-+}
++	blr
 +
-+void fsl_dp_fsm_clean(void *dcsr_base)
-+{
++#else /* CONFIG_PPC32 */
 +
-+	epu_write(EPEVTCR2, 0);
-+	epu_write(EPEVTCR9, 0);
++_GLOBAL(__entry_deep_sleep)
++	/* disable interrupts */
++	FSL_DIS_ALL_IRQ
 +
-+	epu_write(EPGCR, 0);
-+	epu_write(EPECR15, 0);
++	/* switch to 64-bit mode */
++	bl	.enable_64b_mode
 +
-+	rcpm_write(CSTTACR0, 0);
-+	rcpm_write(CG1CR0, 0);
++	/* set TOC pointer */
++	bl	.relative_toc
 +
-+}
---=20
++	/* setup initial TLBs, switch to kernel space ... */
++	bl	.start_initialization_book3e
++
++	/* address space changed, set TOC pointer again */
++	bl	.relative_toc
++
++	/* call a cpu state restore handler */
++	LOAD_REG_ADDR(r23, cur_cpu_spec)
++	ld	r23,0(r23)
++	ld	r23,CPU_SPEC_RESTORE(r23)
++	cmpdi	0,r23,0
++	beq	1f
++	ld	r23,0(r23)
++	mtctr	r23
++	bctrl
++1:
++	LOAD_REG_ADDR(r3, booke_regs_buffer)
++	li	r4, DEEPSLEEP_FLAG
++	bl	booke_cpu_state_restore
++
++	/* Load each CAM entry */
++	LOAD_REG_ADDR(r3, tlbcam_index)
++	lwz	r3, 0(r3)
++	mtctr	r3
++	li	r0, 0
++3:	mr	r3, r0
++	bl	loadcam_entry
++	addi	r0, r0, 1
++	bdnz	3b
++
++	/* restore return address */
++	LOAD_REG_ADDR(r3, booke_regs_buffer)
++	ld	r4, SR_MSR(r3)
++	mtmsr	r4
++	ld	r4, SR_LR(r3)
++	mtlr	r4
++
++	blr
++
++#endif /* CONFIG_PPC32 */
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index eb83a30..7351c40 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -67,7 +67,14 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
+ #define PLAT_PM_SLEEP	20
+ #define PLAT_PM_LPM20	30
+ 
++extern int fsl_dp_iomap(void);
++extern void fsl_dp_iounmap(void);
++
+ extern int fsl_rcpm_init(void);
++extern int fsl_enter_epu_deepsleep(void);
++extern void fsl_dp_enter_low(void *ccsr_base, void *dcsr_base,
++				void *pld_base, int pld_flag);
++extern void __entry_deep_sleep(void);
+ 
+ extern void fsl_dp_fsm_setup(void *dcsr_base);
+ extern void fsl_dp_fsm_clean(void *dcsr_base);
+-- 
 1.7.3
