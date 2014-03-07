@@ -1,18 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1394153258.21206.1.camel@concordia>
-Subject: Re: [PATCH] kexec/powerpc: fix exporting memory limit
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nikita Yushchenko <nyushchenko@dev.rtsoft.ru>
-Date: Fri, 07 Mar 2014 11:47:38 +1100
-In-Reply-To: <1394115854-11709-1-git-send-email-nyushchenko@dev.rtsoft.ru>
-References: <1394115854-11709-1-git-send-email-nyushchenko@dev.rtsoft.ru>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 64C8D2C032B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Mar 2014 13:59:07 +1100 (EST)
+Message-ID: <1394161051.26321.71.camel@pasglop>
+Subject: Re: [PATCH v2 14/52] powerpc, sysfs: Fix CPU hotplug callback
+ registration
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Date: Fri, 07 Mar 2014 13:57:31 +1100
+In-Reply-To: <20140214075215.22701.23653.stgit@srivatsabhat.in.ibm.com>
+References: <20140214074750.22701.47330.stgit@srivatsabhat.in.ibm.com>
+ <20140214075215.22701.23653.stgit@srivatsabhat.in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: yadviga@dev.rtsoft.ru, lugovskoy@dev.rtsoft.ru, kexec@lists.infradead.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>,
- Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Hari Bathini <hbathini@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
+ linux@arm.linux.org.uk, akpm@linux-foundation.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, peterz@infradead.org,
+ rusty@rustcorp.com.au, rjw@rjwysocki.net, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, Olof Johansson <olof@lixom.net>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, paulus@samba.org,
+ tj@kernel.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-06 at 18:24 +0400, Nikita Yushchenko wrote:
-> When preparing dump-capturing kernel, kexec userspace tool needs to know
-> actual amount of memory used by the running kernel. This may differ from
-> extire available DRAM for a couple of reasons. To address this issue,
-> kdump kernel support code injects several attributes into device tree that
-> are later captured by userspace kexec tool via /proc interface.
+On Fri, 2014-02-14 at 13:22 +0530, Srivatsa S. Bhat wrote:
+> Subsystems that want to register CPU hotplug callbacks, as well as perform
+> initialization for the CPUs that are already online, often do it as shown
+> below:
 > 
-> One such attrubute is 'chosen/linux,memory_limit' that is used to pass
-> memory limit of the running kernel.
+> 	get_online_cpus();
 > 
-> This was initialized using kernel's 'memory_limit' variable, that is set
-> by early init code based on mem= kernel parameter and other reasons.
+> 	for_each_online_cpu(cpu)
+> 		init_cpu(cpu);
 > 
-> But there are cases when memory_limit variable does not contain proper
-> information. One such case is when !CONFIG_HIGHMEM kernel runs on system
-> with memory large enough not to fit into lowmem.
+> 	register_cpu_notifier(&foobar_cpu_notifier);
+> 
+> 	put_online_cpus();
 
-Why doesn't the !CONFIG_HIGHMEM code update memory_limit to reflect reality.
+This patch breaks a good half of my test configs with:
 
-cheers
+/home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c: In function 'topology_init':
+/home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c:979:2: error: implicit declaration of function 'cpu_notifier_register_begin' [-Werror=implicit-function-declaration]
+/home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c:1004:2: error: implicit declaration of function '__register_cpu_notifier' [-Werror=implicit-function-declaration]
+/home/benh/linux-powerpc-test/arch/powerpc/kernel/sysfs.c:1006:2: error: implicit declaration of function 'cpu_notifier_register_done' [-Werror=implicit-function-declaration]
+cc1: all warnings being treated as errors
+make[2]: *** [arch/powerpc/kernel/sysfs.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
