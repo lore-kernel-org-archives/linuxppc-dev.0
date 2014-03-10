@@ -1,45 +1,45 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 57C102C02A3
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:35 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A895B2C06E3
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:00 +1100 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:07:33 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2A856E003F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:11:16 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKbQLB65274022
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:26 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKbRXN009150
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:29 +0530
+ Tue, 11 Mar 2014 06:38:00 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8EED32CE8046
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:57 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKHvtC60424348
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:17:57 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKbtT1007556
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:57 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 20/52] x86,
- therm_throt.c: Fix CPU hotplug callback registration
+Subject: [PATCH v3 22/52] x86, amd, ibs: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:07:21 +0530
-Message-ID: <20140310203721.10746.47726.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:07:45 +0530
+Message-ID: <20140310203744.10746.96582.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+ linux@arm.linux.org.uk, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+ x86@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
  "H. Peter Anvin" <hpa@zytor.com>, tj@kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
- Ingo Molnar <mingo@kernel.org>, linux-edac@vger.kernel.org
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -80,42 +80,40 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the thermal throttle code in x86 by using this latter form of callback
+Fix the amd-ibs code in x86 by using this latter form of callback
 registration.
 
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Paul Mackerras <paulus@samba.org>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: x86@kernel.org
-Cc: linux-edac@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpu/mcheck/therm_throt.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/x86/kernel/cpu/perf_event_amd_ibs.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-index 3eec7de..e05dfa3 100644
---- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
-+++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
-@@ -319,7 +319,7 @@ static __init int thermal_throttle_init_device(void)
- 	if (!atomic_read(&therm_throt_en))
- 		return 0;
+diff --git a/arch/x86/kernel/cpu/perf_event_amd_ibs.c b/arch/x86/kernel/cpu/perf_event_amd_ibs.c
+index 4b8e4d3..4c36bbe 100644
+--- a/arch/x86/kernel/cpu/perf_event_amd_ibs.c
++++ b/arch/x86/kernel/cpu/perf_event_amd_ibs.c
+@@ -926,13 +926,13 @@ static __init int amd_ibs_init(void)
+ 		goto out;
  
--	register_hotcpu_notifier(&thermal_throttle_cpu_notifier);
+ 	perf_ibs_pm_init();
+-	get_online_cpus();
 +	cpu_notifier_register_begin();
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 	mutex_lock(&therm_cpu_lock);
-@@ -333,6 +333,9 @@ static __init int thermal_throttle_init_device(void)
- 	mutex_unlock(&therm_cpu_lock);
- #endif
- 
-+	__register_hotcpu_notifier(&thermal_throttle_cpu_notifier);
+ 	ibs_caps = caps;
+ 	/* make ibs_caps visible to other cpus: */
+ 	smp_mb();
+-	perf_cpu_notifier(perf_ibs_cpu_notifier);
+ 	smp_call_function(setup_APIC_ibs, NULL, 1);
+-	put_online_cpus();
++	__perf_cpu_notifier(perf_ibs_cpu_notifier);
 +	cpu_notifier_register_done();
-+
- 	return 0;
- }
- device_initcall(thermal_throttle_init_device);
+ 
+ 	ret = perf_event_ibs_init();
+ out:
