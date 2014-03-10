@@ -1,44 +1,43 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A49B22C0105
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:54 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D8D1E2C01BA
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:36:01 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:05:52 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E82D23940023
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:05:50 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKZk4Q2359750
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:05:47 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKZj95025505
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:05:47 +0530
+ Tue, 11 Mar 2014 06:36:01 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 352BD2BB0047
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:58 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKFmp69109768
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:15:49 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKZuun018478
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:57 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
+Subject: [PATCH v3 11/52] s390,
+ cacheinfo: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:05:38 +0530
-Message-ID: <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:05:46 +0530
+Message-ID: <20140310203545.10746.78648.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- Russell King <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
- linux-pm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- linux-kernel@vger.kernel.org, kvmarm@lists.cs.columbia.edu,
- linuxppc-dev@ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, linuxppc-dev@ozlabs.org,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- Paolo Bonzini <pbonzini@redhat.com>, paulmck@linux.vnet.ibm.com,
- Ingo Molnar <mingo@kernel.org>, Christoffer Dall <christoffer.dall@linaro.org>
+ paulmck@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -79,51 +78,34 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the kvm code in arm by using this latter form of callback registration.
+Fix the cacheinfo code in s390 by using this latter form of callback
+registration.
 
-Cc: Christoffer Dall <christoffer.dall@linaro.org>
-Cc: Gleb Natapov <gleb@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: kvmarm@lists.cs.columbia.edu
-Cc: kvm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+Cc: linux-s390@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/arm/kvm/arm.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/s390/kernel/cache.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
-index bd18bb8..f0e50a0 100644
---- a/arch/arm/kvm/arm.c
-+++ b/arch/arm/kvm/arm.c
-@@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
- 		}
- 	}
- 
+diff --git a/arch/s390/kernel/cache.c b/arch/s390/kernel/cache.c
+index 3a414c0..c0b03c2 100644
+--- a/arch/s390/kernel/cache.c
++++ b/arch/s390/kernel/cache.c
+@@ -378,9 +378,12 @@ static int __init cache_init(void)
+ 	if (!test_facility(34))
+ 		return 0;
+ 	cache_build_info();
++
 +	cpu_notifier_register_begin();
-+
- 	err = init_hyp_mode();
- 	if (err)
- 		goto out_err;
- 
--	err = register_cpu_notifier(&hyp_init_cpu_nb);
-+	err = __register_cpu_notifier(&hyp_init_cpu_nb);
- 	if (err) {
- 		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
- 		goto out_err;
- 	}
- 
+ 	for_each_online_cpu(cpu)
+ 		cache_add_cpu(cpu);
+-	hotcpu_notifier(cache_hotplug, 0);
++	__hotcpu_notifier(cache_hotplug, 0);
 +	cpu_notifier_register_done();
-+
- 	hyp_cpu_pm_init();
- 
- 	kvm_coproc_table_init();
  	return 0;
- out_err:
-+	cpu_notifier_register_done();
- 	return err;
  }
- 
+ device_initcall(cache_init);
