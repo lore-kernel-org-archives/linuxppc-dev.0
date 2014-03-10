@@ -2,45 +2,40 @@ Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
 Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2C83C2C0AF3
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A9BDA2C0B3E
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:53 +1100 (EST)
 Received: from /spool/local
  by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:42:42 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0EC2E3578057
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:40 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKgQdR8847718
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:26 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKgchc008543
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:39 +1100
+ Tue, 11 Mar 2014 06:42:53 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E69C43578054
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:50 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKMfHF11796980
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:22:41 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKgnom001740
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:50 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 49/52] mm, vmstat: Fix CPU hotplug callback registration
+Subject: [PATCH v3 50/52] mm, zswap: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:12:27 +0530
-Message-ID: <20140310204226.10746.64059.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:12:40 +0530
+Message-ID: <20140310204239.10746.94222.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com,
- Christoph Lameter <cl@linux.com>, walken@google.com, linux@arm.linux.org.uk,
- linux-pm@vger.kernel.org, Rik van Riel <riel@redhat.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linuxppc-dev@ozlabs.org,
- Dave Hansen <dave@sr71.net>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Johannes Weiner <hannes@cmpxchg.org>, tj@kernel.org,
- Toshi Kani <toshi.kani@hp.com>, Andrew Morton <akpm@linux-foundation.org>,
- paulmck@linux.vnet.ibm.com, Cody P Schafer <cody@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, linuxppc-dev@ozlabs.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -81,44 +76,40 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the vmstat code in the MM subsystem by using this latter form of callback
-registration.
+Fix the zswap code by using this latter form of callback registration.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Cody P Schafer <cody@linux.vnet.ibm.com>
-Cc: Toshi Kani <toshi.kani@hp.com>
-Cc: Dave Hansen <dave@sr71.net>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: linux-mm@kvack.org
-Acked-by: Christoph Lameter <cl@linux.com>
-Acked-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- mm/vmstat.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ mm/zswap.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index def5dd2..58c6f3d 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -1292,14 +1292,14 @@ static int __init setup_vmstat(void)
- #ifdef CONFIG_SMP
- 	int cpu;
- 
--	register_cpu_notifier(&vmstat_notifier);
-+	cpu_notifier_register_begin();
-+	__register_cpu_notifier(&vmstat_notifier);
+diff --git a/mm/zswap.c b/mm/zswap.c
+index e55bab9..d7337fb 100644
+--- a/mm/zswap.c
++++ b/mm/zswap.c
+@@ -387,18 +387,18 @@ static int zswap_cpu_init(void)
+ {
+ 	unsigned long cpu;
  
 -	get_online_cpus();
- 	for_each_online_cpu(cpu) {
- 		start_cpu_timer(cpu);
- 		node_set_state(cpu_to_node(cpu), N_CPU);
- 	}
++	cpu_notifier_register_begin();
+ 	for_each_online_cpu(cpu)
+ 		if (__zswap_cpu_notifier(CPU_UP_PREPARE, cpu) != NOTIFY_OK)
+ 			goto cleanup;
+-	register_cpu_notifier(&zswap_cpu_notifier_block);
+-	put_online_cpus();
++	__register_cpu_notifier(&zswap_cpu_notifier_block);
++	cpu_notifier_register_done();
+ 	return 0;
+ 
+ cleanup:
+ 	for_each_online_cpu(cpu)
+ 		__zswap_cpu_notifier(CPU_UP_CANCELED, cpu);
 -	put_online_cpus();
 +	cpu_notifier_register_done();
- #endif
- #ifdef CONFIG_PROC_FS
- 	proc_create("buddyinfo", S_IRUGO, NULL, &fragmentation_file_operations);
+ 	return -ENOMEM;
+ }
+ 
