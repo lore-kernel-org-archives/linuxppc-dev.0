@@ -1,43 +1,43 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B00FE2C0610
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:14 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6CFFB2C09D9
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:27 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:41:14 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 417B32BB0057
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:11 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKL1qd12517702
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:21:02 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKf9Q6009917
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:10 +1100
+ Tue, 11 Mar 2014 06:41:27 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id DFD5C2CE8046
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:53 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKKr4a48627844
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:20:53 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKeq5J022577
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:53 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 43/52] thermal,
- x86-pkg-temp: Fix CPU hotplug callback registration
+Subject: [PATCH v3 42/52] octeon,
+ watchdog: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:10:54 +0530
-Message-ID: <20140310204054.10746.57627.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:10:43 +0530
+Message-ID: <20140310204042.10746.60098.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Eduardo Valentin <eduardo.valentin@ti.com>, linuxppc-dev@ozlabs.org,
+ linux@arm.linux.org.uk, linux-watchdog@vger.kernel.org,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, Wim Van Sebroeck <wim@iguana.be>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- Zhang Rui <rui.zhang@intel.com>, paulmck@linux.vnet.ibm.com,
- Ingo Molnar <mingo@kernel.org>
+ paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,65 +78,54 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the thermal x86-pkg-temp code by using this latter form of callback
+Fix the watchdog code in octeon by using this latter form of callback
 registration.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <eduardo.valentin@ti.com>
+Cc: Wim Van Sebroeck <wim@iguana.be>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: linux-pm@vger.kernel.org
+Cc: linux-watchdog@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/thermal/x86_pkg_temp_thermal.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ drivers/watchdog/octeon-wdt-main.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
-index 081fd7e..9ea3d9d 100644
---- a/drivers/thermal/x86_pkg_temp_thermal.c
-+++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -590,12 +590,12 @@ static int __init pkg_temp_thermal_init(void)
- 	platform_thermal_package_rate_control =
- 			pkg_temp_thermal_platform_thermal_rate_control;
+diff --git a/drivers/watchdog/octeon-wdt-main.c b/drivers/watchdog/octeon-wdt-main.c
+index 4612088..4baf2d7 100644
+--- a/drivers/watchdog/octeon-wdt-main.c
++++ b/drivers/watchdog/octeon-wdt-main.c
+@@ -708,10 +708,13 @@ static int __init octeon_wdt_init(void)
  
--	get_online_cpus();
+ 	cpumask_clear(&irq_enabled_cpus);
+ 
 +	cpu_notifier_register_begin();
- 	for_each_online_cpu(i)
- 		if (get_core_online(i))
- 			goto err_ret;
--	register_hotcpu_notifier(&pkg_temp_thermal_notifier);
--	put_online_cpus();
-+	__register_hotcpu_notifier(&pkg_temp_thermal_notifier);
+ 	for_each_online_cpu(cpu)
+ 		octeon_wdt_setup_interrupt(cpu);
+ 
+-	register_hotcpu_notifier(&octeon_wdt_cpu_notifier);
++	__register_hotcpu_notifier(&octeon_wdt_cpu_notifier);
 +	cpu_notifier_register_done();
++
+ out:
+ 	return ret;
+ }
+@@ -725,7 +728,8 @@ static void __exit octeon_wdt_cleanup(void)
  
- 	pkg_temp_debugfs_init(); /* Don't care if fails */
+ 	misc_deregister(&octeon_wdt_miscdev);
  
-@@ -604,7 +604,7 @@ static int __init pkg_temp_thermal_init(void)
- err_ret:
- 	for_each_online_cpu(i)
- 		put_core_offline(i);
--	put_online_cpus();
-+	cpu_notifier_register_done();
- 	kfree(pkg_work_scheduled);
- 	platform_thermal_package_notify = NULL;
- 	platform_thermal_package_rate_control = NULL;
-@@ -617,8 +617,8 @@ static void __exit pkg_temp_thermal_exit(void)
- 	struct phy_dev_entry *phdev, *n;
- 	int i;
- 
--	get_online_cpus();
--	unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
+-	unregister_hotcpu_notifier(&octeon_wdt_cpu_notifier);
 +	cpu_notifier_register_begin();
-+	__unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
- 	mutex_lock(&phy_dev_list_mutex);
- 	list_for_each_entry_safe(phdev, n, &phy_dev_list, list) {
- 		/* Retore old MSR value for package thermal interrupt */
-@@ -636,7 +636,7 @@ static void __exit pkg_temp_thermal_exit(void)
- 	for_each_online_cpu(i)
- 		cancel_delayed_work_sync(
- 			&per_cpu(pkg_temp_thermal_threshold_work, i));
--	put_online_cpus();
++	__unregister_hotcpu_notifier(&octeon_wdt_cpu_notifier);
+ 
+ 	for_each_online_cpu(cpu) {
+ 		int core = cpu2core(cpu);
+@@ -734,6 +738,9 @@ static void __exit octeon_wdt_cleanup(void)
+ 		/* Free the interrupt handler */
+ 		free_irq(OCTEON_IRQ_WDOG0 + core, octeon_wdt_poke_irq);
+ 	}
++
 +	cpu_notifier_register_done();
- 
- 	kfree(pkg_work_scheduled);
- 
++
+ 	/*
+ 	 * Disable the boot-bus memory, the code it points to is soon
+ 	 * to go missing.
