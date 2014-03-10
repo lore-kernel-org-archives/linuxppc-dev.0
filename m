@@ -1,43 +1,42 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D2DEF2C0936
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:33 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 926182C05E5
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:40 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:10:32 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 95AB4394003E
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:30 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKeRSF64487486
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:27 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKeSFM015882
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:30 +0530
+ Tue, 11 Mar 2014 02:10:38 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 48D06E003F
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:14:21 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKeXPT29688044
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:33 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKeZYR020996
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:36 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 39/52] clocksource,
- dummy-timer: Fix CPU hotplug callback registration
+Subject: [PATCH v3 40/52] intel-idle: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:10:23 +0530
-Message-ID: <20140310204023.10746.32020.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:10:30 +0530
+Message-ID: <20140310204030.10746.17666.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
  linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
- Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
  linuxppc-dev@ozlabs.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- tj@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
+ tj@kernel.org, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>,
+ Len Brown <lenb@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,42 +77,55 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the clocksource dummy-timer code by using this latter form of callback
-registration.
+Fix the intel-idle code by using this latter form of callback registration.
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: linux-pm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/clocksource/dummy_timer.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/idle/intel_idle.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clocksource/dummy_timer.c b/drivers/clocksource/dummy_timer.c
-index b3eb582..ad35725 100644
---- a/drivers/clocksource/dummy_timer.c
-+++ b/drivers/clocksource/dummy_timer.c
-@@ -56,14 +56,19 @@ static struct notifier_block dummy_timer_cpu_nb = {
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 8e1939f..51493ed 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -681,14 +681,19 @@ static int __init intel_idle_init(void)
+ 	if (intel_idle_cpuidle_devices == NULL)
+ 		return -ENOMEM;
  
- static int __init dummy_timer_register(void)
- {
--	int err = register_cpu_notifier(&dummy_timer_cpu_nb);
-+	int err = 0;
-+
 +	cpu_notifier_register_begin();
-+	err = __register_cpu_notifier(&dummy_timer_cpu_nb);
- 	if (err)
--		return err;
-+		goto out;
- 
- 	/* We won't get a call on the boot CPU, so register immediately */
- 	if (num_possible_cpus() > 1)
- 		dummy_timer_setup();
- 
--	return 0;
-+out:
++
+ 	for_each_online_cpu(i) {
+ 		retval = intel_idle_cpu_init(i);
+ 		if (retval) {
++			cpu_notifier_register_done();
+ 			cpuidle_unregister_driver(&intel_idle_driver);
+ 			return retval;
+ 		}
+ 	}
+-	register_cpu_notifier(&cpu_hotplug_notifier);
++	__register_cpu_notifier(&cpu_hotplug_notifier);
++
 +	cpu_notifier_register_done();
-+	return err;
+ 
+ 	return 0;
  }
- early_initcall(dummy_timer_register);
+@@ -698,10 +703,13 @@ static void __exit intel_idle_exit(void)
+ 	intel_idle_cpuidle_devices_uninit();
+ 	cpuidle_unregister_driver(&intel_idle_driver);
+ 
++	cpu_notifier_register_begin();
+ 
+ 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
+ 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
+-	unregister_cpu_notifier(&cpu_hotplug_notifier);
++	__unregister_cpu_notifier(&cpu_hotplug_notifier);
++
++	cpu_notifier_register_done();
+ 
+ 	return;
+ }
