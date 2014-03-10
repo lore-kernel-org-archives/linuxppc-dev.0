@@ -1,42 +1,42 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 926182C05E5
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:40 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C9AEB2C0964
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:47 +1100 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:10:38 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 48D06E003F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:14:21 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKeXPT29688044
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:33 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKeZYR020996
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:36 +0530
+ Tue, 11 Mar 2014 02:10:45 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 88D39125803E
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:12:56 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKekup3473800
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:46 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKefbP016290
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:42 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 40/52] intel-idle: Fix CPU hotplug callback registration
+Subject: [PATCH v3 41/52] oprofile,
+ nmi-timer: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:10:30 +0530
-Message-ID: <20140310204030.10746.17666.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:10:36 +0530
+Message-ID: <20140310204036.10746.10550.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@ozlabs.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- tj@kernel.org, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>,
- Len Brown <lenb@kernel.org>
+ tj@kernel.org, Robert Richter <rric@kernel.org>, paulmck@linux.vnet.ibm.com,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -77,55 +77,69 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the intel-idle code by using this latter form of callback registration.
+Fix the nmi-timer code in oprofile by using this latter form of callback
+registration.
 
-Cc: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Robert Richter <rric@kernel.org>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: linux-pm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/idle/intel_idle.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ drivers/oprofile/nmi_timer_int.c |   23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 8e1939f..51493ed 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -681,14 +681,19 @@ static int __init intel_idle_init(void)
- 	if (intel_idle_cpuidle_devices == NULL)
- 		return -ENOMEM;
+diff --git a/drivers/oprofile/nmi_timer_int.c b/drivers/oprofile/nmi_timer_int.c
+index 76f1c93..9559829 100644
+--- a/drivers/oprofile/nmi_timer_int.c
++++ b/drivers/oprofile/nmi_timer_int.c
+@@ -108,8 +108,8 @@ static void nmi_timer_shutdown(void)
+ 	struct perf_event *event;
+ 	int cpu;
  
+-	get_online_cpus();
+-	unregister_cpu_notifier(&nmi_timer_cpu_nb);
 +	cpu_notifier_register_begin();
-+
- 	for_each_online_cpu(i) {
- 		retval = intel_idle_cpu_init(i);
- 		if (retval) {
-+			cpu_notifier_register_done();
- 			cpuidle_unregister_driver(&intel_idle_driver);
- 			return retval;
- 		}
++	__unregister_cpu_notifier(&nmi_timer_cpu_nb);
+ 	for_each_possible_cpu(cpu) {
+ 		event = per_cpu(nmi_timer_events, cpu);
+ 		if (!event)
+@@ -119,7 +119,7 @@ static void nmi_timer_shutdown(void)
+ 		perf_event_release_kernel(event);
  	}
--	register_cpu_notifier(&cpu_hotplug_notifier);
-+	__register_cpu_notifier(&cpu_hotplug_notifier);
-+
+ 
+-	put_online_cpus();
 +	cpu_notifier_register_done();
- 
- 	return 0;
  }
-@@ -698,10 +703,13 @@ static void __exit intel_idle_exit(void)
- 	intel_idle_cpuidle_devices_uninit();
- 	cpuidle_unregister_driver(&intel_idle_driver);
  
+ static int nmi_timer_setup(void)
+@@ -132,20 +132,23 @@ static int nmi_timer_setup(void)
+ 	do_div(period, HZ);
+ 	nmi_timer_attr.sample_period = period;
+ 
+-	get_online_cpus();
+-	err = register_cpu_notifier(&nmi_timer_cpu_nb);
 +	cpu_notifier_register_begin();
- 
- 	if (lapic_timer_reliable_states != LAPIC_TIMER_ALWAYS_RELIABLE)
- 		on_each_cpu(__setup_broadcast_timer, (void *)false, 1);
--	unregister_cpu_notifier(&cpu_hotplug_notifier);
-+	__unregister_cpu_notifier(&cpu_hotplug_notifier);
++	err = __register_cpu_notifier(&nmi_timer_cpu_nb);
+ 	if (err)
+ 		goto out;
 +
+ 	/* can't attach events to offline cpus: */
+ 	for_each_online_cpu(cpu) {
+ 		err = nmi_timer_start_cpu(cpu);
+-		if (err)
+-			break;
++		if (err) {
++			cpu_notifier_register_done();
++			nmi_timer_shutdown();
++			return err;
++		}
+ 	}
+-	if (err)
+-		nmi_timer_shutdown();
++
+ out:
+-	put_online_cpus();
 +	cpu_notifier_register_done();
- 
- 	return;
+ 	return err;
  }
+ 
