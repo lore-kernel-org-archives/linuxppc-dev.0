@@ -1,43 +1,42 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 59F562C0913
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:17 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0763F2C0257
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:26 +1100 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:10:15 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 602A9E0058
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:13:57 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKe9tO47710444
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:09 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKeB9r006830
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:12 +0530
+ Tue, 11 Mar 2014 06:40:25 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 85C0C3578055
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:23 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKe9hK5701956
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:09 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKeLHv009413
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:23 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 37/52] acpi-cpufreq: Fix CPU hotplug callback registration
+Subject: [PATCH v3 38/52] drivers/base/topology.c: Fix CPU hotplug callback
+ registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:10:06 +0530
-Message-ID: <20140310204005.10746.58112.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:10:12 +0530
+Message-ID: <20140310204012.10746.6803.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
  linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
- cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ tj@kernel.org, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,40 +77,42 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the acpi-cpufreq code by using this latter form of callback registration.
+Fix the topology code by using this latter form of callback registration.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: cpufreq@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/cpufreq/acpi-cpufreq.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ drivers/base/topology.c |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 18448a7..245ae078e 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -907,15 +907,16 @@ static void __init acpi_cpufreq_boost_init(void)
- 
- 		acpi_cpufreq_driver.boost_supported = true;
- 		acpi_cpufreq_driver.boost_enabled = boost_state(0);
--		get_online_cpus();
+diff --git a/drivers/base/topology.c b/drivers/base/topology.c
+index 94ffee3..a738d10 100644
+--- a/drivers/base/topology.c
++++ b/drivers/base/topology.c
+@@ -161,16 +161,20 @@ static int topology_cpu_callback(struct notifier_block *nfb,
+ static int topology_sysfs_init(void)
+ {
+ 	int cpu;
+-	int rc;
++	int rc = 0;
 +
-+		cpu_notifier_register_begin();
++	cpu_notifier_register_begin();
  
- 		/* Force all MSRs to the same value */
- 		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
- 			       cpu_online_mask);
- 
--		register_cpu_notifier(&boost_nb);
-+		__register_cpu_notifier(&boost_nb);
- 
--		put_online_cpus();
-+		cpu_notifier_register_done();
+ 	for_each_online_cpu(cpu) {
+ 		rc = topology_add_dev(cpu);
+ 		if (rc)
+-			return rc;
++			goto out;
  	}
+-	hotcpu_notifier(topology_cpu_callback, 0);
++	__hotcpu_notifier(topology_cpu_callback, 0);
+ 
+-	return 0;
++out:
++	cpu_notifier_register_done();
++	return rc;
  }
  
+ device_initcall(topology_sysfs_init);
