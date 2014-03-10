@@ -1,41 +1,42 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C9AEB2C0964
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:40:47 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B00FE2C0610
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:14 +1100 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:10:45 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 88D39125803E
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:12:56 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKekup3473800
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:46 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKefbP016290
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:42 +0530
+ Tue, 11 Mar 2014 06:41:14 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 417B32BB0057
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:11 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKL1qd12517702
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:21:02 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKf9Q6009917
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:10 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 41/52] oprofile,
- nmi-timer: Fix CPU hotplug callback registration
+Subject: [PATCH v3 43/52] thermal,
+ x86-pkg-temp: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:10:36 +0530
-Message-ID: <20140310204036.10746.10550.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:10:54 +0530
+Message-ID: <20140310204054.10746.57627.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
  linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- tj@kernel.org, Robert Richter <rric@kernel.org>, paulmck@linux.vnet.ibm.com,
+ Eduardo Valentin <eduardo.valentin@ti.com>, linuxppc-dev@ozlabs.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ Zhang Rui <rui.zhang@intel.com>, paulmck@linux.vnet.ibm.com,
  Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -77,69 +78,65 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the nmi-timer code in oprofile by using this latter form of callback
+Fix the thermal x86-pkg-temp code by using this latter form of callback
 registration.
 
-Cc: Robert Richter <rric@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <eduardo.valentin@ti.com>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: linux-pm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/oprofile/nmi_timer_int.c |   23 +++++++++++++----------
- 1 file changed, 13 insertions(+), 10 deletions(-)
+ drivers/thermal/x86_pkg_temp_thermal.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/oprofile/nmi_timer_int.c b/drivers/oprofile/nmi_timer_int.c
-index 76f1c93..9559829 100644
---- a/drivers/oprofile/nmi_timer_int.c
-+++ b/drivers/oprofile/nmi_timer_int.c
-@@ -108,8 +108,8 @@ static void nmi_timer_shutdown(void)
- 	struct perf_event *event;
- 	int cpu;
+diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+index 081fd7e..9ea3d9d 100644
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -590,12 +590,12 @@ static int __init pkg_temp_thermal_init(void)
+ 	platform_thermal_package_rate_control =
+ 			pkg_temp_thermal_platform_thermal_rate_control;
  
 -	get_online_cpus();
--	unregister_cpu_notifier(&nmi_timer_cpu_nb);
 +	cpu_notifier_register_begin();
-+	__unregister_cpu_notifier(&nmi_timer_cpu_nb);
- 	for_each_possible_cpu(cpu) {
- 		event = per_cpu(nmi_timer_events, cpu);
- 		if (!event)
-@@ -119,7 +119,7 @@ static void nmi_timer_shutdown(void)
- 		perf_event_release_kernel(event);
- 	}
+ 	for_each_online_cpu(i)
+ 		if (get_core_online(i))
+ 			goto err_ret;
+-	register_hotcpu_notifier(&pkg_temp_thermal_notifier);
+-	put_online_cpus();
++	__register_hotcpu_notifier(&pkg_temp_thermal_notifier);
++	cpu_notifier_register_done();
  
+ 	pkg_temp_debugfs_init(); /* Don't care if fails */
+ 
+@@ -604,7 +604,7 @@ static int __init pkg_temp_thermal_init(void)
+ err_ret:
+ 	for_each_online_cpu(i)
+ 		put_core_offline(i);
 -	put_online_cpus();
 +	cpu_notifier_register_done();
- }
- 
- static int nmi_timer_setup(void)
-@@ -132,20 +132,23 @@ static int nmi_timer_setup(void)
- 	do_div(period, HZ);
- 	nmi_timer_attr.sample_period = period;
+ 	kfree(pkg_work_scheduled);
+ 	platform_thermal_package_notify = NULL;
+ 	platform_thermal_package_rate_control = NULL;
+@@ -617,8 +617,8 @@ static void __exit pkg_temp_thermal_exit(void)
+ 	struct phy_dev_entry *phdev, *n;
+ 	int i;
  
 -	get_online_cpus();
--	err = register_cpu_notifier(&nmi_timer_cpu_nb);
+-	unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
 +	cpu_notifier_register_begin();
-+	err = __register_cpu_notifier(&nmi_timer_cpu_nb);
- 	if (err)
- 		goto out;
-+
- 	/* can't attach events to offline cpus: */
- 	for_each_online_cpu(cpu) {
- 		err = nmi_timer_start_cpu(cpu);
--		if (err)
--			break;
-+		if (err) {
-+			cpu_notifier_register_done();
-+			nmi_timer_shutdown();
-+			return err;
-+		}
- 	}
--	if (err)
--		nmi_timer_shutdown();
-+
- out:
++	__unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
+ 	mutex_lock(&phy_dev_list_mutex);
+ 	list_for_each_entry_safe(phdev, n, &phy_dev_list, list) {
+ 		/* Retore old MSR value for package thermal interrupt */
+@@ -636,7 +636,7 @@ static void __exit pkg_temp_thermal_exit(void)
+ 	for_each_online_cpu(i)
+ 		cancel_delayed_work_sync(
+ 			&per_cpu(pkg_temp_thermal_threshold_work, i));
 -	put_online_cpus();
 +	cpu_notifier_register_done();
- 	return err;
- }
+ 
+ 	kfree(pkg_work_scheduled);
  
