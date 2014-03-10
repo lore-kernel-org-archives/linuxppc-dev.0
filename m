@@ -1,32 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C39A72C0241
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:25 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 57C102C02A3
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:35 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:37:24 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id F25842BB0056
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:21 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKHLtg45613252
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:17:21 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKbJID007135
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:21 +1100
+ Tue, 11 Mar 2014 02:07:33 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2A856E003F
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:11:16 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKbQLB65274022
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:26 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKbRXN009150
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:29 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 19/52] x86, mce: Fix CPU hotplug callback registration
+Subject: [PATCH v3 20/52] x86,
+ therm_throt.c: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:07:04 +0530
-Message-ID: <20140310203703.10746.30680.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:07:21 +0530
+Message-ID: <20140310203721.10746.47726.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -79,7 +80,8 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the mce code in x86 by using this latter form of callback registration.
+Fix the thermal throttle code in x86 by using this latter form of callback
+registration.
 
 Cc: Tony Luck <tony.luck@intel.com>
 Cc: Borislav Petkov <bp@alien8.de>
@@ -91,31 +93,29 @@ Cc: linux-edac@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpu/mcheck/mce.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/x86/kernel/cpu/mcheck/therm_throt.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
-index 4d5419b..9b7734b 100644
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -2434,14 +2434,18 @@ static __init int mcheck_init_device(void)
- 	if (err)
- 		return err;
+diff --git a/arch/x86/kernel/cpu/mcheck/therm_throt.c b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+index 3eec7de..e05dfa3 100644
+--- a/arch/x86/kernel/cpu/mcheck/therm_throt.c
++++ b/arch/x86/kernel/cpu/mcheck/therm_throt.c
+@@ -319,7 +319,7 @@ static __init int thermal_throttle_init_device(void)
+ 	if (!atomic_read(&therm_throt_en))
+ 		return 0;
  
+-	register_hotcpu_notifier(&thermal_throttle_cpu_notifier);
 +	cpu_notifier_register_begin();
- 	for_each_online_cpu(i) {
- 		err = mce_device_create(i);
--		if (err)
-+		if (err) {
-+			cpu_notifier_register_done();
- 			return err;
-+		}
- 	}
  
- 	register_syscore_ops(&mce_syscore_ops);
--	register_hotcpu_notifier(&mce_cpu_notifier);
-+	__register_hotcpu_notifier(&mce_cpu_notifier);
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&therm_cpu_lock);
+@@ -333,6 +333,9 @@ static __init int thermal_throttle_init_device(void)
+ 	mutex_unlock(&therm_cpu_lock);
+ #endif
+ 
++	__register_hotcpu_notifier(&thermal_throttle_cpu_notifier);
 +	cpu_notifier_register_done();
- 
- 	/* register character device /dev/mcelog */
- 	misc_register(&mce_chrdev_device);
++
+ 	return 0;
+ }
+ device_initcall(thermal_throttle_init_device);
