@@ -1,41 +1,46 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A9BDA2C0B3E
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:53 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 105332C0B9A
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:43:01 +1100 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:42:53 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E69C43578054
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:50 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKMfHF11796980
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:22:41 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKgnom001740
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:50 +1100
+ Tue, 11 Mar 2014 02:13:00 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E03A5394005B
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:12:57 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKh2Xi8913350
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:13:02 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKguVr008267
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:12:57 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 50/52] mm, zswap: Fix CPU hotplug callback registration
+Subject: [PATCH v3 51/52] net/core/flow.c: Fix CPU hotplug callback
+ registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:12:40 +0530
-Message-ID: <20140310204239.10746.94222.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:12:51 +0530
+Message-ID: <20140310204250.10746.61946.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linuxppc-dev@ozlabs.org,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
+ Li RongQing <roy.qing.li@gmail.com>, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Chris Metcalf <cmetcalf@tilera.com>,
+ "David S. Miller" <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
+ Sasha Levin <sasha.levin@oracle.com>,
+ Andrew Morton <akpm@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -76,40 +81,52 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the zswap code by using this latter form of callback registration.
+Fix the code in net/core/flow.c by using this latter form of callback
+registration.
 
+Cc: Li RongQing <roy.qing.li@gmail.com>
+Cc: Sasha Levin <sasha.levin@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Chris Metcalf <cmetcalf@tilera.com>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: linux-mm@kvack.org
+Cc: netdev@vger.kernel.org
+Acked-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- mm/zswap.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ net/core/flow.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/mm/zswap.c b/mm/zswap.c
-index e55bab9..d7337fb 100644
---- a/mm/zswap.c
-+++ b/mm/zswap.c
-@@ -387,18 +387,18 @@ static int zswap_cpu_init(void)
- {
- 	unsigned long cpu;
+diff --git a/net/core/flow.c b/net/core/flow.c
+index dfa602c..9a2151f 100644
+--- a/net/core/flow.c
++++ b/net/core/flow.c
+@@ -456,6 +456,8 @@ static int __init flow_cache_init(struct flow_cache *fc)
+ 	if (!fc->percpu)
+ 		return -ENOMEM;
  
--	get_online_cpus();
 +	cpu_notifier_register_begin();
- 	for_each_online_cpu(cpu)
- 		if (__zswap_cpu_notifier(CPU_UP_PREPARE, cpu) != NOTIFY_OK)
- 			goto cleanup;
--	register_cpu_notifier(&zswap_cpu_notifier_block);
--	put_online_cpus();
-+	__register_cpu_notifier(&zswap_cpu_notifier_block);
++
+ 	for_each_online_cpu(i) {
+ 		if (flow_cache_cpu_prepare(fc, i))
+ 			goto err;
+@@ -463,7 +465,9 @@ static int __init flow_cache_init(struct flow_cache *fc)
+ 	fc->hotcpu_notifier = (struct notifier_block){
+ 		.notifier_call = flow_cache_cpu,
+ 	};
+-	register_hotcpu_notifier(&fc->hotcpu_notifier);
++	__register_hotcpu_notifier(&fc->hotcpu_notifier);
++
 +	cpu_notifier_register_done();
- 	return 0;
  
- cleanup:
- 	for_each_online_cpu(cpu)
- 		__zswap_cpu_notifier(CPU_UP_CANCELED, cpu);
--	put_online_cpus();
+ 	setup_timer(&fc->rnd_timer, flow_cache_new_hashrnd,
+ 		    (unsigned long) fc);
+@@ -479,6 +483,8 @@ err:
+ 		fcp->hash_table = NULL;
+ 	}
+ 
 +	cpu_notifier_register_done();
- 	return -ENOMEM;
- }
++
+ 	free_percpu(fc->percpu);
+ 	fc->percpu = NULL;
  
