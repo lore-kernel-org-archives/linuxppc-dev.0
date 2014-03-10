@@ -1,42 +1,43 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 446AE2C06B0
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:28 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5535C2C064E
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:29 +1100 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:42:27 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 961D22BB0045
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:26 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKMHmk58523830
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:22:17 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKgPAd008294
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:26 +1100
+ Tue, 11 Mar 2014 06:42:29 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7543C2CE8051
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:56 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKLuH542270724
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:21:56 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKfsv2023953
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:56 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 48/52] profile: Fix CPU hotplug callback registration
+Subject: [PATCH v3 46/52] xen, balloon: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:12:08 +0530
-Message-ID: <20140310204207.10746.84822.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:11:45 +0530
+Message-ID: <20140310204144.10746.62444.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, Mauro Carvalho Chehab <mchehab@redhat.com>,
- linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Al Viro <viro@zeniv.linux.org.uk>,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, David Vrabel <david.vrabel@citrix.com>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
+ xen-devel@lists.xenproject.org, paulmck@linux.vnet.ibm.com,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -63,66 +64,112 @@ This is wrong, since it is prone to ABBA deadlocks involving the
 cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
 with CPU hotplug operations).
 
-Instead, the correct and race-free way of performing the callback
-registration is:
+The xen balloon driver doesn't take get/put_online_cpus() around this code,
+but that is also buggy, since it can miss CPU hotplug events in between the
+initialization and callback registration:
 
-	cpu_notifier_register_begin();
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+		   ^
+		   |  Race window; Can miss CPU hotplug events here.
+		   v
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+Interestingly, the balloon code in xen can simply be reorganized as shown
+below, to have a race-free method to register hotplug callbacks, without even
+taking get/put_online_cpus(). This is because the initialization performed for
+already online CPUs is exactly the same as that performed for CPUs that come
+online later. Moreover, the code has checks in place to avoid double
+initialization.
+
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+	get_online_cpus();
 
 	for_each_online_cpu(cpu)
 		init_cpu(cpu);
 
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
+	put_online_cpus();
 
-	cpu_notifier_register_done();
+A hotplug operation that occurs between registering the notifier and calling
+get_online_cpus(), won't disrupt anything, because the code takes care to
+perform the memory allocations only once.
 
+So reorganize the balloon code in xen this way to fix the issues with CPU
+hotplug callback registration.
 
-Fix the profile code by using this latter form of callback registration.
-
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: David Vrabel <david.vrabel@citrix.com>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: xen-devel@lists.xenproject.org
+Reviewed-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/profile.c |   20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
+ drivers/xen/balloon.c |   36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
 
-diff --git a/kernel/profile.c b/kernel/profile.c
-index 6631e1e..4c0cb95 100644
---- a/kernel/profile.c
-+++ b/kernel/profile.c
-@@ -591,18 +591,28 @@ out_cleanup:
- int __ref create_proc_profile(void) /* false positive from hotcpu_notifier */
- {
- 	struct proc_dir_entry *entry;
-+	int err = 0;
+diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+index 37d06ea..dd79549 100644
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -592,19 +592,29 @@ static void __init balloon_add_region(unsigned long start_pfn,
+ 	}
+ }
  
- 	if (!prof_on)
- 		return 0;
--	if (create_hash_tables())
--		return -ENOMEM;
++static int alloc_balloon_scratch_page(int cpu)
++{
++	if (per_cpu(balloon_scratch_page, cpu) != NULL)
++		return 0;
 +
-+	cpu_notifier_register_begin();
-+
-+	if (create_hash_tables()) {
-+		err = -ENOMEM;
-+		goto out;
++	per_cpu(balloon_scratch_page, cpu) = alloc_page(GFP_KERNEL);
++	if (per_cpu(balloon_scratch_page, cpu) == NULL) {
++		pr_warn("Failed to allocate balloon_scratch_page for cpu %d\n", cpu);
++		return -ENOMEM;
 +	}
 +
- 	entry = proc_create("profile", S_IWUSR | S_IRUGO,
- 			    NULL, &proc_profile_operations);
- 	if (!entry)
--		return 0;
-+		goto out;
- 	proc_set_size(entry, (1 + prof_len) * sizeof(atomic_t));
--	hotcpu_notifier(profile_cpu_callback, 0);
--	return 0;
-+	__hotcpu_notifier(profile_cpu_callback, 0);
++	return 0;
++}
 +
-+out:
-+	cpu_notifier_register_done();
-+	return err;
- }
- module_init(create_proc_profile);
- #endif /* CONFIG_PROC_FS */
++
+ static int balloon_cpu_notify(struct notifier_block *self,
+ 				    unsigned long action, void *hcpu)
+ {
+ 	int cpu = (long)hcpu;
+ 	switch (action) {
+ 	case CPU_UP_PREPARE:
+-		if (per_cpu(balloon_scratch_page, cpu) != NULL)
+-			break;
+-		per_cpu(balloon_scratch_page, cpu) = alloc_page(GFP_KERNEL);
+-		if (per_cpu(balloon_scratch_page, cpu) == NULL) {
+-			pr_warn("Failed to allocate balloon_scratch_page for cpu %d\n", cpu);
++		if (alloc_balloon_scratch_page(cpu))
+ 			return NOTIFY_BAD;
+-		}
+ 		break;
+ 	default:
+ 		break;
+@@ -624,15 +634,17 @@ static int __init balloon_init(void)
+ 		return -ENODEV;
+ 
+ 	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
+-		for_each_online_cpu(cpu)
+-		{
+-			per_cpu(balloon_scratch_page, cpu) = alloc_page(GFP_KERNEL);
+-			if (per_cpu(balloon_scratch_page, cpu) == NULL) {
+-				pr_warn("Failed to allocate balloon_scratch_page for cpu %d\n", cpu);
++		register_cpu_notifier(&balloon_cpu_notifier);
++
++		get_online_cpus();
++		for_each_online_cpu(cpu) {
++			if (alloc_balloon_scratch_page(cpu)) {
++				put_online_cpus();
++				unregister_cpu_notifier(&balloon_cpu_notifier);
+ 				return -ENOMEM;
+ 			}
+ 		}
+-		register_cpu_notifier(&balloon_cpu_notifier);
++		put_online_cpus();
+ 	}
+ 
+ 	pr_info("Initialising balloon driver\n");
