@@ -1,23 +1,38 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 7C4052C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Mar 2014 22:27:46 +1100 (EST)
-Message-ID: <531D9E3A.7040109@arm.com>
-Date: Mon, 10 Mar 2014 11:12:58 +0000
-From: Sudeep Holla <sudeep.holla@arm.com>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A8BE12C00B9
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:34:09 +1100 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 11 Mar 2014 06:34:07 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 538842CE8047
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:34:02 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKE21f9109854
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:14:02 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKY1Uc026379
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:34:02 +1100
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v3 00/52] CPU hotplug: Fix issues with callback registration
+To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
+ rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
+ akpm@linux-foundation.org
+Date: Tue, 11 Mar 2014 02:03:52 +0530
+Message-ID: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH RFC/RFT v3 6/9] powerpc: move cacheinfo sysfs to generic
- cacheinfo infrastructure
-References: <1392825976-17633-1-git-send-email-sudeep.holla@arm.com>
- <1392825976-17633-7-git-send-email-sudeep.holla@arm.com>
- <531945D1.7010503@linux.vnet.ibm.com> <531963D9.5040701@linux.vnet.ibm.com>
-In-Reply-To: <531963D9.5040701@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, srivatsa.bhat@linux.vnet.ibm.com, tj@kernel.org,
+ paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,250 +42,223 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anshuman,
+Hi,
 
-On 07/03/14 06:14, Anshuman Khandual wrote:
-> On 03/07/2014 09:36 AM, Anshuman Khandual wrote:
->> On 02/19/2014 09:36 PM, Sudeep Holla wrote:
->>> From: Sudeep Holla <sudeep.holla@arm.com>
->>>
->>> This patch removes the redundant sysfs cacheinfo code by making use of
->>> the newly introduced generic cacheinfo infrastructure.
->>>
->>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> Cc: Paul Mackerras <paulus@samba.org>
->>> Cc: linuxppc-dev@lists.ozlabs.org
->>> ---
->>>   arch/powerpc/kernel/cacheinfo.c | 831 ++++++-------------------------=
----------
->>>   arch/powerpc/kernel/cacheinfo.h |   8 -
->>>   arch/powerpc/kernel/sysfs.c     |   4 -
->>>   3 files changed, 109 insertions(+), 734 deletions(-)
->>>   delete mode 100644 arch/powerpc/kernel/cacheinfo.h
->>>
->>> diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cach=
-einfo.c
->>> index 2912b87..05b7580 100644
->>> --- a/arch/powerpc/kernel/cacheinfo.c
->>> +++ b/arch/powerpc/kernel/cacheinfo.c
->>> @@ -10,38 +10,10 @@
->>>    * 2 as published by the Free Software Foundation.
->>>    */
->>>
->>> +#include <linux/cacheinfo.h>
->>>   #include <linux/cpu.h>
->>> -#include <linux/cpumask.h>
->>>   #include <linux/kernel.h>
->>> -#include <linux/kobject.h>
->>> -#include <linux/list.h>
->>> -#include <linux/notifier.h>
->>>   #include <linux/of.h>
->>> -#include <linux/percpu.h>
->>> -#include <linux/slab.h>
->>> -#include <asm/prom.h>
->>> -
->>> -#include "cacheinfo.h"
->>> -
->>> -/* per-cpu object for tracking:
->>> - * - a "cache" kobject for the top-level directory
->>> - * - a list of "index" objects representing the cpu's local cache hier=
-archy
->>> - */
->>> -struct cache_dir {
->>> -=09struct kobject *kobj; /* bare (not embedded) kobject for cache
->>> -=09=09=09       * directory */
->>> -=09struct cache_index_dir *index; /* list of index objects */
->>> -};
->>> -
->>> -/* "index" object: each cpu's cache directory has an index
->>> - * subdirectory corresponding to a cache object associated with the
->>> - * cpu.  This object's lifetime is managed via the embedded kobject.
->>> - */
->>> -struct cache_index_dir {
->>> -=09struct kobject kobj;
->>> -=09struct cache_index_dir *next; /* next index in parent directory */
->>> -=09struct cache *cache;
->>> -};
->>>
->>>   /* Template for determining which OF properties to query for a given
->>>    * cache type */
->>> @@ -60,11 +32,6 @@ struct cache_type_info {
->>>   =09const char *nr_sets_prop;
->>>   };
->>>
->>> -/* These are used to index the cache_type_info array. */
->>> -#define CACHE_TYPE_UNIFIED     0
->>> -#define CACHE_TYPE_INSTRUCTION 1
->>> -#define CACHE_TYPE_DATA        2
->>> -
->>>   static const struct cache_type_info cache_type_info[] =3D {
->>>   =09{
->>>   =09=09/* PowerPC Processor binding says the [di]-cache-*
->>> @@ -77,246 +44,115 @@ static const struct cache_type_info cache_type_in=
-fo[] =3D {
->>>   =09=09.nr_sets_prop    =3D "d-cache-sets",
->>>   =09},
->>>   =09{
->>> -=09=09.name            =3D "Instruction",
->>> -=09=09.size_prop       =3D "i-cache-size",
->>> -=09=09.line_size_props =3D { "i-cache-line-size",
->>> -=09=09=09=09     "i-cache-block-size", },
->>> -=09=09.nr_sets_prop    =3D "i-cache-sets",
->>> -=09},
->>> -=09{
->>>   =09=09.name            =3D "Data",
->>>   =09=09.size_prop       =3D "d-cache-size",
->>>   =09=09.line_size_props =3D { "d-cache-line-size",
->>>   =09=09=09=09     "d-cache-block-size", },
->>>   =09=09.nr_sets_prop    =3D "d-cache-sets",
->>>   =09},
->>> +=09{
->>> +=09=09.name            =3D "Instruction",
->>> +=09=09.size_prop       =3D "i-cache-size",
->>> +=09=09.line_size_props =3D { "i-cache-line-size",
->>> +=09=09=09=09     "i-cache-block-size", },
->>> +=09=09.nr_sets_prop    =3D "i-cache-sets",
->>> +=09},
->>>   };
->>
->>
->> Hey Sudeep,
->>
->> After applying this patch, the cache_type_info array looks like this.
->>
->> static const struct cache_type_info cache_type_info[] =3D {
->>          {
->>                  /*
->>                   * PowerPC Processor binding says the [di]-cache-*
->>                   * must be equal on unified caches, so just use
->>                   * d-cache properties.
->>                   */
->>                  .name            =3D "Unified",
->>                  .size_prop       =3D "d-cache-size",
->>                  .line_size_props =3D { "d-cache-line-size",
->>                                       "d-cache-block-size", },
->>                  .nr_sets_prop    =3D "d-cache-sets",
->>          },
->>          {
->>                  .name            =3D "Data",
->>                  .size_prop       =3D "d-cache-size",
->>                  .line_size_props =3D { "d-cache-line-size",
->>                                       "d-cache-block-size", },
->>                  .nr_sets_prop    =3D "d-cache-sets",
->>          },
->>          {
->>                  .name            =3D "Instruction",
->>                  .size_prop       =3D "i-cache-size",
->>                  .line_size_props =3D { "i-cache-line-size",
->>                                       "i-cache-block-size", },
->>                  .nr_sets_prop    =3D "i-cache-sets",
->>          },
->> };
->>
->> and this function computes the the array index for any given cache type
->> define for PowerPC.
->>
->> static inline int get_cacheinfo_idx(enum cache_type type)
->> {
->>          if (type =3D=3D CACHE_TYPE_UNIFIED)
->>                  return 0;
->>          else
->>                  return type;
->> }
->>
->> These types are define in include/linux/cacheinfo.h as
->>
->> enum cache_type {
->>          CACHE_TYPE_NOCACHE =3D 0,
->>          CACHE_TYPE_INST =3D BIT(0),=09=09---> 1
->>          CACHE_TYPE_DATA =3D BIT(1),=09=09---> 2
->>          CACHE_TYPE_SEPARATE =3D CACHE_TYPE_INST | CACHE_TYPE_DATA,
->>          CACHE_TYPE_UNIFIED =3D BIT(2),
->> };
->>
->> When it is UNIFIED we return index 0, which is correct. But the index
->> for instruction and data cache seems to be swapped which wrong. This
->> will fetch invalid properties for any given cache type.
->>
+Many subsystems and drivers have the need to register CPU hotplug callbacks
+from their init routines and also perform initialization for the CPUs that are
+already online. But unfortunately there is no race-free way to achieve this
+today.
 
-Ah, that's silly mistake on my side, will fix it.
+For example, consider this piece of code:
 
->> I have done some initial review and testing for this patch's impact on
->> PowerPC (ppc64 POWER specifically). I am trying to do some code clean-up
->> and re-arrangements. Will post out soon. Thanks !
+	get_online_cpus();
 
-Thanks for taking time for testing and reviewing these patches.
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
 
->
-> It does not work correctly on POWER.
->
-> The new patchset adds some more attributes for every cache entry apart fr=
-om
-> what we used to have on PowerPC before. From the ABI perspective, the old=
- ones
-> should reflect the correct value in the same manner as before. Looks like
-> the generic code will make any attribute as "Unknown" if the arch code do=
-es
-> not populate them in the respective callback.
->
+	register_cpu_notifier(&foobar_cpu_notifier);
 
-Yes this is on my list, I need to avoid populating the sysfs files with=20
-"Unknown" as value, will do that in next version.
+	put_online_cpus();
 
-> Here are some problems found on a POWER7 system
->
-> (1) L1 instruction cache (cpu<N>/cache/index1/)
->
-> =09=3D=3D=3D=3D=3D=3D Before patch =3D=3D=3D=3D=3D=3D
->
-> =09coherency_line_size: =09128
-> =09level:=09=09=091
-> =09shared_cpu_map:=09=0900000000,00000000,00000000,00000000,00000000,0000=
-0000,00000000,00000000,00000000,
->          =09=09=0900000000,00000000,00000000,00000000,00000000,00000000,0=
-0000000,00000000,00000000,
-> =09=09=09=0900000000,00000000,00000000,00000000,00000000,00000000,0000000=
-0,00000000,00000000,
-> =09=09=09=0900000000,00000000,00000000,00000000,00000f00
-> =09size:=09=09=0932K
-> =09type:=09=09=09Instruction
->
-> =09=3D=3D=3D=3D=3D After patch =3D=3D=3D=3D=3D=3D=3D=3D
->
-> =09coherency_line_size:=09Unknown=09=09=09=09=09=09----> Wrong
-> =09level:=09=09=091
-> =09shared_cpu_map:=09=0900000000,00000000,00000000,00000000,00000000,0000=
-0000,00000000,00000000,00000000,
->          =09=09=0900000000,00000000,00000000,00000000,00000000,00000000,0=
-0000000,00000000,00000000,
-> =09=09=09=0900000000,00000000,00000000,00000000,00000000,00000000,0000000=
-0,00000000,00000000,
-> =09=09=09=0900000000,00000000,00000000,00000000,00ffffff=09----> Wrong
-> =09size:=09=09=090K=09=09=09=09=09=09----> Wrong
-> =09type:=09=09=09Instruction=09
->
-> (2) L3 cache (cpu<N>/cache/index3/)
->
-> =09=3D=3D=3D=3D=3D=3D Before patch =3D=3D=3D=3D=3D=3D
->
-> =09number_of_sets:=09=091
-> =09size:=09=09=094096K
-> =09ways_of_associativity:=090
->
-> =09=3D=3D=3D=3D=3D After patch =3D=3D=3D=3D=3D=3D=3D=3D
->
-> =09number_of_sets:=09=091
-> =09size:=09=09=094096K
-> =09ways_of_associativity:=09Unknown=09=09----> Wrong
->
-> Need to revisit this implementation on PowerPC and figure out the cause o=
-f these problems.
->
+This is not safe because there is a possibility of an ABBA deadlock involving
+the cpu_add_remove_lock and the cpu_hotplug.lock.
 
-Yes, based on the logs you have provided, I will check for the root=20
-cause of these issues. I will get back with questions if I need=20
-clarifications.
+          CPU 0                                         CPU 1
+          -----                                         -----
+
+   Acquire cpu_hotplug.lock
+   [via get_online_cpus()]
+
+                                              CPU online/offline operation
+                                              takes cpu_add_remove_lock
+                                              [via cpu_maps_update_begin()]
+
+   Try to acquire
+   cpu_add_remove_lock
+   [via register_cpu_notifier()]
+
+                                              CPU online/offline operation
+                                              tries to acquire cpu_hotplug.lock
+                                              [via cpu_hotplug_begin()]
+
+                            *** DEADLOCK! ***
+
+
+Other combinations of callback registration also don't work correctly.
+Examples:
+
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+	get_online_cpus();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	put_online_cpus();
+
+This can lead to double initialization if a hotplug operation occurs after
+registering the notifier and before invoking get_online_cpus().
+
+On the other hand, the following piece of code can miss hotplug events
+altogether:
+
+	get_online_cpus();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	put_online_cpus();
+              ^
+              |   Race window; Can miss hotplug events here
+              v
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+
+To solve these issues and provide a race-free method to register CPU hotplug
+callbacks, this patchset introduces new variants of the callback registration
+APIs that don't hold the cpu_add_remove_lock, and exports the
+cpu_add_remove_lock via 2 new APIs cpu_notifier_register_begin/done() for use
+by various subsystems. With this in place, the following code snippet will
+register a hotplug callback as well as initialize already online CPUs without
+any race conditions.
+
+	cpu_notifier_register_begin();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	/* This doesn't take the cpu_add_remove_lock */
+	__register_cpu_notifier(&foobar_cpu_notifier);
+
+	cpu_notifier_register_done();
+
+
+In this patchset, patch 1 adds lockdep annotations to catch the above mentioned
+deadlock scenario. Patch 2 introduces the new APIs and infrastructure necessary
+for race-free callback registration. The remaining patches perform tree-wide
+conversions (to use this model).
+
+This patchset has been hosted in the below git tree. It applies cleanly on
+v3.14-rc6.
+
+git://github.com/srivatsabhat/linux.git cpuhp-registration-fixes-v3
+
+
+Changes from v2:
+* Collected more Acks from subsystem maintainers.
+* Updated the xen-balloon patch and got Ack from Boris Ostrovsky.
+
+
+Gautham R. Shenoy (1):
+      CPU hotplug: Add lockdep annotations to get/put_online_cpus()
+
+Srivatsa S. Bhat (51):
+      CPU hotplug: Provide lockless versions of callback registration functions
+      Doc/cpu-hotplug: Specify race-free way to register CPU hotplug callbacks
+      CPU hotplug, perf: Fix CPU hotplug callback registration
+      ia64, salinfo: Fix hotplug callback registration
+      ia64, palinfo: Fix CPU hotplug callback registration
+      ia64, topology: Fix CPU hotplug callback registration
+      ia64, err-inject: Fix CPU hotplug callback registration
+      arm, hw-breakpoint: Fix CPU hotplug callback registration
+      arm, kvm: Fix CPU hotplug callback registration
+      s390, cacheinfo: Fix CPU hotplug callback registration
+      s390, smp: Fix CPU hotplug callback registration
+      sparc, sysfs: Fix CPU hotplug callback registration
+      powerpc, sysfs: Fix CPU hotplug callback registration
+      x86, msr: Fix CPU hotplug callback registration
+      x86, cpuid: Fix CPU hotplug callback registration
+      x86, vsyscall: Fix CPU hotplug callback registration
+      x86, intel, uncore: Fix CPU hotplug callback registration
+      x86, mce: Fix CPU hotplug callback registration
+      x86, therm_throt.c: Fix CPU hotplug callback registration
+      x86, therm_throt.c: Remove unused therm_cpu_lock
+      x86, amd, ibs: Fix CPU hotplug callback registration
+      x86, intel, cacheinfo: Fix CPU hotplug callback registration
+      x86, intel, rapl: Fix CPU hotplug callback registration
+      x86, amd, uncore: Fix CPU hotplug callback registration
+      x86, hpet: Fix CPU hotplug callback registration
+      x86, pci, amd-bus: Fix CPU hotplug callback registration
+      x86, oprofile, nmi: Fix CPU hotplug callback registration
+      x86, kvm: Fix CPU hotplug callback registration
+      arm64, hw_breakpoint.c: Fix CPU hotplug callback registration
+      arm64, debug-monitors: Fix CPU hotplug callback registration
+      powercap, intel-rapl: Fix CPU hotplug callback registration
+      scsi, bnx2i: Fix CPU hotplug callback registration
+      scsi, bnx2fc: Fix CPU hotplug callback registration
+      scsi, fcoe: Fix CPU hotplug callback registration
+      zsmalloc: Fix CPU hotplug callback registration
+      acpi-cpufreq: Fix CPU hotplug callback registration
+      drivers/base/topology.c: Fix CPU hotplug callback registration
+      clocksource, dummy-timer: Fix CPU hotplug callback registration
+      intel-idle: Fix CPU hotplug callback registration
+      oprofile, nmi-timer: Fix CPU hotplug callback registration
+      octeon, watchdog: Fix CPU hotplug callback registration
+      thermal, x86-pkg-temp: Fix CPU hotplug callback registration
+      hwmon, coretemp: Fix CPU hotplug callback registration
+      hwmon, via-cputemp: Fix CPU hotplug callback registration
+      xen, balloon: Fix CPU hotplug callback registration
+      trace, ring-buffer: Fix CPU hotplug callback registration
+      profile: Fix CPU hotplug callback registration
+      mm, vmstat: Fix CPU hotplug callback registration
+      mm, zswap: Fix CPU hotplug callback registration
+      net/core/flow.c: Fix CPU hotplug callback registration
+      net/iucv/iucv.c: Fix CPU hotplug callback registration
+
+ Documentation/cpu-hotplug.txt                 |   45 +++++++++
+ arch/arm/kernel/hw_breakpoint.c               |    8 +-
+ arch/arm/kvm/arm.c                            |    7 +
+ arch/arm64/kernel/debug-monitors.c            |    6 +
+ arch/arm64/kernel/hw_breakpoint.c             |    7 +
+ arch/ia64/kernel/err_inject.c                 |   15 +++
+ arch/ia64/kernel/palinfo.c                    |    6 +
+ arch/ia64/kernel/salinfo.c                    |    6 +
+ arch/ia64/kernel/topology.c                   |    6 +
+ arch/powerpc/kernel/sysfs.c                   |    8 +-
+ arch/s390/kernel/cache.c                      |    5 +
+ arch/s390/kernel/smp.c                        |   13 ++-
+ arch/sparc/kernel/sysfs.c                     |    6 +
+ arch/x86/kernel/cpu/intel_cacheinfo.c         |   13 ++-
+ arch/x86/kernel/cpu/mcheck/mce.c              |    8 +-
+ arch/x86/kernel/cpu/mcheck/therm_throt.c      |   18 +---
+ arch/x86/kernel/cpu/perf_event_amd_ibs.c      |    6 +
+ arch/x86/kernel/cpu/perf_event_amd_uncore.c   |    7 +
+ arch/x86/kernel/cpu/perf_event_intel_rapl.c   |    9 +-
+ arch/x86/kernel/cpu/perf_event_intel_uncore.c |    6 +
+ arch/x86/kernel/cpuid.c                       |   15 ++-
+ arch/x86/kernel/hpet.c                        |    4 +
+ arch/x86/kernel/msr.c                         |   16 ++-
+ arch/x86/kernel/vsyscall_64.c                 |    6 +
+ arch/x86/kvm/x86.c                            |    7 +
+ arch/x86/oprofile/nmi_int.c                   |   15 +++
+ arch/x86/pci/amd_bus.c                        |    5 +
+ drivers/base/topology.c                       |   12 ++
+ drivers/clocksource/dummy_timer.c             |   11 ++
+ drivers/cpufreq/acpi-cpufreq.c                |    7 +
+ drivers/hwmon/coretemp.c                      |   14 +--
+ drivers/hwmon/via-cputemp.c                   |   14 +--
+ drivers/idle/intel_idle.c                     |   12 ++
+ drivers/oprofile/nmi_timer_int.c              |   23 +++--
+ drivers/powercap/intel_rapl.c                 |   10 ++
+ drivers/scsi/bnx2fc/bnx2fc_fcoe.c             |   12 ++
+ drivers/scsi/bnx2i/bnx2i_init.c               |   12 ++
+ drivers/scsi/fcoe/fcoe.c                      |   15 +++
+ drivers/thermal/x86_pkg_temp_thermal.c        |   14 +--
+ drivers/watchdog/octeon-wdt-main.c            |   11 ++
+ drivers/xen/balloon.c                         |   36 +++++--
+ include/linux/cpu.h                           |   47 ++++++++++
+ include/linux/perf_event.h                    |   16 +++
+ kernel/cpu.c                                  |   38 +++++++-
+ kernel/profile.c                              |   20 +++-
+ kernel/trace/ring_buffer.c                    |   19 ++--
+ mm/vmstat.c                                   |    6 +
+ mm/zsmalloc.c                                 |   17 +++-
+ mm/zswap.c                                    |    8 +-
+ net/core/flow.c                               |    8 +-
+ net/iucv/iucv.c                               |  121 ++++++++++++-------------
+ 51 files changed, 550 insertions(+), 226 deletions(-)
+
 
 Regards,
-Sudeep
+Srivatsa S. Bhat
+IBM Linux Technology Center
