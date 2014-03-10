@@ -1,30 +1,30 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3F24A2C0177
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 22:11:34 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DC9DB2C018E
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 22:11:35 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 10 Mar 2014 16:41:28 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7F261125805D
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:43:38 +0530 (IST)
+ Mon, 10 Mar 2014 16:41:26 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2B89E3940061
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:24 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2ABBTmF2228598
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:29 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2ABBK3W23330944
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:21 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2ABBOEG003425
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:25 +0530
+ s2ABBMZ8003264
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:22 +0530
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 6/6] powernv:cpufreq: Implement the driver->get() method
-Date: Mon, 10 Mar 2014 16:41:01 +0530
-Message-Id: <1394449861-8688-7-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v2 4/6] powernv:cpufreq: Create pstate_id_to_freq() helper
+Date: Mon, 10 Mar 2014 16:40:59 +0530
+Message-Id: <1394449861-8688-5-git-send-email-ego@linux.vnet.ibm.com>
 In-Reply-To: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
 Cc: srivatsa.bhat@linux.vnet.ibm.com,
@@ -40,86 +40,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-The current frequency of a cpu is reported through the sysfs file
-cpuinfo_cur_freq. This requires the driver to implement a
-"->get(unsigned int cpu)" method which will return the current
-operating frequency.
+Create a helper routine that can return the cpu-frequency for the
+corresponding pstate_id.
 
-Implement a function named powernv_cpufreq_get() which reads the local
-pstate from the PMSR and returns the corresponding frequency.
-
-Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
+Also, cache the values of the pstate_max, pstate_min and
+pstate_nominal and nr_pstates in a static structure so that they can
+be reused in the future to perform any validations.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 48 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+ drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 183bbc4..6f3b6e1 100644
+index 4c2e8ca..0ecd163 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -223,6 +223,53 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
- 	BUG();
+@@ -39,6 +39,14 @@ static DEFINE_PER_CPU(struct mutex, freq_switch_lock);
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+ static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
+ 
++struct powernv_pstate_info {
++	int pstate_min_id;
++	int pstate_max_id;
++	int pstate_nominal_id;
++	int nr_pstates;
++};
++static struct powernv_pstate_info powernv_pstate_info;
++
+ /*
+  * Initialize the freq table based on data obtained
+  * from the firmware passed via device-tree
+@@ -112,9 +120,28 @@ static int init_powernv_pstates(void)
+ 	for (i = 0; powernv_freqs[i].frequency != CPUFREQ_TABLE_END; i++)
+ 		pr_debug("%d: %d\n", i, powernv_freqs[i].frequency);
+ 
++	powernv_pstate_info.pstate_min_id = pstate_min;
++	powernv_pstate_info.pstate_max_id = pstate_max;
++	powernv_pstate_info.pstate_nominal_id = pstate_nominal;
++	powernv_pstate_info.nr_pstates = nr_pstates;
++
+ 	return 0;
  }
  
-+/*
-+ * Computes the current frequency on this cpu
-+ * and stores the result in *ret_freq.
++/**
++ * Returns the cpu frequency corresponding to the pstate_id.
 + */
-+static void powernv_read_cpu_freq(void *ret_freq)
++static unsigned int pstate_id_to_freq(int pstate_id)
 +{
-+	unsigned long pmspr_val;
-+	s8 local_pstate_id;
-+	int *cur_freq, freq, pstate_id;
++	int i;
 +
-+	cur_freq = (int *)ret_freq;
-+	pmspr_val = get_pmspr(SPRN_PMSR);
++	i = powernv_pstate_info.pstate_max_id - pstate_id;
 +
-+	/* The local pstate id corresponds bits 48..55 in the PMSR.
-+         * Note: Watch out for the sign! */
-+	local_pstate_id = (pmspr_val >> 48) & 0xFF;
-+	pstate_id = local_pstate_id;
-+
-+	freq = pstate_id_to_freq(pstate_id);
-+	pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
-+		smp_processor_id(), pmspr_val, pstate_id, freq);
-+	*cur_freq = freq;
++	BUG_ON(i >= powernv_pstate_info.nr_pstates || i < 0);
++	WARN_ON(powernv_pstate_ids[i] != pstate_id);
++	return powernv_freqs[i].frequency;
 +}
 +
-+/*
-+ * Returns the cpu frequency as reported by the firmware for 'cpu'.
-+ * This value is reported through the sysfs file cpuinfo_cur_freq.
-+ */
-+unsigned int powernv_cpufreq_get(unsigned int cpu)
-+{
-+	int ret_freq;
-+	cpumask_var_t sibling_mask;
-+
-+	if (unlikely(!zalloc_cpumask_var(&sibling_mask, GFP_KERNEL))) {
-+		smp_call_function_single(cpu, powernv_read_cpu_freq,
-+					&ret_freq, 1);
-+		return ret_freq;
-+	}
-+
-+	powernv_cpu_to_core_mask(cpu, sibling_mask);
-+	smp_call_function_any(sibling_mask, powernv_read_cpu_freq,
-+			&ret_freq, 1);
-+
-+	free_cpumask_var(sibling_mask);
-+	return ret_freq;
-+}
-+
- static void set_pstate(void *pstate)
- {
- 	unsigned long val;
-@@ -309,6 +356,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.verify		= powernv_cpufreq_verify,
- 	.target		= powernv_cpufreq_target,
-+	.get		= powernv_cpufreq_get,
- 	.init		= powernv_cpufreq_cpu_init,
- 	.exit		= powernv_cpufreq_cpu_exit,
- 	.name		= "powernv-cpufreq",
+ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	NULL,
 -- 
 1.8.3.1
