@@ -2,31 +2,31 @@ Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
 Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 155A72C090D
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:50 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 096182C05C5
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:55 +1100 (EST)
 Received: from /spool/local
  by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:09:49 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1D1FD394004E
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:46 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKdgTC59506880
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:42 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKdiwp018127
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:45 +0530
+ Tue, 11 Mar 2014 02:09:54 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id E88ACE0053
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:13:36 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKdnhY27656268
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:49 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKdoaX000614
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:52 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 33/52] scsi, bnx2i: Fix CPU hotplug callback registration
+Subject: [PATCH v3 34/52] scsi, bnx2fc: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:09:39 +0530
-Message-ID: <20140310203938.10746.18579.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:09:45 +0530
+Message-ID: <20140310203945.10746.2812.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -78,7 +78,8 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the bnx2i code in scsi by using this latter form of callback registration.
+Fix the bnx2fc code in scsi by using this latter form of callback
+registration.
 
 Cc: Eddie Wai <eddie.wai@broadcom.com>
 Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
@@ -87,44 +88,47 @@ Cc: linux-scsi@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/scsi/bnx2i/bnx2i_init.c |   12 ++++++++++--
+ drivers/scsi/bnx2fc/bnx2fc_fcoe.c |   12 ++++++++++--
  1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/bnx2i/bnx2i_init.c b/drivers/scsi/bnx2i/bnx2i_init.c
-index 34c294b..80c03b4 100644
---- a/drivers/scsi/bnx2i/bnx2i_init.c
-+++ b/drivers/scsi/bnx2i/bnx2i_init.c
-@@ -537,11 +537,15 @@ static int __init bnx2i_mod_init(void)
- 		p->iothread = NULL;
+diff --git a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
+index 9b94850..c4ec235 100644
+--- a/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
++++ b/drivers/scsi/bnx2fc/bnx2fc_fcoe.c
+@@ -2586,12 +2586,16 @@ static int __init bnx2fc_mod_init(void)
+ 		spin_lock_init(&p->fp_work_lock);
  	}
  
 +	cpu_notifier_register_begin();
 +
- 	for_each_online_cpu(cpu)
- 		bnx2i_percpu_thread_create(cpu);
+ 	for_each_online_cpu(cpu) {
+ 		bnx2fc_percpu_thread_create(cpu);
+ 	}
  
  	/* Initialize per CPU interrupt thread */
--	register_hotcpu_notifier(&bnx2i_cpu_notifier);
-+	__register_hotcpu_notifier(&bnx2i_cpu_notifier);
+-	register_hotcpu_notifier(&bnx2fc_cpu_notifier);
++	__register_hotcpu_notifier(&bnx2fc_cpu_notifier);
 +
 +	cpu_notifier_register_done();
  
- 	return 0;
+ 	cnic_register_driver(CNIC_ULP_FCOE, &bnx2fc_cnic_cb);
  
-@@ -581,11 +585,15 @@ static void __exit bnx2i_mod_exit(void)
- 	}
- 	mutex_unlock(&bnx2i_dev_lock);
+@@ -2656,13 +2660,17 @@ static void __exit bnx2fc_mod_exit(void)
+ 	if (l2_thread)
+ 		kthread_stop(l2_thread);
  
--	unregister_hotcpu_notifier(&bnx2i_cpu_notifier);
+-	unregister_hotcpu_notifier(&bnx2fc_cpu_notifier);
 +	cpu_notifier_register_begin();
  
- 	for_each_online_cpu(cpu)
- 		bnx2i_percpu_thread_destroy(cpu);
+ 	/* Destroy per cpu threads */
+ 	for_each_online_cpu(cpu) {
+ 		bnx2fc_percpu_thread_destroy(cpu);
+ 	}
  
-+	__unregister_hotcpu_notifier(&bnx2i_cpu_notifier);
++	__unregister_hotcpu_notifier(&bnx2fc_cpu_notifier);
 +
 +	cpu_notifier_register_done();
 +
- 	iscsi_unregister_transport(&bnx2i_iscsi_transport);
- 	cnic_unregister_driver(CNIC_ULP_ISCSI);
- }
+ 	destroy_workqueue(bnx2fc_wq);
+ 	/*
+ 	 * detach from scsi transport
