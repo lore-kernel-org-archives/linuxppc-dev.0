@@ -1,41 +1,41 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A895B2C06E3
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:00 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 54AB42C0730
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:11 +1100 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:38:00 +1000
+ Tue, 11 Mar 2014 06:38:11 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8EED32CE8046
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:57 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 244F52BB0052
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:09 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKHvtC60424348
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:17:57 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKbtT1007556
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:57 +1100
+ s2AKI8td5767448
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:18:08 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKc7k2029852
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:08 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 22/52] x86, amd, ibs: Fix CPU hotplug callback registration
+Subject: [PATCH v3 23/52] x86, intel,
+ cacheinfo: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:07:45 +0530
-Message-ID: <20140310203744.10746.96582.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:07:57 +0530
+Message-ID: <20140310203757.10746.76090.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- x86@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Borislav Petkov <bp@suse.de>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
  "H. Peter Anvin" <hpa@zytor.com>, tj@kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
@@ -80,40 +80,51 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the amd-ibs code in x86 by using this latter form of callback
+Fix the intel cacheinfo code in x86 by using this latter form of callback
 registration.
 
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@kernel.org>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: x86@kernel.org
+Cc: Borislav Petkov <bp@suse.de>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpu/perf_event_amd_ibs.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event_amd_ibs.c b/arch/x86/kernel/cpu/perf_event_amd_ibs.c
-index 4b8e4d3..4c36bbe 100644
---- a/arch/x86/kernel/cpu/perf_event_amd_ibs.c
-+++ b/arch/x86/kernel/cpu/perf_event_amd_ibs.c
-@@ -926,13 +926,13 @@ static __init int amd_ibs_init(void)
- 		goto out;
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index 0641113..a952e9c 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -1225,21 +1225,24 @@ static struct notifier_block cacheinfo_cpu_notifier = {
  
- 	perf_ibs_pm_init();
--	get_online_cpus();
+ static int __init cache_sysfs_init(void)
+ {
+-	int i;
++	int i, err = 0;
+ 
+ 	if (num_cache_leaves == 0)
+ 		return 0;
+ 
 +	cpu_notifier_register_begin();
- 	ibs_caps = caps;
- 	/* make ibs_caps visible to other cpus: */
- 	smp_mb();
--	perf_cpu_notifier(perf_ibs_cpu_notifier);
- 	smp_call_function(setup_APIC_ibs, NULL, 1);
--	put_online_cpus();
-+	__perf_cpu_notifier(perf_ibs_cpu_notifier);
-+	cpu_notifier_register_done();
+ 	for_each_online_cpu(i) {
+-		int err;
+ 		struct device *dev = get_cpu_device(i);
  
- 	ret = perf_event_ibs_init();
- out:
+ 		err = cache_add_dev(dev);
+ 		if (err)
+-			return err;
++			goto out;
+ 	}
+-	register_hotcpu_notifier(&cacheinfo_cpu_notifier);
+-	return 0;
++	__register_hotcpu_notifier(&cacheinfo_cpu_notifier);
++
++out:
++	cpu_notifier_register_done();
++	return err;
+ }
+ 
+ device_initcall(cache_sysfs_init);
