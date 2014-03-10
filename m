@@ -1,32 +1,32 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B279C2C025E
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:36:57 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0B8A72C023E
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:00 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:06:55 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 58C85E0044
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:38 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKammD5243066
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:50 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKandD012272
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:50 +0530
+ Tue, 11 Mar 2014 02:06:59 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4B678E0053
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:42 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKb0mH45154462
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:01 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKatpF008389
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:57 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 16/52] x86, cpuid: Fix CPU hotplug callback registration
+Subject: [PATCH v3 17/52] x86, vsyscall: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:06:44 +0530
-Message-ID: <20140310203644.10746.75727.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:06:50 +0530
+Message-ID: <20140310203650.10746.63031.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -78,64 +78,35 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the cpuid code in x86 by using this latter form of callback registration.
+Fix the vsyscall code in x86 by using this latter form of callback
+registration.
 
-Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: x86@kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpuid.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ arch/x86/kernel/vsyscall_64.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/cpuid.c b/arch/x86/kernel/cpuid.c
-index 7d9481c..3225ae6c 100644
---- a/arch/x86/kernel/cpuid.c
-+++ b/arch/x86/kernel/cpuid.c
-@@ -198,14 +198,15 @@ static int __init cpuid_init(void)
- 		goto out_chrdev;
- 	}
- 	cpuid_class->devnode = cpuid_devnode;
--	get_online_cpus();
-+
-+	cpu_notifier_register_begin();
- 	for_each_online_cpu(i) {
- 		err = cpuid_device_create(i);
- 		if (err != 0)
- 			goto out_class;
- 	}
--	register_hotcpu_notifier(&cpuid_class_cpu_notifier);
--	put_online_cpus();
-+	__register_hotcpu_notifier(&cpuid_class_cpu_notifier);
-+	cpu_notifier_register_done();
- 
- 	err = 0;
- 	goto out;
-@@ -215,7 +216,7 @@ out_class:
- 	for_each_online_cpu(i) {
- 		cpuid_device_destroy(i);
- 	}
--	put_online_cpus();
-+	cpu_notifier_register_done();
- 	class_destroy(cpuid_class);
- out_chrdev:
- 	__unregister_chrdev(CPUID_MAJOR, 0, NR_CPUS, "cpu/cpuid");
-@@ -227,13 +228,13 @@ static void __exit cpuid_exit(void)
+diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
+index 1f96f93..556eaf2 100644
+--- a/arch/x86/kernel/vsyscall_64.c
++++ b/arch/x86/kernel/vsyscall_64.c
+@@ -393,9 +393,13 @@ static int __init vsyscall_init(void)
  {
- 	int cpu = 0;
+ 	BUG_ON(VSYSCALL_ADDR(0) != __fix_to_virt(VSYSCALL_FIRST_PAGE));
  
--	get_online_cpus();
 +	cpu_notifier_register_begin();
- 	for_each_online_cpu(cpu)
- 		cpuid_device_destroy(cpu);
- 	class_destroy(cpuid_class);
- 	__unregister_chrdev(CPUID_MAJOR, 0, NR_CPUS, "cpu/cpuid");
--	unregister_hotcpu_notifier(&cpuid_class_cpu_notifier);
--	put_online_cpus();
-+	__unregister_hotcpu_notifier(&cpuid_class_cpu_notifier);
++
+ 	on_each_cpu(cpu_vsyscall_init, NULL, 1);
+ 	/* notifier priority > KVM */
+-	hotcpu_notifier(cpu_vsyscall_notifier, 30);
++	__hotcpu_notifier(cpu_vsyscall_notifier, 30);
++
 +	cpu_notifier_register_done();
- }
  
- module_init(cpuid_init);
+ 	return 0;
+ }
