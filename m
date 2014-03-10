@@ -1,43 +1,44 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DFC5A2C02E8
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:41 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A49B22C0105
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:54 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:35:41 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 84D5A2CE8047
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKFTdo58523744
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:15:29 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKZano001802
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:38 +1100
+ Tue, 11 Mar 2014 02:05:52 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E82D23940023
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:05:50 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKZk4Q2359750
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:05:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKZj95025505
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:05:47 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 09/52] arm,
- hw-breakpoint: Fix CPU hotplug callback registration
+Subject: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:05:21 +0530
-Message-ID: <20140310203521.10746.47464.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:05:38 +0530
+Message-ID: <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- tj@kernel.org, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+ Russell King <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
+ linux-pm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
+ linux-kernel@vger.kernel.org, kvmarm@lists.cs.columbia.edu,
+ linuxppc-dev@ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, paulmck@linux.vnet.ibm.com,
+ Ingo Molnar <mingo@kernel.org>, Christoffer Dall <christoffer.dall@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -78,49 +79,51 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the hw-breakpoint code in arm by using this latter form of callback
-registration.
+Fix the kvm code in arm by using this latter form of callback registration.
 
+Cc: Christoffer Dall <christoffer.dall@linaro.org>
+Cc: Gleb Natapov <gleb@kernel.org>
 Cc: Russell King <linux@arm.linux.org.uk>
 Cc: Ingo Molnar <mingo@kernel.org>
+Cc: kvmarm@lists.cs.columbia.edu
+Cc: kvm@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org
-Acked-by: Will Deacon <will.deacon@arm.com>
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/arm/kernel/hw_breakpoint.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/arm/kvm/arm.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/kernel/hw_breakpoint.c b/arch/arm/kernel/hw_breakpoint.c
-index 3d44660..3702de8 100644
---- a/arch/arm/kernel/hw_breakpoint.c
-+++ b/arch/arm/kernel/hw_breakpoint.c
-@@ -1072,6 +1072,8 @@ static int __init arch_hw_breakpoint_init(void)
- 	core_num_brps = get_num_brps();
- 	core_num_wrps = get_num_wrps();
+diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+index bd18bb8..f0e50a0 100644
+--- a/arch/arm/kvm/arm.c
++++ b/arch/arm/kvm/arm.c
+@@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
+ 		}
+ 	}
  
 +	cpu_notifier_register_begin();
 +
- 	/*
- 	 * We need to tread carefully here because DBGSWENABLE may be
- 	 * driven low on this core and there isn't an architected way to
-@@ -1088,6 +1090,7 @@ static int __init arch_hw_breakpoint_init(void)
- 	if (!cpumask_empty(&debug_err_mask)) {
- 		core_num_brps = 0;
- 		core_num_wrps = 0;
-+		cpu_notifier_register_done();
- 		return 0;
+ 	err = init_hyp_mode();
+ 	if (err)
+ 		goto out_err;
+ 
+-	err = register_cpu_notifier(&hyp_init_cpu_nb);
++	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+ 	if (err) {
+ 		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+ 		goto out_err;
  	}
  
-@@ -1107,7 +1110,10 @@ static int __init arch_hw_breakpoint_init(void)
- 			TRAP_HWBKPT, "breakpoint debug exception");
- 
- 	/* Register hotplug and PM notifiers. */
--	register_cpu_notifier(&dbg_reset_nb);
-+	__register_cpu_notifier(&dbg_reset_nb);
-+
 +	cpu_notifier_register_done();
 +
- 	pm_init();
+ 	hyp_cpu_pm_init();
+ 
+ 	kvm_coproc_table_init();
  	return 0;
+ out_err:
++	cpu_notifier_register_done();
+ 	return err;
  }
+ 
