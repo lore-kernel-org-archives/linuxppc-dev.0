@@ -1,33 +1,33 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 720372C0125
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 22:11:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BD2802C010F
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 22:11:28 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Mon, 10 Mar 2014 16:41:26 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 2997D394005E
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:24 +0530 (IST)
+ Mon, 10 Mar 2014 16:41:21 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 33CBBE0059
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:45:02 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2ABBS2R10158338
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:28 +0530
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2ABBE1C10617246
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:14 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2ABBN5k003332
- for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:23 +0530
+ s2ABBGnE002769
+ for <linuxppc-dev@ozlabs.org>; Mon, 10 Mar 2014 16:41:16 +0530
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 5/6] powernv:cpufreq: Export nominal frequency via sysfs.
-Date: Mon, 10 Mar 2014 16:41:00 +0530
-Message-Id: <1394449861-8688-6-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [PATCH v2 1/6] powernv: cpufreq driver for powernv platform
+Date: Mon, 10 Mar 2014 16:40:56 +0530
+Message-Id: <1394449861-8688-2-git-send-email-ego@linux.vnet.ibm.com>
 In-Reply-To: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
-Cc: srivatsa.bhat@linux.vnet.ibm.com,
+Cc: Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com,
  "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,56 +38,390 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Create a driver attribute named cpuinfo_nominal_freq which
-creates a sysfs read-only file named cpuinfo_nominal_freq. Export
-the frequency corresponding to the nominal_pstate through this
-interface.
+Backend driver to dynamically set voltage and frequency on
+IBM POWER non-virtualized platforms.  Power management SPRs
+are used to set the required PState.
 
-Nominal frequency is the highest non-turbo frequency for the
-platform.  This is generally used for setting governor policies from
-user space for optimal energy efficiency.
+This driver works in conjunction with cpufreq governors
+like 'ondemand' to provide a demand based frequency and
+voltage setting on IBM POWER non-virtualized platforms.
 
+PState table is obtained from OPAL v3 firmware through device
+tree.
+
+powernv_cpufreq back-end driver would parse the relevant device-tree
+nodes and initialise the cpufreq subsystem on powernv platform.
+
+Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ arch/powerpc/include/asm/reg.h         |   4 +
+ arch/powerpc/platforms/powernv/Kconfig |   1 +
+ drivers/cpufreq/Kconfig                |   1 +
+ drivers/cpufreq/Kconfig.powerpc        |  13 ++
+ drivers/cpufreq/Makefile               |   1 +
+ drivers/cpufreq/powernv-cpufreq.c      | 277 +++++++++++++++++++++++++++++++++
+ 6 files changed, 297 insertions(+)
+ create mode 100644 drivers/cpufreq/powernv-cpufreq.c
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 0ecd163..183bbc4 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -142,8 +142,30 @@ static unsigned int pstate_id_to_freq(int pstate_id)
- 	return powernv_freqs[i].frequency;
- }
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 90c06ec..84f92ca 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -271,6 +271,10 @@
+ #define SPRN_HSRR1	0x13B	/* Hypervisor Save/Restore 1 */
+ #define SPRN_IC		0x350	/* Virtual Instruction Count */
+ #define SPRN_VTB	0x351	/* Virtual Time Base */
++#define SPRN_PMICR	0x354   /* Power Management Idle Control Reg */
++#define SPRN_PMSR	0x355   /* Power Management Status Reg */
++#define SPRN_PMCR	0x374	/* Power Management Control Register */
++
+ /* HFSCR and FSCR bit numbers are the same */
+ #define FSCR_TAR_LG	8	/* Enable Target Address Register */
+ #define FSCR_EBB_LG	7	/* Enable Event Based Branching */
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 895e8a2..1fe12b1 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -11,6 +11,7 @@ config PPC_POWERNV
+ 	select PPC_UDBG_16550
+ 	select PPC_SCOM
+ 	select ARCH_RANDOM
++	select CPU_FREQ
+ 	default y
  
-+/**
-+ * show_cpuinfo_nominal_freq - Show the nominal CPU frequency as indicated by
-+ * the firmware
+ config PPC_POWERNV_RTAS
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 4b029c0..4ba1632 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -48,6 +48,7 @@ config CPU_FREQ_STAT_DETAILS
+ choice
+ 	prompt "Default CPUFreq governor"
+ 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
++	default CPU_FREQ_DEFAULT_GOV_ONDEMAND if POWERNV_CPUFREQ
+ 	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+ 	help
+ 	  This option sets which CPUFreq governor shall be loaded at
+diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+index ca0021a..93f8689 100644
+--- a/drivers/cpufreq/Kconfig.powerpc
++++ b/drivers/cpufreq/Kconfig.powerpc
+@@ -54,3 +54,16 @@ config PPC_PASEMI_CPUFREQ
+ 	help
+ 	  This adds the support for frequency switching on PA Semi
+ 	  PWRficient processors.
++
++config POWERNV_CPUFREQ
++       tristate "CPU frequency scaling for IBM POWERNV platform"
++       depends on PPC_POWERNV
++       select CPU_FREQ_GOV_PERFORMANCE
++       select CPU_FREQ_GOV_POWERSAVE
++       select CPU_FREQ_GOV_USERSPACE
++       select CPU_FREQ_GOV_ONDEMAND
++       select CPU_FREQ_GOV_CONSERVATIVE
++       default y
++       help
++	 This adds support for CPU frequency switching on IBM POWERNV
++	 platform
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 7494565..0dbb963 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -86,6 +86,7 @@ obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
+ obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
+ obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
+ obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
++obj-$(CONFIG_POWERNV_CPUFREQ)		+= powernv-cpufreq.o
+ 
+ ##################################################################################
+ # Other platform drivers
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+new file mode 100644
+index 0000000..ab1551f
+--- /dev/null
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -0,0 +1,277 @@
++/*
++ * POWERNV cpufreq driver for the IBM POWER processors
++ *
++ * (C) Copyright IBM 2014
++ *
++ * Author: Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
 + */
-+static ssize_t show_cpuinfo_nominal_freq(struct cpufreq_policy *policy,
-+					char *buf)
++
++#define pr_fmt(fmt)	"powernv-cpufreq: " fmt
++
++#include <linux/module.h>
++#include <linux/cpufreq.h>
++#include <linux/of.h>
++#include <asm/cputhreads.h>
++
++/* FIXME: Make this per-core */
++static DEFINE_MUTEX(freq_switch_mutex);
++
++#define POWERNV_MAX_PSTATES	256
++
++static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
++static int powernv_pstate_ids[POWERNV_MAX_PSTATES+1];
++
++/*
++ * Initialize the freq table based on data obtained
++ * from the firmware passed via device-tree
++ */
++
++static int init_powernv_pstates(void)
 +{
-+	int nominal_freq;
-+	nominal_freq = pstate_id_to_freq(powernv_pstate_info.pstate_nominal_id);
-+	return sprintf(buf, "%u\n", nominal_freq);
++	struct device_node *power_mgt;
++	int nr_pstates = 0;
++	int pstate_min, pstate_max, pstate_nominal;
++	const __be32 *pstate_ids, *pstate_freqs;
++	int i;
++	u32 len_ids, len_freqs;
++
++	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
++	if (!power_mgt) {
++		pr_warn("power-mgt node not found\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-min", &pstate_min)) {
++		pr_warn("ibm,pstate-min node not found\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-max", &pstate_max)) {
++		pr_warn("ibm,pstate-max node not found\n");
++		return -ENODEV;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-nominal",
++				 &pstate_nominal)) {
++		pr_warn("ibm,pstate-nominal not found\n");
++		return -ENODEV;
++	}
++	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
++		pstate_nominal, pstate_max);
++
++	pstate_ids = of_get_property(power_mgt, "ibm,pstate-ids", &len_ids);
++	if (!pstate_ids) {
++		pr_warn("ibm,pstate-ids not found\n");
++		return -ENODEV;
++	}
++
++	pstate_freqs = of_get_property(power_mgt, "ibm,pstate-frequencies-mhz",
++				      &len_freqs);
++	if (!pstate_freqs) {
++		pr_warn("ibm,pstate-frequencies-mhz not found\n");
++		return -ENODEV;
++	}
++
++	WARN_ON(len_ids != len_freqs);
++	nr_pstates = min(len_ids, len_freqs) / sizeof(u32);
++	WARN_ON(!nr_pstates);
++
++	pr_debug("NR PStates %d\n", nr_pstates);
++	for (i = 0; i < nr_pstates; i++) {
++		u32 id = be32_to_cpu(pstate_ids[i]);
++		u32 freq = be32_to_cpu(pstate_freqs[i]);
++
++		pr_debug("PState id %d freq %d MHz\n", id, freq);
++		powernv_freqs[i].driver_data = i;
++		powernv_freqs[i].frequency = freq * 1000; /* kHz */
++		powernv_pstate_ids[i] = id;
++	}
++	/* End of list marker entry */
++	powernv_freqs[i].driver_data = 0;
++	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
++
++	/* Print frequency table */
++	for (i = 0; powernv_freqs[i].frequency != CPUFREQ_TABLE_END; i++)
++		pr_debug("%d: %d\n", i, powernv_freqs[i].frequency);
++
++	return 0;
 +}
 +
-+
-+struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq = {
-+	.attr = { .name = "cpuinfo_nominal_freq",
-+		  .mode = 0444,
-+		},
-+	.show = show_cpuinfo_nominal_freq,
++static struct freq_attr *powernv_cpu_freq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,
 +};
 +
++/* Helper routines */
 +
- static struct freq_attr *powernv_cpu_freq_attr[] = {
- 	&cpufreq_freq_attr_scaling_available_freqs,
-+	&cpufreq_freq_attr_cpuinfo_nominal_freq,
- 	NULL,
- };
- 
++/* Access helpers to power mgt SPR */
++
++static inline unsigned long get_pmspr(unsigned long sprn)
++{
++	switch (sprn) {
++	case SPRN_PMCR:
++		return mfspr(SPRN_PMCR);
++
++	case SPRN_PMICR:
++		return mfspr(SPRN_PMICR);
++
++	case SPRN_PMSR:
++		return mfspr(SPRN_PMSR);
++	}
++	BUG();
++}
++
++static inline void set_pmspr(unsigned long sprn, unsigned long val)
++{
++	switch (sprn) {
++	case SPRN_PMCR:
++		mtspr(SPRN_PMCR, val);
++		return;
++
++	case SPRN_PMICR:
++		mtspr(SPRN_PMICR, val);
++		return;
++
++	case SPRN_PMSR:
++		mtspr(SPRN_PMSR, val);
++		return;
++	}
++	BUG();
++}
++
++static void set_pstate(void *pstate)
++{
++	unsigned long val;
++	unsigned long pstate_ul = *(unsigned long *) pstate;
++
++	val = get_pmspr(SPRN_PMCR);
++	val = val & 0x0000ffffffffffffULL;
++	/* Set both global(bits 56..63) and local(bits 48..55) PStates */
++	val = val | (pstate_ul << 56) | (pstate_ul << 48);
++	pr_debug("Setting cpu %d pmcr to %016lX\n", smp_processor_id(), val);
++	set_pmspr(SPRN_PMCR, val);
++}
++
++static int powernv_set_freq(cpumask_var_t cpus, unsigned int new_index)
++{
++	unsigned long val = (unsigned long) powernv_pstate_ids[new_index];
++
++	/*
++	 * Use smp_call_function to send IPI and execute the
++	 * mtspr on target cpu.  We could do that without IPI
++	 * if current CPU is within policy->cpus (core)
++	 */
++
++	val = val & 0xFF;
++	smp_call_function_any(cpus, set_pstate, &val, 1);
++	return 0;
++}
++
++static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
++{
++	int base, i;
++
++#ifdef CONFIG_SMP
++	base = cpu_first_thread_sibling(policy->cpu);
++
++	for (i = 0; i < threads_per_core; i++)
++		cpumask_set_cpu(base + i, policy->cpus);
++#endif
++	policy->cpuinfo.transition_latency = 25000;
++
++	policy->cur = powernv_freqs[0].frequency;
++	cpufreq_frequency_table_get_attr(powernv_freqs, policy->cpu);
++	return cpufreq_frequency_table_cpuinfo(policy, powernv_freqs);
++}
++
++static int powernv_cpufreq_cpu_exit(struct cpufreq_policy *policy)
++{
++	cpufreq_frequency_table_put_attr(policy->cpu);
++	return 0;
++}
++
++static int powernv_cpufreq_verify(struct cpufreq_policy *policy)
++{
++	return cpufreq_frequency_table_verify(policy, powernv_freqs);
++}
++
++static int powernv_cpufreq_target(struct cpufreq_policy *policy,
++			      unsigned int target_freq,
++			      unsigned int relation)
++{
++	int rc;
++	struct cpufreq_freqs freqs;
++	unsigned int new_index;
++
++	cpufreq_frequency_table_target(policy, powernv_freqs, target_freq,
++				       relation, &new_index);
++
++	freqs.old = policy->cur;
++	freqs.new = powernv_freqs[new_index].frequency;
++	freqs.cpu = policy->cpu;
++
++	mutex_lock(&freq_switch_mutex);
++	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
++
++	pr_debug("setting frequency for cpu %d to %d kHz index %d pstate %d",
++		 policy->cpu,
++		 powernv_freqs[new_index].frequency,
++		 new_index,
++		 powernv_pstate_ids[new_index]);
++
++	rc = powernv_set_freq(policy->cpus, new_index);
++
++	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
++	mutex_unlock(&freq_switch_mutex);
++
++	return rc;
++}
++
++static struct cpufreq_driver powernv_cpufreq_driver = {
++	.verify		= powernv_cpufreq_verify,
++	.target		= powernv_cpufreq_target,
++	.init		= powernv_cpufreq_cpu_init,
++	.exit		= powernv_cpufreq_cpu_exit,
++	.name		= "powernv-cpufreq",
++	.flags		= CPUFREQ_CONST_LOOPS,
++	.attr		= powernv_cpu_freq_attr,
++};
++
++static int __init powernv_cpufreq_init(void)
++{
++	int rc = 0;
++
++	/* Discover pstates from device tree and init */
++
++	rc = init_powernv_pstates();
++
++	if (rc) {
++		pr_info("powernv-cpufreq disabled\n");
++		return rc;
++	}
++
++	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
++	return rc;
++}
++
++static void __exit powernv_cpufreq_exit(void)
++{
++	cpufreq_unregister_driver(&powernv_cpufreq_driver);
++}
++
++module_init(powernv_cpufreq_init);
++module_exit(powernv_cpufreq_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>");
 -- 
 1.8.3.1
