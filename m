@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 80D052C0782
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:33 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6351B2C02FE
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:39 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:38:33 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 68F4A3578056
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:29 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKcFDr51249180
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:15 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKcRU3004890
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:38:29 +1100
+ Tue, 11 Mar 2014 02:08:37 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 868AD125803E
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:49 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKcekl65470490
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:08:40 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKcYsa030704
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:08:36 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 24/52] x86, intel,
- rapl: Fix CPU hotplug callback registration
+Subject: [PATCH v3 25/52] x86, amd,
+ uncore: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:08:09 +0530
-Message-ID: <20140310203809.10746.41940.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:08:29 +0530
+Message-ID: <20140310203829.10746.20437.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -81,7 +81,7 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the intel rapl code in x86 by using this latter form of callback
+Fix the amd-uncore code in x86 by using this latter form of callback
 registration.
 
 Cc: Peter Zijlstra <peterz@infradead.org>
@@ -94,42 +94,29 @@ Cc: x86@kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpu/perf_event_intel_rapl.c |    9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ arch/x86/kernel/cpu/perf_event_amd_uncore.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event_intel_rapl.c b/arch/x86/kernel/cpu/perf_event_intel_rapl.c
-index 5ad35ad..059218e 100644
---- a/arch/x86/kernel/cpu/perf_event_intel_rapl.c
-+++ b/arch/x86/kernel/cpu/perf_event_intel_rapl.c
-@@ -646,19 +646,20 @@ static int __init rapl_pmu_init(void)
- 		/* unsupported */
- 		return 0;
- 	}
+diff --git a/arch/x86/kernel/cpu/perf_event_amd_uncore.c b/arch/x86/kernel/cpu/perf_event_amd_uncore.c
+index 754291a..3bbdf4c 100644
+--- a/arch/x86/kernel/cpu/perf_event_amd_uncore.c
++++ b/arch/x86/kernel/cpu/perf_event_amd_uncore.c
+@@ -531,15 +531,16 @@ static int __init amd_uncore_init(void)
+ 	if (ret)
+ 		return -ENODEV;
+ 
 -	get_online_cpus();
-+
 +	cpu_notifier_register_begin();
- 
++
+ 	/* init cpus already online before registering for hotplug notifier */
  	for_each_online_cpu(cpu) {
- 		rapl_cpu_prepare(cpu);
- 		rapl_cpu_init(cpu);
+ 		amd_uncore_cpu_up_prepare(cpu);
+ 		smp_call_function_single(cpu, init_cpu_already_online, NULL, 1);
  	}
  
--	perf_cpu_notifier(rapl_cpu_notifier);
-+	__perf_cpu_notifier(rapl_cpu_notifier);
- 
- 	ret = perf_pmu_register(&rapl_pmu_class, "power", -1);
- 	if (WARN_ON(ret)) {
- 		pr_info("RAPL PMU detected, registration failed (%d), RAPL PMU disabled\n", ret);
--		put_online_cpus();
-+		cpu_notifier_register_done();
- 		return -1;
- 	}
- 
-@@ -672,7 +673,7 @@ static int __init rapl_pmu_init(void)
- 		hweight32(rapl_cntr_mask),
- 		ktime_to_ms(pmu->timer_interval));
- 
+-	register_cpu_notifier(&amd_uncore_cpu_notifier_block);
 -	put_online_cpus();
++	__register_cpu_notifier(&amd_uncore_cpu_notifier_block);
 +	cpu_notifier_register_done();
  
  	return 0;
