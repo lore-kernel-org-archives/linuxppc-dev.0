@@ -1,44 +1,43 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C364C2C05F3
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:46 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 93A222C0685
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:09 +1100 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:41:46 +1000
+ Tue, 11 Mar 2014 06:42:09 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9CE953578056
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:44 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AFEAA2BB0055
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:07 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKLiWF49873014
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:21:44 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKfhN8023784
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:41:44 +1100
+ s2AKM7hj52756480
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:22:07 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKg6ts001084
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:42:07 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 45/52] hwmon,
- via-cputemp: Fix CPU hotplug callback registration
+Subject: [PATCH v3 47/52] trace,
+ ring-buffer: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:11:33 +0530
-Message-ID: <20140310204132.10746.79433.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:11:56 +0530
+Message-ID: <20140310204156.10746.79965.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
- lm-sensors@lm-sensors.org, linuxppc-dev@ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>,
- Jean Delvare <jdelvare@suse.de>
+ paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -79,67 +78,74 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the hwmon via-cputemp code by using this latter form of callback
+Fix the tracing ring-buffer code by using this latter form of callback
 registration.
 
-Cc: Jean Delvare <jdelvare@suse.de>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: lm-sensors@lm-sensors.org
-Acked-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/hwmon/via-cputemp.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ kernel/trace/ring_buffer.c |   19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/hwmon/via-cputemp.c b/drivers/hwmon/via-cputemp.c
-index 38944e9..8df43c5 100644
---- a/drivers/hwmon/via-cputemp.c
-+++ b/drivers/hwmon/via-cputemp.c
-@@ -319,7 +319,7 @@ static int __init via_cputemp_init(void)
- 	if (err)
- 		goto exit;
- 
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index fc4da2d..c634868 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1301,7 +1301,7 @@ struct ring_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
+ 	 * In that off case, we need to allocate for all possible cpus.
+ 	 */
+ #ifdef CONFIG_HOTPLUG_CPU
 -	get_online_cpus();
 +	cpu_notifier_register_begin();
- 	for_each_online_cpu(i) {
- 		struct cpuinfo_x86 *c = &cpu_data(i);
- 
-@@ -339,14 +339,14 @@ static int __init via_cputemp_init(void)
- 
- #ifndef CONFIG_HOTPLUG_CPU
- 	if (list_empty(&pdev_list)) {
--		put_online_cpus();
-+		cpu_notifier_register_done();
- 		err = -ENODEV;
- 		goto exit_driver_unreg;
- 	}
+ 	cpumask_copy(buffer->cpumask, cpu_online_mask);
+ #else
+ 	cpumask_copy(buffer->cpumask, cpu_possible_mask);
+@@ -1324,10 +1324,10 @@ struct ring_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	buffer->cpu_notify.notifier_call = rb_cpu_notify;
+ 	buffer->cpu_notify.priority = 0;
+-	register_cpu_notifier(&buffer->cpu_notify);
++	__register_cpu_notifier(&buffer->cpu_notify);
++	cpu_notifier_register_done();
  #endif
  
--	register_hotcpu_notifier(&via_cputemp_cpu_notifier);
 -	put_online_cpus();
-+	__register_hotcpu_notifier(&via_cputemp_cpu_notifier);
-+	cpu_notifier_register_done();
- 	return 0;
+ 	mutex_init(&buffer->mutex);
  
- #ifndef CONFIG_HOTPLUG_CPU
-@@ -361,8 +361,8 @@ static void __exit via_cputemp_exit(void)
+ 	return buffer;
+@@ -1341,7 +1341,9 @@ struct ring_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
+ 
+  fail_free_cpumask:
+ 	free_cpumask_var(buffer->cpumask);
+-	put_online_cpus();
++#ifdef CONFIG_HOTPLUG_CPU
++	cpu_notifier_register_done();
++#endif
+ 
+  fail_free_buffer:
+ 	kfree(buffer);
+@@ -1358,16 +1360,17 @@ ring_buffer_free(struct ring_buffer *buffer)
  {
- 	struct pdev_entry *p, *n;
+ 	int cpu;
  
 -	get_online_cpus();
--	unregister_hotcpu_notifier(&via_cputemp_cpu_notifier);
+-
+ #ifdef CONFIG_HOTPLUG_CPU
+-	unregister_cpu_notifier(&buffer->cpu_notify);
 +	cpu_notifier_register_begin();
-+	__unregister_hotcpu_notifier(&via_cputemp_cpu_notifier);
- 	mutex_lock(&pdev_list_mutex);
- 	list_for_each_entry_safe(p, n, &pdev_list, list) {
- 		platform_device_unregister(p->pdev);
-@@ -370,7 +370,7 @@ static void __exit via_cputemp_exit(void)
- 		kfree(p);
- 	}
- 	mutex_unlock(&pdev_list_mutex);
--	put_online_cpus();
-+	cpu_notifier_register_done();
- 	platform_driver_unregister(&via_cputemp_driver);
- }
++	__unregister_cpu_notifier(&buffer->cpu_notify);
+ #endif
  
+ 	for_each_buffer_cpu(buffer, cpu)
+ 		rb_free_cpu_buffer(buffer->buffers[cpu]);
+ 
+-	put_online_cpus();
++#ifdef CONFIG_HOTPLUG_CPU
++	cpu_notifier_register_done();
++#endif
+ 
+ 	kfree(buffer->buffers);
+ 	free_cpumask_var(buffer->cpumask);
