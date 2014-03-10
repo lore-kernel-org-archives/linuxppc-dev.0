@@ -1,44 +1,42 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C1A452C0242
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:36:42 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3C3C42C0227
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:36:48 +1100 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:06:41 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 518D4E003F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:23 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKaZuq61603946
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:35 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKaaGH005016
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:38 +0530
+ Tue, 11 Mar 2014 02:06:46 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 99C4F1258054
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:08:57 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKalh81180092
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKag1S031680
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:06:43 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 14/52] powerpc, sysfs: Fix CPU hotplug callback registration
+Subject: [PATCH v3 15/52] x86, msr: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:06:31 +0530
-Message-ID: <20140310203630.10746.99418.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:06:37 +0530
+Message-ID: <20140310203637.10746.41491.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
- Olof Johansson <olof@lixom.net>, linux-kernel@vger.kernel.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>, linuxppc-dev@ozlabs.org,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, tj@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
  Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -80,45 +78,65 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the sysfs code in powerpc by using this latter form of callback
-registration.
+Fix the msr code in x86 by using this latter form of callback registration.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: x86@kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/kernel/sysfs.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ arch/x86/kernel/msr.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index 97e1dc9..d90d4b7 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -975,7 +975,8 @@ static int __init topology_init(void)
- 	int cpu;
- 
- 	register_nodes();
--	register_cpu_notifier(&sysfs_cpu_nb);
+diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+index 05266b5..c9603ac 100644
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -259,14 +259,15 @@ static int __init msr_init(void)
+ 		goto out_chrdev;
+ 	}
+ 	msr_class->devnode = msr_devnode;
+-	get_online_cpus();
 +
 +	cpu_notifier_register_begin();
- 
- 	for_each_possible_cpu(cpu) {
- 		struct cpu *c = &per_cpu(cpu_devices, cpu);
-@@ -999,6 +1000,11 @@ static int __init topology_init(void)
- 		if (cpu_online(cpu))
- 			register_cpu_online(cpu);
+ 	for_each_online_cpu(i) {
+ 		err = msr_device_create(i);
+ 		if (err != 0)
+ 			goto out_class;
  	}
-+
-+	__register_cpu_notifier(&sysfs_cpu_nb);
-+
+-	register_hotcpu_notifier(&msr_class_cpu_notifier);
+-	put_online_cpus();
++	__register_hotcpu_notifier(&msr_class_cpu_notifier);
 +	cpu_notifier_register_done();
+ 
+ 	err = 0;
+ 	goto out;
+@@ -275,7 +276,7 @@ out_class:
+ 	i = 0;
+ 	for_each_online_cpu(i)
+ 		msr_device_destroy(i);
+-	put_online_cpus();
++	cpu_notifier_register_done();
+ 	class_destroy(msr_class);
+ out_chrdev:
+ 	__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr");
+@@ -286,13 +287,14 @@ out:
+ static void __exit msr_exit(void)
+ {
+ 	int cpu = 0;
+-	get_online_cpus();
 +
- #ifdef CONFIG_PPC64
- 	sysfs_create_dscr_default();
- #endif /* CONFIG_PPC64 */
++	cpu_notifier_register_begin();
+ 	for_each_online_cpu(cpu)
+ 		msr_device_destroy(cpu);
+ 	class_destroy(msr_class);
+ 	__unregister_chrdev(MSR_MAJOR, 0, NR_CPUS, "cpu/msr");
+-	unregister_hotcpu_notifier(&msr_class_cpu_notifier);
+-	put_online_cpus();
++	__unregister_hotcpu_notifier(&msr_class_cpu_notifier);
++	cpu_notifier_register_done();
+ }
+ 
+ module_init(msr_init);
