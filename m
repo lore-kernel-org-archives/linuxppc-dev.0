@@ -1,46 +1,44 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B5C522C0294
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:09 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C39A72C0241
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:25 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:07:06 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id AFBEAE003F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:10:48 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKb77V42991746
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:07 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKb2PB012790
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:03 +0530
+ Tue, 11 Mar 2014 06:37:24 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F25842BB0056
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:21 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKHLtg45613252
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:17:21 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKbJID007135
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:37:21 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 18/52] x86, intel,
- uncore: Fix CPU hotplug callback registration
+Subject: [PATCH v3 19/52] x86, mce: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:06:57 +0530
-Message-ID: <20140310203657.10746.98632.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:07:04 +0530
+Message-ID: <20140310203703.10746.30680.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
- x86@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
  "H. Peter Anvin" <hpa@zytor.com>, tj@kernel.org,
  Thomas Gleixner <tglx@linutronix.de>, paulmck@linux.vnet.ibm.com,
- Ingo Molnar <mingo@kernel.org>
+ Ingo Molnar <mingo@kernel.org>, linux-edac@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -81,44 +79,43 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the uncore code in intel-x86 by using this latter form of callback
-registration.
+Fix the mce code in x86 by using this latter form of callback registration.
 
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Borislav Petkov <bp@alien8.de>
 Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@kernel.org>
 Cc: "H. Peter Anvin" <hpa@zytor.com>
 Cc: x86@kernel.org
+Cc: linux-edac@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpu/perf_event_intel_uncore.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event_intel_uncore.c b/arch/x86/kernel/cpu/perf_event_intel_uncore.c
-index c88f7f4..e90183d 100644
---- a/arch/x86/kernel/cpu/perf_event_intel_uncore.c
-+++ b/arch/x86/kernel/cpu/perf_event_intel_uncore.c
-@@ -3816,7 +3816,7 @@ static int __init uncore_cpu_init(void)
- 	if (ret)
- 		return ret;
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 4d5419b..9b7734b 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -2434,14 +2434,18 @@ static __init int mcheck_init_device(void)
+ 	if (err)
+ 		return err;
  
--	get_online_cpus();
 +	cpu_notifier_register_begin();
- 
- 	for_each_online_cpu(cpu) {
- 		int i, phys_id = topology_physical_package_id(cpu);
-@@ -3835,9 +3835,9 @@ static int __init uncore_cpu_init(void)
+ 	for_each_online_cpu(i) {
+ 		err = mce_device_create(i);
+-		if (err)
++		if (err) {
++			cpu_notifier_register_done();
+ 			return err;
++		}
  	}
- 	on_each_cpu(uncore_cpu_setup, NULL, 1);
  
--	register_cpu_notifier(&uncore_cpu_nb);
-+	__register_cpu_notifier(&uncore_cpu_nb);
- 
--	put_online_cpus();
+ 	register_syscore_ops(&mce_syscore_ops);
+-	register_hotcpu_notifier(&mce_cpu_notifier);
++	__register_hotcpu_notifier(&mce_cpu_notifier);
 +	cpu_notifier_register_done();
  
- 	return 0;
- }
+ 	/* register character device /dev/mcelog */
+ 	misc_register(&mce_chrdev_device);
