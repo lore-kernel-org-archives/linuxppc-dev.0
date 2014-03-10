@@ -1,32 +1,32 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4C9722C0171
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:03 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 01D572C023B
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:12 +1100 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 02:05:01 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3874C1258055
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:07:12 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKYtvP2687244
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:04:55 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKYv3C028244
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:04:58 +0530
+ Tue, 11 Mar 2014 06:35:12 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id F41B53578054
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:09 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKF9cc44302564
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:15:09 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKZ8Qu027146
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:35:09 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 06/52] ia64, palinfo: Fix CPU hotplug callback registration
+Subject: [PATCH v3 07/52] ia64, topology: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:04:52 +0530
-Message-ID: <20140310203451.10746.45775.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:04:58 +0530
+Message-ID: <20140310203458.10746.59610.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -78,7 +78,7 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the palinfo code in ia64 by using this latter form of callback
+Fix the topology code in ia64 by using this latter form of callback
 registration.
 
 Cc: Tony Luck <tony.luck@intel.com>
@@ -88,27 +88,26 @@ Cc: linux-ia64@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/ia64/kernel/palinfo.c |    6 +++++-
+ arch/ia64/kernel/topology.c |    6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/ia64/kernel/palinfo.c b/arch/ia64/kernel/palinfo.c
-index ab33328..c39c3cd 100644
---- a/arch/ia64/kernel/palinfo.c
-+++ b/arch/ia64/kernel/palinfo.c
-@@ -996,13 +996,17 @@ palinfo_init(void)
- 	if (!palinfo_dir)
- 		return -ENOMEM;
+diff --git a/arch/ia64/kernel/topology.c b/arch/ia64/kernel/topology.c
+index ca69a5a..f295f9a 100644
+--- a/arch/ia64/kernel/topology.c
++++ b/arch/ia64/kernel/topology.c
+@@ -454,12 +454,16 @@ static int __init cache_sysfs_init(void)
+ {
+ 	int i;
  
 +	cpu_notifier_register_begin();
 +
- 	/* Create palinfo dirs in /proc for all online cpus */
  	for_each_online_cpu(i) {
- 		create_palinfo_proc_entries(i);
+ 		struct device *sys_dev = get_cpu_device((unsigned int)i);
+ 		cache_add_dev(sys_dev);
  	}
  
- 	/* Register for future delivery via notify registration */
--	register_hotcpu_notifier(&palinfo_cpu_notifier);
-+	__register_hotcpu_notifier(&palinfo_cpu_notifier);
+-	register_hotcpu_notifier(&cache_cpu_notifier);
++	__register_hotcpu_notifier(&cache_cpu_notifier);
 +
 +	cpu_notifier_register_done();
  
