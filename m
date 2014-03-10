@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6D4C32C0876
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:22 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 779AE2C0885
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:29 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:39:22 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DD0212CE805F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:19 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKd6H411010486
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:06 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKdIio030830
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:39:19 +1100
+ Tue, 11 Mar 2014 02:09:27 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2FCA1E0053
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:13:11 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2AKdUMM5505388
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:30 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2AKdPZc004400
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 02:09:26 +0530
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 30/52] arm64,
- hw_breakpoint.c: Fix CPU hotplug callback registration
+Subject: [PATCH v3 31/52] arm64,
+ debug-monitors: Fix CPU hotplug callback registration
 To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
  rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
  akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:09:08 +0530
-Message-ID: <20140310203907.10746.60164.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 02:09:20 +0530
+Message-ID: <20140310203919.10746.1234.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -36,10 +36,9 @@ Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
  linux@arm.linux.org.uk, linux-pm@vger.kernel.org,
  Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
  linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
  "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, tj@kernel.org,
- paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>,
- linux-arm-kernel@lists.infradead.org
+ Russell King <rmk+kernel@arm.linux.org.uk>, paulmck@linux.vnet.ibm.com,
+ Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -80,42 +79,39 @@ registration is:
 	cpu_notifier_register_done();
 
 
-Fix the hw-breakpoint code in arm64 by using this latter form of callback
+Fix the debug-monitors code in arm64 by using this latter form of callback
 registration.
 
 Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 Cc: Ingo Molnar <mingo@kernel.org>
 Cc: linux-arm-kernel@lists.infradead.org
 Acked-by: Will Deacon <will.deacon@arm.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/arm64/kernel/hw_breakpoint.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ arch/arm64/kernel/debug-monitors.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kernel/hw_breakpoint.c b/arch/arm64/kernel/hw_breakpoint.c
-index f17f581..bee7897 100644
---- a/arch/arm64/kernel/hw_breakpoint.c
-+++ b/arch/arm64/kernel/hw_breakpoint.c
-@@ -913,6 +913,8 @@ static int __init arch_hw_breakpoint_init(void)
- 	pr_info("found %d breakpoint and %d watchpoint registers.\n",
- 		core_num_brps, core_num_wrps);
+diff --git a/arch/arm64/kernel/debug-monitors.c b/arch/arm64/kernel/debug-monitors.c
+index 636ba8b..c985531 100644
+--- a/arch/arm64/kernel/debug-monitors.c
++++ b/arch/arm64/kernel/debug-monitors.c
+@@ -155,12 +155,16 @@ static struct notifier_block os_lock_nb = {
  
+ static int debug_monitors_init(void)
+ {
 +	cpu_notifier_register_begin();
 +
- 	/*
- 	 * Reset the breakpoint resources. We assume that a halting
- 	 * debugger will leave the world in a nice state for us.
-@@ -927,7 +929,10 @@ static int __init arch_hw_breakpoint_init(void)
- 			      TRAP_HWBKPT, "hw-watchpoint handler");
+ 	/* Clear the OS lock. */
+ 	smp_call_function(clear_os_lock, NULL, 1);
+ 	clear_os_lock(NULL);
  
- 	/* Register hotplug notifier. */
--	register_cpu_notifier(&hw_breakpoint_reset_nb);
-+	__register_cpu_notifier(&hw_breakpoint_reset_nb);
+ 	/* Register hotplug handler. */
+-	register_cpu_notifier(&os_lock_nb);
++	__register_cpu_notifier(&os_lock_nb);
 +
 +	cpu_notifier_register_done();
-+
- 	/* Register cpu_suspend hw breakpoint restore hook */
- 	cpu_suspend_set_dbg_restorer(hw_breakpoint_reset);
- 
+ 	return 0;
+ }
+ postcore_initcall(debug_monitors_init);
