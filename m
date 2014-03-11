@@ -1,31 +1,30 @@
 Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B50A72C0097
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:31:36 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B5D1E2C0099
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:31:38 +1100 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 21:31:35 +1000
+ Tue, 11 Mar 2014 21:31:36 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5B52B3578052
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:31:32 +1100 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0FEC52CE803F
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:31:34 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2BBBVN711272282
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:11:31 +1100
+ s2BBBWXM64422018
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:11:32 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2BBVVh0019874
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:31:31 +1100
+ s2BBVWAP019905
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 22:31:33 +1100
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC PATCH 1/2] powerpc: powernv: Framework to show the correct clock
- in /proc/cpuinfo
-Date: Tue, 11 Mar 2014 17:01:18 +0530
-Message-Id: <1394537479-17231-2-git-send-email-ego@linux.vnet.ibm.com>
+Subject: [RFC PATCH 2/2] powerpc: powernv: Implement ppc_md.get_proc_freq()
+Date: Tue, 11 Mar 2014 17:01:19 +0530
+Message-Id: <1394537479-17231-3-git-send-email-ego@linux.vnet.ibm.com>
 In-Reply-To: <1394537479-17231-1-git-send-email-ego@linux.vnet.ibm.com>
 References: <1394537479-17231-1-git-send-email-ego@linux.vnet.ibm.com>
 Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
@@ -40,77 +39,65 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Currently, the code in setup-common.c for powerpc assumes that all
-clock rates are same in a smp system. This value is cached in the
-variable named ppc_proc_freq and is the value that is reported in
-/proc/cpuinfo.
+Implement a method named pnv_get_proc_freq(unsigned int cpu) which
+returns the current clock rate on the 'cpu' in Hz to be reported in
+/proc/cpuinfo. This method uses the value reported by cpufreq when
+such a value is sane. Otherwise it falls back to old way of reporting
+the clockrate, i.e. ppc_proc_freq.
 
-However on the PowerNV platform, the clock rate is same only across
-the threads of the same core. Hence the value that is reported in
-/proc/cpuinfo is incorrect on PowerNV platforms. We need a better way
-to query and report the correct value of the processor clock in
-/proc/cpuinfo.
-
-The patch achieves this by creating a machdep_call named
-get_proc_freq() which is expected to returns the frequency in Hz. The
-code in show_cpuinfo() can invoke this method to display the correct
-clock rate on platforms that have implemented this method. On the
-other powerpc platforms it can use the value cached in ppc_proc_freq.
+Set the ppc_md.get_proc_freq() hook to pnv_get_proc_freq() on the
+PowerNV platform.
 
 Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/machdep.h |  2 ++
- arch/powerpc/kernel/setup-common.c | 16 ++++++++++++----
- 2 files changed, 14 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/setup.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index ad3025d..eb1c6d4 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -113,6 +113,8 @@ struct machdep_calls {
- 	/* Optional, may be NULL. */
- 	void		(*show_cpuinfo)(struct seq_file *m);
- 	void		(*show_percpuinfo)(struct seq_file *m, int i);
-+	/* Returns the current operating frequency of "cpu" in Hz */
-+	unsigned long  	(*get_proc_freq)(unsigned int cpu);
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 110f4fb..423e36d 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -28,6 +28,7 @@
+ #include <linux/bug.h>
+ #include <linux/cpuidle.h>
+ #include <linux/pci.h>
++#include <linux/cpufreq.h>
  
- 	void		(*init_IRQ)(void);
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -235,6 +236,25 @@ void powernv_idle(void)
+ 	}
+ }
  
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index bc76cc6..bdd3045 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -209,6 +209,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- {
- 	unsigned long cpu_id = (unsigned long)v - 1;
- 	unsigned int pvr;
-+	unsigned long proc_freq;
- 	unsigned short maj;
- 	unsigned short min;
- 
-@@ -260,12 +261,19 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- #endif /* CONFIG_TAU */
- 
- 	/*
--	 * Assume here that all clock rates are the same in a
--	 * smp system.  -- Cort
-+	 * Platforms that have variable clock rates, should implement
-+	 * the method ppc_md.get_proc_freq() that reports the clock
-+	 * rate of a given cpu. The rest can use ppc_proc_freq to
-+	 * report the clock rate that is same across all cpus.
- 	 */
--	if (ppc_proc_freq)
-+	if (ppc_md.get_proc_freq)
-+		proc_freq = ppc_md.get_proc_freq(cpu_id);
-+	else
-+		proc_freq = ppc_proc_freq;
++/*
++ * Returns the cpu frequency for 'cpu' in Hz. This is used by
++ * /proc/cpuinfo
++ */
++unsigned long pnv_get_proc_freq(unsigned int cpu)
++{
++	unsigned long ret_freq;
 +
-+	if (proc_freq)
- 		seq_printf(m, "clock\t\t: %lu.%06luMHz\n",
--			   ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
-+			   proc_freq / 1000000, proc_freq % 1000000);
- 
- 	if (ppc_md.show_percpuinfo != NULL)
- 		ppc_md.show_percpuinfo(m, cpu_id);
++	ret_freq = cpufreq_quick_get(cpu) * 1000ul;
++
++	/*
++	 * If the backend cpufreq driver does not exist,
++         * then fallback to old way of reporting the clockrate.
++	 */
++	if (!ret_freq)
++		ret_freq = ppc_proc_freq;
++	return ret_freq;
++}
++
+ define_machine(powernv) {
+ 	.name			= "PowerNV",
+ 	.probe			= pnv_probe,
+@@ -242,6 +262,7 @@ define_machine(powernv) {
+ 	.setup_arch		= pnv_setup_arch,
+ 	.init_IRQ		= pnv_init_IRQ,
+ 	.show_cpuinfo		= pnv_show_cpuinfo,
++	.get_proc_freq          = pnv_get_proc_freq,
+ 	.progress		= pnv_progress,
+ 	.machine_shutdown	= pnv_shutdown,
+ 	.power_save             = powernv_idle,
 -- 
 1.8.3.1
