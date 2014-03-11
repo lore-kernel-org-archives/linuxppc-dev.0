@@ -1,23 +1,20 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 738212C00AB
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 11:22:51 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 00/52] CPU hotplug: Fix issues with callback
- registration
-Date: Tue, 11 Mar 2014 01:31:28 +0100
-Message-ID: <2714771.szsVpCAzkq@vostro.rjw.lan>
-In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
-References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, akpm@linux-foundation.org, linux-pm@vger.kernel.org,
- peterz@infradead.org, rusty@rustcorp.com.au, oleg@redhat.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
- tj@kernel.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
- mingo@kernel.org
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:6])
+ by ozlabs.org (Postfix) with ESMTP id 6121E2C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 11:45:12 +1100 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: alistair@popple.id.au,
+	netdev@vger.kernel.org,
+	davem@davemloft.net
+Subject: [PATCH 2/5 V2] IBM Akebono: Add support for a new PHY interface to
+ the IBM emac driver
+Date: Tue, 11 Mar 2014 11:44:33 +1100
+Message-Id: <1394498673-24447-1-git-send-email-alistair@popple.id.au>
+In-Reply-To: <20140307.154142.488351276799532264.davem@davemloft.net>
+References: <20140307.154142.488351276799532264.davem@davemloft.net>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,119 +24,594 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, March 11, 2014 02:03:52 AM Srivatsa S. Bhat wrote:
-> Hi,
+The IBM PPC476GTR SoC that is used on the Akebono board uses a
+different ethernet PHY interface that has wake on lan (WOL) support
+with the IBM emac. This patch adds support to the IBM emac driver for
+this new PHY interface.
 
-Hi,
+At this stage the wake on lan functionality has not been implemented.
 
-> Many subsystems and drivers have the need to register CPU hotplug callbacks
-> from their init routines and also perform initialization for the CPUs that are
-> already online. But unfortunately there is no race-free way to achieve this
-> today.
-> 
-> For example, consider this piece of code:
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	put_online_cpus();
-> 
-> This is not safe because there is a possibility of an ABBA deadlock involving
-> the cpu_add_remove_lock and the cpu_hotplug.lock.
-> 
->           CPU 0                                         CPU 1
->           -----                                         -----
-> 
->    Acquire cpu_hotplug.lock
->    [via get_online_cpus()]
-> 
->                                               CPU online/offline operation
->                                               takes cpu_add_remove_lock
->                                               [via cpu_maps_update_begin()]
-> 
->    Try to acquire
->    cpu_add_remove_lock
->    [via register_cpu_notifier()]
-> 
->                                               CPU online/offline operation
->                                               tries to acquire cpu_hotplug.lock
->                                               [via cpu_hotplug_begin()]
-> 
->                             *** DEADLOCK! ***
-> 
-> 
-> Other combinations of callback registration also don't work correctly.
-> Examples:
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	put_online_cpus();
-> 
-> This can lead to double initialization if a hotplug operation occurs after
-> registering the notifier and before invoking get_online_cpus().
-> 
-> On the other hand, the following piece of code can miss hotplug events
-> altogether:
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	put_online_cpus();
->               ^
->               |   Race window; Can miss hotplug events here
->               v
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 
-> To solve these issues and provide a race-free method to register CPU hotplug
-> callbacks, this patchset introduces new variants of the callback registration
-> APIs that don't hold the cpu_add_remove_lock, and exports the
-> cpu_add_remove_lock via 2 new APIs cpu_notifier_register_begin/done() for use
-> by various subsystems. With this in place, the following code snippet will
-> register a hotplug callback as well as initialize already online CPUs without
-> any race conditions.
-> 
-> 	cpu_notifier_register_begin();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	/* This doesn't take the cpu_add_remove_lock */
-> 	__register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	cpu_notifier_register_done();
-> 
-> 
-> In this patchset, patch 1 adds lockdep annotations to catch the above mentioned
-> deadlock scenario. Patch 2 introduces the new APIs and infrastructure necessary
-> for race-free callback registration. The remaining patches perform tree-wide
-> conversions (to use this model).
-> 
-> This patchset has been hosted in the below git tree. It applies cleanly on
-> v3.14-rc6.
-> 
-> git://github.com/srivatsabhat/linux.git cpuhp-registration-fixes-v3
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-So to me, this is a useful patchset and it addresses a real problem.  It has
-gone through several rounds of review and recently I haven't really seen any
-objections against is from anyone.  On the contrary, I've seen ACKs from a
-number of people whom I trust.
+This version just fixes the coding style as suggested by David M. 
 
-Thus, if nobody objects, I'm going to take this series into the PM tree for 3.15.
+ .../devicetree/bindings/powerpc/4xx/emac.txt       |   9 +
+ drivers/net/ethernet/ibm/emac/Kconfig              |   4 +
+ drivers/net/ethernet/ibm/emac/Makefile             |   1 +
+ drivers/net/ethernet/ibm/emac/core.c               |  50 ++++-
+ drivers/net/ethernet/ibm/emac/core.h               |  12 +
+ drivers/net/ethernet/ibm/emac/rgmii_wol.c          | 244 +++++++++++++++++++++
+ drivers/net/ethernet/ibm/emac/rgmii_wol.h          |  62 ++++++
+ 7 files changed, 376 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.c
+ create mode 100644 drivers/net/ethernet/ibm/emac/rgmii_wol.h
 
-Thanks!
-
+diff --git a/Documentation/devicetree/bindings/powerpc/4xx/emac.txt b/Documentation/devicetree/bindings/powerpc/4xx/emac.txt
+index 712baf6..0c20529 100644
+--- a/Documentation/devicetree/bindings/powerpc/4xx/emac.txt
++++ b/Documentation/devicetree/bindings/powerpc/4xx/emac.txt
+@@ -61,6 +61,8 @@
+ 			  Fox Axon: present, whatever value is appropriate for each
+ 			  EMAC, that is the content of the current (bogus) "phy-port"
+ 			  property.
++    - rgmii-wol-device  : 1 cell, required iff connected to a RGMII in the WKUP
++                          power domain. phandle of the RGMII-WOL device node.
+ 
+     Optional properties:
+     - phy-address       : 1 cell, optional, MDIO address of the PHY. If absent,
+@@ -146,3 +148,10 @@
+ 			   available.
+ 			   For Axon: 0x0000012a
+ 
++      iv) RGMII-WOL node
++
++    Required properties:
++    - compatible         : compatible list, containing 2 entries, first is
++			   "ibm,rgmii-wol-CHIP" where CHIP is the host ASIC (like
++			   EMAC) and the second is "ibm,rgmii-wol".
++    - reg                : <registers mapping>
+diff --git a/drivers/net/ethernet/ibm/emac/Kconfig b/drivers/net/ethernet/ibm/emac/Kconfig
+index 3f44a30..56ea346 100644
+--- a/drivers/net/ethernet/ibm/emac/Kconfig
++++ b/drivers/net/ethernet/ibm/emac/Kconfig
+@@ -55,6 +55,10 @@ config IBM_EMAC_RGMII
+ 	bool
+ 	default n
+ 
++config IBM_EMAC_RGMII_WOL
++	bool "IBM EMAC RGMII wake-on-LAN support" if COMPILE_TEST
++	default n
++
+ config IBM_EMAC_TAH
+ 	bool
+ 	default n
+diff --git a/drivers/net/ethernet/ibm/emac/Makefile b/drivers/net/ethernet/ibm/emac/Makefile
+index eba2183..8843803 100644
+--- a/drivers/net/ethernet/ibm/emac/Makefile
++++ b/drivers/net/ethernet/ibm/emac/Makefile
+@@ -7,5 +7,6 @@ obj-$(CONFIG_IBM_EMAC) += ibm_emac.o
+ ibm_emac-y := mal.o core.o phy.o
+ ibm_emac-$(CONFIG_IBM_EMAC_ZMII) += zmii.o
+ ibm_emac-$(CONFIG_IBM_EMAC_RGMII) += rgmii.o
++ibm_emac-$(CONFIG_IBM_EMAC_RGMII_WOL) += rgmii_wol.o
+ ibm_emac-$(CONFIG_IBM_EMAC_TAH) += tah.o
+ ibm_emac-$(CONFIG_IBM_EMAC_DEBUG) += debug.o
+diff --git a/drivers/net/ethernet/ibm/emac/core.c b/drivers/net/ethernet/ibm/emac/core.c
+index ae342fd..ff58474 100644
+--- a/drivers/net/ethernet/ibm/emac/core.c
++++ b/drivers/net/ethernet/ibm/emac/core.c
+@@ -632,6 +632,8 @@ static int emac_configure(struct emac_instance *dev)
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+ 		rgmii_set_speed(dev->rgmii_dev, dev->rgmii_port,
+ 				dev->phy.speed);
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL))
++		rgmii_wol_set_speed(dev->rgmii_wol_dev, dev->phy.speed);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_ZMII))
+ 		zmii_set_speed(dev->zmii_dev, dev->zmii_port, dev->phy.speed);
+ 
+@@ -799,6 +801,8 @@ static int __emac_mdio_read(struct emac_instance *dev, u8 id, u8 reg)
+ 		zmii_get_mdio(dev->zmii_dev, dev->zmii_port);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+ 		rgmii_get_mdio(dev->rgmii_dev, dev->rgmii_port);
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL))
++		rgmii_wol_get_mdio(dev->rgmii_wol_dev);
+ 
+ 	/* Wait for management interface to become idle */
+ 	n = 20;
+@@ -846,6 +850,8 @@ static int __emac_mdio_read(struct emac_instance *dev, u8 id, u8 reg)
+ 	DBG2(dev, "mdio_read -> %04x" NL, r);
+ 	err = 0;
+  bail:
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL))
++		rgmii_wol_put_mdio(dev->rgmii_wol_dev);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+ 		rgmii_put_mdio(dev->rgmii_dev, dev->rgmii_port);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_ZMII))
+@@ -871,6 +877,8 @@ static void __emac_mdio_write(struct emac_instance *dev, u8 id, u8 reg,
+ 		zmii_get_mdio(dev->zmii_dev, dev->zmii_port);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+ 		rgmii_get_mdio(dev->rgmii_dev, dev->rgmii_port);
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL))
++		rgmii_wol_get_mdio(dev->rgmii_wol_dev);
+ 
+ 	/* Wait for management interface to be idle */
+ 	n = 20;
+@@ -909,6 +917,8 @@ static void __emac_mdio_write(struct emac_instance *dev, u8 id, u8 reg,
+ 	}
+ 	err = 0;
+  bail:
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL))
++		rgmii_wol_put_mdio(dev->rgmii_wol_dev);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+ 		rgmii_put_mdio(dev->rgmii_dev, dev->rgmii_port);
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_ZMII))
+@@ -2277,10 +2287,11 @@ struct emac_depentry {
+ #define	EMAC_DEP_MAL_IDX	0
+ #define	EMAC_DEP_ZMII_IDX	1
+ #define	EMAC_DEP_RGMII_IDX	2
+-#define	EMAC_DEP_TAH_IDX	3
+-#define	EMAC_DEP_MDIO_IDX	4
+-#define	EMAC_DEP_PREV_IDX	5
+-#define	EMAC_DEP_COUNT		6
++#define EMAC_DEP_RGMII_WOL_IDX  3
++#define	EMAC_DEP_TAH_IDX	4
++#define	EMAC_DEP_MDIO_IDX	5
++#define	EMAC_DEP_PREV_IDX	6
++#define	EMAC_DEP_COUNT		7
+ 
+ static int emac_check_deps(struct emac_instance *dev,
+ 			   struct emac_depentry *deps)
+@@ -2358,6 +2369,7 @@ static int emac_wait_deps(struct emac_instance *dev)
+ 	deps[EMAC_DEP_MAL_IDX].phandle = dev->mal_ph;
+ 	deps[EMAC_DEP_ZMII_IDX].phandle = dev->zmii_ph;
+ 	deps[EMAC_DEP_RGMII_IDX].phandle = dev->rgmii_ph;
++	deps[EMAC_DEP_RGMII_WOL_IDX].phandle = dev->rgmii_wol_ph;
+ 	if (dev->tah_ph)
+ 		deps[EMAC_DEP_TAH_IDX].phandle = dev->tah_ph;
+ 	if (dev->mdio_ph)
+@@ -2380,6 +2392,7 @@ static int emac_wait_deps(struct emac_instance *dev)
+ 		dev->mal_dev = deps[EMAC_DEP_MAL_IDX].ofdev;
+ 		dev->zmii_dev = deps[EMAC_DEP_ZMII_IDX].ofdev;
+ 		dev->rgmii_dev = deps[EMAC_DEP_RGMII_IDX].ofdev;
++		dev->rgmii_wol_dev = deps[EMAC_DEP_RGMII_WOL_IDX].ofdev;
+ 		dev->tah_dev = deps[EMAC_DEP_TAH_IDX].ofdev;
+ 		dev->mdio_dev = deps[EMAC_DEP_MDIO_IDX].ofdev;
+ 	}
+@@ -2585,6 +2598,8 @@ static int emac_init_config(struct emac_instance *dev)
+ 		dev->rgmii_ph = 0;
+ 	if (emac_read_uint_prop(np, "rgmii-channel", &dev->rgmii_port, 0))
+ 		dev->rgmii_port = 0xffffffff;
++	if (emac_read_uint_prop(np, "rgmii-wol-device", &dev->rgmii_wol_ph, 0))
++		dev->rgmii_wol_ph = 0;
+ 	if (emac_read_uint_prop(np, "fifo-entry-size", &dev->fifo_entry_size, 0))
+ 		dev->fifo_entry_size = 16;
+ 	if (emac_read_uint_prop(np, "mal-burst-size", &dev->mal_burst_size, 0))
+@@ -2671,6 +2686,16 @@ static int emac_init_config(struct emac_instance *dev)
+ #endif
+ 	}
+ 
++	if (dev->rgmii_wol_ph != 0) {
++#ifdef CONFIG_IBM_EMAC_RGMII_WOL
++		dev->features |= EMAC_FTR_HAS_RGMII_WOL;
++#else
++		printk(KERN_ERR "%s: RGMII WOL support not enabled !\n",
++		       np->full_name);
++		return -ENXIO;
++#endif
++	}
++
+ 	/* Read MAC-address */
+ 	p = of_get_property(np, "local-mac-address", NULL);
+ 	if (p == NULL) {
+@@ -2844,10 +2869,15 @@ static int emac_probe(struct platform_device *ofdev)
+ 	    (err = rgmii_attach(dev->rgmii_dev, dev->rgmii_port, dev->phy_mode)) != 0)
+ 		goto err_detach_zmii;
+ 
++	/* Attach to RGMII_WOL, if needed */
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL) &&
++	    (err = rgmii_wol_attach(dev->rgmii_wol_dev, dev->phy_mode)) != 0)
++		goto err_detach_rgmii;
++
+ 	/* Attach to TAH, if needed */
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_TAH) &&
+ 	    (err = tah_attach(dev->tah_dev, dev->tah_port)) != 0)
+-		goto err_detach_rgmii;
++		goto err_detach_rgmii_wol;
+ 
+ 	/* Set some link defaults before we can find out real parameters */
+ 	dev->phy.speed = SPEED_100;
+@@ -2920,6 +2950,9 @@ static int emac_probe(struct platform_device *ofdev)
+  err_detach_tah:
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_TAH))
+ 		tah_detach(dev->tah_dev, dev->tah_port);
++ err_detach_rgmii_wol:
++	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII_WOL))
++		rgmii_wol_detach(dev->rgmii_wol_dev);
+  err_detach_rgmii:
+ 	if (emac_has_feature(dev, EMAC_FTR_HAS_RGMII))
+ 		rgmii_detach(dev->rgmii_dev, dev->rgmii_port);
+@@ -3081,12 +3114,17 @@ static int __init emac_init(void)
+ 	rc = tah_init();
+ 	if (rc)
+ 		goto err_rgmii;
+-	rc = platform_driver_register(&emac_driver);
++	rc = rgmii_wol_init();
+ 	if (rc)
+ 		goto err_tah;
++	rc = platform_driver_register(&emac_driver);
++	if (rc)
++		goto err_rgmii_wol;
+ 
+ 	return 0;
+ 
++ err_rgmii_wol:
++	rgmii_wol_exit();
+  err_tah:
+ 	tah_exit();
+  err_rgmii:
+diff --git a/drivers/net/ethernet/ibm/emac/core.h b/drivers/net/ethernet/ibm/emac/core.h
+index 67f342a..7e1a70d 100644
+--- a/drivers/net/ethernet/ibm/emac/core.h
++++ b/drivers/net/ethernet/ibm/emac/core.h
+@@ -42,6 +42,7 @@
+ #include "phy.h"
+ #include "zmii.h"
+ #include "rgmii.h"
++#include "rgmii_wol.h"
+ #include "mal.h"
+ #include "tah.h"
+ #include "debug.h"
+@@ -209,6 +210,10 @@ struct emac_instance {
+ 	u32				rgmii_port;
+ 	struct platform_device		*rgmii_dev;
+ 
++	/* RGMII WOL infos if any */
++	u32				rgmii_wol_ph;
++	struct platform_device		*rgmii_wol_dev;
++
+ 	/* TAH infos if any */
+ 	u32				tah_ph;
+ 	u32				tah_port;
+@@ -332,6 +337,10 @@ struct emac_instance {
+  * APM821xx does not support Half Duplex mode
+  */
+ #define EMAC_FTR_APM821XX_NO_HALF_DUPLEX	0x00001000
++/*
++ * Set if we have a RGMII with wake on LAN.
++ */
++#define EMAC_FTR_HAS_RGMII_WOL		0x00020000
+ 
+ /* Right now, we don't quite handle the always/possible masks on the
+  * most optimal way as we don't have a way to say something like
+@@ -355,6 +364,9 @@ enum {
+ #ifdef CONFIG_IBM_EMAC_RGMII
+ 	    EMAC_FTR_HAS_RGMII	|
+ #endif
++#ifdef CONFIG_IBM_EMAC_RGMII_WOL
++	    EMAC_FTR_HAS_RGMII_WOL	|
++#endif
+ #ifdef CONFIG_IBM_EMAC_NO_FLOW_CTRL
+ 	    EMAC_FTR_NO_FLOW_CONTROL_40x |
+ #endif
+diff --git a/drivers/net/ethernet/ibm/emac/rgmii_wol.c b/drivers/net/ethernet/ibm/emac/rgmii_wol.c
+new file mode 100644
+index 0000000..69785d7
+--- /dev/null
++++ b/drivers/net/ethernet/ibm/emac/rgmii_wol.c
+@@ -0,0 +1,244 @@
++/* drivers/net/ethernet/ibm/emac/rgmii_wol.c
++ *
++ * Driver for PowerPC 4xx on-chip ethernet controller, RGMII bridge with
++ * wake on LAN support.
++ *
++ * Copyright 2013 Alistair Popple, IBM Corp.
++ *                <alistair@popple.id.au>
++ *
++ * Based on rgmii.h:
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#include <linux/slab.h>
++#include <linux/kernel.h>
++#include <linux/ethtool.h>
++#include <linux/io.h>
++#include <linux/of_address.h>
++
++#include "emac.h"
++#include "debug.h"
++
++/* RGMII_WOL_REG */
++
++#define WKUP_ETH_RGSPD      0xC0000000
++#define WKUP_ETH_FCSEN      0x20000000
++#define WKUP_ETH_CRSEN      0x02000000
++#define WKUP_ETH_COLEN      0x01000000
++#define WKUP_ETH_TX_OE      0x00040000
++#define WKUP_ETH_RX_IE      0x00020000
++#define WKUP_ETH_RGMIIEN    0x00010000
++
++#define WKUP_ETH_RGSPD_10   0x00000000
++#define WKUP_ETH_RGSPD_100  0x40000000
++#define WKUP_ETH_RGSPD_1000 0x80000000
++
++/* RGMII bridge supports only GMII/TBI and RGMII/RTBI PHYs */
++static inline int rgmii_valid_mode(int phy_mode)
++{
++	return  phy_mode == PHY_MODE_GMII ||
++		phy_mode == PHY_MODE_MII ||
++		phy_mode == PHY_MODE_RGMII ||
++		phy_mode == PHY_MODE_TBI ||
++		phy_mode == PHY_MODE_RTBI;
++}
++
++int rgmii_wol_attach(struct platform_device *ofdev, int mode)
++{
++	struct rgmii_wol_instance *dev = platform_get_drvdata(ofdev);
++
++	dev_dbg(&ofdev->dev, "attach\n");
++
++	/* Check if we need to attach to a RGMII */
++	if (!rgmii_valid_mode(mode)) {
++		dev_err(&ofdev->dev, "unsupported settings !\n");
++		return -ENODEV;
++	}
++
++	mutex_lock(&dev->lock);
++
++	/* Enable this input */
++	out_be32(dev->reg, (in_be32(dev->reg) | WKUP_ETH_RGMIIEN |
++				    WKUP_ETH_TX_OE | WKUP_ETH_RX_IE));
++
++	++dev->users;
++
++	mutex_unlock(&dev->lock);
++
++	return 0;
++}
++
++void rgmii_wol_set_speed(struct platform_device *ofdev, int speed)
++{
++	struct rgmii_wol_instance *dev = platform_get_drvdata(ofdev);
++	u32 reg;
++
++	mutex_lock(&dev->lock);
++
++	reg = in_be32(dev->reg) & ~WKUP_ETH_RGSPD;
++
++	dev_dbg(&ofdev->dev, "speed(%d)\n", speed);
++
++	switch (speed) {
++	case SPEED_1000:
++		reg |= WKUP_ETH_RGSPD_1000;
++		break;
++	case SPEED_100:
++		reg |= WKUP_ETH_RGSPD_100;
++		break;
++	case SPEED_10:
++		reg |= WKUP_ETH_RGSPD_10;
++		break;
++	default:
++		dev_err(&ofdev->dev, "invalid speed set!\n");
++	}
++
++	out_be32(dev->reg, reg);
++
++	mutex_unlock(&dev->lock);
++}
++
++void rgmii_wol_get_mdio(struct platform_device *ofdev)
++{
++	/* MDIO is always enabled when RGMII_WOL is enabled, so we
++	 * don't have to do anything here.
++	 */
++	dev_dbg(&ofdev->dev, "get_mdio\n");
++}
++
++void rgmii_wol_put_mdio(struct platform_device *ofdev)
++{
++	dev_dbg(&ofdev->dev, "put_mdio\n");
++}
++
++void rgmii_wol_detach(struct platform_device *ofdev)
++{
++	struct rgmii_wol_instance *dev = platform_get_drvdata(ofdev);
++
++	BUG_ON(!dev || dev->users == 0);
++
++	mutex_lock(&dev->lock);
++
++	dev_dbg(&ofdev->dev, "detach\n");
++
++	/* Disable this input */
++	out_be32(dev->reg, 0);
++
++	--dev->users;
++
++	mutex_unlock(&dev->lock);
++}
++
++int rgmii_wol_get_regs_len(struct platform_device *ofdev)
++{
++	return sizeof(struct emac_ethtool_regs_subhdr) +
++		sizeof(u32);
++}
++
++void *rgmii_wol_dump_regs(struct platform_device *ofdev, void *buf)
++{
++	struct rgmii_wol_instance *dev = platform_get_drvdata(ofdev);
++	struct emac_ethtool_regs_subhdr *hdr = buf;
++	u32 *regs = (u32 *)(hdr + 1);
++
++	hdr->version = 0;
++	hdr->index = 0; /* for now, are there chips with more than one
++			 * rgmii ? if yes, then we'll add a cell_index
++			 * like we do for emac
++			 */
++	memcpy_fromio(regs, dev->reg, sizeof(u32));
++	return regs + 1;
++}
++
++
++static int rgmii_wol_probe(struct platform_device *ofdev)
++{
++	struct device_node *np = ofdev->dev.of_node;
++	struct rgmii_wol_instance *dev;
++	int rc;
++
++	rc = -ENOMEM;
++	dev = kzalloc(sizeof(struct rgmii_wol_instance), GFP_KERNEL);
++	if (dev == NULL)
++		goto err_gone;
++
++	mutex_init(&dev->lock);
++
++	dev->reg = of_iomap(np, 0);
++	if (!dev->reg) {
++		dev_err(&ofdev->dev, "Can't map registers\n");
++		rc = -ENXIO;
++		goto err_free;
++	}
++
++	/* Check for RGMII flags */
++	if (of_property_read_bool(np, "has-mdio"))
++		dev->flags |= EMAC_RGMII_FLAG_HAS_MDIO;
++
++	dev_dbg(&ofdev->dev, "Boot REG = 0x%08x\n", in_be32(dev->reg));
++
++	/* Disable all inputs by default */
++	out_be32(dev->reg, 0);
++
++	dev_info(&ofdev->dev,
++	       "RGMII %s initialized with%s MDIO support\n",
++	       ofdev->dev.of_node->full_name,
++	       (dev->flags & EMAC_RGMII_FLAG_HAS_MDIO) ? "" : "out");
++
++	wmb();
++	platform_set_drvdata(ofdev, dev);
++
++	return 0;
++
++ err_free:
++	kfree(dev);
++ err_gone:
++	return rc;
++}
++
++static int rgmii_wol_remove(struct platform_device *ofdev)
++{
++	struct rgmii_wol_instance *dev = platform_get_drvdata(ofdev);
++
++	WARN_ON(dev->users != 0);
++
++	iounmap(dev->reg);
++	kfree(dev);
++
++	return 0;
++}
++
++static struct of_device_id rgmii_wol_match[] = {
++	{
++		.compatible	= "ibm,rgmii-wol",
++	},
++	{
++		.type		= "emac-rgmii-wol",
++	},
++	{},
++};
++
++static struct platform_driver rgmii_wol_driver = {
++	.driver = {
++		.name = "emac-rgmii-wol",
++		.owner = THIS_MODULE,
++		.of_match_table = rgmii_wol_match,
++	},
++	.probe = rgmii_wol_probe,
++	.remove = rgmii_wol_remove,
++};
++
++int __init rgmii_wol_init(void)
++{
++	return platform_driver_register(&rgmii_wol_driver);
++}
++
++void rgmii_wol_exit(void)
++{
++	platform_driver_unregister(&rgmii_wol_driver);
++}
+diff --git a/drivers/net/ethernet/ibm/emac/rgmii_wol.h b/drivers/net/ethernet/ibm/emac/rgmii_wol.h
+new file mode 100644
+index 0000000..9f0b589
+--- /dev/null
++++ b/drivers/net/ethernet/ibm/emac/rgmii_wol.h
+@@ -0,0 +1,62 @@
++/* drivers/net/ethernet/ibm/emac/rgmii_wol.h
++ *
++ * Driver for PowerPC 4xx on-chip ethernet controller, RGMII bridge with
++ * wake on LAN support.
++ *
++ * Copyright 2013 Alistair Popple, IBM Corp.
++ *                <alistair@popple.id.au>
++ *
++ * Based on rgmii.h:
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *                <benh@kernel.crashing.org>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef __IBM_NEWEMAC_RGMII_WOL_H
++#define __IBM_NEWEMAC_RGMII_WOL_H
++
++/* RGMII device */
++struct rgmii_wol_instance {
++	u32 __iomem			*reg;
++
++	/* RGMII bridge flags */
++	int				flags;
++#define EMAC_RGMII_FLAG_HAS_MDIO	0x00000001
++
++	/* Only one EMAC whacks us at a time */
++	struct mutex			lock;
++
++	/* number of EMACs using this RGMII bridge */
++	int				users;
++};
++
++#ifdef CONFIG_IBM_EMAC_RGMII_WOL
++
++extern int rgmii_wol_init(void);
++extern void rgmii_wol_exit(void);
++extern int rgmii_wol_attach(struct platform_device *ofdev, int mode);
++extern void rgmii_wol_detach(struct platform_device *ofdev);
++extern void rgmii_wol_get_mdio(struct platform_device *ofdev);
++extern void rgmii_wol_put_mdio(struct platform_device *ofdev);
++extern void rgmii_wol_set_speed(struct platform_device *ofdev, int speed);
++extern int rgmii_wol_get_regs_len(struct platform_device *ofdev);
++extern void *rgmii_wol_dump_regs(struct platform_device *ofdev, void *buf);
++
++#else
++
++# define rgmii_wol_init()		0
++# define rgmii_wol_exit()		do { } while (0)
++# define rgmii_wol_attach(x, y)		(-ENXIO)
++# define rgmii_wol_detach(x)		do { } while (0)
++# define rgmii_wol_get_mdio(o)		do { } while (0)
++# define rgmii_wol_put_mdio(o)		do { } while (0)
++# define rgmii_wol_set_speed(x, y)	do { } while (0)
++# define rgmii_wol_get_regs_len(x)	0
++# define rgmii_wol_dump_regs(x, buf)	(buf)
++#endif				/* !CONFIG_IBM_EMAC_RGMII_WOL */
++
++#endif /* __IBM_NEWEMAC_RGMII_WOL_H */
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.3.2
