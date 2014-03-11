@@ -1,35 +1,23 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BEC5B2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 08:06:38 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 17:06:34 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 86C526E8047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 17:06:25 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2BL6V3O7668096
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 21:06:31 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2BL6ULI006119
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 17:06:30 -0400
-Date: Tue, 11 Mar 2014 14:06:14 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Subject: Bug in reclaim logic with exhausted nodes?
-Message-ID: <20140311210614.GB946@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: cl@linux.com, rientjes@google.com, linuxppc-dev@lists.ozlabs.org,
- anton@samba.org, mgorman@suse.de
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id ED7E52C00CA
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2014 09:07:37 +1100 (EST)
+Date: Tue, 11 Mar 2014 15:07:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 00/52] CPU hotplug: Fix issues with callback
+ registration
+Message-Id: <20140311150733.efcc594dd7fe59c9c5fe9325@linux-foundation.org>
+In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
+ linux@arm.linux.org.uk, linux-pm@vger.kernel.org, peterz@infradead.org,
+ rusty@rustcorp.com.au, rjw@rjwysocki.net, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+ tj@kernel.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,144 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have seen the following situation on a test system:
+On Tue, 11 Mar 2014 02:03:52 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
 
-2-node system, each node has 32GB of memory.
+> Hi,
+> 
+> Many subsystems and drivers have the need to register CPU hotplug callbacks
+> from their init routines and also perform initialization for the CPUs that are
+> already online. But unfortunately there is no race-free way to achieve this
+> today.
+> 
+> For example, consider this piece of code:
+> 
+> 	get_online_cpus();
+> 
+> 	for_each_online_cpu(cpu)
+> 		init_cpu(cpu);
+> 
+> 	register_cpu_notifier(&foobar_cpu_notifier);
+> 
+> 	put_online_cpus();
+> 
+> This is not safe because there is a possibility of an ABBA deadlock involving
+> the cpu_add_remove_lock and the cpu_hotplug.lock.
+> 
+>           CPU 0                                         CPU 1
+>           -----                                         -----
+> 
+>    Acquire cpu_hotplug.lock
+>    [via get_online_cpus()]
+> 
+>                                               CPU online/offline operation
+>                                               takes cpu_add_remove_lock
+>                                               [via cpu_maps_update_begin()]
+> 
+>    Try to acquire
+>    cpu_add_remove_lock
+>    [via register_cpu_notifier()]
+> 
+>                                               CPU online/offline operation
+>                                               tries to acquire cpu_hotplug.lock
+>                                               [via cpu_hotplug_begin()]
 
-2 gigantic (16GB) pages reserved at boot-time, both of which are
-allocated from node 1.
-
-SLUB notices this:
-
-[    0.000000] SLUB: Unable to allocate memory from node 1
-[    0.000000] SLUB: Allocating a useless per node structure in order to
-be able to continue
-
-After boot, user then did:
-
-echo 24 > /proc/sys/vm/nr_hugepages
-
-And tasks are stuck:
-
-[<c0000000010980b8>] kexec_stack+0xb8/0x8000
-[<c0000000000144d0>] .__switch_to+0x1c0/0x390
-[<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
-[<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
-[<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
-[<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
-[<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
-[<c0000000001eb7c8>] .hugetlb_sysctl_handler_common+0x168/0x180
-[<c0000000002ae21c>] .proc_sys_call_handler+0xfc/0x120
-[<c00000000021dcc0>] .vfs_write+0xe0/0x260
-[<c00000000021e8c8>] .SyS_write+0x58/0xd0
-[<c000000000009e7c>] syscall_exit+0x0/0x7c
-
-[<c00000004f9334b0>] 0xc00000004f9334b0
-[<c0000000000144d0>] .__switch_to+0x1c0/0x390
-[<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
-[<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
-[<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
-[<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
-[<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
-[<c0000000001eb7c8>] .hugetlb_sysctl_handler_common+0x168/0x180
-[<c0000000002ae21c>] .proc_sys_call_handler+0xfc/0x120
-[<c00000000021dcc0>] .vfs_write+0xe0/0x260
-[<c00000000021e8c8>] .SyS_write+0x58/0xd0
-[<c000000000009e7c>] syscall_exit+0x0/0x7c
-
-[<c00000004f91f440>] 0xc00000004f91f440
-[<c0000000000144d0>] .__switch_to+0x1c0/0x390
-[<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
-[<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
-[<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
-[<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
-[<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
-[<c0000000001eb54c>] .nr_hugepages_store_common.isra.39+0xbc/0x1b0
-[<c0000000003662cc>] .kobj_attr_store+0x2c/0x50
-[<c0000000002b2c2c>] .sysfs_write_file+0xec/0x1c0
-[<c00000000021dcc0>] .vfs_write+0xe0/0x260
-[<c00000000021e8c8>] .SyS_write+0x58/0xd0
-[<c000000000009e7c>] syscall_exit+0x0/0x7c
-
-kswapd1 is also pegged at this point at 100% cpu.
-
-If we go in and manually:
-
-echo 24 >
-/sys/devices/system/node/node0/hugepages/hugepages-16384kB/nr_hugepages
-
-rather than relying on the interleaving allocator from the sysctl, the
-allocation succeeds (and the echo returns immediately).
-
-I think we are hitting the following:
-
-mm/hugetlb.c::alloc_fresh_huge_page_node():
-
-        page = alloc_pages_exact_node(nid,
-                htlb_alloc_mask(h)|__GFP_COMP|__GFP_THISNODE|
-                                                __GFP_REPEAT|__GFP_NOWARN,
-                huge_page_order(h));
-
-include/linux/gfp.h:
-
-#define GFP_THISNODE    (__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
-
-and mm/page_alloc.c::__alloc_pages_slowpath():
-
-        /*
-         * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
-         * __GFP_NOWARN set) should not cause reclaim since the subsystem
-         * (f.e. slab) using GFP_THISNODE may choose to trigger reclaim
-         * using a larger set of nodes after it has established that the
-         * allowed per node queues are empty and that nodes are
-         * over allocated.
-         */
-        if (IS_ENABLED(CONFIG_NUMA) &&
-                        (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
-                goto nopage;
-
-so we *do* reclaim in this callpath. Under my reading, since node1 is
-exhausted, no matter how much work kswapd1 does, it will never reclaim
-memory from node1 to satisfy a 16M page allocation request (or any
-other, for that matter).
-
-I see the following possible changes/fixes, but am unsure if
-a) my analysis is right
-b) which is best.
-
-1) Since we did notice early in boot that (in this case) node 1 was
-exhausted, perhaps we should mark it as such there somehow, and if a
-__GFP_THISNODE allocation request comes through on such a node, we
-immediately fallthrough to nopage?
-
-2) There is the following check
-        /*
-         * For order > PAGE_ALLOC_COSTLY_ORDER, if __GFP_REPEAT is
-         * specified, then we retry until we no longer reclaim any pages
-         * (above), or we've reclaimed an order of pages at least as
-         * large as the allocation's order. In both cases, if the
-         * allocation still fails, we stop retrying.
-         */
-        if (gfp_mask & __GFP_REPEAT && pages_reclaimed < (1 << order))
-                return 1;
-
-I wonder if we should add a check to also be sure that the pages we are
-reclaiming, if __GFP_THISNODE is set, are from the right node?
-
-       if (gfp_mask & __GFP_THISNODE && the progress we have made is on
-       		the node requested?)
-
-3) did_some_progress could be updated to track where the progress is
-occuring, and if we are in __GFP_THISNODE allocation request and we
-didn't make any progress on the correct node, we fail the allocation?
-
-I think this situation could be reproduced (and am working on it) by
-exhausting a NUMA node with 16M hugepages and then using the generic
-RR allocator to ask for more. Other node exhaustion cases probably
-exist, but since we can't swap the hugepages, it seems like the most
-straightforward way to try and reproduce it.
-
-Any thoughts on this? Am I way off base?
-
-Thanks,
-Nish
+Can't we fix this by using a different (ie: new) lock to protect
+cpu_chain?
