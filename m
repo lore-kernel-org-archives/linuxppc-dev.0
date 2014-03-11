@@ -1,43 +1,23 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7FDA62C0BE8
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:43:18 +1100 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 06:43:18 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 56A372BB0054
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:43:16 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2AKh2ae11796930
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:43:02 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2AKhENB009019
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 07:43:16 +1100
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v3 52/52] net/iucv/iucv.c: Fix CPU hotplug callback
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 738212C00AB
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Mar 2014 11:22:51 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 00/52] CPU hotplug: Fix issues with callback
  registration
-To: paulus@samba.org, oleg@redhat.com, mingo@kernel.org, rjw@rjwysocki.net,
- rusty@rustcorp.com.au, peterz@infradead.org, tglx@linutronix.de,
- akpm@linux-foundation.org
-Date: Tue, 11 Mar 2014 02:12:57 +0530
-Message-ID: <20140310204257.10746.50242.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 11 Mar 2014 01:31:28 +0100
+Message-ID: <2714771.szsVpCAzkq@vostro.rjw.lan>
 In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-kernel@vger.kernel.org, Ursula Braun <ursula.braun@de.ibm.com>,
- linuxppc-dev@ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- tj@kernel.org, paulmck@linux.vnet.ibm.com, Ingo Molnar <mingo@kernel.org>
+ linux@arm.linux.org.uk, akpm@linux-foundation.org, linux-pm@vger.kernel.org,
+ peterz@infradead.org, rusty@rustcorp.com.au, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+ tj@kernel.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,223 +27,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Subsystems that want to register CPU hotplug callbacks, as well as perform
-initialization for the CPUs that are already online, often do it as shown
-below:
+On Tuesday, March 11, 2014 02:03:52 AM Srivatsa S. Bhat wrote:
+> Hi,
 
-	get_online_cpus();
+Hi,
 
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
+> Many subsystems and drivers have the need to register CPU hotplug callbacks
+> from their init routines and also perform initialization for the CPUs that are
+> already online. But unfortunately there is no race-free way to achieve this
+> today.
+> 
+> For example, consider this piece of code:
+> 
+> 	get_online_cpus();
+> 
+> 	for_each_online_cpu(cpu)
+> 		init_cpu(cpu);
+> 
+> 	register_cpu_notifier(&foobar_cpu_notifier);
+> 
+> 	put_online_cpus();
+> 
+> This is not safe because there is a possibility of an ABBA deadlock involving
+> the cpu_add_remove_lock and the cpu_hotplug.lock.
+> 
+>           CPU 0                                         CPU 1
+>           -----                                         -----
+> 
+>    Acquire cpu_hotplug.lock
+>    [via get_online_cpus()]
+> 
+>                                               CPU online/offline operation
+>                                               takes cpu_add_remove_lock
+>                                               [via cpu_maps_update_begin()]
+> 
+>    Try to acquire
+>    cpu_add_remove_lock
+>    [via register_cpu_notifier()]
+> 
+>                                               CPU online/offline operation
+>                                               tries to acquire cpu_hotplug.lock
+>                                               [via cpu_hotplug_begin()]
+> 
+>                             *** DEADLOCK! ***
+> 
+> 
+> Other combinations of callback registration also don't work correctly.
+> Examples:
+> 
+> 	register_cpu_notifier(&foobar_cpu_notifier);
+> 
+> 	get_online_cpus();
+> 
+> 	for_each_online_cpu(cpu)
+> 		init_cpu(cpu);
+> 
+> 	put_online_cpus();
+> 
+> This can lead to double initialization if a hotplug operation occurs after
+> registering the notifier and before invoking get_online_cpus().
+> 
+> On the other hand, the following piece of code can miss hotplug events
+> altogether:
+> 
+> 	get_online_cpus();
+> 
+> 	for_each_online_cpu(cpu)
+> 		init_cpu(cpu);
+> 
+> 	put_online_cpus();
+>               ^
+>               |   Race window; Can miss hotplug events here
+>               v
+> 	register_cpu_notifier(&foobar_cpu_notifier);
+> 
+> 
+> To solve these issues and provide a race-free method to register CPU hotplug
+> callbacks, this patchset introduces new variants of the callback registration
+> APIs that don't hold the cpu_add_remove_lock, and exports the
+> cpu_add_remove_lock via 2 new APIs cpu_notifier_register_begin/done() for use
+> by various subsystems. With this in place, the following code snippet will
+> register a hotplug callback as well as initialize already online CPUs without
+> any race conditions.
+> 
+> 	cpu_notifier_register_begin();
+> 
+> 	for_each_online_cpu(cpu)
+> 		init_cpu(cpu);
+> 
+> 	/* This doesn't take the cpu_add_remove_lock */
+> 	__register_cpu_notifier(&foobar_cpu_notifier);
+> 
+> 	cpu_notifier_register_done();
+> 
+> 
+> In this patchset, patch 1 adds lockdep annotations to catch the above mentioned
+> deadlock scenario. Patch 2 introduces the new APIs and infrastructure necessary
+> for race-free callback registration. The remaining patches perform tree-wide
+> conversions (to use this model).
+> 
+> This patchset has been hosted in the below git tree. It applies cleanly on
+> v3.14-rc6.
+> 
+> git://github.com/srivatsabhat/linux.git cpuhp-registration-fixes-v3
 
-	register_cpu_notifier(&foobar_cpu_notifier);
+So to me, this is a useful patchset and it addresses a real problem.  It has
+gone through several rounds of review and recently I haven't really seen any
+objections against is from anyone.  On the contrary, I've seen ACKs from a
+number of people whom I trust.
 
-	put_online_cpus();
+Thus, if nobody objects, I'm going to take this series into the PM tree for 3.15.
 
-This is wrong, since it is prone to ABBA deadlocks involving the
-cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-with CPU hotplug operations).
+Thanks!
 
-Instead, the correct and race-free way of performing the callback
-registration is:
-
-	cpu_notifier_register_begin();
-
-	for_each_online_cpu(cpu)
-		init_cpu(cpu);
-
-	/* Note the use of the double underscored version of the API */
-	__register_cpu_notifier(&foobar_cpu_notifier);
-
-	cpu_notifier_register_done();
-
-
-Fix the code in net/iucv/iucv.c by using this latter form of callback
-registration. Also, provide helper functions to perform the common memory
-allocations and frees, to condense repetitive code.
-
-Cc: Ursula Braun <ursula.braun@de.ibm.com>
-Cc: Ingo Molnar <mingo@kernel.org>
-Cc: linux-s390@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Acked-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- net/iucv/iucv.c |  121 ++++++++++++++++++++++++++-----------------------------
- 1 file changed, 57 insertions(+), 64 deletions(-)
-
-diff --git a/net/iucv/iucv.c b/net/iucv/iucv.c
-index cd5b8ec..79a0ce9 100644
---- a/net/iucv/iucv.c
-+++ b/net/iucv/iucv.c
-@@ -621,6 +621,42 @@ static void iucv_disable(void)
- 	put_online_cpus();
- }
- 
-+static void free_iucv_data(int cpu)
-+{
-+	kfree(iucv_param_irq[cpu]);
-+	iucv_param_irq[cpu] = NULL;
-+	kfree(iucv_param[cpu]);
-+	iucv_param[cpu] = NULL;
-+	kfree(iucv_irq_data[cpu]);
-+	iucv_irq_data[cpu] = NULL;
-+}
-+
-+static int alloc_iucv_data(int cpu)
-+{
-+	/* Note: GFP_DMA used to get memory below 2G */
-+	iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
-+			     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
-+	if (!iucv_irq_data[cpu])
-+		goto out_free;
-+
-+	/* Allocate parameter blocks. */
-+	iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
-+			  GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
-+	if (!iucv_param[cpu])
-+		goto out_free;
-+
-+	iucv_param_irq[cpu] = kmalloc_node(sizeof(union iucv_param),
-+			  GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
-+	if (!iucv_param_irq[cpu])
-+		goto out_free;
-+
-+	return 0;
-+
-+out_free:
-+	free_iucv_data(cpu);
-+	return -ENOMEM;
-+}
-+
- static int iucv_cpu_notify(struct notifier_block *self,
- 				     unsigned long action, void *hcpu)
- {
-@@ -630,38 +666,14 @@ static int iucv_cpu_notify(struct notifier_block *self,
- 	switch (action) {
- 	case CPU_UP_PREPARE:
- 	case CPU_UP_PREPARE_FROZEN:
--		iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
--					GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
--		if (!iucv_irq_data[cpu])
--			return notifier_from_errno(-ENOMEM);
--
--		iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
--				     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
--		if (!iucv_param[cpu]) {
--			kfree(iucv_irq_data[cpu]);
--			iucv_irq_data[cpu] = NULL;
-+		if (alloc_iucv_data(cpu))
- 			return notifier_from_errno(-ENOMEM);
--		}
--		iucv_param_irq[cpu] = kmalloc_node(sizeof(union iucv_param),
--					GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
--		if (!iucv_param_irq[cpu]) {
--			kfree(iucv_param[cpu]);
--			iucv_param[cpu] = NULL;
--			kfree(iucv_irq_data[cpu]);
--			iucv_irq_data[cpu] = NULL;
--			return notifier_from_errno(-ENOMEM);
--		}
- 		break;
- 	case CPU_UP_CANCELED:
- 	case CPU_UP_CANCELED_FROZEN:
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
--		kfree(iucv_param_irq[cpu]);
--		iucv_param_irq[cpu] = NULL;
--		kfree(iucv_param[cpu]);
--		iucv_param[cpu] = NULL;
--		kfree(iucv_irq_data[cpu]);
--		iucv_irq_data[cpu] = NULL;
-+		free_iucv_data(cpu);
- 		break;
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
-@@ -2025,33 +2037,20 @@ static int __init iucv_init(void)
- 		goto out_int;
- 	}
- 
--	for_each_online_cpu(cpu) {
--		/* Note: GFP_DMA used to get memory below 2G */
--		iucv_irq_data[cpu] = kmalloc_node(sizeof(struct iucv_irq_data),
--				     GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
--		if (!iucv_irq_data[cpu]) {
--			rc = -ENOMEM;
--			goto out_free;
--		}
-+	cpu_notifier_register_begin();
- 
--		/* Allocate parameter blocks. */
--		iucv_param[cpu] = kmalloc_node(sizeof(union iucv_param),
--				  GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
--		if (!iucv_param[cpu]) {
--			rc = -ENOMEM;
--			goto out_free;
--		}
--		iucv_param_irq[cpu] = kmalloc_node(sizeof(union iucv_param),
--				  GFP_KERNEL|GFP_DMA, cpu_to_node(cpu));
--		if (!iucv_param_irq[cpu]) {
-+	for_each_online_cpu(cpu) {
-+		if (alloc_iucv_data(cpu)) {
- 			rc = -ENOMEM;
- 			goto out_free;
- 		}
--
- 	}
--	rc = register_hotcpu_notifier(&iucv_cpu_notifier);
-+	rc = __register_hotcpu_notifier(&iucv_cpu_notifier);
- 	if (rc)
- 		goto out_free;
-+
-+	cpu_notifier_register_done();
-+
- 	rc = register_reboot_notifier(&iucv_reboot_notifier);
- 	if (rc)
- 		goto out_cpu;
-@@ -2069,16 +2068,14 @@ static int __init iucv_init(void)
- out_reboot:
- 	unregister_reboot_notifier(&iucv_reboot_notifier);
- out_cpu:
--	unregister_hotcpu_notifier(&iucv_cpu_notifier);
-+	cpu_notifier_register_begin();
-+	__unregister_hotcpu_notifier(&iucv_cpu_notifier);
- out_free:
--	for_each_possible_cpu(cpu) {
--		kfree(iucv_param_irq[cpu]);
--		iucv_param_irq[cpu] = NULL;
--		kfree(iucv_param[cpu]);
--		iucv_param[cpu] = NULL;
--		kfree(iucv_irq_data[cpu]);
--		iucv_irq_data[cpu] = NULL;
--	}
-+	for_each_possible_cpu(cpu)
-+		free_iucv_data(cpu);
-+
-+	cpu_notifier_register_done();
-+
- 	root_device_unregister(iucv_root);
- out_int:
- 	unregister_external_interrupt(0x4000, iucv_external_interrupt);
-@@ -2105,15 +2102,11 @@ static void __exit iucv_exit(void)
- 		kfree(p);
- 	spin_unlock_irq(&iucv_queue_lock);
- 	unregister_reboot_notifier(&iucv_reboot_notifier);
--	unregister_hotcpu_notifier(&iucv_cpu_notifier);
--	for_each_possible_cpu(cpu) {
--		kfree(iucv_param_irq[cpu]);
--		iucv_param_irq[cpu] = NULL;
--		kfree(iucv_param[cpu]);
--		iucv_param[cpu] = NULL;
--		kfree(iucv_irq_data[cpu]);
--		iucv_irq_data[cpu] = NULL;
--	}
-+	cpu_notifier_register_begin();
-+	__unregister_hotcpu_notifier(&iucv_cpu_notifier);
-+	for_each_possible_cpu(cpu)
-+		free_iucv_data(cpu);
-+	cpu_notifier_register_done();
- 	root_device_unregister(iucv_root);
- 	bus_unregister(&iucv_bus);
- 	unregister_external_interrupt(0x4000, iucv_external_interrupt);
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
