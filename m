@@ -1,28 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AF37C2C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 07:38:49 +1100 (EST)
-Message-ID: <1394570240.4840.48.camel@pasglop>
-Subject: Re: [RFC PATCH] Remove CONFIG_DCACHE_WORD_ACCESS
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joe Perches <joe@perches.com>
-Date: Wed, 12 Mar 2014 07:37:20 +1100
-In-Reply-To: <1393964591.20435.58.camel@joe-AO722>
-References: <1393964591.20435.58.camel@joe-AO722>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-arch <linux-arch@vger.kernel.org>,
- Anton Blanchard <anton@au1.ibm.com>, Russell King <linux@arm.linux.org.uk>,
- Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
- Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>, "H. Peter
- Anvin" <hpa@zytor.com>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel@lists.infradead.org
+ by ozlabs.org (Postfix) with ESMTPS id BEC5B2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 08:06:38 +1100 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 11 Mar 2014 17:06:34 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 86C526E8047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 17:06:25 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2BL6V3O7668096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 21:06:31 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2BL6ULI006119
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 17:06:30 -0400
+Date: Tue, 11 Mar 2014 14:06:14 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Subject: Bug in reclaim logic with exhausted nodes?
+Message-ID: <20140311210614.GB946@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: cl@linux.com, rientjes@google.com, linuxppc-dev@lists.ozlabs.org,
+ anton@samba.org, mgorman@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,137 +39,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-04 at 12:23 -0800, Joe Perches wrote:
-> It seems to duplicate CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-> so use that instead.
-> 
-> This changes the !CPU_LITTLE_ENDIAN powerpc arch to use unaligned
-> accesses in fs/dcache.c and fs/namei.c as
-> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is enabled for that arch.
-> 
-> Remove the now unused DCACHE_WORD_ACCESS defines & uses.
+We have seen the following situation on a test system:
 
-Interesting.. we have word-at-a-time but we never enabled
-DCACHE_WORD_ACCESS, I wonder why that is. In fact, we should
-probably do it for LE as well for P8 if we can make a P8
-only config option...
+2-node system, each node has 32GB of memory.
 
-Anton, what do you reckon here ?
+2 gigantic (16GB) pages reserved at boot-time, both of which are
+allocated from node 1.
 
-Cheers,
-Ben.
+SLUB notices this:
 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/arm/Kconfig                      | 1 -
->  arch/arm/include/asm/word-at-a-time.h | 4 ++--
->  arch/arm64/Kconfig                    | 1 -
->  arch/x86/Kconfig                      | 1 -
->  fs/Kconfig                            | 4 ----
->  fs/dcache.c                           | 2 +-
->  fs/namei.c                            | 2 +-
->  7 files changed, 4 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 623a272..d5a2e60 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -12,7 +12,6 @@ config ARM
->  	select BUILDTIME_EXTABLE_SORT if MMU
->  	select CLONE_BACKWARDS
->  	select CPU_PM if (SUSPEND || CPU_IDLE)
-> -	select DCACHE_WORD_ACCESS if HAVE_EFFICIENT_UNALIGNED_ACCESS
->  	select GENERIC_ATOMIC64 if (CPU_V7M || CPU_V6 || !CPU_32v6K || !AEABI)
->  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
->  	select GENERIC_IDLE_POLL_SETUP
-> diff --git a/arch/arm/include/asm/word-at-a-time.h b/arch/arm/include/asm/word-at-a-time.h
-> index a6d0a29..778b2ad 100644
-> --- a/arch/arm/include/asm/word-at-a-time.h
-> +++ b/arch/arm/include/asm/word-at-a-time.h
-> @@ -54,7 +54,7 @@ static inline unsigned long find_zero(unsigned long mask)
->  #include <asm-generic/word-at-a-time.h>
->  #endif
->  
-> -#ifdef CONFIG_DCACHE_WORD_ACCESS
-> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
->  
->  /*
->   * Load an unaligned word from kernel space.
-> @@ -94,5 +94,5 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
->  	return ret;
->  }
->  
-> -#endif	/* DCACHE_WORD_ACCESS */
-> +#endif	/* HAVE_EFFICIENT_UNALIGNED_ACCESS */
->  #endif /* __ASM_ARM_WORD_AT_A_TIME_H */
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index 764d682..2d6978c 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -13,7 +13,6 @@ config ARM64
->  	select CLONE_BACKWARDS
->  	select COMMON_CLK
->  	select CPU_PM if (SUSPEND || CPU_IDLE)
-> -	select DCACHE_WORD_ACCESS
->  	select GENERIC_CLOCKEVENTS
->  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
->  	select GENERIC_IOMAP
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index abb261e..60cfa073 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -98,7 +98,6 @@ config X86
->  	select CLKEVT_I8253
->  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
->  	select GENERIC_IOMAP
-> -	select DCACHE_WORD_ACCESS
->  	select GENERIC_SMP_IDLE_THREAD
->  	select ARCH_WANT_IPC_PARSE_VERSION if X86_32
->  	select HAVE_ARCH_SECCOMP_FILTER
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index 312393f..7511271 100644
-> --- a/fs/Kconfig
-> +++ b/fs/Kconfig
-> @@ -4,10 +4,6 @@
->  
->  menu "File systems"
->  
-> -# Use unaligned word dcache accesses
-> -config DCACHE_WORD_ACCESS
-> -       bool
-> -
->  if BLOCK
->  
->  source "fs/ext2/Kconfig"
-> diff --git a/fs/dcache.c b/fs/dcache.c
-> index 265e0ce..4e3c195 100644
-> --- a/fs/dcache.c
-> +++ b/fs/dcache.c
-> @@ -163,7 +163,7 @@ int proc_nr_dentry(ctl_table *table, int write, void __user *buffer,
->   * Compare 2 name strings, return 0 if they match, otherwise non-zero.
->   * The strings are both count bytes long, and count is non-zero.
->   */
-> -#ifdef CONFIG_DCACHE_WORD_ACCESS
-> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
->  
->  #include <asm/word-at-a-time.h>
->  /*
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 385f781..1ee33ca 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -1618,7 +1618,7 @@ static inline int nested_symlink(struct path *path, struct nameidata *nd)
->   *   the final mask". Again, that could be replaced with a
->   *   efficient population count instruction or similar.
->   */
-> -#ifdef CONFIG_DCACHE_WORD_ACCESS
-> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
->  
->  #include <asm/word-at-a-time.h>
->  
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[    0.000000] SLUB: Unable to allocate memory from node 1
+[    0.000000] SLUB: Allocating a useless per node structure in order to
+be able to continue
+
+After boot, user then did:
+
+echo 24 > /proc/sys/vm/nr_hugepages
+
+And tasks are stuck:
+
+[<c0000000010980b8>] kexec_stack+0xb8/0x8000
+[<c0000000000144d0>] .__switch_to+0x1c0/0x390
+[<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
+[<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
+[<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
+[<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
+[<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
+[<c0000000001eb7c8>] .hugetlb_sysctl_handler_common+0x168/0x180
+[<c0000000002ae21c>] .proc_sys_call_handler+0xfc/0x120
+[<c00000000021dcc0>] .vfs_write+0xe0/0x260
+[<c00000000021e8c8>] .SyS_write+0x58/0xd0
+[<c000000000009e7c>] syscall_exit+0x0/0x7c
+
+[<c00000004f9334b0>] 0xc00000004f9334b0
+[<c0000000000144d0>] .__switch_to+0x1c0/0x390
+[<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
+[<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
+[<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
+[<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
+[<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
+[<c0000000001eb7c8>] .hugetlb_sysctl_handler_common+0x168/0x180
+[<c0000000002ae21c>] .proc_sys_call_handler+0xfc/0x120
+[<c00000000021dcc0>] .vfs_write+0xe0/0x260
+[<c00000000021e8c8>] .SyS_write+0x58/0xd0
+[<c000000000009e7c>] syscall_exit+0x0/0x7c
+
+[<c00000004f91f440>] 0xc00000004f91f440
+[<c0000000000144d0>] .__switch_to+0x1c0/0x390
+[<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
+[<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
+[<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
+[<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
+[<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
+[<c0000000001eb54c>] .nr_hugepages_store_common.isra.39+0xbc/0x1b0
+[<c0000000003662cc>] .kobj_attr_store+0x2c/0x50
+[<c0000000002b2c2c>] .sysfs_write_file+0xec/0x1c0
+[<c00000000021dcc0>] .vfs_write+0xe0/0x260
+[<c00000000021e8c8>] .SyS_write+0x58/0xd0
+[<c000000000009e7c>] syscall_exit+0x0/0x7c
+
+kswapd1 is also pegged at this point at 100% cpu.
+
+If we go in and manually:
+
+echo 24 >
+/sys/devices/system/node/node0/hugepages/hugepages-16384kB/nr_hugepages
+
+rather than relying on the interleaving allocator from the sysctl, the
+allocation succeeds (and the echo returns immediately).
+
+I think we are hitting the following:
+
+mm/hugetlb.c::alloc_fresh_huge_page_node():
+
+        page = alloc_pages_exact_node(nid,
+                htlb_alloc_mask(h)|__GFP_COMP|__GFP_THISNODE|
+                                                __GFP_REPEAT|__GFP_NOWARN,
+                huge_page_order(h));
+
+include/linux/gfp.h:
+
+#define GFP_THISNODE    (__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
+
+and mm/page_alloc.c::__alloc_pages_slowpath():
+
+        /*
+         * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
+         * __GFP_NOWARN set) should not cause reclaim since the subsystem
+         * (f.e. slab) using GFP_THISNODE may choose to trigger reclaim
+         * using a larger set of nodes after it has established that the
+         * allowed per node queues are empty and that nodes are
+         * over allocated.
+         */
+        if (IS_ENABLED(CONFIG_NUMA) &&
+                        (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
+                goto nopage;
+
+so we *do* reclaim in this callpath. Under my reading, since node1 is
+exhausted, no matter how much work kswapd1 does, it will never reclaim
+memory from node1 to satisfy a 16M page allocation request (or any
+other, for that matter).
+
+I see the following possible changes/fixes, but am unsure if
+a) my analysis is right
+b) which is best.
+
+1) Since we did notice early in boot that (in this case) node 1 was
+exhausted, perhaps we should mark it as such there somehow, and if a
+__GFP_THISNODE allocation request comes through on such a node, we
+immediately fallthrough to nopage?
+
+2) There is the following check
+        /*
+         * For order > PAGE_ALLOC_COSTLY_ORDER, if __GFP_REPEAT is
+         * specified, then we retry until we no longer reclaim any pages
+         * (above), or we've reclaimed an order of pages at least as
+         * large as the allocation's order. In both cases, if the
+         * allocation still fails, we stop retrying.
+         */
+        if (gfp_mask & __GFP_REPEAT && pages_reclaimed < (1 << order))
+                return 1;
+
+I wonder if we should add a check to also be sure that the pages we are
+reclaiming, if __GFP_THISNODE is set, are from the right node?
+
+       if (gfp_mask & __GFP_THISNODE && the progress we have made is on
+       		the node requested?)
+
+3) did_some_progress could be updated to track where the progress is
+occuring, and if we are in __GFP_THISNODE allocation request and we
+didn't make any progress on the correct node, we fail the allocation?
+
+I think this situation could be reproduced (and am working on it) by
+exhausting a NUMA node with 16M hugepages and then using the generic
+RR allocator to ask for more. Other node exhaustion cases probably
+exist, but since we can't swap the hugepages, it seems like the most
+straightforward way to try and reproduce it.
+
+Any thoughts on this? Am I way off base?
+
+Thanks,
+Nish
