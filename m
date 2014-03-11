@@ -1,35 +1,28 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 716EB2C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 06:56:57 +1100 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 11 Mar 2014 13:56:54 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 54B7019D804E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 13:56:49 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2BJuprK5374342
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 20:56:51 +0100
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2BJunCc011433
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 13:56:51 -0600
-Date: Tue, 11 Mar 2014 12:56:33 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Subject: Node 0 not necessary for powerpc?
-Message-ID: <20140311195632.GA946@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: cl@linux.com, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
- rientjes@google.com
+ by ozlabs.org (Postfix) with ESMTPS id AF37C2C00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 07:38:49 +1100 (EST)
+Message-ID: <1394570240.4840.48.camel@pasglop>
+Subject: Re: [RFC PATCH] Remove CONFIG_DCACHE_WORD_ACCESS
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joe Perches <joe@perches.com>
+Date: Wed, 12 Mar 2014 07:37:20 +1100
+In-Reply-To: <1393964591.20435.58.camel@joe-AO722>
+References: <1393964591.20435.58.camel@joe-AO722>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ Anton Blanchard <anton@au1.ibm.com>, Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, "H. Peter
+ Anvin" <hpa@zytor.com>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,59 +32,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have a P7 system that has no node0, but a node0 shows up in numactl
---hardware, which has no cpus and no memory (and no PCI devices):
+On Tue, 2014-03-04 at 12:23 -0800, Joe Perches wrote:
+> It seems to duplicate CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> so use that instead.
+> 
+> This changes the !CPU_LITTLE_ENDIAN powerpc arch to use unaligned
+> accesses in fs/dcache.c and fs/namei.c as
+> CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is enabled for that arch.
+> 
+> Remove the now unused DCACHE_WORD_ACCESS defines & uses.
 
-numactl --hardware
-available: 4 nodes (0-3)
-node 0 cpus:
-node 0 size: 0 MB
-node 0 free: 0 MB
-node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11
-node 1 size: 0 MB
-node 1 free: 0 MB
-node 2 cpus:
-node 2 size: 7935 MB
-node 2 free: 7716 MB
-node 3 cpus:
-node 3 size: 8395 MB
-node 3 free: 8015 MB
-node distances:
-node   0   1   2   3 
-  0:  10  20  10  20 
-  1:  20  10  20  20 
-  2:  10  20  10  20 
-  3:  20  20  20  10 
+Interesting.. we have word-at-a-time but we never enabled
+DCACHE_WORD_ACCESS, I wonder why that is. In fact, we should
+probably do it for LE as well for P8 if we can make a P8
+only config option...
 
-This is because we statically initialize N_ONLINE to be [0] in
-mm/page_alloc.c:
+Anton, what do you reckon here ?
 
-        [N_ONLINE] = { { [0] = 1UL } },
+Cheers,
+Ben.
 
-I'm not sure what the architectural requirements are here, but at least
-on this test system, removing this initialization, it boots fine and is
-running. I've not yet tried stress tests, but it's survived the
-beginnings of kernbench so far.
-
-numactl --hardware
-available: 3 nodes (1-3)
-node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11
-node 1 size: 0 MB
-node 1 free: 0 MB
-node 2 cpus:
-node 2 size: 7935 MB
-node 2 free: 7479 MB
-node 3 cpus:
-node 3 size: 8396 MB
-node 3 free: 8375 MB
-node distances:
-node   1   2   3 
-  1:  10  20  20 
-  2:  20  10  20 
-  3:  20  20  10
-
-Perhaps we could put in a ARCH_DOES_NOT_NEED_NODE0 and only define it on
-powerpc for now, conditionalizing the above initialization on that?
-
-Thanks,
-Nish
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/arm/Kconfig                      | 1 -
+>  arch/arm/include/asm/word-at-a-time.h | 4 ++--
+>  arch/arm64/Kconfig                    | 1 -
+>  arch/x86/Kconfig                      | 1 -
+>  fs/Kconfig                            | 4 ----
+>  fs/dcache.c                           | 2 +-
+>  fs/namei.c                            | 2 +-
+>  7 files changed, 4 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 623a272..d5a2e60 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -12,7 +12,6 @@ config ARM
+>  	select BUILDTIME_EXTABLE_SORT if MMU
+>  	select CLONE_BACKWARDS
+>  	select CPU_PM if (SUSPEND || CPU_IDLE)
+> -	select DCACHE_WORD_ACCESS if HAVE_EFFICIENT_UNALIGNED_ACCESS
+>  	select GENERIC_ATOMIC64 if (CPU_V7M || CPU_V6 || !CPU_32v6K || !AEABI)
+>  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+>  	select GENERIC_IDLE_POLL_SETUP
+> diff --git a/arch/arm/include/asm/word-at-a-time.h b/arch/arm/include/asm/word-at-a-time.h
+> index a6d0a29..778b2ad 100644
+> --- a/arch/arm/include/asm/word-at-a-time.h
+> +++ b/arch/arm/include/asm/word-at-a-time.h
+> @@ -54,7 +54,7 @@ static inline unsigned long find_zero(unsigned long mask)
+>  #include <asm-generic/word-at-a-time.h>
+>  #endif
+>  
+> -#ifdef CONFIG_DCACHE_WORD_ACCESS
+> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+>  
+>  /*
+>   * Load an unaligned word from kernel space.
+> @@ -94,5 +94,5 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
+>  	return ret;
+>  }
+>  
+> -#endif	/* DCACHE_WORD_ACCESS */
+> +#endif	/* HAVE_EFFICIENT_UNALIGNED_ACCESS */
+>  #endif /* __ASM_ARM_WORD_AT_A_TIME_H */
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 764d682..2d6978c 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -13,7 +13,6 @@ config ARM64
+>  	select CLONE_BACKWARDS
+>  	select COMMON_CLK
+>  	select CPU_PM if (SUSPEND || CPU_IDLE)
+> -	select DCACHE_WORD_ACCESS
+>  	select GENERIC_CLOCKEVENTS
+>  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+>  	select GENERIC_IOMAP
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index abb261e..60cfa073 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -98,7 +98,6 @@ config X86
+>  	select CLKEVT_I8253
+>  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+>  	select GENERIC_IOMAP
+> -	select DCACHE_WORD_ACCESS
+>  	select GENERIC_SMP_IDLE_THREAD
+>  	select ARCH_WANT_IPC_PARSE_VERSION if X86_32
+>  	select HAVE_ARCH_SECCOMP_FILTER
+> diff --git a/fs/Kconfig b/fs/Kconfig
+> index 312393f..7511271 100644
+> --- a/fs/Kconfig
+> +++ b/fs/Kconfig
+> @@ -4,10 +4,6 @@
+>  
+>  menu "File systems"
+>  
+> -# Use unaligned word dcache accesses
+> -config DCACHE_WORD_ACCESS
+> -       bool
+> -
+>  if BLOCK
+>  
+>  source "fs/ext2/Kconfig"
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 265e0ce..4e3c195 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -163,7 +163,7 @@ int proc_nr_dentry(ctl_table *table, int write, void __user *buffer,
+>   * Compare 2 name strings, return 0 if they match, otherwise non-zero.
+>   * The strings are both count bytes long, and count is non-zero.
+>   */
+> -#ifdef CONFIG_DCACHE_WORD_ACCESS
+> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+>  
+>  #include <asm/word-at-a-time.h>
+>  /*
+> diff --git a/fs/namei.c b/fs/namei.c
+> index 385f781..1ee33ca 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -1618,7 +1618,7 @@ static inline int nested_symlink(struct path *path, struct nameidata *nd)
+>   *   the final mask". Again, that could be replaced with a
+>   *   efficient population count instruction or similar.
+>   */
+> -#ifdef CONFIG_DCACHE_WORD_ACCESS
+> +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+>  
+>  #include <asm/word-at-a-time.h>
+>  
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
