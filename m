@@ -1,19 +1,21 @@
-Return-Path: <ydroneaud@opteya.com>
-From: Yann Droneaud <ydroneaud@opteya.com>
-To: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCHv6 2/6] ppc/cell: use get_unused_fd_flags(0) instead of
- get_unused_fd()
-Date: Tue, 11 Mar 2014 11:23:41 +0100
-Message-Id: <2e1a8b1869ff86b1f238e6f4e6ce4b5f2b17b03f.1394532336.git.ydroneaud@opteya.com>
-In-Reply-To: <cover.1394532336.git.ydroneaud@opteya.com>
-References: <cover.1394532336.git.ydroneaud@opteya.com>
-In-Reply-To: <cover.1394532336.git.ydroneaud@opteya.com>
-References: <cover.1394532336.git.ydroneaud@opteya.com>
-Cc: Yann Droneaud <ydroneaud@opteya.com>, cbe-oss-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <vinod.koul@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 49C502C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 22:11:01 +1100 (EST)
+Date: Tue, 11 Mar 2014 16:36:16 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: hongbo.zhang@freescale.com
+Subject: Re: [PATCH 3/7] DMA: Freescale: add fsl_dma_free_descriptor() to
+ reduce code duplication
+Message-ID: <20140311110616.GV1976@intel.com>
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+ <1389851246-8564-4-git-send-email-hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1389851246-8564-4-git-send-email-hongbo.zhang@freescale.com>
+Cc: linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,55 +25,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Macro get_unused_fd() is used to allocate a file descriptor with
-default flags. Those default flags (0) can be "unsafe":
-O_CLOEXEC must be used by default to not leak file descriptor
-across exec().
+On Thu, Jan 16, 2014 at 01:47:22PM +0800, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> 
+> There are several places where descriptors are freed using identical code.
+> This patch puts this code into a function to reduce code duplication.
+> 
+> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> ---
+>  drivers/dma/fsldma.c |   38 ++++++++++++++++++++------------------
+>  1 file changed, 20 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 95236e6..ad73538 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -418,6 +418,21 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+>  }
+>  
+>  /**
+> + * fsl_dma_free_descriptor - Free descriptor from channel's DMA pool.
+> + * @chan : Freescale DMA channel
+> + * @desc: descriptor to be freed
+> + */
+> +static void fsl_dma_free_descriptor(struct fsldma_chan *chan,
+> +		struct fsl_desc_sw *desc)
+> +{
+> +	list_del(&desc->node);
+> +#ifdef FSL_DMA_LD_DEBUG
+> +	chan_dbg(chan, "LD %p free\n", desc);
+> +#endif
+why not wrap the define stuff in the defination of chan_dbg rather than its
+usage :(
 
-Instead of macro get_unused_fd(), function get_unused_fd_flags()
-(or anon_inode_getfd()) should be used with flags given by userspace.
-If not possible, flags should be set to O_CLOEXEC to provide userspace
-with a default safe behavor.
-
-In a further patch, get_unused_fd() will be removed so that new code
-start using get_unused_fd_flags() (or anon_inode_getfd()) with correct
-flags.
-
-This patch replaces calls to get_unused_fd() with equivalent call to
-get_unused_fd_flags(0) to preserve current behavor for existing code.
-
-The hard coded flag value (0) should be reviewed on a per-subsystem
-basis, and, if possible, set to O_CLOEXEC.
-
-Link: http://lkml.kernel.org/r/cover.1394532336.git.ydroneaud@opteya.com
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
----
- arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 87ba7cf99cd7..51effcec30d8 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -301,7 +301,7 @@ static int spufs_context_open(struct path *path)
- 	int ret;
- 	struct file *filp;
- 
--	ret = get_unused_fd();
-+	ret = get_unused_fd_flags(0);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -518,7 +518,7 @@ static int spufs_gang_open(struct path *path)
- 	int ret;
- 	struct file *filp;
- 
--	ret = get_unused_fd();
-+	ret = get_unused_fd_flags(0);
- 	if (ret < 0)
- 		return ret;
- 
 -- 
-1.8.5.3
+~Vinod
+
+> +	dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+> +}
+> +
+> +/**
+>   * fsl_dma_alloc_descriptor - Allocate descriptor from channel's DMA pool.
+>   * @chan : Freescale DMA channel
+>   *
+> @@ -491,13 +506,8 @@ static void fsldma_free_desc_list(struct fsldma_chan *chan,
+>  {
+>  	struct fsl_desc_sw *desc, *_desc;
+>  
+> -	list_for_each_entry_safe(desc, _desc, list, node) {
+> -		list_del(&desc->node);
+> -#ifdef FSL_DMA_LD_DEBUG
+> -		chan_dbg(chan, "LD %p free\n", desc);
+> -#endif
+> -		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+> -	}
+> +	list_for_each_entry_safe(desc, _desc, list, node)
+> +		fsl_dma_free_descriptor(chan, desc);
+>  }
+>  
+>  static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
+> @@ -505,13 +515,8 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
+>  {
+>  	struct fsl_desc_sw *desc, *_desc;
+>  
+> -	list_for_each_entry_safe_reverse(desc, _desc, list, node) {
+> -		list_del(&desc->node);
+> -#ifdef FSL_DMA_LD_DEBUG
+> -		chan_dbg(chan, "LD %p free\n", desc);
+> -#endif
+> -		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+> -	}
+> +	list_for_each_entry_safe_reverse(desc, _desc, list, node)
+> +		fsl_dma_free_descriptor(chan, desc);
+>  }
+>  
+>  /**
+> @@ -827,10 +832,7 @@ static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
+>  	dma_run_dependencies(txd);
+>  
+>  	dma_descriptor_unmap(txd);
+> -#ifdef FSL_DMA_LD_DEBUG
+> -	chan_dbg(chan, "LD %p free\n", desc);
+> -#endif
+> -	dma_pool_free(chan->desc_pool, desc, txd->phys);
+> +	fsl_dma_free_descriptor(chan, desc);
+>  }
+>  
+>  /**
+> -- 
+> 1.7.9.5
+> 
+> 
+> 
+
+-- 
