@@ -1,23 +1,35 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id ED7E52C00CA
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2014 09:07:37 +1100 (EST)
-Date: Tue, 11 Mar 2014 15:07:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 00/52] CPU hotplug: Fix issues with callback
- registration
-Message-Id: <20140311150733.efcc594dd7fe59c9c5fe9325@linux-foundation.org>
-In-Reply-To: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
-References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, linux-pm@vger.kernel.org, peterz@infradead.org,
- rusty@rustcorp.com.au, rjw@rjwysocki.net, oleg@redhat.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
- tj@kernel.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
- mingo@kernel.org
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B7BD32C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 10:34:23 +1100 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 12 Mar 2014 05:04:18 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1EFC81258044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 05:06:30 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2BNYAO34456950
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 05:04:11 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2BNYEXB002638
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 05:04:14 +0530
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: Infrastructure to support OPAL async
+ completion
+In-Reply-To: <20140307053010.3365.28513.stgit@neelegup-tp-t420.in.ibm.com>
+References: <20140307053010.3365.28513.stgit@neelegup-tp-t420.in.ibm.com>
+Date: Wed, 12 Mar 2014 10:34:12 +1100
+Message-ID: <87lhwgia2z.fsf@river.au.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 Mar 2014 02:03:52 +0530 "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
+Neelesh Gupta <neelegup@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/platforms/powernv/opal-async.c b/arch/powerpc/platforms/powernv/opal-async.c
+> new file mode 100644
+> index 0000000..cd0c135
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-async.c
+> @@ -0,0 +1,203 @@
+> +/*
+> + * PowerNV OPAL asynchronous completion interfaces
+> + *
+> + * Copyright 2013 IBM Corp.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#undef DEBUG
 
-> Hi,
-> 
-> Many subsystems and drivers have the need to register CPU hotplug callbacks
-> from their init routines and also perform initialization for the CPUs that are
-> already online. But unfortunately there is no race-free way to achieve this
-> today.
-> 
-> For example, consider this piece of code:
-> 
-> 	get_online_cpus();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	put_online_cpus();
-> 
-> This is not safe because there is a possibility of an ABBA deadlock involving
-> the cpu_add_remove_lock and the cpu_hotplug.lock.
-> 
->           CPU 0                                         CPU 1
->           -----                                         -----
-> 
->    Acquire cpu_hotplug.lock
->    [via get_online_cpus()]
-> 
->                                               CPU online/offline operation
->                                               takes cpu_add_remove_lock
->                                               [via cpu_maps_update_begin()]
-> 
->    Try to acquire
->    cpu_add_remove_lock
->    [via register_cpu_notifier()]
-> 
->                                               CPU online/offline operation
->                                               tries to acquire cpu_hotplug.lock
->                                               [via cpu_hotplug_begin()]
-
-Can't we fix this by using a different (ie: new) lock to protect
-cpu_chain?
+this strikes me as slightly odd... are you sure it's correct?
