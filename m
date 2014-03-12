@@ -1,19 +1,18 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42E762C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 11:45:26 +1100 (EST)
-Message-ID: <1394585114.13761.112.camel@snotra.buserror.net>
-Subject: Re: [PATCH 8/9] powerpc/85xx: add save/restore functions for core
- registers
+ by ozlabs.org (Postfix) with ESMTPS id E23222C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 12:10:39 +1100 (EST)
+Message-ID: <1394586624.13761.132.camel@snotra.buserror.net>
+Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
 From: Scott Wood <scottwood@freescale.com>
 To: Chenhui Zhao <chenhui.zhao@freescale.com>
-Date: Tue, 11 Mar 2014 19:45:14 -0500
-In-Reply-To: <1394168285-32275-8-git-send-email-chenhui.zhao@freescale.com>
+Date: Tue, 11 Mar 2014 20:10:24 -0500
+In-Reply-To: <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-8-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -28,450 +27,611 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> From: Zhao Chenhui <chenhui.zhao@freescale.com>
 > 
-> Add booke_cpu_state_save() and booke_cpu_state_restore() functions which can be
-> used to save/restore CPU's registers in the case of deep sleep and hibernation.
+> T1040 supports deep sleep feature, which can switch off most parts of
+> the SoC when it is in deep sleep mode. This way, it becomes more
+> energy-efficient.
 > 
-> Supported processors: E6500, E5500, E500MC, E500v2 and E500v1.
+> The DDR controller will also be powered off in deep sleep. Therefore,
+> the last stage (the latter part of fsl_dp_enter_low) will run without DDR
+> access. This piece of code and related TLBs will be prefetched.
 > 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> Due to the different initialization code between 32-bit and 64-bit, they
+> have seperate resume entry and precedure.
+> 
+> The feature supports 32-bit and 64-bit kernel mode.
+> 
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 > ---
->  arch/powerpc/include/asm/booke_save_regs.h |   96 ++++++++
->  arch/powerpc/kernel/Makefile               |    1 +
->  arch/powerpc/kernel/booke_save_regs.S      |  361 ++++++++++++++++++++++++++++
->  3 files changed, 458 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/include/asm/booke_save_regs.h
->  create mode 100644 arch/powerpc/kernel/booke_save_regs.S
+>  arch/powerpc/include/asm/booke_save_regs.h |    3 +
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   17 ++
+>  arch/powerpc/kernel/head_fsl_booke.S       |   30 +++
+>  arch/powerpc/platforms/85xx/Makefile       |    2 +-
+>  arch/powerpc/platforms/85xx/deepsleep.c    |  201 +++++++++++++++++++
+>  arch/powerpc/platforms/85xx/qoriq_pm.c     |   38 ++++
+>  arch/powerpc/platforms/85xx/sleep.S        |  295 ++++++++++++++++++++++++++++
+>  arch/powerpc/sysdev/fsl_soc.h              |    7 +
+>  8 files changed, 592 insertions(+), 1 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+>  create mode 100644 arch/powerpc/platforms/85xx/sleep.S
 > 
 > diff --git a/arch/powerpc/include/asm/booke_save_regs.h b/arch/powerpc/include/asm/booke_save_regs.h
-> new file mode 100644
-> index 0000000..87c357a
-> --- /dev/null
+> index 87c357a..37c1f6c 100644
+> --- a/arch/powerpc/include/asm/booke_save_regs.h
 > +++ b/arch/powerpc/include/asm/booke_save_regs.h
-> @@ -0,0 +1,96 @@
+> @@ -88,6 +88,9 @@
+>  #define HIBERNATION_FLAG	1
+>  #define DEEPSLEEP_FLAG		2
+>  
+> +#define CPLD_FLAG	1
+> +#define FPGA_FLAG	2
+
+What is this?
+
+>  #ifndef __ASSEMBLY__
+>  extern void booke_cpu_state_save(void *buf, int type);
+>  extern void *booke_cpu_state_restore(void *buf, int type);
+> diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> index e59d6de..ea9bc28 100644
+> --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> @@ -318,6 +318,23 @@ flush_backside_L2_cache:
+>  2:
+>  	blr
+>  
+> +#define CPC_CPCCSR0		0x0
+> +#define CPC_CPCCSR0_CPCFL	0x800
+
+This is supposed to be CPU setup, not platform setup.
+
+> +/* r3 : the base address of CPC  */
+> +_GLOBAL(fsl_flush_cpc_cache)
+> +	lwz	r6, CPC_CPCCSR0(r3)
+> +	ori	r6, r6, CPC_CPCCSR0_CPCFL
+> +	stw	r6, CPC_CPCCSR0(r3)
+> +	sync
+> +
+> +	/* Wait until completing the flush */
+> +1:	lwz	r6, CPC_CPCCSR0(r3)
+> +	andi.	r6, r6, CPC_CPCCSR0_CPCFL
+> +	bne	1b
+> +
+> +	blr
+> +
+>  _GLOBAL(__flush_caches_e500v2)
+
+I'm not sure that this belongs here either.
+
+>  	mflr r0
+>  	bl	flush_dcache_L1
+> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+> index 20204fe..3285752 100644
+> --- a/arch/powerpc/kernel/head_fsl_booke.S
+> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> @@ -162,6 +162,19 @@ _ENTRY(__early_start)
+>  #include "fsl_booke_entry_mapping.S"
+>  #undef ENTRY_MAPPING_BOOT_SETUP
+>  
+> +#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
+> +	/* if deep_sleep_flag != 0, jump to the deep sleep resume entry */
+> +	LOAD_REG_ADDR(r4, deep_sleep_flag)
+> +	lwz	r3, 0(r4)
+> +	cmpwi	r3, 0
+> +	beq	11f
+> +	/* clear deep_sleep_flag */
+> +	li	r3, 0
+> +	stw	r3, 0(r4)
+> +	b	fsl_deepsleep_resume
+> +11:
+> +#endif
+
+Why do you come in via the normal kernel entry, versus specifying a
+direct entry point for deep sleep resume?  How does U-Boot even know
+what the normal entry is when resuming?
+
+Be careful of the "beq set_ivor" in the CONFIG_RELOCATABLE section
+above.  Also you probably don't want the relocation code to run again
+when resuming.
+
+> +#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
+> +_ENTRY(__entry_deep_sleep)
 > +/*
-> + *  Save/restore e500 series core registers
+> + * Bootloader will jump to here when resuming from deep sleep.
+> + * After executing the init code in fsl_booke_entry_mapping.S,
+> + * will jump to the real resume entry.
+> + */
+> +	li	r8, 1
+> +	bl	12f
+> +12:	mflr	r9
+> +	addi	r9, r9, (deep_sleep_flag - 12b)
+> +	stw	r8, 0(r9)
+> +	b __early_start
+> +deep_sleep_flag:
+> +	.long	0
+> +#endif
 
-Filename says booke, comment says e500.
+It's a bit ambiguous to say "entry_deep_sleep" when it's resuming rather
+than entering...
 
-Filename and comment also fail to point out that this is specifically
-for standby/suspend, not for hibernate which is implemented in
-swsusp_booke.S/swsusp_asm64.S.
+So you do have a special entry point.  Why do you go to __early_start
+only to quickly test a flag and branch away?
 
-> + *
-> + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
+> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+> index 7fae817..9a4ea86 100644
+> --- a/arch/powerpc/platforms/85xx/Makefile
+> +++ b/arch/powerpc/platforms/85xx/Makefile
+> @@ -3,7 +3,7 @@
+>  #
+>  obj-$(CONFIG_SMP) += smp.o
+>  ifeq ($(CONFIG_FSL_CORENET_RCPM), y)
+> -obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o
+> +obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o deepsleep.o sleep.o
+>  endif
+>  
+>  obj-y += common.o
+> diff --git a/arch/powerpc/platforms/85xx/deepsleep.c b/arch/powerpc/platforms/85xx/deepsleep.c
+> new file mode 100644
+> index 0000000..ddd7185
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/deepsleep.c
+> @@ -0,0 +1,201 @@
+> +/*
+> + * Support deep sleep feature
+
+AFAICT this supports deep sleep on T1040, not on all 85xx that has it.
+
 > + *
 > + * Copyright 2014 Freescale Semiconductor Inc.
 > + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
+> + * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
+> + *
+> + * This program is free software; you can redistribute	it and/or modify it
+> + * under  the terms of	the GNU General	 Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
 > + */
 > +
-> +#ifndef __ASM_FSL_SLEEP_H
-> +#define __ASM_FSL_SLEEP_H
-> +
-> +/*
-> + * 8 bytes for each register, which is compatible with
-> + * both 32-bit and 64-bit registers
-> + *
-> + * Acronyms:
-> + *	dw(data width)	0x08
-> + *
-> + * Map:
-> + * General-Purpose Registers
-> + *	GPR1(sp)		0
-> + *	GPR2			0x8		(dw * 1)
-> + *	GPR13 - GPR31		0x10 ~ 0xa0	(dw * 2 ~ dw * 20)
-
-Putting these values in a comment separate from the code that defines it
-sounds like a good way to get a mismatch between the two.
-
-> + * Foating-point registers
-> + *	FPR14 - FPR31		0xa8 ~ 0x130	(dw * 21 ~ dw * 38)
-
-Call enable_kernel_fp() or similar, rather than saving FP regs here.
-Likewise with altivec.  And why starting at FPR14?  Volatile versus
-nonvolatile is irrelevant because Linux doesn't participate in the FP
-ABI.  Everything is non-volatile *if* we have a user FP context
-resident, and everything is volatile otherwise.
-
-> + * Timer Registers
-> + *	TCR			0x168		(dw * 45)
-> + *	TB(64bit)		0x170		(dw * 46)
-> + *	TBU(32bit)		0x178		(dw * 47)
-> + *	TBL(32bit)		0x180		(dw * 48)
-
-Why are you saving TBU/L separate from TB?  They're the same thing.
-
-> + * Interrupt Registers
-> + *	IVPR			0x188		(dw * 49)
-> + *	IVOR0 - IVOR15		0x190 ~ 0x208	(dw * 50 ~ dw * 65)
-> + *	IVOR32 - IVOR41		0x210 ~ 0x258	(dw * 66 ~ dw * 75)
-
-What about IVOR42 (LRAT error)?
-
-> + * Software-Use Registers
-> + *	SPRG1			0x260		(dw * 76), 64-bit need to save.
-> + *	SPRG3			0x268		(dw * 77), 32-bit need to save.
-
-What about "CPU and NUMA node for VDSO getcpu" on 64-bit?  Currently
-SPRG3, but it will need to change for critical interrupt support.
-
-> + * MMU Registers
-> + *	PID0 - PID2		0x270 ~ 0x280	(dw * 78 ~ dw * 80)
-
-PID1/PID2 are e500v1/v2 only -- and Linux doesn't use them outside of
-KVM (and you're not in KVM when you're running this code).
-
-Are we ever going to have a non-zero PID at this point?
-
-> + * Debug Registers
-> + *	DBCR0 - DBCR2		0x288 ~ 0x298	(dw * 81 ~ dw * 83)
-> + *	IAC1 - IAC4		0x2a0 ~ 0x2b8	(dw * 84 ~ dw * 87)
-> + *	DAC1 - DAC2		0x2c0 ~ 0x2c8	(dw * 88 ~ dw * 89)
-> + *
-> + */
-
-IAC3-4 are not implemented on e500.
-
-Do we really need to save the debug registers?  We're not going to be in
-a debugged process when we do suspend.  If the concern is kgdb, it
-probably needs to be told to get out of the way during suspend for other
-reasons.
-
-> +#define SR_GPR1			0x000
-> +#define SR_GPR2			0x008
-> +#define SR_GPR13		0x010
-> +#define SR_FPR14		0x0a8
-> +#define SR_CR			0x138
-> +#define SR_LR			0x140
-> +#define SR_MSR			0x148
-
-These are very vague names to be putting in a header file.
-
-> +/*
-> + * hibernation and deepsleep save/restore different number of registers,
-> + * use these flags to indicate.
-> + */
-> +#define HIBERNATION_FLAG	1
-> +#define DEEPSLEEP_FLAG		2
-
-Again, namespacing -- but why is hibernation using this at all?  What's
-wrong with the existing hibernation support?
-
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index fcc9a89..64acae6 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -73,6 +73,7 @@ obj-$(CONFIG_HIBERNATION)	+= swsusp_booke.o
->  else
->  obj-$(CONFIG_HIBERNATION)	+= swsusp_$(CONFIG_WORD_SIZE).o
->  endif
-> +obj-$(CONFIG_E500)		+= booke_save_regs.o
-
-Shouldn't this depend on whether suspend is enabled?
-
-> diff --git a/arch/powerpc/kernel/booke_save_regs.S b/arch/powerpc/kernel/booke_save_regs.S
-> new file mode 100644
-> index 0000000..9ccd576
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/booke_save_regs.S
-> @@ -0,0 +1,361 @@
-> +/*
-> + * Freescale Power Management, Save/Restore core state
-> + *
-> + * Copyright 2014 Freescale Semiconductor, Inc.
-> + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <asm/ppc_asm.h>
+> +#include <linux/kernel.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/of_address.h>
+> +#include <asm/machdep.h>
+> +#include <sysdev/fsl_soc.h>
 > +#include <asm/booke_save_regs.h>
 > +
+> +#define SIZE_1MB	0x100000
+> +#define SIZE_2MB	0x200000
+> +
+> +#define CCSR_SCFG_DPSLPCR	0xfc000
+> +#define CCSR_SCFG_DPSLPCR_WDRR_EN	0x1
+> +#define CCSR_SCFG_SPARECR2	0xfc504
+> +#define CCSR_SCFG_SPARECR3	0xfc508
+> +
+> +#define CCSR_GPIO1_GPDIR	0x130000
+> +#define CCSR_GPIO1_GPODR	0x130004
+> +#define CCSR_GPIO1_GPDAT	0x130008
+> +#define CCSR_GPIO1_GPDIR_29		0x4
+> +
+> +/* 128 bytes buffer for restoring data broke by DDR training initialization */
+> +#define DDR_BUF_SIZE	128
+> +static u8 ddr_buff[DDR_BUF_SIZE] __aligned(64);
+> +
+> +static void *dcsr_base, *ccsr_base, *pld_base;
+> +static int pld_flag;
+> +
+> +int fsl_dp_iomap(void)
+> +{
+> +	struct device_node *np;
+> +	const u32 *prop;
+> +	int ret = 0;
+> +	u64 ccsr_phy_addr, dcsr_phy_addr;
+> +
+> +	np = of_find_node_by_type(NULL, "soc");
+> +	if (!np) {
+> +		pr_err("%s: Can't find the node of \"soc\"\n", __func__);
+> +		ret = -EINVAL;
+> +		goto ccsr_err;
+> +	}
+> +	prop = of_get_property(np, "ranges", NULL);
+> +	if (!prop) {
+> +		pr_err("%s: Can't find the property of \"ranges\"\n", __func__);
+> +		of_node_put(np);
+> +		ret = -EINVAL;
+> +		goto ccsr_err;
+> +	}
+
+Use get_immrbase(), or better use specific nodes in the device tree.
+
+> +	ccsr_phy_addr = of_translate_address(np, prop + 1);
+> +	ccsr_base = ioremap((phys_addr_t)ccsr_phy_addr, SIZE_2MB);
+> +	of_node_put(np);
+> +	if (!ccsr_base) {
+> +		ret = -ENOMEM;
+> +		goto ccsr_err;
+> +	}
+
+Unnecessary cast.
+
+Why 2 MiB?
+
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,dcsr");
+> +	if (!np) {
+> +		pr_err("%s: Can't find the node of \"fsl,dcsr\"\n", __func__);
+> +		ret = -EINVAL;
+> +		goto dcsr_err;
+> +	}
+> +	prop = of_get_property(np, "ranges", NULL);
+> +	if (!prop) {
+> +		pr_err("%s: Can't find the property of \"ranges\"\n", __func__);
+> +		of_node_put(np);
+> +		ret = -EINVAL;
+> +		goto dcsr_err;
+> +	}
+> +	dcsr_phy_addr = of_translate_address(np, prop + 1);
+> +	dcsr_base = ioremap((phys_addr_t)dcsr_phy_addr, SIZE_1MB);
+> +	of_node_put(np);
+> +	if (!dcsr_base) {
+> +		ret = -ENOMEM;
+> +		goto dcsr_err;
+> +	}
+
+If you must do this, add a helper to get the dcsr base -- but do we not
+already have dcsr subnodes for what you are using?
+
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,fpga-qixis");
+> +	if (np) {
+> +		pld_flag = FPGA_FLAG;
+> +	} else {
+> +		np = of_find_compatible_node(NULL, NULL, "fsl,p104xrdb-cpld");
+> +		if (np) {
+> +			pld_flag = CPLD_FLAG;
+> +		} else {
+> +			pr_err("%s: Can't find the FPGA/CPLD node\n",
+> +					__func__);
+> +			ret = -EINVAL;
+> +			goto pld_err;
+> +		}
+> +	}
+
+OK, so this file isn't even specific to T1040 -- it's specific to our
+reference boards?
+
+> +static void fsl_dp_ddr_save(void *ccsr_base)
+> +{
+> +	u32 ddr_buff_addr;
+> +
+> +	/*
+> +	 * DDR training initialization will break 128 bytes at the beginning
+> +	 * of DDR, therefore, save them so that the bootloader will restore
+> +	 * them. Assume that DDR is mapped to the address space started with
+> +	 * CONFIG_PAGE_OFFSET.
+> +	 */
+> +	memcpy(ddr_buff, (void *)CONFIG_PAGE_OFFSET, DDR_BUF_SIZE);
+> +
+> +	/* assume ddr_buff is in the physical address space of 4GB */
+> +	ddr_buff_addr = (u32)(__pa(ddr_buff) & 0xffffffff);
+
+That assumption may break with a relocatable kernel.
+
+> +
+> +}
+> +
+> +int fsl_enter_epu_deepsleep(void)
+> +{
+> +
+> +
+
+No blank lines at begin/end of function.
+
+> diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
+> index 915b13b..5f2c016 100644
+> --- a/arch/powerpc/platforms/85xx/qoriq_pm.c
+> +++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
+> @@ -20,6 +20,8 @@
+>  #define FSL_SLEEP		0x1
+>  #define FSL_DEEP_SLEEP		0x2
+>  
+> +int (*fsl_enter_deepsleep)(void);
+> +
+>  /* specify the sleep state of the present platform */
+>  int sleep_pm_state;
+>  /* supported sleep modes by the present platform */
+> @@ -28,6 +30,7 @@ static unsigned int sleep_modes;
+>  static int qoriq_suspend_enter(suspend_state_t state)
+>  {
+>  	int ret = 0;
+> +	int cpu;
+>  
+>  	switch (state) {
+>  	case PM_SUSPEND_STANDBY:
+> @@ -39,6 +42,17 @@ static int qoriq_suspend_enter(suspend_state_t state)
+>  
+>  		break;
+>  
+> +	case PM_SUSPEND_MEM:
+> +
+> +		cpu = smp_processor_id();
+> +		qoriq_pm_ops->irq_mask(cpu);
+> +
+> +		ret = fsl_enter_deepsleep();
+> +
+> +		qoriq_pm_ops->irq_unmask(cpu);
+> +
+> +		break;
+> +
+>  	default:
+>  		ret = -EINVAL;
+>  
+> @@ -52,12 +66,30 @@ static int qoriq_suspend_valid(suspend_state_t state)
+>  	if (state == PM_SUSPEND_STANDBY && (sleep_modes & FSL_SLEEP))
+>  		return 1;
+>  
+> +	if (state == PM_SUSPEND_MEM && (sleep_modes & FSL_DEEP_SLEEP))
+> +		return 1;
+> +
+>  	return 0;
+>  }
+>  
+> +static int qoriq_suspend_begin(suspend_state_t state)
+> +{
+> +	if (state == PM_SUSPEND_MEM)
+> +		return fsl_dp_iomap();
+> +
+> +	return 0;
+> +}
+> +
+> +static void qoriq_suspend_end(void)
+> +{
+> +	fsl_dp_iounmap();
+> +}
+> +
+>  static const struct platform_suspend_ops qoriq_suspend_ops = {
+>  	.valid = qoriq_suspend_valid,
+>  	.enter = qoriq_suspend_enter,
+> +	.begin = qoriq_suspend_begin,
+> +	.end = qoriq_suspend_end,
+>  };
+>  
+>  static int __init qoriq_suspend_init(void)
+> @@ -71,6 +103,12 @@ static int __init qoriq_suspend_init(void)
+>  	if (np)
+>  		sleep_pm_state = PLAT_PM_LPM20;
+>  
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,t1040-rcpm");
+> +	if (np) {
+> +		fsl_enter_deepsleep = fsl_enter_epu_deepsleep;
+> +		sleep_modes |= FSL_DEEP_SLEEP;
+> +	}
+> +
+>  	suspend_set_ops(&qoriq_suspend_ops);
+>  
+>  	return 0;
+> diff --git a/arch/powerpc/platforms/85xx/sleep.S b/arch/powerpc/platforms/85xx/sleep.S
+> new file mode 100644
+> index 0000000..95a5746
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/sleep.S
+> @@ -0,0 +1,295 @@
 > +/*
-> + * Supported Core List:
-> + * E500v1, E500v2, E500MC, E5500, E6500.
+> + * Implement the low level part of deep sleep
+> + *
+> + * Copyright 2014 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute	it and/or modify it
+> + * under  the terms of	the GNU General	 Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
 > + */
 > +
-> +/* Save/Restore register operation define */
-> +#define do_save_gpr_reg(reg, addr) \
-> +	PPC_STL reg, addr(r10)
+> +#include <asm/page.h>
+> +#include <asm/ppc_asm.h>
+> +#include <asm/reg.h>
+> +#include <asm/asm-offsets.h>
+> +#include <asm/booke_save_regs.h>
+> +#include <asm/mmu.h>
 > +
-> +#define do_save_fpr_reg(reg, addr) \
-> +	stfd	reg, addr(r10)
-> +
-> +#define do_save_spr_reg(reg, addr) \
-> +	mfspr	r0, SPRN_##reg ;\
-> +	PPC_STL r0, addr(r10)
-> +
-> +#define do_save_special_reg(special, addr) \
-> +	mf##special	r0 ;\
-> +	PPC_STL r0, addr(r10)
-> +
-> +#define do_restore_gpr_reg(reg, addr) \
-> +	PPC_LL reg, addr(r10)
-> +
-> +#define do_restore_fpr_reg(reg, addr) \
-> +	lfd	reg, addr(r10)
-> +
-> +#define do_restore_spr_reg(reg, addr) \
-> +	PPC_LL r0, addr(r10) ;\
-> +	mtspr	SPRN_##reg, r0
-> +
-> +#define do_restore_special_reg(special, addr) \
-> +	PPC_LL r0, addr(r10) ;\
-> +	mt##special	r0
-> +
-> +#define do_sr_general_gpr_regs(func) \
-> +	do_##func##_gpr_reg(r1, SR_GPR1) ;\
-> +	do_##func##_gpr_reg(r2, SR_GPR2) ;\
-> +	do_##func##_gpr_reg(r13, SR_GPR13 + 0x00) ;\
-> +	do_##func##_gpr_reg(r14, SR_GPR13 + 0x08) ;\
-> +	do_##func##_gpr_reg(r15, SR_GPR13 + 0x10) ;\
-> +	do_##func##_gpr_reg(r16, SR_GPR13 + 0x18) ;\
-> +	do_##func##_gpr_reg(r17, SR_GPR13 + 0x20) ;\
-> +	do_##func##_gpr_reg(r18, SR_GPR13 + 0x28) ;\
-> +	do_##func##_gpr_reg(r19, SR_GPR13 + 0x30) ;\
-> +	do_##func##_gpr_reg(r20, SR_GPR13 + 0x38) ;\
-> +	do_##func##_gpr_reg(r21, SR_GPR13 + 0x40) ;\
-> +	do_##func##_gpr_reg(r22, SR_GPR13 + 0x48) ;\
-> +	do_##func##_gpr_reg(r23, SR_GPR13 + 0x50) ;\
-> +	do_##func##_gpr_reg(r24, SR_GPR13 + 0x58) ;\
-> +	do_##func##_gpr_reg(r25, SR_GPR13 + 0x60) ;\
-> +	do_##func##_gpr_reg(r26, SR_GPR13 + 0x68) ;\
-> +	do_##func##_gpr_reg(r27, SR_GPR13 + 0x70) ;\
-> +	do_##func##_gpr_reg(r28, SR_GPR13 + 0x78) ;\
-> +	do_##func##_gpr_reg(r29, SR_GPR13 + 0x80) ;\
-> +	do_##func##_gpr_reg(r30, SR_GPR13 + 0x88) ;\
-> +	do_##func##_gpr_reg(r31, SR_GPR13 + 0x90)
-> +
-> +#define do_sr_general_pcr_regs(func) \
-> +	do_##func##_spr_reg(EPCR, SR_EPCR) ;\
-> +	do_##func##_spr_reg(HID0, SR_HID0 + 0x00)
-> +
-> +#define do_sr_e500_pcr_regs(func) \
-> +	do_##func##_spr_reg(HID1, SR_HID0 + 0x08)
+> +#define FSLDELAY(count)		\
+> +	li	r3, (count)@l;	\
+> +	slwi	r3, r3, 10;	\
+> +	mtctr	r3;		\
+> +101:	nop;			\
+> +	bdnz	101b;
 
-PCR?
+You don't need a namespace prefix on local macros in a non-header file.
 
-In the comments you said "Only e500, e500v2 need to save HID0 - HID1",
-yet you save HID0 in the "general" macro.
+Is the timebase stopped where you're calling this from?
 
-> +#define do_sr_save_tb_regs \
-> +	do_save_spr_reg(TBRU, SR_TBU) ;\
-> +	do_save_spr_reg(TBRL, SR_TBL)
-
-What if TBU increments between those two reads?  Use the standard
-sequence to read the timebase.
-
-> +#define do_sr_interrupt_regs(func) \
-> +	do_##func##_spr_reg(IVPR, SR_IVPR) ;\
-> +	do_##func##_spr_reg(IVOR0, SR_IVOR0 + 0x00) ;\
-> +	do_##func##_spr_reg(IVOR1, SR_IVOR0 + 0x08) ;\
-> +	do_##func##_spr_reg(IVOR2, SR_IVOR0 + 0x10) ;\
-> +	do_##func##_spr_reg(IVOR3, SR_IVOR0 + 0x18) ;\
-> +	do_##func##_spr_reg(IVOR4, SR_IVOR0 + 0x20) ;\
-> +	do_##func##_spr_reg(IVOR5, SR_IVOR0 + 0x28) ;\
-> +	do_##func##_spr_reg(IVOR6, SR_IVOR0 + 0x30) ;\
-> +	do_##func##_spr_reg(IVOR7, SR_IVOR0 + 0x38) ;\
-> +	do_##func##_spr_reg(IVOR8, SR_IVOR0 + 0x40) ;\
-> +	do_##func##_spr_reg(IVOR10, SR_IVOR0 + 0x50) ;\
-> +	do_##func##_spr_reg(IVOR11, SR_IVOR0 + 0x58) ;\
-> +	do_##func##_spr_reg(IVOR12, SR_IVOR0 + 0x60) ;\
-> +	do_##func##_spr_reg(IVOR13, SR_IVOR0 + 0x68) ;\
-> +	do_##func##_spr_reg(IVOR14, SR_IVOR0 + 0x70) ;\
-> +	do_##func##_spr_reg(IVOR15, SR_IVOR0 + 0x78)
-> +
-> +#define do_e500_sr_interrupt_regs(func) \
-> +	do_##func##_spr_reg(IVOR32, SR_IVOR32 + 0x00) ;\
-> +	do_##func##_spr_reg(IVOR33, SR_IVOR32 + 0x08) ;\
-> +	do_##func##_spr_reg(IVOR34, SR_IVOR32 + 0x10)
-> +
-> +#define do_e500mc_sr_interrupt_regs(func) \
-> +	do_##func##_spr_reg(IVOR9, SR_IVOR0 + 0x48) ;\
-> +	do_##func##_spr_reg(IVOR35, SR_IVOR32 + 0x18) ;\
-> +	do_##func##_spr_reg(IVOR36, SR_IVOR32 + 0x20) ;\
-> +	do_##func##_spr_reg(IVOR37, SR_IVOR32 + 0x28) ;\
-> +	do_##func##_spr_reg(IVOR38, SR_IVOR32 + 0x30) ;\
-> +	do_##func##_spr_reg(IVOR39, SR_IVOR32 + 0x38) ;\
-> +	do_##func##_spr_reg(IVOR40, SR_IVOR32 + 0x40) ;\
-> +	do_##func##_spr_reg(IVOR41, SR_IVOR32 + 0x48)
-> +
-> +#define do_e5500_sr_interrupt_regs(func) \
-> +	do_e500mc_sr_interrupt_regs(func)
-> +
-> +#define do_e6500_sr_interrupt_regs(func) \
-> +	do_##func##_spr_reg(IVOR32, SR_IVOR32 + 0x00) ;\
-> +	do_##func##_spr_reg(IVOR33, SR_IVOR32 + 0x08) ;\
-> +	do_e5500_sr_interrupt_regs(func)
-> +
-> +#define do_sr_general_software_regs(func) \
-> +	do_##func##_spr_reg(SPRG1, SR_SPRG1) ;\
-> +	do_##func##_spr_reg(SPRG3, SR_SPRG3) ;\
-> +	do_##func##_spr_reg(PID0, SR_PID0)
-> +
-> +#define do_sr_e500_mmu_regs(func) \
-> +	do_##func##_spr_reg(PID1, SR_PID0 + 0x08) ;\
-> +	do_##func##_spr_reg(PID2, SR_PID0 + 0x10)
-> +
-> +#define do_sr_debug_regs(func) \
-> +	do_##func##_spr_reg(DBCR0, SR_DBCR0 + 0x00) ;\
-> +	do_##func##_spr_reg(DBCR1, SR_DBCR0 + 0x08) ;\
-> +	do_##func##_spr_reg(DBCR2, SR_DBCR0 + 0x10) ;\
-> +	do_##func##_spr_reg(IAC1, SR_IAC1 + 0x00) ;\
-> +	do_##func##_spr_reg(IAC2, SR_IAC1 + 0x08) ;\
-> +	do_##func##_spr_reg(DAC1, SR_DAC1 + 0x00) ;\
-> +	do_##func##_spr_reg(DAC2, SR_DAC1 + 0x08)
-> +
-> +#define do_e6500_sr_debug_regs(func) \
-> +	do_##func##_spr_reg(IAC3, SR_IAC1 + 0x10) ;\
-> +	do_##func##_spr_reg(IAC4, SR_IAC1 + 0x18)
-> +
-> +	.section .text
-> +	.align	5
-> +booke_cpu_base_save:
-> +	do_sr_general_gpr_regs(save)
-> +	do_sr_general_pcr_regs(save)
-> +	do_sr_general_software_regs(save)
-> +1:
-> +	mfspr	r5, SPRN_TBRU
-> +	do_sr_general_time_regs(save)
-> +	mfspr	r6, SPRN_TBRU
-> +	cmpw	r5, r6
-> +	bne	1b
-
-Oh, here's where you deal with that.  Why?  It just obfuscates things.
-
-> +booke_cpu_base_restore:
-> +	do_sr_general_gpr_regs(restore)
-> +	do_sr_general_pcr_regs(restore)
-> +	do_sr_general_software_regs(restore)
-> +
+> +#define FSL_DIS_ALL_IRQ		\
+> +	mfmsr	r8;			\
+> +	rlwinm	r8, r8, 0, ~MSR_CE;	\
+> +	rlwinm	r8, r8, 0, ~MSR_ME;	\
+> +	rlwinm	r8, r8, 0, ~MSR_EE;	\
+> +	rlwinm	r8, r8, 0, ~MSR_DE;	\
+> +	mtmsr	r8;			\
 > +	isync
 > +
-> +	/* Restore Time registers, clear tb lower to avoid wrap */
-> +	li	r0, 0
-> +	mtspr	SPRN_TBWL, r0
-> +	do_sr_general_time_regs(restore)
-
-Why is zeroing TBL not done in the same place as you load the new TB?
-
-> +/* Base registers, e500v1, e500v2 need to do some special save/restore */
-> +e500_base_special_save:
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500V1@l
-> +	cmpw	r11, r12
-> +	beq	1f
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500V2@l
-> +	cmpw	r11, r12
-> +	bne	2f
-> +1:
-> +	do_sr_e500_pcr_regs(save)
-> +	do_sr_e500_mmu_regs(save)
-> +2:
-> +	blr
+> +	.section .data
+> +	.align	6
+> +booke_regs_buffer:
+> +	.space REGS_BUFFER_SIZE
 > +
-> +e500_base_special_restore:
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500V1@l
-> +	cmpw	r11, r12
-> +	beq	1f
+> +	.section .txt
+> +	.align 6
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500V2@l
-> +	cmpw	r11, r12
-> +	bne	2f
-> +1:
-> +	do_sr_e500_pcr_regs(save)
-> +	do_sr_e500_mmu_regs(save)
-> +2:
-> +	blr
-
-Why is this separate from the other CPU-specific "append" code?
-
-> +booke_cpu_append_save:
-> +	mfspr	r0, SPRN_PVR
-> +	rlwinm	r11, r0, 16, 16, 31
+> +_GLOBAL(fsl_dp_enter_low)
+> +deepsleep_start:
+> +	LOAD_REG_ADDR(r9, buf_tmp)
+> +	PPC_STL	r3, 0(r9)
+> +	PPC_STL	r4, 8(r9)
+> +	PPC_STL	r5, 16(r9)
+> +	PPC_STL	r6, 24(r9)
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E6500@l
-> +	cmpw	r11, r12
-> +	beq	e6500_append_save
+> +	LOAD_REG_ADDR(r3, booke_regs_buffer)
+> +	/* save the return address */
+> +	mflr	r5
+> +	PPC_STL r5, SR_LR(r3)
+> +	mfmsr	r5
+> +	PPC_STL r5, SR_MSR(r3)
+> +	li	r4, DEEPSLEEP_FLAG
+> +	bl	booke_cpu_state_save
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E5500@l
-> +	cmpw	r11, r12
-> +	beq	e5500_append_save
+> +	LOAD_REG_ADDR(r9, buf_tmp)
+> +	PPC_LL	r31, 0(r9)
+> +	PPC_LL	r30, 8(r9)
+> +	PPC_LL	r29, 16(r9)
+> +	PPC_LL	r28, 24(r9)
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500MC@l
-> +	cmpw	r11, r12
-> +	beq	e500mc_append_save
+> +	/* flush caches */
+> +	LOAD_REG_ADDR(r3, cur_cpu_spec)
+> +	PPC_LL	r3, 0(r3)
+> +	PPC_LL	r3, CPU_FLUSH_CACHES(r3)
+> +	PPC_LCMPI  0, r3, 0
+> +	beq	6f
+> +#ifdef CONFIG_PPC64
+> +	PPC_LL	r3, 0(r3)
+> +#endif
+> +	mtctr	r3
+> +	bctrl
+> +6:
+> +#define CPC_OFFSET	0x10000
+> +	mr	r3, r31
+> +	addis	r3, r3, CPC_OFFSET@h
+> +	bl	fsl_flush_cpc_cache
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500V2@l
-> +	cmpw	r11, r12
-> +	beq	e500v2_append_save
+> +	LOAD_REG_ADDR(r8, deepsleep_start)
+> +	LOAD_REG_ADDR(r9, deepsleep_end)
 > +
-> +	lis	r12, 0
-> +	ori	r12, r12, PVR_VER_E500V1@l
-> +	cmpw	r11, r12
-> +	beq	e500v1_append_save
-> +	b	1f
+> +	/* prefecth TLB */
+> +#define CCSR_GPIO1_GPDAT	0x130008
+> +#define CCSR_GPIO1_GPDAT_29	0x4
+> +	LOAD_REG_IMMEDIATE(r11, CCSR_GPIO1_GPDAT)
+> +	add	r11, r31, r11
+> +	lwz	r10, 0(r11)
 > +
-> +e6500_append_save:
-> +	do_e6500_sr_interrupt_regs(save)
-> +	do_e6500_sr_debug_regs(save)
-> +	b	1f
+> +#define CCSR_RCPM_PCPH15SETR	0xe20b4
+> +#define CCSR_RCPM_PCPH15SETR_CORE0	0x1
+> +	LOAD_REG_IMMEDIATE(r12, CCSR_RCPM_PCPH15SETR)
+> +	add	r12, r31, r12
+> +	lwz	r10, 0(r12)
 > +
-> +e5500_append_save:
-> +	do_e5500_sr_interrupt_regs(save)
-> +	b	1f
+> +#define CCSR_DDR_SDRAM_CFG_2	0x8114
+> +#define CCSR_DDR_SDRAM_CFG_2_FRC_SR	0x80000000
+> +	LOAD_REG_IMMEDIATE(r13, CCSR_DDR_SDRAM_CFG_2)
+> +	add	r13, r31, r13
+> +	lwz	r10, 0(r13)
 > +
-> +e500mc_append_save:
-> +	do_e500mc_sr_interrupt_regs(save)
-> +	b	1f
+> +#define	DCSR_EPU_EPGCR		0x000
+> +#define DCSR_EPU_EPGCR_GCE	0x80000000
+> +	li	r14, DCSR_EPU_EPGCR
+> +	add	r14, r30, r14
+> +	lwz	r10, 0(r14)
 > +
-> +e500v2_append_save:
-> +e500v1_append_save:
-> +	do_e500_sr_interrupt_regs(save)
-> +1:
-> +	do_sr_interrupt_regs(save)
-> +	do_sr_debug_regs(save)
+> +#define	DCSR_EPU_EPECR15	0x33C
+> +#define DCSR_EPU_EPECR15_IC0	0x80000000
+> +	li	r15, DCSR_EPU_EPECR15
+> +	add	r15, r30, r15
+> +	lwz	r10, 0(r15)
 > +
-> +	blr
-
-What is meant by "append" here?
-
+> +#define CCSR_SCFG_QMCRDTRSTCR		0xfc40c
+> +#define CCSR_SCFG_QMCRDTRSTCR_CRDTRST	0x80000000
+> +	LOAD_REG_IMMEDIATE(r16, CCSR_SCFG_QMCRDTRSTCR)
+> +	add	r16, r31, r16
+> +	lwz	r10, 0(r16)
+> +
 > +/*
-> + * r3 = the address of buffer
-> + * r4 = type: HIBERNATION_FLAG or DEEPSLEEP_FLAG
+> + * There are two kind of register maps, one for CPLD and the other for FPGA
 > + */
-> +_GLOBAL(booke_cpu_state_save)
-> +	mflr	r9
-> +	mr	r10, r3
-> +
-> +	cmpwi	r4, HIBERNATION_FLAG
-> +	beq	1f
-> +	bl	booke_cpu_append_save
-> +1:
-> +	bl	e500_base_special_save
-> +	bl	booke_cpu_base_save
-> +
-> +	mtlr	r9
-> +	blr
+> +#define CPLD_MISCCSR		0x17
+> +#define CPLD_MISCCSR_SLEEPEN	0x40
+> +#define QIXIS_PWR_CTL2		0x21
+> +#define QIXIS_PWR_CTL2_PCTL	0x2
+> +	PPC_LCMPI  0, r28, FPGA_FLAG
+> +	beq	20f
+> +	addi	r29, r29, CPLD_MISCCSR
+> +20:
+> +	addi	r29, r29, QIXIS_PWR_CTL2
+> +	lbz	r10, 0(r29)
 
-You're assuming a special ABI from these subfunctions (e.g. r9
-non-volatile) but I don't see any comment to that effect on those
-functions.
+
+Again, this is not marked as a board-specific file.  How do you expect
+customers to adapt this mechanism to their boards?
+
+> +
+> +	/* prefecth code to cache so that executing code after disable DDR */
+> +1:	lwz	r3, 0(r8)
+> +	addi	r8, r8, 4
+> +	cmpw	r8, r9
+> +	blt	1b
+> +	msync
+
+Instructions don't execute from dcache...  I guess you're assuming it
+will allocate in, and stay in, L2/CPC.  It'd be safer to lock those
+cache lines in icache, or copy the code to SRAM.
+
+> +	FSL_DIS_ALL_IRQ
+> +
+> +	/*
+> +	 * Place DDR controller in self refresh mode.
+> +	 * From here on, DDR can't be access any more.
+> +	 */
+> +	lwz	r10, 0(r13)
+> +	oris	r10, r10, CCSR_DDR_SDRAM_CFG_2_FRC_SR@h
+> +	stw	r10, 0(r13)
+> +
+> +	/* can't call udelay() here, so use a macro to delay */
+> +	FSLDELAY(50)
+
+A timebase loop doesn't require accessing DDR.
+
+You also probably want to do a "sync, readback, data dependency, isync"
+sequence to make sure that the store has hit CCSR before you begin your
+delay (or is a delay required at all if you do that?).
+
+> +	/*
+> +	 * Enable deep sleep signals by write external CPLD/FPGA register.
+> +	 * The bootloader will disable them when wakeup from deep sleep.
+> +	 */
+> +	lbz	r10, 0(r29)
+> +	PPC_LCMPI  0, r28, FPGA_FLAG
+> +	beq	22f
+> +	ori	r10, r10, CPLD_MISCCSR_SLEEPEN
+> +22:
+> +	ori	r10, r10, QIXIS_PWR_CTL2_PCTL
+> +	stb	r10, 0(r29)
+> +
+> +	/*
+> +	 * Set GPIO1_29 to lock the signal MCKE down during deep sleep.
+> +	 * The bootloader will clear it when wakeup.
+> +	 */
+> +	lwz	r10, 0(r11)
+> +	ori	r10, r10, CCSR_GPIO1_GPDAT_29
+> +	stw	r10, 0(r11)
+> +
+> +	FSLDELAY(10)
+> +
+> +	/* Clear the QMan CITI Credits */
+> +	lwz	r10, 0(r16)
+> +	oris	r10, r10, CCSR_SCFG_QMCRDTRSTCR_CRDTRST@h
+> +	stw	r10, 0(r16)
+> +
+> +	/* Enable all EPU Counters */
+> +	li	r10, 0
+> +	oris	r10, r10, DCSR_EPU_EPGCR_GCE@h
+> +	stw	r10, 0(r14)
+> +
+> +	/* Enable SCU15 to trigger on RCPM Concentrator 0 */
+> +	lwz	r10, 0(r15)
+> +	oris	r10, r10, DCSR_EPU_EPECR15_IC0@h
+> +	stw	r10, 0(r15)
+> +
+> +	/* put Core0 in PH15 mode, trigger EPU FSM */
+> +	lwz	r10, 0(r12)
+> +	ori	r10, r10, CCSR_RCPM_PCPH15SETR_CORE0
+> +	stw	r10, 0(r12)
+
+Shouldn't there be a sync to ensure that the previous I/O happens before
+the final store to enter PH15?
 
 -Scott
