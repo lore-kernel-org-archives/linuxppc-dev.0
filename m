@@ -3,21 +3,22 @@ Received: from am1outboundpool.messaging.microsoft.com
  (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 023322C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 19:34:19 +1100 (EST)
-Date: Wed, 12 Mar 2014 16:34:10 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 7C9B82C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 20:43:07 +1100 (EST)
+Date: Wed, 12 Mar 2014 17:42:37 +0800
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 7/9] fsl: add EPU FSM configuration for deep sleep
-Message-ID: <20140312083410.GF4706@localhost.localdomain>
+Subject: Re: [PATCH 8/9] powerpc/85xx: add save/restore functions for core
+ registers
+Message-ID: <20140312094237.GG4706@localhost.localdomain>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-7-git-send-email-chenhui.zhao@freescale.com>
- <1394582923.13761.81.camel@snotra.buserror.net>
+ <1394168285-32275-8-git-send-email-chenhui.zhao@freescale.com>
+ <1394585114.13761.112.camel@snotra.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1394582923.13761.81.camel@snotra.buserror.net>
+In-Reply-To: <1394585114.13761.112.camel@snotra.buserror.net>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jason.Jin@freescale.com
+ Jason.Jin@freescale.com, Wang Dongsheng-B40534 <B40534@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,172 +28,504 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2014 at 07:08:43PM -0500, Scott Wood wrote:
+On Tue, Mar 11, 2014 at 07:45:14PM -0500, Scott Wood wrote:
 > On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> > From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> > From: Wang Dongsheng <dongsheng.wang@freescale.com>
 > > 
-> > In the last stage of deep sleep, software will trigger a Finite
-> > State Machine (FSM) to control the hardware precedure, such as
-> > board isolation, killing PLLs, removing power, and so on.
+> > Add booke_cpu_state_save() and booke_cpu_state_restore() functions which can be
+> > used to save/restore CPU's registers in the case of deep sleep and hibernation.
 > > 
-> > When the system is waked up by an interrupt, the FSM controls the
-> > hardware to complete the early resume precedure.
+> > Supported processors: E6500, E5500, E500MC, E500v2 and E500v1.
 > > 
-> > This patch configure the EPU FSM preparing for deep sleep.
-> > 
-> > Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 > > Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> > ---
+> >  arch/powerpc/include/asm/booke_save_regs.h |   96 ++++++++
+> >  arch/powerpc/kernel/Makefile               |    1 +
+> >  arch/powerpc/kernel/booke_save_regs.S      |  361 ++++++++++++++++++++++++++++
+> >  3 files changed, 458 insertions(+), 0 deletions(-)
+> >  create mode 100644 arch/powerpc/include/asm/booke_save_regs.h
+> >  create mode 100644 arch/powerpc/kernel/booke_save_regs.S
+> > 
+> > diff --git a/arch/powerpc/include/asm/booke_save_regs.h b/arch/powerpc/include/asm/booke_save_regs.h
+> > new file mode 100644
+> > index 0000000..87c357a
+> > --- /dev/null
+> > +++ b/arch/powerpc/include/asm/booke_save_regs.h
+> > @@ -0,0 +1,96 @@
+> > +/*
+> > + *  Save/restore e500 series core registers
 > 
-> Couldn't this be part of qoriq_pm.c?
+> Filename says booke, comment says e500.
+> 
+> Filename and comment also fail to point out that this is specifically
+> for standby/suspend, not for hibernate which is implemented in
+> swsusp_booke.S/swsusp_asm64.S.
 
-Put the code in drivers/platform/fsl/ so that LS1 can share these code.
+Sorry for inconsistency. Will changes e500 to booke.
+Hibernation and suspend can share the code.
 
 > 
-> > diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-> > index 9b9a34a..eb83a30 100644
-> > --- a/arch/powerpc/sysdev/fsl_soc.h
-> > +++ b/arch/powerpc/sysdev/fsl_soc.h
-> > @@ -69,5 +69,8 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
-> >  
-> >  extern int fsl_rcpm_init(void);
-> >  
-> > +extern void fsl_dp_fsm_setup(void *dcsr_base);
-> > +extern void fsl_dp_fsm_clean(void *dcsr_base);
-> 
-> __iomem
-
-Thanks. Will add.
-
-> 
+> > + *
+> > + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > + *
+> > + * Copyright 2014 Freescale Semiconductor Inc.
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2 as
+> > + * published by the Free Software Foundation.
+> > + */
 > > +
-> >  #endif
-> >  #endif
-> > diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
-> > index 09fde58..6539e6d 100644
-> > --- a/drivers/platform/Kconfig
-> > +++ b/drivers/platform/Kconfig
-> > @@ -6,3 +6,7 @@ source "drivers/platform/goldfish/Kconfig"
+> > +#ifndef __ASM_FSL_SLEEP_H
+> > +#define __ASM_FSL_SLEEP_H
+> > +
+> > +/*
+> > + * 8 bytes for each register, which is compatible with
+> > + * both 32-bit and 64-bit registers
+> > + *
+> > + * Acronyms:
+> > + *	dw(data width)	0x08
+> > + *
+> > + * Map:
+> > + * General-Purpose Registers
+> > + *	GPR1(sp)		0
+> > + *	GPR2			0x8		(dw * 1)
+> > + *	GPR13 - GPR31		0x10 ~ 0xa0	(dw * 2 ~ dw * 20)
+> 
+> Putting these values in a comment separate from the code that defines it
+> sounds like a good way to get a mismatch between the two.
+
+Ok.
+
+> 
+> > + * Foating-point registers
+> > + *	FPR14 - FPR31		0xa8 ~ 0x130	(dw * 21 ~ dw * 38)
+> 
+> Call enable_kernel_fp() or similar, rather than saving FP regs here.
+> Likewise with altivec.  And why starting at FPR14?  Volatile versus
+> nonvolatile is irrelevant because Linux doesn't participate in the FP
+> ABI.  Everything is non-volatile *if* we have a user FP context
+> resident, and everything is volatile otherwise.
+
+Will remove them.
+
+> 
+> > + * Timer Registers
+> > + *	TCR			0x168		(dw * 45)
+> > + *	TB(64bit)		0x170		(dw * 46)
+> > + *	TBU(32bit)		0x178		(dw * 47)
+> > + *	TBL(32bit)		0x180		(dw * 48)
+> 
+> Why are you saving TBU/L separate from TB?  They're the same thing.
+
+Will remove TBU and TBL.
+
+> 
+> > + * Interrupt Registers
+> > + *	IVPR			0x188		(dw * 49)
+> > + *	IVOR0 - IVOR15		0x190 ~ 0x208	(dw * 50 ~ dw * 65)
+> > + *	IVOR32 - IVOR41		0x210 ~ 0x258	(dw * 66 ~ dw * 75)
+> 
+> What about IVOR42 (LRAT error)?
+
+Will add it.
+
+> 
+> > + * Software-Use Registers
+> > + *	SPRG1			0x260		(dw * 76), 64-bit need to save.
+> > + *	SPRG3			0x268		(dw * 77), 32-bit need to save.
+> 
+> What about "CPU and NUMA node for VDSO getcpu" on 64-bit?  Currently
+> SPRG3, but it will need to change for critical interrupt support.
+> 
+> > + * MMU Registers
+> > + *	PID0 - PID2		0x270 ~ 0x280	(dw * 78 ~ dw * 80)
+> 
+> PID1/PID2 are e500v1/v2 only -- and Linux doesn't use them outside of
+> KVM (and you're not in KVM when you're running this code).
+> 
+> Are we ever going to have a non-zero PID at this point?
+
+I incline to the view that saving all registers regardless of used or
+unused. The good point is that it can be compliant to the future
+changes of the usage of registers.
+
+What do you think?
+
+> 
+> > + * Debug Registers
+> > + *	DBCR0 - DBCR2		0x288 ~ 0x298	(dw * 81 ~ dw * 83)
+> > + *	IAC1 - IAC4		0x2a0 ~ 0x2b8	(dw * 84 ~ dw * 87)
+> > + *	DAC1 - DAC2		0x2c0 ~ 0x2c8	(dw * 88 ~ dw * 89)
+> > + *
+> > + */
+> 
+> IAC3-4 are not implemented on e500.
+> 
+> Do we really need to save the debug registers?  We're not going to be in
+> a debugged process when we do suspend.  If the concern is kgdb, it
+> probably needs to be told to get out of the way during suspend for other
+> reasons.
+
+I think in the ideal case the suspend would not break any context. We
+should try to save/restore all cpu state. Of cause, trade-off is
+unavoidable in practice.
+
+> 
+> > +#define SR_GPR1			0x000
+> > +#define SR_GPR2			0x008
+> > +#define SR_GPR13		0x010
+> > +#define SR_FPR14		0x0a8
+> > +#define SR_CR			0x138
+> > +#define SR_LR			0x140
+> > +#define SR_MSR			0x148
+> 
+> These are very vague names to be putting in a header file.
+
+How about BOOKE_xx_OFFSET?
+
+> 
+> > +/*
+> > + * hibernation and deepsleep save/restore different number of registers,
+> > + * use these flags to indicate.
+> > + */
+> > +#define HIBERNATION_FLAG	1
+> > +#define DEEPSLEEP_FLAG		2
+> 
+> Again, namespacing -- but why is hibernation using this at all?  What's
+> wrong with the existing hibernation support?
+
+How about BOOKE_HIBERNATION_FLAG?
+
+Just wish to share code between hibernation and suspend.
+
+> 
+> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> > index fcc9a89..64acae6 100644
+> > --- a/arch/powerpc/kernel/Makefile
+> > +++ b/arch/powerpc/kernel/Makefile
+> > @@ -73,6 +73,7 @@ obj-$(CONFIG_HIBERNATION)	+= swsusp_booke.o
+> >  else
+> >  obj-$(CONFIG_HIBERNATION)	+= swsusp_$(CONFIG_WORD_SIZE).o
 > >  endif
-> >  
-> >  source "drivers/platform/chrome/Kconfig"
-> > +
-> > +if FSL_SOC
-> > +source "drivers/platform/fsl/Kconfig"
-> > +endif
+> > +obj-$(CONFIG_E500)		+= booke_save_regs.o
 > 
-> Chrome doesn't need an ifdef -- why does this?
-
-Don't wish other platform see these options, and the X86 and GOLDFISH have
-ifdefs.
-
+> Shouldn't this depend on whether suspend is enabled?
 > 
-> > diff --git a/drivers/platform/Makefile b/drivers/platform/Makefile
-> > index 3656b7b..37c6f72 100644
-> > --- a/drivers/platform/Makefile
-> > +++ b/drivers/platform/Makefile
-> > @@ -6,3 +6,4 @@ obj-$(CONFIG_X86)		+= x86/
-> >  obj-$(CONFIG_OLPC)		+= olpc/
-> >  obj-$(CONFIG_GOLDFISH)		+= goldfish/
-> >  obj-$(CONFIG_CHROME_PLATFORMS)	+= chrome/
-> > +obj-$(CONFIG_FSL_SOC)		+= fsl/
-> > diff --git a/drivers/platform/fsl/Kconfig b/drivers/platform/fsl/Kconfig
+> > diff --git a/arch/powerpc/kernel/booke_save_regs.S b/arch/powerpc/kernel/booke_save_regs.S
 > > new file mode 100644
-> > index 0000000..72ed053
+> > index 0000000..9ccd576
 > > --- /dev/null
-> > +++ b/drivers/platform/fsl/Kconfig
-> > @@ -0,0 +1,10 @@
-> > +#
-> > +# Freescale Specific Power Management Drivers
-> > +#
+> > +++ b/arch/powerpc/kernel/booke_save_regs.S
+> > @@ -0,0 +1,361 @@
+> > +/*
+> > + * Freescale Power Management, Save/Restore core state
+> > + *
+> > + * Copyright 2014 Freescale Semiconductor, Inc.
+> > + * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; either version
+> > + * 2 of the License, or (at your option) any later version.
+> > + */
 > > +
-> > +config FSL_SLEEP_FSM
-> > +	bool
-> > +	help
-> > +	  This driver configures a hardware FSM (Finite State Machine) for deep sleep.
-> > +	  The FSM is used to finish clean-ups at the last stage of system entering deep
-> > +	  sleep, and also wakes up system when a wake up event happens.
-> > diff --git a/drivers/platform/fsl/Makefile b/drivers/platform/fsl/Makefile
-> > new file mode 100644
-> > index 0000000..d99ca0e
-> > --- /dev/null
-> > +++ b/drivers/platform/fsl/Makefile
-> > @@ -0,0 +1,5 @@
-> > +#
-> > +# Makefile for linux/drivers/platform/fsl
-> > +# Freescale Specific Power Management Drivers
-> > +#
-> > +obj-$(CONFIG_FSL_SLEEP_FSM)	+= sleep_fsm.o
-> 
-> Why is this here while the other stuff is in arch/powerpc/sysdev?
-> 
-> > +/* Block offsets */
-> > +#define	RCPM_BLOCK_OFFSET	0x00022000
-> > +#define	EPU_BLOCK_OFFSET	0x00000000
-> > +#define	NPC_BLOCK_OFFSET	0x00001000
-> 
-> Why don't these block offsets come from the device tree?
-
-Have maped DCSR registers. Don't wish to remap them.
-
-> 
-> > +static void *g_dcsr_base;
-> 
-> __iomem
-
-OK.
-
-> 
-> > +	/* Configure the EPU Counters */
-> > +	epu_write(EPCCR15, 0x92840000);
-> > +	epu_write(EPCCR14, 0x92840000);
-> > +	epu_write(EPCCR12, 0x92840000);
-> > +	epu_write(EPCCR11, 0x92840000);
-> > +	epu_write(EPCCR10, 0x92840000);
-> > +	epu_write(EPCCR9, 0x92840000);
-> > +	epu_write(EPCCR8, 0x92840000);
-> > +	epu_write(EPCCR5, 0x92840000);
-> > +	epu_write(EPCCR4, 0x92840000);
-> > +	epu_write(EPCCR2, 0x92840000);
+> > +#include <asm/ppc_asm.h>
+> > +#include <asm/booke_save_regs.h>
 > > +
-> > +	/* Configure the SCUs Inputs */
-> > +	epu_write(EPSMCR15, 0x76000000);
-> > +	epu_write(EPSMCR14, 0x00000031);
-> > +	epu_write(EPSMCR13, 0x00003100);
-> > +	epu_write(EPSMCR12, 0x7F000000);
-> > +	epu_write(EPSMCR11, 0x31740000);
-> > +	epu_write(EPSMCR10, 0x65000030);
-> > +	epu_write(EPSMCR9, 0x00003000);
-> > +	epu_write(EPSMCR8, 0x64300000);
-> > +	epu_write(EPSMCR7, 0x30000000);
-> > +	epu_write(EPSMCR6, 0x7C000000);
-> > +	epu_write(EPSMCR5, 0x00002E00);
-> > +	epu_write(EPSMCR4, 0x002F0000);
-> > +	epu_write(EPSMCR3, 0x2F000000);
-> > +	epu_write(EPSMCR2, 0x6C700000);
+> > +/*
+> > + * Supported Core List:
+> > + * E500v1, E500v2, E500MC, E5500, E6500.
+> > + */
+> > +
+> > +/* Save/Restore register operation define */
+> > +#define do_save_gpr_reg(reg, addr) \
+> > +	PPC_STL reg, addr(r10)
+> > +
+> > +#define do_save_fpr_reg(reg, addr) \
+> > +	stfd	reg, addr(r10)
+> > +
+> > +#define do_save_spr_reg(reg, addr) \
+> > +	mfspr	r0, SPRN_##reg ;\
+> > +	PPC_STL r0, addr(r10)
+> > +
+> > +#define do_save_special_reg(special, addr) \
+> > +	mf##special	r0 ;\
+> > +	PPC_STL r0, addr(r10)
+> > +
+> > +#define do_restore_gpr_reg(reg, addr) \
+> > +	PPC_LL reg, addr(r10)
+> > +
+> > +#define do_restore_fpr_reg(reg, addr) \
+> > +	lfd	reg, addr(r10)
+> > +
+> > +#define do_restore_spr_reg(reg, addr) \
+> > +	PPC_LL r0, addr(r10) ;\
+> > +	mtspr	SPRN_##reg, r0
+> > +
+> > +#define do_restore_special_reg(special, addr) \
+> > +	PPC_LL r0, addr(r10) ;\
+> > +	mt##special	r0
+> > +
+> > +#define do_sr_general_gpr_regs(func) \
+> > +	do_##func##_gpr_reg(r1, SR_GPR1) ;\
+> > +	do_##func##_gpr_reg(r2, SR_GPR2) ;\
+> > +	do_##func##_gpr_reg(r13, SR_GPR13 + 0x00) ;\
+> > +	do_##func##_gpr_reg(r14, SR_GPR13 + 0x08) ;\
+> > +	do_##func##_gpr_reg(r15, SR_GPR13 + 0x10) ;\
+> > +	do_##func##_gpr_reg(r16, SR_GPR13 + 0x18) ;\
+> > +	do_##func##_gpr_reg(r17, SR_GPR13 + 0x20) ;\
+> > +	do_##func##_gpr_reg(r18, SR_GPR13 + 0x28) ;\
+> > +	do_##func##_gpr_reg(r19, SR_GPR13 + 0x30) ;\
+> > +	do_##func##_gpr_reg(r20, SR_GPR13 + 0x38) ;\
+> > +	do_##func##_gpr_reg(r21, SR_GPR13 + 0x40) ;\
+> > +	do_##func##_gpr_reg(r22, SR_GPR13 + 0x48) ;\
+> > +	do_##func##_gpr_reg(r23, SR_GPR13 + 0x50) ;\
+> > +	do_##func##_gpr_reg(r24, SR_GPR13 + 0x58) ;\
+> > +	do_##func##_gpr_reg(r25, SR_GPR13 + 0x60) ;\
+> > +	do_##func##_gpr_reg(r26, SR_GPR13 + 0x68) ;\
+> > +	do_##func##_gpr_reg(r27, SR_GPR13 + 0x70) ;\
+> > +	do_##func##_gpr_reg(r28, SR_GPR13 + 0x78) ;\
+> > +	do_##func##_gpr_reg(r29, SR_GPR13 + 0x80) ;\
+> > +	do_##func##_gpr_reg(r30, SR_GPR13 + 0x88) ;\
+> > +	do_##func##_gpr_reg(r31, SR_GPR13 + 0x90)
+> > +
+> > +#define do_sr_general_pcr_regs(func) \
+> > +	do_##func##_spr_reg(EPCR, SR_EPCR) ;\
+> > +	do_##func##_spr_reg(HID0, SR_HID0 + 0x00)
+> > +
+> > +#define do_sr_e500_pcr_regs(func) \
+> > +	do_##func##_spr_reg(HID1, SR_HID0 + 0x08)
 > 
-> Where do these magic numbers come from?  Which chips are they valid for?
+> PCR?
+> 
+> In the comments you said "Only e500, e500v2 need to save HID0 - HID1",
+> yet you save HID0 in the "general" macro.
 
-They are for T1040. Can be found in the RCPM chapter of T1040RM.
+Will change it.
 
 > 
-> > +void fsl_dp_fsm_clean(void *dcsr_base)
-> > +{
-> > +
-> > +	epu_write(EPEVTCR2, 0);
-> > +	epu_write(EPEVTCR9, 0);
-> > +
-> > +	epu_write(EPGCR, 0);
-> > +	epu_write(EPECR15, 0);
-> > +
-> > +	rcpm_write(CSTTACR0, 0);
-> > +	rcpm_write(CG1CR0, 0);
-> > +
-> > +}
+> > +#define do_sr_save_tb_regs \
+> > +	do_save_spr_reg(TBRU, SR_TBU) ;\
+> > +	do_save_spr_reg(TBRL, SR_TBL)
 > 
-> Don't put blank lines at the beginning/end of a block.
+> What if TBU increments between those two reads?  Use the standard
+> sequence to read the timebase.
+> 
+> > +#define do_sr_interrupt_regs(func) \
+> > +	do_##func##_spr_reg(IVPR, SR_IVPR) ;\
+> > +	do_##func##_spr_reg(IVOR0, SR_IVOR0 + 0x00) ;\
+> > +	do_##func##_spr_reg(IVOR1, SR_IVOR0 + 0x08) ;\
+> > +	do_##func##_spr_reg(IVOR2, SR_IVOR0 + 0x10) ;\
+> > +	do_##func##_spr_reg(IVOR3, SR_IVOR0 + 0x18) ;\
+> > +	do_##func##_spr_reg(IVOR4, SR_IVOR0 + 0x20) ;\
+> > +	do_##func##_spr_reg(IVOR5, SR_IVOR0 + 0x28) ;\
+> > +	do_##func##_spr_reg(IVOR6, SR_IVOR0 + 0x30) ;\
+> > +	do_##func##_spr_reg(IVOR7, SR_IVOR0 + 0x38) ;\
+> > +	do_##func##_spr_reg(IVOR8, SR_IVOR0 + 0x40) ;\
+> > +	do_##func##_spr_reg(IVOR10, SR_IVOR0 + 0x50) ;\
+> > +	do_##func##_spr_reg(IVOR11, SR_IVOR0 + 0x58) ;\
+> > +	do_##func##_spr_reg(IVOR12, SR_IVOR0 + 0x60) ;\
+> > +	do_##func##_spr_reg(IVOR13, SR_IVOR0 + 0x68) ;\
+> > +	do_##func##_spr_reg(IVOR14, SR_IVOR0 + 0x70) ;\
+> > +	do_##func##_spr_reg(IVOR15, SR_IVOR0 + 0x78)
+> > +
+> > +#define do_e500_sr_interrupt_regs(func) \
+> > +	do_##func##_spr_reg(IVOR32, SR_IVOR32 + 0x00) ;\
+> > +	do_##func##_spr_reg(IVOR33, SR_IVOR32 + 0x08) ;\
+> > +	do_##func##_spr_reg(IVOR34, SR_IVOR32 + 0x10)
+> > +
+> > +#define do_e500mc_sr_interrupt_regs(func) \
+> > +	do_##func##_spr_reg(IVOR9, SR_IVOR0 + 0x48) ;\
+> > +	do_##func##_spr_reg(IVOR35, SR_IVOR32 + 0x18) ;\
+> > +	do_##func##_spr_reg(IVOR36, SR_IVOR32 + 0x20) ;\
+> > +	do_##func##_spr_reg(IVOR37, SR_IVOR32 + 0x28) ;\
+> > +	do_##func##_spr_reg(IVOR38, SR_IVOR32 + 0x30) ;\
+> > +	do_##func##_spr_reg(IVOR39, SR_IVOR32 + 0x38) ;\
+> > +	do_##func##_spr_reg(IVOR40, SR_IVOR32 + 0x40) ;\
+> > +	do_##func##_spr_reg(IVOR41, SR_IVOR32 + 0x48)
+> > +
+> > +#define do_e5500_sr_interrupt_regs(func) \
+> > +	do_e500mc_sr_interrupt_regs(func)
+> > +
+> > +#define do_e6500_sr_interrupt_regs(func) \
+> > +	do_##func##_spr_reg(IVOR32, SR_IVOR32 + 0x00) ;\
+> > +	do_##func##_spr_reg(IVOR33, SR_IVOR32 + 0x08) ;\
+> > +	do_e5500_sr_interrupt_regs(func)
+> > +
+> > +#define do_sr_general_software_regs(func) \
+> > +	do_##func##_spr_reg(SPRG1, SR_SPRG1) ;\
+> > +	do_##func##_spr_reg(SPRG3, SR_SPRG3) ;\
+> > +	do_##func##_spr_reg(PID0, SR_PID0)
+> > +
+> > +#define do_sr_e500_mmu_regs(func) \
+> > +	do_##func##_spr_reg(PID1, SR_PID0 + 0x08) ;\
+> > +	do_##func##_spr_reg(PID2, SR_PID0 + 0x10)
+> > +
+> > +#define do_sr_debug_regs(func) \
+> > +	do_##func##_spr_reg(DBCR0, SR_DBCR0 + 0x00) ;\
+> > +	do_##func##_spr_reg(DBCR1, SR_DBCR0 + 0x08) ;\
+> > +	do_##func##_spr_reg(DBCR2, SR_DBCR0 + 0x10) ;\
+> > +	do_##func##_spr_reg(IAC1, SR_IAC1 + 0x00) ;\
+> > +	do_##func##_spr_reg(IAC2, SR_IAC1 + 0x08) ;\
+> > +	do_##func##_spr_reg(DAC1, SR_DAC1 + 0x00) ;\
+> > +	do_##func##_spr_reg(DAC2, SR_DAC1 + 0x08)
+> > +
+> > +#define do_e6500_sr_debug_regs(func) \
+> > +	do_##func##_spr_reg(IAC3, SR_IAC1 + 0x10) ;\
+> > +	do_##func##_spr_reg(IAC4, SR_IAC1 + 0x18)
+> > +
+> > +	.section .text
+> > +	.align	5
+> > +booke_cpu_base_save:
+> > +	do_sr_general_gpr_regs(save)
+> > +	do_sr_general_pcr_regs(save)
+> > +	do_sr_general_software_regs(save)
+> > +1:
+> > +	mfspr	r5, SPRN_TBRU
+> > +	do_sr_general_time_regs(save)
+> > +	mfspr	r6, SPRN_TBRU
+> > +	cmpw	r5, r6
+> > +	bne	1b
+> 
+> Oh, here's where you deal with that.  Why?  It just obfuscates things.
+
+Will make it more readable.
+
+> 
+> > +booke_cpu_base_restore:
+> > +	do_sr_general_gpr_regs(restore)
+> > +	do_sr_general_pcr_regs(restore)
+> > +	do_sr_general_software_regs(restore)
+> > +
+> > +	isync
+> > +
+> > +	/* Restore Time registers, clear tb lower to avoid wrap */
+> > +	li	r0, 0
+> > +	mtspr	SPRN_TBWL, r0
+> > +	do_sr_general_time_regs(restore)
+> 
+> Why is zeroing TBL not done in the same place as you load the new TB?
+
+Will fix it.
+
+> 
+> > +/* Base registers, e500v1, e500v2 need to do some special save/restore */
+> > +e500_base_special_save:
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500V1@l
+> > +	cmpw	r11, r12
+> > +	beq	1f
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500V2@l
+> > +	cmpw	r11, r12
+> > +	bne	2f
+> > +1:
+> > +	do_sr_e500_pcr_regs(save)
+> > +	do_sr_e500_mmu_regs(save)
+> > +2:
+> > +	blr
+> > +
+> > +e500_base_special_restore:
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500V1@l
+> > +	cmpw	r11, r12
+> > +	beq	1f
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500V2@l
+> > +	cmpw	r11, r12
+> > +	bne	2f
+> > +1:
+> > +	do_sr_e500_pcr_regs(save)
+> > +	do_sr_e500_mmu_regs(save)
+> > +2:
+> > +	blr
+> 
+> Why is this separate from the other CPU-specific "append" code?
+> 
+> > +booke_cpu_append_save:
+> > +	mfspr	r0, SPRN_PVR
+> > +	rlwinm	r11, r0, 16, 16, 31
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E6500@l
+> > +	cmpw	r11, r12
+> > +	beq	e6500_append_save
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E5500@l
+> > +	cmpw	r11, r12
+> > +	beq	e5500_append_save
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500MC@l
+> > +	cmpw	r11, r12
+> > +	beq	e500mc_append_save
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500V2@l
+> > +	cmpw	r11, r12
+> > +	beq	e500v2_append_save
+> > +
+> > +	lis	r12, 0
+> > +	ori	r12, r12, PVR_VER_E500V1@l
+> > +	cmpw	r11, r12
+> > +	beq	e500v1_append_save
+> > +	b	1f
+> > +
+> > +e6500_append_save:
+> > +	do_e6500_sr_interrupt_regs(save)
+> > +	do_e6500_sr_debug_regs(save)
+> > +	b	1f
+> > +
+> > +e5500_append_save:
+> > +	do_e5500_sr_interrupt_regs(save)
+> > +	b	1f
+> > +
+> > +e500mc_append_save:
+> > +	do_e500mc_sr_interrupt_regs(save)
+> > +	b	1f
+> > +
+> > +e500v2_append_save:
+> > +e500v1_append_save:
+> > +	do_e500_sr_interrupt_regs(save)
+> > +1:
+> > +	do_sr_interrupt_regs(save)
+> > +	do_sr_debug_regs(save)
+> > +
+> > +	blr
+> 
+> What is meant by "append" here?
+
+Means extra registers for specific e500 derivative core.
+
+> 
+> > +/*
+> > + * r3 = the address of buffer
+> > + * r4 = type: HIBERNATION_FLAG or DEEPSLEEP_FLAG
+> > + */
+> > +_GLOBAL(booke_cpu_state_save)
+> > +	mflr	r9
+> > +	mr	r10, r3
+> > +
+> > +	cmpwi	r4, HIBERNATION_FLAG
+> > +	beq	1f
+> > +	bl	booke_cpu_append_save
+> > +1:
+> > +	bl	e500_base_special_save
+> > +	bl	booke_cpu_base_save
+> > +
+> > +	mtlr	r9
+> > +	blr
+> 
+> You're assuming a special ABI from these subfunctions (e.g. r9
+> non-volatile) but I don't see any comment to that effect on those
+> functions.
 > 
 > -Scott
 
-Thanks.
+Will add comments.
 
 -Chenhui
