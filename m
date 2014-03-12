@@ -1,13 +1,21 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Wed, 12 Mar 2014 19:17:07 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/le: Show the endianess of the LPAR under PowerVM.
-Message-ID: <20140312081707.GB13555@thor.bakeyournoodle.com>
+Return-Path: <qiang.zhao@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3C01C2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 19:27:50 +1100 (EST)
+Received: from mail157-co9 (localhost [127.0.0.1])	by
+ mail157-co9-R.bigfish.com (Postfix) with ESMTP id 6988E4001C9	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 08:27:46 +0000 (UTC)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
+Subject: [PATCH] T1040RDB: add qe node for T1040RDB dts
+Date: Wed, 12 Mar 2014 16:26:02 +0800
+Message-ID: <1394612762-36308-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="kXdP64Ggrk/fb43R"
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,59 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---kXdP64Ggrk/fb43R
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
 ---
- arch/powerpc/platforms/pseries/setup.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/boot/dts/t1040rdb.dts | 43 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platform=
-s/pseries/setup.c
-index 972df0f..5a32caa 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -516,7 +516,11 @@ static void __init pSeries_setup_arch(void)
- static int __init pSeries_init_panel(void)
- {
- 	/* Manually leave the kernel version on the panel. */
-+#ifdef __BIG_ENDIAN__
- 	ppc_md.progress("Linux ppc64\n", 0);
-+#else
-+	ppc_md.progress("Linux ppc64le\n", 0);
-+#endif
- 	ppc_md.progress(init_utsname()->version, 0);
-=20
- 	return 0;
---=20
-1.8.5.3
-
-
-Yours Tony
-
---kXdP64Ggrk/fb43R
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCAAGBQJTIBgDAAoJEPvNNsFAAoTB9doQAOmhi3l3yRxWv+4FxbTasVfR
-q9caC4RAmnMgJ3el6af7l9xt81+PUFUt63MsQsuGZQ+GdEA4RLRnKbwEyoaF8xvf
-DxaFfwvQS7RerWKHjGg67ICRFUTaL+J7DGo9Y/Rn15Xahpa3hfwMS7IO0tVFPyiv
-wDX0ysFXQ1a5Wt9ipbdg4yTJR6wmHgaZ3IUscMlrG+30NHJVMqzA/BMti6CLmV4s
-6mYN9hAVVJ/ZBXjOQBL0w5lFqdENL19ghwSp4Ci0OKzx9mWoN914GpUPcsko23Wt
-+pGDdYvk2SzHnaFisTDS4Ynw/ruqEYvSuUqrYM8wFIY9HuhDSZXkWuFeydDDDJjY
-nXabRRRkQP+mBUV5P66SzMqqSrNEJn9n+ATkbPXq5BcNnRcD2PrjFdG2YCSvUKmw
-4B2UnXEohXYNiQasauWj5oA86Nb9FewG70UB2PVDesQ+D0MvMqrvm43dUrOR2iWk
-/61v+fSihVVYDJtVlqEhs+zNdT92M1OxG3WZfVab0/YytMB8/qetonJegU1hCgTq
-c95YTcDizrhYm4NCnBd4ez2+QMmahvwZ4SzGyo3piUbkenVPBwH0bRK8kydaysrr
-9IkeUQ/QeGZojZqDe9NYbaCut9wzOHHCNA1hYNu3OGr8ufuLpeAff8SjfFTloifv
-/tjUgxQIR5GsdoShWcLx
-=hT54
------END PGP SIGNATURE-----
-
---kXdP64Ggrk/fb43R--
+diff --git a/arch/powerpc/boot/dts/t1040rdb.dts b/arch/powerpc/boot/dts/t1040rdb.dts
+index e2eee18..6ff0412 100644
+--- a/arch/powerpc/boot/dts/t1040rdb.dts
++++ b/arch/powerpc/boot/dts/t1040rdb.dts
+@@ -268,6 +268,49 @@
+ 			fsl,fman-mac = <&enet4>;
+ 		};
+ 	};
++
++	qe: qe@ffe139999 {
++		ranges = <0x0 0xf 0xfe140000 0x40000>;
++		reg = <0xf 0xfe140000 0 0x480>;
++		brg-frequency = <0>;
++		bus-frequency = <0>;
++
++		si1: si@700 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,qe-si";
++			reg = <0x700 0x80>;
++		};
++
++		siram1: siram@1000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,qe-siram";
++			reg = <0x1000 0x800>;
++		};
++
++		tdma: ucc@2000 {
++			compatible = "fsl,ucc-tdm";
++			rx-clock-name = "clk3";
++			tx-clock-name = "clk4";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <0>;
++			fsl,siram-entry-id = <0>;
++		};
++
++		serial: ucc@2200 {
++			device_type = "serial";
++			compatible = "ucc_uart";
++			port-number = <1>;
++			rx-clock-name = "brg2";
++			tx-clock-name = "brg2";
++		};
++	};
+ };
+ /include/ "fsl/t1040si-post.dtsi"
+ /include/ "fsl/qoriq-dpaa-res3.dtsi"
+-- 
+1.8.5
