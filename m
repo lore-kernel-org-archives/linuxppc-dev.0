@@ -1,23 +1,23 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B22D72C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 13:02:21 +1100 (EST)
-Received: by mail-pa0-f43.google.com with SMTP id bj1so384544pad.16
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 19:02:19 -0700 (PDT)
-Date: Tue, 11 Mar 2014 19:02:17 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: Node 0 not necessary for powerpc?
-In-Reply-To: <20140311195632.GA946@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.02.1403111900100.19193@chino.kir.corp.google.com>
-References: <20140311195632.GA946@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8BDE32C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 15:00:14 +1100 (EST)
+Date: Wed, 12 Mar 2014 11:59:54 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/9] powerpc/rcpm: add RCPM driver
+Message-ID: <20140312035954.GB4706@localhost.localdomain>
+References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-3-git-send-email-chenhui.zhao@freescale.com>
+ <1394581371.13761.62.camel@snotra.buserror.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-mm@kvack.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- anton@samba.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1394581371.13761.62.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +27,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 Mar 2014, Nishanth Aravamudan wrote:
+On Tue, Mar 11, 2014 at 06:42:51PM -0500, Scott Wood wrote:
+> On Fri, 2014-03-07 at 12:57 +0800, Chenhui Zhao wrote:
+> > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > index b756f3d..3fdf9f3 100644
+> > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > @@ -56,6 +56,8 @@ void __init corenet_gen_setup_arch(void)
+> >  
+> >  	swiotlb_detect_4g();
+> >  
+> > +	fsl_rcpm_init();
+> > +
+> >  	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
+> 
+> RCPM is not board-specific.  Why is this in board code?
 
-> I have a P7 system that has no node0, but a node0 shows up in numactl
-> --hardware, which has no cpus and no memory (and no PCI devices):
-> 
-> numactl --hardware
-> available: 4 nodes (0-3)
-> node 0 cpus:
-> node 0 size: 0 MB
-> node 0 free: 0 MB
-> node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11
-> node 1 size: 0 MB
-> node 1 free: 0 MB
-> node 2 cpus:
-> node 2 size: 7935 MB
-> node 2 free: 7716 MB
-> node 3 cpus:
-> node 3 size: 8395 MB
-> node 3 free: 8015 MB
-> node distances:
-> node   0   1   2   3 
->   0:  10  20  10  20 
->   1:  20  10  20  20 
->   2:  10  20  10  20 
->   3:  20  20  20  10 
-> 
-> This is because we statically initialize N_ONLINE to be [0] in
-> mm/page_alloc.c:
-> 
->         [N_ONLINE] = { { [0] = 1UL } },
-> 
-> I'm not sure what the architectural requirements are here, but at least
-> on this test system, removing this initialization, it boots fine and is
-> running. I've not yet tried stress tests, but it's survived the
-> beginnings of kernbench so far.
-> 
-> numactl --hardware
-> available: 3 nodes (1-3)
-> node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11
-> node 1 size: 0 MB
-> node 1 free: 0 MB
-> node 2 cpus:
-> node 2 size: 7935 MB
-> node 2 free: 7479 MB
-> node 3 cpus:
-> node 3 size: 8396 MB
-> node 3 free: 8375 MB
-> node distances:
-> node   1   2   3 
->   1:  10  20  20 
->   2:  20  10  20 
->   3:  20  20  10
-> 
-> Perhaps we could put in a ARCH_DOES_NOT_NEED_NODE0 and only define it on
-> powerpc for now, conditionalizing the above initialization on that?
-> 
+Init the RCPM driver in the early stage before smp_init(). Because
+the time base sync calls a callback function .freeze_time_base()
+in the RCPM driver.
 
-I don't know if anything has recently changed in the past year or so, but 
-I've booted x86 machines with a hacked BIOS so that all memory on node 0 
-is hotpluggable and offline, so I believe this is possible on x86 as well.
+Will use early_initcall() instead.
+
+> 
+> > +static void rcpm_v1_cpu_enter_state(int cpu, int state)
+> > +{
+> > +	unsigned int hw_cpu = get_hard_smp_processor_id(cpu);
+> > +	unsigned int mask = 1 << hw_cpu;
+> > +
+> > +	switch (state) {
+> > +	case E500_PM_PH10:
+> > +		setbits32(&rcpm_v1_regs->cdozcr, mask);
+> > +		break;
+> > +	case E500_PM_PH15:
+> > +		setbits32(&rcpm_v1_regs->cnapcr, mask);
+> > +		break;
+> > +	default:
+> > +		pr_err("Unknown cpu PM state\n");
+> > +		break;
+> > +	}
+> > +}
+> 
+> Put __func__ in error messages -- and for "unknown value" type messages,
+> print the value.
+
+OK.
+
+> 
+> 
+> > +static int rcpm_v1_plat_enter_state(int state)
+> > +{
+> > +	u32 *pmcsr_reg = &rcpm_v1_regs->powmgtcsr;
+> > +	int ret = 0;
+> > +	int result;
+> > +
+> > +	switch (state) {
+> > +	case PLAT_PM_SLEEP:
+> > +		setbits32(pmcsr_reg, RCPM_POWMGTCSR_SLP);
+> > +
+> > +		/* At this point, the device is in sleep mode. */
+> > +
+> > +		/* Upon resume, wait for RCPM_POWMGTCSR_SLP bit to be clear. */
+> > +		result = spin_event_timeout(
+> > +		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_SLP), 10000, 10);
+> > +		if (!result) {
+> > +			pr_err("%s: timeout waiting for SLP bit to be cleared\n",
+> > +			  __func__);
+> 
+> Why are you indenting continuation lines with only two spaces (and yet
+> still not aligning with anything)?
+
+Will align with the previous parenthesis.
+
+> 
+> > +			ret = -ETIMEDOUT;
+> > +		}
+> > +		break;
+> > +	default:
+> > +		pr_err("Unsupported platform PM state\n");
+> > +		ret = -EINVAL;
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> > +
+> > +static void rcpm_v1_freeze_time_base(int freeze)
+> > +{
+> > +	u32 *tben_reg = &rcpm_v1_regs->ctbenr;
+> > +	static u32 mask;
+> > +
+> > +	if (freeze) {
+> > +		mask = in_be32(tben_reg);
+> > +		clrbits32(tben_reg, mask);
+> > +	} else {
+> > +		setbits32(tben_reg, mask);
+> > +	}
+> > +
+> > +	/* read back to push the previous write */
+> > +	in_be32(tben_reg);
+> > +}
+> > +
+> > +static void rcpm_v2_freeze_time_base(int freeze)
+> > +{
+> > +	u32 *tben_reg = &rcpm_v2_regs->pctbenr;
+> > +	static u32 mask;
+> > +
+> > +	if (freeze) {
+> > +		mask = in_be32(tben_reg);
+> > +		clrbits32(tben_reg, mask);
+> > +	} else {
+> > +		setbits32(tben_reg, mask);
+> > +	}
+> > +
+> > +	/* read back to push the previous write */
+> > +	in_be32(tben_reg);
+> > +}
+> 
+> It looks like the only difference between these two functions is how you
+> calculate tben_reg -- factor the rest out into a single function.
+
+Yes. Will factor them out into a single function.
+
+> 
+> > +int fsl_rcpm_init(void)
+> > +{
+> > +	struct device_node *np;
+> > +
+> > +	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-rcpm-2.0");
+> > +	if (np) {
+> > +		rcpm_v2_regs = of_iomap(np, 0);
+> > +		of_node_put(np);
+> > +		if (!rcpm_v2_regs)
+> > +			return -ENOMEM;
+> > +
+> > +		qoriq_pm_ops = &qoriq_rcpm_v2_ops;
+> > +
+> > +	} else {
+> > +		np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-rcpm-1.0");
+> > +		if (np) {
+> > +			rcpm_v1_regs = of_iomap(np, 0);
+> > +			of_node_put(np);
+> > +			if (!rcpm_v1_regs)
+> > +				return -ENOMEM;
+> > +
+> > +			qoriq_pm_ops = &qoriq_rcpm_v1_ops;
+> > +
+> > +		} else {
+> > +			pr_err("%s: can't find the rcpm node.\n", __func__);
+> > +			return -EINVAL;
+> > +		}
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> 
+> Why isn't this a proper platform driver?
+> 
+> -Scott
+
+The RCPM is not a single function IP block, instead it is a collection
+of device run control and power management. It would be called by other
+drivers and functions. For example, the callback .freeze_time_base()
+need to be called at early stage of kernel init. Therefore, it would be
+better to init it at early stage.
+
+-Chenhui
