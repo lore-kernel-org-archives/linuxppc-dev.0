@@ -1,24 +1,13 @@
-Return-Path: <chenhui.zhao@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 73A1F2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 19:08:22 +1100 (EST)
-Date: Wed, 12 Mar 2014 16:08:14 +0800
-From: Chenhui Zhao <chenhui.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 6/9] powerpc/85xx: support sleep feature on QorIQ SoCs
- with RCPM
-Message-ID: <20140312080814.GE4706@localhost.localdomain>
-References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-6-git-send-email-chenhui.zhao@freescale.com>
- <1394582427.13761.74.camel@snotra.buserror.net>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Wed, 12 Mar 2014 19:17:07 +1100
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/le: Show the endianess of the LPAR under PowerVM.
+Message-ID: <20140312081707.GB13555@thor.bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1394582427.13761.74.camel@snotra.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jason.Jin@freescale.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="kXdP64Ggrk/fb43R"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,171 +17,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2014 at 07:00:27PM -0500, Scott Wood wrote:
-> On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> > In sleep mode, the clocks of e500 cores and unused IP blocks is
-> > turned off. The IP blocks which are allowed to wake up the processor
-> > are still running.
-> > 
-> > The sleep mode is equal to the Standby state in Linux. Use the
-> > command to enter sleep mode:
-> >   echo standby > /sys/power/state
-> > 
-> > Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-> > ---
-> >  arch/powerpc/Kconfig                   |    4 +-
-> >  arch/powerpc/platforms/85xx/Makefile   |    3 +
-> >  arch/powerpc/platforms/85xx/qoriq_pm.c |   78 ++++++++++++++++++++++++++++++++
-> >  3 files changed, 83 insertions(+), 2 deletions(-)
-> >  create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
-> > 
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index 05f6323..e1d6510 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -222,7 +222,7 @@ config ARCH_HIBERNATION_POSSIBLE
-> >  config ARCH_SUSPEND_POSSIBLE
-> >  	def_bool y
-> >  	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
-> > -		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
-> > +		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
-> >  		   || 44x || 40x
-> >  
-> >  config PPC_DCR_NATIVE
-> > @@ -709,7 +709,7 @@ config FSL_PCI
-> >  config FSL_PMC
-> >  	bool
-> >  	default y
-> > -	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-> > +	depends on SUSPEND && (PPC_85xx && !PPC_E500MC || PPC_86xx)
-> 
-> Don't mix && and || without parentheses.
-> 
-> Maybe convert this into being selected (similar to FSL_RCPM), rather
-> than default y?
 
-Yes, will do.
+--kXdP64Ggrk/fb43R
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-> > index 25cebe7..7fae817 100644
-> > --- a/arch/powerpc/platforms/85xx/Makefile
-> > +++ b/arch/powerpc/platforms/85xx/Makefile
-> > @@ -2,6 +2,9 @@
-> >  # Makefile for the PowerPC 85xx linux kernel.
-> >  #
-> >  obj-$(CONFIG_SMP) += smp.o
-> > +ifeq ($(CONFIG_FSL_CORENET_RCPM), y)
-> > +obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o
-> > +endif
-> 
-> There should probably be a kconfig symbol for this.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ arch/powerpc/platforms/pseries/setup.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-OK.
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platform=
+s/pseries/setup.c
+index 972df0f..5a32caa 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -516,7 +516,11 @@ static void __init pSeries_setup_arch(void)
+ static int __init pSeries_init_panel(void)
+ {
+ 	/* Manually leave the kernel version on the panel. */
++#ifdef __BIG_ENDIAN__
+ 	ppc_md.progress("Linux ppc64\n", 0);
++#else
++	ppc_md.progress("Linux ppc64le\n", 0);
++#endif
+ 	ppc_md.progress(init_utsname()->version, 0);
+=20
+ 	return 0;
+--=20
+1.8.5.3
 
-> 
-> > diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
-> > new file mode 100644
-> > index 0000000..915b13b
-> > --- /dev/null
-> > +++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
-> > @@ -0,0 +1,78 @@
-> > +/*
-> > + * Support Power Management feature
-> > + *
-> > + * Copyright 2014 Freescale Semiconductor Inc.
-> > + *
-> > + * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
-> > + *
-> > + * This program is free software; you can redistribute	it and/or modify it
-> > + * under  the terms of	the GNU General	 Public License as published by the
-> > + * Free Software Foundation;  either version 2 of the  License, or (at your
-> > + * option) any later version.
-> > + */
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/suspend.h>
-> > +#include <linux/of_platform.h>
-> > +
-> > +#include <sysdev/fsl_soc.h>
-> > +
-> > +#define FSL_SLEEP		0x1
-> > +#define FSL_DEEP_SLEEP		0x2
-> 
-> FSL_DEEP_SLEEP is unused.
 
-Will be used in the last patch.
-[PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Yours Tony
 
-> 
-> > +
-> > +/* specify the sleep state of the present platform */
-> > +int sleep_pm_state;
-> > +/* supported sleep modes by the present platform */
-> > +static unsigned int sleep_modes;
-> 
-> Why is one signed and the other unsigned?
+--kXdP64Ggrk/fb43R
+Content-Type: application/pgp-signature
 
-Undesigned. Will change them all to unsigned.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-> 
-> > +
-> > +static int qoriq_suspend_enter(suspend_state_t state)
-> > +{
-> > +	int ret = 0;
-> > +
-> > +	switch (state) {
-> > +	case PM_SUSPEND_STANDBY:
-> > +
-> > +		if (cur_cpu_spec->cpu_flush_caches)
-> > +			cur_cpu_spec->cpu_flush_caches();
-> > +
-> > +		ret = qoriq_pm_ops->plat_enter_state(sleep_pm_state);
-> > +
-> > +		break;
-> > +
-> > +	default:
-> > +		ret = -EINVAL;
-> > +
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int qoriq_suspend_valid(suspend_state_t state)
-> > +{
-> > +	if (state == PM_SUSPEND_STANDBY && (sleep_modes & FSL_SLEEP))
-> > +		return 1;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static const struct platform_suspend_ops qoriq_suspend_ops = {
-> > +	.valid = qoriq_suspend_valid,
-> > +	.enter = qoriq_suspend_enter,
-> > +};
-> > +
-> > +static int __init qoriq_suspend_init(void)
-> > +{
-> > +	struct device_node *np;
-> > +
-> > +	sleep_modes = FSL_SLEEP;
-> > +	sleep_pm_state = PLAT_PM_SLEEP;
-> > +
-> > +	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-rcpm-2.0");
-> > +	if (np)
-> > +		sleep_pm_state = PLAT_PM_LPM20;
-> > +
-> > +	suspend_set_ops(&qoriq_suspend_ops);
-> > +
-> > +	return 0;
-> > +}
-> > +arch_initcall(qoriq_suspend_init);
-> 
-> Why is this not a platform driver?  If fsl_pmc can do it...
-> 
-> -Scott
+iQIcBAEBCAAGBQJTIBgDAAoJEPvNNsFAAoTB9doQAOmhi3l3yRxWv+4FxbTasVfR
+q9caC4RAmnMgJ3el6af7l9xt81+PUFUt63MsQsuGZQ+GdEA4RLRnKbwEyoaF8xvf
+DxaFfwvQS7RerWKHjGg67ICRFUTaL+J7DGo9Y/Rn15Xahpa3hfwMS7IO0tVFPyiv
+wDX0ysFXQ1a5Wt9ipbdg4yTJR6wmHgaZ3IUscMlrG+30NHJVMqzA/BMti6CLmV4s
+6mYN9hAVVJ/ZBXjOQBL0w5lFqdENL19ghwSp4Ci0OKzx9mWoN914GpUPcsko23Wt
++pGDdYvk2SzHnaFisTDS4Ynw/ruqEYvSuUqrYM8wFIY9HuhDSZXkWuFeydDDDJjY
+nXabRRRkQP+mBUV5P66SzMqqSrNEJn9n+ATkbPXq5BcNnRcD2PrjFdG2YCSvUKmw
+4B2UnXEohXYNiQasauWj5oA86Nb9FewG70UB2PVDesQ+D0MvMqrvm43dUrOR2iWk
+/61v+fSihVVYDJtVlqEhs+zNdT92M1OxG3WZfVab0/YytMB8/qetonJegU1hCgTq
+c95YTcDizrhYm4NCnBd4ez2+QMmahvwZ4SzGyo3piUbkenVPBwH0bRK8kydaysrr
+9IkeUQ/QeGZojZqDe9NYbaCut9wzOHHCNA1hYNu3OGr8ufuLpeAff8SjfFTloifv
+/tjUgxQIR5GsdoShWcLx
+=hT54
+-----END PGP SIGNATURE-----
 
-It can be, but what advantage of being a platform driver.
-
--Chenhui
+--kXdP64Ggrk/fb43R--
