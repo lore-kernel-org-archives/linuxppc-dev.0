@@ -1,15 +1,15 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B13132C008F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 05:36:58 +1100 (EST)
-Message-ID: <1394649402.13761.149.camel@snotra.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id 374232C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 05:45:44 +1100 (EST)
+Message-ID: <1394649930.13761.154.camel@snotra.buserror.net>
 Subject: Re: [PATCH] T1040RDB: add qe node for T1040RDB dts
 From: Scott Wood <scottwood@freescale.com>
 To: Zhao Qiang <B45475@freescale.com>
-Date: Wed, 12 Mar 2014 13:36:42 -0500
+Date: Wed, 12 Mar 2014 13:45:30 -0500
 In-Reply-To: <1394612762-36308-1-git-send-email-B45475@freescale.com>
 References: <1394612762-36308-1-git-send-email-B45475@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
@@ -29,44 +29,17 @@ On Wed, 2014-03-12 at 16:26 +0800, Zhao Qiang wrote:
 > ---
 >  arch/powerpc/boot/dts/t1040rdb.dts | 43 ++++++++++++++++++++++++++++++++++++++
 >  1 file changed, 43 insertions(+)
-> 
-> diff --git a/arch/powerpc/boot/dts/t1040rdb.dts b/arch/powerpc/boot/dts/t1040rdb.dts
-> index e2eee18..6ff0412 100644
-> --- a/arch/powerpc/boot/dts/t1040rdb.dts
-> +++ b/arch/powerpc/boot/dts/t1040rdb.dts
-> @@ -268,6 +268,49 @@
->  			fsl,fman-mac = <&enet4>;
->  		};
->  	};
-> +
-> +	qe: qe@ffe139999 {
-> +		ranges = <0x0 0xf 0xfe140000 0x40000>;
-> +		reg = <0xf 0xfe140000 0 0x480>;
 
-reg does not match unit address
+Presumably this is on top of this patch:
+http://patchwork.ozlabs.org/patch/314138/
 
-Missing compatible
+...since there's no existing t1040 device tree support.  Always mention
+when your patch is on top of a patch that hasn't yet been merged and
+isn't in the same patch set.
 
-> +		si1: si@700 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			compatible = "fsl,qe-si";
-> +			reg = <0x700 0x80>;
-> +		};
+At least some of this stuff seems like it should be in t1040si-post.dts
+(or a file included by it), rather than the board dts.
 
-Missing binding
-
-> +
-> +		siram1: siram@1000 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "fsl,qe-siram";
-> +			reg = <0x1000 0x800>;
-> +		};
-
-Missing binding
-
-> +
 > +		tdma: ucc@2000 {
 > +			compatible = "fsl,ucc-tdm";
 > +			rx-clock-name = "clk3";
@@ -80,9 +53,7 @@ Missing binding
 > +			fsl,tdm-id = <0>;
 > +			fsl,siram-entry-id = <0>;
 > +		};
-
-Missing binding
-
+> +
 > +		serial: ucc@2200 {
 > +			device_type = "serial";
 > +			compatible = "ucc_uart";
@@ -91,6 +62,6 @@ Missing binding
 > +			tx-clock-name = "brg2";
 > +		};
 
-Missing binding
+Missing reg.
 
 -Scott
