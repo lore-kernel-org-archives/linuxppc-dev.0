@@ -1,19 +1,18 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B80152C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 11:00:39 +1100 (EST)
-Message-ID: <1394582427.13761.74.camel@snotra.buserror.net>
-Subject: Re: [PATCH 6/9] powerpc/85xx: support sleep feature on QorIQ SoCs
- with RCPM
+ by ozlabs.org (Postfix) with ESMTPS id 5CA402C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 11:09:38 +1100 (EST)
+Message-ID: <1394582923.13761.81.camel@snotra.buserror.net>
+Subject: Re: [PATCH 7/9] fsl: add EPU FSM configuration for deep sleep
 From: Scott Wood <scottwood@freescale.com>
 To: Chenhui Zhao <chenhui.zhao@freescale.com>
-Date: Tue, 11 Mar 2014 19:00:27 -0500
-In-Reply-To: <1394168285-32275-6-git-send-email-chenhui.zhao@freescale.com>
+Date: Tue, 11 Mar 2014 19:08:43 -0500
+In-Reply-To: <1394168285-32275-7-git-send-email-chenhui.zhao@freescale.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-6-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-7-git-send-email-chenhui.zhao@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -28,152 +27,147 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> In sleep mode, the clocks of e500 cores and unused IP blocks is
-> turned off. The IP blocks which are allowed to wake up the processor
-> are still running.
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
 > 
-> The sleep mode is equal to the Standby state in Linux. Use the
-> command to enter sleep mode:
->   echo standby > /sys/power/state
+> In the last stage of deep sleep, software will trigger a Finite
+> State Machine (FSM) to control the hardware precedure, such as
+> board isolation, killing PLLs, removing power, and so on.
 > 
+> When the system is waked up by an interrupt, the FSM controls the
+> hardware to complete the early resume precedure.
+> 
+> This patch configure the EPU FSM preparing for deep sleep.
+> 
+> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
 > Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-> ---
->  arch/powerpc/Kconfig                   |    4 +-
->  arch/powerpc/platforms/85xx/Makefile   |    3 +
->  arch/powerpc/platforms/85xx/qoriq_pm.c |   78 ++++++++++++++++++++++++++++++++
->  3 files changed, 83 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 05f6323..e1d6510 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -222,7 +222,7 @@ config ARCH_HIBERNATION_POSSIBLE
->  config ARCH_SUSPEND_POSSIBLE
->  	def_bool y
->  	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
-> -		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
-> +		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
->  		   || 44x || 40x
+
+Couldn't this be part of qoriq_pm.c?
+
+> diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+> index 9b9a34a..eb83a30 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.h
+> +++ b/arch/powerpc/sysdev/fsl_soc.h
+> @@ -69,5 +69,8 @@ extern const struct fsl_pm_ops *qoriq_pm_ops;
 >  
->  config PPC_DCR_NATIVE
-> @@ -709,7 +709,7 @@ config FSL_PCI
->  config FSL_PMC
->  	bool
->  	default y
-> -	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-> +	depends on SUSPEND && (PPC_85xx && !PPC_E500MC || PPC_86xx)
+>  extern int fsl_rcpm_init(void);
+>  
+> +extern void fsl_dp_fsm_setup(void *dcsr_base);
+> +extern void fsl_dp_fsm_clean(void *dcsr_base);
 
-Don't mix && and || without parentheses.
+__iomem
 
-Maybe convert this into being selected (similar to FSL_RCPM), rather
-than default y?
-
-> diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-> index 25cebe7..7fae817 100644
-> --- a/arch/powerpc/platforms/85xx/Makefile
-> +++ b/arch/powerpc/platforms/85xx/Makefile
-> @@ -2,6 +2,9 @@
->  # Makefile for the PowerPC 85xx linux kernel.
->  #
->  obj-$(CONFIG_SMP) += smp.o
-> +ifeq ($(CONFIG_FSL_CORENET_RCPM), y)
-> +obj-$(CONFIG_SUSPEND)	+= qoriq_pm.o
+> +
+>  #endif
+>  #endif
+> diff --git a/drivers/platform/Kconfig b/drivers/platform/Kconfig
+> index 09fde58..6539e6d 100644
+> --- a/drivers/platform/Kconfig
+> +++ b/drivers/platform/Kconfig
+> @@ -6,3 +6,7 @@ source "drivers/platform/goldfish/Kconfig"
+>  endif
+>  
+>  source "drivers/platform/chrome/Kconfig"
+> +
+> +if FSL_SOC
+> +source "drivers/platform/fsl/Kconfig"
 > +endif
 
-There should probably be a kconfig symbol for this.
+Chrome doesn't need an ifdef -- why does this?
 
-> diff --git a/arch/powerpc/platforms/85xx/qoriq_pm.c b/arch/powerpc/platforms/85xx/qoriq_pm.c
+> diff --git a/drivers/platform/Makefile b/drivers/platform/Makefile
+> index 3656b7b..37c6f72 100644
+> --- a/drivers/platform/Makefile
+> +++ b/drivers/platform/Makefile
+> @@ -6,3 +6,4 @@ obj-$(CONFIG_X86)		+= x86/
+>  obj-$(CONFIG_OLPC)		+= olpc/
+>  obj-$(CONFIG_GOLDFISH)		+= goldfish/
+>  obj-$(CONFIG_CHROME_PLATFORMS)	+= chrome/
+> +obj-$(CONFIG_FSL_SOC)		+= fsl/
+> diff --git a/drivers/platform/fsl/Kconfig b/drivers/platform/fsl/Kconfig
 > new file mode 100644
-> index 0000000..915b13b
+> index 0000000..72ed053
 > --- /dev/null
-> +++ b/arch/powerpc/platforms/85xx/qoriq_pm.c
-> @@ -0,0 +1,78 @@
-> +/*
-> + * Support Power Management feature
-> + *
-> + * Copyright 2014 Freescale Semiconductor Inc.
-> + *
-> + * Author: Chenhui Zhao <chenhui.zhao@freescale.com>
-> + *
-> + * This program is free software; you can redistribute	it and/or modify it
-> + * under  the terms of	the GNU General	 Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
+> +++ b/drivers/platform/fsl/Kconfig
+> @@ -0,0 +1,10 @@
+> +#
+> +# Freescale Specific Power Management Drivers
+> +#
 > +
-> +#include <linux/kernel.h>
-> +#include <linux/suspend.h>
-> +#include <linux/of_platform.h>
-> +
-> +#include <sysdev/fsl_soc.h>
-> +
-> +#define FSL_SLEEP		0x1
-> +#define FSL_DEEP_SLEEP		0x2
+> +config FSL_SLEEP_FSM
+> +	bool
+> +	help
+> +	  This driver configures a hardware FSM (Finite State Machine) for deep sleep.
+> +	  The FSM is used to finish clean-ups at the last stage of system entering deep
+> +	  sleep, and also wakes up system when a wake up event happens.
+> diff --git a/drivers/platform/fsl/Makefile b/drivers/platform/fsl/Makefile
+> new file mode 100644
+> index 0000000..d99ca0e
+> --- /dev/null
+> +++ b/drivers/platform/fsl/Makefile
+> @@ -0,0 +1,5 @@
+> +#
+> +# Makefile for linux/drivers/platform/fsl
+> +# Freescale Specific Power Management Drivers
+> +#
+> +obj-$(CONFIG_FSL_SLEEP_FSM)	+= sleep_fsm.o
 
-FSL_DEEP_SLEEP is unused.
+Why is this here while the other stuff is in arch/powerpc/sysdev?
 
+> +/* Block offsets */
+> +#define	RCPM_BLOCK_OFFSET	0x00022000
+> +#define	EPU_BLOCK_OFFSET	0x00000000
+> +#define	NPC_BLOCK_OFFSET	0x00001000
+
+Why don't these block offsets come from the device tree?
+
+> +static void *g_dcsr_base;
+
+__iomem
+
+> +	/* Configure the EPU Counters */
+> +	epu_write(EPCCR15, 0x92840000);
+> +	epu_write(EPCCR14, 0x92840000);
+> +	epu_write(EPCCR12, 0x92840000);
+> +	epu_write(EPCCR11, 0x92840000);
+> +	epu_write(EPCCR10, 0x92840000);
+> +	epu_write(EPCCR9, 0x92840000);
+> +	epu_write(EPCCR8, 0x92840000);
+> +	epu_write(EPCCR5, 0x92840000);
+> +	epu_write(EPCCR4, 0x92840000);
+> +	epu_write(EPCCR2, 0x92840000);
 > +
-> +/* specify the sleep state of the present platform */
-> +int sleep_pm_state;
-> +/* supported sleep modes by the present platform */
-> +static unsigned int sleep_modes;
+> +	/* Configure the SCUs Inputs */
+> +	epu_write(EPSMCR15, 0x76000000);
+> +	epu_write(EPSMCR14, 0x00000031);
+> +	epu_write(EPSMCR13, 0x00003100);
+> +	epu_write(EPSMCR12, 0x7F000000);
+> +	epu_write(EPSMCR11, 0x31740000);
+> +	epu_write(EPSMCR10, 0x65000030);
+> +	epu_write(EPSMCR9, 0x00003000);
+> +	epu_write(EPSMCR8, 0x64300000);
+> +	epu_write(EPSMCR7, 0x30000000);
+> +	epu_write(EPSMCR6, 0x7C000000);
+> +	epu_write(EPSMCR5, 0x00002E00);
+> +	epu_write(EPSMCR4, 0x002F0000);
+> +	epu_write(EPSMCR3, 0x2F000000);
+> +	epu_write(EPSMCR2, 0x6C700000);
 
-Why is one signed and the other unsigned?
+Where do these magic numbers come from?  Which chips are they valid for?
 
-> +
-> +static int qoriq_suspend_enter(suspend_state_t state)
+> +void fsl_dp_fsm_clean(void *dcsr_base)
 > +{
-> +	int ret = 0;
 > +
-> +	switch (state) {
-> +	case PM_SUSPEND_STANDBY:
+> +	epu_write(EPEVTCR2, 0);
+> +	epu_write(EPEVTCR9, 0);
 > +
-> +		if (cur_cpu_spec->cpu_flush_caches)
-> +			cur_cpu_spec->cpu_flush_caches();
+> +	epu_write(EPGCR, 0);
+> +	epu_write(EPECR15, 0);
 > +
-> +		ret = qoriq_pm_ops->plat_enter_state(sleep_pm_state);
+> +	rcpm_write(CSTTACR0, 0);
+> +	rcpm_write(CG1CR0, 0);
 > +
-> +		break;
-> +
-> +	default:
-> +		ret = -EINVAL;
-> +
-> +	}
-> +
-> +	return ret;
 > +}
-> +
-> +static int qoriq_suspend_valid(suspend_state_t state)
-> +{
-> +	if (state == PM_SUSPEND_STANDBY && (sleep_modes & FSL_SLEEP))
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct platform_suspend_ops qoriq_suspend_ops = {
-> +	.valid = qoriq_suspend_valid,
-> +	.enter = qoriq_suspend_enter,
-> +};
-> +
-> +static int __init qoriq_suspend_init(void)
-> +{
-> +	struct device_node *np;
-> +
-> +	sleep_modes = FSL_SLEEP;
-> +	sleep_pm_state = PLAT_PM_SLEEP;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-rcpm-2.0");
-> +	if (np)
-> +		sleep_pm_state = PLAT_PM_LPM20;
-> +
-> +	suspend_set_ops(&qoriq_suspend_ops);
-> +
-> +	return 0;
-> +}
-> +arch_initcall(qoriq_suspend_init);
 
-Why is this not a platform driver?  If fsl_pmc can do it...
+Don't put blank lines at the beginning/end of a block.
 
 -Scott
