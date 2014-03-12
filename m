@@ -1,15 +1,23 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Wed, 12 Mar 2014 15:12:01 +1100
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/le: Avoid creatng R_PPC64_TOCSAVE relocations for
- modules.
-Message-ID: <20140312041201.GA13555@thor.bakeyournoodle.com>
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 33EF22C00CC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 15:34:20 +1100 (EST)
+Date: Wed, 12 Mar 2014 12:34:07 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 4/9] powerpc/85xx: support CPU hotplug for e500mc and e5500
+Message-ID: <20140312043407.GC4706@localhost.localdomain>
+References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-4-git-send-email-chenhui.zhao@freescale.com>
+ <1394581693.13761.66.camel@snotra.buserror.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Alan Modra <amodra@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1394581693.13761.66.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,64 +27,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Mar 11, 2014 at 06:48:13PM -0500, Scott Wood wrote:
+> On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
+> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> > index ac2621a..f3f4401 100644
+> > --- a/arch/powerpc/kernel/smp.c
+> > +++ b/arch/powerpc/kernel/smp.c
+> > @@ -405,8 +405,12 @@ void generic_cpu_die(unsigned int cpu)
+> >  
+> >  	for (i = 0; i < 100; i++) {
+> >  		smp_rmb();
+> > -		if (per_cpu(cpu_state, cpu) == CPU_DEAD)
+> > +		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
+> > +#ifdef CONFIG_PPC64
+> > +			paca[cpu].cpu_start = 0;
+> > +#endif
+> 
+> Why wasn't this needed by previous ppc64 machines?
 
---u3/rZRmxL6MmkK24
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If not clear, cpu can't start in the case of cpu hotpolug.
+The function pseries_cpu_die() in arch/powerpc/platforms/pseries/hotplug-cpu.c
+also clears the flag.
 
-When building modules with a native le toolchain the linker will
-generate R_PPC64_TOCSAVE relocations when it's safe to omit saving r2 on
-a plt call.  This isn't helpful in the conext of a kernel module and the
-kernel will fail to load those modules with an error like:
-	nf_conntrack: Unknown ADD relocation: 109
+> 
+> > diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+> > index 2e5911e..0047883 100644
+> > --- a/arch/powerpc/platforms/85xx/smp.c
+> > +++ b/arch/powerpc/platforms/85xx/smp.c
+> > @@ -19,6 +19,7 @@
+> >  #include <linux/kexec.h>
+> >  #include <linux/highmem.h>
+> >  #include <linux/cpu.h>
+> > +#include <linux/smp.h>
+> >  
+> >  #include <asm/machdep.h>
+> >  #include <asm/pgtable.h>
+> > @@ -46,6 +47,17 @@ static u64 timebase;
+> >  static int tb_req;
+> >  static int tb_valid;
+> >  
+> > +#ifdef CONFIG_PPC_E500MC
+> > +/* specify the cpu PM state when cpu dies, PH15/NAP is the default */
+> > +int qoriq_cpu_die_state = E500_PM_PH15;
+> > +#endif
+> 
+> static?  Is there any way to modify this other than modifying source
+> code?
+> 
+> BTW, QorIQ doesn't imply an e500mc derivative.
 
-This patch tells the linker to avoid createing R_PPC64_TOCSAVE
-relocations allowing modules to load.
+Will support e500, but for now these code support e500mc derivative in
+advance.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/Makefile | 3 +++
- 1 file changed, 3 insertions(+)
+Supposed qoriq_cpu_die_state can be changed by platform init code
+if the default value is not proper for a specific platform.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 0f4344e..fff3945 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -74,6 +74,9 @@ override CROSS32AS +=3D -mlittle-endian
- LDEMULATION	:=3D lppc
- GNUTARGET	:=3D powerpcle
- MULTIPLEWORD	:=3D -mno-multiple
-+ifeq ($(call cc-option-yn,-mno-save-toc-indirect),y)
-+       KBUILD_CFLAGS_MODULE +=3D -mno-save-toc-indirect
-+endif
- else
- ifeq ($(call cc-option-yn,-mbig-endian),y)
- override CC	+=3D -mbig-endian
---=20
-1.8.5.3
+> 
+> > @@ -125,6 +138,34 @@ static void mpc85xx_take_timebase(void)
+> >  }
+> >  
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> > +#ifdef CONFIG_PPC_E500MC
+> > +static void qoriq_cpu_die(void)
+> > +{
+> > +	unsigned int cpu = smp_processor_id();
+> > +
+> > +	local_irq_disable();
+> > +#ifdef CONFIG_PPC64
+> > +	__hard_irq_disable();
+> > +#endif
+> 
+> Why this instead of one call to hard_irq_disable() (no leading
+> underscores)?
+> 
+> -Scott
 
-Yours Tony
+hard_irq_disable() will clear soft_enabled again. local_irq_disable()
+has cleared it.
 
---u3/rZRmxL6MmkK24
-Content-Type: application/pgp-signature
+Will use hard_irq_disable() to replace these lines.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+  local_irq_disable();
+  #ifdef CONFIG_PPC64
+  	__hard_irq_disable();
+  #endif
 
-iQIcBAEBCAAGBQJTH96RAAoJEPvNNsFAAoTBbIEP/iBvREL4znSi9X3F/3k0AN5E
-nRBcH7JI4daI6/90IedK4QDUc+QS+GyYlHJoEaASDSb2/pB86/x6dZkeLEYwb1IB
-GGXidTSa2JINSNZuY78gdaXvWcz8CAKlJAPSsx5+bitU4NWrPonIdWdes8DPdgEn
-GtSm8ug7OnbFfoS8jrkeFOJan4bQe27945jeTu96NTufjtgROpqR/IyrbZ6SZQSY
-DCIfgZ/xnKicXZ/uYiGBFyXbIYGAeat8T118J0qbjpMTNbhdVECOJ0p3qKUsOIYG
-IeT6HTd8Hw+CdVexJ868lJd68r92u6xxpG8HSp0YzzjknWS12fLD9dk5NoaZ3Rq4
-bQzzfAx/QDEPhJwwwqwSoOlxWrVg3AWed79RpHQ8Jq5i4+HrN0UVdyCPqSYhAXBW
-ZXEQ1K6myoTv0AnRtlB3Wf3lB+8UisGPv2LztlPrhOuGcEWv89vlAaeuKZBCxoY2
-gTIhkxHtjpoLOAFqqPmvuuVzNhZMa4FzYDHAlk6WZEKezs4w9xK/+ooqZdcOhZ4F
-HQHYZE1raFWy9lNAe9oWPfm8M1L2C16h7YZ/UXTBTbXbrgqItWraRLm7dxPL3VvM
-vfW+y3kGypLkERByAMs0jN1Qq0qElQT6jmgl1regj4NrlGQN7WkaP2gQtn0ytXhA
-RHWB84GYlBtib9t16aL5
-=iriV
------END PGP SIGNATURE-----
-
---u3/rZRmxL6MmkK24--
+-Chenhui
