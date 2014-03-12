@@ -1,23 +1,26 @@
-Return-Path: <chenhui.zhao@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pb0-x235.google.com (mail-pb0-x235.google.com
+ [IPv6:2607:f8b0:400e:c01::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 33EF22C00CC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 15:34:20 +1100 (EST)
-Date: Wed, 12 Mar 2014 12:34:07 +0800
-From: Chenhui Zhao <chenhui.zhao@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id DF1BB2C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 16:58:12 +1100 (EST)
+Received: by mail-pb0-f53.google.com with SMTP id rp16so612790pbb.26
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Mar 2014 22:58:09 -0700 (PDT)
+Date: Wed, 12 Mar 2014 13:57:55 +0800
+From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/9] powerpc/85xx: support CPU hotplug for e500mc and e5500
-Message-ID: <20140312043407.GC4706@localhost.localdomain>
+Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Message-ID: <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-4-git-send-email-chenhui.zhao@freescale.com>
- <1394581693.13761.66.camel@snotra.buserror.net>
+ <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
+ <1394586624.13761.132.camel@snotra.buserror.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1394581693.13761.66.camel@snotra.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jason.Jin@freescale.com
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="u3/rZRmxL6MmkK24"
+In-Reply-To: <1394586624.13761.132.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,89 +30,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2014 at 06:48:13PM -0500, Scott Wood wrote:
-> On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> > index ac2621a..f3f4401 100644
-> > --- a/arch/powerpc/kernel/smp.c
-> > +++ b/arch/powerpc/kernel/smp.c
-> > @@ -405,8 +405,12 @@ void generic_cpu_die(unsigned int cpu)
-> >  
-> >  	for (i = 0; i < 100; i++) {
-> >  		smp_rmb();
-> > -		if (per_cpu(cpu_state, cpu) == CPU_DEAD)
-> > +		if (per_cpu(cpu_state, cpu) == CPU_DEAD) {
-> > +#ifdef CONFIG_PPC64
-> > +			paca[cpu].cpu_start = 0;
-> > +#endif
-> 
-> Why wasn't this needed by previous ppc64 machines?
 
-If not clear, cpu can't start in the case of cpu hotpolug.
-The function pseries_cpu_die() in arch/powerpc/platforms/pseries/hotplug-cpu.c
-also clears the flag.
+--u3/rZRmxL6MmkK24
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-> > index 2e5911e..0047883 100644
-> > --- a/arch/powerpc/platforms/85xx/smp.c
-> > +++ b/arch/powerpc/platforms/85xx/smp.c
-> > @@ -19,6 +19,7 @@
-> >  #include <linux/kexec.h>
-> >  #include <linux/highmem.h>
-> >  #include <linux/cpu.h>
-> > +#include <linux/smp.h>
-> >  
-> >  #include <asm/machdep.h>
-> >  #include <asm/pgtable.h>
-> > @@ -46,6 +47,17 @@ static u64 timebase;
-> >  static int tb_req;
-> >  static int tb_valid;
-> >  
-> > +#ifdef CONFIG_PPC_E500MC
-> > +/* specify the cpu PM state when cpu dies, PH15/NAP is the default */
-> > +int qoriq_cpu_die_state = E500_PM_PH15;
-> > +#endif
-> 
-> static?  Is there any way to modify this other than modifying source
-> code?
-> 
-> BTW, QorIQ doesn't imply an e500mc derivative.
-
-Will support e500, but for now these code support e500mc derivative in
-advance.
-
-Supposed qoriq_cpu_die_state can be changed by platform init code
-if the default value is not proper for a specific platform.
-
-> 
-> > @@ -125,6 +138,34 @@ static void mpc85xx_take_timebase(void)
-> >  }
-> >  
-> >  #ifdef CONFIG_HOTPLUG_CPU
-> > +#ifdef CONFIG_PPC_E500MC
-> > +static void qoriq_cpu_die(void)
-> > +{
-> > +	unsigned int cpu = smp_processor_id();
+On Tue, Mar 11, 2014 at 08:10:24PM -0500, Scott Wood wrote:
+> > +	FSL_DIS_ALL_IRQ
 > > +
-> > +	local_irq_disable();
-> > +#ifdef CONFIG_PPC64
-> > +	__hard_irq_disable();
-> > +#endif
-> 
-> Why this instead of one call to hard_irq_disable() (no leading
-> underscores)?
-> 
-> -Scott
+> > +	/*
+> > +	 * Place DDR controller in self refresh mode.
+> > +	 * From here on, DDR can't be access any more.
+> > +	 */
+> > +	lwz	r10, 0(r13)
+> > +	oris	r10, r10, CCSR_DDR_SDRAM_CFG_2_FRC_SR@h
+> > +	stw	r10, 0(r13)
+> > +
+> > +	/* can't call udelay() here, so use a macro to delay */
+> > +	FSLDELAY(50)
+>=20
+> A timebase loop doesn't require accessing DDR.
+>=20
+> You also probably want to do a "sync, readback, data dependency, isync"
+> sequence to make sure that the store has hit CCSR before you begin your
+> delay (or is a delay required at all if you do that?).
 
-hard_irq_disable() will clear soft_enabled again. local_irq_disable()
-has cleared it.
+Shouldn't we use "readback, sync" here? The following is quoted form t4240R=
+M:
+  To guarantee that the results of any sequence of writes to configuration
+  registers are in effect, the final configuration register write should be
+  immediately followed by a read of the same register, and that should be
+  followed by a SYNC instruction. Then accesses can safely be made to memory
+  regions affected by the configuration register write.
 
-Will use hard_irq_disable() to replace these lines.
+> > +
+> > +	/* Enable SCU15 to trigger on RCPM Concentrator 0 */
+> > +	lwz	r10, 0(r15)
+> > +	oris	r10, r10, DCSR_EPU_EPECR15_IC0@h
+> > +	stw	r10, 0(r15)
+> > +
+> > +	/* put Core0 in PH15 mode, trigger EPU FSM */
+> > +	lwz	r10, 0(r12)
+> > +	ori	r10, r10, CCSR_RCPM_PCPH15SETR_CORE0
+> > +	stw	r10, 0(r12)
+>=20
+> Shouldn't there be a sync to ensure that the previous I/O happens before
+> the final store to enter PH15?
 
-  local_irq_disable();
-  #ifdef CONFIG_PPC64
-  	__hard_irq_disable();
-  #endif
+Do we really need a sync here? According to the PowerISA, the above stores
+should be performed in program order.
+  If two Store instructions or two Load instructions
+  specify storage locations that are both Caching
+  Inhibited and Guarded, the corresponding storage
+  accesses are performed in program order with
+  respect to any processor or mechanism.
 
--Chenhui
+Thanks,
+Kevin
+
+--u3/rZRmxL6MmkK24
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJTH/djAAoJEJNY7TDerrFxTbUH/R6BbK6sbpZMI5Pabl4lGsJk
+rKbTu5Bx+VtrEcEgMwlMmrFBnSKQIXZT+RCamNVUZgKOCCSYiALGGcq5hBijqk/V
+xr+qk/oE2pvvmXVhzjxGs2e/A0VdEdBTzWU/M46pLsiN0ZM7XrpGwaDOpwimuDc2
+4GxYYbJZBMKGkqMRFrekvWjeC6Q3OEXLSTigCxXR7b4Kgs2LWvVjZqpccwBzyJjT
+IdDx5fiNbje73cnwAMs1qkrFnl45F0gdppCuhrmnrT+TCebfiXNMx8CmkD+feskh
+2cOYzzD/6e3yJ9zXXav1BBFV8Y0s5x7p2hLBIUOhMzVz6BYUjVjguKCpcExBXUY=
+=Dg5c
+-----END PGP SIGNATURE-----
+
+--u3/rZRmxL6MmkK24--
