@@ -1,25 +1,30 @@
-Return-Path: <jacob.jun.pan@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id EE2902C009E
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2014 09:28:46 +1100 (EST)
-Date: Wed, 12 Mar 2014 15:27:39 -0700
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Return-Path: <christoffer.dall@linaro.org>
+Received: from mail-pb0-f47.google.com (mail-pb0-f47.google.com
+ [209.85.160.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A9ED72C00B1
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2014 10:21:32 +1100 (EST)
+Received: by mail-pb0-f47.google.com with SMTP id up15so216522pbc.6
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2014 16:21:30 -0700 (PDT)
+Date: Wed, 12 Mar 2014 16:21:27 -0700
+From: Christoffer Dall <christoffer.dall@linaro.org>
 To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 32/52] powercap, intel-rapl: Fix CPU hotplug callback
- registration
-Message-ID: <20140312152739.12311e48@ultegra>
-In-Reply-To: <20140310203926.10746.11524.stgit@srivatsabhat.in.ibm.com>
+Subject: Re: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
+Message-ID: <20140312232127.GC24808@cbox>
 References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
- <20140310203926.10746.11524.stgit@srivatsabhat.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, ego@linux.vnet.ibm.com, walken@google.com,
- linux@arm.linux.org.uk, akpm@linux-foundation.org, linux-pm@vger.kernel.org,
- peterz@infradead.org, rusty@rustcorp.com.au, rjw@rjwysocki.net,
- oleg@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- paulus@samba.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- tj@kernel.org, tglx@linutronix.de, paulmck@linux.vnet.ibm.com,
- mingo@kernel.org
+ <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+Cc: ego@linux.vnet.ibm.com, kvm@vger.kernel.org, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+ walken@google.com, kvmarm@lists.cs.columbia.edu, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, mingo@kernel.org, marc.zyngier@arm.com,
+ paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ Gleb Natapov <gleb@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, oleg@redhat.com,
+ tj@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,12 +34,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 11 Mar 2014 02:09:26 +0530
-"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
-
-> Subsystems that want to register CPU hotplug callbacks, as well as
-> perform initialization for the CPUs that are already online, often do
-> it as shown below:
+On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
+> Subsystems that want to register CPU hotplug callbacks, as well as perform
+> initialization for the CPUs that are already online, often do it as shown
+> below:
 > 
 > 	get_online_cpus();
 > 
@@ -46,8 +49,8 @@ On Tue, 11 Mar 2014 02:09:26 +0530
 > 	put_online_cpus();
 > 
 > This is wrong, since it is prone to ABBA deadlocks involving the
-> cpu_add_remove_lock and the cpu_hotplug.lock (when running
-> concurrently with CPU hotplug operations).
+> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+> with CPU hotplug operations).
 > 
 > Instead, the correct and race-free way of performing the callback
 > registration is:
@@ -57,72 +60,69 @@ On Tue, 11 Mar 2014 02:09:26 +0530
 > 	for_each_online_cpu(cpu)
 > 		init_cpu(cpu);
 > 
-> 	/* Note the use of the double underscored version of the API
-> */ __register_cpu_notifier(&foobar_cpu_notifier);
+> 	/* Note the use of the double underscored version of the API */
+> 	__register_cpu_notifier(&foobar_cpu_notifier);
 > 
 > 	cpu_notifier_register_done();
 > 
 > 
-> Fix the intel-rapl code in the powercap driver by using this latter
-> form of callback registration. But retain the calls to
-> get/put_online_cpus(), since they also protect the function
-> rapl_cleanup_data(). By nesting get/put_online_cpus() *inside*
-> cpu_notifier_register_begin/done(), we avoid the ABBA deadlock
-> possibility mentioned above.
+> Fix the kvm code in arm by using this latter form of callback registration.
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Christoffer Dall <christoffer.dall@linaro.org>
+> Cc: Gleb Natapov <gleb@kernel.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
 > Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: kvmarm@lists.cs.columbia.edu
+> Cc: kvm@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
 > Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 > ---
 > 
-
-Tested-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-
->  drivers/powercap/intel_rapl.c |   10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+>  arch/arm/kvm/arm.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/powercap/intel_rapl.c
-> b/drivers/powercap/intel_rapl.c index 3c67683..d6c74c1 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -1369,6 +1369,9 @@ static int __init rapl_init(void)
->  
->  		return -ENODEV;
+> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+> index bd18bb8..f0e50a0 100644
+> --- a/arch/arm/kvm/arm.c
+> +++ b/arch/arm/kvm/arm.c
+> @@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
+>  		}
 >  	}
-> +
+>  
 > +	cpu_notifier_register_begin();
 > +
->  	/* prevent CPU hotplug during detection */
->  	get_online_cpus();
->  	ret = rapl_detect_topology();
-> @@ -1380,20 +1383,23 @@ static int __init rapl_init(void)
->  		ret = -ENODEV;
->  		goto done;
+>  	err = init_hyp_mode();
+>  	if (err)
+>  		goto out_err;
+>  
+> -	err = register_cpu_notifier(&hyp_init_cpu_nb);
+> +	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+>  	if (err) {
+>  		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+>  		goto out_err;
 >  	}
-> -	register_hotcpu_notifier(&rapl_cpu_notifier);
-> +	__register_hotcpu_notifier(&rapl_cpu_notifier);
->  done:
->  	put_online_cpus();
-> +	cpu_notifier_register_done();
 >  
->  	return ret;
+> +	cpu_notifier_register_done();
+> +
+>  	hyp_cpu_pm_init();
+>  
+>  	kvm_coproc_table_init();
+>  	return 0;
+>  out_err:
+> +	cpu_notifier_register_done();
+>  	return err;
 >  }
 >  
->  static void __exit rapl_exit(void)
->  {
-> +	cpu_notifier_register_begin();
->  	get_online_cpus();
-> -	unregister_hotcpu_notifier(&rapl_cpu_notifier);
-> +	__unregister_hotcpu_notifier(&rapl_cpu_notifier);
->  	rapl_unregister_powercap();
->  	rapl_cleanup_data();
->  	put_online_cpus();
-> +	cpu_notifier_register_done();
->  }
->  
->  module_init(rapl_init);
 > 
 
-[Jacob Pan]
+Just so we're clear, the existing code was simply racy as not prone to
+deadlocks, right?
+
+This makes it clear that the test above for compatible CPUs can be quite
+easily evaded by using CPU hotplug, but we don't really have a good
+solution for handling that yet...  Hmmm, grumble grumble, I guess if you
+hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+
+In any case:
+Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
