@@ -1,24 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
+ [IPv6:2607:f8b0:4001:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 34B1A2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 04:43:19 +1100 (EST)
-Message-ID: <1394646185.13761.145.camel@snotra.buserror.net>
-Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
-From: Scott Wood <scottwood@freescale.com>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Wed, 12 Mar 2014 12:43:05 -0500
-In-Reply-To: <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
-References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
- <1394586624.13761.132.camel@snotra.buserror.net>
- <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 3C5F02C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 05:21:24 +1100 (EST)
+Received: by mail-ie0-f178.google.com with SMTP id lx4so10636056iec.23
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2014 11:21:20 -0700 (PDT)
+Date: Wed, 12 Mar 2014 14:21:04 -0400
+From: Josh Boyer <jwboyer@gmail.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: Update ppc4xx maintainer
+Message-ID: <20140312182104.GA32023@zod>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
- Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,70 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-12 at 13:57 +0800, Kevin Hao wrote:
-> On Tue, Mar 11, 2014 at 08:10:24PM -0500, Scott Wood wrote:
-> > > +	FSL_DIS_ALL_IRQ
-> > > +
-> > > +	/*
-> > > +	 * Place DDR controller in self refresh mode.
-> > > +	 * From here on, DDR can't be access any more.
-> > > +	 */
-> > > +	lwz	r10, 0(r13)
-> > > +	oris	r10, r10, CCSR_DDR_SDRAM_CFG_2_FRC_SR@h
-> > > +	stw	r10, 0(r13)
-> > > +
-> > > +	/* can't call udelay() here, so use a macro to delay */
-> > > +	FSLDELAY(50)
-> > 
-> > A timebase loop doesn't require accessing DDR.
-> > 
-> > You also probably want to do a "sync, readback, data dependency, isync"
-> > sequence to make sure that the store has hit CCSR before you begin your
-> > delay (or is a delay required at all if you do that?).
-> 
-> Shouldn't we use "readback, sync" here? The following is quoted form t4240RM:
->   To guarantee that the results of any sequence of writes to configuration
->   registers are in effect, the final configuration register write should be
->   immediately followed by a read of the same register, and that should be
->   followed by a SYNC instruction. Then accesses can safely be made to memory
->   regions affected by the configuration register write.
+Alistair Popple has volunteered to take over maintainership of the ppc4xx
+stuff upstream.  Switch the MAINTAINERS entry over to him.
 
-I agree that the sync before the readback is probably not necessary,
-since transactions to the same address should already be ordered.
+Signed-off-by: Josh Boyer <jwboyer@gmail.com>
+---
+ MAINTAINERS | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-A sync after the readback helps if you're trying to order the readback
-with subsequent memory accesses, though in that case wouldn't a sync
-alone (no readback) be adequate?  Though maybe not always -- see the
-comment near the end of fsl_elbc_write_buf() in
-drivers/mtd/nand_fsl_elbc.c.  I guess the readback does more than just
-make sure the device has seen the write, ensuring that the device has
-finished the transaction to the point of acting on another one.
-
-The data dependency plus isync sequence, which is done by the normal I/O
-accessors used from C code, orders the readback versus all future
-instructions (not just I/O).  The delay loop is not I/O.
-
-> > > +	/* Enable SCU15 to trigger on RCPM Concentrator 0 */
-> > > +	lwz	r10, 0(r15)
-> > > +	oris	r10, r10, DCSR_EPU_EPECR15_IC0@h
-> > > +	stw	r10, 0(r15)
-> > > +
-> > > +	/* put Core0 in PH15 mode, trigger EPU FSM */
-> > > +	lwz	r10, 0(r12)
-> > > +	ori	r10, r10, CCSR_RCPM_PCPH15SETR_CORE0
-> > > +	stw	r10, 0(r12)
-> > 
-> > Shouldn't there be a sync to ensure that the previous I/O happens before
-> > the final store to enter PH15?
-> 
-> Do we really need a sync here? According to the PowerISA, the above stores
-> should be performed in program order.
->   If two Store instructions or two Load instructions
->   specify storage locations that are both Caching
->   Inhibited and Guarded, the corresponding storage
->   accesses are performed in program order with
->   respect to any processor or mechanism.
-
-OK, wasn't aware of that.
-
--Scott
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1ecfde1..6d220c8 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5245,11 +5245,10 @@ F:	arch/powerpc/platforms/512x/
+ F:	arch/powerpc/platforms/52xx/
+ 
+ LINUX FOR POWERPC EMBEDDED PPC4XX
+-M:	Josh Boyer <jwboyer@gmail.com>
++M:  Alistair Popple <alistair@popple.id.au>
+ M:	Matt Porter <mporter@kernel.crashing.org>
+ W:	http://www.penguinppc.org/
+ L:	linuxppc-dev@lists.ozlabs.org
+-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git
+ S:	Maintained
+ F:	arch/powerpc/platforms/40x/
+ F:	arch/powerpc/platforms/44x/
+-- 
+1.8.5.3
