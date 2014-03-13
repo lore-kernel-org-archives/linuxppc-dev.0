@@ -1,28 +1,9 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
- [IPv6:2607:f8b0:400e:c02::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0D61D2C0090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 18:46:26 +1100 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id r10so715569pdi.21
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 00:46:23 -0700 (PDT)
-Date: Thu, 13 Mar 2014 15:46:13 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
-Message-ID: <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
-References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
- <1394586624.13761.132.camel@snotra.buserror.net>
- <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
- <1394646185.13761.145.camel@snotra.buserror.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="cQXOx3fnlpmgJsTP"
-In-Reply-To: <1394646185.13761.145.camel@snotra.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
- Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/perf: Fix handling of L3 events with bank == 1
+Date: Thu, 13 Mar 2014 19:30:34 +1100
+Message-Id: <1394699434-31985-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,70 +13,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Currently we reject events which have the L3 bank == 1, such as
+0x000084918F, because the cache field is non-zero.
 
---cQXOx3fnlpmgJsTP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+However that is incorrect, because although the bank is non-zero, the
+value we would write into MMCRC is zero, and so we can count the event.
 
-On Wed, Mar 12, 2014 at 12:43:05PM -0500, Scott Wood wrote:
-> > Shouldn't we use "readback, sync" here? The following is quoted form t4=
-240RM:
-> >   To guarantee that the results of any sequence of writes to configurat=
-ion
-> >   registers are in effect, the final configuration register write shoul=
-d be
-> >   immediately followed by a read of the same register, and that should =
-be
-> >   followed by a SYNC instruction. Then accesses can safely be made to m=
-emory
-> >   regions affected by the configuration register write.
->=20
-> I agree that the sync before the readback is probably not necessary,
-> since transactions to the same address should already be ordered.
->=20
-> A sync after the readback helps if you're trying to order the readback
-> with subsequent memory accesses, though in that case wouldn't a sync
-> alone (no readback) be adequate?
+So fix the check to ignore the bank selector when checking whether the
+cache selector is non-zero.
 
-No, we don't just want to order the subsequent memory access here.
-The 'write, readback, sync' is the required sequence if we want to make
-sure that the writing to CCSR register does really take effect.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/perf/power8-pmu.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
->  Though maybe not always -- see the
-> comment near the end of fsl_elbc_write_buf() in
-> drivers/mtd/nand_fsl_elbc.c.  I guess the readback does more than just
-> make sure the device has seen the write, ensuring that the device has
-> finished the transaction to the point of acting on another one.
-
-Agree.
-
->=20
-> The data dependency plus isync sequence, which is done by the normal I/O
-> accessors used from C code, orders the readback versus all future
-> instructions (not just I/O).  The delay loop is not I/O.
-
-According to the PowerISA, the sequence 'load, date dependency, isync' only
-order the load accesses. So if we want to order all the storage access as w=
-ell
-as execution synchronization, we should choose sync here.
-
-Thanks,
-Kevin
-
---cQXOx3fnlpmgJsTP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAEBAgAGBQJTIWJFAAoJEJNY7TDerrFxnSEH/0paHHq8090PGw8y7vRdA/ji
-FYQhy9BalQVsYBSW96ZRzixEmEPaQ4f0PJiENH36ni4iTCk8gFUNT47wGiBOOxLg
-IztuXIhyJlK93gIZEW63SKrbPvOs8M56ACxAtG5UKV9qBPeYX6e+o5C4xmlhXAOr
-6V2CJQ5WaeeZZArGgGvSmR+fLQkMCEcLbnIjEMpUfO2rUt1eo2+Fd4sB+sZJpLQt
-uM9NYLQ+zgixtADrjq1JPTU+LPpTdrU6Ody+WbqzPWTtnL0YZvN8+SPViteatYDY
-tMxiZUbadOgqgrd4xJbtMcMDqQ8eAB9RvNJoHY//HwvadV73Gw5ceKJTTN1GP58=
-=1D0C
------END PGP SIGNATURE-----
-
---cQXOx3fnlpmgJsTP--
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 3ad363d..fe2763b 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -325,9 +325,10 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
+ 		 * HV writable, and there is no API for guest kernels to modify
+ 		 * it. The solution is for the hypervisor to initialise the
+ 		 * field to zeroes, and for us to only ever allow events that
+-		 * have a cache selector of zero.
++		 * have a cache selector of zero. The bank selector (bit 3) is
++		 * irrelevant, as long as the rest of the value is 0.
+ 		 */
+-		if (cache)
++		if (cache & 0x7)
+ 			return -1;
+ 
+ 	} else if (event & EVENT_IS_L1) {
+-- 
+1.8.3.2
