@@ -1,22 +1,28 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6FA0B2C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 12:56:21 +1100 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0D61D2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 18:46:26 +1100 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id r10so715569pdi.21
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 00:46:23 -0700 (PDT)
+Date: Thu, 13 Mar 2014 15:46:13 +0800
+From: Kevin Hao <haokexin@gmail.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] T1040RDB: add qe node for T1040RDB dts
-Date: Thu, 13 Mar 2014 01:56:14 +0000
-Message-ID: <f07545053329444e9022bd43dc7d66c4@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1394612762-36308-1-git-send-email-B45475@freescale.com>
- <1394649930.13761.154.camel@snotra.buserror.net>
-In-Reply-To: <1394649930.13761.154.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Message-ID: <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
+References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
+ <1394586624.13761.132.camel@snotra.buserror.net>
+ <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
+ <1394646185.13761.145.camel@snotra.buserror.net>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Xiaobo
- Xie <X.Xie@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="cQXOx3fnlpmgJsTP"
+In-Reply-To: <1394646185.13761.145.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gV2VkLCAyMDE0LTAzLTEzIGF0IDI6NDYgQU0sIFNjb3R0IHdyb3RlOg0KDQo+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRo
-dXJzZGF5LCBNYXJjaCAxMywgMjAxNCAyOjQ2IEFNDQo+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NQ0K
-PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxOyBY
-aWUgWGlhb2JvLVI2MzA2MQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBUMTA0MFJEQjogYWRkIHFl
-IG5vZGUgZm9yIFQxMDQwUkRCIGR0cw0KPiANCj4gT24gV2VkLCAyMDE0LTAzLTEyIGF0IDE2OjI2
-ICswODAwLCBaaGFvIFFpYW5nIHdyb3RlOg0KPiA+IFNpZ25lZC1vZmYtYnk6IFpoYW8gUWlhbmcg
-PEI0NTQ3NUBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9k
-dHMvdDEwNDByZGIuZHRzIHwgNDMNCj4gPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKw0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgNDMgaW5zZXJ0aW9ucygrKQ0KPiANCj4gUHJl
-c3VtYWJseSB0aGlzIGlzIG9uIHRvcCBvZiB0aGlzIHBhdGNoOg0KPiBodHRwOi8vcGF0Y2h3b3Jr
-Lm96bGFicy5vcmcvcGF0Y2gvMzE0MTM4Lw0KPiANCj4gLi4uc2luY2UgdGhlcmUncyBubyBleGlz
-dGluZyB0MTA0MCBkZXZpY2UgdHJlZSBzdXBwb3J0LiAgQWx3YXlzIG1lbnRpb24NCj4gd2hlbiB5
-b3VyIHBhdGNoIGlzIG9uIHRvcCBvZiBhIHBhdGNoIHRoYXQgaGFzbid0IHlldCBiZWVuIG1lcmdl
-ZCBhbmQNCj4gaXNuJ3QgaW4gdGhlIHNhbWUgcGF0Y2ggc2V0Lg0KPiANCj4gQXQgbGVhc3Qgc29t
-ZSBvZiB0aGlzIHN0dWZmIHNlZW1zIGxpa2UgaXQgc2hvdWxkIGJlIGluIHQxMDQwc2ktcG9zdC5k
-dHMNCj4gKG9yIGEgZmlsZSBpbmNsdWRlZCBieSBpdCksIHJhdGhlciB0aGFuIHRoZSBib2FyZCBk
-dHMuDQoNCkV2ZXJ5IGJvYXJkIGNhbiB1c2UgdWNjIGRpZmZlcmVudGx5LCBJdCBpcyBub3QgY29y
-cmVjdCB0byBwdXQgdGhpcyBub2RlIGludG8gdDEwNDBzaS1wb3N0LmR0c2kuDQpGb3IgZXhhbXBs
-ZSB0MTA0MHFkcyBjYW4gdXNlIHVjYzEgdG8gdGRtIHdoaWxlIG1heWJlIHQxMDQwcmRiIHVzZSB1
-Y2MxIHRvIHVhcnQuDQoNCj4gDQo+ID4gKwkJdGRtYTogdWNjQDIwMDAgew0KPiA+ICsJCQljb21w
-YXRpYmxlID0gImZzbCx1Y2MtdGRtIjsNCj4gPiArCQkJcngtY2xvY2stbmFtZSA9ICJjbGszIjsN
-Cj4gPiArCQkJdHgtY2xvY2stbmFtZSA9ICJjbGs0IjsNCj4gPiArCQkJZnNsLHJ4LXN5bmMtY2xv
-Y2sgPSAicnN5bmNfcGluIjsNCj4gPiArCQkJZnNsLHR4LXN5bmMtY2xvY2sgPSAidHN5bmNfcGlu
-IjsNCj4gPiArCQkJZnNsLHR4LXRpbWVzbG90ID0gPDB4ZmZmZmZmZmU+Ow0KPiA+ICsJCQlmc2ws
-cngtdGltZXNsb3QgPSA8MHhmZmZmZmZmZT47DQo+ID4gKwkJCWZzbCx0ZG0tZnJhbWVyLXR5cGUg
-PSAiZTEiOw0KPiA+ICsJCQlmc2wsdGRtLW1vZGUgPSAibm9ybWFsIjsNCj4gPiArCQkJZnNsLHRk
-bS1pZCA9IDwwPjsNCj4gPiArCQkJZnNsLHNpcmFtLWVudHJ5LWlkID0gPDA+Ow0KPiA+ICsJCX07
-DQo+ID4gKw0KPiA+ICsJCXNlcmlhbDogdWNjQDIyMDAgew0KPiA+ICsJCQlkZXZpY2VfdHlwZSA9
-ICJzZXJpYWwiOw0KPiA+ICsJCQljb21wYXRpYmxlID0gInVjY191YXJ0IjsNCj4gPiArCQkJcG9y
-dC1udW1iZXIgPSA8MT47DQo+ID4gKwkJCXJ4LWNsb2NrLW5hbWUgPSAiYnJnMiI7DQo+ID4gKwkJ
-CXR4LWNsb2NrLW5hbWUgPSAiYnJnMiI7DQo+ID4gKwkJfTsNCj4gDQo+IE1pc3NpbmcgcmVnLg0K
-PiANCj4gLVNjb3R0DQo+IA0KDQo=
+
+--cQXOx3fnlpmgJsTP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Mar 12, 2014 at 12:43:05PM -0500, Scott Wood wrote:
+> > Shouldn't we use "readback, sync" here? The following is quoted form t4=
+240RM:
+> >   To guarantee that the results of any sequence of writes to configurat=
+ion
+> >   registers are in effect, the final configuration register write shoul=
+d be
+> >   immediately followed by a read of the same register, and that should =
+be
+> >   followed by a SYNC instruction. Then accesses can safely be made to m=
+emory
+> >   regions affected by the configuration register write.
+>=20
+> I agree that the sync before the readback is probably not necessary,
+> since transactions to the same address should already be ordered.
+>=20
+> A sync after the readback helps if you're trying to order the readback
+> with subsequent memory accesses, though in that case wouldn't a sync
+> alone (no readback) be adequate?
+
+No, we don't just want to order the subsequent memory access here.
+The 'write, readback, sync' is the required sequence if we want to make
+sure that the writing to CCSR register does really take effect.
+
+>  Though maybe not always -- see the
+> comment near the end of fsl_elbc_write_buf() in
+> drivers/mtd/nand_fsl_elbc.c.  I guess the readback does more than just
+> make sure the device has seen the write, ensuring that the device has
+> finished the transaction to the point of acting on another one.
+
+Agree.
+
+>=20
+> The data dependency plus isync sequence, which is done by the normal I/O
+> accessors used from C code, orders the readback versus all future
+> instructions (not just I/O).  The delay loop is not I/O.
+
+According to the PowerISA, the sequence 'load, date dependency, isync' only
+order the load accesses. So if we want to order all the storage access as w=
+ell
+as execution synchronization, we should choose sync here.
+
+Thanks,
+Kevin
+
+--cQXOx3fnlpmgJsTP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJTIWJFAAoJEJNY7TDerrFxnSEH/0paHHq8090PGw8y7vRdA/ji
+FYQhy9BalQVsYBSW96ZRzixEmEPaQ4f0PJiENH36ni4iTCk8gFUNT47wGiBOOxLg
+IztuXIhyJlK93gIZEW63SKrbPvOs8M56ACxAtG5UKV9qBPeYX6e+o5C4xmlhXAOr
+6V2CJQ5WaeeZZArGgGvSmR+fLQkMCEcLbnIjEMpUfO2rUt1eo2+Fd4sB+sZJpLQt
+uM9NYLQ+zgixtADrjq1JPTU+LPpTdrU6Ody+WbqzPWTtnL0YZvN8+SPViteatYDY
+tMxiZUbadOgqgrd4xJbtMcMDqQ8eAB9RvNJoHY//HwvadV73Gw5ceKJTTN1GP58=
+=1D0C
+-----END PGP SIGNATURE-----
+
+--cQXOx3fnlpmgJsTP--
