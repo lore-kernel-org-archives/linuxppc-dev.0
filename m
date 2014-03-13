@@ -1,30 +1,38 @@
-Return-Path: <christoffer.dall@linaro.org>
-Received: from mail-pb0-f47.google.com (mail-pb0-f47.google.com
- [209.85.160.47])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A9ED72C00B1
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Mar 2014 10:21:32 +1100 (EST)
-Received: by mail-pb0-f47.google.com with SMTP id up15so216522pbc.6
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Mar 2014 16:21:30 -0700 (PDT)
-Date: Wed, 12 Mar 2014 16:21:27 -0700
-From: Christoffer Dall <christoffer.dall@linaro.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 10/52] arm, kvm: Fix CPU hotplug callback registration
-Message-ID: <20140312232127.GC24808@cbox>
-References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
- <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 4902B2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 03:49:13 +1100 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 13 Mar 2014 10:49:10 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 17B2B38C8047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 12:49:08 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2DGn7tT55181364
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 16:49:08 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2DGn6I0022591
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 12:49:07 -0400
+Date: Thu, 13 Mar 2014 09:48:49 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: Node 0 not necessary for powerpc?
+Message-ID: <20140313164849.GB22247@linux.vnet.ibm.com>
+References: <20140311195632.GA946@linux.vnet.ibm.com>
+ <alpine.DEB.2.02.1403111900100.19193@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
-Cc: ego@linux.vnet.ibm.com, kvm@vger.kernel.org, peterz@infradead.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
- walken@google.com, kvmarm@lists.cs.columbia.edu, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, mingo@kernel.org, marc.zyngier@arm.com,
- paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
- Gleb Natapov <gleb@kernel.org>, rusty@rustcorp.com.au, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, oleg@redhat.com,
- tj@kernel.org, Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
+In-Reply-To: <alpine.DEB.2.02.1403111900100.19193@chino.kir.corp.google.com>
+Cc: linux-mm@kvack.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,95 +42,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
-> Subsystems that want to register CPU hotplug callbacks, as well as perform
-> initialization for the CPUs that are already online, often do it as shown
-> below:
+On 11.03.2014 [19:02:17 -0700], David Rientjes wrote:
+> On Tue, 11 Mar 2014, Nishanth Aravamudan wrote:
 > 
-> 	get_online_cpus();
+> > I have a P7 system that has no node0, but a node0 shows up in numactl
+> > --hardware, which has no cpus and no memory (and no PCI devices):
+> > 
+> > numactl --hardware
+> > available: 4 nodes (0-3)
+> > node 0 cpus:
+> > node 0 size: 0 MB
+> > node 0 free: 0 MB
+> > node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11
+> > node 1 size: 0 MB
+> > node 1 free: 0 MB
+> > node 2 cpus:
+> > node 2 size: 7935 MB
+> > node 2 free: 7716 MB
+> > node 3 cpus:
+> > node 3 size: 8395 MB
+> > node 3 free: 8015 MB
+> > node distances:
+> > node   0   1   2   3 
+> >   0:  10  20  10  20 
+> >   1:  20  10  20  20 
+> >   2:  10  20  10  20 
+> >   3:  20  20  20  10 
+> > 
+> > This is because we statically initialize N_ONLINE to be [0] in
+> > mm/page_alloc.c:
+> > 
+> >         [N_ONLINE] = { { [0] = 1UL } },
+> > 
+> > I'm not sure what the architectural requirements are here, but at least
+> > on this test system, removing this initialization, it boots fine and is
+> > running. I've not yet tried stress tests, but it's survived the
+> > beginnings of kernbench so far.
+> > 
+> > numactl --hardware
+> > available: 3 nodes (1-3)
+> > node 1 cpus: 0 1 2 3 4 5 6 7 8 9 10 11
+> > node 1 size: 0 MB
+> > node 1 free: 0 MB
+> > node 2 cpus:
+> > node 2 size: 7935 MB
+> > node 2 free: 7479 MB
+> > node 3 cpus:
+> > node 3 size: 8396 MB
+> > node 3 free: 8375 MB
+> > node distances:
+> > node   1   2   3 
+> >   1:  10  20  20 
+> >   2:  20  10  20 
+> >   3:  20  20  10
+> > 
+> > Perhaps we could put in a ARCH_DOES_NOT_NEED_NODE0 and only define it on
+> > powerpc for now, conditionalizing the above initialization on that?
+> > 
 > 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	put_online_cpus();
-> 
-> This is wrong, since it is prone to ABBA deadlocks involving the
-> cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
-> with CPU hotplug operations).
-> 
-> Instead, the correct and race-free way of performing the callback
-> registration is:
-> 
-> 	cpu_notifier_register_begin();
-> 
-> 	for_each_online_cpu(cpu)
-> 		init_cpu(cpu);
-> 
-> 	/* Note the use of the double underscored version of the API */
-> 	__register_cpu_notifier(&foobar_cpu_notifier);
-> 
-> 	cpu_notifier_register_done();
-> 
-> 
-> Fix the kvm code in arm by using this latter form of callback registration.
-> 
-> Cc: Christoffer Dall <christoffer.dall@linaro.org>
-> Cc: Gleb Natapov <gleb@kernel.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: kvmarm@lists.cs.columbia.edu
-> Cc: kvm@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Acked-by: Paolo Bonzini <pbonzini@redhat.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
-> 
->  arch/arm/kvm/arm.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
-> index bd18bb8..f0e50a0 100644
-> --- a/arch/arm/kvm/arm.c
-> +++ b/arch/arm/kvm/arm.c
-> @@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
->  		}
->  	}
->  
-> +	cpu_notifier_register_begin();
-> +
->  	err = init_hyp_mode();
->  	if (err)
->  		goto out_err;
->  
-> -	err = register_cpu_notifier(&hyp_init_cpu_nb);
-> +	err = __register_cpu_notifier(&hyp_init_cpu_nb);
->  	if (err) {
->  		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
->  		goto out_err;
->  	}
->  
-> +	cpu_notifier_register_done();
-> +
->  	hyp_cpu_pm_init();
->  
->  	kvm_coproc_table_init();
->  	return 0;
->  out_err:
-> +	cpu_notifier_register_done();
->  	return err;
->  }
->  
-> 
+> I don't know if anything has recently changed in the past year or so, but 
+> I've booted x86 machines with a hacked BIOS so that all memory on node 0 
+> is hotpluggable and offline, so I believe this is possible on x86 as well.
 
-Just so we're clear, the existing code was simply racy as not prone to
-deadlocks, right?
+Good to know, thanks! This is also certainly not very common on powerpc,
+but it is possible -- and the topology ends up being inaccurate because
+of the static initialization.
 
-This makes it clear that the test above for compatible CPUs can be quite
-easily evaded by using CPU hotplug, but we don't really have a good
-solution for handling that yet...  Hmmm, grumble grumble, I guess if you
-hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
-
-In any case:
-Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
+Thanks,
+Nish
