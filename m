@@ -1,37 +1,24 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 72A8E2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 04:01:52 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 13 Mar 2014 11:01:50 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0257D1FF003B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 11:01:49 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2DH1mGF196956
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 18:01:49 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2DH1mKb027196
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2014 11:01:48 -0600
-Date: Thu, 13 Mar 2014 10:01:27 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Subject: Re: Bug in reclaim logic with exhausted nodes?
-Message-ID: <20140313170127.GE22247@linux.vnet.ibm.com>
-References: <20140311210614.GB946@linux.vnet.ibm.com>
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id CC3A02C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 05:09:28 +1100 (EST)
+Date: Thu, 13 Mar 2014 18:09:16 +0000
+From: Mark Rutland <mark.rutland@arm.com>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v9 5/6] dma: mpc512x: add device tree binding document
+Message-ID: <20140313180916.GF25870@e106331-lin.cambridge.arm.com>
+References: <1394624875-24411-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1394624875-24411-6-git-send-email-a13xp0p0v88@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140311210614.GB946@linux.vnet.ibm.com>
-Cc: mgorman@suse.de, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- anton@samba.org, rientjes@google.com
+In-Reply-To: <1394624875-24411-6-git-send-email-a13xp0p0v88@gmail.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,152 +28,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There might have been an error in my original mail, so resending...
+On Wed, Mar 12, 2014 at 11:47:54AM +0000, Alexander Popov wrote:
+> From: Gerhard Sittig <gsi@denx.de>
+> 
+> introduce a device tree binding document for the MPC512x DMA controller
+> 
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> [ a13xp0p0v88@gmail.com: turn this into a separate patch ]
+> ---
+>  .../devicetree/bindings/dma/mpc512x-dma.txt        | 55 ++++++++++++++++++++++
+>  1 file changed, 55 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/dma/mpc512x-dma.txt b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> new file mode 100644
+> index 0000000..a4867d5
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> @@ -0,0 +1,55 @@
+> +* Freescale MPC512x DMA Controller
+> +
+> +The DMA controller in the Freescale MPC512x SoC can move blocks of
+> +memory contents between memory and peripherals or memory to memory.
+> +
+> +Refer to the "Generic DMA Controller and DMA request bindings" description
+> +in the dma.txt file for a more detailled discussion of the binding.  The
+> +MPC512x DMA engine binding follows the common scheme, but doesn't provide
+> +support for the optional channels and requests counters (those values are
+> +derived from the detected hardware features) and has a fixed client
+> +specifier length of 1 integer cell (the value is the DMA channel, since
+> +the DMA controller uses a fixed assignment of request lines per channel).
+> +
+> +
+> +DMA controller node properties:
+> +
+> +Required properties:
+> +- compatible:		should be "fsl,mpc5121-dma"
+> +- reg:			address and size of the DMA controller's register set
+> +- interrupts:		interrupt spec for the DMA controller
+> +
+> +Optional properties:
+> +- #dma-cells:		must be <1>, describes the number of integer cells
+> +			needed to specify the 'dmas' property in client nodes,
+> +			strongly recommended since common client helper code
+> +			uses this property
 
-On 11.03.2014 [14:06:14 -0700], Nishanth Aravamudan wrote:
-> We have seen the following situation on a test system:
+Describe what you expect this cell to contain, not the #dma-cells
+binding in general. The DMA bindings already cover that.
+
+What are valid value that clients may use, and what do they mean?
+
+> +
+> +Example:
+> +
+> +	dma0: dma@14000 {
+> +		compatible = "fsl,mpc5121-dma";
+> +		reg = <0x14000 0x1800>;
+> +		interrupts = <65 0x8>;
+> +		#dma-cells = <1>;
+> +	};
+> +
+> +
+> +Client node properties:
+> +
+> +Required properties:
+> +- dmas:			list of DMA specifiers, consisting each of a handle
+> +			for the DMA controller and integer cells to specify
+> +			the channel used within the DMA controller
+> +- dma-names:		list of identifier strings for the DMA specifiers,
+> +			client device driver code uses these strings to
+> +			have DMA channels looked up at the controller
+
+List the exact names you expect, or the dma-names property is useless.
+
+Thanks,
+Mark.
+
+> +
+> +Example:
+> +
+> +	sdhc@1500 {
+> +		compatible = "fsl,mpc5121-sdhc";
+> +		/* ... */
+> +		dmas = <&dma0 30>;
+> +		dma-names = "rx-tx";
+> +	};
+> -- 
+> 1.8.4.2
 > 
-> 2-node system, each node has 32GB of memory.
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> 2 gigantic (16GB) pages reserved at boot-time, both of which are
-> allocated from node 1.
-> 
-> SLUB notices this:
-> 
-> [    0.000000] SLUB: Unable to allocate memory from node 1
-> [    0.000000] SLUB: Allocating a useless per node structure in order to
-> be able to continue
-> 
-> After boot, user then did:
-> 
-> echo 24 > /proc/sys/vm/nr_hugepages
-> 
-> And tasks are stuck:
-> 
-> [<c0000000010980b8>] kexec_stack+0xb8/0x8000
-> [<c0000000000144d0>] .__switch_to+0x1c0/0x390
-> [<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
-> [<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
-> [<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
-> [<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
-> [<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
-> [<c0000000001eb7c8>] .hugetlb_sysctl_handler_common+0x168/0x180
-> [<c0000000002ae21c>] .proc_sys_call_handler+0xfc/0x120
-> [<c00000000021dcc0>] .vfs_write+0xe0/0x260
-> [<c00000000021e8c8>] .SyS_write+0x58/0xd0
-> [<c000000000009e7c>] syscall_exit+0x0/0x7c
-> 
-> [<c00000004f9334b0>] 0xc00000004f9334b0
-> [<c0000000000144d0>] .__switch_to+0x1c0/0x390
-> [<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
-> [<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
-> [<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
-> [<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
-> [<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
-> [<c0000000001eb7c8>] .hugetlb_sysctl_handler_common+0x168/0x180
-> [<c0000000002ae21c>] .proc_sys_call_handler+0xfc/0x120
-> [<c00000000021dcc0>] .vfs_write+0xe0/0x260
-> [<c00000000021e8c8>] .SyS_write+0x58/0xd0
-> [<c000000000009e7c>] syscall_exit+0x0/0x7c
-> 
-> [<c00000004f91f440>] 0xc00000004f91f440
-> [<c0000000000144d0>] .__switch_to+0x1c0/0x390
-> [<c0000000001ac708>] .throttle_direct_reclaim.isra.31+0x238/0x2c0
-> [<c0000000001b0b34>] .try_to_free_pages+0xb4/0x210
-> [<c0000000001a2f1c>] .__alloc_pages_nodemask+0x75c/0xb00
-> [<c0000000001eafb0>] .alloc_fresh_huge_page+0x70/0x150
-> [<c0000000001eb2d0>] .set_max_huge_pages.part.37+0x130/0x2f0
-> [<c0000000001eb54c>] .nr_hugepages_store_common.isra.39+0xbc/0x1b0
-> [<c0000000003662cc>] .kobj_attr_store+0x2c/0x50
-> [<c0000000002b2c2c>] .sysfs_write_file+0xec/0x1c0
-> [<c00000000021dcc0>] .vfs_write+0xe0/0x260
-> [<c00000000021e8c8>] .SyS_write+0x58/0xd0
-> [<c000000000009e7c>] syscall_exit+0x0/0x7c
-> 
-> kswapd1 is also pegged at this point at 100% cpu.
-> 
-> If we go in and manually:
-> 
-> echo 24 >
-> /sys/devices/system/node/node0/hugepages/hugepages-16384kB/nr_hugepages
-> 
-> rather than relying on the interleaving allocator from the sysctl, the
-> allocation succeeds (and the echo returns immediately).
-> 
-> I think we are hitting the following:
-> 
-> mm/hugetlb.c::alloc_fresh_huge_page_node():
-> 
->         page = alloc_pages_exact_node(nid,
->                 htlb_alloc_mask(h)|__GFP_COMP|__GFP_THISNODE|
->                                                 __GFP_REPEAT|__GFP_NOWARN,
->                 huge_page_order(h));
-> 
-> include/linux/gfp.h:
-> 
-> #define GFP_THISNODE    (__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
-> 
-> and mm/page_alloc.c::__alloc_pages_slowpath():
-> 
->         /*
->          * GFP_THISNODE (meaning __GFP_THISNODE, __GFP_NORETRY and
->          * __GFP_NOWARN set) should not cause reclaim since the subsystem
->          * (f.e. slab) using GFP_THISNODE may choose to trigger reclaim
->          * using a larger set of nodes after it has established that the
->          * allowed per node queues are empty and that nodes are
->          * over allocated.
->          */
->         if (IS_ENABLED(CONFIG_NUMA) &&
->                         (gfp_mask & GFP_THISNODE) == GFP_THISNODE)
->                 goto nopage;
-> 
-> so we *do* reclaim in this callpath. Under my reading, since node1 is
-> exhausted, no matter how much work kswapd1 does, it will never reclaim
-> memory from node1 to satisfy a 16M page allocation request (or any
-> other, for that matter).
-> 
-> I see the following possible changes/fixes, but am unsure if
-> a) my analysis is right
-> b) which is best.
-> 
-> 1) Since we did notice early in boot that (in this case) node 1 was
-> exhausted, perhaps we should mark it as such there somehow, and if a
-> __GFP_THISNODE allocation request comes through on such a node, we
-> immediately fallthrough to nopage?
-> 
-> 2) There is the following check
->         /*
->          * For order > PAGE_ALLOC_COSTLY_ORDER, if __GFP_REPEAT is
->          * specified, then we retry until we no longer reclaim any pages
->          * (above), or we've reclaimed an order of pages at least as
->          * large as the allocation's order. In both cases, if the
->          * allocation still fails, we stop retrying.
->          */
->         if (gfp_mask & __GFP_REPEAT && pages_reclaimed < (1 << order))
->                 return 1;
-> 
-> I wonder if we should add a check to also be sure that the pages we are
-> reclaiming, if __GFP_THISNODE is set, are from the right node?
-> 
->        if (gfp_mask & __GFP_THISNODE && the progress we have made is on
->        		the node requested?)
-> 
-> 3) did_some_progress could be updated to track where the progress is
-> occuring, and if we are in __GFP_THISNODE allocation request and we
-> didn't make any progress on the correct node, we fail the allocation?
-> 
-> I think this situation could be reproduced (and am working on it) by
-> exhausting a NUMA node with 16M hugepages and then using the generic
-> RR allocator to ask for more. Other node exhaustion cases probably
-> exist, but since we can't swap the hugepages, it seems like the most
-> straightforward way to try and reproduce it.
-> 
-> Any thoughts on this? Am I way off base?
-> 
-> Thanks,
-> Nish
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
