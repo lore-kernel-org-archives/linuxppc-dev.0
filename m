@@ -3,13 +3,13 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B23F42C00EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A5E992C0103
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:17 +1100 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 03/10] powerpc/booke64: Fix exception numbers
-Date: Thu, 13 Mar 2014 19:00:42 -0500
-Message-ID: <1394755249-8856-4-git-send-email-scottwood@freescale.com>
+Subject: [PATCH 04/10] powerpc/e6500: Make TLB lock recursive
+Date: Thu, 13 Mar 2014 19:00:43 -0500
+Message-ID: <1394755249-8856-5-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 References: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -25,59 +25,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-altivec_unavailable was commented as 0xf20 but the code uses 0x200.
-Note that 0xf20 is also used by ap_unavailable.
+Once special level interrupts are supported, we may take nested TLB
+misses -- so allow the same thread to acquire the lock recursively.
 
-altivec_assist was commented as 0x1700 but the code uses 0x220.
-
-critical_input was commented as 0x580 but the code uses 0x100.
-
-machine_check was commented and implemented as 0x200, which conflicts
-with altivec_assist (it only builds because MC_EXCEPTION_PROLOG is
-commented out).  Changed to the fixed IVOR value of 0x000.
+The lock will not be effective against the nested TLB miss handler
+trying to write the same entry as the interrupted TLB miss handler, but
+that's also a problem on non-threaded CPUs that lack TLB write
+conditional.  This will be addressed in the patch that enables crit/mc
+support by invalidating the TLB on return from level exceptions.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/mmu-book3e.h |  9 ++++++---
+ arch/powerpc/kernel/setup_64.c        |  2 ++
+ arch/powerpc/mm/tlb_low_64e.S         | 19 ++++++++++++-------
+ 3 files changed, 20 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 6772512..41380a4 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -299,8 +299,8 @@ exception_marker:
- 	.balign	0x1000
- 	.globl interrupt_base_book3e
- interrupt_base_book3e:					/* fake trap */
--	EXCEPTION_STUB(0x000, machine_check)		/* 0x0200 */
--	EXCEPTION_STUB(0x020, critical_input)		/* 0x0580 */
-+	EXCEPTION_STUB(0x000, machine_check)
-+	EXCEPTION_STUB(0x020, critical_input)		/* 0x0100 */
- 	EXCEPTION_STUB(0x040, debug_crit)		/* 0x0d00 */
- 	EXCEPTION_STUB(0x060, data_storage)		/* 0x0300 */
- 	EXCEPTION_STUB(0x080, instruction_storage)	/* 0x0400 */
-@@ -315,8 +315,8 @@ interrupt_base_book3e:					/* fake trap */
- 	EXCEPTION_STUB(0x1a0, watchdog)			/* 0x09f0 */
- 	EXCEPTION_STUB(0x1c0, data_tlb_miss)
- 	EXCEPTION_STUB(0x1e0, instruction_tlb_miss)
--	EXCEPTION_STUB(0x200, altivec_unavailable)	/* 0x0f20 */
--	EXCEPTION_STUB(0x220, altivec_assist)		/* 0x1700 */
-+	EXCEPTION_STUB(0x200, altivec_unavailable)
-+	EXCEPTION_STUB(0x220, altivec_assist)
- 	EXCEPTION_STUB(0x260, perfmon)
- 	EXCEPTION_STUB(0x280, doorbell)
- 	EXCEPTION_STUB(0x2a0, doorbell_crit)
-@@ -343,9 +343,9 @@ interrupt_end_book3e:
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index 89b785d..901dac6 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -287,11 +287,14 @@ extern int mmu_linear_psize;
+ extern int mmu_vmemmap_psize;
  
- /* Machine Check Interrupt */
- 	START_EXCEPTION(machine_check);
--	MC_EXCEPTION_PROLOG(0x200, BOOKE_INTERRUPT_MACHINE_CHECK,
-+	MC_EXCEPTION_PROLOG(0x000, BOOKE_INTERRUPT_MACHINE_CHECK,
- 			    PROLOG_ADDITION_NONE)
--//	EXCEPTION_COMMON(0x200, PACA_EXMC, INTS_DISABLE)
-+//	EXCEPTION_COMMON(0x000, PACA_EXMC, INTS_DISABLE)
- //	bl	special_reg_save_mc
- //	addi	r3,r1,STACK_FRAME_OVERHEAD
- //	CHECK_NAPPING();
+ struct tlb_core_data {
++	/*
++	 * Per-core spinlock for e6500 TLB handlers (no tlbsrx.)
++	 * Must be the first struct element.
++	 */
++	u8 lock;
++
+ 	/* For software way selection, as on Freescale TLB1 */
+ 	u8 esel_next, esel_max, esel_first;
+-
+-	/* Per-core spinlock for e6500 TLB handlers (no tlbsrx.) */
+-	u8 lock;
+ };
+ 
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index da9c42f..4933909 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -102,6 +102,8 @@ static void setup_tlb_core_data(void)
+ {
+ 	int cpu;
+ 
++	BUILD_BUG_ON(offsetof(struct tlb_core_data, lock) != 0);
++
+ 	for_each_possible_cpu(cpu) {
+ 		int first = cpu_first_thread_sibling(cpu);
+ 
+diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+index 6bf5050..1e50249 100644
+--- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -284,7 +284,7 @@ itlb_miss_fault_bolted:
+  * r14 = page table base
+  * r13 = PACA
+  * r11 = tlb_per_core ptr
+- * r10 = crap (free to use)
++ * r10 = cpu number
+  */
+ tlb_miss_common_e6500:
+ 	/*
+@@ -293,15 +293,18 @@ tlb_miss_common_e6500:
+ 	 *
+ 	 * MAS6:IND should be already set based on MAS4
+ 	 */
+-	addi	r10,r11,TCD_LOCK
+-1:	lbarx	r15,0,r10
++1:	lbarx	r15,0,r11
++	lhz	r10,PACAPACAINDEX(r13)
+ 	cmpdi	r15,0
++	cmpdi	cr1,r15,1	/* set cr1.eq = 0 for non-recursive */
+ 	bne	2f
+-	li	r15,1
+-	stbcx.	r15,0,r10
++	stbcx.	r10,0,r11
+ 	bne	1b
++3:
+ 	.subsection 1
+-2:	lbz	r15,0(r10)
++2:	cmpd	cr1,r15,r10	/* recursive lock due to mcheck/crit/etc? */
++	beq	cr1,3b		/* unlock will happen if cr1.eq = 0 */
++	lbz	r15,0(r11)
+ 	cmpdi	r15,0
+ 	bne	2b
+ 	b	1b
+@@ -379,9 +382,11 @@ tlb_miss_common_e6500:
+ 
+ tlb_miss_done_e6500:
+ 	.macro	tlb_unlock_e6500
++	beq	cr1,1f		/* no unlock if lock was recursively grabbed */
+ 	li	r15,0
+ 	isync
+-	stb	r15,TCD_LOCK(r11)
++	stb	r15,0(r11)
++1:
+ 	.endm
+ 
+ 	tlb_unlock_e6500
 -- 
 1.8.3.2
