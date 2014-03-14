@@ -3,16 +3,20 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9DC782C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:13 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C26622C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:14 +1100 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 00/10] powerpc/booke64: critical and mcheck support
-Date: Thu, 13 Mar 2014 19:00:39 -0500
-Message-ID: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH 01/10] powerpc/book3e: initialize crit/mc/dbg kernel stack
+ pointers
+Date: Thu, 13 Mar 2014 19:00:40 -0500
+Message-ID: <1394755249-8856-2-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
+References: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Tiejun Chen <tiejun.chen@windriver.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Scott Wood <scottwood@freescale.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,43 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset adds the state saving required to safely take
-critical and machine check exceptions on 64-bit booke, including
-TLB misses from inside such exceptions.  Previously, the kernel simply
-hung when encountering such an exception.
+From: Tiejun Chen <tiejun.chen@windriver.com>
 
-Scott Wood (8):
-  powerpc/booke64: Fix exception numbers
-  powerpc/e6500: Make TLB lock recursive
-  powerpc/booke64: Use SPRG7 for VDSO
-  powerpc/booke64: Use SPRG_TLB_EXFRAME on bolted handlers
-  powerpc/booke64: Remove ints from EXCEPTION_COMMON
-  powerpc/booke64: Add crit/mc/debug support to EXCEPTION_COMMON
-  powerpc/booke64: Critical and machine check exception support
-  Revert "powerpc/watchdog: Don't enable interrupt on PPC64 BookE"
+We already allocated critical/machine/debug check exceptions, but
+we also should initialize those associated kernel stack pointers
+for use by special exceptions in the PACA.
 
-Tiejun Chen (2):
-  powerpc/book3e: initialize crit/mc/dbg kernel stack pointers
-  powerpc/book3e: store crit/mc/dbg exception thread info
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/kernel/setup_64.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
- arch/powerpc/include/asm/exception-64e.h    |  15 +-
- arch/powerpc/include/asm/kvm_booke_hv_asm.h |  17 +-
- arch/powerpc/include/asm/mmu-book3e.h       |   9 +-
- arch/powerpc/include/asm/paca.h             |   9 +-
- arch/powerpc/include/asm/reg.h              |  13 +-
- arch/powerpc/kernel/asm-offsets.c           |   2 +-
- arch/powerpc/kernel/exceptions-64e.S        | 435 +++++++++++++++++++++-------
- arch/powerpc/kernel/setup_64.c              |  20 +-
- arch/powerpc/kernel/vdso.c                  |   8 +-
- arch/powerpc/kernel/vdso32/getcpu.S         |   2 +-
- arch/powerpc/kernel/vdso64/getcpu.S         |   2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S     |   4 +-
- arch/powerpc/kvm/book3s_interrupts.S        |   4 +-
- arch/powerpc/kvm/bookehv_interrupts.S       |  24 +-
- arch/powerpc/mm/tlb_low_64e.S               |  63 ++--
- arch/powerpc/mm/tlb_nohash.c                |  11 +
- drivers/watchdog/booke_wdt.c                |   8 -
- 17 files changed, 461 insertions(+), 185 deletions(-)
-
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index f5f11a7..da9c42f 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -552,14 +552,20 @@ static void __init irqstack_early_init(void)
+ static void __init exc_lvl_early_init(void)
+ {
+ 	unsigned int i;
++	unsigned long sp;
+ 
+ 	for_each_possible_cpu(i) {
+-		critirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+-		dbgirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
+-		mcheckirq_ctx[i] = (struct thread_info *)
+-			__va(memblock_alloc(THREAD_SIZE, THREAD_SIZE));
++		sp = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
++		critirq_ctx[i] = (struct thread_info *)__va(sp);
++		paca[i].crit_kstack = __va(sp + THREAD_SIZE);
++
++		sp = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
++		dbgirq_ctx[i] = (struct thread_info *)__va(sp);
++		paca[i].dbg_kstack = __va(sp + THREAD_SIZE);
++
++		sp = memblock_alloc(THREAD_SIZE, THREAD_SIZE);
++		mcheckirq_ctx[i] = (struct thread_info *)__va(sp);
++		paca[i].mc_kstack = __va(sp + THREAD_SIZE);
+ 	}
+ 
+ 	if (cpu_has_feature(CPU_FTR_DEBUG_LVL_EXC))
 -- 
 1.8.3.2
