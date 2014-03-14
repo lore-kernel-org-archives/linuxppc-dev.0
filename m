@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 14/20] powerpc/perf: Add a shared interface to get gpci
- version and capabilities
-Date: Fri, 14 Mar 2014 16:00:39 +1100
-Message-Id: <1394773245-18328-15-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 15/20] powerpc/perf: Add macros for defining event fields &
+ formats
+Date: Fri, 14 Mar 2014 16:00:40 +1100
+Message-Id: <1394773245-18328-16-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 References: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 Cc: cody@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
@@ -19,89 +19,57 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 
-This exposes a simple way to grab the firmware provided
-collect_priveliged, ga, expanded, and lab capability bits. All of these
-bits come in from the same gpci request, so we've exposed all of them.
+Add two macros which generate functions to extract the relevent bits
+from event->attr.config{,1,2}.
 
-Only the collect_priveliged bit is really used by the hv-gpci/hv-24x7
-code, the other bits are simply exposed in sysfs to inform the user.
+EVENT_DEFINE_RANGE() defines an accessor for a range of bits in the
+event, as well as a "max" function that gives the maximum value of the
+field based on the bit width.
+
+EVENT_DEFINE_RANGE_FORMAT() defines the accessor & max routine and also
+a format attribute for use in the PMU's attr_groups.
 
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+[mpe: move to powerpc, ugly but descriptive macro names]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/perf/hv-common.c | 39 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/perf/hv-common.h | 17 +++++++++++++++++
- 2 files changed, 56 insertions(+)
- create mode 100644 arch/powerpc/perf/hv-common.c
- create mode 100644 arch/powerpc/perf/hv-common.h
+ arch/powerpc/perf/hv-common.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/perf/hv-common.c b/arch/powerpc/perf/hv-common.c
-new file mode 100644
-index 0000000..47e02b3
---- /dev/null
-+++ b/arch/powerpc/perf/hv-common.c
-@@ -0,0 +1,39 @@
-+#include <asm/io.h>
-+#include <asm/hvcall.h>
-+
-+#include "hv-gpci.h"
-+#include "hv-common.h"
-+
-+unsigned long hv_perf_caps_get(struct hv_perf_caps *caps)
-+{
-+	unsigned long r;
-+	struct p {
-+		struct hv_get_perf_counter_info_params params;
-+		struct cv_system_performance_capabilities caps;
-+	} __packed __aligned(sizeof(uint64_t));
-+
-+	struct p arg = {
-+		.params = {
-+			.counter_request = cpu_to_be32(
-+					CIR_SYSTEM_PERFORMANCE_CAPABILITIES),
-+			.starting_index = cpu_to_be32(-1),
-+			.counter_info_version_in = 0,
-+		}
-+	};
-+
-+	r = plpar_hcall_norets(H_GET_PERF_COUNTER_INFO,
-+			       virt_to_phys(&arg), sizeof(arg));
-+
-+	if (r)
-+		return r;
-+
-+	pr_devel("capability_mask: 0x%x\n", arg.caps.capability_mask);
-+
-+	caps->version = arg.params.counter_info_version_out;
-+	caps->collect_privileged = !!arg.caps.perf_collect_privileged;
-+	caps->ga = !!(arg.caps.capability_mask & CV_CM_GA);
-+	caps->expanded = !!(arg.caps.capability_mask & CV_CM_EXPANDED);
-+	caps->lab = !!(arg.caps.capability_mask & CV_CM_LAB);
-+
-+	return r;
-+}
 diff --git a/arch/powerpc/perf/hv-common.h b/arch/powerpc/perf/hv-common.h
-new file mode 100644
-index 0000000..7e615bd
---- /dev/null
+index 7e615bd..5d79cec 100644
+--- a/arch/powerpc/perf/hv-common.h
 +++ b/arch/powerpc/perf/hv-common.h
-@@ -0,0 +1,17 @@
-+#ifndef LINUX_POWERPC_PERF_HV_COMMON_H_
-+#define LINUX_POWERPC_PERF_HV_COMMON_H_
+@@ -1,6 +1,7 @@
+ #ifndef LINUX_POWERPC_PERF_HV_COMMON_H_
+ #define LINUX_POWERPC_PERF_HV_COMMON_H_
+ 
++#include <linux/perf_event.h>
+ #include <linux/types.h>
+ 
+ struct hv_perf_caps {
+@@ -14,4 +15,22 @@ struct hv_perf_caps {
+ 
+ unsigned long hv_perf_caps_get(struct hv_perf_caps *caps);
+ 
 +
-+#include <linux/types.h>
++#define EVENT_DEFINE_RANGE_FORMAT(name, attr_var, bit_start, bit_end)	\
++PMU_FORMAT_ATTR(name, #attr_var ":" #bit_start "-" #bit_end);		\
++EVENT_DEFINE_RANGE(name, attr_var, bit_start, bit_end)
 +
-+struct hv_perf_caps {
-+	u16 version;
-+	u16 collect_privileged:1,
-+	    ga:1,
-+	    expanded:1,
-+	    lab:1,
-+	    unused:12;
-+};
++#define EVENT_DEFINE_RANGE(name, attr_var, bit_start, bit_end)	\
++static u64 event_get_##name##_max(void)					\
++{									\
++	BUILD_BUG_ON((bit_start > bit_end)				\
++		    || (bit_end >= (sizeof(1ull) * 8)));		\
++	return (((1ull << (bit_end - bit_start)) - 1) << 1) + 1;	\
++}									\
++static u64 event_get_##name(struct perf_event *event)			\
++{									\
++	return (event->attr.attr_var >> (bit_start)) &			\
++		event_get_##name##_max();				\
++}
 +
-+unsigned long hv_perf_caps_get(struct hv_perf_caps *caps);
-+
-+#endif
+ #endif
 -- 
 1.8.3.2
