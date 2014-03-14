@@ -1,10 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 02/20] powerpc/perf: Define perf_event_print_debug() to print
- PMU register values
-Date: Fri, 14 Mar 2014 16:00:27 +1100
-Message-Id: <1394773245-18328-3-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 03/20] powerpc: Add a cpu feature CPU_FTR_PMAO_BUG
+Date: Fri, 14 Mar 2014 16:00:28 +1100
+Message-Id: <1394773245-18328-4-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 References: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 Cc: cody@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
@@ -17,112 +16,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Some power8 revisions have a hardware bug where we can lose a
+Performance Monitor (PMU) exception under certain circumstances.
 
-Currently the sysrq ShowRegs command does not print any PMU registers as
-we have an empty definition for perf_event_print_debug(). This patch
-defines perf_event_print_debug() to print various PMU registers.
+We will be adding a workaround for this case, see the next commit for
+details. The observed behaviour is that writing PMAO doesn't cause an
+exception as we would expect, hence the name of the feature.
 
-Example output:
-
-CPU: 0 PMU registers, ppmu = POWER7 n_counters = 6
-PMC1:  00000000 PMC2: 00000000 PMC3: 00000000 PMC4: 00000000
-PMC5:  00000000 PMC6: 00000000 PMC7: deadbeef PMC8: deadbeef
-MMCR0: 0000000080000000 MMCR1: 0000000000000000 MMCRA: 0f00000001000000
-SIAR:  0000000000000000 SDAR:  0000000000000000 SIER:  0000000000000000
-
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-[mpe: Fix 32 bit build and rework formatting for compactness]
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/perf_event_server.h |  1 +
- arch/powerpc/perf/core-book3s.c              | 55 ++++++++++++++++++++++++++--
- 2 files changed, 52 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/cputable.h | 6 ++++--
+ arch/powerpc/kernel/cputable.c      | 2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 3fd2f1b..9ed73714 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -14,6 +14,7 @@
- #include <linux/device.h>
- #include <uapi/asm/perf_event.h>
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 617cc76..bc23477 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -189,6 +189,7 @@ extern const char *powerpc_base_platform;
+ #define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x0200000000000000)
+ #define CPU_FTR_DAWR			LONG_ASM_CONST(0x0400000000000000)
+ #define CPU_FTR_DABRX			LONG_ASM_CONST(0x0800000000000000)
++#define CPU_FTR_PMAO_BUG		LONG_ASM_CONST(0x1000000000000000)
  
-+/* Update perf_event_print_debug() if this changes */
- #define MAX_HWEVENTS		8
- #define MAX_EVENT_ALTERNATIVES	8
- #define MAX_LIMITED_HWCOUNTERS	2
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 67cf220..704d1c5 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -563,10 +563,6 @@ out:
+ #ifndef __ASSEMBLY__
  
- static void perf_event_interrupt(struct pt_regs *regs);
- 
--void perf_event_print_debug(void)
--{
--}
--
- /*
-  * Read one performance monitor counter (PMC).
-  */
-@@ -645,6 +641,57 @@ static void write_pmc(int idx, unsigned long val)
- 	}
- }
- 
-+/* Called from sysrq_handle_showregs() */
-+void perf_event_print_debug(void)
-+{
-+	unsigned long sdar, sier, flags;
-+	u32 pmcs[MAX_HWEVENTS];
-+	int i;
-+
-+	if (!ppmu->n_counter)
-+		return;
-+
-+	local_irq_save(flags);
-+
-+	pr_info("CPU: %d PMU registers, ppmu = %s n_counters = %d",
-+		 smp_processor_id(), ppmu->name, ppmu->n_counter);
-+
-+	for (i = 0; i < ppmu->n_counter; i++)
-+		pmcs[i] = read_pmc(i + 1);
-+
-+	for (; i < MAX_HWEVENTS; i++)
-+		pmcs[i] = 0xdeadbeef;
-+
-+	pr_info("PMC1:  %08x PMC2: %08x PMC3: %08x PMC4: %08x\n",
-+		 pmcs[0], pmcs[1], pmcs[2], pmcs[3]);
-+
-+	if (ppmu->n_counter > 4)
-+		pr_info("PMC5:  %08x PMC6: %08x PMC7: %08x PMC8: %08x\n",
-+			 pmcs[4], pmcs[5], pmcs[6], pmcs[7]);
-+
-+	pr_info("MMCR0: %016lx MMCR1: %016lx MMCRA: %016lx\n",
-+		mfspr(SPRN_MMCR0), mfspr(SPRN_MMCR1), mfspr(SPRN_MMCRA));
-+
-+	sdar = sier = 0;
-+#ifdef CONFIG_PPC64
-+	sdar = mfspr(SPRN_SDAR);
-+
-+	if (ppmu->flags & PPMU_HAS_SIER)
-+		sier = mfspr(SPRN_SIER);
-+
-+	if (ppmu->flags & PPMU_EBB) {
-+		pr_info("MMCR2: %016lx EBBHR: %016lx\n",
-+			mfspr(SPRN_MMCR2), mfspr(SPRN_EBBHR));
-+		pr_info("EBBRR: %016lx BESCR: %016lx\n",
-+			mfspr(SPRN_EBBRR), mfspr(SPRN_BESCR));
-+	}
-+#endif
-+	pr_info("SIAR:  %016lx SDAR:  %016lx SIER:  %016lx\n",
-+		mfspr(SPRN_SIAR), sdar, sier);
-+
-+	local_irq_restore(flags);
-+}
-+
- /*
-  * Check if a set of events can all go on the PMU at once.
-  * If they can't, this will look at alternative codes for the events
+@@ -445,6 +446,7 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+ 	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | \
+ 	    CPU_FTR_ARCH_207S | CPU_FTR_TM_COMP)
++#define CPU_FTRS_POWER8E (CPU_FTRS_POWER8 | CPU_FTR_PMAO_BUG)
+ #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -466,8 +468,8 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTRS_POSSIBLE	\
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+ 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+-	    CPU_FTRS_POWER7 | CPU_FTRS_POWER8 | CPU_FTRS_CELL |		\
+-	    CPU_FTRS_PA6T | CPU_FTR_VSX)
++	    CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 |	\
++	    CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_VSX)
+ #endif
+ #else
+ enum {
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 6c8dd5d..c1faade 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -510,7 +510,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x004b0000,
+ 		.cpu_name		= "POWER8E (raw)",
+-		.cpu_features		= CPU_FTRS_POWER8,
++		.cpu_features		= CPU_FTRS_POWER8E,
+ 		.cpu_user_features	= COMMON_USER_POWER8,
+ 		.cpu_user_features2	= COMMON_USER2_POWER8,
+ 		.mmu_features		= MMU_FTRS_POWER8,
 -- 
 1.8.3.2
