@@ -3,19 +3,18 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 99C5F2C0114
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:18 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E5AAD2C0114
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:19 +1100 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 05/10] powerpc/booke64: Use SPRG7 for VDSO
-Date: Thu, 13 Mar 2014 19:00:44 -0500
-Message-ID: <1394755249-8856-6-git-send-email-scottwood@freescale.com>
+Subject: [PATCH 06/10] powerpc/booke64: Use SPRG_TLB_EXFRAME on bolted handlers
+Date: Thu, 13 Mar 2014 19:00:45 -0500
+Message-ID: <1394755249-8856-7-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 References: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: kvm-ppc@vger.kernel.org, Tiejun Chen <tiejun.chen@windriver.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  Scott Wood <scottwood@freescale.com>,
  Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,335 +26,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously SPRG3 was marked for use by both VDSO and critical
-interrupts (though critical interrupts were not fully implemented).
+While bolted handlers (including e6500) do not need to deal with a TLB
+miss recursively causing another TLB miss, nested TLB misses can still
+happen with crit/mc/debug exceptions -- so we still need to honor
+SPRG_TLB_EXFRAME.
 
-In commit 8b64a9dfb091f1eca8b7e58da82f1e7d1d5fe0ad ("powerpc/booke64:
-Use SPRG0/3 scratch for bolted TLB miss & crit int"), Mihai Caraman
-made an attempt to resolve this conflict by restoring the VDSO value
-early in the critical interrupt, but this has some issues:
-
- - It's incompatible with EXCEPTION_COMMON which restores r13 from the
-   by-then-overwritten scratch (this cost me some debugging time).
- - It forces critical exceptions to be a special case handled
-   differently from even machine check and debug level exceptions.
- - It didn't occur to me that it was possible to make this work at all
-   (by doing a final "ld r13, PACA_EXCRIT+EX_R13(r13)") until after
-   I made (most of) this patch. :-)
-
-It might be worth investigating using a load rather than SPRG on return
-from all exceptions (except TLB misses where the scratch never leaves
-the SPRG) -- it could save a few cycles.  Until then, let's stick with
-SPRG for all exceptions.
-
-Since we cannot use SPRG4-7 for scratch without corrupting the state of
-a KVM guest, move VDSO to SPRG7 on book3e.  Since neither SPRG4-7 nor
-critical interrupts exist on book3s, SPRG3 is still used for VDSO
-there.
+We don't need to spend time modifying it in the TLB miss fastpath,
+though -- the special level exception will handle that.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 Cc: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Paul Mackerras <paulus@samba.org>
 Cc: kvm-ppc@vger.kernel.org
 ---
- arch/powerpc/include/asm/exception-64e.h    |  5 ++---
- arch/powerpc/include/asm/kvm_booke_hv_asm.h |  9 +--------
- arch/powerpc/include/asm/paca.h             |  2 +-
- arch/powerpc/include/asm/reg.h              | 13 ++++++++++---
- arch/powerpc/kernel/asm-offsets.c           |  2 +-
- arch/powerpc/kernel/exceptions-64e.S        | 19 ++-----------------
- arch/powerpc/kernel/vdso.c                  |  8 ++++----
- arch/powerpc/kernel/vdso32/getcpu.S         |  2 +-
- arch/powerpc/kernel/vdso64/getcpu.S         |  2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S     |  4 ++--
- arch/powerpc/kvm/book3s_interrupts.S        |  4 ++--
- arch/powerpc/kvm/bookehv_interrupts.S       | 10 ++++++----
- 12 files changed, 33 insertions(+), 47 deletions(-)
+ arch/powerpc/include/asm/exception-64e.h    | 10 -------
+ arch/powerpc/include/asm/kvm_booke_hv_asm.h |  8 ++++--
+ arch/powerpc/kvm/bookehv_interrupts.S       | 14 +++++++--
+ arch/powerpc/mm/tlb_low_64e.S               | 44 ++++++++++++++++++-----------
+ 4 files changed, 45 insertions(+), 31 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
-index 51fa43e..e73452f 100644
+index e73452f..a563d9af 100644
 --- a/arch/powerpc/include/asm/exception-64e.h
 +++ b/arch/powerpc/include/asm/exception-64e.h
-@@ -46,9 +46,8 @@
- #define EX_CR		(1 * 8)
- #define EX_R10		(2 * 8)
- #define EX_R11		(3 * 8)
--#define EX_R13		(4 * 8)
--#define EX_R14		(5 * 8)
--#define EX_R15		(6 * 8)
-+#define EX_R14		(4 * 8)
-+#define EX_R15		(5 * 8)
- 
- /*
-  * The TLB miss exception uses different slots.
+@@ -172,16 +172,6 @@ exc_##label##_book3e:
+ 	ld	r9,EX_TLB_R9(r12);					    \
+ 	ld	r8,EX_TLB_R8(r12);					    \
+ 	mtlr	r16;
+-#define TLB_MISS_PROLOG_STATS_BOLTED						    \
+-	mflr	r10;							    \
+-	std	r8,PACA_EXTLB+EX_TLB_R8(r13);				    \
+-	std	r9,PACA_EXTLB+EX_TLB_R9(r13);				    \
+-	std	r10,PACA_EXTLB+EX_TLB_LR(r13);
+-#define TLB_MISS_RESTORE_STATS_BOLTED					            \
+-	ld	r16,PACA_EXTLB+EX_TLB_LR(r13);				    \
+-	ld	r9,PACA_EXTLB+EX_TLB_R9(r13);				    \
+-	ld	r8,PACA_EXTLB+EX_TLB_R8(r13);				    \
+-	mtlr	r16;
+ #define TLB_MISS_STATS_D(name)						    \
+ 	addi	r9,r13,MMSTAT_DSTATS+name;				    \
+ 	bl	.tlb_stat_inc;
 diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-index 3a79f53..c3e3fd5 100644
+index c3e3fd5..e5f048b 100644
 --- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
 +++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-@@ -36,20 +36,13 @@
-  *   *(r8 + GPR11) = saved r11
+@@ -45,10 +45,12 @@
   *
-  * 64-bit host
-- * Expected inputs (GEN/GDBELL/DBG/MC exception types):
-+ * Expected inputs (GEN/GDBELL/DBG/CRIT/MC exception types):
-  *  r10 = saved CR
-  *  r13 = PACA_POINTER
-  *  *(r13 + PACA_EX##type + EX_R10) = saved r10
-  *  *(r13 + PACA_EX##type + EX_R11) = saved r11
-  *  SPRN_SPRG_##type##_SCRATCH = saved r13
-  *
--  * Expected inputs (CRIT exception type):
-- *  r10 = saved CR
-- *  r13 = PACA_POINTER
-- *  *(r13 + PACA_EX##type + EX_R10) = saved r10
-- *  *(r13 + PACA_EX##type + EX_R11) = saved r11
-- *  *(r13 + PACA_EX##type + EX_R13) = saved r13
-- *
   * Expected inputs (TLB exception type):
   *  r10 = saved CR
++ *  r12 = extlb pointer
   *  r13 = PACA_POINTER
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index 9c5dbc3..948f01a 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -146,7 +146,7 @@ struct paca_struct {
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
- 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
- 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
--	u64 sprg3;			/* Saved user-visible sprg */
-+	u64 sprg_vdso;			/* Saved user-visible sprg */
- #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
- 	u64 tm_scratch;                 /* TM scratch area for reclaim */
- #endif
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 90c06ec..b9ac329 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -577,9 +577,13 @@
- #define SPRN_SPRG3	0x113	/* Special Purpose Register General 3 */
- #define SPRN_USPRG3	0x103	/* SPRG3 userspace read */
- #define SPRN_SPRG4	0x114	/* Special Purpose Register General 4 */
-+#define SPRN_USPRG4	0x104	/* SPRG4 userspace read */
- #define SPRN_SPRG5	0x115	/* Special Purpose Register General 5 */
-+#define SPRN_USPRG5	0x105	/* SPRG5 userspace read */
- #define SPRN_SPRG6	0x116	/* Special Purpose Register General 6 */
-+#define SPRN_USPRG6	0x106	/* SPRG6 userspace read */
- #define SPRN_SPRG7	0x117	/* Special Purpose Register General 7 */
-+#define SPRN_USPRG7	0x107	/* SPRG7 userspace read */
- #define SPRN_SRR0	0x01A	/* Save/Restore Register 0 */
- #define SPRN_SRR1	0x01B	/* Save/Restore Register 1 */
- #define   SRR1_ISI_NOPT		0x40000000 /* ISI: Not found in hash */
-@@ -879,11 +883,10 @@
-  * 64-bit embedded
-  *	- SPRG0 generic exception scratch
-  *	- SPRG2 TLB exception stack
-- *	- SPRG3 critical exception scratch and
-- *        CPU and NUMA node for VDSO getcpu (user visible)
-+ *	- SPRG3 critical exception scratch (user visible, sorry!)
-  *	- SPRG4 unused (user visible)
-  *	- SPRG6 TLB miss scratch (user visible, sorry !)
-- *	- SPRG7 critical exception scratch
-+ *	- SPRG7 CPU and NUMA node for VDSO getcpu (user visible)
-  *	- SPRG8 machine check exception scratch
-  *	- SPRG9 debug exception scratch
+- *  *(r13 + PACA_EX##type + EX_TLB_R10) = saved r10
+- *  *(r13 + PACA_EX##type + EX_TLB_R11) = saved r11
+- *  SPRN_SPRG_GEN_SCRATCH = saved r13
++ *  *(r12 + EX_TLB_R10) = saved r10
++ *  *(r12 + EX_TLB_R11) = saved r11
++ *  *(r12 + EX_TLB_R13) = saved r13
++ *  SPRN_SPRG_GEN_SCRATCH = saved r12
   *
-@@ -940,6 +943,8 @@
- #define SPRN_SPRG_SCRATCH0	SPRN_SPRG2
- #define SPRN_SPRG_HPACA		SPRN_HSPRG0
- #define SPRN_SPRG_HSCRATCH0	SPRN_HSPRG1
-+#define SPRN_SPRG_VDSO_READ	SPRN_USPRG3
-+#define SPRN_SPRG_VDSO_WRITE	SPRN_SPRG3
- 
- #define GET_PACA(rX)					\
- 	BEGIN_FTR_SECTION_NESTED(66);			\
-@@ -983,6 +988,8 @@
- #define SPRN_SPRG_TLB_SCRATCH	SPRN_SPRG6
- #define SPRN_SPRG_GEN_SCRATCH	SPRN_SPRG0
- #define SPRN_SPRG_GDBELL_SCRATCH SPRN_SPRG_GEN_SCRATCH
-+#define SPRN_SPRG_VDSO_READ	SPRN_USPRG7
-+#define SPRN_SPRG_VDSO_WRITE	SPRN_SPRG7
- 
- #define SET_PACA(rX)	mtspr	SPRN_SPRG_PACA,rX
- #define GET_PACA(rX)	mfspr	rX,SPRN_SPRG_PACA
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index b5aacf7..dba8140 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -253,7 +253,7 @@ int main(void)
- 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
- 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
- 	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct, nap_state_lost));
--	DEFINE(PACA_SPRG3, offsetof(struct paca_struct, sprg3));
-+	DEFINE(PACA_SPRG_VDSO, offsetof(struct paca_struct, sprg_vdso));
- #endif /* CONFIG_PPC64 */
- 
- 	/* RTAS */
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 41380a4..89e1133 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -55,7 +55,6 @@
- 	mfspr	r13,SPRN_SPRG_PACA;	/* get PACA */			    \
- 	std	r10,PACA_EX##type+EX_R10(r13);				    \
- 	std	r11,PACA_EX##type+EX_R11(r13);				    \
--	PROLOG_STORE_RESTORE_SCRATCH_##type;				    \
- 	mfcr	r10;			/* save CR */			    \
- 	mfspr	r11,SPRN_##type##_SRR1;/* what are we coming from */	    \
- 	DO_KVM	intnum,SPRN_##type##_SRR1;    /* KVM hook */		    \
-@@ -116,20 +115,6 @@
- #define GDBELL_EXCEPTION_PROLOG(n, intnum, addition)			    \
- 	EXCEPTION_PROLOG(n, intnum, GDBELL, addition##_GDBELL(n))
- 
--/*
-- * Store user-visible scratch in PACA exception slots and restore proper value
-- */
--#define PROLOG_STORE_RESTORE_SCRATCH_GEN
--#define PROLOG_STORE_RESTORE_SCRATCH_GDBELL
--#define PROLOG_STORE_RESTORE_SCRATCH_DBG
--#define PROLOG_STORE_RESTORE_SCRATCH_MC
--
--#define PROLOG_STORE_RESTORE_SCRATCH_CRIT				    \
--	mfspr	r10,SPRN_SPRG_CRIT_SCRATCH;	/* get r13 */		    \
--	std	r10,PACA_EXCRIT+EX_R13(r13);				    \
--	ld	r11,PACA_SPRG3(r13);					    \
--	mtspr	SPRN_SPRG_CRIT_SCRATCH,r11;
--
- /* Variants of the "addition" argument for the prolog
+  * Only the bolted version of TLB miss exception handlers is supported now.
   */
- #define PROLOG_ADDITION_NONE_GEN(n)
-@@ -529,7 +514,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	mtcr	r10
- 	ld	r10,PACA_EXCRIT+EX_R10(r13)	/* restore registers */
- 	ld	r11,PACA_EXCRIT+EX_R11(r13)
--	ld	r13,PACA_EXCRIT+EX_R13(r13)
-+	mfspr	r13,SPRN_SPRG_CRIT_SCRATCH
- 	rfci
- 
- 	/* Normal debug exception */
-@@ -542,7 +527,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- 	/* Now we mash up things to make it look like we are coming on a
- 	 * normal exception
- 	 */
--	ld	r15,PACA_EXCRIT+EX_R13(r13)
-+	mfspr	r15,SPRN_SPRG_CRIT_SCRATCH
- 	mtspr	SPRN_SPRG_GEN_SCRATCH,r15
- 	mfspr	r14,SPRN_DBSR
- 	EXCEPTION_COMMON(0xd00, PACA_EXCRIT, INTS_DISABLE)
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 094e45c..ce74c33 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -715,8 +715,8 @@ int vdso_getcpu_init(void)
- 	unsigned long cpu, node, val;
- 
- 	/*
--	 * SPRG3 contains the CPU in the bottom 16 bits and the NUMA node in
--	 * the next 16 bits. The VDSO uses this to implement getcpu().
-+	 * SPRG_VDSO contains the CPU in the bottom 16 bits and the NUMA node
-+	 * in the next 16 bits.  The VDSO uses this to implement getcpu().
- 	 */
- 	cpu = get_cpu();
- 	WARN_ON_ONCE(cpu > 0xffff);
-@@ -725,8 +725,8 @@ int vdso_getcpu_init(void)
- 	WARN_ON_ONCE(node > 0xffff);
- 
- 	val = (cpu & 0xfff) | ((node & 0xffff) << 16);
--	mtspr(SPRN_SPRG3, val);
--	get_paca()->sprg3 = val;
-+	mtspr(SPRN_SPRG_VDSO_WRITE, val);
-+	get_paca()->sprg_vdso = val;
- 
- 	put_cpu();
- 
-diff --git a/arch/powerpc/kernel/vdso32/getcpu.S b/arch/powerpc/kernel/vdso32/getcpu.S
-index 47afd08..23eb9a9 100644
---- a/arch/powerpc/kernel/vdso32/getcpu.S
-+++ b/arch/powerpc/kernel/vdso32/getcpu.S
-@@ -29,7 +29,7 @@
-  */
- V_FUNCTION_BEGIN(__kernel_getcpu)
-   .cfi_startproc
--	mfspr	r5,SPRN_USPRG3
-+	mfspr	r5,SPRN_SPRG_VDSO_READ
- 	cmpdi	cr0,r3,0
- 	cmpdi	cr1,r4,0
- 	clrlwi  r6,r5,16
-diff --git a/arch/powerpc/kernel/vdso64/getcpu.S b/arch/powerpc/kernel/vdso64/getcpu.S
-index 47afd08..23eb9a9 100644
---- a/arch/powerpc/kernel/vdso64/getcpu.S
-+++ b/arch/powerpc/kernel/vdso64/getcpu.S
-@@ -29,7 +29,7 @@
-  */
- V_FUNCTION_BEGIN(__kernel_getcpu)
-   .cfi_startproc
--	mfspr	r5,SPRN_USPRG3
-+	mfspr	r5,SPRN_SPRG_VDSO_READ
- 	cmpdi	cr0,r3,0
- 	cmpdi	cr1,r4,0
- 	clrlwi  r6,r5,16
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index e66d4ec..fbfca57 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -75,8 +75,8 @@ BEGIN_FTR_SECTION
- END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 
- 	/* Restore SPRG3 */
--	ld	r3,PACA_SPRG3(r13)
--	mtspr	SPRN_SPRG3,r3
-+	ld	r3,PACA_SPRG_VDSO(r13)
-+	mtspr	SPRN_SPRG_VDSO_WRITE,r3
- 
- 	/* Reload the host's PMU registers */
- 	ld	r3, PACALPPACAPTR(r13)	/* is the host using the PMU? */
-diff --git a/arch/powerpc/kvm/book3s_interrupts.S b/arch/powerpc/kvm/book3s_interrupts.S
-index f779450..3533c99 100644
---- a/arch/powerpc/kvm/book3s_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_interrupts.S
-@@ -153,8 +153,8 @@ kvm_start_lightweight:
- 	 * Reload kernel SPRG3 value.
- 	 * No need to save guest value as usermode can't modify SPRG3.
- 	 */
--	ld	r3, PACA_SPRG3(r13)
--	mtspr	SPRN_SPRG3, r3
-+	ld	r3, PACA_SPRG_VDSO(r13)
-+	mtspr	SPRN_SPRG_VDSO_WRITE, r3
- #endif /* CONFIG_PPC_BOOK3S_64 */
- 
- 	/* R7 = vcpu */
 diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index e4185f6..99635a3 100644
+index 99635a3..890e338 100644
 --- a/arch/powerpc/kvm/bookehv_interrupts.S
 +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -229,11 +229,7 @@
+@@ -229,13 +229,20 @@
  	stw	r10, VCPU_CR(r4)
  	PPC_STL r11, VCPU_GPR(R4)(r4)
  	PPC_STL	r5, VCPU_GPR(R5)(r4)
--	.if \type == EX_CRIT
--	PPC_LL	r5, (\paca_ex + EX_R13)(r13)
--	.else
- 	mfspr	r5, \scratch
--	.endif
+-	mfspr	r5, \scratch
  	PPC_STL	r6, VCPU_GPR(R6)(r4)
  	PPC_STL	r8, VCPU_GPR(R8)(r4)
  	PPC_STL	r9, VCPU_GPR(R9)(r4)
-@@ -435,10 +431,16 @@ _GLOBAL(kvmppc_resume_host)
- 	PPC_STL	r5, VCPU_LR(r4)
- 	mfspr	r7, SPRN_SPRG5
- 	stw	r3, VCPU_VRSAVE(r4)
-+#ifdef CONFIG_64BIT
-+	PPC_LL	r3, PACA_SPRG_VDSO(r13)
-+#endif
- 	PPC_STD(r6, VCPU_SHARED_SPRG4, r11)
- 	mfspr	r8, SPRN_SPRG6
- 	PPC_STD(r7, VCPU_SHARED_SPRG5, r11)
- 	mfspr	r9, SPRN_SPRG7
-+#ifdef CONFIG_64BIT
-+	mtspr	SPRN_SPRG_VDSO_WRITE, r3
-+#endif
+-	PPC_STL r5, VCPU_GPR(R13)(r4)
++	.if \type == EX_TLB
++	PPC_LL	r5, EX_TLB_R13(r12)
++	PPC_LL	r6, EX_TLB_R10(r12)
++	PPC_LL	r8, EX_TLB_R11(r12)
++	mfspr	r12, \scratch
++	.else
++	mfspr	r5, \scratch
+ 	PPC_LL	r6, (\paca_ex + \ex_r10)(r13)
+ 	PPC_LL	r8, (\paca_ex + \ex_r11)(r13)
++	.endif
++	PPC_STL r5, VCPU_GPR(R13)(r4)
+ 	PPC_STL r3, VCPU_GPR(R3)(r4)
+ 	PPC_STL r7, VCPU_GPR(R7)(r4)
+ 	PPC_STL r12, VCPU_GPR(R12)(r4)
+@@ -444,6 +451,9 @@ _GLOBAL(kvmppc_resume_host)
  	PPC_STD(r8, VCPU_SHARED_SPRG6, r11)
  	mfxer	r3
  	PPC_STD(r9, VCPU_SHARED_SPRG7, r11)
++#ifdef CONFIG_64BIT
++	mtspr	SPRN_SPRG_VDSO_WRITE, r3
++#endif
+ 
+ 	/* save guest MAS registers and restore host mas4 & mas6 */
+ 	mfspr	r5, SPRN_MAS0
+diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+index 1e50249..356e8b4 100644
+--- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -39,37 +39,49 @@
+  *                                                                    *
+  **********************************************************************/
+ 
++/*
++ * Note that, unlike non-bolted handlers, TLB_EXFRAME is not
++ * modified by the TLB miss handlers themselves, since the TLB miss
++ * handler code will not itself cause a recursive TLB miss.
++ *
++ * TLB_EXFRAME will be modified when crit/mc/debug exceptions are
++ * entered/exited.
++ */
+ .macro tlb_prolog_bolted intnum addr
+-	mtspr	SPRN_SPRG_GEN_SCRATCH,r13
++	mtspr	SPRN_SPRG_GEN_SCRATCH,r12
++	mfspr	r12,SPRN_SPRG_TLB_EXFRAME
++	std	r13,EX_TLB_R13(r12)
++	std	r10,EX_TLB_R10(r12)
+ 	mfspr	r13,SPRN_SPRG_PACA
+-	std	r10,PACA_EXTLB+EX_TLB_R10(r13)
++
+ 	mfcr	r10
+-	std	r11,PACA_EXTLB+EX_TLB_R11(r13)
++	std	r11,EX_TLB_R11(r12)
+ #ifdef CONFIG_KVM_BOOKE_HV
+ BEGIN_FTR_SECTION
+ 	mfspr	r11, SPRN_SRR1
+ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ #endif
+ 	DO_KVM	\intnum, SPRN_SRR1
+-	std	r16,PACA_EXTLB+EX_TLB_R16(r13)
++	std	r16,EX_TLB_R16(r12)
+ 	mfspr	r16,\addr		/* get faulting address */
+-	std	r14,PACA_EXTLB+EX_TLB_R14(r13)
++	std	r14,EX_TLB_R14(r12)
+ 	ld	r14,PACAPGD(r13)
+-	std	r15,PACA_EXTLB+EX_TLB_R15(r13)
+-	std	r10,PACA_EXTLB+EX_TLB_CR(r13)
+-	TLB_MISS_PROLOG_STATS_BOLTED
++	std	r15,EX_TLB_R15(r12)
++	std	r10,EX_TLB_CR(r12)
++	TLB_MISS_PROLOG_STATS
+ .endm
+ 
+ .macro tlb_epilog_bolted
+-	ld	r14,PACA_EXTLB+EX_TLB_CR(r13)
+-	ld	r10,PACA_EXTLB+EX_TLB_R10(r13)
+-	ld	r11,PACA_EXTLB+EX_TLB_R11(r13)
++	ld	r14,EX_TLB_CR(r12)
++	ld	r10,EX_TLB_R10(r12)
++	ld	r11,EX_TLB_R11(r12)
++	ld	r13,EX_TLB_R13(r12)
+ 	mtcr	r14
+-	ld	r14,PACA_EXTLB+EX_TLB_R14(r13)
+-	ld	r15,PACA_EXTLB+EX_TLB_R15(r13)
+-	TLB_MISS_RESTORE_STATS_BOLTED
+-	ld	r16,PACA_EXTLB+EX_TLB_R16(r13)
+-	mfspr	r13,SPRN_SPRG_GEN_SCRATCH
++	ld	r14,EX_TLB_R14(r12)
++	ld	r15,EX_TLB_R15(r12)
++	TLB_MISS_RESTORE_STATS
++	ld	r16,EX_TLB_R16(r12)
++	mfspr	r12,SPRN_SPRG_GEN_SCRATCH
+ .endm
+ 
+ /* Data TLB miss */
 -- 
 1.8.3.2
