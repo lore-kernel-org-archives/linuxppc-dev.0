@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 10/20] sysfs: create bin_attributes under the requested group
-Date: Fri, 14 Mar 2014 16:00:35 +1100
-Message-Id: <1394773245-18328-11-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 11/20] powerpc: Add hvcalls for 24x7 and gpci (Get Performance
+ Counter Info)
+Date: Fri, 14 Mar 2014 16:00:36 +1100
+Message-Id: <1394773245-18328-12-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 References: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 Cc: cody@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
@@ -18,45 +19,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Cody P Schafer <cody@linux.vnet.ibm.com>
 
-bin_attributes created/updated in create_files() (such as those listed
-via (struct device).attribute_groups) were not placed under the
-specified group, and instead appeared in the base kobj directory.
-
-Fix this by making bin_attributes use creating code similar to normal
-attributes.
-
-A quick grep shows that no one is using bin_attrs in a named attribute
-group yet, so we can do this without breaking anything in usespace.
-
-Note that I do not add is_visible() support to
-bin_attributes, though that could be done as well.
-
-This is a copy of the patch already merged in Greg's tree.
-
 Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- fs/sysfs/group.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/hvcall.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index 6b57938..aa04068 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -70,8 +70,11 @@ static int create_files(struct kernfs_node *parent, struct kobject *kobj,
- 	if (grp->bin_attrs) {
- 		for (bin_attr = grp->bin_attrs; *bin_attr; bin_attr++) {
- 			if (update)
--				sysfs_remove_bin_file(kobj, *bin_attr);
--			error = sysfs_create_bin_file(kobj, *bin_attr);
-+				kernfs_remove_by_name(parent,
-+						(*bin_attr)->attr.name);
-+			error = sysfs_add_file_mode_ns(parent,
-+					&(*bin_attr)->attr, true,
-+					(*bin_attr)->attr.mode, NULL);
- 			if (error)
- 				break;
- 		}
+diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
+index d8b600b..5dbbb29 100644
+--- a/arch/powerpc/include/asm/hvcall.h
++++ b/arch/powerpc/include/asm/hvcall.h
+@@ -274,6 +274,11 @@
+ /* Platform specific hcalls, used by KVM */
+ #define H_RTAS			0xf000
+ 
++/* "Platform specific hcalls", provided by PHYP */
++#define H_GET_24X7_CATALOG_PAGE	0xF078
++#define H_GET_24X7_DATA		0xF07C
++#define H_GET_PERF_COUNTER_INFO	0xF080
++
+ #ifndef __ASSEMBLY__
+ 
+ /**
 -- 
 1.8.3.2
