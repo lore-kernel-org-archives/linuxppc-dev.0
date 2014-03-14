@@ -1,10 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 05/20] powerpc/perf: Reject EBB events which specify a
- sample_type
-Date: Fri, 14 Mar 2014 16:00:30 +1100
-Message-Id: <1394773245-18328-6-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 06/20] powerpc/perf: Clean up the EBB hash defines a little
+Date: Fri, 14 Mar 2014 16:00:31 +1100
+Message-Id: <1394773245-18328-7-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 References: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 Cc: cody@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
@@ -17,36 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Although we already block EBB events which request sampling using
-sample_period, technically it's possible for an event to set sample_type
-but not sample_period.
-
-Nothing terrible will happen if an EBB event does specify sample_type,
-but it signals a major confusion on the part of userspace, and so we do
-them the favor of rejecting it.
+Rather than using PERF_EVENT_CONFIG_EBB_SHIFT everywhere, add an
+EVENT_EBB_SHIFT like every other event and use that.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/perf/core-book3s.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/perf/power8-pmu.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 53ac1b2..1e095fd 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -503,8 +503,11 @@ static int ebb_event_check(struct perf_event *event)
- 		if (!leader->attr.pinned || !leader->attr.exclusive)
- 			return -EINVAL;
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index 64f04cf..1d7c442 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -119,6 +119,7 @@
+  */
  
--		if (event->attr.inherit || event->attr.sample_period ||
--		    event->attr.enable_on_exec || event->attr.freq)
-+		if (event->attr.freq ||
-+		    event->attr.inherit ||
-+		    event->attr.sample_type ||
-+		    event->attr.sample_period ||
-+		    event->attr.enable_on_exec)
- 			return -EINVAL;
- 	}
+ #define EVENT_EBB_MASK		1ull
++#define EVENT_EBB_SHIFT		PERF_EVENT_CONFIG_EBB_SHIFT
+ #define EVENT_THR_CMP_SHIFT	40	/* Threshold CMP value */
+ #define EVENT_THR_CMP_MASK	0x3ff
+ #define EVENT_THR_CTL_SHIFT	32	/* Threshold control value (start/stop) */
+@@ -151,7 +152,7 @@
+ 	 (EVENT_UNIT_MASK      << EVENT_UNIT_SHIFT)		|	\
+ 	 (EVENT_COMBINE_MASK   << EVENT_COMBINE_SHIFT)		|	\
+ 	 (EVENT_MARKED_MASK    << EVENT_MARKED_SHIFT)		|	\
+-	 (EVENT_EBB_MASK       << PERF_EVENT_CONFIG_EBB_SHIFT)	|	\
++	 (EVENT_EBB_MASK       << EVENT_EBB_SHIFT)		|	\
+ 	  EVENT_PSEL_MASK)
  
+ /* MMCRA IFM bits - POWER8 */
+@@ -267,10 +268,10 @@ static int power8_get_constraint(u64 event, unsigned long *maskp, unsigned long
+ 	pmc   = (event >> EVENT_PMC_SHIFT)        & EVENT_PMC_MASK;
+ 	unit  = (event >> EVENT_UNIT_SHIFT)       & EVENT_UNIT_MASK;
+ 	cache = (event >> EVENT_CACHE_SEL_SHIFT)  & EVENT_CACHE_SEL_MASK;
+-	ebb   = (event >> PERF_EVENT_CONFIG_EBB_SHIFT) & EVENT_EBB_MASK;
++	ebb   = (event >> EVENT_EBB_SHIFT)        & EVENT_EBB_MASK;
+ 
+ 	/* Clear the EBB bit in the event, so event checks work below */
+-	event &= ~(EVENT_EBB_MASK << PERF_EVENT_CONFIG_EBB_SHIFT);
++	event &= ~(EVENT_EBB_MASK << EVENT_EBB_SHIFT);
+ 
+ 	if (pmc) {
+ 		if (pmc > 6)
 -- 
 1.8.3.2
