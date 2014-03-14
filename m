@@ -3,13 +3,13 @@ Received: from na01-bl2-obe.outbound.protection.outlook.com
  (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AA02B2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:15 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B23F42C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 11:01:16 +1100 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 02/10] powerpc/book3e: store crit/mc/dbg exception thread info
-Date: Thu, 13 Mar 2014 19:00:41 -0500
-Message-ID: <1394755249-8856-3-git-send-email-scottwood@freescale.com>
+Subject: [PATCH 03/10] powerpc/booke64: Fix exception numbers
+Date: Thu, 13 Mar 2014 19:00:42 -0500
+Message-ID: <1394755249-8856-4-git-send-email-scottwood@freescale.com>
 In-Reply-To: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 References: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
@@ -25,66 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tiejun Chen <tiejun.chen@windriver.com>
+altivec_unavailable was commented as 0xf20 but the code uses 0x200.
+Note that 0xf20 is also used by ap_unavailable.
 
-We need to store thread info to these exception thread info like something
-we already did for PPC32.
+altivec_assist was commented as 0x1700 but the code uses 0x220.
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+critical_input was commented as 0x580 but the code uses 0x100.
+
+machine_check was commented and implemented as 0x200, which conflicts
+with altivec_assist (it only builds because MC_EXCEPTION_PROLOG is
+commented out).  Changed to the fixed IVOR value of 0x000.
+
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S | 22 +++++++++++++++++++---
- 1 file changed, 19 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 063b65d..6772512 100644
+index 6772512..41380a4 100644
 --- a/arch/powerpc/kernel/exceptions-64e.S
 +++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -36,6 +36,19 @@
-  */
- #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
+@@ -299,8 +299,8 @@ exception_marker:
+ 	.balign	0x1000
+ 	.globl interrupt_base_book3e
+ interrupt_base_book3e:					/* fake trap */
+-	EXCEPTION_STUB(0x000, machine_check)		/* 0x0200 */
+-	EXCEPTION_STUB(0x020, critical_input)		/* 0x0580 */
++	EXCEPTION_STUB(0x000, machine_check)
++	EXCEPTION_STUB(0x020, critical_input)		/* 0x0100 */
+ 	EXCEPTION_STUB(0x040, debug_crit)		/* 0x0d00 */
+ 	EXCEPTION_STUB(0x060, data_storage)		/* 0x0300 */
+ 	EXCEPTION_STUB(0x080, instruction_storage)	/* 0x0400 */
+@@ -315,8 +315,8 @@ interrupt_base_book3e:					/* fake trap */
+ 	EXCEPTION_STUB(0x1a0, watchdog)			/* 0x09f0 */
+ 	EXCEPTION_STUB(0x1c0, data_tlb_miss)
+ 	EXCEPTION_STUB(0x1e0, instruction_tlb_miss)
+-	EXCEPTION_STUB(0x200, altivec_unavailable)	/* 0x0f20 */
+-	EXCEPTION_STUB(0x220, altivec_assist)		/* 0x1700 */
++	EXCEPTION_STUB(0x200, altivec_unavailable)
++	EXCEPTION_STUB(0x220, altivec_assist)
+ 	EXCEPTION_STUB(0x260, perfmon)
+ 	EXCEPTION_STUB(0x280, doorbell)
+ 	EXCEPTION_STUB(0x2a0, doorbell_crit)
+@@ -343,9 +343,9 @@ interrupt_end_book3e:
  
-+/* Now we only store something to exception thread info */
-+#define	EXC_LEVEL_EXCEPTION_PROLOG(type)				\
-+	ld	r14,PACAKSAVE(r13);					\
-+	CURRENT_THREAD_INFO(r14, r14);					\
-+	CURRENT_THREAD_INFO(r15, r1);					\
-+	ld	r10,TI_FLAGS(r14);		     			\
-+	std	r10,TI_FLAGS(r15);			     		\
-+	ld	r10,TI_PREEMPT(r14);		     			\
-+	std	r10,TI_PREEMPT(r15);		     			\
-+	ld	r10,TI_TASK(r14);			     		\
-+	std	r10,TI_TASK(r15);
-+
-+
- /* Exception prolog code for all exceptions */
- #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
- 	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
-@@ -69,19 +82,22 @@
- 
- #define CRIT_SET_KSTACK						            \
- 	ld	r1,PACA_CRIT_STACK(r13);				    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
-+	EXC_LEVEL_EXCEPTION_PROLOG(CRIT);
- #define SPRN_CRIT_SRR0	SPRN_CSRR0
- #define SPRN_CRIT_SRR1	SPRN_CSRR1
- 
- #define DBG_SET_KSTACK						            \
- 	ld	r1,PACA_DBG_STACK(r13);					    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
-+	EXC_LEVEL_EXCEPTION_PROLOG(DBG);
- #define SPRN_DBG_SRR0	SPRN_DSRR0
- #define SPRN_DBG_SRR1	SPRN_DSRR1
- 
- #define MC_SET_KSTACK						            \
- 	ld	r1,PACA_MC_STACK(r13);					    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;				    \
-+	EXC_LEVEL_EXCEPTION_PROLOG(MC);
- #define SPRN_MC_SRR0	SPRN_MCSRR0
- #define SPRN_MC_SRR1	SPRN_MCSRR1
- 
+ /* Machine Check Interrupt */
+ 	START_EXCEPTION(machine_check);
+-	MC_EXCEPTION_PROLOG(0x200, BOOKE_INTERRUPT_MACHINE_CHECK,
++	MC_EXCEPTION_PROLOG(0x000, BOOKE_INTERRUPT_MACHINE_CHECK,
+ 			    PROLOG_ADDITION_NONE)
+-//	EXCEPTION_COMMON(0x200, PACA_EXMC, INTS_DISABLE)
++//	EXCEPTION_COMMON(0x000, PACA_EXMC, INTS_DISABLE)
+ //	bl	special_reg_save_mc
+ //	addi	r3,r1,STACK_FRAME_OVERHEAD
+ //	CHECK_NAPPING();
 -- 
 1.8.3.2
