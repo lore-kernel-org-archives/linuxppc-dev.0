@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 04/20] powerpc/perf: Add lost exception workaround
-Date: Fri, 14 Mar 2014 16:00:29 +1100
-Message-Id: <1394773245-18328-5-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 05/20] powerpc/perf: Reject EBB events which specify a
+ sample_type
+Date: Fri, 14 Mar 2014 16:00:30 +1100
+Message-Id: <1394773245-18328-6-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 References: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
 Cc: cody@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
@@ -16,195 +17,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some power8 revisions have a hardware bug where we can lose a PMU
-exception, this commit adds a workaround to detect the bad condition and
-rectify the situation.
+Although we already block EBB events which request sampling using
+sample_period, technically it's possible for an event to set sample_type
+but not sample_period.
 
-See the comment in the commit for a full description.
+Nothing terrible will happen if an EBB event does specify sample_type,
+but it signals a major confusion on the part of userspace, and so we do
+them the favor of rejecting it.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/reg.h  |   2 +
- arch/powerpc/perf/core-book3s.c | 100 +++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/perf/power8-pmu.c  |   5 ++
- 3 files changed, 105 insertions(+), 2 deletions(-)
+ arch/powerpc/perf/core-book3s.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 90c06ec..3003472 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -670,6 +670,7 @@
- #define   MMCR0_PMC1CE	0x00008000UL /* PMC1 count enable*/
- #define   MMCR0_PMCjCE	0x00004000UL /* PMCj count enable*/
- #define   MMCR0_TRIGGER	0x00002000UL /* TRIGGER enable */
-+#define   MMCR0_PMAO_SYNC 0x00000800UL /* PMU interrupt is synchronous */
- #define   MMCR0_PMAO	0x00000080UL /* performance monitor alert has occurred, set to 0 after handling exception */
- #define   MMCR0_SHRFC	0x00000040UL /* SHRre freeze conditions between threads */
- #define   MMCR0_FC56	0x00000010UL /* freeze counters 5 and 6 */
-@@ -703,6 +704,7 @@
- #define SPRN_EBBHR	804	/* Event based branch handler register */
- #define SPRN_EBBRR	805	/* Event based branch return register */
- #define SPRN_BESCR	806	/* Branch event status and control register */
-+#define   BESCR_GE	0x8000000000000000ULL /* Global Enable */
- #define SPRN_WORT	895	/* Workload optimization register - thread */
- 
- #define SPRN_PMC1	787
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 704d1c5..53ac1b2 100644
+index 53ac1b2..1e095fd 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -120,6 +120,7 @@ static inline void power_pmu_bhrb_enable(struct perf_event *event) {}
- static inline void power_pmu_bhrb_disable(struct perf_event *event) {}
- void power_pmu_flush_branch_stack(void) {}
- static inline void power_pmu_bhrb_read(struct cpu_hw_events *cpuhw) {}
-+static void pmao_restore_workaround(bool ebb) { }
- #endif /* CONFIG_PPC32 */
+@@ -503,8 +503,11 @@ static int ebb_event_check(struct perf_event *event)
+ 		if (!leader->attr.pinned || !leader->attr.exclusive)
+ 			return -EINVAL;
  
- static bool regs_use_siar(struct pt_regs *regs)
-@@ -545,10 +546,18 @@ static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
- 	/* Enable EBB and read/write to all 6 PMCs for userspace */
- 	mmcr0 |= MMCR0_EBE | MMCR0_PMCC_U6;
+-		if (event->attr.inherit || event->attr.sample_period ||
+-		    event->attr.enable_on_exec || event->attr.freq)
++		if (event->attr.freq ||
++		    event->attr.inherit ||
++		    event->attr.sample_type ||
++		    event->attr.sample_period ||
++		    event->attr.enable_on_exec)
+ 			return -EINVAL;
+ 	}
  
--	/* Add any bits from the user reg, FC or PMAO */
-+	/*
-+	 * Add any bits from the user MMCR0, FC or PMAO. This is compatible
-+	 * with pmao_restore_workaround() because we may add PMAO but we never
-+	 * clear it here.
-+	 */
- 	mmcr0 |= current->thread.mmcr0;
- 
--	/* Be careful not to set PMXE if userspace had it cleared */
-+	/*
-+	 * Be careful not to set PMXE if userspace had it cleared. This is also
-+	 * compatible with pmao_restore_workaround() because it has already
-+	 * cleared PMXE and we leave PMAO alone.
-+	 */
- 	if (!(current->thread.mmcr0 & MMCR0_PMXE))
- 		mmcr0 &= ~MMCR0_PMXE;
- 
-@@ -559,6 +568,91 @@ static unsigned long ebb_switch_in(bool ebb, unsigned long mmcr0)
- out:
- 	return mmcr0;
- }
-+
-+static void pmao_restore_workaround(bool ebb)
-+{
-+	unsigned pmcs[6];
-+
-+	if (!cpu_has_feature(CPU_FTR_PMAO_BUG))
-+		return;
-+
-+	/*
-+	 * On POWER8E there is a hardware defect which affects the PMU context
-+	 * switch logic, ie. power_pmu_disable/enable().
-+	 *
-+	 * When a counter overflows PMXE is cleared and FC/PMAO is set in MMCR0
-+	 * by the hardware. Sometime later the actual PMU exception is
-+	 * delivered.
-+	 *
-+	 * If we context switch, or simply disable/enable, the PMU prior to the
-+	 * exception arriving, the exception will be lost when we clear PMAO.
-+	 *
-+	 * When we reenable the PMU, we will write the saved MMCR0 with PMAO
-+	 * set, and this _should_ generate an exception. However because of the
-+	 * defect no exception is generated when we write PMAO, and we get
-+	 * stuck with no counters counting but no exception delivered.
-+	 *
-+	 * The workaround is to detect this case and tweak the hardware to
-+	 * create another pending PMU exception.
-+	 *
-+	 * We do that by setting up PMC6 (cycles) for an imminent overflow and
-+	 * enabling the PMU. That causes a new exception to be generated in the
-+	 * chip, but we don't take it yet because we have interrupts hard
-+	 * disabled. We then write back the PMU state as we want it to be seen
-+	 * by the exception handler. When we reenable interrupts the exception
-+	 * handler will be called and see the correct state.
-+	 *
-+	 * The logic is the same for EBB, except that the exception is gated by
-+	 * us having interrupts hard disabled as well as the fact that we are
-+	 * not in userspace. The exception is finally delivered when we return
-+	 * to userspace.
-+	 */
-+
-+	/* Only if PMAO is set and PMAO_SYNC is clear */
-+	if ((current->thread.mmcr0 & (MMCR0_PMAO | MMCR0_PMAO_SYNC)) != MMCR0_PMAO)
-+		return;
-+
-+	/* If we're doing EBB, only if BESCR[GE] is set */
-+	if (ebb && !(current->thread.bescr & BESCR_GE))
-+		return;
-+
-+	/*
-+	 * We are already soft-disabled in power_pmu_enable(). We need to hard
-+	 * enable to actually prevent the PMU exception from firing.
-+	 */
-+	hard_irq_disable();
-+
-+	/*
-+	 * This is a bit gross, but we know we're on POWER8E and have 6 PMCs.
-+	 * Using read/write_pmc() in a for loop adds 12 function calls and
-+	 * almost doubles our code size.
-+	 */
-+	pmcs[0] = mfspr(SPRN_PMC1);
-+	pmcs[1] = mfspr(SPRN_PMC2);
-+	pmcs[2] = mfspr(SPRN_PMC3);
-+	pmcs[3] = mfspr(SPRN_PMC4);
-+	pmcs[4] = mfspr(SPRN_PMC5);
-+	pmcs[5] = mfspr(SPRN_PMC6);
-+
-+	/* Ensure all freeze bits are unset */
-+	mtspr(SPRN_MMCR2, 0);
-+
-+	/* Set up PMC6 to overflow in one cycle */
-+	mtspr(SPRN_PMC6, 0x7FFFFFFE);
-+
-+	/* Enable exceptions and unfreeze PMC6 */
-+	mtspr(SPRN_MMCR0, MMCR0_PMXE | MMCR0_PMCjCE | MMCR0_PMAO);
-+
-+	/* Now we need to refreeze and restore the PMCs */
-+	mtspr(SPRN_MMCR0, MMCR0_FC | MMCR0_PMAO);
-+
-+	mtspr(SPRN_PMC1, pmcs[0]);
-+	mtspr(SPRN_PMC2, pmcs[1]);
-+	mtspr(SPRN_PMC3, pmcs[2]);
-+	mtspr(SPRN_PMC4, pmcs[3]);
-+	mtspr(SPRN_PMC5, pmcs[4]);
-+	mtspr(SPRN_PMC6, pmcs[5]);
-+}
- #endif /* CONFIG_PPC64 */
- 
- static void perf_event_interrupt(struct pt_regs *regs);
-@@ -1191,6 +1285,8 @@ static void power_pmu_enable(struct pmu *pmu)
- 	cpuhw->mmcr[0] |= MMCR0_PMXE | MMCR0_FCECE;
- 
-  out_enable:
-+	pmao_restore_workaround(ebb);
-+
- 	mmcr0 = ebb_switch_in(ebb, cpuhw->mmcr[0]);
- 
- 	mb();
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index 96cee20..64f04cf 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -10,6 +10,8 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
-+#define pr_fmt(fmt)	"power8-pmu: " fmt
-+
- #include <linux/kernel.h>
- #include <linux/perf_event.h>
- #include <asm/firmware.h>
-@@ -774,6 +776,9 @@ static int __init init_power8_pmu(void)
- 	/* Tell userspace that EBB is supported */
- 	cur_cpu_spec->cpu_user_features2 |= PPC_FEATURE2_EBB;
- 
-+	if (cpu_has_feature(CPU_FTR_PMAO_BUG))
-+		pr_info("PMAO restore workaround active.\n");
-+
- 	return 0;
- }
- early_initcall(init_power8_pmu);
 -- 
 1.8.3.2
