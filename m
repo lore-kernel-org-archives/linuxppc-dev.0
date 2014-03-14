@@ -1,22 +1,30 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id 5C2972C0105
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 20:50:37 +1100 (EST)
-Message-ID: <1394790629.28803.248.camel@smile.fi.intel.com>
-Subject: Re: [PATCH RFC v9 3/6] dma: mpc512x: replace devm_request_irq()
- with request_irq()
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Alexander Popov <a13xp0p0v88@gmail.com>
-Date: Fri, 14 Mar 2014 11:50:29 +0200
-In-Reply-To: <1394624875-24411-4-git-send-email-a13xp0p0v88@gmail.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+ [212.227.126.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 07B8A2C00D5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2014 21:43:21 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH RFC v9 5/6] dma: mpc512x: add device tree binding document
+Date: Fri, 14 Mar 2014 11:43:01 +0100
 References: <1394624875-24411-1-git-send-email-a13xp0p0v88@gmail.com>
- <1394624875-24411-4-git-send-email-a13xp0p0v88@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
- dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+ <1394624875-24411-6-git-send-email-a13xp0p0v88@gmail.com>
+ <20140313180916.GF25870@e106331-lin.cambridge.arm.com>
+In-Reply-To: <20140313180916.GF25870@e106331-lin.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201403141143.01288.arnd@arndb.de>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>, Vinod Koul <vinod.koul@intel.com>,
+ Gerhard Sittig <gsi@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Alexander Popov <a13xp0p0v88@gmail.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +34,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-12 at 15:47 +0400, Alexander Popov wrote:
-> Replace devm_request_irq() with request_irq() since there is no need
-> to use it because the original code always frees IRQ manually with
-> devm_free_irq(). Replace devm_free_irq() with free_irq() accordingly.
+On Thursday 13 March 2014, Mark Rutland wrote:
+> > +
+> > +Example:
+> > +
+> > +     dma0: dma@14000 {
+> > +             compatible = "fsl,mpc5121-dma";
+> > +             reg = <0x14000 0x1800>;
+> > +             interrupts = <65 0x8>;
+> > +             #dma-cells = <1>;
+> > +     };
+> > +
+> > +
+> > +Client node properties:
+> > +
+> > +Required properties:
+> > +- dmas:                      list of DMA specifiers, consisting each of a handle
+> > +                     for the DMA controller and integer cells to specify
+> > +                     the channel used within the DMA controller
+> > +- dma-names:         list of identifier strings for the DMA specifiers,
+> > +                     client device driver code uses these strings to
+> > +                     have DMA channels looked up at the controller
 > 
-> Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
-> ---
->  drivers/dma/mpc512x_dma.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-> index b1e430c..ff7f678 100644
-> --- a/drivers/dma/mpc512x_dma.c
-> +++ b/drivers/dma/mpc512x_dma.c
-> @@ -921,16 +921,15 @@ static int mpc_dma_probe(struct platform_device *op)
->  	mdma->tcd = (struct mpc_dma_tcd *)((u8 *)(mdma->regs)
->  							+ MPC_DMA_TCD_OFFSET);
->  
-> -	retval = devm_request_irq(dev, mdma->irq, &mpc_dma_irq, 0, DRV_NAME,
-> -									mdma);
-> +	retval = request_irq(mdma->irq, &mpc_dma_irq, 0, DRV_NAME, mdma);
->  	if (retval) {
->  		dev_err(dev, "Error requesting IRQ!\n");
->  		return -EINVAL;
->  	}
->  
->  	if (mdma->is_mpc8308) {
-> -		retval = devm_request_irq(dev, mdma->irq2, &mpc_dma_irq, 0,
-> -				DRV_NAME, mdma);
-> +		retval = request_irq(mdma->irq2, &mpc_dma_irq, 0,
-> +							DRV_NAME, mdma);
->  		if (retval) {
->  			dev_err(dev, "Error requesting IRQ2!\n");
+> List the exact names you expect, or the dma-names property is useless.
 
-+ free_irq(IRQ1) here and may be in other places.
+Listing specific names makes no sense in the binding for the provider,
+they should be part of the slave device binding. A reference to the
+generic bindings/dma/dma.txt file should be enough here.
 
->  			return -EINVAL;
-> @@ -1020,7 +1019,7 @@ static int mpc_dma_probe(struct platform_device *op)
->  	dev_set_drvdata(dev, mdma);
->  	retval = dma_async_device_register(dma);
->  	if (retval) {
-> -		devm_free_irq(dev, mdma->irq, mdma);
-> +		free_irq(mdma->irq, mdma);
->  		irq_dispose_mapping(mdma->irq);
->  	}
->  
-> @@ -1033,7 +1032,7 @@ static int mpc_dma_remove(struct platform_device *op)
->  	struct mpc_dma *mdma = dev_get_drvdata(dev);
->  
->  	dma_async_device_unregister(&mdma->dma);
-> -	devm_free_irq(dev, mdma->irq, mdma);
-> +	free_irq(mdma->irq, mdma);
->  	irq_dispose_mapping(mdma->irq);
->  
->  	return 0;
-
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+	Arnd
