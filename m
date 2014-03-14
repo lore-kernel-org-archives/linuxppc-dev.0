@@ -1,22 +1,10 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 673072C00CF
- for <linuxppc-dev@ozlabs.org>; Fri, 14 Mar 2014 11:27:05 +1100 (EST)
-Message-ID: <1394755900.12479.26.camel@snotra.buserror.net>
-Subject: Re: how do I increase default kernel stack size for my MPC8548 board?
-From: Scott Wood <scottwood@freescale.com>
-To: perth1415 <saikia.partha@gmail.com>
-Date: Thu, 13 Mar 2014 19:11:40 -0500
-In-Reply-To: <1394547564081-80712.post@n7.nabble.com>
-References: <r2u389deec71004291743ra5fe0d49yaf317b5c5aaea6b7@mail.gmail.com>
- <1394541351657-80711.post@n7.nabble.com>
- <1394547564081-80712.post@n7.nabble.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: powerpc/perf: patches for 3.15
+Date: Fri, 14 Mar 2014 16:00:25 +1100
+Message-Id: <1394773245-18328-1-git-send-email-mpe@ellerman.id.au>
+Cc: cody@linux.vnet.ibm.com, khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +14,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-11 at 07:19 -0700, perth1415 wrote:
-> Looks like I found the issue :-) The stack size for init task needs to be
-> updated too. Right now it's by default set to 8K for PPC32.
-> 
-> In arch/powerpc/kernel/vmlinux.lds.S -
-> ===
->     /* The initial task and kernel stack */
-> #ifdef CONFIG_PPC32
->     . = ALIGN(8192);
-> #else
->     . = ALIGN(16384);
-> #endif
-> ===
-> 
-> Problem is, how do we link this to THREAD_SHIFT?
+Hi folks,
 
-Have you tried:
+This is the series of patches I have in my git tree to send to Ben.
 
-	. = ALIGN(THREAD_SIZE)
+https://github.com/mpe/powerpc-merge
 
-?
+These have all been to the list previously as-is, except for some of Cody's
+which I've modified slightly to avoid depending on other peoples' trees.
 
-Or just use a newer kernel, where this is already done. :-)
+The patch to fs/sysfs/group.c has already been merged by Greg, but we want to
+carry it too so the code works prior to merging with his tree.
 
--Scott
+cheers
+
+ Documentation/ABI/testing/sysfs-bus-event_source-devices-events  | 517 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 |  23 ++++
+ Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_gpci |  43 +++++++
+ arch/powerpc/include/asm/cputable.h                              |   6 +-
+ arch/powerpc/include/asm/hvcall.h                                |   5 +
+ arch/powerpc/include/asm/perf_event_server.h                     |   1 +
+ arch/powerpc/include/asm/reg.h                                   |   3 +
+ arch/powerpc/kernel/cputable.c                                   |   2 +-
+ arch/powerpc/perf/Makefile                                       |   2 +
+ arch/powerpc/perf/core-book3s.c                                  | 172 ++++++++++++++++++++++++--
+ arch/powerpc/perf/hv-24x7-catalog.h                              |  33 +++++
+ arch/powerpc/perf/hv-24x7.c                                      | 510 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/hv-24x7.h                                      | 109 +++++++++++++++++
+ arch/powerpc/perf/hv-common.c                                    |  39 ++++++
+ arch/powerpc/perf/hv-common.h                                    |  36 ++++++
+ arch/powerpc/perf/hv-gpci.c                                      | 294 ++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/perf/hv-gpci.h                                      |  73 +++++++++++
+ arch/powerpc/perf/power7-events-list.h                           |  10 ++
+ arch/powerpc/perf/power8-pmu.c                                   |  78 +++++++++---
+ arch/powerpc/platforms/pseries/Kconfig                           |  12 ++
+ fs/sysfs/group.c                                                 |   7 +-
+ 21 files changed, 1941 insertions(+), 34 deletions(-)
