@@ -1,24 +1,15 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 044CA2C00B7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Mar 2014 19:07:37 +1100 (EST)
-Message-ID: <1394957243.12479.155.camel@snotra.buserror.net>
-Subject: Re: [PATCH 10/10] Revert "powerpc/watchdog: Don't enable interrupt
- on PPC64 BookE"
-From: Scott Wood <scottwood@freescale.com>
-To: Wim Van Sebroeck <wim@iguana.be>
-Date: Sun, 16 Mar 2014 03:07:23 -0500
-In-Reply-To: <20140315195137.GA14681@spo001.leaseweb.com>
-References: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
- <1394755249-8856-11-git-send-email-scottwood@freescale.com>
- <20140315195137.GA14681@spo001.leaseweb.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <paulus@ozlabs.org>
+Date: Sun, 16 Mar 2014 22:00:40 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: kvmppc_wait_for_nap warnings and KVM host+guest hang on 3.14-rc6*
+Message-ID: <20140316110040.GA20179@iris.ozlabs.ibm.com>
+References: <20140316154400.406537e1@kryten>
 MIME-Version: 1.0
-Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, Tiejun Chen <tiejun.chen@windriver.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140316154400.406537e1@kryten>
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org, agraf@suse.de,
+ aneesh.kumar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-03-15 at 20:51 +0100, Wim Van Sebroeck wrote:
-> Hi Scott,
+On Sun, Mar 16, 2014 at 03:44:00PM +1100, Anton Blanchard wrote:
 > 
-> > This reverts commit 3978bdb4ed653342b0be66c031bf61b72cc55d60, now that
-> > critical interrupts are properly supported on ppc64 booke.
-> > 
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-> > Cc: Wim Van Sebroeck <wim@iguana.be>
-> > ---
-> >  drivers/watchdog/booke_wdt.c | 8 --------
-> >  1 file changed, 8 deletions(-)
-> > 
-> > diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-> > index f1b8d55..a8dbceb3 100644
-> > --- a/drivers/watchdog/booke_wdt.c
-> > +++ b/drivers/watchdog/booke_wdt.c
-> > @@ -138,14 +138,6 @@ static void __booke_wdt_enable(void *data)
-> >  	val &= ~WDTP_MASK;
-> >  	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
-> >  
-> > -#ifdef CONFIG_PPC_BOOK3E_64
-> > -	/*
-> > -	 * Crit ints are currently broken on PPC64 Book-E, so
-> > -	 * just disable them for now.
-> > -	 */
-> > -	val &= ~TCR_WIE;
-> > -#endif
-> > -
-> >  	mtspr(SPRN_TCR, val);
-> >  }
-> >  
+> I was testing KVM on an upstream kernel (3.14.0-rc6-00145-ga4ecdf8)
+> with Gregory's emulated MMIO fixes.
 > 
-> Patch has been added to linux-watchdog-next.
+> I ran with 16 cores and 4 threads (matches the host):
+> 
+> qemu-system-ppc64 -enable-kvm -smp cores=16,threads=4 -m 32G -M pseries -cpu POWER7 -nographic -nodefaults -monitor stdio -serial pty -drive file=XXX -netdev bridge,br=br0,id=net0,helper=/usr/libexec/qemu-bridge-helper -device virtio-net-pci,netdev=net0
+> 
+> Note that in kernel XICS acceleration wasn't enabled (perhaps it should
+> be the default, it isn't right now):
+> 
+> qemu-system-ppc64: KVM and IRQ_XICS capability must be present for in-kernel XICS
+> 
+> During boot I see processors stuck in the guest:
+> 
+> [   16.145166] Processor 1 is stuck.
+> 
+> And thousands of:
+> 
+> kvmppc_wait_for_nap timeout 0 1
+> kvmppc_wait_for_nap timeout 0 1
+> kvmppc_wait_for_nap timeout 0 1
+> kvmppc_wait_for_nap timeout 0 1
 
-Please unapply it.  It is patch 10/10 and depends on the previous parts
-of the patchset to make critical interrupts work properly.
+You need the couple of patches I posted recently, which Paolo Bonzini
+is hopefully going to get to Linus before 3.14 is released, and which
+are in the "next" branch of the kvm tree:
 
--Scott
+KVM: PPC: Book3S HV: Remove bogus duplicate code
+KVM: PPC: Book3S HV: Fix register usage when loading/saving VRSAVE
+
+as well as the series that you have in your "le" branch and Alex has
+in his "kvm-ppc-queue" branch:
+
+PPC: KVM: introduce helper to check RESUME_GUEST and related
+PPC: KVM: fix VCPU run for HV KVM (v2)
+PPC: KVM: fix RESUME_GUEST check before ending CEDE in kvmppc_run_core()
+PPC: KVM: fix RESUME_GUEST check before returning from kvmppc_run_core()
+
+Paul.
