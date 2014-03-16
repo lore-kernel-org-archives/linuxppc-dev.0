@@ -1,13 +1,30 @@
-Return-Path: <anton@samba.org>
-Date: Sun, 16 Mar 2014 15:44:00 +1100
-From: Anton Blanchard <anton@samba.org>
-To: paulus@samba.org, benh@kernel.crashing.org, mikey@neuling.org,
- agraf@suse.de, aneesh.kumar@linux.vnet.ibm.com
-Subject: kvmppc_wait_for_nap warnings and KVM host+guest hang on 3.14-rc6*
-Message-ID: <20140316154400.406537e1@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C0F112C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Mar 2014 15:58:13 +1100 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id kq14so4344228pab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Mar 2014 21:58:10 -0700 (PDT)
+Date: Sun, 16 Mar 2014 12:58:01 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Message-ID: <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
+References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
+ <1394586624.13761.132.camel@snotra.buserror.net>
+ <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
+ <1394646185.13761.145.camel@snotra.buserror.net>
+ <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
+ <1394835987.12479.119.camel@snotra.buserror.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
+In-Reply-To: <1394835987.12479.119.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,87 +35,179 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Hi,
+--FL5UXtIhxfXey3p5
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I was testing KVM on an upstream kernel (3.14.0-rc6-00145-ga4ecdf8)
-with Gregory's emulated MMIO fixes.
+On Fri, Mar 14, 2014 at 05:26:27PM -0500, Scott Wood wrote:
+> On Thu, 2014-03-13 at 15:46 +0800, Kevin Hao wrote:
+> > On Wed, Mar 12, 2014 at 12:43:05PM -0500, Scott Wood wrote:
+> > > > Shouldn't we use "readback, sync" here? The following is quoted for=
+m t4240RM:
+> > > >   To guarantee that the results of any sequence of writes to config=
+uration
+> > > >   registers are in effect, the final configuration register write s=
+hould be
+> > > >   immediately followed by a read of the same register, and that sho=
+uld be
+> > > >   followed by a SYNC instruction. Then accesses can safely be made =
+to memory
+> > > >   regions affected by the configuration register write.
+> > >=20
+> > > I agree that the sync before the readback is probably not necessary,
+> > > since transactions to the same address should already be ordered.
+> > >=20
+> > > A sync after the readback helps if you're trying to order the readback
+> > > with subsequent memory accesses, though in that case wouldn't a sync
+> > > alone (no readback) be adequate?
+> >=20
+> > No, we don't just want to order the subsequent memory access here.
+> > The 'write, readback, sync' is the required sequence if we want to make
+> > sure that the writing to CCSR register does really take effect.
+> >=20
+> > >  Though maybe not always -- see the
+> > > comment near the end of fsl_elbc_write_buf() in
+> > > drivers/mtd/nand_fsl_elbc.c.  I guess the readback does more than just
+> > > make sure the device has seen the write, ensuring that the device has
+> > > finished the transaction to the point of acting on another one.
+> >=20
+> > Agree.
+> >=20
+> > >=20
+> > > The data dependency plus isync sequence, which is done by the normal =
+I/O
+> > > accessors used from C code, orders the readback versus all future
+> > > instructions (not just I/O).  The delay loop is not I/O.
+> >=20
+> > According to the PowerISA, the sequence 'load, date dependency, isync' =
+only
+> > order the load accesses.=20
+>=20
+> The point is to order the delay loop after the load, not to order
+> storage versus storage.
 
-I ran with 16 cores and 4 threads (matches the host):
+I think the point is to make sure that the writing of the CCSR_DDR_SDRAM_CF=
+G_2
+does really take effect before we begin to delay loop. The sequence "write,
+readback, sync" will guarantee this according to the manual. If we just wan=
+t to
+order the delay loop after the load, the following sequence should be enoug=
+h:
+	store to CCSR_DDR_SDRAM_CFG_2
+	load from CCSR_DDR_SDRAM_CFG_2
+	isync or sync
+	delay loop
 
-qemu-system-ppc64 -enable-kvm -smp cores=16,threads=4 -m 32G -M pseries -cpu POWER7 -nographic -nodefaults -monitor stdio -serial pty -drive file=XXX -netdev bridge,br=br0,id=net0,helper=/usr/libexec/qemu-bridge-helper -device virtio-net-pci,netdev=net0
+Why do we need the 'date dependency' here? According to the e6500 manual, t=
+he
+instructions can execute out of order, but complete in order. So I am really
+wondering why we need to order the load and the following delay loop if the=
+re
+is no intention to order the storage access?=20
 
-Note that in kernel XICS acceleration wasn't enabled (perhaps it should
-be the default, it isn't right now):
+>=20
+> This is a sequence we're already using on all of our I/O loads
+> (excluding accesses like in this patch that don't use the standard
+> accessors).  I'm confident that it works even if it's not
+> architecturally guaranteed.
 
-qemu-system-ppc64: KVM and IRQ_XICS capability must be present for in-kernel XICS
+This sequence is used to order the load and the followed storage access.
+And this is guaranteed by the architecture. But I don't think it is suitable
+for a case like this. The following is quoted from PowerISA:
+  Because stores cannot be performed =E2=80=9Cout-of-order=E2=80=9D
+  (see Book III), if a Store instruction depends on the
+  value returned by a preceding Load instruction
+  (because the value returned by the Load is used to
+  compute either the effective address specified by the
+  Store or the value to be stored), the corresponding stor-
+  age accesses are performed in program order. The
+  same applies if whether the Store instruction is exe-
+  cuted depends on a conditional Branch instruction that
+  in turn depends on the value returned by a preceding
+  Load instruction.
+ =20
+  Because an isync instruction prevents the execution of
+  instructions following the isync until instructions pre-
+  ceding the isync have completed, if an isync follows a
+  conditional Branch instruction that depends on the
+  value returned by a preceding Load instruction, the
+  load on which the Branch depends is performed before
+  any loads caused by instructions following the isync.
 
-During boot I see processors stuck in the guest:
+I think the above description would guarantee that the load will be perform=
+ed
+before any storage access (both load and store) following the isync in the
+following scenario:
+	lwz	r4, 0(r3)
+	twi	0, r4, 0
+	isync
 
-[   16.145166] Processor 1 is stuck.
+>  I'm not sure that there exists a clear
+> architectural way of synchronizing non-storage instructions relative to
+> storage instructions.
 
-And thousands of:
+Isn't what the execution synchronization instructions such as sync, isync, =
+mtmsr
+do?
 
-kvmppc_wait_for_nap timeout 0 1
-kvmppc_wait_for_nap timeout 0 1
-kvmppc_wait_for_nap timeout 0 1
-kvmppc_wait_for_nap timeout 0 1
+>=20
+> Given that isync is documented as preventing any execution of
+> instructions after the isync until all previous instructions complete,
+> it doesn't seem to make sense for the architecture to explicitly talk
+> about loads (as opposed to any other instruction) following a load,
+> dependent conditional branch, isync sequence.
 
-And eventually:
+Sorry, I didn't get what you mean.
 
-INFO: rcu_sched self-detected stall on CPU { 52}  (t=10170 jiffies g=765 c=764 q=127)
-CPU: 52 PID: 11833 Comm: qemu-system-ppc Not tainted 3.14.0-rc6-00145-ga4ecdf8-dirty #10
-Call Trace:
-[c000000765caad20] [c000000000015f3c] .show_stack+0x7c/0x1f0 (unreliable)
-[c000000765caadf0] [c00000000082d83c] .dump_stack+0x88/0xb4
-[c000000765caae70] [c0000000000f7cf0] .rcu_check_callbacks+0x5b0/0x950
-[c000000765caafa0] [c00000000009c860] .update_process_times+0x50/0xa0
-[c000000765cab030] [c000000000103c40] .tick_sched_handle.isra.16+0x20/0xa0
-[c000000765cab0b0] [c000000000103d1c] .tick_sched_timer+0x5c/0xa0
-[c000000765cab150] [c0000000000ba0f8] .__run_hrtimer+0x98/0x260
-[c000000765cab1f0] [c0000000000baef8] .hrtimer_interrupt+0x138/0x320
-[c000000765cab300] [c00000000001e430] .timer_interrupt+0x100/0x2f0
-[c000000765cab3b0] [c00000000000a8d8] restore_check_irq_replay+0x40/0x5c
---- Exception: 901 at .__kvmppc_vcore_entry+0x140/0x1ac [kvm_hv]
-    LR = kvmppc_call_hv_entry+0x8/0xe8
-[c000000765cab6a0] [d000000006394f74] .__kvmppc_vcore_entry+0x140/0x1ac [kvm_hv] (unreliable)
-[c000000765cab870] [d000000006394148] .kvmppc_vcpu_run_hv+0x8b8/0x1520 [kvm_hv]
-[c000000765cab9f0] [d000000005e5c250] .kvmppc_vcpu_run+0x30/0x50 [kvm]
-[c000000765caba60] [d000000005e599f4] .kvm_arch_vcpu_ioctl_run+0x54/0x1b0 [kvm]INFO: rcu_sched detected stalls on CPUs/tasks: { 52} (detected by 60, t=10170 jiffies, g=765, c=764, q=127)
-Task dump for CPU 52:
-qemu-system-ppc R  running task     9184 11833  11817 0x00000084
-Call Trace:
-[c000000765cab2f0] [c000000765cab3b0] 0xc000000765cab3b0 (unreliable)
-[c000000765cab420] [c000000000d518e8] kexec_stack+0x18e8/0x10000
-[c000000765cabaf0] [d000000005e54588] .kvm_vcpu_ioctl+0x478/0x740 [kvm]
-[c000000765cabcb0] [c0000000001ffcd4] .do_vfs_ioctl+0x4a4/0x760
-[c000000765cabd90] [c0000000001fffe8] .SyS_ioctl+0x58/0xb0
-[c000000765cabe30] [c00000000000a158] syscall_exit+0x0/0x98
+>=20
+> > So if we want to order all the storage access as well
+> > as execution synchronization, we should choose sync here.
+>=20
+> Do we need execution synchronization or context synchronization?
 
-BUG: soft lockup - CPU#52 stuck for 97s! [qemu-system-ppc:11833]
-Modules linked in: tun xt_conntrack ipt_MASQUERADE iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_filter ip_tables x_tables bridge stp llc kvm_hv powernv_rng rng_core kvm binfmt_misc nfsd exportfs autofs4
-CPU: 52 PID: 11833 Comm: qemu-system-ppc Not tainted 3.14.0-rc6-00145-ga4ecdf8-dirty #10
-task: c00000078f7af860 ti: c000000765ca8000 task.ti: c000000765ca8000
-NIP: d000000006394f74 LR: c00000000007a1dc CTR: c00000000007a1a0
-REGS: c000000765cab420 TRAP: 0901   Not tainted  (3.14.0-rc6-00145-ga4ecdf8-dirty)
-MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 24002824  XER: 20000000
-CFAR: c00000000007a2b4 SOFTE: 1 
-GPR00: c00000000007a1dc c000000765cab6a0 c000000000d518e8 000000aae8fb0387 
-GPR04: fffffff3dbd12408 0000000000000000 0000000000000007 9000000000009032 
-GPR08: d000000006394f74 c00000078b880000 9000000000001032 c00000000007a1a0 
-GPR12: 0000000000000500 c000000001e0d000 
-NIP [d000000006394f74] .__kvmppc_vcore_entry+0x140/0x1ac [kvm_hv]
-LR [c00000000007a1dc] kvmppc_call_hv_entry+0x8/0xe8
-Call Trace:
-[c000000765cab6a0] [d000000006394f74] .__kvmppc_vcore_entry+0x140/0x1ac [kvm_hv] (unreliable)
-[c000000765cab870] [d000000006394148] .kvmppc_vcpu_run_hv+0x8b8/0x1520 [kvm_hv]
-[c000000765cab9f0] [d000000005e5c250] .kvmppc_vcpu_run+0x30/0x50 [kvm]
-[c000000765caba60] [d000000005e599f4] .kvm_arch_vcpu_ioctl_run+0x54/0x1b0 [kvm]
-[c000000765cabaf0] [d000000005e54588] .kvm_vcpu_ioctl+0x478/0x740 [kvm]
-[c000000765cabcb0] [c0000000001ffcd4] .do_vfs_ioctl+0x4a4/0x760
-[c000000765cabd90] [c0000000001fffe8] .SyS_ioctl+0x58/0xb0
-[c000000765cabe30] [c00000000000a158] syscall_exit+0x0/0x98
-Instruction dump:
-7d083a14 f90d03c0 60000000 60000000 60000000 60000000 60000000 60000000 
-60000000 60000000 60000000 48003af1 <e8410028> e9c100e0 e9e100e8 ea0100f0 
+There is no context-altering instruction here, so I think an execution
+synchronizing instruction should be enough here.
 
-Anton
+>=20
+> The t4240 RM section that talks about a readback and a sync is in the
+> context of subsequent memory operations ("Then accesses can safely be
+> made to memory regions affected..."), not arbitrary instructions.
+
+I assume that this sequence also guarantee that the writing does take effec=
+t.
+
+>  There
+> are also a couple other places in the RM where isync is recommended
+> instead (when setting LAWs or CCSRBAR), even though those also only
+> involve memory accesses.
+
+No idea why isync is used here.
+
+>=20
+> In any case, this is not performance critical and thus it's better to
+> oversynchronize than undersynchronize.
+
+On the contrary I think that sync is oversynchronize instead of
+undersynchronize. It not only provide the execution synchronizing but also
+order all the storage accesses. That is why I prefer the sync. :-)
+
+Thanks,
+Kevin
+
+--FL5UXtIhxfXey3p5
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJTJS9ZAAoJEJNY7TDerrFxHvEIAKxLedRdg2Ov+9i+rg+TrYn1
+mIov48dZzDN7ruLm+j8AN6jXlG9N5BkiiFWvEREjzjhTObl80/ziJoUYOIzuelp4
+x8iwJ04SEYNcP1Pm1uqA0PjIqcn5WgxVnrOeJeNgRe9+QT1GjDCRyCahk4BKZcSE
+9QVv8cY3pgMFkmsdDv8yd5HKLrznXPsyoleo81E41QimmdMzaUKzvFfi/iOxvlQL
+EbV7cNaV0q+tSoms/wMg2NFFSSWAZSPQqqGFISgJaNoxvx3IOnRdsnP3zPsmGdAo
+P4kCc/4VmmHJNuzVzZOnu3V5MAEM2EOhzu//KNVYeUbmsH3EF6kxHcbJghVKzUE=
+=s6BD
+-----END PGP SIGNATURE-----
+
+--FL5UXtIhxfXey3p5--
