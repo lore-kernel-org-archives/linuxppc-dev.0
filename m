@@ -1,25 +1,17 @@
-Return-Path: <wimvs@spo001.leaseweb.com>
-Received: from spo001.leaseweb.com (ns1.pc-advies.be [83.149.101.17])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 00EBA2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Mar 2014 06:56:27 +1100 (EST)
-Date: Sun, 16 Mar 2014 20:56:17 +0100
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 10/10] Revert "powerpc/watchdog: Don't enable interrupt on
- PPC64 BookE"
-Message-ID: <20140316195617.GA3643@spo001.leaseweb.com>
-References: <1394755249-8856-1-git-send-email-scottwood@freescale.com>
- <1394755249-8856-11-git-send-email-scottwood@freescale.com>
- <20140315195137.GA14681@spo001.leaseweb.com>
- <1394957243.12479.155.camel@snotra.buserror.net>
+Return-Path: <sfr@canb.auug.org.au>
+Date: Mon, 17 Mar 2014 19:59:55 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the powernv-cpuidle tree with the
+ powerpc tree
+Message-Id: <20140317195955.f7b50aa835d281caf5725610@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1394957243.12479.155.camel@snotra.buserror.net>
-Sender: <wimvs@spo001.leaseweb.com>
-Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, Tiejun Chen <tiejun.chen@windriver.com>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__17_Mar_2014_19_59_55_+1100_MJm+zueLLJeqRQCd"
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +21,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+--Signature=_Mon__17_Mar_2014_19_59_55_+1100_MJm+zueLLJeqRQCd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sat, 2014-03-15 at 20:51 +0100, Wim Van Sebroeck wrote:
-> > Hi Scott,
-> > 
-> > > This reverts commit 3978bdb4ed653342b0be66c031bf61b72cc55d60, now that
-> > > critical interrupts are properly supported on ppc64 booke.
-> > > 
-> > > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > > Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-> > > Cc: Wim Van Sebroeck <wim@iguana.be>
-> > > ---
-> > >  drivers/watchdog/booke_wdt.c | 8 --------
-> > >  1 file changed, 8 deletions(-)
-> > > 
-> > > diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-> > > index f1b8d55..a8dbceb3 100644
-> > > --- a/drivers/watchdog/booke_wdt.c
-> > > +++ b/drivers/watchdog/booke_wdt.c
-> > > @@ -138,14 +138,6 @@ static void __booke_wdt_enable(void *data)
-> > >  	val &= ~WDTP_MASK;
-> > >  	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
-> > >  
-> > > -#ifdef CONFIG_PPC_BOOK3E_64
-> > > -	/*
-> > > -	 * Crit ints are currently broken on PPC64 Book-E, so
-> > > -	 * just disable them for now.
-> > > -	 */
-> > > -	val &= ~TCR_WIE;
-> > > -#endif
-> > > -
-> > >  	mtspr(SPRN_TCR, val);
-> > >  }
-> > >  
-> > 
-> > Patch has been added to linux-watchdog-next.
-> 
-> Please unapply it.  It is patch 10/10 and depends on the previous parts
-> of the patchset to make critical interrupts work properly.
+Hi all,
 
-Unapplied.
+Today's linux-next merge of the powernv-cpuidle tree got a conflict in
+arch/powerpc/include/asm/opal.h between commit c7e64b9ce04a
+("powerpc/powernv Platform dump interface") from the powerpc tree and
+commit 97eb001f0349 ("powerpc/powernv: Add OPAL call to resync timebase
+on wakeup") from the powernv-cpuidle tree.
 
-Kind regards,
-Wim.
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/include/asm/opal.h
+index 2636acfcd340,c71c72e47d47..000000000000
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@@ -159,15 -154,10 +159,16 @@@ extern int opal_enter_rtas(struct rtas_
+  #define OPAL_FLASH_VALIDATE			76
+  #define OPAL_FLASH_MANAGE			77
+  #define OPAL_FLASH_UPDATE			78
++ #define OPAL_RESYNC_TIMEBASE			79
+ +#define OPAL_DUMP_INIT				81
+ +#define OPAL_DUMP_INFO				82
+ +#define OPAL_DUMP_READ				83
+ +#define OPAL_DUMP_ACK				84
+  #define OPAL_GET_MSG				85
+  #define OPAL_CHECK_ASYNC_COMPLETION		86
+ +#define OPAL_DUMP_RESEND			91
+  #define OPAL_SYNC_HOST_REBOOT			87
+ +#define OPAL_DUMP_INFO2				94
+ =20
+  #ifndef __ASSEMBLY__
+ =20
+@@@ -888,13 -862,11 +889,14 @@@ extern void opal_get_rtc_time(struct rt
+  extern unsigned long opal_get_boot_time(void);
+  extern void opal_nvram_init(void);
+  extern void opal_flash_init(void);
+ +extern int opal_elog_init(void);
+ +extern void opal_platform_dump_init(void);
+ =20
+  extern int opal_machine_check(struct pt_regs *regs);
+ +extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
+ =20
+  extern void opal_shutdown(void);
++ extern int opal_resync_timebase(void);
+ =20
+  extern void opal_lpc_init(void);
+ =20
+
+--Signature=_Mon__17_Mar_2014_19_59_55_+1100_MJm+zueLLJeqRQCd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJTJrmPAAoJEMDTa8Ir7ZwV4HIP/Alc3en+bBqvm4nsO7nlLkPU
+0xqWYU8MQYTuQ0Ak9LABXYQ1JE6m6MvMIFunXzhOy6J6gBACieJjbHT3lilq/ZH6
+FSVyLJEjMW3HVAAiP/ljGtcLpBoaUxIKxLAijNWLHrpSpPC5zAFh/mt7eQHtbVAi
+Yw0SYY5sqSW3jeO+BfnPttCjLijltyAEaFGPUoY5PqudooImy6uRKQ2TDw2qgyBz
+SOlwdbx/rklgnE0FpNRGQ/+Njq1vDQDcPh2gYDgwQBMQOCcnq6YQJ22DA9Rpa0ha
+SnoSegEjkwuUCWOFikz0Lq/KX8k7L86rtkuclsWt1rIsh/JvTX2oUlpKea/5jxbv
+EpTavAeR/NuSm+/5fN6P/BXz6+5NAw0B2lKEQOzUScD4VvZkL/QiU79ukyzOJjZi
+RsMOv7g03R+JADfjD68pQJIZPqgSAwPfKpOHCjtCWHE/DutM6D0+RBCGgI6y71ND
+VS36N7Y6LLTRQfGBOQly/MXmSTZQcSxxK1tbEbx034B1TwPBVnZL/zq/2z8oU2Jv
+LePgRdRTc5Ve78AderfM7WkPCk+axAyL0GDr1hq5FB/oJ/e3q5aN+DcNTc5utcUz
+Qk1wX6iMVi/Ft834lYW200CoeJHLMUAKgGLlR5QLSaWDUJymtQqVtoSbvgz7Z0bC
+PvsdQx3nF6yXiYiFmFL2
+=EYhw
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__17_Mar_2014_19_59_55_+1100_MJm+zueLLJeqRQCd--
