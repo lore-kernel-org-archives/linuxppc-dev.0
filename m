@@ -1,26 +1,25 @@
 Return-Path: <chenhui.zhao@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3FB072C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Mar 2014 21:50:41 +1100 (EST)
-Date: Mon, 17 Mar 2014 18:50:32 +0800
+ by ozlabs.org (Postfix) with ESMTPS id F1C3E2C00C3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Mar 2014 22:20:07 +1100 (EST)
+Date: Mon, 17 Mar 2014 19:19:57 +0800
 From: Chenhui Zhao <chenhui.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 8/9] powerpc/85xx: add save/restore functions for core
- registers
-Message-ID: <20140317105032.GC6204@localhost.localdomain>
+Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Message-ID: <20140317111957.GD6204@localhost.localdomain>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-8-git-send-email-chenhui.zhao@freescale.com>
- <1394585114.13761.112.camel@snotra.buserror.net>
- <20140312094237.GG4706@localhost.localdomain>
- <1394838105.12479.144.camel@snotra.buserror.net>
+ <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
+ <1394586624.13761.132.camel@snotra.buserror.net>
+ <20140312104005.GH4706@localhost.localdomain>
+ <1394839107.12479.154.camel@snotra.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1394838105.12479.144.camel@snotra.buserror.net>
+In-Reply-To: <1394839107.12479.154.camel@snotra.buserror.net>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jason.Jin@freescale.com, Wang Dongsheng-B40534 <B40534@freescale.com>
+ Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,83 +29,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 14, 2014 at 06:01:45PM -0500, Scott Wood wrote:
-> On Wed, 2014-03-12 at 17:42 +0800, Chenhui Zhao wrote:
-> > On Tue, Mar 11, 2014 at 07:45:14PM -0500, Scott Wood wrote:
+On Fri, Mar 14, 2014 at 06:18:27PM -0500, Scott Wood wrote:
+> On Wed, 2014-03-12 at 18:40 +0800, Chenhui Zhao wrote:
+> > On Tue, Mar 11, 2014 at 08:10:24PM -0500, Scott Wood wrote:
 > > > On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > From: Zhao Chenhui <chenhui.zhao@freescale.com>
 > > > > 
-> > > > Add booke_cpu_state_save() and booke_cpu_state_restore() functions which can be
-> > > > used to save/restore CPU's registers in the case of deep sleep and hibernation.
+> > > > T1040 supports deep sleep feature, which can switch off most parts of
+> > > > the SoC when it is in deep sleep mode. This way, it becomes more
+> > > > energy-efficient.
 > > > > 
-> > > > Supported processors: E6500, E5500, E500MC, E500v2 and E500v1.
+> > > > The DDR controller will also be powered off in deep sleep. Therefore,
+> > > > the last stage (the latter part of fsl_dp_enter_low) will run without DDR
+> > > > access. This piece of code and related TLBs will be prefetched.
 > > > > 
-> > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > > > Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> > > > Due to the different initialization code between 32-bit and 64-bit, they
+> > > > have seperate resume entry and precedure.
+> > > > 
+> > > > The feature supports 32-bit and 64-bit kernel mode.
+> > > > 
+> > > > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 > > > > ---
-> > > >  arch/powerpc/include/asm/booke_save_regs.h |   96 ++++++++
-> > > >  arch/powerpc/kernel/Makefile               |    1 +
-> > > >  arch/powerpc/kernel/booke_save_regs.S      |  361 ++++++++++++++++++++++++++++
-> > > >  3 files changed, 458 insertions(+), 0 deletions(-)
-> > > >  create mode 100644 arch/powerpc/include/asm/booke_save_regs.h
-> > > >  create mode 100644 arch/powerpc/kernel/booke_save_regs.S
+> > > >  arch/powerpc/include/asm/booke_save_regs.h |    3 +
+> > > >  arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   17 ++
+> > > >  arch/powerpc/kernel/head_fsl_booke.S       |   30 +++
+> > > >  arch/powerpc/platforms/85xx/Makefile       |    2 +-
+> > > >  arch/powerpc/platforms/85xx/deepsleep.c    |  201 +++++++++++++++++++
+> > > >  arch/powerpc/platforms/85xx/qoriq_pm.c     |   38 ++++
+> > > >  arch/powerpc/platforms/85xx/sleep.S        |  295 ++++++++++++++++++++++++++++
+> > > >  arch/powerpc/sysdev/fsl_soc.h              |    7 +
+> > > >  8 files changed, 592 insertions(+), 1 deletions(-)
+> > > >  create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
+> > > >  create mode 100644 arch/powerpc/platforms/85xx/sleep.S
 > > > > 
 > > > > diff --git a/arch/powerpc/include/asm/booke_save_regs.h b/arch/powerpc/include/asm/booke_save_regs.h
-> > > > new file mode 100644
-> > > > index 0000000..87c357a
-> > > > --- /dev/null
+> > > > index 87c357a..37c1f6c 100644
+> > > > --- a/arch/powerpc/include/asm/booke_save_regs.h
 > > > > +++ b/arch/powerpc/include/asm/booke_save_regs.h
-> > > > @@ -0,0 +1,96 @@
+> > > > @@ -88,6 +88,9 @@
+> > > >  #define HIBERNATION_FLAG	1
+> > > >  #define DEEPSLEEP_FLAG		2
+> > > >  
+> > > > +#define CPLD_FLAG	1
+> > > > +#define FPGA_FLAG	2
+> > > 
+> > > What is this?
+> > 
+> > We have two kind of boards, QDS and RDB.
+> > They have different register map. Use the flag to indicate the current board is using which kind
+> > of register map.
+> 
+> CPLD versus FPGA is not a meaningful difference.  We don't care what
+> technology is used to implement programmable logic -- we care what
+> programming interface is exposed.  Customers will have their own boards
+> that will likely not imitate either of these programming interfaces, but
+> what they do have will still probably be implemented in a CPLD or FPGA.
+> Likewise, Freescale may have future reference boards whose CPLD/FPGA is
+> not compatible.
+
+Will use a better name.
+
+> 
+> So use better naming, and structure the code so it's easy to plug in
+> implementations for new or custom boards.
+>  
+> > > > diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+> > > > index 20204fe..3285752 100644
+> > > > --- a/arch/powerpc/kernel/head_fsl_booke.S
+> > > > +++ b/arch/powerpc/kernel/head_fsl_booke.S
+> > > > @@ -162,6 +162,19 @@ _ENTRY(__early_start)
+> > > >  #include "fsl_booke_entry_mapping.S"
+> > > >  #undef ENTRY_MAPPING_BOOT_SETUP
+> > > >  
+> > > > +#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
+> > > > +	/* if deep_sleep_flag != 0, jump to the deep sleep resume entry */
+> > > > +	LOAD_REG_ADDR(r4, deep_sleep_flag)
+> > > > +	lwz	r3, 0(r4)
+> > > > +	cmpwi	r3, 0
+> > > > +	beq	11f
+> > > > +	/* clear deep_sleep_flag */
+> > > > +	li	r3, 0
+> > > > +	stw	r3, 0(r4)
+> > > > +	b	fsl_deepsleep_resume
+> > > > +11:
+> > > > +#endif
+> > > 
+> > > Why do you come in via the normal kernel entry, versus specifying a
+> > > direct entry point for deep sleep resume?  How does U-Boot even know
+> > > what the normal entry is when resuming?
+> > 
+> > I wish to return to a specified point (like 64-bit mode), but the code in
+> > fsl_booke_entry_mapping.S only can run in the first page. Because it
+> > only setups a temp mapping of 4KB.
+> 
+> Why do you need the entry mapping on 32-bit but not 64-bit?
+
+fsl_booke_entry_mapping.S is for 32-bit. 64-bit calls
+initial_tlb_book3e() in exceptions-64e.S.
+
+> > 
+> > > > +#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
+> > > > +_ENTRY(__entry_deep_sleep)
 > > > > +/*
-> > > > + *  Save/restore e500 series core registers
+> > > > + * Bootloader will jump to here when resuming from deep sleep.
+> > > > + * After executing the init code in fsl_booke_entry_mapping.S,
+> > > > + * will jump to the real resume entry.
+> > > > + */
+> > > > +	li	r8, 1
+> > > > +	bl	12f
+> > > > +12:	mflr	r9
+> > > > +	addi	r9, r9, (deep_sleep_flag - 12b)
+> > > > +	stw	r8, 0(r9)
+> > > > +	b __early_start
+> > > > +deep_sleep_flag:
+> > > > +	.long	0
+> > > > +#endif
 > > > 
-> > > Filename says booke, comment says e500.
-> > > 
-> > > Filename and comment also fail to point out that this is specifically
-> > > for standby/suspend, not for hibernate which is implemented in
-> > > swsusp_booke.S/swsusp_asm64.S.
+> > > It's a bit ambiguous to say "entry_deep_sleep" when it's resuming rather
+> > > than entering...
 > > 
-> > Sorry for inconsistency. Will changes e500 to booke.
-> > Hibernation and suspend can share the code.
+> > How about __fsl_entry_resume?
 > 
-> Maybe they could, but AFAICT this patchset doesn't make that happen --
-> and I'm not convinced that the churn would be worthwhile.  Note that
-> swsusp_asm64.S is not just for booke, so most of that file would not be
-> going away if you did make such a change.
-
-OK. Let's put Hibernation aside, and change the code just for suspend.
-
+> fsl_booke_deep_sleep_resume
 > 
-> I also don't like the way it looks like booke_save_regs.S is a booke
-> version of ppc_save_regs.S, even though they serve different purposes
-> and ppc_save_regs.S is still relevant to booke.
-> 
-> > > > + * Software-Use Registers
-> > > > + *	SPRG1			0x260		(dw * 76), 64-bit need to save.
-> > > > + *	SPRG3			0x268		(dw * 77), 32-bit need to save.
+> > > > +#define FSLDELAY(count)		\
+> > > > +	li	r3, (count)@l;	\
+> > > > +	slwi	r3, r3, 10;	\
+> > > > +	mtctr	r3;		\
+> > > > +101:	nop;			\
+> > > > +	bdnz	101b;
 > > > 
-> > > What about "CPU and NUMA node for VDSO getcpu" on 64-bit?  Currently
-> > > SPRG3, but it will need to change for critical interrupt support.
+> > > You don't need a namespace prefix on local macros in a non-header file.
 > > > 
-> > > > + * MMU Registers
-> > > > + *	PID0 - PID2		0x270 ~ 0x280	(dw * 78 ~ dw * 80)
-> > > 
-> > > PID1/PID2 are e500v1/v2 only -- and Linux doesn't use them outside of
-> > > KVM (and you're not in KVM when you're running this code).
-> > > 
-> > > Are we ever going to have a non-zero PID at this point?
+> > > Is the timebase stopped where you're calling this from?
 > > 
-> > I incline to the view that saving all registers regardless of used or
-> > unused. The good point is that it can be compliant to the future
-> > changes of the usage of registers.
-> > 
-> > What do you think?
+> > No. My purpose is to avoid jump in the last stage of entering deep sleep.
+> > Jump may cause problem at that time.
 > 
-> I agree to a certain extent, but balance it with the complexity of
-> dealing with registers that don't exist on all booke chips.  If they
-> don't really need to be saved, why go through the hassle of conditional
-> code?
+> "bdnz" is a jump.
+> 
+> What problems do you think a jump will cause?
 
-I agree. For these registers, I'll check if they are really needed.
+I mean a far jump which can jump to an address which has not been prefetched in
+advance. I wish the code is executed in a restricted environment (predictable code
+and address).
+
+> 
+> > > You also probably want to do a "sync, readback, data dependency, isync"
+> > > sequence to make sure that the store has hit CCSR before you begin your
+> > > delay (or is a delay required at all if you do that?).
+> > 
+> > Yes. It is safer with a sync sequence.
+> > 
+> > The DDR controller need some time to signal the external DDR modules to
+> > enter self refresh mode.
+> 
+> Is it documented how much time it requires?
+> 
+> -Scott
+
+No.
 
 -Chenhui
