@@ -1,37 +1,26 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 32B592C0098
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 20:15:07 +1100 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 17 Mar 2014 03:15:05 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id BFF4319D8036
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 03:14:59 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with
- ESMTP id s2H9EUuZ9699752
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 10:14:30 +0100
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2H9F2SF005218
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 03:15:02 -0600
-Message-ID: <5326BC2E.7060503@linux.vnet.ibm.com>
-Date: Mon, 17 Mar 2014 14:41:10 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id F09882C00CB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Mar 2014 20:37:16 +1100 (EST)
+Date: Mon, 17 Mar 2014 17:37:08 +0800
+From: Chenhui Zhao <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 5/9] powerpc/85xx: disable irq by hardware when suspend
+ for 64-bit
+Message-ID: <20140317093708.GA6204@localhost.localdomain>
+References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-5-git-send-email-chenhui.zhao@freescale.com>
+ <1394581880.13761.69.camel@snotra.buserror.net>
+ <20140312074610.GD4706@localhost.localdomain>
+ <1394836901.12479.125.camel@snotra.buserror.net>
 MIME-Version: 1.0
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 6/6] powernv:cpufreq: Implement the driver->get() method
-References: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
- <1394449861-8688-7-git-send-email-ego@linux.vnet.ibm.com>
-In-Reply-To: <1394449861-8688-7-git-send-email-ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, srivatsa.bhat@linux.vnet.ibm.com
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1394836901.12479.125.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,89 +30,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/10/2014 04:41 PM, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Fri, Mar 14, 2014 at 05:41:41PM -0500, Scott Wood wrote:
+> On Wed, 2014-03-12 at 15:46 +0800, Chenhui Zhao wrote:
+> > On Tue, Mar 11, 2014 at 06:51:20PM -0500, Scott Wood wrote:
+> > > On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
+> > > > In 64-bit mode, kernel just clears the irq soft-enable flag
+> > > > in struct paca_struct to disable external irqs. But, in
+> > > > the case of suspend, irqs should be disabled by hardware.
+> > > > Therefore, hook a function to ppc_md.suspend_disable_irqs
+> > > > to really disable irqs.
+> > > > 
+> > > > Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> > > > ---
+> > > >  arch/powerpc/platforms/85xx/corenet_generic.c |   12 ++++++++++++
+> > > >  1 files changed, 12 insertions(+), 0 deletions(-)
+> > > > 
+> > > > diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > > > index 3fdf9f3..983d81f 100644
+> > > > --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> > > > +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> > > > @@ -32,6 +32,13 @@
+> > > >  #include <sysdev/fsl_pci.h>
+> > > >  #include "smp.h"
+> > > >  
+> > > > +#if defined(CONFIG_PPC64) && defined(CONFIG_SUSPEND)
+> > > > +static void fsl_suspend_disable_irqs(void)
+> > > > +{
+> > > > +	__hard_irq_disable();
+> > > > +}
+> > > > +#endif
+> > > 
+> > > Why the underscore version?  Don't you want PACA_IRQ_HARD_DIS to be set?
+> > > 
+> > > If hard disabling is appropriate here, shouldn't we do it in
+> > > generic_suspend_disable_irqs()?
+> > > 
+> > > Are there any existing platforms that supply a
+> > > ppc_md.suspend_disable_irqs()?  I don't see any when grepping.
+> > > 
+> > > -Scott
+> > 
+> > Will use hard_irq_disable().
+> > 
+> > I think this is a general problem for powerpc.
+> > Should clear MSR_EE before suspend. I agree to put it
+> > in generic_suspend_disable_irqs().
 > 
-> The current frequency of a cpu is reported through the sysfs file
-> cpuinfo_cur_freq. This requires the driver to implement a
-> "->get(unsigned int cpu)" method which will return the current
-> operating frequency.
+> BTW, make sure you test this patchset with CONFIG_DEBUG_PREEMPT and
+> similar debugging options to help ensure that the soft IRQ state is
+> being tracked properly.
 > 
-> Implement a function named powernv_cpufreq_get() which reads the local
-> pstate from the PMSR and returns the corresponding frequency.
-> 
-> Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 48 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 48 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 183bbc4..6f3b6e1 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -223,6 +223,53 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
->  	BUG();
->  }
->  
-> +/*
-> + * Computes the current frequency on this cpu
-> + * and stores the result in *ret_freq.
-> + */
-> +static void powernv_read_cpu_freq(void *ret_freq)
-> +{
-> +	unsigned long pmspr_val;
-> +	s8 local_pstate_id;
-> +	int *cur_freq, freq, pstate_id;
-> +
-> +	cur_freq = (int *)ret_freq;
-> +	pmspr_val = get_pmspr(SPRN_PMSR);
-> +
-> +	/* The local pstate id corresponds bits 48..55 in the PMSR.
-> +         * Note: Watch out for the sign! */
-> +	local_pstate_id = (pmspr_val >> 48) & 0xFF;
-> +	pstate_id = local_pstate_id;
-> +
-> +	freq = pstate_id_to_freq(pstate_id);
-> +	pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
-> +		smp_processor_id(), pmspr_val, pstate_id, freq);
-> +	*cur_freq = freq;
-> +}
-> +
-> +/*
-> + * Returns the cpu frequency as reported by the firmware for 'cpu'.
-> + * This value is reported through the sysfs file cpuinfo_cur_freq.
-> + */
-> +unsigned int powernv_cpufreq_get(unsigned int cpu)
-> +{
-> +	int ret_freq;
-> +	cpumask_var_t sibling_mask;
-> +
-> +	if (unlikely(!zalloc_cpumask_var(&sibling_mask, GFP_KERNEL))) {
-> +		smp_call_function_single(cpu, powernv_read_cpu_freq,
-> +					&ret_freq, 1);
-> +		return ret_freq;
-> +	}
-> +
-> +	powernv_cpu_to_core_mask(cpu, sibling_mask);
-> +	smp_call_function_any(sibling_mask, powernv_read_cpu_freq,
-> +			&ret_freq, 1);
-> +
-> +	free_cpumask_var(sibling_mask);
-> +	return ret_freq;
-> +}
-> +
->  static void set_pstate(void *pstate)
->  {
->  	unsigned long val;
-> @@ -309,6 +356,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
->  static struct cpufreq_driver powernv_cpufreq_driver = {
->  	.verify		= powernv_cpufreq_verify,
->  	.target		= powernv_cpufreq_target,
-> +	.get		= powernv_cpufreq_get,
->  	.init		= powernv_cpufreq_cpu_init,
->  	.exit		= powernv_cpufreq_cpu_exit,
->  	.name		= "powernv-cpufreq",
-> 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> -Scott
+
+OK. I'll keep that in mind.
+
+-Chenhui
