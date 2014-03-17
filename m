@@ -1,17 +1,38 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 17 Mar 2014 20:01:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: manual merge of the powernv-cpuidle tree with the
- powerpc tree
-Message-Id: <20140317200143.0ab543c6092e4f6e84ccb9ca@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__17_Mar_2014_20_01_43_+1100_jFh0IHINV/N.2hpO"
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2ACF72C00A0
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 20:07:54 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 17 Mar 2014 03:07:52 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A018C3E4004F
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 03:07:49 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2H97Hfo10027324
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 10:07:17 +0100
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2H97nOo003328
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Mar 2014 03:07:49 -0600
+Message-ID: <5326BA82.3010004@linux.vnet.ibm.com>
+Date: Mon, 17 Mar 2014 14:34:02 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 3/6] powernv, cpufreq:Add per-core locking to serialize
+ frequency transitions
+References: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1394449861-8688-4-git-send-email-ego@linux.vnet.ibm.com>
+In-Reply-To: <1394449861-8688-4-git-send-email-ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,64 +42,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__17_Mar_2014_20_01_43_+1100_jFh0IHINV/N.2hpO
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,
-
-Today's linux-next merge of the powernv-cpuidle tree got a conflict in
-arch/powerpc/platforms/powernv/opal-wrappers.S between commit
-c7e64b9ce04a ("powerpc/powernv Platform dump interface") from the powerpc
-tree and commit 97eb001f0349 ("powerpc/powernv: Add OPAL call to resync
-timebase on wakeup") from the powernv-cpuidle tree.
-
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc arch/powerpc/platforms/powernv/opal-wrappers.S
-index 47ec3f738062,aab54b60334f..000000000000
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@@ -131,12 -126,7 +131,13 @@@ OPAL_CALL(opal_write_elog,			OPAL_ELOG_
-  OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
-  OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
-  OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
-+ OPAL_CALL(opal_resync_timebase,			OPAL_RESYNC_TIMEBASE);
- +OPAL_CALL(opal_dump_init,			OPAL_DUMP_INIT);
- +OPAL_CALL(opal_dump_info,			OPAL_DUMP_INFO);
- +OPAL_CALL(opal_dump_info2,			OPAL_DUMP_INFO2);
- +OPAL_CALL(opal_dump_read,			OPAL_DUMP_READ);
- +OPAL_CALL(opal_dump_ack,			OPAL_DUMP_ACK);
-  OPAL_CALL(opal_get_msg,				OPAL_GET_MSG);
-  OPAL_CALL(opal_check_completion,		OPAL_CHECK_ASYNC_COMPLETION);
- +OPAL_CALL(opal_dump_resend_notification,	OPAL_DUMP_RESEND);
-  OPAL_CALL(opal_sync_host_reboot,		OPAL_SYNC_HOST_REBOOT);
-
---Signature=_Mon__17_Mar_2014_20_01_43_+1100_jFh0IHINV/N.2hpO
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJTJrn7AAoJEMDTa8Ir7ZwVbA8P/3chAcl9QagyqsZqzXSJh/r+
-DSFUpRXVhyUia+BGuf8eFHmbQlhkF3Hcm4scp0PlHZzhRqs4rufU+Gmi4J/hlGiq
-9xWuoFsS8BXb/nYzg/ga0qYV2JY34dWqNGNI2cLafb+PVLwBbzjY1G0t41+y89eY
-lbReKU+0fQ6M/x8hN1NX1v2swrC9i9SHr64OgQneUXWen2PhbuOubpQh2igNwS+d
-Vfxpk4w5iufpsakm5E29l+ifDFgMdC4q5v+fSLXD5nuWQlVL2QHkA9Qu/Sl5XMOa
-V+wbsDxfmshUZ8V+ioxyNt3EvHqgWkdIPr2eV5JB5+naM7e0RLPFM7TJGCKU4ySW
-QcPfwr1NO7YpWyr6zGfk6xAHsBYOWfRla5uzF5yuUO68FZAe87cAJqXeLWsVwT/y
-5DWd/oDpDoN7mmNz8Z5VNLLWRSjDU9ZmLbWimx3ZoIMvTB+QzwbznCG8YFdTBRa5
-B6gm4F6NZ3doACwrswDP13u8i/IYs+/ReyL00rlPY8qMQ/Ek/ontu2fM1CgXA5qY
-slfvOrkWNzTC/Pt4umJr5x4Uzb0wYtUJyG1Ff9QPVCC8nocwANfCaCCK5kVOodf+
-nt/AkM1I8Jd71Il84aNDAjTBSgsKPGSiotxNHhZkVD/6RAvvGes/6YdR3vPAW6pU
-IvjHesvelmMaqzEuniHX
-=VAKu
------END PGP SIGNATURE-----
-
---Signature=_Mon__17_Mar_2014_20_01_43_+1100_jFh0IHINV/N.2hpO--
+On 03/10/2014 04:40 PM, Gautham R. Shenoy wrote:
+> From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+> 
+> On POWER systems, the CPU frequency is controlled at a core-level and
+> hence we need to serialize so that only one of the threads in the core
+> switches the core's frequency at a time.
+> 
+> Using a global mutex lock would needlessly serialize _all_ frequency
+> transitions in the system (across all cores). So introduce per-core
+> locking to enable finer-grained synchronization and thereby enhance
+> the speed and responsiveness of the cpufreq driver to varying workload
+> demands.
+> 
+> The design of per-core locking is very simple and straight-forward: we
+> first define a Per-CPU lock and use the ones that belongs to the first
+> thread sibling of the core.
+> 
+> cpu_first_thread_sibling() macro is used to find the *common* lock for
+> all thread siblings belonging to a core.
+> 
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++-----
+>  1 file changed, 16 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 4cad727..4c2e8ca 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -24,8 +24,15 @@
+>  #include <linux/of.h>
+>  #include <asm/cputhreads.h>
+>  
+> -/* FIXME: Make this per-core */
+> -static DEFINE_MUTEX(freq_switch_mutex);
+> +/* Per-Core locking for frequency transitions */
+> +static DEFINE_PER_CPU(struct mutex, freq_switch_lock);
+> +
+> +#define lock_core_freq(cpu)				\
+> +			mutex_lock(&per_cpu(freq_switch_lock,\
+> +				cpu_first_thread_sibling(cpu)));
+> +#define unlock_core_freq(cpu)				\
+> +			mutex_unlock(&per_cpu(freq_switch_lock,\
+> +				cpu_first_thread_sibling(cpu)));
+>  
+>  #define POWERNV_MAX_PSTATES	256
+>  
+> @@ -233,7 +240,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+>  	freqs.new = powernv_freqs[new_index].frequency;
+>  	freqs.cpu = policy->cpu;
+>  
+> -	mutex_lock(&freq_switch_mutex);
+> +	lock_core_freq(policy->cpu);
+>  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+>  
+>  	pr_debug("setting frequency for cpu %d to %d kHz index %d pstate %d",
+> @@ -245,7 +252,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+>  	rc = powernv_set_freq(policy->cpus, new_index);
+>  
+>  	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> -	mutex_unlock(&freq_switch_mutex);
+> +	unlock_core_freq(policy->cpu);
+>  
+>  	return rc;
+>  }
+> @@ -262,7 +269,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>  
+>  static int __init powernv_cpufreq_init(void)
+>  {
+> -	int rc = 0;
+> +	int cpu, rc = 0;
+>  
+>  	/* Discover pstates from device tree and init */
+>  
+> @@ -272,6 +279,10 @@ static int __init powernv_cpufreq_init(void)
+>  		pr_info("powernv-cpufreq disabled\n");
+>  		return rc;
+>  	}
+> +	/* Init per-core mutex */
+> +	for_each_possible_cpu(cpu) {
+> +		mutex_init(&per_cpu(freq_switch_lock, cpu));
+> +	}
+>  
+>  	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
+>  	return rc;
+> 
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
