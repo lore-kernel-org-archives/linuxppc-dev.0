@@ -3,17 +3,17 @@ Received: from am1outboundpool.messaging.microsoft.com
  (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CF24A2C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 18:19:11 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 33A0A2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 18:35:18 +1100 (EST)
 Received: from mail14-am1 (localhost [127.0.0.1])	by mail14-am1-R.bigfish.com
- (Postfix) with ESMTP id DE0D734026A	for
+ (Postfix) with ESMTP id 7DE0D3402A8	for
  <linuxppc-dev@lists.ozlabs.org>; Tue,
- 18 Mar 2014 07:19:02 +0000 (UTC)
+ 18 Mar 2014 07:35:12 +0000 (UTC)
 From: Harninder Rai <harninder.rai@freescale.com>
 To: <scottwood@freescale.com>
 Subject: [PATCH] powerpc/mpc85xx: Add BSC9132 QDS Support
-Date: Tue, 18 Mar 2014 12:48:53 +0530
-Message-ID: <1395127133-22255-1-git-send-email-harninder.rai@freescale.com>
+Date: Tue, 18 Mar 2014 13:05:02 +0530
+Message-ID: <1395128102-12983-1-git-send-email-harninder.rai@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -90,14 +90,14 @@ index 380914e..700dec4 100644
 +	};
 diff --git a/arch/powerpc/boot/dts/bsc9132qds.dts b/arch/powerpc/boot/dts/bsc9132qds.dts
 new file mode 100644
-index 0000000..ddf9555
+index 0000000..6cab106
 --- /dev/null
 +++ b/arch/powerpc/boot/dts/bsc9132qds.dts
 @@ -0,0 +1,35 @@
 +/*
 + * BSC9132 QDS Device Tree Source
 + *
-+ * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2014 Freescale Semiconductor Inc.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -131,14 +131,14 @@ index 0000000..ddf9555
 +/include/ "fsl/bsc9132si-post.dtsi"
 diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi b/arch/powerpc/boot/dts/bsc9132qds.dtsi
 new file mode 100644
-index 0000000..8fdc2e8
+index 0000000..948d9ec
 --- /dev/null
 +++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
 @@ -0,0 +1,180 @@
 +/*
 + * BSC9132 QDS Device Tree Source stub (no addresses or top-level ranges)
 + *
-+ * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2014 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
@@ -317,14 +317,14 @@ index 0000000..8fdc2e8
 +};
 diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
 new file mode 100644
-index 0000000..433d75d
+index 0000000..c723071
 --- /dev/null
 +++ b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
 @@ -0,0 +1,185 @@
 +/*
 + * BSC9132 Silicon/SoC Device Tree Source (post include)
 + *
-+ * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2014 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
@@ -508,14 +508,14 @@ index 0000000..433d75d
 +};
 diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
 new file mode 100644
-index 0000000..7cb0ea0
+index 0000000..301a9db
 --- /dev/null
 +++ b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
 @@ -0,0 +1,66 @@
 +/*
 + * BSC9132 Silicon/SoC Device Tree Source (pre include)
 + *
-+ * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2014 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
@@ -612,7 +612,7 @@ index 25cebe7..c19beb9 100644
  obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
 diff --git a/arch/powerpc/platforms/85xx/bsc913x_qds.c b/arch/powerpc/platforms/85xx/bsc913x_qds.c
 new file mode 100644
-index 0000000..0fb7e57
+index 0000000..f0927e5
 --- /dev/null
 +++ b/arch/powerpc/platforms/85xx/bsc913x_qds.c
 @@ -0,0 +1,74 @@
@@ -623,7 +623,7 @@ index 0000000..0fb7e57
 + *   Harninder Rai <harninder.rai@freescale.com>
 + *   Priyanka Jain <Priyanka.Jain@freescale.com>
 + *
-+ * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2014 Freescale Semiconductor Inc.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
