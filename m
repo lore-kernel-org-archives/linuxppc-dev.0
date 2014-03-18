@@ -1,23 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0211.outbound.protection.outlook.com [207.46.163.211])
+Return-Path: <hrai@nmglablinux22.freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B18432C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 12:23:20 +1100 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2 06/10] powerpc/booke64: Use SPRG_TLB_EXFRAME on bolted
- handlers
-Date: Mon, 17 Mar 2014 20:22:48 -0500
-Message-ID: <1395105768-3225-1-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1394825397.12479.75.camel@snotra.buserror.net>
-References: <1394825397.12479.75.camel@snotra.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id CF24A2C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 18:19:11 +1100 (EST)
+Received: from mail14-am1 (localhost [127.0.0.1])	by mail14-am1-R.bigfish.com
+ (Postfix) with ESMTP id DE0D734026A	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 18 Mar 2014 07:19:02 +0000 (UTC)
+From: Harninder Rai <harninder.rai@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH] powerpc/mpc85xx: Add BSC9132 QDS Support
+Date: Tue, 18 Mar 2014 12:48:53 +0530
+Message-ID: <1395127133-22255-1-git-send-email-harninder.rai@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: kvm-ppc@vger.kernel.org, Tiejun Chen <tiejun.chen@windriver.com>,
- Scott Wood <scottwood@freescale.com>,
- Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Ruchika Gupta <ruchika.gupta@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,164 +27,668 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While bolted handlers (including e6500) do not need to deal with a TLB
-miss recursively causing another TLB miss, nested TLB misses can still
-happen with crit/mc/debug exceptions -- so we still need to honor
-SPRG_TLB_EXFRAME.
+- BSC9132 is an integrated device that targets Femto base station market.
+  It combines Power Architecture e500v2 and DSP StarCore SC3850 technologies
+  with MAPLE-B2F baseband acceleration processing elements
 
-We don't need to spend time modifying it in the TLB miss fastpath,
-though -- the special level exception will handle that.
+- BSC9132QDS Overview
+     2Gbyte DDR3 (on board DDR)
+     32Mbyte 16bit NOR flash
+     128Mbyte 2K page size NAND Flash
+     256 Kbit M24256 I2C EEPROM
+     128 Mbit SPI Flash memory
+     SD slot
+     eTSEC1: Connected to SGMII PHY
+     eTSEC2: Connected to SGMII PHY
+     DUART interface: supports one UARTs up to 115200 bps for console display
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: kvm-ppc@vger.kernel.org
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+Signed-off-by: Ruchika Gupta <ruchika.gupta@freescale.com>
 ---
-v2: Removed accidental duplicate/misplaced write to SPRG_VDSO,
-which had been in a previous version of patch 5/10.
+Some of the checkpatch warnings of this patch are fixed in the following patch
+http://patchwork.ozlabs.org/patch/321885/
 
- arch/powerpc/include/asm/exception-64e.h    | 10 -------
- arch/powerpc/include/asm/kvm_booke_hv_asm.h |  8 ++++--
- arch/powerpc/kvm/bookehv_interrupts.S       | 11 ++++++--
- arch/powerpc/mm/tlb_low_64e.S               | 44 ++++++++++++++++++-----------
- 4 files changed, 42 insertions(+), 31 deletions(-)
+ .../devicetree/bindings/powerpc/fsl/board.txt      |   17 ++
+ arch/powerpc/boot/dts/bsc9132qds.dts               |   35 ++++
+ arch/powerpc/boot/dts/bsc9132qds.dtsi              |  180 +++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi      |  185 ++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi       |   66 +++++++
+ arch/powerpc/platforms/85xx/Kconfig                |    9 +
+ arch/powerpc/platforms/85xx/Makefile               |    1 +
+ arch/powerpc/platforms/85xx/bsc913x_qds.c          |   74 ++++++++
+ 8 files changed, 567 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/bsc9132qds.dts
+ create mode 100644 arch/powerpc/boot/dts/bsc9132qds.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+ create mode 100644 arch/powerpc/platforms/85xx/bsc913x_qds.c
 
-diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
-index e73452f..a563d9af 100644
---- a/arch/powerpc/include/asm/exception-64e.h
-+++ b/arch/powerpc/include/asm/exception-64e.h
-@@ -172,16 +172,6 @@ exc_##label##_book3e:
- 	ld	r9,EX_TLB_R9(r12);					    \
- 	ld	r8,EX_TLB_R8(r12);					    \
- 	mtlr	r16;
--#define TLB_MISS_PROLOG_STATS_BOLTED						    \
--	mflr	r10;							    \
--	std	r8,PACA_EXTLB+EX_TLB_R8(r13);				    \
--	std	r9,PACA_EXTLB+EX_TLB_R9(r13);				    \
--	std	r10,PACA_EXTLB+EX_TLB_LR(r13);
--#define TLB_MISS_RESTORE_STATS_BOLTED					            \
--	ld	r16,PACA_EXTLB+EX_TLB_LR(r13);				    \
--	ld	r9,PACA_EXTLB+EX_TLB_R9(r13);				    \
--	ld	r8,PACA_EXTLB+EX_TLB_R8(r13);				    \
--	mtlr	r16;
- #define TLB_MISS_STATS_D(name)						    \
- 	addi	r9,r13,MMSTAT_DSTATS+name;				    \
- 	bl	.tlb_stat_inc;
-diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-index c3e3fd5..e5f048b 100644
---- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-+++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-@@ -45,10 +45,12 @@
-  *
-  * Expected inputs (TLB exception type):
-  *  r10 = saved CR
-+ *  r12 = extlb pointer
-  *  r13 = PACA_POINTER
-- *  *(r13 + PACA_EX##type + EX_TLB_R10) = saved r10
-- *  *(r13 + PACA_EX##type + EX_TLB_R11) = saved r11
-- *  SPRN_SPRG_GEN_SCRATCH = saved r13
-+ *  *(r12 + EX_TLB_R10) = saved r10
-+ *  *(r12 + EX_TLB_R11) = saved r11
-+ *  *(r12 + EX_TLB_R13) = saved r13
-+ *  SPRN_SPRG_GEN_SCRATCH = saved r12
-  *
-  * Only the bolted version of TLB miss exception handlers is supported now.
-  */
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 99635a3..a1712b8 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -229,13 +229,20 @@
- 	stw	r10, VCPU_CR(r4)
- 	PPC_STL r11, VCPU_GPR(R4)(r4)
- 	PPC_STL	r5, VCPU_GPR(R5)(r4)
--	mfspr	r5, \scratch
- 	PPC_STL	r6, VCPU_GPR(R6)(r4)
- 	PPC_STL	r8, VCPU_GPR(R8)(r4)
- 	PPC_STL	r9, VCPU_GPR(R9)(r4)
--	PPC_STL r5, VCPU_GPR(R13)(r4)
-+	.if \type == EX_TLB
-+	PPC_LL	r5, EX_TLB_R13(r12)
-+	PPC_LL	r6, EX_TLB_R10(r12)
-+	PPC_LL	r8, EX_TLB_R11(r12)
-+	mfspr	r12, \scratch
-+	.else
-+	mfspr	r5, \scratch
- 	PPC_LL	r6, (\paca_ex + \ex_r10)(r13)
- 	PPC_LL	r8, (\paca_ex + \ex_r11)(r13)
-+	.endif
-+	PPC_STL r5, VCPU_GPR(R13)(r4)
- 	PPC_STL r3, VCPU_GPR(R3)(r4)
- 	PPC_STL r7, VCPU_GPR(R7)(r4)
- 	PPC_STL r12, VCPU_GPR(R12)(r4)
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 1e50249..356e8b4 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -39,37 +39,49 @@
-  *                                                                    *
-  **********************************************************************/
- 
-+/*
-+ * Note that, unlike non-bolted handlers, TLB_EXFRAME is not
-+ * modified by the TLB miss handlers themselves, since the TLB miss
-+ * handler code will not itself cause a recursive TLB miss.
-+ *
-+ * TLB_EXFRAME will be modified when crit/mc/debug exceptions are
-+ * entered/exited.
-+ */
- .macro tlb_prolog_bolted intnum addr
--	mtspr	SPRN_SPRG_GEN_SCRATCH,r13
-+	mtspr	SPRN_SPRG_GEN_SCRATCH,r12
-+	mfspr	r12,SPRN_SPRG_TLB_EXFRAME
-+	std	r13,EX_TLB_R13(r12)
-+	std	r10,EX_TLB_R10(r12)
- 	mfspr	r13,SPRN_SPRG_PACA
--	std	r10,PACA_EXTLB+EX_TLB_R10(r13)
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+index 380914e..700dec4 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+@@ -67,3 +67,20 @@ Example:
+ 			gpio-controller;
+ 		};
+ 	};
 +
- 	mfcr	r10
--	std	r11,PACA_EXTLB+EX_TLB_R11(r13)
-+	std	r11,EX_TLB_R11(r12)
- #ifdef CONFIG_KVM_BOOKE_HV
- BEGIN_FTR_SECTION
- 	mfspr	r11, SPRN_SRR1
- END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
- #endif
- 	DO_KVM	\intnum, SPRN_SRR1
--	std	r16,PACA_EXTLB+EX_TLB_R16(r13)
-+	std	r16,EX_TLB_R16(r12)
- 	mfspr	r16,\addr		/* get faulting address */
--	std	r14,PACA_EXTLB+EX_TLB_R14(r13)
-+	std	r14,EX_TLB_R14(r12)
- 	ld	r14,PACAPGD(r13)
--	std	r15,PACA_EXTLB+EX_TLB_R15(r13)
--	std	r10,PACA_EXTLB+EX_TLB_CR(r13)
--	TLB_MISS_PROLOG_STATS_BOLTED
-+	std	r15,EX_TLB_R15(r12)
-+	std	r10,EX_TLB_CR(r12)
-+	TLB_MISS_PROLOG_STATS
- .endm
++* Freescale on-board FPGA connected on I2C bus
++
++Some Freescale boards like BSC9132QDS have on board FPGA connected on
++the i2c bus.
++
++Required properties:
++- compatible: Should be a board-specific string followed by a string
++  indicating the type of FPGA.  Example:
++	"fsl,<board>-fpga", "fsl,fpga-qixis-i2c"
++- reg: Should contain the address of the FPGA
++
++Example:
++	fpga: fpga@66 {
++		compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
++		reg = <0x66>;
++	};
+diff --git a/arch/powerpc/boot/dts/bsc9132qds.dts b/arch/powerpc/boot/dts/bsc9132qds.dts
+new file mode 100644
+index 0000000..ddf9555
+--- /dev/null
++++ b/arch/powerpc/boot/dts/bsc9132qds.dts
+@@ -0,0 +1,35 @@
++/*
++ * BSC9132 QDS Device Tree Source
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/include/ "fsl/bsc9132si-pre.dtsi"
++
++/ {
++	model = "fsl,bsc9132qds";
++	compatible = "fsl,bsc9132qds";
++
++	memory {
++		device_type = "memory";
++	};
++
++	ifc: ifc@ff71e000 {
++		/* NOR, NAND Flash on board */
++		ranges = <0x0 0x0 0x0 0x88000000 0x08000000
++			  0x1 0x0 0x0 0xff800000 0x00010000>;
++		reg = <0x0 0xff71e000 0x0 0x2000>;
++	};
++
++	soc: soc@ff700000 {
++		ranges = <0x0 0x0 0xff700000 0x100000>;
++	};
++};
++
++/include/ "bsc9132qds.dtsi"
++/include/ "fsl/bsc9132si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi b/arch/powerpc/boot/dts/bsc9132qds.dtsi
+new file mode 100644
+index 0000000..8fdc2e8
+--- /dev/null
++++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
+@@ -0,0 +1,180 @@
++/*
++ * BSC9132 QDS Device Tree Source stub (no addresses or top-level ranges)
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&ifc {
++	nor@0,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "cfi-flash";
++		reg = <0x0 0x0 0x8000000>;
++		bank-width = <2>;
++		device-width = <1>;
++
++		partition@40000 {
++			/* 256KB for DTB Image */
++			reg = <0x00040000 0x00040000>;
++			label = "NOR DTB Image";
++		};
++
++		partition@80000 {
++			/* 7MB for Linux Kernel Image */
++			reg = <0x00080000 0x00700000>;
++			label = "NAND Linux Kernel Image";
++		};
++
++		partition@800000 {
++			/* 55MB for Root file system */
++			reg = <0x00800000 0x03700000>;
++			label = "NOR RFS Image";
++		};
++
++		partition@3f00000 {
++			/* This location must not be altered  */
++			/* 512KB for u-boot Bootloader Image */
++			/* 512KB for u-boot Environment Variables */
++			reg = <0x03f00000 0x00100000>;
++			label = "NOR U-boot Image";
++			read-only;
++		};
++	};
++
++	nand@1,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,ifc-nand";
++		reg = <0x1 0x0 0x4000>;
++
++		partition@0 {
++			/* This location must not be altered  */
++			/* 3MB for u-boot Bootloader Image */
++			reg = <0x0 0x00300000>;
++			label = "NAND U-Boot Image";
++			read-only;
++		};
++
++		partition@300000 {
++			/* 1MB for DTB Image */
++			reg = <0x00300000 0x00100000>;
++			label = "NAND DTB Image";
++		};
++
++		partition@400000 {
++			/* 8MB for Linux Kernel Image */
++			reg = <0x00400000 0x00800000>;
++			label = "NAND Linux Kernel Image";
++		};
++
++		partition@c00000 {
++			/* Rest space for Root file System Image */
++			reg = <0x00c00000 0x07400000>;
++			label = "NAND RFS Image";
++		};
++	};
++};
++
++&soc {
++	spi@7000 {
++		flash@0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "spansion,s25sl12801";
++			reg = <0>;
++			spi-max-frequency = <30000000>;
++
++			/* 512KB for u-boot Bootloader Image */
++			partition@0 {
++				reg = <0x0 0x00080000>;
++				label = "SPI Flash U-Boot Image";
++				read-only;
++			};
++
++			/* 512KB for DTB Image */
++			partition@80000 {
++				reg = <0x00080000 0x00080000>;
++				label = "SPI Flash DTB Image";
++			};
++
++			/* 4MB for Linux Kernel Image */
++			partition@100000 {
++				reg = <0x00100000 0x00400000>;
++				label = "SPI Flash Kernel Image";
++			};
++
++			/*11MB for RFS Image */
++			partition@500000 {
++				reg = <0x00500000 0x00B00000>;
++				label = "SPI Flash RFS Image";
++			};
++
++		};
++	};
++
++	i2c@3000 {
++		fpga: fpga@66 {
++			compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
++			reg = <0x66>;
++		};
++	};
++
++	usb@22000 {
++		phy_type = "ulpi";
++	};
++
++	mdio@24000 {
++		phy0: ethernet-phy@0 {
++			reg = <0x0>;
++		};
++
++		phy1: ethernet-phy@1 {
++			reg = <0x1>;
++		};
++
++		tbi0: tbi-phy@11 {
++			reg = <0x1f>;
++			device_type = "tbi-phy";
++		};
++	};
++
++	enet0: ethernet@b0000 {
++		phy-handle = <&phy0>;
++		tbi-handle = <&tbi0>;
++		phy-connection-type = "sgmii";
++	};
++
++	enet1: ethernet@b1000 {
++		phy-handle = <&phy1>;
++		tbi-handle = <&tbi0>;
++		phy-connection-type = "sgmii";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+new file mode 100644
+index 0000000..433d75d
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+@@ -0,0 +1,185 @@
++/*
++ * BSC9132 Silicon/SoC Device Tree Source (post include)
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&ifc {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	compatible = "fsl,ifc", "simple-bus";
++	/* FIXME: Test whether interrupts are split */
++	interrupts = <16 2 0 0 20 2 0 0>;
++};
++
++&soc {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "soc";
++	compatible = "fsl,bsc9132-immr", "simple-bus";
++	bus-frequency = <0>;		// Filled out by uboot.
++
++	ecm-law@0 {
++		compatible = "fsl,ecm-law";
++		reg = <0x0 0x1000>;
++		fsl,num-laws = <12>;
++	};
++
++	ecm@1000 {
++		compatible = "fsl,bsc9132-ecm", "fsl,ecm";
++		reg = <0x1000 0x1000>;
++		interrupts = <16 2 0 0>;
++	};
++
++	memory-controller@2000 {
++		compatible = "fsl,bsc9132-memory-controller";
++		reg = <0x2000 0x1000>;
++		interrupts = <16 2 1 8>;
++	};
++
++/include/ "pq3-i2c-0.dtsi"
++	i2c@3000 {
++		interrupts = <17 2 0 0>;
++	};
++
++/include/ "pq3-i2c-1.dtsi"
++	i2c@3100 {
++		interrupts = <17 2 0 0>;
++	};
++
++/include/ "pq3-duart-0.dtsi"
++	serial0: serial@4500 {
++		interrupts = <18 2 0 0>;
++	};
++
++	serial1: serial@4600 {
++		interrupts = <18 2 0 0 >;
++	};
++/include/ "pq3-espi-0.dtsi"
++	spi0: spi@7000 {
++		fsl,espi-num-chipselects = <1>;
++		interrupts = <22 0x2 0 0>;
++	};
++
++/include/ "pq3-gpio-0.dtsi"
++	gpio-controller@f000 {
++		interrupts = <19 0x2 0 0>;
++		};
++
++	L2: l2-cache-controller@20000 {
++		compatible = "fsl,bsc9132-l2-cache-controller";
++		reg = <0x20000 0x1000>;
++		cache-line-size = <32>;	// 32 bytes
++		cache-size = <0x40000>; // L2,256K
++		interrupts = <16 2 1 0>;
++	};
++
++/include/ "pq3-dma-0.dtsi"
++
++dma@21300 {
++
++	dma-channel@0 {
++		interrupts = <62 2 0 0>;
++	};
++
++	dma-channel@80 {
++		interrupts = <63 2 0 0>;
++	};
++
++	dma-channel@100 {
++		interrupts = <64 2 0 0>;
++	};
++
++	dma-channel@180 {
++		interrupts = <65 2 0 0>;
++	};
++};
++
++/include/ "pq3-usb2-dr-0.dtsi"
++usb@22000 {
++	compatible = "fsl-usb2-dr","fsl-usb2-dr-v2.2";
++	interrupts = <40 0x2 0 0>;
++};
++
++/include/ "pq3-esdhc-0.dtsi"
++	sdhc@2e000 {
++		fsl,sdhci-auto-cmd12;
++		interrupts = <41 0x2 0 0>;
++	};
++
++/include/ "pq3-sec4.4-0.dtsi"
++crypto@30000 {
++	interrupts	 = <57 2 0 0>;
++
++	sec_jr0: jr@1000 {
++		interrupts	 = <58 2 0 0>;
++	};
++
++	sec_jr1: jr@2000 {
++		interrupts	 = <59 2 0 0>;
++	};
++
++	sec_jr2: jr@3000 {
++		interrupts	 = <60 2 0 0>;
++	};
++
++	sec_jr3: jr@4000 {
++		interrupts	 = <61 2 0 0>;
++	};
++};
++
++/include/ "pq3-mpic.dtsi"
++/include/ "pq3-mpic-timer-B.dtsi"
++
++/include/ "pq3-etsec2-0.dtsi"
++enet0: ethernet@b0000 {
++	queue-group@b0000 {
++		fsl,rx-bit-map = <0xff>;
++		fsl,tx-bit-map = <0xff>;
++		interrupts = <26 2 0 0 27 2 0 0 28 2 0 0>;
++	};
++};
++
++/include/ "pq3-etsec2-1.dtsi"
++enet1: ethernet@b1000 {
++	queue-group@b1000 {
++		fsl,rx-bit-map = <0xff>;
++		fsl,tx-bit-map = <0xff>;
++		interrupts = <33 2 0 0 34 2 0 0 35 2 0 0>;
++	};
++};
++
++global-utilities@e0000 {
++		compatible = "fsl,bsc9132-guts";
++		reg = <0xe0000 0x1000>;
++		fsl,has-rstcr;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+new file mode 100644
+index 0000000..7cb0ea0
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+@@ -0,0 +1,66 @@
++/*
++ * BSC9132 Silicon/SoC Device Tree Source (pre include)
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	aliases {
++		serial0 = &serial0;
++		ethernet0 = &enet0;
++		ethernet1 = &enet1;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu0: PowerPC,e500v2@0 {
++			device_type = "cpu";
++			reg = <0x0>;
++			next-level-cache = <&L2>;
++		};
++
++		cpu1: PowerPC,e500v2@1 {
++			device_type = "cpu";
++			reg = <0x1>;
++			next-level-cache = <&L2>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index c17aae8..4bd7223 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -38,6 +38,15 @@ config C293_PCIE
+ 	  help
+ 	  This option enables support for the C293PCIE board
  
- .macro tlb_epilog_bolted
--	ld	r14,PACA_EXTLB+EX_TLB_CR(r13)
--	ld	r10,PACA_EXTLB+EX_TLB_R10(r13)
--	ld	r11,PACA_EXTLB+EX_TLB_R11(r13)
-+	ld	r14,EX_TLB_CR(r12)
-+	ld	r10,EX_TLB_R10(r12)
-+	ld	r11,EX_TLB_R11(r12)
-+	ld	r13,EX_TLB_R13(r12)
- 	mtcr	r14
--	ld	r14,PACA_EXTLB+EX_TLB_R14(r13)
--	ld	r15,PACA_EXTLB+EX_TLB_R15(r13)
--	TLB_MISS_RESTORE_STATS_BOLTED
--	ld	r16,PACA_EXTLB+EX_TLB_R16(r13)
--	mfspr	r13,SPRN_SPRG_GEN_SCRATCH
-+	ld	r14,EX_TLB_R14(r12)
-+	ld	r15,EX_TLB_R15(r12)
-+	TLB_MISS_RESTORE_STATS
-+	ld	r16,EX_TLB_R16(r12)
-+	mfspr	r12,SPRN_SPRG_GEN_SCRATCH
- .endm
++config BSC9132_QDS
++	bool "Freescale BSC9132QDS"
++	select DEFAULT_UIMAGE
++	help
++	  This option enables support for the Freescale BSC9132 QDS board.
++	  BSC9132 is a heterogeneous SoC containing dual e500v2 powerpc cores
++	  and dual StarCore SC3850 DSP cores.
++	  Manufacturer : Freescale Semiconductor, Inc
++
+ config MPC8540_ADS
+ 	bool "Freescale MPC8540 ADS"
+ 	select DEFAULT_UIMAGE
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 25cebe7..c19beb9 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -6,6 +6,7 @@ obj-$(CONFIG_SMP) += smp.o
+ obj-y += common.o
  
- /* Data TLB miss */
+ obj-$(CONFIG_BSC9131_RDB) += bsc913x_rdb.o
++obj-$(CONFIG_BSC9132_QDS) += bsc913x_qds.o
+ obj-$(CONFIG_C293_PCIE)   += c293pcie.o
+ obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
+ obj-$(CONFIG_MPC8560_ADS) += mpc85xx_ads.o
+diff --git a/arch/powerpc/platforms/85xx/bsc913x_qds.c b/arch/powerpc/platforms/85xx/bsc913x_qds.c
+new file mode 100644
+index 0000000..0fb7e57
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/bsc913x_qds.c
+@@ -0,0 +1,74 @@
++/*
++ * BSC913xQDS Board Setup
++ *
++ * Author:
++ *   Harninder Rai <harninder.rai@freescale.com>
++ *   Priyanka Jain <Priyanka.Jain@freescale.com>
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/of_platform.h>
++#include <linux/pci.h>
++#include <asm/mpic.h>
++#include <sysdev/fsl_soc.h>
++#include <asm/udbg.h>
++
++#include "mpc85xx.h"
++#include "smp.h"
++
++void __init bsc913x_qds_pic_init(void)
++{
++	struct mpic *mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN |
++	  MPIC_SINGLE_DEST_CPU,
++	  0, 256, " OpenPIC  ");
++
++	if (!mpic)
++		pr_err("bsc913x: Failed to allocate MPIC structure\n");
++	else
++		mpic_init(mpic);
++}
++
++/*
++ * Setup the architecture
++ */
++static void __init bsc913x_qds_setup_arch(void)
++{
++	if (ppc_md.progress)
++		ppc_md.progress("bsc913x_qds_setup_arch()", 0);
++
++#if defined(CONFIG_SMP)
++	mpc85xx_smp_init();
++#endif
++
++	pr_info("bsc913x board from Freescale Semiconductor\n");
++}
++
++machine_device_initcall(bsc9132_qds, mpc85xx_common_publish_devices);
++
++/*
++ * Called very early, device-tree isn't unflattened
++ */
++
++static int __init bsc9132_qds_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	return of_flat_dt_is_compatible(root, "fsl,bsc9132qds");
++}
++
++define_machine(bsc9132_qds) {
++	.name			= "BSC9132 QDS",
++	.probe			= bsc9132_qds_probe,
++	.setup_arch		= bsc913x_qds_setup_arch,
++	.init_IRQ		= bsc913x_qds_pic_init,
++	.get_irq		= mpic_get_irq,
++	.restart		= fsl_rstcr_restart,
++	.calibrate_decr		= generic_calibrate_decr,
++	.progress		= udbg_progress,
++};
 -- 
-1.8.3.2
+1.7.6.GIT
