@@ -1,26 +1,28 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6307B2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Mar 2014 09:42:33 +1100 (EST)
-Message-ID: <1395182529.12479.223.camel@snotra.buserror.net>
+ by ozlabs.org (Postfix) with ESMTPS id 451202C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Mar 2014 10:19:08 +1100 (EST)
+Message-ID: <1395184734.12479.250.camel@snotra.buserror.net>
 Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
 From: Scott Wood <scottwood@freescale.com>
-To: Chenhui Zhao <chenhui.zhao@freescale.com>
-Date: Tue, 18 Mar 2014 17:42:09 -0500
-In-Reply-To: <20140317111957.GD6204@localhost.localdomain>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Tue, 18 Mar 2014 18:18:54 -0500
+In-Reply-To: <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
  <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
  <1394586624.13761.132.camel@snotra.buserror.net>
- <20140312104005.GH4706@localhost.localdomain>
- <1394839107.12479.154.camel@snotra.buserror.net>
- <20140317111957.GD6204@localhost.localdomain>
+ <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
+ <1394646185.13761.145.camel@snotra.buserror.net>
+ <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
+ <1394835987.12479.119.camel@snotra.buserror.net>
+ <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Jason.Jin@freescale.com
+Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,155 +32,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-03-17 at 19:19 +0800, Chenhui Zhao wrote:
-> On Fri, Mar 14, 2014 at 06:18:27PM -0500, Scott Wood wrote:
-> > On Wed, 2014-03-12 at 18:40 +0800, Chenhui Zhao wrote:
-> > > On Tue, Mar 11, 2014 at 08:10:24PM -0500, Scott Wood wrote:
-> > > > On Fri, 2014-03-07 at 12:58 +0800, Chenhui Zhao wrote:
-> > > > > From: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > > > > 
-> > > > > T1040 supports deep sleep feature, which can switch off most parts of
-> > > > > the SoC when it is in deep sleep mode. This way, it becomes more
-> > > > > energy-efficient.
-> > > > > 
-> > > > > The DDR controller will also be powered off in deep sleep. Therefore,
-> > > > > the last stage (the latter part of fsl_dp_enter_low) will run without DDR
-> > > > > access. This piece of code and related TLBs will be prefetched.
-> > > > > 
-> > > > > Due to the different initialization code between 32-bit and 64-bit, they
-> > > > > have seperate resume entry and precedure.
-> > > > > 
-> > > > > The feature supports 32-bit and 64-bit kernel mode.
-> > > > > 
-> > > > > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > > > > ---
-> > > > >  arch/powerpc/include/asm/booke_save_regs.h |    3 +
-> > > > >  arch/powerpc/kernel/cpu_setup_fsl_booke.S  |   17 ++
-> > > > >  arch/powerpc/kernel/head_fsl_booke.S       |   30 +++
-> > > > >  arch/powerpc/platforms/85xx/Makefile       |    2 +-
-> > > > >  arch/powerpc/platforms/85xx/deepsleep.c    |  201 +++++++++++++++++++
-> > > > >  arch/powerpc/platforms/85xx/qoriq_pm.c     |   38 ++++
-> > > > >  arch/powerpc/platforms/85xx/sleep.S        |  295 ++++++++++++++++++++++++++++
-> > > > >  arch/powerpc/sysdev/fsl_soc.h              |    7 +
-> > > > >  8 files changed, 592 insertions(+), 1 deletions(-)
-> > > > >  create mode 100644 arch/powerpc/platforms/85xx/deepsleep.c
-> > > > >  create mode 100644 arch/powerpc/platforms/85xx/sleep.S
-> > > > > 
-> > > > > diff --git a/arch/powerpc/include/asm/booke_save_regs.h b/arch/powerpc/include/asm/booke_save_regs.h
-> > > > > index 87c357a..37c1f6c 100644
-> > > > > --- a/arch/powerpc/include/asm/booke_save_regs.h
-> > > > > +++ b/arch/powerpc/include/asm/booke_save_regs.h
-> > > > > @@ -88,6 +88,9 @@
-> > > > >  #define HIBERNATION_FLAG	1
-> > > > >  #define DEEPSLEEP_FLAG		2
-> > > > >  
-> > > > > +#define CPLD_FLAG	1
-> > > > > +#define FPGA_FLAG	2
+On Sun, 2014-03-16 at 12:58 +0800, Kevin Hao wrote:
+> On Fri, Mar 14, 2014 at 05:26:27PM -0500, Scott Wood wrote:
+> > On Thu, 2014-03-13 at 15:46 +0800, Kevin Hao wrote:
+> > > On Wed, Mar 12, 2014 at 12:43:05PM -0500, Scott Wood wrote:
+> > > > > Shouldn't we use "readback, sync" here? The following is quoted form t4240RM:
+> > > > >   To guarantee that the results of any sequence of writes to configuration
+> > > > >   registers are in effect, the final configuration register write should be
+> > > > >   immediately followed by a read of the same register, and that should be
+> > > > >   followed by a SYNC instruction. Then accesses can safely be made to memory
+> > > > >   regions affected by the configuration register write.
 > > > > 
-> > > > What is this?
-> > > 
-> > > We have two kind of boards, QDS and RDB.
-> > > They have different register map. Use the flag to indicate the current board is using which kind
-> > > of register map.
-> > 
-> > CPLD versus FPGA is not a meaningful difference.  We don't care what
-> > technology is used to implement programmable logic -- we care what
-> > programming interface is exposed.  Customers will have their own boards
-> > that will likely not imitate either of these programming interfaces, but
-> > what they do have will still probably be implemented in a CPLD or FPGA.
-> > Likewise, Freescale may have future reference boards whose CPLD/FPGA is
-> > not compatible.
-> 
-> Will use a better name.
-> 
-> > 
-> > So use better naming, and structure the code so it's easy to plug in
-> > implementations for new or custom boards.
-> >  
-> > > > > diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-> > > > > index 20204fe..3285752 100644
-> > > > > --- a/arch/powerpc/kernel/head_fsl_booke.S
-> > > > > +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> > > > > @@ -162,6 +162,19 @@ _ENTRY(__early_start)
-> > > > >  #include "fsl_booke_entry_mapping.S"
-> > > > >  #undef ENTRY_MAPPING_BOOT_SETUP
-> > > > >  
-> > > > > +#if defined(CONFIG_SUSPEND) && defined(CONFIG_FSL_CORENET_RCPM)
-> > > > > +	/* if deep_sleep_flag != 0, jump to the deep sleep resume entry */
-> > > > > +	LOAD_REG_ADDR(r4, deep_sleep_flag)
-> > > > > +	lwz	r3, 0(r4)
-> > > > > +	cmpwi	r3, 0
-> > > > > +	beq	11f
-> > > > > +	/* clear deep_sleep_flag */
-> > > > > +	li	r3, 0
-> > > > > +	stw	r3, 0(r4)
-> > > > > +	b	fsl_deepsleep_resume
-> > > > > +11:
-> > > > > +#endif
+> > > > I agree that the sync before the readback is probably not necessary,
+> > > > since transactions to the same address should already be ordered.
 > > > > 
-> > > > Why do you come in via the normal kernel entry, versus specifying a
-> > > > direct entry point for deep sleep resume?  How does U-Boot even know
-> > > > what the normal entry is when resuming?
+> > > > A sync after the readback helps if you're trying to order the readback
+> > > > with subsequent memory accesses, though in that case wouldn't a sync
+> > > > alone (no readback) be adequate?
 > > > 
-> > > I wish to return to a specified point (like 64-bit mode), but the code in
-> > > fsl_booke_entry_mapping.S only can run in the first page. Because it
-> > > only setups a temp mapping of 4KB.
-> > 
-> > Why do you need the entry mapping on 32-bit but not 64-bit?
-> 
-> fsl_booke_entry_mapping.S is for 32-bit. 64-bit calls
-> initial_tlb_book3e() in exceptions-64e.S.
-
-The answer I was looking for is that __entry_deep_sleep calls
-start_initialization_book3e which calls the code to handle it.
-
-But why is it driven from sleep.S on 64-bit but not on 32-bit?  Why
-can't you make it so that the 32-bit TLB setup can be called into in a
-similar manner?
-
-> > > > > +#define FSLDELAY(count)		\
-> > > > > +	li	r3, (count)@l;	\
-> > > > > +	slwi	r3, r3, 10;	\
-> > > > > +	mtctr	r3;		\
-> > > > > +101:	nop;			\
-> > > > > +	bdnz	101b;
+> > > No, we don't just want to order the subsequent memory access here.
+> > > The 'write, readback, sync' is the required sequence if we want to make
+> > > sure that the writing to CCSR register does really take effect.
+> > > 
+> > > >  Though maybe not always -- see the
+> > > > comment near the end of fsl_elbc_write_buf() in
+> > > > drivers/mtd/nand_fsl_elbc.c.  I guess the readback does more than just
+> > > > make sure the device has seen the write, ensuring that the device has
+> > > > finished the transaction to the point of acting on another one.
+> > > 
+> > > Agree.
+> > > 
 > > > > 
-> > > > You don't need a namespace prefix on local macros in a non-header file.
-> > > > 
-> > > > Is the timebase stopped where you're calling this from?
+> > > > The data dependency plus isync sequence, which is done by the normal I/O
+> > > > accessors used from C code, orders the readback versus all future
+> > > > instructions (not just I/O).  The delay loop is not I/O.
 > > > 
-> > > No. My purpose is to avoid jump in the last stage of entering deep sleep.
-> > > Jump may cause problem at that time.
+> > > According to the PowerISA, the sequence 'load, date dependency, isync' only
+> > > order the load accesses. 
 > > 
-> > "bdnz" is a jump.
-> > 
-> > What problems do you think a jump will cause?
+> > The point is to order the delay loop after the load, not to order
+> > storage versus storage.
 > 
-> I mean a far jump which can jump to an address which has not been prefetched in
-> advance. I wish the code is executed in a restricted environment (predictable code
-> and address).
+> I think the point is to make sure that the writing of the CCSR_DDR_SDRAM_CFG_2
+> does really take effect before we begin to delay loop.
 
-Why would a timebase loop require a "far" jump?
+Yes.
 
-> > > > You also probably want to do a "sync, readback, data dependency, isync"
-> > > > sequence to make sure that the store has hit CCSR before you begin your
-> > > > delay (or is a delay required at all if you do that?).
-> > > 
-> > > Yes. It is safer with a sync sequence.
-> > > 
-> > > The DDR controller need some time to signal the external DDR modules to
-> > > enter self refresh mode.
-> > 
-> > Is it documented how much time it requires?
-> > 
-> > -Scott
+>  The sequence "write, readback, sync" will guarantee this according to the manual. 
+
+If you're referring to the section you quoted above, the manual does not
+say that.  It only talks about when accesses "to memory regions affected
+by the configuration register write" can be safely made.
+
+> If we just want to
+> order the delay loop after the load, the following sequence should be enough:
+> 	store to CCSR_DDR_SDRAM_CFG_2
+> 	load from CCSR_DDR_SDRAM_CFG_2
+> 	isync or sync
+> 	delay loop
 > 
-> No.
+> Why do we need the 'date dependency' here? According to the e6500 manual, the
+> instructions can execute out of order, but complete in order. So I am really
+> wondering why we need to order the load and the following delay loop if there
+> is no intention to order the storage access? 
 
-How do you know the current delay is adequate in all circumstances (e.g
-clock speeds), much less on future chips?  Is it documented that a delay
-is needed at all, or is this just something that appeared to make it
-work?  If the latter, what happens if you put the synchronization in,
-but leave out the delay?
+The data (not date) dependency means that the twi will not execute until
+after the load instruction returns data (thus, after the device has
+responded to the load).  The twi, being a flow control instruction
+rather than a storage instruction, should be fully ordered by isync.
+
+>From the isync description in the ISA: "Except as described in the
+preceding sentence, the isync instruction may complete before storage
+accesses associated with instructions preceding the
+isync instruction have been performed."
+
+I don't know if that really applies to loads (as opposed to stores), and
+it probably doesn't apply to guarded loads, but I feel safer leaving the
+twi in.
+
+As for sync instead of isync, I see nothing to indicate that it would be
+adequate (though it may be that the only reason there needed to be a
+delay loop in the first place was the lack of a readback/sync before
+doing other I/O, in which case this is moot).
+
+> > This is a sequence we're already using on all of our I/O loads
+> > (excluding accesses like in this patch that don't use the standard
+> > accessors).  I'm confident that it works even if it's not
+> > architecturally guaranteed.
+> 
+> This sequence is used to order the load and the followed storage access.
+
+It's also used to order loads versus other things, such as enabling
+MSR[EE].
+
+> And this is guaranteed by the architecture. But I don't think it is suitable
+> for a case like this. The following is quoted from PowerISA:
+>   Because stores cannot be performed “out-of-order”
+>   (see Book III), if a Store instruction depends on the
+>   value returned by a preceding Load instruction
+>   (because the value returned by the Load is used to
+>   compute either the effective address specified by the
+>   Store or the value to be stored), the corresponding stor-
+>   age accesses are performed in program order. The
+>   same applies if whether the Store instruction is exe-
+>   cuted depends on a conditional Branch instruction that
+>   in turn depends on the value returned by a preceding
+>   Load instruction.
+>   
+>   Because an isync instruction prevents the execution of
+>   instructions following the isync until instructions pre-
+>   ceding the isync have completed, if an isync follows a
+>   conditional Branch instruction that depends on the
+>   value returned by a preceding Load instruction, the
+>   load on which the Branch depends is performed before
+>   any loads caused by instructions following the isync.
+> 
+> I think the above description would guarantee that the load will be performed
+> before any storage access (both load and store) following the isync in the
+> following scenario:
+> 	lwz	r4, 0(r3)
+> 	twi	0, r4, 0
+> 	isync
+
+I think it's a poorly worded section, but yes, it guarantees both loads
+and stores -- unnecessarily doing so in separate places with different
+wording.  But by the definition of isync I don't see why it does not
+apply to *any* instruction after the isync, not just loads and stores.
+
+> >  I'm not sure that there exists a clear
+> > architectural way of synchronizing non-storage instructions relative to
+> > storage instructions.
+> 
+> Isn't what the execution synchronization instructions such as sync, isync, mtmsr
+> do?
+
+No.  Execution synchronizing just says that the previous instructions
+"have completed to a point at which they have reported all the
+exceptions they will cause" (I'm assuming this doesn't include machine
+check error reports), and that the previous instructions won't be
+affected by context changes after the execution synchronizing
+instruction, not that the previous instructions are fully completed.
+ 
+> > Given that isync is documented as preventing any execution of
+> > instructions after the isync until all previous instructions complete,
+> > it doesn't seem to make sense for the architecture to explicitly talk
+> > about loads (as opposed to any other instruction) following a load,
+> > dependent conditional branch, isync sequence.
+> 
+> Sorry, I didn't get what you mean.
+
+I mean that I do not understand why it says, "the load on which the
+Branch depends is performed before any loads caused by instructions
+following the isync" rather than "the Load on which the Branch depends
+is performed before any instructions following the isync".
+
+> > > So if we want to order all the storage access as well
+> > > as execution synchronization, we should choose sync here.
+> > 
+> > Do we need execution synchronization or context synchronization?
+> 
+> There is no context-altering instruction here, so I think an execution
+> synchronizing instruction should be enough here.
+
+Is the ISA ever explicit about what constitutes "context"?  In any case,
+just because we don't need that aspect of context synchronization
+doesn't mean execution synchronization is enough.  The behavior we want
+is described in the isync instruction specifically, not in "context
+synchronization" or "execution synchronization".
+ 
+> > The t4240 RM section that talks about a readback and a sync is in the
+> > context of subsequent memory operations ("Then accesses can safely be
+> > made to memory regions affected..."), not arbitrary instructions.
+> 
+> I assume that this sequence also guarantee that the writing does take effect.
+
+You may assume that, but the manual doesn't say that.  Sync could
+(AFAIK) be implemented by emitting a barrier on the bus, or delaying
+future storage accesses, rather than waiting for everything to have
+finished before proceeding.
+
+> > In any case, this is not performance critical and thus it's better to
+> > oversynchronize than undersynchronize.
+> 
+> On the contrary I think that sync is oversynchronize instead of
+> undersynchronize. It not only provide the execution synchronizing but also
+> order all the storage accesses. That is why I prefer the sync. :-)
+
+sync is not a superset of isync.  isync is not a superset of sync.  If
+you want to oversynchronize to be safe, do both (though even that isn't
+equivalent to a barrier that orders everything, which is partly why a
+readback is needed).
 
 -Scott
