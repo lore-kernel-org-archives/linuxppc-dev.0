@@ -1,22 +1,47 @@
-Return-Path: <X.Xie@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3807D2C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 20:52:34 +1100 (EST)
-Received: from mail60-am1 (localhost [127.0.0.1])	by mail60-am1-R.bigfish.com
- (Postfix) with ESMTP id 14CDC360151	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 18 Mar 2014 09:52:26 +0000 (UTC)
-From: Xie Xiaobo <X.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/qe: Setup clock source for TDM
-Date: Tue, 18 Mar 2014 17:09:05 +0800
-Message-ID: <1395133745-5557-1-git-send-email-X.Xie@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9A4ED2C00AE
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2014 21:23:31 +1100 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 18 Mar 2014 20:23:31 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CCAD82CE8052
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2014 21:23:28 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2IA3I8h52560086
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2014 21:03:19 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2IANPo7020583
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Mar 2014 21:23:27 +1100
+Message-ID: <53281E89.7080201@linux.vnet.ibm.com>
+Date: Tue, 18 Mar 2014 15:53:05 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Xie Xiaobo <X.Xie@freescale.com>
+To: Christoffer Dall <christoffer.dall@linaro.org>
+Subject: [UPDATED PATCH v3 10/52] arm,
+ kvm: Fix CPU hotplug callback registration
+References: <20140310203312.10746.310.stgit@srivatsabhat.in.ibm.com>
+ <20140310203538.10746.25364.stgit@srivatsabhat.in.ibm.com>
+ <20140312232127.GC24808@cbox> <53229701.8050405@linux.vnet.ibm.com>
+ <20140314191055.GF28661@cbox>
+In-Reply-To: <20140314191055.GF28661@cbox>
+Content-Type: text/plain; charset=UTF-8
+Cc: ego@linux.vnet.ibm.com, kvm@vger.kernel.org, peterz@infradead.org,
+ oleg@redhat.com, linuxppc-dev@ozlabs.org, paulus@samba.org, walken@google.com,
+ mingo@kernel.org, linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
+ kvmarm@lists.cs.columbia.edu, Gleb Natapov <gleb@kernel.org>,
+ paulmck@linux.vnet.ibm.com, linux-pm@vger.kernel.org, marc.zyngier@arm.com,
+ rusty@rustcorp.com.au, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, tj@kernel.org,
+ Paolo Bonzini <pbonzini@redhat.com>, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,1006 +51,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add tdm clock configuration in both qe clock system and
-ucc fast controler.
+On 03/15/2014 12:40 AM, Christoffer Dall wrote:
+> On Fri, Mar 14, 2014 at 11:13:29AM +0530, Srivatsa S. Bhat wrote:
+>> On 03/13/2014 04:51 AM, Christoffer Dall wrote:
+>>> On Tue, Mar 11, 2014 at 02:05:38AM +0530, Srivatsa S. Bhat wrote:
+>>>> Subsystems that want to register CPU hotplug callbacks, as well as perform
+>>>> initialization for the CPUs that are already online, often do it as shown
+>>>> below:
+>>>>
+[...]
+>>> Just so we're clear, the existing code was simply racy as not prone to
+>>> deadlocks, right?
+>>>
+>>> This makes it clear that the test above for compatible CPUs can be quite
+>>> easily evaded by using CPU hotplug, but we don't really have a good
+>>> solution for handling that yet...  Hmmm, grumble grumble, I guess if you
+>>> hotplug unsupported CPUs on a KVM/ARM system for now, stuff will break.
+>>>
+>>
+>> In this particular case, there was no deadlock possibility, rather the
+>> existing code had insufficient synchronization against CPU hotplug.
+>>
+>> init_hyp_mode() would invoke cpu_init_hyp_mode() on currently online CPUs
+>> using on_each_cpu(). If a CPU came online after this point and before calling
+>> register_cpu_notifier(), that CPU would remain uninitialized because this
+>> subsystem would miss the hot-online event. This patch fixes this bug and
+>> also uses the new synchronization method (instead of get/put_online_cpus())
+>> to ensure that we don't deadlock with CPU hotplug.
+>>
+> 
+> Yes, that was my conclusion as well.  Thanks for clarifying.  (It could
+> be noted in the commit message as well if you should feel so inclined).
+> 
 
-Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
+Please find the patch with updated changelog (and your Ack) below.
+(No changes in code).
+
+From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] arm, kvm: Fix CPU hotplug callback registration
+
+Subsystems that want to register CPU hotplug callbacks, as well as perform
+initialization for the CPUs that are already online, often do it as shown
+below:
+
+	get_online_cpus();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	register_cpu_notifier(&foobar_cpu_notifier);
+
+	put_online_cpus();
+
+This is wrong, since it is prone to ABBA deadlocks involving the
+cpu_add_remove_lock and the cpu_hotplug.lock (when running concurrently
+with CPU hotplug operations).
+
+Instead, the correct and race-free way of performing the callback
+registration is:
+
+	cpu_notifier_register_begin();
+
+	for_each_online_cpu(cpu)
+		init_cpu(cpu);
+
+	/* Note the use of the double underscored version of the API */
+	__register_cpu_notifier(&foobar_cpu_notifier);
+
+	cpu_notifier_register_done();
+
+
+In the existing arm kvm code, there is no synchronization with CPU hotplug
+to avoid missing the hotplug events that might occur after invoking
+init_hyp_mode() and before calling register_cpu_notifier(). Fix this bug
+and also use the new synchronization method (instead of get/put_online_cpus())
+to ensure that we don't deadlock with CPU hotplug.
+
+Cc: Gleb Natapov <gleb@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: kvmarm@lists.cs.columbia.edu
+Cc: kvm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Acked-by: Paolo Bonzini <pbonzini@redhat.com>
+Acked-by: Christoffer Dall <christoffer.dall@linaro.org>
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/immap_qe.h   |   5 +-
- arch/powerpc/include/asm/qe.h         |  13 +-
- arch/powerpc/include/asm/ucc.h        |   6 +-
- arch/powerpc/include/asm/ucc_fast.h   |  10 +-
- arch/powerpc/sysdev/qe_lib/qe.c       |   9 +-
- arch/powerpc/sysdev/qe_lib/ucc.c      | 773 +++++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/qe_lib/ucc_fast.c |  40 +-
- 7 files changed, 845 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/immap_qe.h
-index bedbff8..c76ef30 100644
---- a/arch/powerpc/include/asm/immap_qe.h
-+++ b/arch/powerpc/include/asm/immap_qe.h
-@@ -159,10 +159,7 @@ struct spi {
- 
- /* SI */
- struct si1 {
--	__be16	siamr1;		/* SI1 TDMA mode register */
--	__be16	sibmr1;		/* SI1 TDMB mode register */
--	__be16	sicmr1;		/* SI1 TDMC mode register */
--	__be16	sidmr1;		/* SI1 TDMD mode register */
-+	__be16	sixmr1[4];	/* SI1 TDMx (x = A B C D) mode register */
- 	u8	siglmr1_h;	/* SI1 global mode register high */
- 	u8	res0[0x1];
- 	u8	sicmdr1_h;	/* SI1 command register high */
-diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
-index 32b9bfa..1c80fdc 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/arch/powerpc/include/asm/qe.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Authors: 	Shlomi Gridish <gridish@freescale.com>
-  * 		Li Yang <leoli@freescale.com>
-@@ -75,6 +75,8 @@ enum qe_clock {
- 	QE_CLK22,		/* Clock 22 */
- 	QE_CLK23,		/* Clock 23 */
- 	QE_CLK24,		/* Clock 24 */
-+	QE_RSYNC_PIN,		/* RSYNC from pin */
-+	QE_TSYNC_PIN,		/* TSYNC from pin */
- 	QE_CLK_DUMMY
- };
- 
-@@ -636,6 +638,15 @@ struct ucc_slow_pram {
- #define UCC_BISYNC_UCCE_TXB	0x0002
- #define UCC_BISYNC_UCCE_RXB	0x0001
- 
-+/* Transparent UCC Event Register (UCCE) */
-+#define UCC_TRANS_UCCE_GRA	0x0080
-+#define UCC_TRANS_UCCE_TXE	0x0010
-+#define UCC_TRANS_UCCE_RXF	0x0008
-+#define UCC_TRANS_UCCE_BSY	0x0004
-+#define UCC_TRANS_UCCE_TXB	0x0002
-+#define UCC_TRANS_UCCE_RXB	0x0001
-+
-+
- /* Gigabit Ethernet Fast UCC Event Register (UCCE) */
- #define UCC_GETH_UCCE_MPD       0x80000000
- #define UCC_GETH_UCCE_SCAR      0x40000000
-diff --git a/arch/powerpc/include/asm/ucc.h b/arch/powerpc/include/asm/ucc.h
-index 6927ac2..0a942c9 100644
---- a/arch/powerpc/include/asm/ucc.h
-+++ b/arch/powerpc/include/asm/ucc.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Authors: 	Shlomi Gridish <gridish@freescale.com>
-  * 		Li Yang <leoli@freescale.com>
-@@ -41,6 +41,10 @@ int ucc_set_qe_mux_mii_mng(unsigned int ucc_num);
- 
- int ucc_set_qe_mux_rxtx(unsigned int ucc_num, enum qe_clock clock,
- 	enum comm_dir mode);
-+int ucc_set_tdm_rxtx_clk(unsigned int tdm_num, enum qe_clock clock,
-+	enum comm_dir mode);
-+int ucc_set_tdm_rxtx_sync(unsigned int tdm_num, enum qe_clock clock,
-+	enum comm_dir mode);
- 
- int ucc_mux_set_grant_tsa_bkpt(unsigned int ucc_num, int set, u32 mask);
- 
-diff --git a/arch/powerpc/include/asm/ucc_fast.h b/arch/powerpc/include/asm/ucc_fast.h
-index 72ea9ba..98e19d8 100644
---- a/arch/powerpc/include/asm/ucc_fast.h
-+++ b/arch/powerpc/include/asm/ucc_fast.h
-@@ -1,7 +1,7 @@
- /*
-  * Internal header file for UCC FAST unit routines.
-  *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Authors: 	Shlomi Gridish <gridish@freescale.com>
-  * 		Li Yang <leoli@freescale.com>
-@@ -27,12 +27,15 @@
- #define R_I	0x10000000	/* interrupt on reception */
- #define R_L	0x08000000	/* last */
- #define R_F	0x04000000	/* first */
-+#define R_CM	0x02000000	/* CM */
- 
- /* transmit BD's status */
- #define T_R	0x80000000	/* ready bit */
- #define T_W	0x20000000	/* wrap bit */
- #define T_I	0x10000000	/* interrupt on completion */
- #define T_L	0x08000000	/* last */
-+#define T_TC	0x04000000	/* crc */
-+#define T_CM	0x02000000	/* CM */
- 
- /* Rx Data buffer must be 4 bytes aligned in most cases */
- #define UCC_FAST_RX_ALIGN			4
-@@ -118,9 +121,12 @@ enum ucc_fast_transparent_tcrc {
- /* Fast UCC initialization structure */
- struct ucc_fast_info {
- 	int ucc_num;
-+	int tdm_num;
- 	enum qe_clock rx_clock;
- 	enum qe_clock tx_clock;
--	u32 regs;
-+	enum qe_clock rx_sync;
-+	enum qe_clock tx_sync;
-+	resource_size_t regs;
- 	int irq;
- 	u32 uccm_mask;
- 	int bd_mem_part;
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index 238a07b..9a9f733 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -1,5 +1,6 @@
- /*
-- * Copyright (C) 2006-2010 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2006-2010, 2014 Freescale Semiconductor, Inc.
-+ * All rights reserved.
-  *
-  * Authors: 	Shlomi Gridish <gridish@freescale.com>
-  * 		Li Yang <leoli@freescale.com>
-@@ -240,6 +241,12 @@ enum qe_clock qe_clock_source(const char *source)
- 	if (strcasecmp(source, "none") == 0)
- 		return QE_CLK_NONE;
- 
-+	if (strcasecmp(source, "tsync_pin") == 0)
-+		return QE_TSYNC_PIN;
-+
-+	if (strcasecmp(source, "rsync_pin") == 0)
-+		return QE_RSYNC_PIN;
-+
- 	if (strncasecmp(source, "brg", 3) == 0) {
- 		i = simple_strtoul(source + 3, NULL, 10);
- 		if ((i >= 1) && (i <= 16))
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/arch/powerpc/sysdev/qe_lib/ucc.c
-index 621575b..5c27e04 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc.c
-@@ -3,7 +3,7 @@
-  *
-  * QE UCC API Set - UCC specific routines implementations.
-  *
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Authors: 	Shlomi Gridish <gridish@freescale.com>
-  * 		Li Yang <leoli@freescale.com>
-@@ -210,3 +210,774 @@ int ucc_set_qe_mux_rxtx(unsigned int ucc_num, enum qe_clock clock,
- 
- 	return 0;
- }
-+
-+/* tdm_num: TDM A-H port num is 0-7 */
-+int ucc_set_tdm_rxtx_clk(u32 tdm_num, enum qe_clock clock,
-+		enum comm_dir mode)
-+{
-+	u32 clock_bits, shift;
-+	struct qe_mux *qe_mux_reg;
-+	 __be32 __iomem *cmxs1cr;
-+
-+	clock_bits = 0;
-+	qe_mux_reg = &qe_immr->qmx;
-+
-+	if ((tdm_num > 7 || tdm_num < 0))
-+		return -EINVAL;
-+
-+	/* The communications direction must be RX or TX */
-+	if (!((mode == COMM_DIR_RX) || (mode == COMM_DIR_TX)))
-+		return -EINVAL;
-+
-+	switch (mode) {
-+	case COMM_DIR_RX:
-+		switch (tdm_num) {
-+		case 0:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK3:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK8:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 28;
-+			break;
-+		case 1:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK5:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK10:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 24;
-+			break;
-+		case 2:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK7:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK12:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 20;
-+			break;
-+		case 3:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK9:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK14:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 16;
-+			break;
-+		case 4:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK11:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK16:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 28;
-+			break;
-+		case 5:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK13:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK18:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 24;
-+			break;
-+		case 6:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK15:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK20:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 20;
-+			break;
-+		case 7:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK17:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK22:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 16;
-+			break;
-+		default:
-+				break;
-+		}
-+		break;
-+	case COMM_DIR_TX:
-+		switch (tdm_num) {
-+		case 0:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK4:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK9:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 12;
-+			break;
-+		case 1:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK6:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK11:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 8;
-+			break;
-+		case 2:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK8:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK13:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 4;
-+			break;
-+		case 3:
-+			switch (clock) {
-+			case QE_BRG3:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG4:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK1:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK2:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK10:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK15:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 0;
-+			break;
-+		case 4:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK12:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK17:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 12;
-+			break;
-+		case 5:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK14:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK19:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 8;
-+			break;
-+		case 6:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK16:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK21:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 4;
-+			break;
-+		case 7:
-+			switch (clock) {
-+			case QE_BRG12:
-+					clock_bits = 1;
-+					break;
-+			case QE_BRG13:
-+					clock_bits = 2;
-+					break;
-+			case QE_CLK23:
-+					clock_bits = 4;
-+					break;
-+			case QE_CLK24:
-+					clock_bits = 5;
-+					break;
-+			case QE_CLK18:
-+					clock_bits = 6;
-+					break;
-+			case QE_CLK3:
-+					clock_bits = 7;
-+					break;
-+			default:
-+					break;
-+			}
-+			shift = 0;
-+			break;
-+		default:
-+			break;
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	if (!clock_bits)
-+		return -ENOENT;
-+
-+	cmxs1cr = (tdm_num < 4) ? (&qe_mux_reg->cmxsi1cr_l) :
-+				  (&qe_mux_reg->cmxsi1cr_h);
-+
-+	clrsetbits_be32(cmxs1cr, QE_CMXUCR_TX_CLK_SRC_MASK << shift,
-+		   clock_bits << shift);
-+
-+	return 0;
-+}
-+
-+
-+int ucc_set_tdm_rxtx_sync(u32 tdm_num, enum qe_clock clock,
-+		enum comm_dir mode)
-+{
-+	u32 shift, clock_bits;
-+	struct qe_mux *qe_mux_reg;
-+	int source;
-+
-+	source = 0;
-+	shift = 0;
-+	qe_mux_reg = &qe_immr->qmx;
-+
-+	if ((tdm_num > 7 || tdm_num < 0))
-+		return -EINVAL;
-+
-+	/* The communications direction must be RX or TX */
-+	if (!((mode == COMM_DIR_RX) || (mode == COMM_DIR_TX)))
-+		return -EINVAL;
-+
-+	switch (mode) {
-+	case COMM_DIR_RX:
-+		switch (tdm_num) {
-+		case 0:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG10:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 30;
-+			break;
-+		case 1:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG10:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 28;
-+			break;
-+		case 2:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG11:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 26;
-+			break;
-+		case 3:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG11:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 24;
-+			break;
-+		case 4:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG14:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 22;
-+			break;
-+		case 5:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG14:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 20;
-+			break;
-+		case 6:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG15:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 18;
-+			break;
-+		case 7:
-+			switch (clock) {
-+			case QE_RSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG15:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 16;
-+			break;
-+		default:
-+			source = -1;
-+			break;
-+		}
-+		break;
-+	case COMM_DIR_TX:
-+		switch (tdm_num) {
-+		case 0:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG10:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 14;
-+			break;
-+		case 1:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG10:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 12;
-+			break;
-+		case 2:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG11:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 10;
-+			break;
-+		case 3:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG9:
-+					source = 1;
-+					break;
-+			case QE_BRG11:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 8;
-+			break;
-+		case 4:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG14:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 6;
-+			break;
-+		case 5:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG14:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 4;
-+			break;
-+		case 6:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG15:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 2;
-+			break;
-+		case 7:
-+			switch (clock) {
-+			case QE_TSYNC_PIN:
-+					source = 0;
-+					break;
-+			case QE_BRG13:
-+					source = 1;
-+					break;
-+			case QE_BRG15:
-+					source = 2;
-+					break;
-+			default:
-+					source = -1;
-+					break;
-+			}
-+			shift = 0;
-+			break;
-+
-+		default:
-+			source = -1;
-+			break;
-+		}
-+		break;
-+	default:
-+		source = -1;
-+		break;
-+	}
-+
-+	if (source == -1)
-+		return -ENOENT;
-+
-+	clock_bits = (u32) source;
-+
-+	clrsetbits_be32(&qe_mux_reg->cmxsi1syr,
-+			QE_CMXUCR_TX_CLK_SRC_MASK << shift,
-+			clock_bits << shift);
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-index 65aaf15..16b88d6 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
-+ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
-  *
-  * Authors: 	Shlomi Gridish <gridish@freescale.com>
-  * 		Li Yang <leoli@freescale.com>
-@@ -327,6 +327,44 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
- 			ucc_fast_free(uccf);
- 			return -EINVAL;
+ arch/arm/kvm/arm.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/kvm/arm.c b/arch/arm/kvm/arm.c
+index bd18bb8..f0e50a0 100644
+--- a/arch/arm/kvm/arm.c
++++ b/arch/arm/kvm/arm.c
+@@ -1051,21 +1051,26 @@ int kvm_arch_init(void *opaque)
  		}
-+#ifdef CONFIG_FSL_UCC_TDM
-+	} else {
-+		/* tdm Rx clock routing */
-+		if ((uf_info->rx_clock != QE_CLK_NONE) &&
-+			ucc_set_tdm_rxtx_clk(uf_info->tdm_num,
-+				uf_info->rx_clock, COMM_DIR_RX)) {
-+			pr_err("%s: illegal value for RX clock", __func__);
-+			ucc_fast_free(uccf);
-+			return -EINVAL;
-+		}
-+
-+		/* tdm Tx clock routing */
-+		if ((uf_info->tx_clock != QE_CLK_NONE) &&
-+			ucc_set_tdm_rxtx_clk(uf_info->tdm_num,
-+				uf_info->tx_clock, COMM_DIR_TX)) {
-+			pr_err("%s:illegal value for TX clock", __func__);
-+			ucc_fast_free(uccf);
-+			return -EINVAL;
-+		}
-+
-+		/* tdm Rx sync clock routing */
-+		if ((uf_info->rx_sync != QE_CLK_NONE) &&
-+			ucc_set_tdm_rxtx_sync(uf_info->tdm_num,
-+				uf_info->rx_sync, COMM_DIR_RX)) {
-+			pr_err("%s:illegal value for TX clock", __func__);
-+			ucc_fast_free(uccf);
-+			return -EINVAL;
-+		}
-+
-+		/* tdm Tx sync clock routing */
-+		if ((uf_info->tx_sync != QE_CLK_NONE) &&
-+			ucc_set_tdm_rxtx_sync(uf_info->tdm_num,
-+				uf_info->tx_sync, COMM_DIR_TX)) {
-+			pr_err("%s:illegal value for TX clock", __func__);
-+			ucc_fast_free(uccf);
-+			return -EINVAL;
-+		}
-+#endif
  	}
  
- 	/* Set interrupt mask register at UCC level. */
--- 
-1.8.4
++	cpu_notifier_register_begin();
++
+ 	err = init_hyp_mode();
+ 	if (err)
+ 		goto out_err;
+ 
+-	err = register_cpu_notifier(&hyp_init_cpu_nb);
++	err = __register_cpu_notifier(&hyp_init_cpu_nb);
+ 	if (err) {
+ 		kvm_err("Cannot register HYP init CPU notifier (%d)\n", err);
+ 		goto out_err;
+ 	}
+ 
++	cpu_notifier_register_done();
++
+ 	hyp_cpu_pm_init();
+ 
+ 	kvm_coproc_table_init();
+ 	return 0;
+ out_err:
++	cpu_notifier_register_done();
+ 	return err;
+ }
+ 
