@@ -1,19 +1,22 @@
-Return-Path: <xuelin.shi@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+Return-Path: <X.Xie@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C06F22C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 20:15:25 +1100 (EST)
-From: <xuelin.shi@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] fix dmaengine_unmap failure.
-Date: Tue, 18 Mar 2014 16:32:00 +0800
-Message-ID: <1395131520-30207-1-git-send-email-xuelin.shi@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3807D2C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 20:52:34 +1100 (EST)
+Received: from mail60-am1 (localhost [127.0.0.1])	by mail60-am1-R.bigfish.com
+ (Postfix) with ESMTP id 14CDC360151	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 18 Mar 2014 09:52:26 +0000 (UTC)
+From: Xie Xiaobo <X.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH] powerpc/qe: Setup clock source for TDM
+Date: Tue, 18 Mar 2014 17:09:05 +0800
+Message-ID: <1395133745-5557-1-git-send-email-X.Xie@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: dmaengine@vger.kernel.org, Xuelin Shi <xuelin.shi@freescale.com>
+Cc: Xie Xiaobo <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,64 +26,1006 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xuelin Shi <xuelin.shi@freescale.com>
+Add tdm clock configuration in both qe clock system and
+ucc fast controler.
 
-The count which is used to get_unmap_data maybe not the same as the
-count computed in dmaengine_unmap which causes to free data in a
-wrong pool.
-
-This patch fixes this issue by keeping the pool in unmap_data
-structure.
-
-Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
+Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
 ---
- drivers/dma/dmaengine.c   | 7 +++++--
- include/linux/dmaengine.h | 1 +
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/immap_qe.h   |   5 +-
+ arch/powerpc/include/asm/qe.h         |  13 +-
+ arch/powerpc/include/asm/ucc.h        |   6 +-
+ arch/powerpc/include/asm/ucc_fast.h   |  10 +-
+ arch/powerpc/sysdev/qe_lib/qe.c       |   9 +-
+ arch/powerpc/sysdev/qe_lib/ucc.c      | 773 +++++++++++++++++++++++++++++++++-
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c |  40 +-
+ 7 files changed, 845 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index ed610b4..2977eee 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -1014,7 +1014,7 @@ static void dmaengine_unmap(struct kref *kref)
- 		dma_unmap_page(dev, unmap->addr[i], unmap->len,
- 			       DMA_BIDIRECTIONAL);
- 	}
--	mempool_free(unmap, __get_unmap_pool(cnt)->pool);
-+	mempool_free(unmap, unmap->unmap_pool->pool);
- }
+diff --git a/arch/powerpc/include/asm/immap_qe.h b/arch/powerpc/include/asm/immap_qe.h
+index bedbff8..c76ef30 100644
+--- a/arch/powerpc/include/asm/immap_qe.h
++++ b/arch/powerpc/include/asm/immap_qe.h
+@@ -159,10 +159,7 @@ struct spi {
  
- void dmaengine_unmap_put(struct dmaengine_unmap_data *unmap)
-@@ -1071,14 +1071,17 @@ struct dmaengine_unmap_data *
- dmaengine_get_unmap_data(struct device *dev, int nr, gfp_t flags)
- {
- 	struct dmaengine_unmap_data *unmap;
-+	struct dmaengine_unmap_pool *unmap_pool;
- 
--	unmap = mempool_alloc(__get_unmap_pool(nr)->pool, flags);
-+	unmap_pool = __get_unmap_pool(nr);
-+	unmap = mempool_alloc(unmap_pool->pool, flags);
- 	if (!unmap)
- 		return NULL;
- 
- 	memset(unmap, 0, sizeof(*unmap));
- 	kref_init(&unmap->kref);
- 	unmap->dev = dev;
-+	unmap->unmap_pool = unmap_pool;
- 
- 	return unmap;
- }
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index c5c92d5..6a25635 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -439,6 +439,7 @@ struct dmaengine_unmap_data {
- 	struct device *dev;
- 	struct kref kref;
- 	size_t len;
-+	struct dmaengine_unmap_pool *unmap_pool;
- 	dma_addr_t addr[0];
+ /* SI */
+ struct si1 {
+-	__be16	siamr1;		/* SI1 TDMA mode register */
+-	__be16	sibmr1;		/* SI1 TDMB mode register */
+-	__be16	sicmr1;		/* SI1 TDMC mode register */
+-	__be16	sidmr1;		/* SI1 TDMD mode register */
++	__be16	sixmr1[4];	/* SI1 TDMx (x = A B C D) mode register */
+ 	u8	siglmr1_h;	/* SI1 global mode register high */
+ 	u8	res0[0x1];
+ 	u8	sicmdr1_h;	/* SI1 command register high */
+diff --git a/arch/powerpc/include/asm/qe.h b/arch/powerpc/include/asm/qe.h
+index 32b9bfa..1c80fdc 100644
+--- a/arch/powerpc/include/asm/qe.h
++++ b/arch/powerpc/include/asm/qe.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Authors: 	Shlomi Gridish <gridish@freescale.com>
+  * 		Li Yang <leoli@freescale.com>
+@@ -75,6 +75,8 @@ enum qe_clock {
+ 	QE_CLK22,		/* Clock 22 */
+ 	QE_CLK23,		/* Clock 23 */
+ 	QE_CLK24,		/* Clock 24 */
++	QE_RSYNC_PIN,		/* RSYNC from pin */
++	QE_TSYNC_PIN,		/* TSYNC from pin */
+ 	QE_CLK_DUMMY
  };
  
+@@ -636,6 +638,15 @@ struct ucc_slow_pram {
+ #define UCC_BISYNC_UCCE_TXB	0x0002
+ #define UCC_BISYNC_UCCE_RXB	0x0001
+ 
++/* Transparent UCC Event Register (UCCE) */
++#define UCC_TRANS_UCCE_GRA	0x0080
++#define UCC_TRANS_UCCE_TXE	0x0010
++#define UCC_TRANS_UCCE_RXF	0x0008
++#define UCC_TRANS_UCCE_BSY	0x0004
++#define UCC_TRANS_UCCE_TXB	0x0002
++#define UCC_TRANS_UCCE_RXB	0x0001
++
++
+ /* Gigabit Ethernet Fast UCC Event Register (UCCE) */
+ #define UCC_GETH_UCCE_MPD       0x80000000
+ #define UCC_GETH_UCCE_SCAR      0x40000000
+diff --git a/arch/powerpc/include/asm/ucc.h b/arch/powerpc/include/asm/ucc.h
+index 6927ac2..0a942c9 100644
+--- a/arch/powerpc/include/asm/ucc.h
++++ b/arch/powerpc/include/asm/ucc.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Authors: 	Shlomi Gridish <gridish@freescale.com>
+  * 		Li Yang <leoli@freescale.com>
+@@ -41,6 +41,10 @@ int ucc_set_qe_mux_mii_mng(unsigned int ucc_num);
+ 
+ int ucc_set_qe_mux_rxtx(unsigned int ucc_num, enum qe_clock clock,
+ 	enum comm_dir mode);
++int ucc_set_tdm_rxtx_clk(unsigned int tdm_num, enum qe_clock clock,
++	enum comm_dir mode);
++int ucc_set_tdm_rxtx_sync(unsigned int tdm_num, enum qe_clock clock,
++	enum comm_dir mode);
+ 
+ int ucc_mux_set_grant_tsa_bkpt(unsigned int ucc_num, int set, u32 mask);
+ 
+diff --git a/arch/powerpc/include/asm/ucc_fast.h b/arch/powerpc/include/asm/ucc_fast.h
+index 72ea9ba..98e19d8 100644
+--- a/arch/powerpc/include/asm/ucc_fast.h
++++ b/arch/powerpc/include/asm/ucc_fast.h
+@@ -1,7 +1,7 @@
+ /*
+  * Internal header file for UCC FAST unit routines.
+  *
+- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Authors: 	Shlomi Gridish <gridish@freescale.com>
+  * 		Li Yang <leoli@freescale.com>
+@@ -27,12 +27,15 @@
+ #define R_I	0x10000000	/* interrupt on reception */
+ #define R_L	0x08000000	/* last */
+ #define R_F	0x04000000	/* first */
++#define R_CM	0x02000000	/* CM */
+ 
+ /* transmit BD's status */
+ #define T_R	0x80000000	/* ready bit */
+ #define T_W	0x20000000	/* wrap bit */
+ #define T_I	0x10000000	/* interrupt on completion */
+ #define T_L	0x08000000	/* last */
++#define T_TC	0x04000000	/* crc */
++#define T_CM	0x02000000	/* CM */
+ 
+ /* Rx Data buffer must be 4 bytes aligned in most cases */
+ #define UCC_FAST_RX_ALIGN			4
+@@ -118,9 +121,12 @@ enum ucc_fast_transparent_tcrc {
+ /* Fast UCC initialization structure */
+ struct ucc_fast_info {
+ 	int ucc_num;
++	int tdm_num;
+ 	enum qe_clock rx_clock;
+ 	enum qe_clock tx_clock;
+-	u32 regs;
++	enum qe_clock rx_sync;
++	enum qe_clock tx_sync;
++	resource_size_t regs;
+ 	int irq;
+ 	u32 uccm_mask;
+ 	int bd_mem_part;
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index 238a07b..9a9f733 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -1,5 +1,6 @@
+ /*
+- * Copyright (C) 2006-2010 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2006-2010, 2014 Freescale Semiconductor, Inc.
++ * All rights reserved.
+  *
+  * Authors: 	Shlomi Gridish <gridish@freescale.com>
+  * 		Li Yang <leoli@freescale.com>
+@@ -240,6 +241,12 @@ enum qe_clock qe_clock_source(const char *source)
+ 	if (strcasecmp(source, "none") == 0)
+ 		return QE_CLK_NONE;
+ 
++	if (strcasecmp(source, "tsync_pin") == 0)
++		return QE_TSYNC_PIN;
++
++	if (strcasecmp(source, "rsync_pin") == 0)
++		return QE_RSYNC_PIN;
++
+ 	if (strncasecmp(source, "brg", 3) == 0) {
+ 		i = simple_strtoul(source + 3, NULL, 10);
+ 		if ((i >= 1) && (i <= 16))
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/arch/powerpc/sysdev/qe_lib/ucc.c
+index 621575b..5c27e04 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc.c
+@@ -3,7 +3,7 @@
+  *
+  * QE UCC API Set - UCC specific routines implementations.
+  *
+- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Authors: 	Shlomi Gridish <gridish@freescale.com>
+  * 		Li Yang <leoli@freescale.com>
+@@ -210,3 +210,774 @@ int ucc_set_qe_mux_rxtx(unsigned int ucc_num, enum qe_clock clock,
+ 
+ 	return 0;
+ }
++
++/* tdm_num: TDM A-H port num is 0-7 */
++int ucc_set_tdm_rxtx_clk(u32 tdm_num, enum qe_clock clock,
++		enum comm_dir mode)
++{
++	u32 clock_bits, shift;
++	struct qe_mux *qe_mux_reg;
++	 __be32 __iomem *cmxs1cr;
++
++	clock_bits = 0;
++	qe_mux_reg = &qe_immr->qmx;
++
++	if ((tdm_num > 7 || tdm_num < 0))
++		return -EINVAL;
++
++	/* The communications direction must be RX or TX */
++	if (!((mode == COMM_DIR_RX) || (mode == COMM_DIR_TX)))
++		return -EINVAL;
++
++	switch (mode) {
++	case COMM_DIR_RX:
++		switch (tdm_num) {
++		case 0:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK3:
++					clock_bits = 6;
++					break;
++			case QE_CLK8:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 28;
++			break;
++		case 1:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK5:
++					clock_bits = 6;
++					break;
++			case QE_CLK10:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 24;
++			break;
++		case 2:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK7:
++					clock_bits = 6;
++					break;
++			case QE_CLK12:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 20;
++			break;
++		case 3:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK9:
++					clock_bits = 6;
++					break;
++			case QE_CLK14:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 16;
++			break;
++		case 4:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK11:
++					clock_bits = 6;
++					break;
++			case QE_CLK16:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 28;
++			break;
++		case 5:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK13:
++					clock_bits = 6;
++					break;
++			case QE_CLK18:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 24;
++			break;
++		case 6:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK15:
++					clock_bits = 6;
++					break;
++			case QE_CLK20:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 20;
++			break;
++		case 7:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK17:
++					clock_bits = 6;
++					break;
++			case QE_CLK22:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 16;
++			break;
++		default:
++				break;
++		}
++		break;
++	case COMM_DIR_TX:
++		switch (tdm_num) {
++		case 0:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK4:
++					clock_bits = 6;
++					break;
++			case QE_CLK9:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 12;
++			break;
++		case 1:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK6:
++					clock_bits = 6;
++					break;
++			case QE_CLK11:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 8;
++			break;
++		case 2:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK8:
++					clock_bits = 6;
++					break;
++			case QE_CLK13:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 4;
++			break;
++		case 3:
++			switch (clock) {
++			case QE_BRG3:
++					clock_bits = 1;
++					break;
++			case QE_BRG4:
++					clock_bits = 2;
++					break;
++			case QE_CLK1:
++					clock_bits = 4;
++					break;
++			case QE_CLK2:
++					clock_bits = 5;
++					break;
++			case QE_CLK10:
++					clock_bits = 6;
++					break;
++			case QE_CLK15:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 0;
++			break;
++		case 4:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK12:
++					clock_bits = 6;
++					break;
++			case QE_CLK17:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 12;
++			break;
++		case 5:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK14:
++					clock_bits = 6;
++					break;
++			case QE_CLK19:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 8;
++			break;
++		case 6:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK16:
++					clock_bits = 6;
++					break;
++			case QE_CLK21:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 4;
++			break;
++		case 7:
++			switch (clock) {
++			case QE_BRG12:
++					clock_bits = 1;
++					break;
++			case QE_BRG13:
++					clock_bits = 2;
++					break;
++			case QE_CLK23:
++					clock_bits = 4;
++					break;
++			case QE_CLK24:
++					clock_bits = 5;
++					break;
++			case QE_CLK18:
++					clock_bits = 6;
++					break;
++			case QE_CLK3:
++					clock_bits = 7;
++					break;
++			default:
++					break;
++			}
++			shift = 0;
++			break;
++		default:
++			break;
++		}
++		break;
++	default:
++		break;
++	}
++
++	if (!clock_bits)
++		return -ENOENT;
++
++	cmxs1cr = (tdm_num < 4) ? (&qe_mux_reg->cmxsi1cr_l) :
++				  (&qe_mux_reg->cmxsi1cr_h);
++
++	clrsetbits_be32(cmxs1cr, QE_CMXUCR_TX_CLK_SRC_MASK << shift,
++		   clock_bits << shift);
++
++	return 0;
++}
++
++
++int ucc_set_tdm_rxtx_sync(u32 tdm_num, enum qe_clock clock,
++		enum comm_dir mode)
++{
++	u32 shift, clock_bits;
++	struct qe_mux *qe_mux_reg;
++	int source;
++
++	source = 0;
++	shift = 0;
++	qe_mux_reg = &qe_immr->qmx;
++
++	if ((tdm_num > 7 || tdm_num < 0))
++		return -EINVAL;
++
++	/* The communications direction must be RX or TX */
++	if (!((mode == COMM_DIR_RX) || (mode == COMM_DIR_TX)))
++		return -EINVAL;
++
++	switch (mode) {
++	case COMM_DIR_RX:
++		switch (tdm_num) {
++		case 0:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG10:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 30;
++			break;
++		case 1:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG10:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 28;
++			break;
++		case 2:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG11:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 26;
++			break;
++		case 3:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG11:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 24;
++			break;
++		case 4:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG14:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 22;
++			break;
++		case 5:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG14:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 20;
++			break;
++		case 6:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG15:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 18;
++			break;
++		case 7:
++			switch (clock) {
++			case QE_RSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG15:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 16;
++			break;
++		default:
++			source = -1;
++			break;
++		}
++		break;
++	case COMM_DIR_TX:
++		switch (tdm_num) {
++		case 0:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG10:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 14;
++			break;
++		case 1:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG10:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 12;
++			break;
++		case 2:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG11:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 10;
++			break;
++		case 3:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG9:
++					source = 1;
++					break;
++			case QE_BRG11:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 8;
++			break;
++		case 4:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG14:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 6;
++			break;
++		case 5:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG14:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 4;
++			break;
++		case 6:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG15:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 2;
++			break;
++		case 7:
++			switch (clock) {
++			case QE_TSYNC_PIN:
++					source = 0;
++					break;
++			case QE_BRG13:
++					source = 1;
++					break;
++			case QE_BRG15:
++					source = 2;
++					break;
++			default:
++					source = -1;
++					break;
++			}
++			shift = 0;
++			break;
++
++		default:
++			source = -1;
++			break;
++		}
++		break;
++	default:
++		source = -1;
++		break;
++	}
++
++	if (source == -1)
++		return -ENOENT;
++
++	clock_bits = (u32) source;
++
++	clrsetbits_be32(&qe_mux_reg->cmxsi1syr,
++			QE_CMXUCR_TX_CLK_SRC_MASK << shift,
++			clock_bits << shift);
++
++	return 0;
++}
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+index 65aaf15..16b88d6 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_fast.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights reserved.
++ * Copyright (C) 2006, 2014 Freescale Semiconductor, Inc. All rights reserved.
+  *
+  * Authors: 	Shlomi Gridish <gridish@freescale.com>
+  * 		Li Yang <leoli@freescale.com>
+@@ -327,6 +327,44 @@ int ucc_fast_init(struct ucc_fast_info * uf_info, struct ucc_fast_private ** ucc
+ 			ucc_fast_free(uccf);
+ 			return -EINVAL;
+ 		}
++#ifdef CONFIG_FSL_UCC_TDM
++	} else {
++		/* tdm Rx clock routing */
++		if ((uf_info->rx_clock != QE_CLK_NONE) &&
++			ucc_set_tdm_rxtx_clk(uf_info->tdm_num,
++				uf_info->rx_clock, COMM_DIR_RX)) {
++			pr_err("%s: illegal value for RX clock", __func__);
++			ucc_fast_free(uccf);
++			return -EINVAL;
++		}
++
++		/* tdm Tx clock routing */
++		if ((uf_info->tx_clock != QE_CLK_NONE) &&
++			ucc_set_tdm_rxtx_clk(uf_info->tdm_num,
++				uf_info->tx_clock, COMM_DIR_TX)) {
++			pr_err("%s:illegal value for TX clock", __func__);
++			ucc_fast_free(uccf);
++			return -EINVAL;
++		}
++
++		/* tdm Rx sync clock routing */
++		if ((uf_info->rx_sync != QE_CLK_NONE) &&
++			ucc_set_tdm_rxtx_sync(uf_info->tdm_num,
++				uf_info->rx_sync, COMM_DIR_RX)) {
++			pr_err("%s:illegal value for TX clock", __func__);
++			ucc_fast_free(uccf);
++			return -EINVAL;
++		}
++
++		/* tdm Tx sync clock routing */
++		if ((uf_info->tx_sync != QE_CLK_NONE) &&
++			ucc_set_tdm_rxtx_sync(uf_info->tdm_num,
++				uf_info->tx_sync, COMM_DIR_TX)) {
++			pr_err("%s:illegal value for TX clock", __func__);
++			ucc_fast_free(uccf);
++			return -EINVAL;
++		}
++#endif
+ 	}
+ 
+ 	/* Set interrupt mask register at UCC level. */
 -- 
-1.8.3.2
+1.8.4
