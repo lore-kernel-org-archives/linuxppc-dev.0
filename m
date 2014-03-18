@@ -1,24 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <xuelin.shi@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 681592C0099
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 19:50:41 +1100 (EST)
-Received: by mail-pa0-f47.google.com with SMTP id lj1so6985954pab.20
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 01:50:37 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id C06F22C00CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Mar 2014 20:15:25 +1100 (EST)
+From: <xuelin.shi@freescale.com>
+To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] fix dmaengine_unmap failure.
+Date: Tue, 18 Mar 2014 16:32:00 +0800
+Message-ID: <1395131520-30207-1-git-send-email-xuelin.shi@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1395132465-19450-1-git-send-email-geert@linux-m68k.org>
-References: <1395132465-19450-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 18 Mar 2014 09:50:37 +0100
-Message-ID: <CAMuHMdVUKbgKEaQ-0ksTd3NJoNASmqy0CiVH6AryAt-HT7Qy3A@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.14-rc7
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Linux I2C <linux-i2c@vger.kernel.org>
+Content-Type: text/plain
+Cc: dmaengine@vger.kernel.org, Xuelin Shi <xuelin.shi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 18, 2014 at 9:47 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.14-rc7[1]  to v3.14-rc6[3], the summaries are:
->   - build errors: +5/-13
+From: Xuelin Shi <xuelin.shi@freescale.com>
 
-Ignoring randconfig failures that are not really new:
+The count which is used to get_unmap_data maybe not the same as the
+count computed in dmaengine_unmap which causes to free data in a
+wrong pool.
 
-  + /scratch/kisskb/src/drivers/i2c/busses/i2c-cpm.c: error: implicit
-declaration of function 'irq_of_parse_and_map'
-[-Werror=implicit-function-declaration]:  => 449:2
-  + /scratch/kisskb/src/drivers/i2c/busses/i2c-cpm.c: error: implicit
-declaration of function 'of_iomap'
-[-Werror=implicit-function-declaration]:  => 460:2
+This patch fixes this issue by keeping the pool in unmap_data
+structure.
 
-powerpc/mpc85xx_defconfig
+Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
+---
+ drivers/dma/dmaengine.c   | 7 +++++--
+ include/linux/dmaengine.h | 1 +
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/7277/ (all 119 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/7258/ (all 119 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index ed610b4..2977eee 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -1014,7 +1014,7 @@ static void dmaengine_unmap(struct kref *kref)
+ 		dma_unmap_page(dev, unmap->addr[i], unmap->len,
+ 			       DMA_BIDIRECTIONAL);
+ 	}
+-	mempool_free(unmap, __get_unmap_pool(cnt)->pool);
++	mempool_free(unmap, unmap->unmap_pool->pool);
+ }
+ 
+ void dmaengine_unmap_put(struct dmaengine_unmap_data *unmap)
+@@ -1071,14 +1071,17 @@ struct dmaengine_unmap_data *
+ dmaengine_get_unmap_data(struct device *dev, int nr, gfp_t flags)
+ {
+ 	struct dmaengine_unmap_data *unmap;
++	struct dmaengine_unmap_pool *unmap_pool;
+ 
+-	unmap = mempool_alloc(__get_unmap_pool(nr)->pool, flags);
++	unmap_pool = __get_unmap_pool(nr);
++	unmap = mempool_alloc(unmap_pool->pool, flags);
+ 	if (!unmap)
+ 		return NULL;
+ 
+ 	memset(unmap, 0, sizeof(*unmap));
+ 	kref_init(&unmap->kref);
+ 	unmap->dev = dev;
++	unmap->unmap_pool = unmap_pool;
+ 
+ 	return unmap;
+ }
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index c5c92d5..6a25635 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -439,6 +439,7 @@ struct dmaengine_unmap_data {
+ 	struct device *dev;
+ 	struct kref kref;
+ 	size_t len;
++	struct dmaengine_unmap_pool *unmap_pool;
+ 	dma_addr_t addr[0];
+ };
+ 
+-- 
+1.8.3.2
