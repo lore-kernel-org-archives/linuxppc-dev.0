@@ -1,20 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 04E512C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 08:52:47 +1100 (EST)
-Date: Wed, 19 Mar 2014 16:52:23 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: tang yuantian <Yuantian.Tang@freescale.com>
-Subject: Re: clk: mpc85xx: Update the driver to align to new clock bindings
-Message-ID: <20140319215223.GA28070@home.buserror.net>
-References: <1390267965-22408-1-git-send-email-Yuantian.Tang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1390267965-22408-1-git-send-email-Yuantian.Tang@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, mturquette@linaro.org
+Return-Path: <eparis@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id A1C2C2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:04:28 +1100 (EST)
+From: Eric Paris <eparis@redhat.com>
+To: linux-audit@redhat.com
+Subject: [PATCH 3/4] ARCH: AUDIT: implement syscall_get_arch for all arches
+Date: Wed, 19 Mar 2014 18:04:02 -0400
+Message-Id: <1395266643-3139-3-git-send-email-eparis@redhat.com>
+In-Reply-To: <1395266643-3139-1-git-send-email-eparis@redhat.com>
+References: <1395266643-3139-1-git-send-email-eparis@redhat.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+ linux@openrisc.net, Eric Paris <eparis@redhat.com>, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,126 +22,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 21, 2014 at 09:32:45AM +0800, tang yuantian wrote:
-> From: Tang Yuantian <yuantian.tang@freescale.com>
-> 
-> The clock bindings for Freescale CoreNet platform are updated.
-> So, the driver needs to be updated accordingly.
-> The main changes include:
-> 	- Added a new node to present the input system clock
-> 	- Changed PLL and MUX's compatible string
-> 
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> 
-> ---
-> drivers/clk/clk-ppc-corenet.c | 70 +++++++++++++++++++++++++++++--------------
->  1 file changed, 48 insertions(+), 22 deletions(-)
+For all arches which support audit implement syscall_get_arch()
+They are all pretty easy and straight forward, stolen from how the call
+to audit_syscall_entry() determines the arch.
 
-Acked-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Eric Paris <eparis@redhat.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: microblaze-uclinux@itee.uq.edu.au
+Cc: linux-mips@linux-mips.org
+Cc: linux@lists.openrisc.net
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+---
+ arch/ia64/include/asm/syscall.h       |  6 ++++++
+ arch/microblaze/include/asm/syscall.h |  5 +++++
+ arch/mips/include/asm/syscall.h       |  2 +-
+ arch/openrisc/include/asm/syscall.h   |  5 +++++
+ arch/parisc/include/asm/syscall.h     | 11 +++++++++++
+ arch/powerpc/include/asm/syscall.h    | 12 ++++++++++++
+ arch/sparc/include/asm/syscall.h      |  8 ++++++++
+ include/uapi/linux/audit.h            |  1 +
+ 8 files changed, 49 insertions(+), 1 deletion(-)
 
-Mike, does this need to go to linux-arm-kernel@lists.infradead.org as per
-MAINTAINERS for drivers/clk?
-
-> diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corenet.c
-> index c4f76ed..8b284be 100644
-> --- a/drivers/clk/clk-ppc-corenet.c
-> +++ b/drivers/clk/clk-ppc-corenet.c
-> @@ -27,7 +27,6 @@ struct cmux_clk {
->  #define CLKSEL_ADJUST		BIT(0)
->  #define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
->  
-> -static void __iomem *base;
->  static unsigned int clocks_per_pll;
->  
->  static int cmux_set_parent(struct clk_hw *hw, u8 idx)
-> @@ -100,7 +99,11 @@ static void __init core_mux_init(struct device_node *np)
->  		pr_err("%s: could not allocate cmux_clk\n", __func__);
->  		goto err_name;
->  	}
-> -	cmux_clk->reg = base + offset;
-> +	cmux_clk->reg = of_iomap(np, 0);
-> +	if (!cmux_clk->reg) {
-> +		pr_err("%s: could not map register\n", __func__);
-> +		goto err_clk;
-> +	}
-
-dev_err?  Though it looks like of_clk_init() makes it hard to pass a
-reference to the parent device (or anything else but a function pointer
-and device tree node) to the init function -- why?
-
->  	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
->  	if (node && (offset >= 0x80))
-> @@ -143,38 +146,39 @@ err_name:
->  
->  static void __init core_pll_init(struct device_node *np)
->  {
-> -	u32 offset, mult;
-> +	u32 mult;
->  	int i, rc, count;
->  	const char *clk_name, *parent_name;
->  	struct clk_onecell_data *onecell_data;
->  	struct clk      **subclks;
-> +	void __iomem *base;
->  
-> -	rc = of_property_read_u32(np, "reg", &offset);
-> -	if (rc) {
-> -		pr_err("%s: could not get reg property\n", np->name);
-> +	base = of_iomap(np, 0);
-> +	if (!base) {
-> +		pr_err("clk-ppc: iomap error\n");
->  		return;
->  	}
->  
->  	/* get the multiple of PLL */
-> -	mult = ioread32be(base + offset);
-> +	mult = ioread32be(base);
->  
->  	/* check if this PLL is disabled */
->  	if (mult & PLL_KILL) {
->  		pr_debug("PLL:%s is disabled\n", np->name);
-> -		return;
-> +		goto err_map;
->  	}
->  	mult = (mult >> 1) & 0x3f;
->  
->  	parent_name = of_clk_get_parent_name(np, 0);
->  	if (!parent_name) {
->  		pr_err("PLL: %s must have a parent\n", np->name);
-> -		return;
-> +		goto err_map;
->  	}
->  
->  	count = of_property_count_strings(np, "clock-output-names");
->  	if (count < 0 || count > 4) {
->  		pr_err("%s: clock is not supported\n", np->name);
-> -		return;
-> +		goto err_map;
->  	}
->  
->  	/* output clock number per PLL */
-> @@ -183,7 +187,7 @@ static void __init core_pll_init(struct device_node *np)
->  	subclks = kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
->  	if (!subclks) {
->  		pr_err("%s: could not allocate subclks\n", __func__);
-> -		return;
-> +		goto err_map;
->  	}
->  
->  	onecell_data = kzalloc(sizeof(struct clk_onecell_data), GFP_KERNEL);
-> @@ -230,30 +234,52 @@ static void __init core_pll_init(struct device_node *np)
->  		goto err_cell;
->  	}
->  
-> +	iounmap(base);
->  	return;
->  err_cell:
->  	kfree(onecell_data);
->  err_clks:
->  	kfree(subclks);
-> +err_map:
-> +	iounmap(base);
-> +}
-
-Consider devres -- is there a devres version of of_iomap()?
-
--Scott
+diff --git a/arch/ia64/include/asm/syscall.h b/arch/ia64/include/asm/syscall.h
+index a7ff1c6..1d0b875 100644
+--- a/arch/ia64/include/asm/syscall.h
++++ b/arch/ia64/include/asm/syscall.h
+@@ -13,6 +13,7 @@
+ #ifndef _ASM_SYSCALL_H
+ #define _ASM_SYSCALL_H	1
+ 
++#include <uapi/linux/audit.h>
+ #include <linux/sched.h>
+ #include <linux/err.h>
+ 
+@@ -79,4 +80,9 @@ static inline void syscall_set_arguments(struct task_struct *task,
+ 
+ 	ia64_syscall_get_set_arguments(task, regs, i, n, args, 1);
+ }
++
++static inline int syscall_get_arch(void)
++{
++	return AUDIT_ARCH_IA64;
++}
+ #endif	/* _ASM_SYSCALL_H */
+diff --git a/arch/microblaze/include/asm/syscall.h b/arch/microblaze/include/asm/syscall.h
+index 9bc4317..53cfaf3 100644
+--- a/arch/microblaze/include/asm/syscall.h
++++ b/arch/microblaze/include/asm/syscall.h
+@@ -1,6 +1,7 @@
+ #ifndef __ASM_MICROBLAZE_SYSCALL_H
+ #define __ASM_MICROBLAZE_SYSCALL_H
+ 
++#include <uapi/linux/audit.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <asm/ptrace.h>
+@@ -99,4 +100,8 @@ static inline void syscall_set_arguments(struct task_struct *task,
+ asmlinkage long do_syscall_trace_enter(struct pt_regs *regs);
+ asmlinkage void do_syscall_trace_leave(struct pt_regs *regs);
+ 
++static inline int syscall_get_arch(void)
++{
++	return AUDIT_ARCH_MICROBLAZE;
++}
+ #endif /* __ASM_MICROBLAZE_SYSCALL_H */
+diff --git a/arch/mips/include/asm/syscall.h b/arch/mips/include/asm/syscall.h
+index fc556d8..992b6ab 100644
+--- a/arch/mips/include/asm/syscall.h
++++ b/arch/mips/include/asm/syscall.h
+@@ -103,7 +103,7 @@ extern const unsigned long sysn32_call_table[];
+ 
+ static inline int syscall_get_arch(void)
+ {
+-	int arch = EM_MIPS;
++	int arch = AUDIT_ARCH_MIPS;
+ #ifdef CONFIG_64BIT
+ 	arch |=  __AUDIT_ARCH_64BIT;
+ #endif
+diff --git a/arch/openrisc/include/asm/syscall.h b/arch/openrisc/include/asm/syscall.h
+index b752bb6..2db9f1c 100644
+--- a/arch/openrisc/include/asm/syscall.h
++++ b/arch/openrisc/include/asm/syscall.h
+@@ -19,6 +19,7 @@
+ #ifndef __ASM_OPENRISC_SYSCALL_H__
+ #define __ASM_OPENRISC_SYSCALL_H__
+ 
++#include <uapi/linux/audit.h>
+ #include <linux/err.h>
+ #include <linux/sched.h>
+ 
+@@ -71,4 +72,8 @@ syscall_set_arguments(struct task_struct *task, struct pt_regs *regs,
+ 	memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
+ }
+ 
++static inline int syscall_get_arch(void)
++{
++	return AUDIT_ARCH_OPENRISC;
++}
+ #endif
+diff --git a/arch/parisc/include/asm/syscall.h b/arch/parisc/include/asm/syscall.h
+index 8bdfd2c..a5eba95 100644
+--- a/arch/parisc/include/asm/syscall.h
++++ b/arch/parisc/include/asm/syscall.h
+@@ -3,6 +3,8 @@
+ #ifndef _ASM_PARISC_SYSCALL_H_
+ #define _ASM_PARISC_SYSCALL_H_
+ 
++#include <uapi/linux/audit.h>
++#include <linux/compat.h>
+ #include <linux/err.h>
+ #include <asm/ptrace.h>
+ 
+@@ -37,4 +39,13 @@ static inline void syscall_get_arguments(struct task_struct *tsk,
+ 	}
+ }
+ 
++static inline int syscall_get_arch(void)
++{
++	int arch = AUDIT_ARCH_PARISC;
++#ifdef CONFIG_64BIT
++	if (!is_compat_task())
++		arch = AUDIT_ARCH_PARISC64;
++#endif
++	return arch;
++}
+ #endif /*_ASM_PARISC_SYSCALL_H_*/
+diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
+index b54b2ad..4271544 100644
+--- a/arch/powerpc/include/asm/syscall.h
++++ b/arch/powerpc/include/asm/syscall.h
+@@ -13,6 +13,8 @@
+ #ifndef _ASM_SYSCALL_H
+ #define _ASM_SYSCALL_H	1
+ 
++#include <uapi/linux/audit.h>
++#include <linux/compat.h>
+ #include <linux/sched.h>
+ 
+ /* ftrace syscalls requires exporting the sys_call_table */
+@@ -86,4 +88,14 @@ static inline void syscall_set_arguments(struct task_struct *task,
+ 	memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
+ }
+ 
++static inline int syscall_get_arch(void)
++{
++	int arch = AUDIT_ARCH_PPC;
++
++#ifdef CONFIG_PPC64
++	if (!is_32bit_task())
++		arch = AUDIT_ARCH_PPC64;
++#endif
++	return arch;
++}
+ #endif	/* _ASM_SYSCALL_H */
+diff --git a/arch/sparc/include/asm/syscall.h b/arch/sparc/include/asm/syscall.h
+index 025a02a..fed3d51 100644
+--- a/arch/sparc/include/asm/syscall.h
++++ b/arch/sparc/include/asm/syscall.h
+@@ -1,9 +1,11 @@
+ #ifndef __ASM_SPARC_SYSCALL_H
+ #define __ASM_SPARC_SYSCALL_H
+ 
++#include <uapi/linux/audit.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <asm/ptrace.h>
++#include <asm/thread_info.h>
+ 
+ /*
+  * The syscall table always contains 32 bit pointers since we know that the
+@@ -124,4 +126,10 @@ static inline void syscall_set_arguments(struct task_struct *task,
+ 		regs->u_regs[UREG_I0 + i + j] = args[j];
+ }
+ 
++static inline int syscall_get_arch(void)
++{
++	return test_thread_flag(TIF_32BIT) ? AUDIT_ARCH_SPARC
++					   : AUDIT_ARCH_SPARC64;
++}
++
+ #endif /* __ASM_SPARC_SYSCALL_H */
+diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
+index 9af01d7..8496cfa 100644
+--- a/include/uapi/linux/audit.h
++++ b/include/uapi/linux/audit.h
+@@ -343,6 +343,7 @@ enum {
+ #define AUDIT_ARCH_IA64		(EM_IA_64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
+ #define AUDIT_ARCH_M32R		(EM_M32R)
+ #define AUDIT_ARCH_M68K		(EM_68K)
++#define AUDIT_ARCH_MICROBLAZE	(EM_MICROBLAZE)
+ #define AUDIT_ARCH_MIPS		(EM_MIPS)
+ #define AUDIT_ARCH_MIPSEL	(EM_MIPS|__AUDIT_ARCH_LE)
+ #define AUDIT_ARCH_MIPS64	(EM_MIPS|__AUDIT_ARCH_64BIT)
+-- 
+1.8.5.3
