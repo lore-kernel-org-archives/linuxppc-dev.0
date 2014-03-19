@@ -1,18 +1,21 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id A1C2C2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:04:28 +1100 (EST)
-From: Eric Paris <eparis@redhat.com>
-To: linux-audit@redhat.com
-Subject: [PATCH 3/4] ARCH: AUDIT: implement syscall_get_arch for all arches
-Date: Wed, 19 Mar 2014 18:04:02 -0400
-Message-Id: <1395266643-3139-3-git-send-email-eparis@redhat.com>
-In-Reply-To: <1395266643-3139-1-git-send-email-eparis@redhat.com>
-References: <1395266643-3139-1-git-send-email-eparis@redhat.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
- linux@openrisc.net, Eric Paris <eparis@redhat.com>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 33D8F2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:05:31 +1100 (EST)
+Message-ID: <1395266717.12479.293.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc 32: Provides VIRT_CPU_ACCOUNTING
+From: Scott Wood <scottwood@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 19 Mar 2014 17:05:17 -0500
+In-Reply-To: <20140319215241.236B21A4BDE@localhost.localdomain>
+References: <20140319215241.236B21A4BDE@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,199 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For all arches which support audit implement syscall_get_arch()
-They are all pretty easy and straight forward, stolen from how the call
-to audit_syscall_entry() determines the arch.
+On Wed, 2014-03-19 at 22:52 +0100, Christophe Leroy wrote:
+> This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
+> Unlike PPC64, PPC32 doesn't provide the PACA register. Therefore the
+> implementation is similar to the one done in the IA64 architecture.
+> It is based on additional information added to the Task Info structure.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: microblaze-uclinux@itee.uq.edu.au
-Cc: linux-mips@linux-mips.org
-Cc: linux@lists.openrisc.net
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: sparclinux@vger.kernel.org
----
- arch/ia64/include/asm/syscall.h       |  6 ++++++
- arch/microblaze/include/asm/syscall.h |  5 +++++
- arch/mips/include/asm/syscall.h       |  2 +-
- arch/openrisc/include/asm/syscall.h   |  5 +++++
- arch/parisc/include/asm/syscall.h     | 11 +++++++++++
- arch/powerpc/include/asm/syscall.h    | 12 ++++++++++++
- arch/sparc/include/asm/syscall.h      |  8 ++++++++
- include/uapi/linux/audit.h            |  1 +
- 8 files changed, 49 insertions(+), 1 deletion(-)
+PACA isn't a register -- just a convention for how Linux uses a GPR.
+Maybe it's time to use it on PPC32 as well?
 
-diff --git a/arch/ia64/include/asm/syscall.h b/arch/ia64/include/asm/syscall.h
-index a7ff1c6..1d0b875 100644
---- a/arch/ia64/include/asm/syscall.h
-+++ b/arch/ia64/include/asm/syscall.h
-@@ -13,6 +13,7 @@
- #ifndef _ASM_SYSCALL_H
- #define _ASM_SYSCALL_H	1
- 
-+#include <uapi/linux/audit.h>
- #include <linux/sched.h>
- #include <linux/err.h>
- 
-@@ -79,4 +80,9 @@ static inline void syscall_set_arguments(struct task_struct *task,
- 
- 	ia64_syscall_get_set_arguments(task, regs, i, n, args, 1);
- }
-+
-+static inline int syscall_get_arch(void)
-+{
-+	return AUDIT_ARCH_IA64;
-+}
- #endif	/* _ASM_SYSCALL_H */
-diff --git a/arch/microblaze/include/asm/syscall.h b/arch/microblaze/include/asm/syscall.h
-index 9bc4317..53cfaf3 100644
---- a/arch/microblaze/include/asm/syscall.h
-+++ b/arch/microblaze/include/asm/syscall.h
-@@ -1,6 +1,7 @@
- #ifndef __ASM_MICROBLAZE_SYSCALL_H
- #define __ASM_MICROBLAZE_SYSCALL_H
- 
-+#include <uapi/linux/audit.h>
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <asm/ptrace.h>
-@@ -99,4 +100,8 @@ static inline void syscall_set_arguments(struct task_struct *task,
- asmlinkage long do_syscall_trace_enter(struct pt_regs *regs);
- asmlinkage void do_syscall_trace_leave(struct pt_regs *regs);
- 
-+static inline int syscall_get_arch(void)
-+{
-+	return AUDIT_ARCH_MICROBLAZE;
-+}
- #endif /* __ASM_MICROBLAZE_SYSCALL_H */
-diff --git a/arch/mips/include/asm/syscall.h b/arch/mips/include/asm/syscall.h
-index fc556d8..992b6ab 100644
---- a/arch/mips/include/asm/syscall.h
-+++ b/arch/mips/include/asm/syscall.h
-@@ -103,7 +103,7 @@ extern const unsigned long sysn32_call_table[];
- 
- static inline int syscall_get_arch(void)
- {
--	int arch = EM_MIPS;
-+	int arch = AUDIT_ARCH_MIPS;
- #ifdef CONFIG_64BIT
- 	arch |=  __AUDIT_ARCH_64BIT;
- #endif
-diff --git a/arch/openrisc/include/asm/syscall.h b/arch/openrisc/include/asm/syscall.h
-index b752bb6..2db9f1c 100644
---- a/arch/openrisc/include/asm/syscall.h
-+++ b/arch/openrisc/include/asm/syscall.h
-@@ -19,6 +19,7 @@
- #ifndef __ASM_OPENRISC_SYSCALL_H__
- #define __ASM_OPENRISC_SYSCALL_H__
- 
-+#include <uapi/linux/audit.h>
- #include <linux/err.h>
- #include <linux/sched.h>
- 
-@@ -71,4 +72,8 @@ syscall_set_arguments(struct task_struct *task, struct pt_regs *regs,
- 	memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
- }
- 
-+static inline int syscall_get_arch(void)
-+{
-+	return AUDIT_ARCH_OPENRISC;
-+}
- #endif
-diff --git a/arch/parisc/include/asm/syscall.h b/arch/parisc/include/asm/syscall.h
-index 8bdfd2c..a5eba95 100644
---- a/arch/parisc/include/asm/syscall.h
-+++ b/arch/parisc/include/asm/syscall.h
-@@ -3,6 +3,8 @@
- #ifndef _ASM_PARISC_SYSCALL_H_
- #define _ASM_PARISC_SYSCALL_H_
- 
-+#include <uapi/linux/audit.h>
-+#include <linux/compat.h>
- #include <linux/err.h>
- #include <asm/ptrace.h>
- 
-@@ -37,4 +39,13 @@ static inline void syscall_get_arguments(struct task_struct *tsk,
- 	}
- }
- 
-+static inline int syscall_get_arch(void)
-+{
-+	int arch = AUDIT_ARCH_PARISC;
-+#ifdef CONFIG_64BIT
-+	if (!is_compat_task())
-+		arch = AUDIT_ARCH_PARISC64;
-+#endif
-+	return arch;
-+}
- #endif /*_ASM_PARISC_SYSCALL_H_*/
-diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/asm/syscall.h
-index b54b2ad..4271544 100644
---- a/arch/powerpc/include/asm/syscall.h
-+++ b/arch/powerpc/include/asm/syscall.h
-@@ -13,6 +13,8 @@
- #ifndef _ASM_SYSCALL_H
- #define _ASM_SYSCALL_H	1
- 
-+#include <uapi/linux/audit.h>
-+#include <linux/compat.h>
- #include <linux/sched.h>
- 
- /* ftrace syscalls requires exporting the sys_call_table */
-@@ -86,4 +88,14 @@ static inline void syscall_set_arguments(struct task_struct *task,
- 	memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
- }
- 
-+static inline int syscall_get_arch(void)
-+{
-+	int arch = AUDIT_ARCH_PPC;
-+
-+#ifdef CONFIG_PPC64
-+	if (!is_32bit_task())
-+		arch = AUDIT_ARCH_PPC64;
-+#endif
-+	return arch;
-+}
- #endif	/* _ASM_SYSCALL_H */
-diff --git a/arch/sparc/include/asm/syscall.h b/arch/sparc/include/asm/syscall.h
-index 025a02a..fed3d51 100644
---- a/arch/sparc/include/asm/syscall.h
-+++ b/arch/sparc/include/asm/syscall.h
-@@ -1,9 +1,11 @@
- #ifndef __ASM_SPARC_SYSCALL_H
- #define __ASM_SPARC_SYSCALL_H
- 
-+#include <uapi/linux/audit.h>
- #include <linux/kernel.h>
- #include <linux/sched.h>
- #include <asm/ptrace.h>
-+#include <asm/thread_info.h>
- 
- /*
-  * The syscall table always contains 32 bit pointers since we know that the
-@@ -124,4 +126,10 @@ static inline void syscall_set_arguments(struct task_struct *task,
- 		regs->u_regs[UREG_I0 + i + j] = args[j];
- }
- 
-+static inline int syscall_get_arch(void)
-+{
-+	return test_thread_flag(TIF_32BIT) ? AUDIT_ARCH_SPARC
-+					   : AUDIT_ARCH_SPARC64;
-+}
-+
- #endif /* __ASM_SPARC_SYSCALL_H */
-diff --git a/include/uapi/linux/audit.h b/include/uapi/linux/audit.h
-index 9af01d7..8496cfa 100644
---- a/include/uapi/linux/audit.h
-+++ b/include/uapi/linux/audit.h
-@@ -343,6 +343,7 @@ enum {
- #define AUDIT_ARCH_IA64		(EM_IA_64|__AUDIT_ARCH_64BIT|__AUDIT_ARCH_LE)
- #define AUDIT_ARCH_M32R		(EM_M32R)
- #define AUDIT_ARCH_M68K		(EM_68K)
-+#define AUDIT_ARCH_MICROBLAZE	(EM_MICROBLAZE)
- #define AUDIT_ARCH_MIPS		(EM_MIPS)
- #define AUDIT_ARCH_MIPSEL	(EM_MIPS|__AUDIT_ARCH_LE)
- #define AUDIT_ARCH_MIPS64	(EM_MIPS|__AUDIT_ARCH_64BIT)
--- 
-1.8.5.3
+> Index: b/arch/powerpc/kernel/asm-offsets.c
+> ===================================================================
+> --- b/arch/powerpc/kernel/asm-offsets.c	(revision 5607)
+> +++ b/arch/powerpc/kernel/asm-offsets.c	(revision 5608)
+> @@ -167,6 +167,10 @@
+>  	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
+>  	DEFINE(TI_TASK, offsetof(struct thread_info, task));
+>  	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
+> +	DEFINE(TI_AC_STAMP, offsetof(struct thread_info, ac_stamp));
+> +	DEFINE(TI_AC_LEAVE, offsetof(struct thread_info, ac_leave));
+> +	DEFINE(TI_AC_STIME, offsetof(struct thread_info, ac_stime));
+> +	DEFINE(TI_AC_UTIME, offsetof(struct thread_info, ac_utime));
+
+Doesn't this need to be protected by #ifdef
+CONFIG_VIRT_CPU_ACCOUNTING_NATIVE?
+
+>  
+>  #ifdef CONFIG_PPC64
+>  	DEFINE(DCACHEL1LINESIZE, offsetof(struct ppc64_caches, dline_size));
+> Index: b/arch/powerpc/include/asm/thread_info.h
+> ===================================================================
+> --- b/arch/powerpc/include/asm/thread_info.h	(revision 5607)
+> +++ b/arch/powerpc/include/asm/thread_info.h	(revision 5608)
+> @@ -43,6 +43,12 @@
+>  	int		cpu;			/* cpu we're on */
+>  	int		preempt_count;		/* 0 => preemptable,
+>  						   <0 => BUG */
+> +#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> +	__u32 ac_stamp;
+> +	__u32 ac_leave;
+> +	__u32 ac_stime;
+> +	__u32 ac_utime;
+> +#endif
+
+This isn't uapi; why not use "u32"?
+
+Plus, it should be made clear that this is only used on 32-bit.
+
+>  	struct restart_block restart_block;
+>  	unsigned long	local_flags;		/* private flags for thread */
+>  
+> @@ -58,6 +64,8 @@
+>  	.task =		&tsk,			\
+>  	.exec_domain =	&default_exec_domain,	\
+>  	.cpu =		0,			\
+> +	.ac_stime =	0,			\
+> +	.ac_utime =	0,			\
+
+Also needs to be ifdeffed -- which isn't going to work in a macro, so
+maybe remove the ifdef from the variable declarations, or just let the
+fields be initialized to zero by default.  Or add PACA to 32-bit. :-)
+
+-Scott
