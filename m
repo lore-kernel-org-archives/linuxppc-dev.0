@@ -1,22 +1,22 @@
-Return-Path: <peterz@infradead.org>
-Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 90F8E2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 04:08:48 +1100 (EST)
-Date: Wed, 19 Mar 2014 18:08:29 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
-Message-ID: <20140319170829.GD8557@laptop.programming.kicks-ass.net>
-References: <20140319152619.GB10406@linux.vnet.ibm.com>
- <20140319154705.GB8557@laptop.programming.kicks-ass.net>
+ by ozlabs.org (Postfix) with ESMTPS id C737C2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 07:42:44 +1100 (EST)
+Date: Wed, 19 Mar 2014 15:42:31 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Subject: Re: [RFC, v3] powerpc: Loading kernels over 8Mbytes without
+ CONFIG_PIN_TLB
+Message-ID: <20140319204230.GA13767@home.buserror.net>
+References: <20131215150957.1F5C143E5B@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140319154705.GB8557@laptop.programming.kicks-ass.net>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- davidlohr@hp.com, paulus@samba.org, tglx@linutronix.de,
- torvalds@linux-foundation.org, mingo@kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+In-Reply-To: <20131215150957.1F5C143E5B@localhost.localdomain>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,142 +26,189 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 19, 2014 at 04:47:05PM +0100, Peter Zijlstra wrote:
-> > I reverted b0c29f79ecea0b6fbcefc999e70f2843ae8306db on top of v3.14-rc6 and confirmed that
-> > reverting the commit solved the problem.
+On Sun, Dec 15, 2013 at 04:09:57PM +0100, LEROY Christophe wrote:
+> Hereunder is a try to implement the sizing of the initial memory size based on
+> initial-mapped-area size given by uboot in r7.
+> As this has an impact on all powerpc platforms due to the need to provide the
+> info up to function setup_initial_memory_limit(), I'm not completly sure of the
+> proper implementation.
+> Thanks to provide comments.
 > 
-> Joy,.. let me look at that with ppc in mind.
+> Today on the 8xx, the only way to load kernels whose size is greater than
+> 8Mbytes is to activate CONFIG_PIN_TLB. Otherwise, the physical memory initially
+> mapped is limited to 8Mbytes. This patch uses the size of initial memory mapped
+> by the bootloader and given to the kernel through register r7.
+> This is done regardless of whether CONFIG_PIN_TLB is active or not. It allows to
+> load "big" kernels (for instance when activating CONFIG_LOCKDEP_SUPPORT) without
+> having to activate CONFIG_PIN_TLB.
+> 
+> Not-yet-signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> 
+> ---
+> Ce courrier électronique ne contient aucun virus ou logiciel malveillant parce que la protection avast! Antivirus est active.
+> http://www.avast.com
+> 
+> Index: linux/arch/powerpc/include/asm/mmu.h
+> ===================================================================
+> --- linux/arch/powerpc/include/asm/mmu.h	(revision 5484)
+> +++ linux/arch/powerpc/include/asm/mmu.h	(copie de travail)
+> @@ -138,7 +138,8 @@
+>  extern void early_init_mmu_secondary(void);
+>  
+>  extern void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+> -				       phys_addr_t first_memblock_size);
+> +				       phys_addr_t first_memblock_size,
+> +				       u64 init_mem_size);
 
-OK; so while pretty much all the comments from that patch are utter
-nonsense (what was I thinking), I cannot actually find a real bug.
+What is the difference between first_memblock_size and init_mem_size, in
+terms of what you expect setup_initial_memory_limit to do with them?
 
-But could you try the below which replaces a control dependency with a
-full barrier. The control flow is plenty convoluted that I think the
-control barrier isn't actually valid anymore and that might indeed
-explain the fail.
+Can you just pass in min(first_memblock_size, init_mem_size), with the
+non-ePAPR fallback handled in head_8xx.S (just load r30 with 8M instead
+of zero)?
 
+>  #ifdef CONFIG_PPC64
+>  /* This is our real memory area size on ppc64 server, on embedded, we
+> Index: linux/arch/powerpc/kernel/head_8xx.S
+> ===================================================================
+> --- linux/arch/powerpc/kernel/head_8xx.S	(revision 5484)
+> +++ linux/arch/powerpc/kernel/head_8xx.S	(copie de travail)
+> @@ -31,6 +31,8 @@
+>  #include <asm/asm-offsets.h>
+>  #include <asm/ptrace.h>
+>  
+> +#define EPAPR_MAGIC	0x65504150
+> +
+>  /* Macro to make the code more readable. */
+>  #ifdef CONFIG_8xx_CPU6
+>  #define DO_8xx_CPU6(val, reg)	\
+> @@ -77,10 +79,19 @@
+>  	.globl	__start
+>  __start:
+>  	mr	r31,r3			/* save device tree ptr */
+> +	li	r30,0
+>  
+> +	lis	r8,EPAPR_MAGIC@h
+> +	ori	r8,r8, EPAPR_MAGIC@l
+> +	cmpw	cr0,r8, r6
 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -119,42 +119,32 @@
-  * sys_futex(WAIT, futex, val);
-  *   futex_wait(futex, val);
-  *
-- *   waiters++;
-- *   mb(); (A) <-- paired with -.
-- *                              |
-- *   lock(hash_bucket(futex));  |
-- *                              |
-- *   uval = *futex;             |
-- *                              |        *futex = newval;
-- *                              |        sys_futex(WAKE, futex);
-- *                              |          futex_wake(futex);
-- *                              |
-- *                              `------->  mb(); (B)
-- *   if (uval == val)
-+ *
-+ *   lock(hash_bucket(futex)); (A)
-+ *
-+ *   uval = *futex;
-+ *                                       *futex = newval;
-+ *                                       sys_futex(WAKE, futex);
-+ *                                         futex_wake(futex);
-+ *
-+ *   if (uval == val) (B)		   smp_mb(); (D)
-  *     queue();
-- *     unlock(hash_bucket(futex));
-- *     schedule();                         if (waiters)
-+ *     unlock(hash_bucket(futex)); (C)
-+ *     schedule();                         if (spin_is_locked(&hb_lock) ||
-+ *					       (smp_rmb(), !plist_empty))) (E)
-  *                                           lock(hash_bucket(futex));
-  *                                           wake_waiters(futex);
-  *                                           unlock(hash_bucket(futex));
-  *
-- * Where (A) orders the waiters increment and the futex value read -- this
-- * is guaranteed by the head counter in the hb spinlock; and where (B)
-- * orders the write to futex and the waiters read -- this is done by the
-- * barriers in get_futex_key_refs(), through either ihold or atomic_inc,
-- * depending on the futex type.
-- *
-- * This yields the following case (where X:=waiters, Y:=futex):
-- *
-- *	X = Y = 0
-- *
-- *	w[X]=1		w[Y]=1
-- *	MB		MB
-- *	r[Y]=y		r[X]=x
-- *
-- * Which guarantees that x==0 && y==0 is impossible; which translates back into
-- * the guarantee that we cannot both miss the futex variable change and the
-- * enqueue.
-+ *
-+ * Because of the acquire (A) and release (C) the futex value load and the 
-+ * plist_add are guaranteed to be inside the locked region. Furthermore, the
-+ * control dependency (B) ensures the futex load happens before the plist_add().
-+ *
-+ * On the wakeup side, the full barrier (D) separates the futex value write
-+ * from the hb_lock load, and matches with the control dependency. The rmb (E)
-+ * separates the spin_is_locked() read and the plist_head_empty() read, such
-+ * that ..., matches with the release barrier (C).
-  */
- 
- #ifndef CONFIG_HAVE_FUTEX_CMPXCHG
-@@ -250,7 +240,7 @@ static inline void futex_get_mm(union fu
- 	/*
- 	 * Ensure futex_get_mm() implies a full barrier such that
- 	 * get_futex_key() implies a full barrier. This is relied upon
--	 * as full barrier (B), see the ordering comment above.
-+	 * as full barrier (D), see the ordering comment above.
- 	 */
- 	smp_mb__after_atomic();
- }
-@@ -308,10 +298,10 @@ static void get_futex_key_refs(union fut
- 
- 	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
- 	case FUT_OFF_INODE:
--		ihold(key->shared.inode); /* implies MB (B) */
-+		ihold(key->shared.inode); /* implies MB (D) */
- 		break;
- 	case FUT_OFF_MMSHARED:
--		futex_get_mm(key); /* implies MB (B) */
-+		futex_get_mm(key); /* implies MB (D) */
- 		break;
- 	}
- }
-@@ -385,7 +375,7 @@ get_futex_key(u32 __user *uaddr, int fsh
- 	if (!fshared) {
- 		key->private.mm = mm;
- 		key->private.address = address;
--		get_futex_key_refs(key);  /* implies MB (B) */
-+		get_futex_key_refs(key);  /* implies MB (D) */
- 		return 0;
- 	}
- 
-@@ -492,7 +482,7 @@ get_futex_key(u32 __user *uaddr, int fsh
- 		key->shared.pgoff = basepage_index(page);
- 	}
- 
--	get_futex_key_refs(key); /* implies MB (B) */
-+	get_futex_key_refs(key); /* implies MB (D) */
- 
- out:
- 	unlock_page(page_head);
-@@ -1604,7 +1594,7 @@ static inline struct futex_hash_bucket *
- 	hb = hash_futex(&q->key);
- 	q->lock_ptr = &hb->lock;
- 
--	spin_lock(&hb->lock); /* implies MB (A) */
-+	spin_lock(&hb->lock);
- 	return hb;
- }
- 
-@@ -1995,6 +1985,8 @@ static int futex_wait_setup(u32 __user *
- 		goto retry;
- 	}
- 
-+	smp_mb();
-+
- 	if (uval != val) {
- 		queue_unlock(*hb);
- 		ret = -EWOULDBLOCK;
+Whitespace
+
+> +	bne	1f
+> +
+> +	mr	r30,r7			/* save initial ram size */
+> +
+>  	/* We have to turn on the MMU right away so we get cache modes
+>  	 * set correctly.
+>  	 */
+> +1:
+>  	bl	initial_mmu
+>  
+>  /* We now have the lower 8 Meg mapped into TLB entries, and the caches
+> @@ -717,6 +728,8 @@
+>   */
+>  	li	r3,0
+>  	mr	r4,r31
+> +	li	r5,0
+> +	mr	r6,r30
+>  	bl	machine_init
+>  	bl	MMU_init
+>  
+> @@ -841,11 +854,17 @@
+>  	ori	r8, r8, MI_BOOTINIT|0x2 /* Inhibit cache -- Cort */
+>  	mtspr	SPRN_MD_RPN, r8
+>  
+> +	/* Map two more 8M kernel data pages if needed
+> +	 * We check how much memory is mapped by the bootloader
+> +	*/
+
+Whitespace
+
+> Index: linux/arch/powerpc/kernel/prom.c
+> ===================================================================
+> --- linux/arch/powerpc/kernel/prom.c	(revision 5484)
+> +++ linux/arch/powerpc/kernel/prom.c	(copie de travail)
+> @@ -649,7 +649,7 @@
+>  	}
+>  }
+>  
+> -void __init early_init_devtree(void *params)
+> +void __init early_init_devtree(void *params, u64 init_mem_size)
+>  {
+>  	phys_addr_t limit;
+>  
+> @@ -697,7 +697,7 @@
+>  	/* make sure we've parsed cmdline for mem= before this */
+>  	if (memory_limit)
+>  		first_memblock_size = min_t(u64, first_memblock_size, memory_limit);
+> -	setup_initial_memory_limit(memstart_addr, first_memblock_size);
+> +	setup_initial_memory_limit(memstart_addr, first_memblock_size, init_mem_size);
+
+Line length.
+Yes, I know there's an existing violation on the previous line. :-)
+
+> Index: linux/arch/powerpc/mm/init_32.c
+> ===================================================================
+> --- linux/arch/powerpc/mm/init_32.c	(revision 5484)
+> +++ linux/arch/powerpc/mm/init_32.c	(copie de travail)
+> @@ -206,19 +206,16 @@
+>  
+>  #ifdef CONFIG_8xx /* No 8xx specific .c file to put that in ... */
+>  void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+> -				phys_addr_t first_memblock_size)
+> +				phys_addr_t first_memblock_size,
+> +				u64 init_mem_size)
+>  {
+>  	/* We don't currently support the first MEMBLOCK not mapping 0
+>  	 * physical on those processors
+>  	 */
+>  	BUG_ON(first_memblock_base != 0);
+>  
+> -#ifdef CONFIG_PIN_TLB
+> -	/* 8xx can only access 24MB at the moment */
+> -	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x01800000));
+> -#else
+> -	/* 8xx can only access 8MB at the moment */
+> -	memblock_set_current_limit(min_t(u64, first_memblock_size, 0x00800000));
+> -#endif
+> +	if (!init_mem_size)
+> +		init_mem_size = 0x00800000;
+> +	memblock_set_current_limit(min_t(u64, first_memblock_size, init_mem_size));
+
+Line length
+
+>  }
+>  #endif /* CONFIG_8xx */
+> Index: linux/arch/powerpc/mm/ppc_mmu_32.c
+> ===================================================================
+> --- linux/arch/powerpc/mm/ppc_mmu_32.c	(revision 5484)
+> +++ linux/arch/powerpc/mm/ppc_mmu_32.c	(copie de travail)
+> @@ -273,7 +273,8 @@
+>  }
+>  
+>  void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+> -				phys_addr_t first_memblock_size)
+> +				phys_addr_t first_memblock_size,
+> +				u64 init_mem_size)
+>  {
+>  	/* We don't currently support the first MEMBLOCK not mapping 0
+>  	 * physical on those processors
+> Index: linux/arch/powerpc/mm/tlb_nohash.c
+> ===================================================================
+> --- linux/arch/powerpc/mm/tlb_nohash.c	(revision 5484)
+> +++ linux/arch/powerpc/mm/tlb_nohash.c	(copie de travail)
+> @@ -654,7 +654,8 @@
+>  }
+>  
+>  void setup_initial_memory_limit(phys_addr_t first_memblock_base,
+> -				phys_addr_t first_memblock_size)
+> +				phys_addr_t first_memblock_size,
+> +				u64 init_mem_size)
+>  {
+>  	/* On non-FSL Embedded 64-bit, we adjust the RMA size to match
+>  	 * the bolted TLB entry. We know for now that only 1G
+
+It seems a bit odd for this function to take init_mem_size on these other
+platforms, but not use it.
+
+-Scott
