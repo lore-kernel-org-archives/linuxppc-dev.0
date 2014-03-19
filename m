@@ -1,30 +1,22 @@
-Return-Path: <davidlohr@hp.com>
-Received: from g2t1383g.austin.hp.com (g2t1383g.austin.hp.com [15.217.136.92])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rajatjain@juniper.net>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 544D02C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 05:06:25 +1100 (EST)
-Received: from g2t2352.austin.hp.com (g2t2352.austin.hp.com [15.217.128.51])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by g2t1383g.austin.hp.com (Postfix) with ESMTPS id A63221DF0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Mar 2014 18:06:14 +0000 (UTC)
-Message-ID: <1395252376.28137.26.camel@buesod1.americas.hpqcorp.net>
-Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
-From: Davidlohr Bueso <davidlohr@hp.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Date: Wed, 19 Mar 2014 11:06:16 -0700
-In-Reply-To: <20140319170829.GD8557@laptop.programming.kicks-ass.net>
-References: <20140319152619.GB10406@linux.vnet.ibm.com>
- <20140319154705.GB8557@laptop.programming.kicks-ass.net>
- <20140319170829.GD8557@laptop.programming.kicks-ass.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
- paulus@samba.org, tglx@linutronix.de,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 636772C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 06:58:58 +1100 (EST)
+From: Rajat Jain <rajatjain@juniper.net>
+To: Valentin Longchamp <valentin.longchamp@keymile.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+Subject: RE: EDAC PCIe errors when scannning the bus
+Date: Wed, 19 Mar 2014 19:58:46 +0000
+Message-ID: <5603f3ee421547dea5cdc861483f8231@DM2PR05MB671.namprd05.prod.outlook.com>
+References: <532991AD.6020903@keymile.com>
+In-Reply-To: <532991AD.6020903@keymile.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Guenter Roeck <groeck@juniper.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,12 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-19 at 18:08 +0100, Peter Zijlstra wrote:
-> On Wed, Mar 19, 2014 at 04:47:05PM +0100, Peter Zijlstra wrote:
-> > > I reverted b0c29f79ecea0b6fbcefc999e70f2843ae8306db on top of v3.14-rc6 and confirmed that
-> > > reverting the commit solved the problem.
-> > 
-> > Joy,.. let me look at that with ppc in mind.
-
-errr... just sat down to check email this morning. CC'ing Paul as for
-any subtle barrier issues.
+SGVsbG8sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcGNp
+LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBjaS0NCj4gb3duZXJAdmdlci5r
+ZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgVmFsZW50aW4gTG9uZ2NoYW1wDQo+IFNlbnQ6IFdlZG5l
+c2RheSwgTWFyY2ggMTksIDIwMTQgNTo0NyBBTQ0KPiBUbzogbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogRURBQyBQQ0ll
+IGVycm9ycyB3aGVuIHNjYW5ubmluZyB0aGUgYnVzDQo+IA0KPiBIZWxsbywNCj4gDQo+IFdlIGhh
+dmUgYSBib2FyZCB0aGF0IGlzIGJhc2VkIG9uIEZyZWVzY2FsZSdzIFAyMDQxIFNvQy4gVGhlIGJv
+YXJkcyBoYXMgMg0KPiBQQ0llIGJ1c2VzIHdpdGggdGhpcyB0b3BvbG9neToNCj4gDQo+IFBDSWUg
+MCA8LS0tPiBQRVg4NTA1IHN3aXRjaCA8LS0tPiA0IG5ldHdvcmsgZGV2aWNlcyBQQ0lFIDIgPC0t
+LT4gRlBHQQ0KPiANCj4gT24gMy4xMC4zMyArIGEgc3Vic2V0IG9mIHRoZSBGcmVlc2NhbGUgU0RL
+IDEuNCBwYXRjaGVzLCBib3RoIFBDSWUgYnVzZXMNCj4gd29yayB3ZWxsIGFuZCB3ZSBhcmUgYWJs
+ZSB0byB1c2UgdGhlIGRldmljZXMgb24gdGhlbS4NCj4gDQo+IEZvciBlYWNoIGJ1cywgSSBob3dl
+dmVyIGtlZXAgZ2V0dGluZyBFREFDIFBDSWUgZXJyb3JzIGF0IHRoZSB2ZXJ5IGZpcnN0DQo+IHN0
+YWdlIG9mIGJ1cyBlbnVtZXJhdGlvbiAocGxlYXNlIHNlZSB0aGUgYXR0YWNoZWQga2VybmVsIGxv
+Zywgd2l0aCBzb21lDQo+IGRlYnVnIG91dHB1dCBmcm9tIGFyY2gvcG93ZXJwYy9rZXJuZWwvcGNp
+LWNvbW1vbi5jIGFuZA0KPiBkcml2ZXJzL3BjaS9wcm9iZS5jKSBmb3IgYm90aCBidXNlcy4NCj4g
+DQo+IE15IGN1cnJlbnQgInVuZGVyc3RhbmRpbmciIG9mIHRoZSBzaXR1YXRpb24gaXMgc3VjaDog
+c2luY2UNCj4gUENJX1BST0JFX05PUk1BTCBpcyB1c2VkLCBwY2liaW9zX3NjYW5fcGhiKCkgY2Fs
+bHMgcGNpX3NjYW5fY2hpbGRfYnVzKCkNCj4gdGhhdCBkb2VzIGEgcGNpX3NjYW5fc2xvdCgpIG9u
+IHRoZSBidXMgZm9yIDMyIHNsb3RzLiBUaGUgZmlyc3QNCj4gcGNpX3NjYW5fc2xvdCgpIGlzIHN1
+Y2Nlc3NmdWwgYW5kIGl0IGRpc2NvdmVycyB0aGUgUDIwNDEncyBQQ0llDQo+IENvbnRyb2xsZXIu
+IEFsbCB0aGUgMzEgb3RoZXIgcGNpX3NjYW5fc2xvdCgpIGNhbGxzIGdlbmVyYXRlIGFuIEVEQUMg
+UENJZQ0KPiBlcnJvciwgdGhhdCBpcyB0cmlnZ2VyZWQgYnkgdGhlIGNvbmZpZ3VyYXRpb24gcmVh
+ZCB0cmFuc2FjdGlvbiB0byByZWFkDQo+IGFuIGh5cG90aGV0aWNhbCB2ZW5kb3IgSUQgb2YgYSBk
+ZXZpY2Ugb24gdGhlIGJ1cy4gVGhpcyBpcyByZWxldmFudCB3aXRoDQo+IHRoYXQgaXMgcmVwb3J0
+ZWQgYnkgdGhlIEVEQUMgZXJyb3IgaGFuZGxlciAoYWxsIHRoZSAzMSBhcmUgdGhlIHNhbWUpOg0K
+PiANCj4gPiBQQ0lFIGVycm9yKHMpIGRldGVjdGVkDQo+ID4gUENJRSBFUlJfRFIgcmVnaXN0ZXI6
+IDB4MDAwMjAwMDANCj4gDQo+IElDQ0EgYml0IGlzIHNldDogQWNjZXNzIHRvIGFuIGlsbGVnYWwg
+Y29uZmlndXJhdGlvbiBzcGFjZSBmcm9tDQo+IFBFWF9DT05GSUdfQUREUi9QRVhfQ09ORklHX0RB
+VEEgd2FzIGRldGVjdGVkLg0KPiANCj4gPiBQQ0lFIEVSUl9DQVBfU1RBVCByZWdpc3RlcjogMHg4
+MDAwMDAwMQ0KPiANCj4gVG8gaXMgc2V0OiBUcmFuc2FjdGlvbiBvcmlnaW5hdGVkIGZyb20gUEVY
+X0NPTkZJR19BRERSL1BFWF9DT05GSUdfREFUQS4NCj4gDQo+ID4gUENJRSBFUlJfQ0FQX1IwIHJl
+Z2lzdGVyOiAweDAwMDAwODAwDQo+IA0KPiBGTVQ6IDBiMDAsIFRZUEU6IDBiMDAxMDAgKENvbmZp
+ZyByZWFkIEkgZ3Vlc3MpDQo+IA0KPiA+IFBDSUUgRVJSX0NBUF9SMSByZWdpc3RlcjogMHgwMDAw
+MDAwMA0KPiA+IFBDSUUgRVJSX0NBUF9SMiByZWdpc3RlcjogMHgwMDAwMDAwMA0KPiA+IFBDSUUg
+RVJSX0NBUF9SMyByZWdpc3RlcjogMHgwMDAwMDAwMA0KPiANCj4gQWZ0ZXJ3YXJkcywgcGNpX3Nj
+YW5fY2hpbGRfYnVzKCkgY2FsbHMgcGNpYmlvc19maXh1cF9idXMgKHRoYXQgbWF5YmUNCj4gaGVs
+cHMgPykuDQo+IEZyb20gaGVyZSwgc2luY2UgdGhlIFAyMDQxJ3MgUENJZSBDb250cm9sbGVyIGlz
+IGEgYnJpZGdlLA0KPiBwY2lfc2Nhbl9icmlkZ2UgaXMgY2FsbGVkIGZvciB0aGlzIGJ1cyBhbmQg
+YWxsIHRoZSBkZXZpY2VzIGFyZSBkZXRlY3RlZA0KPiB3aXRob3V0IGhhdmluZyBhbnkgY29uZmln
+dXJhdGlvbiB0cmFuc2FjdGlvbiBjYXVzaW5nIEVEQUMgZXJyb3JzLg0KPiANCj4gSGFzIHNvbWVv
+bmUgYWxyZWFkeSBvYnNlcnZlZCBzdWNoIGEgYmVoYXZpb3IgPyBXaHkgZG8gdGhlc2UgaW5pdGlh
+bA0KPiB0cmFuc2FjdGlvbiBnZW5lcmF0ZSBhbiBlcnJvciA/IFdoYXQgd291bGQgYmUgYSBwb3Nz
+aWJsZSBmaXggdG8gYXZvaWQNCj4gdGhlc2UgdHJhbnNhY3Rpb24gZXJyb3JzIGZvciB0aGVzZSAz
+MSAodW5uZWRlZCA/KSBwY2lfc2Nhbl9zbG90KCkgY2FsbHMNCj4gb24gdGhlIGluaXRpYWwgYnVz
+ID8NCg0KSSBzZWUgdGhpcyB0b28gb24gbXkgUDUwMjAgYmFzZWQgcGxhdGZvcm0uIE5vIGZpeCB5
+ZXQsIGZvciBub3cgZGlzYWJsaW5nIHRoZSBFREFDLg0KDQpUaGFua3MsDQoNClJhamF0DQoNCj4g
+DQo+IEJlc3QgUmVnYXJkcywNCj4gDQo+IFZhbGVudGluDQo=
