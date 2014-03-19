@@ -1,19 +1,41 @@
-Return-Path: <xuelin.shi@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 58E5C2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Mar 2014 20:02:02 +1100 (EST)
-From: <xuelin.shi@freescale.com>
-To: <dan.j.williams@intel.com>, <vinod.koul@intel.com>
-Subject: [PATCH] fix wrong usage of dmaengine_unmap_put in async_xxx
-Date: Wed, 19 Mar 2014 16:18:29 +0800
-Message-ID: <1395217109-13355-1-git-send-email-xuelin.shi@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 264652C00A0
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2014 22:02:51 +1100 (EST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Wed, 19 Mar 2014 05:02:49 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 9241B1FF003B
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2014 05:02:46 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2JB242s3080592
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2014 12:02:04 +0100
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2JB2jAL027151
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Mar 2014 05:02:45 -0600
+Date: Wed, 19 Mar 2014 16:32:40 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/6] powernv:cpufreq: Create a
+ powernv_cpu_to_core_mask() helper.
+Message-ID: <20140319110240.GA25685@in.ibm.com>
+References: <1394449861-8688-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1394449861-8688-3-git-send-email-ego@linux.vnet.ibm.com>
+ <1395185847.30666.22.camel@pasglop>
+ <53293AA8.2040609@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: dmaengine@vger.kernel.org, Xuelin Shi <xuelin.shi@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <53293AA8.2040609@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,501 +45,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xuelin Shi <xuelin.shi@freescale.com>
+On Wed, Mar 19, 2014 at 12:05:20PM +0530, Srivatsa S. Bhat wrote:
+> On 03/19/2014 05:07 AM, Benjamin Herrenschmidt wrote:
+> > On Mon, 2014-03-10 at 16:40 +0530, Gautham R. Shenoy wrote:
+> >> From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+> >>
+> >> Create a helper method that computes the cpumask corresponding to the
+> >> thread-siblings of a cpu. Use this for initializing the policy->cpus
+> >> mask for a given cpu.
+> >>
+> >> (Original code written by Srivatsa S. Bhat. Gautham moved this to a
+> >> helper function!)
+> > 
+> > How does that differ from the existing entry in the sibling map  which
+> > you can obtain with the helper cpu_sibling_mask() ? (You probably want
+> > to *copy* the mask of course but I don't see the need of re-creating
+> > one from scratch).
+> >
+> 
+> The intent here was to have a sibling mask that is invariant of CPU
+> hotplug. cpu_sibling_mask is updated on every hotplug operation, and this
+> would break cpufreq, since policy->cpus has to be hotplug invariant.
+> 
+> This should have been noted in the changelog of patch 1 as well as this
+> patch. (The earlier (internal) versions of this patchset had the
+> description in the changelogs, but somehow it got dropped accidentally).
+> I'll work with Gautham and ensure that we have this important info
+> included in the changelog. Thanks for pointing it out!
 
-dmaengine_unmap_put does below two things:
-a) unmap pages for srcs and dests
-b) free unmap struct
+I reused that part of the code because I was unaware of
+cpu_sibling_mask()!
 
-The unmap struct data is generated but only initialized while
-other some dma contions are met, like dma alignment etc.
-If the unmap data is not initialized, call dmaengine_unmap_put
-will unmap some random data in unmap->addr[...]
+For implementing powernv_cpufreq_get(), cpu_sibling_mask() suffices
+since we are using this mask as a parameter to
+smp_call_function_any(), and hence are concerned only about the online
+siblings. 
 
-Also call dmaengine_get_unmap_data immediatally after generating tx
-is not correct. Maybe the tx has not been finished by DMA hardware
-yet but the srcs and dests are dma unmapped.
+I shall fix the changelog to reflect Srivatsa's reason for having a
+mask that does not vary with cpu-hotplug.
 
-This patch fixed above two issues by:
-a) only generates unmap struct data when other dma conditions are met.
-b) eliminates dmaengine_unmap_put when tx is generated because tx knowes
-   the best time to unmap it (in interrupt processing).
+> 
+> Regards,
+> Srivatsa S. Bhat
+> 
+> 
+> > Also, this should have been CCed to the cpufreq mailing list and maybe
+> > the relevant maintainer too.
 
-Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
----
- crypto/async_tx/async_memcpy.c |  38 ++++----
- crypto/async_tx/async_pq.c     | 191 ++++++++++++++++++++++-------------------
- crypto/async_tx/async_xor.c    | 100 +++++++++++----------
- 3 files changed, 175 insertions(+), 154 deletions(-)
+Ok. Will do it in the subsequent version. 
 
-diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
-index f8c0b8d..578d1bd 100644
---- a/crypto/async_tx/async_memcpy.c
-+++ b/crypto/async_tx/async_memcpy.c
-@@ -52,10 +52,7 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 	struct dma_async_tx_descriptor *tx = NULL;
- 	struct dmaengine_unmap_data *unmap = NULL;
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, 2, GFP_NOIO);
--
--	if (unmap && is_dma_copy_aligned(device, src_offset, dest_offset, len)) {
-+	if (device && is_dma_copy_aligned(device, src_offset, dest_offset, len)) {
- 		unsigned long dma_prep_flags = 0;
- 
- 		if (submit->cb_fn)
-@@ -63,17 +60,24 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 		if (submit->flags & ASYNC_TX_FENCE)
- 			dma_prep_flags |= DMA_PREP_FENCE;
- 
--		unmap->to_cnt = 1;
--		unmap->addr[0] = dma_map_page(device->dev, src, src_offset, len,
--					      DMA_TO_DEVICE);
--		unmap->from_cnt = 1;
--		unmap->addr[1] = dma_map_page(device->dev, dest, dest_offset, len,
--					      DMA_FROM_DEVICE);
--		unmap->len = len;
--
--		tx = device->device_prep_dma_memcpy(chan, unmap->addr[1],
--						    unmap->addr[0], len,
--						    dma_prep_flags);
-+		unmap = dmaengine_get_unmap_data(device->dev, 2, GFP_NOIO);
-+		if (unmap) {
-+			unmap->to_cnt = 1;
-+			unmap->addr[0] = dma_map_page(device->dev, src,
-+						      src_offset, len,
-+						      DMA_TO_DEVICE);
-+			unmap->from_cnt = 1;
-+			unmap->addr[1] = dma_map_page(device->dev, dest,
-+						      dest_offset, len,
-+						      DMA_FROM_DEVICE);
-+			unmap->len = len;
-+
-+			tx = device->device_prep_dma_memcpy(chan,
-+							    unmap->addr[1],
-+							    unmap->addr[0],
-+							    len,
-+							    dma_prep_flags);
-+		}
- 	}
- 
- 	if (tx) {
-@@ -85,6 +89,8 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 		void *dest_buf, *src_buf;
- 		pr_debug("%s: (sync) len: %zu\n", __func__, len);
- 
-+		dmaengine_unmap_put(unmap);
-+
- 		/* wait for any prerequisite operations */
- 		async_tx_quiesce(&submit->depend_tx);
- 
-@@ -99,8 +105,6 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 		async_tx_sync_epilog(submit);
- 	}
- 
--	dmaengine_unmap_put(unmap);
--
- 	return tx;
- }
- EXPORT_SYMBOL_GPL(async_memcpy);
-diff --git a/crypto/async_tx/async_pq.c b/crypto/async_tx/async_pq.c
-index d05327c..a25343c 100644
---- a/crypto/async_tx/async_pq.c
-+++ b/crypto/async_tx/async_pq.c
-@@ -175,10 +175,7 @@ async_gen_syndrome(struct page **blocks, unsigned int offset, int disks,
- 
- 	BUG_ON(disks > 255 || !(P(blocks, disks) || Q(blocks, disks)));
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
--
--	if (unmap &&
-+	if (device &&
- 	    (src_cnt <= dma_maxpq(device, 0) ||
- 	     dma_maxpq(device, DMA_PREP_CONTINUE) > 0) &&
- 	    is_dma_pq_aligned(device, offset, 0, len)) {
-@@ -194,42 +191,52 @@ async_gen_syndrome(struct page **blocks, unsigned int offset, int disks,
- 		/* convert source addresses being careful to collapse 'empty'
- 		 * sources and update the coefficients accordingly
- 		 */
--		unmap->len = len;
--		for (i = 0, j = 0; i < src_cnt; i++) {
--			if (blocks[i] == NULL)
--				continue;
--			unmap->addr[j] = dma_map_page(device->dev, blocks[i], offset,
--						      len, DMA_TO_DEVICE);
--			coefs[j] = raid6_gfexp[i];
--			unmap->to_cnt++;
--			j++;
--		}
-+		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
-+		if (unmap) {
-+			unmap->len = len;
-+			for (i = 0, j = 0; i < src_cnt; i++) {
-+				if (blocks[i] == NULL)
-+					continue;
-+				unmap->addr[j] = dma_map_page(device->dev,
-+							      blocks[i],
-+							      offset,
-+							      len,
-+							      DMA_TO_DEVICE);
-+				coefs[j] = raid6_gfexp[i];
-+				unmap->to_cnt++;
-+				j++;
-+			}
- 
--		/*
--		 * DMAs use destinations as sources,
--		 * so use BIDIRECTIONAL mapping
--		 */
--		unmap->bidi_cnt++;
--		if (P(blocks, disks))
--			unmap->addr[j++] = dma_map_page(device->dev, P(blocks, disks),
--							offset, len, DMA_BIDIRECTIONAL);
--		else {
--			unmap->addr[j++] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_P;
--		}
-+			/*
-+			 * DMAs use destinations as sources,
-+			 * so use BIDIRECTIONAL mapping
-+			 */
-+			unmap->bidi_cnt++;
-+			if (P(blocks, disks))
-+				unmap->addr[j++] = dma_map_page(device->dev,
-+								P(blocks, disks),
-+								offset, len,
-+								DMA_BIDIRECTIONAL);
-+			else {
-+				unmap->addr[j++] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_P;
-+			}
- 
--		unmap->bidi_cnt++;
--		if (Q(blocks, disks))
--			unmap->addr[j++] = dma_map_page(device->dev, Q(blocks, disks),
--						       offset, len, DMA_BIDIRECTIONAL);
--		else {
--			unmap->addr[j++] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_Q;
--		}
-+			unmap->bidi_cnt++;
-+			if (Q(blocks, disks))
-+				unmap->addr[j++] = dma_map_page(device->dev,
-+								Q(blocks, disks),
-+								offset, len,
-+								DMA_BIDIRECTIONAL);
-+			else {
-+				unmap->addr[j++] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_Q;
-+			}
- 
--		tx = do_async_gen_syndrome(chan, coefs, j, unmap, dma_flags, submit);
--		dmaengine_unmap_put(unmap);
--		return tx;
-+			tx = do_async_gen_syndrome(chan, coefs, j, unmap,
-+						   dma_flags, submit);
-+			return tx;
-+		}
- 	}
- 
- 	dmaengine_unmap_put(unmap);
-@@ -293,10 +300,7 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 
- 	BUG_ON(disks < 4);
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
--
--	if (unmap && disks <= dma_maxpq(device, 0) &&
-+	if (device && disks <= dma_maxpq(device, 0) &&
- 	    is_dma_pq_aligned(device, offset, 0, len)) {
- 		struct device *dev = device->dev;
- 		dma_addr_t pq[2];
-@@ -305,58 +309,63 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 		pr_debug("%s: (async) disks: %d len: %zu\n",
- 			 __func__, disks, len);
- 
--		unmap->len = len;
--		for (i = 0; i < disks-2; i++)
--			if (likely(blocks[i])) {
--				unmap->addr[j] = dma_map_page(dev, blocks[i],
--							      offset, len,
--							      DMA_TO_DEVICE);
--				coefs[j] = raid6_gfexp[i];
-+		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
-+		if (unmap) {
-+			unmap->len = len;
-+			for (i = 0; i < disks-2; i++)
-+				if (likely(blocks[i])) {
-+					unmap->addr[j] = dma_map_page(dev,
-+								      blocks[i],
-+								      offset,
-+								      len,
-+								      DMA_TO_DEVICE);
-+					coefs[j] = raid6_gfexp[i];
-+					unmap->to_cnt++;
-+					src_cnt++;
-+					j++;
-+				}
-+
-+			if (!P(blocks, disks)) {
-+				pq[0] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_P;
-+			} else {
-+				pq[0] = dma_map_page(dev, P(blocks, disks),
-+						     offset, len,
-+						     DMA_TO_DEVICE);
-+				unmap->addr[j++] = pq[0];
-+				unmap->to_cnt++;
-+			}
-+			if (!Q(blocks, disks)) {
-+				pq[1] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_Q;
-+			} else {
-+				pq[1] = dma_map_page(dev, Q(blocks, disks),
-+						     offset, len,
-+						     DMA_TO_DEVICE);
-+				unmap->addr[j++] = pq[1];
- 				unmap->to_cnt++;
--				src_cnt++;
--				j++;
- 			}
- 
--		if (!P(blocks, disks)) {
--			pq[0] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_P;
--		} else {
--			pq[0] = dma_map_page(dev, P(blocks, disks),
--					     offset, len,
--					     DMA_TO_DEVICE);
--			unmap->addr[j++] = pq[0];
--			unmap->to_cnt++;
--		}
--		if (!Q(blocks, disks)) {
--			pq[1] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_Q;
--		} else {
--			pq[1] = dma_map_page(dev, Q(blocks, disks),
--					     offset, len,
--					     DMA_TO_DEVICE);
--			unmap->addr[j++] = pq[1];
--			unmap->to_cnt++;
--		}
--
--		if (submit->flags & ASYNC_TX_FENCE)
--			dma_flags |= DMA_PREP_FENCE;
--		for (;;) {
--			tx = device->device_prep_dma_pq_val(chan, pq,
--							    unmap->addr,
--							    src_cnt,
--							    coefs,
--							    len, pqres,
--							    dma_flags);
--			if (likely(tx))
--				break;
--			async_tx_quiesce(&submit->depend_tx);
--			dma_async_issue_pending(chan);
--		}
-+			if (submit->flags & ASYNC_TX_FENCE)
-+				dma_flags |= DMA_PREP_FENCE;
-+			for (;;) {
-+				tx = device->device_prep_dma_pq_val(chan, pq,
-+								    unmap->addr,
-+								    src_cnt,
-+								    coefs,
-+								    len, pqres,
-+								    dma_flags);
-+				if (likely(tx))
-+					break;
-+				async_tx_quiesce(&submit->depend_tx);
-+				dma_async_issue_pending(chan);
-+			}
- 
--		dma_set_unmap(tx, unmap);
--		async_tx_submit(chan, tx, submit);
-+			dma_set_unmap(tx, unmap);
-+			async_tx_submit(chan, tx, submit);
- 
--		return tx;
-+			return tx;
-+		}
- 	} else {
- 		struct page *p_src = P(blocks, disks);
- 		struct page *q_src = Q(blocks, disks);
-@@ -366,6 +375,8 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 		void *cb_param_orig = submit->cb_param;
- 		void *p, *q, *s;
- 
-+		dmaengine_unmap_put(unmap);
-+
- 		pr_debug("%s: (sync) disks: %d len: %zu\n",
- 			 __func__, disks, len);
- 
-@@ -411,9 +422,9 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 		submit->cb_param = cb_param_orig;
- 		submit->flags = flags_orig;
- 		async_tx_sync_epilog(submit);
--
--		return NULL;
- 	}
-+
-+	return NULL;
- }
- EXPORT_SYMBOL_GPL(async_syndrome_val);
- 
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 3c562f5..d540ac6 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -182,33 +182,36 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 
- 	BUG_ON(src_cnt <= 1);
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, src_cnt+1, GFP_NOIO);
--
--	if (unmap && is_dma_xor_aligned(device, offset, 0, len)) {
-+	if (device && is_dma_xor_aligned(device, offset, 0, len)) {
- 		struct dma_async_tx_descriptor *tx;
- 		int i, j;
- 
- 		/* run the xor asynchronously */
- 		pr_debug("%s (async): len: %zu\n", __func__, len);
- 
--		unmap->len = len;
--		for (i = 0, j = 0; i < src_cnt; i++) {
--			if (!src_list[i])
--				continue;
--			unmap->to_cnt++;
--			unmap->addr[j++] = dma_map_page(device->dev, src_list[i],
--							offset, len, DMA_TO_DEVICE);
--		}
-+		unmap = dmaengine_get_unmap_data(device->dev, src_cnt + 1,
-+						 GFP_NOIO);
-+		if (unmap) {
-+			unmap->len = len;
-+			for (i = 0, j = 0; i < src_cnt; i++) {
-+				if (!src_list[i])
-+					continue;
-+				unmap->to_cnt++;
-+				unmap->addr[j++] = dma_map_page(device->dev,
-+								src_list[i],
-+								offset, len,
-+								DMA_TO_DEVICE);
-+			}
- 
--		/* map it bidirectional as it may be re-used as a source */
--		unmap->addr[j] = dma_map_page(device->dev, dest, offset, len,
--					      DMA_BIDIRECTIONAL);
--		unmap->bidi_cnt = 1;
-+			/* map it bidirectional as it may be re-used as a source */
-+			unmap->addr[j] = dma_map_page(device->dev, dest, offset,
-+						      len, DMA_BIDIRECTIONAL);
-+			unmap->bidi_cnt = 1;
- 
--		tx = do_async_xor(chan, unmap, submit);
--		dmaengine_unmap_put(unmap);
--		return tx;
-+			tx = do_async_xor(chan, unmap, submit);
-+			dmaengine_unmap_put(unmap);
-+			return tx;
-+		}
- 	} else {
- 		dmaengine_unmap_put(unmap);
- 		/* run the xor synchronously */
-@@ -228,9 +231,9 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 		async_tx_quiesce(&submit->depend_tx);
- 
- 		do_sync_xor(dest, src_list, offset, src_cnt, len, submit);
--
--		return NULL;
- 	}
-+
-+	return NULL;
- }
- EXPORT_SYMBOL_GPL(async_xor);
- 
-@@ -278,10 +281,7 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 
- 	BUG_ON(src_cnt <= 1);
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, src_cnt, GFP_NOIO);
--
--	if (unmap && src_cnt <= device->max_xor &&
-+	if (device && src_cnt <= device->max_xor &&
- 	    is_dma_xor_aligned(device, offset, 0, len)) {
- 		unsigned long dma_prep_flags = 0;
- 		int i;
-@@ -293,31 +293,39 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 		if (submit->flags & ASYNC_TX_FENCE)
- 			dma_prep_flags |= DMA_PREP_FENCE;
- 
--		for (i = 0; i < src_cnt; i++) {
--			unmap->addr[i] = dma_map_page(device->dev, src_list[i],
--						      offset, len, DMA_TO_DEVICE);
--			unmap->to_cnt++;
--		}
--		unmap->len = len;
--
--		tx = device->device_prep_dma_xor_val(chan, unmap->addr, src_cnt,
--						     len, result,
--						     dma_prep_flags);
--		if (unlikely(!tx)) {
--			async_tx_quiesce(&submit->depend_tx);
--
--			while (!tx) {
--				dma_async_issue_pending(chan);
--				tx = device->device_prep_dma_xor_val(chan,
--					unmap->addr, src_cnt, len, result,
--					dma_prep_flags);
-+		unmap = dmaengine_get_unmap_data(device->dev, src_cnt,
-+						 GFP_NOIO);
-+		if (unmap) {
-+			for (i = 0; i < src_cnt; i++) {
-+				unmap->addr[i] = dma_map_page(device->dev,
-+							      src_list[i],
-+							      offset, len,
-+							      DMA_TO_DEVICE);
-+				unmap->to_cnt++;
-+			}
-+			unmap->len = len;
-+
-+			tx = device->device_prep_dma_xor_val(chan, unmap->addr,
-+							     src_cnt,
-+							     len, result,
-+							     dma_prep_flags);
-+			if (unlikely(!tx)) {
-+				async_tx_quiesce(&submit->depend_tx);
-+
-+				while (!tx) {
-+					dma_async_issue_pending(chan);
-+					tx = device->device_prep_dma_xor_val(chan,
-+							unmap->addr, src_cnt, len,
-+							result, dma_prep_flags);
-+				}
- 			}
-+			dma_set_unmap(tx, unmap);
-+			async_tx_submit(chan, tx, submit);
- 		}
--		dma_set_unmap(tx, unmap);
--		async_tx_submit(chan, tx, submit);
- 	} else {
- 		enum async_tx_flags flags_orig = submit->flags;
- 
-+		dmaengine_unmap_put(unmap);
- 		pr_debug("%s: (sync) len: %zu\n", __func__, len);
- 		WARN_ONCE(device && src_cnt <= device->max_xor,
- 			  "%s: no space for dma address conversion\n",
-@@ -335,8 +343,6 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 		async_tx_sync_epilog(submit);
- 		submit->flags = flags_orig;
- 	}
--	dmaengine_unmap_put(unmap);
--
- 	return tx;
- }
- EXPORT_SYMBOL_GPL(async_xor_val);
--- 
-1.8.3.2
+Thanks for the review!
+
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> >> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> >> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> >> ---
+> >>  drivers/cpufreq/powernv-cpufreq.c | 24 ++++++++++++++++++------
+> >>  1 file changed, 18 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> >> index ab1551f..4cad727 100644
+> >> --- a/drivers/cpufreq/powernv-cpufreq.c
+> >> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> >> @@ -115,6 +115,23 @@ static struct freq_attr *powernv_cpu_freq_attr[] = {
+> >>  
+> >>  /* Helper routines */
+> >>  
+> >> +/**
+> >> + * Sets the bits corresponding to the thread-siblings of cpu in its core
+> >> + * in 'cpus'.
+> >> + */
+> >> +static void powernv_cpu_to_core_mask(unsigned int cpu, cpumask_var_t cpus)
+> >> +{
+> >> +	int base, i;
+> >> +
+> >> +	base = cpu_first_thread_sibling(cpu);
+> >> +
+> >> +	for (i = 0; i < threads_per_core; i++) {
+> >> +		cpumask_set_cpu(base + i, cpus);
+> >> +	}
+> >> +
+> >> +	return;
+> >> +}
+> >> +
+> >>  /* Access helpers to power mgt SPR */
+> >>  
+> >>  static inline unsigned long get_pmspr(unsigned long sprn)
+> >> @@ -180,13 +197,8 @@ static int powernv_set_freq(cpumask_var_t cpus, unsigned int new_index)
+> >>  
+> >>  static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> >>  {
+> >> -	int base, i;
+> >> -
+> >>  #ifdef CONFIG_SMP
+> >> -	base = cpu_first_thread_sibling(policy->cpu);
+> >> -
+> >> -	for (i = 0; i < threads_per_core; i++)
+> >> -		cpumask_set_cpu(base + i, policy->cpus);
+> >> +	powernv_cpu_to_core_mask(policy->cpu, policy->cpus);
+> >>  #endif
+> >>  	policy->cpuinfo.transition_latency = 25000;
+> >>  
+> > 
+> > 
+> 
