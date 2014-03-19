@@ -1,23 +1,20 @@
-Return-Path: <eparis@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 0FED52C008F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 10:02:31 +1100 (EST)
-Message-ID: <1395270144.10106.0.camel@localhost>
-Subject: Re: [PATCH 3/4] ARCH: AUDIT: implement syscall_get_arch for all arches
-From: Eric Paris <eparis@redhat.com>
-To: Matt Turner <mattst88@gmail.com>
-Date: Wed, 19 Mar 2014 19:02:24 -0400
-In-Reply-To: <CAEdQ38Ex47GxhN1ZZMu+RETpWs-ENbfCr8v=6iFg9p_QWaa9zw@mail.gmail.com>
-References: <1395266643-3139-1-git-send-email-eparis@redhat.com>
- <1395266643-3139-3-git-send-email-eparis@redhat.com>
- <CAEdQ38Ex47GxhN1ZZMu+RETpWs-ENbfCr8v=6iFg9p_QWaa9zw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- linux-ia64@vger.kernel.org,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- microblaze-uclinux@itee.uq.edu.au, linux@openrisc.net, linux-audit@redhat.com,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0183.outbound.protection.outlook.com [207.46.163.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4505D2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 10:08:28 +1100 (EST)
+Date: Wed, 19 Mar 2014 18:08:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Valentin Longchamp <valentin.longchamp@keymile.com>
+Subject: Re: [v2, 2/2] powerpc/mpc85xx: add support for Keymile's kmcoge4 board
+Message-ID: <20140319230813.GA30481@home.buserror.net>
+References: <1392119407-29490-3-git-send-email-valentin.longchamp@keymile.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1392119407-29490-3-git-send-email-valentin.longchamp@keymile.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-19 at 15:19 -0700, Matt Turner wrote:
-> On Wed, Mar 19, 2014 at 3:04 PM, Eric Paris <eparis@redhat.com> wrote:
-> > For all arches which support audit implement syscall_get_arch()
-> 
-> support audit -- is that AUDIT_ARCH? If so, alpha gained support
-> recently, so I think this patch needs to handle alpha too?
+On Tue, Feb 11, 2014 at 12:50:07PM +0100, Valentin Longchamp wrote:
+> +		reset_cpld@1,0 {
+> +			interrupt-controller;
+> +			#interrupt-cells = <2>;
+> +			reg = <1 0 0x80>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <
+> +				4 1 0 0
+> +				5 1 0 0>;
+> +		};
+> +
+> +		chassis_mgmt@3,0 {
+> +			interrupt-controller;
+> +			#interrupt-cells = <2>;
+> +			reg = <3 0 0x100>;
+> +			interrupt-parent = <&mpic>;
+> +			interrupts = <6 1 0 0>;
+> +		};
 
-Absolutely right.  I broke Alpha (in the next patch).  Will fix.
+Dashes are preferred to underscores in device trees.
 
--Eric
+More importantly, these nodes need proper compatibles and bindings.  Once
+that's done, the name for the nodes should probably be
+"board_control@whatever" for both.
+
+-Scott
