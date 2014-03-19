@@ -1,22 +1,21 @@
-Return-Path: <rajatjain@juniper.net>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 636772C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 06:58:58 +1100 (EST)
-From: Rajat Jain <rajatjain@juniper.net>
-To: Valentin Longchamp <valentin.longchamp@keymile.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-Subject: RE: EDAC PCIe errors when scannning the bus
-Date: Wed, 19 Mar 2014 19:58:46 +0000
-Message-ID: <5603f3ee421547dea5cdc861483f8231@DM2PR05MB671.namprd05.prod.outlook.com>
-References: <532991AD.6020903@keymile.com>
-In-Reply-To: <532991AD.6020903@keymile.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 7EA282C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 08:01:19 +1100 (EST)
+Date: Wed, 19 Mar 2014 16:00:41 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Subject: Re: [2/2] fsl/pci: The new pci suspend/resume implementation
+Message-ID: <20140319210041.GA14019@home.buserror.net>
+References: <1389081848-26506-2-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Cc: Guenter Roeck <groeck@juniper.net>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1389081848-26506-2-git-send-email-dongsheng.wang@freescale.com>
+Cc: roy.zang@freescale.com, galak@codeaurora.org, rjw@rjwysocki.net,
+ linux-pci@vger.kernel.org, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +25,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGVsbG8sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcGNp
-LW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBjaS0NCj4gb3duZXJAdmdlci5r
-ZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgVmFsZW50aW4gTG9uZ2NoYW1wDQo+IFNlbnQ6IFdlZG5l
-c2RheSwgTWFyY2ggMTksIDIwMTQgNTo0NyBBTQ0KPiBUbzogbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmc7IGxpbnV4LXBjaUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogRURBQyBQQ0ll
-IGVycm9ycyB3aGVuIHNjYW5ubmluZyB0aGUgYnVzDQo+IA0KPiBIZWxsbywNCj4gDQo+IFdlIGhh
-dmUgYSBib2FyZCB0aGF0IGlzIGJhc2VkIG9uIEZyZWVzY2FsZSdzIFAyMDQxIFNvQy4gVGhlIGJv
-YXJkcyBoYXMgMg0KPiBQQ0llIGJ1c2VzIHdpdGggdGhpcyB0b3BvbG9neToNCj4gDQo+IFBDSWUg
-MCA8LS0tPiBQRVg4NTA1IHN3aXRjaCA8LS0tPiA0IG5ldHdvcmsgZGV2aWNlcyBQQ0lFIDIgPC0t
-LT4gRlBHQQ0KPiANCj4gT24gMy4xMC4zMyArIGEgc3Vic2V0IG9mIHRoZSBGcmVlc2NhbGUgU0RL
-IDEuNCBwYXRjaGVzLCBib3RoIFBDSWUgYnVzZXMNCj4gd29yayB3ZWxsIGFuZCB3ZSBhcmUgYWJs
-ZSB0byB1c2UgdGhlIGRldmljZXMgb24gdGhlbS4NCj4gDQo+IEZvciBlYWNoIGJ1cywgSSBob3dl
-dmVyIGtlZXAgZ2V0dGluZyBFREFDIFBDSWUgZXJyb3JzIGF0IHRoZSB2ZXJ5IGZpcnN0DQo+IHN0
-YWdlIG9mIGJ1cyBlbnVtZXJhdGlvbiAocGxlYXNlIHNlZSB0aGUgYXR0YWNoZWQga2VybmVsIGxv
-Zywgd2l0aCBzb21lDQo+IGRlYnVnIG91dHB1dCBmcm9tIGFyY2gvcG93ZXJwYy9rZXJuZWwvcGNp
-LWNvbW1vbi5jIGFuZA0KPiBkcml2ZXJzL3BjaS9wcm9iZS5jKSBmb3IgYm90aCBidXNlcy4NCj4g
-DQo+IE15IGN1cnJlbnQgInVuZGVyc3RhbmRpbmciIG9mIHRoZSBzaXR1YXRpb24gaXMgc3VjaDog
-c2luY2UNCj4gUENJX1BST0JFX05PUk1BTCBpcyB1c2VkLCBwY2liaW9zX3NjYW5fcGhiKCkgY2Fs
-bHMgcGNpX3NjYW5fY2hpbGRfYnVzKCkNCj4gdGhhdCBkb2VzIGEgcGNpX3NjYW5fc2xvdCgpIG9u
-IHRoZSBidXMgZm9yIDMyIHNsb3RzLiBUaGUgZmlyc3QNCj4gcGNpX3NjYW5fc2xvdCgpIGlzIHN1
-Y2Nlc3NmdWwgYW5kIGl0IGRpc2NvdmVycyB0aGUgUDIwNDEncyBQQ0llDQo+IENvbnRyb2xsZXIu
-IEFsbCB0aGUgMzEgb3RoZXIgcGNpX3NjYW5fc2xvdCgpIGNhbGxzIGdlbmVyYXRlIGFuIEVEQUMg
-UENJZQ0KPiBlcnJvciwgdGhhdCBpcyB0cmlnZ2VyZWQgYnkgdGhlIGNvbmZpZ3VyYXRpb24gcmVh
-ZCB0cmFuc2FjdGlvbiB0byByZWFkDQo+IGFuIGh5cG90aGV0aWNhbCB2ZW5kb3IgSUQgb2YgYSBk
-ZXZpY2Ugb24gdGhlIGJ1cy4gVGhpcyBpcyByZWxldmFudCB3aXRoDQo+IHRoYXQgaXMgcmVwb3J0
-ZWQgYnkgdGhlIEVEQUMgZXJyb3IgaGFuZGxlciAoYWxsIHRoZSAzMSBhcmUgdGhlIHNhbWUpOg0K
-PiANCj4gPiBQQ0lFIGVycm9yKHMpIGRldGVjdGVkDQo+ID4gUENJRSBFUlJfRFIgcmVnaXN0ZXI6
-IDB4MDAwMjAwMDANCj4gDQo+IElDQ0EgYml0IGlzIHNldDogQWNjZXNzIHRvIGFuIGlsbGVnYWwg
-Y29uZmlndXJhdGlvbiBzcGFjZSBmcm9tDQo+IFBFWF9DT05GSUdfQUREUi9QRVhfQ09ORklHX0RB
-VEEgd2FzIGRldGVjdGVkLg0KPiANCj4gPiBQQ0lFIEVSUl9DQVBfU1RBVCByZWdpc3RlcjogMHg4
-MDAwMDAwMQ0KPiANCj4gVG8gaXMgc2V0OiBUcmFuc2FjdGlvbiBvcmlnaW5hdGVkIGZyb20gUEVY
-X0NPTkZJR19BRERSL1BFWF9DT05GSUdfREFUQS4NCj4gDQo+ID4gUENJRSBFUlJfQ0FQX1IwIHJl
-Z2lzdGVyOiAweDAwMDAwODAwDQo+IA0KPiBGTVQ6IDBiMDAsIFRZUEU6IDBiMDAxMDAgKENvbmZp
-ZyByZWFkIEkgZ3Vlc3MpDQo+IA0KPiA+IFBDSUUgRVJSX0NBUF9SMSByZWdpc3RlcjogMHgwMDAw
-MDAwMA0KPiA+IFBDSUUgRVJSX0NBUF9SMiByZWdpc3RlcjogMHgwMDAwMDAwMA0KPiA+IFBDSUUg
-RVJSX0NBUF9SMyByZWdpc3RlcjogMHgwMDAwMDAwMA0KPiANCj4gQWZ0ZXJ3YXJkcywgcGNpX3Nj
-YW5fY2hpbGRfYnVzKCkgY2FsbHMgcGNpYmlvc19maXh1cF9idXMgKHRoYXQgbWF5YmUNCj4gaGVs
-cHMgPykuDQo+IEZyb20gaGVyZSwgc2luY2UgdGhlIFAyMDQxJ3MgUENJZSBDb250cm9sbGVyIGlz
-IGEgYnJpZGdlLA0KPiBwY2lfc2Nhbl9icmlkZ2UgaXMgY2FsbGVkIGZvciB0aGlzIGJ1cyBhbmQg
-YWxsIHRoZSBkZXZpY2VzIGFyZSBkZXRlY3RlZA0KPiB3aXRob3V0IGhhdmluZyBhbnkgY29uZmln
-dXJhdGlvbiB0cmFuc2FjdGlvbiBjYXVzaW5nIEVEQUMgZXJyb3JzLg0KPiANCj4gSGFzIHNvbWVv
-bmUgYWxyZWFkeSBvYnNlcnZlZCBzdWNoIGEgYmVoYXZpb3IgPyBXaHkgZG8gdGhlc2UgaW5pdGlh
-bA0KPiB0cmFuc2FjdGlvbiBnZW5lcmF0ZSBhbiBlcnJvciA/IFdoYXQgd291bGQgYmUgYSBwb3Nz
-aWJsZSBmaXggdG8gYXZvaWQNCj4gdGhlc2UgdHJhbnNhY3Rpb24gZXJyb3JzIGZvciB0aGVzZSAz
-MSAodW5uZWRlZCA/KSBwY2lfc2Nhbl9zbG90KCkgY2FsbHMNCj4gb24gdGhlIGluaXRpYWwgYnVz
-ID8NCg0KSSBzZWUgdGhpcyB0b28gb24gbXkgUDUwMjAgYmFzZWQgcGxhdGZvcm0uIE5vIGZpeCB5
-ZXQsIGZvciBub3cgZGlzYWJsaW5nIHRoZSBFREFDLg0KDQpUaGFua3MsDQoNClJhamF0DQoNCj4g
-DQo+IEJlc3QgUmVnYXJkcywNCj4gDQo+IFZhbGVudGluDQo=
+On Tue, Jan 07, 2014 at 04:04:08PM +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> The new suspend/resume implementation, send pme turnoff message
+> in suspend, and send pme exit message in resume.
+> 
+> Add a PME handler, to response PME & message interrupt.
+> 
+> Change platform_driver->suspend/resume to syscore->suspend/resume.
+> pci-driver will call back EP device, to save EP state in
+> pci_pm_suspend_noirq, so we need to keep the link, until
+> pci_pm_suspend_noirq finish.
+> 
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+
+Is this patch OK to go in without patch 1/2?  It's not clear whether that
+was deemed incorrect (as in new patch coming) or unnecessary.
+
+It would also be good if you submit with the explanation from
+http://www.spinics.net/lists/linux-pci/msg27844.html in the commit
+message.
+
+> -static int fsl_pci_probe(struct platform_device *pdev)
+> +#ifdef CONFIG_PM
+> +static irqreturn_t fsl_pci_pme_handle(int irq, void *dev_id)
+>  {
+> -	int ret;
+> -	struct device_node *node;
+> +	struct pci_controller *hose = dev_id;
+> +	struct ccsr_pci __iomem *pci = hose->private_data;
+> +	u32 dr;
+>  
+> -	node = pdev->dev.of_node;
+> -	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
+> +	dr = in_be32(&pci->pex_pme_mes_dr);
+> +	if (dr)
+> +		out_be32(&pci->pex_pme_mes_dr, dr);
+> +	else
+> +		return IRQ_NONE;
+>  
+> -	mpc85xx_pci_err_probe(pdev);
+> +	return IRQ_HANDLED;
+> +}
+
+Why do you put some of the HANDLED path in the if statement, and some
+outside?
+
+Just do:
+
+if (!dr)
+	return IRQ_NONE;
+
+out_be32(...);
+return IRQ_HANDLED;
+
+> +static int fsl_pci_pme_probe(struct pci_controller *hose)
+> +{
+> +	struct ccsr_pci __iomem *pci;
+> +	struct pci_dev *dev = hose->bus->self;
+> +	u16 pms;
+> +	int pme_irq;
+> +	int res;
+> +
+> +	/* PME Disable */
+> +	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pms);
+> +	pms &= ~PCI_PM_CTRL_PME_ENABLE;
+> +	pci_write_config_word(dev, dev->pm_cap + PCI_PM_CTRL, pms);
+> +
+> +	pme_irq = irq_of_parse_and_map(hose->dn, 0);
+> +	if (!pme_irq) {
+> +		pr_warn("Failed to map PME interrupt.\n");
+
+dev_err()
+
+> +
+> +		return -ENXIO;
+> +	}
+> +
+> +	res = devm_request_irq(hose->parent, pme_irq,
+> +			fsl_pci_pme_handle,
+> +			IRQF_DISABLED | IRQF_SHARED,
+> +			"[PCI] PME", hose);
+
+IRQF_DISABLED is a deprecated no-op.
+
+> +	if (res < 0) {
+> +		pr_warn("Unable to requiest irq %d for PME\n", pme_irq);
+
+dev_err() etc.
+
+-Scott
