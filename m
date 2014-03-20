@@ -2,31 +2,31 @@ Return-Path: <clg@fr.ibm.com>
 Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 23CF22C00A0
+ by ozlabs.org (Postfix) with ESMTPS id 3303C2C00AB
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:44 +1100 (EST)
 Received: from /spool/local
  by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
  Thu, 20 Mar 2014 15:10:40 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 994561B0805F
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id BA2491B08070
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:29 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2KFARqJ1507704
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2KFARCd4587888
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:27 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2KFAcAw016347
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KFAcIw018632
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:38 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 05/18] powerpc/boot: add PROM_ERROR define in oflib
-Date: Thu, 20 Mar 2014 16:10:00 +0100
-Message-Id: <1395328213-19206-6-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 08/18] powerpc/boot: fix compile warning in 64bit
+Date: Thu, 20 Mar 2014 16:10:03 +0100
+Message-Id: <1395328213-19206-9-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
@@ -44,47 +44,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is mostly useful to make to the boot wrapper code closer with
-the kernel code in prom_init.
+ arch/powerpc/boot/oflib.c:211:9: warning: cast to pointer from integer of \
+		  different size [-Wint-to-pointer-cast]
+  return (phandle) of_call_prom("finddevice", 1, 1, name);
+
+This is a work around. The definite solution would be to define the
+phandle typedef as a u32, as in the kernel, but this would break the
+device tree ops API. 
+
+Let it be for the moment.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/oflib.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/boot/oflib.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 0f72b1a42133..96fe4d225abe 100644
+index 5ab9cb57cd31..e8697df2df27 100644
 --- a/arch/powerpc/boot/oflib.c
 +++ b/arch/powerpc/boot/oflib.c
-@@ -27,6 +27,8 @@ struct prom_args {
- 	__be32 args[10];	/* Input/output arguments. */
- };
- 
-+#define PROM_ERROR (-1u)
-+
- static int (*prom) (void *);
- 
- void of_init(void *promptr)
-@@ -55,7 +57,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
- 		args.args[nargs+i] = 0;
- 
- 	if (prom(&args) < 0)
--		return -1;
-+		return PROM_ERROR;
- 
- 	return (nret > 0) ? be32_to_cpu(args.args[nargs]) : 0;
+@@ -203,7 +203,7 @@ void of_exit(void)
+  */
+ void *of_finddevice(const char *name)
+ {
+-	return (phandle) of_call_prom("finddevice", 1, 1, name);
++	return (void *) (unsigned long) of_call_prom("finddevice", 1, 1, name);
  }
-@@ -80,9 +82,9 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
- 		args.args[nargs+i] = 0;
  
- 	if (prom(&args) < 0)
--		return -1;
-+		return PROM_ERROR;
- 
--	if (rets != (void *) 0)
-+	if (rets != NULL)
- 		for (i = 1; i < nret; ++i)
- 			rets[i-1] = be32_to_cpu(args.args[nargs+i]);
- 
+ int of_getprop(const void *phandle, const char *name, void *buf,
 -- 
 1.7.10.4
