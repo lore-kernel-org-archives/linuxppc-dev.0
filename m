@@ -1,40 +1,26 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp18.uk.ibm.com (e06smtp18.uk.ibm.com [195.75.94.114])
+Return-Path: <davidlohr@hp.com>
+Received: from g2t2354.austin.hp.com (g2t2354.austin.hp.com [15.217.128.53])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 533C02C083F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:20:46 +1100 (EST)
-Received: from /spool/local
- by e06smtp18.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 20 Mar 2014 15:10:42 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 286882190041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:35 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2KFASNO2752844
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:28 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2KFAdXx016433
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:39 -0600
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH 18/18] powerpc/boot: add PPC64_BOOT_WRAPPER config option
-Date: Thu, 20 Mar 2014 16:10:13 +0100
-Message-Id: <1395328213-19206-19-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
-References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
-References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id D713E2C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 03:31:41 +1100 (EST)
+Message-ID: <1395333093.14694.3.camel@buesod1.americas.hpqcorp.net>
+Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
+From: Davidlohr Bueso <davidlohr@hp.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Date: Thu, 20 Mar 2014 09:31:33 -0700
+In-Reply-To: <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
+References: <20140319152619.GB10406@linux.vnet.ibm.com>
+ <20140319154705.GB8557@laptop.programming.kicks-ass.net>
+ <20140319170829.GD8557@laptop.programming.kicks-ass.net>
+ <20140320053350.GB30295@linux.vnet.ibm.com>
+ <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>, torvalds@linux-foundation.org,
+ LKML <linux-kernel@vger.kernel.org>, paulus@samba.org, tglx@linutronix.de,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,104 +30,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch broke compatibility for 64bit big endian kernel.
+On Wed, 2014-03-19 at 22:56 -0700, Davidlohr Bueso wrote:
+> On Thu, 2014-03-20 at 11:03 +0530, Srikar Dronamraju wrote:
+> > > > Joy,.. let me look at that with ppc in mind.
+> > > 
+> > > OK; so while pretty much all the comments from that patch are utter
+> > > nonsense (what was I thinking), I cannot actually find a real bug.
+> > > 
+> > > But could you try the below which replaces a control dependency with a
+> > > full barrier. The control flow is plenty convoluted that I think the
+> > > control barrier isn't actually valid anymore and that might indeed
+> > > explain the fail.
+> > > 
+> > 
+> > Unfortunately the patch didnt help. Still seeing tasks stuck
+> > 
+> > # ps -Ao pid,tt,user,fname,tmout,f,wchan | grep futex
+> > 14680 pts/0    root     java         - 0 futex_wait_queue_me
+> > 14797 pts/0    root     java         - 0 futex_wait_queue_me
+> > # :> /var/log/messages
+> > # echo t > /proc/sysrq-trigger 
+> > # grep futex_wait_queue_me /var/log/messages | wc -l 
+> > 334
+> > #
+> > 
+> > [ 6904.211478] Call Trace:
+> > [ 6904.211481] [c000000fa1f1b4d0] [0000000000000020] 0x20 (unreliable)
+> > [ 6904.211486] [c000000fa1f1b6a0] [c000000000015208] .__switch_to+0x1e8/0x330
+> > [ 6904.211491] [c000000fa1f1b750] [c000000000702f00] .__schedule+0x360/0x8b0
+> > [ 6904.211495] [c000000fa1f1b9d0] [c000000000147348] .futex_wait_queue_me+0xf8/0x1a0
+> > [ 6904.211500] [c000000fa1f1ba60] [c0000000001486dc] .futex_wait+0x17c/0x2a0
+> > [ 6904.211505] [c000000fa1f1bc10] [c00000000014a614] .do_futex+0x254/0xd80
+> > [ 6904.211510] [c000000fa1f1bd60] [c00000000014b25c] .SyS_futex+0x11c/0x1d0
+> > [ 6904.238874] [c000000fa1f1be30] [c00000000000a0fc] syscall_exit+0x0/0x7c
+> > [ 6904.238879] java            S 00003fff825f6044     0 14682  14076 0x00000080
+> > 
+> > Is there any other information that I provide that can help?
+> 
+> This problem suggests that we missed a wakeup for a task that was adding
+> itself to the queue in a wait path. And the only place that can happen
+> is with the hb spinlock check for any pending waiters. Just in case we
+> missed some assumption about checking the hash bucket spinlock as a way
+> of detecting any waiters (powerpc?), could you revert this commit and
+> try the original atomic operations variant:
+> 
+> https://lkml.org/lkml/2013/12/19/630
 
-This patch adds a config option to compile the boot wrapper in 64bit
-only when CPU_LITTLE_ENDIAN is selected. It restores 32bit compilation
-and linking for the big endian kernel.
-
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- arch/powerpc/boot/Makefile             |    2 +-
- arch/powerpc/boot/wrapper              |    2 +-
- arch/powerpc/boot/zImage.lds.S         |    8 ++++----
- arch/powerpc/platforms/Kconfig.cputype |    5 +++++
- 4 files changed, 11 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index b7e640028711..35189540b699 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -23,7 +23,7 @@ BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -Os -msoft-float -pipe \
- 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
- 		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
--ifdef CONFIG_PPC64
-+ifdef CONFIG_PPC64_BOOT_WRAPPER
- BOOTCFLAGS	+= -m64
- endif
- ifdef CONFIG_CPU_BIG_ENDIAN
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 3270e2a5c901..1948cf8b8a40 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -140,7 +140,7 @@ fi
- elfformat="`${CROSS}objdump -p "$kernel" | grep 'file format' | awk '{print $4}'`"
- case "$elfformat" in
-     elf64-powerpcle)	format=elf64lppc	;;
--    elf64-powerpc)	format=elf64ppc	;;
-+    elf64-powerpc)	format=elf32ppc	;;
-     elf32-powerpc)	format=elf32ppc	;;
- esac
- 
-diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
-index afecab0aff5c..861e72109df2 100644
---- a/arch/powerpc/boot/zImage.lds.S
-+++ b/arch/powerpc/boot/zImage.lds.S
-@@ -1,6 +1,6 @@
- #include <asm-generic/vmlinux.lds.h>
- 
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
- OUTPUT_ARCH(powerpc:common64)
- #else
- OUTPUT_ARCH(powerpc:common)
-@@ -22,7 +22,7 @@ SECTIONS
-     *(.rodata*)
-     *(.data*)
-     *(.sdata*)
--#ifdef CONFIG_PPC32
-+#ifndef CONFIG_PPC64_BOOT_WRAPPER
-     *(.got2)
- #endif
-   }
-@@ -37,7 +37,7 @@ SECTIONS
-   .interp : { *(.interp) }
-   .rela.dyn :
-   {
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
-     __rela_dyn_start = .;
- #endif
-     *(.rela*)
-@@ -67,7 +67,7 @@ SECTIONS
-     _initrd_end =  .;
-   }
- 
--#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC64_BOOT_WRAPPER
-   .got :
-   {
-     __toc_start = .;
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 434fda39bf8b..a4aadb091a1e 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -421,6 +421,7 @@ config CPU_BIG_ENDIAN
- 
- config CPU_LITTLE_ENDIAN
- 	bool "Build little endian kernel"
-+	select PPC64_BOOT_WRAPPER
- 	help
- 	  Build a little endian kernel.
- 
-@@ -429,3 +430,7 @@ config CPU_LITTLE_ENDIAN
- 	  little endian powerpc.
- 
- endchoice
-+
-+config PPC64_BOOT_WRAPPER
-+	def_bool n
-+	depends on CPU_LITTLE_ENDIAN
--- 
-1.7.10.4
+hmmm looking at ppc spinlock code, it seems that it doesn't have ticket
+spinlocks -- in fact Torsten Duwe has been trying to get them upstream
+very recently. Since we rely on the counter for detecting waiters, this
+might explain the issue. Could someone confirm this spinlock
+implementation difference? 
