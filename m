@@ -1,20 +1,41 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 700E32C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:52:30 +1100 (EST)
-Message-ID: <1395291139.12479.315.camel@snotra.buserror.net>
-Subject: Re: 3.16.6 build error: swsusp_booke.S:85: Error: invalid sprg number
-From: Scott Wood <scottwood@freescale.com>
-To: John Donnelly <john.d@servergy.com>
-Date: Wed, 19 Mar 2014 23:52:19 -0500
-In-Reply-To: <CAGtOQbTgXnxEHfuqtQ-BwpsnY=J2WktMFTNXysfYw9-cYprstQ@mail.gmail.com>
-References: <CAGtOQbTgXnxEHfuqtQ-BwpsnY=J2WktMFTNXysfYw9-cYprstQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 09DD92C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 16:34:01 +1100 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Thu, 20 Mar 2014 15:33:58 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0DAF3357803F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 16:33:56 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2K5DhO54850148
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 16:13:44 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2K5Xr3O025637
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 16:33:54 +1100
+Date: Thu, 20 Mar 2014 11:03:50 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
+Message-ID: <20140320053350.GB30295@linux.vnet.ibm.com>
+References: <20140319152619.GB10406@linux.vnet.ibm.com>
+ <20140319154705.GB8557@laptop.programming.kicks-ass.net>
+ <20140319170829.GD8557@laptop.programming.kicks-ass.net>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20140319170829.GD8557@laptop.programming.kicks-ass.net>
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ davidlohr@hp.com, paulus@samba.org, tglx@linutronix.de,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
+ mingo@kernel.org
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,31 +45,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-19 at 17:58 -0500, John Donnelly wrote:
-> Platform: Freescale  p4080--e500mc  ,
+> > Joy,.. let me look at that with ppc in mind.
 > 
+> OK; so while pretty much all the comments from that patch are utter
+> nonsense (what was I thinking), I cannot actually find a real bug.
 > 
-> Suggestions welcome . 
+> But could you try the below which replaces a control dependency with a
+> full barrier. The control flow is plenty convoluted that I think the
+> control barrier isn't actually valid anymore and that might indeed
+> explain the fail.
 > 
-> 
->  /bin/sh arch/powerpc/kernel/systbl_chk.sh
-> arch/powerpc/kernel/systbl_chk.i
-> make -f scripts/Makefile.build obj=arch/powerpc/kernel/vdso32
->   gcc -mbig-endian -m32 -Wp,-MD,arch/powerpc/kernel/.swsusp_booke.o.d
->  -nostdinc -isystem /usr/lib/gcc/ppc64-redhat-linux/4.8.2/include
-> -I/root/linux-3.13.6/arch/powerpc/include
-> -Iarch/powerpc/include/generated  -Iinclude
-> -I/root/linux-3.13.6/arch/powerpc/include/uapi
-> -Iarch/powerpc/include/generated/uapi
-> -I/root/linux-3.13.6/include/uapi -Iinclude/generated/uapi
-> -include /root/linux-3.13.6/include/linux/kconfig.h -D__KERNEL__
-> -Iarch/powerpc  -D__ASSEMBLY__ -Iarch/powerpc  -gdwarf-2          -c
-> -o arch/powerpc/kernel/swsusp_booke.o
-> arch/powerpc/kernel/swsusp_booke.S
-> arch/powerpc/kernel/swsusp_booke.S: Assembler messages:
-> arch/powerpc/kernel/swsusp_booke.S:85: Error: invalid sprg number
-> arch/powerpc/kernel/swsusp_booke.S:87: Error: invalid sprg number
-> 
-You need commit b58a7bd6df7b61446b833a7c72f8a1f11066e0b0.
 
--Scott
+Unfortunately the patch didnt help. Still seeing tasks stuck
+
+# ps -Ao pid,tt,user,fname,tmout,f,wchan | grep futex
+14680 pts/0    root     java         - 0 futex_wait_queue_me
+14797 pts/0    root     java         - 0 futex_wait_queue_me
+# :> /var/log/messages
+# echo t > /proc/sysrq-trigger 
+# grep futex_wait_queue_me /var/log/messages | wc -l 
+334
+#
+
+[ 6904.211478] Call Trace:
+[ 6904.211481] [c000000fa1f1b4d0] [0000000000000020] 0x20 (unreliable)
+[ 6904.211486] [c000000fa1f1b6a0] [c000000000015208] .__switch_to+0x1e8/0x330
+[ 6904.211491] [c000000fa1f1b750] [c000000000702f00] .__schedule+0x360/0x8b0
+[ 6904.211495] [c000000fa1f1b9d0] [c000000000147348] .futex_wait_queue_me+0xf8/0x1a0
+[ 6904.211500] [c000000fa1f1ba60] [c0000000001486dc] .futex_wait+0x17c/0x2a0
+[ 6904.211505] [c000000fa1f1bc10] [c00000000014a614] .do_futex+0x254/0xd80
+[ 6904.211510] [c000000fa1f1bd60] [c00000000014b25c] .SyS_futex+0x11c/0x1d0
+[ 6904.238874] [c000000fa1f1be30] [c00000000000a0fc] syscall_exit+0x0/0x7c
+[ 6904.238879] java            S 00003fff825f6044     0 14682  14076 0x00000080
+
+Is there any other information that I provide that can help?
+
+-- 
+Thanks and Regards
+Srikar Dronamraju
