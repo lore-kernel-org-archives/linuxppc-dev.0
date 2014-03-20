@@ -1,33 +1,31 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id D8B202C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 23:00:41 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 04007-02 for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 20 Mar 2014 12:00:35 +0000 (GMT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Kevin Hao' <haokexin@gmail.com>, Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
-Date: Thu, 20 Mar 2014 11:59:14 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6E33AE@AcuExch.aculab.com>
-References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
- <1394586624.13761.132.camel@snotra.buserror.net>
- <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
- <1394646185.13761.145.camel@snotra.buserror.net>
- <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
- <1394835987.12479.119.camel@snotra.buserror.net>
- <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
- <1395184734.12479.250.camel@snotra.buserror.net>
- <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Chenhui
- Zhao <chenhui.zhao@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A58922C009A
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2014 23:11:09 +1100 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Thu, 20 Mar 2014 22:11:08 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 813AD3578048
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2014 23:11:05 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2KBoiYe9503108
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2014 22:50:44 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KCB4oK003985
+ for <linuxppc-dev@ozlabs.org>; Thu, 20 Mar 2014 23:11:04 +1100
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org
+Subject: [PATCH v3 0/5] powernv: Enable Dynamic Frequency 
+Date: Thu, 20 Mar 2014 17:40:55 +0530
+Message-Id: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,41 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogS2V2aW4gSGFvDQo+IFNlbnQ6IDIwIE1hcmNoIDIwMTQgMTE6NDgNCj4gVG86IFNjb3R0
-IFdvb2QNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBDaGVuaHVpIFpoYW87
-IEphc29uLkppbkBmcmVlc2NhbGUuY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+
-IFN1YmplY3Q6IFJlOiBbUEFUQ0ggOS85XSBwb3dlcnBjL3BtOiBzdXBwb3J0IGRlZXAgc2xlZXAg
-ZmVhdHVyZSBvbiBUMTA0MA0KPiANCj4gT24gVHVlLCBNYXIgMTgsIDIwMTQgYXQgMDY6MTg6NTRQ
-TSAtMDUwMCwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+ICBUaGUgc2VxdWVuY2UgIndyaXRlLCBy
-ZWFkYmFjaywgc3luYyIgd2lsbCBndWFyYW50ZWUgdGhpcyBhY2NvcmRpbmcgdG8gdGhlIG1hbnVh
-bC4NCj4gPg0KPiA+IElmIHlvdSdyZSByZWZlcnJpbmcgdG8gdGhlIHNlY3Rpb24geW91IHF1b3Rl
-ZCBhYm92ZSwgdGhlIG1hbnVhbCBkb2VzIG5vdA0KPiA+IHNheSB0aGF0LiAgSXQgb25seSB0YWxr
-cyBhYm91dCB3aGVuIGFjY2Vzc2VzICJ0byBtZW1vcnkgcmVnaW9ucyBhZmZlY3RlZA0KPiA+IGJ5
-IHRoZSBjb25maWd1cmF0aW9uIHJlZ2lzdGVyIHdyaXRlIiBjYW4gYmUgc2FmZWx5IG1hZGUuDQo+
-IA0KPiAgIFRvIGd1YXJhbnRlZSB0aGF0IHRoZSByZXN1bHRzIG9mIGFueSBzZXF1ZW5jZSBvZiB3
-cml0ZXMgdG8gY29uZmlndXJhdGlvbg0KPiAgIHJlZ2lzdGVycyBhcmUgaW4gZWZmZWN0LCB0aGUg
-ZmluYWwgY29uZmlndXJhdGlvbiByZWdpc3RlciB3cml0ZSBzaG91bGQgYmUNCj4gICBpbW1lZGlh
-dGVseSBmb2xsb3dlZCBieSBhIHJlYWQgb2YgdGhlIHNhbWUgcmVnaXN0ZXIsIGFuZCB0aGF0IHNo
-b3VsZCBiZQ0KPiAgIGZvbGxvd2VkIGJ5IGEgU1lOQyBpbnN0cnVjdGlvbi4gVGhlbiBhY2Nlc3Nl
-cyBjYW4gc2FmZWx5IGJlIG1hZGUgdG8gbWVtb3J5DQo+ICAgcmVnaW9ucyBhZmZlY3RlZCBieSB0
-aGUgY29uZmlndXJhdGlvbiByZWdpc3RlciB3cml0ZS4NCg0KVGhhdCBzb3J0IG9mIHNlcXVlbmNl
-IGlzIG5lZWQgdG8gZm9yY2UgdGhlIG9wZXJhdGlvbnMgdGhyb3VnaCBhbnkNCmV4dGVybmFsIGJ1
-cyAtIGFmdGVyIHRoZSBjcHUgaXRzZWxmIGhhcyBpc3N1ZWQgdGhlIGJ1cyBjeWNsZXMuDQpNb3N0
-bHkgcmVxdWlyZWQgYmVjYXVzZSB3cml0ZXMgYXJlIG9mdGVuICdwb3N0ZWQnIChpZSBhZGRyZXNz
-IGFuZCBkYXRhDQpsYXRjaGVkLCBhbmQgdGhlbiBwZXJmb3JtZWQgc3luY2hyb25vdXNseSkuDQoN
-Cj4gQWNjb3JkaW5nIHRvIHRoZSBhYm92ZSBkZXNjcmlwdGlvbiBpbiB0NDI0MCBSTSBtYW51YWwg
-KDIuNi4xIEFjY2Vzc2luZyBDQ1NSDQo+IE1lbW9yeSBmcm9tIHRoZSBMb2NhbCBQcm9jZXNzb3Ip
-LCB0aGF0IHRoZSB3cml0aW5nIHRvIGNvbmZpZ3VyYXRpb24gcmVnaXN0ZXINCj4gdGFrZXMgZWZm
-ZWN0IGlzIGEgcHJlcmVxdWlzaXRlIGZvciB0aGUgbWVtb3J5IGFjY2VzcyB0byB0aGUgYWZmZWN0
-ZWQgcmVnaW9ucy4NCi4uLg0KPiBPSywgc28gdGhlIGludGVudGlvbiBvZiAndHdpLCBpc3luYycg
-Zm9sbG93aW5nIHRoZSBsb2FkIGlzIG5vdCB0byBvcmRlciB0aGUNCj4gZm9sbG93aW5nIHN0b3Jh
-Z2UgYWNjZXNzLCBidXQgb3JkZXIgdGhlIGZvbGxvd2luZyBkZWxheSBsb29wIGluc3RydWN0aW9u
-cywNCj4gcmlnaHQNCg0KSSB0cmllZCB0byB3b3JrIG91dCB3aGF0IHRoZSAndHdpLCBpc3luYycg
-aW5zdHJ1Y3Rpb25zIHdlcmUgZm9yIChpbiBpbl9sZTMyKCkpLg0KVGhlIGJlc3QgSSBjb3VsZCBj
-b21lIHVwIHdpdGggd2FzIHRvIGVuc3VyZSBhIHN5bmNocm9ub3VzIGJ1cy1mYXVsdC4NCkJ1dCBi
-dXMgZmF1bHRzIGFyZSBwcm9iYWJseSBvbmx5IGV4cGVjdGVkIGR1cmluZyBkZXZpY2UgcHJvYmlu
-ZyAtIG5vdA0Kbm9ybWFsIG9wZXJhdGlvbiwgYW5kIHRoZSBpbnN0cnVjdGlvbnMgd2lsbCBoYXZl
-IGEgc2lnbmlmaWNhbnQgY29zdC4NCg0KQWRkaXRpb25hbGx5IGluX2xlMzIoKSBhbmQgb3V0X2xl
-MzIoKSBib3RoIHN0YXJ0IHdpdGggYSAnc3luYycgaW5zdHJ1Y3Rpb24uDQpJbiBtYW55IGNhc2Vz
-IHRoYXQgaXNuJ3QgbmVlZGVkIGVpdGhlciAtIGFuIGV4cGxpY2l0IGlvc3luYygpIGNhbiBiZQ0K
-dXNlZCBhZnRlciBncm91cHMgb2YgaW5zdHJ1Y3Rpb25zLg0KDQoJRGF2aWQNCg0KDQo=
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+
+Hi,
+
+This is the v3 of the consolidated patchset consisting
+patches for enabling cpufreq on IBM POWERNV platforms
+along with some enhancements. I have incorporated the review 
+for v2 (which can be found at [1]).
+
+- This patchset contains code for the platform driver to support CPU
+  frequency scaling on IBM POWERNV platforms.
+
+- In addition to the standard control and status files exposed by the
+  cpufreq core, the patchset exposes the nominal frequency through the
+  file named "cpuinfo_nominal_freq".
+
+
+The changes from from v2:
+  - Updated the changelog for "powernv: cpufreq driver for powernv platform"
+    to record the fact that policy->cpus must be populated with a sibling mask
+    that includes even the offlined siblings.
+
+  - Dropped the patch named 
+    "powernv:cpufreq: Create a powernv_cpu_to_core_mask() helper"
+     since the driver->get() method can use cpu_sibling_mask().
+  
+  -  Updated "powernv:cpufreq: Implement the driver->get() method" to 
+     use cpu_sibling_mask() in powernv_cpufreq_get()
+
+The patchset is based against commit 4907cdca7210c5895311bddcf05a4c85b67d8566
+of the mainline tree.
+
+[1]: https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-March/115861.html
+
+
+Gautham R. Shenoy (3):
+  powernv:cpufreq: Create pstate_id_to_freq() helper
+  powernv:cpufreq: Export nominal frequency via sysfs.
+  powernv:cpufreq: Implement the driver->get() method
+
+Srivatsa S. Bhat (1):
+  powernv,cpufreq:Add per-core locking to serialize frequency
+    transitions
+
+Vaidyanathan Srinivasan (1):
+  powernv: cpufreq driver for powernv platform
+
+ arch/powerpc/include/asm/reg.h         |   4 +
+ arch/powerpc/platforms/powernv/Kconfig |   1 +
+ drivers/cpufreq/Kconfig                |   1 +
+ drivers/cpufreq/Kconfig.powerpc        |  13 ++
+ drivers/cpufreq/Makefile               |   1 +
+ drivers/cpufreq/powernv-cpufreq.c      | 375 +++++++++++++++++++++++++++++++++
+ 6 files changed, 395 insertions(+)
+ create mode 100644 drivers/cpufreq/powernv-cpufreq.c
+
+-- 
+1.8.3.1
