@@ -1,25 +1,25 @@
-Return-Path: <davidlohr@hp.com>
-Received: from g2t2354.austin.hp.com (g2t2354.austin.hp.com [15.217.128.53])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xuelin.shi@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 53AF42C0089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 16:57:08 +1100 (EST)
-Message-ID: <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
-Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
-From: Davidlohr Bueso <davidlohr@hp.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Wed, 19 Mar 2014 22:56:59 -0700
-In-Reply-To: <20140320053350.GB30295@linux.vnet.ibm.com>
-References: <20140319152619.GB10406@linux.vnet.ibm.com>
- <20140319154705.GB8557@laptop.programming.kicks-ass.net>
- <20140319170829.GD8557@laptop.programming.kicks-ass.net>
- <20140320053350.GB30295@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>, torvalds@linux-foundation.org,
- LKML <linux-kernel@vger.kernel.org>, paulus@samba.org, tglx@linutronix.de,
- Paul McKenney <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 96C462C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 17:35:08 +1100 (EST)
+From: Xuelin Shi <xuelin.shi@freescale.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Subject: RE: [PATCH] fix dmaengine_unmap failure.
+Date: Thu, 20 Mar 2014 06:34:59 +0000
+Message-ID: <2072b2b9599b4eda88dafb998b4793c8@BL2PR03MB147.namprd03.prod.outlook.com>
+References: <1395131520-30207-1-git-send-email-xuelin.shi@freescale.com>
+ <CAPcyv4gs-jos5TvfDbsaXTNebQf8VjJvbdjmjsbGZLZwZKi34g@mail.gmail.com>
+ <30ef7093dcc247e490831a43355ec10f@BL2PR03MB147.namprd03.prod.outlook.com>
+ <CAPcyv4imH14PuiZJwMw1B+UnxBgHzPAS22p4b171MrmKDBJM+Q@mail.gmail.com>
+In-Reply-To: <CAPcyv4imH14PuiZJwMw1B+UnxBgHzPAS22p4b171MrmKDBJM+Q@mail.gmail.com>
+Content-Type: text/plain; charset="gb2312"
+MIME-Version: 1.0
+Cc: Vinod Koul <vinod.koul@intel.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-20 at 11:03 +0530, Srikar Dronamraju wrote:
-> > > Joy,.. let me look at that with ppc in mind.
-> > 
-> > OK; so while pretty much all the comments from that patch are utter
-> > nonsense (what was I thinking), I cannot actually find a real bug.
-> > 
-> > But could you try the below which replaces a control dependency with a
-> > full barrier. The control flow is plenty convoluted that I think the
-> > control barrier isn't actually valid anymore and that might indeed
-> > explain the fail.
-> > 
-> 
-> Unfortunately the patch didnt help. Still seeing tasks stuck
-> 
-> # ps -Ao pid,tt,user,fname,tmout,f,wchan | grep futex
-> 14680 pts/0    root     java         - 0 futex_wait_queue_me
-> 14797 pts/0    root     java         - 0 futex_wait_queue_me
-> # :> /var/log/messages
-> # echo t > /proc/sysrq-trigger 
-> # grep futex_wait_queue_me /var/log/messages | wc -l 
-> 334
-> #
-> 
-> [ 6904.211478] Call Trace:
-> [ 6904.211481] [c000000fa1f1b4d0] [0000000000000020] 0x20 (unreliable)
-> [ 6904.211486] [c000000fa1f1b6a0] [c000000000015208] .__switch_to+0x1e8/0x330
-> [ 6904.211491] [c000000fa1f1b750] [c000000000702f00] .__schedule+0x360/0x8b0
-> [ 6904.211495] [c000000fa1f1b9d0] [c000000000147348] .futex_wait_queue_me+0xf8/0x1a0
-> [ 6904.211500] [c000000fa1f1ba60] [c0000000001486dc] .futex_wait+0x17c/0x2a0
-> [ 6904.211505] [c000000fa1f1bc10] [c00000000014a614] .do_futex+0x254/0xd80
-> [ 6904.211510] [c000000fa1f1bd60] [c00000000014b25c] .SyS_futex+0x11c/0x1d0
-> [ 6904.238874] [c000000fa1f1be30] [c00000000000a0fc] syscall_exit+0x0/0x7c
-> [ 6904.238879] java            S 00003fff825f6044     0 14682  14076 0x00000080
-> 
-> Is there any other information that I provide that can help?
-
-This problem suggests that we missed a wakeup for a task that was adding
-itself to the queue in a wait path. And the only place that can happen
-is with the hb spinlock check for any pending waiters. Just in case we
-missed some assumption about checking the hash bucket spinlock as a way
-of detecting any waiters (powerpc?), could you revert this commit and
-try the original atomic operations variant:
-
-https://lkml.org/lkml/2013/12/19/630
+SGkgRGFuLA0KDQpJJ20gT0sgdG8gc2F2ZSBtZW1vcnkgaGVyZS4gSSdkIGxpa2UgdG8gc2VuZCB2
+Mi4NCg0KVGhhbmtzLA0KWHVlbGluIFNoaQ0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
+RnJvbTogRGFuIFdpbGxpYW1zIFttYWlsdG86ZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tXSANClNl
+bnQ6IDIwMTTE6jPUwjE5yNUgMjM6NDQNClRvOiBTaGkgWHVlbGluLUIyOTIzNw0KQ2M6IFZpbm9k
+IEtvdWw7IGxpbnV4cHBjLWRldjsgZG1hZW5naW5lQHZnZXIua2VybmVsLm9yZw0KU3ViamVjdDog
+UmU6IFtQQVRDSF0gZml4IGRtYWVuZ2luZV91bm1hcCBmYWlsdXJlLg0KDQpPbiBUdWUsIE1hciAx
+OCwgMjAxNCBhdCAxMTozOSBQTSwgWHVlbGluIFNoaSA8eHVlbGluLnNoaUBmcmVlc2NhbGUuY29t
+PiB3cm90ZToNCj4gSGkgRGFuLA0KPg0KPiBJbiBhc3luY19tdWx0KC4uLikgb2YgYXN5bmNfcmFp
+ZDZfcmVjb3YuYywgdGhlIGNvdW50IDMgaXMgdXNlZCB0byByZXF1ZXN0IGFuIHVubWFwLg0KPiBI
+b3dldmVyIHRoZSB0b19jbnQgYW5kIGJpZGlfY250IGFyZSBib3RoIHNldCB0byAxIGFuZCBmcm9t
+X2NudCB0byAwLg0KPiBUaGVuIHdoaWxlIHRyeWluZyB0byBkbyB1bm1hcCwgd2UgYXJlIGdldHRp
+bmcgdGhlIHdyb25nICJ1bm1hcCIgZnJvbSBhIGRpZmZlcmVudCBtZW1wb29sLg0KPg0KPiBJbiB0
+aGlzIHBhdGNoLCB0aGUgbWVtcG9vbCBpcyBhc3NvY2lhdGVkIHdpdGggdGhlIHVubWFwIHN0cnVj
+dHVyZSBpbnN0ZWFkIG9mIGNvbXB1dGluZyBpdCBhZ2Fpbi4NCj4gQnkgdGhpcyB3YXksIGl0IGlz
+IGd1YXJhbnRlZWQgdGhhdCB0aGUgdW5tYXAgaXMgdGhlIHNhbWUgd2hlbiB3ZSBnZXQgYW5kIHB1
+dCB0aGUgdW5tYXAgZGF0YS4NCj4NCj4gQlRXOiB0aGUgbWVtcG9vbCBpcyBqdXN0IHVzZWQgdG8g
+bWFuYWdlIHRoZSBzdHJ1Y3QgdW5tYXAsIG5vdCB0aGUgcGFnZXMuDQo+DQoNCkkgc2VlLCB3aGF0
+IGFib3V0IGp1c3Qgc3RvcmluZyB0aGUgbWFwX2NudCBhdCBhbGxvY2F0aW9uIHRpbWU/ICBJdCBj
+b3VsZCBiZSBhbm90aGVyIGJ5dGUgaW4gc3RydWN0IGRtYWVuZ2luZV91bm1hcF9kYXRhIHJhdGhl
+ciB0aGFuIGFuIDggYnl0ZSBwb2ludGVyLg0KDQoNCg==
