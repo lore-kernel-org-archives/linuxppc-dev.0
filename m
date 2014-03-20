@@ -2,32 +2,31 @@ Return-Path: <clg@fr.ibm.com>
 Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 325982C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:44 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8B48D2C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:45 +1100 (EST)
 Received: from /spool/local
  by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 20 Mar 2014 15:10:41 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 99C9D1B08040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:30 +0000 (GMT)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2KFASFg31522944
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:28 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2KFAdBv018683
+ Thu, 20 Mar 2014 15:10:42 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id D3CF4219005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:34 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2KFARL453608448
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:27 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KFAdb6016398
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:39 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 17/18] powerpc/boot: add support for 64bit little endian
- wrapper
-Date: Thu, 20 Mar 2014 16:10:12 +0100
-Message-Id: <1395328213-19206-18-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 13/18] powerpc/boot: modify entry point for 64bit
+Date: Thu, 20 Mar 2014 16:10:08 +0100
+Message-Id: <1395328213-19206-14-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
@@ -45,97 +44,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Compilation is changed for little endian and entry points between the
-wrapper and the kernel are modified to fix endian order with the 
-FIXUP_ENDIAN trampoline. 
+This patch adds support a 64bit wrapper entry point. As in 32bit, the
+entry point does its own relocation and can be loaded at any address
+by the firmware.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/Makefile       |    7 +++++--
- arch/powerpc/boot/crt0.S         |    1 +
- arch/powerpc/boot/ppc_asm.h      |   12 ++++++++++++
- arch/powerpc/boot/pseries-head.S |    3 +++
- arch/powerpc/boot/wrapper        |    1 +
- 5 files changed, 22 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/crt0.S |  108 ++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 104 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index e0744781ba5b..b7e640028711 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -22,11 +22,14 @@ all: $(obj)/zImage
- BOOTCFLAGS    := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		 -fno-strict-aliasing -Os -msoft-float -pipe \
- 		 -fomit-frame-pointer -fno-builtin -fPIC -nostdinc \
--		 -isystem $(shell $(CROSS32CC) -print-file-name=include) \
--		 -mbig-endian
-+		 -isystem $(shell $(CROSS32CC) -print-file-name=include)
- ifdef CONFIG_PPC64
- BOOTCFLAGS	+= -m64
- endif
-+ifdef CONFIG_CPU_BIG_ENDIAN
-+BOOTCFLAGS	+= -mbig-endian
-+endif
-+
- BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
- 
- ifdef CONFIG_DEBUG_INFO
 diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index 689290561e69..14de4f8778a7 100644
+index dbd99d064828..689290561e69 100644
 --- a/arch/powerpc/boot/crt0.S
 +++ b/arch/powerpc/boot/crt0.S
-@@ -275,6 +275,7 @@ prom:
- 	rfid
+@@ -1,17 +1,20 @@
+ /*
+  * Copyright (C) Paul Mackerras 1997.
+  *
++ * Adapted for 64 bit LE PowerPC by Andrew Tauferner
++ *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  *
+- * NOTE: this code runs in 32 bit mode, is position-independent,
+- * and is packaged as ELF32.
+  */
  
- 1:	/* Return from OF */
-+	FIXUP_ENDIAN
+ #include "ppc_asm.h"
  
- 	/* Restore registers and return. */
- 	rldicl  r1,r1,0,32
-diff --git a/arch/powerpc/boot/ppc_asm.h b/arch/powerpc/boot/ppc_asm.h
-index eb0e98be69e0..35ea60c1f070 100644
---- a/arch/powerpc/boot/ppc_asm.h
-+++ b/arch/powerpc/boot/ppc_asm.h
-@@ -62,4 +62,16 @@
- #define SPRN_TBRL	268
- #define SPRN_TBRU	269
- 
-+#define FIXUP_ENDIAN						   \
-+	tdi   0, 0, 0x48; /* Reverse endian of b . + 8		*/ \
-+	b     $+36;	  /* Skip trampoline if endian is good	*/ \
-+	.long 0x05009f42; /* bcl 20,31,$+4			*/ \
-+	.long 0xa602487d; /* mflr r10				*/ \
-+	.long 0x1c004a39; /* addi r10,r10,28			*/ \
-+	.long 0xa600607d; /* mfmsr r11				*/ \
-+	.long 0x01006b69; /* xori r11,r11,1			*/ \
-+	.long 0xa6035a7d; /* mtsrr0 r10				*/ \
-+	.long 0xa6037b7d; /* mtsrr1 r11				*/ \
-+	.long 0x2400004c  /* rfid				*/
-+
- #endif /* _PPC64_PPC_ASM_H */
-diff --git a/arch/powerpc/boot/pseries-head.S b/arch/powerpc/boot/pseries-head.S
-index 655c3d2c321b..6ef6e02e80f9 100644
---- a/arch/powerpc/boot/pseries-head.S
-+++ b/arch/powerpc/boot/pseries-head.S
-@@ -1,5 +1,8 @@
-+#include "ppc_asm.h"
++RELA = 7
++RELACOUNT = 0x6ffffff9
 +
  	.text
+ 	/* A procedure descriptor used when booting this as a COFF file.
+ 	 * When making COFF, this comes first in the link and we're
+@@ -21,6 +24,20 @@
+ _zimage_start_opd:
+ 	.long	0x500000, 0, 0, 0
  
- 	.globl _zimage_start
- _zimage_start:
-+	FIXUP_ENDIAN
- 	b _zimage_start_lib
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index baaad96eed7f..3270e2a5c901 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -139,6 +139,7 @@ fi
++#ifdef __powerpc64__
++.balign 8
++p_start:	.llong	_start
++p_etext:	.llong	_etext
++p_bss_start:	.llong	__bss_start
++p_end:		.llong	_end
++
++p_toc:		.llong	__toc_start + 0x8000 - p_base
++p_dyn:		.llong	__dynamic_start - p_base
++p_rela:		.llong	__rela_dyn_start - p_base
++p_prom:		.llong	0
++	.weak	_platform_stack_top
++p_pstack:	.llong	_platform_stack_top
++#else
+ p_start:	.long	_start
+ p_etext:	.long	_etext
+ p_bss_start:	.long	__bss_start
+@@ -28,6 +45,7 @@ p_end:		.long	_end
  
- elfformat="`${CROSS}objdump -p "$kernel" | grep 'file format' | awk '{print $4}'`"
- case "$elfformat" in
-+    elf64-powerpcle)	format=elf64lppc	;;
-     elf64-powerpc)	format=elf64ppc	;;
-     elf32-powerpc)	format=elf32ppc	;;
- esac
+ 	.weak	_platform_stack_top
+ p_pstack:	.long	_platform_stack_top
++#endif
+ 
+ 	.weak	_zimage_start
+ 	.globl	_zimage_start
+@@ -38,6 +56,7 @@ _zimage_start_lib:
+ 	   and the address where we're running. */
+ 	bl	.+4
+ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
++#ifndef __powerpc64__
+ 	/* grab the link address of the dynamic section in r11 */
+ 	addis	r11,r10,(_GLOBAL_OFFSET_TABLE_-p_base)@ha
+ 	lwz	r11,(_GLOBAL_OFFSET_TABLE_-p_base)@l(r11)
+@@ -51,8 +70,6 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
+ 
+ 	/* The dynamic section contains a series of tagged entries.
+ 	 * We need the RELA and RELACOUNT entries. */
+-RELA = 7
+-RELACOUNT = 0x6ffffff9
+ 	li	r9,0
+ 	li	r0,0
+ 9:	lwz	r8,0(r12)	/* get tag */
+@@ -120,7 +137,90 @@ RELACOUNT = 0x6ffffff9
+ 	li	r0,0
+ 	stwu	r0,-16(r1)	/* establish a stack frame */
+ 6:
++#else /* __powerpc64__ */
++	/* Save the prom pointer at p_prom. */
++	std	r5,(p_prom-p_base)(r10)
++
++	/* Set r2 to the TOC. */
++	ld	r2,(p_toc-p_base)(r10)
++	add	r2,r2,r10
++
++	/* Grab the link address of the dynamic section in r11. */
++	ld	r11,-32768(r2)
++	cmpwi	r11,0
++	beq	3f              /* if not linked -pie then no dynamic section */
++
++	ld	r11,(p_dyn-p_base)(r10)
++	add	r11,r11,r10
++	ld	r9,(p_rela-p_base)(r10)
++	add	r9,r9,r10
++
++	li	r7,0
++	li	r8,0
++9:	ld	r6,0(r11)       /* get tag */
++	cmpdi	r6,0
++	beq	12f              /* end of list */
++	cmpdi	r6,RELA
++	bne	10f
++	ld	r7,8(r11)       /* get RELA pointer in r7 */
++	b	11f
++10:	addis	r6,r6,(-RELACOUNT)@ha
++	cmpdi	r6,RELACOUNT@l
++	bne	11f
++	ld	r8,8(r11)       /* get RELACOUNT value in r8 */
++11:	addi	r11,r11,16
++	b	9b
++12:
++	cmpdi	r7,0            /* check we have both RELA and RELACOUNT */
++	cmpdi	cr1,r8,0
++	beq	3f
++	beq	cr1,3f
++
++	/* Calcuate the runtime offset. */
++	subf	r7,r7,r9
+ 
++	/* Run through the list of relocations and process the
++	 * R_PPC64_RELATIVE ones. */
++	mtctr	r8
++13:	ld	r0,8(r9)        /* ELF64_R_TYPE(reloc->r_info) */
++	cmpdi	r0,22           /* R_PPC64_RELATIVE */
++	bne	3f
++	ld	r6,0(r9)        /* reloc->r_offset */
++	ld	r0,16(r9)       /* reloc->r_addend */
++	add	r0,r0,r7
++	stdx	r0,r7,r6
++	addi	r9,r9,24
++	bdnz	13b
++
++	/* Do a cache flush for our text, in case the loader didn't */
++3:	ld	r9,p_start-p_base(r10)	/* note: these are relocated now */
++	ld	r8,p_etext-p_base(r10)
++4:	dcbf	r0,r9
++	icbi	r0,r9
++	addi	r9,r9,0x20
++	cmpld	cr0,r9,r8
++	blt	4b
++	sync
++	isync
++
++	/* Clear the BSS */
++	ld	r9,p_bss_start-p_base(r10)
++	ld	r8,p_end-p_base(r10)
++	li	r0,0
++5:	std	r0,0(r9)
++	addi	r9,r9,8
++	cmpld	cr0,r9,r8
++	blt	5b
++
++	/* Possibly set up a custom stack */
++	ld	r8,p_pstack-p_base(r10)
++	cmpdi	r8,0
++	beq	6f
++	ld	r1,0(r8)
++	li	r0,0
++	stdu	r0,-16(r1)	/* establish a stack frame */
++6:
++#endif  /* __powerpc64__ */
+ 	/* Call platform_init() */
+ 	bl	platform_init
+ 
 -- 
 1.7.10.4
