@@ -1,32 +1,32 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8B48D2C00B0
+ by ozlabs.org (Postfix) with ESMTPS id 365182C00B2
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:45 +1100 (EST)
 Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 20 Mar 2014 15:10:42 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id D3CF4219005C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:34 +0000 (GMT)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2KFARL453608448
+ Thu, 20 Mar 2014 15:10:41 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 264841B08051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:30 +0000 (GMT)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2KFARpd38273130
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:27 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2KFAdb6016398
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KFAcNA024752
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:39 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 13/18] powerpc/boot: modify entry point for 64bit
-Date: Thu, 20 Mar 2014 16:10:08 +0100
-Message-Id: <1395328213-19206-14-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 02/18] powerpc/boot: use a common prom_args struct in oflib
+Date: Thu, 20 Mar 2014 16:09:57 +0100
+Message-Id: <1395328213-19206-3-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
@@ -44,178 +44,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support a 64bit wrapper entry point. As in 32bit, the
-entry point does its own relocation and can be loaded at any address
-by the firmware.
+This patch fixes warnings when the wrapper is compiled in 64bit and
+updates the boot wrapper code related to prom to converge with the
+kernel code in prom_init. This should make the review of changes easier.
+
+The kernel has a different number of possible arguments (10) when
+entering prom. There does not seem to be any good reason to have
+12 in the wrapper, so the patch changes this value to args[10] in
+the prom_args struct.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/crt0.S |  108 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 104 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/of.h    |    2 ++
+ arch/powerpc/boot/oflib.c |   29 +++++++++++++++--------------
+ 2 files changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index dbd99d064828..689290561e69 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -1,17 +1,20 @@
- /*
-  * Copyright (C) Paul Mackerras 1997.
-  *
-+ * Adapted for 64 bit LE PowerPC by Andrew Tauferner
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-  * 2 of the License, or (at your option) any later version.
-  *
-- * NOTE: this code runs in 32 bit mode, is position-independent,
-- * and is packaged as ELF32.
-  */
+diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
+index e4c68f7391c5..5da03d9b9463 100644
+--- a/arch/powerpc/boot/of.h
++++ b/arch/powerpc/boot/of.h
+@@ -18,4 +18,6 @@ int of_setprop(const void *phandle, const char *name, const void *buf,
+ /* Console functions */
+ void of_console_init(void);
  
- #include "ppc_asm.h"
++typedef u32			__be32;
++
+ #endif /* _PPC_BOOT_OF_H_ */
+diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
+index b0ec9cf3eaaf..c3288a3446b3 100644
+--- a/arch/powerpc/boot/oflib.c
++++ b/arch/powerpc/boot/oflib.c
+@@ -16,6 +16,15 @@
  
-+RELA = 7
-+RELACOUNT = 0x6ffffff9
-+
- 	.text
- 	/* A procedure descriptor used when booting this as a COFF file.
- 	 * When making COFF, this comes first in the link and we're
-@@ -21,6 +24,20 @@
- _zimage_start_opd:
- 	.long	0x500000, 0, 0, 0
+ #include "of.h"
  
-+#ifdef __powerpc64__
-+.balign 8
-+p_start:	.llong	_start
-+p_etext:	.llong	_etext
-+p_bss_start:	.llong	__bss_start
-+p_end:		.llong	_end
++/* The following structure is used to communicate with open firmware.
++ * All arguments in and out are in big endian format. */
++struct prom_args {
++	__be32 service;	/* Address of service name string. */
++	__be32 nargs;	/* Number of input arguments. */
++	__be32 nret;	/* Number of output arguments. */
++	__be32 args[10];	/* Input/output arguments. */
++};
 +
-+p_toc:		.llong	__toc_start + 0x8000 - p_base
-+p_dyn:		.llong	__dynamic_start - p_base
-+p_rela:		.llong	__rela_dyn_start - p_base
-+p_prom:		.llong	0
-+	.weak	_platform_stack_top
-+p_pstack:	.llong	_platform_stack_top
-+#else
- p_start:	.long	_start
- p_etext:	.long	_etext
- p_bss_start:	.long	__bss_start
-@@ -28,6 +45,7 @@ p_end:		.long	_end
+ static int (*prom) (void *);
  
- 	.weak	_platform_stack_top
- p_pstack:	.long	_platform_stack_top
-+#endif
+ void of_init(void *promptr)
+@@ -23,18 +32,15 @@ void of_init(void *promptr)
+ 	prom = (int (*)(void *))promptr;
+ }
  
- 	.weak	_zimage_start
- 	.globl	_zimage_start
-@@ -38,6 +56,7 @@ _zimage_start_lib:
- 	   and the address where we're running. */
- 	bl	.+4
- p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
-+#ifndef __powerpc64__
- 	/* grab the link address of the dynamic section in r11 */
- 	addis	r11,r10,(_GLOBAL_OFFSET_TABLE_-p_base)@ha
- 	lwz	r11,(_GLOBAL_OFFSET_TABLE_-p_base)@l(r11)
-@@ -51,8 +70,6 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
++#define ADDR(x)		(u32)(unsigned long)(x)
++
+ int of_call_prom(const char *service, int nargs, int nret, ...)
+ {
+ 	int i;
+-	struct prom_args {
+-		const char *service;
+-		int nargs;
+-		int nret;
+-		unsigned int args[12];
+-	} args;
++	struct prom_args args;
+ 	va_list list;
  
- 	/* The dynamic section contains a series of tagged entries.
- 	 * We need the RELA and RELACOUNT entries. */
--RELA = 7
--RELACOUNT = 0x6ffffff9
- 	li	r9,0
- 	li	r0,0
- 9:	lwz	r8,0(r12)	/* get tag */
-@@ -120,7 +137,90 @@ RELACOUNT = 0x6ffffff9
- 	li	r0,0
- 	stwu	r0,-16(r1)	/* establish a stack frame */
- 6:
-+#else /* __powerpc64__ */
-+	/* Save the prom pointer at p_prom. */
-+	std	r5,(p_prom-p_base)(r10)
-+
-+	/* Set r2 to the TOC. */
-+	ld	r2,(p_toc-p_base)(r10)
-+	add	r2,r2,r10
-+
-+	/* Grab the link address of the dynamic section in r11. */
-+	ld	r11,-32768(r2)
-+	cmpwi	r11,0
-+	beq	3f              /* if not linked -pie then no dynamic section */
-+
-+	ld	r11,(p_dyn-p_base)(r10)
-+	add	r11,r11,r10
-+	ld	r9,(p_rela-p_base)(r10)
-+	add	r9,r9,r10
-+
-+	li	r7,0
-+	li	r8,0
-+9:	ld	r6,0(r11)       /* get tag */
-+	cmpdi	r6,0
-+	beq	12f              /* end of list */
-+	cmpdi	r6,RELA
-+	bne	10f
-+	ld	r7,8(r11)       /* get RELA pointer in r7 */
-+	b	11f
-+10:	addis	r6,r6,(-RELACOUNT)@ha
-+	cmpdi	r6,RELACOUNT@l
-+	bne	11f
-+	ld	r8,8(r11)       /* get RELACOUNT value in r8 */
-+11:	addi	r11,r11,16
-+	b	9b
-+12:
-+	cmpdi	r7,0            /* check we have both RELA and RELACOUNT */
-+	cmpdi	cr1,r8,0
-+	beq	3f
-+	beq	cr1,3f
-+
-+	/* Calcuate the runtime offset. */
-+	subf	r7,r7,r9
+-	args.service = service;
++	args.service = ADDR(service);
+ 	args.nargs = nargs;
+ 	args.nret = nret;
  
-+	/* Run through the list of relocations and process the
-+	 * R_PPC64_RELATIVE ones. */
-+	mtctr	r8
-+13:	ld	r0,8(r9)        /* ELF64_R_TYPE(reloc->r_info) */
-+	cmpdi	r0,22           /* R_PPC64_RELATIVE */
-+	bne	3f
-+	ld	r6,0(r9)        /* reloc->r_offset */
-+	ld	r0,16(r9)       /* reloc->r_addend */
-+	add	r0,r0,r7
-+	stdx	r0,r7,r6
-+	addi	r9,r9,24
-+	bdnz	13b
-+
-+	/* Do a cache flush for our text, in case the loader didn't */
-+3:	ld	r9,p_start-p_base(r10)	/* note: these are relocated now */
-+	ld	r8,p_etext-p_base(r10)
-+4:	dcbf	r0,r9
-+	icbi	r0,r9
-+	addi	r9,r9,0x20
-+	cmpld	cr0,r9,r8
-+	blt	4b
-+	sync
-+	isync
-+
-+	/* Clear the BSS */
-+	ld	r9,p_bss_start-p_base(r10)
-+	ld	r8,p_end-p_base(r10)
-+	li	r0,0
-+5:	std	r0,0(r9)
-+	addi	r9,r9,8
-+	cmpld	cr0,r9,r8
-+	blt	5b
-+
-+	/* Possibly set up a custom stack */
-+	ld	r8,p_pstack-p_base(r10)
-+	cmpdi	r8,0
-+	beq	6f
-+	ld	r1,0(r8)
-+	li	r0,0
-+	stdu	r0,-16(r1)	/* establish a stack frame */
-+6:
-+#endif  /* __powerpc64__ */
- 	/* Call platform_init() */
- 	bl	platform_init
+@@ -56,15 +62,10 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
+ 			    unsigned int *rets, ...)
+ {
+ 	int i;
+-	struct prom_args {
+-		const char *service;
+-		int nargs;
+-		int nret;
+-		unsigned int args[12];
+-	} args;
++	struct prom_args args;
+ 	va_list list;
+ 
+-	args.service = service;
++	args.service = ADDR(service);
+ 	args.nargs = nargs;
+ 	args.nret = nret;
  
 -- 
 1.7.10.4
