@@ -1,32 +1,33 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 365182C00B2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:45 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4CD352C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:46 +1100 (EST)
 Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 20 Mar 2014 15:10:41 -0000
+ Thu, 20 Mar 2014 15:10:42 -0000
 Received: from b06cxnps4076.portsmouth.uk.ibm.com
  (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 264841B08051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:30 +0000 (GMT)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 849A9219005F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:34 +0000 (GMT)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2KFARpd38273130
+ s2KFARd531260816
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:27 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2KFAcNA024752
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KFAcf7020504
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:39 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 02/18] powerpc/boot: use a common prom_args struct in oflib
-Date: Thu, 20 Mar 2014 16:09:57 +0100
-Message-Id: <1395328213-19206-3-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 10/18] powerpc/boot: add 64bit and little endian support to
+ addnote
+Date: Thu, 20 Mar 2014 16:10:05 +0100
+Message-Id: <1395328213-19206-11-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
@@ -44,92 +45,236 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes warnings when the wrapper is compiled in 64bit and
-updates the boot wrapper code related to prom to converge with the
-kernel code in prom_init. This should make the review of changes easier.
+It could certainly be improved using Elf macros and byteswapping
+routines, but the initial version of the code is organised to be a
+single file program with limited dependencies. yaboot is the same.
 
-The kernel has a different number of possible arguments (10) when
-entering prom. There does not seem to be any good reason to have
-12 in the wrapper, so the patch changes this value to args[10] in
-the prom_args struct.
+Please scream if you want a total rewrite.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/of.h    |    2 ++
- arch/powerpc/boot/oflib.c |   29 +++++++++++++++--------------
- 2 files changed, 17 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index e4c68f7391c5..5da03d9b9463 100644
---- a/arch/powerpc/boot/of.h
-+++ b/arch/powerpc/boot/of.h
-@@ -18,4 +18,6 @@ int of_setprop(const void *phandle, const char *name, const void *buf,
- /* Console functions */
- void of_console_init(void);
+>From the comment in the header :
+
+    "This is needed for OF on RS/6000s to load an image correctly" 
+
+If so, the data written in the ELF note should be in Big Endian as this 
+code is doing ?
+
+Changes since RFC:
+
+ - fixed the note creation which was done with the wrong endianess 
+ - increased 'buf' as ELF structures are larger in 64bit
+
+ arch/powerpc/boot/addnote.c |  128 ++++++++++++++++++++++++++++---------------
+ 1 file changed, 85 insertions(+), 43 deletions(-)
+
+diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
+index 349b5530d2c4..9d9f6f334d3c 100644
+--- a/arch/powerpc/boot/addnote.c
++++ b/arch/powerpc/boot/addnote.c
+@@ -6,6 +6,8 @@
+  *
+  * Copyright 2000 Paul Mackerras.
+  *
++ * Adapted for 64 bit little endian images by Andrew Tauferner.
++ *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+  * as published by the Free Software Foundation; either version
+@@ -55,36 +57,61 @@ unsigned int rpanote[N_RPA_DESCR] = {
  
-+typedef u32			__be32;
+ #define ROUNDUP(len)	(((len) + 3) & ~3)
+ 
+-unsigned char buf[512];
++unsigned char buf[1024];
++#define ELFDATA2LSB     1
++#define ELFDATA2MSB     2
++static int e_data = ELFDATA2MSB;
++#define ELFCLASS32      1
++#define ELFCLASS64      2
++static int e_class = ELFCLASS32;
+ 
+ #define GET_16BE(off)	((buf[off] << 8) + (buf[(off)+1]))
+-#define GET_32BE(off)	((GET_16BE(off) << 16) + GET_16BE((off)+2))
+-
+-#define PUT_16BE(off, v)	(buf[off] = ((v) >> 8) & 0xff, \
+-				 buf[(off) + 1] = (v) & 0xff)
+-#define PUT_32BE(off, v)	(PUT_16BE((off), (v) >> 16), \
+-				 PUT_16BE((off) + 2, (v)))
++#define GET_32BE(off)	((GET_16BE(off) << 16U) + GET_16BE((off)+2U))
++#define GET_64BE(off)	((((unsigned long long)GET_32BE(off)) << 32ULL) + \
++			((unsigned long long)GET_32BE((off)+4ULL)))
++#define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
++			 buf[(off) + 1] = (v) & 0xff)
++#define PUT_32BE(off, v)(PUT_16BE((off), (v) >> 16L), PUT_16BE((off) + 2, (v)))
++#define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
++			  PUT_32BE((off) + 4, (v))))
 +
- #endif /* _PPC_BOOT_OF_H_ */
-diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index b0ec9cf3eaaf..c3288a3446b3 100644
---- a/arch/powerpc/boot/oflib.c
-+++ b/arch/powerpc/boot/oflib.c
-@@ -16,6 +16,15 @@
- 
- #include "of.h"
- 
-+/* The following structure is used to communicate with open firmware.
-+ * All arguments in and out are in big endian format. */
-+struct prom_args {
-+	__be32 service;	/* Address of service name string. */
-+	__be32 nargs;	/* Number of input arguments. */
-+	__be32 nret;	/* Number of output arguments. */
-+	__be32 args[10];	/* Input/output arguments. */
-+};
++#define GET_16LE(off)	((buf[off]) + (buf[(off)+1] << 8))
++#define GET_32LE(off)	(GET_16LE(off) + (GET_16LE((off)+2U) << 16U))
++#define GET_64LE(off)	((unsigned long long)GET_32LE(off) + \
++			(((unsigned long long)GET_32LE((off)+4ULL)) << 32ULL))
++#define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
++			  buf[(off) + 1] = ((v) >> 8) & 0xff)
++#define PUT_32LE(off, v) (PUT_16LE((off), (v)), PUT_16LE((off) + 2, (v) >> 16L))
++#define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
 +
- static int (*prom) (void *);
++#define GET_16(off)	(e_data == ELFDATA2MSB ? GET_16BE(off) : GET_16LE(off))
++#define GET_32(off)	(e_data == ELFDATA2MSB ? GET_32BE(off) : GET_32LE(off))
++#define GET_64(off)	(e_data == ELFDATA2MSB ? GET_64BE(off) : GET_64LE(off))
++#define PUT_16(off, v)	(e_data == ELFDATA2MSB ? PUT_16BE(off, v) : \
++			 PUT_16LE(off, v))
++#define PUT_32(off, v)  (e_data == ELFDATA2MSB ? PUT_32BE(off, v) : \
++			 PUT_32LE(off, v))
++#define PUT_64(off, v)  (e_data == ELFDATA2MSB ? PUT_64BE(off, v) : \
++			 PUT_64LE(off, v))
  
- void of_init(void *promptr)
-@@ -23,18 +32,15 @@ void of_init(void *promptr)
- 	prom = (int (*)(void *))promptr;
- }
+ /* Structure of an ELF file */
+ #define E_IDENT		0	/* ELF header */
+-#define	E_PHOFF		28
+-#define E_PHENTSIZE	42
+-#define E_PHNUM		44
+-#define E_HSIZE		52	/* size of ELF header */
++#define	E_PHOFF		(e_class == ELFCLASS32 ? 28 : 32)
++#define E_PHENTSIZE	(e_class == ELFCLASS32 ? 42 : 54)
++#define E_PHNUM		(e_class == ELFCLASS32 ? 44 : 56)
++#define E_HSIZE		(e_class == ELFCLASS32 ? 52 : 64)
  
-+#define ADDR(x)		(u32)(unsigned long)(x)
-+
- int of_call_prom(const char *service, int nargs, int nret, ...)
+ #define EI_MAGIC	0	/* offsets in E_IDENT area */
+ #define EI_CLASS	4
+ #define EI_DATA		5
+ 
+ #define PH_TYPE		0	/* ELF program header */
+-#define PH_OFFSET	4
+-#define PH_FILESZ	16
+-#define PH_HSIZE	32	/* size of program header */
++#define PH_OFFSET	(e_class == ELFCLASS32 ? 4 : 8)
++#define PH_FILESZ	(e_class == ELFCLASS32 ? 16 : 32)
++#define PH_HSIZE	(e_class == ELFCLASS32 ? 32 : 56)
+ 
+ #define PT_NOTE		4	/* Program header type = note */
+ 
+-#define ELFCLASS32	1
+-#define ELFDATA2MSB	2
+ 
+ unsigned char elf_magic[4] = { 0x7f, 'E', 'L', 'F' };
+ 
+@@ -92,8 +119,8 @@ int
+ main(int ac, char **av)
  {
- 	int i;
--	struct prom_args {
--		const char *service;
--		int nargs;
--		int nret;
--		unsigned int args[12];
--	} args;
-+	struct prom_args args;
- 	va_list list;
+ 	int fd, n, i;
+-	int ph, ps, np;
+-	int nnote, nnote2, ns;
++	unsigned long ph, ps, np;
++	long nnote, nnote2, ns;
  
--	args.service = service;
-+	args.service = ADDR(service);
- 	args.nargs = nargs;
- 	args.nret = nret;
+ 	if (ac != 2) {
+ 		fprintf(stderr, "Usage: %s elf-file\n", av[0]);
+@@ -114,26 +141,27 @@ main(int ac, char **av)
+ 		exit(1);
+ 	}
  
-@@ -56,15 +62,10 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
- 			    unsigned int *rets, ...)
- {
- 	int i;
--	struct prom_args {
--		const char *service;
--		int nargs;
--		int nret;
--		unsigned int args[12];
--	} args;
-+	struct prom_args args;
- 	va_list list;
+-	if (n < E_HSIZE || memcmp(&buf[E_IDENT+EI_MAGIC], elf_magic, 4) != 0)
++	if (memcmp(&buf[E_IDENT+EI_MAGIC], elf_magic, 4) != 0)
++		goto notelf;
++	e_class = buf[E_IDENT+EI_CLASS];
++	if (e_class != ELFCLASS32 && e_class != ELFCLASS64)
++		goto notelf;
++	e_data = buf[E_IDENT+EI_DATA];
++	if (e_data != ELFDATA2MSB && e_data != ELFDATA2LSB)
++		goto notelf;
++	if (n < E_HSIZE)
+ 		goto notelf;
  
--	args.service = service;
-+	args.service = ADDR(service);
- 	args.nargs = nargs;
- 	args.nret = nret;
+-	if (buf[E_IDENT+EI_CLASS] != ELFCLASS32
+-	    || buf[E_IDENT+EI_DATA] != ELFDATA2MSB) {
+-		fprintf(stderr, "%s is not a big-endian 32-bit ELF image\n",
+-			av[1]);
+-		exit(1);
+-	}
+-
+-	ph = GET_32BE(E_PHOFF);
+-	ps = GET_16BE(E_PHENTSIZE);
+-	np = GET_16BE(E_PHNUM);
++	ph = (e_class == ELFCLASS32 ? GET_32(E_PHOFF) : GET_64(E_PHOFF));
++	ps = GET_16(E_PHENTSIZE);
++	np = GET_16(E_PHNUM);
+ 	if (ph < E_HSIZE || ps < PH_HSIZE || np < 1)
+ 		goto notelf;
+ 	if (ph + (np + 2) * ps + nnote + nnote2 > n)
+ 		goto nospace;
  
+ 	for (i = 0; i < np; ++i) {
+-		if (GET_32BE(ph + PH_TYPE) == PT_NOTE) {
++		if (GET_32(ph + PH_TYPE) == PT_NOTE) {
+ 			fprintf(stderr, "%s already has a note entry\n",
+ 				av[1]);
+ 			exit(0);
+@@ -148,15 +176,22 @@ main(int ac, char **av)
+ 
+ 	/* fill in the program header entry */
+ 	ns = ph + 2 * ps;
+-	PUT_32BE(ph + PH_TYPE, PT_NOTE);
+-	PUT_32BE(ph + PH_OFFSET, ns);
+-	PUT_32BE(ph + PH_FILESZ, nnote);
++	PUT_32(ph + PH_TYPE, PT_NOTE);
++	if (e_class == ELFCLASS32)
++		PUT_32(ph + PH_OFFSET, ns);
++	else
++		PUT_64(ph + PH_OFFSET, ns);
++
++	if (e_class == ELFCLASS32)
++		PUT_32(ph + PH_FILESZ, nnote);
++	else
++		PUT_64(ph + PH_FILESZ, nnote);
+ 
+ 	/* fill in the note area we point to */
+ 	/* XXX we should probably make this a proper section */
+-	PUT_32BE(ns, strlen(arch) + 1);
+-	PUT_32BE(ns + 4, N_DESCR * 4);
+-	PUT_32BE(ns + 8, 0x1275);
++	PUT_32(ns, strlen(arch) + 1);
++	PUT_32(ns + 4, N_DESCR * 4);
++	PUT_32(ns + 8, 0x1275);
+ 	strcpy((char *) &buf[ns + 12], arch);
+ 	ns += 12 + strlen(arch) + 1;
+ 	for (i = 0; i < N_DESCR; ++i, ns += 4)
+@@ -164,21 +199,28 @@ main(int ac, char **av)
+ 
+ 	/* fill in the second program header entry and the RPA note area */
+ 	ph += ps;
+-	PUT_32BE(ph + PH_TYPE, PT_NOTE);
+-	PUT_32BE(ph + PH_OFFSET, ns);
+-	PUT_32BE(ph + PH_FILESZ, nnote2);
++	PUT_32(ph + PH_TYPE, PT_NOTE);
++	if (e_class == ELFCLASS32)
++		PUT_32(ph + PH_OFFSET, ns);
++	else
++		PUT_64(ph + PH_OFFSET, ns);
++
++	if (e_class == ELFCLASS32)
++		PUT_32(ph + PH_FILESZ, nnote);
++	else
++		PUT_64(ph + PH_FILESZ, nnote2);
+ 
+ 	/* fill in the note area we point to */
+-	PUT_32BE(ns, strlen(rpaname) + 1);
+-	PUT_32BE(ns + 4, sizeof(rpanote));
+-	PUT_32BE(ns + 8, 0x12759999);
++	PUT_32(ns, strlen(rpaname) + 1);
++	PUT_32(ns + 4, sizeof(rpanote));
++	PUT_32(ns + 8, 0x12759999);
+ 	strcpy((char *) &buf[ns + 12], rpaname);
+ 	ns += 12 + ROUNDUP(strlen(rpaname) + 1);
+ 	for (i = 0; i < N_RPA_DESCR; ++i, ns += 4)
+ 		PUT_32BE(ns, rpanote[i]);
+ 
+ 	/* Update the number of program headers */
+-	PUT_16BE(E_PHNUM, np + 2);
++	PUT_16(E_PHNUM, np + 2);
+ 
+ 	/* write back */
+ 	lseek(fd, (long) 0, SEEK_SET);
 -- 
 1.7.10.4
