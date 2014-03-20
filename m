@@ -1,26 +1,32 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-x235.google.com (mail-la0-x235.google.com
- [IPv6:2a00:1450:4010:c03::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <davidlohr@hp.com>
+Received: from g2t1383g.austin.hp.com (g2t1383g.austin.hp.com [15.217.136.92])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 06BA22C0143
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 01:48:28 +1100 (EST)
-Received: by mail-la0-f53.google.com with SMTP id b8so685248lan.26
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 07:48:24 -0700 (PDT)
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org
-Subject: [PATCH RFC v10 6/6] dma: mpc512x: register for device tree channel
- lookup
-Date: Thu, 20 Mar 2014 18:47:58 +0400
-Message-Id: <1395326878-25243-7-git-send-email-a13xp0p0v88@gmail.com>
-In-Reply-To: <1395326878-25243-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1395326878-25243-1-git-send-email-a13xp0p0v88@gmail.com>
-Cc: devicetree@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 385502C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:06:53 +1100 (EST)
+Received: from g4t3425.houston.hp.com (g4t3425.houston.hp.com [15.201.208.53])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by g2t1383g.austin.hp.com (Postfix) with ESMTPS id 84DD926AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:06:41 +0000 (UTC)
+Message-ID: <1395328003.2612.15.camel@buesod1.americas.hpqcorp.net>
+Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
+From: Davidlohr Bueso <davidlohr@hp.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Date: Thu, 20 Mar 2014 08:06:43 -0700
+In-Reply-To: <20140320100848.GC10406@linux.vnet.ibm.com>
+References: <20140319152619.GB10406@linux.vnet.ibm.com>
+ <20140319154705.GB8557@laptop.programming.kicks-ass.net>
+ <20140319170829.GD8557@laptop.programming.kicks-ass.net>
+ <20140320053350.GB30295@linux.vnet.ibm.com>
+ <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
+ <20140320100848.GC10406@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>, paulus@samba.org, tglx@linutronix.de,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +36,199 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the controller for device tree based lookup of DMA channels
-(non-fatal for backwards compatibility with older device trees) and
-provide the '#dma-cells' property in the shared mpc5121.dtsi file
+On Thu, 2014-03-20 at 15:38 +0530, Srikar Dronamraju wrote:
+> > This problem suggests that we missed a wakeup for a task that was adding
+> > itself to the queue in a wait path. And the only place that can happen
+> > is with the hb spinlock check for any pending waiters. Just in case we
+> > missed some assumption about checking the hash bucket spinlock as a way
+> > of detecting any waiters (powerpc?), could you revert this commit and
+> > try the original atomic operations variant:
+> > 
+> > https://lkml.org/lkml/2013/12/19/630
+> 
+> I think the above url and the commit id that I reverted i.e
+> git://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=b0c29f79ecea0b6fbcefc999
+> are the same.
+> 
+> Or am I missing something? 
 
-Signed-off-by: Gerhard Sittig <gsi@denx.de>
-Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
----
- arch/powerpc/boot/dts/mpc5121.dtsi |  1 +
- drivers/dma/mpc512x_dma.c          | 13 ++++++++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+No, please take a closer look, it is a different approaches to the same
+end.
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 2c0e155..7f9d14f 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -498,6 +498,7 @@
- 			compatible = "fsl,mpc5121-dma";
- 			reg = <0x14000 0x1800>;
- 			interrupts = <65 0x8>;
-+			#dma-cells = <1>;
- 		};
- 	};
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 34ecd9d..35ff697 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -203,6 +203,7 @@ static const struct futex_q futex_q_init = {
+  * waiting on a futex.
+  */
+ struct futex_hash_bucket {
++	atomic_t waiters;
+ 	spinlock_t lock;
+ 	struct plist_head chain;
+ } ____cacheline_aligned_in_smp;
+@@ -211,6 +212,53 @@ static unsigned long __read_mostly futex_hashsize;
  
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 1b90b3b..ab70012 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -52,6 +52,7 @@
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
-+#include <linux/of_dma.h>
- #include <linux/of_platform.h>
+ static struct futex_hash_bucket *futex_queues;
  
- #include <linux/random.h>
-@@ -1031,7 +1032,15 @@ static int mpc_dma_probe(struct platform_device *op)
- 	if (retval)
- 		goto err_free2;
- 
--	return retval;
-+	/* Register with OF helpers for DMA lookups (nonfatal) */
-+	if (dev->of_node) {
-+		retval = of_dma_controller_register(dev->of_node,
-+						of_dma_xlate_by_chan_id, mdma);
-+		if (retval)
-+			dev_warn(dev, "Could not register for OF lookup\n");
-+	}
++static inline void futex_get_mm(union futex_key *key)
++{
++	atomic_inc(&key->private.mm->mm_count);
++#ifdef CONFIG_SMP
++	/*
++	 * Ensure futex_get_mm() implies a full barrier such that
++	 * get_futex_key() implies a full barrier. This is relied upon
++	 * as full barrier (B), see the ordering comment above.
++	 */
++	smp_mb__after_atomic_inc();
++#endif
++}
 +
-+	return 0;
++/*
++ * Reflects a new waiter being added to the waitqueue.
++ */
++static inline void hb_waiters_inc(struct futex_hash_bucket *hb)
++{
++#ifdef CONFIG_SMP
++	atomic_inc(&hb->waiters);
++	/*
++	 * Full barrier (A), see the ordering comment above.
++	 */
++	smp_mb__after_atomic_inc();
++#endif
++}
++
++/*
++ * Reflects a waiter being removed from the waitqueue by wakeup
++ * paths.
++ */
++static inline void hb_waiters_dec(struct futex_hash_bucket *hb)
++{
++#ifdef CONFIG_SMP
++	atomic_dec(&hb->waiters);
++#endif
++}
++
++static inline int hb_waiters_pending(struct futex_hash_bucket *hb)
++{
++#ifdef CONFIG_SMP
++	return atomic_read(&hb->waiters);
++#else
++	return 1;
++#endif
++}
++
+ /*
+  * We hash on the keys returned from get_futex_key (see below).
+  */
+@@ -245,10 +293,10 @@ static void get_futex_key_refs(union futex_key *key)
  
- err_free2:
- 	if (mdma->is_mpc8308)
-@@ -1052,6 +1061,8 @@ static int mpc_dma_remove(struct platform_device *op)
- 	struct device *dev = &op->dev;
- 	struct mpc_dma *mdma = dev_get_drvdata(dev);
+ 	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
+ 	case FUT_OFF_INODE:
+-		ihold(key->shared.inode);
++		ihold(key->shared.inode); /* implies MB */
+ 		break;
+ 	case FUT_OFF_MMSHARED:
+-		atomic_inc(&key->private.mm->mm_count);
++		futex_get_mm(key); /* implies MB */
+ 		break;
+ 	}
+ }
+@@ -322,7 +370,7 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
+ 	if (!fshared) {
+ 		key->private.mm = mm;
+ 		key->private.address = address;
+-		get_futex_key_refs(key);
++		get_futex_key_refs(key); /* implies MB (B) */
+ 		return 0;
+ 	}
  
-+	if (dev->of_node)
-+		of_dma_controller_free(dev->of_node);
- 	dma_async_device_unregister(&mdma->dma);
- 	if (mdma->is_mpc8308) {
- 		free_irq(mdma->irq2, mdma);
--- 
-1.8.4.2
+@@ -429,7 +477,7 @@ again:
+ 		key->shared.pgoff = basepage_index(page);
+ 	}
+ 
+-	get_futex_key_refs(key);
++	get_futex_key_refs(key); /* implies MB (B) */
+ 
+ out:
+ 	unlock_page(page_head);
+@@ -893,6 +941,7 @@ static void __unqueue_futex(struct futex_q *q)
+ 
+ 	hb = container_of(q->lock_ptr, struct futex_hash_bucket, lock);
+ 	plist_del(&q->list, &hb->chain);
++	hb_waiters_dec(hb);
+ }
+ 
+ /*
+@@ -1052,6 +1101,11 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
+ 		goto out;
+ 
+ 	hb = hash_futex(&key);
++
++	/* Make sure we really have tasks to wakeup */
++	if (!hb_waiters_pending(hb))
++		goto out_put_key;
++
+ 	spin_lock(&hb->lock);
+ 
+ 	plist_for_each_entry_safe(this, next, &hb->chain, list) {
+@@ -1072,6 +1126,7 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
+ 	}
+ 
+ 	spin_unlock(&hb->lock);
++out_put_key:
+ 	put_futex_key(&key);
+ out:
+ 	return ret;
+@@ -1190,7 +1245,9 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
+ 	 */
+ 	if (likely(&hb1->chain != &hb2->chain)) {
+ 		plist_del(&q->list, &hb1->chain);
++		hb_waiters_dec(hb1);
+ 		plist_add(&q->list, &hb2->chain);
++		hb_waiters_inc(hb2);
+ 		q->lock_ptr = &hb2->lock;
+ 	}
+ 	get_futex_key_refs(key2);
+@@ -1533,6 +1590,17 @@ static inline struct futex_hash_bucket *queue_lock(struct futex_q *q)
+ 	struct futex_hash_bucket *hb;
+ 
+ 	hb = hash_futex(&q->key);
++
++	/*
++	 * Increment the counter before taking the lock so that
++	 * a potential waker won't miss a to-be-slept task that is
++	 * waiting for the spinlock. This is safe as all queue_lock()
++	 * users end up calling queue_me(). Similarly, for housekeeping,
++	 * decrement the counter at queue_unlock() when some error has
++	 * occurred and we don't end up adding the task to the list.
++	 */
++	hb_waiters_inc(hb);
++
+ 	q->lock_ptr = &hb->lock;
+ 
+ 	spin_lock(&hb->lock);
+@@ -1544,6 +1612,7 @@ queue_unlock(struct futex_hash_bucket *hb)
+ 	__releases(&hb->lock)
+ {
+ 	spin_unlock(&hb->lock);
++	hb_waiters_dec(hb);
+ }
+ 
+ /**
+@@ -2275,6 +2344,7 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+ 		 * Unqueue the futex_q and determine which it was.
+ 		 */
+ 		plist_del(&q->list, &hb->chain);
++		hb_waiters_dec(hb);
+ 
+ 		/* Handle spurious wakeups gracefully */
+ 		ret = -EWOULDBLOCK;
+@@ -2808,6 +2878,7 @@ static int __init futex_init(void)
+ 		futex_cmpxchg_enabled = 1;
+ 
+ 	for (i = 0; i < futex_hashsize; i++) {
++		atomic_set(&futex_queues[i].waiters, 0);
+ 		plist_head_init(&futex_queues[i].chain);
+ 		spin_lock_init(&futex_queues[i].lock);
+ 	}
