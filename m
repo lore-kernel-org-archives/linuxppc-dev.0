@@ -1,20 +1,32 @@
-Return-Path: <prvs=01563da3ac=valentin.longchamp@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pd0-x22e.google.com (mail-pd0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c02::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C33162C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 21:44:13 +1100 (EST)
-Message-ID: <532AC673.5070308@keymile.com>
-Date: Thu, 20 Mar 2014 11:44:03 +0100
-From: Valentin Longchamp <valentin.longchamp@keymile.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0A3952C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 22:47:57 +1100 (EST)
+Received: by mail-pd0-f174.google.com with SMTP id y13so812945pdi.33
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 04:47:55 -0700 (PDT)
+Date: Thu, 20 Mar 2014 19:47:35 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Message-ID: <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
+References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
+ <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
+ <1394586624.13761.132.camel@snotra.buserror.net>
+ <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
+ <1394646185.13761.145.camel@snotra.buserror.net>
+ <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
+ <1394835987.12479.119.camel@snotra.buserror.net>
+ <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
+ <1395184734.12479.250.camel@snotra.buserror.net>
 MIME-Version: 1.0
-To: Johannes Thumshirn <johannes.thumshirn@men.de>
-Subject: Re: EDAC PCIe errors when scannning the bus
-References: <532991AD.6020903@keymile.com> <20140319155404.GA2045@jtlinux>
-In-Reply-To: <20140319155404.GA2045@jtlinux>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Qrgsu6vtpU/OV/zm"
+In-Reply-To: <1395184734.12479.250.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
+ Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,91 +36,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Johannes,
 
-On 03/19/2014 04:54 PM, Johannes Thumshirn wrote:
-> On Wed, Mar 19, 2014 at 01:46:37PM +0100, Valentin Longchamp wrote:
->> Hello,
->>
->> We have a board that is based on Freescale's P2041 SoC. The boards has 2 PCIe
->> buses with this topology:
->>
->> PCIe 0 <---> PEX8505 switch <---> 4 network devices
->> PCIE 2 <---> FPGA
->>
->> On 3.10.33 + a subset of the Freescale SDK 1.4 patches, both PCIe buses work
->> well and we are able to use the devices on them.
->>
->> For each bus, I however keep getting EDAC PCIe errors at the very first stage of
->> bus enumeration (please see the attached kernel log, with some debug output from
->> arch/powerpc/kernel/pci-common.c and drivers/pci/probe.c) for both buses.
->>
->> My current "understanding" of the situation is such: since PCI_PROBE_NORMAL is
->> used, pcibios_scan_phb() calls pci_scan_child_bus() that does a pci_scan_slot()
->> on the bus for 32 slots. The first pci_scan_slot() is successful and it
->> discovers the P2041's PCIe Controller. All the 31 other pci_scan_slot() calls
->> generate an EDAC PCIe error, that is triggered by the configuration read
->> transaction to read an hypothetical vendor ID of a device on the bus. This is
->> relevant with that is reported by the EDAC error handler (all the 31 are the same):
->>
->>> PCIE error(s) detected
->>> PCIE ERR_DR register: 0x00020000
->>
->> ICCA bit is set: Access to an illegal configuration space from
->> PEX_CONFIG_ADDR/PEX_CONFIG_DATA was detected.
->>
->>> PCIE ERR_CAP_STAT register: 0x80000001
->>
->> To is set: Transaction originated from PEX_CONFIG_ADDR/PEX_CONFIG_DATA.
->>
->>> PCIE ERR_CAP_R0 register: 0x00000800
->>
->> FMT: 0b00, TYPE: 0b00100 (Config read I guess)
->>
->>> PCIE ERR_CAP_R1 register: 0x00000000
->>> PCIE ERR_CAP_R2 register: 0x00000000
->>> PCIE ERR_CAP_R3 register: 0x00000000
->>
->> Afterwards, pci_scan_child_bus() calls pcibios_fixup_bus (that maybe helps ?).
->> From here, since the P2041's PCIe Controller is a bridge, pci_scan_bridge is
->> called for this bus and all the devices are detected without having any
->> configuration transaction causing EDAC errors.
->>
->> Has someone already observed such a behavior ? Why do these initial transaction
->> generate an error ? What would be a possible fix to avoid these transaction
->> errors for these 31 (unneded ?) pci_scan_slot() calls on the initial bus ?
->>
-> 
-> I've encountered similar problems on a P4080 based design (mine has additional
-> machine checks that cause an oops). I haven't solved it yet, so I unfortunately
-> can't offer you a fix. But I was told there are some errata workarounds that
-> more or less could have an impact on PCIe behavior. Could you show me the output
-> of U-Boot's errata command?
+--Qrgsu6vtpU/OV/zm
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here is the output for the errata command:
+On Tue, Mar 18, 2014 at 06:18:54PM -0500, Scott Wood wrote:
+> >  The sequence "write, readback, sync" will guarantee this according to =
+the manual.=20
+>=20
+> If you're referring to the section you quoted above, the manual does not
+> say that.  It only talks about when accesses "to memory regions affected
+> by the configuration register write" can be safely made.
 
-> => errata
-> Work-around for Erratum CPU-A003999 enabled
-> Work-around for Erratum DDR-A003473 enabled
-> Work-around for Erratum ESDHC111 enabled
-> Work-around for Erratum DDR-A003 enabled
-> Work-around for Erratum A004510 enabled
-> Work-around for Erratum SRIO-A004034 enabled
-> Work-around for Erratum A004849 is not enabled
-> Work-around for Erratum A004580 is not enabled
-> Work-around for Erratum USB14 enabled
+  To guarantee that the results of any sequence of writes to configuration
+  registers are in effect, the final configuration register write should be
+  immediately followed by a read of the same register, and that should be
+  followed by a SYNC instruction. Then accesses can safely be made to memory
+  regions affected by the configuration register write.
 
-> 
-> Especially if the workarounds for A-004580 and A-004849 are in place.
-> 
+According to the above description in t4240 RM manual (2.6.1 Accessing CCSR
+Memory from the Local Processor), that the writing to configuration register
+takes effect is a prerequisite for the memory access to the affected region=
+s.
 
-So both are not enabled, I am going to fix that. Surprisingly, A-004580 is not
-defined for the P2041 in u-boot even though it is also present in the P2041's
-errata sheet, I had to enable it myself.
+>=20
+> > If we just want to
+> > order the delay loop after the load, the following sequence should be e=
+nough:
+> > 	store to CCSR_DDR_SDRAM_CFG_2
+> > 	load from CCSR_DDR_SDRAM_CFG_2
+> > 	isync or sync
+> > 	delay loop
+> >=20
+> > Why do we need the 'date dependency' here? According to the e6500 manua=
+l, the
+> > instructions can execute out of order, but complete in order. So I am r=
+eally
+> > wondering why we need to order the load and the following delay loop if=
+ there
+> > is no intention to order the storage access?=20
+>=20
+> The data (not date) dependency means that the twi will not execute until
+> after the load instruction returns data (thus, after the device has
+> responded to the load).  The twi, being a flow control instruction
+> rather than a storage instruction, should be fully ordered by isync.
+>=20
+> From the isync description in the ISA: "Except as described in the
+> preceding sentence, the isync instruction may complete before storage
+> accesses associated with instructions preceding the
+> isync instruction have been performed."
+>=20
+> I don't know if that really applies to loads (as opposed to stores), and
+> it probably doesn't apply to guarded loads, but I feel safer leaving the
+> twi in.
+>=20
+> As for sync instead of isync, I see nothing to indicate that it would be
+> adequate (though it may be that the only reason there needed to be a
+> delay loop in the first place was the lack of a readback/sync before
+> doing other I/O, in which case this is moot).
 
-However, I expect that enabling the workarounds for these 2 Errata are good for
-the system but it will not solve the PCIe EDAC problem.
+OK, so the intention of 'twi, isync' following the load is not to order the
+following storage access, but order the following delay loop instructions,
+right? But according to the e6500 manual, the instructions complete in orde=
+r.
+The following is the definition of 'complete':
+  Complete=E2=80=94An instruction is eligible to complete after it finishes=
+ executing
+  and makes its results available for subsequent instructions. Instructions
+  must complete in order from the bottom two entries of the
+  completion queue (CQ). The completion unit coordinates how instructions (=
+which
+  may have executed out of order) affect architected registers to ensure the
+  appearance of serial execution. This guarantees that the completed instru=
+ction
+  and all previous instructions can cause no exceptions. An instruction com=
+pletes
+  when it is retired, that is, deleted from the CQ.
 
-Thank you for the input.
+So the following delay loop instructions should never complete before the
+complete of the load instruction. After the complete of load instruction,
+the data should already been updated to the architecture register. So we can
+guarantee that the load instruction get the data (the device has responded =
+to
+the load) before the complete of the following delay loop instructions, why=
+ do
+we need the additional 'twi, isync'?  Then for a case like this (which don't
+need order the following storage access), I think the following sequence sh=
+ould
+be enough:
+	write to configuration register
+	read back
+	delay loop
 
-Valentin
+> I mean that I do not understand why it says, "the load on which the
+> Branch depends is performed before any loads caused by instructions
+> following the isync" rather than "the Load on which the Branch depends
+> is performed before any instructions following the isync".
+
+When we talk about the 'performed' here, we should only mean the effect of
+storage access. The following is the definition of 'performed':
+  performed
+  A load or instruction fetch by a processor or mech-
+  anism (P1) is performed with respect to any pro-
+  cessor or mechanism (P2) when the value to be
+  returned by the load or instruction fetch can no
+  longer be changed by a store by P2. A store by P1
+  is performed with respect to P2 when a load by P2
+  from the location accessed by the store will return
+  the value stored (or a value stored subsequently).
+  An instruction cache block invalidation by P1 is
+  performed with respect to P2 when an instruction
+  fetch by P2 will not be satisfied from the copy of
+  the block that existed in its instruction cache when
+  the instruction causing the invalidation was exe-
+  cuted, and similarly for a data cache block invalida-
+  tion.
+  The preceding definitions apply regardless of
+  whether P1 and P2 are the same entity.
+
+>=20
+> > > > So if we want to order all the storage access as well
+> > > > as execution synchronization, we should choose sync here.
+> > >=20
+> > > Do we need execution synchronization or context synchronization?
+> >=20
+> > There is no context-altering instruction here, so I think an execution
+> > synchronizing instruction should be enough here.
+>=20
+> Is the ISA ever explicit about what constitutes "context"?
+
+The following is the definition of context-altering instruction:
+  An instruction that alters the context in which data
+  addresses or instruction addresses are interpreted, or
+  in which instructions are executed or data accesses are
+  performed, is called a context-altering instruction.
+
+So the context should be:
+  - in which data addresses or instruction addresses are interpreted
+  - in which instructions are executed
+  - in which data accesses are performed
+
+Thanks,
+Kevin
+
+--Qrgsu6vtpU/OV/zm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJTKtVXAAoJEJNY7TDerrFxFDIH/jJ8L8UXohZVkK4cWZQgVWgT
+Eg9NzcXxMjbv4UFiKrlyoaQYh+YNbwetZwwM1eqPAS+/LHHnbR7Xu+/UiVSmh6zY
+AqKCYPXcx/bpWFEPws4aASxfgRxYW0lQxyjwS80p8H1eGiNUZkzuygo+jOs1hSlL
+s/FdsghCJzpqvhGW9NFs0CTG08fbtylp8orXsPEG65ptpM9u9nG7zt0owO+Cznx4
+HcbskvIGvfTjx7WP/xg8v2uSVDwUOmPB1tWIkZsd7Nf4b+zsaNNxS0J8m6FwK7T1
+SfdY2kxzVM3M2kxu4UflBVIpJVOdd+9LuZVNiqTKm4pv5pCvMFRArWTVmLqS3ws=
+=nrfu
+-----END PGP SIGNATURE-----
+
+--Qrgsu6vtpU/OV/zm--
