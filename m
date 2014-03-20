@@ -1,17 +1,16 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-pd0-x22e.google.com (mail-pd0-x22e.google.com
- [IPv6:2607:f8b0:400e:c02::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0A3952C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 22:47:57 +1100 (EST)
-Received: by mail-pd0-f174.google.com with SMTP id y13so812945pdi.33
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 04:47:55 -0700 (PDT)
-Date: Thu, 20 Mar 2014 19:47:35 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
-Message-ID: <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id D8B202C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 23:00:41 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 04007-02 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 20 Mar 2014 12:00:35 +0000 (GMT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Kevin Hao' <haokexin@gmail.com>, Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
+Date: Thu, 20 Mar 2014 11:59:14 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6E33AE@AcuExch.aculab.com>
 References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
  <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
  <1394586624.13761.132.camel@snotra.buserror.net>
@@ -21,12 +20,14 @@ References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
  <1394835987.12479.119.camel@snotra.buserror.net>
  <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
  <1395184734.12479.250.camel@snotra.buserror.net>
+ <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Qrgsu6vtpU/OV/zm"
-In-Reply-To: <1395184734.12479.250.camel@snotra.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, Chenhui Zhao <chenhui.zhao@freescale.com>,
- Jason.Jin@freescale.com, linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Chenhui
+ Zhao <chenhui.zhao@freescale.com>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,164 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---Qrgsu6vtpU/OV/zm
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Mar 18, 2014 at 06:18:54PM -0500, Scott Wood wrote:
-> >  The sequence "write, readback, sync" will guarantee this according to =
-the manual.=20
->=20
-> If you're referring to the section you quoted above, the manual does not
-> say that.  It only talks about when accesses "to memory regions affected
-> by the configuration register write" can be safely made.
-
-  To guarantee that the results of any sequence of writes to configuration
-  registers are in effect, the final configuration register write should be
-  immediately followed by a read of the same register, and that should be
-  followed by a SYNC instruction. Then accesses can safely be made to memory
-  regions affected by the configuration register write.
-
-According to the above description in t4240 RM manual (2.6.1 Accessing CCSR
-Memory from the Local Processor), that the writing to configuration register
-takes effect is a prerequisite for the memory access to the affected region=
-s.
-
->=20
-> > If we just want to
-> > order the delay loop after the load, the following sequence should be e=
-nough:
-> > 	store to CCSR_DDR_SDRAM_CFG_2
-> > 	load from CCSR_DDR_SDRAM_CFG_2
-> > 	isync or sync
-> > 	delay loop
-> >=20
-> > Why do we need the 'date dependency' here? According to the e6500 manua=
-l, the
-> > instructions can execute out of order, but complete in order. So I am r=
-eally
-> > wondering why we need to order the load and the following delay loop if=
- there
-> > is no intention to order the storage access?=20
->=20
-> The data (not date) dependency means that the twi will not execute until
-> after the load instruction returns data (thus, after the device has
-> responded to the load).  The twi, being a flow control instruction
-> rather than a storage instruction, should be fully ordered by isync.
->=20
-> From the isync description in the ISA: "Except as described in the
-> preceding sentence, the isync instruction may complete before storage
-> accesses associated with instructions preceding the
-> isync instruction have been performed."
->=20
-> I don't know if that really applies to loads (as opposed to stores), and
-> it probably doesn't apply to guarded loads, but I feel safer leaving the
-> twi in.
->=20
-> As for sync instead of isync, I see nothing to indicate that it would be
-> adequate (though it may be that the only reason there needed to be a
-> delay loop in the first place was the lack of a readback/sync before
-> doing other I/O, in which case this is moot).
-
-OK, so the intention of 'twi, isync' following the load is not to order the
-following storage access, but order the following delay loop instructions,
-right? But according to the e6500 manual, the instructions complete in orde=
-r.
-The following is the definition of 'complete':
-  Complete=E2=80=94An instruction is eligible to complete after it finishes=
- executing
-  and makes its results available for subsequent instructions. Instructions
-  must complete in order from the bottom two entries of the
-  completion queue (CQ). The completion unit coordinates how instructions (=
-which
-  may have executed out of order) affect architected registers to ensure the
-  appearance of serial execution. This guarantees that the completed instru=
-ction
-  and all previous instructions can cause no exceptions. An instruction com=
-pletes
-  when it is retired, that is, deleted from the CQ.
-
-So the following delay loop instructions should never complete before the
-complete of the load instruction. After the complete of load instruction,
-the data should already been updated to the architecture register. So we can
-guarantee that the load instruction get the data (the device has responded =
-to
-the load) before the complete of the following delay loop instructions, why=
- do
-we need the additional 'twi, isync'?  Then for a case like this (which don't
-need order the following storage access), I think the following sequence sh=
-ould
-be enough:
-	write to configuration register
-	read back
-	delay loop
-
-> I mean that I do not understand why it says, "the load on which the
-> Branch depends is performed before any loads caused by instructions
-> following the isync" rather than "the Load on which the Branch depends
-> is performed before any instructions following the isync".
-
-When we talk about the 'performed' here, we should only mean the effect of
-storage access. The following is the definition of 'performed':
-  performed
-  A load or instruction fetch by a processor or mech-
-  anism (P1) is performed with respect to any pro-
-  cessor or mechanism (P2) when the value to be
-  returned by the load or instruction fetch can no
-  longer be changed by a store by P2. A store by P1
-  is performed with respect to P2 when a load by P2
-  from the location accessed by the store will return
-  the value stored (or a value stored subsequently).
-  An instruction cache block invalidation by P1 is
-  performed with respect to P2 when an instruction
-  fetch by P2 will not be satisfied from the copy of
-  the block that existed in its instruction cache when
-  the instruction causing the invalidation was exe-
-  cuted, and similarly for a data cache block invalida-
-  tion.
-  The preceding definitions apply regardless of
-  whether P1 and P2 are the same entity.
-
->=20
-> > > > So if we want to order all the storage access as well
-> > > > as execution synchronization, we should choose sync here.
-> > >=20
-> > > Do we need execution synchronization or context synchronization?
-> >=20
-> > There is no context-altering instruction here, so I think an execution
-> > synchronizing instruction should be enough here.
->=20
-> Is the ISA ever explicit about what constitutes "context"?
-
-The following is the definition of context-altering instruction:
-  An instruction that alters the context in which data
-  addresses or instruction addresses are interpreted, or
-  in which instructions are executed or data accesses are
-  performed, is called a context-altering instruction.
-
-So the context should be:
-  - in which data addresses or instruction addresses are interpreted
-  - in which instructions are executed
-  - in which data accesses are performed
-
-Thanks,
-Kevin
-
---Qrgsu6vtpU/OV/zm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQEcBAEBAgAGBQJTKtVXAAoJEJNY7TDerrFxFDIH/jJ8L8UXohZVkK4cWZQgVWgT
-Eg9NzcXxMjbv4UFiKrlyoaQYh+YNbwetZwwM1eqPAS+/LHHnbR7Xu+/UiVSmh6zY
-AqKCYPXcx/bpWFEPws4aASxfgRxYW0lQxyjwS80p8H1eGiNUZkzuygo+jOs1hSlL
-s/FdsghCJzpqvhGW9NFs0CTG08fbtylp8orXsPEG65ptpM9u9nG7zt0owO+Cznx4
-HcbskvIGvfTjx7WP/xg8v2uSVDwUOmPB1tWIkZsd7Nf4b+zsaNNxS0J8m6FwK7T1
-SfdY2kxzVM3M2kxu4UflBVIpJVOdd+9LuZVNiqTKm4pv5pCvMFRArWTVmLqS3ws=
-=nrfu
------END PGP SIGNATURE-----
-
---Qrgsu6vtpU/OV/zm--
+RnJvbTogS2V2aW4gSGFvDQo+IFNlbnQ6IDIwIE1hcmNoIDIwMTQgMTE6NDgNCj4gVG86IFNjb3R0
+IFdvb2QNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBDaGVuaHVpIFpoYW87
+IEphc29uLkppbkBmcmVlc2NhbGUuY29tOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+
+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggOS85XSBwb3dlcnBjL3BtOiBzdXBwb3J0IGRlZXAgc2xlZXAg
+ZmVhdHVyZSBvbiBUMTA0MA0KPiANCj4gT24gVHVlLCBNYXIgMTgsIDIwMTQgYXQgMDY6MTg6NTRQ
+TSAtMDUwMCwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiA+ICBUaGUgc2VxdWVuY2UgIndyaXRlLCBy
+ZWFkYmFjaywgc3luYyIgd2lsbCBndWFyYW50ZWUgdGhpcyBhY2NvcmRpbmcgdG8gdGhlIG1hbnVh
+bC4NCj4gPg0KPiA+IElmIHlvdSdyZSByZWZlcnJpbmcgdG8gdGhlIHNlY3Rpb24geW91IHF1b3Rl
+ZCBhYm92ZSwgdGhlIG1hbnVhbCBkb2VzIG5vdA0KPiA+IHNheSB0aGF0LiAgSXQgb25seSB0YWxr
+cyBhYm91dCB3aGVuIGFjY2Vzc2VzICJ0byBtZW1vcnkgcmVnaW9ucyBhZmZlY3RlZA0KPiA+IGJ5
+IHRoZSBjb25maWd1cmF0aW9uIHJlZ2lzdGVyIHdyaXRlIiBjYW4gYmUgc2FmZWx5IG1hZGUuDQo+
+IA0KPiAgIFRvIGd1YXJhbnRlZSB0aGF0IHRoZSByZXN1bHRzIG9mIGFueSBzZXF1ZW5jZSBvZiB3
+cml0ZXMgdG8gY29uZmlndXJhdGlvbg0KPiAgIHJlZ2lzdGVycyBhcmUgaW4gZWZmZWN0LCB0aGUg
+ZmluYWwgY29uZmlndXJhdGlvbiByZWdpc3RlciB3cml0ZSBzaG91bGQgYmUNCj4gICBpbW1lZGlh
+dGVseSBmb2xsb3dlZCBieSBhIHJlYWQgb2YgdGhlIHNhbWUgcmVnaXN0ZXIsIGFuZCB0aGF0IHNo
+b3VsZCBiZQ0KPiAgIGZvbGxvd2VkIGJ5IGEgU1lOQyBpbnN0cnVjdGlvbi4gVGhlbiBhY2Nlc3Nl
+cyBjYW4gc2FmZWx5IGJlIG1hZGUgdG8gbWVtb3J5DQo+ICAgcmVnaW9ucyBhZmZlY3RlZCBieSB0
+aGUgY29uZmlndXJhdGlvbiByZWdpc3RlciB3cml0ZS4NCg0KVGhhdCBzb3J0IG9mIHNlcXVlbmNl
+IGlzIG5lZWQgdG8gZm9yY2UgdGhlIG9wZXJhdGlvbnMgdGhyb3VnaCBhbnkNCmV4dGVybmFsIGJ1
+cyAtIGFmdGVyIHRoZSBjcHUgaXRzZWxmIGhhcyBpc3N1ZWQgdGhlIGJ1cyBjeWNsZXMuDQpNb3N0
+bHkgcmVxdWlyZWQgYmVjYXVzZSB3cml0ZXMgYXJlIG9mdGVuICdwb3N0ZWQnIChpZSBhZGRyZXNz
+IGFuZCBkYXRhDQpsYXRjaGVkLCBhbmQgdGhlbiBwZXJmb3JtZWQgc3luY2hyb25vdXNseSkuDQoN
+Cj4gQWNjb3JkaW5nIHRvIHRoZSBhYm92ZSBkZXNjcmlwdGlvbiBpbiB0NDI0MCBSTSBtYW51YWwg
+KDIuNi4xIEFjY2Vzc2luZyBDQ1NSDQo+IE1lbW9yeSBmcm9tIHRoZSBMb2NhbCBQcm9jZXNzb3Ip
+LCB0aGF0IHRoZSB3cml0aW5nIHRvIGNvbmZpZ3VyYXRpb24gcmVnaXN0ZXINCj4gdGFrZXMgZWZm
+ZWN0IGlzIGEgcHJlcmVxdWlzaXRlIGZvciB0aGUgbWVtb3J5IGFjY2VzcyB0byB0aGUgYWZmZWN0
+ZWQgcmVnaW9ucy4NCi4uLg0KPiBPSywgc28gdGhlIGludGVudGlvbiBvZiAndHdpLCBpc3luYycg
+Zm9sbG93aW5nIHRoZSBsb2FkIGlzIG5vdCB0byBvcmRlciB0aGUNCj4gZm9sbG93aW5nIHN0b3Jh
+Z2UgYWNjZXNzLCBidXQgb3JkZXIgdGhlIGZvbGxvd2luZyBkZWxheSBsb29wIGluc3RydWN0aW9u
+cywNCj4gcmlnaHQNCg0KSSB0cmllZCB0byB3b3JrIG91dCB3aGF0IHRoZSAndHdpLCBpc3luYycg
+aW5zdHJ1Y3Rpb25zIHdlcmUgZm9yIChpbiBpbl9sZTMyKCkpLg0KVGhlIGJlc3QgSSBjb3VsZCBj
+b21lIHVwIHdpdGggd2FzIHRvIGVuc3VyZSBhIHN5bmNocm9ub3VzIGJ1cy1mYXVsdC4NCkJ1dCBi
+dXMgZmF1bHRzIGFyZSBwcm9iYWJseSBvbmx5IGV4cGVjdGVkIGR1cmluZyBkZXZpY2UgcHJvYmlu
+ZyAtIG5vdA0Kbm9ybWFsIG9wZXJhdGlvbiwgYW5kIHRoZSBpbnN0cnVjdGlvbnMgd2lsbCBoYXZl
+IGEgc2lnbmlmaWNhbnQgY29zdC4NCg0KQWRkaXRpb25hbGx5IGluX2xlMzIoKSBhbmQgb3V0X2xl
+MzIoKSBib3RoIHN0YXJ0IHdpdGggYSAnc3luYycgaW5zdHJ1Y3Rpb24uDQpJbiBtYW55IGNhc2Vz
+IHRoYXQgaXNuJ3QgbmVlZGVkIGVpdGhlciAtIGFuIGV4cGxpY2l0IGlvc3luYygpIGNhbiBiZQ0K
+dXNlZCBhZnRlciBncm91cHMgb2YgaW5zdHJ1Y3Rpb25zLg0KDQoJRGF2aWQNCg0KDQo=
