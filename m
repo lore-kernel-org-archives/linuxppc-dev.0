@@ -2,32 +2,31 @@ Return-Path: <clg@fr.ibm.com>
 Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 637192C00A8
+ by ozlabs.org (Postfix) with ESMTPS id 75F572C00AD
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:46 +1100 (EST)
 Received: from /spool/local
  by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 20 Mar 2014 15:10:41 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 25C892190041
+ Thu, 20 Mar 2014 15:10:43 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id EA6CC219005E
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:34 +0000 (GMT)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2KFAR0E35651700
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2KFARQo1180068
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:27 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2KFAc6c018629
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:38 -0600
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KFAdcw016858
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:39 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 06/18] powerpc/boot: rework of_claim() to make it 64bit
- friendly
-Date: Thu, 20 Mar 2014 16:10:01 +0100
-Message-Id: <1395328213-19206-7-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 12/18] powerpc/boot: define a routine to enter prom
+Date: Thu, 20 Mar 2014 16:10:07 +0100
+Message-Id: <1395328213-19206-13-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
@@ -45,97 +44,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes 64bit compile warnings and updates the wrapper code
-to converge the kernel code in prom_init.
+This patch defines a 'prom' routine similar to 'enter_prom' in the
+kernel.
+
+The difference is in the MSR which is built before entering prom. Big
+endian order is enforced as in the kernel but 32bit mode is not. It
+prepares ground for the next patches which will introduce Little endian
+order.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/of.c    |    4 ++--
- arch/powerpc/boot/of.h    |    3 ++-
- arch/powerpc/boot/oflib.c |   15 ++++++++-------
- 3 files changed, 12 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/crt0.S  |   71 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/oflib.c |    6 ++++
+ 2 files changed, 77 insertions(+)
 
-diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
-index 62e2f43ec1df..6836a2b2112a 100644
---- a/arch/powerpc/boot/of.c
-+++ b/arch/powerpc/boot/of.c
-@@ -40,8 +40,8 @@ static void *of_try_claim(unsigned long size)
- #ifdef DEBUG
- 		printf("    trying: 0x%08lx\n\r", claim_base);
- #endif
--		addr = (unsigned long)of_claim(claim_base, size, 0);
--		if ((void *)addr != (void *)-1)
-+		addr = (unsigned long) of_claim(claim_base, size, 0);
-+		if (addr != -1)
- 			break;
- 	}
- 	if (addr == 0)
-diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index 40d95bf7402b..3f35cf0ec432 100644
---- a/arch/powerpc/boot/of.h
-+++ b/arch/powerpc/boot/of.h
-@@ -6,7 +6,8 @@ typedef void *ihandle;
+diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+index 0f7428a37efb..dbd99d064828 100644
+--- a/arch/powerpc/boot/crt0.S
++++ b/arch/powerpc/boot/crt0.S
+@@ -126,3 +126,74 @@ RELACOUNT = 0x6ffffff9
  
- void of_init(void *promptr);
- int of_call_prom(const char *service, int nargs, int nret, ...);
--void *of_claim(unsigned long virt, unsigned long size, unsigned long align);
-+unsigned int of_claim(unsigned long virt, unsigned long size,
-+	unsigned long align);
- void *of_vmlinux_alloc(unsigned long size);
- void of_exit(void);
- void *of_finddevice(const char *name);
+ 	/* Call start */
+ 	b	start
++
++#ifdef __powerpc64__
++
++#define PROM_FRAME_SIZE 512
++#define SAVE_GPR(n, base)       std     n,8*(n)(base)
++#define REST_GPR(n, base)       ld      n,8*(n)(base)
++#define SAVE_2GPRS(n, base)     SAVE_GPR(n, base); SAVE_GPR(n+1, base)
++#define SAVE_4GPRS(n, base)     SAVE_2GPRS(n, base); SAVE_2GPRS(n+2, base)
++#define SAVE_8GPRS(n, base)     SAVE_4GPRS(n, base); SAVE_4GPRS(n+4, base)
++#define SAVE_10GPRS(n, base)    SAVE_8GPRS(n, base); SAVE_2GPRS(n+8, base)
++#define REST_2GPRS(n, base)     REST_GPR(n, base); REST_GPR(n+1, base)
++#define REST_4GPRS(n, base)     REST_2GPRS(n, base); REST_2GPRS(n+2, base)
++#define REST_8GPRS(n, base)     REST_4GPRS(n, base); REST_4GPRS(n+4, base)
++#define REST_10GPRS(n, base)    REST_8GPRS(n, base); REST_2GPRS(n+8, base)
++
++/* prom handles the jump into and return from firmware.  The prom args pointer
++   is loaded in r3. */
++.globl prom
++prom:
++	mflr	r0
++	std	r0,16(r1)
++	stdu	r1,-PROM_FRAME_SIZE(r1) /* Save SP and create stack space */
++
++	SAVE_GPR(2, r1)
++	SAVE_GPR(13, r1)
++	SAVE_8GPRS(14, r1)
++	SAVE_10GPRS(22, r1)
++	mfcr    r10
++	std     r10,8*32(r1)
++	mfmsr   r10
++	std     r10,8*33(r1)
++
++	/* remove MSR_LE from msr but keep MSR_SF */
++	mfmsr	r10
++	rldicr	r10,r10,0,62
++	mtsrr1	r10
++
++	/* Load FW address, set LR to label 1, and jump to FW */
++	bl	0f
++0:	mflr	r10
++	addi	r11,r10,(1f-0b)
++	mtlr	r11
++
++	ld	r10,(p_prom-0b)(r10)
++	mtsrr0	r10
++
++	rfid
++
++1:	/* Return from OF */
++
++	/* Restore registers and return. */
++	rldicl  r1,r1,0,32
++
++	/* Restore the MSR (back to 64 bits) */
++	ld      r10,8*(33)(r1)
++	mtmsr	r10
++	isync
++
++	/* Restore other registers */
++	REST_GPR(2, r1)
++	REST_GPR(13, r1)
++	REST_8GPRS(14, r1)
++	REST_10GPRS(22, r1)
++	ld      r10,8*32(r1)
++	mtcr	r10
++
++	addi    r1,r1,PROM_FRAME_SIZE
++	ld      r0,16(r1)
++	mtlr    r0
++	blr
++#endif
 diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 96fe4d225abe..cb6a5de0c257 100644
+index e8697df2df27..488548a607c2 100644
 --- a/arch/powerpc/boot/oflib.c
 +++ b/arch/powerpc/boot/oflib.c
-@@ -149,7 +149,8 @@ static int check_of_version(void)
- 	return 1;
+@@ -29,11 +29,17 @@ struct prom_args {
+ 
+ #define PROM_ERROR (-1u)
+ 
++#ifdef __powerpc64__
++extern int prom(void *);
++#else
+ static int (*prom) (void *);
++#endif
+ 
+ void of_init(void *promptr)
+ {
++#ifndef __powerpc64__
+ 	prom = (int (*)(void *))promptr;
++#endif
  }
  
--void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
-+unsigned int of_claim(unsigned long virt, unsigned long size,
-+		      unsigned long align)
- {
- 	int ret;
- 	prom_arg_t result;
-@@ -157,32 +158,32 @@ void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
- 	if (need_map < 0)
- 		need_map = check_of_version();
- 	if (align || !need_map)
--		return (void *) of_call_prom("claim", 3, 1, virt, size, align);
-+		return of_call_prom("claim", 3, 1, virt, size, align);
- 
- 	ret = of_call_prom_ret("call-method", 5, 2, &result, "claim", memory,
- 			       align, size, virt);
- 	if (ret != 0 || result == -1)
--		return (void *) -1;
-+		return  -1;
- 	ret = of_call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
- 			       align, size, virt);
- 	/* 0x12 == coherent + read/write */
- 	ret = of_call_prom("call-method", 6, 1, "map", chosen_mmu,
- 			   0x12, size, virt, virt);
--	return (void *) virt;
-+	return virt;
- }
- 
- void *of_vmlinux_alloc(unsigned long size)
- {
- 	unsigned long start = (unsigned long)_start, end = (unsigned long)_end;
--	void *addr;
-+	unsigned long addr;
- 	void *p;
- 
- 	/* With some older POWER4 firmware we need to claim the area the kernel
- 	 * will reside in.  Newer firmwares don't need this so we just ignore
- 	 * the return value.
- 	 */
--	addr = of_claim(start, end - start, 0);
--	printf("Trying to claim from 0x%lx to 0x%lx (0x%lx) got %p\r\n",
-+	addr = (unsigned long) of_claim(start, end - start, 0);
-+	printf("Trying to claim from 0x%lx to 0x%lx (0x%lx) got %lx\r\n",
- 	       start, end, end - start, addr);
- 
- 	p = malloc(size);
+ #define ADDR(x)		(u32)(unsigned long)(x)
 -- 
 1.7.10.4
