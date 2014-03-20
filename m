@@ -1,25 +1,19 @@
 Return-Path: <xuelin.shi@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 96C462C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 17:35:08 +1100 (EST)
-From: Xuelin Shi <xuelin.shi@freescale.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: RE: [PATCH] fix dmaengine_unmap failure.
-Date: Thu, 20 Mar 2014 06:34:59 +0000
-Message-ID: <2072b2b9599b4eda88dafb998b4793c8@BL2PR03MB147.namprd03.prod.outlook.com>
-References: <1395131520-30207-1-git-send-email-xuelin.shi@freescale.com>
- <CAPcyv4gs-jos5TvfDbsaXTNebQf8VjJvbdjmjsbGZLZwZKi34g@mail.gmail.com>
- <30ef7093dcc247e490831a43355ec10f@BL2PR03MB147.namprd03.prod.outlook.com>
- <CAPcyv4imH14PuiZJwMw1B+UnxBgHzPAS22p4b171MrmKDBJM+Q@mail.gmail.com>
-In-Reply-To: <CAPcyv4imH14PuiZJwMw1B+UnxBgHzPAS22p4b171MrmKDBJM+Q@mail.gmail.com>
-Content-Type: text/plain; charset="gb2312"
+ by ozlabs.org (Postfix) with ESMTPS id 0E4302C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 18:17:36 +1100 (EST)
+From: <xuelin.shi@freescale.com>
+To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>
+Subject: [PATCH v2] fix dmaengine_unmap failure
+Date: Thu, 20 Mar 2014 14:33:50 +0800
+Message-ID: <1395297230-8195-1-git-send-email-xuelin.shi@freescale.com>
 MIME-Version: 1.0
-Cc: Vinod Koul <vinod.koul@intel.com>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: dmaengine@vger.kernel.org, Xuelin Shi <xuelin.shi@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgRGFuLA0KDQpJJ20gT0sgdG8gc2F2ZSBtZW1vcnkgaGVyZS4gSSdkIGxpa2UgdG8gc2VuZCB2
-Mi4NCg0KVGhhbmtzLA0KWHVlbGluIFNoaQ0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0K
-RnJvbTogRGFuIFdpbGxpYW1zIFttYWlsdG86ZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tXSANClNl
-bnQ6IDIwMTTE6jPUwjE5yNUgMjM6NDQNClRvOiBTaGkgWHVlbGluLUIyOTIzNw0KQ2M6IFZpbm9k
-IEtvdWw7IGxpbnV4cHBjLWRldjsgZG1hZW5naW5lQHZnZXIua2VybmVsLm9yZw0KU3ViamVjdDog
-UmU6IFtQQVRDSF0gZml4IGRtYWVuZ2luZV91bm1hcCBmYWlsdXJlLg0KDQpPbiBUdWUsIE1hciAx
-OCwgMjAxNCBhdCAxMTozOSBQTSwgWHVlbGluIFNoaSA8eHVlbGluLnNoaUBmcmVlc2NhbGUuY29t
-PiB3cm90ZToNCj4gSGkgRGFuLA0KPg0KPiBJbiBhc3luY19tdWx0KC4uLikgb2YgYXN5bmNfcmFp
-ZDZfcmVjb3YuYywgdGhlIGNvdW50IDMgaXMgdXNlZCB0byByZXF1ZXN0IGFuIHVubWFwLg0KPiBI
-b3dldmVyIHRoZSB0b19jbnQgYW5kIGJpZGlfY250IGFyZSBib3RoIHNldCB0byAxIGFuZCBmcm9t
-X2NudCB0byAwLg0KPiBUaGVuIHdoaWxlIHRyeWluZyB0byBkbyB1bm1hcCwgd2UgYXJlIGdldHRp
-bmcgdGhlIHdyb25nICJ1bm1hcCIgZnJvbSBhIGRpZmZlcmVudCBtZW1wb29sLg0KPg0KPiBJbiB0
-aGlzIHBhdGNoLCB0aGUgbWVtcG9vbCBpcyBhc3NvY2lhdGVkIHdpdGggdGhlIHVubWFwIHN0cnVj
-dHVyZSBpbnN0ZWFkIG9mIGNvbXB1dGluZyBpdCBhZ2Fpbi4NCj4gQnkgdGhpcyB3YXksIGl0IGlz
-IGd1YXJhbnRlZWQgdGhhdCB0aGUgdW5tYXAgaXMgdGhlIHNhbWUgd2hlbiB3ZSBnZXQgYW5kIHB1
-dCB0aGUgdW5tYXAgZGF0YS4NCj4NCj4gQlRXOiB0aGUgbWVtcG9vbCBpcyBqdXN0IHVzZWQgdG8g
-bWFuYWdlIHRoZSBzdHJ1Y3QgdW5tYXAsIG5vdCB0aGUgcGFnZXMuDQo+DQoNCkkgc2VlLCB3aGF0
-IGFib3V0IGp1c3Qgc3RvcmluZyB0aGUgbWFwX2NudCBhdCBhbGxvY2F0aW9uIHRpbWU/ICBJdCBj
-b3VsZCBiZSBhbm90aGVyIGJ5dGUgaW4gc3RydWN0IGRtYWVuZ2luZV91bm1hcF9kYXRhIHJhdGhl
-ciB0aGFuIGFuIDggYnl0ZSBwb2ludGVyLg0KDQoNCg==
+From: Xuelin Shi <xuelin.shi@freescale.com>
+
+The count which is used to get_unmap_data maybe not the same as the
+count computed in dmaengine_unmap which causes to free data in a
+wrong pool.
+
+This patch fixes this issue by keeping the map count with unmap_data
+structure and use this count to get the pool.
+
+Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
+---
+change history:
+	v1: keep mempool pointer with unmap struct
+	v2: keep u8 map_cnt instead of mempool pointer to save mem.
+
+ drivers/dma/dmaengine.c   | 2 ++
+ include/linux/dmaengine.h | 1 +
+ 2 files changed, 3 insertions(+)
+
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index ed610b4..a4068e2 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -1014,6 +1014,7 @@ static void dmaengine_unmap(struct kref *kref)
+ 		dma_unmap_page(dev, unmap->addr[i], unmap->len,
+ 			       DMA_BIDIRECTIONAL);
+ 	}
++	cnt = unmap->map_cnt;
+ 	mempool_free(unmap, __get_unmap_pool(cnt)->pool);
+ }
+ 
+@@ -1079,6 +1080,7 @@ dmaengine_get_unmap_data(struct device *dev, int nr, gfp_t flags)
+ 	memset(unmap, 0, sizeof(*unmap));
+ 	kref_init(&unmap->kref);
+ 	unmap->dev = dev;
++	unmap->map_cnt = nr;
+ 
+ 	return unmap;
+ }
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index c5c92d5..0a5f552 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -433,6 +433,7 @@ typedef bool (*dma_filter_fn)(struct dma_chan *chan, void *filter_param);
+ typedef void (*dma_async_tx_callback)(void *dma_async_param);
+ 
+ struct dmaengine_unmap_data {
++	u8 map_cnt;
+ 	u8 to_cnt;
+ 	u8 from_cnt;
+ 	u8 bidi_cnt;
+-- 
+1.8.3.2
