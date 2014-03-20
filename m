@@ -1,32 +1,40 @@
-Return-Path: <davidlohr@hp.com>
-Received: from g2t1383g.austin.hp.com (g2t1383g.austin.hp.com [15.217.136.92])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 385502C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:06:53 +1100 (EST)
-Received: from g4t3425.houston.hp.com (g4t3425.houston.hp.com [15.201.208.53])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by g2t1383g.austin.hp.com (Postfix) with ESMTPS id 84DD926AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:06:41 +0000 (UTC)
-Message-ID: <1395328003.2612.15.camel@buesod1.americas.hpqcorp.net>
-Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
-From: Davidlohr Bueso <davidlohr@hp.com>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Thu, 20 Mar 2014 08:06:43 -0700
-In-Reply-To: <20140320100848.GC10406@linux.vnet.ibm.com>
-References: <20140319152619.GB10406@linux.vnet.ibm.com>
- <20140319154705.GB8557@laptop.programming.kicks-ass.net>
- <20140319170829.GD8557@laptop.programming.kicks-ass.net>
- <20140320053350.GB30295@linux.vnet.ibm.com>
- <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
- <20140320100848.GC10406@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>, paulus@samba.org, tglx@linutronix.de,
- Paul McKenney <paulmck@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
- mingo@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 23CF22C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:10:44 +1100 (EST)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Thu, 20 Mar 2014 15:10:40 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 994561B0805F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:29 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2KFARqJ1507704
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 15:10:27 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2KFAcAw016347
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:10:38 -0600
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH 05/18] powerpc/boot: add PROM_ERROR define in oflib
+Date: Thu, 20 Mar 2014 16:10:00 +0100
+Message-Id: <1395328213-19206-6-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
+References: <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
+References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,199 +44,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-20 at 15:38 +0530, Srikar Dronamraju wrote:
-> > This problem suggests that we missed a wakeup for a task that was adding
-> > itself to the queue in a wait path. And the only place that can happen
-> > is with the hb spinlock check for any pending waiters. Just in case we
-> > missed some assumption about checking the hash bucket spinlock as a way
-> > of detecting any waiters (powerpc?), could you revert this commit and
-> > try the original atomic operations variant:
-> > 
-> > https://lkml.org/lkml/2013/12/19/630
-> 
-> I think the above url and the commit id that I reverted i.e
-> git://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=b0c29f79ecea0b6fbcefc999
-> are the same.
-> 
-> Or am I missing something? 
+This is mostly useful to make to the boot wrapper code closer with
+the kernel code in prom_init.
 
-No, please take a closer look, it is a different approaches to the same
-end.
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+ arch/powerpc/boot/oflib.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 34ecd9d..35ff697 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -203,6 +203,7 @@ static const struct futex_q futex_q_init = {
-  * waiting on a futex.
-  */
- struct futex_hash_bucket {
-+	atomic_t waiters;
- 	spinlock_t lock;
- 	struct plist_head chain;
- } ____cacheline_aligned_in_smp;
-@@ -211,6 +212,53 @@ static unsigned long __read_mostly futex_hashsize;
+diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
+index 0f72b1a42133..96fe4d225abe 100644
+--- a/arch/powerpc/boot/oflib.c
++++ b/arch/powerpc/boot/oflib.c
+@@ -27,6 +27,8 @@ struct prom_args {
+ 	__be32 args[10];	/* Input/output arguments. */
+ };
  
- static struct futex_hash_bucket *futex_queues;
++#define PROM_ERROR (-1u)
++
+ static int (*prom) (void *);
  
-+static inline void futex_get_mm(union futex_key *key)
-+{
-+	atomic_inc(&key->private.mm->mm_count);
-+#ifdef CONFIG_SMP
-+	/*
-+	 * Ensure futex_get_mm() implies a full barrier such that
-+	 * get_futex_key() implies a full barrier. This is relied upon
-+	 * as full barrier (B), see the ordering comment above.
-+	 */
-+	smp_mb__after_atomic_inc();
-+#endif
-+}
-+
-+/*
-+ * Reflects a new waiter being added to the waitqueue.
-+ */
-+static inline void hb_waiters_inc(struct futex_hash_bucket *hb)
-+{
-+#ifdef CONFIG_SMP
-+	atomic_inc(&hb->waiters);
-+	/*
-+	 * Full barrier (A), see the ordering comment above.
-+	 */
-+	smp_mb__after_atomic_inc();
-+#endif
-+}
-+
-+/*
-+ * Reflects a waiter being removed from the waitqueue by wakeup
-+ * paths.
-+ */
-+static inline void hb_waiters_dec(struct futex_hash_bucket *hb)
-+{
-+#ifdef CONFIG_SMP
-+	atomic_dec(&hb->waiters);
-+#endif
-+}
-+
-+static inline int hb_waiters_pending(struct futex_hash_bucket *hb)
-+{
-+#ifdef CONFIG_SMP
-+	return atomic_read(&hb->waiters);
-+#else
-+	return 1;
-+#endif
-+}
-+
- /*
-  * We hash on the keys returned from get_futex_key (see below).
-  */
-@@ -245,10 +293,10 @@ static void get_futex_key_refs(union futex_key *key)
+ void of_init(void *promptr)
+@@ -55,7 +57,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
+ 		args.args[nargs+i] = 0;
  
- 	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
- 	case FUT_OFF_INODE:
--		ihold(key->shared.inode);
-+		ihold(key->shared.inode); /* implies MB */
- 		break;
- 	case FUT_OFF_MMSHARED:
--		atomic_inc(&key->private.mm->mm_count);
-+		futex_get_mm(key); /* implies MB */
- 		break;
- 	}
+ 	if (prom(&args) < 0)
+-		return -1;
++		return PROM_ERROR;
+ 
+ 	return (nret > 0) ? be32_to_cpu(args.args[nargs]) : 0;
  }
-@@ -322,7 +370,7 @@ get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
- 	if (!fshared) {
- 		key->private.mm = mm;
- 		key->private.address = address;
--		get_futex_key_refs(key);
-+		get_futex_key_refs(key); /* implies MB (B) */
- 		return 0;
- 	}
+@@ -80,9 +82,9 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
+ 		args.args[nargs+i] = 0;
  
-@@ -429,7 +477,7 @@ again:
- 		key->shared.pgoff = basepage_index(page);
- 	}
+ 	if (prom(&args) < 0)
+-		return -1;
++		return PROM_ERROR;
  
--	get_futex_key_refs(key);
-+	get_futex_key_refs(key); /* implies MB (B) */
+-	if (rets != (void *) 0)
++	if (rets != NULL)
+ 		for (i = 1; i < nret; ++i)
+ 			rets[i-1] = be32_to_cpu(args.args[nargs+i]);
  
- out:
- 	unlock_page(page_head);
-@@ -893,6 +941,7 @@ static void __unqueue_futex(struct futex_q *q)
- 
- 	hb = container_of(q->lock_ptr, struct futex_hash_bucket, lock);
- 	plist_del(&q->list, &hb->chain);
-+	hb_waiters_dec(hb);
- }
- 
- /*
-@@ -1052,6 +1101,11 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
- 		goto out;
- 
- 	hb = hash_futex(&key);
-+
-+	/* Make sure we really have tasks to wakeup */
-+	if (!hb_waiters_pending(hb))
-+		goto out_put_key;
-+
- 	spin_lock(&hb->lock);
- 
- 	plist_for_each_entry_safe(this, next, &hb->chain, list) {
-@@ -1072,6 +1126,7 @@ futex_wake(u32 __user *uaddr, unsigned int flags, int nr_wake, u32 bitset)
- 	}
- 
- 	spin_unlock(&hb->lock);
-+out_put_key:
- 	put_futex_key(&key);
- out:
- 	return ret;
-@@ -1190,7 +1245,9 @@ void requeue_futex(struct futex_q *q, struct futex_hash_bucket *hb1,
- 	 */
- 	if (likely(&hb1->chain != &hb2->chain)) {
- 		plist_del(&q->list, &hb1->chain);
-+		hb_waiters_dec(hb1);
- 		plist_add(&q->list, &hb2->chain);
-+		hb_waiters_inc(hb2);
- 		q->lock_ptr = &hb2->lock;
- 	}
- 	get_futex_key_refs(key2);
-@@ -1533,6 +1590,17 @@ static inline struct futex_hash_bucket *queue_lock(struct futex_q *q)
- 	struct futex_hash_bucket *hb;
- 
- 	hb = hash_futex(&q->key);
-+
-+	/*
-+	 * Increment the counter before taking the lock so that
-+	 * a potential waker won't miss a to-be-slept task that is
-+	 * waiting for the spinlock. This is safe as all queue_lock()
-+	 * users end up calling queue_me(). Similarly, for housekeeping,
-+	 * decrement the counter at queue_unlock() when some error has
-+	 * occurred and we don't end up adding the task to the list.
-+	 */
-+	hb_waiters_inc(hb);
-+
- 	q->lock_ptr = &hb->lock;
- 
- 	spin_lock(&hb->lock);
-@@ -1544,6 +1612,7 @@ queue_unlock(struct futex_hash_bucket *hb)
- 	__releases(&hb->lock)
- {
- 	spin_unlock(&hb->lock);
-+	hb_waiters_dec(hb);
- }
- 
- /**
-@@ -2275,6 +2344,7 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
- 		 * Unqueue the futex_q and determine which it was.
- 		 */
- 		plist_del(&q->list, &hb->chain);
-+		hb_waiters_dec(hb);
- 
- 		/* Handle spurious wakeups gracefully */
- 		ret = -EWOULDBLOCK;
-@@ -2808,6 +2878,7 @@ static int __init futex_init(void)
- 		futex_cmpxchg_enabled = 1;
- 
- 	for (i = 0; i < futex_hashsize; i++) {
-+		atomic_set(&futex_queues[i].waiters, 0);
- 		plist_head_init(&futex_queues[i].chain);
- 		spin_lock_init(&futex_queues[i].lock);
- 	}
+-- 
+1.7.10.4
