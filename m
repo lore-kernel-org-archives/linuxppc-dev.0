@@ -1,32 +1,28 @@
-Return-Path: <davidlohr@hp.com>
-Received: from g2t2353.austin.hp.com (g2t2353.austin.hp.com [15.217.128.52])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 335C82C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 07:20:17 +1100 (EST)
-Message-ID: <1395346808.14694.62.camel@buesod1.americas.hpqcorp.net>
+ by ozlabs.org (Postfix) with ESMTPS id ED25C2C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 07:24:13 +1100 (EST)
+Message-ID: <1395346982.3460.23.camel@pasglop>
 Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
-From: Davidlohr Bueso <davidlohr@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 20 Mar 2014 13:20:08 -0700
-In-Reply-To: <CA+55aFw8wSe-DUtZ8=rjFJzXYmOSsZ0JzS-_jsZKrDai8LZMXw@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: torvalds@linux-foundation.org
+Date: Fri, 21 Mar 2014 07:23:02 +1100
+In-Reply-To: <1395333093.14694.3.camel@buesod1.americas.hpqcorp.net>
 References: <20140319152619.GB10406@linux.vnet.ibm.com>
  <20140319154705.GB8557@laptop.programming.kicks-ass.net>
  <20140319170829.GD8557@laptop.programming.kicks-ass.net>
  <20140320053350.GB30295@linux.vnet.ibm.com>
  <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
- <CA+55aFzP60Ucn0snFchHNw2tOnS6HYp-6n+f+9nxrbTPw8fTfQ@mail.gmail.com>
- <1395335909.14694.15.camel@buesod1.americas.hpqcorp.net>
- <CA+55aFwH2sJKCH6hUf8H-7nMPo8YwFCR6oP8McZ5VpMcGDrYSw@mail.gmail.com>
- <1395342510.14694.43.camel@buesod1.americas.hpqcorp.net>
- <CA+55aFw8wSe-DUtZ8=rjFJzXYmOSsZ0JzS-_jsZKrDai8LZMXw@mail.gmail.com>
+ <1395333093.14694.3.camel@buesod1.americas.hpqcorp.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
- Paul McKenney <paulmck@linux.vnet.ibm.com>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+ paulus@samba.org, Davidlohr Bueso <davidlohr@hp.com>, tglx@linutronix.de,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-20 at 12:25 -0700, Linus Torvalds wrote:
-> On Thu, Mar 20, 2014 at 12:08 PM, Davidlohr Bueso <davidlohr@hp.com> wrote:
-> >
-> > Oh, it does. This atomics technique was tested at a customer's site and
-> > ready for upstream.
-> 
-> I'm not worried about the *original* patch. I'm worried about the
-> incremental one.
-> 
-> Your original patch never applied to my tree - I think it was based on
-> -mm or something. So I couldn't verify my "let's go back to the
-> explicit 'waiters'" incremental patch against reverting and
-> re-applying the original patch.
+On Thu, 2014-03-20 at 09:31 -0700, Davidlohr Bueso wrote:
+> hmmm looking at ppc spinlock code, it seems that it doesn't have ticket
+> spinlocks -- in fact Torsten Duwe has been trying to get them upstream
+> very recently. Since we rely on the counter for detecting waiters, this
+> might explain the issue. Could someone confirm this spinlock
+> implementation difference? 
 
-Ok, so a big reason why this patch doesn't apply cleanly after reverting
-is because *most* of the changes were done at the top of the file with
-regards to documenting the ordering guarantees, the actual code changes
-are quite minimal.
+Indeed. I haven't merged ticket locks because they break lockref :-(
 
-I reverted commits 99b60ce6 (documentation) and b0c29f79 (the offending
-commit), and then I cleanly applied the equivalent ones from v3 of the
-series (which was already *tested* and ready for upstream until you
-suggested looking into the alternative spinlock approach):
+We have a problem here because we need to store the lock holder so we
+can yield to the lock holder partition on contention and we are running
+out of space in the spinlock.
 
-https://lkml.org/lkml/2013/12/19/624
-https://lkml.org/lkml/2013/12/19/630
+The lock holder doesn't have to be atomic, so in theory we could have
+the tickets and the lockref in the same 64-bit and the holder separately
+but the way the layers are stacked at the moment that's not workable,
+at least not without duplicating the whole lockref implementation and
+breaking the spinlock in two, a "base" lock without older and the separate
+variant with holder field. A mess...
 
-Assuming the atomics solves the issue, would you be willing to take this
-path? Any pending documentation fixes can be added afterwards. The
-important thing is that the actual code is well tested.
+I want to try sorting that out at some stage but haven't had a chance yet.
 
-Thanks,
-Davidlohr
+Cheers,
+Ben.
