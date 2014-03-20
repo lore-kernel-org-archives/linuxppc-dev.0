@@ -1,28 +1,28 @@
-Return-Path: <davidlohr@hp.com>
-Received: from g2t1383g.austin.hp.com (g2t1383g.austin.hp.com [15.217.136.92])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-ve0-x235.google.com (mail-ve0-x235.google.com
+ [IPv6:2607:f8b0:400c:c01::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9DCD42C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 04:18:44 +1100 (EST)
-Received: from g5t1625.atlanta.hp.com (g5t1625.atlanta.hp.com [15.192.137.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by g2t1383g.austin.hp.com (Postfix) with ESMTPS id B9687F77
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 17:18:32 +0000 (UTC)
-Message-ID: <1395335909.14694.15.camel@buesod1.americas.hpqcorp.net>
-Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
-From: Davidlohr Bueso <davidlohr@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 20 Mar 2014 10:18:29 -0700
-In-Reply-To: <CA+55aFzP60Ucn0snFchHNw2tOnS6HYp-6n+f+9nxrbTPw8fTfQ@mail.gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id F2B2A2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 04:42:06 +1100 (EST)
+Received: by mail-ve0-f181.google.com with SMTP id oy12so1353914veb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 10:42:02 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <1395335909.14694.15.camel@buesod1.americas.hpqcorp.net>
 References: <20140319152619.GB10406@linux.vnet.ibm.com>
  <20140319154705.GB8557@laptop.programming.kicks-ass.net>
  <20140319170829.GD8557@laptop.programming.kicks-ass.net>
  <20140320053350.GB30295@linux.vnet.ibm.com>
  <1395295019.2612.11.camel@buesod1.americas.hpqcorp.net>
  <CA+55aFzP60Ucn0snFchHNw2tOnS6HYp-6n+f+9nxrbTPw8fTfQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1395335909.14694.15.camel@buesod1.americas.hpqcorp.net>
+Date: Thu, 20 Mar 2014 10:42:02 -0700
+Message-ID: <CA+55aFw-gGQ5hTdVPovpRgcEHGyhf3YDzoSLpavzP4SefkkBDg@mail.gmail.com>
+Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Davidlohr Bueso <davidlohr@hp.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
  Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
  Paul Mackerras <paulus@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
@@ -37,63 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-20 at 09:41 -0700, Linus Torvalds wrote:
-> On Wed, Mar 19, 2014 at 10:56 PM, Davidlohr Bueso <davidlohr@hp.com> wrote:
-> >
-> > This problem suggests that we missed a wakeup for a task that was adding
-> > itself to the queue in a wait path. And the only place that can happen
-> > is with the hb spinlock check for any pending waiters.
-> 
-> Ok, so thinking about hb_waiters_pending():
-> 
->  - spin_is_locked() test
->  - read barrier
->  - plist_head_empty() test
-> 
-> seems to be broken after all.
-> 
-> The race is against futex_wait() that does
-> 
->  - futex_wait_setup():
->    - queue_lock()
->    - get_futex_value_locked()
->  - futex_wait_queue_me()
->    - queue_me()
->      - plist_add()
-> 
-> right?
+On Thu, Mar 20, 2014 at 10:18 AM, Davidlohr Bueso <davidlohr@hp.com> wrote:
+>> It strikes me that the "spin_is_locked()" test has no barriers wrt the
+>> writing of the new futex value on the wake path. And the read barrier
+>> obviously does nothing wrt the write either. Or am I missing
+>> something? So the write that actually released the futex might be
+>> almost arbitrarily delayed on the waking side. So the waiting side may
+>> not see the new value, even though the waker assumes it does due to
+>> the ordering of it doing the write first.
+>
+> Aha, that would certainly violate the ordering guarantees. I feared
+> _something_ like that when we originally discussed your suggestion as
+> opposed to the atomics one, but didn't have any case for it either.
 
-Yep.
+Actually, looking closer, we have the memory barrier in
+get_futex_key_refs() (called by "get_futex_key()") so that's not it.
+In fact, your "atomic_read(&hb->waiters)" doesn't have any more
+serialization than the spin_is_locked() test had.
 
-> 
-> It strikes me that the "spin_is_locked()" test has no barriers wrt the
-> writing of the new futex value on the wake path. And the read barrier
-> obviously does nothing wrt the write either. Or am I missing
-> something? So the write that actually released the futex might be
-> almost arbitrarily delayed on the waking side. So the waiting side may
-> not see the new value, even though the waker assumes it does due to
-> the ordering of it doing the write first.
+But the spin_is_locked() and queue-empty tests are two separate memory
+reads, and maybe there is some ordering wrt those two that we missed,
+so the "waiters" patch is worth trying anyway.
 
-Aha, that would certainly violate the ordering guarantees. I feared
-_something_ like that when we originally discussed your suggestion as
-opposed to the atomics one, but didn't have any case for it either.
+I do still dislike how the "waiters" thing adds an atomic update, but whatever..
 
-> So maybe we need a memory barrier in hb_waiters_pending() just to make
-> sure that the new value is written.
-> 
-> But at that point, I suspect that Davidlohrs original patch that just
-> had explicit waiting counts is just as well. The whole point with the
-> head empty test was to emulate that "do we have waiters" without
-> having to actually add the atomics, but a memory barrier is really no
-> worse.
-> 
-> The attached is a TOTALLY UNTESTED interdiff that adds back Davidlohrs
-> atomic count. It may be terminally broken, I literally didn't test it
-> at all.
-
-Comparing with the patch I sent earlier this morning, looks equivalent,
-and fwiw, passes my initial qemu bootup, which is the first way of
-detecting anything stupid going on.
-
-So, Srikar, please try this patch out, as opposed to mine, you don't
-have to first revert the commit in question.
+          Linus
