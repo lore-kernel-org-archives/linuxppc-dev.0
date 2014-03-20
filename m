@@ -1,19 +1,24 @@
 Return-Path: <xuelin.shi@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0238.outbound.protection.outlook.com [207.46.163.238])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 237782C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 20:00:06 +1100 (EST)
-From: <xuelin.shi@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>
-Subject: [PATCH v2] fix wrong usage of dmaengine_unmap_put in async_xxx
-Date: Thu, 20 Mar 2014 16:16:25 +0800
-Message-ID: <1395303385-29461-1-git-send-email-xuelin.shi@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id E32342C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 20:53:10 +1100 (EST)
+From: Xuelin Shi <xuelin.shi@freescale.com>
+To: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+Subject: RE: [PATCH v2] fix wrong usage of dmaengine_unmap_put in async_xxx
+Date: Thu, 20 Mar 2014 09:53:01 +0000
+Message-ID: <bcaf8719e4bd455dbd6d00a134082c85@BY2PR03MB158.namprd03.prod.outlook.com>
+References: <1395303385-29461-1-git-send-email-xuelin.shi@freescale.com>
+ <1395308689.28803.323.camel@smile.fi.intel.com>
+In-Reply-To: <1395308689.28803.323.camel@smile.fi.intel.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: dmaengine@vger.kernel.org, Xuelin Shi <xuelin.shi@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "Koul, Vinod" <vinod.koul@intel.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "Williams,
+ Dan J" <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,741 +28,441 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xuelin Shi <xuelin.shi@freescale.com>
-
-dmaengine_unmap_put does below two things:
-a) unmap pages for srcs and dests
-b) free unmap struct
-
-The unmap struct data is generated but only initialized while
-other some dma contions are met, like dma alignment etc.
-If the unmap data is not initialized, call dmaengine_unmap_put
-will unmap some random data in unmap->addr[...]
-
-Also call dmaengine_get_unmap_data immediatally after generating tx
-is not correct. Maybe the tx has not been finished by DMA hardware
-yet but the srcs and dests are dma unmapped.
-
-This patch fixed above two issues by:
-a) only generates unmap struct data when other dma conditions are met.
-b) eliminates dmaengine_unmap_put when tx is generated because tx knowes
-the best time to unmap it (in interrupt processing).
-
-Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
----
-change log:
-	v1: include change in async_memcpy, async_xor, async_pq
- 	v2: add change in async_raid6_recov.c and fix some style issue
-
- crypto/async_tx/async_memcpy.c      |  80 ++++++++-------
- crypto/async_tx/async_pq.c          | 189 +++++++++++++++++++-----------------
- crypto/async_tx/async_raid6_recov.c | 108 +++++++++++----------
- crypto/async_tx/async_xor.c         | 164 ++++++++++++++++---------------
- 4 files changed, 286 insertions(+), 255 deletions(-)
-
-diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
-index f8c0b8d..6546e87 100644
---- a/crypto/async_tx/async_memcpy.c
-+++ b/crypto/async_tx/async_memcpy.c
-@@ -51,11 +51,10 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 	struct dma_device *device = chan ? chan->device : NULL;
- 	struct dma_async_tx_descriptor *tx = NULL;
- 	struct dmaengine_unmap_data *unmap = NULL;
-+	void *dest_buf, *src_buf;
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, 2, GFP_NOIO);
--
--	if (unmap && is_dma_copy_aligned(device, src_offset, dest_offset, len)) {
-+	if (device &&
-+	    is_dma_copy_aligned(device, src_offset, dest_offset, len)) {
- 		unsigned long dma_prep_flags = 0;
- 
- 		if (submit->cb_fn)
-@@ -63,45 +62,56 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 		if (submit->flags & ASYNC_TX_FENCE)
- 			dma_prep_flags |= DMA_PREP_FENCE;
- 
--		unmap->to_cnt = 1;
--		unmap->addr[0] = dma_map_page(device->dev, src, src_offset, len,
--					      DMA_TO_DEVICE);
--		unmap->from_cnt = 1;
--		unmap->addr[1] = dma_map_page(device->dev, dest, dest_offset, len,
--					      DMA_FROM_DEVICE);
--		unmap->len = len;
--
--		tx = device->device_prep_dma_memcpy(chan, unmap->addr[1],
--						    unmap->addr[0], len,
--						    dma_prep_flags);
-+		unmap = dmaengine_get_unmap_data(device->dev, 2, GFP_NOIO);
-+		if (unmap) {
-+			unmap->to_cnt = 1;
-+			unmap->addr[0] = dma_map_page(device->dev, src,
-+						      src_offset, len,
-+						      DMA_TO_DEVICE);
-+			unmap->from_cnt = 1;
-+			unmap->addr[1] = dma_map_page(device->dev, dest,
-+						      dest_offset, len,
-+						      DMA_FROM_DEVICE);
-+			unmap->len = len;
-+
-+			tx = device->device_prep_dma_memcpy(chan,
-+							    unmap->addr[1],
-+							    unmap->addr[0],
-+							    len,
-+							    dma_prep_flags);
-+			if (tx) {
-+				pr_debug("%s: (async) len: %zu\n", __func__,
-+					 len);
-+
-+				dma_set_unmap(tx, unmap);
-+				async_tx_submit(chan, tx, submit);
-+				return tx;
-+			}
-+
-+			/* could not get a descriptor, unmap and fall through to
-+			 * the synchronous path
-+			 */
-+			dmaengine_unmap_put(unmap);
-+		}
- 	}
- 
--	if (tx) {
--		pr_debug("%s: (async) len: %zu\n", __func__, len);
-+	/* run the operation synchronously */
-+	pr_debug("%s: (sync) len: %zu\n", __func__, len);
- 
--		dma_set_unmap(tx, unmap);
--		async_tx_submit(chan, tx, submit);
--	} else {
--		void *dest_buf, *src_buf;
--		pr_debug("%s: (sync) len: %zu\n", __func__, len);
-+	/* wait for any prerequisite operations */
-+	async_tx_quiesce(&submit->depend_tx);
- 
--		/* wait for any prerequisite operations */
--		async_tx_quiesce(&submit->depend_tx);
-+	dest_buf = kmap_atomic(dest) + dest_offset;
-+	src_buf = kmap_atomic(src) + src_offset;
- 
--		dest_buf = kmap_atomic(dest) + dest_offset;
--		src_buf = kmap_atomic(src) + src_offset;
-+	memcpy(dest_buf, src_buf, len);
- 
--		memcpy(dest_buf, src_buf, len);
--
--		kunmap_atomic(src_buf);
--		kunmap_atomic(dest_buf);
--
--		async_tx_sync_epilog(submit);
--	}
-+	kunmap_atomic(src_buf);
-+	kunmap_atomic(dest_buf);
- 
--	dmaengine_unmap_put(unmap);
-+	async_tx_sync_epilog(submit);
- 
--	return tx;
-+	return NULL;
- }
- EXPORT_SYMBOL_GPL(async_memcpy);
- 
-diff --git a/crypto/async_tx/async_pq.c b/crypto/async_tx/async_pq.c
-index d05327c..f446cda 100644
---- a/crypto/async_tx/async_pq.c
-+++ b/crypto/async_tx/async_pq.c
-@@ -175,10 +175,7 @@ async_gen_syndrome(struct page **blocks, unsigned int offset, int disks,
- 
- 	BUG_ON(disks > 255 || !(P(blocks, disks) || Q(blocks, disks)));
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
--
--	if (unmap &&
-+	if (device &&
- 	    (src_cnt <= dma_maxpq(device, 0) ||
- 	     dma_maxpq(device, DMA_PREP_CONTINUE) > 0) &&
- 	    is_dma_pq_aligned(device, offset, 0, len)) {
-@@ -194,46 +191,54 @@ async_gen_syndrome(struct page **blocks, unsigned int offset, int disks,
- 		/* convert source addresses being careful to collapse 'empty'
- 		 * sources and update the coefficients accordingly
- 		 */
--		unmap->len = len;
--		for (i = 0, j = 0; i < src_cnt; i++) {
--			if (blocks[i] == NULL)
--				continue;
--			unmap->addr[j] = dma_map_page(device->dev, blocks[i], offset,
--						      len, DMA_TO_DEVICE);
--			coefs[j] = raid6_gfexp[i];
--			unmap->to_cnt++;
--			j++;
--		}
-+		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
-+		if (unmap) {
-+			unmap->len = len;
-+			for (i = 0, j = 0; i < src_cnt; i++) {
-+				if (blocks[i] == NULL)
-+					continue;
-+				unmap->addr[j] = dma_map_page(device->dev,
-+							      blocks[i],
-+							      offset,
-+							      len,
-+							      DMA_TO_DEVICE);
-+				coefs[j] = raid6_gfexp[i];
-+				unmap->to_cnt++;
-+				j++;
-+			}
- 
--		/*
--		 * DMAs use destinations as sources,
--		 * so use BIDIRECTIONAL mapping
--		 */
--		unmap->bidi_cnt++;
--		if (P(blocks, disks))
--			unmap->addr[j++] = dma_map_page(device->dev, P(blocks, disks),
--							offset, len, DMA_BIDIRECTIONAL);
--		else {
--			unmap->addr[j++] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_P;
--		}
-+			/*
-+			 * DMAs use destinations as sources,
-+			 * so use BIDIRECTIONAL mapping
-+			 */
-+			unmap->bidi_cnt++;
-+			if (P(blocks, disks))
-+				unmap->addr[j++] = dma_map_page(device->dev,
-+							P(blocks, disks),
-+							offset, len,
-+							DMA_BIDIRECTIONAL);
-+			else {
-+				unmap->addr[j++] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_P;
-+			}
- 
--		unmap->bidi_cnt++;
--		if (Q(blocks, disks))
--			unmap->addr[j++] = dma_map_page(device->dev, Q(blocks, disks),
--						       offset, len, DMA_BIDIRECTIONAL);
--		else {
--			unmap->addr[j++] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_Q;
--		}
-+			unmap->bidi_cnt++;
-+			if (Q(blocks, disks))
-+				unmap->addr[j++] = dma_map_page(device->dev,
-+							Q(blocks, disks),
-+							offset, len,
-+							DMA_BIDIRECTIONAL);
-+			else {
-+				unmap->addr[j++] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_Q;
-+			}
- 
--		tx = do_async_gen_syndrome(chan, coefs, j, unmap, dma_flags, submit);
--		dmaengine_unmap_put(unmap);
--		return tx;
-+			tx = do_async_gen_syndrome(chan, coefs, j, unmap,
-+						   dma_flags, submit);
-+			return tx;
-+		}
- 	}
- 
--	dmaengine_unmap_put(unmap);
--
- 	/* run the pq synchronously */
- 	pr_debug("%s: (sync) disks: %d len: %zu\n", __func__, disks, len);
- 
-@@ -293,10 +298,7 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 
- 	BUG_ON(disks < 4);
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
--
--	if (unmap && disks <= dma_maxpq(device, 0) &&
-+	if (device && disks <= dma_maxpq(device, 0) &&
- 	    is_dma_pq_aligned(device, offset, 0, len)) {
- 		struct device *dev = device->dev;
- 		dma_addr_t pq[2];
-@@ -305,58 +307,63 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 		pr_debug("%s: (async) disks: %d len: %zu\n",
- 			 __func__, disks, len);
- 
--		unmap->len = len;
--		for (i = 0; i < disks-2; i++)
--			if (likely(blocks[i])) {
--				unmap->addr[j] = dma_map_page(dev, blocks[i],
--							      offset, len,
-+		unmap = dmaengine_get_unmap_data(device->dev, disks, GFP_NOIO);
-+		if (unmap) {
-+			unmap->len = len;
-+			for (i = 0; i < disks-2; i++)
-+				if (likely(blocks[i])) {
-+					unmap->addr[j] = dma_map_page(dev,
-+							      blocks[i],
-+							      offset,
-+							      len,
- 							      DMA_TO_DEVICE);
--				coefs[j] = raid6_gfexp[i];
-+					coefs[j] = raid6_gfexp[i];
-+					unmap->to_cnt++;
-+					src_cnt++;
-+					j++;
-+				}
-+
-+			if (!P(blocks, disks)) {
-+				pq[0] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_P;
-+			} else {
-+				pq[0] = dma_map_page(dev, P(blocks, disks),
-+						     offset, len,
-+						     DMA_TO_DEVICE);
-+				unmap->addr[j++] = pq[0];
-+				unmap->to_cnt++;
-+			}
-+			if (!Q(blocks, disks)) {
-+				pq[1] = 0;
-+				dma_flags |= DMA_PREP_PQ_DISABLE_Q;
-+			} else {
-+				pq[1] = dma_map_page(dev, Q(blocks, disks),
-+						     offset, len,
-+						     DMA_TO_DEVICE);
-+				unmap->addr[j++] = pq[1];
- 				unmap->to_cnt++;
--				src_cnt++;
--				j++;
- 			}
- 
--		if (!P(blocks, disks)) {
--			pq[0] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_P;
--		} else {
--			pq[0] = dma_map_page(dev, P(blocks, disks),
--					     offset, len,
--					     DMA_TO_DEVICE);
--			unmap->addr[j++] = pq[0];
--			unmap->to_cnt++;
--		}
--		if (!Q(blocks, disks)) {
--			pq[1] = 0;
--			dma_flags |= DMA_PREP_PQ_DISABLE_Q;
--		} else {
--			pq[1] = dma_map_page(dev, Q(blocks, disks),
--					     offset, len,
--					     DMA_TO_DEVICE);
--			unmap->addr[j++] = pq[1];
--			unmap->to_cnt++;
--		}
--
--		if (submit->flags & ASYNC_TX_FENCE)
--			dma_flags |= DMA_PREP_FENCE;
--		for (;;) {
--			tx = device->device_prep_dma_pq_val(chan, pq,
--							    unmap->addr,
--							    src_cnt,
--							    coefs,
--							    len, pqres,
--							    dma_flags);
--			if (likely(tx))
--				break;
--			async_tx_quiesce(&submit->depend_tx);
--			dma_async_issue_pending(chan);
--		}
-+			if (submit->flags & ASYNC_TX_FENCE)
-+				dma_flags |= DMA_PREP_FENCE;
-+			for (;;) {
-+				tx = device->device_prep_dma_pq_val(chan, pq,
-+								    unmap->addr,
-+								    src_cnt,
-+								    coefs,
-+								    len, pqres,
-+								    dma_flags);
-+				if (likely(tx))
-+					break;
-+				async_tx_quiesce(&submit->depend_tx);
-+				dma_async_issue_pending(chan);
-+			}
- 
--		dma_set_unmap(tx, unmap);
--		async_tx_submit(chan, tx, submit);
-+			dma_set_unmap(tx, unmap);
-+			async_tx_submit(chan, tx, submit);
- 
--		return tx;
-+			return tx;
-+		}
- 	} else {
- 		struct page *p_src = P(blocks, disks);
- 		struct page *q_src = Q(blocks, disks);
-@@ -411,9 +418,9 @@ async_syndrome_val(struct page **blocks, unsigned int offset, int disks,
- 		submit->cb_param = cb_param_orig;
- 		submit->flags = flags_orig;
- 		async_tx_sync_epilog(submit);
--
--		return NULL;
- 	}
-+
-+	return NULL;
- }
- EXPORT_SYMBOL_GPL(async_syndrome_val);
- 
-diff --git a/crypto/async_tx/async_raid6_recov.c b/crypto/async_tx/async_raid6_recov.c
-index 934a849..c55d8f1 100644
---- a/crypto/async_tx/async_raid6_recov.c
-+++ b/crypto/async_tx/async_raid6_recov.c
-@@ -40,10 +40,7 @@ async_sum_product(struct page *dest, struct page **srcs, unsigned char *coef,
- 	u8 ax, bx;
- 	u8 *a, *b, *c;
- 
--	if (dma)
--		unmap = dmaengine_get_unmap_data(dma->dev, 3, GFP_NOIO);
--
--	if (unmap) {
-+	if (dma) {
- 		struct device *dev = dma->dev;
- 		dma_addr_t pq[2];
- 		struct dma_async_tx_descriptor *tx;
-@@ -51,29 +48,35 @@ async_sum_product(struct page *dest, struct page **srcs, unsigned char *coef,
- 
- 		if (submit->flags & ASYNC_TX_FENCE)
- 			dma_flags |= DMA_PREP_FENCE;
--		unmap->addr[0] = dma_map_page(dev, srcs[0], 0, len, DMA_TO_DEVICE);
--		unmap->addr[1] = dma_map_page(dev, srcs[1], 0, len, DMA_TO_DEVICE);
--		unmap->to_cnt = 2;
--
--		unmap->addr[2] = dma_map_page(dev, dest, 0, len, DMA_BIDIRECTIONAL);
--		unmap->bidi_cnt = 1;
--		/* engine only looks at Q, but expects it to follow P */
--		pq[1] = unmap->addr[2];
--
--		unmap->len = len;
--		tx = dma->device_prep_dma_pq(chan, pq, unmap->addr, 2, coef,
--					     len, dma_flags);
--		if (tx) {
--			dma_set_unmap(tx, unmap);
--			async_tx_submit(chan, tx, submit);
-+
-+		unmap = dmaengine_get_unmap_data(dma->dev, 3, GFP_NOIO);
-+		if (unmap) {
-+			unmap->addr[0] = dma_map_page(dev, srcs[0], 0, len,
-+						      DMA_TO_DEVICE);
-+			unmap->addr[1] = dma_map_page(dev, srcs[1], 0, len,
-+						      DMA_TO_DEVICE);
-+			unmap->to_cnt = 2;
-+
-+			unmap->addr[2] = dma_map_page(dev, dest, 0, len,
-+						      DMA_BIDIRECTIONAL);
-+			unmap->bidi_cnt = 1;
-+			/* engine only looks at Q, but expects it to follow P */
-+			pq[1] = unmap->addr[2];
-+
-+			unmap->len = len;
-+			tx = dma->device_prep_dma_pq(chan, pq, unmap->addr, 2,
-+						     coef, len, dma_flags);
-+			if (tx) {
-+				dma_set_unmap(tx, unmap);
-+				async_tx_submit(chan, tx, submit);
-+				return tx;
-+			}
-+
-+			/* could not get a descriptor, unmap and fall through to
-+			 * the synchronous path
-+			 */
- 			dmaengine_unmap_put(unmap);
--			return tx;
- 		}
--
--		/* could not get a descriptor, unmap and fall through to
--		 * the synchronous path
--		 */
--		dmaengine_unmap_put(unmap);
- 	}
- 
- 	/* run the operation synchronously */
-@@ -104,10 +107,7 @@ async_mult(struct page *dest, struct page *src, u8 coef, size_t len,
- 	const u8 *qmul; /* Q multiplier table */
- 	u8 *d, *s;
- 
--	if (dma)
--		unmap = dmaengine_get_unmap_data(dma->dev, 3, GFP_NOIO);
--
--	if (unmap) {
-+	if (dma) {
- 		dma_addr_t dma_dest[2];
- 		struct device *dev = dma->dev;
- 		struct dma_async_tx_descriptor *tx;
-@@ -115,31 +115,37 @@ async_mult(struct page *dest, struct page *src, u8 coef, size_t len,
- 
- 		if (submit->flags & ASYNC_TX_FENCE)
- 			dma_flags |= DMA_PREP_FENCE;
--		unmap->addr[0] = dma_map_page(dev, src, 0, len, DMA_TO_DEVICE);
--		unmap->to_cnt++;
--		unmap->addr[1] = dma_map_page(dev, dest, 0, len, DMA_BIDIRECTIONAL);
--		dma_dest[1] = unmap->addr[1];
--		unmap->bidi_cnt++;
--		unmap->len = len;
--
--		/* this looks funny, but the engine looks for Q at
--		 * dma_dest[1] and ignores dma_dest[0] as a dest
--		 * due to DMA_PREP_PQ_DISABLE_P
--		 */
--		tx = dma->device_prep_dma_pq(chan, dma_dest, unmap->addr,
--					     1, &coef, len, dma_flags);
- 
--		if (tx) {
--			dma_set_unmap(tx, unmap);
-+		unmap = dmaengine_get_unmap_data(dma->dev, 3, GFP_NOIO);
-+		if (unmap) {
-+			unmap->addr[0] = dma_map_page(dev, src, 0, len,
-+						      DMA_TO_DEVICE);
-+			unmap->to_cnt++;
-+			unmap->addr[1] = dma_map_page(dev, dest, 0, len,
-+						      DMA_BIDIRECTIONAL);
-+			dma_dest[1] = unmap->addr[1];
-+			unmap->bidi_cnt++;
-+			unmap->len = len;
-+
-+			/* this looks funny, but the engine looks for Q at
-+			 * dma_dest[1] and ignores dma_dest[0] as a dest
-+			 * due to DMA_PREP_PQ_DISABLE_P
-+			 */
-+			tx = dma->device_prep_dma_pq(chan, dma_dest,
-+						     unmap->addr, 1, &coef,
-+						     len, dma_flags);
-+
-+			if (tx) {
-+				dma_set_unmap(tx, unmap);
-+				async_tx_submit(chan, tx, submit);
-+				return tx;
-+			}
-+
-+			/* could not get a descriptor, unmap and fall through to
-+			 * the synchronous path
-+			 */
- 			dmaengine_unmap_put(unmap);
--			async_tx_submit(chan, tx, submit);
--			return tx;
- 		}
--
--		/* could not get a descriptor, unmap and fall through to
--		 * the synchronous path
--		 */
--		dmaengine_unmap_put(unmap);
- 	}
- 
- 	/* no channel available, or failed to allocate a descriptor, so
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 3c562f5..019e469 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -182,55 +182,57 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 
- 	BUG_ON(src_cnt <= 1);
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, src_cnt+1, GFP_NOIO);
--
--	if (unmap && is_dma_xor_aligned(device, offset, 0, len)) {
-+	if (device && is_dma_xor_aligned(device, offset, 0, len)) {
- 		struct dma_async_tx_descriptor *tx;
- 		int i, j;
- 
- 		/* run the xor asynchronously */
- 		pr_debug("%s (async): len: %zu\n", __func__, len);
- 
--		unmap->len = len;
--		for (i = 0, j = 0; i < src_cnt; i++) {
--			if (!src_list[i])
--				continue;
--			unmap->to_cnt++;
--			unmap->addr[j++] = dma_map_page(device->dev, src_list[i],
--							offset, len, DMA_TO_DEVICE);
--		}
-+		unmap = dmaengine_get_unmap_data(device->dev, src_cnt + 1,
-+						 GFP_NOIO);
-+		if (unmap) {
-+			unmap->len = len;
-+			for (i = 0, j = 0; i < src_cnt; i++) {
-+				if (!src_list[i])
-+					continue;
-+				unmap->to_cnt++;
-+				unmap->addr[j++] = dma_map_page(device->dev,
-+								src_list[i],
-+								offset, len,
-+								DMA_TO_DEVICE);
-+			}
- 
--		/* map it bidirectional as it may be re-used as a source */
--		unmap->addr[j] = dma_map_page(device->dev, dest, offset, len,
--					      DMA_BIDIRECTIONAL);
--		unmap->bidi_cnt = 1;
--
--		tx = do_async_xor(chan, unmap, submit);
--		dmaengine_unmap_put(unmap);
--		return tx;
--	} else {
--		dmaengine_unmap_put(unmap);
--		/* run the xor synchronously */
--		pr_debug("%s (sync): len: %zu\n", __func__, len);
--		WARN_ONCE(chan, "%s: no space for dma address conversion\n",
--			  __func__);
--
--		/* in the sync case the dest is an implied source
--		 * (assumes the dest is the first source)
--		 */
--		if (submit->flags & ASYNC_TX_XOR_DROP_DST) {
--			src_cnt--;
--			src_list++;
-+			/* map it bidirectional as it may be re-used
-+			   as a source */
-+			unmap->addr[j] = dma_map_page(device->dev, dest, offset,
-+						      len, DMA_BIDIRECTIONAL);
-+			unmap->bidi_cnt = 1;
-+
-+			tx = do_async_xor(chan, unmap, submit);
-+			return tx;
- 		}
-+	}
- 
--		/* wait for any prerequisite operations */
--		async_tx_quiesce(&submit->depend_tx);
-+	/* run the xor synchronously */
-+	pr_debug("%s (sync): len: %zu\n", __func__, len);
-+	WARN_ONCE(chan, "%s: no space for dma address conversion\n",
-+		  __func__);
-+
-+	/* in the sync case the dest is an implied source
-+	 * (assumes the dest is the first source)
-+	 */
-+	if (submit->flags & ASYNC_TX_XOR_DROP_DST) {
-+		src_cnt--;
-+		src_list++;
-+	}
- 
--		do_sync_xor(dest, src_list, offset, src_cnt, len, submit);
-+	/* wait for any prerequisite operations */
-+	async_tx_quiesce(&submit->depend_tx);
- 
--		return NULL;
--	}
-+	do_sync_xor(dest, src_list, offset, src_cnt, len, submit);
-+
-+	return NULL;
- }
- EXPORT_SYMBOL_GPL(async_xor);
- 
-@@ -275,13 +277,11 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 	struct dma_device *device = chan ? chan->device : NULL;
- 	struct dma_async_tx_descriptor *tx = NULL;
- 	struct dmaengine_unmap_data *unmap = NULL;
-+	enum async_tx_flags flags_orig = submit->flags;
- 
- 	BUG_ON(src_cnt <= 1);
- 
--	if (device)
--		unmap = dmaengine_get_unmap_data(device->dev, src_cnt, GFP_NOIO);
--
--	if (unmap && src_cnt <= device->max_xor &&
-+	if (device && src_cnt <= device->max_xor &&
- 	    is_dma_xor_aligned(device, offset, 0, len)) {
- 		unsigned long dma_prep_flags = 0;
- 		int i;
-@@ -293,51 +293,59 @@ async_xor_val(struct page *dest, struct page **src_list, unsigned int offset,
- 		if (submit->flags & ASYNC_TX_FENCE)
- 			dma_prep_flags |= DMA_PREP_FENCE;
- 
--		for (i = 0; i < src_cnt; i++) {
--			unmap->addr[i] = dma_map_page(device->dev, src_list[i],
--						      offset, len, DMA_TO_DEVICE);
--			unmap->to_cnt++;
--		}
--		unmap->len = len;
--
--		tx = device->device_prep_dma_xor_val(chan, unmap->addr, src_cnt,
--						     len, result,
--						     dma_prep_flags);
--		if (unlikely(!tx)) {
--			async_tx_quiesce(&submit->depend_tx);
--
--			while (!tx) {
--				dma_async_issue_pending(chan);
--				tx = device->device_prep_dma_xor_val(chan,
--					unmap->addr, src_cnt, len, result,
--					dma_prep_flags);
-+		unmap = dmaengine_get_unmap_data(device->dev, src_cnt,
-+						 GFP_NOIO);
-+		if (unmap) {
-+			for (i = 0; i < src_cnt; i++) {
-+				unmap->addr[i] = dma_map_page(device->dev,
-+							      src_list[i],
-+							      offset, len,
-+							      DMA_TO_DEVICE);
-+				unmap->to_cnt++;
-+			}
-+			unmap->len = len;
-+
-+			tx = device->device_prep_dma_xor_val(chan, unmap->addr,
-+							     src_cnt,
-+							     len, result,
-+							     dma_prep_flags);
-+			if (unlikely(!tx)) {
-+				async_tx_quiesce(&submit->depend_tx);
-+
-+				while (!tx) {
-+					dma_async_issue_pending(chan);
-+					tx = device->device_prep_dma_xor_val(
-+							chan, unmap->addr,
-+							src_cnt, len,
-+							result, dma_prep_flags);
-+				}
- 			}
-+			dma_set_unmap(tx, unmap);
-+			async_tx_submit(chan, tx, submit);
-+
-+			return tx;
- 		}
--		dma_set_unmap(tx, unmap);
--		async_tx_submit(chan, tx, submit);
--	} else {
--		enum async_tx_flags flags_orig = submit->flags;
-+	}
- 
--		pr_debug("%s: (sync) len: %zu\n", __func__, len);
--		WARN_ONCE(device && src_cnt <= device->max_xor,
--			  "%s: no space for dma address conversion\n",
--			  __func__);
-+	/* run the xor_val synchronously */
-+	pr_debug("%s: (sync) len: %zu\n", __func__, len);
-+	WARN_ONCE(device && src_cnt <= device->max_xor,
-+		  "%s: no space for dma address conversion\n",
-+		  __func__);
- 
--		submit->flags |= ASYNC_TX_XOR_DROP_DST;
--		submit->flags &= ~ASYNC_TX_ACK;
-+	submit->flags |= ASYNC_TX_XOR_DROP_DST;
-+	submit->flags &= ~ASYNC_TX_ACK;
- 
--		tx = async_xor(dest, src_list, offset, src_cnt, len, submit);
-+	tx = async_xor(dest, src_list, offset, src_cnt, len, submit);
- 
--		async_tx_quiesce(&tx);
-+	async_tx_quiesce(&tx);
- 
--		*result = !page_is_zero(dest, offset, len) << SUM_CHECK_P;
-+	*result = !page_is_zero(dest, offset, len) << SUM_CHECK_P;
- 
--		async_tx_sync_epilog(submit);
--		submit->flags = flags_orig;
--	}
--	dmaengine_unmap_put(unmap);
-+	async_tx_sync_epilog(submit);
-+	submit->flags = flags_orig;
- 
--	return tx;
-+	return NULL;
- }
- EXPORT_SYMBOL_GPL(async_xor_val);
- 
--- 
-1.8.3.2
+WWVzLCB0aGlzIHBhdGNoIGlzIHJ1biBieSBjaGVja3BhdGNoIGFuZCBmb3VuZCAwIGVycm9ycywg
+MCB3YXJuaW5ncy4NCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206IFNoZXZjaGVu
+a28sIEFuZHJpeSBbbWFpbHRvOmFuZHJpeS5zaGV2Y2hlbmtvQGludGVsLmNvbV0gDQpTZW50OiAy
+MDE05bm0M+aciDIw5pelIDE3OjQ1DQpUbzogU2hpIFh1ZWxpbi1CMjkyMzcNCkNjOiBLb3VsLCBW
+aW5vZDsgV2lsbGlhbXMsIERhbiBKOyBkbWFlbmdpbmVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBw
+Yy1kZXZAbGlzdHMub3psYWJzLm9yZw0KU3ViamVjdDogUmU6IFtQQVRDSCB2Ml0gZml4IHdyb25n
+IHVzYWdlIG9mIGRtYWVuZ2luZV91bm1hcF9wdXQgaW4gYXN5bmNfeHh4DQoNCk9uIFRodSwgMjAx
+NC0wMy0yMCBhdCAxNjoxNiArMDgwMCwgeHVlbGluLnNoaUBmcmVlc2NhbGUuY29tIHdyb3RlOg0K
+PiBGcm9tOiBYdWVsaW4gU2hpIDx4dWVsaW4uc2hpQGZyZWVzY2FsZS5jb20+DQo+IA0KPiBkbWFl
+bmdpbmVfdW5tYXBfcHV0IGRvZXMgYmVsb3cgdHdvIHRoaW5nczoNCj4gYSkgdW5tYXAgcGFnZXMg
+Zm9yIHNyY3MgYW5kIGRlc3RzDQo+IGIpIGZyZWUgdW5tYXAgc3RydWN0DQo+IA0KPiBUaGUgdW5t
+YXAgc3RydWN0IGRhdGEgaXMgZ2VuZXJhdGVkIGJ1dCBvbmx5IGluaXRpYWxpemVkIHdoaWxlIG90
+aGVyIA0KPiBzb21lIGRtYSBjb250aW9ucyBhcmUgbWV0LCBsaWtlIGRtYSBhbGlnbm1lbnQgZXRj
+Lg0KPiBJZiB0aGUgdW5tYXAgZGF0YSBpcyBub3QgaW5pdGlhbGl6ZWQsIGNhbGwgZG1hZW5naW5l
+X3VubWFwX3B1dCB3aWxsIA0KPiB1bm1hcCBzb21lIHJhbmRvbSBkYXRhIGluIHVubWFwLT5hZGRy
+Wy4uLl0NCj4gDQo+IEFsc28gY2FsbCBkbWFlbmdpbmVfZ2V0X3VubWFwX2RhdGEgaW1tZWRpYXRh
+bGx5IGFmdGVyIGdlbmVyYXRpbmcgdHggaXMgDQo+IG5vdCBjb3JyZWN0LiBNYXliZSB0aGUgdHgg
+aGFzIG5vdCBiZWVuIGZpbmlzaGVkIGJ5IERNQSBoYXJkd2FyZSB5ZXQgDQo+IGJ1dCB0aGUgc3Jj
+cyBhbmQgZGVzdHMgYXJlIGRtYSB1bm1hcHBlZC4NCj4gDQo+IFRoaXMgcGF0Y2ggZml4ZWQgYWJv
+dmUgdHdvIGlzc3VlcyBieToNCj4gYSkgb25seSBnZW5lcmF0ZXMgdW5tYXAgc3RydWN0IGRhdGEg
+d2hlbiBvdGhlciBkbWEgY29uZGl0aW9ucyBhcmUgbWV0Lg0KPiBiKSBlbGltaW5hdGVzIGRtYWVu
+Z2luZV91bm1hcF9wdXQgd2hlbiB0eCBpcyBnZW5lcmF0ZWQgYmVjYXVzZSB0eCANCj4ga25vd2Vz
+IHRoZSBiZXN0IHRpbWUgdG8gdW5tYXAgaXQgKGluIGludGVycnVwdCBwcm9jZXNzaW5nKS4NCg0K
+SGF2ZSB5b3UgcnVuIGNoZWNrcGF0Y2gucGwgYWdhaW5zdCB0aGlzIG9uZT8NCg0KPiANCj4gU2ln
+bmVkLW9mZi1ieTogWHVlbGluIFNoaSA8eHVlbGluLnNoaUBmcmVlc2NhbGUuY29tPg0KPiAtLS0N
+Cj4gY2hhbmdlIGxvZzoNCj4gCXYxOiBpbmNsdWRlIGNoYW5nZSBpbiBhc3luY19tZW1jcHksIGFz
+eW5jX3hvciwgYXN5bmNfcHENCj4gIAl2MjogYWRkIGNoYW5nZSBpbiBhc3luY19yYWlkNl9yZWNv
+di5jIGFuZCBmaXggc29tZSBzdHlsZSBpc3N1ZQ0KPiANCj4gIGNyeXB0by9hc3luY190eC9hc3lu
+Y19tZW1jcHkuYyAgICAgIHwgIDgwICsrKysrKysrLS0tLS0tLQ0KPiAgY3J5cHRvL2FzeW5jX3R4
+L2FzeW5jX3BxLmMgICAgICAgICAgfCAxODkgKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0t
+LS0tLS0tDQo+ICBjcnlwdG8vYXN5bmNfdHgvYXN5bmNfcmFpZDZfcmVjb3YuYyB8IDEwOCArKysr
+KysrKysrKy0tLS0tLS0tLS0NCj4gIGNyeXB0by9hc3luY190eC9hc3luY194b3IuYyAgICAgICAg
+IHwgMTY0ICsrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0NCj4gIDQgZmlsZXMgY2hhbmdl
+ZCwgMjg2IGluc2VydGlvbnMoKyksIDI1NSBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1naXQg
+YS9jcnlwdG8vYXN5bmNfdHgvYXN5bmNfbWVtY3B5LmMgDQo+IGIvY3J5cHRvL2FzeW5jX3R4L2Fz
+eW5jX21lbWNweS5jIGluZGV4IGY4YzBiOGQuLjY1NDZlODcgMTAwNjQ0DQo+IC0tLSBhL2NyeXB0
+by9hc3luY190eC9hc3luY19tZW1jcHkuYw0KPiArKysgYi9jcnlwdG8vYXN5bmNfdHgvYXN5bmNf
+bWVtY3B5LmMNCj4gQEAgLTUxLDExICs1MSwxMCBAQCBhc3luY19tZW1jcHkoc3RydWN0IHBhZ2Ug
+KmRlc3QsIHN0cnVjdCBwYWdlICpzcmMsIHVuc2lnbmVkIGludCBkZXN0X29mZnNldCwNCj4gIAlz
+dHJ1Y3QgZG1hX2RldmljZSAqZGV2aWNlID0gY2hhbiA/IGNoYW4tPmRldmljZSA6IE5VTEw7DQo+
+ICAJc3RydWN0IGRtYV9hc3luY190eF9kZXNjcmlwdG9yICp0eCA9IE5VTEw7DQo+ICAJc3RydWN0
+IGRtYWVuZ2luZV91bm1hcF9kYXRhICp1bm1hcCA9IE5VTEw7DQo+ICsJdm9pZCAqZGVzdF9idWYs
+ICpzcmNfYnVmOw0KPiAgDQo+IC0JaWYgKGRldmljZSkNCj4gLQkJdW5tYXAgPSBkbWFlbmdpbmVf
+Z2V0X3VubWFwX2RhdGEoZGV2aWNlLT5kZXYsIDIsIEdGUF9OT0lPKTsNCj4gLQ0KPiAtCWlmICh1
+bm1hcCAmJiBpc19kbWFfY29weV9hbGlnbmVkKGRldmljZSwgc3JjX29mZnNldCwgZGVzdF9vZmZz
+ZXQsIGxlbikpIHsNCj4gKwlpZiAoZGV2aWNlICYmDQo+ICsJICAgIGlzX2RtYV9jb3B5X2FsaWdu
+ZWQoZGV2aWNlLCBzcmNfb2Zmc2V0LCBkZXN0X29mZnNldCwgbGVuKSkgew0KPiAgCQl1bnNpZ25l
+ZCBsb25nIGRtYV9wcmVwX2ZsYWdzID0gMDsNCj4gIA0KPiAgCQlpZiAoc3VibWl0LT5jYl9mbikN
+Cj4gQEAgLTYzLDQ1ICs2Miw1NiBAQCBhc3luY19tZW1jcHkoc3RydWN0IHBhZ2UgKmRlc3QsIHN0
+cnVjdCBwYWdlICpzcmMsIHVuc2lnbmVkIGludCBkZXN0X29mZnNldCwNCj4gIAkJaWYgKHN1Ym1p
+dC0+ZmxhZ3MgJiBBU1lOQ19UWF9GRU5DRSkNCj4gIAkJCWRtYV9wcmVwX2ZsYWdzIHw9IERNQV9Q
+UkVQX0ZFTkNFOw0KPiAgDQo+IC0JCXVubWFwLT50b19jbnQgPSAxOw0KPiAtCQl1bm1hcC0+YWRk
+clswXSA9IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRldiwgc3JjLCBzcmNfb2Zmc2V0LCBsZW4sDQo+
+IC0JCQkJCSAgICAgIERNQV9UT19ERVZJQ0UpOw0KPiAtCQl1bm1hcC0+ZnJvbV9jbnQgPSAxOw0K
+PiAtCQl1bm1hcC0+YWRkclsxXSA9IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRldiwgZGVzdCwgZGVz
+dF9vZmZzZXQsIGxlbiwNCj4gLQkJCQkJICAgICAgRE1BX0ZST01fREVWSUNFKTsNCj4gLQkJdW5t
+YXAtPmxlbiA9IGxlbjsNCj4gLQ0KPiAtCQl0eCA9IGRldmljZS0+ZGV2aWNlX3ByZXBfZG1hX21l
+bWNweShjaGFuLCB1bm1hcC0+YWRkclsxXSwNCj4gLQkJCQkJCSAgICB1bm1hcC0+YWRkclswXSwg
+bGVuLA0KPiAtCQkJCQkJICAgIGRtYV9wcmVwX2ZsYWdzKTsNCj4gKwkJdW5tYXAgPSBkbWFlbmdp
+bmVfZ2V0X3VubWFwX2RhdGEoZGV2aWNlLT5kZXYsIDIsIEdGUF9OT0lPKTsNCj4gKwkJaWYgKHVu
+bWFwKSB7DQo+ICsJCQl1bm1hcC0+dG9fY250ID0gMTsNCj4gKwkJCXVubWFwLT5hZGRyWzBdID0g
+ZG1hX21hcF9wYWdlKGRldmljZS0+ZGV2LCBzcmMsDQo+ICsJCQkJCQkgICAgICBzcmNfb2Zmc2V0
+LCBsZW4sDQo+ICsJCQkJCQkgICAgICBETUFfVE9fREVWSUNFKTsNCj4gKwkJCXVubWFwLT5mcm9t
+X2NudCA9IDE7DQo+ICsJCQl1bm1hcC0+YWRkclsxXSA9IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRl
+diwgZGVzdCwNCj4gKwkJCQkJCSAgICAgIGRlc3Rfb2Zmc2V0LCBsZW4sDQo+ICsJCQkJCQkgICAg
+ICBETUFfRlJPTV9ERVZJQ0UpOw0KPiArCQkJdW5tYXAtPmxlbiA9IGxlbjsNCj4gKw0KPiArCQkJ
+dHggPSBkZXZpY2UtPmRldmljZV9wcmVwX2RtYV9tZW1jcHkoY2hhbiwNCj4gKwkJCQkJCQkgICAg
+dW5tYXAtPmFkZHJbMV0sDQo+ICsJCQkJCQkJICAgIHVubWFwLT5hZGRyWzBdLA0KPiArCQkJCQkJ
+CSAgICBsZW4sDQo+ICsJCQkJCQkJICAgIGRtYV9wcmVwX2ZsYWdzKTsNCj4gKwkJCWlmICh0eCkg
+ew0KPiArCQkJCXByX2RlYnVnKCIlczogKGFzeW5jKSBsZW46ICV6dVxuIiwgX19mdW5jX18sDQo+
+ICsJCQkJCSBsZW4pOw0KPiArDQo+ICsJCQkJZG1hX3NldF91bm1hcCh0eCwgdW5tYXApOw0KPiAr
+CQkJCWFzeW5jX3R4X3N1Ym1pdChjaGFuLCB0eCwgc3VibWl0KTsNCj4gKwkJCQlyZXR1cm4gdHg7
+DQo+ICsJCQl9DQo+ICsNCj4gKwkJCS8qIGNvdWxkIG5vdCBnZXQgYSBkZXNjcmlwdG9yLCB1bm1h
+cCBhbmQgZmFsbCB0aHJvdWdoIHRvDQo+ICsJCQkgKiB0aGUgc3luY2hyb25vdXMgcGF0aA0KPiAr
+CQkJICovDQo+ICsJCQlkbWFlbmdpbmVfdW5tYXBfcHV0KHVubWFwKTsNCj4gKwkJfQ0KPiAgCX0N
+Cj4gIA0KPiAtCWlmICh0eCkgew0KPiAtCQlwcl9kZWJ1ZygiJXM6IChhc3luYykgbGVuOiAlenVc
+biIsIF9fZnVuY19fLCBsZW4pOw0KPiArCS8qIHJ1biB0aGUgb3BlcmF0aW9uIHN5bmNocm9ub3Vz
+bHkgKi8NCj4gKwlwcl9kZWJ1ZygiJXM6IChzeW5jKSBsZW46ICV6dVxuIiwgX19mdW5jX18sIGxl
+bik7DQo+ICANCj4gLQkJZG1hX3NldF91bm1hcCh0eCwgdW5tYXApOw0KPiAtCQlhc3luY190eF9z
+dWJtaXQoY2hhbiwgdHgsIHN1Ym1pdCk7DQo+IC0JfSBlbHNlIHsNCj4gLQkJdm9pZCAqZGVzdF9i
+dWYsICpzcmNfYnVmOw0KPiAtCQlwcl9kZWJ1ZygiJXM6IChzeW5jKSBsZW46ICV6dVxuIiwgX19m
+dW5jX18sIGxlbik7DQo+ICsJLyogd2FpdCBmb3IgYW55IHByZXJlcXVpc2l0ZSBvcGVyYXRpb25z
+ICovDQo+ICsJYXN5bmNfdHhfcXVpZXNjZSgmc3VibWl0LT5kZXBlbmRfdHgpOw0KPiAgDQo+IC0J
+CS8qIHdhaXQgZm9yIGFueSBwcmVyZXF1aXNpdGUgb3BlcmF0aW9ucyAqLw0KPiAtCQlhc3luY190
+eF9xdWllc2NlKCZzdWJtaXQtPmRlcGVuZF90eCk7DQo+ICsJZGVzdF9idWYgPSBrbWFwX2F0b21p
+YyhkZXN0KSArIGRlc3Rfb2Zmc2V0Ow0KPiArCXNyY19idWYgPSBrbWFwX2F0b21pYyhzcmMpICsg
+c3JjX29mZnNldDsNCj4gIA0KPiAtCQlkZXN0X2J1ZiA9IGttYXBfYXRvbWljKGRlc3QpICsgZGVz
+dF9vZmZzZXQ7DQo+IC0JCXNyY19idWYgPSBrbWFwX2F0b21pYyhzcmMpICsgc3JjX29mZnNldDsN
+Cj4gKwltZW1jcHkoZGVzdF9idWYsIHNyY19idWYsIGxlbik7DQo+ICANCj4gLQkJbWVtY3B5KGRl
+c3RfYnVmLCBzcmNfYnVmLCBsZW4pOw0KPiAtDQo+IC0JCWt1bm1hcF9hdG9taWMoc3JjX2J1Zik7
+DQo+IC0JCWt1bm1hcF9hdG9taWMoZGVzdF9idWYpOw0KPiAtDQo+IC0JCWFzeW5jX3R4X3N5bmNf
+ZXBpbG9nKHN1Ym1pdCk7DQo+IC0JfQ0KPiArCWt1bm1hcF9hdG9taWMoc3JjX2J1Zik7DQo+ICsJ
+a3VubWFwX2F0b21pYyhkZXN0X2J1Zik7DQo+ICANCj4gLQlkbWFlbmdpbmVfdW5tYXBfcHV0KHVu
+bWFwKTsNCj4gKwlhc3luY190eF9zeW5jX2VwaWxvZyhzdWJtaXQpOw0KPiAgDQo+IC0JcmV0dXJu
+IHR4Ow0KPiArCXJldHVybiBOVUxMOw0KPiAgfQ0KPiAgRVhQT1JUX1NZTUJPTF9HUEwoYXN5bmNf
+bWVtY3B5KTsNCj4gIA0KPiBkaWZmIC0tZ2l0IGEvY3J5cHRvL2FzeW5jX3R4L2FzeW5jX3BxLmMg
+Yi9jcnlwdG8vYXN5bmNfdHgvYXN5bmNfcHEuYyANCj4gaW5kZXggZDA1MzI3Yy4uZjQ0NmNkYSAx
+MDA2NDQNCj4gLS0tIGEvY3J5cHRvL2FzeW5jX3R4L2FzeW5jX3BxLmMNCj4gKysrIGIvY3J5cHRv
+L2FzeW5jX3R4L2FzeW5jX3BxLmMNCj4gQEAgLTE3NSwxMCArMTc1LDcgQEAgYXN5bmNfZ2VuX3N5
+bmRyb21lKHN0cnVjdCBwYWdlICoqYmxvY2tzLCB1bnNpZ25lZCANCj4gaW50IG9mZnNldCwgaW50
+IGRpc2tzLA0KPiAgDQo+ICAJQlVHX09OKGRpc2tzID4gMjU1IHx8ICEoUChibG9ja3MsIGRpc2tz
+KSB8fCBRKGJsb2NrcywgZGlza3MpKSk7DQo+ICANCj4gLQlpZiAoZGV2aWNlKQ0KPiAtCQl1bm1h
+cCA9IGRtYWVuZ2luZV9nZXRfdW5tYXBfZGF0YShkZXZpY2UtPmRldiwgZGlza3MsIEdGUF9OT0lP
+KTsNCj4gLQ0KPiAtCWlmICh1bm1hcCAmJg0KPiArCWlmIChkZXZpY2UgJiYNCj4gIAkgICAgKHNy
+Y19jbnQgPD0gZG1hX21heHBxKGRldmljZSwgMCkgfHwNCj4gIAkgICAgIGRtYV9tYXhwcShkZXZp
+Y2UsIERNQV9QUkVQX0NPTlRJTlVFKSA+IDApICYmDQo+ICAJICAgIGlzX2RtYV9wcV9hbGlnbmVk
+KGRldmljZSwgb2Zmc2V0LCAwLCBsZW4pKSB7IEBAIC0xOTQsNDYgKzE5MSw1NCANCj4gQEAgYXN5
+bmNfZ2VuX3N5bmRyb21lKHN0cnVjdCBwYWdlICoqYmxvY2tzLCB1bnNpZ25lZCBpbnQgb2Zmc2V0
+LCBpbnQgZGlza3MsDQo+ICAJCS8qIGNvbnZlcnQgc291cmNlIGFkZHJlc3NlcyBiZWluZyBjYXJl
+ZnVsIHRvIGNvbGxhcHNlICdlbXB0eScNCj4gIAkJICogc291cmNlcyBhbmQgdXBkYXRlIHRoZSBj
+b2VmZmljaWVudHMgYWNjb3JkaW5nbHkNCj4gIAkJICovDQo+IC0JCXVubWFwLT5sZW4gPSBsZW47
+DQo+IC0JCWZvciAoaSA9IDAsIGogPSAwOyBpIDwgc3JjX2NudDsgaSsrKSB7DQo+IC0JCQlpZiAo
+YmxvY2tzW2ldID09IE5VTEwpDQo+IC0JCQkJY29udGludWU7DQo+IC0JCQl1bm1hcC0+YWRkcltq
+XSA9IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRldiwgYmxvY2tzW2ldLCBvZmZzZXQsDQo+IC0JCQkJ
+CQkgICAgICBsZW4sIERNQV9UT19ERVZJQ0UpOw0KPiAtCQkJY29lZnNbal0gPSByYWlkNl9nZmV4
+cFtpXTsNCj4gLQkJCXVubWFwLT50b19jbnQrKzsNCj4gLQkJCWorKzsNCj4gLQkJfQ0KPiArCQl1
+bm1hcCA9IGRtYWVuZ2luZV9nZXRfdW5tYXBfZGF0YShkZXZpY2UtPmRldiwgZGlza3MsIEdGUF9O
+T0lPKTsNCj4gKwkJaWYgKHVubWFwKSB7DQo+ICsJCQl1bm1hcC0+bGVuID0gbGVuOw0KPiArCQkJ
+Zm9yIChpID0gMCwgaiA9IDA7IGkgPCBzcmNfY250OyBpKyspIHsNCj4gKwkJCQlpZiAoYmxvY2tz
+W2ldID09IE5VTEwpDQo+ICsJCQkJCWNvbnRpbnVlOw0KPiArCQkJCXVubWFwLT5hZGRyW2pdID0g
+ZG1hX21hcF9wYWdlKGRldmljZS0+ZGV2LA0KPiArCQkJCQkJCSAgICAgIGJsb2Nrc1tpXSwNCj4g
+KwkJCQkJCQkgICAgICBvZmZzZXQsDQo+ICsJCQkJCQkJICAgICAgbGVuLA0KPiArCQkJCQkJCSAg
+ICAgIERNQV9UT19ERVZJQ0UpOw0KPiArCQkJCWNvZWZzW2pdID0gcmFpZDZfZ2ZleHBbaV07DQo+
+ICsJCQkJdW5tYXAtPnRvX2NudCsrOw0KPiArCQkJCWorKzsNCj4gKwkJCX0NCj4gIA0KPiAtCQkv
+Kg0KPiAtCQkgKiBETUFzIHVzZSBkZXN0aW5hdGlvbnMgYXMgc291cmNlcywNCj4gLQkJICogc28g
+dXNlIEJJRElSRUNUSU9OQUwgbWFwcGluZw0KPiAtCQkgKi8NCj4gLQkJdW5tYXAtPmJpZGlfY250
+Kys7DQo+IC0JCWlmIChQKGJsb2NrcywgZGlza3MpKQ0KPiAtCQkJdW5tYXAtPmFkZHJbaisrXSA9
+IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRldiwgUChibG9ja3MsIGRpc2tzKSwNCj4gLQkJCQkJCQlv
+ZmZzZXQsIGxlbiwgRE1BX0JJRElSRUNUSU9OQUwpOw0KPiAtCQllbHNlIHsNCj4gLQkJCXVubWFw
+LT5hZGRyW2orK10gPSAwOw0KPiAtCQkJZG1hX2ZsYWdzIHw9IERNQV9QUkVQX1BRX0RJU0FCTEVf
+UDsNCj4gLQkJfQ0KPiArCQkJLyoNCj4gKwkJCSAqIERNQXMgdXNlIGRlc3RpbmF0aW9ucyBhcyBz
+b3VyY2VzLA0KPiArCQkJICogc28gdXNlIEJJRElSRUNUSU9OQUwgbWFwcGluZw0KPiArCQkJICov
+DQo+ICsJCQl1bm1hcC0+YmlkaV9jbnQrKzsNCj4gKwkJCWlmIChQKGJsb2NrcywgZGlza3MpKQ0K
+PiArCQkJCXVubWFwLT5hZGRyW2orK10gPSBkbWFfbWFwX3BhZ2UoZGV2aWNlLT5kZXYsDQo+ICsJ
+CQkJCQkJUChibG9ja3MsIGRpc2tzKSwNCj4gKwkJCQkJCQlvZmZzZXQsIGxlbiwNCj4gKwkJCQkJ
+CQlETUFfQklESVJFQ1RJT05BTCk7DQo+ICsJCQllbHNlIHsNCj4gKwkJCQl1bm1hcC0+YWRkcltq
+KytdID0gMDsNCj4gKwkJCQlkbWFfZmxhZ3MgfD0gRE1BX1BSRVBfUFFfRElTQUJMRV9QOw0KPiAr
+CQkJfQ0KPiAgDQo+IC0JCXVubWFwLT5iaWRpX2NudCsrOw0KPiAtCQlpZiAoUShibG9ja3MsIGRp
+c2tzKSkNCj4gLQkJCXVubWFwLT5hZGRyW2orK10gPSBkbWFfbWFwX3BhZ2UoZGV2aWNlLT5kZXYs
+IFEoYmxvY2tzLCBkaXNrcyksDQo+IC0JCQkJCQkgICAgICAgb2Zmc2V0LCBsZW4sIERNQV9CSURJ
+UkVDVElPTkFMKTsNCj4gLQkJZWxzZSB7DQo+IC0JCQl1bm1hcC0+YWRkcltqKytdID0gMDsNCj4g
+LQkJCWRtYV9mbGFncyB8PSBETUFfUFJFUF9QUV9ESVNBQkxFX1E7DQo+IC0JCX0NCj4gKwkJCXVu
+bWFwLT5iaWRpX2NudCsrOw0KPiArCQkJaWYgKFEoYmxvY2tzLCBkaXNrcykpDQo+ICsJCQkJdW5t
+YXAtPmFkZHJbaisrXSA9IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRldiwNCj4gKwkJCQkJCQlRKGJs
+b2NrcywgZGlza3MpLA0KPiArCQkJCQkJCW9mZnNldCwgbGVuLA0KPiArCQkJCQkJCURNQV9CSURJ
+UkVDVElPTkFMKTsNCj4gKwkJCWVsc2Ugew0KPiArCQkJCXVubWFwLT5hZGRyW2orK10gPSAwOw0K
+PiArCQkJCWRtYV9mbGFncyB8PSBETUFfUFJFUF9QUV9ESVNBQkxFX1E7DQo+ICsJCQl9DQo+ICAN
+Cj4gLQkJdHggPSBkb19hc3luY19nZW5fc3luZHJvbWUoY2hhbiwgY29lZnMsIGosIHVubWFwLCBk
+bWFfZmxhZ3MsIHN1Ym1pdCk7DQo+IC0JCWRtYWVuZ2luZV91bm1hcF9wdXQodW5tYXApOw0KPiAt
+CQlyZXR1cm4gdHg7DQo+ICsJCQl0eCA9IGRvX2FzeW5jX2dlbl9zeW5kcm9tZShjaGFuLCBjb2Vm
+cywgaiwgdW5tYXAsDQo+ICsJCQkJCQkgICBkbWFfZmxhZ3MsIHN1Ym1pdCk7DQo+ICsJCQlyZXR1
+cm4gdHg7DQo+ICsJCX0NCj4gIAl9DQo+ICANCj4gLQlkbWFlbmdpbmVfdW5tYXBfcHV0KHVubWFw
+KTsNCj4gLQ0KPiAgCS8qIHJ1biB0aGUgcHEgc3luY2hyb25vdXNseSAqLw0KPiAgCXByX2RlYnVn
+KCIlczogKHN5bmMpIGRpc2tzOiAlZCBsZW46ICV6dVxuIiwgX19mdW5jX18sIGRpc2tzLCBsZW4p
+Ow0KPiAgDQo+IEBAIC0yOTMsMTAgKzI5OCw3IEBAIGFzeW5jX3N5bmRyb21lX3ZhbChzdHJ1Y3Qg
+cGFnZSAqKmJsb2NrcywgdW5zaWduZWQgDQo+IGludCBvZmZzZXQsIGludCBkaXNrcywNCj4gIA0K
+PiAgCUJVR19PTihkaXNrcyA8IDQpOw0KPiAgDQo+IC0JaWYgKGRldmljZSkNCj4gLQkJdW5tYXAg
+PSBkbWFlbmdpbmVfZ2V0X3VubWFwX2RhdGEoZGV2aWNlLT5kZXYsIGRpc2tzLCBHRlBfTk9JTyk7
+DQo+IC0NCj4gLQlpZiAodW5tYXAgJiYgZGlza3MgPD0gZG1hX21heHBxKGRldmljZSwgMCkgJiYN
+Cj4gKwlpZiAoZGV2aWNlICYmIGRpc2tzIDw9IGRtYV9tYXhwcShkZXZpY2UsIDApICYmDQo+ICAJ
+ICAgIGlzX2RtYV9wcV9hbGlnbmVkKGRldmljZSwgb2Zmc2V0LCAwLCBsZW4pKSB7DQo+ICAJCXN0
+cnVjdCBkZXZpY2UgKmRldiA9IGRldmljZS0+ZGV2Ow0KPiAgCQlkbWFfYWRkcl90IHBxWzJdOw0K
+PiBAQCAtMzA1LDU4ICszMDcsNjMgQEAgYXN5bmNfc3luZHJvbWVfdmFsKHN0cnVjdCBwYWdlICoq
+YmxvY2tzLCB1bnNpZ25lZCBpbnQgb2Zmc2V0LCBpbnQgZGlza3MsDQo+ICAJCXByX2RlYnVnKCIl
+czogKGFzeW5jKSBkaXNrczogJWQgbGVuOiAlenVcbiIsDQo+ICAJCQkgX19mdW5jX18sIGRpc2tz
+LCBsZW4pOw0KPiAgDQo+IC0JCXVubWFwLT5sZW4gPSBsZW47DQo+IC0JCWZvciAoaSA9IDA7IGkg
+PCBkaXNrcy0yOyBpKyspDQo+IC0JCQlpZiAobGlrZWx5KGJsb2Nrc1tpXSkpIHsNCj4gLQkJCQl1
+bm1hcC0+YWRkcltqXSA9IGRtYV9tYXBfcGFnZShkZXYsIGJsb2Nrc1tpXSwNCj4gLQkJCQkJCQkg
+ICAgICBvZmZzZXQsIGxlbiwNCj4gKwkJdW5tYXAgPSBkbWFlbmdpbmVfZ2V0X3VubWFwX2RhdGEo
+ZGV2aWNlLT5kZXYsIGRpc2tzLCBHRlBfTk9JTyk7DQo+ICsJCWlmICh1bm1hcCkgew0KPiArCQkJ
+dW5tYXAtPmxlbiA9IGxlbjsNCj4gKwkJCWZvciAoaSA9IDA7IGkgPCBkaXNrcy0yOyBpKyspDQo+
+ICsJCQkJaWYgKGxpa2VseShibG9ja3NbaV0pKSB7DQo+ICsJCQkJCXVubWFwLT5hZGRyW2pdID0g
+ZG1hX21hcF9wYWdlKGRldiwNCj4gKwkJCQkJCQkgICAgICBibG9ja3NbaV0sDQo+ICsJCQkJCQkJ
+ICAgICAgb2Zmc2V0LA0KPiArCQkJCQkJCSAgICAgIGxlbiwNCj4gIAkJCQkJCQkgICAgICBETUFf
+VE9fREVWSUNFKTsNCj4gLQkJCQljb2Vmc1tqXSA9IHJhaWQ2X2dmZXhwW2ldOw0KPiArCQkJCQlj
+b2Vmc1tqXSA9IHJhaWQ2X2dmZXhwW2ldOw0KPiArCQkJCQl1bm1hcC0+dG9fY250Kys7DQo+ICsJ
+CQkJCXNyY19jbnQrKzsNCj4gKwkJCQkJaisrOw0KPiArCQkJCX0NCj4gKw0KPiArCQkJaWYgKCFQ
+KGJsb2NrcywgZGlza3MpKSB7DQo+ICsJCQkJcHFbMF0gPSAwOw0KPiArCQkJCWRtYV9mbGFncyB8
+PSBETUFfUFJFUF9QUV9ESVNBQkxFX1A7DQo+ICsJCQl9IGVsc2Ugew0KPiArCQkJCXBxWzBdID0g
+ZG1hX21hcF9wYWdlKGRldiwgUChibG9ja3MsIGRpc2tzKSwNCj4gKwkJCQkJCSAgICAgb2Zmc2V0
+LCBsZW4sDQo+ICsJCQkJCQkgICAgIERNQV9UT19ERVZJQ0UpOw0KPiArCQkJCXVubWFwLT5hZGRy
+W2orK10gPSBwcVswXTsNCj4gKwkJCQl1bm1hcC0+dG9fY250Kys7DQo+ICsJCQl9DQo+ICsJCQlp
+ZiAoIVEoYmxvY2tzLCBkaXNrcykpIHsNCj4gKwkJCQlwcVsxXSA9IDA7DQo+ICsJCQkJZG1hX2Zs
+YWdzIHw9IERNQV9QUkVQX1BRX0RJU0FCTEVfUTsNCj4gKwkJCX0gZWxzZSB7DQo+ICsJCQkJcHFb
+MV0gPSBkbWFfbWFwX3BhZ2UoZGV2LCBRKGJsb2NrcywgZGlza3MpLA0KPiArCQkJCQkJICAgICBv
+ZmZzZXQsIGxlbiwNCj4gKwkJCQkJCSAgICAgRE1BX1RPX0RFVklDRSk7DQo+ICsJCQkJdW5tYXAt
+PmFkZHJbaisrXSA9IHBxWzFdOw0KPiAgCQkJCXVubWFwLT50b19jbnQrKzsNCj4gLQkJCQlzcmNf
+Y250Kys7DQo+IC0JCQkJaisrOw0KPiAgCQkJfQ0KPiAgDQo+IC0JCWlmICghUChibG9ja3MsIGRp
+c2tzKSkgew0KPiAtCQkJcHFbMF0gPSAwOw0KPiAtCQkJZG1hX2ZsYWdzIHw9IERNQV9QUkVQX1BR
+X0RJU0FCTEVfUDsNCj4gLQkJfSBlbHNlIHsNCj4gLQkJCXBxWzBdID0gZG1hX21hcF9wYWdlKGRl
+diwgUChibG9ja3MsIGRpc2tzKSwNCj4gLQkJCQkJICAgICBvZmZzZXQsIGxlbiwNCj4gLQkJCQkJ
+ICAgICBETUFfVE9fREVWSUNFKTsNCj4gLQkJCXVubWFwLT5hZGRyW2orK10gPSBwcVswXTsNCj4g
+LQkJCXVubWFwLT50b19jbnQrKzsNCj4gLQkJfQ0KPiAtCQlpZiAoIVEoYmxvY2tzLCBkaXNrcykp
+IHsNCj4gLQkJCXBxWzFdID0gMDsNCj4gLQkJCWRtYV9mbGFncyB8PSBETUFfUFJFUF9QUV9ESVNB
+QkxFX1E7DQo+IC0JCX0gZWxzZSB7DQo+IC0JCQlwcVsxXSA9IGRtYV9tYXBfcGFnZShkZXYsIFEo
+YmxvY2tzLCBkaXNrcyksDQo+IC0JCQkJCSAgICAgb2Zmc2V0LCBsZW4sDQo+IC0JCQkJCSAgICAg
+RE1BX1RPX0RFVklDRSk7DQo+IC0JCQl1bm1hcC0+YWRkcltqKytdID0gcHFbMV07DQo+IC0JCQl1
+bm1hcC0+dG9fY250Kys7DQo+IC0JCX0NCj4gLQ0KPiAtCQlpZiAoc3VibWl0LT5mbGFncyAmIEFT
+WU5DX1RYX0ZFTkNFKQ0KPiAtCQkJZG1hX2ZsYWdzIHw9IERNQV9QUkVQX0ZFTkNFOw0KPiAtCQlm
+b3IgKDs7KSB7DQo+IC0JCQl0eCA9IGRldmljZS0+ZGV2aWNlX3ByZXBfZG1hX3BxX3ZhbChjaGFu
+LCBwcSwNCj4gLQkJCQkJCQkgICAgdW5tYXAtPmFkZHIsDQo+IC0JCQkJCQkJICAgIHNyY19jbnQs
+DQo+IC0JCQkJCQkJICAgIGNvZWZzLA0KPiAtCQkJCQkJCSAgICBsZW4sIHBxcmVzLA0KPiAtCQkJ
+CQkJCSAgICBkbWFfZmxhZ3MpOw0KPiAtCQkJaWYgKGxpa2VseSh0eCkpDQo+IC0JCQkJYnJlYWs7
+DQo+IC0JCQlhc3luY190eF9xdWllc2NlKCZzdWJtaXQtPmRlcGVuZF90eCk7DQo+IC0JCQlkbWFf
+YXN5bmNfaXNzdWVfcGVuZGluZyhjaGFuKTsNCj4gLQkJfQ0KPiArCQkJaWYgKHN1Ym1pdC0+Zmxh
+Z3MgJiBBU1lOQ19UWF9GRU5DRSkNCj4gKwkJCQlkbWFfZmxhZ3MgfD0gRE1BX1BSRVBfRkVOQ0U7
+DQo+ICsJCQlmb3IgKDs7KSB7DQo+ICsJCQkJdHggPSBkZXZpY2UtPmRldmljZV9wcmVwX2RtYV9w
+cV92YWwoY2hhbiwgcHEsDQo+ICsJCQkJCQkJCSAgICB1bm1hcC0+YWRkciwNCj4gKwkJCQkJCQkJ
+ICAgIHNyY19jbnQsDQo+ICsJCQkJCQkJCSAgICBjb2VmcywNCj4gKwkJCQkJCQkJICAgIGxlbiwg
+cHFyZXMsDQo+ICsJCQkJCQkJCSAgICBkbWFfZmxhZ3MpOw0KPiArCQkJCWlmIChsaWtlbHkodHgp
+KQ0KPiArCQkJCQlicmVhazsNCj4gKwkJCQlhc3luY190eF9xdWllc2NlKCZzdWJtaXQtPmRlcGVu
+ZF90eCk7DQo+ICsJCQkJZG1hX2FzeW5jX2lzc3VlX3BlbmRpbmcoY2hhbik7DQo+ICsJCQl9DQo+
+ICANCj4gLQkJZG1hX3NldF91bm1hcCh0eCwgdW5tYXApOw0KPiAtCQlhc3luY190eF9zdWJtaXQo
+Y2hhbiwgdHgsIHN1Ym1pdCk7DQo+ICsJCQlkbWFfc2V0X3VubWFwKHR4LCB1bm1hcCk7DQo+ICsJ
+CQlhc3luY190eF9zdWJtaXQoY2hhbiwgdHgsIHN1Ym1pdCk7DQo+ICANCj4gLQkJcmV0dXJuIHR4
+Ow0KPiArCQkJcmV0dXJuIHR4Ow0KPiArCQl9DQo+ICAJfSBlbHNlIHsNCj4gIAkJc3RydWN0IHBh
+Z2UgKnBfc3JjID0gUChibG9ja3MsIGRpc2tzKTsNCj4gIAkJc3RydWN0IHBhZ2UgKnFfc3JjID0g
+UShibG9ja3MsIGRpc2tzKTsgQEAgLTQxMSw5ICs0MTgsOSBAQCANCj4gYXN5bmNfc3luZHJvbWVf
+dmFsKHN0cnVjdCBwYWdlICoqYmxvY2tzLCB1bnNpZ25lZCBpbnQgb2Zmc2V0LCBpbnQgZGlza3Ms
+DQo+ICAJCXN1Ym1pdC0+Y2JfcGFyYW0gPSBjYl9wYXJhbV9vcmlnOw0KPiAgCQlzdWJtaXQtPmZs
+YWdzID0gZmxhZ3Nfb3JpZzsNCj4gIAkJYXN5bmNfdHhfc3luY19lcGlsb2coc3VibWl0KTsNCj4g
+LQ0KPiAtCQlyZXR1cm4gTlVMTDsNCj4gIAl9DQo+ICsNCj4gKwlyZXR1cm4gTlVMTDsNCj4gIH0N
+Cj4gIEVYUE9SVF9TWU1CT0xfR1BMKGFzeW5jX3N5bmRyb21lX3ZhbCk7DQo+ICANCj4gZGlmZiAt
+LWdpdCBhL2NyeXB0by9hc3luY190eC9hc3luY19yYWlkNl9yZWNvdi5jIA0KPiBiL2NyeXB0by9h
+c3luY190eC9hc3luY19yYWlkNl9yZWNvdi5jDQo+IGluZGV4IDkzNGE4NDkuLmM1NWQ4ZjEgMTAw
+NjQ0DQo+IC0tLSBhL2NyeXB0by9hc3luY190eC9hc3luY19yYWlkNl9yZWNvdi5jDQo+ICsrKyBi
+L2NyeXB0by9hc3luY190eC9hc3luY19yYWlkNl9yZWNvdi5jDQo+IEBAIC00MCwxMCArNDAsNyBA
+QCBhc3luY19zdW1fcHJvZHVjdChzdHJ1Y3QgcGFnZSAqZGVzdCwgc3RydWN0IHBhZ2UgKipzcmNz
+LCB1bnNpZ25lZCBjaGFyICpjb2VmLA0KPiAgCXU4IGF4LCBieDsNCj4gIAl1OCAqYSwgKmIsICpj
+Ow0KPiAgDQo+IC0JaWYgKGRtYSkNCj4gLQkJdW5tYXAgPSBkbWFlbmdpbmVfZ2V0X3VubWFwX2Rh
+dGEoZG1hLT5kZXYsIDMsIEdGUF9OT0lPKTsNCj4gLQ0KPiAtCWlmICh1bm1hcCkgew0KPiArCWlm
+IChkbWEpIHsNCj4gIAkJc3RydWN0IGRldmljZSAqZGV2ID0gZG1hLT5kZXY7DQo+ICAJCWRtYV9h
+ZGRyX3QgcHFbMl07DQo+ICAJCXN0cnVjdCBkbWFfYXN5bmNfdHhfZGVzY3JpcHRvciAqdHg7IEBA
+IC01MSwyOSArNDgsMzUgQEAgDQo+IGFzeW5jX3N1bV9wcm9kdWN0KHN0cnVjdCBwYWdlICpkZXN0
+LCBzdHJ1Y3QgcGFnZSAqKnNyY3MsIHVuc2lnbmVkIGNoYXIgDQo+ICpjb2VmLA0KPiAgDQo+ICAJ
+CWlmIChzdWJtaXQtPmZsYWdzICYgQVNZTkNfVFhfRkVOQ0UpDQo+ICAJCQlkbWFfZmxhZ3MgfD0g
+RE1BX1BSRVBfRkVOQ0U7DQo+IC0JCXVubWFwLT5hZGRyWzBdID0gZG1hX21hcF9wYWdlKGRldiwg
+c3Jjc1swXSwgMCwgbGVuLCBETUFfVE9fREVWSUNFKTsNCj4gLQkJdW5tYXAtPmFkZHJbMV0gPSBk
+bWFfbWFwX3BhZ2UoZGV2LCBzcmNzWzFdLCAwLCBsZW4sIERNQV9UT19ERVZJQ0UpOw0KPiAtCQl1
+bm1hcC0+dG9fY250ID0gMjsNCj4gLQ0KPiAtCQl1bm1hcC0+YWRkclsyXSA9IGRtYV9tYXBfcGFn
+ZShkZXYsIGRlc3QsIDAsIGxlbiwgRE1BX0JJRElSRUNUSU9OQUwpOw0KPiAtCQl1bm1hcC0+Ymlk
+aV9jbnQgPSAxOw0KPiAtCQkvKiBlbmdpbmUgb25seSBsb29rcyBhdCBRLCBidXQgZXhwZWN0cyBp
+dCB0byBmb2xsb3cgUCAqLw0KPiAtCQlwcVsxXSA9IHVubWFwLT5hZGRyWzJdOw0KPiAtDQo+IC0J
+CXVubWFwLT5sZW4gPSBsZW47DQo+IC0JCXR4ID0gZG1hLT5kZXZpY2VfcHJlcF9kbWFfcHEoY2hh
+biwgcHEsIHVubWFwLT5hZGRyLCAyLCBjb2VmLA0KPiAtCQkJCQkgICAgIGxlbiwgZG1hX2ZsYWdz
+KTsNCj4gLQkJaWYgKHR4KSB7DQo+IC0JCQlkbWFfc2V0X3VubWFwKHR4LCB1bm1hcCk7DQo+IC0J
+CQlhc3luY190eF9zdWJtaXQoY2hhbiwgdHgsIHN1Ym1pdCk7DQo+ICsNCj4gKwkJdW5tYXAgPSBk
+bWFlbmdpbmVfZ2V0X3VubWFwX2RhdGEoZG1hLT5kZXYsIDMsIEdGUF9OT0lPKTsNCj4gKwkJaWYg
+KHVubWFwKSB7DQo+ICsJCQl1bm1hcC0+YWRkclswXSA9IGRtYV9tYXBfcGFnZShkZXYsIHNyY3Nb
+MF0sIDAsIGxlbiwNCj4gKwkJCQkJCSAgICAgIERNQV9UT19ERVZJQ0UpOw0KPiArCQkJdW5tYXAt
+PmFkZHJbMV0gPSBkbWFfbWFwX3BhZ2UoZGV2LCBzcmNzWzFdLCAwLCBsZW4sDQo+ICsJCQkJCQkg
+ICAgICBETUFfVE9fREVWSUNFKTsNCj4gKwkJCXVubWFwLT50b19jbnQgPSAyOw0KPiArDQo+ICsJ
+CQl1bm1hcC0+YWRkclsyXSA9IGRtYV9tYXBfcGFnZShkZXYsIGRlc3QsIDAsIGxlbiwNCj4gKwkJ
+CQkJCSAgICAgIERNQV9CSURJUkVDVElPTkFMKTsNCj4gKwkJCXVubWFwLT5iaWRpX2NudCA9IDE7
+DQo+ICsJCQkvKiBlbmdpbmUgb25seSBsb29rcyBhdCBRLCBidXQgZXhwZWN0cyBpdCB0byBmb2xs
+b3cgUCAqLw0KPiArCQkJcHFbMV0gPSB1bm1hcC0+YWRkclsyXTsNCj4gKw0KPiArCQkJdW5tYXAt
+PmxlbiA9IGxlbjsNCj4gKwkJCXR4ID0gZG1hLT5kZXZpY2VfcHJlcF9kbWFfcHEoY2hhbiwgcHEs
+IHVubWFwLT5hZGRyLCAyLA0KPiArCQkJCQkJICAgICBjb2VmLCBsZW4sIGRtYV9mbGFncyk7DQo+
+ICsJCQlpZiAodHgpIHsNCj4gKwkJCQlkbWFfc2V0X3VubWFwKHR4LCB1bm1hcCk7DQo+ICsJCQkJ
+YXN5bmNfdHhfc3VibWl0KGNoYW4sIHR4LCBzdWJtaXQpOw0KPiArCQkJCXJldHVybiB0eDsNCj4g
+KwkJCX0NCj4gKw0KPiArCQkJLyogY291bGQgbm90IGdldCBhIGRlc2NyaXB0b3IsIHVubWFwIGFu
+ZCBmYWxsIHRocm91Z2ggdG8NCj4gKwkJCSAqIHRoZSBzeW5jaHJvbm91cyBwYXRoDQo+ICsJCQkg
+Ki8NCj4gIAkJCWRtYWVuZ2luZV91bm1hcF9wdXQodW5tYXApOw0KPiAtCQkJcmV0dXJuIHR4Ow0K
+PiAgCQl9DQo+IC0NCj4gLQkJLyogY291bGQgbm90IGdldCBhIGRlc2NyaXB0b3IsIHVubWFwIGFu
+ZCBmYWxsIHRocm91Z2ggdG8NCj4gLQkJICogdGhlIHN5bmNocm9ub3VzIHBhdGgNCj4gLQkJICov
+DQo+IC0JCWRtYWVuZ2luZV91bm1hcF9wdXQodW5tYXApOw0KPiAgCX0NCj4gIA0KPiAgCS8qIHJ1
+biB0aGUgb3BlcmF0aW9uIHN5bmNocm9ub3VzbHkgKi8gQEAgLTEwNCwxMCArMTA3LDcgQEAgDQo+
+IGFzeW5jX211bHQoc3RydWN0IHBhZ2UgKmRlc3QsIHN0cnVjdCBwYWdlICpzcmMsIHU4IGNvZWYs
+IHNpemVfdCBsZW4sDQo+ICAJY29uc3QgdTggKnFtdWw7IC8qIFEgbXVsdGlwbGllciB0YWJsZSAq
+Lw0KPiAgCXU4ICpkLCAqczsNCj4gIA0KPiAtCWlmIChkbWEpDQo+IC0JCXVubWFwID0gZG1hZW5n
+aW5lX2dldF91bm1hcF9kYXRhKGRtYS0+ZGV2LCAzLCBHRlBfTk9JTyk7DQo+IC0NCj4gLQlpZiAo
+dW5tYXApIHsNCj4gKwlpZiAoZG1hKSB7DQo+ICAJCWRtYV9hZGRyX3QgZG1hX2Rlc3RbMl07DQo+
+ICAJCXN0cnVjdCBkZXZpY2UgKmRldiA9IGRtYS0+ZGV2Ow0KPiAgCQlzdHJ1Y3QgZG1hX2FzeW5j
+X3R4X2Rlc2NyaXB0b3IgKnR4OyBAQCAtMTE1LDMxICsxMTUsMzcgQEAgDQo+IGFzeW5jX211bHQo
+c3RydWN0IHBhZ2UgKmRlc3QsIHN0cnVjdCBwYWdlICpzcmMsIHU4IGNvZWYsIHNpemVfdCBsZW4s
+DQo+ICANCj4gIAkJaWYgKHN1Ym1pdC0+ZmxhZ3MgJiBBU1lOQ19UWF9GRU5DRSkNCj4gIAkJCWRt
+YV9mbGFncyB8PSBETUFfUFJFUF9GRU5DRTsNCj4gLQkJdW5tYXAtPmFkZHJbMF0gPSBkbWFfbWFw
+X3BhZ2UoZGV2LCBzcmMsIDAsIGxlbiwgRE1BX1RPX0RFVklDRSk7DQo+IC0JCXVubWFwLT50b19j
+bnQrKzsNCj4gLQkJdW5tYXAtPmFkZHJbMV0gPSBkbWFfbWFwX3BhZ2UoZGV2LCBkZXN0LCAwLCBs
+ZW4sIERNQV9CSURJUkVDVElPTkFMKTsNCj4gLQkJZG1hX2Rlc3RbMV0gPSB1bm1hcC0+YWRkclsx
+XTsNCj4gLQkJdW5tYXAtPmJpZGlfY250Kys7DQo+IC0JCXVubWFwLT5sZW4gPSBsZW47DQo+IC0N
+Cj4gLQkJLyogdGhpcyBsb29rcyBmdW5ueSwgYnV0IHRoZSBlbmdpbmUgbG9va3MgZm9yIFEgYXQN
+Cj4gLQkJICogZG1hX2Rlc3RbMV0gYW5kIGlnbm9yZXMgZG1hX2Rlc3RbMF0gYXMgYSBkZXN0DQo+
+IC0JCSAqIGR1ZSB0byBETUFfUFJFUF9QUV9ESVNBQkxFX1ANCj4gLQkJICovDQo+IC0JCXR4ID0g
+ZG1hLT5kZXZpY2VfcHJlcF9kbWFfcHEoY2hhbiwgZG1hX2Rlc3QsIHVubWFwLT5hZGRyLA0KPiAt
+CQkJCQkgICAgIDEsICZjb2VmLCBsZW4sIGRtYV9mbGFncyk7DQo+ICANCj4gLQkJaWYgKHR4KSB7
+DQo+IC0JCQlkbWFfc2V0X3VubWFwKHR4LCB1bm1hcCk7DQo+ICsJCXVubWFwID0gZG1hZW5naW5l
+X2dldF91bm1hcF9kYXRhKGRtYS0+ZGV2LCAzLCBHRlBfTk9JTyk7DQo+ICsJCWlmICh1bm1hcCkg
+ew0KPiArCQkJdW5tYXAtPmFkZHJbMF0gPSBkbWFfbWFwX3BhZ2UoZGV2LCBzcmMsIDAsIGxlbiwN
+Cj4gKwkJCQkJCSAgICAgIERNQV9UT19ERVZJQ0UpOw0KPiArCQkJdW5tYXAtPnRvX2NudCsrOw0K
+PiArCQkJdW5tYXAtPmFkZHJbMV0gPSBkbWFfbWFwX3BhZ2UoZGV2LCBkZXN0LCAwLCBsZW4sDQo+
+ICsJCQkJCQkgICAgICBETUFfQklESVJFQ1RJT05BTCk7DQo+ICsJCQlkbWFfZGVzdFsxXSA9IHVu
+bWFwLT5hZGRyWzFdOw0KPiArCQkJdW5tYXAtPmJpZGlfY250Kys7DQo+ICsJCQl1bm1hcC0+bGVu
+ID0gbGVuOw0KPiArDQo+ICsJCQkvKiB0aGlzIGxvb2tzIGZ1bm55LCBidXQgdGhlIGVuZ2luZSBs
+b29rcyBmb3IgUSBhdA0KPiArCQkJICogZG1hX2Rlc3RbMV0gYW5kIGlnbm9yZXMgZG1hX2Rlc3Rb
+MF0gYXMgYSBkZXN0DQo+ICsJCQkgKiBkdWUgdG8gRE1BX1BSRVBfUFFfRElTQUJMRV9QDQo+ICsJ
+CQkgKi8NCj4gKwkJCXR4ID0gZG1hLT5kZXZpY2VfcHJlcF9kbWFfcHEoY2hhbiwgZG1hX2Rlc3Qs
+DQo+ICsJCQkJCQkgICAgIHVubWFwLT5hZGRyLCAxLCAmY29lZiwNCj4gKwkJCQkJCSAgICAgbGVu
+LCBkbWFfZmxhZ3MpOw0KPiArDQo+ICsJCQlpZiAodHgpIHsNCj4gKwkJCQlkbWFfc2V0X3VubWFw
+KHR4LCB1bm1hcCk7DQo+ICsJCQkJYXN5bmNfdHhfc3VibWl0KGNoYW4sIHR4LCBzdWJtaXQpOw0K
+PiArCQkJCXJldHVybiB0eDsNCj4gKwkJCX0NCj4gKw0KPiArCQkJLyogY291bGQgbm90IGdldCBh
+IGRlc2NyaXB0b3IsIHVubWFwIGFuZCBmYWxsIHRocm91Z2ggdG8NCj4gKwkJCSAqIHRoZSBzeW5j
+aHJvbm91cyBwYXRoDQo+ICsJCQkgKi8NCj4gIAkJCWRtYWVuZ2luZV91bm1hcF9wdXQodW5tYXAp
+Ow0KPiAtCQkJYXN5bmNfdHhfc3VibWl0KGNoYW4sIHR4LCBzdWJtaXQpOw0KPiAtCQkJcmV0dXJu
+IHR4Ow0KPiAgCQl9DQo+IC0NCj4gLQkJLyogY291bGQgbm90IGdldCBhIGRlc2NyaXB0b3IsIHVu
+bWFwIGFuZCBmYWxsIHRocm91Z2ggdG8NCj4gLQkJICogdGhlIHN5bmNocm9ub3VzIHBhdGgNCj4g
+LQkJICovDQo+IC0JCWRtYWVuZ2luZV91bm1hcF9wdXQodW5tYXApOw0KPiAgCX0NCj4gIA0KPiAg
+CS8qIG5vIGNoYW5uZWwgYXZhaWxhYmxlLCBvciBmYWlsZWQgdG8gYWxsb2NhdGUgYSBkZXNjcmlw
+dG9yLCBzbyBkaWZmIA0KPiAtLWdpdCBhL2NyeXB0by9hc3luY190eC9hc3luY194b3IuYyBiL2Ny
+eXB0by9hc3luY190eC9hc3luY194b3IuYyANCj4gaW5kZXggM2M1NjJmNS4uMDE5ZTQ2OSAxMDA2
+NDQNCj4gLS0tIGEvY3J5cHRvL2FzeW5jX3R4L2FzeW5jX3hvci5jDQo+ICsrKyBiL2NyeXB0by9h
+c3luY190eC9hc3luY194b3IuYw0KPiBAQCAtMTgyLDU1ICsxODIsNTcgQEAgYXN5bmNfeG9yKHN0
+cnVjdCBwYWdlICpkZXN0LCBzdHJ1Y3QgcGFnZSANCj4gKipzcmNfbGlzdCwgdW5zaWduZWQgaW50
+IG9mZnNldCwNCj4gIA0KPiAgCUJVR19PTihzcmNfY250IDw9IDEpOw0KPiAgDQo+IC0JaWYgKGRl
+dmljZSkNCj4gLQkJdW5tYXAgPSBkbWFlbmdpbmVfZ2V0X3VubWFwX2RhdGEoZGV2aWNlLT5kZXYs
+IHNyY19jbnQrMSwgR0ZQX05PSU8pOw0KPiAtDQo+IC0JaWYgKHVubWFwICYmIGlzX2RtYV94b3Jf
+YWxpZ25lZChkZXZpY2UsIG9mZnNldCwgMCwgbGVuKSkgew0KPiArCWlmIChkZXZpY2UgJiYgaXNf
+ZG1hX3hvcl9hbGlnbmVkKGRldmljZSwgb2Zmc2V0LCAwLCBsZW4pKSB7DQo+ICAJCXN0cnVjdCBk
+bWFfYXN5bmNfdHhfZGVzY3JpcHRvciAqdHg7DQo+ICAJCWludCBpLCBqOw0KPiAgDQo+ICAJCS8q
+IHJ1biB0aGUgeG9yIGFzeW5jaHJvbm91c2x5ICovDQo+ICAJCXByX2RlYnVnKCIlcyAoYXN5bmMp
+OiBsZW46ICV6dVxuIiwgX19mdW5jX18sIGxlbik7DQo+ICANCj4gLQkJdW5tYXAtPmxlbiA9IGxl
+bjsNCj4gLQkJZm9yIChpID0gMCwgaiA9IDA7IGkgPCBzcmNfY250OyBpKyspIHsNCj4gLQkJCWlm
+ICghc3JjX2xpc3RbaV0pDQo+IC0JCQkJY29udGludWU7DQo+IC0JCQl1bm1hcC0+dG9fY250Kys7
+DQo+IC0JCQl1bm1hcC0+YWRkcltqKytdID0gZG1hX21hcF9wYWdlKGRldmljZS0+ZGV2LCBzcmNf
+bGlzdFtpXSwNCj4gLQkJCQkJCQlvZmZzZXQsIGxlbiwgRE1BX1RPX0RFVklDRSk7DQo+IC0JCX0N
+Cj4gKwkJdW5tYXAgPSBkbWFlbmdpbmVfZ2V0X3VubWFwX2RhdGEoZGV2aWNlLT5kZXYsIHNyY19j
+bnQgKyAxLA0KPiArCQkJCQkJIEdGUF9OT0lPKTsNCj4gKwkJaWYgKHVubWFwKSB7DQo+ICsJCQl1
+bm1hcC0+bGVuID0gbGVuOw0KPiArCQkJZm9yIChpID0gMCwgaiA9IDA7IGkgPCBzcmNfY250OyBp
+KyspIHsNCj4gKwkJCQlpZiAoIXNyY19saXN0W2ldKQ0KPiArCQkJCQljb250aW51ZTsNCj4gKwkJ
+CQl1bm1hcC0+dG9fY250Kys7DQo+ICsJCQkJdW5tYXAtPmFkZHJbaisrXSA9IGRtYV9tYXBfcGFn
+ZShkZXZpY2UtPmRldiwNCj4gKwkJCQkJCQkJc3JjX2xpc3RbaV0sDQo+ICsJCQkJCQkJCW9mZnNl
+dCwgbGVuLA0KPiArCQkJCQkJCQlETUFfVE9fREVWSUNFKTsNCj4gKwkJCX0NCj4gIA0KPiAtCQkv
+KiBtYXAgaXQgYmlkaXJlY3Rpb25hbCBhcyBpdCBtYXkgYmUgcmUtdXNlZCBhcyBhIHNvdXJjZSAq
+Lw0KPiAtCQl1bm1hcC0+YWRkcltqXSA9IGRtYV9tYXBfcGFnZShkZXZpY2UtPmRldiwgZGVzdCwg
+b2Zmc2V0LCBsZW4sDQo+IC0JCQkJCSAgICAgIERNQV9CSURJUkVDVElPTkFMKTsNCj4gLQkJdW5t
+YXAtPmJpZGlfY250ID0gMTsNCj4gLQ0KPiAtCQl0eCA9IGRvX2FzeW5jX3hvcihjaGFuLCB1bm1h
+cCwgc3VibWl0KTsNCj4gLQkJZG1hZW5naW5lX3VubWFwX3B1dCh1bm1hcCk7DQo+IC0JCXJldHVy
+biB0eDsNCj4gLQl9IGVsc2Ugew0KPiAtCQlkbWFlbmdpbmVfdW5tYXBfcHV0KHVubWFwKTsNCj4g
+LQkJLyogcnVuIHRoZSB4b3Igc3luY2hyb25vdXNseSAqLw0KPiAtCQlwcl9kZWJ1ZygiJXMgKHN5
+bmMpOiBsZW46ICV6dVxuIiwgX19mdW5jX18sIGxlbik7DQo+IC0JCVdBUk5fT05DRShjaGFuLCAi
+JXM6IG5vIHNwYWNlIGZvciBkbWEgYWRkcmVzcyBjb252ZXJzaW9uXG4iLA0KPiAtCQkJICBfX2Z1
+bmNfXyk7DQo+IC0NCj4gLQkJLyogaW4gdGhlIHN5bmMgY2FzZSB0aGUgZGVzdCBpcyBhbiBpbXBs
+aWVkIHNvdXJjZQ0KPiAtCQkgKiAoYXNzdW1lcyB0aGUgZGVzdCBpcyB0aGUgZmlyc3Qgc291cmNl
+KQ0KPiAtCQkgKi8NCj4gLQkJaWYgKHN1Ym1pdC0+ZmxhZ3MgJiBBU1lOQ19UWF9YT1JfRFJPUF9E
+U1QpIHsNCj4gLQkJCXNyY19jbnQtLTsNCj4gLQkJCXNyY19saXN0Kys7DQo+ICsJCQkvKiBtYXAg
+aXQgYmlkaXJlY3Rpb25hbCBhcyBpdCBtYXkgYmUgcmUtdXNlZA0KPiArCQkJICAgYXMgYSBzb3Vy
+Y2UgKi8NCj4gKwkJCXVubWFwLT5hZGRyW2pdID0gZG1hX21hcF9wYWdlKGRldmljZS0+ZGV2LCBk
+ZXN0LCBvZmZzZXQsDQo+ICsJCQkJCQkgICAgICBsZW4sIERNQV9CSURJUkVDVElPTkFMKTsNCj4g
+KwkJCXVubWFwLT5iaWRpX2NudCA9IDE7DQo+ICsNCj4gKwkJCXR4ID0gZG9fYXN5bmNfeG9yKGNo
+YW4sIHVubWFwLCBzdWJtaXQpOw0KPiArCQkJcmV0dXJuIHR4Ow0KPiAgCQl9DQo+ICsJfQ0KPiAg
+DQo+IC0JCS8qIHdhaXQgZm9yIGFueSBwcmVyZXF1aXNpdGUgb3BlcmF0aW9ucyAqLw0KPiAtCQlh
+c3luY190eF9xdWllc2NlKCZzdWJtaXQtPmRlcGVuZF90eCk7DQo+ICsJLyogcnVuIHRoZSB4b3Ig
+c3luY2hyb25vdXNseSAqLw0KPiArCXByX2RlYnVnKCIlcyAoc3luYyk6IGxlbjogJXp1XG4iLCBf
+X2Z1bmNfXywgbGVuKTsNCj4gKwlXQVJOX09OQ0UoY2hhbiwgIiVzOiBubyBzcGFjZSBmb3IgZG1h
+IGFkZHJlc3MgY29udmVyc2lvblxuIiwNCj4gKwkJICBfX2Z1bmNfXyk7DQo+ICsNCj4gKwkvKiBp
+biB0aGUgc3luYyBjYXNlIHRoZSBkZXN0IGlzIGFuIGltcGxpZWQgc291cmNlDQo+ICsJICogKGFz
+c3VtZXMgdGhlIGRlc3QgaXMgdGhlIGZpcnN0IHNvdXJjZSkNCj4gKwkgKi8NCj4gKwlpZiAoc3Vi
+bWl0LT5mbGFncyAmIEFTWU5DX1RYX1hPUl9EUk9QX0RTVCkgew0KPiArCQlzcmNfY250LS07DQo+
+ICsJCXNyY19saXN0Kys7DQo+ICsJfQ0KPiAgDQo+IC0JCWRvX3N5bmNfeG9yKGRlc3QsIHNyY19s
+aXN0LCBvZmZzZXQsIHNyY19jbnQsIGxlbiwgc3VibWl0KTsNCj4gKwkvKiB3YWl0IGZvciBhbnkg
+cHJlcmVxdWlzaXRlIG9wZXJhdGlvbnMgKi8NCj4gKwlhc3luY190eF9xdWllc2NlKCZzdWJtaXQt
+PmRlcGVuZF90eCk7DQo+ICANCj4gLQkJcmV0dXJuIE5VTEw7DQo+IC0JfQ0KPiArCWRvX3N5bmNf
+eG9yKGRlc3QsIHNyY19saXN0LCBvZmZzZXQsIHNyY19jbnQsIGxlbiwgc3VibWl0KTsNCj4gKw0K
+PiArCXJldHVybiBOVUxMOw0KPiAgfQ0KPiAgRVhQT1JUX1NZTUJPTF9HUEwoYXN5bmNfeG9yKTsN
+Cj4gIA0KPiBAQCAtMjc1LDEzICsyNzcsMTEgQEAgYXN5bmNfeG9yX3ZhbChzdHJ1Y3QgcGFnZSAq
+ZGVzdCwgc3RydWN0IHBhZ2UgKipzcmNfbGlzdCwgdW5zaWduZWQgaW50IG9mZnNldCwNCj4gIAlz
+dHJ1Y3QgZG1hX2RldmljZSAqZGV2aWNlID0gY2hhbiA/IGNoYW4tPmRldmljZSA6IE5VTEw7DQo+
+ICAJc3RydWN0IGRtYV9hc3luY190eF9kZXNjcmlwdG9yICp0eCA9IE5VTEw7DQo+ICAJc3RydWN0
+IGRtYWVuZ2luZV91bm1hcF9kYXRhICp1bm1hcCA9IE5VTEw7DQo+ICsJZW51bSBhc3luY190eF9m
+bGFncyBmbGFnc19vcmlnID0gc3VibWl0LT5mbGFnczsNCj4gIA0KPiAgCUJVR19PTihzcmNfY250
+IDw9IDEpOw0KPiAgDQo+IC0JaWYgKGRldmljZSkNCj4gLQkJdW5tYXAgPSBkbWFlbmdpbmVfZ2V0
+X3VubWFwX2RhdGEoZGV2aWNlLT5kZXYsIHNyY19jbnQsIEdGUF9OT0lPKTsNCj4gLQ0KPiAtCWlm
+ICh1bm1hcCAmJiBzcmNfY250IDw9IGRldmljZS0+bWF4X3hvciAmJg0KPiArCWlmIChkZXZpY2Ug
+JiYgc3JjX2NudCA8PSBkZXZpY2UtPm1heF94b3IgJiYNCj4gIAkgICAgaXNfZG1hX3hvcl9hbGln
+bmVkKGRldmljZSwgb2Zmc2V0LCAwLCBsZW4pKSB7DQo+ICAJCXVuc2lnbmVkIGxvbmcgZG1hX3By
+ZXBfZmxhZ3MgPSAwOw0KPiAgCQlpbnQgaTsNCj4gQEAgLTI5Myw1MSArMjkzLDU5IEBAIGFzeW5j
+X3hvcl92YWwoc3RydWN0IHBhZ2UgKmRlc3QsIHN0cnVjdCBwYWdlICoqc3JjX2xpc3QsIHVuc2ln
+bmVkIGludCBvZmZzZXQsDQo+ICAJCWlmIChzdWJtaXQtPmZsYWdzICYgQVNZTkNfVFhfRkVOQ0Up
+DQo+ICAJCQlkbWFfcHJlcF9mbGFncyB8PSBETUFfUFJFUF9GRU5DRTsNCj4gIA0KPiAtCQlmb3Ig
+KGkgPSAwOyBpIDwgc3JjX2NudDsgaSsrKSB7DQo+IC0JCQl1bm1hcC0+YWRkcltpXSA9IGRtYV9t
+YXBfcGFnZShkZXZpY2UtPmRldiwgc3JjX2xpc3RbaV0sDQo+IC0JCQkJCQkgICAgICBvZmZzZXQs
+IGxlbiwgRE1BX1RPX0RFVklDRSk7DQo+IC0JCQl1bm1hcC0+dG9fY250Kys7DQo+IC0JCX0NCj4g
+LQkJdW5tYXAtPmxlbiA9IGxlbjsNCj4gLQ0KPiAtCQl0eCA9IGRldmljZS0+ZGV2aWNlX3ByZXBf
+ZG1hX3hvcl92YWwoY2hhbiwgdW5tYXAtPmFkZHIsIHNyY19jbnQsDQo+IC0JCQkJCQkgICAgIGxl
+biwgcmVzdWx0LA0KPiAtCQkJCQkJICAgICBkbWFfcHJlcF9mbGFncyk7DQo+IC0JCWlmICh1bmxp
+a2VseSghdHgpKSB7DQo+IC0JCQlhc3luY190eF9xdWllc2NlKCZzdWJtaXQtPmRlcGVuZF90eCk7
+DQo+IC0NCj4gLQkJCXdoaWxlICghdHgpIHsNCj4gLQkJCQlkbWFfYXN5bmNfaXNzdWVfcGVuZGlu
+ZyhjaGFuKTsNCj4gLQkJCQl0eCA9IGRldmljZS0+ZGV2aWNlX3ByZXBfZG1hX3hvcl92YWwoY2hh
+biwNCj4gLQkJCQkJdW5tYXAtPmFkZHIsIHNyY19jbnQsIGxlbiwgcmVzdWx0LA0KPiAtCQkJCQlk
+bWFfcHJlcF9mbGFncyk7DQo+ICsJCXVubWFwID0gZG1hZW5naW5lX2dldF91bm1hcF9kYXRhKGRl
+dmljZS0+ZGV2LCBzcmNfY250LA0KPiArCQkJCQkJIEdGUF9OT0lPKTsNCj4gKwkJaWYgKHVubWFw
+KSB7DQo+ICsJCQlmb3IgKGkgPSAwOyBpIDwgc3JjX2NudDsgaSsrKSB7DQo+ICsJCQkJdW5tYXAt
+PmFkZHJbaV0gPSBkbWFfbWFwX3BhZ2UoZGV2aWNlLT5kZXYsDQo+ICsJCQkJCQkJICAgICAgc3Jj
+X2xpc3RbaV0sDQo+ICsJCQkJCQkJICAgICAgb2Zmc2V0LCBsZW4sDQo+ICsJCQkJCQkJICAgICAg
+RE1BX1RPX0RFVklDRSk7DQo+ICsJCQkJdW5tYXAtPnRvX2NudCsrOw0KPiArCQkJfQ0KPiArCQkJ
+dW5tYXAtPmxlbiA9IGxlbjsNCj4gKw0KPiArCQkJdHggPSBkZXZpY2UtPmRldmljZV9wcmVwX2Rt
+YV94b3JfdmFsKGNoYW4sIHVubWFwLT5hZGRyLA0KPiArCQkJCQkJCSAgICAgc3JjX2NudCwNCj4g
+KwkJCQkJCQkgICAgIGxlbiwgcmVzdWx0LA0KPiArCQkJCQkJCSAgICAgZG1hX3ByZXBfZmxhZ3Mp
+Ow0KPiArCQkJaWYgKHVubGlrZWx5KCF0eCkpIHsNCj4gKwkJCQlhc3luY190eF9xdWllc2NlKCZz
+dWJtaXQtPmRlcGVuZF90eCk7DQo+ICsNCj4gKwkJCQl3aGlsZSAoIXR4KSB7DQo+ICsJCQkJCWRt
+YV9hc3luY19pc3N1ZV9wZW5kaW5nKGNoYW4pOw0KPiArCQkJCQl0eCA9IGRldmljZS0+ZGV2aWNl
+X3ByZXBfZG1hX3hvcl92YWwoDQo+ICsJCQkJCQkJY2hhbiwgdW5tYXAtPmFkZHIsDQo+ICsJCQkJ
+CQkJc3JjX2NudCwgbGVuLA0KPiArCQkJCQkJCXJlc3VsdCwgZG1hX3ByZXBfZmxhZ3MpOw0KPiAr
+CQkJCX0NCj4gIAkJCX0NCj4gKwkJCWRtYV9zZXRfdW5tYXAodHgsIHVubWFwKTsNCj4gKwkJCWFz
+eW5jX3R4X3N1Ym1pdChjaGFuLCB0eCwgc3VibWl0KTsNCj4gKw0KPiArCQkJcmV0dXJuIHR4Ow0K
+PiAgCQl9DQo+IC0JCWRtYV9zZXRfdW5tYXAodHgsIHVubWFwKTsNCj4gLQkJYXN5bmNfdHhfc3Vi
+bWl0KGNoYW4sIHR4LCBzdWJtaXQpOw0KPiAtCX0gZWxzZSB7DQo+IC0JCWVudW0gYXN5bmNfdHhf
+ZmxhZ3MgZmxhZ3Nfb3JpZyA9IHN1Ym1pdC0+ZmxhZ3M7DQo+ICsJfQ0KPiAgDQo+IC0JCXByX2Rl
+YnVnKCIlczogKHN5bmMpIGxlbjogJXp1XG4iLCBfX2Z1bmNfXywgbGVuKTsNCj4gLQkJV0FSTl9P
+TkNFKGRldmljZSAmJiBzcmNfY250IDw9IGRldmljZS0+bWF4X3hvciwNCj4gLQkJCSAgIiVzOiBu
+byBzcGFjZSBmb3IgZG1hIGFkZHJlc3MgY29udmVyc2lvblxuIiwNCj4gLQkJCSAgX19mdW5jX18p
+Ow0KPiArCS8qIHJ1biB0aGUgeG9yX3ZhbCBzeW5jaHJvbm91c2x5ICovDQo+ICsJcHJfZGVidWco
+IiVzOiAoc3luYykgbGVuOiAlenVcbiIsIF9fZnVuY19fLCBsZW4pOw0KPiArCVdBUk5fT05DRShk
+ZXZpY2UgJiYgc3JjX2NudCA8PSBkZXZpY2UtPm1heF94b3IsDQo+ICsJCSAgIiVzOiBubyBzcGFj
+ZSBmb3IgZG1hIGFkZHJlc3MgY29udmVyc2lvblxuIiwNCj4gKwkJICBfX2Z1bmNfXyk7DQo+ICAN
+Cj4gLQkJc3VibWl0LT5mbGFncyB8PSBBU1lOQ19UWF9YT1JfRFJPUF9EU1Q7DQo+IC0JCXN1Ym1p
+dC0+ZmxhZ3MgJj0gfkFTWU5DX1RYX0FDSzsNCj4gKwlzdWJtaXQtPmZsYWdzIHw9IEFTWU5DX1RY
+X1hPUl9EUk9QX0RTVDsNCj4gKwlzdWJtaXQtPmZsYWdzICY9IH5BU1lOQ19UWF9BQ0s7DQo+ICAN
+Cj4gLQkJdHggPSBhc3luY194b3IoZGVzdCwgc3JjX2xpc3QsIG9mZnNldCwgc3JjX2NudCwgbGVu
+LCBzdWJtaXQpOw0KPiArCXR4ID0gYXN5bmNfeG9yKGRlc3QsIHNyY19saXN0LCBvZmZzZXQsIHNy
+Y19jbnQsIGxlbiwgc3VibWl0KTsNCj4gIA0KPiAtCQlhc3luY190eF9xdWllc2NlKCZ0eCk7DQo+
+ICsJYXN5bmNfdHhfcXVpZXNjZSgmdHgpOw0KPiAgDQo+IC0JCSpyZXN1bHQgPSAhcGFnZV9pc196
+ZXJvKGRlc3QsIG9mZnNldCwgbGVuKSA8PCBTVU1fQ0hFQ0tfUDsNCj4gKwkqcmVzdWx0ID0gIXBh
+Z2VfaXNfemVybyhkZXN0LCBvZmZzZXQsIGxlbikgPDwgU1VNX0NIRUNLX1A7DQo+ICANCj4gLQkJ
+YXN5bmNfdHhfc3luY19lcGlsb2coc3VibWl0KTsNCj4gLQkJc3VibWl0LT5mbGFncyA9IGZsYWdz
+X29yaWc7DQo+IC0JfQ0KPiAtCWRtYWVuZ2luZV91bm1hcF9wdXQodW5tYXApOw0KPiArCWFzeW5j
+X3R4X3N5bmNfZXBpbG9nKHN1Ym1pdCk7DQo+ICsJc3VibWl0LT5mbGFncyA9IGZsYWdzX29yaWc7
+DQo+ICANCj4gLQlyZXR1cm4gdHg7DQo+ICsJcmV0dXJuIE5VTEw7DQo+ICB9DQo+ICBFWFBPUlRf
+U1lNQk9MX0dQTChhc3luY194b3JfdmFsKTsNCj4gIA0KDQoNCi0tDQpBbmR5IFNoZXZjaGVua28g
+PGFuZHJpeS5zaGV2Y2hlbmtvQGludGVsLmNvbT4gSW50ZWwgRmlubGFuZCBPeQ0KLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tDQpJbnRlbCBGaW5sYW5kIE95DQpSZWdpc3RlcmVkIEFkZHJlc3M6IFBMIDI4MSwgMDAxODEg
+SGVsc2lua2kgQnVzaW5lc3MgSWRlbnRpdHkgQ29kZTogMDM1NzYwNiAtIDQgRG9taWNpbGVkIGlu
+IEhlbHNpbmtpIA0KDQpUaGlzIGUtbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRzIG1heSBjb250YWlu
+IGNvbmZpZGVudGlhbCBtYXRlcmlhbCBmb3IgdGhlIHNvbGUgdXNlIG9mIHRoZSBpbnRlbmRlZCBy
+ZWNpcGllbnQocykuIEFueSByZXZpZXcgb3IgZGlzdHJpYnV0aW9uIGJ5IG90aGVycyBpcyBzdHJp
+Y3RseSBwcm9oaWJpdGVkLiBJZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQgcmVjaXBpZW50LCBw
+bGVhc2UgY29udGFjdCB0aGUgc2VuZGVyIGFuZCBkZWxldGUgYWxsIGNvcGllcy4NCg==
