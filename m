@@ -1,19 +1,24 @@
-Return-Path: <john.d@servergy.com>
-Received: from mail-oa0-f42.google.com (mail-oa0-f42.google.com
- [209.85.219.42])
+Return-Path: <mturquette@linaro.org>
+Received: from mail-pb0-f50.google.com (mail-pb0-f50.google.com
+ [209.85.160.50])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 567F92C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 09:58:46 +1100 (EST)
-Received: by mail-oa0-f42.google.com with SMTP id i4so35826oah.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Mar 2014 15:58:43 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5264C2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 11:06:26 +1100 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id md12so87607pbc.23
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Mar 2014 17:06:23 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Date: Wed, 19 Mar 2014 17:58:42 -0500
-Message-ID: <CAGtOQbTgXnxEHfuqtQ-BwpsnY=J2WktMFTNXysfYw9-cYprstQ@mail.gmail.com>
-Subject: 3.16.6 build error: swsusp_booke.S:85: Error: invalid sprg number
-From: John Donnelly <john.d@servergy.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=f46d044630a81ecbf004f4fd98fb
+To: Scott Wood <scottwood@freescale.com>,
+ "tang yuantian" <Yuantian.Tang@freescale.com>
+From: Mike Turquette <mturquette@linaro.org>
+In-Reply-To: <20140319215223.GA28070@home.buserror.net>
+References: <1390267965-22408-1-git-send-email-Yuantian.Tang@freescale.com>
+ <20140319215223.GA28070@home.buserror.net>
+Message-ID: <20140320000616.21989.35743@quantum>
+Subject: Re: clk: mpc85xx: Update the driver to align to new clock bindings
+Date: Wed, 19 Mar 2014 17:06:16 -0700
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,97 +28,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d044630a81ecbf004f4fd98fb
-Content-Type: text/plain; charset=ISO-8859-1
+Quoting Scott Wood (2014-03-19 14:52:23)
+> On Tue, Jan 21, 2014 at 09:32:45AM +0800, tang yuantian wrote:
+> > From: Tang Yuantian <yuantian.tang@freescale.com>
+> > =
 
-Platform: Freescale  p4080--e500mc  ,
+> > The clock bindings for Freescale CoreNet platform are updated.
+> > So, the driver needs to be updated accordingly.
+> > The main changes include:
+> >       - Added a new node to present the input system clock
+> >       - Changed PLL and MUX's compatible string
+> > =
 
-Suggestions welcome .
+> > Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> > =
 
- /bin/sh arch/powerpc/kernel/systbl_chk.sh arch/powerpc/kernel/systbl_chk.i
-make -f scripts/Makefile.build obj=arch/powerpc/kernel/vdso32
-  gcc -mbig-endian -m32 -Wp,-MD,arch/powerpc/kernel/.swsusp_booke.o.d
- -nostdinc -isystem /usr/lib/gcc/ppc64-redhat-linux/4.8.2/include
--I/root/linux-3.13.6/arch/powerpc/include -Iarch/powerpc/include/generated
- -Iinclude -I/root/linux-3.13.6/arch/powerpc/include/uapi
--Iarch/powerpc/include/generated/uapi -I/root/linux-3.13.6/include/uapi
--Iinclude/generated/uapi -include
-/root/linux-3.13.6/include/linux/kconfig.h -D__KERNEL__ -Iarch/powerpc
- -D__ASSEMBLY__ -Iarch/powerpc  -gdwarf-2          -c -o
-arch/powerpc/kernel/swsusp_booke.o arch/powerpc/kernel/swsusp_booke.S
-arch/powerpc/kernel/swsusp_booke.S: Assembler messages:
-arch/powerpc/kernel/swsusp_booke.S:85: Error: invalid sprg number
-arch/powerpc/kernel/swsusp_booke.S:87: Error: invalid sprg number
+> > ---
+> > drivers/clk/clk-ppc-corenet.c | 70 +++++++++++++++++++++++++++++-------=
+-------
+> >  1 file changed, 48 insertions(+), 22 deletions(-)
+> =
 
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> =
 
--- 
+> Mike, does this need to go to linux-arm-kernel@lists.infradead.org as per
+> MAINTAINERS for drivers/clk?
 
-*Regards,*
-* John.*
+Nope, I should probably change that to LKML just be politically correct.
+The important thing is to Cc me (which the original poster did) and ping
+me if I don't review your patch after a week or two (which you did).
 
-*--*
+This patch looks great and I've taken it into clk-next.
 
-*o* Energy-efficiency is #1 reason data centers look to expand.  -- Digital
-Realty Trust
-*o* Green Data Centers spending to increase 300% worldwide by 2016.  --
-Pike Research
-*o *Data Centers have become as vital to the functioni
-ng of society as power stations.  -- The Economist
+Thanks,
+Mike
 
---f46d044630a81ecbf004f4fd98fb
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+> =
 
-<div dir=3D"ltr"><div>Platform: Freescale =A0p4080--e500mc =A0,</div><div><=
-br></div><div>Suggestions welcome .=A0</div><div><br></div><div>=A0/bin/sh =
-arch/powerpc/kernel/systbl_chk.sh arch/powerpc/kernel/systbl_chk.i</div><di=
-v>make -f scripts/Makefile.build obj=3Darch/powerpc/kernel/vdso32</div>
-<div>=A0 gcc -mbig-endian -m32 -Wp,-MD,arch/powerpc/kernel/.swsusp_booke.o.=
-d =A0-nostdinc -isystem /usr/lib/gcc/ppc64-redhat-linux/4.8.2/include -I/ro=
-ot/linux-3.13.6/arch/powerpc/include -Iarch/powerpc/include/generated =A0-I=
-include -I/root/linux-3.13.6/arch/powerpc/include/uapi -Iarch/powerpc/inclu=
-de/generated/uapi -I/root/linux-3.13.6/include/uapi -Iinclude/generated/uap=
-i -include /root/linux-3.13.6/include/linux/kconfig.h -D__KERNEL__ -Iarch/p=
-owerpc =A0-D__ASSEMBLY__ -Iarch/powerpc =A0-gdwarf-2 =A0 =A0 =A0 =A0 =A0-c =
--o arch/powerpc/kernel/swsusp_booke.o arch/powerpc/kernel/swsusp_booke.S</d=
-iv>
-<div>arch/powerpc/kernel/swsusp_booke.S: Assembler messages:</div><div>arch=
-/powerpc/kernel/swsusp_booke.S:85: Error: invalid sprg number</div><div>arc=
-h/powerpc/kernel/swsusp_booke.S:87: Error: invalid sprg number</div><div>
-<br></div><div><br></div>-- <br><div dir=3D"ltr"><div style=3D"font-family:=
-Arial;font-size:12px"><span style=3D"border-collapse:collapse"><div style=
-=3D"border-collapse:collapse"><div style=3D"margin:0px;display:inline!impor=
-tant"><span style=3D"color:rgb(80,0,80);border-collapse:collapse"><font col=
-or=3D"#67b545"><b><br>
-</b></font></span></div></div><div style=3D"border-collapse:collapse"><font=
- color=3D"#67b545"><b>Regards,</b></font></div><div style=3D"border-collaps=
-e:collapse"><font color=3D"#67b545"><b>=A0John.</b></font></div><div style=
-=3D"border-collapse:collapse">
-<font color=3D"#67b545"><b><br></b></font></div><div style=3D"border-collap=
-se:collapse"><div style=3D"margin:0px;display:inline!important"><span style=
-=3D"color:rgb(80,0,80);border-collapse:collapse"><font color=3D"#67b545"><b=
->--</b></font></span></div>
-</div><div style=3D"border-collapse:collapse"><div style=3D"margin:0px;disp=
-lay:inline!important"><span style=3D"color:rgb(80,0,80);border-collapse:col=
-lapse"><font color=3D"#67b545"><b><br></b></font></span></div></div><div st=
-yle=3D"border-collapse:collapse">
-<div style=3D"margin:0px;display:inline!important"><span style=3D"color:rgb=
-(80,0,80);border-collapse:collapse"><font color=3D"#67b545"><b>o</b></font>=
-=A0</span><span style=3D"border-collapse:collapse"><font color=3D"#000000">=
-Energy-efficiency is #1 reason data centers look to expand. =A0-- Digital R=
-ealty Trust</font></span></div>
-</div><div style=3D"border-collapse:collapse"><div style=3D"margin:0px;disp=
-lay:inline!important"><font style=3D"color:rgb(51,204,0)"><b style=3D"color=
-:rgb(103,181,69)">o</b>=A0</font><font color=3D"#000000">Green Data Centers=
- spending to increase 300% worldwide by 2016. =A0-- Pike Research</font></d=
-iv>
-</div></span></div><div style=3D"font-family:Arial;font-size:12px"><div sty=
-le=3D"margin:0px"><b style=3D"color:rgb(103,181,69)">o=A0</b><font color=3D=
-"#000000">Data Centers have=A0become as vital to the=A0functioni</font><div=
- style=3D"margin:0px;display:inline!important">
-<font color=3D"#000000">ng</font><font color=3D"#000000">=A0of society as p=
-ower stations. =A0-- The Economist</font></div></div><div style=3D"margin:0=
-px"><br></div></div></div>
-</div>
+> > diff --git a/drivers/clk/clk-ppc-corenet.c b/drivers/clk/clk-ppc-corene=
+t.c
+> > index c4f76ed..8b284be 100644
+> > --- a/drivers/clk/clk-ppc-corenet.c
+> > +++ b/drivers/clk/clk-ppc-corenet.c
+> > @@ -27,7 +27,6 @@ struct cmux_clk {
+> >  #define CLKSEL_ADJUST                BIT(0)
+> >  #define to_cmux_clk(p)               container_of(p, struct cmux_clk, =
+hw)
+> >  =
 
---f46d044630a81ecbf004f4fd98fb--
+> > -static void __iomem *base;
+> >  static unsigned int clocks_per_pll;
+> >  =
+
+> >  static int cmux_set_parent(struct clk_hw *hw, u8 idx)
+> > @@ -100,7 +99,11 @@ static void __init core_mux_init(struct device_node=
+ *np)
+> >               pr_err("%s: could not allocate cmux_clk\n", __func__);
+> >               goto err_name;
+> >       }
+> > -     cmux_clk->reg =3D base + offset;
+> > +     cmux_clk->reg =3D of_iomap(np, 0);
+> > +     if (!cmux_clk->reg) {
+> > +             pr_err("%s: could not map register\n", __func__);
+> > +             goto err_clk;
+> > +     }
+> =
+
+> dev_err?  Though it looks like of_clk_init() makes it hard to pass a
+> reference to the parent device (or anything else but a function pointer
+> and device tree node) to the init function -- why?
+> =
+
+> >       node =3D of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen"=
+);
+> >       if (node && (offset >=3D 0x80))
+> > @@ -143,38 +146,39 @@ err_name:
+> >  =
+
+> >  static void __init core_pll_init(struct device_node *np)
+> >  {
+> > -     u32 offset, mult;
+> > +     u32 mult;
+> >       int i, rc, count;
+> >       const char *clk_name, *parent_name;
+> >       struct clk_onecell_data *onecell_data;
+> >       struct clk      **subclks;
+> > +     void __iomem *base;
+> >  =
+
+> > -     rc =3D of_property_read_u32(np, "reg", &offset);
+> > -     if (rc) {
+> > -             pr_err("%s: could not get reg property\n", np->name);
+> > +     base =3D of_iomap(np, 0);
+> > +     if (!base) {
+> > +             pr_err("clk-ppc: iomap error\n");
+> >               return;
+> >       }
+> >  =
+
+> >       /* get the multiple of PLL */
+> > -     mult =3D ioread32be(base + offset);
+> > +     mult =3D ioread32be(base);
+> >  =
+
+> >       /* check if this PLL is disabled */
+> >       if (mult & PLL_KILL) {
+> >               pr_debug("PLL:%s is disabled\n", np->name);
+> > -             return;
+> > +             goto err_map;
+> >       }
+> >       mult =3D (mult >> 1) & 0x3f;
+> >  =
+
+> >       parent_name =3D of_clk_get_parent_name(np, 0);
+> >       if (!parent_name) {
+> >               pr_err("PLL: %s must have a parent\n", np->name);
+> > -             return;
+> > +             goto err_map;
+> >       }
+> >  =
+
+> >       count =3D of_property_count_strings(np, "clock-output-names");
+> >       if (count < 0 || count > 4) {
+> >               pr_err("%s: clock is not supported\n", np->name);
+> > -             return;
+> > +             goto err_map;
+> >       }
+> >  =
+
+> >       /* output clock number per PLL */
+> > @@ -183,7 +187,7 @@ static void __init core_pll_init(struct device_node=
+ *np)
+> >       subclks =3D kzalloc(sizeof(struct clk *) * count, GFP_KERNEL);
+> >       if (!subclks) {
+> >               pr_err("%s: could not allocate subclks\n", __func__);
+> > -             return;
+> > +             goto err_map;
+> >       }
+> >  =
+
+> >       onecell_data =3D kzalloc(sizeof(struct clk_onecell_data), GFP_KER=
+NEL);
+> > @@ -230,30 +234,52 @@ static void __init core_pll_init(struct device_no=
+de *np)
+> >               goto err_cell;
+> >       }
+> >  =
+
+> > +     iounmap(base);
+> >       return;
+> >  err_cell:
+> >       kfree(onecell_data);
+> >  err_clks:
+> >       kfree(subclks);
+> > +err_map:
+> > +     iounmap(base);
+> > +}
+> =
+
+> Consider devres -- is there a devres version of of_iomap()?
+> =
+
+> -Scott
