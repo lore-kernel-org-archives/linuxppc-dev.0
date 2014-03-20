@@ -1,19 +1,25 @@
-Return-Path: <xuelin.shi@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0E4302C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 18:17:36 +1100 (EST)
-From: <xuelin.shi@freescale.com>
-To: <vinod.koul@intel.com>, <dan.j.williams@intel.com>
-Subject: [PATCH v2] fix dmaengine_unmap failure
-Date: Thu, 20 Mar 2014 14:33:50 +0800
-Message-ID: <1395297230-8195-1-git-send-email-xuelin.shi@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id A99D82C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2014 18:24:23 +1100 (EST)
+Date: Thu, 20 Mar 2014 08:23:59 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: Tasks stuck in futex code (in 3.14-rc6)
+Message-ID: <20140320072359.GF27965@twins.programming.kicks-ass.net>
+References: <20140319152619.GB10406@linux.vnet.ibm.com>
+ <20140319154705.GB8557@laptop.programming.kicks-ass.net>
+ <20140319170829.GD8557@laptop.programming.kicks-ass.net>
+ <20140320053350.GB30295@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: dmaengine@vger.kernel.org, Xuelin Shi <xuelin.shi@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140320053350.GB30295@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ davidlohr@hp.com, paulus@samba.org, tglx@linutronix.de,
+ Paul McKenney <paulmck@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
+ mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xuelin Shi <xuelin.shi@freescale.com>
+On Thu, Mar 20, 2014 at 11:03:50AM +0530, Srikar Dronamraju wrote:
+> > > Joy,.. let me look at that with ppc in mind.
+> > 
+> > OK; so while pretty much all the comments from that patch are utter
+> > nonsense (what was I thinking), I cannot actually find a real bug.
+> > 
+> > But could you try the below which replaces a control dependency with a
+> > full barrier. The control flow is plenty convoluted that I think the
+> > control barrier isn't actually valid anymore and that might indeed
+> > explain the fail.
+> > 
+> 
+> Unfortunately the patch didnt help. Still seeing tasks stuck
 
-The count which is used to get_unmap_data maybe not the same as the
-count computed in dmaengine_unmap which causes to free data in a
-wrong pool.
-
-This patch fixes this issue by keeping the map count with unmap_data
-structure and use this count to get the pool.
-
-Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
----
-change history:
-	v1: keep mempool pointer with unmap struct
-	v2: keep u8 map_cnt instead of mempool pointer to save mem.
-
- drivers/dma/dmaengine.c   | 2 ++
- include/linux/dmaengine.h | 1 +
- 2 files changed, 3 insertions(+)
-
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index ed610b4..a4068e2 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -1014,6 +1014,7 @@ static void dmaengine_unmap(struct kref *kref)
- 		dma_unmap_page(dev, unmap->addr[i], unmap->len,
- 			       DMA_BIDIRECTIONAL);
- 	}
-+	cnt = unmap->map_cnt;
- 	mempool_free(unmap, __get_unmap_pool(cnt)->pool);
- }
- 
-@@ -1079,6 +1080,7 @@ dmaengine_get_unmap_data(struct device *dev, int nr, gfp_t flags)
- 	memset(unmap, 0, sizeof(*unmap));
- 	kref_init(&unmap->kref);
- 	unmap->dev = dev;
-+	unmap->map_cnt = nr;
- 
- 	return unmap;
- }
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index c5c92d5..0a5f552 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -433,6 +433,7 @@ typedef bool (*dma_filter_fn)(struct dma_chan *chan, void *filter_param);
- typedef void (*dma_async_tx_callback)(void *dma_async_param);
- 
- struct dmaengine_unmap_data {
-+	u8 map_cnt;
- 	u8 to_cnt;
- 	u8 from_cnt;
- 	u8 bidi_cnt;
--- 
-1.8.3.2
+Aww bugger. I'll be traveling tomorrow and today is wasted getting
+ready. So unless Davidlohr has anything we'll need to scrap this change.
