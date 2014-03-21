@@ -1,35 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7E8A52C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Mar 2014 08:16:45 +1100 (EST)
-Message-ID: <1395436593.12479.379.camel@snotra.buserror.net>
-Subject: Re: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
-From: Scott Wood <scottwood@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>
-Date: Fri, 21 Mar 2014 16:16:33 -0500
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6E40C4@AcuExch.aculab.com>
-References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
- <1394586624.13761.132.camel@snotra.buserror.net>
- <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
- <1394646185.13761.145.camel@snotra.buserror.net>
- <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
- <1394835987.12479.119.camel@snotra.buserror.net>
- <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
- <1395184734.12479.250.camel@snotra.buserror.net>
- <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
- <063D6719AE5E284EB5DD2968C1650D6D0F6E33AE@AcuExch.aculab.com>
- <1395353279.12479.335.camel@snotra.buserror.net>
- <063D6719AE5E284EB5DD2968C1650D6D0F6E40C4@AcuExch.aculab.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3C4A92C00B9
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 09:57:14 +1100 (EST)
+Message-ID: <1395442590.3460.85.camel@pasglop>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: ego@linux.vnet.ibm.com
+Date: Sat, 22 Mar 2014 09:56:30 +1100
+In-Reply-To: <20140321110445.GB2493@in.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+ <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+ <20140321110445.GB2493@in.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- 'Kevin Hao' <haokexin@gmail.com>, Chenhui Zhao <chenhui.zhao@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Cc: Viresh Kumar <viresh.kumar@linaro.org>,
+ Linux PM list <linux-pm@vger.kernel.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-03-21 at 09:21 +0000, David Laight wrote:
-> From: Scott Wood [mailto:scottwood@freescale.com]
-> > On Thu, 2014-03-20 at 11:59 +0000, David Laight wrote:
-> > > I tried to work out what the 'twi, isync' instructions were for (in in_le32()).
-> > > The best I could come up with was to ensure a synchronous bus-fault.
-> > > But bus faults are probably only expected during device probing - not
-> > > normal operation, and the instructions will have a significant cost.
+On Fri, 2014-03-21 at 16:34 +0530, Gautham R Shenoy wrote:
+
 > > >
-> > > Additionally in_le32() and out_le32() both start with a 'sync' instruction.
-> > > In many cases that isn't needed either - an explicit iosync() can be
-> > > used after groups of instructions.
+> > > +/*
+> > > + * Computes the current frequency on this cpu
+> > > + * and stores the result in *ret_freq.
+> > > + */
+> > > +static void powernv_read_cpu_freq(void *ret_freq)
+> > > +{
+> > > +       unsigned long pmspr_val;
+> > > +       s8 local_pstate_id;
+> > > +       int *cur_freq, freq, pstate_id;
+> > > +
+> > > +       cur_freq = (int *)ret_freq;
 > > 
-> > The idea is that it's better to be maximally safe by default, and let
-> > performance critical sections be optimized using raw accessors and
-> > explicit synchronization if needed, than to have hard-to-debug bugs due
-> > to missing/wrong sync.  A lot of I/O is slow enough that the performance
-> > impact doesn't really matter, but the brain-time cost of getting the
-> > sync right is still there.
+> > You don't need cur_freq variable at all..
 > 
-> Hmmm....
-> 
-> That might be an excuse for the 'sync', but not the twi and isync.
+> I don't like it either. But the compiler complains without this hack
+> :-(
 
-That might be true if I/O is always cache inhibited and guarded, in
-which case I think we can rely on that to ensure that the load has
-completed before we do things like wrtee or rfi.  In any case, I'd want
-to hear Ben's explanation.
+Casting integers into void * is a recipe for disaster... what is that
+supposed to be about ? We lose all type checking and get exposed
+to endian issues etc... the day somebody uses a different type on both
+sides.
 
-> I was setting up a dma request (for the ppc 83xx PCIe bridge) and
-> was doing back to back little-endian writes into memory.
-> I had difficulty finding and including header files containing
-> the definitions for byteswapped accesses I needed.
-> arch/powerpc/include/asm/swab.h contains some - but I couldn't
-> work out how to get it included (apart from giving the full path).
-> 
-> In any case you need to understand when synchronisation is
-> required - otherwise you will get it wrong.
-> Especially since non-byteswapped accesses are done by direct
-> access.
+Also is "freq" a frequency ? In this case an int isn't big enough.
 
-Yes, it's bad that rawness combines the lack of byteswapping with the
-lack of synchronization.  Ideally the raw accessors would also come in
-big and little endian form, plus a native endian form if it's really
-needed.
-
--Scott
+Cheers,
+Ben.
