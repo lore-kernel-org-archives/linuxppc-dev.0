@@ -1,24 +1,45 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id A85552C00CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 23:03:56 +1100 (EST)
-Message-ID: <532C2ACD.7070107@arm.com>
-Date: Fri, 21 Mar 2014 12:04:29 +0000
-From: Sudeep Holla <sudeep.holla@arm.com>
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4A65C2C00A0
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 23:31:18 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 21 Mar 2014 06:31:16 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 35F9A3E40026
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 06:31:13 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2LCUdJ01179996
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 13:30:39 +0100
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2LCVCb8021204
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 06:31:13 -0600
+Date: Fri, 21 Mar 2014 18:01:06 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: David Laight <David.Laight@aculab.com>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+Message-ID: <20140321123106.GC2493@in.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+ <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+ <20140321110445.GB2493@in.ibm.com>
+ <CAKohpo=k-e1GLiLRNtJ3Xi3+NUWW1+gvtCNr_4Ag60j49dZvdQ@mail.gmail.com>
+ <063D6719AE5E284EB5DD2968C1650D6D0F6E5386@AcuExch.aculab.com>
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH RFC/RFT v3 6/9] powerpc: move cacheinfo sysfs to generic
- cacheinfo infrastructure
-References: <1392825976-17633-1-git-send-email-sudeep.holla@arm.com>
- <1392825976-17633-7-git-send-email-sudeep.holla@arm.com>
- <531945D1.7010503@linux.vnet.ibm.com> <531963D9.5040701@linux.vnet.ibm.com>
- <531D9E3A.7040109@arm.com> <532BB5AC.3000904@linux.vnet.ibm.com>
-In-Reply-To: <532BB5AC.3000904@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6E5386@AcuExch.aculab.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ 'Viresh Kumar' <viresh.kumar@linaro.org>,
+ Linux PM list <linux-pm@vger.kernel.org>,
+ "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,47 +49,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anshuman,
+On Fri, Mar 21, 2014 at 12:01:07PM +0000, David Laight wrote:
+> From: Viresh Kumar
+>  
+> > On 21 March 2014 16:34, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> > > Heh! Well, that wasn't the reason why this was sent out as a separate
+> > > patch, but never mind. Though I don't understand why it would be
+> > > difficult to review the patch though.
+> > 
+> > Because the initial driver wasn't complete earlier. There were 2-3 patches
+> > after the first one which are changing what the first patch has added.
+> > Nothing else :)
+> > 
+> > >> > +static void powernv_read_cpu_freq(void *ret_freq)
+> > >> > +{
+> > >> > +       unsigned long pmspr_val;
+> > >> > +       s8 local_pstate_id;
+> > >> > +       int *cur_freq, freq, pstate_id;
+> > >> > +
+> > >> > +       cur_freq = (int *)ret_freq;
+> > >>
+> > >> You don't need cur_freq variable at all..
+> > >
+> > > I don't like it either. But the compiler complains without this hack
+> > > :-(
+> > 
+> > Why would the compiler warn for doing this?:
+> > 
+> > *(int *)ret_freq = freq;
+> 
+> Because it is very likely to be wrong.
+> In general casts of pointers to integer types are dangerous.
+> In this case why not make the function return the value?
 
-On 21/03/14 03:44, Anshuman Khandual wrote:
-> On 03/10/2014 04:42 PM, Sudeep Holla wrote:
->> Hi Anshuman,
->>
->> On 07/03/14 06:14, Anshuman Khandual wrote:
->>> On 03/07/2014 09:36 AM, Anshuman Khandual wrote:
->>>> On 02/19/2014 09:36 PM, Sudeep Holla wrote:
->>>>> From: Sudeep Holla <sudeep.holla@arm.com>
->>>>>
->>>>> This patch removes the redundant sysfs cacheinfo code by making use o=
-f
->>>>> the newly introduced generic cacheinfo infrastructure.
+Because this function is called via an smp_call_function(). And we
+need a way of returning the value to the caller.
 
-[...]
-
->>>> When it is UNIFIED we return index 0, which is correct. But the index
->>>> for instruction and data cache seems to be swapped which wrong. This
->>>> will fetch invalid properties for any given cache type.
->>>>
->>
->> Ah, that's silly mistake on my side, will fix it.
->>
->>>> I have done some initial review and testing for this patch's impact on
->>>> PowerPC (ppc64 POWER specifically). I am trying to do some code clean-=
-up
->>>> and re-arrangements. Will post out soon. Thanks !
->>
->> Thanks for taking time for testing and reviewing these patches.
->=20
-> Now that you got some of the problems to work on and resend the patches, =
-I will
-> hold on to the clean up patches I had.
->=20
-
-I have done most of the changes but still unable to find why the shared_cpu=
-_map
-is getting incorrect on PPC. All the other wrong entries are fixed. Any clu=
-e on
-shared_cpu_map ?
-
-Regards,
-Sudeep
+> 
+> 	David
+> 
+> 
