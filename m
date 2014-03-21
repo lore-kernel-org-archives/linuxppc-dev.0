@@ -1,35 +1,24 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 30C102C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 20:23:25 +1100 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 09444-08 for <linuxppc-dev@lists.ozlabs.org>;
- Fri, 21 Mar 2014 09:23:21 +0000 (GMT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Scott Wood' <scottwood@freescale.com>
-Subject: RE: [PATCH 9/9] powerpc/pm: support deep sleep feature on T1040
-Date: Fri, 21 Mar 2014 09:21:56 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6E40C4@AcuExch.aculab.com>
-References: <1394168285-32275-1-git-send-email-chenhui.zhao@freescale.com>
- <1394168285-32275-9-git-send-email-chenhui.zhao@freescale.com>
- <1394586624.13761.132.camel@snotra.buserror.net>
- <20140312055755.GA17203@pek-khao-d1.corp.ad.wrs.com>
- <1394646185.13761.145.camel@snotra.buserror.net>
- <20140313074613.GD26692@pek-khao-d1.corp.ad.wrs.com>
- <1394835987.12479.119.camel@snotra.buserror.net>
- <20140316045801.GA32188@pek-khao-d1.corp.ad.wrs.com>
- <1395184734.12479.250.camel@snotra.buserror.net>
- <20140320114735.GD10182@pek-khao-d1.corp.ad.wrs.com>
- <063D6719AE5E284EB5DD2968C1650D6D0F6E33AE@AcuExch.aculab.com>
- <1395353279.12479.335.camel@snotra.buserror.net>
-In-Reply-To: <1395353279.12479.335.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <viresh.linux@gmail.com>
+Received: from mail-vc0-x234.google.com (mail-vc0-x234.google.com
+ [IPv6:2607:f8b0:400c:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 420982C00C2
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 20:31:32 +1100 (EST)
+Received: by mail-vc0-f180.google.com with SMTP id lf12so2325014vcb.11
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 02:31:29 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- 'Kevin Hao' <haokexin@gmail.com>, Chenhui Zhao <chenhui.zhao@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Sender: viresh.linux@gmail.com
+In-Reply-To: <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
+Date: Fri, 21 Mar 2014 15:01:29 +0530
+Message-ID: <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
+Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,33 +28,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogU2NvdHQgV29vZCBbbWFpbHRvOnNjb3R0d29vZEBmcmVlc2NhbGUuY29tXQ0KPiBPbiBU
-aHUsIDIwMTQtMDMtMjAgYXQgMTE6NTkgKzAwMDAsIERhdmlkIExhaWdodCB3cm90ZToNCj4gPiBJ
-IHRyaWVkIHRvIHdvcmsgb3V0IHdoYXQgdGhlICd0d2ksIGlzeW5jJyBpbnN0cnVjdGlvbnMgd2Vy
-ZSBmb3IgKGluIGluX2xlMzIoKSkuDQo+ID4gVGhlIGJlc3QgSSBjb3VsZCBjb21lIHVwIHdpdGgg
-d2FzIHRvIGVuc3VyZSBhIHN5bmNocm9ub3VzIGJ1cy1mYXVsdC4NCj4gPiBCdXQgYnVzIGZhdWx0
-cyBhcmUgcHJvYmFibHkgb25seSBleHBlY3RlZCBkdXJpbmcgZGV2aWNlIHByb2JpbmcgLSBub3QN
-Cj4gPiBub3JtYWwgb3BlcmF0aW9uLCBhbmQgdGhlIGluc3RydWN0aW9ucyB3aWxsIGhhdmUgYSBz
-aWduaWZpY2FudCBjb3N0Lg0KPiA+DQo+ID4gQWRkaXRpb25hbGx5IGluX2xlMzIoKSBhbmQgb3V0
-X2xlMzIoKSBib3RoIHN0YXJ0IHdpdGggYSAnc3luYycgaW5zdHJ1Y3Rpb24uDQo+ID4gSW4gbWFu
-eSBjYXNlcyB0aGF0IGlzbid0IG5lZWRlZCBlaXRoZXIgLSBhbiBleHBsaWNpdCBpb3N5bmMoKSBj
-YW4gYmUNCj4gPiB1c2VkIGFmdGVyIGdyb3VwcyBvZiBpbnN0cnVjdGlvbnMuDQo+IA0KPiBUaGUg
-aWRlYSBpcyB0aGF0IGl0J3MgYmV0dGVyIHRvIGJlIG1heGltYWxseSBzYWZlIGJ5IGRlZmF1bHQs
-IGFuZCBsZXQNCj4gcGVyZm9ybWFuY2UgY3JpdGljYWwgc2VjdGlvbnMgYmUgb3B0aW1pemVkIHVz
-aW5nIHJhdyBhY2Nlc3NvcnMgYW5kDQo+IGV4cGxpY2l0IHN5bmNocm9uaXphdGlvbiBpZiBuZWVk
-ZWQsIHRoYW4gdG8gaGF2ZSBoYXJkLXRvLWRlYnVnIGJ1Z3MgZHVlDQo+IHRvIG1pc3Npbmcvd3Jv
-bmcgc3luYy4gIEEgbG90IG9mIEkvTyBpcyBzbG93IGVub3VnaCB0aGF0IHRoZSBwZXJmb3JtYW5j
-ZQ0KPiBpbXBhY3QgZG9lc24ndCByZWFsbHkgbWF0dGVyLCBidXQgdGhlIGJyYWluLXRpbWUgY29z
-dCBvZiBnZXR0aW5nIHRoZQ0KPiBzeW5jIHJpZ2h0IGlzIHN0aWxsIHRoZXJlLg0KDQpIbW1tLi4u
-Lg0KDQpUaGF0IG1pZ2h0IGJlIGFuIGV4Y3VzZSBmb3IgdGhlICdzeW5jJywgYnV0IG5vdCB0aGUg
-dHdpIGFuZCBpc3luYy4NCg0KSSB3YXMgc2V0dGluZyB1cCBhIGRtYSByZXF1ZXN0IChmb3IgdGhl
-IHBwYyA4M3h4IFBDSWUgYnJpZGdlKSBhbmQNCndhcyBkb2luZyBiYWNrIHRvIGJhY2sgbGl0dGxl
-LWVuZGlhbiB3cml0ZXMgaW50byBtZW1vcnkuDQpJIGhhZCBkaWZmaWN1bHR5IGZpbmRpbmcgYW5k
-IGluY2x1ZGluZyBoZWFkZXIgZmlsZXMgY29udGFpbmluZw0KdGhlIGRlZmluaXRpb25zIGZvciBi
-eXRlc3dhcHBlZCBhY2Nlc3NlcyBJIG5lZWRlZC4NCmFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9z
-d2FiLmggY29udGFpbnMgc29tZSAtIGJ1dCBJIGNvdWxkbid0DQp3b3JrIG91dCBob3cgdG8gZ2V0
-IGl0IGluY2x1ZGVkIChhcGFydCBmcm9tIGdpdmluZyB0aGUgZnVsbCBwYXRoKS4NCg0KSW4gYW55
-IGNhc2UgeW91IG5lZWQgdG8gdW5kZXJzdGFuZCB3aGVuIHN5bmNocm9uaXNhdGlvbiBpcw0KcmVx
-dWlyZWQgLSBvdGhlcndpc2UgeW91IHdpbGwgZ2V0IGl0IHdyb25nLg0KRXNwZWNpYWxseSBzaW5j
-ZSBub24tYnl0ZXN3YXBwZWQgYWNjZXNzZXMgYXJlIGRvbmUgYnkgZGlyZWN0DQphY2Nlc3MuDQoN
-CglEYXZpZA0KDQo=
+On Thu, Mar 20, 2014 at 5:41 PM, Gautham R. Shenoy
+<ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> The current frequency of a cpu is reported through the sysfs file
+> cpuinfo_cur_freq. This requires the driver to implement a
+> "->get(unsigned int cpu)" method which will return the current
+> operating frequency.
+>
+> Implement a function named powernv_cpufreq_get() which reads the local
+> pstate from the PMSR and returns the corresponding frequency.
+>
+> Set the powernv_cpufreq_driver.get hook to powernv_cpufreq_get().
+>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 38 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 38 insertions(+)
+
+Please merge these fixups with the first patch which is creating the driver.
+I understand that a different guy has created this patch and so wanted
+to have a patch on his name but its really difficult to review this way.
+Better add your signed-off in the first patch instead. Sending such changes
+once the driver is mainlined looks fine.
+
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 46bee8a..ef6ed8c 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -206,6 +206,43 @@ static inline void set_pmspr(unsigned long sprn, unsigned long val)
+>         BUG();
+>  }
+>
+> +/*
+> + * Computes the current frequency on this cpu
+> + * and stores the result in *ret_freq.
+> + */
+> +static void powernv_read_cpu_freq(void *ret_freq)
+> +{
+> +       unsigned long pmspr_val;
+> +       s8 local_pstate_id;
+> +       int *cur_freq, freq, pstate_id;
+> +
+> +       cur_freq = (int *)ret_freq;
+
+You don't need cur_freq variable at all..
+
+> +       pmspr_val = get_pmspr(SPRN_PMSR);
+> +
+> +       /* The local pstate id corresponds bits 48..55 in the PMSR.
+> +         * Note: Watch out for the sign! */
+> +       local_pstate_id = (pmspr_val >> 48) & 0xFF;
+> +       pstate_id = local_pstate_id;
+
+similarly local_pstate_id
+
+> +
+> +       freq = pstate_id_to_freq(pstate_id);
+> +       pr_debug("cpu %d pmsr %lx pstate_id %d frequency %d \n",
+> +               smp_processor_id(), pmspr_val, pstate_id, freq);
+> +       *cur_freq = freq;
+
+Move above print here after a blank line. Also remove freq variable as
+well and use *cur_freq directly.. And then you can rename it to freq as well.
+
+> +}
+> +
+> +/*
+> + * Returns the cpu frequency as reported by the firmware for 'cpu'.
+> + * This value is reported through the sysfs file cpuinfo_cur_freq.
+> + */
+> +unsigned int powernv_cpufreq_get(unsigned int cpu)
+> +{
+> +       int ret_freq;
+> +
+> +       smp_call_function_any(cpu_sibling_mask(cpu), powernv_read_cpu_freq,
+> +                       &ret_freq, 1);
+> +       return ret_freq;
+> +}
+> +
+>  static void set_pstate(void *pstate)
+>  {
+>         unsigned long val;
+> @@ -297,6 +334,7 @@ static int powernv_cpufreq_target(struct cpufreq_policy *policy,
+>  static struct cpufreq_driver powernv_cpufreq_driver = {
+>         .verify         = powernv_cpufreq_verify,
+>         .target         = powernv_cpufreq_target,
+> +       .get            = powernv_cpufreq_get,
+>         .init           = powernv_cpufreq_cpu_init,
+>         .exit           = powernv_cpufreq_cpu_exit,
+>         .name           = "powernv-cpufreq",
+> --
+> 1.8.3.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
