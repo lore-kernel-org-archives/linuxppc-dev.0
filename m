@@ -1,19 +1,40 @@
-Return-Path: <B48286@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D64E52C00BA
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 22:18:14 +1100 (EST)
-From: Hou Zhiqiang <B48286@freescale.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] mtd: m25p80: Modify the name of mtd_info
-Date: Fri, 21 Mar 2014 19:16:18 +0800
-Message-ID: <1395400578-5637-1-git-send-email-B48286@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1A2582C00A8
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 22:41:05 +1100 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Fri, 21 Mar 2014 21:41:04 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8D4822BB0047
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 22:40:32 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2LBKAbP10879314
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 22:20:10 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2LBeVwr009636
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 22:40:31 +1100
+Message-ID: <532C251B.1020306@linux.vnet.ibm.com>
+Date: Fri, 21 Mar 2014 17:10:11 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, mingkai.hu@freescale.com,
- Hou Zhiqiang <B48286@freescale.com>, dwmw2@infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/5] powernv: cpufreq driver for powernv platform
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-2-git-send-email-ego@linux.vnet.ibm.com>
+ <CAOh2x=kp65vrKamtxxR9iCX+t-S3nDJP05+1mfpOiWzbWpfGYA@mail.gmail.com>
+ <20140321104317.GA2493@in.ibm.com>
+ <CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
+In-Reply-To: <CAKohpo=JqHOPF_pdcAsvRgc1vENmS=Sg9pS8ZXPGhfMFnA8ZUA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>,
+ Anton Blanchard <anton@samba.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,63 +44,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To specify spi flash layouts by "mtdparts=..." in cmdline, we must
-give mtd_info a fixed name,because the cmdlinepart's parser will
-match the name of mtd_info given in cmdline.
-Now, if use DT, the mtd_info's name will be spi->dev->name. It
-consists of spi_master->bus_num, and the spi_master->bus_num maybe
-dynamically fetched. So, in this case, replace the component bus_num
-with thei physical address of spi master.
+On 03/21/2014 04:24 PM, Viresh Kumar wrote:
+> On 21 March 2014 16:13, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+>> On Fri, Mar 21, 2014 at 02:11:32PM +0530, Viresh Kumar wrote:
+> 
+>>>> +               pr_debug("PState id %d freq %d MHz\n", id, freq);
+>>>> +               powernv_freqs[i].driver_data = i;
+>>>
+[...] 
+>>>> +static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>> +{
+>>>> +       int base, i;
+>>>> +
+>>>> +#ifdef CONFIG_SMP
+>>>
+>>> What will break if you don't have this ifdef here? Without that as well
+>>> below code should work?
+> 
+> Missed this one?
+> 
 
-Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
----
- drivers/mtd/devices/m25p80.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+Nothing will break, its just that the code size will be a tiny bit
+lesser on UP configs, that's all :-) Anyway, I think removing the ifdef
+improves the readability (and doesn't add any noticeable overhead on UP
+kernels), so let's get rid of it.
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 7eda71d..64450a2 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -30,6 +30,7 @@
- #include <linux/mtd/cfi.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/partitions.h>
-+#include <linux/of_address.h>
- #include <linux/of_platform.h>
- 
- #include <linux/spi/spi.h>
-@@ -934,9 +935,11 @@ static int m25p_probe(struct spi_device *spi)
- 	struct flash_platform_data	*data;
- 	struct m25p			*flash;
- 	struct flash_info		*info;
--	unsigned			i;
-+	unsigned			i, ret;
- 	struct mtd_part_parser_data	ppdata;
- 	struct device_node *np = spi->dev.of_node;
-+	struct resource res;
-+	struct device_node *mnp = spi->master->dev.of_node;
- 
- 	/* Platform data helps sort out which chip type we have, as
- 	 * well as how this board partitions it.  If we don't have
-@@ -1009,8 +1012,17 @@ static int m25p_probe(struct spi_device *spi)
- 
- 	if (data && data->name)
- 		flash->mtd.name = data->name;
--	else
--		flash->mtd.name = dev_name(&spi->dev);
-+	else{
-+		ret = of_address_to_resource(mnp, 0, &res);
-+		if (ret) {
-+			dev_err(&spi->dev, "failed to get spi master resource\n");
-+			return ret;
-+		}
-+		flash->mtd.name = kasprintf(GFP_KERNEL, "spi%x.%d",
-+				(unsigned)res.start, spi->chip_select);
-+		if (!flash->mtd.name)
-+			return -ENOMEM;
-+	}
- 
- 	flash->mtd.type = MTD_NORFLASH;
- 	flash->mtd.writesize = 1;
--- 
-1.8.5
+Regards,
+Srivatsa S. Bhat
+
+>>>> +       base = cpu_first_thread_sibling(policy->cpu);
+>>>> +
+>>>> +       for (i = 0; i < threads_per_core; i++)
+>>>> +               cpumask_set_cpu(base + i, policy->cpus);
+>>>> +#endif
+>>>> +       policy->cpuinfo.transition_latency = 25000;
+>>>> +
+>>>> +       policy->cur = powernv_freqs[0].frequency;
+>>>> +       cpufreq_frequency_table_get_attr(powernv_freqs, policy->cpu);
+>>>
