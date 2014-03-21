@@ -1,39 +1,39 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 34F322C00B0
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 19:20:05 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 85A3E2C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 19:37:33 +1100 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Fri, 21 Mar 2014 02:20:03 -0600
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4E7ADC9003E
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 04:19:55 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2L8JwMp8716692
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 08:19:58 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2L8JwNA008579
- for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 04:19:58 -0400
-Date: Fri, 21 Mar 2014 13:49:42 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/5] powernv: Enable Dynamic Frequency
-Message-ID: <20140321081942.GE27293@in.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
- <CAOh2x=mYnRWEqs=qBi4C4OWog+ds85=e+uDTJGpojozEr-XKhQ@mail.gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Fri, 21 Mar 2014 08:37:29 -0000
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id BE34A2190056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 08:37:20 +0000 (GMT)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2L8bD5W66322494
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 08:37:14 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2L8bOeS021848
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 02:37:25 -0600
+Message-ID: <532BFA38.9090904@fr.ibm.com>
+Date: Fri, 21 Mar 2014 09:37:12 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAOh2x=mYnRWEqs=qBi4C4OWog+ds85=e+uDTJGpojozEr-XKhQ@mail.gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Linux PM list <linux-pm@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Reply-To: ego@linux.vnet.ibm.com
+To: Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH 00/18] powerpc/boot: 64bit little endian wrapper
+References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
+ <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
+ <1395335024.20123.2.camel@smoke>
+In-Reply-To: <1395335024.20123.2.camel@smoke>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +43,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Viresh,
+Hi Geoff,
 
-On Fri, Mar 21, 2014 at 01:16:03PM +0530, Viresh Kumar wrote:
-> On Thu, Mar 20, 2014 at 5:40 PM, Gautham R. Shenoy
-> <ego@linux.vnet.ibm.com> wrote:
-> > This is the v3 of the consolidated patchset consisting
-> > patches for enabling cpufreq on IBM POWERNV platforms
-> > along with some enhancements.
-> 
-> This is the first time I saw them. Looks like you never Cc'd linux-pm list.
-> Also, would be better to keep Maintainers in --to field so that they can
-> review them as soon as possible. Otherwise they might stay on lists for
-> a long time..
+> Do you have these in a git branch somewhere so I can merge and test
+> them?
 
-Yes, I hadn't Cc'ed linux-pm list last time around. Sorry about
-that. Will keep this in mind the next time around. Also, your
-suggestion regarding keeping the Maintainers in --to field is well
-taken.
+No, sorry, I don't have a public git repo. Let me see how I can fix 
+that, it might be useful for future patchsets. 
 
---
-Thanks and Regards
-gautham.
-> 
+Thanks,
+
+C.  
