@@ -1,39 +1,41 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5B58D2C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 20:37:48 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9915B2C00BC
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 20:55:46 +1100 (EST)
 Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Fri, 21 Mar 2014 09:37:44 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 78A681B08040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 09:37:32 +0000 (GMT)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2L9bTNa56688718
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 09:37:29 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2L9bese009401
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2014 03:37:41 -0600
-Message-ID: <532C0856.6090707@fr.ibm.com>
-Date: Fri, 21 Mar 2014 10:37:26 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Fri, 21 Mar 2014 03:55:43 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E5A6D1FF001A
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 03:55:40 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2L9swV511141548
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 10:54:58 +0100
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2L9tei6012399
+ for <linuxppc-dev@ozlabs.org>; Fri, 21 Mar 2014 03:55:40 -0600
+Date: Fri, 21 Mar 2014 15:25:34 +0530
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 4/5] powernv:cpufreq: Export nominal frequency via
+ sysfs.
+Message-ID: <20140321095534.GF27293@in.ibm.com>
+References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395317460-14811-5-git-send-email-ego@linux.vnet.ibm.com>
+ <CAOh2x=kLwDGFtHR5sBKhE-9L=3=npV4_i+B+BVm+yBocmmMvzQ@mail.gmail.com>
 MIME-Version: 1.0
-To: Geoff Levand <geoff@infradead.org>
-Subject: Re: [PATCH 00/18] powerpc/boot: 64bit little endian wrapper
-References: <1391788771-16405-1-git-send-email-clg@fr.ibm.com>
- <1395328213-19206-1-git-send-email-clg@fr.ibm.com>
- <1395335024.20123.2.camel@smoke> <532BFA38.9090904@fr.ibm.com>
-In-Reply-To: <532BFA38.9090904@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOh2x=kLwDGFtHR5sBKhE-9L=3=npV4_i+B+BVm+yBocmmMvzQ@mail.gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM list <linux-pm@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Reply-To: ego@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,18 +45,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Geoff,
- 
->> Do you have these in a git branch somewhere so I can merge and test
->> them?
+On Fri, Mar 21, 2014 at 02:17:28PM +0530, Viresh Kumar wrote:
+> > +static ssize_t show_cpuinfo_nominal_freq(struct cpufreq_policy *policy,
+> > +                                       char *buf)
+> > +{
+> > +       int nominal_freq;
+> > +       nominal_freq = pstate_id_to_freq(powernv_pstate_info.pstate_nominal_id);
+> > +       return sprintf(buf, "%u\n", nominal_freq);
 > 
-> No, sorry, I don't have a public git repo. Let me see how I can fix 
-> that, it might be useful for future patchsets. 
+> return sprintf(buf, "%u\n",
+> pstate_id_to_freq(powernv_pstate_info.pstate_nominal_id));
 
-Please try that :
+Sure. Will fix this. 
+> 
+> ??
+> 
+> > +}
+> > +
+> > +
+> 
+> remove extra blank line.
+> 
+> > +struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq = {
+> > +       .attr = { .name = "cpuinfo_nominal_freq",
+> > +                 .mode = 0444,
+> > +               },
+> 
+> Align {}
 
-	git pull git://github.com/legoater/linux.git zimage
+Probably the use of ATTR_RO(cpuinfo_nominal_freq) and renaming
+show_cpuinfo_nominal_freq to cpuinfo_nominal_freq_show() would be even
+better. What do you think ?
 
-Thanks,
+> 
+> > +       .show = show_cpuinfo_nominal_freq,
+> > +};
+> > +
+> > +
+> >  static struct freq_attr *powernv_cpu_freq_attr[] = {
+> >         &cpufreq_freq_attr_scaling_available_freqs,
+> > +       &cpufreq_freq_attr_cpuinfo_nominal_freq,
+> >         NULL,
+> >  };
 
-C.
+This needs to be rewritten to include the entries of cpufreq_generic_attr.
+>
+
+Thanks for the review.
+
+--
+Regards
+gautham. 
