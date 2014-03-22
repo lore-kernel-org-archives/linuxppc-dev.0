@@ -1,43 +1,19 @@
-Return-Path: <ego@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <B48286@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1C1C32C00AA
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 18:54:08 +1100 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
- Sat, 22 Mar 2014 01:54:06 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0668119D803F
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 01:54:01 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2M5pCgO8651014
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 06:51:13 +0100
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2M7s3ED002767
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 01:54:03 -0600
-Date: Sat, 22 Mar 2014 13:23:56 +0530
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v3 5/5] powernv:cpufreq: Implement the driver->get() method
-Message-ID: <20140322075356.GA3857@in.ibm.com>
-References: <1395317460-14811-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395317460-14811-6-git-send-email-ego@linux.vnet.ibm.com>
- <CAOh2x==9JT-q2w95Ub_Ck_UMPcWY_4vo_Y44-i=DPjtu0jxwZg@mail.gmail.com>
- <20140321110445.GB2493@in.ibm.com>
- <1395442590.3460.85.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id B7D9A2C00AA
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 19:00:35 +1100 (EST)
+From: Hou Zhiqiang <B48286@freescale.com>
+To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
+Subject: [v2] mtd: m25p80: Modify the name of mtd_info
+Date: Sat, 22 Mar 2014 15:58:06 +0800
+Message-ID: <1395475086-31195-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1395442590.3460.85.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, ego@linux.vnet.ibm.com,
- Linux PM list <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Reply-To: ego@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: scottwood@freescale.com, mingkai.hu@freescale.com,
+ Hou Zhiqiang <B48286@freescale.com>, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,54 +23,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+To specify spi flash layouts by "mtdparts=..." in cmdline, we must
+give mtd_info a fixed name,because the cmdlinepart's parser will
+match the name of mtd_info given in cmdline.
+Now, if use DT, the mtd_info's name will be spi->dev->name. It
+consists of spi_master->bus_num, and the spi_master->bus_num maybe
+dynamically fetched. So, in this case, replace the component bus_num
+with thei physical address of spi master.
 
-On Sat, Mar 22, 2014 at 09:56:30AM +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2014-03-21 at 16:34 +0530, Gautham R Shenoy wrote:
-> 
-> > > >
-> > > > +/*
-> > > > + * Computes the current frequency on this cpu
-> > > > + * and stores the result in *ret_freq.
-> > > > + */
-> > > > +static void powernv_read_cpu_freq(void *ret_freq)
-> > > > +{
-> > > > +       unsigned long pmspr_val;
-> > > > +       s8 local_pstate_id;
-> > > > +       int *cur_freq, freq, pstate_id;
-> > > > +
-> > > > +       cur_freq = (int *)ret_freq;
-> > > 
-> > > You don't need cur_freq variable at all..
-> > 
-> > I don't like it either. But the compiler complains without this hack
-> > :-(
-> 
-> Casting integers into void * is a recipe for disaster... what is that
-> supposed to be about ?
+Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
+---
+v2:
+	1. Fix some code style issue.
+	2. Cast physical address to unsigned long long.
 
-Like I mentioned elsewhere on this thread, we're calling
-powernv_read_cpu_freq via an smp_call_function(). We use this to
-obtain the frequency on the cpu where powernv_read_cpu_freq
-executes and return it to the caller of smp_call_function.
+ drivers/mtd/devices/m25p80.c | 19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-> We lose all type checking and get exposed
-> to endian issues etc... the day somebody uses a different type on both
-> sides.
-> 
-Yes, I understand the problem now. I'll think of a safer way to pass
-the return value.
-
-> Also is "freq" a frequency ? In this case an int isn't big enough.
-
-freq is the frequency stored in the cpufreq_table. The value is in
-kHz. So, int should be big enough.
-
-> Cheers,
-> Ben.
-> 
->
-
---
-Thanks and Regards
-gautham. 
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 7eda71d..cbb04aa 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -30,6 +30,7 @@
+ #include <linux/mtd/cfi.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
++#include <linux/of_address.h>
+ #include <linux/of_platform.h>
+ 
+ #include <linux/spi/spi.h>
+@@ -934,9 +935,11 @@ static int m25p_probe(struct spi_device *spi)
+ 	struct flash_platform_data	*data;
+ 	struct m25p			*flash;
+ 	struct flash_info		*info;
+-	unsigned			i;
++	unsigned			i, ret;
+ 	struct mtd_part_parser_data	ppdata;
+ 	struct device_node *np = spi->dev.of_node;
++	struct resource res;
++	struct device_node *mnp = spi->master->dev.of_node;
+ 
+ 	/* Platform data helps sort out which chip type we have, as
+ 	 * well as how this board partitions it.  If we don't have
+@@ -1009,8 +1012,18 @@ static int m25p_probe(struct spi_device *spi)
+ 
+ 	if (data && data->name)
+ 		flash->mtd.name = data->name;
+-	else
+-		flash->mtd.name = dev_name(&spi->dev);
++	else {
++		ret = of_address_to_resource(mnp, 0, &res);
++		if (ret) {
++			dev_err(&spi->dev, "failed to get spi master resource\n");
++			return ret;
++		}
++		flash->mtd.name = kasprintf(GFP_KERNEL, "spi%x.%d",
++				(unsigned long long)res.start,
++				spi->chip_select);
++		if (!flash->mtd.name)
++			return -ENOMEM;
++	}
+ 
+ 	flash->mtd.type = MTD_NORFLASH;
+ 	flash->mtd.writesize = 1;
+-- 
+1.8.5
