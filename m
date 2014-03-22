@@ -1,15 +1,15 @@
 Return-Path: <B48286@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B7D9A2C00AA
- for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 19:00:35 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0068A2C00A2
+ for <linuxppc-dev@ozlabs.org>; Sat, 22 Mar 2014 19:57:14 +1100 (EST)
 From: Hou Zhiqiang <B48286@freescale.com>
 To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
-Subject: [v2] mtd: m25p80: Modify the name of mtd_info
-Date: Sat, 22 Mar 2014 15:58:06 +0800
-Message-ID: <1395475086-31195-1-git-send-email-B48286@freescale.com>
+Subject: [v3] mtd: m25p80: Modify the name of mtd_info
+Date: Sat, 22 Mar 2014 16:55:18 +0800
+Message-ID: <1395478518-22308-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, mingkai.hu@freescale.com,
@@ -33,6 +33,8 @@ with thei physical address of spi master.
 
 Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
 ---
+v3:
+	Fix a bug, matching unsigned long long with "%llx".
 v2:
 	1. Fix some code style issue.
 	2. Cast physical address to unsigned long long.
@@ -41,7 +43,7 @@ v2:
  1 file changed, 16 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 7eda71d..cbb04aa 100644
+index 7eda71d..695890e 100644
 --- a/drivers/mtd/devices/m25p80.c
 +++ b/drivers/mtd/devices/m25p80.c
 @@ -30,6 +30,7 @@
@@ -77,7 +79,7 @@ index 7eda71d..cbb04aa 100644
 +			dev_err(&spi->dev, "failed to get spi master resource\n");
 +			return ret;
 +		}
-+		flash->mtd.name = kasprintf(GFP_KERNEL, "spi%x.%d",
++		flash->mtd.name = kasprintf(GFP_KERNEL, "spi%llx.%d",
 +				(unsigned long long)res.start,
 +				spi->chip_select);
 +		if (!flash->mtd.name)
