@@ -1,32 +1,31 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 0A8952C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Mar 2014 09:59:17 +1100 (EST)
-Message-ID: <1395529151.2143.64.camel@dabdike.int.hansenpartnership.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 44A472C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Mar 2014 14:06:21 +1100 (EST)
+Message-ID: <1395543886.3460.95.camel@pasglop>
 Subject: Re: [RESEND][PATCH 1/2] lib/scatterlist: Make ARCH_HAS_SG_CHAIN an
  actual Kconfig
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Sat, 22 Mar 2014 15:59:11 -0700
-In-Reply-To: <20140322225201.GN7528@n2100.arm.linux.org.uk>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Laura Abbott <lauraa@codeaurora.org>
+Date: Sun, 23 Mar 2014 14:04:46 +1100
+In-Reply-To: <1395512032-20575-2-git-send-email-lauraa@codeaurora.org>
 References: <1395512032-20575-1-git-send-email-lauraa@codeaurora.org>
  <1395512032-20575-2-git-send-email-lauraa@codeaurora.org>
- <1395523881.2143.58.camel@dabdike.int.hansenpartnership.com>
- <20140322222306.GM7528@n2100.arm.linux.org.uk>
- <1395527860.2143.61.camel@dabdike.int.hansenpartnership.com>
- <20140322225201.GN7528@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="ISO-8859-15"
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, Laura Abbott <lauraa@codeaurora.org>,
- linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ Russell King <linux@arm.linux.org.uk>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org,
  Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>, linux390@de.ibm.com,
+ sparclinux@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
  Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-ia64@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,42 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-03-22 at 22:52 +0000, Russell King - ARM Linux wrote:
-> On Sat, Mar 22, 2014 at 03:37:40PM -0700, James Bottomley wrote:
-> > On Sat, 2014-03-22 at 22:23 +0000, Russell King - ARM Linux wrote:
-> > > On Sat, Mar 22, 2014 at 02:31:21PM -0700, James Bottomley wrote:
-> > > > Perhaps now might be the time to ask which are the remaining
-> > > > architectures that cannot do SG chaining and then we can fix them and
-> > > > pull the whole thing out.
-> > > 
-> > > Not quite.  You're making the assumption that we can be sure that all
-> > > the scatterlist users on an architecture have been converted - that's
-> > > simply not true on ARM.
-> > 
-> > No I'm not, I said "now might be the time to ask which are the remaining
-> > architectures that cannot do SG chaining"
-> 
-> And I'm disagreeing with that statement which implies that it's something
-> that is an architecture wide property for any particular architecture.
-> 
-> Right now in mainline, if ARM has IOMMU support enabled, then SG_CHAIN
-> support will also be enabled.  I've a patch out of tree which I've been
-> using for years which enables SG_CHAIN for a particular SoC (Dove).
-> Otherwise, it doesn't have support for SG_CHAIN.
-> 
-> PARISC on the other hand (as you list) has no support to enable SG_CHAIN
-> under any circumstances.
-> 
-> Where we're disagreeing is whether this is something that is always-on or
-> always-off for any particular architecture.
 
-Actually, I don't disagree with that.  PA used to share sb_iommu with
-ia64 (it's the same chipset for the HP versions), but we can't now
-because ia64 is chained and we're not and there's no way to say chained
-for this platform but not for these other more legacy ones.  If you have
-a proposal for this, I'd be interested, so I don't have to do an all or
-nothing conversion, but the config option isn't it because our platform
-configuration is runtime determined (we usually select every driver and
-let the actual one be chosen at runtime from the config table).
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 1594945..8122294 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -82,6 +82,7 @@ config ARM
+>  	  <http://www.arm.linux.org.uk/>.
+>  
+>  config ARM_HAS_SG_CHAIN
+> +	select ARCH_HAS_SG_CHAIN
+>  	bool
+>  
 
-James
+Heh, a self-selecting config option... I didn't know that trick !
+
+Ben.
