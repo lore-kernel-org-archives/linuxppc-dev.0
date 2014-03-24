@@ -1,37 +1,38 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 31A3914008C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Mar 2014 22:24:43 +1100 (EST)
-Date: Mon, 24 Mar 2014 10:45:10 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [RESEND][PATCH 1/2] lib/scatterlist: Make ARCH_HAS_SG_CHAIN an
- actual Kconfig
-Message-ID: <20140324104510.GQ7528@n2100.arm.linux.org.uk>
-References: <1395512032-20575-1-git-send-email-lauraa@codeaurora.org>
- <1395512032-20575-2-git-send-email-lauraa@codeaurora.org>
- <1395523881.2143.58.camel@dabdike.int.hansenpartnership.com>
- <20140322222306.GM7528@n2100.arm.linux.org.uk>
- <1395527860.2143.61.camel@dabdike.int.hansenpartnership.com>
- <20140322225201.GN7528@n2100.arm.linux.org.uk>
- <1395529151.2143.64.camel@dabdike.int.hansenpartnership.com>
+ by ozlabs.org (Postfix) with ESMTPS id 752D514008C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Mar 2014 22:33:41 +1100 (EST)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Mon, 24 Mar 2014 10:22:53 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 004602190069
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Mar 2014 10:22:47 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2OAMenQ66781392
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Mar 2014 10:22:40 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2OAMpWk001852
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Mar 2014 04:22:51 -0600
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/boot: fix global entry point for pseries
+Date: Mon, 24 Mar 2014 11:22:41 +0100
+Message-Id: <1395656561-29261-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1395651884.30488.10.camel@pasglop>
+References: <1395651884.30488.10.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1395529151.2143.64.camel@dabdike.int.hansenpartnership.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org,
- Tony Luck <tony.luck@intel.com>, Laura Abbott <lauraa@codeaurora.org>,
- linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- "David S. Miller" <davem@davemloft.net>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,53 +42,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Mar 22, 2014 at 03:59:11PM -0700, James Bottomley wrote:
-> On Sat, 2014-03-22 at 22:52 +0000, Russell King - ARM Linux wrote:
-> > And I'm disagreeing with that statement which implies that it's something
-> > that is an architecture wide property for any particular architecture.
-> > 
-> > Right now in mainline, if ARM has IOMMU support enabled, then SG_CHAIN
-> > support will also be enabled.  I've a patch out of tree which I've been
-> > using for years which enables SG_CHAIN for a particular SoC (Dove).
-> > Otherwise, it doesn't have support for SG_CHAIN.
-> > 
-> > PARISC on the other hand (as you list) has no support to enable SG_CHAIN
-> > under any circumstances.
-> > 
-> > Where we're disagreeing is whether this is something that is always-on or
-> > always-off for any particular architecture.
-> 
-> Actually, I don't disagree with that.  PA used to share sb_iommu with
-> ia64 (it's the same chipset for the HP versions), but we can't now
-> because ia64 is chained and we're not and there's no way to say chained
-> for this platform but not for these other more legacy ones.  If you have
-> a proposal for this, I'd be interested, so I don't have to do an all or
-> nothing conversion, but the config option isn't it because our platform
-> configuration is runtime determined (we usually select every driver and
-> let the actual one be chosen at runtime from the config table).
+Patch 15/18 "powerpc/boot: add a global entry point for pseries"
+introduced a pseries-head.S file to fix the endian order when
+entering the boot wrapper. This patch is a fix for some platforms
+which also generate the zImage.pseries boot wrapper.
 
-At runtime, it's obviously a lot harder to resolve.  However, that's not
-what we're trying to do with this patch.
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+Ben,
 
-The main issue is that Laura is trying to add SG chain support to ARM64.
-At the moment, ARM64 uses the asm-generic version of scatterlist.h
-directly.
+You can probably merge that one with patch 15. I can also
+resend the whole patchset and merge the three last patches
+as you did. As you wish.
 
-Her first spin of the patch involved creating
-arch/arm64/include/asm/scatterlist.h, which was nothing more than an
-include of the asm-generic header file of the same name, and the
-definition of ARCH_HAS_SG_CHAIN.  That seemed to be extremely wasteful
-and sub-optimal way to handle this.
+Cheers,
 
-Moving this symbol into the Kconfig means that ARM64 no longer has to
-have this additional file (and probably a bunch of other architectures
-fall into that same camp) and the ARM specific CONFIG_ARM_HAS_SG_CHAIN
-can be eliminated in favour of the now generic cross-arch config symbol.
 
-We have plenty of other Kconfig symbols which control similar features
-throughout the kernel source, there is no reason that this one should
-not be the same.
+ arch/powerpc/boot/Makefile |    4 ++++
+ 1 file changed, 4 insertions(+)
 
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 35189540b699..0d65b83e4af3 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -106,6 +106,10 @@ src-plat-$(CONFIG_AMIGAONE) += cuboot-amigaone.c
+ src-plat-$(CONFIG_PPC_PS3) += ps3-head.S ps3-hvcall.S ps3.c
+ src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
+ src-plat-$(CONFIG_PPC_PSERIES) += pseries-head.S
++src-plat-$(CONFIG_PPC_POWERNV) += pseries-head.S
++src-plat-$(CONFIG_PPC_IBM_CELL_BLADE) += pseries-head.S
++src-plat-$(CONFIG_PPC_CELLEB) += pseries-head.S
++src-plat-$(CONFIG_PPC_CELL_QPACE) += pseries-head.S
+ 
+ 
+ src-wlib := $(sort $(src-wlib-y))
 -- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+1.7.10.4
