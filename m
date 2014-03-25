@@ -1,38 +1,16 @@
-Return-Path: <ulrich.weigand@de.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prvs=0161d7d14c=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9B28A14008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 00:20:12 +1100 (EST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ulrich.weigand@de.ibm.com>;
- Tue, 25 Mar 2014 13:20:08 -0000
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id EEC322190041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 13:19:58 +0000 (GMT)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2PDJqbC66256964
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 13:19:52 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2PDK3pL002906
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 09:20:03 -0400
-In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
-References: <1395747879-5948-1-git-send-email-anton@samba.org>
-Subject: Re: [PATCH 00/33] Build ppc64le kernel using ABIv2
-To: Anton Blanchard <anton@samba.org>
-Message-ID: <OF5605E77F.F2B0528E-ONC1257CA6.00487EE5-C1257CA6.00491690@de.ibm.com>
-From: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-Date: Tue, 25 Mar 2014 14:18:19 +0100
-MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: mikey@neuling.org, amodra@gmail.com, rusty@rustcorp.com.au,
- mjw@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 31F7C140089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 00:42:08 +1100 (EST)
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
+To: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 0/3] Support of the kmcoge4 board
+Date: Tue, 25 Mar 2014 14:41:52 +0100
+Message-Id: <1395754915-14534-1-git-send-email-valentin.longchamp@keymile.com>
+Cc: devicetree@vger.kernel.org,
+ Valentin Longchamp <valentin.longchamp@keymile.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,51 +20,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard <anton@samba.org> wrote on 25.03.2014 12:44:06:
+This series adds support for Keymile's COGE4 board, called kmcoge4. This
+board is the reference design for further designs at Keymile around the
+P2040/P2041 SoCs from Freescale. This reference design is internally
+called kmp204x.
 
-> There are two known outstanding issues:
->
-> - If a kernel module calls into an exported assembly function
->   which in turns calls out to C, r2 is going to be wrong. One example
->   is __copy_tofrom_user_power7.
->
->   The reason is _GLOBAL() doesn't have a global entry point setup
->   with the associated addis/addi used to create r2. I tried adding
->   it and quickly realised that _GLOBAL is used places that will not
->   tolerate the addi/addis (eg __start()).
+Changes in v3:
+- add a patch with the bindings for the KEYMILE FPGAs
+- add the compatible strings for the localbus nodes
+- remove the IRQ part of the board-control node as it is currently being
+  reworked
 
-You probably should have two different macros _GLOBAL_TOC vs. _GLOBAL
-(or _GLOBAL vs. _GLOBAL_NOTOC), and use the variant that provides a
-global entry point setting up the TOC only with those functions that
-actually require a TOC.
+Changes in v2:
+- add a patch so that the Zarlink vendor prefix is defined
+- add some nodes on the localbus CS when possible
+- only use the corenet_generic machine and add kmcoge4 to the supported
+  boards instead of defining a new kmp204x machine
+- set better and more precise device nodes for the spi devices
+- remove the partion layout for the spi_flash@0
 
-> - arch/powerpc/platforms/pseries/hvCall.S assumes we always have a
->   parameter save area, which is incorrect for ABIv2. I tried to be
->   intelligent and use the toc save area to store some information
->   but that failed as soon as we started using modules. It would be
->   nice to avoid a stack frame in the common (tracepoints disabled)
->   case, but we may end up having to allocate one.
+Valentin Longchamp (3):
+  devicetree: bindings: add Zarlink to the vendor prefixes
+  devcietree: bindings: add some MFD Keymile FPGAs
+  powerpc/mpc85xx: add support for Keymile's kmcoge4 board
 
-When I looked at this last time, I remarked:
+ Documentation/devicetree/bindings/mfd/bfticu.txt   |  26 +++
+ Documentation/devicetree/bindings/mfd/qriox.txt    |  17 ++
+ .../devicetree/bindings/vendor-prefixes.txt        |   2 +
+ arch/powerpc/boot/dts/kmcoge4.dts                  | 157 ++++++++++++++
+ arch/powerpc/configs/85xx/kmp204x_defconfig        | 227 +++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig                |   2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c      |   3 +-
+ 7 files changed, 432 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/bfticu.txt
+ create mode 100644 Documentation/devicetree/bindings/mfd/qriox.txt
+ create mode 100644 arch/powerpc/boot/dts/kmcoge4.dts
+ create mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
 
->./platforms/pseries/hvCall.S:
->./platforms/cell/beat_hvCall.S:
->Looks safe since all functions are called via varargs prototypes
->(or > 8 integer arguments).
-
-Checking again, this still seems true.  These are the prototypes
-for all the functions in hvCall.S:
-
-long plpar_hcall_norets(unsigned long opcode, ...);
-long plpar_hcall(unsigned long opcode, unsigned long *retbuf, ...);
-long plpar_hcall_raw(unsigned long opcode, unsigned long *retbuf, ...);
-long plpar_hcall9(unsigned long opcode, unsigned long *retbuf, ...);
-long plpar_hcall9_raw(unsigned long opcode, unsigned long *retbuf, ...);
-
-Functions like that *will* always have a save area allocated by
-the caller, even in the ELFv2 ABI.
-
-Am I missing something here?
-
-Bye,
-Ulrich
+-- 
+1.8.0.1
