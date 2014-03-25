@@ -3,9 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 23/33] powerpc: modules implement R_PPC64_TOCSAVE relocation.
-Date: Tue, 25 Mar 2014 22:44:29 +1100
-Message-Id: <1395747879-5948-24-git-send-email-anton@samba.org>
+Subject: [PATCH 24/33] powerpc: EXPORT_SYMBOL(.TOC.)
+Date: Tue, 25 Mar 2014 22:44:30 +1100
+Message-Id: <1395747879-5948-25-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -20,48 +20,44 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
+For the ELFv2 ABI, powerpc introduces a magic symbol ".TOC.".  depmod
+then complains that this doesn't resolve (so does modpost, but we could
+easily fix that).  To export this, we need to use asm.
+
+modpost and depmod both strip "." from symbols for the old PPC64 ELFv1
+ABI, so we actually export a "TOC.".
+
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/powerpc/include/uapi/asm/elf.h | 5 ++++-
- arch/powerpc/kernel/module_64.c     | 8 ++++++++
- 2 files changed, 12 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/misc_64.S | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
-index 7e39c91..0341109 100644
---- a/arch/powerpc/include/uapi/asm/elf.h
-+++ b/arch/powerpc/include/uapi/asm/elf.h
-@@ -291,9 +291,12 @@ do {									\
- #define R_PPC64_DTPREL16_HIGHERA 104 /* half16	(sym+add)@dtprel@highera */
- #define R_PPC64_DTPREL16_HIGHEST 105 /* half16	(sym+add)@dtprel@highest */
- #define R_PPC64_DTPREL16_HIGHESTA 106 /* half16	(sym+add)@dtprel@highesta */
-+#define R_PPC64_TLSGD		107
-+#define R_PPC64_TLSLD		108
-+#define R_PPC64_TOCSAVE		109
- 
- /* Keep this the last entry.  */
--#define R_PPC64_NUM		107
-+#define R_PPC64_NUM		110
- 
- /* There's actually a third entry here, but it's unused */
- struct ppc64_opd_entry
-diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index 7c16b2e..a8694d4 100644
---- a/arch/powerpc/kernel/module_64.c
-+++ b/arch/powerpc/kernel/module_64.c
-@@ -454,6 +454,14 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 			*location = value - (unsigned long)location;
- 			break;
- 
-+		case R_PPC64_TOCSAVE:
-+			/*
-+			 * Marker reloc indicates we don't have to save r2.
-+			 * That would only save us one instruction, so ignore
-+			 * it.
-+			 */
-+			break;
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index bda85a1..b80fafb 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -634,3 +634,22 @@ _GLOBAL(kexec_sequence)
+ 	li	r5,0
+ 	blr	/* image->start(physid, image->start, 0); */
+ #endif /* CONFIG_KEXEC */
 +
- 		default:
- 			printk("%s: Unknown ADD relocation: %lu\n",
- 			       me->name,
++#ifdef CONFIG_MODULES
++#if defined(_CALL_ELF) && _CALL_ELF == 2
++/*
++ * Export a fake .TOC. since both modpost and depmod will complain otherwise.
++ * Both modpost and depmod strip the leading . so we do the same here.
++ */
++.section "__ksymtab_strings","a"
++__kstrtab_TOC.:
++	.asciz "TOC."
++
++.section "___ksymtab+TOC.","a"
++/* This symbol name is important: it's used by modpost to find exported syms */
++.globl __ksymtab_TOC.
++__ksymtab_TOC.:
++	.llong 0 /* .value */
++	.llong __kstrtab_TOC.
++#endif /* ELFv2 */
++#endif /* MODULES */
 -- 
 1.8.3.2
