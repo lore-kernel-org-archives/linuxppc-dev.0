@@ -3,10 +3,10 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 08/33] powerpc: Remove function descriptors and dot symbols on
- new ABI
-Date: Tue, 25 Mar 2014 22:44:14 +1100
-Message-Id: <1395747879-5948-9-git-send-email-anton@samba.org>
+Subject: [PATCH 09/33] powerpc: ABIv2 function calls must place target address
+ in r12
+Date: Tue, 25 Mar 2014 22:44:15 +1100
+Message-Id: <1395747879-5948-10-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -19,95 +19,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ABIv2 doesn't have function descriptors or dot symbols. One
-new thing it does add is a function global and a local entry
-point, so add that to our _GLOBAL macro.
+To establish addressability quickly, ABIv2 requires the target
+address of the function being called to be in r12. Fix a number of
+places in assembly code that we do indirect function calls.
+
+We need to avoid function descriptors on ABIv2 too.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/ftrace.h  |  2 ++
- arch/powerpc/include/asm/linkage.h |  2 ++
- arch/powerpc/include/asm/ppc_asm.h | 22 ++++++++++++++++++++++
- 3 files changed, 26 insertions(+)
+ arch/powerpc/kernel/entry_64.S |  4 ++--
+ arch/powerpc/kernel/head_64.S  | 20 +++++++++++---------
+ arch/powerpc/kernel/misc_64.S  |  8 ++++++--
+ 3 files changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-index 169d039..e366187 100644
---- a/arch/powerpc/include/asm/ftrace.h
-+++ b/arch/powerpc/include/asm/ftrace.h
-@@ -61,6 +61,7 @@ struct dyn_arch_ftrace {
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 2662f02..d23d752 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -174,8 +174,8 @@ system_call:			/* label this so stack traces look sane */
+ 	clrldi	r8,r8,32
+ 15:
+ 	slwi	r0,r0,4
+-	ldx	r10,r11,r0	/* Fetch system call handler [ptr] */
+-	mtctr   r10
++	ldx	r12,r11,r0	/* Fetch system call handler [ptr] */
++	mtctr   r12
+ 	bctrl			/* Call handler */
+ 
+ syscall_exit:
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 8284124..97329a1 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -140,16 +140,18 @@ __secondary_hold:
+ 	tovirt(r26,r26)
  #endif
+ 	/* All secondary cpus wait here until told to start. */
+-100:	ld	r4,__secondary_hold_spinloop-_stext(r26)
+-	cmpdi	0,r4,0
++100:	ld	r12,__secondary_hold_spinloop-_stext(r26)
++	cmpdi	0,r12,0
+ 	beq	100b
  
- #if defined(CONFIG_FTRACE_SYSCALLS) && defined(CONFIG_PPC64) && !defined(__ASSEMBLY__)
-+#if !defined(_CALL_ELF) || _CALL_ELF != 2
- #define ARCH_HAS_SYSCALL_MATCH_SYM_NAME
- static inline bool arch_syscall_match_sym_name(const char *sym, const char *name)
- {
-@@ -72,6 +73,7 @@ static inline bool arch_syscall_match_sym_name(const char *sym, const char *name
- 	 */
- 	return !strcmp(sym + 4, name + 3);
- }
-+#endif
- #endif /* CONFIG_FTRACE_SYSCALLS && CONFIG_PPC64 && !__ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_FTRACE */
-diff --git a/arch/powerpc/include/asm/linkage.h b/arch/powerpc/include/asm/linkage.h
-index b36f650..e3ad5c7 100644
---- a/arch/powerpc/include/asm/linkage.h
-+++ b/arch/powerpc/include/asm/linkage.h
-@@ -2,6 +2,7 @@
- #define _ASM_POWERPC_LINKAGE_H
- 
- #ifdef CONFIG_PPC64
-+#if !defined(_CALL_ELF) || _CALL_ELF != 2
- #define cond_syscall(x) \
- 	asm ("\t.weak " #x "\n\t.set " #x ", sys_ni_syscall\n"		\
- 	     "\t.weak ." #x "\n\t.set ." #x ", .sys_ni_syscall\n")
-@@ -9,5 +10,6 @@
- 	asm ("\t.globl " #alias "\n\t.set " #alias ", " #name "\n"	\
- 	     "\t.globl ." #alias "\n\t.set ." #alias ", ." #name)
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
+ #ifdef CONFIG_PPC_BOOK3E
+-	tovirt(r4,r4)
++	tovirt(r12,r12)
  #endif
+-	ld	r4,0(r4)		/* deref function descriptor */
+-	mtctr	r4
++#if !defined(_CALL_ELF) || _CALL_ELF != 2
++	ld	r12,0(r12)		/* deref function descriptor */
 +#endif
++	mtctr	r12
+ 	mr	r3,r24
+ 	/*
+ 	 * it may be the case that other platforms have r4 right to
+@@ -267,8 +269,8 @@ generic_secondary_common_init:
+ 	ld	r23,CPU_SPEC_RESTORE(r23)
+ 	cmpdi	0,r23,0
+ 	beq	3f
+-	ld	r23,0(r23)
+-	mtctr	r23
++	ld	r12,0(r23)
++	mtctr	r12
+ 	bctrl
  
- #endif	/* _ASM_POWERPC_LINKAGE_H */
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 61992d8..5394d41 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -192,6 +192,26 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- #define __STK_PARAM(i)	(48 + ((i)-3)*8)
- #define STK_PARAM(i)	__STK_PARAM(__REG_##i)
+ 3:	LOAD_REG_ADDR(r3, spinning_secondaries) /* Decrement spinning_secondaries */
+@@ -468,8 +470,8 @@ __after_prom_start:
+ 					/* this includes the code being	 */
+ 					/* executed here.		 */
+ 	addis	r8,r3,(4f - _stext)@ha	/* Jump to the copy of this code */
+-	addi	r8,r8,(4f - _stext)@l	/* that we just made */
+-	mtctr	r8
++	addi	r12,r8,(4f - _stext)@l	/* that we just made */
++	mtctr	r12
+ 	bctr
  
-+#if defined(_CALL_ELF) && _CALL_ELF == 2
-+
-+#define _GLOBAL(name) \
-+	.section ".text"; \
-+	.align 2 ; \
-+	.type name,@function; \
-+	.globl name; \
-+name:
-+
-+#define _KPROBE(name) \
-+	.section ".kprobes.text","a"; \
-+	.align 2 ; \
-+	.type name,@function; \
-+	.globl name; \
-+name:
-+
-+#define DOTSYM(a)	a
-+
+ .balign 8
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index b39cf4a..bda85a1 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -595,8 +595,12 @@ _GLOBAL(kexec_sequence)
+ 	stw	r6,kexec_flag-1b(5)
+ 
+ 	/* clear out hardware hash page table and tlb */
+-	ld	r5,0(r27)		/* deref function descriptor */
+-	mtctr	r5
++#if !defined(_CALL_ELF) || _CALL_ELF != 2
++	ld	r12,0(r27)		/* deref function descriptor */
 +#else
-+
- #define XGLUE(a,b) a##b
- #define GLUE(a,b) XGLUE(a,b)
- 
-@@ -225,6 +245,8 @@ GLUE(.,name):
- 
- #define DOTSYM(a)	GLUE(.,a)
- 
++	mr	r12,r27
 +#endif
-+
- #else /* 32-bit */
++	mtctr	r12
+ 	bctrl				/* ppc_md.hpte_clear_all(void); */
  
- #define _ENTRY(n)	\
+ /*
 -- 
 1.8.3.2
