@@ -1,37 +1,20 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3EC0A14008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 17:50:31 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 25 Mar 2014 12:20:25 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id C6699E0057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 12:24:22 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2P6oAZc60031022
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 12:20:10 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2P6oLlD016498
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 12:20:22 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 1/1] mm: move FAULT_AROUND_ORDER to arch/
-Date: Tue, 25 Mar 2014 12:20:15 +0530
-Message-Id: <1395730215-11604-2-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1395730215-11604-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1395730215-11604-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
- rusty@rustcorp.com.au, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- paulus@samba.org, mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+ by ozlabs.org (Postfix) with ESMTPS id 0952D14008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 18:58:39 +1100 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>, <timur@tabi.org>
+Subject: [PATCH] video/fsl: Fix the sleep function for FSL DIU module
+Date: Tue, 25 Mar 2014 15:56:20 +0800
+Message-ID: <1395734180-45012-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>,
+ Jason Jin <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,90 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kirill A. Shutemov with the commit 96bacfe542 introduced
-vm_ops->map_pages() for mapping easy accessible pages around
-fault address in hope to reduce number of minor page faults.
-Based on his workload runs, suggested FAULT_AROUND_ORDER
-(knob to control the numbers of pages to map) is 4.
+From: Jason Jin <Jason.Jin@freescale.com>
 
-This patch moves the FAULT_AROUND_ORDER macro to arch/ for
-architecture maintainers to decide on suitable FAULT_AROUND_ORDER
-value based on performance data for that architecture.
+For deep sleep, the diu module will power off, when wake up
+from the deep sleep, the registers need to be reinitialized.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable.h |    6 ++++++
- arch/x86/include/asm/pgtable.h     |    5 +++++
- include/asm-generic/pgtable.h      |   10 ++++++++++
- mm/memory.c                        |    2 --
- 4 files changed, 21 insertions(+), 2 deletions(-)
+Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 3ebb188..9fcbd48 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -19,6 +19,12 @@ struct mm_struct;
- #endif
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index e8758b9..7ec780c 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1628,9 +1628,18 @@ static int fsl_diu_suspend(struct platform_device *ofdev, pm_message_t state)
+ static int fsl_diu_resume(struct platform_device *ofdev)
+ {
+ 	struct fsl_diu_data *data;
++	struct mfb_info *mfbi;
++	int i;
  
- /*
-+ * With a few real world workloads that were run,
-+ * the performance data showed that a value of 3 is more advantageous.
-+ */
-+#define FAULT_AROUND_ORDER	3
+ 	data = dev_get_drvdata(&ofdev->dev);
+-	enable_lcdc(data->fsl_diu_info);
++	fsl_diu_enable_interrupts(data);
++	update_lcdc(data->fsl_diu_info);
 +
-+/*
-  * We save the slot number & secondary bit in the second half of the
-  * PTE page. We use the 8 bytes per each pte entry.
-  */
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index 938ef1d..8387a65 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -7,6 +7,11 @@
- #include <asm/pgtable_types.h>
++	for (i = 0; i < NUM_AOIS; i++) {
++		mfbi = &data->mfb[i];
++		if (mfbi->count)
++			fsl_diu_enable_panel(&data->fsl_diu_info[i]);
++	}
  
- /*
-+ * Based on Kirill's test results, fault around order is set to 4
-+ */
-+#define FAULT_AROUND_ORDER 4
-+
-+/*
-  * Macro to mark a page protection value as UC-
-  */
- #define pgprot_noncached(prot)					\
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index 1ec08c1..62f7f07 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -7,6 +7,16 @@
- #include <linux/mm_types.h>
- #include <linux/bug.h>
- 
-+
-+/*
-+ * Fault around order is a control knob to decide the fault around pages.
-+ * Default value is set to 0UL (disabled), but the arch can override it as
-+ * desired.
-+ */
-+#ifndef FAULT_AROUND_ORDER
-+#define FAULT_AROUND_ORDER	0UL
-+#endif
-+
- /*
-  * On almost all architectures and configurations, 0 can be used as the
-  * upper ceiling to free_pgtables(): on many architectures it has the same
-diff --git a/mm/memory.c b/mm/memory.c
-index b02c584..fd79ffc 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3358,8 +3358,6 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
- 	update_mmu_cache(vma, address, pte);
+ 	return 0;
  }
- 
--#define FAULT_AROUND_ORDER 4
--
- #ifdef CONFIG_DEBUG_FS
- static unsigned int fault_around_order = FAULT_AROUND_ORDER;
- 
 -- 
-1.7.10.4
+1.8.5
