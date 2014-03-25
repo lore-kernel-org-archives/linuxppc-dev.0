@@ -3,9 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 06/33] powerpc: Remove dot symbol usage in exception macros
-Date: Tue, 25 Mar 2014 22:44:12 +1100
-Message-Id: <1395747879-5948-7-git-send-email-anton@samba.org>
+Subject: [PATCH 07/33] powerpc: Create DOTSYM to wrap dot symbol usage
+Date: Tue, 25 Mar 2014 22:44:13 +1100
+Message-Id: <1395747879-5948-8-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,134 +18,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-STD_EXCEPTION_COMMON, STD_EXCEPTION_COMMON_ASYNC and
-MASKABLE_EXCEPTION branch to the handler, so we can remove
-the explicit dot symbol and binutils will do the right thing.
+There are a few places we have to use dot symbols with the
+current ABI - the syscall table and the kvm hcall table.
+
+Wrap both of these with a new macro called DOTSYM so it will
+be easy to transition away from dot symbols in a future ABI.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/kernel/exceptions-64e.S |  8 +++----
- arch/powerpc/kernel/exceptions-64s.S | 46 ++++++++++++++++++------------------
- 2 files changed, 27 insertions(+), 27 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h      |  2 ++
+ arch/powerpc/include/asm/systbl.h       |  6 +++---
+ arch/powerpc/kernel/systbl.S            | 12 ++++++------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 26 +++++++++++++-------------
+ 4 files changed, 24 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index c8ac8a0..771b4e9 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -591,7 +591,7 @@ interrupt_end_book3e:
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 35b23a6..61992d8 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -223,6 +223,8 @@ name: \
+ 	.type GLUE(.,name),@function; \
+ GLUE(.,name):
  
- /* External Input Interrupt */
- 	MASKABLE_EXCEPTION(0x500, BOOKE_INTERRUPT_EXTERNAL,
--			   external_input, .do_IRQ, ACK_NONE)
-+			   external_input, do_IRQ, ACK_NONE)
++#define DOTSYM(a)	GLUE(.,a)
++
+ #else /* 32-bit */
  
- /* Alignment */
- 	START_EXCEPTION(alignment);
-@@ -676,11 +676,11 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #define _ENTRY(n)	\
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index 3ddf702..ac062f5 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -62,7 +62,7 @@ COMPAT_SYS_SPU(fcntl)
+ SYSCALL(ni_syscall)
+ SYSCALL_SPU(setpgid)
+ SYSCALL(ni_syscall)
+-SYSX(sys_ni_syscall,sys_olduname, sys_olduname)
++SYSX(sys_ni_syscall,sys_olduname,sys_olduname)
+ SYSCALL_SPU(umask)
+ SYSCALL_SPU(chroot)
+ COMPAT_SYS(ustat)
+@@ -258,7 +258,7 @@ SYSCALL_SPU(tgkill)
+ COMPAT_SYS_SPU(utimes)
+ COMPAT_SYS_SPU(statfs64)
+ COMPAT_SYS_SPU(fstatfs64)
+-SYSX(sys_ni_syscall, ppc_fadvise64_64, ppc_fadvise64_64)
++SYSX(sys_ni_syscall,ppc_fadvise64_64,ppc_fadvise64_64)
+ PPC_SYS_SPU(rtas)
+ OLDSYS(debug_setcontext)
+ SYSCALL(ni_syscall)
+@@ -295,7 +295,7 @@ SYSCALL_SPU(mkdirat)
+ SYSCALL_SPU(mknodat)
+ SYSCALL_SPU(fchownat)
+ COMPAT_SYS_SPU(futimesat)
+-SYSX_SPU(sys_newfstatat, sys_fstatat64, sys_fstatat64)
++SYSX_SPU(sys_newfstatat,sys_fstatat64,sys_fstatat64)
+ SYSCALL_SPU(unlinkat)
+ SYSCALL_SPU(renameat)
+ SYSCALL_SPU(linkat)
+diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
+index 75822f9..895c50c 100644
+--- a/arch/powerpc/kernel/systbl.S
++++ b/arch/powerpc/kernel/systbl.S
+@@ -17,12 +17,12 @@
+ #include <asm/ppc_asm.h>
  
- /* Decrementer Interrupt */
- 	MASKABLE_EXCEPTION(0x900, BOOKE_INTERRUPT_DECREMENTER,
--			   decrementer, .timer_interrupt, ACK_DEC)
-+			   decrementer, timer_interrupt, ACK_DEC)
- 
- /* Fixed Interval Timer Interrupt */
- 	MASKABLE_EXCEPTION(0x980, BOOKE_INTERRUPT_FIT,
--			   fixed_interval, .unknown_exception, ACK_FIT)
-+			   fixed_interval, unknown_exception, ACK_FIT)
- 
- /* Watchdog Timer Interrupt */
- 	START_EXCEPTION(watchdog);
-@@ -855,7 +855,7 @@ kernel_dbg_exc:
- 
- /* Doorbell interrupt */
- 	MASKABLE_EXCEPTION(0x280, BOOKE_INTERRUPT_DOORBELL,
--			   doorbell, .doorbell_exception, ACK_NONE)
-+			   doorbell, doorbell_exception, ACK_NONE)
- 
- /* Doorbell critical Interrupt */
- 	START_EXCEPTION(doorbell_crit);
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a695a23..ce50e64 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -771,38 +771,38 @@ kvmppc_skip_Hinterrupt:
- 
- /*** Common interrupt handlers ***/
- 
--	STD_EXCEPTION_COMMON(0x100, system_reset, .system_reset_exception)
-+	STD_EXCEPTION_COMMON(0x100, system_reset, system_reset_exception)
- 
- 	STD_EXCEPTION_COMMON_ASYNC(0x500, hardware_interrupt, do_IRQ)
--	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, .timer_interrupt)
--	STD_EXCEPTION_COMMON(0x980, hdecrementer, .hdec_interrupt)
-+	STD_EXCEPTION_COMMON_ASYNC(0x900, decrementer, timer_interrupt)
-+	STD_EXCEPTION_COMMON(0x980, hdecrementer, hdec_interrupt)
- #ifdef CONFIG_PPC_DOORBELL
--	STD_EXCEPTION_COMMON_ASYNC(0xa00, doorbell_super, .doorbell_exception)
-+	STD_EXCEPTION_COMMON_ASYNC(0xa00, doorbell_super, doorbell_exception)
+ #ifdef CONFIG_PPC64
+-#define SYSCALL(func)		.llong	.sys_##func,.sys_##func
+-#define COMPAT_SYS(func)	.llong	.sys_##func,.compat_sys_##func
+-#define PPC_SYS(func)		.llong	.ppc_##func,.ppc_##func
+-#define OLDSYS(func)		.llong	.sys_ni_syscall,.sys_ni_syscall
+-#define SYS32ONLY(func)		.llong	.sys_ni_syscall,.compat_sys_##func
+-#define SYSX(f, f3264, f32)	.llong	.f,.f3264
++#define SYSCALL(func)		.llong	DOTSYM(sys_##func),DOTSYM(sys_##func)
++#define COMPAT_SYS(func)	.llong	DOTSYM(sys_##func),DOTSYM(compat_sys_##func)
++#define PPC_SYS(func)		.llong	DOTSYM(ppc_##func),DOTSYM(ppc_##func)
++#define OLDSYS(func)		.llong	DOTSYM(sys_ni_syscall),DOTSYM(sys_ni_syscall)
++#define SYS32ONLY(func)		.llong	DOTSYM(sys_ni_syscall),DOTSYM(compat_sys_##func)
++#define SYSX(f, f3264, f32)	.llong	DOTSYM(f),DOTSYM(f3264)
  #else
--	STD_EXCEPTION_COMMON_ASYNC(0xa00, doorbell_super, .unknown_exception)
-+	STD_EXCEPTION_COMMON_ASYNC(0xa00, doorbell_super, unknown_exception)
- #endif
--	STD_EXCEPTION_COMMON(0xb00, trap_0b, .unknown_exception)
--	STD_EXCEPTION_COMMON(0xd00, single_step, .single_step_exception)
--	STD_EXCEPTION_COMMON(0xe00, trap_0e, .unknown_exception)
--	STD_EXCEPTION_COMMON(0xe40, emulation_assist, .emulation_assist_interrupt)
--	STD_EXCEPTION_COMMON(0xe60, hmi_exception, .unknown_exception)
-+	STD_EXCEPTION_COMMON(0xb00, trap_0b, unknown_exception)
-+	STD_EXCEPTION_COMMON(0xd00, single_step, single_step_exception)
-+	STD_EXCEPTION_COMMON(0xe00, trap_0e, unknown_exception)
-+	STD_EXCEPTION_COMMON(0xe40, emulation_assist, emulation_assist_interrupt)
-+	STD_EXCEPTION_COMMON(0xe60, hmi_exception, unknown_exception)
- #ifdef CONFIG_PPC_DOORBELL
--	STD_EXCEPTION_COMMON_ASYNC(0xe80, h_doorbell, .doorbell_exception)
-+	STD_EXCEPTION_COMMON_ASYNC(0xe80, h_doorbell, doorbell_exception)
+ #define SYSCALL(func)		.long	sys_##func
+ #define COMPAT_SYS(func)	.long	sys_##func
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index bb5faff..da59454 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1752,16 +1752,16 @@ hcall_real_fallback:
+ 	.globl	hcall_real_table
+ hcall_real_table:
+ 	.long	0		/* 0 - unused */
+-	.long	.kvmppc_h_remove - hcall_real_table
+-	.long	.kvmppc_h_enter - hcall_real_table
+-	.long	.kvmppc_h_read - hcall_real_table
++	.long	DOTSYM(kvmppc_h_remove) - hcall_real_table
++	.long	DOTSYM(kvmppc_h_enter) - hcall_real_table
++	.long	DOTSYM(kvmppc_h_read) - hcall_real_table
+ 	.long	0		/* 0x10 - H_CLEAR_MOD */
+ 	.long	0		/* 0x14 - H_CLEAR_REF */
+-	.long	.kvmppc_h_protect - hcall_real_table
++	.long	DOTSYM(kvmppc_h_protect) - hcall_real_table
+ 	.long	0		/* 0x1c - H_GET_TCE */
+-	.long	.kvmppc_h_put_tce - hcall_real_table
++	.long	DOTSYM(kvmppc_h_put_tce) - hcall_real_table
+ 	.long	0		/* 0x24 - H_SET_SPRG0 */
+-	.long	.kvmppc_h_set_dabr - hcall_real_table
++	.long	DOTSYM(kvmppc_h_set_dabr) - hcall_real_table
+ 	.long	0		/* 0x2c */
+ 	.long	0		/* 0x30 */
+ 	.long	0		/* 0x34 */
+@@ -1777,11 +1777,11 @@ hcall_real_table:
+ 	.long	0		/* 0x5c */
+ 	.long	0		/* 0x60 */
+ #ifdef CONFIG_KVM_XICS
+-	.long	.kvmppc_rm_h_eoi - hcall_real_table
+-	.long	.kvmppc_rm_h_cppr - hcall_real_table
+-	.long	.kvmppc_rm_h_ipi - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_eoi) - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_cppr) - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_ipi) - hcall_real_table
+ 	.long	0		/* 0x70 - H_IPOLL */
+-	.long	.kvmppc_rm_h_xirr - hcall_real_table
++	.long	DOTSYM(kvmppc_rm_h_xirr) - hcall_real_table
  #else
--	STD_EXCEPTION_COMMON_ASYNC(0xe80, h_doorbell, .unknown_exception)
-+	STD_EXCEPTION_COMMON_ASYNC(0xe80, h_doorbell, unknown_exception)
- #endif
--	STD_EXCEPTION_COMMON_ASYNC(0xf00, performance_monitor, .performance_monitor_exception)
--	STD_EXCEPTION_COMMON(0x1300, instruction_breakpoint, .instruction_breakpoint_exception)
--	STD_EXCEPTION_COMMON(0x1502, denorm, .unknown_exception)
-+	STD_EXCEPTION_COMMON_ASYNC(0xf00, performance_monitor, performance_monitor_exception)
-+	STD_EXCEPTION_COMMON(0x1300, instruction_breakpoint, instruction_breakpoint_exception)
-+	STD_EXCEPTION_COMMON(0x1502, denorm, unknown_exception)
- #ifdef CONFIG_ALTIVEC
--	STD_EXCEPTION_COMMON(0x1700, altivec_assist, .altivec_assist_exception)
-+	STD_EXCEPTION_COMMON(0x1700, altivec_assist, altivec_assist_exception)
- #else
--	STD_EXCEPTION_COMMON(0x1700, altivec_assist, .unknown_exception)
-+	STD_EXCEPTION_COMMON(0x1700, altivec_assist, unknown_exception)
- #endif
- #ifdef CONFIG_CBE_RAS
--	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, .cbe_system_error_exception)
--	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, .cbe_maintenance_exception)
--	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, .cbe_thermal_exception)
-+	STD_EXCEPTION_COMMON(0x1200, cbe_system_error, cbe_system_error_exception)
-+	STD_EXCEPTION_COMMON(0x1600, cbe_maintenance, cbe_maintenance_exception)
-+	STD_EXCEPTION_COMMON(0x1800, cbe_thermal, cbe_thermal_exception)
- #endif /* CONFIG_CBE_RAS */
+ 	.long	0		/* 0x64 - H_EOI */
+ 	.long	0		/* 0x68 - H_CPPR */
+@@ -1815,7 +1815,7 @@ hcall_real_table:
+ 	.long	0		/* 0xd4 */
+ 	.long	0		/* 0xd8 */
+ 	.long	0		/* 0xdc */
+-	.long	.kvmppc_h_cede - hcall_real_table
++	.long	DOTSYM(kvmppc_h_cede) - hcall_real_table
+ 	.long	0		/* 0xe4 */
+ 	.long	0		/* 0xe8 */
+ 	.long	0		/* 0xec */
+@@ -1832,11 +1832,11 @@ hcall_real_table:
+ 	.long	0		/* 0x118 */
+ 	.long	0		/* 0x11c */
+ 	.long	0		/* 0x120 */
+-	.long	.kvmppc_h_bulk_remove - hcall_real_table
++	.long	DOTSYM(kvmppc_h_bulk_remove) - hcall_real_table
+ 	.long	0		/* 0x128 */
+ 	.long	0		/* 0x12c */
+ 	.long	0		/* 0x130 */
+-	.long	.kvmppc_h_set_xdabr - hcall_real_table
++	.long	DOTSYM(kvmppc_h_set_xdabr) - hcall_real_table
+ hcall_real_table_end:
  
- 	/*
-@@ -1075,7 +1075,7 @@ instruction_access_common:
- 	li	r5,0x400
- 	b	do_hash_page		/* Try to handle as hpte fault */
- 
--	STD_EXCEPTION_COMMON(0xe20, h_instr_storage, .unknown_exception)
-+	STD_EXCEPTION_COMMON(0xe20, h_instr_storage, unknown_exception)
- 
- /*
-  * Here is the common SLB miss user that is used when going to virtual
-@@ -1292,8 +1292,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	bl	vsx_unavailable_exception
- 	b	ret_from_except
- 
--	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, .facility_unavailable_exception)
--	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, .facility_unavailable_exception)
-+	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, facility_unavailable_exception)
-+	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, facility_unavailable_exception)
- 
- 	.align	7
- 	.globl	__end_handlers
+ ignore_hdec:
 -- 
 1.8.3.2
