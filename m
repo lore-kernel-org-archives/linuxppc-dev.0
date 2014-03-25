@@ -3,9 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 31/33] powerpc: modules: skip r2 setup for ELFv2
-Date: Tue, 25 Mar 2014 22:44:37 +1100
-Message-Id: <1395747879-5948-32-git-send-email-anton@samba.org>
+Subject: [PATCH 32/33] powerpc: modules: implement stubs for ELFv2 ABI.
+Date: Tue, 25 Mar 2014 22:44:38 +1100
+Message-Id: <1395747879-5948-33-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -20,53 +20,154 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-ELFv2 doesn't need to set up r2 when calling a function.
+ELFv2 doesn't use function descriptors, because it doesn't need to
+load a new r2 when calling into a function.  On the other hand, you're
+supposed to use a local entry point for R_PPC_REL24 branches.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/powerpc/kernel/module_64.c | 22 ++++++++++++++++------
- 1 file changed, 16 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/module_64.c | 73 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 61 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index f8b6d28..d722249 100644
+index d722249..0423601 100644
 --- a/arch/powerpc/kernel/module_64.c
 +++ b/arch/powerpc/kernel/module_64.c
-@@ -59,12 +59,19 @@ struct ppc64_stub_entry
- 	struct ppc64_opd_entry opd;
+@@ -43,8 +43,58 @@
+ 
+ #if defined(_CALL_ELF) && _CALL_ELF == 2
+ #define R2_STACK_OFFSET 24
++
++/* An address is simply the address of the function. */
++typedef unsigned long func_desc_t;
++
++static func_desc_t func_desc(unsigned long addr)
++{
++	return addr;
++}
++static unsigned long func_addr(unsigned long addr)
++{
++	return addr;
++}
++static unsigned long stub_func_addr(func_desc_t func)
++{
++	return func;
++}
++
++/* PowerPC64 specific values for the Elf64_Sym st_other field.  */
++#define STO_PPC64_LOCAL_BIT	5
++#define STO_PPC64_LOCAL_MASK	(7 << STO_PPC64_LOCAL_BIT)
++#define PPC64_LOCAL_ENTRY_OFFSET(other)					\
++ (((1 << (((other) & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT)) >> 2) << 2)
++
++static unsigned int local_entry_offset(const Elf64_Sym *sym)
++{
++	/* sym->st_other indicates offset to local entry point
++	 * (otherwise it will assume r12 is the address of the start
++	 * of function and try to derive r2 from it). */
++	return PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
++}
+ #else
+ #define R2_STACK_OFFSET 40
++
++/* An address is address of the OPD entry, which contains address of fn. */
++typedef struct ppc64_opd_entry func_desc_t;
++
++static func_desc_t func_desc(unsigned long addr)
++{
++	return *(struct ppc64_opd_entry *)addr;
++}
++static unsigned long func_addr(unsigned long addr)
++{
++	return func_desc(addr).funcaddr;
++}
++static unsigned long stub_func_addr(func_desc_t func)
++{
++	return func.funcaddr;
++}
++static unsigned int local_entry_offset(const Elf64_Sym *sym)
++{
++	return 0;
++}
+ #endif
+ 
+ /* Like PPC32, we need little trampolines to do > 24-bit jumps (into
+@@ -56,7 +106,7 @@ struct ppc64_stub_entry
+ 	u32 jump[7];
+ 	u32 unused;
+ 	/* Data for the above code */
+-	struct ppc64_opd_entry opd;
++	func_desc_t funcdata;
  };
  
--/* We use a stub to fix up r2 (TOC ptr) and to jump to the (external)
--   function which may be more than 24-bits away.  We could simply
--   patch the new r2 value and function pointer into the stub, but it's
--   significantly shorter to put these values at the end of the stub
--   code, and patch the stub address (32-bits relative to the TOC ptr,
--   r2) into the stub. */
-+/*
-+ * PPC64 uses 24 bit jumps, but we need to jump into other modules or
-+ * the kernel which may be further.  So we jump to a stub.
-+ *
-+ * For ELFv1 we need to use this to set up the new r2 value (aka TOC
-+ * pointer).  For ELFv2 it's the callee's responsibility to set up the
-+ * new r2, but for both we need to save the old r2.
-+ *
-+ * We could simply patch the new r2 value and function pointer into
-+ * the stub, but it's significantly shorter to put these values at the
-+ * end of the stub code, and patch the stub address (32-bits relative
-+ * to the TOC ptr, r2) into the stub.
-+ */
- static struct ppc64_stub_entry ppc64_stub =
- { .jump = {
- 	0x3d620000,			/* addis   r11,r2, <high> */
-@@ -72,7 +79,10 @@ static struct ppc64_stub_entry ppc64_stub =
- 	/* Save current r2 value in magic place on the stack. */
- 	0xf8410000|R2_STACK_OFFSET,	/* std     r2,R2_STACK_OFFSET(r1) */
- 	0xe98b0020,			/* ld      r12,32(r11) */
-+#if !defined(_CALL_ELF) || _CALL_ELF != 2
-+	/* Set up new r2 from function descriptor */
- 	0xe84b0026,			/* ld      r2,40(r11) */
-+#endif
- 	0x7d8903a6,			/* mtctr   r12 */
- 	0x4e800420			/* bctr */
- } };
+ /*
+@@ -225,7 +275,7 @@ static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
+ 
+ 	for (i = 1; i < numsyms; i++) {
+ 		if (syms[i].st_shndx == SHN_UNDEF
+-		    && strcmp(strtab + syms[i].st_name, ".TOC.") == 0)
++		    && strcmp(strtab + syms[i].st_name, "TOC.") == 0)
+ 			return &syms[i];
+ 	}
+ 	return NULL;
+@@ -295,7 +345,7 @@ static inline unsigned long my_r2(Elf64_Shdr *sechdrs, struct module *me)
+ /* Patch stub to reference function and correct r2 value. */
+ static inline int create_stub(Elf64_Shdr *sechdrs,
+ 			      struct ppc64_stub_entry *entry,
+-			      struct ppc64_opd_entry *opd,
++			      unsigned long addr,
+ 			      struct module *me)
+ {
+ 	long reladdr;
+@@ -313,33 +363,31 @@ static inline int create_stub(Elf64_Shdr *sechdrs,
+ 
+ 	entry->jump[0] |= PPC_HA(reladdr);
+ 	entry->jump[1] |= PPC_LO(reladdr);
+-	entry->opd.funcaddr = opd->funcaddr;
+-	entry->opd.r2 = opd->r2;
++	entry->funcdata = func_desc(addr);
+ 	return 1;
+ }
+ 
+-/* Create stub to jump to function described in this OPD: we need the
++/* Create stub to jump to function described in this OPD/ptr: we need the
+    stub to set up the TOC ptr (r2) for the function. */
+ static unsigned long stub_for_addr(Elf64_Shdr *sechdrs,
+-				   unsigned long opdaddr,
++				   unsigned long addr,
+ 				   struct module *me)
+ {
+ 	struct ppc64_stub_entry *stubs;
+-	struct ppc64_opd_entry *opd = (void *)opdaddr;
+ 	unsigned int i, num_stubs;
+ 
+ 	num_stubs = sechdrs[me->arch.stubs_section].sh_size / sizeof(*stubs);
+ 
+ 	/* Find this stub, or if that fails, the next avail. entry */
+ 	stubs = (void *)sechdrs[me->arch.stubs_section].sh_addr;
+-	for (i = 0; stubs[i].opd.funcaddr; i++) {
++	for (i = 0; stub_func_addr(stubs[i].funcdata); i++) {
+ 		BUG_ON(i >= num_stubs);
+ 
+-		if (stubs[i].opd.funcaddr == opd->funcaddr)
++		if (stub_func_addr(stubs[i].funcdata) == func_addr(addr))
+ 			return (unsigned long)&stubs[i];
+ 	}
+ 
+-	if (!create_stub(sechdrs, &stubs[i], opd, me))
++	if (!create_stub(sechdrs, &stubs[i], addr, me))
+ 		return 0;
+ 
+ 	return (unsigned long)&stubs[i];
+@@ -480,7 +528,8 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 					return -ENOENT;
+ 				if (!restore_r2((u32 *)location + 1, me))
+ 					return -ENOEXEC;
+-			}
++			} else
++				value += local_entry_offset(sym);
+ 
+ 			/* Convert value to relative */
+ 			value -= (unsigned long)location;
 -- 
 1.8.3.2
