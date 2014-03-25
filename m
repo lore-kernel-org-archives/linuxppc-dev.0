@@ -1,24 +1,22 @@
-Return-Path: <dave.hansen@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 97753140086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 05:06:07 +1100 (EST)
-Message-ID: <5331C1C9.5020309@intel.com>
-Date: Tue, 25 Mar 2014 10:50:01 -0700
-From: Dave Hansen <dave.hansen@intel.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AC5AD1400A1
+ for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2014 10:05:26 +1100 (EST)
+Message-ID: <1395788711.12738.3.camel@snotra.buserror.net>
+Subject: Re: Ask for help about fsl ppc toolchian issue "Illegal instruction"
+From: Scott Wood <scottwood@freescale.com>
+To: wyang <w90p710@gmail.com>
+Date: Tue, 25 Mar 2014 18:05:11 -0500
+In-Reply-To: <533114A4.4080608@gmail.com>
+References: <BLU172-W4881D62A1C46E030116284FD650@phx.gbl>
+ <533114A4.4080608@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: "Kirill A. Shutemov" <kirill@shutemov.name>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] mm: move FAULT_AROUND_ORDER to arch/
-References: <1395730215-11604-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1395730215-11604-2-git-send-email-maddy@linux.vnet.ibm.com>
- <20140325173605.GA21411@node.dhcp.inet.fi>
-In-Reply-To: <20140325173605.GA21411@node.dhcp.inet.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
- peterz@infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+Cc: =?UTF-8?Q?=E8=AE=B8=E4=B9=85=E6=88=90?= <jiucheng.xu@hotmail.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,17 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/25/2014 10:36 AM, Kirill A. Shutemov wrote:
->> > +/*
->> > + * Fault around order is a control knob to decide the fault around pages.
->> > + * Default value is set to 0UL (disabled), but the arch can override it as
->> > + * desired.
->> > + */
->> > +#ifndef FAULT_AROUND_ORDER
->> > +#define FAULT_AROUND_ORDER	0UL
->> > +#endif
-> FAULT_AROUND_ORDER == 0 case should be handled separately in
-> do_read_fault(): no reason to go to do_fault_around() if we are going to
-> fault in only one page.
+On Tue, 2014-03-25 at 13:31 +0800, wyang wrote:
+> 
+> On 03/25/2014 10:17 AM, 许久成 wrote:
+> 
+> > Hi All, 
+> > 
+> > 
+> > We run into an issue when use e500mc toolchain  g++ to compile c++
+> > code for p2020 platform,  the code as below:
+> 
+> Hmm, p2020 should be e500 core rather than e500mc. Additionally, you
+> should use gdb to debug it, and check which instruction is illegal.
 
-Isn't this the kind of thing we want to do in Kconfig?
+It's probably a floating point instruction.  e500v2 (and thus p2020)
+does not support normal PPC floating point.  You need to use the right
+toolchain.
+
+-Scott
