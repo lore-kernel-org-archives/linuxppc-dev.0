@@ -1,15 +1,25 @@
-Return-Path: <jiucheng.xu@hotmail.com>
-Received: from blu0-omc4-s17.blu0.hotmail.com (blu0-omc4-s17.blu0.hotmail.com
- [65.55.111.156]) by ozlabs.org (Postfix) with ESMTP id 1FB7714008F
- for <linuxppc-dev@ozlabs.org>; Tue, 25 Mar 2014 13:23:04 +1100 (EST)
-Message-ID: <BLU172-W4881D62A1C46E030116284FD650@phx.gbl>
-Content-Type: multipart/alternative;
- boundary="_ae56c86f-09d3-436d-a75d-67f3fe111b1f_"
-From: =?gb2312?B?0O2+w7PJ?= <jiucheng.xu@hotmail.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Ask for help about fsl ppc toolchian issue "Illegal instruction"
-Date: Tue, 25 Mar 2014 02:17:58 +0000
+Return-Path: <zyjzyj2000@gmail.com>
+Received: from mail-yk0-x22f.google.com (mail-yk0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c07::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2A6CB140092
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 16:08:54 +1100 (EST)
+Received: by mail-yk0-f175.google.com with SMTP id 131so17442218ykp.6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Mar 2014 22:08:49 -0700 (PDT)
+Message-ID: <53310F4E.4080104@gmail.com>
+Date: Tue, 25 Mar 2014 13:08:30 +0800
+From: zhuyj <zyjzyj2000@gmail.com>
 MIME-Version: 1.0
+To: sandeep.kumar@freescale.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, "Tao, Yue" <Yue.Tao@windriver.com>,
+ "Yang, Zhangle (Eric)" <Zhangle.Yang@windriver.com>,
+ guang.yang@windriver.com, zhuyj <zyjzyj2000@gmail.com>, joe@perches.com,
+ festevam@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ richardcochran@gmail.com, clarocq@gmail.com, yongjun_wei@trendmicro.com.cn
+Subject: on kernel 2.6.34.15, vlan and raw packets can not be received with
+ gfar-enet nic
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,141 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_ae56c86f-09d3-436d-a75d-67f3fe111b1f_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Hi, Sandeep Gopalpet
 
-SGkgQWxsLA0KV2UgcnVuIGludG8gYW4gaXNzdWUgd2hlbiB1c2UgZTUwMG1jIHRvb2xjaGFpbiAg
-ZysrIHRvIGNvbXBpbGUgYysrIGNvZGUgZm9yIHAyMDIwIHBsYXRmb3JtLCAgdGhlIGNvZGUgYXMg
-YmVsb3c6DQoNCm1haW4uYw0KI2luY2x1ZGUgPGlvc3RyZWFtPnVzaW5nIG5hbWVzcGFjZSBzdGQ7
-DQppbnQgbWFpbih2b2lkKSB7ICAgICAgICBjb3V0IDw8ICJhc2RmYXNkZmFzZGZhc2RmIjsNCiAg
-ICAgICAgcmV0dXJuIDA7fQ0KY29tcGlsZSBpdCB3aXRoIGNvbW1hbmQgInBvd2VycGMtZmxzLWxp
-bnV4LWcrKyBtYWluLmMiIGFuZCB0aGUgb3V0cHV0IGZpbGUncyBuYW1lIGlzIGEub3V0LCBkb3du
-bG9hZCB0aGUgYmluYXJ5IHRvIHAyMDIwcmRiIGJvYXJkLCBidXQgdGhlIGNvbnNvbGUgcHJpbnRz
-IHRoZSBlcnJvciBsb2cgIklsbGVnYWwgaW5zdHJ1Y3Rpb24iLg0KSXQgaXMgYWxsIHJpZ2h0IG9u
-IHAyMDQxIHBsYXRmb3JtLiANClRoZSB2ZXJzaW9uIG9mIHRvb2xjaGlhbjoNCkNvbmZpZ3VyZWQg
-d2l0aDogL2xvY2FsL3dvcmtzcGFjZS95b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxkX3A0MDgw
-ZHNfcmVsZWFzZS90bXAvd29yay1zaGFyZWQvZ2NjLTQuNi4yK3N2bnIxODA1MTYtcjI5K2ZzbC42
-L2djYy00XzYtYnJhbmNoL2NvbmZpZ3VyZSAtLWJ1aWxkPWk2ODYtbGludXggLS1ob3N0PWk2ODYt
-ZnNsc2RrLWxpbnV4IC0tdGFyZ2V0PXBvd2VycGMtZnNsLWxpbnV4IC0tcHJlZml4PS9vcHQvZnNs
-LzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IgLS1leGVjX3ByZWZpeD0vb3B0L2Zz
-bC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvdXNyIC0tYmluZGlyPS9vcHQvZnNsLzEu
-Mi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IvYmluL3BwY2U1MDBtYy1mc2wtbGludXgg
-LS1zYmluZGlyPS9vcHQvZnNsLzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IvYmlu
-L3BwY2U1MDBtYy1mc2wtbGludXggLS1saWJleGVjZGlyPS9vcHQvZnNsLzEuMi9zeXNyb290cy9p
-Njg2LWZzbHNkay1saW51eC91c3IvbGliZXhlYy9wcGNlNTAwbWMtZnNsLWxpbnV4IC0tZGF0YWRp
-cj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvdXNyL3NoYXJlIC0tc3lz
-Y29uZmRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvZXRjIC0tc2hh
-cmVkc3RhdGVkaXI9L29wdC9mc2wvMS4yL3N5c3Jvb3RzL2k2ODYtZnNsc2RrLWxpbnV4L2NvbSAt
-LWxvY2Fsc3RhdGVkaXI9L29wdC9mc2wvMS4yL3N5c3Jvb3RzL2k2ODYtZnNsc2RrLWxpbnV4L3Zh
-ciAtLWxpYmRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvdXNyL2xp
-Yi9wcGNlNTAwbWMtZnNsLWxpbnV4IC0taW5jbHVkZWRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMv
-aTY4Ni1mc2xzZGstbGludXgvdXNyL2luY2x1ZGUgLS1vbGRpbmNsdWRlZGlyPS9vcHQvZnNsLzEu
-Mi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IvaW5jbHVkZSAtLWluZm9kaXI9L29wdC9m
-c2wvMS4yL3N5c3Jvb3RzL2k2ODYtZnNsc2RrLWxpbnV4L3Vzci9zaGFyZS9pbmZvIC0tbWFuZGly
-PS9vcHQvZnNsLzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3Ivc2hhcmUvbWFuIC0t
-ZGlzYWJsZS1zaWxlbnQtcnVsZXMgLS1kaXNhYmxlLWRlcGVuZGVuY3ktdHJhY2tpbmcgLS13aXRo
-LWxpYnRvb2wtc3lzcm9vdD0vbG9jYWwvd29ya3NwYWNlL3lvY3RvLWlzby1tYWtlL3A0MDgwZHMv
-YnVpbGRfcDQwODBkc19yZWxlYXNlL3RtcC9zeXNyb290cy9pNjg2LW5hdGl2ZXNkay1mc2xzZGst
-bGludXggLS13aXRoLWdudS1sZCAtLWVuYWJsZS1zaGFyZWQgLS1lbmFibGUtbGFuZ3VhZ2VzPWMs
-YysrIC0tZW5hYmxlLXRocmVhZHM9cG9zaXggLS1kaXNhYmxlLW11bHRpbGliIC0tZW5hYmxlLWM5
-OSAtLWVuYWJsZS1sb25nLWxvbmcgLS1lbmFibGUtc3ltdmVycz1nbnUgLS1lbmFibGUtbGlic3Rk
-Y3h4LXBjaCAtLXByb2dyYW0tcHJlZml4PXBvd2VycGMtZnNsLWxpbnV4LSAtLWVuYWJsZS1sdG8g
-LS1lbmFibGUtbGlic3NwIC0tZGlzYWJsZS1ib290c3RyYXAgLS1kaXNhYmxlLWxpYmdvbXAgLS1k
-aXNhYmxlLWxpYm11ZGZsYXAgLS13aXRoLXN5c3RlbS16bGliIC0td2l0aC1saW5rZXItaGFzaC1z
-dHlsZT1nbnUgLS1lbmFibGUtY2hlYWRlcnM9Y19nbG9iYWwgLS13aXRoLWxvY2FsLXByZWZpeD0v
-b3B0L2ZzbC8xLjIvc3lzcm9vdHMvcHBjZTUwMG1jLWZzbC1saW51eC91c3IgLS13aXRoLWd4eC1p
-bmNsdWRlLWRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvcHBjZTUwMG1jLWZzbC1saW51eC91c3Iv
-aW5jbHVkZS9jKysgLS13aXRoLWJ1aWxkLXRpbWUtdG9vbHM9L2xvY2FsL3dvcmtzcGFjZS95b2N0
-by1pc28tbWFrZS9wNDA4MGRzL2J1aWxkX3A0MDgwZHNfcmVsZWFzZS90bXAvc3lzcm9vdHMvaTY4
-Ni1saW51eC91c3IvcG93ZXJwYy1mc2wtbGludXgvYmluIC0td2l0aC1zeXNyb290PS9vcHQvZnNs
-LzEuMi9zeXNyb290cy9wcGNlNTAwbWMtZnNsLWxpbnV4IC0td2l0aC1idWlsZC1zeXNyb290PS9s
-b2NhbC93b3Jrc3BhY2UveW9jdG8taXNvLW1ha2UvcDQwODBkcy9idWlsZF9wNDA4MGRzX3JlbGVh
-c2UvdG1wL3N5c3Jvb3RzL3A0MDgwZHMgLS1kaXNhYmxlLWxpYnVud2luZC1leGNlcHRpb25zIC0t
-ZGlzYWJsZS1saWJzc3AgLS1kaXNhYmxlLWxpYmdvbXAgLS1kaXNhYmxlLWxpYm11ZGZsYXAgLS13
-aXRoLW1wZnI9L2xvY2FsL3dvcmtzcGFjZS95b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxkX3A0
-MDgwZHNfcmVsZWFzZS90bXAvc3lzcm9vdHMvaTY4Ni1uYXRpdmVzZGstZnNsc2RrLWxpbnV4IC0t
-d2l0aC1tcGM9L2xvY2FsL3dvcmtzcGFjZS95b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxkX3A0
-MDgwZHNfcmVsZWFzZS90bXAvc3lzcm9vdHMvaTY4Ni1uYXRpdmVzZGstZnNsc2RrLWxpbnV4IC0t
-ZW5hYmxlLW5scyAtLWVuYWJsZS1fX2N4YV9hdGV4aXQgLS13aXRoLWxvbmctZG91YmxlLTEyOFRo
-cmVhZCBtb2RlbDogcG9zaXhnY2MgdmVyc2lvbiA0LjYuMiAoR0NDKSANCklzIGU1MDBtYyBmYW1p
-bHkgZG93bndhcmQgY29tcGl0aWJsZSB3aXRoIGU1MDB2Mj8gQyBjb2RlIGNhbiBydW4gY29ycmVj
-dGx5IG9uIHAyMDIwIHdpdGggdGhlIGU1MDBtYyB0b29sY2hhaW4uDQpUaGFua3MgJiBCZXN0IFJl
-Z2FyZHNKaXVjaGVuZw0KIA0KIAkJIAkgICAJCSAg
+I am a developer. Now I confronted an interesting phenomena. When I used 
+linux kernel 2.6.34.15 on freescale-p2020, I can not receive raw and 
+vlan packets on gfar-enet nic. But with e1000e nic, we can make vlan and 
+raw packets work well. I looked into the source code and find that maybe 
+it is related with hardware insert and remove vlan head. But I have no 
+the specifications of gfar-enet nic. Would you like to give some 
+document or some guides?
 
---_ae56c86f-09d3-436d-a75d-67f3fe111b1f_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: base64
+Thanks a lot.
+Zhu Yanjun
 
-PGh0bWw+DQo8aGVhZD4NCjxzdHlsZT48IS0tDQouaG1tZXNzYWdlIFANCnsNCm1hcmdpbjowcHg7
-DQpwYWRkaW5nOjBweA0KfQ0KYm9keS5obW1lc3NhZ2UNCnsNCmZvbnQtc2l6ZTogMTJwdDsNCmZv
-bnQtZmFtaWx5Os6iyO3RxbraDQp9DQotLT48L3N0eWxlPjwvaGVhZD4NCjxib2R5IGNsYXNzPSdo
-bW1lc3NhZ2UnPjxkaXYgZGlyPSdsdHInPkhpIEFsbCw8ZGl2Pjxicj48L2Rpdj48ZGl2PldlIHJ1
-biBpbnRvIGFuIGlzc3VlIHdoZW4gdXNlIGU1MDBtYyB0b29sY2hhaW4gJm5ic3A7ZysrIHRvIGNv
-bXBpbGUgYysrIGNvZGUgZm9yIHAyMDIwIHBsYXRmb3JtLCAmbmJzcDt0aGUgY29kZSBhcyBiZWxv
-dzo8L2Rpdj48ZGl2Pjxicj48L2Rpdj48ZGl2Pjxicj48L2Rpdj48ZGl2Pm1haW4uYzwvZGl2Pjxk
-aXY+PGJyPjwvZGl2PjxkaXY+PGRpdj4jaW5jbHVkZSAmbHQ7aW9zdHJlYW0mZ3Q7PC9kaXY+PGRp
-dj51c2luZyBuYW1lc3BhY2Ugc3RkOzwvZGl2PjxkaXY+PGJyPjwvZGl2PjxkaXY+aW50IG1haW4o
-dm9pZCkgezwvZGl2PjxkaXY+Jm5ic3A7ICZuYnNwOyAmbmJzcDsgJm5ic3A7IGNvdXQgJmx0OyZs
-dDsgImFzZGZhc2RmYXNkZmFzZGYiOzwvZGl2PjxkaXY+PGJyPjwvZGl2PjxkaXY+Jm5ic3A7ICZu
-YnNwOyAmbmJzcDsgJm5ic3A7IHJldHVybiAwOzwvZGl2PjxkaXY+fTwvZGl2PjwvZGl2PjxkaXY+
-PGJyPjwvZGl2PjxkaXY+Y29tcGlsZSBpdCB3aXRoIGNvbW1hbmQgInBvd2VycGMtZmxzLWxpbnV4
-LWcrKyBtYWluLmMiIGFuZCB0aGUgb3V0cHV0IGZpbGUncyBuYW1lIGlzIGEub3V0LCBkb3dubG9h
-ZCB0aGUgYmluYXJ5IHRvIHAyMDIwcmRiIGJvYXJkLCBidXQgdDxzcGFuIHN0eWxlPSJmb250LXNp
-emU6IDEycHQ7Ij5oZSBjb25zb2xlIHByaW50cyB0aGUgZXJyb3IgbG9nICJJbGxlZ2FsIGluc3Ry
-dWN0aW9uIi48L3NwYW4+PC9kaXY+PGRpdj48YnI+PC9kaXY+PGRpdj5JdCBpcyBhbGwgcmlnaHQg
-b24gcDIwNDEgcGxhdGZvcm0uJm5ic3A7PC9kaXY+PGRpdj48YnI+PC9kaXY+PGRpdj5UaGUgdmVy
-c2lvbiBvZiB0b29sY2hpYW46PC9kaXY+PGRpdj48YnI+PC9kaXY+PGRpdj48ZGl2PkNvbmZpZ3Vy
-ZWQgd2l0aDogL2xvY2FsL3dvcmtzcGFjZS95b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxkX3A0
-MDgwZHNfcmVsZWFzZS90bXAvd29yay1zaGFyZWQvZ2NjLTQuNi4yK3N2bnIxODA1MTYtcjI5K2Zz
-bC42L2djYy00XzYtYnJhbmNoL2NvbmZpZ3VyZSAtLWJ1aWxkPWk2ODYtbGludXggLS1ob3N0PWk2
-ODYtZnNsc2RrLWxpbnV4IC0tdGFyZ2V0PXBvd2VycGMtZnNsLWxpbnV4IC0tcHJlZml4PS9vcHQv
-ZnNsLzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IgLS1leGVjX3ByZWZpeD0vb3B0
-L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvdXNyIC0tYmluZGlyPS9vcHQvZnNs
-LzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IvYmluL3BwY2U1MDBtYy1mc2wtbGlu
-dXggLS1zYmluZGlyPS9vcHQvZnNsLzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3Iv
-YmluL3BwY2U1MDBtYy1mc2wtbGludXggLS1saWJleGVjZGlyPS9vcHQvZnNsLzEuMi9zeXNyb290
-cy9pNjg2LWZzbHNkay1saW51eC91c3IvbGliZXhlYy9wcGNlNTAwbWMtZnNsLWxpbnV4IC0tZGF0
-YWRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvdXNyL3NoYXJlIC0t
-c3lzY29uZmRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvZXRjIC0t
-c2hhcmVkc3RhdGVkaXI9L29wdC9mc2wvMS4yL3N5c3Jvb3RzL2k2ODYtZnNsc2RrLWxpbnV4L2Nv
-bSAtLWxvY2Fsc3RhdGVkaXI9L29wdC9mc2wvMS4yL3N5c3Jvb3RzL2k2ODYtZnNsc2RrLWxpbnV4
-L3ZhciAtLWxpYmRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvaTY4Ni1mc2xzZGstbGludXgvdXNy
-L2xpYi9wcGNlNTAwbWMtZnNsLWxpbnV4IC0taW5jbHVkZWRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9v
-dHMvaTY4Ni1mc2xzZGstbGludXgvdXNyL2luY2x1ZGUgLS1vbGRpbmNsdWRlZGlyPS9vcHQvZnNs
-LzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3IvaW5jbHVkZSAtLWluZm9kaXI9L29w
-dC9mc2wvMS4yL3N5c3Jvb3RzL2k2ODYtZnNsc2RrLWxpbnV4L3Vzci9zaGFyZS9pbmZvIC0tbWFu
-ZGlyPS9vcHQvZnNsLzEuMi9zeXNyb290cy9pNjg2LWZzbHNkay1saW51eC91c3Ivc2hhcmUvbWFu
-IC0tZGlzYWJsZS1zaWxlbnQtcnVsZXMgLS1kaXNhYmxlLWRlcGVuZGVuY3ktdHJhY2tpbmcgLS13
-aXRoLWxpYnRvb2wtc3lzcm9vdD0vbG9jYWwvd29ya3NwYWNlL3lvY3RvLWlzby1tYWtlL3A0MDgw
-ZHMvYnVpbGRfcDQwODBkc19yZWxlYXNlL3RtcC9zeXNyb290cy9pNjg2LW5hdGl2ZXNkay1mc2xz
-ZGstbGludXggLS13aXRoLWdudS1sZCAtLWVuYWJsZS1zaGFyZWQgLS1lbmFibGUtbGFuZ3VhZ2Vz
-PWMsYysrIC0tZW5hYmxlLXRocmVhZHM9cG9zaXggLS1kaXNhYmxlLW11bHRpbGliIC0tZW5hYmxl
-LWM5OSAtLWVuYWJsZS1sb25nLWxvbmcgLS1lbmFibGUtc3ltdmVycz1nbnUgLS1lbmFibGUtbGli
-c3RkY3h4LXBjaCAtLXByb2dyYW0tcHJlZml4PXBvd2VycGMtZnNsLWxpbnV4LSAtLWVuYWJsZS1s
-dG8gLS1lbmFibGUtbGlic3NwIC0tZGlzYWJsZS1ib290c3RyYXAgLS1kaXNhYmxlLWxpYmdvbXAg
-LS1kaXNhYmxlLWxpYm11ZGZsYXAgLS13aXRoLXN5c3RlbS16bGliIC0td2l0aC1saW5rZXItaGFz
-aC1zdHlsZT1nbnUgLS1lbmFibGUtY2hlYWRlcnM9Y19nbG9iYWwgLS13aXRoLWxvY2FsLXByZWZp
-eD0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvcHBjZTUwMG1jLWZzbC1saW51eC91c3IgLS13aXRoLWd4
-eC1pbmNsdWRlLWRpcj0vb3B0L2ZzbC8xLjIvc3lzcm9vdHMvcHBjZTUwMG1jLWZzbC1saW51eC91
-c3IvaW5jbHVkZS9jKysgLS13aXRoLWJ1aWxkLXRpbWUtdG9vbHM9L2xvY2FsL3dvcmtzcGFjZS95
-b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxkX3A0MDgwZHNfcmVsZWFzZS90bXAvc3lzcm9vdHMv
-aTY4Ni1saW51eC91c3IvcG93ZXJwYy1mc2wtbGludXgvYmluIC0td2l0aC1zeXNyb290PS9vcHQv
-ZnNsLzEuMi9zeXNyb290cy9wcGNlNTAwbWMtZnNsLWxpbnV4IC0td2l0aC1idWlsZC1zeXNyb290
-PS9sb2NhbC93b3Jrc3BhY2UveW9jdG8taXNvLW1ha2UvcDQwODBkcy9idWlsZF9wNDA4MGRzX3Jl
-bGVhc2UvdG1wL3N5c3Jvb3RzL3A0MDgwZHMgLS1kaXNhYmxlLWxpYnVud2luZC1leGNlcHRpb25z
-IC0tZGlzYWJsZS1saWJzc3AgLS1kaXNhYmxlLWxpYmdvbXAgLS1kaXNhYmxlLWxpYm11ZGZsYXAg
-LS13aXRoLW1wZnI9L2xvY2FsL3dvcmtzcGFjZS95b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxk
-X3A0MDgwZHNfcmVsZWFzZS90bXAvc3lzcm9vdHMvaTY4Ni1uYXRpdmVzZGstZnNsc2RrLWxpbnV4
-IC0td2l0aC1tcGM9L2xvY2FsL3dvcmtzcGFjZS95b2N0by1pc28tbWFrZS9wNDA4MGRzL2J1aWxk
-X3A0MDgwZHNfcmVsZWFzZS90bXAvc3lzcm9vdHMvaTY4Ni1uYXRpdmVzZGstZnNsc2RrLWxpbnV4
-IC0tZW5hYmxlLW5scyAtLWVuYWJsZS1fX2N4YV9hdGV4aXQgLS13aXRoLWxvbmctZG91YmxlLTEy
-ODwvZGl2PjxkaXY+VGhyZWFkIG1vZGVsOiBwb3NpeDwvZGl2PjxkaXY+Z2NjIHZlcnNpb24gNC42
-LjIgKEdDQykmbmJzcDs8L2Rpdj48L2Rpdj48ZGl2Pjxicj48L2Rpdj48ZGl2PklzIGU1MDBtYyBm
-YW1pbHkgZG93bndhcmQgY29tcGl0aWJsZSB3aXRoIGU1MDB2Mj8gQyBjb2RlIGNhbiBydW4gY29y
-cmVjdGx5IG9uIHAyMDIwIHdpdGggdGhlIGU1MDBtYyB0b29sY2hhaW4uPC9kaXY+PGRpdj48YnI+
-PC9kaXY+PGRpdj5UaGFua3MgJmFtcDsgQmVzdCBSZWdhcmRzPC9kaXY+PGRpdj5KaXVjaGVuZzwv
-ZGl2PjxkaXY+PGJyPjwvZGl2PjxkaXY+Jm5ic3A7PC9kaXY+PGRpdj48YnI+PC9kaXY+IAkJIAkg
-ICAJCSAgPC9kaXY+PC9ib2R5Pg0KPC9odG1sPg==
+The steps are as below.
 
---_ae56c86f-09d3-436d-a75d-67f3fe111b1f_--
+1. I boot two freescale-p2020 boards with linux kernel 2.6.34.15, then I 
+connected 2 gfar-enet nic cards with a direct network line;
+
+2. On board 1, I checked the driver of eth0
+
+ethtool -i eth0
+
+driver: gfar-enet
+version: 1.3
+firmware-version: N/A
+bus-info: N/A
+
+On board 2, I checked the driver of eth1
+
+ethtool -i eth1
+
+driver: gfar-enet
+version: 1.3
+firmware-version: N/A
+bus-info: N/A
+
+3. Then I configure the ip address on the above 2 nic cards.
+
+On board 1,
+
+ifconfig eth0 192.168.1.13/24 up
+
+On board 2,
+
+ifconfig eth1 192.168.1.196/24 up
+
+4. We can access the other board on one board.
+For example, on board 1, we can ping board 2.
+
+root@p2020rdb:/root> ping 192.168.1.196
+PING 192.168.1.196 (192.168.1.196) 56(84) bytes of data.
+64 bytes from 192.168.1.196: icmp_req=1 ttl=64 time=2.92 ms
+64 bytes from 192.168.1.196: icmp_req=2 ttl=64 time=0.096 ms
+
+5. We configure vlan on these 2 boards.
+On board 1,
+
+modprobe 8021q
+vconfig add eth0 4091
+ifconfig eth0.4091 10.1.1.13/24 up
+
+On board 2,
+
+modprobe 8021q
+vconfig add eth1 4091
+ifconfig eth1.4091 10.1.1.196/24 up
+
+6. We can access the other board on one board through vlan.
+For example, on board 1, we can ping board 2 through vlan nic.
+
+root@p2020rdb:/root> ping 10.1.1.196
+PING 10.1.1.196 (10.1.1.196) 56(84) bytes of data.
+64 bytes from 10.1.1.196: icmp_req=1 ttl=64 time=2.92 ms
+64 bytes from 10.1.1.196: icmp_req=2 ttl=64 time=0.096 ms
+
+But we can not access the other board on one board through raw nic.
+For example, on board, we can not ping board 2.
+
+root@p2020rdb:/root> ping 192.168.1.196
+ From 192.168.1.196 icmp_seq=1 Destination Host Unreachable
+ From 192.168.1.196 icmp_seq=2 Destination Host Unreachable
+ From 192.168.1.196 icmp_seq=3 Destination Host Unreachable
