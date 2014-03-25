@@ -1,16 +1,36 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 25 Mar 2014 16:52:43 +1100
-From: Anton Blanchard <anton@samba.org>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/powernv: Platform dump interface
-Message-ID: <20140325165243.22c0109d@kryten>
-In-Reply-To: <52FB8CC6.2010005@linux.vnet.ibm.com>
-References: <20140116121411.624.55662.stgit@hegdevasant.in.ibm.com>
- <20140209082034.0329833d@kryten>
- <52FB8CC6.2010005@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 2F2BF14008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 17:50:30 +1100 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 25 Mar 2014 12:20:25 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 876CCE004B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 12:24:20 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2P6o8rf4063644
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 12:20:08 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2P6oK2t016380
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 12:20:21 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
+Subject: [PATCH 0/1] mm: FAULT_AROUND_ORDER patchset performance data for
+ powerpc
+Date: Tue, 25 Mar 2014 12:20:14 +0530
+Message-Id: <1395730215-11604-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
+ rusty@rustcorp.com.au, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ paulus@samba.org, mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,112 +40,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Vasant,
+Performance data for different FAULT_AROUND_ORDER values from 4 socket
+Power7 system (128 Threads and 128GB memory) is below.  Fault around order (FAO)
+value of 3 looks more advantageous.
 
-> On 02/09/2014 02:50 AM, Anton Blanchard wrote:
-> >
-> > Hi Vasant,
-> >
-> >> +static void free_dump_sg_list(struct opal_sg_list *list)
-> >> +{
-> >> +	struct opal_sg_list *sg1;
-> >> +	while (list) {
-> >> +		sg1 = list->next;
-> >> +		kfree(list);
-> >> +		list = sg1;
-> >> +	}
-> >> +	list = NULL;
-> >> +}
-> >> +
-> >> +/*
-> >> + * Build dump buffer scatter gather list
-> >> + */
-> >> +static struct opal_sg_list *dump_data_to_sglist(void)
-> >> +{
-> >> +	struct opal_sg_list *sg1, *list = NULL;
-> >> +	void *addr;
-> >> +	int64_t size;
-> >> +
-> >> +	addr = dump_record.buffer;
-> >> +	size = dump_record.size;
-> >> +
-> >> +	sg1 = kzalloc(PAGE_SIZE, GFP_KERNEL);
-> >> +	if (!sg1)
-> >> +		goto nomem;
-> >> +
-> >> +	list = sg1;
-> >> +	sg1->num_entries = 0;
-> >> +	while (size > 0) {
-> >> +		/* Translate virtual address to physical address
-> >> */
-> >> +		sg1->entry[sg1->num_entries].data =
-> >> +			(void *)(vmalloc_to_pfn(addr) <<
-> >> PAGE_SHIFT); +
-> >> +		if (size > PAGE_SIZE)
-> >> +			sg1->entry[sg1->num_entries].length =
-> >> PAGE_SIZE;
-> >> +		else
-> >> +			sg1->entry[sg1->num_entries].length =
-> >> size; +
-> >> +		sg1->num_entries++;
-> >> +		if (sg1->num_entries >= SG_ENTRIES_PER_NODE) {
-> >> +			sg1->next = kzalloc(PAGE_SIZE,
-> >> GFP_KERNEL);
-> >> +			if (!sg1->next)
-> >> +				goto nomem;
-> >> +
-> >> +			sg1 = sg1->next;
-> >> +			sg1->num_entries = 0;
-> >> +		}
-> >> +		addr += PAGE_SIZE;
-> >> +		size -= PAGE_SIZE;
-> >> +	}
-> >> +	return list;
-> >> +
-> >> +nomem:
-> >> +	pr_err("%s : Failed to allocate memory\n", __func__);
-> >> +	free_dump_sg_list(list);
-> >> +	return NULL;
-> >> +}
-> >> +
-> >> +/*
-> >> + * Translate sg list address to absolute
-> >> + */
-> >> +static void sglist_to_phy_addr(struct opal_sg_list *list)
-> >> +{
-> >> +	struct opal_sg_list *sg, *next;
-> >> +
-> >> +	for (sg = list; sg; sg = next) {
-> >> +		next = sg->next;
-> >> +		/* Don't translate NULL pointer for last entry */
-> >> +		if (sg->next)
-> >> +			sg->next = (struct opal_sg_list
-> >> *)__pa(sg->next);
-> >> +		else
-> >> +			sg->next = NULL;
-> >> +
-> >> +		/* Convert num_entries to length */
-> >> +		sg->num_entries =
-> >> +			sg->num_entries * sizeof(struct
-> >> opal_sg_entry) + 16;
-> >> +	}
-> >> +}
-> >> +
-> >> +static void free_dump_data_buf(void)
-> >> +{
-> >> +	vfree(dump_record.buffer);
-> >> +	dump_record.size = 0;
-> >> +}
-> >
-> 
-> Anton,
-> 
-> > This looks identical to the code in opal-flash.c. Considering how
-> > complicated it is, can we put it somewhere common?
-> 
-> Thanks for the review.. Will look into it next week.
+FAULT_AROUND_ORDER      Baseline        1               3               4		5               7
 
-This doesn't appear to have been fixed in the version that went into
-next.
+Linux build (make -j64)
+minor-faults		7184385		5874015		4567289		4318518		4193815		4159193
+times in seconds	61.433776136	60.865935292	59.245368038	60.630675011	60.56587624	59.828271924
 
-Anton
+Linux rebuild (make -j64)
+minor-faults		303018		226392		146170		132480		126878		126236
+times in seconds	5.659819172	5.723996942	5.591238319	5.622533357	5.878811995	5.550133096
+
+Two synthetic tests: access every word in file in sequential/random order.
+Marginal Performance gains seen for FAO value of 3 when compared to value
+of 4.
+
+Sequential access 16GiB file
+FAULT_AROUND_ORDER      Baseline        1               3               4		5               7
+1 thread
+       minor-faults	262302		131192		32873		16486		8291		2351
+       times in seconds	53.071497352	52.945826882	52.931417302	52.928577184	52.859285439	53.116800539
+8 threads
+       minor-faults	2097314		1051046		263336		131715		66098		16653
+       times in seconds	54.385698561	54.603652339	54.771282004	54.488565674	54.496701531	54.962142189
+32 threads
+       minor-faults	8389267		4218595		1059961		531319		266463		67271
+       times in seconds	60.61715047	60.827964038	60.46412673	60.266045885	60.492398315	60.24531921
+64 threads
+       minor-faults	16777455	8485998		2178582		1092106		544302		137693
+       times in seconds	86.471334554	84.412415735	85.208303832	84.331473392	85.598793479	84.695469266
+128 threads
+       minor-faults	33555267	17734522	4710107		2380821		1182707		292077
+       times in seconds	117.535385569	114.291359037	112.593908276	113.081807611	114.358686588	114.491043011
+
+Random access 1GiB file
+FAULT_AROUND_ORDER      Baseline        1               3               4		5               7
+1 thread
+       minor-faults	16503		8664		2149		1126		610		437
+       times in seconds	43.843573808	48.042069805	50.580779682	54.282884593	52.641739876	51.803302129
+8 threads
+       minor-faults	131201		70916		17760		8665		4250		1149
+       times in seconds	46.262626804	55.942851041	56.629191584	57.97044714	55.417557594	56.019709166
+32 threads
+       minor-faults	524959		265980		67282		33601		16930		4316
+       times in seconds	67.754175928	69.85012331	71.750338061	71.053074643	68.90728294	71.250103217
+64 threads
+       minor-faults	1048831		528829		133256		66700		33428		8776
+       times in seconds	96.674025305	93.109961822	87.441777715	91.986332028	88.686748472	93.101434306
+128 threads
+       minor-faults	2098043		1053224		266271		133702		66966		17276
+       times in seconds	156.525792044	152.117971403	147.523673243	148.560226602	148.596575663	149.389288429
+
+Worst case scenario: we touch one page every 16M to demonstrate overhead.
+
+Touch only one page in page table in 16GiB file
+FAULT_AROUND_ORDER      Baseline        1               3               4		5               7
+1 thread
+       minor-faults	1077		1064		1051		1048		1046		1045
+       times in seconds	0.00615347	0.008327379	0.019775282	0.034444003	0.05905971	0.220863339
+8 threads
+       minor-faults	8252		8239		8226		8223		8220		8224
+       times in seconds	0.04387392	0.059859294	0.113897648	0.199707764	0.361585762	1.343366843
+32 threads
+       minor-faults	32852		32841		32825		32826		32824		32828
+       times in seconds	0.191404544	0.21907773	0.433207123	0.72430447	1.334983196	4.97727449
+64 threads
+       minor-faults	65652		65642		65629		65622		65623		65634
+       times in seconds	0.402140429	0.510806718	0.854288645	1.412329805	2.556707704	8.711074863
+128 threads
+       minor-faults	131255		131239		131228		131228		131229		131243
+       times in seconds	0.817782148	1.124631348	2.023730928	3.184792382	5.331392072	17.309524609
+
+Madhavan Srinivasan (1):
+  mm: move FAULT_AROUND_ORDER to arch/
+
+ arch/powerpc/include/asm/pgtable.h |    6 ++++++
+ arch/x86/include/asm/pgtable.h     |    5 +++++
+ include/asm-generic/pgtable.h      |   10 ++++++++++
+ mm/memory.c                        |    2 --
+ 4 files changed, 21 insertions(+), 2 deletions(-)
+
+-- 
+1.7.10.4
