@@ -3,9 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 25/33] powerpc: module: handle MODVERSION for .TOC.
-Date: Tue, 25 Mar 2014 22:44:31 +1100
-Message-Id: <1395747879-5948-26-git-send-email-anton@samba.org>
+Subject: [PATCH 26/33] powerpc: Fix up TOC. for modules.
+Date: Tue, 25 Mar 2014 22:44:32 +1100
+Message-Id: <1395747879-5948-27-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -20,35 +20,73 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-For the ELFv2 ABI, powerpc introduces a magic symbol ".TOC.".  If we
-don't create a CRC for it (minus the leading ".", since we strip that)
-we get a modpost warning about missing CRC and the CRC array seems to
-be displaced by 1 so other CRCs mismatch too.
+The kernel resolved the '.TOC.' to a fake symbol, so we need to fix it up
+to point to our .toc section plus 0x8000.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/powerpc/kernel/misc_64.S | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/powerpc/include/asm/module.h |  1 +
+ arch/powerpc/kernel/module_64.c   | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 30 insertions(+)
 
-diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
-index b80fafb..4e314b9 100644
---- a/arch/powerpc/kernel/misc_64.S
-+++ b/arch/powerpc/kernel/misc_64.S
-@@ -637,6 +637,15 @@ _GLOBAL(kexec_sequence)
+diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
+index 49fa55b..c9c7aaa 100644
+--- a/arch/powerpc/include/asm/module.h
++++ b/arch/powerpc/include/asm/module.h
+@@ -35,6 +35,7 @@ struct mod_arch_specific {
+ #ifdef __powerpc64__
+ 	unsigned int stubs_section;	/* Index of stubs section in module */
+ 	unsigned int toc_section;	/* What section is the TOC? */
++	bool toc_fixed;			/* Have we fixed up .TOC.? */
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 	unsigned long toc;
+ 	unsigned long tramp;
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index a8694d4..f6544d7 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -196,6 +196,24 @@ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
+ 	}
+ }
  
- #ifdef CONFIG_MODULES
- #if defined(_CALL_ELF) && _CALL_ELF == 2
++static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
++			       const char *strtab,
++			       unsigned int symindex)
++{
++	unsigned int i, numsyms;
++	Elf64_Sym *syms;
 +
-+#ifdef CONFIG_MODVERSIONS
-+.weak __crc_TOC.
-+.section "___kcrctab+TOC.","a"
-+.globl __kcrctab_TOC.
-+__kcrctab_TOC.:
-+	.llong	__crc_TOC.
-+#endif
++	syms = (Elf64_Sym *)sechdrs[symindex].sh_addr;
++	numsyms = sechdrs[symindex].sh_size / sizeof(Elf64_Sym);
 +
- /*
-  * Export a fake .TOC. since both modpost and depmod will complain otherwise.
-  * Both modpost and depmod strip the leading . so we do the same here.
++	for (i = 1; i < numsyms; i++) {
++		if (syms[i].st_shndx == SHN_UNDEF
++		    && strcmp(strtab + syms[i].st_name, ".TOC.") == 0)
++			return &syms[i];
++	}
++	return NULL;
++}
++
+ int module_frob_arch_sections(Elf64_Ehdr *hdr,
+ 			      Elf64_Shdr *sechdrs,
+ 			      char *secstrings,
+@@ -337,6 +355,17 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 
+ 	DEBUGP("Applying ADD relocate section %u to %u\n", relsec,
+ 	       sechdrs[relsec].sh_info);
++
++	/* First time we're called, we can fix up .TOC. */
++	if (!me->arch.toc_fixed) {
++		sym = find_dot_toc(sechdrs, strtab, symindex);
++		/* It's theoretically possible that a module doesn't want a
++		 * .TOC. so don't fail it just for that. */
++		if (sym)
++			sym->st_value = my_r2(sechdrs, me);
++		me->arch.toc_fixed = true;
++	}
++
+ 	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
+ 		/* This is where to make the change */
+ 		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
 -- 
 1.8.3.2
