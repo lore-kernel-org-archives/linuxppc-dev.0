@@ -3,10 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 12/33] powerpc: Use ppc_function_entry instead of open coding
- it
-Date: Tue, 25 Mar 2014 22:44:18 +1100
-Message-Id: <1395747879-5948-13-git-send-email-anton@samba.org>
+Subject: [PATCH 13/33] powerpc: Fix branch patching code for ABIv2
+Date: Tue, 25 Mar 2014 22:44:19 +1100
+Message-Id: <1395747879-5948-14-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -19,66 +18,263 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace FUNCTION_TEXT with ppc_function_entry which can handle both
-ABIv1 and ABIv2.
+The MMU hashtable and SLB branch patching code uses function
+pointers for the update sites. This creates a difference between
+ABIv1 and ABIv2 because we don't have function descriptors on
+ABIv2.
+
+Get rid of the function pointer and just point at the update
+sites directly. This works on both ABIs.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/mm/hash_utils_64.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/hash_low_64.S   | 36 ++++++++++++++++++++++++------------
+ arch/powerpc/mm/hash_utils_64.c | 20 +++++++++-----------
+ arch/powerpc/mm/slb.c           | 12 ++++++------
+ arch/powerpc/mm/slb_low.S       | 12 ++++++++----
+ 4 files changed, 47 insertions(+), 33 deletions(-)
 
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index 8bf7537..057cbbb 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -201,7 +201,8 @@ htab_insert_pte:
+ 	li	r8,MMU_PAGE_4K		/* page size */
+ 	li	r9,MMU_PAGE_4K		/* actual page size */
+ 	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-_GLOBAL(htab_call_hpte_insert1)
++.globl htab_call_hpte_insert1
++htab_call_hpte_insert1:
+ 	bl	.			/* Patched by htab_finish_init() */
+ 	cmpdi	0,r3,0
+ 	bge	htab_pte_insert_ok	/* Insertion successful */
+@@ -225,7 +226,8 @@ _GLOBAL(htab_call_hpte_insert1)
+ 	li	r8,MMU_PAGE_4K		/* page size */
+ 	li	r9,MMU_PAGE_4K		/* actual page size */
+ 	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-_GLOBAL(htab_call_hpte_insert2)
++.globl htab_call_hpte_insert2
++htab_call_hpte_insert2:
+ 	bl	.			/* Patched by htab_finish_init() */
+ 	cmpdi	0,r3,0
+ 	bge+	htab_pte_insert_ok	/* Insertion successful */
+@@ -242,7 +244,8 @@ _GLOBAL(htab_call_hpte_insert2)
+ 2:	and	r0,r5,r27
+ 	rldicr	r3,r0,3,63-3	/* r0 = (hash & mask) << 3 */	
+ 	/* Call ppc_md.hpte_remove */
+-_GLOBAL(htab_call_hpte_remove)
++.globl htab_call_hpte_remove
++htab_call_hpte_remove:
+ 	bl	.			/* Patched by htab_finish_init() */
+ 
+ 	/* Try all again */
+@@ -296,7 +299,8 @@ htab_modify_pte:
+ 	li	r7,MMU_PAGE_4K		/* actual page size */
+ 	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
+ 	ld	r9,STK_PARAM(R8)(r1)	/* get "local" param */
+-_GLOBAL(htab_call_hpte_updatepp)
++.globl htab_call_hpte_updatepp
++htab_call_hpte_updatepp:
+ 	bl	.			/* Patched by htab_finish_init() */
+ 
+ 	/* if we failed because typically the HPTE wasn't really here
+@@ -526,7 +530,8 @@ htab_special_pfn:
+ 	li	r8,MMU_PAGE_4K		/* page size */
+ 	li	r9,MMU_PAGE_4K		/* actual page size */
+ 	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-_GLOBAL(htab_call_hpte_insert1)
++.globl htab_call_hpte_insert1
++htab_call_hpte_insert1:
+ 	bl	.			/* patched by htab_finish_init() */
+ 	cmpdi	0,r3,0
+ 	bge	htab_pte_insert_ok	/* Insertion successful */
+@@ -554,7 +559,8 @@ _GLOBAL(htab_call_hpte_insert1)
+ 	li	r8,MMU_PAGE_4K		/* page size */
+ 	li	r9,MMU_PAGE_4K		/* actual page size */
+ 	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-_GLOBAL(htab_call_hpte_insert2)
++.globl htab_call_hpte_insert2
++htab_call_hpte_insert2:
+ 	bl	.			/* patched by htab_finish_init() */
+ 	cmpdi	0,r3,0
+ 	bge+	htab_pte_insert_ok	/* Insertion successful */
+@@ -571,7 +577,8 @@ _GLOBAL(htab_call_hpte_insert2)
+ 2:	and	r0,r5,r27
+ 	rldicr	r3,r0,3,63-3		/* r0 = (hash & mask) << 3 */
+ 	/* Call ppc_md.hpte_remove */
+-_GLOBAL(htab_call_hpte_remove)
++.globl htab_call_hpte_remove
++htab_call_hpte_remove:
+ 	bl	.			/* patched by htab_finish_init() */
+ 
+ 	/* Try all again */
+@@ -660,7 +667,8 @@ htab_modify_pte:
+ 	li	r7,MMU_PAGE_4K		/* actual page size */
+ 	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
+ 	ld	r9,STK_PARAM(R8)(r1)	/* get "local" param */
+-_GLOBAL(htab_call_hpte_updatepp)
++.globl htab_call_hpte_updatepp
++htab_call_hpte_updatepp:
+ 	bl	.			/* patched by htab_finish_init() */
+ 
+ 	/* if we failed because typically the HPTE wasn't really here
+@@ -857,7 +865,8 @@ ht64_insert_pte:
+ 	li	r8,MMU_PAGE_64K
+ 	li	r9,MMU_PAGE_64K		/* actual page size */
+ 	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-_GLOBAL(ht64_call_hpte_insert1)
++.globl ht64_call_hpte_insert1
++ht64_call_hpte_insert1:
+ 	bl	.			/* patched by htab_finish_init() */
+ 	cmpdi	0,r3,0
+ 	bge	ht64_pte_insert_ok	/* Insertion successful */
+@@ -881,7 +890,8 @@ _GLOBAL(ht64_call_hpte_insert1)
+ 	li	r8,MMU_PAGE_64K
+ 	li	r9,MMU_PAGE_64K		/* actual page size */
+ 	ld	r10,STK_PARAM(R9)(r1)	/* segment size */
+-_GLOBAL(ht64_call_hpte_insert2)
++.globl ht64_call_hpte_insert2
++ht64_call_hpte_insert2:
+ 	bl	.			/* patched by htab_finish_init() */
+ 	cmpdi	0,r3,0
+ 	bge+	ht64_pte_insert_ok	/* Insertion successful */
+@@ -898,7 +908,8 @@ _GLOBAL(ht64_call_hpte_insert2)
+ 2:	and	r0,r5,r27
+ 	rldicr	r3,r0,3,63-3	/* r0 = (hash & mask) << 3 */
+ 	/* Call ppc_md.hpte_remove */
+-_GLOBAL(ht64_call_hpte_remove)
++.globl ht64_call_hpte_remove
++ht64_call_hpte_remove:
+ 	bl	.			/* patched by htab_finish_init() */
+ 
+ 	/* Try all again */
+@@ -952,7 +963,8 @@ ht64_modify_pte:
+ 	li	r7,MMU_PAGE_64K		/* actual page size */
+ 	ld	r8,STK_PARAM(R9)(r1)	/* segment size */
+ 	ld	r9,STK_PARAM(R8)(r1)	/* get "local" param */
+-_GLOBAL(ht64_call_hpte_updatepp)
++.globl ht64_call_hpte_updatepp
++ht64_call_hpte_updatepp:
+ 	bl	.			/* patched by htab_finish_init() */
+ 
+ 	/* if we failed because typically the HPTE wasn't really here
 diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index d766d6e..49fc935 100644
+index 49fc935..d685dff 100644
 --- a/arch/powerpc/mm/hash_utils_64.c
 +++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -603,8 +603,6 @@ int remove_section_mapping(unsigned long start, unsigned long end)
+@@ -603,19 +603,18 @@ int remove_section_mapping(unsigned long start, unsigned long end)
  }
  #endif /* CONFIG_MEMORY_HOTPLUG */
  
--#define FUNCTION_TEXT(A)	((*(unsigned long *)(A)))
--
++extern u32 htab_call_hpte_insert1[];
++extern u32 htab_call_hpte_insert2[];
++extern u32 htab_call_hpte_remove[];
++extern u32 htab_call_hpte_updatepp[];
++extern u32 ht64_call_hpte_insert1[];
++extern u32 ht64_call_hpte_insert2[];
++extern u32 ht64_call_hpte_remove[];
++extern u32 ht64_call_hpte_updatepp[];
++
  static void __init htab_finish_init(void)
  {
- 	extern unsigned int *htab_call_hpte_insert1;
-@@ -619,31 +617,31 @@ static void __init htab_finish_init(void)
- 	extern unsigned int *ht64_call_hpte_updatepp;
- 
+-	extern unsigned int *htab_call_hpte_insert1;
+-	extern unsigned int *htab_call_hpte_insert2;
+-	extern unsigned int *htab_call_hpte_remove;
+-	extern unsigned int *htab_call_hpte_updatepp;
+-
+ #ifdef CONFIG_PPC_HAS_HASH_64K
+-	extern unsigned int *ht64_call_hpte_insert1;
+-	extern unsigned int *ht64_call_hpte_insert2;
+-	extern unsigned int *ht64_call_hpte_remove;
+-	extern unsigned int *ht64_call_hpte_updatepp;
+-
  	patch_branch(ht64_call_hpte_insert1,
--		FUNCTION_TEXT(ppc_md.hpte_insert),
-+		ppc_function_entry(ppc_md.hpte_insert),
+ 		ppc_function_entry(ppc_md.hpte_insert),
  		BRANCH_SET_LINK);
- 	patch_branch(ht64_call_hpte_insert2,
--		FUNCTION_TEXT(ppc_md.hpte_insert),
-+		ppc_function_entry(ppc_md.hpte_insert),
- 		BRANCH_SET_LINK);
- 	patch_branch(ht64_call_hpte_remove,
--		FUNCTION_TEXT(ppc_md.hpte_remove),
-+		ppc_function_entry(ppc_md.hpte_remove),
- 		BRANCH_SET_LINK);
+@@ -628,7 +627,6 @@ static void __init htab_finish_init(void)
  	patch_branch(ht64_call_hpte_updatepp,
--		FUNCTION_TEXT(ppc_md.hpte_updatepp),
-+		ppc_function_entry(ppc_md.hpte_updatepp),
+ 		ppc_function_entry(ppc_md.hpte_updatepp),
  		BRANCH_SET_LINK);
- 
+-
  #endif /* CONFIG_PPC_HAS_HASH_64K */
  
  	patch_branch(htab_call_hpte_insert1,
--		FUNCTION_TEXT(ppc_md.hpte_insert),
-+		ppc_function_entry(ppc_md.hpte_insert),
- 		BRANCH_SET_LINK);
- 	patch_branch(htab_call_hpte_insert2,
--		FUNCTION_TEXT(ppc_md.hpte_insert),
-+		ppc_function_entry(ppc_md.hpte_insert),
- 		BRANCH_SET_LINK);
- 	patch_branch(htab_call_hpte_remove,
--		FUNCTION_TEXT(ppc_md.hpte_remove),
-+		ppc_function_entry(ppc_md.hpte_remove),
- 		BRANCH_SET_LINK);
- 	patch_branch(htab_call_hpte_updatepp,
--		FUNCTION_TEXT(ppc_md.hpte_updatepp),
-+		ppc_function_entry(ppc_md.hpte_updatepp),
- 		BRANCH_SET_LINK);
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 9d1d33c..4623366 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -256,10 +256,14 @@ static inline void patch_slb_encoding(unsigned int *insn_addr,
+ 	patch_instruction(insn_addr, insn);
  }
  
++extern u32 slb_compare_rr_to_size[];
++extern u32 slb_miss_kernel_load_linear[];
++extern u32 slb_miss_kernel_load_io[];
++extern u32 slb_compare_rr_to_size[];
++extern u32 slb_miss_kernel_load_vmemmap[];
++
+ void slb_set_size(u16 size)
+ {
+-	extern unsigned int *slb_compare_rr_to_size;
+-
+ 	if (mmu_slb_size == size)
+ 		return;
+ 
+@@ -272,11 +276,7 @@ void slb_initialize(void)
+ 	unsigned long linear_llp, vmalloc_llp, io_llp;
+ 	unsigned long lflags, vflags;
+ 	static int slb_encoding_inited;
+-	extern unsigned int *slb_miss_kernel_load_linear;
+-	extern unsigned int *slb_miss_kernel_load_io;
+-	extern unsigned int *slb_compare_rr_to_size;
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+-	extern unsigned int *slb_miss_kernel_load_vmemmap;
+ 	unsigned long vmemmap_llp;
+ #endif
+ 
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 17aa6df..28cffb6 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -59,7 +59,8 @@ _GLOBAL(slb_allocate_realmode)
+ 	/* Linear mapping encoding bits, the "li" instruction below will
+ 	 * be patched by the kernel at boot
+ 	 */
+-_GLOBAL(slb_miss_kernel_load_linear)
++.globl slb_miss_kernel_load_linear
++slb_miss_kernel_load_linear:
+ 	li	r11,0
+ 	/*
+ 	 * context = (MAX_USER_CONTEXT) + ((ea >> 60) - 0xc) + 1
+@@ -79,7 +80,8 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+ 	/* Check virtual memmap region. To be patches at kernel boot */
+ 	cmpldi	cr0,r9,0xf
+ 	bne	1f
+-_GLOBAL(slb_miss_kernel_load_vmemmap)
++.globl slb_miss_kernel_load_vmemmap
++slb_miss_kernel_load_vmemmap:
+ 	li	r11,0
+ 	b	6f
+ 1:
+@@ -95,7 +97,8 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
+ 	b	6f
+ 5:
+ 	/* IO mapping */
+-	_GLOBAL(slb_miss_kernel_load_io)
++.globl slb_miss_kernel_load_io
++slb_miss_kernel_load_io:
+ 	li	r11,0
+ 6:
+ 	/*
+@@ -250,7 +253,8 @@ slb_finish_load:
+ 7:	ld	r10,PACASTABRR(r13)
+ 	addi	r10,r10,1
+ 	/* This gets soft patched on boot. */
+-_GLOBAL(slb_compare_rr_to_size)
++.globl slb_compare_rr_to_size
++slb_compare_rr_to_size:
+ 	cmpldi	r10,0
+ 
+ 	blt+	4f
 -- 
 1.8.3.2
