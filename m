@@ -3,9 +3,12 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 00/33] Build ppc64le kernel using ABIv2
-Date: Tue, 25 Mar 2014 22:44:06 +1100
-Message-Id: <1395747879-5948-1-git-send-email-anton@samba.org>
+Subject: [PATCH 01/33] powerpc: No need to use dot symbols when branching to a
+ function
+Date: Tue, 25 Mar 2014 22:44:07 +1100
+Message-Id: <1395747879-5948-2-git-send-email-anton@samba.org>
+In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
+References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -16,123 +19,1851 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patches allow the kernel to be built using ABIv2 on a
-compatible LE toolchain. Module support thanks to Rusty. Thanks also
-to Uli for his help with some of assembly issues we tripped up on.
+binutils is smart enough to know that a branch to a function
+descriptor is actually a branch to the functions text address.
 
-There are two known outstanding issues:
+Alan tells me that binutils has been doing this for 9 years.
 
-- If a kernel module calls into an exported assembly function
-  which in turns calls out to C, r2 is going to be wrong. One example
-  is __copy_tofrom_user_power7.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/boot/util.S                    |   4 +-
+ arch/powerpc/include/asm/context_tracking.h |   4 +-
+ arch/powerpc/include/asm/exception-64e.h    |   6 +-
+ arch/powerpc/include/asm/exception-64s.h    |   2 +-
+ arch/powerpc/include/asm/irqflags.h         |   4 +-
+ arch/powerpc/include/asm/ppc_asm.h          |   2 +-
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S   |  28 +++---
+ arch/powerpc/kernel/entry_64.S              |  86 ++++++++---------
+ arch/powerpc/kernel/exceptions-64e.S        | 128 +++++++++++++-------------
+ arch/powerpc/kernel/exceptions-64s.S        | 138 ++++++++++++++--------------
+ arch/powerpc/kernel/head_64.S               |  66 ++++++-------
+ arch/powerpc/kernel/idle_book3e.S           |   2 +-
+ arch/powerpc/kernel/idle_power4.S           |   2 +-
+ arch/powerpc/kernel/idle_power7.S           |   4 +-
+ arch/powerpc/kernel/misc_64.S               |  10 +-
+ arch/powerpc/kvm/book3s_hv_interrupts.S     |   2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S     |   6 +-
+ arch/powerpc/lib/copypage_64.S              |   2 +-
+ arch/powerpc/lib/copypage_power7.S          |   4 +-
+ arch/powerpc/lib/copyuser_power7.S          |   8 +-
+ arch/powerpc/lib/hweight_64.S               |   8 +-
+ arch/powerpc/lib/mem_64.S                   |   4 +-
+ arch/powerpc/lib/memcpy_power7.S            |   6 +-
+ arch/powerpc/mm/hash_low_64.S               |   8 +-
+ arch/powerpc/platforms/pasemi/powersave.S   |   2 +-
+ arch/powerpc/platforms/pseries/hvCall.S     |   4 +-
+ 26 files changed, 270 insertions(+), 270 deletions(-)
 
-  The reason is _GLOBAL() doesn't have a global entry point setup
-  with the associated addis/addi used to create r2. I tried adding
-  it and quickly realised that _GLOBAL is used places that will not
-  tolerate the addi/addis (eg __start()).
-
-- arch/powerpc/platforms/pseries/hvCall.S assumes we always have a
-  parameter save area, which is incorrect for ABIv2. I tried to be
-  intelligent and use the toc save area to store some information
-  but that failed as soon as we started using modules. It would be
-  nice to avoid a stack frame in the common (tracepoints disabled)
-  case, but we may end up having to allocate one.
-
-Anton
---
-
-Anton Blanchard (21):
-  powerpc: No need to use dot symbols when branching to a function
-  powerpc: Remove superflous function descriptors in assembly only code
-  powerpc: Don't use a function descriptor for system call table
-  powerpc: Remove some unnecessary uses of _GLOBAL() and _STATIC()
-  powerpc: Remove _INIT_GLOBAL(), _STATIC() and _INIT_STATIC()
-  powerpc: Remove dot symbol usage in exception macros
-  powerpc: Create DOTSYM to wrap dot symbol usage
-  powerpc: Remove function descriptors and dot symbols on new ABI
-  powerpc: ABIv2 function calls must place target address in r12
-  powerpc: Ignore TOC relocations
-  powerpc: Add ABIv2 support to ppc_function_entry
-  powerpc: Use ppc_function_entry instead of open coding it
-  powerpc: Fix branch patching code for ABIv2
-  powerpc: Fix kernel thread creation on ABIv2
-  powerpc: Fix ABIv2 issues with stack offsets in assembly code
-  powerpc/tm: Use STK_PARAM
-  powerpc/tm: Fix GOT save offset for ABIv2
-  powerpc/tracing: TRACE_WITH_FRAME_BUFFER creates invalid stack frames
-  powerpc: Fix SMP issues with ppc64le ABIv2
-  powerpc: Fix ABIv2 issue with dereference_function_descriptor
-  powerpc: Build little endian ppc64 kernel with ABIv2
-
-Rusty Russell (11):
-  powerpc: make module stub code endian independent
-  powerpc: modules implement R_PPC64_TOCSAVE relocation.
-  powerpc: EXPORT_SYMBOL(.TOC.)
-  powerpc: module: handle MODVERSION for .TOC.
-  powerpc: Fix up TOC. for modules.
-  powerpc: Handle new ELFv2 module relocations
-  powerpc: modules: comment about de-dotifying symbols when using the
-    ELFv2 ABI.
-  powerpc: modules: change r2 save/restore offset for ELFv2 ABI.
-  powerpc: modules: use r12 for stub jump address.
-  powerpc: modules: skip r2 setup for ELFv2
-  powerpc: modules: implement stubs for ELFv2 ABI.
-
-Ulrich Weigand (1):
-  powerpc: Fix unsafe accesses to parameter area in ELFv2
-
- arch/powerpc/Makefile                          |   8 +-
- arch/powerpc/boot/util.S                       |   4 +-
- arch/powerpc/include/asm/code-patching.h       |  40 ++++-
- arch/powerpc/include/asm/context_tracking.h    |   4 +-
- arch/powerpc/include/asm/exception-64e.h       |   6 +-
- arch/powerpc/include/asm/exception-64s.h       |   2 +-
- arch/powerpc/include/asm/ftrace.h              |   2 +
- arch/powerpc/include/asm/irqflags.h            |   8 +-
- arch/powerpc/include/asm/linkage.h             |   2 +
- arch/powerpc/include/asm/module.h              |   1 +
- arch/powerpc/include/asm/ppc_asm.h             |  64 ++++----
- arch/powerpc/include/asm/sections.h            |   2 +
- arch/powerpc/include/asm/systbl.h              |   6 +-
- arch/powerpc/include/uapi/asm/elf.h            |  10 +-
- arch/powerpc/kernel/cpu_setup_fsl_booke.S      |  28 ++--
- arch/powerpc/kernel/entry_64.S                 | 110 ++++++-------
- arch/powerpc/kernel/exceptions-64e.S           | 140 ++++++++---------
- arch/powerpc/kernel/exceptions-64s.S           | 204 ++++++++++++-------------
- arch/powerpc/kernel/head_64.S                  | 117 +++++++-------
- arch/powerpc/kernel/idle_book3e.S              |   2 +-
- arch/powerpc/kernel/idle_power4.S              |   2 +-
- arch/powerpc/kernel/idle_power7.S              |   4 +-
- arch/powerpc/kernel/misc_64.S                  |  46 +++++-
- arch/powerpc/kernel/module_64.c                | 199 ++++++++++++++++++------
- arch/powerpc/kernel/process.c                  |  17 +--
- arch/powerpc/kernel/prom_init_check.sh         |   2 +-
- arch/powerpc/kernel/setup_64.c                 |   2 +-
- arch/powerpc/kernel/systbl.S                   |  18 ++-
- arch/powerpc/kernel/tm.S                       |  13 +-
- arch/powerpc/kvm/book3s_hv_interrupts.S        |   2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S        |  32 ++--
- arch/powerpc/lib/copypage_64.S                 |   2 +-
- arch/powerpc/lib/copypage_power7.S             |  12 +-
- arch/powerpc/lib/copyuser_power7.S             |  32 ++--
- arch/powerpc/lib/hweight_64.S                  |   8 +-
- arch/powerpc/lib/mem_64.S                      |   4 +-
- arch/powerpc/lib/memcpy_64.S                   |   8 +-
- arch/powerpc/lib/memcpy_power7.S               |  26 ++--
- arch/powerpc/mm/hash_low_64.S                  |  44 ++++--
- arch/powerpc/mm/hash_utils_64.c                |  36 ++---
- arch/powerpc/mm/slb.c                          |  12 +-
- arch/powerpc/mm/slb_low.S                      |  12 +-
- arch/powerpc/platforms/85xx/smp.c              |   3 +-
- arch/powerpc/platforms/cell/smp.c              |   5 +-
- arch/powerpc/platforms/pasemi/powersave.S      |   2 +-
- arch/powerpc/platforms/powernv/opal-takeover.S |   2 +
- arch/powerpc/platforms/powernv/opal-wrappers.S |   4 +-
- arch/powerpc/platforms/powernv/smp.c           |   5 +-
- arch/powerpc/platforms/pseries/hvCall.S        |   4 +-
- arch/powerpc/platforms/pseries/smp.c           |   5 +-
- arch/powerpc/platforms/wsp/scom_smp.c          |   3 +-
- 51 files changed, 760 insertions(+), 566 deletions(-)
-
+diff --git a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
+index 6636b1d..243b849 100644
+--- a/arch/powerpc/boot/util.S
++++ b/arch/powerpc/boot/util.S
+@@ -45,7 +45,7 @@ udelay:
+ 	mfspr	r4,SPRN_PVR
+ 	srwi	r4,r4,16
+ 	cmpwi	0,r4,1		/* 601 ? */
+-	bne	.udelay_not_601
++	bne	.Ludelay_not_601
+ 00:	li	r0,86	/* Instructions / microsecond? */
+ 	mtctr	r0
+ 10:	addi	r0,r0,0 /* NOP */
+@@ -54,7 +54,7 @@ udelay:
+ 	bne	00b
+ 	blr
+ 
+-.udelay_not_601:
++.Ludelay_not_601:
+ 	mulli	r4,r3,1000	/* nanoseconds */
+ 	/*  Change r4 to be the number of ticks using:
+ 	 *	(nanoseconds + (timebase_period_ns - 1 )) / timebase_period_ns
+diff --git a/arch/powerpc/include/asm/context_tracking.h b/arch/powerpc/include/asm/context_tracking.h
+index b6f5a33..4001492 100644
+--- a/arch/powerpc/include/asm/context_tracking.h
++++ b/arch/powerpc/include/asm/context_tracking.h
+@@ -2,9 +2,9 @@
+ #define _ASM_POWERPC_CONTEXT_TRACKING_H
+ 
+ #ifdef CONFIG_CONTEXT_TRACKING
+-#define SCHEDULE_USER bl	.schedule_user
++#define SCHEDULE_USER bl	schedule_user
+ #else
+-#define SCHEDULE_USER bl	.schedule
++#define SCHEDULE_USER bl	schedule
+ #endif
+ 
+ #endif
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index a563d9af..a8b52b6 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -174,10 +174,10 @@ exc_##label##_book3e:
+ 	mtlr	r16;
+ #define TLB_MISS_STATS_D(name)						    \
+ 	addi	r9,r13,MMSTAT_DSTATS+name;				    \
+-	bl	.tlb_stat_inc;
++	bl	tlb_stat_inc;
+ #define TLB_MISS_STATS_I(name)						    \
+ 	addi	r9,r13,MMSTAT_ISTATS+name;				    \
+-	bl	.tlb_stat_inc;
++	bl	tlb_stat_inc;
+ #define TLB_MISS_STATS_X(name)						    \
+ 	ld	r8,PACA_EXTLB+EX_TLB_ESR(r13);				    \
+ 	cmpdi	cr2,r8,-1;						    \
+@@ -185,7 +185,7 @@ exc_##label##_book3e:
+ 	addi	r9,r13,MMSTAT_DSTATS+name;				    \
+ 	b	62f;							    \
+ 61:	addi	r9,r13,MMSTAT_ISTATS+name;				    \
+-62:	bl	.tlb_stat_inc;
++62:	bl	tlb_stat_inc;
+ #define TLB_MISS_STATS_SAVE_INFO					    \
+ 	std	r14,EX_TLB_ESR(r12);	/* save ESR */
+ #define TLB_MISS_STATS_SAVE_INFO_BOLTED					    \
+diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+index aeaa56c..8f35cd7 100644
+--- a/arch/powerpc/include/asm/exception-64s.h
++++ b/arch/powerpc/include/asm/exception-64s.h
+@@ -517,7 +517,7 @@ label##_relon_hv:							\
+ #define DISABLE_INTS	RECONCILE_IRQ_STATE(r10,r11)
+ 
+ #define ADD_NVGPRS				\
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 
+ #define RUNLATCH_ON				\
+ BEGIN_FTR_SECTION				\
+diff --git a/arch/powerpc/include/asm/irqflags.h b/arch/powerpc/include/asm/irqflags.h
+index f51a558..f62c056 100644
+--- a/arch/powerpc/include/asm/irqflags.h
++++ b/arch/powerpc/include/asm/irqflags.h
+@@ -36,8 +36,8 @@
+  * have to call a C function so call a wrapper that saves all the
+  * C-clobbered registers.
+  */
+-#define TRACE_ENABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_on)
+-#define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(.trace_hardirqs_off)
++#define TRACE_ENABLE_INTS	TRACE_WITH_FRAME_BUFFER(trace_hardirqs_on)
++#define TRACE_DISABLE_INTS	TRACE_WITH_FRAME_BUFFER(trace_hardirqs_off)
+ 
+ /*
+  * This is used by assembly code to soft-disable interrupts first and
+diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+index 6586a40..3128ba3 100644
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -57,7 +57,7 @@ BEGIN_FW_FTR_SECTION;							\
+ 	LDX_BE	r10,0,r10;		/* get log write index */	\
+ 	cmpd	cr1,r11,r10;						\
+ 	beq+	cr1,33f;						\
+-	bl	.accumulate_stolen_time;				\
++	bl	accumulate_stolen_time;				\
+ 	ld	r12,_MSR(r1);						\
+ 	andi.	r10,r12,MSR_PR;		/* Restore cr0 (coming from user) */ \
+ 33:									\
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index cc2d896..4f1393d 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -94,12 +94,12 @@ _GLOBAL(setup_altivec_idle)
+ _GLOBAL(__setup_cpu_e6500)
+ 	mflr	r6
+ #ifdef CONFIG_PPC64
+-	bl	.setup_altivec_ivors
++	bl	setup_altivec_ivors
+ 	/* Touch IVOR42 only if the CPU supports E.HV category */
+ 	mfspr	r10,SPRN_MMUCFG
+ 	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
+ 	beq	1f
+-	bl	.setup_lrat_ivor
++	bl	setup_lrat_ivor
+ 1:
+ #endif
+ 	bl	setup_pw20_idle
+@@ -164,15 +164,15 @@ _GLOBAL(__setup_cpu_e5500)
+ #ifdef CONFIG_PPC_BOOK3E_64
+ _GLOBAL(__restore_cpu_e6500)
+ 	mflr	r5
+-	bl	.setup_altivec_ivors
++	bl	setup_altivec_ivors
+ 	/* Touch IVOR42 only if the CPU supports E.HV category */
+ 	mfspr	r10,SPRN_MMUCFG
+ 	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
+ 	beq	1f
+-	bl	.setup_lrat_ivor
++	bl	setup_lrat_ivor
+ 1:
+-	bl	.setup_pw20_idle
+-	bl	.setup_altivec_idle
++	bl	setup_pw20_idle
++	bl	setup_altivec_idle
+ 	bl	__restore_cpu_e5500
+ 	mtlr	r5
+ 	blr
+@@ -181,9 +181,9 @@ _GLOBAL(__restore_cpu_e5500)
+ 	mflr	r4
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+-	bl	.__setup_base_ivors
+-	bl	.setup_perfmon_ivor
+-	bl	.setup_doorbell_ivors
++	bl	__setup_base_ivors
++	bl	setup_perfmon_ivor
++	bl	setup_doorbell_ivors
+ 	/*
+ 	 * We only want to touch IVOR38-41 if we're running on hardware
+ 	 * that supports category E.HV.  The architectural way to determine
+@@ -192,7 +192,7 @@ _GLOBAL(__restore_cpu_e5500)
+ 	mfspr	r10,SPRN_MMUCFG
+ 	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
+ 	beq	1f
+-	bl	.setup_ehv_ivors
++	bl	setup_ehv_ivors
+ 1:
+ 	mtlr	r4
+ 	blr
+@@ -201,9 +201,9 @@ _GLOBAL(__setup_cpu_e5500)
+ 	mflr	r5
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+-	bl	.__setup_base_ivors
+-	bl	.setup_perfmon_ivor
+-	bl	.setup_doorbell_ivors
++	bl	__setup_base_ivors
++	bl	setup_perfmon_ivor
++	bl	setup_doorbell_ivors
+ 	/*
+ 	 * We only want to touch IVOR38-41 if we're running on hardware
+ 	 * that supports category E.HV.  The architectural way to determine
+@@ -212,7 +212,7 @@ _GLOBAL(__setup_cpu_e5500)
+ 	mfspr	r10,SPRN_MMUCFG
+ 	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
+ 	beq	1f
+-	bl	.setup_ehv_ivors
++	bl	setup_ehv_ivors
+ 	b	2f
+ 1:
+ 	ld	r10,CPU_SPEC_FEATURES(r4)
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 662c6dd..b629198 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -106,7 +106,7 @@ BEGIN_FW_FTR_SECTION
+ 	LDX_BE	r10,0,r10		/* get log write index */
+ 	cmpd	cr1,r11,r10
+ 	beq+	cr1,33f
+-	bl	.accumulate_stolen_time
++	bl	accumulate_stolen_time
+ 	REST_GPR(0,r1)
+ 	REST_4GPRS(3,r1)
+ 	REST_2GPRS(7,r1)
+@@ -143,7 +143,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ 	std	r10,SOFTE(r1)
+ 
+ #ifdef SHOW_SYSCALLS
+-	bl	.do_show_syscall
++	bl	do_show_syscall
+ 	REST_GPR(0,r1)
+ 	REST_4GPRS(3,r1)
+ 	REST_2GPRS(7,r1)
+@@ -181,7 +181,7 @@ system_call:			/* label this so stack traces look sane */
+ syscall_exit:
+ 	std	r3,RESULT(r1)
+ #ifdef SHOW_SYSCALLS
+-	bl	.do_show_syscall_exit
++	bl	do_show_syscall_exit
+ 	ld	r3,RESULT(r1)
+ #endif
+ 	CURRENT_THREAD_INFO(r12, r1)
+@@ -248,9 +248,9 @@ syscall_error:
+ 	
+ /* Traced system call support */
+ syscall_dotrace:
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.do_syscall_trace_enter
++	bl	do_syscall_trace_enter
+ 	/*
+ 	 * Restore argument registers possibly just changed.
+ 	 * We use the return value of do_syscall_trace_enter
+@@ -308,7 +308,7 @@ syscall_exit_work:
+ 4:	/* Anything else left to do? */
+ 	SET_DEFAULT_THREAD_PPR(r3, r10)		/* Set thread.ppr = 3 */
+ 	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
+-	beq	.ret_from_except_lite
++	beq	ret_from_except_lite
+ 
+ 	/* Re-enable interrupts */
+ #ifdef CONFIG_PPC_BOOK3E
+@@ -319,10 +319,10 @@ syscall_exit_work:
+ 	mtmsrd	r10,1
+ #endif /* CONFIG_PPC_BOOK3E */
+ 
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.do_syscall_trace_leave
+-	b	.ret_from_except
++	bl	do_syscall_trace_leave
++	b	ret_from_except
+ 
+ /* Save non-volatile GPRs, if not already saved. */
+ _GLOBAL(save_nvgprs)
+@@ -345,38 +345,38 @@ _GLOBAL(save_nvgprs)
+  */
+ 
+ _GLOBAL(ppc_fork)
+-	bl	.save_nvgprs
+-	bl	.sys_fork
++	bl	save_nvgprs
++	bl	sys_fork
+ 	b	syscall_exit
+ 
+ _GLOBAL(ppc_vfork)
+-	bl	.save_nvgprs
+-	bl	.sys_vfork
++	bl	save_nvgprs
++	bl	sys_vfork
+ 	b	syscall_exit
+ 
+ _GLOBAL(ppc_clone)
+-	bl	.save_nvgprs
+-	bl	.sys_clone
++	bl	save_nvgprs
++	bl	sys_clone
+ 	b	syscall_exit
+ 
+ _GLOBAL(ppc32_swapcontext)
+-	bl	.save_nvgprs
+-	bl	.compat_sys_swapcontext
++	bl	save_nvgprs
++	bl	compat_sys_swapcontext
+ 	b	syscall_exit
+ 
+ _GLOBAL(ppc64_swapcontext)
+-	bl	.save_nvgprs
+-	bl	.sys_swapcontext
++	bl	save_nvgprs
++	bl	sys_swapcontext
+ 	b	syscall_exit
+ 
+ _GLOBAL(ret_from_fork)
+-	bl	.schedule_tail
++	bl	schedule_tail
+ 	REST_NVGPRS(r1)
+ 	li	r3,0
+ 	b	syscall_exit
+ 
+ _GLOBAL(ret_from_kernel_thread)
+-	bl	.schedule_tail
++	bl	schedule_tail
+ 	REST_NVGPRS(r1)
+ 	ld	r14, 0(r14)
+ 	mtlr	r14
+@@ -611,7 +611,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
+ _GLOBAL(ret_from_except)
+ 	ld	r11,_TRAP(r1)
+ 	andi.	r0,r11,1
+-	bne	.ret_from_except_lite
++	bne	ret_from_except_lite
+ 	REST_NVGPRS(r1)
+ 
+ _GLOBAL(ret_from_except_lite)
+@@ -661,23 +661,23 @@ _GLOBAL(ret_from_except_lite)
+ #endif
+ 1:	andi.	r0,r4,_TIF_NEED_RESCHED
+ 	beq	2f
+-	bl	.restore_interrupts
++	bl	restore_interrupts
+ 	SCHEDULE_USER
+-	b	.ret_from_except_lite
++	b	ret_from_except_lite
+ 2:
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 	andi.	r0,r4,_TIF_USER_WORK_MASK & ~_TIF_RESTORE_TM
+ 	bne	3f		/* only restore TM if nothing else to do */
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.restore_tm_state
++	bl	restore_tm_state
+ 	b	restore
+ 3:
+ #endif
+-	bl	.save_nvgprs
+-	bl	.restore_interrupts
++	bl	save_nvgprs
++	bl	restore_interrupts
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.do_notify_resume
+-	b	.ret_from_except
++	bl	do_notify_resume
++	b	ret_from_except
+ 
+ resume_kernel:
+ 	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+@@ -730,7 +730,7 @@ resume_kernel:
+ 	 * sure we are soft-disabled first and reconcile irq state.
+ 	 */
+ 	RECONCILE_IRQ_STATE(r3,r4)
+-1:	bl	.preempt_schedule_irq
++1:	bl	preempt_schedule_irq
+ 
+ 	/* Re-test flags and eventually loop */
+ 	CURRENT_THREAD_INFO(r9, r1)
+@@ -792,7 +792,7 @@ restore_no_replay:
+ 	 */
+ do_restore:
+ #ifdef CONFIG_PPC_BOOK3E
+-	b	.exception_return_book3e
++	b	exception_return_book3e
+ #else
+ 	/*
+ 	 * Clear the reservation. If we know the CPU tracks the address of
+@@ -907,7 +907,7 @@ restore_check_irq_replay:
+ 	 *
+ 	 * Still, this might be useful for things like hash_page
+ 	 */
+-	bl	.__check_irq_replay
++	bl	__check_irq_replay
+ 	cmpwi	cr0,r3,0
+  	beq	restore_no_replay
+  
+@@ -928,13 +928,13 @@ restore_check_irq_replay:
+ 	cmpwi	cr0,r3,0x500
+ 	bne	1f
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+- 	bl	.do_IRQ
+-	b	.ret_from_except
++ 	bl	do_IRQ
++	b	ret_from_except
+ 1:	cmpwi	cr0,r3,0x900
+ 	bne	1f
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+-	bl	.timer_interrupt
+-	b	.ret_from_except
++	bl	timer_interrupt
++	b	ret_from_except
+ #ifdef CONFIG_PPC_DOORBELL
+ 1:
+ #ifdef CONFIG_PPC_BOOK3E
+@@ -948,14 +948,14 @@ restore_check_irq_replay:
+ #endif /* CONFIG_PPC_BOOK3E */
+ 	bne	1f
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;
+-	bl	.doorbell_exception
+-	b	.ret_from_except
++	bl	doorbell_exception
++	b	ret_from_except
+ #endif /* CONFIG_PPC_DOORBELL */
+-1:	b	.ret_from_except /* What else to do here ? */
++1:	b	ret_from_except /* What else to do here ? */
+  
+ unrecov_restore:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unrecoverable_exception
++	bl	unrecoverable_exception
+ 	b	unrecov_restore
+ 
+ #ifdef CONFIG_PPC_RTAS
+@@ -1238,7 +1238,7 @@ _GLOBAL(ftrace_graph_caller)
+ 	ld	r11, 112(r1)
+ 	addi	r3, r11, 16
+ 
+-	bl	.prepare_ftrace_return
++	bl	prepare_ftrace_return
+ 	nop
+ 
+ 	ld	r0, 128(r1)
+@@ -1254,7 +1254,7 @@ _GLOBAL(return_to_handler)
+ 	mr	r31, r1
+ 	stdu	r1, -112(r1)
+ 
+-	bl	.ftrace_return_to_handler
++	bl	ftrace_return_to_handler
+ 	nop
+ 
+ 	/* return value has real return address */
+@@ -1284,7 +1284,7 @@ _GLOBAL(mod_return_to_handler)
+ 	 */
+ 	ld	r2, PACATOC(r13)
+ 
+-	bl	.ftrace_return_to_handler
++	bl	ftrace_return_to_handler
+ 	nop
+ 
+ 	/* return value has real return address */
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index c1bee3c..5e37338 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -499,7 +499,7 @@ exc_##n##_bad_stack:							    \
+ 	CHECK_NAPPING();						\
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD;				\
+ 	bl	hdlr;							\
+-	b	.ret_from_except_lite;
++	b	ret_from_except_lite;
+ 
+ /* This value is used to mark exception frames on the stack. */
+ 	.section	".toc","aw"
+@@ -550,11 +550,11 @@ interrupt_end_book3e:
+ 	CRIT_EXCEPTION_PROLOG(0x100, BOOKE_INTERRUPT_CRITICAL,
+ 			      PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON_CRIT(0x100)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	bl	special_reg_save
+ 	CHECK_NAPPING();
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unknown_exception
++	bl	unknown_exception
+ 	b	ret_from_crit_except
+ 
+ /* Machine Check Interrupt */
+@@ -562,11 +562,11 @@ interrupt_end_book3e:
+ 	MC_EXCEPTION_PROLOG(0x000, BOOKE_INTERRUPT_MACHINE_CHECK,
+ 			    PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON_MC(0x000)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	bl	special_reg_save
+ 	CHECK_NAPPING();
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.machine_check_exception
++	bl	machine_check_exception
+ 	b	ret_from_mc_except
+ 
+ /* Data Storage Interrupt */
+@@ -612,9 +612,9 @@ interrupt_end_book3e:
+ 	std	r14,_DSISR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r14,PACA_EXGEN+EX_R14(r13)
+-	bl	.save_nvgprs
+-	bl	.program_check_exception
+-	b	.ret_from_except
++	bl	save_nvgprs
++	bl	program_check_exception
++	b	ret_from_except
+ 
+ /* Floating Point Unavailable Interrupt */
+ 	START_EXCEPTION(fp_unavailable);
+@@ -625,13 +625,13 @@ interrupt_end_book3e:
+ 	ld	r12,_MSR(r1)
+ 	andi.	r0,r12,MSR_PR;
+ 	beq-	1f
+-	bl	.load_up_fpu
++	bl	load_up_fpu
+ 	b	fast_exception_return
+ 1:	INTS_DISABLE
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.kernel_fp_unavailable_exception
+-	b	.ret_from_except
++	bl	kernel_fp_unavailable_exception
++	b	ret_from_except
+ 
+ /* Altivec Unavailable Interrupt */
+ 	START_EXCEPTION(altivec_unavailable);
+@@ -644,16 +644,16 @@ BEGIN_FTR_SECTION
+ 	ld	r12,_MSR(r1)
+ 	andi.	r0,r12,MSR_PR;
+ 	beq-	1f
+-	bl	.load_up_altivec
++	bl	load_up_altivec
+ 	b	fast_exception_return
+ 1:
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+ 	INTS_DISABLE
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.altivec_unavailable_exception
+-	b	.ret_from_except
++	bl	altivec_unavailable_exception
++	b	ret_from_except
+ 
+ /* AltiVec Assist */
+ 	START_EXCEPTION(altivec_assist);
+@@ -662,16 +662,16 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 				PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON(0x220)
+ 	INTS_DISABLE
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ #ifdef CONFIG_ALTIVEC
+ BEGIN_FTR_SECTION
+-	bl	.altivec_assist_exception
++	bl	altivec_assist_exception
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #else
+-	bl	.unknown_exception
++	bl	unknown_exception
+ #endif
+-	b	.ret_from_except
++	b	ret_from_except
+ 
+ 
+ /* Decrementer Interrupt */
+@@ -687,14 +687,14 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	CRIT_EXCEPTION_PROLOG(0x9f0, BOOKE_INTERRUPT_WATCHDOG,
+ 			      PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON_CRIT(0x9f0)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	bl	special_reg_save
+ 	CHECK_NAPPING();
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ #ifdef CONFIG_BOOKE_WDT
+-	bl	.WatchdogException
++	bl	WatchdogException
+ #else
+-	bl	.unknown_exception
++	bl	unknown_exception
+ #endif
+ 	b	ret_from_crit_except
+ 
+@@ -712,10 +712,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 				PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON(0xf20)
+ 	INTS_DISABLE
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unknown_exception
+-	b	.ret_from_except
++	bl	unknown_exception
++	b	ret_from_except
+ 
+ /* Debug exception as a critical interrupt*/
+ 	START_EXCEPTION(debug_crit);
+@@ -774,9 +774,9 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	mr	r4,r14
+ 	ld	r14,PACA_EXCRIT+EX_R14(r13)
+ 	ld	r15,PACA_EXCRIT+EX_R15(r13)
+-	bl	.save_nvgprs
+-	bl	.DebugException
+-	b	.ret_from_except
++	bl	save_nvgprs
++	bl	DebugException
++	b	ret_from_except
+ 
+ kernel_dbg_exc:
+ 	b	.	/* NYI */
+@@ -839,9 +839,9 @@ kernel_dbg_exc:
+ 	mr	r4,r14
+ 	ld	r14,PACA_EXDBG+EX_R14(r13)
+ 	ld	r15,PACA_EXDBG+EX_R15(r13)
+-	bl	.save_nvgprs
+-	bl	.DebugException
+-	b	.ret_from_except
++	bl	save_nvgprs
++	bl	DebugException
++	b	ret_from_except
+ 
+ 	START_EXCEPTION(perfmon);
+ 	NORMAL_EXCEPTION_PROLOG(0x260, BOOKE_INTERRUPT_PERFORMANCE_MONITOR,
+@@ -850,8 +850,8 @@ kernel_dbg_exc:
+ 	INTS_DISABLE
+ 	CHECK_NAPPING()
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.performance_monitor_exception
+-	b	.ret_from_except_lite
++	bl	performance_monitor_exception
++	b	ret_from_except_lite
+ 
+ /* Doorbell interrupt */
+ 	MASKABLE_EXCEPTION(0x280, BOOKE_INTERRUPT_DOORBELL,
+@@ -862,11 +862,11 @@ kernel_dbg_exc:
+ 	CRIT_EXCEPTION_PROLOG(0x2a0, BOOKE_INTERRUPT_DOORBELL_CRITICAL,
+ 			      PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON_CRIT(0x2a0)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	bl	special_reg_save
+ 	CHECK_NAPPING();
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unknown_exception
++	bl	unknown_exception
+ 	b	ret_from_crit_except
+ 
+ /*
+@@ -878,21 +878,21 @@ kernel_dbg_exc:
+ 			        PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON(0x2c0)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	INTS_RESTORE_HARD
+-	bl	.unknown_exception
+-	b	.ret_from_except
++	bl	unknown_exception
++	b	ret_from_except
+ 
+ /* Guest Doorbell critical Interrupt */
+ 	START_EXCEPTION(guest_doorbell_crit);
+ 	CRIT_EXCEPTION_PROLOG(0x2e0, BOOKE_INTERRUPT_GUEST_DBELL_CRIT,
+ 			      PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON_CRIT(0x2e0)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	bl	special_reg_save
+ 	CHECK_NAPPING();
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unknown_exception
++	bl	unknown_exception
+ 	b	ret_from_crit_except
+ 
+ /* Hypervisor call */
+@@ -901,10 +901,10 @@ kernel_dbg_exc:
+ 			        PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON(0x310)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	INTS_RESTORE_HARD
+-	bl	.unknown_exception
+-	b	.ret_from_except
++	bl	unknown_exception
++	b	ret_from_except
+ 
+ /* Embedded Hypervisor priviledged  */
+ 	START_EXCEPTION(ehpriv);
+@@ -912,10 +912,10 @@ kernel_dbg_exc:
+ 			        PROLOG_ADDITION_NONE)
+ 	EXCEPTION_COMMON(0x320)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	INTS_RESTORE_HARD
+-	bl	.unknown_exception
+-	b	.ret_from_except
++	bl	unknown_exception
++	b	ret_from_except
+ 
+ /* LRAT Error interrupt */
+ 	START_EXCEPTION(lrat_error);
+@@ -1014,16 +1014,16 @@ storage_fault_common:
+ 	mr	r5,r15
+ 	ld	r14,PACA_EXGEN+EX_R14(r13)
+ 	ld	r15,PACA_EXGEN+EX_R15(r13)
+-	bl	.do_page_fault
++	bl	do_page_fault
+ 	cmpdi	r3,0
+ 	bne-	1f
+-	b	.ret_from_except_lite
+-1:	bl	.save_nvgprs
++	b	ret_from_except_lite
++1:	bl	save_nvgprs
+ 	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r4,_DAR(r1)
+-	bl	.bad_page_fault
+-	b	.ret_from_except
++	bl	bad_page_fault
++	b	ret_from_except
+ 
+ /*
+  * Alignment exception doesn't fit entirely in the 0x100 bytes so it
+@@ -1035,10 +1035,10 @@ alignment_more:
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r14,PACA_EXGEN+EX_R14(r13)
+ 	ld	r15,PACA_EXGEN+EX_R15(r13)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	INTS_RESTORE_HARD
+-	bl	.alignment_exception
+-	b	.ret_from_except
++	bl	alignment_exception
++	b	ret_from_except
+ 
+ /*
+  * We branch here from entry_64.S for the last stage of the exception
+@@ -1172,7 +1172,7 @@ bad_stack_book3e:
+ 	std	r12,0(r11)
+ 	ld	r2,PACATOC(r13)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.kernel_bad_stack
++	bl	kernel_bad_stack
+ 	b	1b
+ 
+ /*
+@@ -1521,13 +1521,13 @@ _GLOBAL(start_initialization_book3e)
+ 	 * and always use AS 0, so we just set it up to match our link
+ 	 * address and never use 0 based addresses.
+ 	 */
+-	bl	.initial_tlb_book3e
++	bl	initial_tlb_book3e
+ 
+ 	/* Init global core bits */
+-	bl	.init_core_book3e
++	bl	init_core_book3e
+ 
+ 	/* Init per-thread bits */
+-	bl	.init_thread_book3e
++	bl	init_thread_book3e
+ 
+ 	/* Return to common init code */
+ 	tovirt(r28,r28)
+@@ -1548,7 +1548,7 @@ _GLOBAL(start_initialization_book3e)
+  */
+ _GLOBAL(book3e_secondary_core_init_tlb_set)
+ 	li	r4,1
+-	b	.generic_secondary_smp_init
++	b	generic_secondary_smp_init
+ 
+ _GLOBAL(book3e_secondary_core_init)
+ 	mflr	r28
+@@ -1558,18 +1558,18 @@ _GLOBAL(book3e_secondary_core_init)
+ 	bne	2f
+ 
+ 	/* Setup TLB for this core */
+-	bl	.initial_tlb_book3e
++	bl	initial_tlb_book3e
+ 
+ 	/* We can return from the above running at a different
+ 	 * address, so recalculate r2 (TOC)
+ 	 */
+-	bl	.relative_toc
++	bl	relative_toc
+ 
+ 	/* Init global core bits */
+-2:	bl	.init_core_book3e
++2:	bl	init_core_book3e
+ 
+ 	/* Init per-thread bits */
+-3:	bl	.init_thread_book3e
++3:	bl	init_thread_book3e
+ 
+ 	/* Return to common init code at proper virtual address.
+ 	 *
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4c34c3c..f0e6c1b 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -139,8 +139,8 @@ BEGIN_FTR_SECTION
+ #endif
+ 
+ 	beq	cr1,2f
+-	b	.power7_wakeup_noloss
+-2:	b	.power7_wakeup_loss
++	b	power7_wakeup_noloss
++2:	b	power7_wakeup_loss
+ 9:
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE | CPU_FTR_ARCH_206)
+ #endif /* CONFIG_PPC_P7_NAP */
+@@ -213,7 +213,7 @@ data_access_slb_pSeries:
+ #endif /* __DISABLED__ */
+ 	mfspr	r12,SPRN_SRR1
+ #ifndef CONFIG_RELOCATABLE
+-	b	.slb_miss_realmode
++	b	slb_miss_realmode
+ #else
+ 	/*
+ 	 * We can't just use a direct branch to .slb_miss_realmode
+@@ -245,7 +245,7 @@ instruction_access_slb_pSeries:
+ #endif /* __DISABLED__ */
+ 	mfspr	r12,SPRN_SRR1
+ #ifndef CONFIG_RELOCATABLE
+-	b	.slb_miss_realmode
++	b	slb_miss_realmode
+ #else
+ 	mfctr	r11
+ 	ld	r10,PACAKBASE(r13)
+@@ -831,7 +831,7 @@ data_access_slb_relon_pSeries:
+ 	mfspr	r3,SPRN_DAR
+ 	mfspr	r12,SPRN_SRR1
+ #ifndef CONFIG_RELOCATABLE
+-	b	.slb_miss_realmode
++	b	slb_miss_realmode
+ #else
+ 	/*
+ 	 * We can't just use a direct branch to .slb_miss_realmode
+@@ -856,7 +856,7 @@ instruction_access_slb_relon_pSeries:
+ 	mfspr	r3,SPRN_SRR0		/* SRR0 is faulting address */
+ 	mfspr	r12,SPRN_SRR1
+ #ifndef CONFIG_RELOCATABLE
+-	b	.slb_miss_realmode
++	b	slb_miss_realmode
+ #else
+ 	mfctr	r11
+ 	ld	r10,PACAKBASE(r13)
+@@ -968,7 +968,7 @@ system_call_entry:
+ 	b	system_call_common
+ 
+ ppc64_runlatch_on_trampoline:
+-	b	.__ppc64_runlatch_on
++	b	__ppc64_runlatch_on
+ 
+ /*
+  * Here we have detected that the kernel stack pointer is bad.
+@@ -1027,7 +1027,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_CFAR)
+ 	std	r12,RESULT(r1)
+ 	std	r11,STACK_FRAME_OVERHEAD-16(r1)
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.kernel_bad_stack
++	bl	kernel_bad_stack
+ 	b	1b
+ 
+ /*
+@@ -1048,7 +1048,7 @@ data_access_common:
+ 	ld	r3,PACA_EXGEN+EX_DAR(r13)
+ 	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
+ 	li	r5,0x300
+-	b	.do_hash_page		/* Try to handle as hpte fault */
++	b	do_hash_page		/* Try to handle as hpte fault */
+ 
+ 	.align  7
+ 	.globl  h_data_storage_common
+@@ -1058,11 +1058,11 @@ h_data_storage_common:
+ 	mfspr   r10,SPRN_HDSISR
+ 	stw     r10,PACA_EXGEN+EX_DSISR(r13)
+ 	EXCEPTION_PROLOG_COMMON(0xe00, PACA_EXGEN)
+-	bl      .save_nvgprs
++	bl      save_nvgprs
+ 	DISABLE_INTS
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD
+-	bl      .unknown_exception
+-	b       .ret_from_except
++	bl      unknown_exception
++	b       ret_from_except
+ 
+ 	.align	7
+ 	.globl instruction_access_common
+@@ -1073,7 +1073,7 @@ instruction_access_common:
+ 	ld	r3,_NIP(r1)
+ 	andis.	r4,r12,0x5820
+ 	li	r5,0x400
+-	b	.do_hash_page		/* Try to handle as hpte fault */
++	b	do_hash_page		/* Try to handle as hpte fault */
+ 
+ 	STD_EXCEPTION_COMMON(0xe20, h_instr_storage, .unknown_exception)
+ 
+@@ -1090,7 +1090,7 @@ slb_miss_user_common:
+ 	stw	r9,PACA_EXGEN+EX_CCR(r13)
+ 	std	r10,PACA_EXGEN+EX_LR(r13)
+ 	std	r11,PACA_EXGEN+EX_SRR0(r13)
+-	bl	.slb_allocate_user
++	bl	slb_allocate_user
+ 
+ 	ld	r10,PACA_EXGEN+EX_LR(r13)
+ 	ld	r3,PACA_EXGEN+EX_R3(r13)
+@@ -1133,9 +1133,9 @@ slb_miss_fault:
+ unrecov_user_slb:
+ 	EXCEPTION_PROLOG_COMMON(0x4200, PACA_EXGEN)
+ 	DISABLE_INTS
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unrecoverable_exception
++	bl	unrecoverable_exception
+ 	b	1b
+ 
+ #endif /* __DISABLED__ */
+@@ -1160,10 +1160,10 @@ machine_check_common:
+ 	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
+ 	std	r3,_DAR(r1)
+ 	std	r4,_DSISR(r1)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.machine_check_exception
+-	b	.ret_from_except
++	bl	machine_check_exception
++	b	ret_from_except
+ 
+ 	.align	7
+ 	.globl alignment_common
+@@ -1177,31 +1177,31 @@ alignment_common:
+ 	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
+ 	std	r3,_DAR(r1)
+ 	std	r4,_DSISR(r1)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.alignment_exception
+-	b	.ret_from_except
++	bl	alignment_exception
++	b	ret_from_except
+ 
+ 	.align	7
+ 	.globl program_check_common
+ program_check_common:
+ 	EXCEPTION_PROLOG_COMMON(0x700, PACA_EXGEN)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.program_check_exception
+-	b	.ret_from_except
++	bl	program_check_exception
++	b	ret_from_except
+ 
+ 	.align	7
+ 	.globl fp_unavailable_common
+ fp_unavailable_common:
+ 	EXCEPTION_PROLOG_COMMON(0x800, PACA_EXGEN)
+ 	bne	1f			/* if from user, just load it up */
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.kernel_fp_unavailable_exception
++	bl	kernel_fp_unavailable_exception
+ 	BUG_OPCODE
+ 1:
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+@@ -1213,15 +1213,15 @@ BEGIN_FTR_SECTION
+ 	bne-	2f
+ END_FTR_SECTION_IFSET(CPU_FTR_TM)
+ #endif
+-	bl	.load_up_fpu
++	bl	load_up_fpu
+ 	b	fast_exception_return
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.fp_unavailable_tm
+-	b	.ret_from_except
++	bl	fp_unavailable_tm
++	b	ret_from_except
+ #endif
+ 	.align	7
+ 	.globl altivec_unavailable_common
+@@ -1239,24 +1239,24 @@ BEGIN_FTR_SECTION
+ 	bne-	2f
+   END_FTR_SECTION_NESTED(CPU_FTR_TM, CPU_FTR_TM, 69)
+ #endif
+-	bl	.load_up_altivec
++	bl	load_up_altivec
+ 	b	fast_exception_return
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.altivec_unavailable_tm
+-	b	.ret_from_except
++	bl	altivec_unavailable_tm
++	b	ret_from_except
+ #endif
+ 1:
+ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ #endif
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.altivec_unavailable_exception
+-	b	.ret_from_except
++	bl	altivec_unavailable_exception
++	b	ret_from_except
+ 
+ 	.align	7
+ 	.globl vsx_unavailable_common
+@@ -1274,23 +1274,23 @@ BEGIN_FTR_SECTION
+ 	bne-	2f
+   END_FTR_SECTION_NESTED(CPU_FTR_TM, CPU_FTR_TM, 69)
+ #endif
+-	b	.load_up_vsx
++	b	load_up_vsx
+ #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+ 2:	/* User process was in a transaction */
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.vsx_unavailable_tm
+-	b	.ret_from_except
++	bl	vsx_unavailable_tm
++	b	ret_from_except
+ #endif
+ 1:
+ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+ #endif
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	DISABLE_INTS
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.vsx_unavailable_exception
+-	b	.ret_from_except
++	bl	vsx_unavailable_exception
++	b	ret_from_except
+ 
+ 	STD_EXCEPTION_COMMON(0xf60, facility_unavailable, .facility_unavailable_exception)
+ 	STD_EXCEPTION_COMMON(0xf80, hv_facility_unavailable, .facility_unavailable_exception)
+@@ -1388,9 +1388,9 @@ _GLOBAL(opal_mc_secondary_handler)
+ machine_check_handle_early:
+ 	std	r0,GPR0(r1)	/* Save r0 */
+ 	EXCEPTION_PROLOG_COMMON_3(0x200)
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.machine_check_early
++	bl	machine_check_early
+ 	ld	r12,_MSR(r1)
+ #ifdef	CONFIG_PPC_P7_NAP
+ 	/*
+@@ -1410,11 +1410,11 @@ machine_check_handle_early:
+ 	/* Supervisor state loss */
+ 	li	r0,1
+ 	stb	r0,PACA_NAPSTATELOST(r13)
+-3:	bl	.machine_check_queue_event
++3:	bl	machine_check_queue_event
+ 	MACHINE_CHECK_HANDLER_WINDUP
+ 	GET_PACA(r13)
+ 	ld	r1,PACAR1(r13)
+-	b	.power7_enter_nap_mode
++	b	power7_enter_nap_mode
+ 4:
+ #endif
+ 	/*
+@@ -1446,7 +1446,7 @@ machine_check_handle_early:
+ 	andi.	r11,r12,MSR_RI
+ 	bne	2f
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unrecoverable_exception
++	bl	unrecoverable_exception
+ 	b	1b
+ 2:
+ 	/*
+@@ -1454,7 +1454,7 @@ machine_check_handle_early:
+ 	 * Queue up the MCE event so that we can log it later, while
+ 	 * returning from kernel or opal call.
+ 	 */
+-	bl	.machine_check_queue_event
++	bl	machine_check_queue_event
+ 	MACHINE_CHECK_HANDLER_WINDUP
+ 	rfid
+ 9:
+@@ -1479,7 +1479,7 @@ _GLOBAL(slb_miss_realmode)
+ 	stw	r9,PACA_EXSLB+EX_CCR(r13)	/* save CR in exc. frame */
+ 	std	r10,PACA_EXSLB+EX_LR(r13)	/* save LR */
+ 
+-	bl	.slb_allocate_realmode
++	bl	slb_allocate_realmode
+ 
+ 	/* All done -- return from exception. */
+ 
+@@ -1519,9 +1519,9 @@ _GLOBAL(slb_miss_realmode)
+ unrecov_slb:
+ 	EXCEPTION_PROLOG_COMMON(0x4100, PACA_EXSLB)
+ 	DISABLE_INTS
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unrecoverable_exception
++	bl	unrecoverable_exception
+ 	b	1b
+ 
+ 
+@@ -1575,7 +1575,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_SLB)
+ 	 *
+ 	 * at return r3 = 0 for success, 1 for page fault, negative for error
+ 	 */
+-	bl	.hash_page		/* build HPTE if possible */
++	bl	hash_page		/* build HPTE if possible */
+ 	cmpdi	r3,0			/* see if hash_page succeeded */
+ 
+ 	/* Success */
+@@ -1589,35 +1589,35 @@ handle_page_fault:
+ 11:	ld	r4,_DAR(r1)
+ 	ld	r5,_DSISR(r1)
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.do_page_fault
++	bl	do_page_fault
+ 	cmpdi	r3,0
+ 	beq+	12f
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	lwz	r4,_DAR(r1)
+-	bl	.bad_page_fault
+-	b	.ret_from_except
++	bl	bad_page_fault
++	b	ret_from_except
+ 
+ /* We have a data breakpoint exception - handle it */
+ handle_dabr_fault:
+-	bl	.save_nvgprs
++	bl	save_nvgprs
+ 	ld      r4,_DAR(r1)
+ 	ld      r5,_DSISR(r1)
+ 	addi    r3,r1,STACK_FRAME_OVERHEAD
+-	bl      .do_break
+-12:	b       .ret_from_except_lite
++	bl      do_break
++12:	b       ret_from_except_lite
+ 
+ 
+ /* We have a page fault that hash_page could handle but HV refused
+  * the PTE insertion
+  */
+-13:	bl	.save_nvgprs
++13:	bl	save_nvgprs
+ 	mr	r5,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ld	r4,_DAR(r1)
+-	bl	.low_hash_fault
+-	b	.ret_from_except
++	bl	low_hash_fault
++	b	ret_from_except
+ 
+ /*
+  * We come here as a result of a DSI at a point where we don't want
+@@ -1626,16 +1626,16 @@ handle_dabr_fault:
+  * were soft-disabled.  We want to invoke the exception handler for
+  * the access, or panic if there isn't a handler.
+  */
+-77:	bl	.save_nvgprs
++77:	bl	save_nvgprs
+ 	mr	r4,r3
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	li	r5,SIGSEGV
+-	bl	.bad_page_fault
+-	b	.ret_from_except
++	bl	bad_page_fault
++	b	ret_from_except
+ 
+ 	/* here we have a segment miss */
+ do_ste_alloc:
+-	bl	.ste_allocate		/* try to insert stab entry */
++	bl	ste_allocate		/* try to insert stab entry */
+ 	cmpdi	r3,0
+ 	bne-	handle_page_fault
+ 	b	fast_exception_return
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index b7363bd..afcfd63 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -70,7 +70,7 @@ _GLOBAL(__start)
+ 	/* NOP this out unconditionally */
+ BEGIN_FTR_SECTION
+ 	FIXUP_ENDIAN
+-	b	.__start_initialization_multiplatform
++	b	__start_initialization_multiplatform
+ END_FTR_SECTION(0, 1)
+ 
+ 	/* Catch branch to 0 in real mode */
+@@ -186,16 +186,16 @@ _GLOBAL(generic_secondary_thread_init)
+ 	mr	r24,r3
+ 
+ 	/* turn on 64-bit mode */
+-	bl	.enable_64b_mode
++	bl	enable_64b_mode
+ 
+ 	/* get a valid TOC pointer, wherever we're mapped at */
+-	bl	.relative_toc
++	bl	relative_toc
+ 	tovirt(r2,r2)
+ 
+ #ifdef CONFIG_PPC_BOOK3E
+ 	/* Book3E initialization */
+ 	mr	r3,r24
+-	bl	.book3e_secondary_thread_init
++	bl	book3e_secondary_thread_init
+ #endif
+ 	b	generic_secondary_common_init
+ 
+@@ -214,17 +214,17 @@ _GLOBAL(generic_secondary_smp_init)
+ 	mr	r25,r4
+ 
+ 	/* turn on 64-bit mode */
+-	bl	.enable_64b_mode
++	bl	enable_64b_mode
+ 
+ 	/* get a valid TOC pointer, wherever we're mapped at */
+-	bl	.relative_toc
++	bl	relative_toc
+ 	tovirt(r2,r2)
+ 
+ #ifdef CONFIG_PPC_BOOK3E
+ 	/* Book3E initialization */
+ 	mr	r3,r24
+ 	mr	r4,r25
+-	bl	.book3e_secondary_core_init
++	bl	book3e_secondary_core_init
+ #endif
+ 
+ generic_secondary_common_init:
+@@ -236,7 +236,7 @@ generic_secondary_common_init:
+ 	ld	r13,0(r13)		/* Get base vaddr of paca array	 */
+ #ifndef CONFIG_SMP
+ 	addi	r13,r13,PACA_SIZE	/* know r13 if used accidentally */
+-	b	.kexec_wait		/* wait for next kernel if !SMP	 */
++	b	kexec_wait		/* wait for next kernel if !SMP	 */
+ #else
+ 	LOAD_REG_ADDR(r7, nr_cpu_ids)	/* Load nr_cpu_ids address       */
+ 	lwz	r7,0(r7)		/* also the max paca allocated 	 */
+@@ -250,7 +250,7 @@ generic_secondary_common_init:
+ 	blt	1b
+ 
+ 	mr	r3,r24			/* not found, copy phys to r3	 */
+-	b	.kexec_wait		/* next kernel might do better	 */
++	b	kexec_wait		/* next kernel might do better	 */
+ 
+ 2:	SET_PACA(r13)
+ #ifdef CONFIG_PPC_BOOK3E
+@@ -326,10 +326,10 @@ _STATIC(__mmu_off)
+  */
+ _GLOBAL(__start_initialization_multiplatform)
+ 	/* Make sure we are running in 64 bits mode */
+-	bl	.enable_64b_mode
++	bl	enable_64b_mode
+ 
+ 	/* Get TOC pointer (current runtime address) */
+-	bl	.relative_toc
++	bl	relative_toc
+ 
+ 	/* find out where we are now */
+ 	bcl	20,31,$+4
+@@ -342,7 +342,7 @@ _GLOBAL(__start_initialization_multiplatform)
+ 	 */
+ 	cmpldi	cr0,r5,0
+ 	beq	1f
+-	b	.__boot_from_prom		/* yes -> prom */
++	b	__boot_from_prom		/* yes -> prom */
+ 1:
+ 	/* Save parameters */
+ 	mr	r31,r3
+@@ -354,8 +354,8 @@ _GLOBAL(__start_initialization_multiplatform)
+ #endif
+ 
+ #ifdef CONFIG_PPC_BOOK3E
+-	bl	.start_initialization_book3e
+-	b	.__after_prom_start
++	bl	start_initialization_book3e
++	b	__after_prom_start
+ #else
+ 	/* Setup some critical 970 SPRs before switching MMU off */
+ 	mfspr	r0,SPRN_PVR
+@@ -368,12 +368,12 @@ _GLOBAL(__start_initialization_multiplatform)
+ 	beq	1f
+ 	cmpwi	r0,0x45		/* 970GX */
+ 	bne	2f
+-1:	bl	.__cpu_preinit_ppc970
++1:	bl	__cpu_preinit_ppc970
+ 2:
+ 
+ 	/* Switch off MMU if not already off */
+-	bl	.__mmu_off
+-	b	.__after_prom_start
++	bl	__mmu_off
++	b	__after_prom_start
+ #endif /* CONFIG_PPC_BOOK3E */
+ 
+ _INIT_STATIC(__boot_from_prom)
+@@ -395,7 +395,7 @@ _INIT_STATIC(__boot_from_prom)
+ #ifdef CONFIG_RELOCATABLE
+ 	/* Relocate code for where we are now */
+ 	mr	r3,r26
+-	bl	.relocate
++	bl	relocate
+ #endif
+ 
+ 	/* Restore parameters */
+@@ -407,7 +407,7 @@ _INIT_STATIC(__boot_from_prom)
+ 
+ 	/* Do all of the interaction with OF client interface */
+ 	mr	r8,r26
+-	bl	.prom_init
++	bl	prom_init
+ #endif /* #CONFIG_PPC_OF_BOOT_TRAMPOLINE */
+ 
+ 	/* We never return. We also hit that trap if trying to boot
+@@ -424,7 +424,7 @@ _STATIC(__after_prom_start)
+ 	bne	1f
+ 	add	r25,r25,r26
+ 1:	mr	r3,r25
+-	bl	.relocate
++	bl	relocate
+ #endif
+ 
+ /*
+@@ -464,7 +464,7 @@ _STATIC(__after_prom_start)
+ 	lis	r5,(copy_to_here - _stext)@ha
+ 	addi	r5,r5,(copy_to_here - _stext)@l /* # bytes of memory to copy */
+ 
+-	bl	.copy_and_flush		/* copy the first n bytes	 */
++	bl	copy_and_flush		/* copy the first n bytes	 */
+ 					/* this includes the code being	 */
+ 					/* executed here.		 */
+ 	addis	r8,r3,(4f - _stext)@ha	/* Jump to the copy of this code */
+@@ -478,9 +478,9 @@ p_end:	.llong	_end - _stext
+ 4:	/* Now copy the rest of the kernel up to _end */
+ 	addis	r5,r26,(p_end - _stext)@ha
+ 	ld	r5,(p_end - _stext)@l(r5)	/* get _end */
+-5:	bl	.copy_and_flush		/* copy the rest */
++5:	bl	copy_and_flush		/* copy the rest */
+ 
+-9:	b	.start_here_multiplatform
++9:	b	start_here_multiplatform
+ 
+ /*
+  * Copy routine used to copy the kernel to start at physical address 0
+@@ -544,7 +544,7 @@ __secondary_start_pmac_0:
+ 	
+ _GLOBAL(pmac_secondary_start)
+ 	/* turn on 64-bit mode */
+-	bl	.enable_64b_mode
++	bl	enable_64b_mode
+ 
+ 	li	r0,0
+ 	mfspr	r3,SPRN_HID4
+@@ -556,11 +556,11 @@ _GLOBAL(pmac_secondary_start)
+ 	slbia
+ 
+ 	/* get TOC pointer (real address) */
+-	bl	.relative_toc
++	bl	relative_toc
+ 	tovirt(r2,r2)
+ 
+ 	/* Copy some CPU settings from CPU 0 */
+-	bl	.__restore_cpu_ppc970
++	bl	__restore_cpu_ppc970
+ 
+ 	/* pSeries do that early though I don't think we really need it */
+ 	mfmsr	r3
+@@ -619,7 +619,7 @@ __secondary_start:
+ 	std	r14,PACAKSAVE(r13)
+ 
+ 	/* Do early setup for that CPU (stab, slb, hash table pointer) */
+-	bl	.early_setup_secondary
++	bl	early_setup_secondary
+ 
+ 	/*
+ 	 * setup the new stack pointer, but *don't* use this until
+@@ -656,7 +656,7 @@ _GLOBAL(start_secondary_prolog)
+ 	ld	r2,PACATOC(r13)
+ 	li	r3,0
+ 	std	r3,0(r1)		/* Zero the stack frame pointer	*/
+-	bl	.start_secondary
++	bl	start_secondary
+ 	b	.
+ /*
+  * Reset stack pointer and call start_secondary
+@@ -667,7 +667,7 @@ _GLOBAL(start_secondary_resume)
+ 	ld	r1,PACAKSAVE(r13)	/* Reload kernel stack pointer */
+ 	li	r3,0
+ 	std	r3,0(r1)		/* Zero the stack frame pointer	*/
+-	bl	.start_secondary
++	bl	start_secondary
+ 	b	.
+ #endif
+ 
+@@ -717,7 +717,7 @@ p_toc:	.llong	__toc_start + 0x8000 - 0b
+  */
+ _INIT_STATIC(start_here_multiplatform)
+ 	/* set up the TOC */
+-	bl      .relative_toc
++	bl      relative_toc
+ 	tovirt(r2,r2)
+ 
+ 	/* Clear out the BSS. It may have been done in prom_init,
+@@ -776,7 +776,7 @@ _INIT_STATIC(start_here_multiplatform)
+ 
+ 	/* Restore parameters passed from prom_init/kexec */
+ 	mr	r3,r31
+-	bl	.early_setup		/* also sets r13 and SPRG_PACA */
++	bl	early_setup		/* also sets r13 and SPRG_PACA */
+ 
+ 	LOAD_REG_ADDR(r3, .start_here_common)
+ 	ld	r4,PACAKMSR(r13)
+@@ -794,7 +794,7 @@ _INIT_GLOBAL(start_here_common)
+ 	ld	r2,PACATOC(r13)
+ 
+ 	/* Do more system initializations in virtual mode */
+-	bl	.setup_system
++	bl	setup_system
+ 
+ 	/* Mark interrupts soft and hard disabled (they might be enabled
+ 	 * in the PACA when doing hotplug)
+@@ -805,7 +805,7 @@ _INIT_GLOBAL(start_here_common)
+ 	stb	r0,PACAIRQHAPPENED(r13)
+ 
+ 	/* Generic kernel entry */
+-	bl	.start_kernel
++	bl	start_kernel
+ 
+ 	/* Not reached */
+ 	BUG_OPCODE
+diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
+index bfb73cc..48c21ac 100644
+--- a/arch/powerpc/kernel/idle_book3e.S
++++ b/arch/powerpc/kernel/idle_book3e.S
+@@ -43,7 +43,7 @@ _GLOBAL(\name)
+ 	 */
+ #ifdef CONFIG_TRACE_IRQFLAGS
+ 	stdu    r1,-128(r1)
+-	bl	.trace_hardirqs_on
++	bl	trace_hardirqs_on
+ 	addi    r1,r1,128
+ #endif
+ 	li	r0,1
+diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
+index e3edaa1..f57a193 100644
+--- a/arch/powerpc/kernel/idle_power4.S
++++ b/arch/powerpc/kernel/idle_power4.S
+@@ -46,7 +46,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	mflr	r0
+ 	std	r0,16(r1)
+ 	stdu    r1,-128(r1)
+-	bl	.trace_hardirqs_on
++	bl	trace_hardirqs_on
+ 	addi    r1,r1,128
+ 	ld	r0,16(r1)
+ 	mtlr	r0
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 3fdef0f..03a2959 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -47,7 +47,7 @@ _GLOBAL(power7_nap)
+ 	/* Make sure FPU, VSX etc... are flushed as we may lose
+ 	 * state when going to nap mode
+ 	 */
+-	bl	.discard_lazy_cpu_state
++	bl	discard_lazy_cpu_state
+ #endif /* CONFIG_SMP */
+ 
+ 	/* Hard disable interrupts */
+@@ -116,7 +116,7 @@ _GLOBAL(power7_wakeup_loss)
+ _GLOBAL(power7_wakeup_noloss)
+ 	lbz	r0,PACA_NAPSTATELOST(r13)
+ 	cmpwi	r0,0
+-	bne	.power7_wakeup_loss
++	bne	power7_wakeup_loss
+ 	ld	r1,PACAR1(r13)
+ 	ld	r4,_MSR(r1)
+ 	ld	r5,_NIP(r1)
+diff --git a/arch/powerpc/kernel/misc_64.S b/arch/powerpc/kernel/misc_64.S
+index 3d02495..b39cf4a 100644
+--- a/arch/powerpc/kernel/misc_64.S
++++ b/arch/powerpc/kernel/misc_64.S
+@@ -34,7 +34,7 @@ _GLOBAL(call_do_softirq)
+ 	std	r0,16(r1)
+ 	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r3)
+ 	mr	r1,r3
+-	bl	.__do_softirq
++	bl	__do_softirq
+ 	ld	r1,0(r1)
+ 	ld	r0,16(r1)
+ 	mtlr	r0
+@@ -45,7 +45,7 @@ _GLOBAL(call_do_irq)
+ 	std	r0,16(r1)
+ 	stdu	r1,THREAD_SIZE-STACK_FRAME_OVERHEAD(r4)
+ 	mr	r1,r4
+-	bl	.__do_irq
++	bl	__do_irq
+ 	ld	r1,0(r1)
+ 	ld	r0,16(r1)
+ 	mtlr	r0
+@@ -506,7 +506,7 @@ _GLOBAL(kexec_smp_wait)
+ 	stb	r4,PACAKEXECSTATE(r13)
+ 	SYNC
+ 
+-	b	.kexec_wait
++	b	kexec_wait
+ 
+ /*
+  * switch to real mode (turn mmu off)
+@@ -576,7 +576,7 @@ _GLOBAL(kexec_sequence)
+ 
+ 	/* copy dest pages, flush whole dest image */
+ 	mr	r3,r29
+-	bl	.kexec_copy_flush	/* (image) */
++	bl	kexec_copy_flush	/* (image) */
+ 
+ 	/* turn off mmu */
+ 	bl	real_mode
+@@ -586,7 +586,7 @@ _GLOBAL(kexec_sequence)
+ 	mr	r4,r30		/* start, aka phys mem offset */
+ 	li	r5,0x100
+ 	li	r6,0
+-	bl	.copy_and_flush	/* (dest, src, copy limit, start offset) */
++	bl	copy_and_flush	/* (dest, src, copy limit, start offset) */
+ 1:	/* assume normal blr return */
+ 
+ 	/* release other cpus to the new kernel secondary start at 0x60 */
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index e873796..5421bac 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -149,7 +149,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ #endif /* CONFIG_SMP */
+ 
+ 	/* Jump to partition switch code */
+-	bl	.kvmppc_hv_entry_trampoline
++	bl	kvmppc_hv_entry_trampoline
+ 	nop
+ 
+ /*
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index fbfca57..bb5faff 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1604,7 +1604,7 @@ kvmppc_hdsi:
+ 	/* Search the hash table. */
+ 	mr	r3, r9			/* vcpu pointer */
+ 	li	r7, 1			/* data fault */
+-	bl	.kvmppc_hpte_hv_fault
++	bl	kvmppc_hpte_hv_fault
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 	ld	r10, VCPU_PC(r9)
+ 	ld	r11, VCPU_MSR(r9)
+@@ -1678,7 +1678,7 @@ kvmppc_hisi:
+ 	mr	r4, r10
+ 	mr	r6, r11
+ 	li	r7, 0			/* instruction fault */
+-	bl	.kvmppc_hpte_hv_fault
++	bl	kvmppc_hpte_hv_fault
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 	ld	r10, VCPU_PC(r9)
+ 	ld	r11, VCPU_MSR(r9)
+@@ -2056,7 +2056,7 @@ kvm_cede_exit:
+ 	/* Try to handle a machine check in real mode */
+ machine_check_realmode:
+ 	mr	r3, r9		/* get vcpu pointer */
+-	bl	.kvmppc_realmode_machine_check
++	bl	kvmppc_realmode_machine_check
+ 	nop
+ 	cmpdi	r3, 0		/* continue exiting from guest? */
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+diff --git a/arch/powerpc/lib/copypage_64.S b/arch/powerpc/lib/copypage_64.S
+index 9f9434a..e59c9c2 100644
+--- a/arch/powerpc/lib/copypage_64.S
++++ b/arch/powerpc/lib/copypage_64.S
+@@ -20,7 +20,7 @@ _GLOBAL(copy_page)
+ BEGIN_FTR_SECTION
+ 	lis	r5,PAGE_SIZE@h
+ FTR_SECTION_ELSE
+-	b	.copypage_power7
++	b	copypage_power7
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+ 	ori	r5,r5,PAGE_SIZE@l
+ BEGIN_FTR_SECTION
+diff --git a/arch/powerpc/lib/copypage_power7.S b/arch/powerpc/lib/copypage_power7.S
+index 395c594..0f1e239 100644
+--- a/arch/powerpc/lib/copypage_power7.S
++++ b/arch/powerpc/lib/copypage_power7.S
+@@ -60,7 +60,7 @@ _GLOBAL(copypage_power7)
+ 	std	r4,56(r1)
+ 	std	r0,16(r1)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+-	bl	.enter_vmx_copy
++	bl	enter_vmx_copy
+ 	cmpwi	r3,0
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+ 	ld	r3,STACKFRAMESIZE+48(r1)
+@@ -103,7 +103,7 @@ _GLOBAL(copypage_power7)
+ 	addi	r3,r3,128
+ 	bdnz	1b
+ 
+-	b	.exit_vmx_copy		/* tail call optimise */
++	b	exit_vmx_copy		/* tail call optimise */
+ 
+ #else
+ 	li	r0,(PAGE_SIZE/128)
+diff --git a/arch/powerpc/lib/copyuser_power7.S b/arch/powerpc/lib/copyuser_power7.S
+index e8e9c36..62f0540 100644
+--- a/arch/powerpc/lib/copyuser_power7.S
++++ b/arch/powerpc/lib/copyuser_power7.S
+@@ -66,7 +66,7 @@
+ 	ld	r15,STK_REG(R15)(r1)
+ 	ld	r14,STK_REG(R14)(r1)
+ .Ldo_err3:
+-	bl	.exit_vmx_usercopy
++	bl	exit_vmx_usercopy
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+ 	mtlr	r0
+ 	b	.Lexit
+@@ -295,7 +295,7 @@ err1;	stb	r0,0(r3)
+ 	mflr	r0
+ 	std	r0,16(r1)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+-	bl	.enter_vmx_usercopy
++	bl	enter_vmx_usercopy
+ 	cmpwi	cr1,r3,0
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+ 	ld	r3,STACKFRAMESIZE+48(r1)
+@@ -514,7 +514,7 @@ err3;	lbz	r0,0(r4)
+ err3;	stb	r0,0(r3)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+-	b	.exit_vmx_usercopy	/* tail call optimise */
++	b	exit_vmx_usercopy	/* tail call optimise */
+ 
+ .Lvmx_unaligned_copy:
+ 	/* Get the destination 16B aligned */
+@@ -717,5 +717,5 @@ err3;	lbz	r0,0(r4)
+ err3;	stb	r0,0(r3)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+-	b	.exit_vmx_usercopy	/* tail call optimise */
++	b	exit_vmx_usercopy	/* tail call optimise */
+ #endif /* CONFiG_ALTIVEC */
+diff --git a/arch/powerpc/lib/hweight_64.S b/arch/powerpc/lib/hweight_64.S
+index 9b96ff2..19e6600 100644
+--- a/arch/powerpc/lib/hweight_64.S
++++ b/arch/powerpc/lib/hweight_64.S
+@@ -24,7 +24,7 @@
+ 
+ _GLOBAL(__arch_hweight8)
+ BEGIN_FTR_SECTION
+-	b .__sw_hweight8
++	b __sw_hweight8
+ 	nop
+ 	nop
+ FTR_SECTION_ELSE
+@@ -35,7 +35,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
+ 
+ _GLOBAL(__arch_hweight16)
+ BEGIN_FTR_SECTION
+-	b .__sw_hweight16
++	b __sw_hweight16
+ 	nop
+ 	nop
+ 	nop
+@@ -57,7 +57,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
+ 
+ _GLOBAL(__arch_hweight32)
+ BEGIN_FTR_SECTION
+-	b .__sw_hweight32
++	b __sw_hweight32
+ 	nop
+ 	nop
+ 	nop
+@@ -82,7 +82,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_POPCNTB)
+ 
+ _GLOBAL(__arch_hweight64)
+ BEGIN_FTR_SECTION
+-	b .__sw_hweight64
++	b __sw_hweight64
+ 	nop
+ 	nop
+ 	nop
+diff --git a/arch/powerpc/lib/mem_64.S b/arch/powerpc/lib/mem_64.S
+index f4fcb0b..0738f96 100644
+--- a/arch/powerpc/lib/mem_64.S
++++ b/arch/powerpc/lib/mem_64.S
+@@ -79,8 +79,8 @@ _GLOBAL(memset)
+ 
+ _GLOBAL(memmove)
+ 	cmplw	0,r3,r4
+-	bgt	.backwards_memcpy
+-	b	.memcpy
++	bgt	backwards_memcpy
++	b	memcpy
+ 
+ _GLOBAL(backwards_memcpy)
+ 	rlwinm.	r7,r5,32-3,3,31		/* r0 = r5 >> 3 */
+diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
+index e4177db..bae3f21 100644
+--- a/arch/powerpc/lib/memcpy_power7.S
++++ b/arch/powerpc/lib/memcpy_power7.S
+@@ -230,7 +230,7 @@ _GLOBAL(memcpy_power7)
+ 	std	r5,64(r1)
+ 	std	r0,16(r1)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+-	bl	.enter_vmx_copy
++	bl	enter_vmx_copy
+ 	cmpwi	cr1,r3,0
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+ 	ld	r3,STACKFRAMESIZE+48(r1)
+@@ -448,7 +448,7 @@ _GLOBAL(memcpy_power7)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+ 	ld	r3,48(r1)
+-	b	.exit_vmx_copy		/* tail call optimise */
++	b	exit_vmx_copy		/* tail call optimise */
+ 
+ .Lvmx_unaligned_copy:
+ 	/* Get the destination 16B aligned */
+@@ -652,5 +652,5 @@ _GLOBAL(memcpy_power7)
+ 
+ 15:	addi	r1,r1,STACKFRAMESIZE
+ 	ld	r3,48(r1)
+-	b	.exit_vmx_copy		/* tail call optimise */
++	b	exit_vmx_copy		/* tail call optimise */
+ #endif /* CONFiG_ALTIVEC */
+diff --git a/arch/powerpc/mm/hash_low_64.S b/arch/powerpc/mm/hash_low_64.S
+index 1136d26..8bf7537 100644
+--- a/arch/powerpc/mm/hash_low_64.S
++++ b/arch/powerpc/mm/hash_low_64.S
+@@ -159,7 +159,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ BEGIN_FTR_SECTION
+ 	mr	r4,r30
+ 	mr	r5,r7
+-	bl	.hash_page_do_lazy_icache
++	bl	hash_page_do_lazy_icache
+ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
+ 
+ 	/* At this point, r3 contains new PP bits, save them in
+@@ -471,7 +471,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ BEGIN_FTR_SECTION
+ 	mr	r4,r30
+ 	mr	r5,r7
+-	bl	.hash_page_do_lazy_icache
++	bl	hash_page_do_lazy_icache
+ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
+ 
+ 	/* At this point, r3 contains new PP bits, save them in
+@@ -588,7 +588,7 @@ htab_inval_old_hpte:
+ 	li	r6,MMU_PAGE_64K		/* psize */
+ 	ld	r7,STK_PARAM(R9)(r1)	/* ssize */
+ 	ld	r8,STK_PARAM(R8)(r1)	/* local */
+-	bl	.flush_hash_page
++	bl	flush_hash_page
+ 	/* Clear out _PAGE_HPTE_SUB bits in the new linux PTE */
+ 	lis	r0,_PAGE_HPTE_SUB@h
+ 	ori	r0,r0,_PAGE_HPTE_SUB@l
+@@ -812,7 +812,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+ BEGIN_FTR_SECTION
+ 	mr	r4,r30
+ 	mr	r5,r7
+-	bl	.hash_page_do_lazy_icache
++	bl	hash_page_do_lazy_icache
+ END_FTR_SECTION(CPU_FTR_NOEXECUTE|CPU_FTR_COHERENT_ICACHE, CPU_FTR_NOEXECUTE)
+ 
+ 	/* At this point, r3 contains new PP bits, save them in
+diff --git a/arch/powerpc/platforms/pasemi/powersave.S b/arch/powerpc/platforms/pasemi/powersave.S
+index 56f45ad..81ab555 100644
+--- a/arch/powerpc/platforms/pasemi/powersave.S
++++ b/arch/powerpc/platforms/pasemi/powersave.S
+@@ -66,7 +66,7 @@ sleep_common:
+ 	std	r3, 48(r1)
+ 
+ 	/* Only do power savings when in astate 0 */
+-	bl	.check_astate
++	bl	check_astate
+ 	cmpwi	r3,0
+ 	bne	1f
+ 
+diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
+index 444fe77..7891a86 100644
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -49,7 +49,7 @@ END_FTR_SECTION(0, 1);						\
+ 	std	r0,16(r1);					\
+ 	addi	r4,r1,STK_PARAM(FIRST_REG);			\
+ 	stdu	r1,-STACK_FRAME_OVERHEAD(r1);			\
+-	bl	.__trace_hcall_entry;				\
++	bl	__trace_hcall_entry;				\
+ 	addi	r1,r1,STACK_FRAME_OVERHEAD;			\
+ 	ld	r0,16(r1);					\
+ 	ld	r3,STK_PARAM(R3)(r1);				\
+@@ -83,7 +83,7 @@ END_FTR_SECTION(0, 1);						\
+ 	mr	r3,r6;						\
+ 	std	r0,16(r1);					\
+ 	stdu	r1,-STACK_FRAME_OVERHEAD(r1);			\
+-	bl	.__trace_hcall_exit;				\
++	bl	__trace_hcall_exit;				\
+ 	addi	r1,r1,STACK_FRAME_OVERHEAD;			\
+ 	ld	r0,16(r1);					\
+ 	ld	r3,STK_PARAM(R3)(r1);				\
 -- 
 1.8.3.2
