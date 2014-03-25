@@ -1,20 +1,28 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ee0-x236.google.com (mail-ee0-x236.google.com
+ [IPv6:2a00:1450:4013:c00::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0952D14008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 18:58:39 +1100 (EST)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>, <timur@tabi.org>
-Subject: [PATCH] video/fsl: Fix the sleep function for FSL DIU module
-Date: Tue, 25 Mar 2014 15:56:20 +0800
-Message-ID: <1395734180-45012-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2A6D914008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 19:11:15 +1100 (EST)
+Received: by mail-ee0-f54.google.com with SMTP id d49so113085eek.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2014 01:11:10 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 25 Mar 2014 09:11:07 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/1] mm: FAULT_AROUND_ORDER patchset performance data for
+ powerpc
+Message-ID: <20140325081107.GA28377@gmail.com>
+References: <1395730215-11604-1-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>,
- Jason Jin <Jason.Jin@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1395730215-11604-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
+ peterz@infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +32,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jason Jin <Jason.Jin@freescale.com>
 
-For deep sleep, the diu module will power off, when wake up
-from the deep sleep, the registers need to be reinitialized.
+* Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> Performance data for different FAULT_AROUND_ORDER values from 4 socket
+> Power7 system (128 Threads and 128GB memory) is below.  Fault around order (FAO)
+> value of 3 looks more advantageous.
+> 
+> FAULT_AROUND_ORDER      Baseline        1               3               4		5               7
+> 
+> Linux build (make -j64)
+> minor-faults		7184385		5874015		4567289		4318518		4193815		4159193
+> times in seconds	61.433776136	60.865935292	59.245368038	60.630675011	60.56587624	59.828271924
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index e8758b9..7ec780c 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1628,9 +1628,18 @@ static int fsl_diu_suspend(struct platform_device *ofdev, pm_message_t state)
- static int fsl_diu_resume(struct platform_device *ofdev)
- {
- 	struct fsl_diu_data *data;
-+	struct mfb_info *mfbi;
-+	int i;
- 
- 	data = dev_get_drvdata(&ofdev->dev);
--	enable_lcdc(data->fsl_diu_info);
-+	fsl_diu_enable_interrupts(data);
-+	update_lcdc(data->fsl_diu_info);
-+
-+	for (i = 0; i < NUM_AOIS; i++) {
-+		mfbi = &data->mfb[i];
-+		if (mfbi->count)
-+			fsl_diu_enable_panel(&data->fsl_diu_info[i]);
-+	}
- 
- 	return 0;
- }
--- 
-1.8.5
+Hm, I have one general observation: it's hard to tell how 
+(statistically) significant the time differences are, without standard 
+deviation numbers.
+
+You can get stddev very easily via 'perf stat --null --repeat N'.
+
+You can use --pre <script> and --post <script> for pre/post 
+measurement cleanup hooks (such as 'make clean'). So for example:
+
+  perf stat --null --repeat 3 --pre 'make defconfig; make clean >/dev/null 2>&1' make -j64 kernel/
+
+Which run the workload 3 times and it will output something like:
+
+       9.013717158 seconds time elapsed                                          ( +-  0.99% )
+
+Where the +- column shows the stddev in relative percentage units.
+
+The --null option ensures that only time measurement is done with no 
+overhead for the workload, no other performance metrics are taken.
+
+The overhead of the --pre stage is not added to the measured time.
+
+Thus you can also add really expensive steps to the --pre stage, such 
+as a vm_drop_caches clearing of all caches, to measure cache-cold 
+results.
+
+The stddev value shows that the result is significant to about the 
+first fractional digit.
+
+Thanks,
+
+	Ingo
