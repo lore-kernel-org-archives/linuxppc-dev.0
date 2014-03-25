@@ -3,9 +3,9 @@ From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
  ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
  mjw@linux.vnet.ibm.com
-Subject: [PATCH 26/33] powerpc: Fix up TOC. for modules.
-Date: Tue, 25 Mar 2014 22:44:32 +1100
-Message-Id: <1395747879-5948-27-git-send-email-anton@samba.org>
+Subject: [PATCH 27/33] powerpc: Handle new ELFv2 module relocations
+Date: Tue, 25 Mar 2014 22:44:33 +1100
+Message-Id: <1395747879-5948-28-git-send-email-anton@samba.org>
 In-Reply-To: <1395747879-5948-1-git-send-email-anton@samba.org>
 References: <1395747879-5948-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -20,73 +20,61 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-The kernel resolved the '.TOC.' to a fake symbol, so we need to fix it up
-to point to our .toc section plus 0x8000.
+The new ELF ABI tends to use R_PPC64_REL16_LO and R_PPC64_REL16_HA
+relocations (PC-relative), so implement them.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 ---
- arch/powerpc/include/asm/module.h |  1 +
- arch/powerpc/kernel/module_64.c   | 29 +++++++++++++++++++++++++++++
- 2 files changed, 30 insertions(+)
+ arch/powerpc/include/uapi/asm/elf.h |  7 ++++++-
+ arch/powerpc/kernel/module_64.c     | 17 +++++++++++++++++
+ 2 files changed, 23 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/module.h b/arch/powerpc/include/asm/module.h
-index 49fa55b..c9c7aaa 100644
---- a/arch/powerpc/include/asm/module.h
-+++ b/arch/powerpc/include/asm/module.h
-@@ -35,6 +35,7 @@ struct mod_arch_specific {
- #ifdef __powerpc64__
- 	unsigned int stubs_section;	/* Index of stubs section in module */
- 	unsigned int toc_section;	/* What section is the TOC? */
-+	bool toc_fixed;			/* Have we fixed up .TOC.? */
- #ifdef CONFIG_DYNAMIC_FTRACE
- 	unsigned long toc;
- 	unsigned long tramp;
+diff --git a/arch/powerpc/include/uapi/asm/elf.h b/arch/powerpc/include/uapi/asm/elf.h
+index 0341109..59dad11 100644
+--- a/arch/powerpc/include/uapi/asm/elf.h
++++ b/arch/powerpc/include/uapi/asm/elf.h
+@@ -295,8 +295,13 @@ do {									\
+ #define R_PPC64_TLSLD		108
+ #define R_PPC64_TOCSAVE		109
+ 
++#define R_PPC64_REL16		249
++#define R_PPC64_REL16_LO	250
++#define R_PPC64_REL16_HI	251
++#define R_PPC64_REL16_HA	252
++
+ /* Keep this the last entry.  */
+-#define R_PPC64_NUM		110
++#define R_PPC64_NUM		253
+ 
+ /* There's actually a third entry here, but it's unused */
+ struct ppc64_opd_entry
 diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
-index a8694d4..f6544d7 100644
+index f6544d7..34ba326 100644
 --- a/arch/powerpc/kernel/module_64.c
 +++ b/arch/powerpc/kernel/module_64.c
-@@ -196,6 +196,24 @@ static void dedotify(Elf64_Sym *syms, unsigned int numsyms, char *strtab)
- 	}
- }
+@@ -491,6 +491,23 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
+ 			 */
+ 			break;
  
-+static Elf64_Sym *find_dot_toc(Elf64_Shdr *sechdrs,
-+			       const char *strtab,
-+			       unsigned int symindex)
-+{
-+	unsigned int i, numsyms;
-+	Elf64_Sym *syms;
++		case R_PPC64_REL16_HA:
++			/* Subtract location pointer */
++			value -= (unsigned long)location;
++			value = ((value + 0x8000) >> 16);
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
 +
-+	syms = (Elf64_Sym *)sechdrs[symindex].sh_addr;
-+	numsyms = sechdrs[symindex].sh_size / sizeof(Elf64_Sym);
++		case R_PPC64_REL16_LO:
++			/* Subtract location pointer */
++			value -= (unsigned long)location;
++			*((uint16_t *) location)
++				= (*((uint16_t *) location) & ~0xffff)
++				| (value & 0xffff);
++			break;
 +
-+	for (i = 1; i < numsyms; i++) {
-+		if (syms[i].st_shndx == SHN_UNDEF
-+		    && strcmp(strtab + syms[i].st_name, ".TOC.") == 0)
-+			return &syms[i];
-+	}
-+	return NULL;
-+}
-+
- int module_frob_arch_sections(Elf64_Ehdr *hdr,
- 			      Elf64_Shdr *sechdrs,
- 			      char *secstrings,
-@@ -337,6 +355,17 @@ int apply_relocate_add(Elf64_Shdr *sechdrs,
- 
- 	DEBUGP("Applying ADD relocate section %u to %u\n", relsec,
- 	       sechdrs[relsec].sh_info);
-+
-+	/* First time we're called, we can fix up .TOC. */
-+	if (!me->arch.toc_fixed) {
-+		sym = find_dot_toc(sechdrs, strtab, symindex);
-+		/* It's theoretically possible that a module doesn't want a
-+		 * .TOC. so don't fail it just for that. */
-+		if (sym)
-+			sym->st_value = my_r2(sechdrs, me);
-+		me->arch.toc_fixed = true;
-+	}
-+
- 	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rela); i++) {
- 		/* This is where to make the change */
- 		location = (void *)sechdrs[sechdrs[relsec].sh_info].sh_addr
+ 		default:
+ 			printk("%s: Unknown ADD relocation: %lu\n",
+ 			       me->name,
 -- 
 1.8.3.2
