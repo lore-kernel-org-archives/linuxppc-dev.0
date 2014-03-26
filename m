@@ -1,20 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
+Return-Path: <Jason.Jin@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A5F7E14007C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 05:14:09 +1100 (EST)
-Message-ID: <1395857635.12738.35.camel@snotra.buserror.net>
-Subject: Re: [PATCH] phy/at8031: enable at8031 to work on interrupt mode
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang <B45475@freescale.com>
-Date: Wed, 26 Mar 2014 13:13:55 -0500
-In-Reply-To: <1395816338-3090-1-git-send-email-B45475@freescale.com>
-References: <1395816338-3090-1-git-send-email-B45475@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id CC7D6140085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 05:23:56 +1100 (EST)
+From: Jason Jin <Jason.Jin@freescale.com>
+To: <b07421@freescale.com>, <timur@tabi.org>
+Subject: [PATCH 1/2] video/fsl: make the diu driver work without platform hooks
+Date: Thu, 27 Mar 2014 01:41:43 +0800
+Message-ID: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
 MIME-Version: 1.0
-Cc: B07421@freescale.com, R63061@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ r58472@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,16 +23,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-03-26 at 14:45 +0800, Zhao Qiang wrote:
-> The at8031 can work on polling mode and interrupt mode.
-> Add ack_interrupt and config intr funcs to enable
-> interrupt mode for it.
-> 
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
->  drivers/net/phy/at803x.c | 30 ++++++++++++++++++++++++++++++
->  1 file changed, 30 insertions(+)
+make the diu driver work without platform hooks.
 
-This needs to go to the netdev maintainer/list.
+So far the DIU driver does not have a mechanism to do the
+board specific initialization. So on some platforms,
+such as P1022, 8610 and 5121, The board specific initialization
+is implmented in the platform file such p10222_ds.
 
--Scott
+This board sepecific initialization mechanism is not feasible i
+for corenet platform as the corenet platform file is a
+abstraction of serveral platforms.
+
+However, the DIU is already initialized in u-boot and we can
+rely on the settings in u-boot for corenet platform, the only
+issue is that when DIU wake up from the deepsleep, some of the
+board specific initialization will lost, such as the pixel clock
+setting.
+
+This patch try to make the diu work on the platform without board
+specific initialization such as corenet(T1040 so far), and rely on
+the board initialization in u-boot. The following patch will try to
+fix the pixel clock saving issue for deepsleep.
+
+Signed-off-by: Jason Jin <Jason.Jin@freescale.com>
+---
+ drivers/video/fsl-diu-fb.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index e8758b9..4640846 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -479,7 +479,10 @@ static enum fsl_diu_monitor_port fsl_diu_name_to_port(const char *s)
+ 			port = FSL_DIU_PORT_DLVDS;
+ 	}
+ 
+-	return diu_ops.valid_monitor_port(port);
++	if (diu_ops.valid_monitor_port)
++		return diu_ops.valid_monitor_port(port);
++	else
++		return port;
+ }
+ 
+ /*
+@@ -846,7 +849,11 @@ static void update_lcdc(struct fb_info *info)
+ 
+ 	out_be32(&hw->vsyn_para, temp);
+ 
+-	diu_ops.set_pixel_clock(var->pixclock);
++	/*if there is platform function for pixel clock setting, use it.
++	 * otherwise we rely on the settings in u-boot.
++	 */
++	if (diu_ops.set_pixel_clock)
++		diu_ops.set_pixel_clock(var->pixclock);
+ 
+ #ifndef CONFIG_PPC_MPC512x
+ 	/*
+-- 
+1.8.0
