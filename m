@@ -1,19 +1,24 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D166614008B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 22:47:49 +1100 (EST)
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: <broonie@kernel.org>, <Li.Xiubo@freescale.com>
-Subject: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
-Date: Wed, 26 Mar 2014 19:48:37 +0800
-Message-ID: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 1FA5A14008C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 23:00:39 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 15728-07 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 26 Mar 2014 12:00:34 +0000 (GMT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Nicolin Chen' <Guangyu.Chen@freescale.com>, "broonie@kernel.org"
+ <broonie@kernel.org>, "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
+Subject: RE: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+Date: Wed, 26 Mar 2014 11:59:53 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
+References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+In-Reply-To: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,152 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It's quite cricial to clear error flags because SAI might hang if getting
-FIFO underrun during playback (I haven't confirmed the same issue on Rx
-overflow though).
-
-So this patch enables those irq and adds isr() to clear the flags so as to
-keep playback entirely safe.
-
-Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
----
- sound/soc/fsl/fsl_sai.c | 69 ++++++++++++++++++++++++++++++++++++++++++++++---
- sound/soc/fsl/fsl_sai.h |  9 +++++++
- 2 files changed, 75 insertions(+), 3 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index c4a4231..5f91aff 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -23,6 +23,55 @@
- 
- #include "fsl_sai.h"
- 
-+#define FSL_SAI_FLAGS (FSL_SAI_CSR_SEIE |\
-+		       FSL_SAI_CSR_FEIE |\
-+		       FSL_SAI_CSR_FWIE)
-+
-+static irqreturn_t fsl_sai_isr(int irq, void *devid)
-+{
-+	struct fsl_sai *sai = (struct fsl_sai *)devid;
-+	struct device *dev = &sai->pdev->dev;
-+	u32 xcsr;
-+
-+	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
-+	regmap_write(sai->regmap, FSL_SAI_TCSR, xcsr);
-+
-+	if (xcsr & FSL_SAI_CSR_WSF)
-+		dev_dbg(dev, "isr: Start of Tx word detected\n");
-+
-+	if (xcsr & FSL_SAI_CSR_SEF)
-+		dev_dbg(dev, "isr: Tx Frame sync error detected\n");
-+
-+	if (xcsr & FSL_SAI_CSR_FEF)
-+		dev_dbg(dev, "isr: Transmit underrun detected\n");
-+
-+	if (xcsr & FSL_SAI_CSR_FWF)
-+		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
-+
-+	if (xcsr & FSL_SAI_CSR_FRF)
-+		dev_dbg(dev, "isr: Transmit FIFO watermark has been reached\n");
-+
-+	regmap_read(sai->regmap, FSL_SAI_RCSR, &xcsr);
-+	regmap_write(sai->regmap, FSL_SAI_RCSR, xcsr);
-+
-+	if (xcsr & FSL_SAI_CSR_WSF)
-+		dev_dbg(dev, "isr: Start of Rx word detected\n");
-+
-+	if (xcsr & FSL_SAI_CSR_SEF)
-+		dev_dbg(dev, "isr: Rx Frame sync error detected\n");
-+
-+	if (xcsr & FSL_SAI_CSR_FEF)
-+		dev_dbg(dev, "isr: Receive overflow detected\n");
-+
-+	if (xcsr & FSL_SAI_CSR_FWF)
-+		dev_dbg(dev, "isr: Enabled receive FIFO is full\n");
-+
-+	if (xcsr & FSL_SAI_CSR_FRF)
-+		dev_dbg(dev, "isr: Receive FIFO watermark has been reached\n");
-+
-+	return IRQ_HANDLED;
-+}
-+
- static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
- 		int clk_id, unsigned int freq, int fsl_dir)
- {
-@@ -373,8 +422,8 @@ static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
- {
- 	struct fsl_sai *sai = dev_get_drvdata(cpu_dai->dev);
- 
--	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, 0x0);
--	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, 0x0);
-+	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, FSL_SAI_FLAGS);
-+	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, FSL_SAI_FLAGS);
- 	regmap_update_bits(sai->regmap, FSL_SAI_TCR1, FSL_SAI_CR1_RFW_MASK,
- 			   FSL_SAI_MAXBURST_TX * 2);
- 	regmap_update_bits(sai->regmap, FSL_SAI_RCR1, FSL_SAI_CR1_RFW_MASK,
-@@ -490,12 +539,14 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 	struct fsl_sai *sai;
- 	struct resource *res;
- 	void __iomem *base;
--	int ret;
-+	int irq, ret;
- 
- 	sai = devm_kzalloc(&pdev->dev, sizeof(*sai), GFP_KERNEL);
- 	if (!sai)
- 		return -ENOMEM;
- 
-+	sai->pdev = pdev;
-+
- 	sai->big_endian_regs = of_property_read_bool(np, "big-endian-regs");
- 	if (sai->big_endian_regs)
- 		fsl_sai_regmap_config.val_format_endian = REGMAP_ENDIAN_BIG;
-@@ -514,6 +565,18 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		return PTR_ERR(sai->regmap);
- 	}
- 
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0) {
-+		dev_err(&pdev->dev, "no irq for node %s\n", np->full_name);
-+		return irq;
-+	}
-+
-+	ret = devm_request_irq(&pdev->dev, irq, fsl_sai_isr, 0, np->name, sai);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to claim irq %u\n", irq);
-+		return ret;
-+	}
-+
- 	sai->dma_params_rx.addr = res->start + FSL_SAI_RDR;
- 	sai->dma_params_tx.addr = res->start + FSL_SAI_TDR;
- 	sai->dma_params_rx.maxburst = FSL_SAI_MAXBURST_RX;
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index e432260..05d1a1f 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -37,7 +37,15 @@
- 
- /* SAI Transmit/Recieve Control Register */
- #define FSL_SAI_CSR_TERE	BIT(31)
-+#define FSL_SAI_CSR_WSF		BIT(20)
-+#define FSL_SAI_CSR_SEF		BIT(19)
-+#define FSL_SAI_CSR_FEF		BIT(18)
- #define FSL_SAI_CSR_FWF		BIT(17)
-+#define FSL_SAI_CSR_FRF		BIT(16)
-+#define FSL_SAI_CSR_WSIE	BIT(12)
-+#define FSL_SAI_CSR_SEIE	BIT(11)
-+#define FSL_SAI_CSR_FEIE	BIT(10)
-+#define FSL_SAI_CSR_FWIE	BIT(9)
- #define FSL_SAI_CSR_FRIE	BIT(8)
- #define FSL_SAI_CSR_FRDE	BIT(0)
- 
-@@ -99,6 +107,7 @@
- #define FSL_SAI_MAXBURST_RX 6
- 
- struct fsl_sai {
-+	struct platform_device *pdev;
- 	struct regmap *regmap;
- 
- 	bool big_endian_regs;
--- 
-1.8.4
+RnJvbTogTmljb2xpbiBDaGVuDQo+IEl0J3MgcXVpdGUgY3JpY2lhbCB0byBjbGVhciBlcnJvciBm
+bGFncyBiZWNhdXNlIFNBSSBtaWdodCBoYW5nIGlmIGdldHRpbmcNCj4gRklGTyB1bmRlcnJ1biBk
+dXJpbmcgcGxheWJhY2sgKEkgaGF2ZW4ndCBjb25maXJtZWQgdGhlIHNhbWUgaXNzdWUgb24gUngN
+Cj4gb3ZlcmZsb3cgdGhvdWdoKS4NCj4gDQo+IFNvIHRoaXMgcGF0Y2ggZW5hYmxlcyB0aG9zZSBp
+cnEgYW5kIGFkZHMgaXNyKCkgdG8gY2xlYXIgdGhlIGZsYWdzIHNvIGFzIHRvDQo+IGtlZXAgcGxh
+eWJhY2sgZW50aXJlbHkgc2FmZS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IE5pY29saW4gQ2hlbiA8
+R3Vhbmd5dS5DaGVuQGZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiAgc291bmQvc29jL2ZzbC9mc2xf
+c2FpLmMgfCA2OSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+LS0tDQo+ICBzb3VuZC9zb2MvZnNsL2ZzbF9zYWkuaCB8ICA5ICsrKysrKysNCj4gIDIgZmlsZXMg
+Y2hhbmdlZCwgNzUgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1n
+aXQgYS9zb3VuZC9zb2MvZnNsL2ZzbF9zYWkuYyBiL3NvdW5kL3NvYy9mc2wvZnNsX3NhaS5jDQo+
+IGluZGV4IGM0YTQyMzEuLjVmOTFhZmYgMTAwNjQ0DQo+IC0tLSBhL3NvdW5kL3NvYy9mc2wvZnNs
+X3NhaS5jDQo+ICsrKyBiL3NvdW5kL3NvYy9mc2wvZnNsX3NhaS5jDQo+IEBAIC0yMyw2ICsyMyw1
+NSBAQA0KPiANCj4gICNpbmNsdWRlICJmc2xfc2FpLmgiDQo+IA0KPiArI2RlZmluZSBGU0xfU0FJ
+X0ZMQUdTIChGU0xfU0FJX0NTUl9TRUlFIHxcDQo+ICsJCSAgICAgICBGU0xfU0FJX0NTUl9GRUlF
+IHxcDQo+ICsJCSAgICAgICBGU0xfU0FJX0NTUl9GV0lFKQ0KPiArDQo+ICtzdGF0aWMgaXJxcmV0
+dXJuX3QgZnNsX3NhaV9pc3IoaW50IGlycSwgdm9pZCAqZGV2aWQpDQo+ICt7DQo+ICsJc3RydWN0
+IGZzbF9zYWkgKnNhaSA9IChzdHJ1Y3QgZnNsX3NhaSAqKWRldmlkOw0KPiArCXN0cnVjdCBkZXZp
+Y2UgKmRldiA9ICZzYWktPnBkZXYtPmRldjsNCj4gKwl1MzIgeGNzcjsNCj4gKw0KPiArCXJlZ21h
+cF9yZWFkKHNhaS0+cmVnbWFwLCBGU0xfU0FJX1RDU1IsICZ4Y3NyKTsNCj4gKwlyZWdtYXBfd3Jp
+dGUoc2FpLT5yZWdtYXAsIEZTTF9TQUlfVENTUiwgeGNzcik7DQoNCkFzc3VtaW5nIHRoZXNlIGFy
+ZSAnd3JpdGUgdG8gY2xlYXInIGJpdHMsIHlvdSBtaWdodCB3YW50DQp0byBtYWtlIHRoZSB3cml0
+ZSAoYWJvdmUpIGFuZCBhbGwgdGhlIHRyYWNlcyAoYmVsb3cpDQpjb25kaXRpb25hbCBvbiB0aGUg
+dmFsdWUgYmVpbmcgbm9uLXplcm8uDQoNCj4gKwlpZiAoeGNzciAmIEZTTF9TQUlfQ1NSX1dTRikN
+Cj4gKwkJZGV2X2RiZyhkZXYsICJpc3I6IFN0YXJ0IG9mIFR4IHdvcmQgZGV0ZWN0ZWRcbiIpOw0K
+PiArDQo+ICsJaWYgKHhjc3IgJiBGU0xfU0FJX0NTUl9TRUYpDQo+ICsJCWRldl9kYmcoZGV2LCAi
+aXNyOiBUeCBGcmFtZSBzeW5jIGVycm9yIGRldGVjdGVkXG4iKTsNCj4gKw0KPiArCWlmICh4Y3Ny
+ICYgRlNMX1NBSV9DU1JfRkVGKQ0KPiArCQlkZXZfZGJnKGRldiwgImlzcjogVHJhbnNtaXQgdW5k
+ZXJydW4gZGV0ZWN0ZWRcbiIpOw0KPiArDQo+ICsJaWYgKHhjc3IgJiBGU0xfU0FJX0NTUl9GV0Yp
+DQo+ICsJCWRldl9kYmcoZGV2LCAiaXNyOiBFbmFibGVkIHRyYW5zbWl0IEZJRk8gaXMgZW1wdHlc
+biIpOw0KPiArDQo+ICsJaWYgKHhjc3IgJiBGU0xfU0FJX0NTUl9GUkYpDQo+ICsJCWRldl9kYmco
+ZGV2LCAiaXNyOiBUcmFuc21pdCBGSUZPIHdhdGVybWFyayBoYXMgYmVlbiByZWFjaGVkXG4iKTsN
+Cg0KU29tZSBvZiB0aG9zZSBsb29rIGxpa2UgJ25vcm1hbCcgaW50ZXJydXB0cywgb3RoZXJzIGFy
+ZSBjbGVhcmx5DQphYm5vcm1hbCBjb25kaXRpb25zLg0KTWF5YmUgdGhlIHRyYWNpbmcgc2hvdWxk
+IHJlZmxlY3QgdGhpcy4NCg0KPiArDQo+ICsJcmVnbWFwX3JlYWQoc2FpLT5yZWdtYXAsIEZTTF9T
+QUlfUkNTUiwgJnhjc3IpOw0KPiArCXJlZ21hcF93cml0ZShzYWktPnJlZ21hcCwgRlNMX1NBSV9S
+Q1NSLCB4Y3NyKTsNCg0KU2FtZSBjb21tZW50cyBhcHBseS4uLg0KDQoJRGF2aWQNCg0K
