@@ -1,19 +1,38 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E63B6140090
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 01:23:48 +1100 (EST)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] bootmem/powerpc: Unify bootmem initialization
-Date: Wed, 26 Mar 2014 08:52:14 -0500
-Message-ID: <1395841934-5139-1-git-send-email-Emilian.Medve@Freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3F617140098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 02:58:42 +1100 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Wed, 26 Mar 2014 09:58:38 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3FFF41FF0044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 09:58:34 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2QFwXU611338020
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 16:58:34 +0100
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2QFwWwp023788
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 09:58:33 -0600
+Date: Wed, 26 Mar 2014 08:58:15 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Subject: [RFC PATCH] hugetlb: ensure hugepage access is denied if hugepages
+ are not supported
+Message-ID: <20140326155815.GB15234@linux.vnet.ibm.com>
+References: <20140324230256.GA18778@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140324230256.GA18778@linux.vnet.ibm.com>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
+ nyc@holomorphy.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +42,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unify the low/highmem code path from do_init_bootmem() by using (the)
-lowmem related variables/parameters even when the low/highmem split
-is not needed (64-bit) or configured. In such cases the "lowmem"
-variables/parameters continue to observe the definition by referring
-to memory directly mapped by the kernel
+On 24.03.2014 [16:02:56 -0700], Nishanth Aravamudan wrote:
+> In KVM guests on Power, if the guest is not backed by hugepages, we see
+> the following in the guest:
+> 
+> AnonHugePages:         0 kB
+> HugePages_Total:       0
+> HugePages_Free:        0
+> HugePages_Rsvd:        0
+> HugePages_Surp:        0
+> Hugepagesize:         64 kB
+> 
+> This seems like a configuration issue -- why is a hstate of 64k being
+> registered?
+> 
+> I did some debugging and found that the following does trigger,
+> mm/hugetlb.c::hugetlb_init():
+> 
+>         /* Some platform decide whether they support huge pages at boot
+>          * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
+>          * there is no such support
+>          */
+>         if (HPAGE_SHIFT == 0)
+>                 return 0;
+> 
+> That check is only during init-time. So we don't support hugepages, but
+> none of the hugetlb APIs actually check this condition (HPAGE_SHIFT ==
+> 0), so /proc/meminfo above falsely indicates there is a valid hstate (at
+> least one). But note that there is no /sys/kernel/mm/hugepages meaning
+> no hstate was actually registered.
+> 
+> Further, it turns out that huge_page_order(default_hstate) is 0, so
+> hugetlb_report_meminfo is doing:
+> 
+> 1UL << (huge_page_order(h) + PAGE_SHIFT - 10)
+> 
+> which ends up just doing 1 << (PAGE_SHIFT - 10) and since the base page
+> size is 64k, we report a hugepage size of 64k... And allow the user to
+> allocate hugepages via the sysctl, etc.
+> 
+> What's the right thing to do here?
+> 
+> 1) Should we add checks for HPAGE_SHIFT == 0 to all the hugetlb APIs? It
+> seems like HPAGE_SHIFT == 0 should be the equivalent, functionally, of
+> the config options being off. This seems like a lot of overhead, though,
+> to put everywhere, so maybe I can do it in an arch-specific macro, that
+> in asm-generic defaults to 0 (and so will hopefully be compiled out?).
+> 
+> 2) What should hugetlbfs do when HPAGE_SHIFT == 0? Should it be
+> mountable? Obviously if it's mountable, we can't great files there
+> (since the fs will report insufficient space). [1]
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
- arch/powerpc/mm/mem.c | 36 ++++++++++++++++--------------------
- 1 file changed, 16 insertions(+), 20 deletions(-)
+Here is my solution to this. Comments appreciated!
 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 32202c9..807a950 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -188,27 +188,31 @@ EXPORT_SYMBOL_GPL(walk_system_ram_range);
- void __init do_init_bootmem(void)
- {
- 	unsigned long start, bootmap_pages;
--	unsigned long total_pages;
- 	struct memblock_region *reg;
- 	int boot_mapsize;
-+	phys_addr_t _total_lowmem;
-+	phys_addr_t _lowmem_end_addr;
+In KVM guests on Power, in a guest not backed by hugepages, we see the
+following:
+
+AnonHugePages:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:         64 kB
+
+HPAGE_SHIFT == 0 in this configuration, which indicates that hugepages
+are not supported at boot-time, but this is only checked in
+hugetlb_init(). Extract the check to a helper function, and use it in a
+few relevant places.
+
+This does make hugetlbfs not supported in this environment. I believe
+this is fine, as there are no valid hugepages and that won't change at
+runtime.
+
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index d19b30a..c7aa477 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -1017,6 +1017,11 @@ static int __init init_hugetlbfs_fs(void)
+ 	int error;
+ 	int i;
  
--	max_low_pfn = max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
--	total_pages = (memblock_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
--#ifdef CONFIG_HIGHMEM
--	total_pages = total_lowmem >> PAGE_SHIFT;
--	max_low_pfn = lowmem_end_addr >> PAGE_SHIFT;
-+#ifndef CONFIG_HIGHMEM
-+	_lowmem_end_addr = memblock_end_of_DRAM();
-+#else
-+	_lowmem_end_addr = lowmem_end_addr;
- #endif
-+	_total_lowmem = _lowmem_end_addr - memstart_addr;
++	if (!hugepages_supported()) {
++		printk(KERN_ERR "hugetlbfs: Disabling because there are no supported page sizes\n");
++		return -ENOTSUPP;
++	}
 +
-+	max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
-+	max_low_pfn = _lowmem_end_addr >> PAGE_SHIFT;
-+	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
+ 	error = bdi_init(&hugetlbfs_backing_dev_info);
+ 	if (error)
+ 		return error;
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 8c43cc4..0aea8de 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -450,4 +450,14 @@ static inline spinlock_t *huge_pte_lock(struct hstate *h,
+ 	return ptl;
+ }
  
- 	/*
- 	 * Find an area to use for the bootmem bitmap.  Calculate the size of
- 	 * bitmap required as (Total Memory) / PAGE_SIZE / BITS_PER_BYTE.
- 	 * Add 1 additional page in case the address isn't page-aligned.
- 	 */
--	bootmap_pages = bootmem_bootmap_pages(total_pages);
-+	bootmap_pages = bootmem_bootmap_pages(_total_lowmem >> PAGE_SHIFT);
++static inline bool hugepages_supported(void)
++{
++	/*
++	 * Some platform decide whether they support huge pages at boot
++	 * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
++	 * there is no such support
++	 */
++	return HPAGE_SHIFT != 0;
++}
++
+ #endif /* _LINUX_HUGETLB_H */
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index c01cb9f..1c99585 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1949,11 +1949,7 @@ module_exit(hugetlb_exit);
  
- 	start = memblock_alloc(bootmap_pages << PAGE_SHIFT, PAGE_SIZE);
+ static int __init hugetlb_init(void)
+ {
+-	/* Some platform decide whether they support huge pages at boot
+-	 * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
+-	 * there is no such support
+-	 */
+-	if (HPAGE_SHIFT == 0)
++	if (!hugepages_supported())
+ 		return 0;
  
--	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
- 	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
+ 	if (!size_to_hstate(default_hstate_size)) {
+@@ -2069,6 +2065,9 @@ static int hugetlb_sysctl_handler_common(bool obey_mempolicy,
+ 	unsigned long tmp;
+ 	int ret;
  
- 	/* Place all memblock_regions in the same node and merge contiguous
-@@ -219,26 +223,18 @@ void __init do_init_bootmem(void)
- 	/* Add all physical memory to the bootmem map, mark each area
- 	 * present.
- 	 */
--#ifdef CONFIG_HIGHMEM
--	free_bootmem_with_active_regions(0, lowmem_end_addr >> PAGE_SHIFT);
-+	free_bootmem_with_active_regions(0, max_low_pfn);
++	if (!hugepages_supported())
++		return -ENOTSUPP;
++
+ 	tmp = h->max_huge_pages;
  
- 	/* reserve the sections we're already using */
- 	for_each_memblock(reserved, reg) {
--		unsigned long top = reg->base + reg->size - 1;
--		if (top < lowmem_end_addr)
-+		if (reg->base + reg->size - 1 < _lowmem_end_addr)
- 			reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
--		else if (reg->base < lowmem_end_addr) {
--			unsigned long trunc_size = lowmem_end_addr - reg->base;
-+		else if (reg->base < _lowmem_end_addr) {
-+			unsigned long trunc_size = _lowmem_end_addr - reg->base;
- 			reserve_bootmem(reg->base, trunc_size, BOOTMEM_DEFAULT);
- 		}
- 	}
--#else
--	free_bootmem_with_active_regions(0, max_pfn);
+ 	if (write && h->order >= MAX_ORDER)
+@@ -2122,6 +2121,9 @@ int hugetlb_overcommit_handler(struct ctl_table *table, int write,
+ 	unsigned long tmp;
+ 	int ret;
  
--	/* reserve the sections we're already using */
--	for_each_memblock(reserved, reg)
--		reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
--#endif
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
++	if (!hugepages_supported())
++		return -ENOTSUPP;
++
+ 	tmp = h->nr_overcommit_huge_pages;
  
--- 
-1.9.1
+ 	if (write && h->order >= MAX_ORDER)
+@@ -2147,6 +2149,8 @@ out:
+ void hugetlb_report_meminfo(struct seq_file *m)
+ {
+ 	struct hstate *h = &default_hstate;
++	if (!hugepages_supported())
++		return;
+ 	seq_printf(m,
+ 			"HugePages_Total:   %5lu\n"
+ 			"HugePages_Free:    %5lu\n"
+@@ -2163,6 +2167,8 @@ void hugetlb_report_meminfo(struct seq_file *m)
+ int hugetlb_report_node_meminfo(int nid, char *buf)
+ {
+ 	struct hstate *h = &default_hstate;
++	if (!hugepages_supported())
++		return 0;
+ 	return sprintf(buf,
+ 		"Node %d HugePages_Total: %5u\n"
+ 		"Node %d HugePages_Free:  %5u\n"
+@@ -2177,6 +2183,9 @@ void hugetlb_show_meminfo(void)
+ 	struct hstate *h;
+ 	int nid;
+ 
++	if (!hugepages_supported())
++		return;
++
+ 	for_each_node_state(nid, N_MEMORY)
+ 		for_each_hstate(h)
+ 			pr_info("Node %d hugepages_total=%u hugepages_free=%u hugepages_surp=%u hugepages_size=%lukB\n",
