@@ -1,18 +1,19 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 53C4414009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 07:52:34 +1100 (EST)
-Message-ID: <1395867121.12738.56.camel@snotra.buserror.net>
-Subject: Re: [PATCH 3/4] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+ by ozlabs.org (Postfix) with ESMTPS id B2D7B140079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 08:18:07 +1100 (EST)
+Message-ID: <1395868664.12738.68.camel@snotra.buserror.net>
+Subject: Re: [PATCH 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
+ emulation
 From: Scott Wood <scottwood@freescale.com>
 To: Mihai Caraman <mihai.caraman@freescale.com>
-Date: Wed, 26 Mar 2014 15:52:01 -0500
-In-Reply-To: <1392913821-4520-3-git-send-email-mihai.caraman@freescale.com>
+Date: Wed, 26 Mar 2014 16:17:44 -0500
+In-Reply-To: <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
 References: <1392913821-4520-1-git-send-email-mihai.caraman@freescale.com>
- <1392913821-4520-3-git-send-email-mihai.caraman@freescale.com>
+ <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
@@ -26,142 +27,204 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2014-02-20 at 18:30 +0200, Mihai Caraman wrote:
-> diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
-> index a59a25a..80c533e 100644
-> --- a/arch/powerpc/kvm/book3s_paired_singles.c
-> +++ b/arch/powerpc/kvm/book3s_paired_singles.c
-> @@ -640,19 +640,24 @@ static int kvmppc_ps_one_in(struct kvm_vcpu *vcpu, bool rc,
+> Load external pid (lwepx) instruction faults (when called from
+> KVM with guest context) needs to be handled by KVM. This implies
+> additional code in DO_KVM macro to identify the source of the
+> exception (which oiginate from KVM host rather than the guest).
+> The hook requires to check the Exception Syndrome Register
+> ESR[EPID] and External PID Load Context Register EPLC[EGS] for
+> some exceptions (DTLB_MISS, DSI and LRAT). Doing this on Data TLB
+> miss exception is obvious intrusive for the host.
+> 
+> Get rid of lwepx and acquire last instuction in kvmppc_get_last_inst()
+> by searching for the physical address and kmap it. This fixes an
+> infinite loop caused by lwepx's data TLB miss handled in the host
+> and the TODO for TLB eviction and execute-but-not-read entries.
+> 
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+>  arch/powerpc/kvm/bookehv_interrupts.S |   37 +++----------
+>  arch/powerpc/kvm/e500_mmu_host.c      |   93 +++++++++++++++++++++++++++++++++
+>  2 files changed, 102 insertions(+), 28 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+> index 20c7a54..c50490c 100644
+> --- a/arch/powerpc/kvm/bookehv_interrupts.S
+> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
+> @@ -119,38 +119,14 @@
+>  1:
 >  
->  int kvmppc_emulate_paired_single(struct kvm_run *run, struct kvm_vcpu *vcpu)
->  {
-> -	u32 inst = kvmppc_get_last_inst(vcpu);
-> +	u32 inst;
->  	enum emulation_result emulated = EMULATE_DONE;
+>  	.if	\flags & NEED_EMU
+> -	/*
+> -	 * This assumes you have external PID support.
+> -	 * To support a bookehv CPU without external PID, you'll
+> -	 * need to look up the TLB entry and create a temporary mapping.
+> -	 *
+> -	 * FIXME: we don't currently handle if the lwepx faults.  PR-mode
+> -	 * booke doesn't handle it either.  Since Linux doesn't use
+> -	 * broadcast tlbivax anymore, the only way this should happen is
+> -	 * if the guest maps its memory execute-but-not-read, or if we
+> -	 * somehow take a TLB miss in the middle of this entry code and
+> -	 * evict the relevant entry.  On e500mc, all kernel lowmem is
+> -	 * bolted into TLB1 large page mappings, and we don't use
+> -	 * broadcast invalidates, so we should not take a TLB miss here.
+> -	 *
+> -	 * Later we'll need to deal with faults here.  Disallowing guest
+> -	 * mappings that are execute-but-not-read could be an option on
+> -	 * e500mc, but not on chips with an LRAT if it is used.
+> -	 */
 > -
-> -	int ax_rd = inst_get_field(inst, 6, 10);
-> -	int ax_ra = inst_get_field(inst, 11, 15);
-> -	int ax_rb = inst_get_field(inst, 16, 20);
-> -	int ax_rc = inst_get_field(inst, 21, 25);
-> -	short full_d = inst_get_field(inst, 16, 31);
-> -
-> -	u64 *fpr_d = &vcpu->arch.fpr[ax_rd];
-> -	u64 *fpr_a = &vcpu->arch.fpr[ax_ra];
-> -	u64 *fpr_b = &vcpu->arch.fpr[ax_rb];
-> -	u64 *fpr_c = &vcpu->arch.fpr[ax_rc];
-> +	int ax_rd, ax_ra, ax_rb, ax_rc;
-> +	short full_d;
-> +	u64 *fpr_d, *fpr_a, *fpr_b, *fpr_c;
+> -	mfspr	r3, SPRN_EPLC	/* will already have correct ELPID and EGS */
+>  	PPC_STL	r15, VCPU_GPR(R15)(r4)
+>  	PPC_STL	r16, VCPU_GPR(R16)(r4)
+>  	PPC_STL	r17, VCPU_GPR(R17)(r4)
+>  	PPC_STL	r18, VCPU_GPR(R18)(r4)
+>  	PPC_STL	r19, VCPU_GPR(R19)(r4)
+> -	mr	r8, r3
+>  	PPC_STL	r20, VCPU_GPR(R20)(r4)
+> -	rlwimi	r8, r6, EPC_EAS_SHIFT - MSR_IR_LG, EPC_EAS
+>  	PPC_STL	r21, VCPU_GPR(R21)(r4)
+> -	rlwimi	r8, r6, EPC_EPR_SHIFT - MSR_PR_LG, EPC_EPR
+>  	PPC_STL	r22, VCPU_GPR(R22)(r4)
+> -	rlwimi	r8, r10, EPC_EPID_SHIFT, EPC_EPID
+>  	PPC_STL	r23, VCPU_GPR(R23)(r4)
+>  	PPC_STL	r24, VCPU_GPR(R24)(r4)
+>  	PPC_STL	r25, VCPU_GPR(R25)(r4)
+> @@ -160,10 +136,15 @@
+>  	PPC_STL	r29, VCPU_GPR(R29)(r4)
+>  	PPC_STL	r30, VCPU_GPR(R30)(r4)
+>  	PPC_STL	r31, VCPU_GPR(R31)(r4)
+> -	mtspr	SPRN_EPLC, r8
+> -	isync
+> -	lwepx   r9, 0, r5
+> -	mtspr	SPRN_EPLC, r3
 > +
-> +	kvmppc_get_last_inst(vcpu, &inst);
-
-Should probably check for failure here and elsewhere -- even though it
-can't currently fail on book3s, the interface now allows it.
-
-> diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-> index 5b9e906..b0d884d 100644
-> --- a/arch/powerpc/kvm/book3s_pr.c
-> +++ b/arch/powerpc/kvm/book3s_pr.c
-> @@ -624,9 +624,10 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
->  static int kvmppc_read_inst(struct kvm_vcpu *vcpu)
->  {
->  	ulong srr0 = kvmppc_get_pc(vcpu);
-> -	u32 last_inst = kvmppc_get_last_inst(vcpu);
-> +	u32 last_inst;
->  	int ret;
+> +	/*
+> +	 * We don't use external PID support. lwepx faults would need to be
+> +	 * handled by KVM and this implies aditional code in DO_KVM (for
+> +	 * DTB_MISS, DSI and LRAT) to check ESR[EPID] and EPLC[EGS] which
+> +	 * is too intrusive for the host. Get last instuction in
+> +	 * kvmppc_get_last_inst().
+> +	 */
+> +	li	r9, KVM_INST_FETCH_FAILED
+>  	stw	r9, VCPU_LAST_INST(r4)
+>  	.endif
 >  
-> +	kvmppc_get_last_inst(vcpu, &last_inst);
->  	ret = kvmppc_ld(vcpu, &srr0, sizeof(u32), &last_inst, false);
-
-This isn't new, but this function looks odd to me -- calling
-kvmppc_get_last_inst() but ignoring last_inst, then calling kvmppc_ld()
-and ignoring anything but failure.  last_inst itself is never read.  And
-no comments to explain the weirdness. :-)
-
-I get that kvmppc_get_last_inst() is probably being used for the side
-effect of filling in vcpu->arch.last_inst, but why store the return
-value without using it?  Why pass the address of it to kvmppc_ld(),
-which seems to be used only as an indirect way of determining whether
-kvmppc_get_last_inst() failed?  And that whole mechanism becomes
-stranger once it becomes possible for kvmppc_get_last_inst() to directly
-return failure.
-
-> diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
-> index 09bfd9b..c7c60c2 100644
-> --- a/arch/powerpc/kvm/booke.h
-> +++ b/arch/powerpc/kvm/booke.h
-> @@ -90,6 +90,9 @@ void kvmppc_vcpu_disable_spe(struct kvm_vcpu *vcpu);
->  void kvmppc_booke_vcpu_load(struct kvm_vcpu *vcpu, int cpu);
->  void kvmppc_booke_vcpu_put(struct kvm_vcpu *vcpu);
->  
-> +void kvmppc_core_queue_inst_storage(struct kvm_vcpu *vcpu,
-> +                                           ulong esr_flags);
-
-Whitespace
-
-> +
->  enum int_class {
->  	INT_CLASS_NONCRIT,
->  	INT_CLASS_CRIT,
-> @@ -123,6 +126,8 @@ extern int kvmppc_core_emulate_mtspr_e500(struct kvm_vcpu *vcpu, int sprn,
->  extern int kvmppc_core_emulate_mfspr_e500(struct kvm_vcpu *vcpu, int sprn,
->  					  ulong *spr_val);
->  
-> +extern int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr) ;
-
-Whitespace
-
 > diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-> index ecf2247..6025cb7 100644
+> index 6025cb7..1b4cb41 100644
 > --- a/arch/powerpc/kvm/e500_mmu_host.c
 > +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -34,6 +34,7 @@
->  #include "e500.h"
->  #include "timing.h"
->  #include "e500_mmu_host.h"
-> +#include "booke.h"
->  
->  #include "trace_booke.h"
->  
-> @@ -597,6 +598,10 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
+> @@ -598,9 +598,102 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
 >  	}
 >  }
 >  
-> +int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr) {
-> +	return EMULATE_FAIL;
-> +};
+> +#ifdef CONFIG_KVM_BOOKE_HV
+> +int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr)
 
-Brace placement
+It'd be interesting to see what the performance impact of doing this on
+non-HV would be -- it would eliminate divergent code, eliminate the
+MSR_DS hack, and make exec-only mappings work.
 
->  /************* MMU Notifiers *************/
->  
->  int kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
-> diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
-> index 2f9a087..24a8e50 100644
-> --- a/arch/powerpc/kvm/emulate.c
-> +++ b/arch/powerpc/kvm/emulate.c
-> @@ -225,19 +225,26 @@ static int kvmppc_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
->   * from opcode tables in the future. */
->  int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
->  {
-> -	u32 inst = kvmppc_get_last_inst(vcpu);
-> -	int ra = get_ra(inst);
-> -	int rs = get_rs(inst);
-> -	int rt = get_rt(inst);
-> -	int sprn = get_sprn(inst);
-> -	enum emulation_result emulated = EMULATE_DONE;
-> +	u32 inst;
-> +	int ra, rs, rt, sprn;
-> +	enum emulation_result emulated;
->  	int advance = 1;
->  
->  	/* this default type might be overwritten by subcategories */
->  	kvmppc_set_exit_type(vcpu, EMULATED_INST_EXITS);
->  
-> +	emulated = kvmppc_get_last_inst(vcpu, &inst);
-> +	if (emulated != EMULATE_DONE) {
-> +		return emulated;
+> +{
+> +	gva_t geaddr;
+> +	hpa_t addr;
+> +	hfn_t pfn;
+> +	hva_t eaddr;
+> +	u32 mas0, mas1, mas2, mas3;
+> +	u64 mas7_mas3;
+> +	struct page *page;
+> +	unsigned int addr_space, psize_shift;
+> +	bool pr;
+> +	unsigned long flags;
+> +
+> +	/* Search TLB for guest pc to get the real address */
+> +	geaddr = kvmppc_get_pc(vcpu);
+> +	addr_space = (vcpu->arch.shared->msr & MSR_IS) >> MSR_IR_LG;
+> +
+> +	local_irq_save(flags);
+> +	mtspr(SPRN_MAS6, (vcpu->arch.pid << MAS6_SPID_SHIFT) | addr_space);
+> +	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
+> +	isync();
+> +	asm volatile("tlbsx 0, %[geaddr]\n" : : [geaddr] "r" (geaddr));
+
+We can probably get away without that isync, despite what the manual
+says.  We've been doing it in other contexts on e500 since forever, and
+tlbsx has presync serialization which means it already waits for all
+previous instructions to complete before beginning execution.
+
+> +	mtspr(SPRN_MAS5, 0);
+> +	mtspr(SPRN_MAS8, 0);
+> +	mas0 = mfspr(SPRN_MAS0);
+> +	mas1 = mfspr(SPRN_MAS1);
+> +	mas2 = mfspr(SPRN_MAS2);
+> +	mas3 = mfspr(SPRN_MAS3);
+> +	mas7_mas3 = (((u64) mfspr(SPRN_MAS7)) << 32) | mfspr(SPRN_MAS3);
+
+Why read mas3 twice?
+
+> +	local_irq_restore(flags);
+> +
+> +	/*
+> +	 * If the TLB entry for guest pc was evicted, return to the guest.
+> +	 * There are high chances to find a valid TLB entry next time.
+> +	 */
+> +	if (!(mas1 & MAS1_VALID))
+> +		return EMULATE_AGAIN;
+> +
+> +	/*
+> +	 * Another thread may rewrite the TLB entry in parallel, don't
+> +	 * execute from the address if the execute permission is not set
+> +	 */
+> +	pr = vcpu->arch.shared->msr & MSR_PR;
+> +	if ((pr && (!(mas3 & MAS3_UX))) || ((!pr) && (!(mas3 & MAS3_SX)))) {
+> +		kvmppc_core_queue_inst_storage(vcpu, 0);
+> +		return EMULATE_AGAIN;
 > +	}
 
-Unnecessary braces
+s/(!foo)/!foo/g
+
+> +	/*
+> +	 * We will map the real address through a cacheable page, so we will
+> +	 * not support cache-inhibited guest pages. Fortunately emulated
+> +	 * instructions should not live there.
+> +	 */
+> +	if (mas2 & MAS2_I) {
+> +		printk(KERN_CRIT "Instuction emulation from cache-inhibited "
+> +				"guest pages is not supported\n");
+> +		return EMULATE_FAIL;
+> +	}
+
+This message needs to be ratelimited, and use pr_err() (or maybe even
+pr_debug()).
+
+> +	/* Get page size */
+> +	if (MAS0_GET_TLBSEL(mas0) == 0)
+> +		psize_shift = PAGE_SHIFT;
+> +	else
+> +		psize_shift = MAS1_GET_TSIZE(mas1) + 10;
+
+TSIZE should be correct when reading from TLB0, even if it was incorrect
+(and ignored) when writing.
+
+> +	/* Map a page and get guest's instruction */
+> +	addr = (mas7_mas3 & (~0ULL << psize_shift)) |
+> +	       (geaddr & ((1ULL << psize_shift) - 1ULL));
+> +	pfn = addr >> PAGE_SHIFT;
+> +
+> +	if (unlikely(!pfn_valid(pfn))) {
+> +		printk(KERN_CRIT "Invalid frame number\n");
+> +		return EMULATE_FAIL;
+> +	}
+> +
+> +	/* Guard us against emulation from devices area */
+> +	if (unlikely(!page_is_ram(pfn))) {
+> +		printk(KERN_CRIT "Instruction emulation from non-RAM host "
+> +				"pages is not supported\n");
+> +		return EMULATE_FAIL;
+> +	}
+
+Same comment as the cache-inhibited message, and you can probably have
+one message for both pfn_valid and page_is_ram (is one of those a subset
+of the other?).
 
 -Scott
