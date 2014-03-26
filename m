@@ -1,22 +1,23 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <vkoul@infradead.org>
+Received: from merlin.infradead.org (unknown [IPv6:2001:4978:20e::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9C1CD14009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 17:47:40 +1100 (EST)
-Received: from mail47-tx2 (localhost [127.0.0.1])	by mail47-tx2-R.bigfish.com
- (Postfix) with ESMTP id 7196A120226	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,
- 26 Mar 2014 06:47:35 +0000 (UTC)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
-Subject: [PATCH] phy/at8031: enable at8031 to work on interrupt mode
-Date: Wed, 26 Mar 2014 14:45:38 +0800
-Message-ID: <1395816338-3090-1-git-send-email-B45475@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhao Qiang <B45475@freescale.com>, R63061@freescale.com
+ by ozlabs.org (Postfix) with ESMTPS id B1A8D140088
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 18:08:30 +1100 (EST)
+Subject: Re: [PATCH 6/7] DMA: Freescale: use spin_lock_bh instead of
+ spin_lock_irqsave
+From: Vinod Koul <vkoul@infradead.org>
+To: hongbo.zhang@freescale.com
+In-Reply-To: <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+ <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 26 Mar 2014 12:31:34 +0530
+Message-ID: <1395817294.6569.2.camel@vkoul-udesk3>
+Mime-Version: 1.0
+Cc: vinod.koul@intel.com, linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,69 +27,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The at8031 can work on polling mode and interrupt mode.
-Add ack_interrupt and config intr funcs to enable
-interrupt mode for it.
+On Thu, 2014-01-16 at 13:47 +0800, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> 
+> The usage of spin_lock_irqsave() is a stronger locking mechanism than is
+> required throughout the driver. The minimum locking required should be used
+> instead. Interrupts will be turned off and context will be saved, it is
+> unnecessary to use irqsave.
+> 
+> This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
+> manipulation of protected fields is done using tasklet context or weaker, which
+> makes spin_lock_bh() the correct choice.
+> 
+> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> ---
+>  drivers/dma/fsldma.c |   25 ++++++++++---------------
+>  1 file changed, 10 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index bbace54..437794e 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -396,10 +396,9 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+>  	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
+>  	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
+>  	struct fsl_desc_sw *child;
+> -	unsigned long flags;
+>  	dma_cookie_t cookie = -EINVAL;
+>  
+> -	spin_lock_irqsave(&chan->desc_lock, flags);
+> +	spin_lock_bh(&chan->desc_lock);
+>  
+>  	/*
+>  	 * assign cookies to all of the software descriptors
+> @@ -412,7 +411,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+>  	/* put this transaction onto the tail of the pending queue */
+>  	append_ld_queue(chan, desc);
+>  
+> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> +	spin_unlock_bh(&chan->desc_lock);
+>  
+>  	return cookie;
+>  }
+> @@ -731,15 +730,14 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
+>  static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
+>  {
+>  	struct fsldma_chan *chan = to_fsl_chan(dchan);
+> -	unsigned long flags;
+>  
+>  	chan_dbg(chan, "free all channel resources\n");
+> -	spin_lock_irqsave(&chan->desc_lock, flags);
+> +	spin_lock_bh(&chan->desc_lock);
+>  	fsldma_cleanup_descriptors(chan);
+>  	fsldma_free_desc_list(chan, &chan->ld_pending);
+>  	fsldma_free_desc_list(chan, &chan->ld_running);
+>  	fsldma_free_desc_list(chan, &chan->ld_completed);
+> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> +	spin_unlock_bh(&chan->desc_lock);
+>  
+>  	dma_pool_destroy(chan->desc_pool);
+>  	chan->desc_pool = NULL;
+> @@ -958,7 +956,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>  {
+>  	struct dma_slave_config *config;
+>  	struct fsldma_chan *chan;
+> -	unsigned long flags;
+>  	int size;
+>  
+>  	if (!dchan)
+> @@ -968,7 +965,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>  
+>  	switch (cmd) {
+>  	case DMA_TERMINATE_ALL:
+> -		spin_lock_irqsave(&chan->desc_lock, flags);
+> +		spin_lock_bh(&chan->desc_lock);
+>  
+>  		/* Halt the DMA engine */
+>  		dma_halt(chan);
+> @@ -979,7 +976,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>  		fsldma_free_desc_list(chan, &chan->ld_completed);
+>  		chan->idle = true;
+>  
+> -		spin_unlock_irqrestore(&chan->desc_lock, flags);
+> +		spin_unlock_bh(&chan->desc_lock);
+>  		return 0;
+>  
+>  	case DMA_SLAVE_CONFIG:
+> @@ -1021,11 +1018,10 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>  static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
+>  {
+>  	struct fsldma_chan *chan = to_fsl_chan(dchan);
+> -	unsigned long flags;
+>  
+> -	spin_lock_irqsave(&chan->desc_lock, flags);
+> +	spin_lock_bh(&chan->desc_lock);
+>  	fsl_chan_xfer_ld_queue(chan);
+> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> +	spin_unlock_bh(&chan->desc_lock);
+>  }
+>  
+>  /**
+> @@ -1124,11 +1120,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+>  static void dma_do_tasklet(unsigned long data)
+>  {
+>  	struct fsldma_chan *chan = (struct fsldma_chan *)data;
+> -	unsigned long flags;
+>  
+>  	chan_dbg(chan, "tasklet entry\n");
+>  
+> -	spin_lock_irqsave(&chan->desc_lock, flags);
+> +	spin_lock_bh(&chan->desc_lock);
+okay here is the problem :(
 
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
----
- drivers/net/phy/at803x.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+You moved to _bh variant. So if you grab the lock in rest of the code
+and irq gets triggered then here we will be spinning to grab the lock.
+So effectively you made right locking solution into deadlock situation!
 
-diff --git a/drivers/net/phy/at803x.c b/drivers/net/phy/at803x.c
-index bc71947..d034ef5 100644
---- a/drivers/net/phy/at803x.c
-+++ b/drivers/net/phy/at803x.c
-@@ -27,6 +27,9 @@
- #define AT803X_MMD_ACCESS_CONTROL		0x0D
- #define AT803X_MMD_ACCESS_CONTROL_DATA		0x0E
- #define AT803X_FUNC_DATA			0x4003
-+#define AT803X_INER				0x0012
-+#define AT803X_INER_INIT			0xec00
-+#define AT803X_INSR				0x0013
- #define AT803X_DEBUG_ADDR			0x1D
- #define AT803X_DEBUG_DATA			0x1E
- #define AT803X_DEBUG_SYSTEM_MODE_CTRL		0x05
-@@ -191,6 +194,31 @@ static int at803x_config_init(struct phy_device *phydev)
- 	return 0;
- }
- 
-+static int at803x_ack_interrupt(struct phy_device *phydev)
-+{
-+	int err;
-+
-+	err = phy_read(phydev, AT803X_INSR);
-+
-+	return (err < 0) ? err : 0;
-+}
-+
-+static int at803x_config_intr(struct phy_device *phydev)
-+{
-+	int err;
-+	int value;
-+
-+	value = phy_read(phydev, AT803X_INER);
-+
-+	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
-+		err = phy_write(phydev, AT803X_INER,
-+				(value | AT803X_INER_INIT));
-+	else
-+		err = phy_write(phydev, AT803X_INER, value);
-+
-+	return err;
-+}
-+
- static struct phy_driver at803x_driver[] = {
- {
- 	/* ATHEROS 8035 */
-@@ -240,6 +268,8 @@ static struct phy_driver at803x_driver[] = {
- 	.flags		= PHY_HAS_INTERRUPT,
- 	.config_aneg	= genphy_config_aneg,
- 	.read_status	= genphy_read_status,
-+	.ack_interrupt  = &at803x_ack_interrupt,
-+	.config_intr    = &at803x_config_intr,
- 	.driver		= {
- 		.owner = THIS_MODULE,
- 	},
+>  
+>  	/* the hardware is now idle and ready for more */
+>  	chan->idle = true;
+> @@ -1136,7 +1131,7 @@ static void dma_do_tasklet(unsigned long data)
+>  	/* Run all cleanup for descriptors which have been completed */
+>  	fsldma_cleanup_descriptors(chan);
+>  
+> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> +	spin_unlock_bh(&chan->desc_lock);
+>  
+>  	chan_dbg(chan, "tasklet exit\n");
+>  }
+
+
 -- 
-1.8.5
+Vinod Koul
+Intel Corp.
