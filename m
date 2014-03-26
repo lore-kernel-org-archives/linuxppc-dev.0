@@ -1,22 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AC5AD1400A1
- for <linuxppc-dev@ozlabs.org>; Wed, 26 Mar 2014 10:05:26 +1100 (EST)
-Message-ID: <1395788711.12738.3.camel@snotra.buserror.net>
-Subject: Re: Ask for help about fsl ppc toolchian issue "Illegal instruction"
-From: Scott Wood <scottwood@freescale.com>
-To: wyang <w90p710@gmail.com>
-Date: Tue, 25 Mar 2014 18:05:11 -0500
-In-Reply-To: <533114A4.4080608@gmail.com>
-References: <BLU172-W4881D62A1C46E030116284FD650@phx.gbl>
- <533114A4.4080608@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: =?UTF-8?Q?=E8=AE=B8=E4=B9=85=E6=88=90?= <jiucheng.xu@hotmail.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0206.hostedemail.com
+ [216.40.44.206]) by ozlabs.org (Postfix) with ESMTP id 8E4DA14009E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Mar 2014 15:54:07 +1100 (EST)
+Message-ID: <1395809640.3726.7.camel@joe-AO722>
+Subject: Re: [RFC PATCH] Remove CONFIG_DCACHE_WORD_ACCESS
+From: Joe Perches <joe@perches.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Anton Blanchard
+ <anton@au1.ibm.com>
+Date: Tue, 25 Mar 2014 21:54:00 -0700
+In-Reply-To: <1394570240.4840.48.camel@pasglop>
+References: <1393964591.20435.58.camel@joe-AO722>
+ <1394570240.4840.48.camel@pasglop>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: linux-arch <linux-arch@vger.kernel.org>,
+ Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, x86@kernel.org,
+ Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Alexander Viro <viro@zeniv.linux.org.uk>, "H. Peter
+ Anvin" <hpa@zytor.com>, linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +32,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-03-25 at 13:31 +0800, wyang wrote:
-> 
-> On 03/25/2014 10:17 AM, 许久成 wrote:
-> 
-> > Hi All, 
+On Wed, 2014-03-12 at 07:37 +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2014-03-04 at 12:23 -0800, Joe Perches wrote:
+> > It seems to duplicate CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> > so use that instead.
 > > 
+> > This changes the !CPU_LITTLE_ENDIAN powerpc arch to use unaligned
+> > accesses in fs/dcache.c and fs/namei.c as
+> > CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS is enabled for that arch.
 > > 
-> > We run into an issue when use e500mc toolchain  g++ to compile c++
-> > code for p2020 platform,  the code as below:
+> > Remove the now unused DCACHE_WORD_ACCESS defines & uses.
 > 
-> Hmm, p2020 should be e500 core rather than e500mc. Additionally, you
-> should use gdb to debug it, and check which instruction is illegal.
+> Interesting.. we have word-at-a-time but we never enabled
+> DCACHE_WORD_ACCESS, I wonder why that is. In fact, we should
+> probably do it for LE as well for P8 if we can make a P8
+> only config option...
+> 
+> Anton, what do you reckon here ?
 
-It's probably a floating point instruction.  e500v2 (and thus p2020)
-does not support normal PPC floating point.  You need to use the right
-toolchain.
+Anton, do you have an opinion here?
 
--Scott
+> Cheers,
+> Ben.
+> 
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > ---
+> >  arch/arm/Kconfig                      | 1 -
+> >  arch/arm/include/asm/word-at-a-time.h | 4 ++--
+> >  arch/arm64/Kconfig                    | 1 -
+> >  arch/x86/Kconfig                      | 1 -
+> >  fs/Kconfig                            | 4 ----
+> >  fs/dcache.c                           | 2 +-
+> >  fs/namei.c                            | 2 +-
+> >  7 files changed, 4 insertions(+), 11 deletions(-)
+> > 
+> > diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> > index 623a272..d5a2e60 100644
+> > --- a/arch/arm/Kconfig
+> > +++ b/arch/arm/Kconfig
+> > @@ -12,7 +12,6 @@ config ARM
+> >  	select BUILDTIME_EXTABLE_SORT if MMU
+> >  	select CLONE_BACKWARDS
+> >  	select CPU_PM if (SUSPEND || CPU_IDLE)
+> > -	select DCACHE_WORD_ACCESS if HAVE_EFFICIENT_UNALIGNED_ACCESS
+> >  	select GENERIC_ATOMIC64 if (CPU_V7M || CPU_V6 || !CPU_32v6K || !AEABI)
+> >  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+> >  	select GENERIC_IDLE_POLL_SETUP
+> > diff --git a/arch/arm/include/asm/word-at-a-time.h b/arch/arm/include/asm/word-at-a-time.h
+> > index a6d0a29..778b2ad 100644
+> > --- a/arch/arm/include/asm/word-at-a-time.h
+> > +++ b/arch/arm/include/asm/word-at-a-time.h
+> > @@ -54,7 +54,7 @@ static inline unsigned long find_zero(unsigned long mask)
+> >  #include <asm-generic/word-at-a-time.h>
+> >  #endif
+> >  
+> > -#ifdef CONFIG_DCACHE_WORD_ACCESS
+> > +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> >  
+> >  /*
+> >   * Load an unaligned word from kernel space.
+> > @@ -94,5 +94,5 @@ static inline unsigned long load_unaligned_zeropad(const void *addr)
+> >  	return ret;
+> >  }
+> >  
+> > -#endif	/* DCACHE_WORD_ACCESS */
+> > +#endif	/* HAVE_EFFICIENT_UNALIGNED_ACCESS */
+> >  #endif /* __ASM_ARM_WORD_AT_A_TIME_H */
+> > diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> > index 764d682..2d6978c 100644
+> > --- a/arch/arm64/Kconfig
+> > +++ b/arch/arm64/Kconfig
+> > @@ -13,7 +13,6 @@ config ARM64
+> >  	select CLONE_BACKWARDS
+> >  	select COMMON_CLK
+> >  	select CPU_PM if (SUSPEND || CPU_IDLE)
+> > -	select DCACHE_WORD_ACCESS
+> >  	select GENERIC_CLOCKEVENTS
+> >  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+> >  	select GENERIC_IOMAP
+> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> > index abb261e..60cfa073 100644
+> > --- a/arch/x86/Kconfig
+> > +++ b/arch/x86/Kconfig
+> > @@ -98,7 +98,6 @@ config X86
+> >  	select CLKEVT_I8253
+> >  	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+> >  	select GENERIC_IOMAP
+> > -	select DCACHE_WORD_ACCESS
+> >  	select GENERIC_SMP_IDLE_THREAD
+> >  	select ARCH_WANT_IPC_PARSE_VERSION if X86_32
+> >  	select HAVE_ARCH_SECCOMP_FILTER
+> > diff --git a/fs/Kconfig b/fs/Kconfig
+> > index 312393f..7511271 100644
+> > --- a/fs/Kconfig
+> > +++ b/fs/Kconfig
+> > @@ -4,10 +4,6 @@
+> >  
+> >  menu "File systems"
+> >  
+> > -# Use unaligned word dcache accesses
+> > -config DCACHE_WORD_ACCESS
+> > -       bool
+> > -
+> >  if BLOCK
+> >  
+> >  source "fs/ext2/Kconfig"
+> > diff --git a/fs/dcache.c b/fs/dcache.c
+> > index 265e0ce..4e3c195 100644
+> > --- a/fs/dcache.c
+> > +++ b/fs/dcache.c
+> > @@ -163,7 +163,7 @@ int proc_nr_dentry(ctl_table *table, int write, void __user *buffer,
+> >   * Compare 2 name strings, return 0 if they match, otherwise non-zero.
+> >   * The strings are both count bytes long, and count is non-zero.
+> >   */
+> > -#ifdef CONFIG_DCACHE_WORD_ACCESS
+> > +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> >  
+> >  #include <asm/word-at-a-time.h>
+> >  /*
+> > diff --git a/fs/namei.c b/fs/namei.c
+> > index 385f781..1ee33ca 100644
+> > --- a/fs/namei.c
+> > +++ b/fs/namei.c
+> > @@ -1618,7 +1618,7 @@ static inline int nested_symlink(struct path *path, struct nameidata *nd)
+> >   *   the final mask". Again, that could be replaced with a
+> >   *   efficient population count instruction or similar.
+> >   */
+> > -#ifdef CONFIG_DCACHE_WORD_ACCESS
+> > +#ifdef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+> >  
+> >  #include <asm/word-at-a-time.h>
