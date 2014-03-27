@@ -1,31 +1,25 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-ob0-f173.google.com (mail-ob0-f173.google.com
- [209.85.214.173])
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-la0-f43.google.com (mail-la0-f43.google.com
+ [209.85.215.43])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0234814008C
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 22:29:27 +1100 (EST)
-Received: by mail-ob0-f173.google.com with SMTP id gq1so4120791obb.32
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 04:29:24 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id CE5D7140088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 22:52:39 +1100 (EST)
+Received: by mail-la0-f43.google.com with SMTP id e16so2557827lan.30
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 04:52:34 -0700 (PDT)
+Message-ID: <53341101.9000404@cogentembedded.com>
+Date: Thu, 27 Mar 2014 15:52:33 +0400
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
-In-Reply-To: <20140327112031.GC27777@in.ibm.com>
-References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
- <CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
- <20140327093050.GA27777@in.ibm.com>
- <CAKohponOe9Au+pe5u9FpddW3+f5pegZB953+5fmYBDusE9j0HA@mail.gmail.com>
- <20140327112031.GC27777@in.ibm.com>
-Date: Thu, 27 Mar 2014 16:59:24 +0530
-Message-ID: <CAKohpom7TekvQmAO6yPqSrPQ2yz10vOezKrWh=aA5vWCE=jS+A@mail.gmail.com>
-Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PM list <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+To: Zhao Qiang <B45475@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ netdev@vger.kernel.org, B07421@freescale.com
+Subject: Re: [PATCH] phy/at8031: enable at8031 to work on interrupt mode
+References: <1395901116-16034-1-git-send-email-B45475@freescale.com>
+In-Reply-To: <1395901116-16034-1-git-send-email-B45475@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: mugunthanvnm@ti.com, linux-kernel@vger.kernel.org,
+ helmut.schaa@googlemail.com, zonque@gmail.com, R63061@freescale.com,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,31 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27 March 2014 16:50, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
-> (That said, in the future if we want to export additional
-> information, say pertaining to the voltage, we will have to keep a
-> separate array anyway :-) )
+Hello.
 
-Lets handle that once it comes.
+On 27-03-2014 10:18, Zhao Qiang wrote:
 
-> However, as of now, I am wary about reusing a variable provided by
-> the core, whose type is fixed (which is not the type I am interested
-> in) and whose interpretation is ambiguous (since it is also being used
-> as a BOOST indicator).
+> The at8031 can work on polling mode and interrupt mode.
+> Add ack_interrupt and config intr funcs to enable
+> interrupt mode for it.
 
-I understand that..
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+>   drivers/net/phy/at803x.c | 30 ++++++++++++++++++++++++++++++
+>   1 file changed, 30 insertions(+)
 
-> When we have a .is_boost field, or a flags field in the cpufreq_table,
+> diff --git a/drivers/net/phy/at803x.c b/drivers/net/phy/at803x.c
+> index bc71947..d034ef5 100644
+> --- a/drivers/net/phy/at803x.c
+> +++ b/drivers/net/phy/at803x.c
+[...]
+> @@ -191,6 +194,31 @@ static int at803x_config_init(struct phy_device *phydev)
+>   	return 0;
+>   }
+>
+> +static int at803x_ack_interrupt(struct phy_device *phydev)
+> +{
+> +	int err;
+> +
+> +	err = phy_read(phydev, AT803X_INSR);
 
-Probably we might keep it as is and take the patch which I already
-sent. In that case as well your stuff will continue to work..
+    Could make this an initializer...
 
-> and once the .driver_data field is completely opaque, I would be
-> comfortable making use of .driver_data to store the pstate_ids. So
-> I'll send out those patches once the fixes are present in the
-> core. For now, let this code stay as it is. I think we should be ok
-> with the additional overhead of 1kb as of now.
+> +
+> +	return (err < 0) ? err : 0;
+> +}
+> +
+> +static int at803x_config_intr(struct phy_device *phydev)
+> +{
+> +	int err;
+> +	int value;
+> +
+> +	value = phy_read(phydev, AT803X_INER);
+> +
+> +	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
+> +		err = phy_write(phydev, AT803X_INER,
+> +				(value | AT803X_INER_INIT));
 
-Chances are more that all my changes would make it before this
-driver and then you would be required to update this driver
-before submission.
+    Inner parens not needed.
+
+> +	else
+> +		err = phy_write(phydev, AT803X_INER, value);
+
+    Why are you not clearing the bits here? Why write back what has been read 
+at all?
+
+WBR, Sergei
