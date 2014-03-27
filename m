@@ -1,10 +1,10 @@
 Return-Path: <anton@samba.org>
-Date: Thu, 27 Mar 2014 16:19:42 +1100
+Date: Thu, 27 Mar 2014 16:20:21 +1100
 From: Anton Blanchard <anton@samba.org>
 To: stewart@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 2/4] powerpc/powernv: Remove some OPAL function declaration
- duplication
-Message-ID: <20140327161942.795916f6@kryten>
+Subject: [PATCH 3/4] powerpc/powernv: Fix little endian issues with
+ opal_do_notifier calls
+Message-ID: <20140327162021.4510477c@kryten>
 In-Reply-To: <20140327161849.791432d0@kryten>
 References: <20140327161849.791432d0@kryten>
 Mime-Version: 1.0
@@ -20,52 +20,39 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We had some duplication of the internal OPAL functions.
+The bitmap in opal_poll_events and opal_handle_interrupt is
+big endian, so we need to byteswap it on little endian builds.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: b/arch/powerpc/include/asm/opal.h
+Index: b/arch/powerpc/platforms/powernv/opal.c
 ===================================================================
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -877,7 +877,8 @@ int64_t opal_sensor_read(uint32_t sensor
- 		uint32_t *sensor_data);
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -216,14 +216,14 @@ void opal_notifier_update_evt(uint64_t e
+ void opal_notifier_enable(void)
+ {
+ 	int64_t rc;
+-	uint64_t evt = 0;
++	__be64 evt = 0;
  
- /* Internal functions */
--extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
-+extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-+				   int depth, void *data);
- extern int early_init_dt_scan_recoverable_ranges(unsigned long node,
- 				 const char *uname, int depth, void *data);
+ 	atomic_set(&opal_notifier_hold, 0);
  
-@@ -886,10 +887,6 @@ extern int opal_put_chars(uint32_t vterm
+ 	/* Process pending events */
+ 	rc = opal_poll_events(&evt);
+ 	if (rc == OPAL_SUCCESS && evt)
+-		opal_do_notifier(evt);
++		opal_do_notifier(be64_to_cpu(evt));
+ }
  
- extern void hvc_opal_init_early(void);
+ void opal_notifier_disable(void)
+@@ -501,7 +501,7 @@ static irqreturn_t opal_interrupt(int ir
  
--/* Internal functions */
--extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
--				   int depth, void *data);
--
- extern int opal_notifier_register(struct notifier_block *nb);
- extern int opal_message_notifier_register(enum OpalMessageType msg_type,
- 						struct notifier_block *nb);
-@@ -897,9 +894,6 @@ extern void opal_notifier_enable(void);
- extern void opal_notifier_disable(void);
- extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
+ 	opal_handle_interrupt(virq_to_hw(irq), &events);
  
--extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
--extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
--
- extern int __opal_async_get_token(void);
- extern int opal_async_get_token_interruptible(void);
- extern int __opal_async_release_token(int token);
-@@ -907,8 +901,6 @@ extern int opal_async_release_token(int
- extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
- extern int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data);
+-	opal_do_notifier(events);
++	opal_do_notifier(be64_to_cpu(events));
  
--extern void hvc_opal_init_early(void);
--
- struct rtc_time;
- extern int opal_set_rtc_time(struct rtc_time *tm);
- extern void opal_get_rtc_time(struct rtc_time *tm);
+ 	return IRQ_HANDLED;
+ }
