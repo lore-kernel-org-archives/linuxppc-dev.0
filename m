@@ -1,15 +1,15 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4EC19140088
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 15:17:01 +1100 (EST)
-Date: Thu, 27 Mar 2014 11:57:27 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Xiubo Li-B47053 <Li.Xiubo@freescale.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
-Message-ID: <20140327035726.GA16359@MrMyself>
+ by ozlabs.org (Postfix) with ESMTPS id 25680140077
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 15:18:41 +1100 (EST)
+From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
+To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>
+Subject: RE: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+Date: Thu, 27 Mar 2014 04:18:27 +0000
+Message-ID: <d77b7d1800884badbdb50564b8460267@BY2PR03MB505.namprd03.prod.outlook.com>
 References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
  <11a8271c31044515bd2657a93aefdaec@BY2PR03MB505.namprd03.prod.outlook.com>
  <20140327023617.GB16197@MrMyself>
@@ -18,9 +18,10 @@ References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
  <12f887b3889a41849026965f0cf7db1f@BY2PR03MB505.namprd03.prod.outlook.com>
  <20140327033117.GD16197@MrMyself>
  <62630844c7434df6937ca25d3f47b656@BY2PR03MB505.namprd03.prod.outlook.com>
-MIME-Version: 1.0
+ <20140327035726.GA16359@MrMyself>
+In-Reply-To: <20140327035726.GA16359@MrMyself>
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <62630844c7434df6937ca25d3f47b656@BY2PR03MB505.namprd03.prod.outlook.com>
+MIME-Version: 1.0
 Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
  "broonie@kernel.org" <broonie@kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -34,50 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 27, 2014 at 12:06:53PM +0800, Xiubo Li-B47053 wrote:
-> > > > > > > > +	if (xcsr & FSL_SAI_CSR_FWF)
-> > > > > > > > +		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
-> > > > > > > > +
-> > > > > > > > +	if (xcsr & FSL_SAI_CSR_FRF)
-> > > > > > > > +		dev_dbg(dev, "isr: Transmit FIFO watermark has been
-> > > > reached\n");
-> > > > > > > > +
-> > > > > > >
-> > > > > > > While are these ones really needed to clear manually ?
-> > > > > >
-> > > > > > The reference manual doesn't mention about the requirement. So SAI
-> > should
-> > > > do
-> > > > > > the self-clearance.
-> > > > >
-> > > > > Yes, I do think we should let it do the self-clearance, and shouldn't
-> > > > interfere
-> > > > > of them...
-> > > >
-> > > > SAI is supposed to ignore the interference, isn't it?
-> > > >
-> > >
-> > > Maybe, but I'm not very sure.
-> > > And these bits are all writable and readable.
-> > 
-> > Double-confirmed? Because FWF and FRF should be read-only bits.
-> > 
-> 
-> So let's just ignore the clearance of these bits in isr().
-> 
-> +++++
-> SAI Transmit Control Register (I2S1_TCSR) : 32 : R/W : 0000_0000h
+> > So let's just ignore the clearance of these bits in isr().
+> >
+> > +++++
+> > SAI Transmit Control Register (I2S1_TCSR) : 32 : R/W : 0000_0000h
+>=20
+> I'm talking about FWF and FRF bits, not TCSR as a register.
+>=20
+> > -----
+> >
+> > I have checked in the Vybrid and LS1 SoC datasheets, and they are all t=
+he
+> > Same as above, and nothing else.
+> >
+> > Have I missed ?
+>=20
+> What i.MX IC team told me is SAI ignores what we do to FWF and FRF, so yo=
+u
+> don't need to worry about it at all unless Vybrid makes them writable, in
+> which case we may also need to clear these bits and confirm with Vybrid I=
+C
+> team if they're also W1C.
+>=20
 
-I'm talking about FWF and FRF bits, not TCSR as a register.
+Well, if so, that's fine.
 
-> -----
-> 
-> I have checked in the Vybrid and LS1 SoC datasheets, and they are all the
-> Same as above, and nothing else.
-> 
-> Have I missed ?
-
-What i.MX IC team told me is SAI ignores what we do to FWF and FRF, so you
-don't need to worry about it at all unless Vybrid makes them writable, in
-which case we may also need to clear these bits and confirm with Vybrid IC
-team if they're also W1C.
+Thanks,
