@@ -1,15 +1,21 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 28 Mar 2014 09:18:57 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, neelegup@linux.vnet.ibm.com,
- sbhat@linux.vnet.ibm.com
-Subject: [PATCH 2/2] powerpc/powernv: Fix endian issues with sensor code
-Message-ID: <20140328091857.10a8ef90@kryten>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1623714008D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 09:27:13 +1100 (EST)
+Message-ID: <1395959222.5569.123.camel@pasglop>
+Subject: Re: [PATCH 1/2] powerpc/powernv: Fix endian issues with OPAL async
+ code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Date: Fri, 28 Mar 2014 09:27:02 +1100
 In-Reply-To: <20140328091737.6cb02f7d@kryten>
 References: <20140328091737.6cb02f7d@kryten>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: neelegup@linux.vnet.ibm.com, sbhat@linux.vnet.ibm.com, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,82 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2014-03-28 at 09:17 +1100, Anton Blanchard wrote:
+> Byteswap struct opal_msg in one place instead of requiring all the
+> callers to do it.
 
-One OPAL call and one device tree property needed byte swapping.
+This will clash with us making opal.h something clean and identical
+between OPAL and clients.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Can you rename the converted version instead ? (yeah I know, it suck
+to find a good name ...)
 
-Index: b/arch/powerpc/platforms/powernv/opal-sensor.c
-===================================================================
---- a/arch/powerpc/platforms/powernv/opal-sensor.c
-+++ b/arch/powerpc/platforms/powernv/opal-sensor.c
-@@ -33,6 +33,7 @@ int opal_get_sensor_data(u32 sensor_hndl
- {
- 	int ret, token;
- 	struct opal_msg msg;
-+	__be32 data;
- 
- 	token = opal_async_get_token_interruptible();
- 	if (token < 0) {
-@@ -42,7 +43,7 @@ int opal_get_sensor_data(u32 sensor_hndl
- 	}
- 
- 	mutex_lock(&opal_sensor_mutex);
--	ret = opal_sensor_read(sensor_hndl, token, sensor_data);
-+	ret = opal_sensor_read(sensor_hndl, token, &data);
- 	if (ret != OPAL_ASYNC_COMPLETION)
- 		goto out_token;
- 
-@@ -53,6 +54,7 @@ int opal_get_sensor_data(u32 sensor_hndl
- 		goto out_token;
- 	}
- 
-+	*sensor_data = be32_to_cpu(data);
- 	ret = msg.params[1];
- 
- out_token:
-Index: b/arch/powerpc/include/asm/opal.h
-===================================================================
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -886,8 +886,7 @@ int64_t opal_get_param(uint64_t token, u
- 		uint64_t length);
- int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
- 		uint64_t length);
--int64_t opal_sensor_read(uint32_t sensor_hndl, int token,
--		uint32_t *sensor_data);
-+int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-Index: b/drivers/hwmon/ibmpowernv.c
-===================================================================
---- a/drivers/hwmon/ibmpowernv.c
-+++ b/drivers/hwmon/ibmpowernv.c
-@@ -471,7 +471,7 @@ static int __init powernv_hwmon_init(voi
- 	struct device_node *opal, *np = NULL;
- 	enum attributes attr_type;
- 	enum sensors type;
--	const u32 *sensor_id;
-+	u32 sensor_id;
- 	u32 sensor_index;
- 	int err;
- 
-@@ -497,14 +497,13 @@ static int __init powernv_hwmon_init(voi
- 				&sensor_index))
- 			continue;
- 
--		sensor_id = of_get_property(np, "sensor-id", NULL);
--		if (!sensor_id) {
-+		if (of_property_read_u32(np, "sensor-id", &sensor_id)) {
- 			pr_info("%s: %s doesn't have sensor-id\n", __func__,
- 					np->name);
- 			continue;
- 		}
- 
--		err = powernv_sensor_init(*sensor_id, np, type, attr_type,
-+		err = powernv_sensor_init(sensor_id, np, type, attr_type,
- 				sensor_index);
- 		if (err) {
- 			of_node_put(opal);
+Cheers,
+Ben.
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: b/arch/powerpc/include/asm/opal.h
+> ===================================================================
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -421,6 +421,12 @@ enum OpalSysparamPerm {
+>  	OPAL_SYSPARAM_RW        = (OPAL_SYSPARAM_READ | OPAL_SYSPARAM_WRITE),
+>  };
+>  
+> +struct raw_opal_msg {
+> +	__be32 msg_type;
+> +	__be32 reserved;
+> +	__be64 params[8];
+> +};
+> +
+>  struct opal_msg {
+>  	uint32_t msg_type;
+>  	uint32_t reserved;
+> Index: b/arch/powerpc/platforms/powernv/opal.c
+> ===================================================================
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -288,9 +288,11 @@ static void opal_handle_message(void)
+>  	 * TODO: pre-allocate a message buffer depending on opal-msg-size
+>  	 * value in /proc/device-tree.
+>  	 */
+> +	static struct raw_opal_msg raw_msg;
+>  	static struct opal_msg msg;
+> +	int i;
+>  
+> -	ret = opal_get_msg(__pa(&msg), sizeof(msg));
+> +	ret = opal_get_msg(__pa(&raw_msg), sizeof(raw_msg));
+>  	/* No opal message pending. */
+>  	if (ret == OPAL_RESOURCE)
+>  		return;
+> @@ -302,6 +304,11 @@ static void opal_handle_message(void)
+>  		return;
+>  	}
+>  
+> +	msg.msg_type = be32_to_cpu(raw_msg.msg_type);
+> +	msg.reserved = be32_to_cpu(raw_msg.reserved);
+> +	for (i = 0; i < ARRAY_SIZE(raw_msg.params); i++)
+> +		msg.params[i] = be64_to_cpu(raw_msg.params[i]);
+> +
+>  	/* Sanity check */
+>  	if (msg.msg_type > OPAL_MSG_TYPE_MAX) {
+>  		pr_warning("%s: Unknown message type: %u\n",
