@@ -1,26 +1,23 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EC85A140077
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 12:34:13 +1100 (EST)
-Date: Thu, 27 Mar 2014 01:14:24 +0000
-From: Mark Brown <broonie@kernel.org>
-To: David Laight <David.Laight@ACULAB.COM>
-Message-ID: <20140327011424.GB30768@sirena.org.uk>
+ by ozlabs.org (Postfix) with ESMTPS id BE735140079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 13:29:45 +1100 (EST)
+From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
+To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>,
+ "broonie@kernel.org" <broonie@kernel.org>
+Subject: RE: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+Date: Thu, 27 Mar 2014 02:13:48 +0000
+Message-ID: <11a8271c31044515bd2657a93aefdaec@BY2PR03MB505.namprd03.prod.outlook.com>
 References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
- <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
+In-Reply-To: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="gatW/ieO32f1wygP"
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
 Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- 'Nicolin Chen' <Guangyu.Chen@freescale.com>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,46 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> +	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
+> +	regmap_write(sai->regmap, FSL_SAI_TCSR, xcsr);
+> +
+> +	if (xcsr & FSL_SAI_CSR_WSF)
+> +		dev_dbg(dev, "isr: Start of Tx word detected\n");
+> +
+> +	if (xcsr & FSL_SAI_CSR_SEF)
+> +		dev_dbg(dev, "isr: Tx Frame sync error detected\n");
+> +
+> +	if (xcsr & FSL_SAI_CSR_FEF)
+> +		dev_dbg(dev, "isr: Transmit underrun detected\n");
+> +
 
---gatW/ieO32f1wygP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Actually, the above three isrs should to write a logic 1 to this field
+to clear this flag.
 
-On Wed, Mar 26, 2014 at 11:59:53AM +0000, David Laight wrote:
-> From: Nicolin Chen
 
-> > +	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
-> > +	regmap_write(sai->regmap, FSL_SAI_TCSR, xcsr);
+> +	if (xcsr & FSL_SAI_CSR_FWF)
+> +		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
+> +
+> +	if (xcsr & FSL_SAI_CSR_FRF)
+> +		dev_dbg(dev, "isr: Transmit FIFO watermark has been reached\n");
+> +
 
-> Assuming these are 'write to clear' bits, you might want
-> to make the write (above) and all the traces (below)
-> conditional on the value being non-zero.
+While are these ones really needed to clear manually ?
 
-The trace is already conditional?  I'd also expect to see the driver
-only acknowledging sources it knows about and only reporting that the
-interrupt was handled if it saw one of them - right now all interrupts
-are unconditionally acknowleged.
 
---gatW/ieO32f1wygP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Thanks,
+--
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTM3ttAAoJELSic+t+oim95MUP+gMsQMOBj7NRxd7FrKARq1Gm
-LUZUJOWHUzsG/KUzJHmWIkYmcDfQSFnME6ff8piAkhKNSTctMJJa+enfVdFABO9W
-v9nwruVF3qFbU29s8/G+V0PbaPyPgobUt2z5v223XLpqfGOcaAmhLtbZrJwSembu
-vplBpegifopzWpo+kdb4X0BdBuVfwEXrpPmpwIz/K2EfJtUINvNB/vtw7RmKE+Xt
-HamSfmEzjJsxowBNmRpgoTd7rwz1Tfudfy4ADwGHuZrr/mvUhGKWGyjxGU1+aFQj
-/nNjaHvbt1L+gIWbxgookmoorRMgR99iIN6Za0mER+ZLdKHPkQT7UTC7IlTwOeAO
-ZxMe0e6kgOVDvKIDstaFLsKN3d1N7GAXTapXRByjMg1QLgN8K060vs+z1XI4wxJb
-JbhnOqxsc6Vw0wgpKyvHEDb3M2wdk6NPgxopdi9qGoDyRIoplsmwwfFwCxAQ0a6B
-AW1H76dsqkOmeBdo8eHno+foNeD5Mx49BCL9RKiqc+nitzt1nrgwpMgE5axsex+F
-bnFam/NBcw7Q2y2jbwWqBbpQziVgTwZcvXbjXpLSAX/SjJFNYnTc6UTx8WD17Htu
-gAM9W6qJZqCm9Tgq+twff4xLiH0agnTZtQOf/Au2qMIR1XnGuJOzJsRerhFN48Bz
-XReN9qP/EFGKVV/Ij2e8
-=N62s
------END PGP SIGNATURE-----
-
---gatW/ieO32f1wygP--
+Best Regards,
+Xiubo
