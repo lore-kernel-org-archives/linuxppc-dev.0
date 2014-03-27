@@ -1,27 +1,25 @@
-Return-Path: <Li.Xiubo@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
+Return-Path: <Jason.Jin@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48A11140084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 14:41:08 +1100 (EST)
-From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
-To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>
-Subject: RE: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
-Date: Thu, 27 Mar 2014 03:41:02 +0000
-Message-ID: <12f887b3889a41849026965f0cf7db1f@BY2PR03MB505.namprd03.prod.outlook.com>
-References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
- <11a8271c31044515bd2657a93aefdaec@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327023617.GB16197@MrMyself>
- <1e2d210764724c7e834c5307b54c37ab@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327025647.GC16197@MrMyself>
-In-Reply-To: <20140327025647.GC16197@MrMyself>
+ by ozlabs.org (Postfix) with ESMTPS id E2A3214008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 14:42:40 +1100 (EST)
+From: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+To: Timur Tabi <timur@tabi.org>
+Subject: RE: [PATCH 2/2] video/fsl: Fix the sleep function for FSL DIU module
+Date: Thu, 27 Mar 2014 03:42:31 +0000
+Message-ID: <e3e45edb388c482eb53474e18575f227@BLUPR03MB373.namprd03.prod.outlook.com>
+References: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
+ <1395855704-19908-2-git-send-email-Jason.Jin@freescale.com>
+ <53332168.5050805@tabi.org>
+In-Reply-To: <53332168.5050805@tabi.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
+Cc: Scott Wood <scottwood@freescale.com>,
+ "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+ "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>=20
+> On 03/26/2014 12:41 PM, Jason Jin wrote:
+> > +	if (!diu_ops.set_pixel_clock) {
+> > +		data->saved_pixel_clock =3D 0;
+> > +		if (of_address_to_resource(ofdev->dev.of_node, 1, &res))
+> > +			pr_err(KERN_ERR "No pixel clock set func and no pixel
+> node!\n");
+> > +		else {
+> > +			data->pixelclk_ptr =3D
+> > +				devm_ioremap(&ofdev->dev, res.start,
+> resource_size(&res));
+> > +			if (!data->pixelclk_ptr) {
+> > +				pr_err(KERN_ERR "fslfb: could not map pixelclk
+> register!\n");
+> > +				ret =3D -ENOMEM;
+> > +			} else
+> > +				data->saved_pixel_clock =3D in_be32(data-
+> >pixelclk_ptr);
+> > +		}
+> > +	}
+>=20
+> This seems very hackish.  What node does ofdev point to?  I wonder if
+> this code should be in the platform file instead.
+>=20
+[Jason Jin-R64188] It's not hackish, we can provide the pixel clock registe=
+r in the DIU node, I did not provide the dts update as this is only tested =
+on T1040 platform. For other platforms such as p1022 and 8610, we still can=
+ use the pixel clock setting function in the platform.=20
 
-> Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
->=20
-> On Thu, Mar 27, 2014 at 10:53:50AM +0800, Xiubo Li-B47053 wrote:
-> > > On Thu, Mar 27, 2014 at 10:13:48AM +0800, Xiubo Li-B47053 wrote:
-> > > > > +	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
-> > > > > +	regmap_write(sai->regmap, FSL_SAI_TCSR, xcsr);
-> > > > > +
-> > > > > +	if (xcsr & FSL_SAI_CSR_WSF)
-> > > > > +		dev_dbg(dev, "isr: Start of Tx word detected\n");
-> > > > > +
-> > > > > +	if (xcsr & FSL_SAI_CSR_SEF)
-> > > > > +		dev_dbg(dev, "isr: Tx Frame sync error detected\n");
-> > > > > +
-> > > > > +	if (xcsr & FSL_SAI_CSR_FEF)
-> > > > > +		dev_dbg(dev, "isr: Transmit underrun detected\n");
-> > > > > +
-> > > >
-> > > > Actually, the above three isrs should to write a logic 1 to this fi=
-eld
-> > > > to clear this flag.
-> > > >
-> > > >
-> > > > > +	if (xcsr & FSL_SAI_CSR_FWF)
-> > > > > +		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
-> > > > > +
-> > > > > +	if (xcsr & FSL_SAI_CSR_FRF)
-> > > > > +		dev_dbg(dev, "isr: Transmit FIFO watermark has been
-> reached\n");
-> > > > > +
-> > > >
-> > > > While are these ones really needed to clear manually ?
-> > >
-> > > The reference manual doesn't mention about the requirement. So SAI sh=
-ould
-> do
-> > > the self-clearance.
-> >
-> > Yes, I do think we should let it do the self-clearance, and shouldn't
-> interfere
-> > of them...
->=20
-> SAI is supposed to ignore the interference, isn't it?
->=20
+The dts node update for T1040 is:
+display:display@180000 {
+        compatible =3D "fsl,t1040-diu", "fsl,diu";
+-       reg =3D <0x180000 1000>;
++       reg =3D <0x180000 1000 0xfc028 4>;
+        interrupts =3D <74 2 0 0>;
+};
 
-Maybe, but I'm not very sure.
-And these bits are all writable and readable.
+If saving the pixel clock register likes a hackish. We can provide more inf=
+ormation in the node to move the pixel clock settings to the driver. It see=
+ms that we only need to provide another parameter(the ratio) for pixel cloc=
+k setting.
+
+> Also, use dev_info() instead of pr_err, and never use exclamation marks
+> in driver messages.
+Ok, Thanks.
