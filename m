@@ -1,31 +1,13 @@
-Return-Path: <Li.Xiubo@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 25680140077
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 15:18:41 +1100 (EST)
-From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
-To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>
-Subject: RE: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
-Date: Thu, 27 Mar 2014 04:18:27 +0000
-Message-ID: <d77b7d1800884badbdb50564b8460267@BY2PR03MB505.namprd03.prod.outlook.com>
-References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
- <11a8271c31044515bd2657a93aefdaec@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327023617.GB16197@MrMyself>
- <1e2d210764724c7e834c5307b54c37ab@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327025647.GC16197@MrMyself>
- <12f887b3889a41849026965f0cf7db1f@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327033117.GD16197@MrMyself>
- <62630844c7434df6937ca25d3f47b656@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327035726.GA16359@MrMyself>
-In-Reply-To: <20140327035726.GA16359@MrMyself>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <anton@samba.org>
+Date: Thu, 27 Mar 2014 16:18:49 +1100
+From: Anton Blanchard <anton@samba.org>
+To: stewart@linux.vnet.ibm.com, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 1/4] powerpc/powernv: Use uint64_t instead of size_t in OPAL
+ APIs
+Message-ID: <20140327161849.791432d0@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +17,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > So let's just ignore the clearance of these bits in isr().
-> >
-> > +++++
-> > SAI Transmit Control Register (I2S1_TCSR) : 32 : R/W : 0000_0000h
->=20
-> I'm talking about FWF and FRF bits, not TCSR as a register.
->=20
-> > -----
-> >
-> > I have checked in the Vybrid and LS1 SoC datasheets, and they are all t=
-he
-> > Same as above, and nothing else.
-> >
-> > Have I missed ?
->=20
-> What i.MX IC team told me is SAI ignores what we do to FWF and FRF, so yo=
-u
-> don't need to worry about it at all unless Vybrid makes them writable, in
-> which case we may also need to clear these bits and confirm with Vybrid I=
-C
-> team if they're also W1C.
->=20
 
-Well, if so, that's fine.
+Using size_t in our APIs is asking for trouble, especially
+when some OPAL calls use size_t pointers.
 
-Thanks,
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: b/arch/powerpc/include/asm/opal.h
+===================================================================
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -850,8 +850,8 @@ int64_t opal_lpc_write(uint32_t chip_id,
+ int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
+ 		      uint32_t addr, __be32 *data, uint32_t sz);
+ 
+-int64_t opal_read_elog(uint64_t buffer, size_t size, uint64_t log_id);
+-int64_t opal_get_elog_size(uint64_t *log_id, size_t *size, uint64_t *elog_type);
++int64_t opal_read_elog(uint64_t buffer, uint64_t size, uint64_t log_id);
++int64_t opal_get_elog_size(uint64_t *log_id, uint64_t *size, uint64_t *elog_type);
+ int64_t opal_write_elog(uint64_t buffer, uint64_t size, uint64_t offset);
+ int64_t opal_send_ack_elog(uint64_t log_id);
+ void opal_resend_pending_logs(void);
+@@ -866,13 +866,13 @@ int64_t opal_dump_read(uint32_t dump_id,
+ int64_t opal_dump_ack(uint32_t dump_id);
+ int64_t opal_dump_resend_notification(void);
+ 
+-int64_t opal_get_msg(uint64_t buffer, size_t size);
+-int64_t opal_check_completion(uint64_t buffer, size_t size, uint64_t token);
++int64_t opal_get_msg(uint64_t buffer, uint64_t size);
++int64_t opal_check_completion(uint64_t buffer, uint64_t size, uint64_t token);
+ int64_t opal_sync_host_reboot(void);
+ int64_t opal_get_param(uint64_t token, uint32_t param_id, uint64_t buffer,
+-		size_t length);
++		uint64_t length);
+ int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
+-		size_t length);
++		uint64_t length);
+ int64_t opal_sensor_read(uint32_t sensor_hndl, int token,
+ 		uint32_t *sensor_data);
+ 
+Index: b/arch/powerpc/platforms/powernv/opal-elog.c
+===================================================================
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -243,7 +243,7 @@ static struct elog_obj *create_elog_obj(
+ 
+ static void elog_work_fn(struct work_struct *work)
+ {
+-	size_t elog_size;
++	uint64_t elog_size;
+ 	uint64_t log_id;
+ 	uint64_t elog_type;
+ 	int rc;
