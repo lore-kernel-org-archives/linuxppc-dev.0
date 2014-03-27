@@ -1,21 +1,24 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A3CDD140087
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 17:21:19 +1100 (EST)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
- <B07421@freescale.com>
-Subject: [PATCH] phy/at8031: enable at8031 to work on interrupt mode
-Date: Thu, 27 Mar 2014 14:18:36 +0800
-Message-ID: <1395901116-16034-1-git-send-email-B45475@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mugunthanvnm@ti.com, Zhao Qiang <B45475@freescale.com>,
- linux-kernel@vger.kernel.org, helmut.schaa@googlemail.com, zonque@gmail.com,
- R63061@freescale.com, davem@davemloft.net
+ by ozlabs.org (Postfix) with ESMTPS id 7DD25140084
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 17:28:58 +1100 (EST)
+Message-ID: <1395901724.5569.83.camel@pasglop>
+Subject: Re: [PATCH v4] powernv: Dynamic Frequency Scaling Enablement
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Thu, 27 Mar 2014 17:28:44 +1100
+In-Reply-To: <CAKohpom-mnOXpOUChasOMVTrRGknvZNA_bOcq6ZfGTRmUM5W9A@mail.gmail.com>
+References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKohpom-mnOXpOUChasOMVTrRGknvZNA_bOcq6ZfGTRmUM5W9A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM list <linux-pm@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,69 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The at8031 can work on polling mode and interrupt mode.
-Add ack_interrupt and config intr funcs to enable
-interrupt mode for it.
+On Thu, 2014-03-27 at 11:08 +0530, Viresh Kumar wrote:
+> On 26 March 2014 22:25, Gautham R. Shenoy <ego@linux.vnet.ibm.com> wrote:
+> > This is the v4 of the patchset to enable Dynamic Frequency Scaling
+> > on IBM PowerNV Platforms. I have incorporated the review comments
+> > from the previous version (can be found at [1]).
+> 
+> I wouldn't have added a cover-letter if I only have a single patch to
+> send. Would have rather used the not-to-be-commited field of the
+> patch instead.
 
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
----
- drivers/net/phy/at803x.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+Any other comment ? :-)
 
-diff --git a/drivers/net/phy/at803x.c b/drivers/net/phy/at803x.c
-index bc71947..d034ef5 100644
---- a/drivers/net/phy/at803x.c
-+++ b/drivers/net/phy/at803x.c
-@@ -27,6 +27,9 @@
- #define AT803X_MMD_ACCESS_CONTROL		0x0D
- #define AT803X_MMD_ACCESS_CONTROL_DATA		0x0E
- #define AT803X_FUNC_DATA			0x4003
-+#define AT803X_INER				0x0012
-+#define AT803X_INER_INIT			0xec00
-+#define AT803X_INSR				0x0013
- #define AT803X_DEBUG_ADDR			0x1D
- #define AT803X_DEBUG_DATA			0x1E
- #define AT803X_DEBUG_SYSTEM_MODE_CTRL		0x05
-@@ -191,6 +194,31 @@ static int at803x_config_init(struct phy_device *phydev)
- 	return 0;
- }
- 
-+static int at803x_ack_interrupt(struct phy_device *phydev)
-+{
-+	int err;
-+
-+	err = phy_read(phydev, AT803X_INSR);
-+
-+	return (err < 0) ? err : 0;
-+}
-+
-+static int at803x_config_intr(struct phy_device *phydev)
-+{
-+	int err;
-+	int value;
-+
-+	value = phy_read(phydev, AT803X_INER);
-+
-+	if (phydev->interrupts == PHY_INTERRUPT_ENABLED)
-+		err = phy_write(phydev, AT803X_INER,
-+				(value | AT803X_INER_INIT));
-+	else
-+		err = phy_write(phydev, AT803X_INER, value);
-+
-+	return err;
-+}
-+
- static struct phy_driver at803x_driver[] = {
- {
- 	/* ATHEROS 8035 */
-@@ -240,6 +268,8 @@ static struct phy_driver at803x_driver[] = {
- 	.flags		= PHY_HAS_INTERRUPT,
- 	.config_aneg	= genphy_config_aneg,
- 	.read_status	= genphy_read_status,
-+	.ack_interrupt  = &at803x_ack_interrupt,
-+	.config_intr    = &at803x_config_intr,
- 	.driver		= {
- 		.owner = THIS_MODULE,
- 	},
--- 
-1.8.5
+Because it depends on some other stuff in -next, I think it's best if
+this gets merged via Rafael's tree, unless someone can point me at
+the necessary pre-requisites in the form of a topic branch I can
+pull in powerpc along with this.
+
+Cheers,
+Ben.
