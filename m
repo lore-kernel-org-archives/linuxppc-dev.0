@@ -1,24 +1,23 @@
-Return-Path: <Jason.Jin@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C0390140084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 14:45:53 +1100 (EST)
-From: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
-To: Timur Tabi <timur@tabi.org>
-Subject: RE: [PATCH 1/2] video/fsl: make the diu driver work without
- platform hooks
-Date: Thu, 27 Mar 2014 03:30:35 +0000
-Message-ID: <f6883c3f759a4544936acec5dc7e542b@BLUPR03MB373.namprd03.prod.outlook.com>
-References: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
- <533320A0.8010507@tabi.org>
-In-Reply-To: <533320A0.8010507@tabi.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 2EF0D1400B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 14:46:14 +1100 (EST)
+Message-ID: <53339F03.7010004@tabi.org>
+Date: Wed, 26 Mar 2014 22:46:11 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
+To: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+Subject: Re: [PATCH 2/2] video/fsl: Fix the sleep function for FSL DIU module
+References: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
+ <1395855704-19908-2-git-send-email-Jason.Jin@freescale.com>
+ <53332168.5050805@tabi.org>
+ <e3e45edb388c482eb53474e18575f227@BLUPR03MB373.namprd03.prod.outlook.com>
+In-Reply-To: <e3e45edb388c482eb53474e18575f227@BLUPR03MB373.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Scott Wood <scottwood@freescale.com>,
  "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,39 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On 03/26/2014 12:41 PM, Jason Jin wrote:
-> > This board sepecific initialization mechanism is not feasible i for
-> > corenet platform as the corenet platform file is a abstraction of
-> > serveral platforms.
->=20
-> You can't make it 100% abstract.  The DIU driver requires some sort of
-> board support.  I think you can make a generic platform file for the DIU.
->=20
-[Jason Jin-R64188] Provide the generic diu platform file is reasonable, but=
- it is will be just the board specific initialization file collection, if w=
-e really need to reinitialize something in kernel.=20
+Jason.Jin@freescale.com wrote:
+> [Jason Jin-R64188] It's not hackish, we can provide the pixel clock register in the DIU node, I did not provide the dts update as this is only tested on T1040 platform. For other platforms such as p1022 and 8610, we still can use the pixel clock setting function in the platform.
+>
+> The dts node update for T1040 is:
+> display:display@180000 {
+>          compatible = "fsl,t1040-diu", "fsl,diu";
+> -       reg = <0x180000 1000>;
+> +       reg = <0x180000 1000 0xfc028 4>;
+>          interrupts = <74 2 0 0>;
+> };
 
-> > However, the DIU is already initialized in u-boot and we can rely on
-> > the settings in u-boot for corenet platform,
->=20
-> I don't like that at all.
-[Jason Jin-R64188] What's the potential issue of this? Most of the IPs need=
- the platform initialization in u-boot. For example, the hwconfig in u-boot=
- used for board specific settings for most platform.
+This is hackish because you're specifying a single register that you 
+want to preserve in the DTS file, instead of a platform function which 
+is where it's supposed to be.
 
-The diu_ops structure is still open for any board specific initialization i=
-f the platform needed. We at least can let the platform to select to use th=
-e diu_ops or not. This is the purse for this patch.
-
->=20
-> > the only
-> > issue is that when DIU wake up from the deepsleep, some of the board
-> > specific initialization will lost, such as the pixel clock setting.
->=20
-> That is a BIG issue.  This is why we have a platform file -- to handle
-> the platform issues.
-[Jason Jin-R64188] Yes, this is an issue, Actually, this is a SOC level iss=
-ue, We can try to fix it in the driver by saving the pixel clock in suspend=
- function and restored it in resume function.
-
-Thanks.
+I will think about this some more.  I think you are trying too hard to 
+avoid a platform file, which is why some of this code is hackish to me.
