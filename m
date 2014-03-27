@@ -1,32 +1,19 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 11FCD14008C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 21:55:06 +1100 (EST)
-Date: Thu, 27 Mar 2014 10:54:36 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Message-ID: <20140327105436.GF30768@sirena.org.uk>
-References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
- <11a8271c31044515bd2657a93aefdaec@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327023617.GB16197@MrMyself>
- <1e2d210764724c7e834c5307b54c37ab@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327025647.GC16197@MrMyself>
- <12f887b3889a41849026965f0cf7db1f@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327033117.GD16197@MrMyself>
- <62630844c7434df6937ca25d3f47b656@BY2PR03MB505.namprd03.prod.outlook.com>
- <20140327035726.GA16359@MrMyself>
+ by ozlabs.org (Postfix) with ESMTPS id EC987140086
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 22:06:01 +1100 (EST)
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: <broonie@kernel.org>, <Li.Xiubo@freescale.com>
+Subject: [PATCH v2] ASoC: fsl_sai: Add isr to deal with error flag
+Date: Thu, 27 Mar 2014 19:06:59 +0800
+Message-ID: <1395918419-20739-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="qftxBdZWiueWNAVY"
-In-Reply-To: <20140327035726.GA16359@MrMyself>
-Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Xiubo Li-B47053 <Li.Xiubo@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, David.Laight@ACULAB.COM,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,47 +23,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+It's quite cricial to clear error flags because SAI might hang if getting
+FIFO underrun during playback (I haven't confirmed the same issue on Rx
+overflow though).
 
---qftxBdZWiueWNAVY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+So this patch enables those irq and adds isr() to clear the flags so as to
+keep playback entirely safe.
 
-On Thu, Mar 27, 2014 at 11:57:27AM +0800, Nicolin Chen wrote:
-> On Thu, Mar 27, 2014 at 12:06:53PM +0800, Xiubo Li-B47053 wrote:
+Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+---
 
-> > I have checked in the Vybrid and LS1 SoC datasheets, and they are all the
-> > Same as above, and nothing else.
+Changelog
+v2:
+ * Mask the active flags only for the following handler.
+ * Reset FIFO for FIFO underrun/overflow cases.
+ * Enable two error flags only as default.
+ * Use dev_warn for two error flags.
+ * Only clear those W1C bits.
 
-> > Have I missed ?
+ sound/soc/fsl/fsl_sai.c | 85 +++++++++++++++++++++++++++++++++++++++++++++++--
+ sound/soc/fsl/fsl_sai.h | 15 +++++++++
+ 2 files changed, 97 insertions(+), 3 deletions(-)
 
-> What i.MX IC team told me is SAI ignores what we do to FWF and FRF, so you
-> don't need to worry about it at all unless Vybrid makes them writable, in
-> which case we may also need to clear these bits and confirm with Vybrid IC
-> team if they're also W1C.
-
-And even if it payed attention I'd expect that a lot of the time they'd
-just be reasserted immediately as the condition still holds.
-
---qftxBdZWiueWNAVY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTNANpAAoJELSic+t+oim9r2cP/3dQQg6dU4Lij5ZiofJFGOjs
-bQorzEeQzHbKAY4Wb305d0zLJXSP7jdZ30oczgm9NjeUh1MQQKuMhwKOAVLkhVMd
-thCCEVltQiuFHvCFpg7FTjR6BJ+Zs0MHlCX9dRZ1Z9oukoqryqZA7bH7wu+7NKgp
-P/TV+edn0XKXJ1O0JT2NOQTHdbiLedZjM1YwZorWCxPZI58YZ//0bKl5gU1S5PuL
-huAYiuLHGMMzDF2RL+zBz+63LHbF6iuGHlQ3BdV/UTuakfijo/WEU23L94MOtydh
-c3Idk9CZav/mfp3aKatlcabcYgrgOA248Ghmt9TSbNXQj8A+u6E1raA35YC2Yky8
-J+tZ6ywqLpCqXjGDFK1B2GNMvdlBSLV9wFUINc3QHWtd0g8jpM5K/jVX8Pxh4bWc
-tbnsrZ7LGAhNRmPtEOKNxOGMhaVULXE+M+BXmeG2+QUaZj6GK99BzkgpP/Oy2Kij
-qb1II9xbGVAb2Kv6BgRWMx+vAlIQpamsdHDJhmyGqDoRXszQt1uW3Dv3M+Iz4S+N
-lHZRbfwtNn6KbnaGzLL6Y8hNrEL5YkHBCzutO8Xj4JwILFXWzdCcd70OrE1CE9Tl
-cOfbz/mF3pznrcuOl1cikhB7Zaz6V7LDhfi+aXNxa0eM1UCo87Ny/ESxt3n3dznO
-+ws1n+FMe80NSiUqgDUr
-=mDGu
------END PGP SIGNATURE-----
-
---qftxBdZWiueWNAVY--
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index c4a4231..0bc98bb 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -23,6 +23,71 @@
+ 
+ #include "fsl_sai.h"
+ 
++#define FSL_SAI_FLAGS (FSL_SAI_CSR_SEIE |\
++		       FSL_SAI_CSR_FEIE)
++
++static irqreturn_t fsl_sai_isr(int irq, void *devid)
++{
++	struct fsl_sai *sai = (struct fsl_sai *)devid;
++	struct device *dev = &sai->pdev->dev;
++	u32 xcsr, mask;
++
++	/* Only handle those what we enabled */
++	mask = (FSL_SAI_FLAGS >> FSL_SAI_CSR_xIE_SHIFT) << FSL_SAI_CSR_xF_SHIFT;
++
++	/* Tx IRQ */
++	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
++	xcsr &= mask;
++
++	if (xcsr & FSL_SAI_CSR_WSF)
++		dev_dbg(dev, "isr: Start of Tx word detected\n");
++
++	if (xcsr & FSL_SAI_CSR_SEF)
++		dev_warn(dev, "isr: Tx Frame sync error detected\n");
++
++	if (xcsr & FSL_SAI_CSR_FEF) {
++		dev_warn(dev, "isr: Transmit underrun detected\n");
++		/* FIFO reset for safety */
++		xcsr |= FSL_SAI_CSR_FR;
++	}
++
++	if (xcsr & FSL_SAI_CSR_FWF)
++		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
++
++	if (xcsr & FSL_SAI_CSR_FRF)
++		dev_dbg(dev, "isr: Transmit FIFO watermark has been reached\n");
++
++	regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
++			   FSL_SAI_CSR_xF_W_MASK | FSL_SAI_CSR_FR, xcsr);
++
++	/* Rx IRQ */
++	regmap_read(sai->regmap, FSL_SAI_RCSR, &xcsr);
++	xcsr &= mask;
++
++	if (xcsr & FSL_SAI_CSR_WSF)
++		dev_dbg(dev, "isr: Start of Rx word detected\n");
++
++	if (xcsr & FSL_SAI_CSR_SEF)
++		dev_warn(dev, "isr: Rx Frame sync error detected\n");
++
++	if (xcsr & FSL_SAI_CSR_FEF) {
++		dev_warn(dev, "isr: Receive overflow detected\n");
++		/* FIFO reset for safety */
++		xcsr |= FSL_SAI_CSR_FR;
++	}
++
++	if (xcsr & FSL_SAI_CSR_FWF)
++		dev_dbg(dev, "isr: Enabled receive FIFO is full\n");
++
++	if (xcsr & FSL_SAI_CSR_FRF)
++		dev_dbg(dev, "isr: Receive FIFO watermark has been reached\n");
++
++	regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
++			   FSL_SAI_CSR_xF_W_MASK | FSL_SAI_CSR_FR, xcsr);
++
++	return IRQ_HANDLED;
++}
++
+ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
+ 		int clk_id, unsigned int freq, int fsl_dir)
+ {
+@@ -373,8 +438,8 @@ static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
+ {
+ 	struct fsl_sai *sai = dev_get_drvdata(cpu_dai->dev);
+ 
+-	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, 0x0);
+-	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, 0x0);
++	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, FSL_SAI_FLAGS);
++	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, FSL_SAI_FLAGS);
+ 	regmap_update_bits(sai->regmap, FSL_SAI_TCR1, FSL_SAI_CR1_RFW_MASK,
+ 			   FSL_SAI_MAXBURST_TX * 2);
+ 	regmap_update_bits(sai->regmap, FSL_SAI_RCR1, FSL_SAI_CR1_RFW_MASK,
+@@ -490,12 +555,14 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 	struct fsl_sai *sai;
+ 	struct resource *res;
+ 	void __iomem *base;
+-	int ret;
++	int irq, ret;
+ 
+ 	sai = devm_kzalloc(&pdev->dev, sizeof(*sai), GFP_KERNEL);
+ 	if (!sai)
+ 		return -ENOMEM;
+ 
++	sai->pdev = pdev;
++
+ 	sai->big_endian_regs = of_property_read_bool(np, "big-endian-regs");
+ 	if (sai->big_endian_regs)
+ 		fsl_sai_regmap_config.val_format_endian = REGMAP_ENDIAN_BIG;
+@@ -514,6 +581,18 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 		return PTR_ERR(sai->regmap);
+ 	}
+ 
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0) {
++		dev_err(&pdev->dev, "no irq for node %s\n", np->full_name);
++		return irq;
++	}
++
++	ret = devm_request_irq(&pdev->dev, irq, fsl_sai_isr, 0, np->name, sai);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to claim irq %u\n", irq);
++		return ret;
++	}
++
+ 	sai->dma_params_rx.addr = res->start + FSL_SAI_RDR;
+ 	sai->dma_params_tx.addr = res->start + FSL_SAI_TDR;
+ 	sai->dma_params_rx.maxburst = FSL_SAI_MAXBURST_RX;
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index e432260..a264185 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -37,7 +37,21 @@
+ 
+ /* SAI Transmit/Recieve Control Register */
+ #define FSL_SAI_CSR_TERE	BIT(31)
++#define FSL_SAI_CSR_FR		BIT(25)
++#define FSL_SAI_CSR_xF_SHIFT	16
++#define FSL_SAI_CSR_xF_W_SHIFT	18
++#define FSL_SAI_CSR_xF_MASK	(0x1f << FSL_SAI_CSR_xF_SHIFT)
++#define FSL_SAI_CSR_xF_W_MASK	(0x7 << FSL_SAI_CSR_xF_W_SHIFT)
++#define FSL_SAI_CSR_WSF		BIT(20)
++#define FSL_SAI_CSR_SEF		BIT(19)
++#define FSL_SAI_CSR_FEF		BIT(18)
+ #define FSL_SAI_CSR_FWF		BIT(17)
++#define FSL_SAI_CSR_FRF		BIT(16)
++#define FSL_SAI_CSR_xIE_SHIFT	8
++#define FSL_SAI_CSR_WSIE	BIT(12)
++#define FSL_SAI_CSR_SEIE	BIT(11)
++#define FSL_SAI_CSR_FEIE	BIT(10)
++#define FSL_SAI_CSR_FWIE	BIT(9)
+ #define FSL_SAI_CSR_FRIE	BIT(8)
+ #define FSL_SAI_CSR_FRDE	BIT(0)
+ 
+@@ -99,6 +113,7 @@
+ #define FSL_SAI_MAXBURST_RX 6
+ 
+ struct fsl_sai {
++	struct platform_device *pdev;
+ 	struct regmap *regmap;
+ 
+ 	bool big_endian_regs;
+-- 
+1.8.4
