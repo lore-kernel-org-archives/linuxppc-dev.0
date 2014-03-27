@@ -1,28 +1,20 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <adogcalledsummer@gmail.com>
+Received: from mail-wi0-x230.google.com (mail-wi0-x230.google.com
+ [IPv6:2a00:1450:400c:c05::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0ECA014008A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 00:06:20 +1100 (EST)
-Date: Thu, 27 Mar 2014 13:05:29 +0000
-From: Mark Brown <broonie@kernel.org>
-To: David Laight <David.Laight@ACULAB.COM>
-Message-ID: <20140327130529.GK30768@sirena.org.uk>
-References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
- <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
- <20140327011424.GB30768@sirena.org.uk>
- <063D6719AE5E284EB5DD2968C1650D6D0F6EA538@AcuExch.aculab.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="huBJOJF9BsF479P6"
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6EA538@AcuExch.aculab.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- 'Nicolin Chen' <Guangyu.Chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6C91114016F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 22:53:08 +1100 (EST)
+Received: by mail-wi0-f176.google.com with SMTP id r20so5864428wiv.15
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 04:53:01 -0700 (PDT)
+Date: Thu, 27 Mar 2014 11:52:58 +0000
+From: Adam Smith <adogcalledsummer@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] ALSA: snd-aoa: Add another layout entry for PowerBook6,5
+Message-Id: <20140327115258.40fecbd1439a5cd7769ab792@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: stefang@aon.at
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,57 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Either one or a combination of commits
+3a3dd0186f619b74e61e6f29dddcaf59af7d3cac "Improve detection of devices
+from device-tree" and 26b0d14106954ae46d2f4f7eec3481828a210f7d "Adapt
+to new i2c probing scheme" broke the snd-powermac module for my
+PowerBook6,5 machine (12" iBook late 2004).  As I understand things,
+these machines should be moving over to use snd-aoa.
 
---huBJOJF9BsF479P6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The attached patch (against a 3.13.0 kernel) creates a new snd-aoa
+layout entry for PowerBook6,5 machines.  I've tested it on my iBook and
+sound now appears to be fully working.  The module snd-aoa-i2sbus needs
+to be added to /etc/modules to ensure all the necessary snd-aoa modules
+are loaded. 
+ 
 
-On Thu, Mar 27, 2014 at 09:41:20AM +0000, David Laight wrote:
-> From: Mark Brown
+Signed-off-by: Adam Smith <adogcalledsummer@gmail.com>
 
-> > The trace is already conditional?  I'd also expect to see the driver
-> > only acknowledging sources it knows about and only reporting that the
-> > interrupt was handled if it saw one of them - right now all interrupts
-> > are unconditionally acknowleged.
-
-> The traces are separately conditional on their own bits.
-> That is a lot of checks that will normally be false.
-
-Oh, I see what you mean.  I'm not sure that level of optimisation is
-worth it, the overhead of taking an interrupt in the first place is
-going to dwarf the optimisation and the indentation probably won't help
-writing clear messages.
-
-> Also the driver may need to clear all the active interrupt
-> bits in order to make the IRQ go away.
-> It should trace that bits it doesn't expect to be set though.
-
-The interrupt core will eventually take care of it if the interrupt is
-left screaming with nothing handling it (and provide diagnostics).  I
-would *hope* that this is only happening for unmasked interrupt sources
-we explicitly unmask anyway, we really don't want interrupts on FIFO
-level changes.
-
---huBJOJF9BsF479P6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTNCIWAAoJELSic+t+oim9N08P/RbG8PG42Ry0SGuTIf+g8zrJ
-5cxkqJM+V71MzkQLkKEWINMJ/Ac4tg42pwr9EAuHA+7pQ9HBEjHk/LDwBTuUvXea
-1aIugHlrrXHEdQs2Itvl+8w73tkgEpazZbjJ6LgskS3j4wDPvcauAU07e2E6nT7O
-18fQxFeLyFrjzuGAzsd8nPyrl1DpxlhgpYWTtijRNQp1014d+Er+LcEa8HIuGh1I
-Sco1bk7FqSNRt2Vrp7lBpu6qcQzFO4JwoWG9IWqURHpZ9oWPCWYo6K1GGJIDUl79
-P3OUtfMxET7COc62dYwxnJwWW0mGwojISXphef919xVeV6VhxQ7RxHjfBUszZY9x
-wRZqGPHW0mXP/FNsPY3D0briew7mTLyBH8iI9IivwUwtQBmC933FRFLyMTwjJG4K
-l8E+ge5u0TmwFiLvHviinjvAy7peDRL5cWqxb/fq+RLpmqZCjbOVCd7jryoOqMIl
-oRDgJnk7tRoxjLUmagWzCja+OxRkR6eu8+47LZM10AbPG3aUG0IwmabSPcnD5RS6
-bbFkFcmGUGxMDJ6wxfkOFbnqCltjX4vFv8mh72fYMjRFVtkxFozRh+m3oeNWb2Kc
-PeelqzCYCVtLJ7WYxBQ1X0eJ3BBqSke+/Mcfu8XzIeHF07CtYSH6uzhl5JdZLM2G
-cmV+eaaHub+Vb9QOYjLV
-=Xkew
------END PGP SIGNATURE-----
-
---huBJOJF9BsF479P6--
+diff -uprN a/sound/aoa/fabrics/layout.c b/sound/aoa/fabrics/layout.c
+--- a/sound/aoa/fabrics/layout.c	2014-01-20 02:40:07.000000000 +0000
++++ b/sound/aoa/fabrics/layout.c	2014-03-05 18:31:11.748445177 +0000
+@@ -113,6 +113,7 @@ MODULE_ALIAS("sound-layout-100");
+ MODULE_ALIAS("aoa-device-id-14");
+ MODULE_ALIAS("aoa-device-id-22");
+ MODULE_ALIAS("aoa-device-id-35");
++MODULE_ALIAS("aoa-device-id-38");
+ MODULE_ALIAS("aoa-device-id-44");
+ 
+ /* onyx with all but microphone connected */
+@@ -363,6 +364,12 @@ static struct layout layouts[] = {
+ 	  },
+ 	},
+ 	/* PowerBook6,5 */
++	{ .device_id = 38,
++	  .codecs[0] = {
++		.name = "tas",
++		.connections = tas_connections_noline,
++	  },
++	},
+ 	{ .device_id = 44,
+ 	  .codecs[0] = {
+ 		.name = "tas",
+diff -uprN a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+--- a/sound/aoa/soundbus/i2sbus/core.c	2014-01-20 02:40:07.000000000 +0000
++++ b/sound/aoa/soundbus/i2sbus/core.c	2014-03-05 18:32:41.184445303 +0000
+@@ -203,7 +203,7 @@ static int i2sbus_add_dev(struct macio_d
+ 			 * so restrict to those we do handle for now.
+ 			 */
+ 			if (id && (*id == 22 || *id == 14 || *id == 35 ||
+-				   *id == 44)) {
++				   *id == 38 || *id == 44)) {
+ 				snprintf(dev->sound.modalias, 32,
+ 					 "aoa-device-id-%d", *id);
+ 				ok = 1;
