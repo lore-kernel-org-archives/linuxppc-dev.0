@@ -1,31 +1,26 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f43.google.com (mail-oa0-f43.google.com
- [209.85.219.43])
+Return-Path: <curieux.khetan@gmail.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A0D211400AD
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 21:23:39 +1100 (EST)
-Received: by mail-oa0-f43.google.com with SMTP id eb12so4121773oac.30
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 03:23:37 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 26E3D140086
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 21:35:29 +1100 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id fa1so3307013pad.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 03:35:25 -0700 (PDT)
+Message-ID: <5333FEBD.3050704@gmail.com>
+Date: Thu, 27 Mar 2014 16:04:37 +0530
+From: Ashish <curieux.khetan@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <5333FBA8.1040107@linux.vnet.ibm.com>
-References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
- <CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
- <20140327093050.GA27777@in.ibm.com>
- <CAKohponOe9Au+pe5u9FpddW3+f5pegZB953+5fmYBDusE9j0HA@mail.gmail.com>
- <5333FBA8.1040107@linux.vnet.ibm.com>
-Date: Thu, 27 Mar 2014 15:53:36 +0530
-Message-ID: <CAKohponoSP2s3BYNb04mZOxCegcQHua1Pz7=dWN2nGo70OJOjw@mail.gmail.com>
-Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>,
- Linux PM list <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+To: kernelnewbies <kernelnewbies@kernelnewbies.org>
+Subject: MPC8641 based custom board Kernel stuck at 1000Mhz core clock
+References: <CAERE9PrGaOJS3YTBv61=JCEGyPxGnqr_8j=eKrnn7Y9vi8dMug@mail.gmail.com>
+ <52BBF1CB.3070006@gmail.com>
+ <CAERE9Prr_C31D96zuYbV0KQ7b_j8Te0A2DO8C+6YtetF0e6M_w@mail.gmail.com>
+ <CALyraeMiKQsoHV8AQ5SOz926z_YBD3LbFFNefMpRibYOt=Vo=Q@mail.gmail.com>
+ <CAERE9PrX61oNtQoT1tpL_+rXfirFeMa4woD2P2TSUJ_Xj-h4rg@mail.gmail.com>
+In-Reply-To: <CAERE9PrX61oNtQoT1tpL_+rXfirFeMa4woD2P2TSUJ_Xj-h4rg@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,11 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27 March 2014 15:51, Srivatsa S. Bhat
-<srivatsa.bhat@linux.vnet.ibm.com> wrote:
-> smp_processor_id() maps to debug_smp_processor_id() only if
-> CONFIG_DEBUG_PREEMPT is set. Otherwise, it is same as raw_smp_processor_id().
-> So I think its best to keep it as it is.
+Hi,
 
-That was the case in .configs and so suggested raw_* variant. Keep it
-as you want to :)
+  I am using MPC8641-HPCN based custom board and able to boot linux at 
+MPX clock 400Mhz and core clock 800mhz. When I am increasing core 
+frequency ie MPX clock at 400Mhz and core at 1Ghz, kernel stuck. Does 
+any body have faced this kind of issue ?  Or any idea how to resolve this?
+
+
+
+
+
+Thanks & Regards
+
+A$hi$h
