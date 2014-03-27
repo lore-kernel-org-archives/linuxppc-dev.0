@@ -1,22 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B2D7B140079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 08:18:07 +1100 (EST)
-Message-ID: <1395868664.12738.68.camel@snotra.buserror.net>
-Subject: Re: [PATCH 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
- emulation
-From: Scott Wood <scottwood@freescale.com>
-To: Mihai Caraman <mihai.caraman@freescale.com>
-Date: Wed, 26 Mar 2014 16:17:44 -0500
-In-Reply-To: <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
-References: <1392913821-4520-1-git-send-email-mihai.caraman@freescale.com>
- <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id EC85A140077
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 12:34:13 +1100 (EST)
+Date: Thu, 27 Mar 2014 01:14:24 +0000
+From: Mark Brown <broonie@kernel.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Message-ID: <20140327011424.GB30768@sirena.org.uk>
+References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+ <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="gatW/ieO32f1wygP"
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ 'Nicolin Chen' <Guangyu.Chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,205 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-02-20 at 18:30 +0200, Mihai Caraman wrote:
-> Load external pid (lwepx) instruction faults (when called from
-> KVM with guest context) needs to be handled by KVM. This implies
-> additional code in DO_KVM macro to identify the source of the
-> exception (which oiginate from KVM host rather than the guest).
-> The hook requires to check the Exception Syndrome Register
-> ESR[EPID] and External PID Load Context Register EPLC[EGS] for
-> some exceptions (DTLB_MISS, DSI and LRAT). Doing this on Data TLB
-> miss exception is obvious intrusive for the host.
-> 
-> Get rid of lwepx and acquire last instuction in kvmppc_get_last_inst()
-> by searching for the physical address and kmap it. This fixes an
-> infinite loop caused by lwepx's data TLB miss handled in the host
-> and the TODO for TLB eviction and execute-but-not-read entries.
-> 
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> ---
->  arch/powerpc/kvm/bookehv_interrupts.S |   37 +++----------
->  arch/powerpc/kvm/e500_mmu_host.c      |   93 +++++++++++++++++++++++++++++++++
->  2 files changed, 102 insertions(+), 28 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-> index 20c7a54..c50490c 100644
-> --- a/arch/powerpc/kvm/bookehv_interrupts.S
-> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-> @@ -119,38 +119,14 @@
->  1:
->  
->  	.if	\flags & NEED_EMU
-> -	/*
-> -	 * This assumes you have external PID support.
-> -	 * To support a bookehv CPU without external PID, you'll
-> -	 * need to look up the TLB entry and create a temporary mapping.
-> -	 *
-> -	 * FIXME: we don't currently handle if the lwepx faults.  PR-mode
-> -	 * booke doesn't handle it either.  Since Linux doesn't use
-> -	 * broadcast tlbivax anymore, the only way this should happen is
-> -	 * if the guest maps its memory execute-but-not-read, or if we
-> -	 * somehow take a TLB miss in the middle of this entry code and
-> -	 * evict the relevant entry.  On e500mc, all kernel lowmem is
-> -	 * bolted into TLB1 large page mappings, and we don't use
-> -	 * broadcast invalidates, so we should not take a TLB miss here.
-> -	 *
-> -	 * Later we'll need to deal with faults here.  Disallowing guest
-> -	 * mappings that are execute-but-not-read could be an option on
-> -	 * e500mc, but not on chips with an LRAT if it is used.
-> -	 */
-> -
-> -	mfspr	r3, SPRN_EPLC	/* will already have correct ELPID and EGS */
->  	PPC_STL	r15, VCPU_GPR(R15)(r4)
->  	PPC_STL	r16, VCPU_GPR(R16)(r4)
->  	PPC_STL	r17, VCPU_GPR(R17)(r4)
->  	PPC_STL	r18, VCPU_GPR(R18)(r4)
->  	PPC_STL	r19, VCPU_GPR(R19)(r4)
-> -	mr	r8, r3
->  	PPC_STL	r20, VCPU_GPR(R20)(r4)
-> -	rlwimi	r8, r6, EPC_EAS_SHIFT - MSR_IR_LG, EPC_EAS
->  	PPC_STL	r21, VCPU_GPR(R21)(r4)
-> -	rlwimi	r8, r6, EPC_EPR_SHIFT - MSR_PR_LG, EPC_EPR
->  	PPC_STL	r22, VCPU_GPR(R22)(r4)
-> -	rlwimi	r8, r10, EPC_EPID_SHIFT, EPC_EPID
->  	PPC_STL	r23, VCPU_GPR(R23)(r4)
->  	PPC_STL	r24, VCPU_GPR(R24)(r4)
->  	PPC_STL	r25, VCPU_GPR(R25)(r4)
-> @@ -160,10 +136,15 @@
->  	PPC_STL	r29, VCPU_GPR(R29)(r4)
->  	PPC_STL	r30, VCPU_GPR(R30)(r4)
->  	PPC_STL	r31, VCPU_GPR(R31)(r4)
-> -	mtspr	SPRN_EPLC, r8
-> -	isync
-> -	lwepx   r9, 0, r5
-> -	mtspr	SPRN_EPLC, r3
-> +
-> +	/*
-> +	 * We don't use external PID support. lwepx faults would need to be
-> +	 * handled by KVM and this implies aditional code in DO_KVM (for
-> +	 * DTB_MISS, DSI and LRAT) to check ESR[EPID] and EPLC[EGS] which
-> +	 * is too intrusive for the host. Get last instuction in
-> +	 * kvmppc_get_last_inst().
-> +	 */
-> +	li	r9, KVM_INST_FETCH_FAILED
->  	stw	r9, VCPU_LAST_INST(r4)
->  	.endif
->  
-> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-> index 6025cb7..1b4cb41 100644
-> --- a/arch/powerpc/kvm/e500_mmu_host.c
-> +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -598,9 +598,102 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
->  	}
->  }
->  
-> +#ifdef CONFIG_KVM_BOOKE_HV
-> +int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr)
 
-It'd be interesting to see what the performance impact of doing this on
-non-HV would be -- it would eliminate divergent code, eliminate the
-MSR_DS hack, and make exec-only mappings work.
+--gatW/ieO32f1wygP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> +{
-> +	gva_t geaddr;
-> +	hpa_t addr;
-> +	hfn_t pfn;
-> +	hva_t eaddr;
-> +	u32 mas0, mas1, mas2, mas3;
-> +	u64 mas7_mas3;
-> +	struct page *page;
-> +	unsigned int addr_space, psize_shift;
-> +	bool pr;
-> +	unsigned long flags;
-> +
-> +	/* Search TLB for guest pc to get the real address */
-> +	geaddr = kvmppc_get_pc(vcpu);
-> +	addr_space = (vcpu->arch.shared->msr & MSR_IS) >> MSR_IR_LG;
-> +
-> +	local_irq_save(flags);
-> +	mtspr(SPRN_MAS6, (vcpu->arch.pid << MAS6_SPID_SHIFT) | addr_space);
-> +	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
-> +	isync();
-> +	asm volatile("tlbsx 0, %[geaddr]\n" : : [geaddr] "r" (geaddr));
+On Wed, Mar 26, 2014 at 11:59:53AM +0000, David Laight wrote:
+> From: Nicolin Chen
 
-We can probably get away without that isync, despite what the manual
-says.  We've been doing it in other contexts on e500 since forever, and
-tlbsx has presync serialization which means it already waits for all
-previous instructions to complete before beginning execution.
+> > +	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
+> > +	regmap_write(sai->regmap, FSL_SAI_TCSR, xcsr);
 
-> +	mtspr(SPRN_MAS5, 0);
-> +	mtspr(SPRN_MAS8, 0);
-> +	mas0 = mfspr(SPRN_MAS0);
-> +	mas1 = mfspr(SPRN_MAS1);
-> +	mas2 = mfspr(SPRN_MAS2);
-> +	mas3 = mfspr(SPRN_MAS3);
-> +	mas7_mas3 = (((u64) mfspr(SPRN_MAS7)) << 32) | mfspr(SPRN_MAS3);
+> Assuming these are 'write to clear' bits, you might want
+> to make the write (above) and all the traces (below)
+> conditional on the value being non-zero.
 
-Why read mas3 twice?
+The trace is already conditional?  I'd also expect to see the driver
+only acknowledging sources it knows about and only reporting that the
+interrupt was handled if it saw one of them - right now all interrupts
+are unconditionally acknowleged.
 
-> +	local_irq_restore(flags);
-> +
-> +	/*
-> +	 * If the TLB entry for guest pc was evicted, return to the guest.
-> +	 * There are high chances to find a valid TLB entry next time.
-> +	 */
-> +	if (!(mas1 & MAS1_VALID))
-> +		return EMULATE_AGAIN;
-> +
-> +	/*
-> +	 * Another thread may rewrite the TLB entry in parallel, don't
-> +	 * execute from the address if the execute permission is not set
-> +	 */
-> +	pr = vcpu->arch.shared->msr & MSR_PR;
-> +	if ((pr && (!(mas3 & MAS3_UX))) || ((!pr) && (!(mas3 & MAS3_SX)))) {
-> +		kvmppc_core_queue_inst_storage(vcpu, 0);
-> +		return EMULATE_AGAIN;
-> +	}
+--gatW/ieO32f1wygP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-s/(!foo)/!foo/g
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-> +	/*
-> +	 * We will map the real address through a cacheable page, so we will
-> +	 * not support cache-inhibited guest pages. Fortunately emulated
-> +	 * instructions should not live there.
-> +	 */
-> +	if (mas2 & MAS2_I) {
-> +		printk(KERN_CRIT "Instuction emulation from cache-inhibited "
-> +				"guest pages is not supported\n");
-> +		return EMULATE_FAIL;
-> +	}
+iQIcBAEBAgAGBQJTM3ttAAoJELSic+t+oim95MUP+gMsQMOBj7NRxd7FrKARq1Gm
+LUZUJOWHUzsG/KUzJHmWIkYmcDfQSFnME6ff8piAkhKNSTctMJJa+enfVdFABO9W
+v9nwruVF3qFbU29s8/G+V0PbaPyPgobUt2z5v223XLpqfGOcaAmhLtbZrJwSembu
+vplBpegifopzWpo+kdb4X0BdBuVfwEXrpPmpwIz/K2EfJtUINvNB/vtw7RmKE+Xt
+HamSfmEzjJsxowBNmRpgoTd7rwz1Tfudfy4ADwGHuZrr/mvUhGKWGyjxGU1+aFQj
+/nNjaHvbt1L+gIWbxgookmoorRMgR99iIN6Za0mER+ZLdKHPkQT7UTC7IlTwOeAO
+ZxMe0e6kgOVDvKIDstaFLsKN3d1N7GAXTapXRByjMg1QLgN8K060vs+z1XI4wxJb
+JbhnOqxsc6Vw0wgpKyvHEDb3M2wdk6NPgxopdi9qGoDyRIoplsmwwfFwCxAQ0a6B
+AW1H76dsqkOmeBdo8eHno+foNeD5Mx49BCL9RKiqc+nitzt1nrgwpMgE5axsex+F
+bnFam/NBcw7Q2y2jbwWqBbpQziVgTwZcvXbjXpLSAX/SjJFNYnTc6UTx8WD17Htu
+gAM9W6qJZqCm9Tgq+twff4xLiH0agnTZtQOf/Au2qMIR1XnGuJOzJsRerhFN48Bz
+XReN9qP/EFGKVV/Ij2e8
+=N62s
+-----END PGP SIGNATURE-----
 
-This message needs to be ratelimited, and use pr_err() (or maybe even
-pr_debug()).
-
-> +	/* Get page size */
-> +	if (MAS0_GET_TLBSEL(mas0) == 0)
-> +		psize_shift = PAGE_SHIFT;
-> +	else
-> +		psize_shift = MAS1_GET_TSIZE(mas1) + 10;
-
-TSIZE should be correct when reading from TLB0, even if it was incorrect
-(and ignored) when writing.
-
-> +	/* Map a page and get guest's instruction */
-> +	addr = (mas7_mas3 & (~0ULL << psize_shift)) |
-> +	       (geaddr & ((1ULL << psize_shift) - 1ULL));
-> +	pfn = addr >> PAGE_SHIFT;
-> +
-> +	if (unlikely(!pfn_valid(pfn))) {
-> +		printk(KERN_CRIT "Invalid frame number\n");
-> +		return EMULATE_FAIL;
-> +	}
-> +
-> +	/* Guard us against emulation from devices area */
-> +	if (unlikely(!page_is_ram(pfn))) {
-> +		printk(KERN_CRIT "Instruction emulation from non-RAM host "
-> +				"pages is not supported\n");
-> +		return EMULATE_FAIL;
-> +	}
-
-Same comment as the cache-inhibited message, and you can probably have
-one message for both pfn_valid and page_is_ram (is one of those a subset
-of the other?).
-
--Scott
+--gatW/ieO32f1wygP--
