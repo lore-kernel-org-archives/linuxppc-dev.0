@@ -1,29 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A26D714008A
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 23:56:34 +1100 (EST)
-Message-ID: <1395924977.5569.109.camel@pasglop>
-Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: ego@linux.vnet.ibm.com
-Date: Thu, 27 Mar 2014 23:56:17 +1100
-In-Reply-To: <20140327112031.GC27777@in.ibm.com>
-References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
- <1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
- <CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
- <20140327093050.GA27777@in.ibm.com>
- <CAKohponOe9Au+pe5u9FpddW3+f5pegZB953+5fmYBDusE9j0HA@mail.gmail.com>
- <20140327112031.GC27777@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Linux PM list <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Anton Blanchard <anton@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0ECA014008A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 00:06:20 +1100 (EST)
+Date: Thu, 27 Mar 2014 13:05:29 +0000
+From: Mark Brown <broonie@kernel.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Message-ID: <20140327130529.GK30768@sirena.org.uk>
+References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+ <063D6719AE5E284EB5DD2968C1650D6D0F6E958E@AcuExch.aculab.com>
+ <20140327011424.GB30768@sirena.org.uk>
+ <063D6719AE5E284EB5DD2968C1650D6D0F6EA538@AcuExch.aculab.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="huBJOJF9BsF479P6"
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6EA538@AcuExch.aculab.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ 'Nicolin Chen' <Guangyu.Chen@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,15 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-27 at 16:50 +0530, Gautham R Shenoy wrote:
-> 
-> Well, in the scenarios that we're interested in, it is highly unlikely
-> that CONFIG_PREMPT is set. Hence we'll default to
-> raw_smp_processor_id() anyway. So, I think we can retain
-> smp_processor_id(). 
 
-We don't know that. Some people are interested in running preempt
-on these things. If raw is ok to call here, please use it.
+--huBJOJF9BsF479P6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Cheers,
-Ben.
+On Thu, Mar 27, 2014 at 09:41:20AM +0000, David Laight wrote:
+> From: Mark Brown
+
+> > The trace is already conditional?  I'd also expect to see the driver
+> > only acknowledging sources it knows about and only reporting that the
+> > interrupt was handled if it saw one of them - right now all interrupts
+> > are unconditionally acknowleged.
+
+> The traces are separately conditional on their own bits.
+> That is a lot of checks that will normally be false.
+
+Oh, I see what you mean.  I'm not sure that level of optimisation is
+worth it, the overhead of taking an interrupt in the first place is
+going to dwarf the optimisation and the indentation probably won't help
+writing clear messages.
+
+> Also the driver may need to clear all the active interrupt
+> bits in order to make the IRQ go away.
+> It should trace that bits it doesn't expect to be set though.
+
+The interrupt core will eventually take care of it if the interrupt is
+left screaming with nothing handling it (and provide diagnostics).  I
+would *hope* that this is only happening for unmasked interrupt sources
+we explicitly unmask anyway, we really don't want interrupts on FIFO
+level changes.
+
+--huBJOJF9BsF479P6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJTNCIWAAoJELSic+t+oim9N08P/RbG8PG42Ry0SGuTIf+g8zrJ
+5cxkqJM+V71MzkQLkKEWINMJ/Ac4tg42pwr9EAuHA+7pQ9HBEjHk/LDwBTuUvXea
+1aIugHlrrXHEdQs2Itvl+8w73tkgEpazZbjJ6LgskS3j4wDPvcauAU07e2E6nT7O
+18fQxFeLyFrjzuGAzsd8nPyrl1DpxlhgpYWTtijRNQp1014d+Er+LcEa8HIuGh1I
+Sco1bk7FqSNRt2Vrp7lBpu6qcQzFO4JwoWG9IWqURHpZ9oWPCWYo6K1GGJIDUl79
+P3OUtfMxET7COc62dYwxnJwWW0mGwojISXphef919xVeV6VhxQ7RxHjfBUszZY9x
+wRZqGPHW0mXP/FNsPY3D0briew7mTLyBH8iI9IivwUwtQBmC933FRFLyMTwjJG4K
+l8E+ge5u0TmwFiLvHviinjvAy7peDRL5cWqxb/fq+RLpmqZCjbOVCd7jryoOqMIl
+oRDgJnk7tRoxjLUmagWzCja+OxRkR6eu8+47LZM10AbPG3aUG0IwmabSPcnD5RS6
+bbFkFcmGUGxMDJ6wxfkOFbnqCltjX4vFv8mh72fYMjRFVtkxFozRh+m3oeNWb2Kc
+PeelqzCYCVtLJ7WYxBQ1X0eJ3BBqSke+/Mcfu8XzIeHF07CtYSH6uzhl5JdZLM2G
+cmV+eaaHub+Vb9QOYjLV
+=Xkew
+-----END PGP SIGNATURE-----
+
+--huBJOJF9BsF479P6--
