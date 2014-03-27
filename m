@@ -1,23 +1,28 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by ozlabs.org (Postfix) with ESMTP id 2EF0D1400B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 14:46:14 +1100 (EST)
-Message-ID: <53339F03.7010004@tabi.org>
-Date: Wed, 26 Mar 2014 22:46:11 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 31E32140178
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2014 14:46:57 +1100 (EST)
+Date: Thu, 27 Mar 2014 11:31:18 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Xiubo Li-B47053 <Li.Xiubo@freescale.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+Message-ID: <20140327033117.GD16197@MrMyself>
+References: <1395834517-16426-1-git-send-email-Guangyu.Chen@freescale.com>
+ <11a8271c31044515bd2657a93aefdaec@BY2PR03MB505.namprd03.prod.outlook.com>
+ <20140327023617.GB16197@MrMyself>
+ <1e2d210764724c7e834c5307b54c37ab@BY2PR03MB505.namprd03.prod.outlook.com>
+ <20140327025647.GC16197@MrMyself>
+ <12f887b3889a41849026965f0cf7db1f@BY2PR03MB505.namprd03.prod.outlook.com>
 MIME-Version: 1.0
-To: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
-Subject: Re: [PATCH 2/2] video/fsl: Fix the sleep function for FSL DIU module
-References: <1395855704-19908-1-git-send-email-Jason.Jin@freescale.com>
- <1395855704-19908-2-git-send-email-Jason.Jin@freescale.com>
- <53332168.5050805@tabi.org>
- <e3e45edb388c482eb53474e18575f227@BLUPR03MB373.namprd03.prod.outlook.com>
-In-Reply-To: <e3e45edb388c482eb53474e18575f227@BLUPR03MB373.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>,
- "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <12f887b3889a41849026965f0cf7db1f@BY2PR03MB505.namprd03.prod.outlook.com>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "broonie@kernel.org" <broonie@kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +32,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jason.Jin@freescale.com wrote:
-> [Jason Jin-R64188] It's not hackish, we can provide the pixel clock register in the DIU node, I did not provide the dts update as this is only tested on T1040 platform. For other platforms such as p1022 and 8610, we still can use the pixel clock setting function in the platform.
->
-> The dts node update for T1040 is:
-> display:display@180000 {
->          compatible = "fsl,t1040-diu", "fsl,diu";
-> -       reg = <0x180000 1000>;
-> +       reg = <0x180000 1000 0xfc028 4>;
->          interrupts = <74 2 0 0>;
-> };
+On Thu, Mar 27, 2014 at 11:41:02AM +0800, Xiubo Li-B47053 wrote:
+> 
+> > Subject: Re: [PATCH] ASoC: fsl_sai: Add isr to deal with error flag
+> > 
+> > On Thu, Mar 27, 2014 at 10:53:50AM +0800, Xiubo Li-B47053 wrote:
+> > > > On Thu, Mar 27, 2014 at 10:13:48AM +0800, Xiubo Li-B47053 wrote:
+> > > > > > +	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
+> > > > > > +	regmap_write(sai->regmap, FSL_SAI_TCSR, xcsr);
+> > > > > > +
+> > > > > > +	if (xcsr & FSL_SAI_CSR_WSF)
+> > > > > > +		dev_dbg(dev, "isr: Start of Tx word detected\n");
+> > > > > > +
+> > > > > > +	if (xcsr & FSL_SAI_CSR_SEF)
+> > > > > > +		dev_dbg(dev, "isr: Tx Frame sync error detected\n");
+> > > > > > +
+> > > > > > +	if (xcsr & FSL_SAI_CSR_FEF)
+> > > > > > +		dev_dbg(dev, "isr: Transmit underrun detected\n");
+> > > > > > +
+> > > > >
+> > > > > Actually, the above three isrs should to write a logic 1 to this field
+> > > > > to clear this flag.
+> > > > >
+> > > > >
+> > > > > > +	if (xcsr & FSL_SAI_CSR_FWF)
+> > > > > > +		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
+> > > > > > +
+> > > > > > +	if (xcsr & FSL_SAI_CSR_FRF)
+> > > > > > +		dev_dbg(dev, "isr: Transmit FIFO watermark has been
+> > reached\n");
+> > > > > > +
+> > > > >
+> > > > > While are these ones really needed to clear manually ?
+> > > >
+> > > > The reference manual doesn't mention about the requirement. So SAI should
+> > do
+> > > > the self-clearance.
+> > >
+> > > Yes, I do think we should let it do the self-clearance, and shouldn't
+> > interfere
+> > > of them...
+> > 
+> > SAI is supposed to ignore the interference, isn't it?
+> > 
+> 
+> Maybe, but I'm not very sure.
+> And these bits are all writable and readable.
 
-This is hackish because you're specifying a single register that you 
-want to preserve in the DTS file, instead of a platform function which 
-is where it's supposed to be.
-
-I will think about this some more.  I think you are trying too hard to 
-avoid a platform file, which is why some of this code is hackish to me.
+Double-confirmed? Because FWF and FRF should be read-only bits.
