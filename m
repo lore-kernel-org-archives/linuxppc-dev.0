@@ -1,10 +1,12 @@
 Return-Path: <anton@samba.org>
-Date: Fri, 28 Mar 2014 16:33:33 +1100
+Date: Fri, 28 Mar 2014 16:34:10 +1100
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, neelegup@linux.vnet.ibm.com,
  sbhat@linux.vnet.ibm.com
-Subject: [PATCH 1/2] powerpc/powernv: Fix endian issues with OPAL async code
-Message-ID: <20140328163333.4b1d3df4@kryten>
+Subject: [PATCH 2/2] powerpc/powernv: Fix endian issues with sensor code
+Message-ID: <20140328163410.79ba511b@kryten>
+In-Reply-To: <20140328163333.4b1d3df4@kryten>
+References: <20140328163333.4b1d3df4@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -18,115 +20,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-OPAL defines opal_msg as a big endian struct so we have to
-byte swap it on little endian builds.
+One OPAL call and one device tree property needed byte swapping.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: b/arch/powerpc/include/asm/opal.h
-===================================================================
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -422,9 +422,9 @@ enum OpalSysparamPerm {
- };
- 
- struct opal_msg {
--	uint32_t msg_type;
--	uint32_t reserved;
--	uint64_t params[8];
-+	__be32 msg_type;
-+	__be32 reserved;
-+	__be64 params[8];
- };
- 
- struct opal_machine_check_event {
-Index: b/arch/powerpc/platforms/powernv/opal-async.c
-===================================================================
---- a/arch/powerpc/platforms/powernv/opal-async.c
-+++ b/arch/powerpc/platforms/powernv/opal-async.c
-@@ -125,14 +125,15 @@ static int opal_async_comp_event(struct
- {
- 	struct opal_msg *comp_msg = msg;
- 	unsigned long flags;
-+	uint64_t token;
- 
- 	if (msg_type != OPAL_MSG_ASYNC_COMP)
- 		return 0;
- 
--	memcpy(&opal_async_responses[comp_msg->params[0]], comp_msg,
--			sizeof(*comp_msg));
-+	token = be64_to_cpu(comp_msg->params[0]);
-+	memcpy(&opal_async_responses[token], comp_msg, sizeof(*comp_msg));
- 	spin_lock_irqsave(&opal_async_comp_lock, flags);
--	__set_bit(comp_msg->params[0], opal_async_complete_map);
-+	__set_bit(token, opal_async_complete_map);
- 	spin_unlock_irqrestore(&opal_async_comp_lock, flags);
- 
- 	wake_up(&opal_async_wait);
 Index: b/arch/powerpc/platforms/powernv/opal-sensor.c
 ===================================================================
 --- a/arch/powerpc/platforms/powernv/opal-sensor.c
 +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
-@@ -53,7 +53,7 @@ int opal_get_sensor_data(u32 sensor_hndl
+@@ -33,6 +33,7 @@ int opal_get_sensor_data(u32 sensor_hndl
+ {
+ 	int ret, token;
+ 	struct opal_msg msg;
++	__be32 data;
+ 
+ 	token = opal_async_get_token_interruptible();
+ 	if (token < 0) {
+@@ -42,7 +43,7 @@ int opal_get_sensor_data(u32 sensor_hndl
+ 	}
+ 
+ 	mutex_lock(&opal_sensor_mutex);
+-	ret = opal_sensor_read(sensor_hndl, token, sensor_data);
++	ret = opal_sensor_read(sensor_hndl, token, &data);
+ 	if (ret != OPAL_ASYNC_COMPLETION)
+ 		goto out_token;
+ 
+@@ -53,6 +54,7 @@ int opal_get_sensor_data(u32 sensor_hndl
  		goto out_token;
  	}
  
--	ret = msg.params[1];
-+	ret = be64_to_cpu(msg.params[1]);
++	*sensor_data = be32_to_cpu(data);
+ 	ret = be64_to_cpu(msg.params[1]);
  
  out_token:
- 	mutex_unlock(&opal_sensor_mutex);
-Index: b/arch/powerpc/platforms/powernv/opal-sysparam.c
+Index: b/arch/powerpc/include/asm/opal.h
 ===================================================================
---- a/arch/powerpc/platforms/powernv/opal-sysparam.c
-+++ b/arch/powerpc/platforms/powernv/opal-sysparam.c
-@@ -64,7 +64,7 @@ static int opal_get_sys_param(u32 param_
- 		goto out_token;
- 	}
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -880,8 +880,7 @@ int64_t opal_get_param(uint64_t token, u
+ 		uint64_t length);
+ int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
+ 		uint64_t length);
+-int64_t opal_sensor_read(uint32_t sensor_hndl, int token,
+-		uint32_t *sensor_data);
++int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
  
--	ret = msg.params[1];
-+	ret = be64_to_cpu(msg.params[1]);
- 
- out_token:
- 	opal_async_release_token(token);
-@@ -98,7 +98,7 @@ static int opal_set_sys_param(u32 param_
- 		goto out_token;
- 	}
- 
--	ret = msg.params[1];
-+	ret = be64_to_cpu(msg.params[1]);
- 
- out_token:
- 	opal_async_release_token(token);
-Index: b/arch/powerpc/platforms/powernv/opal.c
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+Index: b/drivers/hwmon/ibmpowernv.c
 ===================================================================
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -289,6 +289,7 @@ static void opal_handle_message(void)
- 	 * value in /proc/device-tree.
- 	 */
- 	static struct opal_msg msg;
-+	u32 type;
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -471,7 +471,7 @@ static int __init powernv_hwmon_init(voi
+ 	struct device_node *opal, *np = NULL;
+ 	enum attributes attr_type;
+ 	enum sensors type;
+-	const u32 *sensor_id;
++	u32 sensor_id;
+ 	u32 sensor_index;
+ 	int err;
  
- 	ret = opal_get_msg(__pa(&msg), sizeof(msg));
- 	/* No opal message pending. */
-@@ -302,13 +303,14 @@ static void opal_handle_message(void)
- 		return;
- 	}
+@@ -497,14 +497,13 @@ static int __init powernv_hwmon_init(voi
+ 				&sensor_index))
+ 			continue;
  
-+	type = be32_to_cpu(msg.msg_type);
-+
- 	/* Sanity check */
--	if (msg.msg_type > OPAL_MSG_TYPE_MAX) {
--		pr_warning("%s: Unknown message type: %u\n",
--				__func__, msg.msg_type);
-+	if (type > OPAL_MSG_TYPE_MAX) {
-+		pr_warning("%s: Unknown message type: %u\n", __func__, type);
- 		return;
- 	}
--	opal_message_do_notify(msg.msg_type, (void *)&msg);
-+	opal_message_do_notify(type, (void *)&msg);
- }
+-		sensor_id = of_get_property(np, "sensor-id", NULL);
+-		if (!sensor_id) {
++		if (of_property_read_u32(np, "sensor-id", &sensor_id)) {
+ 			pr_info("%s: %s doesn't have sensor-id\n", __func__,
+ 					np->name);
+ 			continue;
+ 		}
  
- static int opal_message_notify(struct notifier_block *nb,
+-		err = powernv_sensor_init(*sensor_id, np, type, attr_type,
++		err = powernv_sensor_init(sensor_id, np, type, attr_type,
+ 				sensor_index);
+ 		if (err) {
+ 			of_node_put(opal);
