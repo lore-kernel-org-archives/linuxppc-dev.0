@@ -1,38 +1,19 @@
-Return-Path: <laurent.dufour@fr.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe008.messaging.microsoft.com [65.55.88.32])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4E65D14007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 19:29:31 +1100 (EST)
-Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <laurent.dufour@fr.ibm.com>;
- Fri, 28 Mar 2014 08:29:27 -0000
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9705817D8047
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 08:30:12 +0000 (GMT)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2S8TDDn48038064
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 08:29:13 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2S8TPF8000734
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 02:29:25 -0600
-Message-ID: <533532E2.4020505@fr.ibm.com>
-Date: Fri, 28 Mar 2014 09:29:22 +0100
-From: Laurent Dufour <laurent.dufour@fr.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7AC4314008A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 22:38:04 +1100 (EST)
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: <broonie@kernel.org>, <Li.Xiubo@freescale.com>
+Subject: [PATCH] ASoC: fsl_sai: Improve fsl_sai_isr()
+Date: Fri, 28 Mar 2014 19:39:25 +0800
+Message-ID: <1396006765-4527-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>, benh@kernel.crashing.org
-Subject: Re: [PATCH] powerpc/le: enable RTAS events support
-References: <20140328073344.26823.32931.stgit@bahia.local>
-In-Reply-To: <20140328073344.26823.32931.stgit@bahia.local>
-Content-Type: text/plain; charset=UTF-8
-Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org, anton@samba.org
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,193 +23,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28/03/2014 08:33, Greg Kurz wrote:
-> The current kernel code assumes big endian and parses RTAS events all
-> wrong. The most visible effect is that we cannot honor EPOW events,
-> meaning, for example, we cannot shut down a guest properly from the
-> hypervisor.
-> 
-> This patch fixes that.
-> 
-> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+This patch improves fsl_sai_isr() in these ways:
+1, Add comment for mask fetching code.
+2, Return IRQ_NONE if the IRQ is not for the device.
+3, Use regmap_write() instead of regmap_update_bits().
 
-Reviewed-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+---
+ sound/soc/fsl/fsl_sai.c | 64 ++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 45 insertions(+), 19 deletions(-)
 
-> ---
->  arch/powerpc/include/asm/rtas.h      |   46 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/kernel/rtas.c           |   11 ++++----
->  arch/powerpc/kernel/rtasd.c          |    8 ++++--
->  arch/powerpc/platforms/pseries/ras.c |    3 +-
->  4 files changed, 59 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-> index 9bd52c6..8bb99d0 100644
-> --- a/arch/powerpc/include/asm/rtas.h
-> +++ b/arch/powerpc/include/asm/rtas.h
-> @@ -150,15 +150,37 @@ struct rtas_suspend_me_data {
->  #define RTAS_VECTOR_EXTERNAL_INTERRUPT	0x500
->  
->  struct rtas_error_log {
-> +#ifdef __BIG_ENDIAN__
-> +	/* Byte 0 */
->  	unsigned long version:8;		/* Architectural version */
-> +	/* Byte 1 */
->  	unsigned long severity:3;		/* Severity level of error */
->  	unsigned long disposition:2;		/* Degree of recovery */
->  	unsigned long extended:1;		/* extended log present? */
->  	unsigned long /* reserved */ :2;	/* Reserved for future use */
-> +	/* Byte 2 */
->  	unsigned long initiator:4;		/* Initiator of event */
->  	unsigned long target:4;			/* Target of failed operation */
-> +	/* Byte 3 */
->  	unsigned long type:8;			/* General event or error*/
-> +	/* Byte 4 */
->  	unsigned long extended_log_length:32;	/* length in bytes */
-> +#else
-> +	/* Byte 0 */
-> +	unsigned long version:8;
-> +	/* Byte 1 */
-> +	unsigned long :2;
-> +	unsigned long extended:1;
-> +	unsigned long disposition:2;
-> +	unsigned long severity:3;
-> +	unsigned long target:4;
-
-Hi Greg,
-
-A cosmetic detail: 'target' is in the 'Byte 2'.
-
-Laurent.
-
-> +	/* Byte 2 */
-> +	unsigned long initiator:4;
-> +	/* Byte 3 */
-> +	unsigned long type:8;
-> +	/* Byte 4 */
-> +	unsigned long extended_log_length:32;
-> +#endif
->  	unsigned char buffer[1];		/* Start of extended log */
->  						/* Variable length.      */
->  };
-> @@ -171,6 +193,7 @@ struct rtas_error_log {
->   * from "buffer" field of struct rtas_error_log defined above.
->   */
->  struct rtas_ext_event_log_v6 {
-> +#ifdef __BIG_ENDIAN__
->  	/* Byte 0 */
->  	uint32_t log_valid:1;		/* 1:Log valid */
->  	uint32_t unrecoverable_error:1;	/* 1:Unrecoverable error */
-> @@ -200,6 +223,29 @@ struct rtas_ext_event_log_v6 {
->  	uint32_t company_id;		/* Company ID of the company	*/
->  					/* that defines the format for	*/
->  					/* the vendor specific log type	*/
-> +#else
-> +	/* Byte 0 */
-> +	uint32_t :1;
-> +	uint32_t big_endian:1;
-> +	uint32_t new_log:1;
-> +	uint32_t predictive_error:1;
-> +	uint32_t degraded_operation:1;
-> +	uint32_t recoverable_error:1;
-> +	uint32_t unrecoverable_error:1;
-> +	uint32_t log_valid:1;
-> +	/* Byte 1 */
-> +	uint32_t :8;
-> +	/* Byte 2 */
-> +	uint32_t log_format:4;
-> +	uint32_t :3;
-> +	uint32_t powerpc_format:1;
-> +	/* Byte 3 */
-> +	uint32_t :8;
-> +	/* Byte 4-11 */
-> +	uint8_t reserved[8];
-> +	/* Byte 12-15 */
-> +	uint32_t company_id;
-> +#endif
->  	/* Byte 16-end of log */
->  	uint8_t vendor_log[1];		/* Start of vendor specific log	*/
->  					/* Variable length.		*/
-> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-> index f386296..e18ab12 100644
-> --- a/arch/powerpc/kernel/rtas.c
-> +++ b/arch/powerpc/kernel/rtas.c
-> @@ -993,21 +993,22 @@ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
->  		(struct rtas_ext_event_log_v6 *)log->buffer;
->  	struct pseries_errorlog *sect;
->  	unsigned char *p, *log_end;
-> +	uint32_t extended_log_length = be32_to_cpu(log->extended_log_length);
->  
->  	/* Check that we understand the format */
-> -	if (log->extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
-> +	if (extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
->  	    ext_log->log_format != RTAS_V6EXT_LOG_FORMAT_EVENT_LOG ||
-> -	    ext_log->company_id != RTAS_V6EXT_COMPANY_ID_IBM)
-> +	    be32_to_cpu(ext_log->company_id) != RTAS_V6EXT_COMPANY_ID_IBM)
->  		return NULL;
->  
-> -	log_end = log->buffer + log->extended_log_length;
-> +	log_end = log->buffer + extended_log_length;
->  	p = ext_log->vendor_log;
->  
->  	while (p < log_end) {
->  		sect = (struct pseries_errorlog *)p;
-> -		if (sect->id == section_id)
-> +		if (be16_to_cpu(sect->id) == section_id)
->  			return sect;
-> -		p += sect->length;
-> +		p += be16_to_cpu(sect->length);
->  	}
->  
->  	return NULL;
-> diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
-> index 1130c53..1987825 100644
-> --- a/arch/powerpc/kernel/rtasd.c
-> +++ b/arch/powerpc/kernel/rtasd.c
-> @@ -159,14 +159,16 @@ static int log_rtas_len(char * buf)
->  {
->  	int len;
->  	struct rtas_error_log *err;
-> +	uint32_t extended_log_length;
->  
->  	/* rtas fixed header */
->  	len = 8;
->  	err = (struct rtas_error_log *)buf;
-> -	if (err->extended && err->extended_log_length) {
-> +	extended_log_length = be32_to_cpu(err->extended_log_length);
-> +	if (err->extended && extended_log_length) {
->  
->  		/* extended header */
-> -		len += err->extended_log_length;
-> +		len += extended_log_length;
->  	}
->  
->  	if (rtas_error_log_max == 0)
-> @@ -298,7 +300,7 @@ static void handle_rtas_event(const struct rtas_error_log *log)
->  		 * the scope for calling rtas update-nodes.
->  		 */
->  		if (prrn_is_enabled())
-> -			prrn_schedule_update(log->extended_log_length);
-> +			prrn_schedule_update(be32_to_cpu(log->extended_log_length));
->  	}
->  
->  	return;
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 721c058..39e7557 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -306,7 +306,8 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
->  	} else {
->  		int len;
->  
-> -		len = max_t(int, 8+h->extended_log_length, RTAS_ERROR_LOG_MAX);
-> +		len = max_t(int, 8+be32_to_cpu(h->extended_log_length),
-> +			    RTAS_ERROR_LOG_MAX);
->  		memset(global_mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
->  		memcpy(global_mce_data_buf, h, len);
->  		errhdr = (struct rtas_error_log *)global_mce_data_buf;
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 0bc98bb..f088545 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -30,62 +30,88 @@ static irqreturn_t fsl_sai_isr(int irq, void *devid)
+ {
+ 	struct fsl_sai *sai = (struct fsl_sai *)devid;
+ 	struct device *dev = &sai->pdev->dev;
+-	u32 xcsr, mask;
++	u32 flags, xcsr, mask;
++	bool irq_none = true;
+ 
+-	/* Only handle those what we enabled */
++	/*
++	 * Both IRQ status bits and IRQ mask bits are in the xCSR but
++	 * different shifts. And we here create a mask only for those
++	 * IRQs that we activated.
++	 */
+ 	mask = (FSL_SAI_FLAGS >> FSL_SAI_CSR_xIE_SHIFT) << FSL_SAI_CSR_xF_SHIFT;
+ 
+ 	/* Tx IRQ */
+ 	regmap_read(sai->regmap, FSL_SAI_TCSR, &xcsr);
+-	xcsr &= mask;
++	flags = xcsr & mask;
+ 
+-	if (xcsr & FSL_SAI_CSR_WSF)
++	if (flags)
++		irq_none = false;
++	else
++		goto irq_rx;
++
++	if (flags & FSL_SAI_CSR_WSF)
+ 		dev_dbg(dev, "isr: Start of Tx word detected\n");
+ 
+-	if (xcsr & FSL_SAI_CSR_SEF)
++	if (flags & FSL_SAI_CSR_SEF)
+ 		dev_warn(dev, "isr: Tx Frame sync error detected\n");
+ 
+-	if (xcsr & FSL_SAI_CSR_FEF) {
++	if (flags & FSL_SAI_CSR_FEF) {
+ 		dev_warn(dev, "isr: Transmit underrun detected\n");
+ 		/* FIFO reset for safety */
+ 		xcsr |= FSL_SAI_CSR_FR;
+ 	}
+ 
+-	if (xcsr & FSL_SAI_CSR_FWF)
++	if (flags & FSL_SAI_CSR_FWF)
+ 		dev_dbg(dev, "isr: Enabled transmit FIFO is empty\n");
+ 
+-	if (xcsr & FSL_SAI_CSR_FRF)
++	if (flags & FSL_SAI_CSR_FRF)
+ 		dev_dbg(dev, "isr: Transmit FIFO watermark has been reached\n");
+ 
+-	regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
+-			   FSL_SAI_CSR_xF_W_MASK | FSL_SAI_CSR_FR, xcsr);
++	flags &= FSL_SAI_CSR_xF_W_MASK;
++	xcsr &= ~FSL_SAI_CSR_xF_MASK;
++
++	if (flags)
++		regmap_write(sai->regmap, FSL_SAI_TCSR, flags | xcsr);
+ 
++irq_rx:
+ 	/* Rx IRQ */
+ 	regmap_read(sai->regmap, FSL_SAI_RCSR, &xcsr);
+-	xcsr &= mask;
++	flags = xcsr & mask;
+ 
+-	if (xcsr & FSL_SAI_CSR_WSF)
++	if (flags)
++		irq_none = false;
++	else
++		goto out;
++
++	if (flags & FSL_SAI_CSR_WSF)
+ 		dev_dbg(dev, "isr: Start of Rx word detected\n");
+ 
+-	if (xcsr & FSL_SAI_CSR_SEF)
++	if (flags & FSL_SAI_CSR_SEF)
+ 		dev_warn(dev, "isr: Rx Frame sync error detected\n");
+ 
+-	if (xcsr & FSL_SAI_CSR_FEF) {
++	if (flags & FSL_SAI_CSR_FEF) {
+ 		dev_warn(dev, "isr: Receive overflow detected\n");
+ 		/* FIFO reset for safety */
+ 		xcsr |= FSL_SAI_CSR_FR;
+ 	}
+ 
+-	if (xcsr & FSL_SAI_CSR_FWF)
++	if (flags & FSL_SAI_CSR_FWF)
+ 		dev_dbg(dev, "isr: Enabled receive FIFO is full\n");
+ 
+-	if (xcsr & FSL_SAI_CSR_FRF)
++	if (flags & FSL_SAI_CSR_FRF)
+ 		dev_dbg(dev, "isr: Receive FIFO watermark has been reached\n");
+ 
+-	regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
+-			   FSL_SAI_CSR_xF_W_MASK | FSL_SAI_CSR_FR, xcsr);
++	flags &= FSL_SAI_CSR_xF_W_MASK;
++	xcsr &= ~FSL_SAI_CSR_xF_MASK;
+ 
+-	return IRQ_HANDLED;
++	if (flags)
++		regmap_write(sai->regmap, FSL_SAI_TCSR, flags | xcsr);
++
++out:
++	if (irq_none)
++		return IRQ_NONE;
++	else
++		return IRQ_HANDLED;
+ }
+ 
+ static int fsl_sai_set_dai_sysclk_tr(struct snd_soc_dai *cpu_dai,
+-- 
+1.8.4
