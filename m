@@ -1,31 +1,35 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-la0-f41.google.com (mail-la0-f41.google.com
- [209.85.215.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <ego@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 11CBE140088
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Mar 2014 04:09:04 +1100 (EST)
-Received: by mail-la0-f41.google.com with SMTP id gl10so3926032lab.14
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 10:08:59 -0700 (PDT)
-Message-ID: <5335BABE.80007@cogentembedded.com>
-Date: Fri, 28 Mar 2014 21:09:02 +0300
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-MIME-Version: 1.0
-To: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] phy/at8031: enable at8031 to work on interrupt mode
-References: <1395901116-16034-1-git-send-email-B45475@freescale.com>
- <53341101.9000404@cogentembedded.com>
- <0ca1e7910cd247c4aebe4cbd48a633cb@BLUPR03MB341.namprd03.prod.outlook.com>
-In-Reply-To: <0ca1e7910cd247c4aebe4cbd48a633cb@BLUPR03MB341.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "mugunthanvnm@ti.com" <mugunthanvnm@ti.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "helmut.schaa@googlemail.com" <helmut.schaa@googlemail.com>,
- "zonque@gmail.com" <zonque@gmail.com>,
- "davem@davemloft.net" <davem@davemloft.net>, Xiaobo Xie <X.Xie@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7DE8E140088
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2014 07:11:46 +1100 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ego@linux.vnet.ibm.com>;
+ Sat, 29 Mar 2014 01:41:43 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9B1631258044
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2014 01:44:06 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2SKBMfE4129056
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2014 01:41:22 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2SKBd2C009644
+ for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2014 01:41:39 +0530
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v5 0/3] powernv,cpufreq: Dynamic Frequency Scaling support
+Date: Sat, 29 Mar 2014 01:41:21 +0530
+Message-Id: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org,
+ cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,38 +39,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On 03/28/2014 10:36 AM, qiang.zhao@freescale.com wrote:
+Hi,
 
->>> The at8031 can work on polling mode and interrupt mode.
->>> Add ack_interrupt and config intr funcs to enable interrupt mode for
->>> it.
+This is v5 of the patchset to enable dynamic frequency scaling on IBM
+PowerNV platforms. This patchset does address all the review comments
+obtained for v4 (which can be found at [1]).
 
->>> Signed-off-by: Zhao Qiang <B45475@freescale.com>
->>> ---
->>>    drivers/net/phy/at803x.c | 30 ++++++++++++++++++++++++++++++
->>>    1 file changed, 30 insertions(+)
+Changes from v4:
 
->>> diff --git a/drivers/net/phy/at803x.c b/drivers/net/phy/at803x.c index
->>> bc71947..d034ef5 100644
->>> --- a/drivers/net/phy/at803x.c
->>> +++ b/drivers/net/phy/at803x.c
->> [...]
->>> @@ -191,6 +194,31 @@ static int at803x_config_init(struct phy_device
->> *phydev)
->>>    	return 0;
->>>    }
->>>
->>> +static int at803x_ack_interrupt(struct phy_device *phydev) {
->>> +	int err;
->>> +
->>> +	err = phy_read(phydev, AT803X_INSR);
+    * Created a separate patch to select the CPUFreq related Config
+      options for PowerNV
 
->>      Could make this an initializer...
+    * Dropped the per-core locking hunks in
+      drivers/cpufreq/powernv-cpufreq.c since the CPUFreq core takes
+      care of the for us after the following commit which is present in
+      linux-next:
 
-> Thank you very much. However I have no idea about "make this an initializer".
+	commit 12478cf0c55e5969f740bb38a24b1a0104ae18d8	  
+      	Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+        Date:   Mon Mar 24 13:35:44 2014 +0530
 
-	int err = phy_read(phydev, AT803X_INSR);
+       	cpufreq: Make sure frequency transitions are serialized
 
-WBR, Sergei
+    * [PATCH v5 3/3] gets rid of the powernv_pstate_ids[] array that
+      was being used to record the pstate ids. After the following
+      patch it is safe to use cpufreq_frequency_table.driver_data
+      since it is opaque to the cpufreq core: 
+
+      	From: Viresh Kumar <viresh.kumar@linaro.org>
+	Date: 2014-03-28 13:53:47
+	url: http://marc.info/?l=linux-pm&m=139601416804702&w=2
+	    
+	cpufreq: create another field .flags in cpufreq_frequency_table
+
+The patchset is based on the commit
+201544be8c37dffbf069bb5fc9edb5674f8c1754 of the linux-next tree.
+
+While all the patches in the patchset apply cleanly on linux-next,
+[PATCH v5 3/3] requires the Viresh's patch that was mentioned
+above. Otherwise, the frequency corresponding to pstate id -3 will be
+omited while reporting the "scaling_available_frequencies" in sysfs.
+
+[1]: http://marc.info/?l=linux-pm&m=139585297620612&w=2
+
+Gautham R. Shenoy (2):
+  powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
+  powernv,cpufreq: Use cpufreq_frequency_table.driver_data to store
+    pstate ids
+
+Vaidyanathan Srinivasan (1):
+  powernv, cpufreq: cpufreq driver for powernv platform
+
+ arch/powerpc/configs/pseries_defconfig    |   1 +
+ arch/powerpc/configs/pseries_le_defconfig |   1 +
+ arch/powerpc/include/asm/reg.h            |   4 +
+ arch/powerpc/platforms/powernv/Kconfig    |   6 +
+ drivers/cpufreq/Kconfig.powerpc           |   8 +
+ drivers/cpufreq/Makefile                  |   1 +
+ drivers/cpufreq/powernv-cpufreq.c         | 341 ++++++++++++++++++++++++++++++
+ 7 files changed, 362 insertions(+)
+ create mode 100644 drivers/cpufreq/powernv-cpufreq.c
+
+-- 
+1.8.3.1
