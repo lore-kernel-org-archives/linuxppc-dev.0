@@ -1,25 +1,39 @@
-Return-Path: <paul.gortmaker@gmail.com>
-Received: from mail-we0-x230.google.com (mail-we0-x230.google.com
- [IPv6:2a00:1450:400c:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D1B02140092
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Mar 2014 02:27:23 +1100 (EST)
-Received: by mail-we0-f176.google.com with SMTP id x48so2808670wes.35
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 08:27:17 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3B3DF140092
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Mar 2014 02:31:50 +1100 (EST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Fri, 28 Mar 2014 15:31:47 -0000
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5DDDF17D804E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 15:32:32 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2SFVXM766519084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 15:31:33 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2SFVi6L031566
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 09:31:44 -0600
+Date: Fri, 28 Mar 2014 16:31:40 +0100
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/le: enable RTAS events support
+Message-ID: <20140328163140.2e63b77d@bahia.local>
+In-Reply-To: <53358DBF.4080808@linux.vnet.ibm.com>
+References: <20140328073344.26823.32931.stgit@bahia.local>
+ <53358DBF.4080808@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: paul.gortmaker@gmail.com
-In-Reply-To: <20140307053320.3547.10656.stgit@neelegup-tp-t420.in.ibm.com>
-References: <20140307053236.3547.55729.stgit@neelegup-tp-t420.in.ibm.com>
- <20140307053320.3547.10656.stgit@neelegup-tp-t420.in.ibm.com>
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Fri, 28 Mar 2014 11:26:47 -0400
-Message-ID: <CAP=VYLpVZ7b2ooYjU8XteOxU4K0Ak4JfXDTsvrNYwTN4Wxj_2g@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/powernv: Enable fetching of platform sensor
- data
-To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sbhat@linux.vnet.ibm.com, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ linux-kernel@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,191 +43,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 7, 2014 at 12:33 AM, Neelesh Gupta
-<neelegup@linux.vnet.ibm.com> wrote:
-> This patch enables fetching of various platform sensor data through
-> OPAL and expects a sensor handle from the driver to pass to OPAL.
+On Fri, 28 Mar 2014 09:57:03 -0500
+Nathan Fontenot <nfont@linux.vnet.ibm.com> wrote:
+> Greg,
+> 
+> There is one more place that needs fixing up, in mobility_rtas_call(),
+> and handle_rtas_event() in arch/powerpc/platforms/pseries/mobility.c.
+> 
+> This relates to rtas event handling for PRRN notifications, we need to
+> convert the scope variable (PRRN notifications re-use the extended log
+> length field) when read from the rtas event in handle_rtas_event(), then
+> convert it back to big endian in mobility_rtas_call().
+> 
+> The double conversion seems yucky but mobility_rtas_call can be called
+> other places where the scope variable is not originally big endian.
+> 
+> -Nathan
+> 
 
-Looks like a missing header, causing build failures on celleb_defconfig
+Nathan,
 
-cc1: warnings being treated as errors
-In file included from arch/powerpc/platforms/powernv/opal-sensor.c:23:0:
-/home/paul/git/linux-head/arch/powerpc/include/asm/opal.h:893:42:
-error: 'struct notifier_block' declared inside parameter list
-/home/paul/git/linux-head/arch/powerpc/include/asm/opal.h:893:42:
-error: its scope is only this definition or declaration, which is
-probably not what you want
-/home/paul/git/linux-head/arch/powerpc/include/asm/opal.h:895:14:
-error: 'struct notifier_block' declared inside parameter list
-make[2]: *** [arch/powerpc/platforms/powernv/opal-sensor.o] Error 1
-make[1]: *** [arch/powerpc/platforms/powernv] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make: *** [arch/powerpc/platforms] Error 2
-make: *** Waiting for unfinished jobs....
-Bisecting: 0 revisions left to test after this (roughly 0 steps)
-[4029cd66545f0a45258eda5313b7559bfeaaaae4] powerpc/powernv: Enable
-reading and updating of system parameters
-running ./x
-#
-# configuration written to .config
-#
-7224adbbb80329d1a3ec5aa98213b50365fcd246 is the first bad commit
-commit 7224adbbb80329d1a3ec5aa98213b50365fcd246
-Author: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Date:   Fri Mar 7 11:03:27 2014 +0530
+rtas_call() in arch/powerpc/kernel/rtas.c already does the conversion for us.
 
-    powerpc/powernv: Enable fetching of platform sensor data
+Thanks.
 
-    This patch enables fetching of various platform sensor data through
-    OPAL and expects a sensor handle from the driver to pass to OPAL.
+> On 03/28/2014 02:33 AM, Greg Kurz wrote:
+> > The current kernel code assumes big endian and parses RTAS events all
+> > wrong. The most visible effect is that we cannot honor EPOW events,
+> > meaning, for example, we cannot shut down a guest properly from the
+> > hypervisor.
+> > 
+> > This patch fixes that.
+> > 
+> > Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> > ---
+> >  arch/powerpc/include/asm/rtas.h      |   46 ++++++++++++++++++++++++++++++++++
+> >  arch/powerpc/kernel/rtas.c           |   11 ++++----
+> >  arch/powerpc/kernel/rtasd.c          |    8 ++++--
+> >  arch/powerpc/platforms/pseries/ras.c |    3 +-
+> >  4 files changed, 59 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> > index 9bd52c6..8bb99d0 100644
+> > --- a/arch/powerpc/include/asm/rtas.h
+> > +++ b/arch/powerpc/include/asm/rtas.h
+> > @@ -150,15 +150,37 @@ struct rtas_suspend_me_data {
+> >  #define RTAS_VECTOR_EXTERNAL_INTERRUPT	0x500
+> >  
+> >  struct rtas_error_log {
+> > +#ifdef __BIG_ENDIAN__
+> > +	/* Byte 0 */
+> >  	unsigned long version:8;		/* Architectural version */
+> > +	/* Byte 1 */
+> >  	unsigned long severity:3;		/* Severity level of error */
+> >  	unsigned long disposition:2;		/* Degree of recovery */
+> >  	unsigned long extended:1;		/* extended log present? */
+> >  	unsigned long /* reserved */ :2;	/* Reserved for future use */
+> > +	/* Byte 2 */
+> >  	unsigned long initiator:4;		/* Initiator of event */
+> >  	unsigned long target:4;			/* Target of failed operation */
+> > +	/* Byte 3 */
+> >  	unsigned long type:8;			/* General event or error*/
+> > +	/* Byte 4 */
+> >  	unsigned long extended_log_length:32;	/* length in bytes */
+> > +#else
+> > +	/* Byte 0 */
+> > +	unsigned long version:8;
+> > +	/* Byte 1 */
+> > +	unsigned long :2;
+> > +	unsigned long extended:1;
+> > +	unsigned long disposition:2;
+> > +	unsigned long severity:3;
+> > +	unsigned long target:4;
+> > +	/* Byte 2 */
+> > +	unsigned long initiator:4;
+> > +	/* Byte 3 */
+> > +	unsigned long type:8;
+> > +	/* Byte 4 */
+> > +	unsigned long extended_log_length:32;
+> > +#endif
+> >  	unsigned char buffer[1];		/* Start of extended log */
+> >  						/* Variable length.      */
+> >  };
+> > @@ -171,6 +193,7 @@ struct rtas_error_log {
+> >   * from "buffer" field of struct rtas_error_log defined above.
+> >   */
+> >  struct rtas_ext_event_log_v6 {
+> > +#ifdef __BIG_ENDIAN__
+> >  	/* Byte 0 */
+> >  	uint32_t log_valid:1;		/* 1:Log valid */
+> >  	uint32_t unrecoverable_error:1;	/* 1:Unrecoverable error */
+> > @@ -200,6 +223,29 @@ struct rtas_ext_event_log_v6 {
+> >  	uint32_t company_id;		/* Company ID of the company	*/
+> >  					/* that defines the format for	*/
+> >  					/* the vendor specific log type	*/
+> > +#else
+> > +	/* Byte 0 */
+> > +	uint32_t :1;
+> > +	uint32_t big_endian:1;
+> > +	uint32_t new_log:1;
+> > +	uint32_t predictive_error:1;
+> > +	uint32_t degraded_operation:1;
+> > +	uint32_t recoverable_error:1;
+> > +	uint32_t unrecoverable_error:1;
+> > +	uint32_t log_valid:1;
+> > +	/* Byte 1 */
+> > +	uint32_t :8;
+> > +	/* Byte 2 */
+> > +	uint32_t log_format:4;
+> > +	uint32_t :3;
+> > +	uint32_t powerpc_format:1;
+> > +	/* Byte 3 */
+> > +	uint32_t :8;
+> > +	/* Byte 4-11 */
+> > +	uint8_t reserved[8];
+> > +	/* Byte 12-15 */
+> > +	uint32_t company_id;
+> > +#endif
+> >  	/* Byte 16-end of log */
+> >  	uint8_t vendor_log[1];		/* Start of vendor specific log	*/
+> >  					/* Variable length.		*/
+> > diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> > index f386296..e18ab12 100644
+> > --- a/arch/powerpc/kernel/rtas.c
+> > +++ b/arch/powerpc/kernel/rtas.c
+> > @@ -993,21 +993,22 @@ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+> >  		(struct rtas_ext_event_log_v6 *)log->buffer;
+> >  	struct pseries_errorlog *sect;
+> >  	unsigned char *p, *log_end;
+> > +	uint32_t extended_log_length = be32_to_cpu(log->extended_log_length);
+> >  
+> >  	/* Check that we understand the format */
+> > -	if (log->extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
+> > +	if (extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
+> >  	    ext_log->log_format != RTAS_V6EXT_LOG_FORMAT_EVENT_LOG ||
+> > -	    ext_log->company_id != RTAS_V6EXT_COMPANY_ID_IBM)
+> > +	    be32_to_cpu(ext_log->company_id) != RTAS_V6EXT_COMPANY_ID_IBM)
+> >  		return NULL;
+> >  
+> > -	log_end = log->buffer + log->extended_log_length;
+> > +	log_end = log->buffer + extended_log_length;
+> >  	p = ext_log->vendor_log;
+> >  
+> >  	while (p < log_end) {
+> >  		sect = (struct pseries_errorlog *)p;
+> > -		if (sect->id == section_id)
+> > +		if (be16_to_cpu(sect->id) == section_id)
+> >  			return sect;
+> > -		p += sect->length;
+> > +		p += be16_to_cpu(sect->length);
+> >  	}
+> >  
+> >  	return NULL;
+> > diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+> > index 1130c53..1987825 100644
+> > --- a/arch/powerpc/kernel/rtasd.c
+> > +++ b/arch/powerpc/kernel/rtasd.c
+> > @@ -159,14 +159,16 @@ static int log_rtas_len(char * buf)
+> >  {
+> >  	int len;
+> >  	struct rtas_error_log *err;
+> > +	uint32_t extended_log_length;
+> >  
+> >  	/* rtas fixed header */
+> >  	len = 8;
+> >  	err = (struct rtas_error_log *)buf;
+> > -	if (err->extended && err->extended_log_length) {
+> > +	extended_log_length = be32_to_cpu(err->extended_log_length);
+> > +	if (err->extended && extended_log_length) {
+> >  
+> >  		/* extended header */
+> > -		len += err->extended_log_length;
+> > +		len += extended_log_length;
+> >  	}
+> >  
+> >  	if (rtas_error_log_max == 0)
+> > @@ -298,7 +300,7 @@ static void handle_rtas_event(const struct rtas_error_log *log)
+> >  		 * the scope for calling rtas update-nodes.
+> >  		 */
+> >  		if (prrn_is_enabled())
+> > -			prrn_schedule_update(log->extended_log_length);
+> > +			prrn_schedule_update(be32_to_cpu(log->extended_log_length));
+> >  	}
+> >  
+> >  	return;
+> > diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+> > index 721c058..39e7557 100644
+> > --- a/arch/powerpc/platforms/pseries/ras.c
+> > +++ b/arch/powerpc/platforms/pseries/ras.c
+> > @@ -306,7 +306,8 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
+> >  	} else {
+> >  		int len;
+> >  
+> > -		len = max_t(int, 8+h->extended_log_length, RTAS_ERROR_LOG_MAX);
+> > +		len = max_t(int, 8+be32_to_cpu(h->extended_log_length),
+> > +			    RTAS_ERROR_LOG_MAX);
+> >  		memset(global_mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
+> >  		memcpy(global_mce_data_buf, h, len);
+> >  		errhdr = (struct rtas_error_log *)global_mce_data_buf;
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > 
 
-    Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-:040000 040000 ee7c8dec121a0da53be09da0e1449d8b885ef8a1
-b8c4906de326638be77387c78173f7148369d6ff M    arch
-bisect run success
 
-http://kisskb.ellerman.id.au/kisskb/buildresult/10844143/
+-- 
+Gregory Kurz                                     kurzgreg@fr.ibm.com
+                                                 gkurz@linux.vnet.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)562 165 496
 
-Paul.
----
-
->
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/include/asm/opal.h                |    4 ++
->  arch/powerpc/platforms/powernv/Makefile        |    2 -
->  arch/powerpc/platforms/powernv/opal-sensor.c   |   64 ++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/opal-wrappers.S |    1
->  4 files changed, 70 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/platforms/powernv/opal-sensor.c
->
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 60b3edc..a1cc4dd 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -159,6 +159,7 @@ extern int opal_enter_rtas(struct rtas_args *args,
->  #define OPAL_GET_MSG                           85
->  #define OPAL_CHECK_ASYNC_COMPLETION            86
->  #define OPAL_SYNC_HOST_REBOOT                  87
-> +#define OPAL_SENSOR_READ                       88
->  #define OPAL_GET_PARAM                         89
->  #define OPAL_SET_PARAM                         90
->
-> @@ -847,6 +848,8 @@ int64_t opal_get_param(uint64_t token, uint32_t param_id, uint64_t buffer,
->                 size_t length);
->  int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
->                 size_t length);
-> +int64_t opal_sensor_read(uint32_t sensor_hndl, int token,
-> +               uint32_t *sensor_data);
->
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
-> @@ -875,6 +878,7 @@ extern int opal_async_get_token_interruptible(void);
->  extern int __opal_async_release_token(int token);
->  extern int opal_async_release_token(int token);
->  extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
-> +extern int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data);
->
->  extern void hvc_opal_init_early(void);
->
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> index e6166d3..00ae938 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -1,6 +1,6 @@
->  obj-y                  += setup.o opal-takeover.o opal-wrappers.o opal.o opal-async.o
->  obj-y                  += opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o opal-sysparam.o
-> -obj-y                  += rng.o
-> +obj-y                  += rng.o opal-sensor.o
->
->  obj-$(CONFIG_SMP)      += smp.o
->  obj-$(CONFIG_PCI)      += pci.o pci-p5ioc2.o pci-ioda.o
-> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
-> new file mode 100644
-> index 0000000..663cc9c
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
-> @@ -0,0 +1,64 @@
-> +/*
-> + * PowerNV sensor code
-> + *
-> + * Copyright (C) 2013 IBM
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> + */
-> +
-> +#include <linux/delay.h>
-> +#include <linux/mutex.h>
-> +#include <asm/opal.h>
-> +
-> +static DEFINE_MUTEX(opal_sensor_mutex);
-> +
-> +/*
-> + * This will return sensor information to driver based on the requested sensor
-> + * handle. A handle is an opaque id for the powernv, read by the driver from the
-> + * device tree..
-> + */
-> +int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data)
-> +{
-> +       int ret, token;
-> +       struct opal_msg msg;
-> +
-> +       token = opal_async_get_token_interruptible();
-> +       if (token < 0) {
-> +               pr_err("%s: Couldn't get the token, returning\n", __func__);
-> +               ret = token;
-> +               goto out;
-> +       }
-> +
-> +       mutex_lock(&opal_sensor_mutex);
-> +       ret = opal_sensor_read(sensor_hndl, token, sensor_data);
-> +       if (ret != OPAL_ASYNC_COMPLETION)
-> +               goto out_token;
-> +
-> +       ret = opal_async_wait_response(token, &msg);
-> +       if (ret) {
-> +               pr_err("%s: Failed to wait for the async response, %d\n",
-> +                               __func__, ret);
-> +               goto out_token;
-> +       }
-> +
-> +       ret = msg.params[1];
-> +
-> +out_token:
-> +       mutex_unlock(&opal_sensor_mutex);
-> +       opal_async_release_token(token);
-> +out:
-> +       return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(opal_get_sensor_data);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index 0afdeca..4279e30 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -129,5 +129,6 @@ OPAL_CALL(opal_update_flash,                        OPAL_FLASH_UPDATE);
->  OPAL_CALL(opal_get_msg,                                OPAL_GET_MSG);
->  OPAL_CALL(opal_check_completion,               OPAL_CHECK_ASYNC_COMPLETION);
->  OPAL_CALL(opal_sync_host_reboot,               OPAL_SYNC_HOST_REBOOT);
-> +OPAL_CALL(opal_sensor_read,                    OPAL_SENSOR_READ);
->  OPAL_CALL(opal_get_param,                      OPAL_GET_PARAM);
->  OPAL_CALL(opal_set_param,                      OPAL_SET_PARAM);
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
