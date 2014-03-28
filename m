@@ -1,12 +1,25 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 28 Mar 2014 17:01:23 +1100
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, tommusta@gmail.com
-Subject: [PATCH] powerpc: Add lq/stq emulation
-Message-ID: <20140328170123.2df45d19@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 46438140084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 17:34:06 +1100 (EST)
+Message-ID: <533517C1.8080208@freescale.com>
+Date: Fri, 28 Mar 2014 14:33:37 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+To: Vinod Koul <vkoul@infradead.org>
+Subject: Re: [PATCH 6/7] DMA: Freescale: use spin_lock_bh instead of
+ spin_lock_irqsave
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>	
+ <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
+ <1395817294.6569.2.camel@vkoul-udesk3>
+In-Reply-To: <1395817294.6569.2.camel@vkoul-udesk3>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: vinod.koul@intel.com, linux-kernel@vger.kernel.org, scottwood@freescale.com,
+ dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,122 +30,139 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Recent CPUs support quad word load and store instructions. Add
-support to the alignment handler for them.
+On 03/26/2014 03:01 PM, Vinod Koul wrote:
+> On Thu, 2014-01-16 at 13:47 +0800, hongbo.zhang@freescale.com wrote:
+>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>
+>> The usage of spin_lock_irqsave() is a stronger locking mechanism than is
+>> required throughout the driver. The minimum locking required should be used
+>> instead. Interrupts will be turned off and context will be saved, it is
+>> unnecessary to use irqsave.
+>>
+>> This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
+>> manipulation of protected fields is done using tasklet context or weaker, which
+>> makes spin_lock_bh() the correct choice.
+>>
+>> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+>> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+>> ---
+>>   drivers/dma/fsldma.c |   25 ++++++++++---------------
+>>   1 file changed, 10 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+>> index bbace54..437794e 100644
+>> --- a/drivers/dma/fsldma.c
+>> +++ b/drivers/dma/fsldma.c
+>> @@ -396,10 +396,9 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+>>   	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
+>>   	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
+>>   	struct fsl_desc_sw *child;
+>> -	unsigned long flags;
+>>   	dma_cookie_t cookie = -EINVAL;
+>>   
+>> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>> +	spin_lock_bh(&chan->desc_lock);
+>>   
+>>   	/*
+>>   	 * assign cookies to all of the software descriptors
+>> @@ -412,7 +411,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+>>   	/* put this transaction onto the tail of the pending queue */
+>>   	append_ld_queue(chan, desc);
+>>   
+>> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>> +	spin_unlock_bh(&chan->desc_lock);
+>>   
+>>   	return cookie;
+>>   }
+>> @@ -731,15 +730,14 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
+>>   static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
+>>   {
+>>   	struct fsldma_chan *chan = to_fsl_chan(dchan);
+>> -	unsigned long flags;
+>>   
+>>   	chan_dbg(chan, "free all channel resources\n");
+>> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>> +	spin_lock_bh(&chan->desc_lock);
+>>   	fsldma_cleanup_descriptors(chan);
+>>   	fsldma_free_desc_list(chan, &chan->ld_pending);
+>>   	fsldma_free_desc_list(chan, &chan->ld_running);
+>>   	fsldma_free_desc_list(chan, &chan->ld_completed);
+>> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>> +	spin_unlock_bh(&chan->desc_lock);
+>>   
+>>   	dma_pool_destroy(chan->desc_pool);
+>>   	chan->desc_pool = NULL;
+>> @@ -958,7 +956,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>>   {
+>>   	struct dma_slave_config *config;
+>>   	struct fsldma_chan *chan;
+>> -	unsigned long flags;
+>>   	int size;
+>>   
+>>   	if (!dchan)
+>> @@ -968,7 +965,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>>   
+>>   	switch (cmd) {
+>>   	case DMA_TERMINATE_ALL:
+>> -		spin_lock_irqsave(&chan->desc_lock, flags);
+>> +		spin_lock_bh(&chan->desc_lock);
+>>   
+>>   		/* Halt the DMA engine */
+>>   		dma_halt(chan);
+>> @@ -979,7 +976,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>>   		fsldma_free_desc_list(chan, &chan->ld_completed);
+>>   		chan->idle = true;
+>>   
+>> -		spin_unlock_irqrestore(&chan->desc_lock, flags);
+>> +		spin_unlock_bh(&chan->desc_lock);
+>>   		return 0;
+>>   
+>>   	case DMA_SLAVE_CONFIG:
+>> @@ -1021,11 +1018,10 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>>   static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
+>>   {
+>>   	struct fsldma_chan *chan = to_fsl_chan(dchan);
+>> -	unsigned long flags;
+>>   
+>> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>> +	spin_lock_bh(&chan->desc_lock);
+>>   	fsl_chan_xfer_ld_queue(chan);
+>> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>> +	spin_unlock_bh(&chan->desc_lock);
+>>   }
+>>   
+>>   /**
+>> @@ -1124,11 +1120,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+>>   static void dma_do_tasklet(unsigned long data)
+>>   {
+>>   	struct fsldma_chan *chan = (struct fsldma_chan *)data;
+>> -	unsigned long flags;
+>>   
+>>   	chan_dbg(chan, "tasklet entry\n");
+>>   
+>> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>> +	spin_lock_bh(&chan->desc_lock);
+> okay here is the problem :(
+>
+> You moved to _bh variant. So if you grab the lock in rest of the code
+> and irq gets triggered then here we will be spinning to grab the lock.
+> So effectively you made right locking solution into deadlock situation!
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+If the rest code grabs lock by spin_lock_bh(), and if irq raised, the 
+tasklet could not be executed because it has been disabled by the _bh 
+variant function.
+Right?
 
-Index: b/arch/powerpc/include/asm/emulated_ops.h
-===================================================================
---- a/arch/powerpc/include/asm/emulated_ops.h
-+++ b/arch/powerpc/include/asm/emulated_ops.h
-@@ -54,6 +54,7 @@ extern struct ppc_emulated {
- #ifdef CONFIG_PPC64
- 	struct ppc_emulated_entry mfdscr;
- 	struct ppc_emulated_entry mtdscr;
-+	struct ppc_emulated_entry lq_stq;
- #endif
- } ppc_emulated;
- 
-Index: b/arch/powerpc/kernel/align.c
-===================================================================
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -73,7 +73,7 @@ static struct aligninfo aligninfo[128] =
- 	{ 8, LD+F },		/* 00 0 1001: lfd */
- 	{ 4, ST+F+S },		/* 00 0 1010: stfs */
- 	{ 8, ST+F },		/* 00 0 1011: stfd */
--	INVALID,		/* 00 0 1100 */
-+	{ 16, LD },		/* 00 0 1100: lq */
- 	{ 8, LD },		/* 00 0 1101: ld/ldu/lwa */
- 	INVALID,		/* 00 0 1110 */
- 	{ 8, ST },		/* 00 0 1111: std/stdu */
-@@ -140,7 +140,7 @@ static struct aligninfo aligninfo[128] =
- 	{ 2, LD+SW },		/* 10 0 1100: lhbrx */
- 	{ 4, LD+SE },		/* 10 0 1101  lwa */
- 	{ 2, ST+SW },		/* 10 0 1110: sthbrx */
--	INVALID,		/* 10 0 1111 */
-+	{ 16, ST },		/* 10 0 1111: stq */
- 	INVALID,		/* 10 1 0000 */
- 	INVALID,		/* 10 1 0001 */
- 	INVALID,		/* 10 1 0010 */
-@@ -385,8 +385,6 @@ static int emulate_fp_pair(unsigned char
- 	char *ptr1 = (char *) &current->thread.TS_FPR(reg+1);
- 	int i, ret, sw = 0;
- 
--	if (!(flags & F))
--		return 0;
- 	if (reg & 1)
- 		return 0;	/* invalid form: FRS/FRT must be even */
- 	if (flags & SW)
-@@ -406,6 +404,32 @@ static int emulate_fp_pair(unsigned char
- 	return 1;	/* exception handled and fixed up */
- }
- 
-+static int emulate_lq_stq(struct pt_regs *regs, unsigned char __user *addr,
-+			  unsigned int reg, unsigned int flags)
-+{
-+	char *ptr0 = (char *)&regs->gpr[reg];
-+	char *ptr1 = (char *)&regs->gpr[reg+1];
-+	int i, ret, sw = 0;
-+
-+	if (reg & 1)
-+		return 0;	/* invalid form: GPR must be even */
-+	if (flags & SW)
-+		sw = 7;
-+	ret = 0;
-+	for (i = 0; i < 8; ++i) {
-+		if (!(flags & ST)) {
-+			ret |= __get_user(ptr0[i^sw], addr + i);
-+			ret |= __get_user(ptr1[i^sw], addr + i + 8);
-+		} else {
-+			ret |= __put_user(ptr0[i^sw], addr + i);
-+			ret |= __put_user(ptr1[i^sw], addr + i + 8);
-+		}
-+	}
-+	if (ret)
-+		return -EFAULT;
-+	return 1;	/* exception handled and fixed up */
-+}
-+
- #ifdef CONFIG_SPE
- 
- static struct aligninfo spe_aligninfo[32] = {
-@@ -914,10 +938,20 @@ int fix_alignment(struct pt_regs *regs)
- 		flush_fp_to_thread(current);
- 	}
- 
--	/* Special case for 16-byte FP loads and stores */
--	if (nb == 16) {
--		PPC_WARN_ALIGNMENT(fp_pair, regs);
--		return emulate_fp_pair(addr, reg, flags);
-+	if ((nb == 16)) {
-+		if (flags & F) {
-+			/* Special case for 16-byte FP loads and stores */
-+			PPC_WARN_ALIGNMENT(fp_pair, regs);
-+			return emulate_fp_pair(addr, reg, flags);
-+		} else {
-+#ifdef CONFIG_PPC64
-+			/* Special case for 16-byte loads and stores */
-+			PPC_WARN_ALIGNMENT(lq_stq, regs);
-+			return emulate_lq_stq(regs, addr, reg, flags);
-+#else
-+			return 0;
-+#endif
-+		}
- 	}
- 
- 	PPC_WARN_ALIGNMENT(unaligned, regs);
-Index: b/arch/powerpc/kernel/traps.c
-===================================================================
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1868,6 +1868,7 @@ struct ppc_emulated ppc_emulated = {
- #ifdef CONFIG_PPC64
- 	WARN_EMULATED_SETUP(mfdscr),
- 	WARN_EMULATED_SETUP(mtdscr),
-+	WARN_EMULATED_SETUP(lq_stq),
- #endif
- };
- 
+>>   
+>>   	/* the hardware is now idle and ready for more */
+>>   	chan->idle = true;
+>> @@ -1136,7 +1131,7 @@ static void dma_do_tasklet(unsigned long data)
+>>   	/* Run all cleanup for descriptors which have been completed */
+>>   	fsldma_cleanup_descriptors(chan);
+>>   
+>> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>> +	spin_unlock_bh(&chan->desc_lock);
+>>   
+>>   	chan_dbg(chan, "tasklet exit\n");
+>>   }
+>
