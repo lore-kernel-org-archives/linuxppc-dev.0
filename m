@@ -1,25 +1,29 @@
-Return-Path: <hongbo.zhang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-ob0-f174.google.com (mail-ob0-f174.google.com
+ [209.85.214.174])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F0690140085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 14:44:59 +1100 (EST)
-Message-ID: <5334F022.3050402@freescale.com>
-Date: Fri, 28 Mar 2014 11:44:34 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6739D14009B
+ for <linuxppc-dev@ozlabs.org>; Fri, 28 Mar 2014 16:25:16 +1100 (EST)
+Received: by mail-ob0-f174.google.com with SMTP id wo20so5380333obc.19
+ for <linuxppc-dev@ozlabs.org>; Thu, 27 Mar 2014 22:25:13 -0700 (PDT)
 MIME-Version: 1.0
-To: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH 3/7] DMA: Freescale: add fsl_dma_free_descriptor() to
- reduce code duplication
-References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
- <1389851246-8564-4-git-send-email-hongbo.zhang@freescale.com>
- <20140311110616.GV1976@intel.com>
-In-Reply-To: <20140311110616.GV1976@intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-kernel@vger.kernel.org, scottwood@freescale.com,
- dmaengine@vger.kernel.org, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20140327093050.GA27777@in.ibm.com>
+References: <1395852947-22290-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1395852947-22290-2-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKohponPb+b=8Pa=te3CkiN6QPAUAukngqLSdG4vxc9pUkD8OQ@mail.gmail.com>
+ <20140327093050.GA27777@in.ibm.com>
+Date: Fri, 28 Mar 2014 10:55:12 +0530
+Message-ID: <CAKohpomuwkVVOgEbk4ARE+N6eo_tii9Msd1FbTgZfFK8Dvm9Uw@mail.gmail.com>
+Subject: Re: [PATCH v4] powernv, cpufreq: cpufreq driver for powernv platform
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "ego@linux.vnet.ibm.com" <ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PM list <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +33,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 27 March 2014 15:00, Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
+> As of now, I prefer this patch be based on code that is in the -next
+> tree. I'll get rid of the per-core locking once the serialization
+> patch of the core is accepted.
 
-On 03/11/2014 07:06 PM, Vinod Koul wrote:
-> On Thu, Jan 16, 2014 at 01:47:22PM +0800, hongbo.zhang@freescale.com wrote:
->> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>
->> There are several places where descriptors are freed using identical code.
->> This patch puts this code into a function to reduce code duplication.
->>
->> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
->> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
->> ---
->>   drivers/dma/fsldma.c |   38 ++++++++++++++++++++------------------
->>   1 file changed, 20 insertions(+), 18 deletions(-)
->>
->> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
->> index 95236e6..ad73538 100644
->> --- a/drivers/dma/fsldma.c
->> +++ b/drivers/dma/fsldma.c
->> @@ -418,6 +418,21 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
->>   }
->>   
->>   /**
->> + * fsl_dma_free_descriptor - Free descriptor from channel's DMA pool.
->> + * @chan : Freescale DMA channel
->> + * @desc: descriptor to be freed
->> + */
->> +static void fsl_dma_free_descriptor(struct fsldma_chan *chan,
->> +		struct fsl_desc_sw *desc)
->> +{
->> +	list_del(&desc->node);
->> +#ifdef FSL_DMA_LD_DEBUG
->> +	chan_dbg(chan, "LD %p free\n", desc);
->> +#endif
-> why not wrap the define stuff in the defination of chan_dbg rather than its
-> usage :(
->
-
-OK, I will fix it by another separate patch.
-Thanks.
+Okay, its pushed in -next now :)
