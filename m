@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 02FC01400AB
- for <linuxppc-dev@ozlabs.org>; Sat, 29 Mar 2014 22:42:02 +1100 (EST)
-Message-ID: <1396093291.11529.41.camel@pasglop>
-Subject: Re: [PATCH v2] powerpc/book3s: Recover from MC in opal on SCOM read
- via MMIO.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Date: Sat, 29 Mar 2014 22:41:31 +1100
-In-Reply-To: <20140329045724.5158.19322.stgit@mars>
-References: <20140329045724.5158.19322.stgit@mars>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id ACD2B140081
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Mar 2014 00:52:36 +1100 (EST)
+Date: Sat, 29 Mar 2014 19:15:28 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Hongbo Zhang <hongbo.zhang@freescale.com>
+Subject: Re: [PATCH 6/7] DMA: Freescale: use spin_lock_bh instead of
+ spin_lock_irqsave
+Message-ID: <20140329134528.GQ1976@intel.com>
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+ <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
+ <1395817294.6569.2.camel@vkoul-udesk3>
+ <533517C1.8080208@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <533517C1.8080208@freescale.com>
+Cc: Vinod Koul <vkoul@infradead.org>, linux-kernel@vger.kernel.org,
+ scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,411 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2014-03-29 at 10:27 +0530, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Fri, Mar 28, 2014 at 02:33:37PM +0800, Hongbo Zhang wrote:
 > 
-> Detect and recover from machine check when inside opal on a special
-> scom load instructions. On specific SCOM read via MMIO we may get a machine
-> check exception with SRR0 pointing inside opal. To recover from MC
-> in this scenario, get a recovery instruction address and return to it from
-> MC.
+> On 03/26/2014 03:01 PM, Vinod Koul wrote:
+> >On Thu, 2014-01-16 at 13:47 +0800, hongbo.zhang@freescale.com wrote:
+> >>From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> >>
+> >>The usage of spin_lock_irqsave() is a stronger locking mechanism than is
+> >>required throughout the driver. The minimum locking required should be used
+> >>instead. Interrupts will be turned off and context will be saved, it is
+> >>unnecessary to use irqsave.
+> >>
+> >>This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
+> >>manipulation of protected fields is done using tasklet context or weaker, which
+> >>makes spin_lock_bh() the correct choice.
+> >>
 
-V1 is already in -next, please send an incremental patch.
 
-Cheers,
-Ben.
+> >>  /**
+> >>@@ -1124,11 +1120,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+> >>  static void dma_do_tasklet(unsigned long data)
+> >>  {
+> >>  	struct fsldma_chan *chan = (struct fsldma_chan *)data;
+> >>-	unsigned long flags;
+> >>  	chan_dbg(chan, "tasklet entry\n");
+> >>-	spin_lock_irqsave(&chan->desc_lock, flags);
+> >>+	spin_lock_bh(&chan->desc_lock);
+> >okay here is the problem :(
+> >
+> >You moved to _bh variant. So if you grab the lock in rest of the code
+> >and irq gets triggered then here we will be spinning to grab the lock.
+> >So effectively you made right locking solution into deadlock situation!
+> 
+> If the rest code grabs lock by spin_lock_bh(), and if irq raised,
+> the tasklet could not be executed because it has been disabled by
+> the _bh variant function.
+yes if you are accessing resources only in tasklet and rest of the code, then
+_bh variant works well. The problem here is usage in irq handler
 
-> OPAL will export the machine check recoverable ranges through
-> device tree node mcheck-recoverable-ranges under ibm,opal:
-> 
-> # hexdump /proc/device-tree/ibm,opal/mcheck-recoverable-ranges
-> 0000000 0000 0000 3000 2804 0000 000c 0000 0000
-> 0000010 3000 2814 0000 0000 3000 27f0 0000 000c
-> 0000020 0000 0000 3000 2814 xxxx xxxx xxxx xxxx
-> 0000030 llll llll yyyy yyyy yyyy yyyy
-> ...
-> ...
-> #
-> 
-> where:
-> 	xxxx xxxx xxxx xxxx = Starting instruction address
-> 	llll llll           = Length of the address range.
-> 	yyyy yyyy yyyy yyyy = recovery address
-> 
-> Each recoverable address range entry is (start address, len,
-> recovery address), 2 cells each for start and recovery address, 1 cell for
-> len, totalling 5 cells per entry. During kernel boot time, build up the
-> recovery table with the list of recovery ranges from device-tree node which
-> will be used during machine check exception to recover from MMIO SCOM UE.
-> 
-> Changes in V2:
-> - Allocate mc_recoverable_range buffer based on number of entries
->   of recoverable ranges instead of device property size. Without this
->   change we end up allocating less memory and run into buffer corruption
->   issue.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/machdep.h     |    3 +
->  arch/powerpc/include/asm/mce.h         |    3 +
->  arch/powerpc/include/asm/opal.h        |    3 +
->  arch/powerpc/kernel/mce.c              |    4 +
->  arch/powerpc/kernel/mce_power.c        |   37 +++++++++--
->  arch/powerpc/kernel/prom.c             |    5 +
->  arch/powerpc/platforms/powernv/opal.c  |  112 +++++++++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/setup.c |    1 
->  8 files changed, 158 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index ad3025d..4da6574 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -170,6 +170,9 @@ struct machdep_calls {
->  	int		(*system_reset_exception)(struct pt_regs *regs);
->  	int 		(*machine_check_exception)(struct pt_regs *regs);
->  
-> +	/* Called during machine check exception to retrive fixup address. */
-> +	bool		(*mce_check_early_recovery)(struct pt_regs *regs);
-> +
->  	/* Motherboard/chipset features. This is a kind of general purpose
->  	 * hook used to control some machine specific features (like reset
->  	 * lines, chip power control, etc...).
-> diff --git a/arch/powerpc/include/asm/mce.h b/arch/powerpc/include/asm/mce.h
-> index 8e99edf..f97d8cb 100644
-> --- a/arch/powerpc/include/asm/mce.h
-> +++ b/arch/powerpc/include/asm/mce.h
-> @@ -187,7 +187,8 @@ struct mce_error_info {
->  #define MCE_EVENT_DONTRELEASE	false
->  
->  extern void save_mce_event(struct pt_regs *regs, long handled,
-> -			   struct mce_error_info *mce_err, uint64_t addr);
-> +			   struct mce_error_info *mce_err, uint64_t nip,
-> +			   uint64_t addr);
->  extern int get_mce_event(struct machine_check_event *mce, bool release);
->  extern void release_mce_event(void);
->  extern void machine_check_queue_event(void);
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index ed82142..ad67c40 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -833,6 +833,8 @@ int64_t opal_sync_host_reboot(void);
->  
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
-> +extern int early_init_dt_scan_recoverable_ranges(unsigned long node,
-> +				 const char *uname, int depth, void *data);
->  
->  extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
->  extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
-> @@ -863,6 +865,7 @@ extern void opal_nvram_init(void);
->  extern void opal_flash_init(void);
->  
->  extern int opal_machine_check(struct pt_regs *regs);
-> +extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
->  
->  extern void opal_shutdown(void);
->  
-> diff --git a/arch/powerpc/kernel/mce.c b/arch/powerpc/kernel/mce.c
-> index cadef7e..a7fd4cb 100644
-> --- a/arch/powerpc/kernel/mce.c
-> +++ b/arch/powerpc/kernel/mce.c
-> @@ -70,7 +70,7 @@ static void mce_set_error_info(struct machine_check_event *mce,
->   */
->  void save_mce_event(struct pt_regs *regs, long handled,
->  		    struct mce_error_info *mce_err,
-> -		    uint64_t addr)
-> +		    uint64_t nip, uint64_t addr)
->  {
->  	uint64_t srr1;
->  	int index = __get_cpu_var(mce_nest_count)++;
-> @@ -86,7 +86,7 @@ void save_mce_event(struct pt_regs *regs, long handled,
->  
->  	/* Populate generic machine check info */
->  	mce->version = MCE_V1;
-> -	mce->srr0 = regs->nip;
-> +	mce->srr0 = nip;
->  	mce->srr1 = regs->msr;
->  	mce->gpr3 = regs->gpr[3];
->  	mce->in_use = 1;
-> diff --git a/arch/powerpc/kernel/mce_power.c b/arch/powerpc/kernel/mce_power.c
-> index 27c93f4..aa9aff3 100644
-> --- a/arch/powerpc/kernel/mce_power.c
-> +++ b/arch/powerpc/kernel/mce_power.c
-> @@ -26,6 +26,7 @@
->  #include <linux/ptrace.h>
->  #include <asm/mmu.h>
->  #include <asm/mce.h>
-> +#include <asm/machdep.h>
->  
->  /* flush SLBs and reload */
->  static void flush_and_reload_slb(void)
-> @@ -197,13 +198,32 @@ static void mce_get_derror_p7(struct mce_error_info *mce_err, uint64_t dsisr)
->  	}
->  }
->  
-> +static long mce_handle_ue_error(struct pt_regs *regs)
-> +{
-> +	long handled = 0;
-> +
-> +	/*
-> +	 * On specific SCOM read via MMIO we may get a machine check
-> +	 * exception with SRR0 pointing inside opal. If that is the
-> +	 * case OPAL may have recovery address to re-read SCOM data in
-> +	 * different way and hence we can recover from this MC.
-> +	 */
-> +
-> +	if (ppc_md.mce_check_early_recovery) {
-> +		if (ppc_md.mce_check_early_recovery(regs))
-> +			handled = 1;
-> +	}
-> +	return handled;
-> +}
-> +
->  long __machine_check_early_realmode_p7(struct pt_regs *regs)
->  {
-> -	uint64_t srr1, addr;
-> +	uint64_t srr1, nip, addr;
->  	long handled = 1;
->  	struct mce_error_info mce_error_info = { 0 };
->  
->  	srr1 = regs->msr;
-> +	nip = regs->nip;
->  
->  	/*
->  	 * Handle memory errors depending whether this was a load/store or
-> @@ -221,7 +241,11 @@ long __machine_check_early_realmode_p7(struct pt_regs *regs)
->  		addr = regs->nip;
->  	}
->  
-> -	save_mce_event(regs, handled, &mce_error_info, addr);
-> +	/* Handle UE error. */
-> +	if (mce_error_info.error_type == MCE_ERROR_TYPE_UE)
-> +		handled = mce_handle_ue_error(regs);
-> +
-> +	save_mce_event(regs, handled, &mce_error_info, nip, addr);
->  	return handled;
->  }
->  
-> @@ -263,11 +287,12 @@ static long mce_handle_derror_p8(uint64_t dsisr)
->  
->  long __machine_check_early_realmode_p8(struct pt_regs *regs)
->  {
-> -	uint64_t srr1, addr;
-> +	uint64_t srr1, nip, addr;
->  	long handled = 1;
->  	struct mce_error_info mce_error_info = { 0 };
->  
->  	srr1 = regs->msr;
-> +	nip = regs->nip;
->  
->  	if (P7_SRR1_MC_LOADSTORE(srr1)) {
->  		handled = mce_handle_derror_p8(regs->dsisr);
-> @@ -279,6 +304,10 @@ long __machine_check_early_realmode_p8(struct pt_regs *regs)
->  		addr = regs->nip;
->  	}
->  
-> -	save_mce_event(regs, handled, &mce_error_info, addr);
-> +	/* Handle UE error. */
-> +	if (mce_error_info.error_type == MCE_ERROR_TYPE_UE)
-> +		handled = mce_handle_ue_error(regs);
-> +
-> +	save_mce_event(regs, handled, &mce_error_info, nip, addr);
->  	return handled;
->  }
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index f58c0d3..d711b7e 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -752,6 +752,11 @@ void __init early_init_devtree(void *params)
->  	spinning_secondaries = boot_cpu_count - 1;
->  #endif
->  
-> +#ifdef CONFIG_PPC_POWERNV
-> +	/* Scan and build the list of machine check recoverable ranges */
-> +	of_scan_flat_dt(early_init_dt_scan_recoverable_ranges, NULL);
-> +#endif
-> +
->  	DBG(" <- early_init_devtree()\n");
->  }
->  
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index 65499ad..f52762b 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -21,6 +21,7 @@
->  #include <linux/sched.h>
->  #include <linux/kobject.h>
->  #include <linux/delay.h>
-> +#include <linux/memblock.h>
->  #include <asm/opal.h>
->  #include <asm/firmware.h>
->  #include <asm/mce.h>
-> @@ -33,8 +34,18 @@ struct kobject *opal_kobj;
->  struct opal {
->  	u64 base;
->  	u64 entry;
-> +	u64 size;
->  } opal;
->  
-> +struct mcheck_recoverable_range {
-> +	u64 start_addr;
-> +	u64 end_addr;
-> +	u64 recover_addr;
-> +};
-> +
-> +static struct mcheck_recoverable_range *mc_recoverable_range;
-> +static int mc_recoverable_range_len;
-> +
->  static struct device_node *opal_node;
->  static DEFINE_SPINLOCK(opal_write_lock);
->  extern u64 opal_mc_secondary_handler[];
-> @@ -49,25 +60,29 @@ static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
->  int __init early_init_dt_scan_opal(unsigned long node,
->  				   const char *uname, int depth, void *data)
->  {
-> -	const void *basep, *entryp;
-> -	unsigned long basesz, entrysz;
-> +	const void *basep, *entryp, *sizep;
-> +	unsigned long basesz, entrysz, runtimesz;
->  
->  	if (depth != 1 || strcmp(uname, "ibm,opal") != 0)
->  		return 0;
->  
->  	basep  = of_get_flat_dt_prop(node, "opal-base-address", &basesz);
->  	entryp = of_get_flat_dt_prop(node, "opal-entry-address", &entrysz);
-> +	sizep = of_get_flat_dt_prop(node, "opal-runtime-size", &runtimesz);
->  
-> -	if (!basep || !entryp)
-> +	if (!basep || !entryp || !sizep)
->  		return 1;
->  
->  	opal.base = of_read_number(basep, basesz/4);
->  	opal.entry = of_read_number(entryp, entrysz/4);
-> +	opal.size = of_read_number(sizep, runtimesz/4);
->  
->  	pr_debug("OPAL Base  = 0x%llx (basep=%p basesz=%ld)\n",
->  		 opal.base, basep, basesz);
->  	pr_debug("OPAL Entry = 0x%llx (entryp=%p basesz=%ld)\n",
->  		 opal.entry, entryp, entrysz);
-> +	pr_debug("OPAL Entry = 0x%llx (sizep=%p runtimesz=%ld)\n",
-> +		 opal.size, sizep, runtimesz);
->  
->  	powerpc_firmware_features |= FW_FEATURE_OPAL;
->  	if (of_flat_dt_is_compatible(node, "ibm,opal-v3")) {
-> @@ -84,6 +99,65 @@ int __init early_init_dt_scan_opal(unsigned long node,
->  	return 1;
->  }
->  
-> +int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
-> +				   const char *uname, int depth, void *data)
-> +{
-> +	unsigned long i, psize, size;
-> +	const __be32 *prop;
-> +
-> +	if (depth != 1 || strcmp(uname, "ibm,opal") != 0)
-> +		return 0;
-> +
-> +	prop = of_get_flat_dt_prop(node, "mcheck-recoverable-ranges", &psize);
-> +
-> +	if (!prop)
-> +		return 1;
-> +
-> +	pr_debug("Found machine check recoverable ranges.\n");
-> +
-> +	/*
-> +	 * Calculate number of available entries.
-> +	 *
-> +	 * Each recoverable address range entry is (start address, len,
-> +	 * recovery address), 2 cells each for start and recovery address,
-> +	 * 1 cell for len, totalling 5 cells per entry.
-> +	 */
-> +	mc_recoverable_range_len = psize / (sizeof(*prop) * 5);
-> +
-> +	/* Sanity check */
-> +	if (!mc_recoverable_range_len)
-> +		return 1;
-> +
-> +	/* Size required to hold all the entries. */
-> +	size = mc_recoverable_range_len *
-> +			sizeof(struct mcheck_recoverable_range);
-> +
-> +	/*
-> +	 * Allocate a buffer to hold the MC recoverable ranges. We would be
-> +	 * accessing them in real mode, hence it needs to be within
-> +	 * RMO region.
-> +	 */
-> +	mc_recoverable_range = __va(memblock_alloc_base(size, __alignof__(u64),
-> +							ppc64_rma_size));
-> +	memset(mc_recoverable_range, 0, size);
-> +
-> +	for (i = 0; i < mc_recoverable_range_len; i++) {
-> +		mc_recoverable_range[i].start_addr =
-> +					of_read_number(prop + (i * 5) + 0, 2);
-> +		mc_recoverable_range[i].end_addr =
-> +					mc_recoverable_range[i].start_addr +
-> +					of_read_number(prop + (i * 5) + 2, 1);
-> +		mc_recoverable_range[i].recover_addr =
-> +					of_read_number(prop + (i * 5) + 3, 2);
-> +
-> +		pr_debug("Machine check recoverable range: %llx..%llx: %llx\n",
-> +				mc_recoverable_range[i].start_addr,
-> +				mc_recoverable_range[i].end_addr,
-> +				mc_recoverable_range[i].recover_addr);
-> +	}
-> +	return 1;
-> +}
-> +
->  static int __init opal_register_exception_handlers(void)
->  {
->  #ifdef __BIG_ENDIAN__
-> @@ -401,6 +475,38 @@ int opal_machine_check(struct pt_regs *regs)
->  	return 0;
->  }
->  
-> +static uint64_t find_recovery_address(uint64_t nip)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < mc_recoverable_range_len; i++)
-> +		if ((nip >= mc_recoverable_range[i].start_addr) &&
-> +		    (nip < mc_recoverable_range[i].end_addr))
-> +			return mc_recoverable_range[i].recover_addr;
-> +	return 0;
-> +}
-> +
-> +bool opal_mce_check_early_recovery(struct pt_regs *regs)
-> +{
-> +	uint64_t recover_addr = 0;
-> +
-> +	if (!opal.base || !opal.size)
-> +		goto out;
-> +
-> +	if ((regs->nip >= opal.base) &&
-> +			(regs->nip <= (opal.base + opal.size)))
-> +		recover_addr = find_recovery_address(regs->nip);
-> +
-> +	/*
-> +	 * Setup regs->nip to rfi into fixup address.
-> +	 */
-> +	if (recover_addr)
-> +		regs->nip = recover_addr;
-> +
-> +out:
-> +	return !!recover_addr;
-> +}
-> +
->  static irqreturn_t opal_interrupt(int irq, void *data)
->  {
->  	__be64 events;
-> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> index 110f4fb..2d80845 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -188,6 +188,7 @@ static void __init pnv_setup_machdep_opal(void)
->  	ppc_md.power_off = pnv_power_off;
->  	ppc_md.halt = pnv_halt;
->  	ppc_md.machine_check_exception = opal_machine_check;
-> +	ppc_md.mce_check_early_recovery = opal_mce_check_early_recovery;
->  }
->  
->  #ifdef CONFIG_PPC_POWERNV_RTAS
+-- 
+~Vinod
