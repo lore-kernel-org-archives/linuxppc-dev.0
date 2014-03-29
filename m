@@ -1,33 +1,38 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 26F7D1400A5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Mar 2014 09:14:16 +1100 (EST)
-Date: Fri, 28 Mar 2014 15:14:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Laura Abbott <lauraa@codeaurora.org>
-Subject: Re: [RESEND][PATCH 0/2] Cleanup asm/scatterlist.h
-Message-Id: <20140328151412.9d3ce44ee4c5ad3b1c75751d@linux-foundation.org>
-In-Reply-To: <1395512032-20575-1-git-send-email-lauraa@codeaurora.org>
-References: <1395512032-20575-1-git-send-email-lauraa@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ia64@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Lennox Wu <lennox.wu@gmail.com>, Chen Liqin <liqin.linux@gmail.com>,
- Jesper Nilsson <jesper.nilsson@axis.com>, linux-am33-list@redhat.com,
- Russell King <linux@arm.linux.org.uk>, linux-scsi@vger.kernel.org,
- Hirokazu Takata <takata@linux-m32r.org>, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
- linux-s390@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
- Mikael Starvik <starvik@axis.com>, linux-m32r@ml.linux-m32r.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- linux-cris-kernel@axis.com, linux-kernel@vger.kernel.org,
- "James E.J. Bottomley" <JBottomley@parallels.com>, linux-alpha@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Return-Path: <haokexin@gmail.com>
+Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c03::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 137431400AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Mar 2014 12:20:40 +1100 (EST)
+Received: by mail-pa0-f45.google.com with SMTP id kl14so5735281pab.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2014 18:20:37 -0700 (PDT)
+Date: Sat, 29 Mar 2014 09:20:21 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/irq: Remove HAVE_IRQ_EXIT_ON_IRQ_STACK feature
+ at powerpc platform
+Message-ID: <20140329012020.GA29172@pek-khao-d1.corp.ad.wrs.com>
+References: <1395992312-23035-1-git-send-email-dongsheng.wang@freescale.com>
+ <20140328081827.GB2176@pek-khao-d1.corp.ad.wrs.com>
+ <1396042027.11529.24.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+In-Reply-To: <1396042027.11529.24.camel@pasglop>
+Cc: Ingo Molnar <mingo@kernel.org>, James Hogan <james.hogan@imgtec.com>,
+ jason.jin@freescale.com, Peter Zijlstra <peterz@infradead.org>,
+ fweisbec@gmail.com, Helge Deller <deller@gmx.de>,
+ linuxppc-dev@lists.ozlabs.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Dongsheng Wang <dongsheng.wang@freescale.com>,
+ Paul Mackerras <paulus@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, scottwood@freescale.com,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,22 +42,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 22 Mar 2014 11:13:50 -0700 Laura Abbott <lauraa@codeaurora.org> wrote:
 
-> I haven't gotten many responses so I'm going to try sending again
-> (this time with a cover letter which I probably should have done in
-> the first place...)
-> 
-> ARCH_HAS_SG_CHAIN is currently defined as needed in asm/scatterlist.h.
-> It was suggested[1] that this should probably be a proper Kconfig.
-> At the same time, we can clean up most of the asm/scatterlist.h files
-> to reduce redundancy. This makes parisc the only architecture that still
-> has an asm/scatterlist.h file due to the #define sg_virt_addr (which
-> could probably be cleaned up further still)
-> 
-> Andrew, once we get a few more Acked-bys can we take this through your tree
-> as suggested by Will?
+--oyUTqETQ0mS9luUI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Grabbed.  It's super late for 3.15-rc1 and I'm thinking of merging this
-in 3.16-rc1.  Or I can maybe squeeze it into 3.15-rc2 is there's an
-immediatish need for it?
+On Sat, Mar 29, 2014 at 08:27:07AM +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2014-03-28 at 16:18 +0800, Kevin Hao wrote:
+>=20
+> >     powerpc: Set the correct ksp_limit on ppc32 when switching to irq s=
+tack
+> >   =20
+>=20
+> Kevin. It looks like it was applied to 3.14 and sent to 3.12 stable but
+> not 3.13 ... can you fix that up ?
+
+It was already merged into 3.13 stable since 3.13.6:
+  https://lkml.org/lkml/2014/3/4/787
+
+I guess that Dongsheng didn't use the latest 3.13 stable tree.
+
+Thanks,
+Kevin
+
+--oyUTqETQ0mS9luUI
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQEcBAEBAgAGBQJTNh/UAAoJEJNY7TDerrFxhLQH/10fMDmiShY7Kqgz2DV+GiJa
+FyVtaoVPpdbylfH+rEaCZYfInCIxeShMsuj9OWo4e8fBOyvBDV/SSNY6/eIDs3aA
+a8/BZgaIaGko8aFi5SYr1tatfOpOEXc7ki0Eu4doKvcldmD974v7BBhDMOusLwek
++9x2WaM+n1GWKiRwiOxkplka4enelBZ9N32eSUKVX/t9wKka4mWV+OzBeXmi9R0+
+tBVade7RphMJy2k63YC6WSDdp1gFq9CV0ZXz2FUy+lw8JJrwJll4Uy7TwI2O+N6p
+IWA5lRhesuwihZOpqE/QlmO+YUCru1ZCl7bTHhfeR2sahsM8+XQ4LVuJUvp+btM=
+=tler
+-----END PGP SIGNATURE-----
+
+--oyUTqETQ0mS9luUI--
