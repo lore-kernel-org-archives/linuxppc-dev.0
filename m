@@ -1,38 +1,36 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AF8141400BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 09:21:29 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id BFF661400CB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 09:27:27 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Mon, 31 Mar 2014 08:21:28 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9FDAB2CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 09:21:25 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s2UM0paQ5177752
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 09:00:52 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s2UMLOu0027908
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 09:21:24 +1100
+ Mon, 31 Mar 2014 03:57:22 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9DA0B125803E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 03:59:47 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2UMRITV3211750
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 03:57:18 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2UMRJO5008662
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 03:57:19 +0530
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Joel Stanley <joel@jms.id.au>, benh@kernel.crashing.org, paulus@samba.org,
- anton@samba.org, shangw@linux.vnet.ibm.com,
- hegdevasant@linux.vnet.ibm.com, michael@ellerman.id.au
-Subject: Re: [PATCH 1/2] powerpc/powernv: Add OPAL message log interface
-In-Reply-To: <1395964240-8305-2-git-send-email-joel@jms.id.au>
-References: <1395964240-8305-1-git-send-email-joel@jms.id.au>
- <1395964240-8305-2-git-send-email-joel@jms.id.au>
-Date: Mon, 31 Mar 2014 09:21:23 +1100
-Message-ID: <871txjba58.fsf@river.i-did-not-set--mail-host-address--so-tickle-me>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>, benh@kernel.crashing.org
+Subject: Re: [PATCH] powerpc/le: enable RTAS events support
+In-Reply-To: <20140328073344.26823.32931.stgit@bahia.local>
+References: <20140328073344.26823.32931.stgit@bahia.local>
+Date: Mon, 31 Mar 2014 09:27:16 +1100
+Message-ID: <87vbuv9vaz.fsf@river.i-did-not-set--mail-host-address--so-tickle-me>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ linux-kernel@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,182 +40,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joel Stanley <joel@jms.id.au> writes:
-> OPAL provides an in-memory circular buffer containing a message log
-> populated with various runtime messages produced by the firmware.
->
-> Provide a sysfs interface /sys/firmware/opal/messages for userspace to
-> view the messages.
+Greg Kurz <gkurz@linux.vnet.ibm.com> writes:
+>  struct rtas_error_log {
+> +#ifdef __BIG_ENDIAN__
+> +	/* Byte 0 */
+>  	unsigned long version:8;		/* Architectural version */
+> +	/* Byte 1 */
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
->  arch/powerpc/include/asm/opal.h                |  4 ++
->  arch/powerpc/platforms/powernv/Makefile        |  1 +
->  arch/powerpc/platforms/powernv/opal-messages.c | 97 ++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/opal.c          |  4 +-
->  4 files changed, 105 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/platforms/powernv/opal-messages.c
->
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index ffafab0..6aa757e 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -729,6 +729,9 @@ typedef struct oppanel_line {
->  /* /sys/firmware/opal */
->  extern struct kobject *opal_kobj;
->
-> +/* /ibm,opal */
-> +extern struct device_node *opal_node;
-> +
->  /* API functions */
->  int64_t opal_console_write(int64_t term_number, __be64 *length,
->  			   const uint8_t *buffer);
-> @@ -918,6 +921,7 @@ extern void opal_flash_init(void);
->  extern int opal_elog_init(void);
->  extern void opal_platform_dump_init(void);
->  extern void opal_sys_param_init(void);
-> +extern void opal_messages_init(void);
->
->  extern int opal_machine_check(struct pt_regs *regs);
->  extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> index f324ea0..e2ba418 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -1,6 +1,7 @@
->  obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o opal-async.o
->  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
->  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
-> +obj-y			+= opal-messages.o
->
->  obj-$(CONFIG_SMP)	+= smp.o
->  obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-> diff --git a/arch/powerpc/platforms/powernv/opal-messages.c b/arch/powerpc/platforms/powernv/opal-messages.c
-> new file mode 100644
-> index 0000000..3a863e8
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-messages.c
-> @@ -0,0 +1,97 @@
-> +/*
-> + * PowerNV OPAL in-memory console interface
-> + *
-> + * Copyright 2014 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <asm/io.h>
-> +#include <asm/opal.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/of.h>
-> +#include <linux/types.h>
-> +
-> +/* OPAL in-memory console. Defined in OPAL source at core/console.c */
-> +struct memcons {
-> +	__be64 magic;
-> +#define MEMCONS_MAGIC	0x6630696567726173L
-> +	__be64 obuf_phys;
-> +	__be64 ibuf_phys;
-> +	__be32 obuf_size;
-> +	__be32 ibuf_size;
-> +	__be32 out_pos;
-> +#define MEMCONS_OUT_POS_WRAP	0x80000000u
-> +#define MEMCONS_OUT_POS_MASK	0x00ffffffu
-> +	__be32 in_prod;
-> +	__be32 in_cons;
-> +};
-> +
-> +static ssize_t opal_messages_read(struct file *file, struct kobject *kobj,
-> +	struct bin_attribute *bin_attr, char *to, loff_t pos, size_t count)
-> +{
-> +	struct memcons *mc = bin_attr->private;
-> +	const char *conbuf;
-> +	bool wrapped;
-> +	size_t num_read;
-> +	int out_pos;
-> +
-> +	if (!mc)
-> +		return -ENODEV;
-> +
-> +	conbuf = phys_to_virt(be64_to_cpu(mc->obuf_phys));
-> +	wrapped = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_WRAP;
-> +	out_pos = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_MASK;
-> +
-> +	if (!wrapped) {
-> +		num_read = memory_read_from_buffer(to, count, &pos, conbuf,
-> +				out_pos);
-> +	} else {
-> +		num_read = memory_read_from_buffer(to, count, &pos,
-> +				conbuf + out_pos,
-> +				be32_to_cpu(mc->obuf_size) - out_pos);
-> +
-> +		if (num_read < 0)
-> +			goto out;
-> +
-> +		num_read += memory_read_from_buffer(to + num_read,
-> +				count - num_read, &pos, conbuf, out_pos);
-> +	}
-> +out:
-> +	return num_read;
-> +}
-> +
-> +static struct bin_attribute messages_attr = {
-> +	.attr = {.name = "messages", .mode = 0444},
-> +	.read = opal_messages_read
-> +};
-> +
-> +void __init opal_messages_init(void)
-> +{
-> +	u64 mcaddr;
-> +	struct memcons *mc;
-> +
-> +	if (of_property_read_u64(opal_node, "ibm,opal-memcons", &mcaddr)) {
-> +		pr_warn("OPAL: Property ibm,opal-memcons not found, no message log\n");
-> +		return;
-> +	}
-> +
-> +	mc = phys_to_virt(mcaddr);
-> +	if (!mc) {
-> +		pr_warn("OPAL: memory console address is invalid\n");
-> +		return;
-> +	}
-> +
-> +	if (be64_to_cpu(mc->magic) != MEMCONS_MAGIC) {
-> +		pr_warn("OPAL: memory console version is invalid\n");
-> +		return;
-> +	}
-> +
-> +	messages_attr.private = mc;
-> +
-> +	if (sysfs_create_bin_file(opal_kobj, &messages_attr) != 0)
-> +		pr_warn("OPAL: sysfs file creation failed\n");
-> +}
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> index e92f2f6..2bc032a 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -46,7 +46,7 @@ struct mcheck_recoverable_range {
->  static struct mcheck_recoverable_range *mc_recoverable_range;
->  static int mc_recoverable_range_len;
->
-> -static struct device_node *opal_node;
-> +struct device_node *opal_node;
->  static DEFINE_SPINLOCK(opal_write_lock);
->  extern u64 opal_mc_secondary_handler[];
->  static unsigned int *opal_irqs;
-> @@ -574,6 +574,8 @@ static int __init opal_init(void)
->  		opal_platform_dump_init();
->  		/* Setup system parameters interface */
->  		opal_sys_param_init();
-> +		/* Setup message log interface. */
-> +		opal_messages_init();
->  	}
->
->  	return 0;
-> -- 
-> 1.9.1
+I think it would be great if we got rid of the usage of bitfields. As
+soon as the mood of the compiler changes, this code is going to break.
