@@ -1,18 +1,34 @@
-Return-Path: <shc_work@mail.ru>
-Received: from fallback5.mail.ru (fallback5.mail.ru [94.100.176.59])
- by ozlabs.org (Postfix) with ESMTP id 73B481400BF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Mar 2014 16:21:44 +1100 (EST)
-Received: from smtp40.i.mail.ru (smtp40.i.mail.ru [94.100.177.100])
- by fallback5.mail.ru (mPOP.Fallback_MX) with ESMTP id 3ADE11122158D
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Mar 2014 09:14:26 +0400 (MSK)
-From: Alexander Shiyan <shc_work@mail.ru>
-To: linux-gpio@vger.kernel.org
-Subject: [PATCH] gpio: ge: Convert to platform driver
-Date: Sun, 30 Mar 2014 09:14:15 +0400
-Message-Id: <1396156455-4225-1-git-send-email-shc_work@mail.ru>
-Cc: Alexandre Courbot <gnurou@gmail.com>,
- Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Shiyan <shc_work@mail.ru>
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B71BA1400B0
+ for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2014 16:33:32 +1100 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Sun, 30 Mar 2014 15:33:31 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 203A42BB0045
+ for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2014 16:33:27 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s2U5Cs6H4194726
+ for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2014 16:12:54 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s2U5XQ2A009913
+ for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2014 16:33:26 +1100
+Subject: [PATCH] powerpc/book3s: Fix mc_recoverable_range buffer overrun issue.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Sun, 30 Mar 2014 11:03:23 +0530
+Message-ID: <20140330053310.2748.89461.stgit@mars>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,250 +38,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch converts GE I/O FPGA GPIO driver to platform driver.
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
----
-Only compile tested.
----
- drivers/gpio/gpio-ge.c | 176 ++++++++++++++++---------------------------------
- 1 file changed, 58 insertions(+), 118 deletions(-)
+Currently we wrongly allocate mc_recoverable_range buffer (to hold
+recoverable ranges) based on size of the property "mcheck-recoverable-ranges".
+This results in allocating less memory to hold available recoverable range
+entries from /proc/device-tree/ibm,opal/mcheck-recoverable-ranges.
 
-diff --git a/drivers/gpio/gpio-ge.c b/drivers/gpio/gpio-ge.c
-index 7b95a4a..93efb29 100644
---- a/drivers/gpio/gpio-ge.c
-+++ b/drivers/gpio/gpio-ge.c
-@@ -18,15 +18,9 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/compiler.h>
--#include <linux/init.h>
- #include <linux/io.h>
--#include <linux/of.h>
- #include <linux/of_device.h>
--#include <linux/of_platform.h>
- #include <linux/of_gpio.h>
--#include <linux/gpio.h>
--#include <linux/slab.h>
- #include <linux/module.h>
- 
- #define GEF_GPIO_DIRECT		0x00
-@@ -39,28 +33,28 @@
- #define GEF_GPIO_OVERRUN	0x1C
- #define GEF_GPIO_MODE		0x20
- 
--static void _gef_gpio_set(void __iomem *reg, unsigned int offset, int value)
-+static void gef_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
+This patch fixes this issue by allocating mc_recoverable_range buffer based
+on number of entries of recoverable ranges instead of device property size.
+Without this change we end up allocating less memory and run into memory
+corruption issue.
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c |   28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index d5f11d6..f4c011f 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -102,13 +102,13 @@ int __init early_init_dt_scan_opal(unsigned long node,
+ int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 				   const char *uname, int depth, void *data)
  {
-+	struct of_mm_gpio_chip *mmchip = to_of_mm_gpio_chip(chip);
- 	unsigned int data;
+-	unsigned long i, size;
++	unsigned long i, psize, size;
+ 	const __be32 *prop;
  
--	data = ioread32be(reg);
-+	data = ioread32be(mmchip->regs + GEF_GPIO_OUT);
- 	/* value: 0=low; 1=high */
--	if (value & 0x1)
--		data = data | (0x1 << offset);
-+	if (value)
-+		data = data | BIT(offset);
- 	else
--		data = data & ~(0x1 << offset);
-+		data = data & ~BIT(offset);
+ 	if (depth != 1 || strcmp(uname, "ibm,opal") != 0)
+ 		return 0;
  
--	iowrite32be(data, reg);
-+	iowrite32be(data, mmchip->regs + GEF_GPIO_OUT);
+-	prop = of_get_flat_dt_prop(node, "mcheck-recoverable-ranges", &size);
++	prop = of_get_flat_dt_prop(node, "mcheck-recoverable-ranges", &psize);
+ 
+ 	if (!prop)
+ 		return 1;
+@@ -116,6 +116,23 @@ int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 	pr_debug("Found machine check recoverable ranges.\n");
+ 
+ 	/*
++	 * Calculate number of available entries.
++	 *
++	 * Each recoverable address range entry is (start address, len,
++	 * recovery address), 2 cells each for start and recovery address,
++	 * 1 cell for len, totalling 5 cells per entry.
++	 */
++	mc_recoverable_range_len = psize / (sizeof(*prop) * 5);
++
++	/* Sanity check */
++	if (!mc_recoverable_range_len)
++		return 1;
++
++	/* Size required to hold all the entries. */
++	size = mc_recoverable_range_len *
++			sizeof(struct mcheck_recoverable_range);
++
++	/*
+ 	 * Allocate a buffer to hold the MC recoverable ranges. We would be
+ 	 * accessing them in real mode, hence it needs to be within
+ 	 * RMO region.
+@@ -124,11 +141,7 @@ int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 							ppc64_rma_size));
+ 	memset(mc_recoverable_range, 0, size);
+ 
+-	/*
+-	 * Each recoverable address entry is an (start address,len,
+-	 * recover address) pair, * 2 cells each, totalling 4 cells per entry.
+-	 */
+-	for (i = 0; i < size / (sizeof(*prop) * 5); i++) {
++	for (i = 0; i < mc_recoverable_range_len; i++) {
+ 		mc_recoverable_range[i].start_addr =
+ 					of_read_number(prop + (i * 5) + 0, 2);
+ 		mc_recoverable_range[i].end_addr =
+@@ -142,7 +155,6 @@ int __init early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 				mc_recoverable_range[i].end_addr,
+ 				mc_recoverable_range[i].recover_addr);
+ 	}
+-	mc_recoverable_range_len = i;
+ 	return 1;
  }
  
--
- static int gef_gpio_dir_in(struct gpio_chip *chip, unsigned offset)
- {
- 	unsigned int data;
- 	struct of_mm_gpio_chip *mmchip = to_of_mm_gpio_chip(chip);
- 
- 	data = ioread32be(mmchip->regs + GEF_GPIO_DIRECT);
--	data = data | (0x1 << offset);
-+	data = data | BIT(offset);
- 	iowrite32be(data, mmchip->regs + GEF_GPIO_DIRECT);
- 
- 	return 0;
-@@ -71,11 +65,11 @@ static int gef_gpio_dir_out(struct gpio_chip *chip, unsigned offset, int value)
- 	unsigned int data;
- 	struct of_mm_gpio_chip *mmchip = to_of_mm_gpio_chip(chip);
- 
--	/* Set direction before switching to input */
--	_gef_gpio_set(mmchip->regs + GEF_GPIO_OUT, offset, value);
-+	/* Set value before switching to output */
-+	gef_gpio_set(mmchip->regs + GEF_GPIO_OUT, offset, value);
- 
- 	data = ioread32be(mmchip->regs + GEF_GPIO_DIRECT);
--	data = data & ~(0x1 << offset);
-+	data = data & ~BIT(offset);
- 	iowrite32be(data, mmchip->regs + GEF_GPIO_DIRECT);
- 
- 	return 0;
-@@ -83,116 +77,62 @@ static int gef_gpio_dir_out(struct gpio_chip *chip, unsigned offset, int value)
- 
- static int gef_gpio_get(struct gpio_chip *chip, unsigned offset)
- {
--	unsigned int data;
--	int state = 0;
- 	struct of_mm_gpio_chip *mmchip = to_of_mm_gpio_chip(chip);
- 
--	data = ioread32be(mmchip->regs + GEF_GPIO_IN);
--	state = (int)((data >> offset) & 0x1);
--
--	return state;
-+	return !!(ioread32be(mmchip->regs + GEF_GPIO_IN) & BIT(offset));
- }
- 
--static void gef_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
-+static const struct of_device_id gef_gpio_ids[] = {
-+	{
-+		.compatible	= "gef,sbc610-gpio",
-+		.data		= (void *)19,
-+	}, {
-+		.compatible	= "gef,sbc310-gpio",
-+		.data		= (void *)6,
-+	}, {
-+		.compatible	= "ge,imp3a-gpio",
-+		.data		= (void *)16,
-+	},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, gef_gpio_ids);
-+
-+static int gef_gpio_probe(struct platform_device *pdev)
- {
--	struct of_mm_gpio_chip *mmchip = to_of_mm_gpio_chip(chip);
-+	const struct of_device_id *of_id =
-+		of_match_device(gef_gpio_ids, &pdev->dev);
-+	struct of_mm_gpio_chip *mmchip;
- 
--	_gef_gpio_set(mmchip->regs + GEF_GPIO_OUT, offset, value);
--}
-+	if (!of_id)
-+		return -ENOSYS;
- 
--static int __init gef_gpio_init(void)
--{
--	struct device_node *np;
--	int retval;
--	struct of_mm_gpio_chip *gef_gpio_chip;
--
--	for_each_compatible_node(np, NULL, "gef,sbc610-gpio") {
--
--		pr_debug("%s: Initialising GEF GPIO\n", np->full_name);
--
--		/* Allocate chip structure */
--		gef_gpio_chip = kzalloc(sizeof(*gef_gpio_chip), GFP_KERNEL);
--		if (!gef_gpio_chip) {
--			pr_err("%s: Unable to allocate structure\n",
--				np->full_name);
--			continue;
--		}
--
--		/* Setup pointers to chip functions */
--		gef_gpio_chip->gc.of_gpio_n_cells = 2;
--		gef_gpio_chip->gc.ngpio = 19;
--		gef_gpio_chip->gc.direction_input = gef_gpio_dir_in;
--		gef_gpio_chip->gc.direction_output = gef_gpio_dir_out;
--		gef_gpio_chip->gc.get = gef_gpio_get;
--		gef_gpio_chip->gc.set = gef_gpio_set;
--
--		/* This function adds a memory mapped GPIO chip */
--		retval = of_mm_gpiochip_add(np, gef_gpio_chip);
--		if (retval) {
--			kfree(gef_gpio_chip);
--			pr_err("%s: Unable to add GPIO\n", np->full_name);
--		}
--	}
--
--	for_each_compatible_node(np, NULL, "gef,sbc310-gpio") {
--
--		pr_debug("%s: Initialising GEF GPIO\n", np->full_name);
--
--		/* Allocate chip structure */
--		gef_gpio_chip = kzalloc(sizeof(*gef_gpio_chip), GFP_KERNEL);
--		if (!gef_gpio_chip) {
--			pr_err("%s: Unable to allocate structure\n",
--				np->full_name);
--			continue;
--		}
--
--		/* Setup pointers to chip functions */
--		gef_gpio_chip->gc.of_gpio_n_cells = 2;
--		gef_gpio_chip->gc.ngpio = 6;
--		gef_gpio_chip->gc.direction_input = gef_gpio_dir_in;
--		gef_gpio_chip->gc.direction_output = gef_gpio_dir_out;
--		gef_gpio_chip->gc.get = gef_gpio_get;
--		gef_gpio_chip->gc.set = gef_gpio_set;
--
--		/* This function adds a memory mapped GPIO chip */
--		retval = of_mm_gpiochip_add(np, gef_gpio_chip);
--		if (retval) {
--			kfree(gef_gpio_chip);
--			pr_err("%s: Unable to add GPIO\n", np->full_name);
--		}
--	}
--
--	for_each_compatible_node(np, NULL, "ge,imp3a-gpio") {
--
--		pr_debug("%s: Initialising GE GPIO\n", np->full_name);
--
--		/* Allocate chip structure */
--		gef_gpio_chip = kzalloc(sizeof(*gef_gpio_chip), GFP_KERNEL);
--		if (!gef_gpio_chip) {
--			pr_err("%s: Unable to allocate structure\n",
--				np->full_name);
--			continue;
--		}
--
--		/* Setup pointers to chip functions */
--		gef_gpio_chip->gc.of_gpio_n_cells = 2;
--		gef_gpio_chip->gc.ngpio = 16;
--		gef_gpio_chip->gc.direction_input = gef_gpio_dir_in;
--		gef_gpio_chip->gc.direction_output = gef_gpio_dir_out;
--		gef_gpio_chip->gc.get = gef_gpio_get;
--		gef_gpio_chip->gc.set = gef_gpio_set;
--
--		/* This function adds a memory mapped GPIO chip */
--		retval = of_mm_gpiochip_add(np, gef_gpio_chip);
--		if (retval) {
--			kfree(gef_gpio_chip);
--			pr_err("%s: Unable to add GPIO\n", np->full_name);
--		}
--	}
-+	mmchip = devm_kzalloc(&pdev->dev, sizeof(*mmchip), GFP_KERNEL);
-+	if (!mmchip)
-+		return -ENOMEM;
- 
--	return 0;
-+	/* Setup pointers to chip functions */
-+	mmchip->gc.ngpio = (u16)(uintptr_t)of_id->data;
-+	mmchip->gc.of_gpio_n_cells = 2;
-+	mmchip->gc.direction_input = gef_gpio_dir_in;
-+	mmchip->gc.direction_output = gef_gpio_dir_out;
-+	mmchip->gc.get = gef_gpio_get;
-+	mmchip->gc.set = gef_gpio_set;
-+
-+	platform_set_drvdata(pdev, mmchip);
-+
-+	/* This function adds a memory mapped GPIO chip */
-+	return of_mm_gpiochip_add(pdev->dev.of_node, mmchip);
-+};
-+
-+static struct platform_driver gef_gpio_driver = {
-+	.driver	= {
-+		.name		= "gef-gpio",
-+		.owner		= THIS_MODULE,
-+		.of_match_table	= gef_gpio_ids,
-+	},
-+	.probe	= gef_gpio_probe,
- };
--arch_initcall(gef_gpio_init);
-+module_platform_driver(gef_gpio_driver);
- 
- MODULE_DESCRIPTION("GE I/O FPGA GPIO driver");
- MODULE_AUTHOR("Martyn Welch <martyn.welch@ge.com");
--- 
-1.8.3.2
