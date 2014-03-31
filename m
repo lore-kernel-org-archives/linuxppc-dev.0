@@ -1,29 +1,24 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-vc0-x231.google.com (mail-vc0-x231.google.com
- [IPv6:2607:f8b0:400c:c03::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0CCA3140098
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 09:53:18 +1100 (EST)
-Received: by mail-vc0-f177.google.com with SMTP id if17so8764032vcb.36
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 15:53:15 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3FE4314009C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 10:03:38 +1100 (EST)
+Message-ID: <1396307005.20849.37.camel@snotra.buserror.net>
+Subject: Re: [PATCH 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
+ emulation
+From: Scott Wood <scottwood@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Mon, 31 Mar 2014 18:03:25 -0500
+In-Reply-To: <53397091.4050601@suse.de>
+References: <1392913821-4520-1-git-send-email-mihai.caraman@freescale.com>
+ <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
+ <1395868664.12738.68.camel@snotra.buserror.net> <53397091.4050601@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Sender: joel.stan@gmail.com
-In-Reply-To: <1396267178.11529.80.camel@pasglop>
-References: <1395964240-8305-1-git-send-email-joel@jms.id.au>
- <1395964240-8305-2-git-send-email-joel@jms.id.au>
- <21604.1396238935@ale.ozlabs.ibm.com>
- <1396267178.11529.80.camel@pasglop>
-From: Joel Stanley <joel@jms.id.au>
-Date: Tue, 1 Apr 2014 09:22:54 +1030
-Message-ID: <CACPK8Xfun6UHdHq_-308jGw5tmv53L-CPa=g-NWCya1WL_kVGw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] powerpc/powernv: Add OPAL message log interface
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, michael@ellerman.id.au,
- Michael Neuling <mikey@neuling.org>, shangw@linux.vnet.ibm.com,
- hegdevasant@linux.vnet.ibm.com, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 31, 2014 at 10:29 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->> > +   conbuf = phys_to_virt(be64_to_cpu(mc->obuf_phys));
->> > +   wrapped = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_WRAP;
->> > +   out_pos = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_MASK;
->> > +
->>
->> Are there ordering issues we need to think about here with reading
->> these?  Can the messages be written on another CPU at the same time as
->> these are being read?
->
-> Good point. out_pos should probably be read only once into a local
-> variable using the ACCESS_ONCE macro, and then only be broken up.
+On Mon, 2014-03-31 at 15:41 +0200, Alexander Graf wrote:
+> On 03/26/2014 10:17 PM, Scott Wood wrote:
+> > On Thu, 2014-02-20 at 18:30 +0200, Mihai Caraman wrote:
+> >> +	/*
+> >> +	 * Another thread may rewrite the TLB entry in parallel, don't
+> >> +	 * execute from the address if the execute permission is not set
+> >> +	 */
+> 
+> What happens when another thread rewrites the TLB entry in parallel? 
+> Does tlbsx succeed? Does it fail? Do we see failure indicated somehow? 
+> Are the contents of the MAS registers consistent at this point or 
+> inconsistent?
 
-I've got a V2 that fixes this and the other issues Mikey pointed out.
+If another thread rewrites the TLB entry, then we use the new TLB entry,
+just as if it had raced in hardware.  This check ensures that we don't
+execute from the new TLB entry if it doesn't have execute permissions
+(just as hardware would).
 
-I found that the log would get corrupted from Linux's point of view
-once full. Dumping the memory suggests that the contents of the
-circular buffer is fine, and it's just our pointer (out_pos) that is
-incorrect. It's not clear why this is happening; I'll do some more
-testing before sending out the updated patch.
+What happens if the new TLB entry is valid and executable, and the
+instruction pointed to is valid, but doesn't trap (and thus we don't
+have emulation for it)?
 
-Cheers,
+> There has to be a good way to detect such a race and deal with it, no?
 
-Joel
+How would you detect it?  We don't get any information from the trap
+about what physical address the instruction was fetched from, or what
+the instruction was.
+
+-Scott
