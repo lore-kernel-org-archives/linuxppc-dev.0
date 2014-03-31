@@ -1,24 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <luto@amacapital.net>
+Received: from mail-qg0-f53.google.com (mail-qg0-f53.google.com
+ [209.85.192.53])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3FE4314009C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 10:03:38 +1100 (EST)
-Message-ID: <1396307005.20849.37.camel@snotra.buserror.net>
-Subject: Re: [PATCH 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
- emulation
-From: Scott Wood <scottwood@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Date: Mon, 31 Mar 2014 18:03:25 -0500
-In-Reply-To: <53397091.4050601@suse.de>
-References: <1392913821-4520-1-git-send-email-mihai.caraman@freescale.com>
- <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
- <1395868664.12738.68.camel@snotra.buserror.net> <53397091.4050601@suse.de>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 29A6F14009D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 10:50:09 +1100 (EST)
+Received: by mail-qg0-f53.google.com with SMTP id e89so1530207qgf.26
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 16:50:06 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <CALCETrWuUcinbJ5v2LzaFWEg1vkBAB2H8rD9x0jccawwRwb4pQ@mail.gmail.com>
+References: <CALCETrWuUcinbJ5v2LzaFWEg1vkBAB2H8rD9x0jccawwRwb4pQ@mail.gmail.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Date: Mon, 31 Mar 2014 16:49:45 -0700
+Message-ID: <CALCETrVG=49tVCFDfgQ=2EMJrV582JxGzfadGM+JxfL59JxG0A@mail.gmail.com>
+Subject: Re: OOPS in hvc / virtconsole
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ virtio-dev@lists.oasis-open.org, virtualization@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-03-31 at 15:41 +0200, Alexander Graf wrote:
-> On 03/26/2014 10:17 PM, Scott Wood wrote:
-> > On Thu, 2014-02-20 at 18:30 +0200, Mihai Caraman wrote:
-> >> +	/*
-> >> +	 * Another thread may rewrite the TLB entry in parallel, don't
-> >> +	 * execute from the address if the execute permission is not set
-> >> +	 */
-> 
-> What happens when another thread rewrites the TLB entry in parallel? 
-> Does tlbsx succeed? Does it fail? Do we see failure indicated somehow? 
-> Are the contents of the MAS registers consistent at this point or 
-> inconsistent?
+On Mon, Mar 31, 2014 at 3:31 PM, Andy Lutomirski <luto@amacapital.net> wrote:
+> I'm running a Fedora distro kernel (3.13.7-200.fc20.x86_64) in kvm
+> with these options:
+>
+> -chardev null,id=hvc0,signal=off
+> -device virtio-serial-pci
+> -device virtconsole,chardev=hvc0,name=virtme_console
+> -append console=hvc0 console=ttyS0
+> -nographic
+>
+> (There are more, but these are the interesting ones, I think.)
 
-If another thread rewrites the TLB entry, then we use the new TLB entry,
-just as if it had raced in hardware.  This check ensures that we don't
-execute from the new TLB entry if it doesn't have execute permissions
-(just as hardware would).
+You can reproduce it by downloading this:
 
-What happens if the new TLB entry is valid and executable, and the
-instruction pointed to is valid, but doesn't trap (and thus we don't
-have emulation for it)?
+https://git.kernel.org/cgit/utils/kernel/virtme/virtme.git/commit/?h=crash-virtconsole&id=c55df415154e6331a1dc96a5e2ffcf5c684fc2f9
 
-> There has to be a good way to detect such a race and deal with it, no?
+and running:
 
-How would you detect it?  We don't get any information from the trap
-about what physical address the instruction was fetched from, or what
-the instruction was.
+./virtme-run --installed-kernel 3.13.7-200.fc20.x86_64 --console
+--qemu-opts -m 2048 -smp 2
 
--Scott
+Adjust the requested kernel version as appropriate.
+
+--Andy
