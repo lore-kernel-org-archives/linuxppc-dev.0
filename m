@@ -1,15 +1,28 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] powerpc/powernv: Add OPAL message log interface
-In-reply-to: <21604.1396238935@ale.ozlabs.ibm.com>
-References: <1395964240-8305-1-git-send-email-joel@jms.id.au>
- <1395964240-8305-2-git-send-email-joel@jms.id.au>
- <21604.1396238935@ale.ozlabs.ibm.com>
-Date: Mon, 31 Mar 2014 15:21:38 +1100
-Message-ID: <22853.1396239698@ale.ozlabs.ibm.com>
-Cc: stewart@linux.vnet.ibm.com, michael@ellerman.id.au,
- shangw@linux.vnet.ibm.com, hegdevasant@linux.vnet.ibm.com, paulus@samba.org,
- Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org, anton@samba.org
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-oa0-f48.google.com (mail-oa0-f48.google.com
+ [209.85.219.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8CDA61400E5
+ for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2014 15:25:43 +1100 (EST)
+Received: by mail-oa0-f48.google.com with SMTP id m1so8755443oag.35
+ for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2014 21:25:40 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+Date: Mon, 31 Mar 2014 09:55:40 +0530
+Message-ID: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
+Subject: Re: [PATCH v5 0/3] powernv, cpufreq: Dynamic Frequency Scaling support
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PM list <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,233 +32,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> wrote:
+On 29 March 2014 01:41, Gautham R. Shenoy <ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> Hi,
+>
+> This is v5 of the patchset to enable dynamic frequency scaling on IBM
+> PowerNV platforms. This patchset does address all the review comments
+> obtained for v4 (which can be found at [1]).
+>
+> Changes from v4:
+>
+>     * Created a separate patch to select the CPUFreq related Config
+>       options for PowerNV
+>
+>     * Dropped the per-core locking hunks in
+>       drivers/cpufreq/powernv-cpufreq.c since the CPUFreq core takes
+>       care of the for us after the following commit which is present in
+>       linux-next:
+>
+>         commit 12478cf0c55e5969f740bb38a24b1a0104ae18d8
+>         Author: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>         Date:   Mon Mar 24 13:35:44 2014 +0530
+>
+>         cpufreq: Make sure frequency transitions are serialized
+>
+>     * [PATCH v5 3/3] gets rid of the powernv_pstate_ids[] array that
+>       was being used to record the pstate ids. After the following
+>       patch it is safe to use cpufreq_frequency_table.driver_data
+>       since it is opaque to the cpufreq core:
+>
+>         From: Viresh Kumar <viresh.kumar@linaro.org>
+>         Date: 2014-03-28 13:53:47
+>         url: http://marc.info/?l=linux-pm&m=139601416804702&w=2
+>
+>         cpufreq: create another field .flags in cpufreq_frequency_table
+>
+> The patchset is based on the commit
+> 201544be8c37dffbf069bb5fc9edb5674f8c1754 of the linux-next tree.
+>
+> While all the patches in the patchset apply cleanly on linux-next,
+> [PATCH v5 3/3] requires the Viresh's patch that was mentioned
+> above. Otherwise, the frequency corresponding to pstate id -3 will be
+> omited while reporting the "scaling_available_frequencies" in sysfs.
+>
+> [1]: http://marc.info/?l=linux-pm&m=139585297620612&w=2
+>
+> Gautham R. Shenoy (2):
+>   powernv, cpufreq: Select CPUFreq related Kconfig options for powernv
 
-> Joel Stanley <joel@jms.id.au> wrote:
-> 
-> > OPAL provides an in-memory circular buffer containing a message log
-> > populated with various runtime messages produced by the firmware.
-> > 
-> > Provide a sysfs interface /sys/firmware/opal/messages for userspace to
-> > view the messages.
-> > 
-> > Signed-off-by: Joel Stanley <joel@jms.id.au>
-> > ---
-> >  arch/powerpc/include/asm/opal.h                |  4 ++
-> >  arch/powerpc/platforms/powernv/Makefile        |  1 +
-> >  arch/powerpc/platforms/powernv/opal-messages.c | 97 ++++++++++++++++++++++++++
-> >  arch/powerpc/platforms/powernv/opal.c          |  4 +-
-> >  4 files changed, 105 insertions(+), 1 deletion(-)
-> >  create mode 100644 arch/powerpc/platforms/powernv/opal-messages.c
-> > 
-> > diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> > index ffafab0..6aa757e 100644
-> > --- a/arch/powerpc/include/asm/opal.h
-> > +++ b/arch/powerpc/include/asm/opal.h
-> > @@ -729,6 +729,9 @@ typedef struct oppanel_line {
-> >  /* /sys/firmware/opal */
-> >  extern struct kobject *opal_kobj;
-> >  
-> > +/* /ibm,opal */
-> > +extern struct device_node *opal_node;
-> > +
-> >  /* API functions */
-> >  int64_t opal_console_write(int64_t term_number, __be64 *length,
-> >  			   const uint8_t *buffer);
-> > @@ -918,6 +921,7 @@ extern void opal_flash_init(void);
-> >  extern int opal_elog_init(void);
-> >  extern void opal_platform_dump_init(void);
-> >  extern void opal_sys_param_init(void);
-> > +extern void opal_messages_init(void);
-> >  
-> >  extern int opal_machine_check(struct pt_regs *regs);
-> >  extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
-> > diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-> > index f324ea0..e2ba418 100644
-> > --- a/arch/powerpc/platforms/powernv/Makefile
-> > +++ b/arch/powerpc/platforms/powernv/Makefile
-> > @@ -1,6 +1,7 @@
-> >  obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o opal-async.o
-> >  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
-> >  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
-> > +obj-y			+= opal-messages.o
-> >  
-> >  obj-$(CONFIG_SMP)	+= smp.o
-> >  obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-> > diff --git a/arch/powerpc/platforms/powernv/opal-messages.c b/arch/powerpc/platforms/powernv/opal-messages.c
-> > new file mode 100644
-> > index 0000000..3a863e8
-> > --- /dev/null
-> > +++ b/arch/powerpc/platforms/powernv/opal-messages.c
-> > @@ -0,0 +1,97 @@
-> > +/*
-> > + * PowerNV OPAL in-memory console interface
-> > + *
-> > + * Copyright 2014 IBM Corp.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + */
-> > +
-> > +#include <asm/io.h>
-> > +#include <asm/opal.h>
-> > +#include <linux/debugfs.h>
-> > +#include <linux/of.h>
-> > +#include <linux/types.h>
-> > +
-> > +/* OPAL in-memory console. Defined in OPAL source at core/console.c */
-> > +struct memcons {
-> > +	__be64 magic;
-> > +#define MEMCONS_MAGIC	0x6630696567726173L
-> 
-> 0x6630696567726173 == f0iegras ... Ben!!! :-P
-> 
-> > +	__be64 obuf_phys;
-> > +	__be64 ibuf_phys;
-> > +	__be32 obuf_size;
-> > +	__be32 ibuf_size;
-> > +	__be32 out_pos;
-> > +#define MEMCONS_OUT_POS_WRAP	0x80000000u
-> > +#define MEMCONS_OUT_POS_MASK	0x00ffffffu
-> > +	__be32 in_prod;
-> > +	__be32 in_cons;
-> > +};
-> > +
-> > +static ssize_t opal_messages_read(struct file *file, struct kobject *kobj,
-> > +	struct bin_attribute *bin_attr, char *to, loff_t pos, size_t count)
-> > +{
-> > +	struct memcons *mc = bin_attr->private;
-> > +	const char *conbuf;
-> > +	bool wrapped;
-> > +	size_t num_read;
-> > +	int out_pos;
-> > +
-> > +	if (!mc)
-> > +		return -ENODEV;
-> > +
-> > +	conbuf = phys_to_virt(be64_to_cpu(mc->obuf_phys));
-> > +	wrapped = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_WRAP;
-> > +	out_pos = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_MASK;
-> > +
-> 
-> Are there ordering issues we need to think about here with reading
-> these?  Can the messages be written on another CPU at the same time as
-> these are being read?
-> 
-> What happens if in between reading wrapped and out_pos the buffer wraps?
-> You'd end up getting only a few bytes of console?  Maybe you need to
-> read wrapped before and after out_pos to make should it's not wrapped in
-> between.
+Make this patch 3/3 (Probably Rafael can do this while applying)
 
-wrapped = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_WRAP;
-out_pos = be32_to_cpu(mc->out_pos) & MEMCONS_OUT_POS_MASK;
+>   powernv,cpufreq: Use cpufreq_frequency_table.driver_data to store
+>     pstate ids
+>
+> Vaidyanathan Srinivasan (1):
+>   powernv, cpufreq: cpufreq driver for powernv platform
 
-OK, I just realised this is reading from the same location.  So yeah,
-don't do that.  Read it once and calculate wrapped and out_pos from that
-single read.
+Otherwise,
 
-> 
-> > +	if (!wrapped) {
-> 
-> Why the negative case first?  Just make it:
-> 
->    if (wrapped) {
->       wrapped case
->    } else {
->       not wrapped case
->    }
-> 
-> Also, no curlies needed for single statement.
-> 
-> 
-> > +		num_read = memory_read_from_buffer(to, count, &pos, conbuf,
-> > +				out_pos);
-> 
-> This is probably not necessary, but do we need to sanity check out_pos <
-> obuf_size?  I guess we don't generally sanity check numbers from OPAL as
-> it can screw us in many other ways anyway.
-> 
-> > +	} else {
-> > +		num_read = memory_read_from_buffer(to, count, &pos,
-> > +				conbuf + out_pos,
-> > +				be32_to_cpu(mc->obuf_size) - out_pos);
-> > +
-> > +		if (num_read < 0)
-> > +			goto out;
-> > +
-> > +		num_read += memory_read_from_buffer(to + num_read,
-> > +				count - num_read, &pos, conbuf,
-> >                out_pos);
-> 
-> What if this second read returns an error?  num_read += -ERRNO?  I think
-> you need to check this return independently.
-> 
-> Mikey
-> 
-> > +	}
-> > +out:
-> > +	return num_read;
-> > +}
-> > +
-> > +static struct bin_attribute messages_attr = {
-> > +	.attr = {.name = "messages", .mode = 0444},
-> > +	.read = opal_messages_read
-> > +};
-> > +
-> > +void __init opal_messages_init(void)
-> > +{
-> > +	u64 mcaddr;
-> > +	struct memcons *mc;
-> > +
-> > +	if (of_property_read_u64(opal_node, "ibm,opal-memcons", &mcaddr)) {
-> > +		pr_warn("OPAL: Property ibm,opal-memcons not found, no message log\n");
-> > +		return;
-> > +	}
-> > +
-> > +	mc = phys_to_virt(mcaddr);
-> > +	if (!mc) {
-> > +		pr_warn("OPAL: memory console address is invalid\n");
-> > +		return;
-> > +	}
-> > +
-> > +	if (be64_to_cpu(mc->magic) != MEMCONS_MAGIC) {
-> > +		pr_warn("OPAL: memory console version is invalid\n");
-> > +		return;
-> > +	}
-> > +
-> > +	messages_attr.private = mc;
-> > +
-> > +	if (sysfs_create_bin_file(opal_kobj, &messages_attr) != 0)
-> > +		pr_warn("OPAL: sysfs file creation failed\n");
-> > +}
-> > diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-> > index e92f2f6..2bc032a 100644
-> > --- a/arch/powerpc/platforms/powernv/opal.c
-> > +++ b/arch/powerpc/platforms/powernv/opal.c
-> > @@ -46,7 +46,7 @@ struct mcheck_recoverable_range {
-> >  static struct mcheck_recoverable_range *mc_recoverable_range;
-> >  static int mc_recoverable_range_len;
-> >  
-> > -static struct device_node *opal_node;
-> > +struct device_node *opal_node;
-> >  static DEFINE_SPINLOCK(opal_write_lock);
-> >  extern u64 opal_mc_secondary_handler[];
-> >  static unsigned int *opal_irqs;
-> > @@ -574,6 +574,8 @@ static int __init opal_init(void)
-> >  		opal_platform_dump_init();
-> >  		/* Setup system parameters interface */
-> >  		opal_sys_param_init();
-> > +		/* Setup message log interface. */
-> > +		opal_messages_init();
-> >  	}
-> >  
-> >  	return 0;
-> > -- 
-> > 1.9.1
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
