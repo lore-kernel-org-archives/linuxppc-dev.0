@@ -1,26 +1,30 @@
-Return-Path: <hongbo.zhang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <viresh.kumar@linaro.org>
+Received: from mail-ob0-f169.google.com (mail-ob0-f169.google.com
+ [209.85.214.169])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 47BC11401F0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 15:09:15 +1100 (EST)
-Message-ID: <5338EA57.1000509@freescale.com>
-Date: Mon, 31 Mar 2014 12:08:55 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id A68321400E1
+ for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2014 15:21:06 +1100 (EST)
+Received: by mail-ob0-f169.google.com with SMTP id va2so8665559obc.0
+ for <linuxppc-dev@ozlabs.org>; Sun, 30 Mar 2014 21:21:04 -0700 (PDT)
 MIME-Version: 1.0
-To: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH 6/7] DMA: Freescale: use spin_lock_bh instead of
- spin_lock_irqsave
-References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
- <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
- <1395817294.6569.2.camel@vkoul-udesk3> <533517C1.8080208@freescale.com>
- <20140329134528.GQ1976@intel.com>
-In-Reply-To: <20140329134528.GQ1976@intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Vinod Koul <vkoul@infradead.org>, linux-kernel@vger.kernel.org,
- scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
+References: <1396037484-23907-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1396037484-23907-2-git-send-email-ego@linux.vnet.ibm.com>
+Date: Mon, 31 Mar 2014 09:51:03 +0530
+Message-ID: <CAKohpokvHYH7xcQyQyKmbu_xqfX8dbwnBNhQ3y9ZyAm7i0z0Qg@mail.gmail.com>
+Subject: Re: [PATCH v5 1/3] powernv, cpufreq: Select CPUFreq related Kconfig
+ options for powernv
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linux PM list <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Anton Blanchard <anton@samba.org>,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 03/29/2014 09:45 PM, Vinod Koul wrote:
-> On Fri, Mar 28, 2014 at 02:33:37PM +0800, Hongbo Zhang wrote:
->> On 03/26/2014 03:01 PM, Vinod Koul wrote:
->>> On Thu, 2014-01-16 at 13:47 +0800, hongbo.zhang@freescale.com wrote:
->>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
->>>>
->>>> The usage of spin_lock_irqsave() is a stronger locking mechanism than is
->>>> required throughout the driver. The minimum locking required should be used
->>>> instead. Interrupts will be turned off and context will be saved, it is
->>>> unnecessary to use irqsave.
->>>>
->>>> This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
->>>> manipulation of protected fields is done using tasklet context or weaker, which
->>>> makes spin_lock_bh() the correct choice.
->>>>
+On 29 March 2014 01:41, Gautham R. Shenoy <ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 >
->>>>   /**
->>>> @@ -1124,11 +1120,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
->>>>   static void dma_do_tasklet(unsigned long data)
->>>>   {
->>>>   	struct fsldma_chan *chan = (struct fsldma_chan *)data;
->>>> -	unsigned long flags;
->>>>   	chan_dbg(chan, "tasklet entry\n");
->>>> -	spin_lock_irqsave(&chan->desc_lock, flags);
->>>> +	spin_lock_bh(&chan->desc_lock);
->>> okay here is the problem :(
->>>
->>> You moved to _bh variant. So if you grab the lock in rest of the code
->>> and irq gets triggered then here we will be spinning to grab the lock.
->>> So effectively you made right locking solution into deadlock situation!
->> If the rest code grabs lock by spin_lock_bh(), and if irq raised,
->> the tasklet could not be executed because it has been disabled by
->> the _bh variant function.
-> yes if you are accessing resources only in tasklet and rest of the code, then
-> _bh variant works well. The problem here is usage in irq handler
+> Enable CPUFreq for PowerNV. Select "performance", "powersave",
+> "userspace" and "ondemand" governors. Choose "ondemand" to be the
+> default governor.
 >
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/configs/pseries_defconfig    | 1 +
+>  arch/powerpc/configs/pseries_le_defconfig | 1 +
+>  arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
+>  3 files changed, 8 insertions(+)
 
-The name dma_do_tasklet may mislead, it is tasklet handler, not irq 
-handler, not a trigger to load tasklet.
-the irq handler is fsldma_chan_irq, and I don't use lock in it.
-
-If it is the problem, I would like to change dma_do_tasklet to 
-dma_tasklet to eliminate misleading.
+Probably it doesn't make much sense to keep this as the first patch
+as you still don't have the driver available yet.
