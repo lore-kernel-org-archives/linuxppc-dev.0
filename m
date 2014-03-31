@@ -1,23 +1,31 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ig0-f176.google.com (mail-ig0-f176.google.com
+ [209.85.213.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 04CD91400A1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 00:41:41 +1100 (EST)
-Message-ID: <53397091.4050601@suse.de>
-Date: Mon, 31 Mar 2014 15:41:37 +0200
-From: Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id 1B20A14007B
+ for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2014 00:52:27 +1100 (EST)
+Received: by mail-ig0-f176.google.com with SMTP id uy17so3463494igb.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 31 Mar 2014 06:52:25 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
- emulation
-References: <1392913821-4520-1-git-send-email-mihai.caraman@freescale.com>
- <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
- <1395868664.12738.68.camel@snotra.buserror.net>
-In-Reply-To: <1395868664.12738.68.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <CACxGe6vbEMgZf6LvpHqsW353rcGVZ9iGFVuir4eP5qreC_eXpQ@mail.gmail.com>
+References: <1393594976-16728-1-git-send-email-m.szyprowski@samsung.com>
+ <CACxGe6vbEMgZf6LvpHqsW353rcGVZ9iGFVuir4eP5qreC_eXpQ@mail.gmail.com>
+From: Grant Likely <grant.likely@linaro.org>
+Date: Mon, 31 Mar 2014 06:52:04 -0700
+Message-ID: <CACxGe6snm_D=X0cm3OYkX6gLhpKcu120mikuLX8_vVkNxdrhmA@mail.gmail.com>
+Subject: Re: [PATCH v6 00/11] reserved-memory regions/CMA in devicetree, again
+To: Marek Szyprowski <m.szyprowski@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Catalin Marinas <Catalin.Marinas@arm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robh+dt@kernel.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,190 +35,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/26/2014 10:17 PM, Scott Wood wrote:
-> On Thu, 2014-02-20 at 18:30 +0200, Mihai Caraman wrote:
->> Load external pid (lwepx) instruction faults (when called from
->> KVM with guest context) needs to be handled by KVM. This implies
->> additional code in DO_KVM macro to identify the source of the
->> exception (which oiginate from KVM host rather than the guest).
->> The hook requires to check the Exception Syndrome Register
->> ESR[EPID] and External PID Load Context Register EPLC[EGS] for
->> some exceptions (DTLB_MISS, DSI and LRAT). Doing this on Data TLB
->> miss exception is obvious intrusive for the host.
+On Tue, Mar 11, 2014 at 10:37 AM, Grant Likely <grant.likely@linaro.org> wrote:
+> Hi Ben, Russell and Catalin,
+>
+> I've got this series queued up, and I'd like to be ready to merge it
+> in the next merge window. I'm going to queue it up in linux-next. If
+> you have any concerns, please shout and it can be removed. I won't ask
+> Linus to pull it without you giving the okay.
+
+Hi Ben and Russell.
+
+Any feedback on this? The arch/powerpc and arch/arm patches are a
+single line change each and are easy to revert if they cause problems.
+I'm going to send Linus a pull request tomorrow morning if I don't
+hear anything before then.
+
+g.
+
+> On Fri, Feb 28, 2014 at 1:42 PM, Marek Szyprowski
+> <m.szyprowski@samsung.com> wrote:
+>> Hello again!
 >>
->> Get rid of lwepx and acquire last instuction in kvmppc_get_last_inst()
->> by searching for the physical address and kmap it. This fixes an
->> infinite loop caused by lwepx's data TLB miss handled in the host
->> and the TODO for TLB eviction and execute-but-not-read entries.
+>> Here is another update of the support for reserved memory regions in
+>> device tree. I've fixes a few more minor issues pointed by Grant. See
+>> changelog for more details.
 >>
->> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
->> ---
->>   arch/powerpc/kvm/bookehv_interrupts.S |   37 +++----------
->>   arch/powerpc/kvm/e500_mmu_host.c      |   93 +++++++++++++++++++++++++++++++++
->>   2 files changed, 102 insertions(+), 28 deletions(-)
+>> The initial code for this feature were posted here [1], merged as commit
+>> 9d8eab7af79cb4ce2de5de39f82c455b1f796963 ("drivers: of: add
+>> initialization code for dma reserved memory") and later reverted by
+>> commit 1931ee143b0ab72924944bc06e363d837ba05063. For more information,
+>> see [2]. Finally a new bindings has been proposed [3] and Josh
+>> Cartwright a few days ago prepared some code which implements those
+>> bindings [4]. This finally pushed me again to find some time to finish
+>> this task and review the code. Josh agreed to give me the ownership of
+>> this series to continue preparing them for mainline inclusion.
 >>
->> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
->> index 20c7a54..c50490c 100644
->> --- a/arch/powerpc/kvm/bookehv_interrupts.S
->> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
->> @@ -119,38 +119,14 @@
->>   1:
->>   
->>   	.if	\flags & NEED_EMU
->> -	/*
->> -	 * This assumes you have external PID support.
->> -	 * To support a bookehv CPU without external PID, you'll
->> -	 * need to look up the TLB entry and create a temporary mapping.
->> -	 *
->> -	 * FIXME: we don't currently handle if the lwepx faults.  PR-mode
->> -	 * booke doesn't handle it either.  Since Linux doesn't use
->> -	 * broadcast tlbivax anymore, the only way this should happen is
->> -	 * if the guest maps its memory execute-but-not-read, or if we
->> -	 * somehow take a TLB miss in the middle of this entry code and
->> -	 * evict the relevant entry.  On e500mc, all kernel lowmem is
->> -	 * bolted into TLB1 large page mappings, and we don't use
->> -	 * broadcast invalidates, so we should not take a TLB miss here.
->> -	 *
->> -	 * Later we'll need to deal with faults here.  Disallowing guest
->> -	 * mappings that are execute-but-not-read could be an option on
->> -	 * e500mc, but not on chips with an LRAT if it is used.
->> -	 */
->> -
->> -	mfspr	r3, SPRN_EPLC	/* will already have correct ELPID and EGS */
->>   	PPC_STL	r15, VCPU_GPR(R15)(r4)
->>   	PPC_STL	r16, VCPU_GPR(R16)(r4)
->>   	PPC_STL	r17, VCPU_GPR(R17)(r4)
->>   	PPC_STL	r18, VCPU_GPR(R18)(r4)
->>   	PPC_STL	r19, VCPU_GPR(R19)(r4)
->> -	mr	r8, r3
->>   	PPC_STL	r20, VCPU_GPR(R20)(r4)
->> -	rlwimi	r8, r6, EPC_EAS_SHIFT - MSR_IR_LG, EPC_EAS
->>   	PPC_STL	r21, VCPU_GPR(R21)(r4)
->> -	rlwimi	r8, r6, EPC_EPR_SHIFT - MSR_PR_LG, EPC_EPR
->>   	PPC_STL	r22, VCPU_GPR(R22)(r4)
->> -	rlwimi	r8, r10, EPC_EPID_SHIFT, EPC_EPID
->>   	PPC_STL	r23, VCPU_GPR(R23)(r4)
->>   	PPC_STL	r24, VCPU_GPR(R24)(r4)
->>   	PPC_STL	r25, VCPU_GPR(R25)(r4)
->> @@ -160,10 +136,15 @@
->>   	PPC_STL	r29, VCPU_GPR(R29)(r4)
->>   	PPC_STL	r30, VCPU_GPR(R30)(r4)
->>   	PPC_STL	r31, VCPU_GPR(R31)(r4)
->> -	mtspr	SPRN_EPLC, r8
->> -	isync
->> -	lwepx   r9, 0, r5
->> -	mtspr	SPRN_EPLC, r3
->> +
->> +	/*
->> +	 * We don't use external PID support. lwepx faults would need to be
->> +	 * handled by KVM and this implies aditional code in DO_KVM (for
->> +	 * DTB_MISS, DSI and LRAT) to check ESR[EPID] and EPLC[EGS] which
->> +	 * is too intrusive for the host. Get last instuction in
->> +	 * kvmppc_get_last_inst().
->> +	 */
->> +	li	r9, KVM_INST_FETCH_FAILED
->>   	stw	r9, VCPU_LAST_INST(r4)
->>   	.endif
->>   
->> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
->> index 6025cb7..1b4cb41 100644
->> --- a/arch/powerpc/kvm/e500_mmu_host.c
->> +++ b/arch/powerpc/kvm/e500_mmu_host.c
->> @@ -598,9 +598,102 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
->>   	}
->>   }
->>   
->> +#ifdef CONFIG_KVM_BOOKE_HV
->> +int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr)
-> It'd be interesting to see what the performance impact of doing this on
-> non-HV would be -- it would eliminate divergent code, eliminate the
-> MSR_DS hack, and make exec-only mappings work.
-
-We hit the instruction emulation path a lot more often on non-HV, so 
-even a slight performance impact that might not be a major bummer for HV 
-would become critical for PR.
-
-But I agree - it'd be interesting to see numbers.
-
->
->> +{
->> +	gva_t geaddr;
->> +	hpa_t addr;
->> +	hfn_t pfn;
->> +	hva_t eaddr;
->> +	u32 mas0, mas1, mas2, mas3;
->> +	u64 mas7_mas3;
->> +	struct page *page;
->> +	unsigned int addr_space, psize_shift;
->> +	bool pr;
->> +	unsigned long flags;
->> +
->> +	/* Search TLB for guest pc to get the real address */
->> +	geaddr = kvmppc_get_pc(vcpu);
->> +	addr_space = (vcpu->arch.shared->msr & MSR_IS) >> MSR_IR_LG;
->> +
->> +	local_irq_save(flags);
->> +	mtspr(SPRN_MAS6, (vcpu->arch.pid << MAS6_SPID_SHIFT) | addr_space);
->> +	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
->> +	isync();
->> +	asm volatile("tlbsx 0, %[geaddr]\n" : : [geaddr] "r" (geaddr));
-> We can probably get away without that isync, despite what the manual
-> says.  We've been doing it in other contexts on e500 since forever, and
-> tlbsx has presync serialization which means it already waits for all
-> previous instructions to complete before beginning execution.
->
->> +	mtspr(SPRN_MAS5, 0);
->> +	mtspr(SPRN_MAS8, 0);
->> +	mas0 = mfspr(SPRN_MAS0);
->> +	mas1 = mfspr(SPRN_MAS1);
->> +	mas2 = mfspr(SPRN_MAS2);
->> +	mas3 = mfspr(SPRN_MAS3);
->> +	mas7_mas3 = (((u64) mfspr(SPRN_MAS7)) << 32) | mfspr(SPRN_MAS3);
-> Why read mas3 twice?
->
->> +	local_irq_restore(flags);
->> +
->> +	/*
->> +	 * If the TLB entry for guest pc was evicted, return to the guest.
->> +	 * There are high chances to find a valid TLB entry next time.
->> +	 */
->> +	if (!(mas1 & MAS1_VALID))
->> +		return EMULATE_AGAIN;
->> +
->> +	/*
->> +	 * Another thread may rewrite the TLB entry in parallel, don't
->> +	 * execute from the address if the execute permission is not set
->> +	 */
-
-What happens when another thread rewrites the TLB entry in parallel? 
-Does tlbsx succeed? Does it fail? Do we see failure indicated somehow? 
-Are the contents of the MAS registers consistent at this point or 
-inconsistent?
-
-There has to be a good way to detect such a race and deal with it, no?
-
->> +	pr = vcpu->arch.shared->msr & MSR_PR;
->> +	if ((pr && (!(mas3 & MAS3_UX))) || ((!pr) && (!(mas3 & MAS3_SX)))) {
->> +		kvmppc_core_queue_inst_storage(vcpu, 0);
->> +		return EMULATE_AGAIN;
->> +	}
-> s/(!foo)/!foo/g
->
->> +	/*
->> +	 * We will map the real address through a cacheable page, so we will
->> +	 * not support cache-inhibited guest pages. Fortunately emulated
->> +	 * instructions should not live there.
->> +	 */
->> +	if (mas2 & MAS2_I) {
->> +		printk(KERN_CRIT "Instuction emulation from cache-inhibited "
->> +				"guest pages is not supported\n");
->> +		return EMULATE_FAIL;
->> +	}
-> This message needs to be ratelimited, and use pr_err() (or maybe even
-> pr_debug()).
-
-I'd go for pr_debug(). If anything we'd want a trace point indicating 
-whether instruction fetching worked.
-
-
-Alex
+>> For more information please refer to the changlelog and links below.
+>>
+>> [1]: http://lkml.kernel.org/g/1377527959-5080-1-git-send-email-m.szyprowski@samsung.com
+>> [2]: http://lkml.kernel.org/g/1381476448-14548-1-git-send-email-m.szyprowski@samsung.com
+>> [3]: http://lkml.kernel.org/g/20131030134702.19B57C402A0@trevor.secretlab.ca
+>> [4]: http://thread.gmane.org/gmane.linux.documentation/19579
+>>
+>> Changelog:
+>>
+>> v6:
+>> - removed the need for "#memory-region-cells" property
+>> - fixed compilation issues on some systems
+>> - some other minor code cleanups
+>>
+>> v5: https://lkml.org/lkml/2014/2/21/147
+>> - sliced main patch into several smaller patches on Grant's request
+>> - fixed coding style issues pointed by Grant
+>> - use node->phandle value directly instead of parsing properties manually
+>>
+>> v4: https://lkml.org/lkml/2014/2/20/150
+>> - dynamic allocations are processed after all static reservations has been
+>>   done
+>> - moved code for handling static reservations to drivers/of/fdt.c
+>> - removed node matching by string comparison, now phandle values are used
+>>   directly
+>> - moved code for DMA and CMA handling directly to
+>>   drivers/base/dma-{coherent,contiguous}.c
+>> - added checks for proper #size-cells, #address-cells, ranges properties
+>>   in /reserved-memory node
+>> - even more code cleanup
+>> - added init code for ARM64 and PowerPC
+>>
+>> v3: http://article.gmane.org/gmane.linux.documentation/20169/
+>> - refactored memory reservation code, created common code to parse reg, size,
+>>   align, alloc-ranges properties
+>> - added support for multiple tuples in 'reg' property
+>> - memory is reserved regardless of presence of the driver for its compatible
+>> - prepared arch specific hooks for memory reservation (defaults use memblock
+>>   calls)
+>> - removed node matching by string during device initialization
+>> - CMA init code: added checks for required region alignment
+>> - more code cleanup here and there
+>>
+>> v2: http://thread.gmane.org/gmane.linux.documentation/19870/
+>> - removed copying of the node name
+>> - split shared-dma-pool handling into separate files (one for CMA and one
+>>   for dma_declare_coherent based implementations) for making the code easier
+>>   to understand
+>> - added support for AMBA devices, changed prototypes to use struct decice
+>>   instead of struct platform_device
+>> - renamed some functions to better match other names used in drivers/of/
+>> - restructured the rest of the code a bit for better readability
+>> - added 'reusable' property to exmaple linux,cma node in documentation
+>> - exclusive dma (dma_coherent) is used for only handling 'shared-dma-pool'
+>>   regions without 'reusable' property and CMA is used only for handling
+>>   'shared-dma-pool' regions with 'reusable' property.
+>>
+>> v1: http://thread.gmane.org/gmane.linux.documentation/19579
+>> - initial version prepared by Josh Cartwright
+>>
+>> Summary:
+>>
+>> Grant Likely (1):
+>>   of: document bindings for reserved-memory nodes
+>>
+>> Marek Szyprowski (10):
+>>   drivers: of: add initialization code for static reserved memory
+>>   drivers: of: add initialization code for dynamic reserved memory
+>>   drivers: of: add support for custom reserved memory drivers
+>>   drivers: of: add automated assignment of reserved regions to client
+>>     devices
+>>   drivers: of: initialize and assign reserved memory to newly created
+>>     devices
+>>   drivers: dma-coherent: add initialization from device tree
+>>   drivers: dma-contiguous: add initialization from device tree
+>>   arm: add support for reserved memory defined by device tree
+>>   arm64: add support for reserved memory defined by device tree
+>>   powerpc: add support for reserved memory defined by device tree
+>>
+>>  .../bindings/reserved-memory/reserved-memory.txt   |  136 ++++++++++
+>>  arch/arm/Kconfig                                   |    1 +
+>>  arch/arm/mm/init.c                                 |    2 +
+>>  arch/arm64/Kconfig                                 |    1 +
+>>  arch/arm64/mm/init.c                               |    1 +
+>>  arch/powerpc/Kconfig                               |    1 +
+>>  arch/powerpc/kernel/prom.c                         |    3 +
+>>  drivers/base/dma-coherent.c                        |   40 +++
+>>  drivers/base/dma-contiguous.c                      |  129 +++++++--
+>>  drivers/of/Kconfig                                 |    6 +
+>>  drivers/of/Makefile                                |    1 +
+>>  drivers/of/fdt.c                                   |  140 ++++++++++
+>>  drivers/of/of_reserved_mem.c                       |  287 ++++++++++++++++++++
+>>  drivers/of/platform.c                              |    7 +
+>>  include/asm-generic/vmlinux.lds.h                  |   11 +
+>>  include/linux/of_fdt.h                             |    3 +
+>>  include/linux/of_reserved_mem.h                    |   60 ++++
+>>  17 files changed, 807 insertions(+), 22 deletions(-)
+>>  create mode 100644 Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt
+>>  create mode 100644 drivers/of/of_reserved_mem.c
+>>  create mode 100644 include/linux/of_reserved_mem.h
+>>
+>> --
+>> 1.7.9.5
+>>
