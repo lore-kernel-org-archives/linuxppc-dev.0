@@ -1,20 +1,20 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
+Return-Path: <Li.Xiubo@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 679E914008B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 13:42:10 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 3B467140090
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 13:58:05 +1100 (EST)
+From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
 To: "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>, Scott Wood
  <scottwood@freescale.com>, "timur@tabi.org" <timur@tabi.org>
 Subject: RE: [PATCH 2/2] Make the diu driver work without board level
  initilization
-Date: Tue, 1 Apr 2014 02:42:01 +0000
-Message-ID: <ee46a927c70c4a5290e2bc048a74ddd3@BN1PR03MB188.namprd03.prod.outlook.com>
+Date: Tue, 1 Apr 2014 02:57:58 +0000
+Message-ID: <1305603ae9b846d9bc4c78f21a8c0494@BY2PR03MB505.namprd03.prod.outlook.com>
 References: <1395920287-5204-1-git-send-email-Jason.Jin@freescale.com>
 In-Reply-To: <1395920287-5204-1-git-send-email-Jason.Jin@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -28,71 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFtt
-YWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK2I0MDUzND1mcmVlc2NhbGUuY29tQGxpc3Rz
-Lm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBKYXNvbiBKaW4NCj4gU2VudDogVGh1cnNkYXksIE1h
-cmNoIDI3LCAyMDE0IDc6MzggUE0NCj4gVG86IFdvb2QgU2NvdHQtQjA3NDIxOyB0aW11ckB0YWJp
-Lm9yZw0KPiBDYzogbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZzsgTGkgWWFuZy1MZW8tDQo+IFI1ODQ3MjsgSmluIFpoZW5neGlvbmctUjY0
-MTg4DQo+IFN1YmplY3Q6IFtQQVRDSCAyLzJdIE1ha2UgdGhlIGRpdSBkcml2ZXIgd29yayB3aXRo
-b3V0IGJvYXJkIGxldmVsIGluaXRpbGl6YXRpb24NCj4gDQo+IFNvIGZhciB0aGUgRElVIGRyaXZl
-ciBkb2VzIG5vdCBoYXZlIGEgbWVjaGFuaXNtIHRvIGRvIHRoZQ0KPiBib2FyZCBzcGVjaWZpYyBp
-bml0aWFsaXphdGlvbi4gU28gb24gc29tZSBwbGF0Zm9ybXMsDQo+IHN1Y2ggYXMgUDEwMjIsIDg2
-MTAgYW5kIDUxMjEsIFRoZSBib2FyZCBzcGVjaWZpYyBpbml0aWFsaXphdGlvbg0KPiBpcyBpbXBs
-bWVudGVkIGluIHRoZSBwbGF0Zm9ybSBmaWxlIHN1Y2ggcDEwMjIyX2RzLg0KPiANCj4gQWN0dWFs
-bHksIHRoZSBESVUgaXMgYWxyZWFkeSBpbnRpYWxpemVkIGluIHRoZSB1LWJvb3QsIHRoZSBwaW4g
-c2hhcmluZw0KPiBhbmQgdGhlIHNpZ25hbCByb3V0aW5nIGFyZSBhbHNvIHNldCBpbiB1LWJvb3Qu
-IFNvIHdlIGNhbiBsZXZlcmFnZSB0aGF0DQo+IGluIGtlcm5lbCBkcml2ZXIgdG8gYXZvaWQgYm9h
-cmQgc2VwZWNpZmljIGluaXRpYWxpemF0aW9uLCBlc3BlY2lhbGx5DQo+IGZvciB0aGUgY29yZW5l
-dCBwbGF0Zm9ybSwgd2hpY2ggaXMgdGhlIGFic3RyYWN0aW9uIGZvciBzZXJ2ZXJhbA0KPiBwbGF0
-ZnJvbXMuDQo+IA0KPiBUaGUgcG90ZW50aWFsIHByb2JsZW0gaXMgdGhhdCB3aGVuIHRoZSBzeXN0
-ZW0gd2FrZXVwIGZyb20gdGhlIGRlZXANCj4gc2xlZXAsIHNvbWUgcGxhdGZvcm0gc2V0dGluZ3Mg
-bWF5IG5lZWQgdG8gYmUgcmUtaW5pdGlhbGl6ZWQuIFRoZSBDUExEDQo+IGFuZCBGUEdBIHNldHRp
-bmdzIHdpbGwgYmUga2VwdCwgYnV0IHRoZSBwaXhlbCBjbG9jayByZWdpc3RlciB3aGljaA0KPiB1
-c3VhbGx5IGxvY2F0ZSBhdCB0aGUgZ2xvYmFsIHV0aWxpdHkgc3BhY2UgbmVlZCB0byBiZSByZWlu
-aXRpYWxpemVkLg0KPiANCj4gR2VuZXJhbGx5LCB0aGUgcGl4ZWwgY2xvY2sgc2V0dGluZyB3YXMg
-aW1wbGVtZW50ZWQgaW4gdGhlIHBsYXRmb3JtDQo+IGZpbGUsIEJ1dCB0aGUgcGl4ZWwgY2xvY2sg
-cmVnaXN0ZXIgaXRzZWxmIHNob3VsZCBiZSBwYXJ0IG9mIHRoZSBESVUNCj4gbW9kdWxlLCBBbmQg
-Zm9yIFAxMDIyLDg2MTAgYW5kIFQxMDQwLCB0aGUgcGl4ZWwgY2xvY2sgcmVnaXN0ZXIgaGF2ZSB0
-aGUNCj4gc2FtZSBzdHJ1Y3R1cmUsIFNvIHdlIGNhbiBjb25zaWRlciB0byBtb3ZlIHRoZSBwaXhl
-bCBjbG9jayBzZXR0aW5nDQo+IGZyb20gdGhlIHBsYXRmb3JtIHRvIHRoZSBkaXUgZHJpdmVyLiBU
-aGlzIHBhdGNoIHByb3ZpZGUgdGhlIG9wdGlvbnMNCj4gc2V0IHRoZSBwaXhlbCBjbG9jayBpbiB0
-aGUgZGl1IGRyaXZlci4gQnV0IHRoZSBvcmlnaW5hbCBwbGF0Zm9ybSBwaXhlbA0KPiBjbG9jayBz
-ZXR0aW5nIHN0aWwgY2FuIGJlIHVzZWQgZm9yIFAxMDIyLDg2MTAgYW5kIDUxMnggd2l0aG91dCBh
-bnkNCj4gdXBkYXRlLiBUbyBpbXBsZW1lbnQgdGhlIHBpeGVsIGNsb2NrIHNldHRpbmcgaW4gdGhl
-IGRpdSBkcml2ZXIuIHRoZQ0KPiBmb2xsb3dpbmcgdXBkYXRlIGluIHRoZSBkaXUgZHRzIG5vZGUg
-d2FzIG5lZWRlZC4NCj4gZGlzcGxheTpkaXNwbGF5QDE4MDAwMCB7DQo+IAljb21wYXRpYmxlID0g
-ImZzbCx0MTA0MC1kaXUiLCAiZnNsLGRpdSI7DQo+IC0JcmVnID0gPDB4MTgwMDAwIDEwMDA+Ow0K
-PiArCXJlZyA9IDwweDE4MDAwMCAxMDAwIDB4ZmMwMjggND47DQo+ICsJcGl4Y2xrID0gPDAgMjU1
-IDA+Ow0KPiAgCWludGVycnVwdHMgPSA8NzQgMiAwIDA+Ow0KPiB9DQo+IFRoZSAweGZjMDI4IGlz
-IHRoZSBvZmZzZXQgZm9yIHBpeGVsIGNsb2NrIHJlZ2lzdGVyLiB0aGUgMyBzZWdtZW50IG9mDQo+
-IHRoZSBwaXhjbGsgc3RhbmQgZm9yIHRoZSBQWENLRExZRElSLCB0aGUgbWF4IG9mIFBYQ0sgYW5k
-IHRoZSBQWENLRExZDQo+IHdoaWNoIHdpbGwgYmUgdXNlZCBieSB0aGUgcGl4ZWwgY2xvY2sgcmVn
-aXN0ZXIgc2V0dGluZy4NCj4gDQo+IFRoaXMgd2FzIHRlc3RlZCBvbiBUMTA0MCBwbGF0Zm9ybS4g
-Rm9yIG90aGVyIHBsYXRmb3JtLCB0aGUgb3JpZ2luYWwNCj4gbm9kZSB0b2dldGhlciB3aXRoIHRo
-ZSBwbGF0Zm9ybSBzZXR0aW5ncyBzdGlsbCBjYW4gd29yay4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6
-IEphc29uIEppbiA8SmFzb24uSmluQGZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiBWMjogUmVtb3Zl
-IHRoZSBwaXhlbCBjbG9jayByZWdpc3RlciBzYXZpbmcgZm9yIHN1c3BlbmQuDQo+IGFkZCB0aGUg
-cGl4ZWwgY2xvY2sgc2V0dGluZyBpbiBkcml2ZXIuDQo+IA0KPiAgZHJpdmVycy92aWRlby9mc2wt
-ZGl1LWZiLmMgfCA2MSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-Ky0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgNTkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkN
-Cj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZzbC1kaXUtZmIuYyBiL2RyaXZlcnMv
-dmlkZW8vZnNsLWRpdS1mYi5jDQo+IGluZGV4IDRiYzQ3MzAuLjc5MjAzOGYgMTAwNjQ0DQo+IC0t
-LSBhL2RyaXZlcnMvdmlkZW8vZnNsLWRpdS1mYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZnNs
-LWRpdS1mYi5jDQo+IEBAIC01MCw2ICs1MCw3IEBADQo+ICAjZGVmaW5lIElOVF9QQVJFUlIJMHgw
-OAkvKiBEaXNwbGF5IHBhcmFtZXRlcnMgZXJyb3IgaW50ZXJydXB0ICovDQo+ICAjZGVmaW5lIElO
-VF9MU19CRl9WUwkweDEwCS8qIExpbmVzIGJlZm9yZSB2c3luYy4gaW50ZXJydXB0ICovDQo+IA0K
-PiArI2RlZmluZSBQSVhDTEtDUl9QWENLRU4gMHg4MDAwMDAwMA0KPiAgLyoNCj4gICAqIExpc3Qg
-b2Ygc3VwcG9ydGVkIHZpZGVvIG1vZGVzDQo+ICAgKg0KPiBAQCAtMzcyLDYgKzM3Myw4IEBAIHN0
-cnVjdCBmc2xfZGl1X2RhdGEgew0KPiAgCXVuc2lnbmVkIGludCBpcnE7DQo+ICAJZW51bSBmc2xf
-ZGl1X21vbml0b3JfcG9ydCBtb25pdG9yX3BvcnQ7DQo+ICAJc3RydWN0IGRpdSBfX2lvbWVtICpk
-aXVfcmVnOw0KPiArCXZvaWQgX19pb21lbSAqcGl4ZWxjbGtfcmVnOw0KPiArCXUzMiBwaXhjbGtj
-clszXTsNCj4gIAlzcGlubG9ja190IHJlZ19sb2NrOw0KPiAgCXU4IGR1bW15X2FvaVs0ICogNCAq
-IDRdOw0KPiAgCXN0cnVjdCBkaXVfYWQgZHVtbXlfYWQgX19hbGlnbmVkKDgpOw0KPiBAQCAtNDc5
-LDcgKzQ4MiwxMCBAQCBzdGF0aWMgZW51bSBmc2xfZGl1X21vbml0b3JfcG9ydCBmc2xfZGl1X25h
-bWVfdG9fcG9ydChjb25zdA0KPiBjaGFyICpzKQ0KPiAgCQkJcG9ydCA9IEZTTF9ESVVfUE9SVF9E
-TFZEUzsNCj4gIAl9DQo+IA0KPiAtCXJldHVybiBkaXVfb3BzLnZhbGlkX21vbml0b3JfcG9ydChw
-b3J0KTsNCj4gKwlpZiAoZGl1X29wcy52YWxpZF9tb25pdG9yX3BvcnQpDQo+ICsJCXJldHVybiBk
-aXVfb3BzLnZhbGlkX21vbml0b3JfcG9ydChwb3J0KTsNCj4gKwllbHNlDQpSZW1vdmUgdGhpcyAi
-ZWxzZSIsIG90aGVyd2lzZSBsb29rcyBnb29kLg0KDQpSZWdhcmRzLA0KLURvbmdzaGVuZw0KPiAr
-CQlyZXR1cm4gcG9ydDsNCj4gIH0NCj4gDQoNCg==
+> @@ -1752,6 +1793,22 @@ static int fsl_diu_probe(struct platform_device *p=
+dev)
+>  		goto error;
+>  	}
+>=20
+> +	if (!diu_ops.set_pixel_clock) {
+> +		data->pixelclk_reg =3D of_iomap(np, 1);
+> +		if (!data->pixelclk_reg) {
+> +			dev_err(&pdev->dev, "Cannot map pixelclk registers, please \
+> +				provide the diu_ops for pixclk setting instead.\n");
+
+The error message should be in one line if possible, or it will hard to gre=
+p.
+If cannot, should split it into two or more lines, like:
+ +			dev_err(&pdev->dev, "Cannot map pixelclk registers,\n"
+ +				"please provide the diu_ops for pixclk setting instead.\n");
+
+Thanks,
+
+BRs
+Xiubo
