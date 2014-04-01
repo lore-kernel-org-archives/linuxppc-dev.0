@@ -1,26 +1,28 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0B28F1400AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 03:43:15 +1100 (EST)
-Date: Tue, 1 Apr 2014 17:42:54 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Message-ID: <20140401164254.GA2269@sirena.org.uk>
-References: <1396322227-482-1-git-send-email-Guangyu.Chen@freescale.com>
- <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
- <20140401120715.GR2269@sirena.org.uk>
- <20140401132156.GB27586@MrMyself>
+ by ozlabs.org (Postfix) with ESMTPS id D9EE5140089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 03:58:29 +1100 (EST)
+Message-ID: <1396371496.20849.51.camel@snotra.buserror.net>
+Subject: Re: [PATCH 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
+ emulation
+From: Scott Wood <scottwood@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 1 Apr 2014 11:58:16 -0500
+In-Reply-To: <9EA94FFE-EC8B-40BE-A6BE-1D0FCF81F2E9@suse.de>
+References: <1392913821-4520-1-git-send-email-mihai.caraman@freescale.com>
+ <1392913821-4520-4-git-send-email-mihai.caraman@freescale.com>
+ <1395868664.12738.68.camel@snotra.buserror.net> <53397091.4050601@suse.de>
+ <1396307005.20849.37.camel@snotra.buserror
+ <9EA94FFE-EC8B-40BE-A6BE-1D0FCF81F2E9@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="2GxxjMFQpcQtANqJ"
-In-Reply-To: <20140401132156.GB27586@MrMyself>
-Subject: Re: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts
- for Tx and Rx streams
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+Cc: Mihai Caraman <mihai.caraman@freescale.com>,
+ "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>,
+ "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-04-01 at 07:47 +0200, Alexander Graf wrote:
+> 
+> > Am 01.04.2014 um 01:03 schrieb Scott Wood <scottwood@freescale.com>:
+> > 
+> >> On Mon, 2014-03-31 at 15:41 +0200, Alexander Graf wrote:
+> >>> On 03/26/2014 10:17 PM, Scott Wood wrote:
+> >>>> On Thu, 2014-02-20 at 18:30 +0200, Mihai Caraman wrote:
+> >>>> +    /*
+> >>>> +     * Another thread may rewrite the TLB entry in parallel, don't
+> >>>> +     * execute from the address if the execute permission is not set
+> >>>> +     */
+> >> 
+> >> What happens when another thread rewrites the TLB entry in parallel? 
+> >> Does tlbsx succeed? Does it fail? Do we see failure indicated somehow? 
+> >> Are the contents of the MAS registers consistent at this point or 
+> >> inconsistent?
+> > 
+> > If another thread rewrites the TLB entry, then we use the new TLB entry,
+> > just as if it had raced in hardware.  This check ensures that we don't
+> > execute from the new TLB entry if it doesn't have execute permissions
+> > (just as hardware would).
+> > 
+> > What happens if the new TLB entry is valid and executable, and the
+> > instruction pointed to is valid, but doesn't trap (and thus we don't
+> > have emulation for it)?
+> > 
+> >> There has to be a good way to detect such a race and deal with it, no?
+> > 
+> > How would you detect it?  We don't get any information from the trap
+> > about what physical address the instruction was fetched from, or what
+> > the instruction was.
+> 
+> Ah, this is a guest race where the guest modifies exactly the TLB in question. I see.
+> 
+> Why would this ever happen in practice (in a case where we're not executing malicious code)?
 
---2GxxjMFQpcQtANqJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I don't know.  It probably wouldn't.  But it seems wrong to not check
+the exec bit.
 
-On Tue, Apr 01, 2014 at 09:21:57PM +0800, Nicolin Chen wrote:
-
-> Sir, I just rebased my for-next branch again and found that it's missing
-> two applied patches: "ASoC: fsl_sai: Add isr to deal with error flag" and
-> "ASoC: fsl_sai: Improve fsl_sai_isr()", so that's why this PATCH-2 could
-> not be applied against it as it needs the macro that's included in the
-> patch "ASoC: fsl_sai: Add isr to deal with error flag".
-
-Ah, those dropped out of -next due to the merge window.  I've applied
-your new patch now.
-
---2GxxjMFQpcQtANqJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTOuyLAAoJELSic+t+oim9P9IP/juYeCYWLrvNjtoaolEc7fFY
-Le8Ot6PwBTjERsdn7oILYWk7ILfFY0UL5umC+41/KvOUdIf1ngRF+UbLaqOLqN0m
-vzxiQYmfeIqpgPqgU6V9PDXxnjhNkU827OyC++BmR4/hYBXn4lOBwUTa9Nbn3UU8
-0QJy/LkRbPqhIJLhme1E2hMePJghqCP4sKc3pqtDYJ4E1LrKvFb26kV3Qs/R7zgd
-dpaFtLpw8EjTpi0PAsYktqZOuAHXPz1zP2aK7TOR+9jPZnOs9H4PCpv6J/mfWitI
-Fx+mQ5bU6ZHX9QnyZGICeT4xkx4rI99ydbO5jSSRF6RKMX/axVOhS+B1/kyHFjpL
-tICQvHsD4ZgMdd7Bgj/ysQr4iczCkGxQ46jutg+kZmc4OULrashKTzZYD6nL0tLU
-xjTsTQmhyiQVAiCogaftKeLA7eUSyID2RJNKodPH9FGJECWlcT0Ea5Qlz2prWi1o
-wL+ATn1Mr10VMgwcyp3MmHRSyWT7MHY+pSDmjUP2t1JGF9/vhxPuMZQvlVXvQjrd
-kGGtF/ctijt+j72z9oPZacIgD4d+mUM5A9lHRFtb3I9vihFm2I/csdu6nbfsNkhW
-0f2IUW7XxlZglfPjyRgxxbpv5qwbUhDKS+pBYAtL0+gmav3o9HYdPpnVUS9MgdpC
-Vd1ZoH2izNV+v8a0j5vO
-=9QgJ
------END PGP SIGNATURE-----
-
---2GxxjMFQpcQtANqJ--
+-Scott
