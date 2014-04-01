@@ -1,29 +1,20 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <joel@jms.id.au>
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B5CA4140078
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 14:59:29 +1100 (EST)
-Date: Tue, 1 Apr 2014 11:37:59 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
-Subject: Re: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts
- for Tx and Rx streams
-Message-ID: <20140401033758.GB26925@MrMyself>
-References: <1396322227-482-1-git-send-email-Guangyu.Chen@freescale.com>
- <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
- <d00e324f09954dcbb509f8c135ad51af@BN1PR03MB188.namprd03.prod.outlook.com>
- <20140401031409.GA26925@MrMyself>
- <034c8b9a3822441dac07512ae2bbb1e7@BN1PR03MB188.namprd03.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <034c8b9a3822441dac07512ae2bbb1e7@BN1PR03MB188.namprd03.prod.outlook.com>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "broonie@kernel.org" <broonie@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "timur@tabi.org" <timur@tabi.org>, Xiubo Li-B47053 <Li.Xiubo@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 39DD61401DF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 14:59:59 +1100 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id kq14so9252513pab.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 31 Mar 2014 20:59:55 -0700 (PDT)
+From: Joel Stanley <joel@jms.id.au>
+To: benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
+ shangw@linux.vnet.ibm.com, hegdevasant@linux.vnet.ibm.com,
+ michael@ellerman.id.au, mikey@neuling.org, stewart@linux.vnet.ibm.com
+Subject: [PATCH v2 0/2] OPAL message log interface
+Date: Tue,  1 Apr 2014 14:28:18 +1030
+Message-Id: <1396324700-22457-1-git-send-email-joel@jms.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,76 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 01, 2014 at 11:48:16AM +0800, Wang Dongsheng-B40534 wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Nicolin Chen [mailto:Guangyu.Chen@freescale.com]
-> > Sent: Tuesday, April 01, 2014 11:14 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: broonie@kernel.org; alsa-devel@alsa-project.org; Xiubo Li-B47053; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; timur@tabi.org
-> > Subject: Re: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts for
-> > Tx and Rx streams
-> > 
-> > On Tue, Apr 01, 2014 at 11:25:02AM +0800, Wang Dongsheng-B40534 wrote:
-> > > > Subject: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts for
-> > Tx
-> > > > and Rx streams
-> > > >
-> > > > We only enable one side interrupt for each stream since over/underrun
-> > > > on the opposite stream would be resulted from what we previously did,
-> > > > enabling TERE but remaining FRDE disabled, even though the xrun on the
-> > > > opposite direction will not break the current stream.
-> > > >
-> > > > Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
-> > > > Acked-by: Xiubo Li <Li.Xiubo@freescale.com>
-> > > > ---
-> > > >  sound/soc/fsl/fsl_sai.c | 8 ++++++--
-> > > >  sound/soc/fsl/fsl_sai.h | 1 +
-> > > >  2 files changed, 7 insertions(+), 2 deletions(-)
-> > > >
-> > > > diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-> > > > index bdfd497..d64c33f 100644
-> > > > --- a/sound/soc/fsl/fsl_sai.c
-> > > > +++ b/sound/soc/fsl/fsl_sai.c
-> > > > @@ -397,4 +397,6 @@ static int fsl_sai_trigger(struct snd_pcm_substream
-> > > > *substream, int cmd,
-> > > >
-> > > >  		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
-> > > > +				   FSL_SAI_CSR_xIE_MASK, FSL_SAI_FLAGS);
-> > > > +		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
-> > > >  				   FSL_SAI_CSR_FRDE, FSL_SAI_CSR_FRDE);
-> > > >  		break;
-> > > > @@ -404,4 +406,6 @@ static int fsl_sai_trigger(struct snd_pcm_substream
-> > > > *substream, int cmd,
-> > > >  		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
-> > > >  				   FSL_SAI_CSR_FRDE, 0);
-> > > > +		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
-> > > > +				   FSL_SAI_CSR_xIE_MASK, 0);
-> > > >
-> > > >  		if (!(tcsr & FSL_SAI_CSR_FRDE || rcsr & FSL_SAI_CSR_FRDE)) {
-> > > > @@ -464,6 +468,6 @@ static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
-> > > >  	struct fsl_sai *sai = dev_get_drvdata(cpu_dai->dev);
-> > > >
-> > > > -	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, FSL_SAI_FLAGS);
-> > > > -	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, FSL_SAI_FLAGS);
-> > > > +	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, 0x0);
-> > > > +	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, 0x0);
-> > >
-> > > Why are you remove this macro? Don't use magic number.
-> > 
-> > It's pretty clear that the so-called magic number is to clear the settings
-> > in the registers for driver init as what this driver did at the first place
-> > -- no offense but I don't think you would ask this if you check the git-log
-> > of the driver.
-> > 
-> ~FSL_SAI_MASK is better than 0x0. And you also replace 0xffffffff.
+These two patches add support for the message log, and expose a new OPAL call
+called opal_invalid that allow me to cause OPAL to inject messages into the
+log.
 
-I would later send a patch to reset SAI for a true init instead of these lines
-but not within this patch as it's focusing on the interrupts enabling.
+The naming is a bit mixed, as our device tree node is opal-memcons and I
+retained the naming of the header structure 'struct memcons', but all other
+references are to the OPAL message log.
 
-So please don't grasp the mask here. Just let me continue.
+They have been tested on a POWER7+ machine running some recent firmware.
 
-Thank you,
-Nicolin Chen
+Changes in V2:
+
+The guts of the function used to read the console has been reworked. In doing
+so, I've addressed the comments from Mikey and Ben:
+
+ - Added barrier between reading header and data
+ - Only read out_pos once
+ - Check the return code before adding it to the number of bytes read
+
+Unlike V1, this version correctly reads out a wrapped buffer.
+
+Joel Stanley (2):
+  powerpc/powernv: Add OPAL message log interface
+  powerpc/powernv: Add invalid OPAL call
+
+ arch/powerpc/include/asm/opal.h                |   6 ++
+ arch/powerpc/platforms/powernv/Makefile        |   1 +
+ arch/powerpc/platforms/powernv/opal-msglog.c   | 120 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/opal.c          |   7 +-
+ 5 files changed, 134 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-msglog.c
+
+-- 
+1.9.1
