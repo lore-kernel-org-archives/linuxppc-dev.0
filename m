@@ -1,22 +1,27 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7139714014E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 14:16:00 +1100 (EST)
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: <broonie@kernel.org>
-Subject: [PATCH bisect 1/2] ASoC: fsl_sai: Fix buggy configurations in
- trigger()
-Date: Tue, 1 Apr 2014 11:17:06 +0800
-Message-ID: <1396322227-482-2-git-send-email-Guangyu.Chen@freescale.com>
-In-Reply-To: <1396322227-482-1-git-send-email-Guangyu.Chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 377A914008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 14:25:11 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>,
+ "broonie@kernel.org" <broonie@kernel.org>
+Subject: RE: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts
+ for Tx and Rx streams
+Date: Tue, 1 Apr 2014 03:25:02 +0000
+Message-ID: <d00e324f09954dcbb509f8c135ad51af@BN1PR03MB188.namprd03.prod.outlook.com>
 References: <1396322227-482-1-git-send-email-Guangyu.Chen@freescale.com>
+ <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
+In-Reply-To: <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "timur@tabi.org" <timur@tabi.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,115 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current trigger() has two crucial problems:
-1) The DMA request enabling operations (FSL_SAI_CSR_FRDE) for Tx and Rx are
-   now totally exclusive: It would fail to run simultaneous Tx-Rx cases.
-2) The TERE disabling operation depends on an incorrect condition -- active
-   reference count that only gets increased in snd_pcm_open() and decreased
-   in snd_pcm_close(): The TERE would never get cleared.
-
-So this patch overwrites the trigger function by following these rules:
-A) We continue to support tx-async-while-rx-sync-to-tx case alone, which's
-   originally limited by this fsl_sai driver, but we make the code easy to
-   modify for the further support of the opposite case.
-B) We enable both TE and RE for PLAYBACK stream or CAPTURE stream but only
-   enabling the DMA request bit (FSL_SAI_CSR_FRDE) of the current direction
-   due to the requirement of SAI -- For tx-async-while-rx-sync-to-tx case,
-   the receiver is enabled only when both the transmitter and receiver are
-   enabled.
-
-Tested cases:
-a) aplay test.wav -d5
-b) arecord -r44100 -c2 -fS16_LE test.wav -d5
-c) arecord -r44100 -c2 -fS16_LE -d5 | aplay
-d) (aplay test2.wav &); sleep 1; arecord -r44100 -c2 -fS16_LE test.wav -d1
-e) (arecord -r44100 -c2 -fS16_LE test.wav -d5 &); sleep 1; aplay test.wav -d1
-
-Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
-Acked-by: Xiubo Li <Li.Xiubo@freescale.com>
----
- sound/soc/fsl/fsl_sai.c | 35 +++++++++++++++++------------------
- sound/soc/fsl/fsl_sai.h | 10 ++++++++++
- 2 files changed, 27 insertions(+), 18 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index f088545..bdfd497 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -366,4 +366,5 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- {
- 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
-+	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
- 	u32 tcsr, rcsr;
- 
-@@ -380,12 +381,4 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	regmap_read(sai->regmap, FSL_SAI_RCSR, &rcsr);
- 
--	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
--		tcsr |= FSL_SAI_CSR_FRDE;
--		rcsr &= ~FSL_SAI_CSR_FRDE;
--	} else {
--		rcsr |= FSL_SAI_CSR_FRDE;
--		tcsr &= ~FSL_SAI_CSR_FRDE;
--	}
--
- 	/*
- 	 * It is recommended that the transmitter is the last enabled
-@@ -396,20 +389,26 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_RESUME:
- 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
--		tcsr |= FSL_SAI_CSR_TERE;
--		rcsr |= FSL_SAI_CSR_TERE;
-+		if (!(tcsr & FSL_SAI_CSR_FRDE || rcsr & FSL_SAI_CSR_FRDE)) {
-+			regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
-+					   FSL_SAI_CSR_TERE, FSL_SAI_CSR_TERE);
-+			regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
-+					   FSL_SAI_CSR_TERE, FSL_SAI_CSR_TERE);
-+		}
- 
--		regmap_write(sai->regmap, FSL_SAI_RCSR, rcsr);
--		regmap_write(sai->regmap, FSL_SAI_TCSR, tcsr);
-+		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
-+				   FSL_SAI_CSR_FRDE, FSL_SAI_CSR_FRDE);
- 		break;
- 	case SNDRV_PCM_TRIGGER_STOP:
- 	case SNDRV_PCM_TRIGGER_SUSPEND:
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
--		if (!(cpu_dai->playback_active || cpu_dai->capture_active)) {
--			tcsr &= ~FSL_SAI_CSR_TERE;
--			rcsr &= ~FSL_SAI_CSR_TERE;
-+		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
-+				   FSL_SAI_CSR_FRDE, 0);
-+
-+		if (!(tcsr & FSL_SAI_CSR_FRDE || rcsr & FSL_SAI_CSR_FRDE)) {
-+			regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
-+					   FSL_SAI_CSR_TERE, 0);
-+			regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
-+					   FSL_SAI_CSR_TERE, 0);
- 		}
--
--		regmap_write(sai->regmap, FSL_SAI_TCSR, tcsr);
--		regmap_write(sai->regmap, FSL_SAI_RCSR, rcsr);
- 		break;
- 	default:
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index a264185..64b6fe7 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -36,4 +36,14 @@
- #define FSL_SAI_RMR	0xe0 /* SAI Receive Mask */
- 
-+#define FSL_SAI_xCSR(tx)	(tx ? FSL_SAI_TCSR : FSL_SAI_RCSR)
-+#define FSL_SAI_xCR1(tx)	(tx ? FSL_SAI_TCR1 : FSL_SAI_RCR1)
-+#define FSL_SAI_xCR2(tx)	(tx ? FSL_SAI_TCR2 : FSL_SAI_RCR2)
-+#define FSL_SAI_xCR3(tx)	(tx ? FSL_SAI_TCR3 : FSL_SAI_RCR3)
-+#define FSL_SAI_xCR4(tx)	(tx ? FSL_SAI_TCR4 : FSL_SAI_RCR4)
-+#define FSL_SAI_xCR5(tx)	(tx ? FSL_SAI_TCR5 : FSL_SAI_RCR5)
-+#define FSL_SAI_xDR(tx)		(tx ? FSL_SAI_TDR : FSL_SAI_RDR)
-+#define FSL_SAI_xFR(tx)		(tx ? FSL_SAI_TFR : FSL_SAI_RFR)
-+#define FSL_SAI_xMR(tx)		(tx ? FSL_SAI_TMR : FSL_SAI_RMR)
-+
- /* SAI Transmit/Recieve Control Register */
- #define FSL_SAI_CSR_TERE	BIT(31)
--- 
-1.8.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFtt
+YWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK2I0MDUzND1mcmVlc2NhbGUuY29tQGxpc3Rz
+Lm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBOaWNvbGluIENoZW4NCj4gU2VudDogVHVlc2RheSwg
+QXByaWwgMDEsIDIwMTQgMTE6MTcgQU0NCj4gVG86IGJyb29uaWVAa2VybmVsLm9yZw0KPiBDYzog
+YWxzYS1kZXZlbEBhbHNhLXByb2plY3Qub3JnOyBYaXVibyBMaS1CNDcwNTM7IGxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyB0aW11
+ckB0YWJpLm9yZw0KPiBTdWJqZWN0OiBbUEFUQ0ggYmlzZWN0IDIvMl0gQVNvQzogZnNsX3NhaTog
+U2VwYXJhdGVseSBlbmFibGUgaW50ZXJydXB0cyBmb3IgVHgNCj4gYW5kIFJ4IHN0cmVhbXMNCj4g
+DQo+IFdlIG9ubHkgZW5hYmxlIG9uZSBzaWRlIGludGVycnVwdCBmb3IgZWFjaCBzdHJlYW0gc2lu
+Y2Ugb3Zlci91bmRlcnJ1bg0KPiBvbiB0aGUgb3Bwb3NpdGUgc3RyZWFtIHdvdWxkIGJlIHJlc3Vs
+dGVkIGZyb20gd2hhdCB3ZSBwcmV2aW91c2x5IGRpZCwNCj4gZW5hYmxpbmcgVEVSRSBidXQgcmVt
+YWluaW5nIEZSREUgZGlzYWJsZWQsIGV2ZW4gdGhvdWdoIHRoZSB4cnVuIG9uIHRoZQ0KPiBvcHBv
+c2l0ZSBkaXJlY3Rpb24gd2lsbCBub3QgYnJlYWsgdGhlIGN1cnJlbnQgc3RyZWFtLg0KPiANCj4g
+U2lnbmVkLW9mZi1ieTogTmljb2xpbiBDaGVuIDxHdWFuZ3l1LkNoZW5AZnJlZXNjYWxlLmNvbT4N
+Cj4gQWNrZWQtYnk6IFhpdWJvIExpIDxMaS5YaXVib0BmcmVlc2NhbGUuY29tPg0KPiAtLS0NCj4g
+IHNvdW5kL3NvYy9mc2wvZnNsX3NhaS5jIHwgOCArKysrKystLQ0KPiAgc291bmQvc29jL2ZzbC9m
+c2xfc2FpLmggfCAxICsNCj4gIDIgZmlsZXMgY2hhbmdlZCwgNyBpbnNlcnRpb25zKCspLCAyIGRl
+bGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL3NvdW5kL3NvYy9mc2wvZnNsX3NhaS5jIGIv
+c291bmQvc29jL2ZzbC9mc2xfc2FpLmMNCj4gaW5kZXggYmRmZDQ5Ny4uZDY0YzMzZiAxMDA2NDQN
+Cj4gLS0tIGEvc291bmQvc29jL2ZzbC9mc2xfc2FpLmMNCj4gKysrIGIvc291bmQvc29jL2ZzbC9m
+c2xfc2FpLmMNCj4gQEAgLTM5Nyw0ICszOTcsNiBAQCBzdGF0aWMgaW50IGZzbF9zYWlfdHJpZ2dl
+cihzdHJ1Y3Qgc25kX3BjbV9zdWJzdHJlYW0NCj4gKnN1YnN0cmVhbSwgaW50IGNtZCwNCj4gDQo+
+ICAJCXJlZ21hcF91cGRhdGVfYml0cyhzYWktPnJlZ21hcCwgRlNMX1NBSV94Q1NSKHR4KSwNCj4g
+KwkJCQkgICBGU0xfU0FJX0NTUl94SUVfTUFTSywgRlNMX1NBSV9GTEFHUyk7DQo+ICsJCXJlZ21h
+cF91cGRhdGVfYml0cyhzYWktPnJlZ21hcCwgRlNMX1NBSV94Q1NSKHR4KSwNCj4gIAkJCQkgICBG
+U0xfU0FJX0NTUl9GUkRFLCBGU0xfU0FJX0NTUl9GUkRFKTsNCj4gIAkJYnJlYWs7DQo+IEBAIC00
+MDQsNCArNDA2LDYgQEAgc3RhdGljIGludCBmc2xfc2FpX3RyaWdnZXIoc3RydWN0IHNuZF9wY21f
+c3Vic3RyZWFtDQo+ICpzdWJzdHJlYW0sIGludCBjbWQsDQo+ICAJCXJlZ21hcF91cGRhdGVfYml0
+cyhzYWktPnJlZ21hcCwgRlNMX1NBSV94Q1NSKHR4KSwNCj4gIAkJCQkgICBGU0xfU0FJX0NTUl9G
+UkRFLCAwKTsNCj4gKwkJcmVnbWFwX3VwZGF0ZV9iaXRzKHNhaS0+cmVnbWFwLCBGU0xfU0FJX3hD
+U1IodHgpLA0KPiArCQkJCSAgIEZTTF9TQUlfQ1NSX3hJRV9NQVNLLCAwKTsNCj4gDQo+ICAJCWlm
+ICghKHRjc3IgJiBGU0xfU0FJX0NTUl9GUkRFIHx8IHJjc3IgJiBGU0xfU0FJX0NTUl9GUkRFKSkg
+ew0KPiBAQCAtNDY0LDYgKzQ2OCw2IEBAIHN0YXRpYyBpbnQgZnNsX3NhaV9kYWlfcHJvYmUoc3Ry
+dWN0IHNuZF9zb2NfZGFpICpjcHVfZGFpKQ0KPiAgCXN0cnVjdCBmc2xfc2FpICpzYWkgPSBkZXZf
+Z2V0X2RydmRhdGEoY3B1X2RhaS0+ZGV2KTsNCj4gDQo+IC0JcmVnbWFwX3VwZGF0ZV9iaXRzKHNh
+aS0+cmVnbWFwLCBGU0xfU0FJX1RDU1IsIDB4ZmZmZmZmZmYsIEZTTF9TQUlfRkxBR1MpOw0KPiAt
+CXJlZ21hcF91cGRhdGVfYml0cyhzYWktPnJlZ21hcCwgRlNMX1NBSV9SQ1NSLCAweGZmZmZmZmZm
+LCBGU0xfU0FJX0ZMQUdTKTsNCj4gKwlyZWdtYXBfdXBkYXRlX2JpdHMoc2FpLT5yZWdtYXAsIEZT
+TF9TQUlfVENTUiwgMHhmZmZmZmZmZiwgMHgwKTsNCj4gKwlyZWdtYXBfdXBkYXRlX2JpdHMoc2Fp
+LT5yZWdtYXAsIEZTTF9TQUlfUkNTUiwgMHhmZmZmZmZmZiwgMHgwKTsNCg0KV2h5IGFyZSB5b3Ug
+cmVtb3ZlIHRoaXMgbWFjcm8/IERvbid0IHVzZSBtYWdpYyBudW1iZXIuDQoNClJlZ2FyZHMsDQot
+RG9uZ3NoZW5nDQo=
