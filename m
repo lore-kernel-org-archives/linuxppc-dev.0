@@ -1,27 +1,27 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
+Return-Path: <guangyu.chen@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 377A914008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 14:25:11 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>,
- "broonie@kernel.org" <broonie@kernel.org>
-Subject: RE: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts
+ by ozlabs.org (Postfix) with ESMTPS id 33E8D14009D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 14:33:34 +1100 (EST)
+Date: Tue, 1 Apr 2014 11:14:10 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
+Subject: Re: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts
  for Tx and Rx streams
-Date: Tue, 1 Apr 2014 03:25:02 +0000
-Message-ID: <d00e324f09954dcbb509f8c135ad51af@BN1PR03MB188.namprd03.prod.outlook.com>
+Message-ID: <20140401031409.GA26925@MrMyself>
 References: <1396322227-482-1-git-send-email-Guangyu.Chen@freescale.com>
  <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
-In-Reply-To: <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <d00e324f09954dcbb509f8c135ad51af@BN1PR03MB188.namprd03.prod.outlook.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <d00e324f09954dcbb509f8c135ad51af@BN1PR03MB188.namprd03.prod.outlook.com>
 Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "broonie@kernel.org" <broonie@kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "timur@tabi.org" <timur@tabi.org>
+ "timur@tabi.org" <timur@tabi.org>, Xiubo Li-B47053 <Li.Xiubo@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFtt
-YWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK2I0MDUzND1mcmVlc2NhbGUuY29tQGxpc3Rz
-Lm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBOaWNvbGluIENoZW4NCj4gU2VudDogVHVlc2RheSwg
-QXByaWwgMDEsIDIwMTQgMTE6MTcgQU0NCj4gVG86IGJyb29uaWVAa2VybmVsLm9yZw0KPiBDYzog
-YWxzYS1kZXZlbEBhbHNhLXByb2plY3Qub3JnOyBYaXVibyBMaS1CNDcwNTM7IGxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyB0aW11
-ckB0YWJpLm9yZw0KPiBTdWJqZWN0OiBbUEFUQ0ggYmlzZWN0IDIvMl0gQVNvQzogZnNsX3NhaTog
-U2VwYXJhdGVseSBlbmFibGUgaW50ZXJydXB0cyBmb3IgVHgNCj4gYW5kIFJ4IHN0cmVhbXMNCj4g
-DQo+IFdlIG9ubHkgZW5hYmxlIG9uZSBzaWRlIGludGVycnVwdCBmb3IgZWFjaCBzdHJlYW0gc2lu
-Y2Ugb3Zlci91bmRlcnJ1bg0KPiBvbiB0aGUgb3Bwb3NpdGUgc3RyZWFtIHdvdWxkIGJlIHJlc3Vs
-dGVkIGZyb20gd2hhdCB3ZSBwcmV2aW91c2x5IGRpZCwNCj4gZW5hYmxpbmcgVEVSRSBidXQgcmVt
-YWluaW5nIEZSREUgZGlzYWJsZWQsIGV2ZW4gdGhvdWdoIHRoZSB4cnVuIG9uIHRoZQ0KPiBvcHBv
-c2l0ZSBkaXJlY3Rpb24gd2lsbCBub3QgYnJlYWsgdGhlIGN1cnJlbnQgc3RyZWFtLg0KPiANCj4g
-U2lnbmVkLW9mZi1ieTogTmljb2xpbiBDaGVuIDxHdWFuZ3l1LkNoZW5AZnJlZXNjYWxlLmNvbT4N
-Cj4gQWNrZWQtYnk6IFhpdWJvIExpIDxMaS5YaXVib0BmcmVlc2NhbGUuY29tPg0KPiAtLS0NCj4g
-IHNvdW5kL3NvYy9mc2wvZnNsX3NhaS5jIHwgOCArKysrKystLQ0KPiAgc291bmQvc29jL2ZzbC9m
-c2xfc2FpLmggfCAxICsNCj4gIDIgZmlsZXMgY2hhbmdlZCwgNyBpbnNlcnRpb25zKCspLCAyIGRl
-bGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL3NvdW5kL3NvYy9mc2wvZnNsX3NhaS5jIGIv
-c291bmQvc29jL2ZzbC9mc2xfc2FpLmMNCj4gaW5kZXggYmRmZDQ5Ny4uZDY0YzMzZiAxMDA2NDQN
-Cj4gLS0tIGEvc291bmQvc29jL2ZzbC9mc2xfc2FpLmMNCj4gKysrIGIvc291bmQvc29jL2ZzbC9m
-c2xfc2FpLmMNCj4gQEAgLTM5Nyw0ICszOTcsNiBAQCBzdGF0aWMgaW50IGZzbF9zYWlfdHJpZ2dl
-cihzdHJ1Y3Qgc25kX3BjbV9zdWJzdHJlYW0NCj4gKnN1YnN0cmVhbSwgaW50IGNtZCwNCj4gDQo+
-ICAJCXJlZ21hcF91cGRhdGVfYml0cyhzYWktPnJlZ21hcCwgRlNMX1NBSV94Q1NSKHR4KSwNCj4g
-KwkJCQkgICBGU0xfU0FJX0NTUl94SUVfTUFTSywgRlNMX1NBSV9GTEFHUyk7DQo+ICsJCXJlZ21h
-cF91cGRhdGVfYml0cyhzYWktPnJlZ21hcCwgRlNMX1NBSV94Q1NSKHR4KSwNCj4gIAkJCQkgICBG
-U0xfU0FJX0NTUl9GUkRFLCBGU0xfU0FJX0NTUl9GUkRFKTsNCj4gIAkJYnJlYWs7DQo+IEBAIC00
-MDQsNCArNDA2LDYgQEAgc3RhdGljIGludCBmc2xfc2FpX3RyaWdnZXIoc3RydWN0IHNuZF9wY21f
-c3Vic3RyZWFtDQo+ICpzdWJzdHJlYW0sIGludCBjbWQsDQo+ICAJCXJlZ21hcF91cGRhdGVfYml0
-cyhzYWktPnJlZ21hcCwgRlNMX1NBSV94Q1NSKHR4KSwNCj4gIAkJCQkgICBGU0xfU0FJX0NTUl9G
-UkRFLCAwKTsNCj4gKwkJcmVnbWFwX3VwZGF0ZV9iaXRzKHNhaS0+cmVnbWFwLCBGU0xfU0FJX3hD
-U1IodHgpLA0KPiArCQkJCSAgIEZTTF9TQUlfQ1NSX3hJRV9NQVNLLCAwKTsNCj4gDQo+ICAJCWlm
-ICghKHRjc3IgJiBGU0xfU0FJX0NTUl9GUkRFIHx8IHJjc3IgJiBGU0xfU0FJX0NTUl9GUkRFKSkg
-ew0KPiBAQCAtNDY0LDYgKzQ2OCw2IEBAIHN0YXRpYyBpbnQgZnNsX3NhaV9kYWlfcHJvYmUoc3Ry
-dWN0IHNuZF9zb2NfZGFpICpjcHVfZGFpKQ0KPiAgCXN0cnVjdCBmc2xfc2FpICpzYWkgPSBkZXZf
-Z2V0X2RydmRhdGEoY3B1X2RhaS0+ZGV2KTsNCj4gDQo+IC0JcmVnbWFwX3VwZGF0ZV9iaXRzKHNh
-aS0+cmVnbWFwLCBGU0xfU0FJX1RDU1IsIDB4ZmZmZmZmZmYsIEZTTF9TQUlfRkxBR1MpOw0KPiAt
-CXJlZ21hcF91cGRhdGVfYml0cyhzYWktPnJlZ21hcCwgRlNMX1NBSV9SQ1NSLCAweGZmZmZmZmZm
-LCBGU0xfU0FJX0ZMQUdTKTsNCj4gKwlyZWdtYXBfdXBkYXRlX2JpdHMoc2FpLT5yZWdtYXAsIEZT
-TF9TQUlfVENTUiwgMHhmZmZmZmZmZiwgMHgwKTsNCj4gKwlyZWdtYXBfdXBkYXRlX2JpdHMoc2Fp
-LT5yZWdtYXAsIEZTTF9TQUlfUkNTUiwgMHhmZmZmZmZmZiwgMHgwKTsNCg0KV2h5IGFyZSB5b3Ug
-cmVtb3ZlIHRoaXMgbWFjcm8/IERvbid0IHVzZSBtYWdpYyBudW1iZXIuDQoNClJlZ2FyZHMsDQot
-RG9uZ3NoZW5nDQo=
+On Tue, Apr 01, 2014 at 11:25:02AM +0800, Wang Dongsheng-B40534 wrote:
+> > Subject: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts for Tx
+> > and Rx streams
+> > 
+> > We only enable one side interrupt for each stream since over/underrun
+> > on the opposite stream would be resulted from what we previously did,
+> > enabling TERE but remaining FRDE disabled, even though the xrun on the
+> > opposite direction will not break the current stream.
+> > 
+> > Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+> > Acked-by: Xiubo Li <Li.Xiubo@freescale.com>
+> > ---
+> >  sound/soc/fsl/fsl_sai.c | 8 ++++++--
+> >  sound/soc/fsl/fsl_sai.h | 1 +
+> >  2 files changed, 7 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> > index bdfd497..d64c33f 100644
+> > --- a/sound/soc/fsl/fsl_sai.c
+> > +++ b/sound/soc/fsl/fsl_sai.c
+> > @@ -397,4 +397,6 @@ static int fsl_sai_trigger(struct snd_pcm_substream
+> > *substream, int cmd,
+> > 
+> >  		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
+> > +				   FSL_SAI_CSR_xIE_MASK, FSL_SAI_FLAGS);
+> > +		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
+> >  				   FSL_SAI_CSR_FRDE, FSL_SAI_CSR_FRDE);
+> >  		break;
+> > @@ -404,4 +406,6 @@ static int fsl_sai_trigger(struct snd_pcm_substream
+> > *substream, int cmd,
+> >  		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
+> >  				   FSL_SAI_CSR_FRDE, 0);
+> > +		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
+> > +				   FSL_SAI_CSR_xIE_MASK, 0);
+> > 
+> >  		if (!(tcsr & FSL_SAI_CSR_FRDE || rcsr & FSL_SAI_CSR_FRDE)) {
+> > @@ -464,6 +468,6 @@ static int fsl_sai_dai_probe(struct snd_soc_dai *cpu_dai)
+> >  	struct fsl_sai *sai = dev_get_drvdata(cpu_dai->dev);
+> > 
+> > -	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, FSL_SAI_FLAGS);
+> > -	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, FSL_SAI_FLAGS);
+> > +	regmap_update_bits(sai->regmap, FSL_SAI_TCSR, 0xffffffff, 0x0);
+> > +	regmap_update_bits(sai->regmap, FSL_SAI_RCSR, 0xffffffff, 0x0);
+> 
+> Why are you remove this macro? Don't use magic number.
+
+It's pretty clear that the so-called magic number is to clear the settings
+in the registers for driver init as what this driver did at the first place
+-- no offense but I don't think you would ask this if you check the git-log
+of the driver.
+
+Thank you,
+Nicolin Chen
