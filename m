@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A91A11400DE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 10:34:48 +1100 (EST)
-Message-ID: <1396395275.19762.28.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+ by ozlabs.org (Postfix) with ESMTPS id 333CD140150
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 10:34:54 +1100 (EST)
+Message-ID: <1396395283.19762.29.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git next branch
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 02 Apr 2014 10:34:35 +1100
+Date: Wed, 02 Apr 2014 10:34:43 +1100
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
