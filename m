@@ -1,24 +1,14 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F12751400AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 00:27:00 +1100 (EST)
-Date: Tue, 1 Apr 2014 21:21:57 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH bisect 2/2] ASoC: fsl_sai: Separately enable interrupts
- for Tx and Rx streams
-Message-ID: <20140401132156.GB27586@MrMyself>
-References: <1396322227-482-1-git-send-email-Guangyu.Chen@freescale.com>
- <1396322227-482-3-git-send-email-Guangyu.Chen@freescale.com>
- <20140401120715.GR2269@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140401120715.GR2269@sirena.org.uk>
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+ by ozlabs.org (Postfix) with ESMTPS id 6A2BB140086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 00:46:11 +1100 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Use 64k io pages when we never see an HEA
+Date: Tue,  1 Apr 2014 15:46:05 +0200
+Message-Id: <1396359965-19515-1-git-send-email-agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +18,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 01, 2014 at 01:07:15PM +0100, Mark Brown wrote:
-> On Tue, Apr 01, 2014 at 11:17:07AM +0800, Nicolin Chen wrote:
-> > We only enable one side interrupt for each stream since over/underrun
-> > on the opposite stream would be resulted from what we previously did,
-> > enabling TERE but remaining FRDE disabled, even though the xrun on the
-> > opposite direction will not break the current stream.
-> 
-> This still doesn't apply against fsl-sai (nor for-next).
+When we never get around to seeing an HEA ethernet adapter, there's
+no point in restricting ourselves to 4k IO page size.
 
-Sir, I just rebased my for-next branch again and found that it's missing
-two applied patches: "ASoC: fsl_sai: Add isr to deal with error flag" and
-"ASoC: fsl_sai: Improve fsl_sai_isr()", so that's why this PATCH-2 could
-not be applied against it as it needs the macro that's included in the
-patch "ASoC: fsl_sai: Add isr to deal with error flag".
+This speeds up IO maps when CONFIG_IBMEBUS is disabled.
 
-What should I do now?
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/mm/hash_utils_64.c | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
 
-Thank you,
-Nicolin
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index d766d6e..c0ef976 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -445,6 +445,20 @@ static void mmu_psize_set_default_penc(void)
+ 			mmu_psize_defs[bpsize].penc[apsize] = -1;
+ }
+ 
++static bool might_have_hea(void)
++{
++	/*
++	 * The HEA ethernet adapter requires awareness of the
++	 * GX bus. Without that awareness we can easily assume
++	 * we will never see an HEA ethernet device.
++	 */
++#ifdef CONFIG_IBMEBUS
++	return true;
++#else
++	return false;
++#endif
++}
++
+ static void __init htab_init_page_sizes(void)
+ {
+ 	int rc;
+@@ -499,10 +513,11 @@ static void __init htab_init_page_sizes(void)
+ 			mmu_linear_psize = MMU_PAGE_64K;
+ 		if (mmu_has_feature(MMU_FTR_CI_LARGE_PAGE)) {
+ 			/*
+-			 * Don't use 64k pages for ioremap on pSeries, since
+-			 * that would stop us accessing the HEA ethernet.
++			 * When running on pSeries using 64k pages for ioremap
++			 * would stop us accessing the HEA ethernet. So if we
++			 * have the chance of ever seeing one, stay at 4k.
+ 			 */
+-			if (!machine_is(pseries))
++			if (!might_have_hea() || !machine_is(pseries))
+ 				mmu_io_psize = MMU_PAGE_64K;
+ 		} else
+ 			mmu_ci_restrictions = 1;
+-- 
+1.8.1.4
