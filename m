@@ -1,41 +1,27 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3EED9140099
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2014 20:47:02 +1100 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 1 Apr 2014 19:46:59 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CF488357803F
- for <linuxppc-dev@ozlabs.org>; Tue,  1 Apr 2014 20:46:56 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s319kgEn10748348
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Apr 2014 20:46:42 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s319ktXb009897
- for <linuxppc-dev@ozlabs.org>; Tue, 1 Apr 2014 20:46:56 +1100
-Message-ID: <1396345609.28055.7.camel@pasglop>
-Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
- Kconfig options for powernv
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Date: Tue, 01 Apr 2014 20:46:49 +1100
-In-Reply-To: <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
-References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
- <1396336408-20954-1-git-send-email-ego@linux.vnet.ibm.com>
- <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Linux PM list <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
+ by ozlabs.org (Postfix) with ESMTPS id 6116E1400AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Apr 2014 21:26:37 +1100 (EST)
+Received: by mail-pa0-f49.google.com with SMTP id lj1so9599496pab.22
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Apr 2014 03:26:33 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <53398379.8000203@linux.vnet.ibm.com>
+References: <20140328073344.26823.32931.stgit@bahia.local>
+ <53398379.8000203@linux.vnet.ibm.com>
+Date: Tue, 1 Apr 2014 12:26:32 +0200
+Message-ID: <CAMuHMdXXELjK-t4k025uRE3QPsMiYR9KevtEnq_k32m-4g+fPg@mail.gmail.com>
+Subject: Re: [RFC PATCH] powerpc/le: enable RTAS events support
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Greg Kurz <gkurz@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,61 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-04-01 at 12:43 +0530, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> Enable CPUFreq for PowerNV. Select "performance", "powersave",
-> "userspace" and "ondemand" governors. Choose "ondemand" to be the
-> default governor.
+On Mon, Mar 31, 2014 at 5:02 PM, Nathan Fontenot
+<nfont@linux.vnet.ibm.com> wrote:
+>  struct rtas_error_log {
+> -       unsigned long version:8;                /* Architectural version */
+> -       unsigned long severity:3;               /* Severity level of error */
+> -       unsigned long disposition:2;            /* Degree of recovery */
+> -       unsigned long extended:1;               /* extended log present? */
+> -       unsigned long /* reserved */ :2;        /* Reserved for future use */
+> -       unsigned long initiator:4;              /* Initiator of event */
+> -       unsigned long target:4;                 /* Target of failed operation */
+> -       unsigned long type:8;                   /* General event or error*/
+> -       unsigned long extended_log_length:32;   /* length in bytes */
+> -       unsigned char buffer[1];                /* Start of extended log */
+> +       /* Byte 0 */
+> +       uint8_t         version;                /* Architectural version */
+> +
+> +       /* Byte 1 */
+> +       uint8_t         severity;
+> +       /* XXXXXXXX
+> +        * XXX          3: Severity level of error
+> +        *    XX        2: Degree of recovery
+> +        *      X       1: Extended log present?
+> +        *       XX     2: Reserved
+> +        */
+> +
+> +       /* Byte 2 */
+> +       uint8_t         :8;
+> +       /* XXXXXXXX
+> +        * XXXX         4: Initiator of event
+> +        *     XXXX     4: Target of failed operation
+> +        */
+> +       uint8_t         type;                   /* General event or error*/
+> +       uint32_t        extended_log_length;    /* length in bytes */
 
-Rafael, are you going to take these or should I send them to Linus ?
+Now the bitfields are gone, things like the above can become __be32,
+so we get extra type checking from sparse ("make C=1").
 
-(I'd rather you take them :-)
+Gr{oetje,eeting}s,
 
-Cheers,
-Ben.
+                        Geert
 
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/configs/pseries_defconfig    | 1 +
->  arch/powerpc/configs/pseries_le_defconfig | 1 +
->  arch/powerpc/platforms/powernv/Kconfig    | 6 ++++++
->  3 files changed, 8 insertions(+)
-> 
-> diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
-> index 9ea8342b..a905063 100644
-> --- a/arch/powerpc/configs/pseries_defconfig
-> +++ b/arch/powerpc/configs/pseries_defconfig
-> @@ -306,3 +306,4 @@ CONFIG_KVM_BOOK3S_64=m
->  CONFIG_KVM_BOOK3S_64_HV=y
->  CONFIG_TRANSPARENT_HUGEPAGE=y
->  CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
-> +CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-> diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-> index 3c84f9d..58e3dbf 100644
-> --- a/arch/powerpc/configs/pseries_le_defconfig
-> +++ b/arch/powerpc/configs/pseries_le_defconfig
-> @@ -301,3 +301,4 @@ CONFIG_CRYPTO_LZO=m
->  # CONFIG_CRYPTO_ANSI_CPRNG is not set
->  CONFIG_CRYPTO_DEV_NX=y
->  CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
-> +CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
-> diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-> index 895e8a2..c252ee9 100644
-> --- a/arch/powerpc/platforms/powernv/Kconfig
-> +++ b/arch/powerpc/platforms/powernv/Kconfig
-> @@ -11,6 +11,12 @@ config PPC_POWERNV
->  	select PPC_UDBG_16550
->  	select PPC_SCOM
->  	select ARCH_RANDOM
-> +	select CPU_FREQ
-> +	select CPU_FREQ_GOV_PERFORMANCE
-> +	select CPU_FREQ_GOV_POWERSAVE
-> +	select CPU_FREQ_GOV_USERSPACE
-> +	select CPU_FREQ_GOV_ONDEMAND
-> +	select CPU_FREQ_GOV_CONSERVATIVE
->  	default y
->  
->  config PPC_POWERNV_RTAS
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
