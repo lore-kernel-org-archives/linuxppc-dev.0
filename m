@@ -1,28 +1,43 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 699A8140102
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 00:52:08 +1100 (EST)
-Date: Wed, 2 Apr 2014 21:39:56 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v2 2/2] ARM: dts: Append clock bindings for sai2 on VF610
- platform
-Message-ID: <20140402133955.GB29440@MrMyself>
-References: <cover.1396432924.git.Guangyu.Chen@freescale.com>
- <d09da3eb629143abd3f61ae037af4ddaf7286a83.1396432924.git.Guangyu.Chen@freescale.com>
- <20140402130302.GC8558@dragon>
+ by ozlabs.org (Postfix) with ESMTPS id 2B64C14008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 02:57:09 +1100 (EST)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Wed, 2 Apr 2014 16:57:06 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 6F18E2190041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 16:56:57 +0100 (BST)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s32Fup4i66977798
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 15:56:51 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s32Fv2G8016705
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 11:57:02 -0400
+Date: Wed, 2 Apr 2014 17:56:58 +0200
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC PATCH] powerpc/le: enable RTAS events support
+Message-ID: <20140402175658.1b4a8c4d@bahia.local>
+In-Reply-To: <CAMuHMdXXELjK-t4k025uRE3QPsMiYR9KevtEnq_k32m-4g+fPg@mail.gmail.com>
+References: <20140328073344.26823.32931.stgit@bahia.local>
+ <53398379.8000203@linux.vnet.ibm.com>
+ <CAMuHMdXXELjK-t4k025uRE3QPsMiYR9KevtEnq_k32m-4g+fPg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140402130302.GC8558@dragon>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- broonie@kernel.org, ijc+devicetree@hellion.org.uk,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
- Li.Xiubo@freescale.com, rob@landley.net, galak@codeaurora.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,57 +47,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shawn,
+On Tue, 1 Apr 2014 12:26:32 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-   Thanks for the comments, but...
-
-On Wed, Apr 02, 2014 at 09:03:04PM +0800, Shawn Guo wrote:
-> On Wed, Apr 02, 2014 at 06:10:20PM +0800, Nicolin Chen wrote:
-> > Since we added fours clock to the DT binding, we should update the current
-> > SAI dts/dtsi so as not to break their functions.
-> > 
-> > Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
-> > ---
-> >  arch/arm/boot/dts/vf610.dtsi | 6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
-> > index d31ce1b..9fd0007 100644
-> > --- a/arch/arm/boot/dts/vf610.dtsi
-> > +++ b/arch/arm/boot/dts/vf610.dtsi
-> > @@ -139,8 +139,10 @@
-> >  				compatible = "fsl,vf610-sai";
-> >  				reg = <0x40031000 0x1000>;
-> >  				interrupts = <0 86 0x04>;
-> > -				clocks = <&clks VF610_CLK_SAI2>;
-> > -				clock-names = "sai";
-> > +				clocks = <&clks VF610_CLK_SAI2>,
-> > +				       <&clks VF610_CLK_SAI2>,
-> > +				       <&clks 0>, <&clks 0>;
+> On Mon, Mar 31, 2014 at 5:02 PM, Nathan Fontenot
+> <nfont@linux.vnet.ibm.com> wrote:
+> >  struct rtas_error_log {
+> > -       unsigned long version:8;                /* Architectural version */
+> > -       unsigned long severity:3;               /* Severity level of error */
+> > -       unsigned long disposition:2;            /* Degree of recovery */
+> > -       unsigned long extended:1;               /* extended log present? */
+> > -       unsigned long /* reserved */ :2;        /* Reserved for future use */
+> > -       unsigned long initiator:4;              /* Initiator of event */
+> > -       unsigned long target:4;                 /* Target of failed operation */
+> > -       unsigned long type:8;                   /* General event or error*/
+> > -       unsigned long extended_log_length:32;   /* length in bytes */
+> > -       unsigned char buffer[1];                /* Start of extended log */
+> > +       /* Byte 0 */
+> > +       uint8_t         version;                /* Architectural version */
+> > +
+> > +       /* Byte 1 */
+> > +       uint8_t         severity;
+> > +       /* XXXXXXXX
+> > +        * XXX          3: Severity level of error
+> > +        *    XX        2: Degree of recovery
+> > +        *      X       1: Extended log present?
+> > +        *       XX     2: Reserved
+> > +        */
+> > +
+> > +       /* Byte 2 */
+> > +       uint8_t         :8;
+> > +       /* XXXXXXXX
+> > +        * XXXX         4: Initiator of event
+> > +        *     XXXX     4: Target of failed operation
+> > +        */
+> > +       uint8_t         type;                   /* General event or error*/
+> > +       uint32_t        extended_log_length;    /* length in bytes */
 > 
-> So it seems that SAI on vf610 does work with only one clock.  So the
-> driver change will break old DTB for vf610?  If that's case, we will
-> have to need a new compatible for cases where 4 clocks are needed.
+> Now the bitfields are gone, things like the above can become __be32,
+> so we get extra type checking from sparse ("make C=1").
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
 
-According to Vybrid's RM Chapter 9.11.12 SAI clocking, the SoC actually
-connects SAI with two clocks: SAI_CLK and Platform Bus Clock. So the DT
-binding here still needs to be corrected even if ignoring driver change.
+I am reworking a patch in this direction.
 
-Besides, I've checked both SAI on imx and vf610 and found that they are
-seemly identical, especially for the clock part -- "The transmitter and
-receiver can independently select between the bus clock and up to three
-audio master clocks to generate the bit clock." And the driver that was
-designed for vf610 already contains the code to switch the clock between
-Bus Clock and Three MCLKs. What I want to say is, even if SAI on vf610
-does work with only one clock, it still doesn't have the full function
-on vf610 -- driving clock from Platform Bus Clock unless we make this
-improvement to the DT binding.
+Thanks.
 
-So I think it's fair to complete the code here for both platforms, even
-though we might take the risk of merging conflict. And I understand
-your point to avoid function break on those platform both of us aren't
-convenient to test. But I've already involved Xiubo in the list. And
-we can wait for his test result.
+--
+Greg
 
-Hope you can understand the circumstance,
-Nicolin
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+-- 
+Gregory Kurz                                     kurzgreg@fr.ibm.com
+                                                 gkurz@linux.vnet.ibm.com
+Software Engineer @ IBM/Meiosys                  http://www.ibm.com
+Tel +33 (0)562 165 496
+
+"Anarchy is about taking complete responsibility for yourself."
+        Alan Moore.
