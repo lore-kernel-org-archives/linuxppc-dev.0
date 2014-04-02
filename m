@@ -1,30 +1,31 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8684214015B
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:38 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4017B140276
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:05:00 +1100 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 2 Apr 2014 17:04:38 +1000
+ Wed, 2 Apr 2014 17:04:59 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 91BE12BB0054
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:36 +1100 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3166D2CE8050
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:56 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3274Mmj9765344
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:22 +1100
+ s3274fJ111141458
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:42 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3274KWk004697
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:21 +1100
+ s3274sb8005677
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:55 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] elf: Add some new PowerPC specifc note sections
-Date: Wed,  2 Apr 2014 12:32:22 +0530
-Message-Id: <1396422144-11032-2-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH 3/3] powerpc,
+ ptrace: Add new ptrace request macro for miscellaneous registers
+Date: Wed,  2 Apr 2014 12:32:24 +0530
+Message-Id: <1396422144-11032-4-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com, roland@redhat.com,
@@ -38,31 +39,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds four new note sections for transactional memory
-and one note section for some miscellaneous registers. This addition
-of new elf note sections extends the existing elf ABI without affecting
-it in any manner.
+This patch adds following new set of ptrace request macros for miscellaneous
+registers expanding the existing ptrace ABI on PowerPC.
+
+	/* Miscellaneous registers */
+	PTRACE_GETMSCREGS
+	PTRACE_SETMSCREGS
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- include/uapi/linux/elf.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/powerpc/include/uapi/asm/ptrace.h | 10 ++++
+ arch/powerpc/kernel/ptrace.c           | 91 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 100 insertions(+), 1 deletion(-)
 
-diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
-index ef6103b..bd59452 100644
---- a/include/uapi/linux/elf.h
-+++ b/include/uapi/linux/elf.h
-@@ -379,6 +379,11 @@ typedef struct elf64_shdr {
- #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
- #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
- #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
-+#define NT_PPC_TM_SPR	0x103		/* PowerPC transactional memory special registers */
-+#define NT_PPC_TM_CGPR	0x104		/* PowerpC transactional memory checkpointed GPR */
-+#define NT_PPC_TM_CFPR	0x105		/* PowerPC transactional memory checkpointed FPR */
-+#define NT_PPC_TM_CVMX	0x106		/* PowerPC transactional memory checkpointed VMX */
-+#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
- #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
- #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
- #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index 1a12c36..bce1055 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -241,6 +241,16 @@ struct pt_regs {
+ #define PTRACE_GETTM_CVMXREGS	0x76
+ #define PTRACE_SETTM_CVMXREGS	0x77
+ 
++/* Miscellaneous registers */
++#define PTRACE_GETMSCREGS      0x78
++#define PTRACE_SETMSCREGS      0x79
++
++/*
++ * XXX: A note to application developers. The existing data layout
++ * of the above four ptrace requests can change when new registers
++ * are available for each category in forthcoming processors.
++ */
++
+ #ifndef __ASSEMBLY__
+ 
+ struct ppc_debug_info {
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 9fbcb6a..2893958 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1054,6 +1054,76 @@ static int tm_cvmx_set(struct task_struct *target, const struct user_regset *reg
+ #endif	/* CONFIG_PPC_TRANSACTIONAL_MEM */
+ 
+ /*
++ * Miscellaneous Registers
++ *
++ * struct {
++ * 	unsigned long dscr;
++ *	unsigned long ppr;
++ * 	unsigned long tar;
++ * };
++ */
++static int misc_get(struct task_struct *target, const struct user_regset *regset,
++		   unsigned int pos, unsigned int count,
++		   void *kbuf, void __user *ubuf)
++{
++	int ret;
++
++	/* DSCR register */
++	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					&target->thread.dscr, 0,
++					sizeof(unsigned long));
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, dscr) + sizeof(unsigned long) +
++		     		sizeof(unsigned long) != offsetof(struct thread_struct, ppr));
++
++	/* PPR register */
++	if (!ret)
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  &target->thread.ppr, sizeof(unsigned long),
++					  2 * sizeof(unsigned long));
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, ppr) + sizeof(unsigned long)
++		     			!= offsetof(struct thread_struct, tar));
++	/* TAR register */
++	if (!ret)
++		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
++					  &target->thread.tar, 2 * sizeof(unsigned long),
++					  3 * sizeof(unsigned long));
++	return ret;
++}
++
++static int misc_set(struct task_struct *target, const struct user_regset *regset,
++		   unsigned int pos, unsigned int count,
++		   const void *kbuf, const void __user *ubuf)
++{
++	int ret;
++
++	/* DSCR register */
++	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++					&target->thread.dscr, 0,
++					sizeof(unsigned long));
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, dscr) + sizeof(unsigned long) +
++		     	sizeof(unsigned long) != offsetof(struct thread_struct, ppr));
++
++	/* PPR register */
++	if (!ret)
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++						&target->thread.ppr, sizeof(unsigned long),
++						2 * sizeof(unsigned long));
++
++	BUILD_BUG_ON(offsetof(struct thread_struct, ppr) + sizeof(unsigned long)
++						!= offsetof(struct thread_struct, tar));
++
++	/* TAR register */
++	if (!ret)
++		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
++						&target->thread.tar, 2 * sizeof(unsigned long),
++						3 * sizeof(unsigned long));
++	return ret;
++}
++
++/*
+  * These are our native regset flavors.
+  */
+ enum powerpc_regset {
+@@ -1072,8 +1142,9 @@ enum powerpc_regset {
+ 	REGSET_TM_SPR,		/* TM specific SPR */
+ 	REGSET_TM_CGPR,		/* TM checkpointed GPR */
+ 	REGSET_TM_CFPR,		/* TM checkpointed FPR */
+-	REGSET_TM_CVMX		/* TM checkpointed VMX */
++	REGSET_TM_CVMX,		/* TM checkpointed VMX */
+ #endif
++	REGSET_MISC		/* Miscellaneous */
+ };
+ 
+ static const struct user_regset native_regsets[] = {
+@@ -1130,6 +1201,11 @@ static const struct user_regset native_regsets[] = {
+ 		.get = tm_cvmx_get, .set = tm_cvmx_set
+ 	},
+ #endif
++	[REGSET_MISC] = {
++		.core_note_type = NT_PPC_MISC, .n = 3,
++		.size = sizeof(u64), .align = sizeof(u64),
++		.get = misc_get, .set = misc_set
++	},
+ };
+ 
+ static const struct user_regset_view user_ppc_native_view = {
+@@ -1320,6 +1396,11 @@ static const struct user_regset compat_regsets[] = {
+ 		.get = tm_cvmx_get, .set = tm_cvmx_set
+ 	},
+ #endif
++	[REGSET_MISC] = {
++		.core_note_type = NT_PPC_MISC, .n = 3,
++		.size = sizeof(u64), .align = sizeof(u64),
++		.get = misc_get, .set = misc_set
++	},
+ };
+ 
+ static const struct user_regset_view user_ppc_compat_view = {
+@@ -2269,6 +2350,14 @@ long arch_ptrace(struct task_struct *child, long request,
+ 		return copy_regset_from_user(child, &user_ppc_native_view,
+ 					   REGSET_TM_CVMX, 0, (33 * sizeof(vector128) + sizeof(u32)), datavp);
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
++	case PTRACE_GETMSCREGS:
++		return copy_regset_to_user(child, &user_ppc_native_view,
++					REGSET_MISC, 0, 3 * sizeof(u64),
++					datavp);
++	case PTRACE_SETMSCREGS:
++		return copy_regset_from_user(child, &user_ppc_native_view,
++					REGSET_MISC, 0, 3 * sizeof(u64),
++					datavp);
+ 	default:
+ 		ret = ptrace_request(child, request, addr, data);
+ 		break;
 -- 
 1.7.11.7
