@@ -1,33 +1,24 @@
-Return-Path: <dan.carpenter@oracle.com>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E168C140102
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 03:48:29 +1100 (EST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- s32GmRiE021277
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 16:48:27 GMT
-Received: from acsinet21.oracle.com (acsinet21.oracle.com [141.146.126.237])
- by aserp1040.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- s32GmN0p025820
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 16:48:23 GMT
-Received: from userz7021.oracle.com (userz7021.oracle.com [156.151.31.85])
- by acsinet21.oracle.com (8.14.4+Sun/8.14.4) with ESMTP id s32GmMDs023691
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 16:48:22 GMT
-Received: from abhmp0016.oracle.com (abhmp0016.oracle.com [141.146.116.22])
- by userz7021.oracle.com (8.14.4+Sun/8.14.4) with ESMTP id s32GmLCL010426
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 16:48:21 GMT
-Date: Wed, 2 Apr 2014 19:48:14 +0300
-From: Dan Carpenter <dan.carpenter@oracle.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [bug report] bad error path in fsl_open_inb_mbox()
-Message-ID: <20140402164814.GA8126@mwanda>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 7BB2C140111
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 04:04:39 +1100 (EST)
+Date: Wed, 2 Apr 2014 22:05:19 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Hongbo Zhang <hongbo.zhang@freescale.com>
+Subject: Re: [PATCH 6/7] DMA: Freescale: use spin_lock_bh instead of
+ spin_lock_irqsave
+Message-ID: <20140402163519.GU1976@intel.com>
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+ <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
+ <1395817294.6569.2.camel@vkoul-udesk3>
+ <533517C1.8080208@freescale.com> <20140329134528.GQ1976@intel.com>
+ <5338EA57.1000509@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5338EA57.1000509@freescale.com>
+Cc: Vinod Koul <vkoul@infradead.org>, linux-kernel@vger.kernel.org,
+ scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,62 +28,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello PPC devs,
+On Mon, Mar 31, 2014 at 12:08:55PM +0800, Hongbo Zhang wrote:
+> 
+> On 03/29/2014 09:45 PM, Vinod Koul wrote:
+> >On Fri, Mar 28, 2014 at 02:33:37PM +0800, Hongbo Zhang wrote:
+> >>On 03/26/2014 03:01 PM, Vinod Koul wrote:
+> >>>On Thu, 2014-01-16 at 13:47 +0800, hongbo.zhang@freescale.com wrote:
+> >>>>From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> >>>>
+> >>>>The usage of spin_lock_irqsave() is a stronger locking mechanism than is
+> >>>>required throughout the driver. The minimum locking required should be used
+> >>>>instead. Interrupts will be turned off and context will be saved, it is
+> >>>>unnecessary to use irqsave.
+> >>>>
+> >>>>This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
+> >>>>manipulation of protected fields is done using tasklet context or weaker, which
+> >>>>makes spin_lock_bh() the correct choice.
+> >>>>
+> >
+> >>>>  /**
+> >>>>@@ -1124,11 +1120,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+> >>>>  static void dma_do_tasklet(unsigned long data)
+> >>>>  {
+> >>>>  	struct fsldma_chan *chan = (struct fsldma_chan *)data;
+> >>>>-	unsigned long flags;
+> >>>>  	chan_dbg(chan, "tasklet entry\n");
+> >>>>-	spin_lock_irqsave(&chan->desc_lock, flags);
+> >>>>+	spin_lock_bh(&chan->desc_lock);
+> >>>okay here is the problem :(
+> >>>
+> >>>You moved to _bh variant. So if you grab the lock in rest of the code
+> >>>and irq gets triggered then here we will be spinning to grab the lock.
+> >>>So effectively you made right locking solution into deadlock situation!
+> >>If the rest code grabs lock by spin_lock_bh(), and if irq raised,
+> >>the tasklet could not be executed because it has been disabled by
+> >>the _bh variant function.
+> >yes if you are accessing resources only in tasklet and rest of the code, then
+> >_bh variant works well. The problem here is usage in irq handler
+> >
+> 
+> The name dma_do_tasklet may mislead, it is tasklet handler, not irq
+> handler, not a trigger to load tasklet.
+> the irq handler is fsldma_chan_irq, and I don't use lock in it.
+sorry my bad, i misread this as code in fsldma_chan_irq() insteadof
+dma_do_tasklet(). In that case patch is doing the right thing.
 
-Smatch has the following warning:
+-- 
+~Vinod
+> 
+> If it is the problem, I would like to change dma_do_tasklet to
+> dma_tasklet to eliminate misleading.
+> 
+> 
+> 
 
-	arch/powerpc/sysdev/fsl_rmu.c:884 fsl_open_inb_mbox()
-	error: buffer overflow 'rmu->msg_tx_ring.virt_buffer' 2048 <= 2048
-
-arch/powerpc/sysdev/fsl_rmu.c
-   861          for (i = 0; i < rmu->msg_rx_ring.size; i++)
-   862                  rmu->msg_rx_ring.virt_buffer[i] = NULL;
-
-Here we set i one past the end of the ->virt_buffer[] array.
-
-   863  
-   864          /* Initialize inbound message ring */
-   865          rmu->msg_rx_ring.virt = dma_alloc_coherent(priv->dev,
-   866                                  rmu->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
-   867                                  &rmu->msg_rx_ring.phys, GFP_KERNEL);
-   868          if (!rmu->msg_rx_ring.virt) {
-   869                  rc = -ENOMEM;
-   870                  goto out;
-   871          }
-   872  
-   873          /* Point dequeue/enqueue pointers at first entry in ring */
-   874          out_be32(&rmu->msg_regs->ifqdpar, (u32) rmu->msg_rx_ring.phys);
-   875          out_be32(&rmu->msg_regs->ifqepar, (u32) rmu->msg_rx_ring.phys);
-   876  
-   877          /* Clear interrupt status */
-   878          out_be32(&rmu->msg_regs->isr, 0x00000091);
-   879  
-   880          /* Hook up inbound message handler */
-   881          rc = request_irq(IRQ_RIO_RX(mport), fsl_rio_rx_handler, 0,
-   882                           "msg_rx", (void *)mport);
-   883          if (rc < 0) {
-   884                  dma_free_coherent(priv->dev, RIO_MSG_BUFFER_SIZE,
-   885                          rmu->msg_tx_ring.virt_buffer[i],
-                                                 ^^^^^^^^^^^^^^
-Wrong variable.
-
-   886                          rmu->msg_tx_ring.phys_buffer[i]);
-                                                 ^^^^^^^^^^^^^^
-
-This should probably be something like:
-
-			dma_free_coherent(priv->dev,
-				rmu->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
-				rmu->msg_rx_ring.virt, rmu->msg_rx_ring.phys);
-
-But dma_free_coherent() is poorly documented (it's not documented at
-all) and I can't even compile this code so I don't feel comfortable
-patching this myself.
-
-Please give me a Reported-by tag if you fix this.
-
-   887                  goto out;
-   888          }
-
-regards,
-dan carpenter
+-- 
