@@ -1,23 +1,23 @@
-Return-Path: <gnurou@gmail.com>
-Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
- [IPv6:2607:f8b0:4001:c05::235])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BEDA5140101
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 20:42:19 +1100 (EST)
-Received: by mail-ig0-f181.google.com with SMTP id h18so60238igc.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 02:42:16 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 348EB1400AA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 21:09:24 +1100 (EST)
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: <broonie@kernel.org>, <shawn.guo@linaro.org>
+Subject: [PATCH v2 0/2] ASoC: fsl_sai: Add bus clock and mclks with clock
+ controls
+Date: Wed, 2 Apr 2014 18:10:18 +0800
+Message-ID: <cover.1396432924.git.Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1396156455-4225-1-git-send-email-shc_work@mail.ru>
-References: <1396156455-4225-1-git-send-email-shc_work@mail.ru>
-From: Alexandre Courbot <gnurou@gmail.com>
-Date: Wed, 2 Apr 2014 18:41:55 +0900
-Message-ID: <CAAVeFu+8sjgtGGUv8O+FLy_3vbtQV+2m5rsJ9FccPoq6AiOFsg@mail.gmail.com>
-Subject: Re: [PATCH] gpio: ge: Convert to platform driver
-To: Alexander Shiyan <shc_work@mail.ru>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com, rob@landley.net,
+ galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 30, 2014 at 2:14 PM, Alexander Shiyan <shc_work@mail.ru> wrote:
-> This patch converts GE I/O FPGA GPIO driver to platform driver.
->
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
-> Only compile tested.
+This series of patches add clock controls to fsl_sai driver and updates
+the vf610.dtsi accordingly.
 
-Could we get a couple of Tested-by by people who can try this patch?
-It greatly simplifies the driver, but we need to make sure it doesn't
-break anything before going further...
+Changelog
+v2:
+ * Appended two extra mclks to the driver since SAI actually has three.
+ * Renamed clock name to 'bus' and 'mclk' according to the reference manual.
+
+Nicolin Chen (2):
+  ASoC: fsl_sai: Add clock controls for SAI
+  ARM: dts: Append clock bindings for sai2 on VF610 platform
+
+ .../devicetree/bindings/sound/fsl-sai.txt          |  8 ++--
+ arch/arm/boot/dts/vf610.dtsi                       |  6 ++-
+ sound/soc/fsl/fsl_sai.c                            | 50 ++++++++++++++++++++--
+ sound/soc/fsl/fsl_sai.h                            |  4 ++
+ 4 files changed, 59 insertions(+), 9 deletions(-)
+
+-- 
+1.8.4
