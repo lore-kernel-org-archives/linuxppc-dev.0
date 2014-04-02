@@ -1,27 +1,36 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-wg0-x22b.google.com (mail-wg0-x22b.google.com
- [IPv6:2a00:1450:400c:c00::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 288AF1400E2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 19:01:48 +1100 (EST)
-Received: by mail-wg0-f43.google.com with SMTP id x13so8447518wgg.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 01:01:43 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id C1BB41400F6
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 20:34:13 +1100 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 2 Apr 2014 15:04:09 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id CF880125805E
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 15:06:35 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s329XsPC39714966
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 15:03:54 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s329Xnpm018225
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 15:03:50 +0530
+Message-ID: <533BD922.4070009@linux.vnet.ibm.com>
+Date: Wed, 02 Apr 2014 15:02:18 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <cover.1396352401.git.Guangyu.Chen@freescale.com>
-References: <cover.1396352401.git.Guangyu.Chen@freescale.com>
-Date: Wed, 2 Apr 2014 16:01:43 +0800
-Message-ID: <CAGoOwPQXw82ZgK=ovmBxPifVT-3mC0a0o0GDtZd=AHRfCf3Q_w@mail.gmail.com>
-Subject: Re: [alsa-devel] [PATCH 0/2] Add ipg clock control to sai driver
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Content-Type: multipart/alternative; boundary=089e01228d460184db04f60ab233
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- Li.Xiubo@freescale.com, ijc+devicetree@hellion.org.uk,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, Timur Tabi <timur@tabi.org>,
- broonie@kernel.org, rob@landley.net, galak@codeaurora.org,
- Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] Add new ptrace request macros on PowerPC
+References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,96 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e01228d460184db04f60ab233
-Content-Type: text/plain; charset=ISO-8859-1
+On 04/02/2014 12:32 PM, Anshuman Khandual wrote:
+> 	This patch series adds new ELF note sections which are used to
+> create new ptrace request macros for various transactional memory and
+> miscellaneous registers on PowerPC. Please find the test case exploiting
+> the new ptrace request macros and it's results on a POWER8 system.
+> 
+> RFC: https://lkml.org/lkml/2014/4/1/292
+> 
+> ============================== Results ==============================
+> -------TM specific SPR------
+> TM TFHAR: 100009dc
+> TM TEXASR: de000001ac000001
+> TM TFIAR: c00000000003f386
+> TM CH ORIG_MSR: 900000050000f032
+> TM CH TAR: 6
+> TM CH PPR: c000000000000
+> TM CH DSCR: 1
+> -------TM checkpointed GPR-----
+> TM CH GPR[0]: 1000097c
+> TM CH GPR[1]: 5
+> TM CH GPR[2]: 6
+> TM CH GPR[7]: 1
+> TM CH NIP: 100009dc
+> TM CH LINK: 1000097c
+> TM CH CCR: 22000422
+> -------TM running GPR-----
+> TM RN GPR[0]: 1000097c
+> TM RN GPR[1]: 7
+> TM RN GPR[2]: 8
+> TM RN GPR[7]: 5
+> TM RN NIP: 100009fc
+> TM RN LINK: 1000097c
+> TM RN CCR: 2000422
+> -------TM running FPR-----
+> TM RN FPR[0]: 1002d3a3780
+> TM RN FPR[1]: 7
+> TM RN FPR[2]: 8
+> TM RN FPSCR: 0
+> -------TM checkpointed FPR-----
+> TM CH FPR[0]: 1002d3a3780
+> TM CH FPR[1]: 5
+> TM CH FPR[2]: 6
+> TM CH FPSCR: 0
+> -------Running miscellaneous registers-------
+TM RN DSCR: 0
 
-Please disregard this version.
-
-SAI actually has three master clocks and one bus clock.
-So the patch should have added three sai_clks to the driver.
-I'll later send v2 to append the other two.
-
-Thank you.
-
-
-On Tue, Apr 1, 2014 at 7:52 PM, Nicolin Chen <Guangyu.Chen@freescale.com>wrote:
-
-> This series of patches add ipg clock control to fsl_sai driver and updates
-> the vf610.dtsi accordingly.
->
-> @Shawn
-> I'm not sure if VF610 currently does full works with SAI audio function.
-> The PATCH-2 is based on broonie/for-next.
->
-> Nicolin Chen (2):
->   ASoC: fsl_sai: Add clock control for SAI
->   ARM: dts: Add ipg clock for sai2 on VF610 platform
->
->  .../devicetree/bindings/sound/fsl-sai.txt          |  7 ++--
->  arch/arm/boot/dts/vf610.dtsi                       |  4 +--
->  sound/soc/fsl/fsl_sai.c                            | 37
-> ++++++++++++++++++++--
->  sound/soc/fsl/fsl_sai.h                            |  2 ++
->  4 files changed, 43 insertions(+), 7 deletions(-)
->
-> --
-> 1.8.4
->
->
-> _______________________________________________
-> Alsa-devel mailing list
-> Alsa-devel@alsa-project.org
-> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
->
-
---089e01228d460184db04f60ab233
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Please disregard this version.<div><br></div><div>SAI actu=
-ally has three master clocks and one bus clock.<div style>So the patch shou=
-ld have added three sai_clks to the driver.</div><div style>I&#39;ll later =
-send v2 to append the other two.</div>
-<div style><br></div><div style>Thank you.</div></div></div><div class=3D"g=
-mail_extra"><br><br><div class=3D"gmail_quote">On Tue, Apr 1, 2014 at 7:52 =
-PM, Nicolin Chen <span dir=3D"ltr">&lt;<a href=3D"mailto:Guangyu.Chen@frees=
-cale.com" target=3D"_blank">Guangyu.Chen@freescale.com</a>&gt;</span> wrote=
-:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">This series of patches add ipg clock control=
- to fsl_sai driver and updates<br>
-the vf610.dtsi accordingly.<br>
-<br>
-@Shawn<br>
-I&#39;m not sure if VF610 currently does full works with SAI audio function=
-.<br>
-The PATCH-2 is based on broonie/for-next.<br>
-<br>
-Nicolin Chen (2):<br>
-=A0 ASoC: fsl_sai: Add clock control for SAI<br>
-=A0 ARM: dts: Add ipg clock for sai2 on VF610 platform<br>
-<br>
-=A0.../devicetree/bindings/sound/fsl-sai.txt =A0 =A0 =A0 =A0 =A0| =A07 ++--=
-<br>
-=A0arch/arm/boot/dts/vf610.dtsi =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- | =A04 +--<br>
-=A0sound/soc/fsl/fsl_sai.c =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0| 37 ++++++++++++++++++++--<br>
-=A0sound/soc/fsl/fsl_sai.h =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0| =A02 ++<br>
-=A04 files changed, 43 insertions(+), 7 deletions(-)<br>
-<span class=3D"HOEnZb"><font color=3D"#888888"><br>
---<br>
-1.8.4<br>
-<br>
-<br>
-_______________________________________________<br>
-Alsa-devel mailing list<br>
-<a href=3D"mailto:Alsa-devel@alsa-project.org">Alsa-devel@alsa-project.org<=
-/a><br>
-<a href=3D"http://mailman.alsa-project.org/mailman/listinfo/alsa-devel" tar=
-get=3D"_blank">http://mailman.alsa-project.org/mailman/listinfo/alsa-devel<=
-/a><br>
-</font></span></blockquote></div><br></div>
-
---089e01228d460184db04f60ab233--
+There is a problem in here which I forgot to mention. The running DSCR value
+comes from thread->dscr component of the target process. While we are inside the
+transaction (which is the case here as we are stuck at "b ." instruction and
+have not reached TEND) thread->dscr should have the running value of the DSCR
+register at that point of time. Here we expect the DSCR value to be 5 instead
+of 0 as shown in the output above. During the tests when I moved the "b ." after
+TEND, the thread->dscr gets the value of 5 while all check pointed reg values are
+thrown away. I believe there is some problem in the way thread->dscr context
+is saved away inside the TM section. Will look into this problem further and
+keep informed.
