@@ -1,26 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <shawn.guo@linaro.org>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C40E0140101
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 22:29:46 +1100 (EST)
-Message-ID: <1396438160.19206.23.camel@pasglop>
-Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
- Kconfig options for powernv
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Date: Wed, 02 Apr 2014 22:29:20 +1100
-In-Reply-To: <1621325.cz1O3Ng49e@vostro.rjw.lan>
-References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
- <1506880.SKUfks4BOU@vostro.rjw.lan> <1396412608.1394.15.camel@pasglop>
- <1621325.cz1O3Ng49e@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
- Linux PM list <linux-pm@vger.kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
- cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
+ by ozlabs.org (Postfix) with ESMTPS id 1A00114010F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 00:03:30 +1100 (EST)
+Date: Wed, 2 Apr 2014 21:03:04 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Nicolin Chen <Guangyu.Chen@freescale.com>
+Subject: Re: [PATCH v2 2/2] ARM: dts: Append clock bindings for sai2 on VF610
+ platform
+Message-ID: <20140402130302.GC8558@dragon>
+References: <cover.1396432924.git.Guangyu.Chen@freescale.com>
+ <d09da3eb629143abd3f61ae037af4ddaf7286a83.1396432924.git.Guangyu.Chen@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <d09da3eb629143abd3f61ae037af4ddaf7286a83.1396432924.git.Guangyu.Chen@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ broonie@kernel.org, ijc+devicetree@hellion.org.uk,
+ linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
+ Li.Xiubo@freescale.com, rob@landley.net, galak@codeaurora.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-04-02 at 13:03 +0200, Rafael J. Wysocki wrote:
-> > To be honest pretty urgent. It's a new drop-in driver so it
-> shouldn't
-> > be a huge deal.
-> > 
-> > We have distros really waiting for this to hit upstream... But I'll
-> > leave that decision to you :-)
+On Wed, Apr 02, 2014 at 06:10:20PM +0800, Nicolin Chen wrote:
+> Since we added fours clock to the DT binding, we should update the current
+> SAI dts/dtsi so as not to break their functions.
 > 
-> Well, I've already sent a second pull request for this merge window
-> and I'm not going to send the next one before it is merged.
+> Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+> ---
+>  arch/arm/boot/dts/vf610.dtsi | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> So, I can push them next week realistically.
+> diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
+> index d31ce1b..9fd0007 100644
+> --- a/arch/arm/boot/dts/vf610.dtsi
+> +++ b/arch/arm/boot/dts/vf610.dtsi
+> @@ -139,8 +139,10 @@
+>  				compatible = "fsl,vf610-sai";
+>  				reg = <0x40031000 0x1000>;
+>  				interrupts = <0 86 0x04>;
+> -				clocks = <&clks VF610_CLK_SAI2>;
+> -				clock-names = "sai";
+> +				clocks = <&clks VF610_CLK_SAI2>,
+> +				       <&clks VF610_CLK_SAI2>,
+> +				       <&clks 0>, <&clks 0>;
 
-Thanks. You can blame me for the lateness if you want (and the debate as
-to which tree should carry them :-)
+So it seems that SAI on vf610 does work with only one clock.  So the
+driver change will break old DTB for vf610?  If that's case, we will
+have to need a new compatible for cases where 4 clocks are needed.
 
-Cheers,
-Ben.
+Shawn
+
+> +				clock-names = "bus", "mclk1", "mclk2", "mclk3";
+>  				status = "disabled";
+>  			};
+>  
+> -- 
+> 1.8.4
+> 
+> 
