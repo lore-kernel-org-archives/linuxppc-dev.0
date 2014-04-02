@@ -2,29 +2,31 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 229E01400FD
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:25 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8684214015B
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:38 +1100 (EST)
 Received: from /spool/local
  by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 2 Apr 2014 17:04:23 +1000
+ Wed, 2 Apr 2014 17:04:38 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2EF5F2CE8050
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:20 +1100 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 91BE12BB0054
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 18:04:36 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s327458510944998
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:06 +1100
+ s3274Mmj9765344
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:22 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3274Is5004633
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:18 +1100
+ s3274KWk004697
+ for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 18:04:21 +1100
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] Add new ptrace request macros on PowerPC
-Date: Wed,  2 Apr 2014 12:32:21 +0530
-Message-Id: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] elf: Add some new PowerPC specifc note sections
+Date: Wed,  2 Apr 2014 12:32:22 +0530
+Message-Id: <1396422144-11032-2-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com, roland@redhat.com,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,311 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	This patch series adds new ELF note sections which are used to
-create new ptrace request macros for various transactional memory and
-miscellaneous registers on PowerPC. Please find the test case exploiting
-the new ptrace request macros and it's results on a POWER8 system.
+This patch adds four new note sections for transactional memory
+and one note section for some miscellaneous registers. This addition
+of new elf note sections extends the existing elf ABI without affecting
+it in any manner.
 
-RFC: https://lkml.org/lkml/2014/4/1/292
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ include/uapi/linux/elf.h | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-============================== Results ==============================
--------TM specific SPR------
-TM TFHAR: 100009dc
-TM TEXASR: de000001ac000001
-TM TFIAR: c00000000003f386
-TM CH ORIG_MSR: 900000050000f032
-TM CH TAR: 6
-TM CH PPR: c000000000000
-TM CH DSCR: 1
--------TM checkpointed GPR-----
-TM CH GPR[0]: 1000097c
-TM CH GPR[1]: 5
-TM CH GPR[2]: 6
-TM CH GPR[7]: 1
-TM CH NIP: 100009dc
-TM CH LINK: 1000097c
-TM CH CCR: 22000422
--------TM running GPR-----
-TM RN GPR[0]: 1000097c
-TM RN GPR[1]: 7
-TM RN GPR[2]: 8
-TM RN GPR[7]: 5
-TM RN NIP: 100009fc
-TM RN LINK: 1000097c
-TM RN CCR: 2000422
--------TM running FPR-----
-TM RN FPR[0]: 1002d3a3780
-TM RN FPR[1]: 7
-TM RN FPR[2]: 8
-TM RN FPSCR: 0
--------TM checkpointed FPR-----
-TM CH FPR[0]: 1002d3a3780
-TM CH FPR[1]: 5
-TM CH FPR[2]: 6
-TM CH FPSCR: 0
--------Running miscellaneous registers-------
-TM RN DSCR: 0
-TM RN PPR: c000000000000
-TM RN TAR: 8
-============================ Test case ==============================
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <malloc.h>
-#include <errno.h>
-#include <sys/ptrace.h>
-#include <sys/uio.h>
-#include <sys/types.h>
-#include <sys/signal.h>
-#include <sys/user.h>
-#include <linux/elf.h>
-#include <linux/types.h>
-
-typedef unsigned long u64;
-typedef unsigned int u32;
-
-typedef __vector128 vector128;
-
-/* TM CFPR */
-struct tm_cfpr {
-	u64     fpr[32];
-	u64     fpscr;
-};
-
-/* TM CVMX */
-struct tm_cvmx {
-        vector128       vr[32] __attribute__((aligned(16)));
-        vector128       vscr __attribute__((aligned(16)));
-	u32		vrsave;	
-};
-
-/* TM SPR */
-struct tm_spr_regs {
-	u64	tm_tfhar;
-	u64	tm_texasr;
-	u64	tm_tfiar;
-	u64	tm_orig_msr;
-	u64	tm_tar;
-	u64	tm_ppr;
-	u64	tm_dscr;
-};
-
-/* Miscellaneous registers */
-struct misc_regs {
-	u64	dscr;
-	u64	ppr;
-	u64	tar;
-};
-
-/* TM instructions */
-#define TBEGIN          ".long 0x7C00051D ;"
-#define TEND            ".long 0x7C00055D ;"
-
-#define SPRN_DSCR	0x3
-#define SPRN_TAR	815
-
-/* Ptrace request macros */
-#define PTRACE_GETTM_SPRREGS    0x70
-#define PTRACE_SETTM_SPRREGS    0x71
-#define PTRACE_GETTM_CGPRREGS   0x72
-#define PTRACE_SETTM_CGPRREGS   0x73
-#define PTRACE_GETTM_CFPRREGS   0x74
-#define PTRACE_SETTM_CFPRREGS   0x75
-#define PTRACE_GETTM_CVMXREG    0x76
-#define PTRACE_SETTM_CVMXREG    0x77
-#define PTRACE_GETMSCREGS	0x78
-#define PTRACE_SETMSCREGS	0x79
-
-int main(int argc, char *argv[])
-{
-	struct tm_spr_regs *tmr1;
-	struct pt_regs *pregs1, *pregs2;
-	struct tm_cfpr *fpr, *fpr1;
-	struct tm_cvmx *vr1;
-	struct misc_regs *dbr1;
-
-	pid_t child;
-	int ret = 0, status = 0, i = 0, flag = 1;
-
-	tmr1 = (struct tm_spr_regs *) malloc(sizeof(struct tm_spr_regs));
-	pregs1 = (struct pt_regs *) malloc(sizeof(struct pt_regs));
-	pregs2 = (struct pt_regs *) malloc(sizeof(struct pt_regs));
-	fpr = (struct tm_cfpr *) malloc(sizeof(struct tm_cfpr));
-	fpr1 = (struct tm_cfpr *) malloc(sizeof(struct tm_cfpr));
-	vr1 = (struct tm_cvmx *) malloc(sizeof(struct tm_cvmx));
-	dbr1 = (struct misc_regs *) malloc(sizeof(struct misc_regs));
-
-	child = fork();
-	if (child < 0) {
-		printf("fork() failed \n");
-		exit(-1);
-	}
-
-	/* Child code */
-	if (child == 0) {
-		asm __volatile__(
-			"6: ;"			/* TM checkpointed values */
-			"li 1, 5;"		/* GPR[1] */
-			".long 0x7C210166;"	/* FPR[1] */
-			"li 2, 6;"		/* GPR[2] */
-			".long 0x7C420166;"	/* FPR[2] */
-			"mtspr %[tar], 2;"	/* TAR */
-			"li 7, 1;"		/* GPR[7] */
- 			"mtspr %[dscr], 7;"	/* DSCR */
-			"1: ;"
-			TBEGIN			/* TM running values */
-			"beq 2f ;"
-		 	"li 1, 7;"		/* GPR[1] */
-                        ".long 0x7C210166;"	/* FPR[1] */
-                        "li 2, 8;"		/* GPR[2] */
-                        ".long 0x7C420166;"	/* FPR[2] */
-                        "mtspr %[tar], 2;"	/* TAR */
-                        "li 7, 5;"		/* GPR[7] */
-			"mtspr %[dscr], 7;"	/* DSCR */
-			"b .;"
-			TEND
-			"2: ;"			/* Abort handler */
-			"b 1b;"			/* Start from TBEGIN */
-
-			"3: ;"
-			"b 6b;"			/* Start all over again */
-			:: [dscr]"i"(SPRN_DSCR), [tar]"i"(SPRN_TAR)
-			: "memory", "r7");
-	}
-
-	/* Parent */
-	if (child) {
-		do {
-			/* Wait till child hits "b ." instruction */
-			sleep(3);
-
-			memset(tmr1, 0 , sizeof(struct tm_spr_regs));
-			memset(pregs1, 0 , sizeof(struct pt_regs));
-			memset(pregs2, 0 , sizeof(struct pt_regs));
-			memset(fpr1, 0 , sizeof(struct tm_cfpr));
-			memset(fpr, 0 , sizeof(struct tm_cfpr));
-			memset(vr1, 0 , sizeof(struct tm_cvmx));
-			memset(dbr1, 0 , sizeof(struct misc_regs));
-
-			ret = ptrace(PTRACE_ATTACH, child, NULL, NULL);
-			if (ret == -1) {
-				printf("PTRACE_ATTACH failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-
-			ret = waitpid(child, NULL, 0);
-			if (ret != child) {
-				printf("PID does not match\n");
-				exit(-1);
-			}
-
-			/* TM specific SPR */
-			ret = ptrace(PTRACE_GETTM_SPRREGS, child, NULL, tmr1);
-			if (ret == -1) {
-				printf("PTRACE_GETTM_SPRREGS failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-
-			printf("-------TM specific SPR------\n");
-			printf("TM TFHAR: %lx\n", tmr1->tm_tfhar);
-			printf("TM TEXASR: %lx\n", tmr1->tm_texasr);
-			printf("TM TFIAR: %lx\n", tmr1->tm_tfiar);
-			printf("TM CH ORIG_MSR: %lx\n", tmr1->tm_orig_msr);
-			printf("TM CH TAR: %lx\n", tmr1->tm_tar);
-			printf("TM CH PPR: %lx\n", tmr1->tm_ppr);
-			printf("TM CH DSCR: %lx\n", tmr1->tm_dscr);
-
-			/* TM checkpointed GPR */
-			ret = ptrace(PTRACE_GETTM_CGPRREGS, child, NULL, pregs1);
-			if (ret == -1) {
-				printf("PTRACE_GETTM_CGPRREGS failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-
-			printf("-------TM checkpointed GPR-----\n");
-			printf("TM CH GPR[0]: %lx\n", pregs1->gpr[0]);
-			printf("TM CH GPR[1]: %lx\n", pregs1->gpr[1]);
-			printf("TM CH GPR[2]: %lx\n", pregs1->gpr[2]);
-			printf("TM CH GPR[7]: %lx\n", pregs1->gpr[7]);
-			printf("TM CH NIP: %lx\n", pregs1->nip);
-			printf("TM CH LINK: %lx\n", pregs1->link);
-			printf("TM CH CCR: %lx\n", pregs1->ccr);
-
-			/* TM running GPR */
-			ret = ptrace(PTRACE_GETREGS, child, NULL, pregs2);
-			if (ret == -1) {
-				printf("PTRACE_GETREGS failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-
-			printf("-------TM running GPR-----\n");
-			printf("TM RN GPR[0]: %lx\n", pregs2->gpr[0]);
-			printf("TM RN GPR[1]: %lx\n", pregs2->gpr[1]);
-			printf("TM RN GPR[2]: %lx\n", pregs2->gpr[2]);
-			printf("TM RN GPR[7]: %lx\n", pregs2->gpr[7]);
-			printf("TM RN NIP: %lx\n", pregs2->nip);
-			printf("TM RN LINK: %lx\n", pregs2->link);
-			printf("TM RN CCR: %lx\n", pregs2->ccr);
-
-			/* TM running FPR */
-			ret = ptrace(PTRACE_GETFPREGS, child, NULL, fpr);
-			if (ret == -1) {
-				printf("PTRACE_GETFPREGS failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-
-			printf("-------TM running FPR-----\n");
-			printf("TM RN FPR[0]: %lx\n", fpr->fpr[0]);
-			printf("TM RN FPR[1]: %lx\n", fpr->fpr[1]);
-			printf("TM RN FPR[2]: %lx\n", fpr->fpr[2]);
-			printf("TM RN FPSCR: %lx\n", fpr->fpscr);
-
-			/* TM checkpointed FPR */
-			ret = ptrace(PTRACE_GETTM_CFPRREGS, child, NULL, fpr1);
-			if (ret == -1) {
-				printf("PTRACE_GETTM_CFPRREGS failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-			printf("-------TM checkpointed FPR-----\n");
-			printf("TM CH FPR[0]: %lx\n", fpr1->fpr[0]);
-			printf("TM CH FPR[1]: %lx\n", fpr1->fpr[1]);
-			printf("TM CH FPR[2]: %lx\n", fpr1->fpr[2]);
-			printf("TM CH FPSCR: %lx\n", fpr1->fpscr);
-
-			/* Misc debug */
-			ret = ptrace(PTRACE_GETMSCREGS, child, NULL, dbr1);
-			if (ret == -1) {
-				printf("PTRACE_GETMSCREGS failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-
-			printf("-------Running miscellaneous registers-------\n");
-			printf("TM RN DSCR: %lx\n", dbr1->dscr);
-			printf("TM RN PPR: %lx\n", dbr1->ppr);
-			printf("TM RN TAR: %lx\n", dbr1->tar);
-	
-			ret = ptrace(PTRACE_DETACH, child, NULL, NULL);
-			if (ret == -1) {
-				printf("PTRACE_DETACH failed: %s\n", strerror(errno));
-				exit(-1);
-			}
-		} while (0);
-	}
-	return 0;
-}
-=====================================================================
-
-Anshuman Khandual (3):
-  elf: Add some new PowerPC specifc note sections
-  powerpc, ptrace: Add new ptrace request macros for transactional memory
-  powerpc, ptrace: Add new ptrace request macro for miscellaneous registers
-
- arch/powerpc/include/asm/switch_to.h   |   8 +
- arch/powerpc/include/uapi/asm/ptrace.h |  61 +++
- arch/powerpc/kernel/process.c          |  24 ++
- arch/powerpc/kernel/ptrace.c           | 659 +++++++++++++++++++++++++++++++--
- include/uapi/linux/elf.h               |   5 +
- 5 files changed, 729 insertions(+), 28 deletions(-)
-
+diff --git a/include/uapi/linux/elf.h b/include/uapi/linux/elf.h
+index ef6103b..bd59452 100644
+--- a/include/uapi/linux/elf.h
++++ b/include/uapi/linux/elf.h
+@@ -379,6 +379,11 @@ typedef struct elf64_shdr {
+ #define NT_PPC_VMX	0x100		/* PowerPC Altivec/VMX registers */
+ #define NT_PPC_SPE	0x101		/* PowerPC SPE/EVR registers */
+ #define NT_PPC_VSX	0x102		/* PowerPC VSX registers */
++#define NT_PPC_TM_SPR	0x103		/* PowerPC transactional memory special registers */
++#define NT_PPC_TM_CGPR	0x104		/* PowerpC transactional memory checkpointed GPR */
++#define NT_PPC_TM_CFPR	0x105		/* PowerPC transactional memory checkpointed FPR */
++#define NT_PPC_TM_CVMX	0x106		/* PowerPC transactional memory checkpointed VMX */
++#define NT_PPC_MISC	0x107		/* PowerPC miscellaneous registers */
+ #define NT_386_TLS	0x200		/* i386 TLS slots (struct user_desc) */
+ #define NT_386_IOPERM	0x201		/* x86 io permission bitmap (1=deny) */
+ #define NT_X86_XSTATE	0x202		/* x86 extended state using xsave */
 -- 
 1.7.11.7
