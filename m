@@ -3,21 +3,23 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [IPv6:2400:8900::f03c:91ff:fedb:4f4])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2DBF3140120
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 06:40:01 +1100 (EST)
-Date: Wed, 2 Apr 2014 20:39:45 +0100
+ by ozlabs.org (Postfix) with ESMTPS id CE331140125
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 06:52:24 +1100 (EST)
+Date: Wed, 2 Apr 2014 20:52:08 +0100
 From: Mark Brown <broonie@kernel.org>
-To: Zhao Qiang <B45475@freescale.com>
-Message-ID: <20140402193945.GH14763@sirena.org.uk>
-References: <1396343450-6199-1-git-send-email-B45475@freescale.com>
+To: Nicolin Chen <Guangyu.Chen@freescale.com>
+Message-ID: <20140402195208.GM14763@sirena.org.uk>
+References: <1396352049-23554-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="7J16OGEJ/mt06A90"
-In-Reply-To: <1396343450-6199-1-git-send-email-B45475@freescale.com>
-Subject: Re: [PATCH v2] spi: add "spi-lsb-first" to devicetree
-Cc: B07421@freescale.com, baruch@tkos.co.il, devicetree@vger.kernel.org,
- linux-spi@vger.kernel.org, R63061@freescale.com, linuxppc-dev@lists.ozlabs.org,
- wangyuhang2014@gmail.com
+ protocol="application/pgp-signature"; boundary="L/bWm/e7/ricERqM"
+In-Reply-To: <1396352049-23554-1-git-send-email-Guangyu.Chen@freescale.com>
+Subject: Re: [PATCH] ASoC: fsl_sai: Add imx6sx platform support
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com, rob@landley.net,
+ galak@codeaurora.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +30,38 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---7J16OGEJ/mt06A90
+--L/bWm/e7/ricERqM
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Tue, Apr 01, 2014 at 05:10:50PM +0800, Zhao Qiang wrote:
-> add optional property devicetree for SPI slave nodes
-> into devicetree so that LSB mode can be enabled by devicetree.
+On Tue, Apr 01, 2014 at 07:34:09PM +0800, Nicolin Chen wrote:
+> The next coming i.MX6 Solo X SoC also contains SAI module while we use
+> imp_pcm_init() for i.MX platform.
 
-Applied, thanks.
+I've applied this, though obviously it'd be better if we had dmaengine
+support for this SoC so that it was just a compatible string update and
+didn't require any code.
 
---7J16OGEJ/mt06A90
+--L/bWm/e7/ricERqM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTPGd+AAoJELSic+t+oim9AS0QAIpuDugLQoc6QM4BDNSTaSQQ
-xrJO1C8WdLdU9raGKErnFdIGwiuuEeqXGsRzB1Quq27xq2eRgt5RTHICBwkNIL0r
-ASXF494at1tapvoO7Z4jjaW+tsDpH3o1ZFgWBcD9JfVPvY8KnJWYaY+MzJaXXd0f
-cL7qKP3yQ21/OS8WDgouPCkjRHV8R3a3bPD4286JL46gboNszPaRWuFAMaaF93Ul
-KBTRGZAAELZBcXdfZqfD5D1cow9FYZFSQLgRADxI/WSgPbstOfbJuI3HmFd0HFgr
-AhZY+j6i4qTchoQGklpMXfGQLPq+eC+VHVdK88axJqONUMPPBDbv8LLTk21ET/ce
-US2P5HdxWDKLxQY0Fh/nBMtjrmVYpP7YzfmmpiyL6aZqy1EAw5hvM6h+Fcw+VT/y
-nWcMaOKRHhMc7wOH5CyLndvK63LXpLUtbW8WOSqywm4wCTpGRMmviW24y0E/XaB1
-MhStyJ1iRVdBDMFsEZlmRB3+WnUZ5EftKnlImox9o4oZB7oPCuAJnz80Ca3PJcwf
-XccsRs/nNOjnwagZe+9CZzg5KWwlkKoTZmTnRxmYJ6GRrLFG4SkbJcTRtjlljrEn
-t0qeyjEc3cU8bO4NGLCdnu5abt+nc+Jr1kSXFY4UwhJQZ6Nqi4WC5XI+bmYbTMct
-enNvk2w/EqJcnK3B8cru
-=13uQ
+iQIcBAEBAgAGBQJTPGplAAoJELSic+t+oim9WMoP/jw3mYBYR71+bc4LxmhDmoXB
+ZyGam2gLtQ10yNOR/EuH9yKVXS84kw2ixKSC3fUSrlxzpK2KZgei6HvI1jHza2bU
+lbJ2UP5/YgxOAqdwBPLhED100mgSkTbqyZN0YwvzimRfI39VQhKip2EmZ9CASFWt
+td6DydrruAQTwceiu3gyrbQ+K/2PvwNOjRHR7eRplYyM7BpJXRfYrBuy/5EhbJNJ
+X1lZ6tMrIt/ILbHw/3cWS3J+nfKdevY2IUOtipUekj6jO8PeK4VdqT7oXGg1qUvT
+A6IlMLiERc0Y5H6zlP6RA2MKShbh/6qfuJqvJ3pvwD4HnKWgmEIMgGpEmrzUtLRV
+SwYP+L7j7diZJNkD2T3EtlfSXaJzoEHiVEHZeV1vqgiq6E5YY2D/dJZPl2s5Y7vZ
+E5c7s0IOvH0Dr5YbJ9cvU5oQbu13mBTJ/eitqSWzQwR5/rjpi8b27SRBzgovAGzZ
+UIbKP0hpTLHU0c1M26twq5OTIPlBBeuNZjjcKeCPC5hg3PuvLvPNSa9d1W1icFl1
+/LWv5WYiB3OLFdzhQThZk1RMjjCAdQFusOBS7wUqGlPkolr7GVUz+TGLzFYxnpbM
+28o17R2LOjA6CfiQenkuz7kubgSAKI7LKTjyc/aV2xAMAIrO0sbOXWjUczVcrHic
+l+yze0UTzoGYtvc3ipr2
+=5s9g
 -----END PGP SIGNATURE-----
 
---7J16OGEJ/mt06A90--
+--L/bWm/e7/ricERqM--
