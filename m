@@ -1,23 +1,23 @@
-Return-Path: <shc_work@mail.ru>
-Received: from fallback1.mail.ru (fallback1.mail.ru [94.100.176.18])
- by ozlabs.org (Postfix) with ESMTP id ABB691400D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 21:13:47 +1100 (EST)
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-To: =?UTF-8?B?QWxleGFuZHJlIENvdXJib3Q=?= <gnurou@gmail.com>
-Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gZ3BpbzogZ2U6IENvbnZlcnQgdG8gcGxhdGZvcm0gZHJp?=
- =?UTF-8?B?dmVy?=
-Mime-Version: 1.0
-Date: Wed, 02 Apr 2014 14:13:20 +0400
-Message-ID: <1396433600.323945770@f243.i.mail.ru>
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAAVeFu+8sjgtGGUv8O+FLy_3vbtQV+2m5rsJ9FccPoq6AiOFsg@mail.gmail.com>
-References: <1396156455-4225-1-git-send-email-shc_work@mail.ru>
- <CAAVeFu+8sjgtGGUv8O+FLy_3vbtQV+2m5rsJ9FccPoq6AiOFsg@mail.gmail.com>
-Cc: =?UTF-8?B?bGludXgtZ3Bpb0B2Z2VyLmtlcm5lbC5vcmc=?=
- <linux-gpio@vger.kernel.org>,
- =?UTF-8?B?TGludXMgV2FsbGVpag==?= <linus.walleij@linaro.org>,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 9F1121400DF
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 21:47:48 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH REPOST v5 1/3] powernv,
+ cpufreq: Select CPUFreq related Kconfig options for powernv
+Date: Wed, 02 Apr 2014 13:03:35 +0200
+Message-ID: <1621325.cz1O3Ng49e@vostro.rjw.lan>
+In-Reply-To: <1396412608.1394.15.camel@pasglop>
+References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
+ <1506880.SKUfks4BOU@vostro.rjw.lan> <1396412608.1394.15.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM list <linux-pm@vger.kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
+ cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,14 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-V2VkLCAyIEFwciAyMDE0IDE4OjQxOjU1ICswOTAwINC+0YIgQWxleGFuZHJlIENvdXJib3QgPGdu
-dXJvdUBnbWFpbC5jb20+Ogo+IE9uIFN1biwgTWFyIDMwLCAyMDE0IGF0IDI6MTQgUE0sIEFsZXhh
-bmRlciBTaGl5YW4gPHNoY193b3JrQG1haWwucnU+IHdyb3RlOgo+ID4gVGhpcyBwYXRjaCBjb252
-ZXJ0cyBHRSBJL08gRlBHQSBHUElPIGRyaXZlciB0byBwbGF0Zm9ybSBkcml2ZXIuCj4gPgo+ID4g
-U2lnbmVkLW9mZi1ieTogQWxleGFuZGVyIFNoaXlhbiA8c2hjX3dvcmtAbWFpbC5ydT4KPiA+IC0t
-LQo+ID4gT25seSBjb21waWxlIHRlc3RlZC4KPiAKPiBDb3VsZCB3ZSBnZXQgYSBjb3VwbGUgb2Yg
-VGVzdGVkLWJ5IGJ5IHBlb3BsZSB3aG8gY2FuIHRyeSB0aGlzIHBhdGNoPwo+IEl0IGdyZWF0bHkg
-c2ltcGxpZmllcyB0aGUgZHJpdmVyLCBidXQgd2UgbmVlZCB0byBtYWtlIHN1cmUgaXQgZG9lc24n
-dAo+IGJyZWFrIGFueXRoaW5nIGJlZm9yZSBnb2luZyBmdXJ0aGVyLi4uCgpZZWFoLCBJJ20gd2Fp
-dCBmb3IgdGhpcyB0b28uIEluIGFueSBjYXNlLCBJIHdhbnQgdG8gc3VibWl0IHYyIGEgYml0IGxh
-dGVyLgoKLS0tCgo=
+On Wednesday, April 02, 2014 03:23:28 PM Benjamin Herrenschmidt wrote:
+> On Wed, 2014-04-02 at 00:03 +0200, Rafael J. Wysocki wrote:
+> > > Rafael, are you going to take these or should I send them to Linus ?
+> > > 
+> > > (I'd rather you take them :-)
+> > 
+> > I can do that, but the timing is pretty bad.  How urgent are they?
+> 
+> To be honest pretty urgent. It's a new drop-in driver so it shouldn't
+> be a huge deal.
+> 
+> We have distros really waiting for this to hit upstream... But I'll
+> leave that decision to you :-)
+
+Well, I've already sent a second pull request for this merge window
+and I'm not going to send the next one before it is merged.
+
+So, I can push them next week realistically.
+
+Rafael
