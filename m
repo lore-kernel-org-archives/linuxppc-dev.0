@@ -1,36 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0786D1400E4
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 14:41:57 +1100 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 2 Apr 2014 09:11:54 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 321CF1258048
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 09:14:21 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s323fuMv3539422
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 09:11:56 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s323fpGW013725
- for <linuxppc-dev@ozlabs.org>; Wed, 2 Apr 2014 09:11:51 +0530
-Message-ID: <533B86A5.90700@linux.vnet.ibm.com>
-Date: Wed, 02 Apr 2014 09:10:21 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [RFC] powerpc, ptrace: Add few more ptrace request macros
-References: <1396350893-4456-1-git-send-email-khandual@linux.vnet.ibm.com>
- <25834.1396399387@ale.ozlabs.ibm.com>
-In-Reply-To: <25834.1396399387@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 8716D1400E5
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Apr 2014 15:23:48 +1100 (EST)
+Message-ID: <1396412608.1394.15.camel@pasglop>
+Subject: Re: [PATCH REPOST v5 1/3] powernv, cpufreq: Select CPUFreq related
+ Kconfig options for powernv
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Date: Wed, 02 Apr 2014 15:23:28 +1100
+In-Reply-To: <1506880.SKUfks4BOU@vostro.rjw.lan>
+References: <CAKohpo=jvswNPmUPEbS79bSp9ZWC1e3DjaEUX=O4CWMXfufHrw@mail.gmail.com>
+ <1396336408-20954-3-git-send-email-ego@linux.vnet.ibm.com>
+ <1396345609.28055.7.camel@pasglop> <1506880.SKUfks4BOU@vostro.rjw.lan>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+ Linux PM list <linux-pm@vger.kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
+ cpufreq@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Anton Blanchard <anton@samba.org>, srivatsa.bhat@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,18 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/02/2014 06:13 AM, Michael Neuling wrote:
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
->> > This patch adds few more ptrace request macros expanding
->> > the existing capability. These ptrace requests macros can
->> > be classified into two categories.
-> Why is this only an RFC?
+On Wed, 2014-04-02 at 00:03 +0200, Rafael J. Wysocki wrote:
+> > Rafael, are you going to take these or should I send them to Linus ?
+> > 
+> > (I'd rather you take them :-)
 > 
+> I can do that, but the timing is pretty bad.  How urgent are they?
 
-Looking for comments, suggestions, concerns from people. But looks
-like its bit big a patch to review at once.
+To be honest pretty urgent. It's a new drop-in driver so it shouldn't
+be a huge deal.
 
-> Also, please share the test case that you wrote for this.
+We have distros really waiting for this to hit upstream... But I'll
+leave that decision to you :-)
 
-Will split the patch into multiple components, add the test case
-and send out again.
+Cheers,
+Ben.
