@@ -1,28 +1,25 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 684D4140149
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 19:03:12 +1100 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-Date: Thu, 3 Apr 2014 08:03:02 +0000
-Message-ID: <69cec4d810a448069df4d30bfc861ea5@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
- <533BDA11.9080905@linaro.org>
- <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
- <533CFFA7.6000907@linaro.org>
-In-Reply-To: <533CFFA7.6000907@linaro.org>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 8397314014E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 19:09:48 +1100 (EST)
+Message-ID: <533D173C.9050204@freescale.com>
+Date: Thu, 3 Apr 2014 16:09:32 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Cc: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH 3/7] DMA: Freescale: add fsl_dma_free_descriptor() to
+ reduce code duplication
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+ <1389851246-8564-4-git-send-email-hongbo.zhang@freescale.com>
+ <20140311110616.GV1976@intel.com> <5334F022.3050402@freescale.com>
+In-Reply-To: <5334F022.3050402@freescale.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: scottwood@freescale.com, dmaengine@vger.kernel.org,
+ dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,111 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGFuaWVsIExlemNhbm8g
-W21haWx0bzpkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwgQXBy
-aWwgMDMsIDIwMTQgMjoyOSBQTQ0KPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0OyBXb29kIFNj
-b3R0LUIwNzQyMQ0KPiBDYzogcmp3QHJqd3lzb2NraS5uZXQ7IExpIFlhbmctTGVvLVI1ODQ3Mjsg
-SmluIFpoZW5neGlvbmctUjY0MTg4OyBaaGFvIENoZW5odWktDQo+IEIzNTMzNjsgbGludXgtcG1A
-dmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIXSBjcHVpZGxlOiBhZGQgZnJlZXNjYWxlIGU1MDAgZmFtaWx5IHBvcmNlc3Nv
-cnMgaWRsZSBzdXBwb3J0DQo+IA0KPiBPbiAwNC8wMy8yMDE0IDA1OjIwIEFNLCBEb25nc2hlbmcu
-V2FuZ0BmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+IEhpIERhbmllbCwNCj4gPg0KPiA+IFRoYW5r
-cyBmb3IgeW91ciByZXZpZXcuIEkgd2lsbCBmaXggeW91ciBjb21tZW50cy4NCj4gPg0KPiA+IEJU
-VywgZml4IFJhZmFlbCdzIGVtYWlsLiA6KQ0KPiA+DQo+ID4+PiArI2luY2x1ZGUgPGxpbnV4L2Nw
-dS5oPg0KPiA+Pj4gKyNpbmNsdWRlIDxsaW51eC9jcHVpZGxlLmg+DQo+ID4+PiArI2luY2x1ZGUg
-PGxpbnV4L2luaXQuaD4NCj4gPj4+ICsjaW5jbHVkZSA8bGludXgva2VybmVsLmg+DQo+ID4+PiAr
-I2luY2x1ZGUgPGxpbnV4L25vdGlmaWVyLmg+DQo+ID4+PiArDQo+ID4+PiArI2luY2x1ZGUgPGFz
-bS9jcHV0YWJsZS5oPg0KPiA+Pj4gKyNpbmNsdWRlIDxhc20vbWFjaGRlcC5oPg0KPiA+Pj4gKyNp
-bmNsdWRlIDxhc20vbXBjODV4eC5oPg0KPiA+Pj4gKw0KPiA+Pj4gK3N0YXRpYyB1bnNpZ25lZCBp
-bnQgbWF4X2lkbGVfc3RhdGU7IHN0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZQ0KPiA+Pj4gKypj
-cHVpZGxlX3N0YXRlX3RhYmxlOw0KPiA+Pj4gKw0KPiA+Pj4gK3N0cnVjdCBjcHVpZGxlX2RyaXZl
-ciBlNTAwX2lkbGVfZHJpdmVyID0gew0KPiA+Pj4gKwkubmFtZSA9ICJlNTAwX2lkbGUiLA0KPiA+
-Pj4gKwkub3duZXIgPSBUSElTX01PRFVMRSwNCj4gPj4+ICt9Ow0KPiA+Pj4gKw0KPiA+Pj4gK3N0
-YXRpYyB2b2lkIGU1MDBfY3B1aWRsZSh2b2lkKQ0KPiA+Pj4gK3sNCj4gPj4+ICsJaWYgKGNwdWlk
-bGVfaWRsZV9jYWxsKCkpDQo+ID4+PiArCQljcHVpZGxlX3dhaXQoKTsNCj4gPj4+ICt9DQo+ID4+
-DQo+ID4+IE5vcGUsIHRoYXQgaGFzIGJlZW4gY2hhbmdlZC4gTm8gbW9yZSBjYWxsIHRvIGNwdWlk
-bGVfaWRsZV9jYWxsIGluIGEgZHJpdmVyLg0KPiA+Pg0KPiA+DQo+ID4gVGhhbmtzLg0KPiA+DQo+
-ID4+PiArDQo+ID4+PiArc3RhdGljIGludCBwdzEwX2VudGVyKHN0cnVjdCBjcHVpZGxlX2Rldmlj
-ZSAqZGV2LA0KPiA+Pj4gKwkJCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgp
-IHsNCj4gPj4+ICsJY3B1aWRsZV93YWl0KCk7DQo+ID4+PiArCXJldHVybiBpbmRleDsNCj4gPj4+
-ICt9DQo+ID4+PiArDQo+ID4+PiArI2RlZmluZSBNQVhfQklUCTYzDQo+ID4+PiArI2RlZmluZSBN
-SU5fQklUCTENCj4gPj4+ICtleHRlcm4gdTMyIGNwdWlkbGVfZW50cnlfYml0Ow0KPiA+Pj4gK3N0
-YXRpYyBpbnQgcHcyMF9lbnRlcihzdHJ1Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiwNCj4gPj4+ICsJ
-CXN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgpIHsNCj4gPj4+ICsJdTMyIHB3
-MjBfaWRsZTsNCj4gPj4+ICsJdTMyIGVudHJ5X2JpdDsNCj4gPj4+ICsJcHcyMF9pZGxlID0gbWZz
-cHIoU1BSTl9QV1JNR1RDUjApOw0KPiA+Pj4gKwlpZiAoKHB3MjBfaWRsZSAmIFBXUk1HVENSMF9Q
-VzIwX0VOVCkgIT0gUFdSTUdUQ1IwX1BXMjBfRU5UKSB7DQo+ID4+PiArCQlwdzIwX2lkbGUgJj0g
-flBXUk1HVENSMF9QVzIwX0VOVDsNCj4gPj4+ICsJCWVudHJ5X2JpdCA9IE1BWF9CSVQgLSBjcHVp
-ZGxlX2VudHJ5X2JpdDsNCj4gPj4+ICsJCXB3MjBfaWRsZSB8PSAoZW50cnlfYml0IDw8IFBXUk1H
-VENSMF9QVzIwX0VOVF9TSElGVCk7DQo+ID4+PiArCQltdHNwcihTUFJOX1BXUk1HVENSMCwgcHcy
-MF9pZGxlKTsNCj4gPj4+ICsJfQ0KPiA+Pj4gKw0KPiA+Pj4gKwljcHVpZGxlX3dhaXQoKTsNCj4g
-Pj4+ICsNCj4gPj4+ICsJcHcyMF9pZGxlICY9IH5QV1JNR1RDUjBfUFcyMF9FTlQ7DQo+ID4+PiAr
-CXB3MjBfaWRsZSB8PSAoTUlOX0JJVCA8PCBQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQpOw0KPiA+
-Pj4gKwltdHNwcihTUFJOX1BXUk1HVENSMCwgcHcyMF9pZGxlKTsNCj4gPj4+ICsNCj4gPj4+ICsJ
-cmV0dXJuIGluZGV4Ow0KPiA+Pj4gK30NCj4gPj4NCj4gPj4gSXMgaXQgcG9zc2libGUgdG8gZ2l2
-ZSBzb21lIGNvbW1lbnRzIGFuZCBlbmNhcHN1bGF0ZSB0aGUgY29kZSB3aXRoDQo+ID4+IGV4cGxp
-Y2l0IGZ1bmN0aW9uIG5hbWVzIHRvIGJlIGltcGxlbWVudGVkIGluIGFuIGFyY2ggc3BlY2lmaWMN
-Cj4gPj4gZGlyZWN0b3J5IGZpbGUgKGVnLiBwbS5jKSBhbmQgZXhwb3J0IHRoZXNlIGZ1bmN0aW9u
-cyBpbiBhIGxpbnV4Lw0KPiA+PiBoZWFkZXIgPyBXZSB0cnkgdG8gcHJldmVudCB0byBpbmNsdWRl
-IGFzbSBpZiBwb3NzaWJsZS4NCj4gPj4NCj4gPg0KPiA+IFllcCwgTG9va3MgYmV0dGVyLiBUaGFu
-a3MuDQo+ID4NCj4gPj4+ICsNCj4gPj4+ICtzdGF0aWMgc3RydWN0IGNwdWlkbGVfc3RhdGUgcHdf
-aWRsZV9zdGF0ZXNbXSA9IHsNCj4gPj4+ICsJew0KPiA+Pj4gKwkJLm5hbWUgPSAicHcxMCIsDQo+
-ID4+PiArCQkuZGVzYyA9ICJwdzEwIiwNCj4gPj4+ICsJCS5mbGFncyA9IENQVUlETEVfRkxBR19U
-SU1FX1ZBTElELA0KPiA+Pj4gKwkJLmV4aXRfbGF0ZW5jeSA9IDAsDQo+ID4+PiArCQkudGFyZ2V0
-X3Jlc2lkZW5jeSA9IDAsDQo+ID4+PiArCQkuZW50ZXIgPSAmcHcxMF9lbnRlcg0KPiA+Pj4gKwl9
-LA0KPiA+Pj4gKw0KPiA+Pj4gKwl7DQo+ID4+PiArCQkubmFtZSA9ICJwdzIwIiwNCj4gPj4+ICsJ
-CS5kZXNjID0gInB3MjAtY29yZS1pZGxlIiwNCj4gPj4+ICsJCS5mbGFncyA9IENQVUlETEVfRkxB
-R19USU1FX1ZBTElELA0KPiA+Pj4gKwkJLmV4aXRfbGF0ZW5jeSA9IDEsDQo+ID4+PiArCQkudGFy
-Z2V0X3Jlc2lkZW5jeSA9IDUwLA0KPiA+Pj4gKwkJLmVudGVyID0gJnB3MjBfZW50ZXINCj4gPj4+
-ICsJfSwNCj4gPj4+ICt9Ow0KPiA+Pg0KPiA+PiBObyBuZWVkIHRvIGRlZmluZSB0aGlzIGludGVy
-bWVkaWF0ZSBzdHJ1Y3R1cmUgaGVyZSwgeW91IGNhbiBkaXJlY3RseQ0KPiA+PiBpbml0aWFsaXpl
-IHRoZSBjcHVpZGxlX2RyaXZlcjoNCj4gPj4NCj4gPg0KPiA+IFRoYW5rcy4gOikNCj4gPg0KPiA+
-Pj4gK3N0YXRpYyBpbnQgY3B1X2hvdHBsdWdfbm90aWZ5KHN0cnVjdCBub3RpZmllcl9ibG9jayAq
-biwNCj4gPj4+ICsJCQl1bnNpZ25lZCBsb25nIGFjdGlvbiwgdm9pZCAqaGNwdSkgew0KPiA+Pj4g
-Kwl1bnNpZ25lZCBsb25nIGhvdGNwdSA9ICh1bnNpZ25lZCBsb25nKWhjcHU7DQo+ID4+PiArCXN0
-cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2ID0NCj4gPj4+ICsJCQlwZXJfY3B1X3B0cihjcHVpZGxl
-X2RldmljZXMsIGhvdGNwdSk7DQo+ID4+PiArDQo+ID4+PiArCWlmIChkZXYgJiYgY3B1aWRsZV9n
-ZXRfZHJpdmVyKCkpIHsNCj4gPj4+ICsJCXN3aXRjaCAoYWN0aW9uKSB7DQo+ID4+PiArCQljYXNl
-IENQVV9PTkxJTkU6DQo+ID4+PiArCQljYXNlIENQVV9PTkxJTkVfRlJPWkVOOg0KPiA+Pj4gKwkJ
-CWNwdWlkbGVfcGF1c2VfYW5kX2xvY2soKTsNCj4gPj4+ICsJCQljcHVpZGxlX2VuYWJsZV9kZXZp
-Y2UoZGV2KTsNCj4gPj4+ICsJCQljcHVpZGxlX3Jlc3VtZV9hbmRfdW5sb2NrKCk7DQo+ID4+PiAr
-CQkJYnJlYWs7DQo+ID4+PiArDQo+ID4+PiArCQljYXNlIENQVV9ERUFEOg0KPiA+Pj4gKwkJY2Fz
-ZSBDUFVfREVBRF9GUk9aRU46DQo+ID4+PiArCQkJY3B1aWRsZV9wYXVzZV9hbmRfbG9jaygpOw0K
-PiA+Pj4gKwkJCWNwdWlkbGVfZGlzYWJsZV9kZXZpY2UoZGV2KTsNCj4gPj4+ICsJCQljcHVpZGxl
-X3Jlc3VtZV9hbmRfdW5sb2NrKCk7DQo+ID4+PiArCQkJYnJlYWs7DQo+ID4+PiArDQo+ID4+PiAr
-CQlkZWZhdWx0Og0KPiA+Pj4gKwkJCXJldHVybiBOT1RJRllfRE9ORTsNCj4gPj4+ICsJCX0NCj4g
-Pj4+ICsJfQ0KPiA+Pj4gKw0KPiA+Pj4gKwlyZXR1cm4gTk9USUZZX09LOw0KPiA+Pj4gK30NCj4g
-Pj4+ICsNCj4gPj4+ICtzdGF0aWMgc3RydWN0IG5vdGlmaWVyX2Jsb2NrIGNwdV9ob3RwbHVnX25v
-dGlmaWVyID0gew0KPiA+Pj4gKwkubm90aWZpZXJfY2FsbCA9IGNwdV9ob3RwbHVnX25vdGlmeSwg
-fTsNCj4gPj4NCj4gPj4gQ2FuIHlvdSBleHBsYWluIHdoeSB0aGlzIGlzIG5lZWRlZCA/DQo+ID4+
-DQo+ID4NCj4gPiBJZiBhIGNwdSB3aWxsIGJlIHBsdWdnZWQgb3V0L2luLCBXZSBzaG91bGQgYmUg
-bGV0IENwdWlkbGUga25vdyB0bw0KPiA+IHJlbW92ZSBjb3JyZXNwb25kaW5nIHN5cyBpbnRlcmZh
-Y2UgYW5kIGRpc2FibGUvZW5hYmxlIGNwdWRpbGUtZ292ZXJub3IgZm9yDQo+IGN1cnJlbnQgY3B1
-Lg0KPiANCj4gT2ssIHRoaXMgY29kZSBpcyBhIGNvcHktcGFzdGUgb2YgdGhlIHBvd2VycycgY3B1
-aWRsZSBkcml2ZXIuDQo+IA0KPiBJSVJDLCBJIHBvc3RlZCBhIHBhdGNoc2V0IHRvIG1vdmUgdGhp
-cyBwb3J0aW9uIG9mIGNvZGUgaW4gdGhlIGNwdWlkbGUgY29tbW9uDQo+IGZyYW1ld29yayBzb21l
-IHRpbWUgYWdvLg0KPiANCj4gQ291bGQgeW91IHBsZWFzZSBnZXQgcmlkIG9mIHRoaXMgcGFydCBv
-ZiBjb2RlID8NCj4gDQoNClllcywgSSBjYW4uIDopIENvdWxkIHlvdSBzaGFyZSBtZSB5b3VyIHBh
-dGNoc2V0IGxpbms/IEkgY2FuJ3QgZm91bmQgdGhlbSBvbiB5b3VyIHRyZWUuDQoNClJlZ2FyZHMs
-DQotRG9uZ3NoZW5nDQoNCj4gDQo+ID4+PiArCWVyciA9IHJlZ2lzdGVyX2NwdV9ub3RpZmllcigm
-Y3B1X2hvdHBsdWdfbm90aWZpZXIpOw0KPiA+Pj4gKwlpZiAoZXJyKQ0KPiA+Pj4gKwkJcHJfd2Fy
-bigiQ3B1aWRsZSBkcml2ZXI6IHJlZ2lzdGVyIGNwdSBub3RpZmllciBmYWlsZWQuXG4iKTsNCj4g
-Pj4+ICsNCj4gPj4+ICsJLyogUmVwbGFjZSB0aGUgb3JpZ2luYWwgd2F5IG9mIGlkbGUgYWZ0ZXIg
-Y3B1aWRsZSByZWdpc3RlcmVkLiAqLw0KPiA+Pj4gKwlwcGNfbWQucG93ZXJfc2F2ZSA9IGU1MDBf
-Y3B1aWRsZTsNCj4gPj4+ICsJb25fZWFjaF9jcHUocmVwbGFjZV9vcmlnX2lkbGUsIE5VTEwsIDEp
-Ow0KPiA+Pg0KPiA+PiBXaHkgPw0KPiA+Pg0KPiA+DQo+ID4gSSBjaGVja2VkIGFnYWluLCBpZiB3
-ZSBwdXQgY3B1aWRsZV9pZGxlX2NhbGwgaW4gYXNtLCB0aGlzIGlzIG5vdCBuZWVkLg0KPiA+DQo+
-ID4gUmVnYXJkcywNCj4gPiAtRG9uZ3NoZW5nDQo+ID4NCj4gPj4+ICsJcHJfaW5mbygiZTUwMF9p
-ZGxlX2RyaXZlciByZWdpc3RlcmVkLlxuIik7DQo+ID4+PiArDQo+ID4+PiArCXJldHVybiAwOw0K
-PiA+Pj4gK30NCj4gPj4+ICtsYXRlX2luaXRjYWxsKGU1MDBfaWRsZV9pbml0KTsNCj4gPj4+DQo+
-ID4+DQo+ID4+IFRoYW5rcw0KPiA+Pg0KPiA+PiAgICAgLS0gRGFuaWVsDQo+ID4+DQo+ID4+DQo+
-ID4+IC0tDQo+ID4+ICAgIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBP
-cGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNDQo+ID4+IFNvQ3MNCj4gPj4NCj4gPj4gRm9sbG93
-IExpbmFybzogIDxodHRwOi8vd3d3LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29r
-IHwNCj4gPj4gPGh0dHA6Ly90d2l0dGVyLmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfA0KPiA+
-PiA8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xpbmFyby1ibG9nLz4gQmxvZw0KPiA+Pg0KPiA+Pg0K
-PiA+DQo+IA0KPiANCj4gLS0NCj4gICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9y
-ZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzDQo+IA0KPiBGb2xsb3cgTGlu
-YXJvOiAgPGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfA0K
-PiA8aHR0cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8IDxodHRwOi8vd3d3
-LmxpbmFyby5vcmcvbGluYXJvLWJsb2cvPg0KPiBCbG9nDQo+IA0KPiANCg0K
+
+On 03/28/2014 11:44 AM, Hongbo Zhang wrote:
+>
+> On 03/11/2014 07:06 PM, Vinod Koul wrote:
+>> On Thu, Jan 16, 2014 at 01:47:22PM +0800, hongbo.zhang@freescale.com 
+>> wrote:
+>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>>
+>>> There are several places where descriptors are freed using identical 
+>>> code.
+>>> This patch puts this code into a function to reduce code duplication.
+>>>
+>>> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+>>> ---
+>>>   drivers/dma/fsldma.c |   38 ++++++++++++++++++++------------------
+>>>   1 file changed, 20 insertions(+), 18 deletions(-)
+>>>
+>>> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+>>> index 95236e6..ad73538 100644
+>>> --- a/drivers/dma/fsldma.c
+>>> +++ b/drivers/dma/fsldma.c
+>>> @@ -418,6 +418,21 @@ static dma_cookie_t fsl_dma_tx_submit(struct 
+>>> dma_async_tx_descriptor *tx)
+>>>   }
+>>>     /**
+>>> + * fsl_dma_free_descriptor - Free descriptor from channel's DMA pool.
+>>> + * @chan : Freescale DMA channel
+>>> + * @desc: descriptor to be freed
+>>> + */
+>>> +static void fsl_dma_free_descriptor(struct fsldma_chan *chan,
+>>> +        struct fsl_desc_sw *desc)
+>>> +{
+>>> +    list_del(&desc->node);
+>>> +#ifdef FSL_DMA_LD_DEBUG
+>>> +    chan_dbg(chan, "LD %p free\n", desc);
+>>> +#endif
+>> why not wrap the define stuff in the defination of chan_dbg rather 
+>> than its
+>> usage :(
+>>
+>
+> OK, I will fix it by another separate patch.
+> Thanks.
+>
+
+Think it again, I'd like to remove the FSL_DMA_LD_DEBUG usage, because 
+the chan_dbg is a wrapper of dev_dbg, we do have macro to switch on/off 
+dev_dbg, and most of other codes are calling chan_dbg directly without 
+FSL_DMA_LD_DEBUG, the FSL_DMA_LD_DEBUG only shows up 3 times unnecessarily.
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
