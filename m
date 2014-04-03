@@ -1,33 +1,27 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 84841140144
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 17:58:28 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Thu, 3 Apr 2014 16:58:27 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 574972BB0056
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 17:58:24 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s336wAJB11665822
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Apr 2014 17:58:10 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s336wNW6025639
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Apr 2014 17:58:23 +1100
-Message-ID: <1396508300.2913.52.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: [PATCH] powerpc: use of_node_init() for the fakenode in msi_bitmap.c
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 03 Apr 2014 14:58:20 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: grant.likely@linaro.org, Paul Mackerras <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id 50E23140146
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 18:00:24 +1100 (EST)
+Message-ID: <533D06F2.7080702@freescale.com>
+Date: Thu, 3 Apr 2014 15:00:02 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+To: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH 6/7] DMA: Freescale: use spin_lock_bh instead of
+ spin_lock_irqsave
+References: <1389851246-8564-1-git-send-email-hongbo.zhang@freescale.com>
+ <1389851246-8564-7-git-send-email-hongbo.zhang@freescale.com>
+ <1395817294.6569.2.camel@vkoul-udesk3> <533517C1.8080208@freescale.com>
+ <20140329134528.GQ1976@intel.com> <5338EA57.1000509@freescale.com>
+ <20140402163519.GU1976@intel.com>
+In-Reply-To: <20140402163519.GU1976@intel.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Vinod Koul <vkoul@infradead.org>, linux-kernel@vger.kernel.org,
+ scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,59 +31,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch uses of_node_init() to initialize the kobject in the fake
-node used in test_of_node(), to avoid following kobject warning. 
 
-[    0.897654] kobject: '(null)' (c0000007ca183a08): is not initialized, yet kobject_put() is being called.
-[    0.897682] ------------[ cut here ]------------
-[    0.897688] WARNING: at lib/kobject.c:670
-[    0.897692] Modules linked in:
-[    0.897701] CPU: 4 PID: 1 Comm: swapper/0 Not tainted 3.14.0+ #1
-[    0.897708] task: c0000007ca100000 ti: c0000007ca180000 task.ti: c0000007ca180000
-[    0.897715] NIP: c00000000046a1f0 LR: c00000000046a1ec CTR: 0000000001704660
-[    0.897721] REGS: c0000007ca1835c0 TRAP: 0700   Not tainted  (3.14.0+)
-[    0.897727] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 28000024  XER: 0000000d
-[    0.897749] CFAR: c0000000008ef4ec SOFTE: 1 
-GPR00: c00000000046a1ec c0000007ca183840 c0000000014c59b8 000000000000005c 
-GPR04: 0000000000000001 c000000000129770 0000000000000000 0000000000000001 
-GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000003fef 
-GPR12: 0000000000000000 c00000000f221200 c00000000000c350 0000000000000000 
-GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-GPR24: 0000000000000000 c00000000144e808 c000000000c56f20 00000000000000d8 
-GPR28: c000000000cd5058 0000000000000000 c000000001454ca8 c0000007ca183a08 
-[    0.897856] NIP [c00000000046a1f0] .kobject_put+0xa0/0xb0
-[    0.897863] LR [c00000000046a1ec] .kobject_put+0x9c/0xb0
-[    0.897868] Call Trace:
-[    0.897874] [c0000007ca183840] [c00000000046a1ec] .kobject_put+0x9c/0xb0 (unreliable)
-[    0.897885] [c0000007ca1838c0] [c000000000743f9c] .of_node_put+0x2c/0x50
-[    0.897894] [c0000007ca183940] [c000000000c83954] .test_of_node+0x1dc/0x208
-[    0.897902] [c0000007ca183b80] [c000000000c839a4] .msi_bitmap_selftest+0x24/0x38
-[    0.897913] [c0000007ca183bf0] [c00000000000bb34] .do_one_initcall+0x144/0x200
-[    0.897922] [c0000007ca183ce0] [c000000000c748e4] .kernel_init_freeable+0x2b4/0x394
-[    0.897931] [c0000007ca183db0] [c00000000000c374] .kernel_init+0x24/0x130
-[    0.897940] [c0000007ca183e30] [c00000000000a2f4] .ret_from_kernel_thread+0x5c/0x68
-[    0.897947] Instruction dump:
-[    0.897952] 7fe3fb78 38210080 e8010010 ebe1fff8 7c0803a6 4800014c e89f0000 3c62ff6e 
-[    0.897971] 7fe5fb78 3863a950 48485279 60000000 <0fe00000> 39000000 393f0038 4bffff80 
-[    0.897992] ---[ end trace 1eeffdb9f825a556 ]---
+On 04/03/2014 12:35 AM, Vinod Koul wrote:
+> On Mon, Mar 31, 2014 at 12:08:55PM +0800, Hongbo Zhang wrote:
+>> On 03/29/2014 09:45 PM, Vinod Koul wrote:
+>>> On Fri, Mar 28, 2014 at 02:33:37PM +0800, Hongbo Zhang wrote:
+>>>> On 03/26/2014 03:01 PM, Vinod Koul wrote:
+>>>>> On Thu, 2014-01-16 at 13:47 +0800, hongbo.zhang@freescale.com wrote:
+>>>>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>>>>>
+>>>>>> The usage of spin_lock_irqsave() is a stronger locking mechanism than is
+>>>>>> required throughout the driver. The minimum locking required should be used
+>>>>>> instead. Interrupts will be turned off and context will be saved, it is
+>>>>>> unnecessary to use irqsave.
+>>>>>>
+>>>>>> This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
+>>>>>> manipulation of protected fields is done using tasklet context or weaker, which
+>>>>>> makes spin_lock_bh() the correct choice.
+>>>>>>
+>>>>>>   /**
+>>>>>> @@ -1124,11 +1120,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
+>>>>>>   static void dma_do_tasklet(unsigned long data)
+>>>>>>   {
+>>>>>>   	struct fsldma_chan *chan = (struct fsldma_chan *)data;
+>>>>>> -	unsigned long flags;
+>>>>>>   	chan_dbg(chan, "tasklet entry\n");
+>>>>>> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>>>>>> +	spin_lock_bh(&chan->desc_lock);
+>>>>> okay here is the problem :(
+>>>>>
+>>>>> You moved to _bh variant. So if you grab the lock in rest of the code
+>>>>> and irq gets triggered then here we will be spinning to grab the lock.
+>>>>> So effectively you made right locking solution into deadlock situation!
+>>>> If the rest code grabs lock by spin_lock_bh(), and if irq raised,
+>>>> the tasklet could not be executed because it has been disabled by
+>>>> the _bh variant function.
+>>> yes if you are accessing resources only in tasklet and rest of the code, then
+>>> _bh variant works well. The problem here is usage in irq handler
+>>>
+>> The name dma_do_tasklet may mislead, it is tasklet handler, not irq
+>> handler, not a trigger to load tasklet.
+>> the irq handler is fsldma_chan_irq, and I don't use lock in it.
+> sorry my bad, i misread this as code in fsldma_chan_irq() insteadof
+> dma_do_tasklet(). In that case patch is doing the right thing.
+>
 
-
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/sysdev/msi_bitmap.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
-index 8ba6042..2ff6302 100644
---- a/arch/powerpc/sysdev/msi_bitmap.c
-+++ b/arch/powerpc/sysdev/msi_bitmap.c
-@@ -202,7 +202,7 @@ void __init test_of_node(void)
- 
- 	/* There should really be a struct device_node allocator */
- 	memset(&of_node, 0, sizeof(of_node));
--	kref_init(&of_node.kobj.kref);
-+	of_node_init(&of_node);
- 	of_node.full_name = node_name;
- 
- 	check(0 == msi_bitmap_alloc(&bmp, size, &of_node));
+OK, so I will send a v2 series with only updating 3/7 soon.
