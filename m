@@ -1,31 +1,41 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wi0-f177.google.com (mail-wi0-f177.google.com
- [209.85.212.177])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2EC43140151
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 19:12:33 +1100 (EST)
-Received: by mail-wi0-f177.google.com with SMTP id cc10so1956148wib.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Apr 2014 01:12:28 -0700 (PDT)
-Message-ID: <533D17FC.1000201@linaro.org>
-Date: Thu, 03 Apr 2014 10:12:44 +0200
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+ by ozlabs.org (Postfix) with ESMTPS id BE1A0140157
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 19:51:14 +1100 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Thu, 3 Apr 2014 14:21:11 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B2422E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 14:25:15 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s338p0Np65274052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Apr 2014 14:21:00 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s338p6mU018731
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Apr 2014 14:21:06 +0530
+Message-ID: <533D20E1.4000008@linux.vnet.ibm.com>
+Date: Thu, 03 Apr 2014 14:20:41 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
- <533BDA11.9080905@linaro.org>
- <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
- <533CFFA7.6000907@linaro.org>
- <69cec4d810a448069df4d30bfc861ea5@BN1PR03MB188.namprd03.prod.outlook.com>
-In-Reply-To: <69cec4d810a448069df4d30bfc861ea5@BN1PR03MB188.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Michael wang <wangyun@linux.vnet.ibm.com>
+Subject: Re: [PATCH] power,
+ sched: stop updating inside arch_update_cpu_topology()
+ when nothing to be update
+References: <533B8431.8090507@linux.vnet.ibm.com>
+In-Reply-To: <533B8431.8090507@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sfr@canb.auug.org.au, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, jlarrew@linux.vnet.ibm.com,
+ paulus@samba.org, alistair@popple.id.au, nfont@linux.vnet.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>, rcj@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,189 +45,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/03/2014 10:03 AM, Dongsheng.Wang@freescale.com wrote:
->
->
->> -----Original Message-----
->> From: Daniel Lezcano [mailto:daniel.lezcano@linaro.org]
->> Sent: Thursday, April 03, 2014 2:29 PM
->> To: Wang Dongsheng-B40534; Wood Scott-B07421
->> Cc: rjw@rjwysocki.net; Li Yang-Leo-R58472; Jin Zhengxiong-R64188; Zhao Chenhui-
->> B35336; linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
->> Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
->>
->> On 04/03/2014 05:20 AM, Dongsheng.Wang@freescale.com wrote:
->>> Hi Daniel,
->>>
->>> Thanks for your review. I will fix your comments.
->>>
->>> BTW, fix Rafael's email. :)
->>>
->>>>> +#include <linux/cpu.h>
->>>>> +#include <linux/cpuidle.h>
->>>>> +#include <linux/init.h>
->>>>> +#include <linux/kernel.h>
->>>>> +#include <linux/notifier.h>
->>>>> +
->>>>> +#include <asm/cputable.h>
->>>>> +#include <asm/machdep.h>
->>>>> +#include <asm/mpc85xx.h>
->>>>> +
->>>>> +static unsigned int max_idle_state; static struct cpuidle_state
->>>>> +*cpuidle_state_table;
->>>>> +
->>>>> +struct cpuidle_driver e500_idle_driver = {
->>>>> +	.name = "e500_idle",
->>>>> +	.owner = THIS_MODULE,
->>>>> +};
->>>>> +
->>>>> +static void e500_cpuidle(void)
->>>>> +{
->>>>> +	if (cpuidle_idle_call())
->>>>> +		cpuidle_wait();
->>>>> +}
->>>>
->>>> Nope, that has been changed. No more call to cpuidle_idle_call in a driver.
->>>>
->>>
->>> Thanks.
->>>
->>>>> +
->>>>> +static int pw10_enter(struct cpuidle_device *dev,
->>>>> +			struct cpuidle_driver *drv, int index) {
->>>>> +	cpuidle_wait();
->>>>> +	return index;
->>>>> +}
->>>>> +
->>>>> +#define MAX_BIT	63
->>>>> +#define MIN_BIT	1
->>>>> +extern u32 cpuidle_entry_bit;
->>>>> +static int pw20_enter(struct cpuidle_device *dev,
->>>>> +		struct cpuidle_driver *drv, int index) {
->>>>> +	u32 pw20_idle;
->>>>> +	u32 entry_bit;
->>>>> +	pw20_idle = mfspr(SPRN_PWRMGTCR0);
->>>>> +	if ((pw20_idle & PWRMGTCR0_PW20_ENT) != PWRMGTCR0_PW20_ENT) {
->>>>> +		pw20_idle &= ~PWRMGTCR0_PW20_ENT;
->>>>> +		entry_bit = MAX_BIT - cpuidle_entry_bit;
->>>>> +		pw20_idle |= (entry_bit << PWRMGTCR0_PW20_ENT_SHIFT);
->>>>> +		mtspr(SPRN_PWRMGTCR0, pw20_idle);
->>>>> +	}
->>>>> +
->>>>> +	cpuidle_wait();
->>>>> +
->>>>> +	pw20_idle &= ~PWRMGTCR0_PW20_ENT;
->>>>> +	pw20_idle |= (MIN_BIT << PWRMGTCR0_PW20_ENT_SHIFT);
->>>>> +	mtspr(SPRN_PWRMGTCR0, pw20_idle);
->>>>> +
->>>>> +	return index;
->>>>> +}
->>>>
->>>> Is it possible to give some comments and encapsulate the code with
->>>> explicit function names to be implemented in an arch specific
->>>> directory file (eg. pm.c) and export these functions in a linux/
->>>> header ? We try to prevent to include asm if possible.
->>>>
->>>
->>> Yep, Looks better. Thanks.
->>>
->>>>> +
->>>>> +static struct cpuidle_state pw_idle_states[] = {
->>>>> +	{
->>>>> +		.name = "pw10",
->>>>> +		.desc = "pw10",
->>>>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->>>>> +		.exit_latency = 0,
->>>>> +		.target_residency = 0,
->>>>> +		.enter = &pw10_enter
->>>>> +	},
->>>>> +
->>>>> +	{
->>>>> +		.name = "pw20",
->>>>> +		.desc = "pw20-core-idle",
->>>>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->>>>> +		.exit_latency = 1,
->>>>> +		.target_residency = 50,
->>>>> +		.enter = &pw20_enter
->>>>> +	},
->>>>> +};
->>>>
->>>> No need to define this intermediate structure here, you can directly
->>>> initialize the cpuidle_driver:
->>>>
->>>
->>> Thanks. :)
->>>
->>>>> +static int cpu_hotplug_notify(struct notifier_block *n,
->>>>> +			unsigned long action, void *hcpu) {
->>>>> +	unsigned long hotcpu = (unsigned long)hcpu;
->>>>> +	struct cpuidle_device *dev =
->>>>> +			per_cpu_ptr(cpuidle_devices, hotcpu);
->>>>> +
->>>>> +	if (dev && cpuidle_get_driver()) {
->>>>> +		switch (action) {
->>>>> +		case CPU_ONLINE:
->>>>> +		case CPU_ONLINE_FROZEN:
->>>>> +			cpuidle_pause_and_lock();
->>>>> +			cpuidle_enable_device(dev);
->>>>> +			cpuidle_resume_and_unlock();
->>>>> +			break;
->>>>> +
->>>>> +		case CPU_DEAD:
->>>>> +		case CPU_DEAD_FROZEN:
->>>>> +			cpuidle_pause_and_lock();
->>>>> +			cpuidle_disable_device(dev);
->>>>> +			cpuidle_resume_and_unlock();
->>>>> +			break;
->>>>> +
->>>>> +		default:
->>>>> +			return NOTIFY_DONE;
->>>>> +		}
->>>>> +	}
->>>>> +
->>>>> +	return NOTIFY_OK;
->>>>> +}
->>>>> +
->>>>> +static struct notifier_block cpu_hotplug_notifier = {
->>>>> +	.notifier_call = cpu_hotplug_notify, };
->>>>
->>>> Can you explain why this is needed ?
->>>>
->>>
->>> If a cpu will be plugged out/in, We should be let Cpuidle know to
->>> remove corresponding sys interface and disable/enable cpudile-governor for
->> current cpu.
->>
->> Ok, this code is a copy-paste of the powers' cpuidle driver.
->>
->> IIRC, I posted a patchset to move this portion of code in the cpuidle common
->> framework some time ago.
->>
->> Could you please get rid of this part of code ?
->>
->
-> Yes, I can. :) Could you share me your patchset link? I can't found them on your tree.
+On 04/02/2014 08:59 AM, Michael wang wrote:
+> During the testing, we encounter below WARN followed by Oops:
+> 
+> 	WARNING: at kernel/sched/core.c:6218
+> 	...
+> 	NIP [c000000000101660] .build_sched_domains+0x11d0/0x1200
+> 	LR [c000000000101358] .build_sched_domains+0xec8/0x1200
+> 	PACATMSCRATCH [800000000000f032]
+> 	Call Trace:
+> 	[c00000001b103850] [c000000000101358] .build_sched_domains+0xec8/0x1200
+> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
+> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
+> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
+> 	...
+> 	Oops: Kernel access of bad area, sig: 11 [#1]
+> 	...
+> 	NIP [c00000000045c000] .__bitmap_weight+0x60/0xf0
+> 	LR [c00000000010132c] .build_sched_domains+0xe9c/0x1200
+> 	PACATMSCRATCH [8000000000029032]
+> 	Call Trace:
+> 	[c00000001b1037a0] [c000000000288ff4] .kmem_cache_alloc_node_trace+0x184/0x3a0
+> 	[c00000001b103850] [c00000000010132c] .build_sched_domains+0xe9c/0x1200
+> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
+> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
+> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
+> 	...
+> 
+> This was caused by that 'sd->groups == NULL' after building groups, which
+> was caused by the empty 'sd->span'.
+> 
+> The cpu's domain contain nothing because the cpu was assigned to wrong
+> node inside arch_update_cpu_topology() by calling update_lookup_table()
+> with the uninitialized param, in the case when there is nothing to be
+> update.
 >
 
-It was a while ago. I should have it somewhere locally. I will find it 
-out and resend the patch next week when finishing my current task.
+I think we need to verify this theory. Here are my thoughts:
 
-   -- Daniel
+If we get a topology update notification from the hypervisor, and then the
+update happens to be nothing new (as in, new_node == old_node for the given
+cpu), then updated_cpus mask will not have any cpus set in it (like you noted
+below). In that scenario, the following sequence will take place:
 
->> --
->>    <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter | <http://www.linaro.org/linaro-blog/>
->> Blog
->>
->>
->
+Inside arch_cpu_update_topology(), the 'updates' has been kzalloc()'ed.
+So updates[0] will have all its fields set to 0, such as ->cpu, ->new_nid etc.
+
+When we invoke stop_machine() the first time like this:
+
+stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
+
+stop-machine will notice that updated_cpus mask does not have any cpus set
+in it, so it will nominate cpumask_first(cpu_online_mask) to run the
+update_cpu_topology() function, which means that CPU0 will run it.
+
+So, when CPU0 runs update_cpu_topology(), it will find that cpu == update->cpu
+since both are 0, and will invoke unmap_cpu_from_node() and then calls
+map_cpu_to_node(), with update->new_nid == 0.
+
+Now, the interesting thing to note here is that, if CPU0's node was already
+set as node0, *nothing* should go wrong, since its just a redundant update.
+However, if CPU0's original node mapping was something different, or if
+node0 doesn't even exist in the machine, then the system can crash.
+
+Have you verified that CPU0's node mapping is different from node 0?
+That is, boot the kernel with "numa=debug" in the kernel command line and
+it will print out the cpu-to-node associativity during boot. That way you
+can figure out what was the original associativity that was set. This will
+confirm the theory that the hypervisor sent a redundant update, but because
+of the weird pre-allocation using kzalloc that we do inside
+arch_update_cpu_topology(), we wrongly updated CPU0's mapping as CPU0 <-> Node0.
 
 
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Regards,
+Srivatsa S. Bhat
+ 
+> Thus we should stop the updating in such cases, this patch will achieve
+> this and fix the issue.
+> 
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: Robert Jennings <rcj@linux.vnet.ibm.com>
+> CC: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+> CC: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+> CC: Alistair Popple <alistair@popple.id.au>
+> Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/numa.c |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 30a42e2..6757690 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1591,6 +1591,14 @@ int arch_update_cpu_topology(void)
+>  		cpu = cpu_last_thread_sibling(cpu);
+>  	}
+> 
+> +	/*
+> +	 * The 'cpu_associativity_changes_mask' could be cleared if
+> +	 * all the cpus it indicates won't change their node, in
+> +	 * which case the 'updated_cpus' will be empty.
+> +	 */
+> +	if (!cpumask_weight(&updated_cpus))
+> +		goto out;
+> +
+>  	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
+> 
+>  	/*
+> @@ -1612,6 +1620,7 @@ int arch_update_cpu_topology(void)
+>  		changed = 1;
+>  	}
+> 
+> +out:
+>  	kfree(updates);
+>  	return changed;
+>  }
+> 
