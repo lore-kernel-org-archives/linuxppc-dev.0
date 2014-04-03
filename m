@@ -1,27 +1,26 @@
-Return-Path: <kernelfans@gmail.com>
-Received: from mail-yh0-x22b.google.com (mail-yh0-x22b.google.com
- [IPv6:2607:f8b0:4002:c01::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A0AA140125
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 13:37:01 +1100 (EST)
-Received: by mail-yh0-f43.google.com with SMTP id b6so1101688yha.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 19:36:56 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id C1AB9140133
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 14:20:58 +1100 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH] cpuidle: add freescale e500 family porcessors idle support
+Date: Thu, 3 Apr 2014 03:20:49 +0000
+Message-ID: <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
+ <533BDA11.9080905@linaro.org>
+In-Reply-To: <533BDA11.9080905@linaro.org>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
-References: <1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com>
- <8761pdk6x5.fsf@linux.vnet.ibm.com>
- <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
-Date: Thu, 3 Apr 2014 10:36:55 +0800
-Message-ID: <CAFgQCTs8LSXUi+AwxR9j+2-QRGw4EFZWx-JxktAnJ3VvwLJb9A@mail.gmail.com>
-Subject: Re: [PATCH v2] powernv: kvm: make _PAGE_NUMA take effect
-From: Liu ping fan <kernelfans@gmail.com>
-To: Alexander Graf <agraf@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: kvm-devel <kvm@vger.kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,35 +30,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Alex, could you help to pick up this patch? since  v3.14 kernel can
-enable numa fault for powerpc.
-
-Thx,
-Fan
-
-On Mon, Jan 27, 2014 at 5:11 PM, Alexander Graf <agraf@suse.de> wrote:
->
-> On 21.01.2014, at 10:42, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> Liu Ping Fan <kernelfans@gmail.com> writes:
->>
->>> To make sure that on host, the pages marked with _PAGE_NUMA result in a fault
->>> when guest access them, we should force the checking when guest uses hypercall
->>> to setup hpte.
->>>
->>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
->>
->> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>
->> When we mark pte with _PAGE_NUMA we already call mmu_notifier_invalidate_range_start and
->> mmu_notifier_invalidate_range_end, which will mark existing guest hpte
->> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
->> guest hpte entries. This patch does that.
->
-> So what happens next? We insert a page into the HTAB without HPTE_V_VALID set, so the guest will fail to use it. If the guest does an H_READ on it it will suddenly turn to V_VALID though?
->
-> I might need a crash course in the use of HPTE_V_ABSENT.
->
->
-> Alex
->
+SGkgRGFuaWVsLA0KDQpUaGFua3MgZm9yIHlvdXIgcmV2aWV3LiBJIHdpbGwgZml4IHlvdXIgY29t
+bWVudHMuDQoNCkJUVywgZml4IFJhZmFlbCdzIGVtYWlsLiA6KQ0KDQo+ID4gKyNpbmNsdWRlIDxs
+aW51eC9jcHUuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L2NwdWlkbGUuaD4NCj4gPiArI2luY2x1
+ZGUgPGxpbnV4L2luaXQuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPg0KPiA+ICsj
+aW5jbHVkZSA8bGludXgvbm90aWZpZXIuaD4NCj4gPiArDQo+ID4gKyNpbmNsdWRlIDxhc20vY3B1
+dGFibGUuaD4NCj4gPiArI2luY2x1ZGUgPGFzbS9tYWNoZGVwLmg+DQo+ID4gKyNpbmNsdWRlIDxh
+c20vbXBjODV4eC5oPg0KPiA+ICsNCj4gPiArc3RhdGljIHVuc2lnbmVkIGludCBtYXhfaWRsZV9z
+dGF0ZTsNCj4gPiArc3RhdGljIHN0cnVjdCBjcHVpZGxlX3N0YXRlICpjcHVpZGxlX3N0YXRlX3Rh
+YmxlOw0KPiA+ICsNCj4gPiArc3RydWN0IGNwdWlkbGVfZHJpdmVyIGU1MDBfaWRsZV9kcml2ZXIg
+PSB7DQo+ID4gKwkubmFtZSA9ICJlNTAwX2lkbGUiLA0KPiA+ICsJLm93bmVyID0gVEhJU19NT0RV
+TEUsDQo+ID4gK307DQo+ID4gKw0KPiA+ICtzdGF0aWMgdm9pZCBlNTAwX2NwdWlkbGUodm9pZCkN
+Cj4gPiArew0KPiA+ICsJaWYgKGNwdWlkbGVfaWRsZV9jYWxsKCkpDQo+ID4gKwkJY3B1aWRsZV93
+YWl0KCk7DQo+ID4gK30NCj4gDQo+IE5vcGUsIHRoYXQgaGFzIGJlZW4gY2hhbmdlZC4gTm8gbW9y
+ZSBjYWxsIHRvIGNwdWlkbGVfaWRsZV9jYWxsIGluIGEgZHJpdmVyLg0KPiANCg0KVGhhbmtzLg0K
+DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IHB3MTBfZW50ZXIoc3RydWN0IGNwdWlkbGVfZGV2aWNl
+ICpkZXYsDQo+ID4gKwkJCXN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgpDQo+
+ID4gK3sNCj4gPiArCWNwdWlkbGVfd2FpdCgpOw0KPiA+ICsJcmV0dXJuIGluZGV4Ow0KPiA+ICt9
+DQo+ID4gKw0KPiA+ICsjZGVmaW5lIE1BWF9CSVQJNjMNCj4gPiArI2RlZmluZSBNSU5fQklUCTEN
+Cj4gPiArZXh0ZXJuIHUzMiBjcHVpZGxlX2VudHJ5X2JpdDsNCj4gPiArc3RhdGljIGludCBwdzIw
+X2VudGVyKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LA0KPiA+ICsJCXN0cnVjdCBjcHVpZGxl
+X2RyaXZlciAqZHJ2LCBpbnQgaW5kZXgpDQo+ID4gK3sNCj4gPiArCXUzMiBwdzIwX2lkbGU7DQo+
+ID4gKwl1MzIgZW50cnlfYml0Ow0KPiA+ICsJcHcyMF9pZGxlID0gbWZzcHIoU1BSTl9QV1JNR1RD
+UjApOw0KPiA+ICsJaWYgKChwdzIwX2lkbGUgJiBQV1JNR1RDUjBfUFcyMF9FTlQpICE9IFBXUk1H
+VENSMF9QVzIwX0VOVCkgew0KPiA+ICsJCXB3MjBfaWRsZSAmPSB+UFdSTUdUQ1IwX1BXMjBfRU5U
+Ow0KPiA+ICsJCWVudHJ5X2JpdCA9IE1BWF9CSVQgLSBjcHVpZGxlX2VudHJ5X2JpdDsNCj4gPiAr
+CQlwdzIwX2lkbGUgfD0gKGVudHJ5X2JpdCA8PCBQV1JNR1RDUjBfUFcyMF9FTlRfU0hJRlQpOw0K
+PiA+ICsJCW10c3ByKFNQUk5fUFdSTUdUQ1IwLCBwdzIwX2lkbGUpOw0KPiA+ICsJfQ0KPiA+ICsN
+Cj4gPiArCWNwdWlkbGVfd2FpdCgpOw0KPiA+ICsNCj4gPiArCXB3MjBfaWRsZSAmPSB+UFdSTUdU
+Q1IwX1BXMjBfRU5UOw0KPiA+ICsJcHcyMF9pZGxlIHw9IChNSU5fQklUIDw8IFBXUk1HVENSMF9Q
+VzIwX0VOVF9TSElGVCk7DQo+ID4gKwltdHNwcihTUFJOX1BXUk1HVENSMCwgcHcyMF9pZGxlKTsN
+Cj4gPiArDQo+ID4gKwlyZXR1cm4gaW5kZXg7DQo+ID4gK30NCj4gDQo+IElzIGl0IHBvc3NpYmxl
+IHRvIGdpdmUgc29tZSBjb21tZW50cyBhbmQgZW5jYXBzdWxhdGUgdGhlIGNvZGUgd2l0aA0KPiBl
+eHBsaWNpdCBmdW5jdGlvbiBuYW1lcyB0byBiZSBpbXBsZW1lbnRlZCBpbiBhbiBhcmNoIHNwZWNp
+ZmljIGRpcmVjdG9yeQ0KPiBmaWxlIChlZy4gcG0uYykgYW5kIGV4cG9ydCB0aGVzZSBmdW5jdGlv
+bnMgaW4gYSBsaW51eC8gaGVhZGVyID8gV2UgdHJ5DQo+IHRvIHByZXZlbnQgdG8gaW5jbHVkZSBh
+c20gaWYgcG9zc2libGUuDQo+IA0KDQpZZXAsIExvb2tzIGJldHRlci4gVGhhbmtzLg0KDQo+ID4g
+Kw0KPiA+ICtzdGF0aWMgc3RydWN0IGNwdWlkbGVfc3RhdGUgcHdfaWRsZV9zdGF0ZXNbXSA9IHsN
+Cj4gPiArCXsNCj4gPiArCQkubmFtZSA9ICJwdzEwIiwNCj4gPiArCQkuZGVzYyA9ICJwdzEwIiwN
+Cj4gPiArCQkuZmxhZ3MgPSBDUFVJRExFX0ZMQUdfVElNRV9WQUxJRCwNCj4gPiArCQkuZXhpdF9s
+YXRlbmN5ID0gMCwNCj4gPiArCQkudGFyZ2V0X3Jlc2lkZW5jeSA9IDAsDQo+ID4gKwkJLmVudGVy
+ID0gJnB3MTBfZW50ZXINCj4gPiArCX0sDQo+ID4gKw0KPiA+ICsJew0KPiA+ICsJCS5uYW1lID0g
+InB3MjAiLA0KPiA+ICsJCS5kZXNjID0gInB3MjAtY29yZS1pZGxlIiwNCj4gPiArCQkuZmxhZ3Mg
+PSBDUFVJRExFX0ZMQUdfVElNRV9WQUxJRCwNCj4gPiArCQkuZXhpdF9sYXRlbmN5ID0gMSwNCj4g
+PiArCQkudGFyZ2V0X3Jlc2lkZW5jeSA9IDUwLA0KPiA+ICsJCS5lbnRlciA9ICZwdzIwX2VudGVy
+DQo+ID4gKwl9LA0KPiA+ICt9Ow0KPiANCj4gTm8gbmVlZCB0byBkZWZpbmUgdGhpcyBpbnRlcm1l
+ZGlhdGUgc3RydWN0dXJlIGhlcmUsIHlvdSBjYW4gZGlyZWN0bHkNCj4gaW5pdGlhbGl6ZSB0aGUg
+Y3B1aWRsZV9kcml2ZXI6DQo+IA0KDQpUaGFua3MuIDopDQoNCj4gPiArc3RhdGljIGludCBjcHVf
+aG90cGx1Z19ub3RpZnkoc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuLA0KPiA+ICsJCQl1bnNpZ25l
+ZCBsb25nIGFjdGlvbiwgdm9pZCAqaGNwdSkNCj4gPiArew0KPiA+ICsJdW5zaWduZWQgbG9uZyBo
+b3RjcHUgPSAodW5zaWduZWQgbG9uZyloY3B1Ow0KPiA+ICsJc3RydWN0IGNwdWlkbGVfZGV2aWNl
+ICpkZXYgPQ0KPiA+ICsJCQlwZXJfY3B1X3B0cihjcHVpZGxlX2RldmljZXMsIGhvdGNwdSk7DQo+
+ID4gKw0KPiA+ICsJaWYgKGRldiAmJiBjcHVpZGxlX2dldF9kcml2ZXIoKSkgew0KPiA+ICsJCXN3
+aXRjaCAoYWN0aW9uKSB7DQo+ID4gKwkJY2FzZSBDUFVfT05MSU5FOg0KPiA+ICsJCWNhc2UgQ1BV
+X09OTElORV9GUk9aRU46DQo+ID4gKwkJCWNwdWlkbGVfcGF1c2VfYW5kX2xvY2soKTsNCj4gPiAr
+CQkJY3B1aWRsZV9lbmFibGVfZGV2aWNlKGRldik7DQo+ID4gKwkJCWNwdWlkbGVfcmVzdW1lX2Fu
+ZF91bmxvY2soKTsNCj4gPiArCQkJYnJlYWs7DQo+ID4gKw0KPiA+ICsJCWNhc2UgQ1BVX0RFQUQ6
+DQo+ID4gKwkJY2FzZSBDUFVfREVBRF9GUk9aRU46DQo+ID4gKwkJCWNwdWlkbGVfcGF1c2VfYW5k
+X2xvY2soKTsNCj4gPiArCQkJY3B1aWRsZV9kaXNhYmxlX2RldmljZShkZXYpOw0KPiA+ICsJCQlj
+cHVpZGxlX3Jlc3VtZV9hbmRfdW5sb2NrKCk7DQo+ID4gKwkJCWJyZWFrOw0KPiA+ICsNCj4gPiAr
+CQlkZWZhdWx0Og0KPiA+ICsJCQlyZXR1cm4gTk9USUZZX0RPTkU7DQo+ID4gKwkJfQ0KPiA+ICsJ
+fQ0KPiA+ICsNCj4gPiArCXJldHVybiBOT1RJRllfT0s7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0
+YXRpYyBzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgY3B1X2hvdHBsdWdfbm90aWZpZXIgPSB7DQo+ID4g
+Kwkubm90aWZpZXJfY2FsbCA9IGNwdV9ob3RwbHVnX25vdGlmeSwNCj4gPiArfTsNCj4gDQo+IENh
+biB5b3UgZXhwbGFpbiB3aHkgdGhpcyBpcyBuZWVkZWQgPw0KPiANCg0KSWYgYSBjcHUgd2lsbCBi
+ZSBwbHVnZ2VkIG91dC9pbiwgV2Ugc2hvdWxkIGJlIGxldCBDcHVpZGxlIGtub3cgdG8gcmVtb3Zl
+DQpjb3JyZXNwb25kaW5nIHN5cyBpbnRlcmZhY2UgYW5kIGRpc2FibGUvZW5hYmxlIGNwdWRpbGUt
+Z292ZXJub3IgZm9yIGN1cnJlbnQgY3B1Lg0KDQo+ID4gKwllcnIgPSByZWdpc3Rlcl9jcHVfbm90
+aWZpZXIoJmNwdV9ob3RwbHVnX25vdGlmaWVyKTsNCj4gPiArCWlmIChlcnIpDQo+ID4gKwkJcHJf
+d2FybigiQ3B1aWRsZSBkcml2ZXI6IHJlZ2lzdGVyIGNwdSBub3RpZmllciBmYWlsZWQuXG4iKTsN
+Cj4gPiArDQo+ID4gKwkvKiBSZXBsYWNlIHRoZSBvcmlnaW5hbCB3YXkgb2YgaWRsZSBhZnRlciBj
+cHVpZGxlIHJlZ2lzdGVyZWQuICovDQo+ID4gKwlwcGNfbWQucG93ZXJfc2F2ZSA9IGU1MDBfY3B1
+aWRsZTsNCj4gPiArCW9uX2VhY2hfY3B1KHJlcGxhY2Vfb3JpZ19pZGxlLCBOVUxMLCAxKTsNCj4g
+DQo+IFdoeSA/DQo+IA0KDQpJIGNoZWNrZWQgYWdhaW4sIGlmIHdlIHB1dCBjcHVpZGxlX2lkbGVf
+Y2FsbCBpbiBhc20sIHRoaXMgaXMgbm90IG5lZWQuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoN
+Cj4gPiArCXByX2luZm8oImU1MDBfaWRsZV9kcml2ZXIgcmVnaXN0ZXJlZC5cbiIpOw0KPiA+ICsN
+Cj4gPiArCXJldHVybiAwOw0KPiA+ICt9DQo+ID4gK2xhdGVfaW5pdGNhbGwoZTUwMF9pZGxlX2lu
+aXQpOw0KPiA+DQo+IA0KPiBUaGFua3MNCj4gDQo+ICAgIC0tIERhbmllbA0KPiANCj4gDQo+IC0t
+DQo+ICAgPGh0dHA6Ly93d3cubGluYXJvLm9yZy8+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNl
+IHNvZnR3YXJlIGZvciBBUk0gU29Dcw0KPiANCj4gRm9sbG93IExpbmFybzogIDxodHRwOi8vd3d3
+LmZhY2Vib29rLmNvbS9wYWdlcy9MaW5hcm8+IEZhY2Vib29rIHwNCj4gPGh0dHA6Ly90d2l0dGVy
+LmNvbS8jIS9saW5hcm9vcmc+IFR3aXR0ZXIgfA0KPiA8aHR0cDovL3d3dy5saW5hcm8ub3JnL2xp
+bmFyby1ibG9nLz4gQmxvZw0KPiANCj4gDQoNCg==
