@@ -1,29 +1,29 @@
-Return-Path: <sanjeevsharmaengg@gmail.com>
-Received: from mail-ob0-x235.google.com (mail-ob0-x235.google.com
- [IPv6:2607:f8b0:4003:c01::235])
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wi0-f182.google.com (mail-wi0-f182.google.com
+ [209.85.212.182])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EF84914012E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 14:25:22 +1100 (EST)
-Received: by mail-ob0-f181.google.com with SMTP id wp4so1334061obc.12
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 20:25:19 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id E6A0414012A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 17:28:44 +1100 (EST)
+Received: by mail-wi0-f182.google.com with SMTP id d1so1799623wiv.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 23:28:40 -0700 (PDT)
+Message-ID: <533CFFA7.6000907@linaro.org>
+Date: Thu, 03 Apr 2014 08:28:55 +0200
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <3723.1395937889@turing-police.cc.vt.edu>
-References: <CAERE9PrGaOJS3YTBv61=JCEGyPxGnqr_8j=eKrnn7Y9vi8dMug@mail.gmail.com>
- <52BBF1CB.3070006@gmail.com>
- <CAERE9Prr_C31D96zuYbV0KQ7b_j8Te0A2DO8C+6YtetF0e6M_w@mail.gmail.com>
- <CALyraeMiKQsoHV8AQ5SOz926z_YBD3LbFFNefMpRibYOt=Vo=Q@mail.gmail.com>
- <CAERE9PrX61oNtQoT1tpL_+rXfirFeMa4woD2P2TSUJ_Xj-h4rg@mail.gmail.com>
- <5333FEBD.3050704@gmail.com>
- <3723.1395937889@turing-police.cc.vt.edu>
-Date: Thu, 3 Apr 2014 08:55:19 +0530
-Message-ID: <CAGUYZuR+rymKURoHURemEggZ8uktagyhGGuqtaWvN=11DQsoxw@mail.gmail.com>
-Subject: Re: MPC8641 based custom board Kernel stuck at 1000Mhz core clock
-From: sanjeev sharma <sanjeevsharmaengg@gmail.com>
-To: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Content-Type: multipart/alternative; boundary=047d7b33cd7c596f7d04f61af3ec
-Cc: scottwood@freescale.com, Ashish <curieux.khetan@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, kernelnewbies <kernelnewbies@kernelnewbies.org>
+To: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>,
+ Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
+References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
+ <533BDA11.9080905@linaro.org>
+ <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
+In-Reply-To: <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,76 +33,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7b33cd7c596f7d04f61af3ec
-Content-Type: text/plain; charset=ISO-8859-1
-
-Are you able to capture kernel logs ?
-
-Regards
-Sanjeev Sharma
-
-
-On Thu, Mar 27, 2014 at 10:01 PM, <Valdis.Kletnieks@vt.edu> wrote:
-
-> On Thu, 27 Mar 2014 16:04:37 +0530, Ashish said:
-> > Hi,
-> >
-> >   I am using MPC8641-HPCN based custom board and able to boot linux at
-> > MPX clock 400Mhz and core clock 800mhz. When I am increasing core
-> > frequency ie MPX clock at 400Mhz and core at 1Ghz, kernel stuck.
+On 04/03/2014 05:20 AM, Dongsheng.Wang@freescale.com wrote:
+> Hi Daniel,
 >
-> Step 0:  Prove to us that your core actually runs reliable and stably at
-> 1Ghz.
+> Thanks for your review. I will fix your comments.
 >
-> Step 1: Figure out *where* it gets stuck.  If you have earlyprintk working
-> on
-> your board, adding 'initcall_debug ignore_loglevel' to the kernel cmdline
-> often
-> helps track down where a kernel hangs during boot.
+> BTW, fix Rafael's email. :)
 >
+>>> +#include <linux/cpu.h>
+>>> +#include <linux/cpuidle.h>
+>>> +#include <linux/init.h>
+>>> +#include <linux/kernel.h>
+>>> +#include <linux/notifier.h>
+>>> +
+>>> +#include <asm/cputable.h>
+>>> +#include <asm/machdep.h>
+>>> +#include <asm/mpc85xx.h>
+>>> +
+>>> +static unsigned int max_idle_state;
+>>> +static struct cpuidle_state *cpuidle_state_table;
+>>> +
+>>> +struct cpuidle_driver e500_idle_driver = {
+>>> +	.name = "e500_idle",
+>>> +	.owner = THIS_MODULE,
+>>> +};
+>>> +
+>>> +static void e500_cpuidle(void)
+>>> +{
+>>> +	if (cpuidle_idle_call())
+>>> +		cpuidle_wait();
+>>> +}
+>>
+>> Nope, that has been changed. No more call to cpuidle_idle_call in a driver.
+>>
 >
-> _______________________________________________
-> Kernelnewbies mailing list
-> Kernelnewbies@kernelnewbies.org
-> http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies
+> Thanks.
 >
+>>> +
+>>> +static int pw10_enter(struct cpuidle_device *dev,
+>>> +			struct cpuidle_driver *drv, int index)
+>>> +{
+>>> +	cpuidle_wait();
+>>> +	return index;
+>>> +}
+>>> +
+>>> +#define MAX_BIT	63
+>>> +#define MIN_BIT	1
+>>> +extern u32 cpuidle_entry_bit;
+>>> +static int pw20_enter(struct cpuidle_device *dev,
+>>> +		struct cpuidle_driver *drv, int index)
+>>> +{
+>>> +	u32 pw20_idle;
+>>> +	u32 entry_bit;
+>>> +	pw20_idle = mfspr(SPRN_PWRMGTCR0);
+>>> +	if ((pw20_idle & PWRMGTCR0_PW20_ENT) != PWRMGTCR0_PW20_ENT) {
+>>> +		pw20_idle &= ~PWRMGTCR0_PW20_ENT;
+>>> +		entry_bit = MAX_BIT - cpuidle_entry_bit;
+>>> +		pw20_idle |= (entry_bit << PWRMGTCR0_PW20_ENT_SHIFT);
+>>> +		mtspr(SPRN_PWRMGTCR0, pw20_idle);
+>>> +	}
+>>> +
+>>> +	cpuidle_wait();
+>>> +
+>>> +	pw20_idle &= ~PWRMGTCR0_PW20_ENT;
+>>> +	pw20_idle |= (MIN_BIT << PWRMGTCR0_PW20_ENT_SHIFT);
+>>> +	mtspr(SPRN_PWRMGTCR0, pw20_idle);
+>>> +
+>>> +	return index;
+>>> +}
+>>
+>> Is it possible to give some comments and encapsulate the code with
+>> explicit function names to be implemented in an arch specific directory
+>> file (eg. pm.c) and export these functions in a linux/ header ? We try
+>> to prevent to include asm if possible.
+>>
+>
+> Yep, Looks better. Thanks.
+>
+>>> +
+>>> +static struct cpuidle_state pw_idle_states[] = {
+>>> +	{
+>>> +		.name = "pw10",
+>>> +		.desc = "pw10",
+>>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>>> +		.exit_latency = 0,
+>>> +		.target_residency = 0,
+>>> +		.enter = &pw10_enter
+>>> +	},
+>>> +
+>>> +	{
+>>> +		.name = "pw20",
+>>> +		.desc = "pw20-core-idle",
+>>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+>>> +		.exit_latency = 1,
+>>> +		.target_residency = 50,
+>>> +		.enter = &pw20_enter
+>>> +	},
+>>> +};
+>>
+>> No need to define this intermediate structure here, you can directly
+>> initialize the cpuidle_driver:
+>>
+>
+> Thanks. :)
+>
+>>> +static int cpu_hotplug_notify(struct notifier_block *n,
+>>> +			unsigned long action, void *hcpu)
+>>> +{
+>>> +	unsigned long hotcpu = (unsigned long)hcpu;
+>>> +	struct cpuidle_device *dev =
+>>> +			per_cpu_ptr(cpuidle_devices, hotcpu);
+>>> +
+>>> +	if (dev && cpuidle_get_driver()) {
+>>> +		switch (action) {
+>>> +		case CPU_ONLINE:
+>>> +		case CPU_ONLINE_FROZEN:
+>>> +			cpuidle_pause_and_lock();
+>>> +			cpuidle_enable_device(dev);
+>>> +			cpuidle_resume_and_unlock();
+>>> +			break;
+>>> +
+>>> +		case CPU_DEAD:
+>>> +		case CPU_DEAD_FROZEN:
+>>> +			cpuidle_pause_and_lock();
+>>> +			cpuidle_disable_device(dev);
+>>> +			cpuidle_resume_and_unlock();
+>>> +			break;
+>>> +
+>>> +		default:
+>>> +			return NOTIFY_DONE;
+>>> +		}
+>>> +	}
+>>> +
+>>> +	return NOTIFY_OK;
+>>> +}
+>>> +
+>>> +static struct notifier_block cpu_hotplug_notifier = {
+>>> +	.notifier_call = cpu_hotplug_notify,
+>>> +};
+>>
+>> Can you explain why this is needed ?
+>>
+>
+> If a cpu will be plugged out/in, We should be let Cpuidle know to remove
+> corresponding sys interface and disable/enable cpudile-governor for current cpu.
+
+Ok, this code is a copy-paste of the powers' cpuidle driver.
+
+IIRC, I posted a patchset to move this portion of code in the cpuidle 
+common framework some time ago.
+
+Could you please get rid of this part of code ?
+
+
+>>> +	err = register_cpu_notifier(&cpu_hotplug_notifier);
+>>> +	if (err)
+>>> +		pr_warn("Cpuidle driver: register cpu notifier failed.\n");
+>>> +
+>>> +	/* Replace the original way of idle after cpuidle registered. */
+>>> +	ppc_md.power_save = e500_cpuidle;
+>>> +	on_each_cpu(replace_orig_idle, NULL, 1);
+>>
+>> Why ?
+>>
+>
+> I checked again, if we put cpuidle_idle_call in asm, this is not need.
+>
+> Regards,
+> -Dongsheng
+>
+>>> +	pr_info("e500_idle_driver registered.\n");
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +late_initcall(e500_idle_init);
+>>>
+>>
+>> Thanks
+>>
+>>     -- Daniel
+>>
+>>
+>> --
+>>    <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+>>
+>> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+>> <http://twitter.com/#!/linaroorg> Twitter |
+>> <http://www.linaro.org/linaro-blog/> Blog
+>>
+>>
 >
 
---047d7b33cd7c596f7d04f61af3ec
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><div>Are you able to capture kernel logs ?<br><br></div>Re=
-gards<br>Sanjeev Sharma<br></div><div class=3D"gmail_extra"><br><br><div cl=
-ass=3D"gmail_quote">On Thu, Mar 27, 2014 at 10:01 PM,  <span dir=3D"ltr">&l=
-t;<a href=3D"mailto:Valdis.Kletnieks@vt.edu" target=3D"_blank">Valdis.Kletn=
-ieks@vt.edu</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex"><div class=3D"">On Thu, 27 Mar 2014 16:04:37=
- +0530, Ashish said:<br>
-&gt; Hi,<br>
-&gt;<br>
-&gt; =A0 I am using MPC8641-HPCN based custom board and able to boot linux =
-at<br>
-&gt; MPX clock 400Mhz and core clock 800mhz. When I am increasing core<br>
-&gt; frequency ie MPX clock at 400Mhz and core at 1Ghz, kernel stuck.<br>
-<br>
-</div>Step 0: =A0Prove to us that your core actually runs reliable and stab=
-ly at 1Ghz.<br>
-<br>
-Step 1: Figure out *where* it gets stuck. =A0If you have earlyprintk workin=
-g on<br>
-your board, adding &#39;initcall_debug ignore_loglevel&#39; to the kernel c=
-mdline often<br>
-helps track down where a kernel hangs during boot.<br>
-<br>
-<br>_______________________________________________<br>
-Kernelnewbies mailing list<br>
-<a href=3D"mailto:Kernelnewbies@kernelnewbies.org">Kernelnewbies@kernelnewb=
-ies.org</a><br>
-<a href=3D"http://lists.kernelnewbies.org/mailman/listinfo/kernelnewbies" t=
-arget=3D"_blank">http://lists.kernelnewbies.org/mailman/listinfo/kernelnewb=
-ies</a><br>
-<br></blockquote></div><br></div>
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
---047d7b33cd7c596f7d04f61af3ec--
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
