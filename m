@@ -1,34 +1,27 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-yh0-x22b.google.com (mail-yh0-x22b.google.com
+ [IPv6:2607:f8b0:4002:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B7145140130
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 09:11:05 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Wed, 2 Apr 2014 18:11:02 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id ED5986E8045
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Apr 2014 18:10:53 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s32MAxCZ9306578
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 22:11:00 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s32MAw8B009647
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Apr 2014 18:10:59 -0400
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH 0/2] powerpc/perf: fixup 2 patches from the 24x7 series
-Date: Wed,  2 Apr 2014 15:10:52 -0700
-Message-Id: <1396476654-20623-1-git-send-email-cody@linux.vnet.ibm.com>
-Cc: Linux PPC <linuxppc-dev@lists.ozlabs.org>, cody+local@linux.vnet.ibm.com,
- LKML <linux-kernel@vger.kernel.org>, David.Laight@aculab.com,
- Anton Blanchard <anton@samba.org>, Cody P Schafer <cody@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8A0AA140125
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 13:37:01 +1100 (EST)
+Received: by mail-yh0-f43.google.com with SMTP id b6so1101688yha.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 19:36:56 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
+References: <1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <8761pdk6x5.fsf@linux.vnet.ibm.com>
+ <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
+Date: Thu, 3 Apr 2014 10:36:55 +0800
+Message-ID: <CAFgQCTs8LSXUi+AwxR9j+2-QRGw4EFZWx-JxktAnJ3VvwLJb9A@mail.gmail.com>
+Subject: Re: [PATCH v2] powernv: kvm: make _PAGE_NUMA take effect
+From: Liu ping fan <kernelfans@gmail.com>
+To: Alexander Graf <agraf@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: kvm-devel <kvm@vger.kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,27 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpe: these are fixups for 2 patches already in your merge tree (and in benh's next branch).
+Hi Alex, could you help to pick up this patch? since  v3.14 kernel can
+enable numa fault for powerpc.
 
-f3e622941a7cec587c00c0d17ea31514457c63c8 powerpc/perf: Add support for the hv 24x7 interface
-edd354ea4a6774bf9f380b0acf30e699070f4e8a powerpc/perf: Add support for the hv gpci (get performance counter info) interface
+Thx,
+Fan
 
-The only change is to a pr_info() printed when the interface is not detected.
-
-Anton: I'm hesitant to switch these to pr_debug() as they are the only way
-users expecting these PMUs to exist to tell why the kernel decided they didn't
-have them. As a result, I've kept them as pr_info() instead of converting to
-pr_debug().
-
-
-Cody P Schafer (2):
-  fixup: "powerpc/perf: Add support for the hv 24x7 interface"
-  fixup: "powerpc/perf: Add support for the hv gpci (get performance
-    counter info) interface"
-
- arch/powerpc/perf/hv-24x7.c | 2 +-
- arch/powerpc/perf/hv-gpci.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
--- 
-1.9.1
+On Mon, Jan 27, 2014 at 5:11 PM, Alexander Graf <agraf@suse.de> wrote:
+>
+> On 21.01.2014, at 10:42, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Liu Ping Fan <kernelfans@gmail.com> writes:
+>>
+>>> To make sure that on host, the pages marked with _PAGE_NUMA result in a fault
+>>> when guest access them, we should force the checking when guest uses hypercall
+>>> to setup hpte.
+>>>
+>>> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+>>
+>> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>>
+>> When we mark pte with _PAGE_NUMA we already call mmu_notifier_invalidate_range_start and
+>> mmu_notifier_invalidate_range_end, which will mark existing guest hpte
+>> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
+>> guest hpte entries. This patch does that.
+>
+> So what happens next? We insert a page into the HTAB without HPTE_V_VALID set, so the guest will fail to use it. If the guest does an H_READ on it it will suddenly turn to V_VALID though?
+>
+> I might need a crash course in the use of HPTE_V_ABSENT.
+>
+>
+> Alex
+>
