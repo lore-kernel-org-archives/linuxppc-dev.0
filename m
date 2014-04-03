@@ -1,29 +1,33 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wi0-f182.google.com (mail-wi0-f182.google.com
- [209.85.212.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E6A0414012A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 17:28:44 +1100 (EST)
-Received: by mail-wi0-f182.google.com with SMTP id d1so1799623wiv.9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Apr 2014 23:28:40 -0700 (PDT)
-Message-ID: <533CFFA7.6000907@linaro.org>
-Date: Thu, 03 Apr 2014 08:28:55 +0200
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-To: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
- <533BDA11.9080905@linaro.org>
- <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
-In-Reply-To: <e32c248e30c54f458f65501227b1ce54@BN1PR03MB188.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 84841140144
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 17:58:28 +1100 (EST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Thu, 3 Apr 2014 16:58:27 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 574972BB0056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Apr 2014 17:58:24 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s336wAJB11665822
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Apr 2014 17:58:10 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s336wNW6025639
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Apr 2014 17:58:23 +1100
+Message-ID: <1396508300.2913.52.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: [PATCH] powerpc: use of_node_init() for the fakenode in msi_bitmap.c
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 03 Apr 2014 14:58:20 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: grant.likely@linaro.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,201 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/03/2014 05:20 AM, Dongsheng.Wang@freescale.com wrote:
-> Hi Daniel,
->
-> Thanks for your review. I will fix your comments.
->
-> BTW, fix Rafael's email. :)
->
->>> +#include <linux/cpu.h>
->>> +#include <linux/cpuidle.h>
->>> +#include <linux/init.h>
->>> +#include <linux/kernel.h>
->>> +#include <linux/notifier.h>
->>> +
->>> +#include <asm/cputable.h>
->>> +#include <asm/machdep.h>
->>> +#include <asm/mpc85xx.h>
->>> +
->>> +static unsigned int max_idle_state;
->>> +static struct cpuidle_state *cpuidle_state_table;
->>> +
->>> +struct cpuidle_driver e500_idle_driver = {
->>> +	.name = "e500_idle",
->>> +	.owner = THIS_MODULE,
->>> +};
->>> +
->>> +static void e500_cpuidle(void)
->>> +{
->>> +	if (cpuidle_idle_call())
->>> +		cpuidle_wait();
->>> +}
->>
->> Nope, that has been changed. No more call to cpuidle_idle_call in a driver.
->>
->
-> Thanks.
->
->>> +
->>> +static int pw10_enter(struct cpuidle_device *dev,
->>> +			struct cpuidle_driver *drv, int index)
->>> +{
->>> +	cpuidle_wait();
->>> +	return index;
->>> +}
->>> +
->>> +#define MAX_BIT	63
->>> +#define MIN_BIT	1
->>> +extern u32 cpuidle_entry_bit;
->>> +static int pw20_enter(struct cpuidle_device *dev,
->>> +		struct cpuidle_driver *drv, int index)
->>> +{
->>> +	u32 pw20_idle;
->>> +	u32 entry_bit;
->>> +	pw20_idle = mfspr(SPRN_PWRMGTCR0);
->>> +	if ((pw20_idle & PWRMGTCR0_PW20_ENT) != PWRMGTCR0_PW20_ENT) {
->>> +		pw20_idle &= ~PWRMGTCR0_PW20_ENT;
->>> +		entry_bit = MAX_BIT - cpuidle_entry_bit;
->>> +		pw20_idle |= (entry_bit << PWRMGTCR0_PW20_ENT_SHIFT);
->>> +		mtspr(SPRN_PWRMGTCR0, pw20_idle);
->>> +	}
->>> +
->>> +	cpuidle_wait();
->>> +
->>> +	pw20_idle &= ~PWRMGTCR0_PW20_ENT;
->>> +	pw20_idle |= (MIN_BIT << PWRMGTCR0_PW20_ENT_SHIFT);
->>> +	mtspr(SPRN_PWRMGTCR0, pw20_idle);
->>> +
->>> +	return index;
->>> +}
->>
->> Is it possible to give some comments and encapsulate the code with
->> explicit function names to be implemented in an arch specific directory
->> file (eg. pm.c) and export these functions in a linux/ header ? We try
->> to prevent to include asm if possible.
->>
->
-> Yep, Looks better. Thanks.
->
->>> +
->>> +static struct cpuidle_state pw_idle_states[] = {
->>> +	{
->>> +		.name = "pw10",
->>> +		.desc = "pw10",
->>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->>> +		.exit_latency = 0,
->>> +		.target_residency = 0,
->>> +		.enter = &pw10_enter
->>> +	},
->>> +
->>> +	{
->>> +		.name = "pw20",
->>> +		.desc = "pw20-core-idle",
->>> +		.flags = CPUIDLE_FLAG_TIME_VALID,
->>> +		.exit_latency = 1,
->>> +		.target_residency = 50,
->>> +		.enter = &pw20_enter
->>> +	},
->>> +};
->>
->> No need to define this intermediate structure here, you can directly
->> initialize the cpuidle_driver:
->>
->
-> Thanks. :)
->
->>> +static int cpu_hotplug_notify(struct notifier_block *n,
->>> +			unsigned long action, void *hcpu)
->>> +{
->>> +	unsigned long hotcpu = (unsigned long)hcpu;
->>> +	struct cpuidle_device *dev =
->>> +			per_cpu_ptr(cpuidle_devices, hotcpu);
->>> +
->>> +	if (dev && cpuidle_get_driver()) {
->>> +		switch (action) {
->>> +		case CPU_ONLINE:
->>> +		case CPU_ONLINE_FROZEN:
->>> +			cpuidle_pause_and_lock();
->>> +			cpuidle_enable_device(dev);
->>> +			cpuidle_resume_and_unlock();
->>> +			break;
->>> +
->>> +		case CPU_DEAD:
->>> +		case CPU_DEAD_FROZEN:
->>> +			cpuidle_pause_and_lock();
->>> +			cpuidle_disable_device(dev);
->>> +			cpuidle_resume_and_unlock();
->>> +			break;
->>> +
->>> +		default:
->>> +			return NOTIFY_DONE;
->>> +		}
->>> +	}
->>> +
->>> +	return NOTIFY_OK;
->>> +}
->>> +
->>> +static struct notifier_block cpu_hotplug_notifier = {
->>> +	.notifier_call = cpu_hotplug_notify,
->>> +};
->>
->> Can you explain why this is needed ?
->>
->
-> If a cpu will be plugged out/in, We should be let Cpuidle know to remove
-> corresponding sys interface and disable/enable cpudile-governor for current cpu.
+This patch uses of_node_init() to initialize the kobject in the fake
+node used in test_of_node(), to avoid following kobject warning. 
 
-Ok, this code is a copy-paste of the powers' cpuidle driver.
-
-IIRC, I posted a patchset to move this portion of code in the cpuidle 
-common framework some time ago.
-
-Could you please get rid of this part of code ?
+[    0.897654] kobject: '(null)' (c0000007ca183a08): is not initialized, yet kobject_put() is being called.
+[    0.897682] ------------[ cut here ]------------
+[    0.897688] WARNING: at lib/kobject.c:670
+[    0.897692] Modules linked in:
+[    0.897701] CPU: 4 PID: 1 Comm: swapper/0 Not tainted 3.14.0+ #1
+[    0.897708] task: c0000007ca100000 ti: c0000007ca180000 task.ti: c0000007ca180000
+[    0.897715] NIP: c00000000046a1f0 LR: c00000000046a1ec CTR: 0000000001704660
+[    0.897721] REGS: c0000007ca1835c0 TRAP: 0700   Not tainted  (3.14.0+)
+[    0.897727] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 28000024  XER: 0000000d
+[    0.897749] CFAR: c0000000008ef4ec SOFTE: 1 
+GPR00: c00000000046a1ec c0000007ca183840 c0000000014c59b8 000000000000005c 
+GPR04: 0000000000000001 c000000000129770 0000000000000000 0000000000000001 
+GPR08: 0000000000000000 0000000000000000 0000000000000000 0000000000003fef 
+GPR12: 0000000000000000 c00000000f221200 c00000000000c350 0000000000000000 
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+GPR24: 0000000000000000 c00000000144e808 c000000000c56f20 00000000000000d8 
+GPR28: c000000000cd5058 0000000000000000 c000000001454ca8 c0000007ca183a08 
+[    0.897856] NIP [c00000000046a1f0] .kobject_put+0xa0/0xb0
+[    0.897863] LR [c00000000046a1ec] .kobject_put+0x9c/0xb0
+[    0.897868] Call Trace:
+[    0.897874] [c0000007ca183840] [c00000000046a1ec] .kobject_put+0x9c/0xb0 (unreliable)
+[    0.897885] [c0000007ca1838c0] [c000000000743f9c] .of_node_put+0x2c/0x50
+[    0.897894] [c0000007ca183940] [c000000000c83954] .test_of_node+0x1dc/0x208
+[    0.897902] [c0000007ca183b80] [c000000000c839a4] .msi_bitmap_selftest+0x24/0x38
+[    0.897913] [c0000007ca183bf0] [c00000000000bb34] .do_one_initcall+0x144/0x200
+[    0.897922] [c0000007ca183ce0] [c000000000c748e4] .kernel_init_freeable+0x2b4/0x394
+[    0.897931] [c0000007ca183db0] [c00000000000c374] .kernel_init+0x24/0x130
+[    0.897940] [c0000007ca183e30] [c00000000000a2f4] .ret_from_kernel_thread+0x5c/0x68
+[    0.897947] Instruction dump:
+[    0.897952] 7fe3fb78 38210080 e8010010 ebe1fff8 7c0803a6 4800014c e89f0000 3c62ff6e 
+[    0.897971] 7fe5fb78 3863a950 48485279 60000000 <0fe00000> 39000000 393f0038 4bffff80 
+[    0.897992] ---[ end trace 1eeffdb9f825a556 ]---
 
 
->>> +	err = register_cpu_notifier(&cpu_hotplug_notifier);
->>> +	if (err)
->>> +		pr_warn("Cpuidle driver: register cpu notifier failed.\n");
->>> +
->>> +	/* Replace the original way of idle after cpuidle registered. */
->>> +	ppc_md.power_save = e500_cpuidle;
->>> +	on_each_cpu(replace_orig_idle, NULL, 1);
->>
->> Why ?
->>
->
-> I checked again, if we put cpuidle_idle_call in asm, this is not need.
->
-> Regards,
-> -Dongsheng
->
->>> +	pr_info("e500_idle_driver registered.\n");
->>> +
->>> +	return 0;
->>> +}
->>> +late_initcall(e500_idle_init);
->>>
->>
->> Thanks
->>
->>     -- Daniel
->>
->>
->> --
->>    <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
->>
->> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->> <http://twitter.com/#!/linaroorg> Twitter |
->> <http://www.linaro.org/linaro-blog/> Blog
->>
->>
->
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/sysdev/msi_bitmap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+diff --git a/arch/powerpc/sysdev/msi_bitmap.c b/arch/powerpc/sysdev/msi_bitmap.c
+index 8ba6042..2ff6302 100644
+--- a/arch/powerpc/sysdev/msi_bitmap.c
++++ b/arch/powerpc/sysdev/msi_bitmap.c
+@@ -202,7 +202,7 @@ void __init test_of_node(void)
+ 
+ 	/* There should really be a struct device_node allocator */
+ 	memset(&of_node, 0, sizeof(of_node));
+-	kref_init(&of_node.kobj.kref);
++	of_node_init(&of_node);
+ 	of_node.full_name = node_name;
+ 
+ 	check(0 == msi_bitmap_alloc(&bmp, size, &of_node));
