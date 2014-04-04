@@ -1,12 +1,33 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/tm: Disable IRQ in tm_recheckpoint
-In-reply-to: <1395985234-27281-1-git-send-email-mikey@neuling.org>
-References: <1395985234-27281-1-git-send-email-mikey@neuling.org>
-Date: Fri, 04 Apr 2014 20:19:48 +1100
-Message-ID: <12199.1396603188@ale.ozlabs.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <Li.Xiubo@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 80DCA140096
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 20:24:47 +1100 (EST)
+From: "Li.Xiubo@freescale.com" <Li.Xiubo@freescale.com>
+To: "guangyu.chen@freescale.com" <guangyu.chen@freescale.com>,
+ "broonie@kernel.org" <broonie@kernel.org>, "shawn.guo@linaro.org"
+ <shawn.guo@linaro.org>
+Subject: RE: [PATCH 1/2] ASoC: fsl_sai: Add clock control for SAI
+Date: Fri, 4 Apr 2014 09:24:39 +0000
+Message-ID: <49295d4f0f0f42c4b9c6de77583b978e@BY2PR03MB505.namprd03.prod.outlook.com>
+References: <cover.1396352401.git.Guangyu.Chen@freescale.com>
+ <87d225a25812d730c0865f9d0bb733c67d8b3ed1.1396352401.git.Guangyu.Chen@freescale.com>
+In-Reply-To: <87d225a25812d730c0865f9d0bb733c67d8b3ed1.1396352401.git.Guangyu.Chen@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ "pawel.moll@arm.com" <pawel.moll@arm.com>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "timur@tabi.org" <timur@tabi.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "rob@landley.net" <rob@landley.net>,
+ "galak@codeaurora.org" <galak@codeaurora.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,143 +37,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can't take an IRQ when we're about to do a trechkpt as our GPR state is set
-to user GPR values.
+Hi,
 
-We've hit this when running some IBM Java stress tests in the lab resulting in
-the following dump:
+I have test this series on my Vybrid-TWR board and it works happily.
 
-  cpu 0x3f: Vector: 700 (Program Check) at [c000000007eb3d40]
-      pc: c000000000050074: restore_gprs+0xc0/0x148
-      lr: 00000000b52a8184
-      sp: ac57d360
-     msr: 8000000100201030
-    current = 0xc00000002c500000
-    paca    = 0xc000000007dbfc00     softe: 0     irq_happened: 0x00
-      pid   = 34535, comm = Pooled Thread #
-  R00 = 00000000b52a8184   R16 = 00000000b3e48fda
-  R01 = 00000000ac57d360   R17 = 00000000ade79bd8
-  R02 = 00000000ac586930   R18 = 000000000fac9bcc
-  R03 = 00000000ade60000   R19 = 00000000ac57f930
-  R04 = 00000000f6624918   R20 = 00000000ade79be8
-  R05 = 00000000f663f238   R21 = 00000000ac218a54
-  R06 = 0000000000000002   R22 = 000000000f956280
-  R07 = 0000000000000008   R23 = 000000000000007e
-  R08 = 000000000000000a   R24 = 000000000000000c
-  R09 = 00000000b6e69160   R25 = 00000000b424cf00
-  R10 = 0000000000000181   R26 = 00000000f66256d4
-  R11 = 000000000f365ec0   R27 = 00000000b6fdcdd0
-  R12 = 00000000f66400f0   R28 = 0000000000000001
-  R13 = 00000000ada71900   R29 = 00000000ade5a300
-  R14 = 00000000ac2185a8   R30 = 00000000f663f238
-  R15 = 0000000000000004   R31 = 00000000f6624918
-  pc  = c000000000050074 restore_gprs+0xc0/0x148
-  cfar= c00000000004fe28 dont_restore_vec+0x1c/0x1a4
-  lr  = 00000000b52a8184
-  msr = 8000000100201030   cr  = 24804888
-  ctr = 0000000000000000   xer = 0000000000000000   trap =  700
+[...]
+> diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+> index 3847d2a..2d749df 100644
+> --- a/sound/soc/fsl/fsl_sai.c
+> +++ b/sound/soc/fsl/fsl_sai.c
+> @@ -428,5 +428,18 @@ static int fsl_sai_startup(struct snd_pcm_substream
+> *substream,
+>  {
+>  	struct fsl_sai *sai =3D snd_soc_dai_get_drvdata(cpu_dai);
+> -	u32 reg;
+> +	struct device *dev =3D &sai->pdev->dev;
+> +	u32 reg, ret;
+> +
 
-This moves tm_recheckpoint to a C function and moves the tm_restore_sprs into
-that function.  It then adds IRQ disabling over the trechkpt critical section.
-It also sets the TEXASR FS in the signals code to ensure this is never set now
-that we explictly write the TM sprs in tm_recheckpoint.
+I'd prefer:
+  +	int ret;
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-cc: stable@vger.kernel.org
 
----
-v2:
-  Fix bug where TM SPRs are not saved when outside a transaction.
+> +	ret =3D clk_prepare_enable(sai->ipg_clk);
+> +	if (ret) {
+> +		dev_err(dev, "failed to prepare and enable ipg clock\n");
+> +		return ret;
+> +	}
+> +
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index af064d2..31d0215 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -610,6 +610,31 @@ out_and_saveregs:
- 	tm_save_sprs(thr);
- }
- 
-+extern void __tm_recheckpoint(struct thread_struct *thread,
-+			      unsigned long orig_msr);
-+
-+void tm_recheckpoint(struct thread_struct *thread,
-+		     unsigned long orig_msr)
-+{
-+	unsigned long flags;
-+
-+	/* We really can't be interrupted here as the TEXASR registers can't
-+	 * change and later in the trecheckpoint code, we have a userspace R1.
-+	 * So let's hard disable over this region.
-+	 */
-+	local_irq_save(flags);
-+	hard_irq_disable();
-+
-+	/* The TM SPRs are restored here, so that TEXASR.FS can be set
-+	 * before the trecheckpoint and no explosion occurs.
-+	 */
-+	tm_restore_sprs(thread);
-+
-+	__tm_recheckpoint(thread, orig_msr);
-+
-+	local_irq_restore(flags);
-+}
-+
- static inline void tm_recheckpoint_new_task(struct task_struct *new)
- {
- 	unsigned long msr;
-@@ -628,13 +653,10 @@ static inline void tm_recheckpoint_new_task(struct task_struct *new)
- 	if (!new->thread.regs)
- 		return;
- 
--	/* The TM SPRs are restored here, so that TEXASR.FS can be set
--	 * before the trecheckpoint and no explosion occurs.
--	 */
--	tm_restore_sprs(&new->thread);
--
--	if (!MSR_TM_ACTIVE(new->thread.regs->msr))
-+	if (!MSR_TM_ACTIVE(new->thread.regs->msr)){
-+		tm_restore_sprs(&new->thread);
- 		return;
-+	}
- 	msr = new->thread.tm_orig_msr;
- 	/* Recheckpoint to restore original checkpointed register state. */
- 	TM_DEBUG("*** tm_recheckpoint of pid %d "
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index a67e00a..4e47db6 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -881,6 +881,8 @@ static long restore_tm_user_regs(struct pt_regs *regs,
- 	 * transactional versions should be loaded.
- 	 */
- 	tm_enable();
-+	/* Make sure the transaction is marked as failed */
-+	current->thread.tm_texasr |= TEXASR_FS;
- 	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&current->thread, msr);
- 	/* Get the top half of the MSR */
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 8d253c2..d501dc4 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -527,6 +527,8 @@ static long restore_tm_sigcontexts(struct pt_regs *regs,
- 	}
- #endif
- 	tm_enable();
-+	/* Make sure the transaction is marked as failed */
-+	current->thread.tm_texasr |= TEXASR_FS;
- 	/* This loads the checkpointed FP/VEC state, if used */
- 	tm_recheckpoint(&current->thread, msr);
- 
-diff --git a/arch/powerpc/kernel/tm.S b/arch/powerpc/kernel/tm.S
-index ef47bcb..03567c0 100644
---- a/arch/powerpc/kernel/tm.S
-+++ b/arch/powerpc/kernel/tm.S
-@@ -307,7 +307,7 @@ dont_backup_fp:
- 	 *	Call with IRQs off, stacks get all out of sync for
- 	 *	some periods in here!
- 	 */
--_GLOBAL(tm_recheckpoint)
-+_GLOBAL(__tm_recheckpoint)
- 	mfcr	r5
- 	mflr	r0
- 	stw	r5, 8(r1)
+[...]
+
+> @@ -609,5 +630,5 @@ static int fsl_sai_probe(struct platform_device *pdev=
+)
+>=20
+>  	sai->regmap =3D devm_regmap_init_mmio_clk(&pdev->dev,
+> -			"sai", base, &fsl_sai_regmap_config);
+> +			"ipg", base, &fsl_sai_regmap_config);
+>  	if (IS_ERR(sai->regmap)) {
+>  		dev_err(&pdev->dev, "regmap init failed\n");
+> @@ -615,4 +636,16 @@ static int fsl_sai_probe(struct platform_device *pde=
+v)
+>  	}
+>=20
+> +	sai->ipg_clk =3D devm_clk_get(&pdev->dev, "ipg");
+> +	if (IS_ERR(sai->ipg_clk)) {
+> +		dev_err(&pdev->dev, "failed to get ipg clock\n");
+> +		return PTR_ERR(sai->ipg_clk);
+> +	}
+> +
+
+Since the 'ipg' clock is just intend to be used for registers accessing and
+We are using the regmap_init_mmio_clk(), so we can just drop it here and
+Let the regmap APIs to do the clock options properly.
+
+Otherwise it look good to me.
+
+After this:
+Acked-by: Xiubo Li <Li.Xiubo@freescale.com>
+
+
+
+Thanks,
+
+Brs,
+Xiubo
+
+
+
+
+> +	sai->sai_clk =3D devm_clk_get(&pdev->dev, "sai");
+> +	if (IS_ERR(sai->sai_clk)) {
+> +		dev_err(&pdev->dev, "failed to get sai clock\n");
+> +		return PTR_ERR(sai->sai_clk);
+> +	}
+> +
+>  	irq =3D platform_get_irq(pdev, 0);
+>  	if (irq < 0) {
+> diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+> index 677670d..cbaf114 100644
+> --- a/sound/soc/fsl/fsl_sai.h
+> +++ b/sound/soc/fsl/fsl_sai.h
+> @@ -127,4 +127,6 @@ struct fsl_sai {
+>  	struct platform_device *pdev;
+>  	struct regmap *regmap;
+> +	struct clk *ipg_clk;
+> +	struct clk *sai_clk;
+>=20
+>  	bool big_endian_regs;
+> --
+> 1.8.4
+>=20
