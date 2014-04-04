@@ -1,31 +1,38 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-we0-x22f.google.com (mail-we0-x22f.google.com
- [IPv6:2a00:1450:400c:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F3F121400BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 18:11:07 +1100 (EST)
-Received: by mail-we0-f175.google.com with SMTP id q58so2906606wes.6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Apr 2014 00:11:02 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 4 Apr 2014 09:10:59 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 2/2] mm: add FAULT_AROUND_ORDER Kconfig paramater for
- powerpc
-Message-ID: <20140404071059.GA1397@gmail.com>
-References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1396592835-24767-3-git-send-email-maddy@linux.vnet.ibm.com>
- <20140404070241.GA984@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 204DB1400BE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 18:35:28 +1100 (EST)
+Received: from /spool/local
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Fri, 4 Apr 2014 08:35:25 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id E741D17D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 08:36:12 +0100 (BST)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s347ZBLU63897704
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Apr 2014 07:35:11 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s347ZLwT001345
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Apr 2014 01:35:22 -0600
+Subject: [PATCH v2] powerpc/le: enable RTAS events support
+To: benh@kernel.crashing.org
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Date: Fri, 04 Apr 2014 09:35:13 +0200
+Message-ID: <20140404072750.20016.18969.stgit@bahia.local>
+In-Reply-To: <0140402175658.1b4a8c4d@bahia.local>
+References: <0140402175658.1b4a8c4d@bahia.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140404070241.GA984@gmail.com>
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@linux.intel.com,
- paulus@samba.org, mgorman@suse.de,
- Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-kernel@vger.kernel.org, geert@linux-m68k.org, paulus@samba.org,
+ anton@samba.org, nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,60 +42,378 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The current kernel code assumes big endian and parses RTAS events all
+wrong. The most visible effect is that we cannot honor EPOW events,
+meaning, for example, we cannot shut down a guest properly from the
+hypervisor.
 
-* Ingo Molnar <mingo@kernel.org> wrote:
+This new patch is largely inspired by Nathan's work: we get rid of all
+the bit fields in the RTAS event structures (even the unused ones, for
+consistency). We also introduce endian safe accessors for the fields used
+by the kernel (trivial rtas_error_type() accessor added for consistency).
 
-> * Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
-> 
-> > Performance data for different FAULT_AROUND_ORDER values from 4 
-> > socket Power7 system (128 Threads and 128GB memory) is below. perf 
-> > stat with repeat of 5 is used to get the stddev values. This patch 
-> > create FAULT_AROUND_ORDER Kconfig parameter and defaults it to 3 
-> > based on the performance data.
-> > 
-> > FAULT_AROUND_ORDER      Baseline        1               3               4               5               7
-> > 
-> > Linux build (make -j64)
-> > minor-faults            7184385         5874015         4567289         4318518         4193815         4159193
-> > times in seconds        61.433776136    60.865935292    59.245368038    60.630675011    60.56587624     59.828271924
-> >  stddev for time	( +-  1.18% )	( +-  1.78% )	( +-  0.44% )	( +-  2.03% )	( +-  1.66% )	( +-  1.45% )
-> 
-> Ok, this is better, but it is still rather incomplete statistically, 
-> please also calculate the percentage difference to baseline, so that 
-> the stddev becomes meaningful and can be compared to something!
-> 
-> As an example I did this for the first line of measurements (all 
-> errors in the numbers are mine, this was done manually), and it 
-> gives:
-> 
-> >  stddev for time   ( +-  1.18% ) ( +-  1.78% ) ( +-  0.44% ) ( +-  2.03% ) ( +-  1.66% ) ( +-  1.45% )
->                                         +0.9%         +3.5%         +1.3%         +1.4%         +2.6%
-> 
-> This shows that there is probably a statistically significant 
-> (positiv) effect from the change, but from these numbers alone I 
-> would not draw any quantitative (sizing, tuning) conclusions, 
-> because in 3 out of 5 cases the stddev was larger than the effect, 
-> so the resulting percentages are not comparable.
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+---
 
-Also note that because we calculate the percentage by dividing result 
-with baseline, the stddev of the two values roughly adds up. So for 
-example the second column the true noise is around 1.5%, not 0.4%
+Changes since v2:
+- kill all bit fields in RTAS event structures
+- endian safe accessors
+- use __be32 and __be16 where applicable
 
-So for good sizing decisions the stddev must be 'comfortably' below 
-the effect. (or sizing should be done based on the other workloads yu 
-tested, I have not checked them.)
+I could successfuly have the system_shutdown command working in the qemu
+monitor.
 
-It also makes sense to run more measurements to reduce the stddev of 
-the baseline. So if each measurement is run 3 times then it makes 
-sense to run the baseline 6 times, this gives a ~30% improvement in 
-the confidence of our result, at just a small increase in test time.
+Cheers.
 
-[ For such cases it might also make sense to script all of that, 
-  combined with a debug patch that puts the tuned fault-around value 
-  into a dynamic knob in /proc/sys/, so that you can run the full 
-  measurement in a single pass, with no reboot and with no human 
-  intervention. ]
+--
+Greg
 
-Thanks,
+ arch/powerpc/include/asm/rtas.h               |  127 +++++++++++++++++++------
+ arch/powerpc/kernel/rtas.c                    |   15 ++-
+ arch/powerpc/kernel/rtasd.c                   |   24 ++---
+ arch/powerpc/platforms/pseries/io_event_irq.c |    6 +
+ arch/powerpc/platforms/pseries/ras.c          |   17 ++-
+ 5 files changed, 128 insertions(+), 61 deletions(-)
 
-	Ingo
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 9bd52c6..217c81e 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -150,19 +150,53 @@ struct rtas_suspend_me_data {
+ #define RTAS_VECTOR_EXTERNAL_INTERRUPT	0x500
+ 
+ struct rtas_error_log {
+-	unsigned long version:8;		/* Architectural version */
+-	unsigned long severity:3;		/* Severity level of error */
+-	unsigned long disposition:2;		/* Degree of recovery */
+-	unsigned long extended:1;		/* extended log present? */
+-	unsigned long /* reserved */ :2;	/* Reserved for future use */
+-	unsigned long initiator:4;		/* Initiator of event */
+-	unsigned long target:4;			/* Target of failed operation */
+-	unsigned long type:8;			/* General event or error*/
+-	unsigned long extended_log_length:32;	/* length in bytes */
+-	unsigned char buffer[1];		/* Start of extended log */
++	/* Byte 0 */
++	uint8_t		byte0;			/* Architectural version */
++
++	/* Byte 1 */
++	uint8_t		byte1;
++	/* XXXXXXXX
++	 * XXX		3: Severity level of error
++	 *    XX	2: Degree of recovery
++	 *      X	1: Extended log present?
++	 *       XX	2: Reserved
++	 */
++
++	/* Byte 2 */
++	uint8_t		byte2;
++	/* XXXXXXXX
++	 * XXXX		4: Initiator of event
++	 *     XXXX	4: Target of failed operation
++	 */
++	uint8_t		byte3;			/* General event or error*/
++	__be32		extended_log_length;	/* length in bytes */
++	unsigned char	buffer[1];		/* Start of extended log */
+ 						/* Variable length.      */
+ };
+ 
++static inline uint8_t rtas_error_severity(const struct rtas_error_log *elog)
++{
++	return (elog->byte1 & 0xE0) >> 5;
++}
++
++static inline uint8_t rtas_error_disposition(const struct rtas_error_log *elog)
++{
++	return (elog->byte1 & 0x18) >> 3;
++}
++
++static inline uint8_t rtas_error_extended(const struct rtas_error_log *elog)
++{
++	return (elog->byte1 & 0x04) >> 2;
++}
++
++#define rtas_error_type(x)	((x)->byte3)
++
++static inline
++uint32_t rtas_error_extended_log_length(const struct rtas_error_log *elog)
++{
++	return be32_to_cpu(elog->extended_log_length);
++}
++
+ #define RTAS_V6EXT_LOG_FORMAT_EVENT_LOG	14
+ 
+ #define RTAS_V6EXT_COMPANY_ID_IBM	(('I' << 24) | ('B' << 16) | ('M' << 8))
+@@ -172,32 +206,35 @@ struct rtas_error_log {
+  */
+ struct rtas_ext_event_log_v6 {
+ 	/* Byte 0 */
+-	uint32_t log_valid:1;		/* 1:Log valid */
+-	uint32_t unrecoverable_error:1;	/* 1:Unrecoverable error */
+-	uint32_t recoverable_error:1;	/* 1:recoverable (correctable	*/
+-					/*   or successfully retried)	*/
+-	uint32_t degraded_operation:1;	/* 1:Unrecoverable err, bypassed*/
+-					/*   - degraded operation (e.g.	*/
+-					/*   CPU or mem taken off-line)	*/
+-	uint32_t predictive_error:1;
+-	uint32_t new_log:1;		/* 1:"New" log (Always 1 for	*/
+-					/*   data returned from RTAS	*/
+-	uint32_t big_endian:1;		/* 1: Big endian */
+-	uint32_t :1;			/* reserved */
++	uint8_t byte0;
++	/* XXXXXXXX
++	 * X		1: Log valid
++	 *  X		1: Unrecoverable error
++	 *   X		1: Recoverable (correctable or successfully retried)
++	 *    X		1: Bypassed unrecoverable error (degraded operation)
++	 *     X	1: Predictive error
++	 *      X	1: "New" log (always 1 for data returned from RTAS)
++	 *       X	1: Big Endian
++	 *        X	1: Reserved
++	 */
++
+ 	/* Byte 1 */
+-	uint32_t :8;			/* reserved */
++	uint8_t byte1;			/* reserved */
++
+ 	/* Byte 2 */
+-	uint32_t powerpc_format:1;	/* Set to 1 (indicating log is	*/
+-					/* in PowerPC format		*/
+-	uint32_t :3;			/* reserved */
+-	uint32_t log_format:4;		/* Log format indicator. Define	*/
+-					/* format used for byte 12-2047	*/
++	uint8_t byte2;
++	/* XXXXXXXX
++	 * X		1: Set to 1 (indicating log is in PowerPC format)
++	 *  XXX		3: Reserved
++	 *     XXXX	4: Log format used for bytes 12-2047
++	 */
++
+ 	/* Byte 3 */
+-	uint32_t :8;			/* reserved */
++	uint8_t byte3;			/* reserved */
+ 	/* Byte 4-11 */
+ 	uint8_t reserved[8];		/* reserved */
+ 	/* Byte 12-15 */
+-	uint32_t company_id;		/* Company ID of the company	*/
++	__be32  company_id;		/* Company ID of the company	*/
+ 					/* that defines the format for	*/
+ 					/* the vendor specific log type	*/
+ 	/* Byte 16-end of log */
+@@ -205,6 +242,18 @@ struct rtas_ext_event_log_v6 {
+ 					/* Variable length.		*/
+ };
+ 
++static
++inline uint8_t rtas_ext_event_log_format(struct rtas_ext_event_log_v6 *ext_log)
++{
++	return ext_log->byte2 & 0x0F;
++}
++
++static
++inline uint32_t rtas_ext_event_company_id(struct rtas_ext_event_log_v6 *ext_log)
++{
++	return be32_to_cpu(ext_log->company_id);
++}
++
+ /* pSeries event log format */
+ 
+ /* Two bytes ASCII section IDs */
+@@ -227,14 +276,26 @@ struct rtas_ext_event_log_v6 {
+ 
+ /* Vendor specific Platform Event Log Format, Version 6, section header */
+ struct pseries_errorlog {
+-	uint16_t id;			/* 0x00 2-byte ASCII section ID	*/
+-	uint16_t length;		/* 0x02 Section length in bytes	*/
++	__be16 id;			/* 0x00 2-byte ASCII section ID	*/
++	__be16 length;			/* 0x02 Section length in bytes	*/
+ 	uint8_t version;		/* 0x04 Section version		*/
+ 	uint8_t subtype;		/* 0x05 Section subtype		*/
+-	uint16_t creator_component;	/* 0x06 Creator component ID	*/
++	__be16 creator_component;	/* 0x06 Creator component ID	*/
+ 	uint8_t data[];			/* 0x08 Start of section data	*/
+ };
+ 
++static
++inline uint16_t pseries_errorlog_id(struct pseries_errorlog *sect)
++{
++	return be16_to_cpu(sect->id);
++}
++
++static
++inline uint16_t pseries_errorlog_length(struct pseries_errorlog *sect)
++{
++	return be16_to_cpu(sect->length);
++}
++
+ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+ 					      uint16_t section_id);
+ 
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index f386296..8cd5ed0 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -993,21 +993,24 @@ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+ 		(struct rtas_ext_event_log_v6 *)log->buffer;
+ 	struct pseries_errorlog *sect;
+ 	unsigned char *p, *log_end;
++	uint32_t ext_log_length = rtas_error_extended_log_length(log);
++	uint8_t log_format = rtas_ext_event_log_format(ext_log);
++	uint32_t company_id = rtas_ext_event_company_id(ext_log);
+ 
+ 	/* Check that we understand the format */
+-	if (log->extended_log_length < sizeof(struct rtas_ext_event_log_v6) ||
+-	    ext_log->log_format != RTAS_V6EXT_LOG_FORMAT_EVENT_LOG ||
+-	    ext_log->company_id != RTAS_V6EXT_COMPANY_ID_IBM)
++	if (ext_log_length < sizeof(struct rtas_ext_event_log_v6) ||
++	    log_format != RTAS_V6EXT_LOG_FORMAT_EVENT_LOG ||
++	    company_id != RTAS_V6EXT_COMPANY_ID_IBM)
+ 		return NULL;
+ 
+-	log_end = log->buffer + log->extended_log_length;
++	log_end = log->buffer + ext_log_length;
+ 	p = ext_log->vendor_log;
+ 
+ 	while (p < log_end) {
+ 		sect = (struct pseries_errorlog *)p;
+-		if (sect->id == section_id)
++		if (pseries_errorlog_id(sect) == section_id)
+ 			return sect;
+-		p += sect->length;
++		p += pseries_errorlog_length(sect);
+ 	}
+ 
+ 	return NULL;
+diff --git a/arch/powerpc/kernel/rtasd.c b/arch/powerpc/kernel/rtasd.c
+index 1130c53..e736387 100644
+--- a/arch/powerpc/kernel/rtasd.c
++++ b/arch/powerpc/kernel/rtasd.c
+@@ -150,8 +150,8 @@ static void printk_log_rtas(char *buf, int len)
+ 		struct rtas_error_log *errlog = (struct rtas_error_log *)buf;
+ 
+ 		printk(RTAS_DEBUG "event: %d, Type: %s, Severity: %d\n",
+-		       error_log_cnt, rtas_event_type(errlog->type),
+-		       errlog->severity);
++		       error_log_cnt, rtas_event_type(rtas_error_type(errlog)),
++		       rtas_error_severity(errlog));
+ 	}
+ }
+ 
+@@ -159,14 +159,16 @@ static int log_rtas_len(char * buf)
+ {
+ 	int len;
+ 	struct rtas_error_log *err;
++	uint32_t extended_log_length;
+ 
+ 	/* rtas fixed header */
+ 	len = 8;
+ 	err = (struct rtas_error_log *)buf;
+-	if (err->extended && err->extended_log_length) {
++	extended_log_length = rtas_error_extended_log_length(err);
++	if (rtas_error_extended(err) && extended_log_length) {
+ 
+ 		/* extended header */
+-		len += err->extended_log_length;
++		len += extended_log_length;
+ 	}
+ 
+ 	if (rtas_error_log_max == 0)
+@@ -293,15 +295,13 @@ void prrn_schedule_update(u32 scope)
+ 
+ static void handle_rtas_event(const struct rtas_error_log *log)
+ {
+-	if (log->type == RTAS_TYPE_PRRN) {
+-		/* For PRRN Events the extended log length is used to denote
+-		 * the scope for calling rtas update-nodes.
+-		 */
+-		if (prrn_is_enabled())
+-			prrn_schedule_update(log->extended_log_length);
+-	}
++	if (rtas_error_type(log) != RTAS_TYPE_PRRN || !prrn_is_enabled())
++		return;
+ 
+-	return;
++	/* For PRRN Events the extended log length is used to denote
++	 * the scope for calling rtas update-nodes.
++	 */
++	prrn_schedule_update(rtas_error_extended_log_length(log));
+ }
+ 
+ #else
+diff --git a/arch/powerpc/platforms/pseries/io_event_irq.c b/arch/powerpc/platforms/pseries/io_event_irq.c
+index 5ea88d1..0240c4f 100644
+--- a/arch/powerpc/platforms/pseries/io_event_irq.c
++++ b/arch/powerpc/platforms/pseries/io_event_irq.c
+@@ -82,9 +82,9 @@ static struct pseries_io_event * ioei_find_event(struct rtas_error_log *elog)
+ 	 * RTAS_TYPE_IO only exists in extended event log version 6 or later.
+ 	 * No need to check event log version.
+ 	 */
+-	if (unlikely(elog->type != RTAS_TYPE_IO)) {
+-		printk_once(KERN_WARNING "io_event_irq: Unexpected event type %d",
+-			    elog->type);
++	if (unlikely(rtas_error_type(elog) != RTAS_TYPE_IO)) {
++		printk_once(KERN_WARNING"io_event_irq: Unexpected event type %d",
++			    rtas_error_type(elog));
+ 		return NULL;
+ 	}
+ 
+diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+index 721c058..9c5778e 100644
+--- a/arch/powerpc/platforms/pseries/ras.c
++++ b/arch/powerpc/platforms/pseries/ras.c
+@@ -236,7 +236,8 @@ static irqreturn_t ras_error_interrupt(int irq, void *dev_id)
+ 
+ 	rtas_elog = (struct rtas_error_log *)ras_log_buf;
+ 
+-	if ((status == 0) && (rtas_elog->severity >= RTAS_SEVERITY_ERROR_SYNC))
++	if (status == 0 &&
++	    rtas_error_severity(rtas_elog) >= RTAS_SEVERITY_ERROR_SYNC)
+ 		fatal = 1;
+ 	else
+ 		fatal = 0;
+@@ -300,13 +301,14 @@ static struct rtas_error_log *fwnmi_get_errinfo(struct pt_regs *regs)
+ 
+ 	/* If it isn't an extended log we can use the per cpu 64bit buffer */
+ 	h = (struct rtas_error_log *)&savep[1];
+-	if (!h->extended) {
++	if (!rtas_error_extended(h)) {
+ 		memcpy(&__get_cpu_var(mce_data_buf), h, sizeof(__u64));
+ 		errhdr = (struct rtas_error_log *)&__get_cpu_var(mce_data_buf);
+ 	} else {
+-		int len;
++		int len, error_log_length;
+ 
+-		len = max_t(int, 8+h->extended_log_length, RTAS_ERROR_LOG_MAX);
++		error_log_length = 8 + rtas_error_extended_log_length(h);
++		len = max_t(int, error_log_length, RTAS_ERROR_LOG_MAX);
+ 		memset(global_mce_data_buf, 0, RTAS_ERROR_LOG_MAX);
+ 		memcpy(global_mce_data_buf, h, len);
+ 		errhdr = (struct rtas_error_log *)global_mce_data_buf;
+@@ -350,23 +352,24 @@ int pSeries_system_reset_exception(struct pt_regs *regs)
+ static int recover_mce(struct pt_regs *regs, struct rtas_error_log *err)
+ {
+ 	int recovered = 0;
++	int disposition = rtas_error_disposition(err);
+ 
+ 	if (!(regs->msr & MSR_RI)) {
+ 		/* If MSR_RI isn't set, we cannot recover */
+ 		recovered = 0;
+ 
+-	} else if (err->disposition == RTAS_DISP_FULLY_RECOVERED) {
++	} else if (disposition == RTAS_DISP_FULLY_RECOVERED) {
+ 		/* Platform corrected itself */
+ 		recovered = 1;
+ 
+-	} else if (err->disposition == RTAS_DISP_LIMITED_RECOVERY) {
++	} else if (disposition == RTAS_DISP_LIMITED_RECOVERY) {
+ 		/* Platform corrected itself but could be degraded */
+ 		printk(KERN_ERR "MCE: limited recovery, system may "
+ 		       "be degraded\n");
+ 		recovered = 1;
+ 
+ 	} else if (user_mode(regs) && !is_global_init(current) &&
+-		   err->severity == RTAS_SEVERITY_ERROR_SYNC) {
++		   rtas_error_severity(err) == RTAS_SEVERITY_ERROR_SYNC) {
+ 
+ 		/*
+ 		 * If we received a synchronous error when in userspace
