@@ -1,17 +1,17 @@
 Return-Path: <hongbo.zhang@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6EC3F140177
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 14:28:21 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F185B14012E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 14:28:28 +1100 (EST)
 From: <hongbo.zhang@freescale.com>
 To: <vkoul@infradead.org>, <dan.j.williams@intel.com>,
  <dmaengine@vger.kernel.org>
-Subject: [PATCH v2 7/8] DMA: Freescale: use spin_lock_bh instead of
- spin_lock_irqsave
-Date: Fri, 4 Apr 2014 11:27:16 +0800
-Message-ID: <1396582037-23065-8-git-send-email-hongbo.zhang@freescale.com>
+Subject: [PATCH v2 8/8] DMA: Freescale: add suspend resume functions for DMA
+ driver
+Date: Fri, 4 Apr 2014 11:27:17 +0800
+Message-ID: <1396582037-23065-9-git-send-email-hongbo.zhang@freescale.com>
 In-Reply-To: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
 References: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
@@ -29,125 +29,183 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-The usage of spin_lock_irqsave() is a stronger locking mechanism than is
-required throughout the driver. The minimum locking required should be used
-instead. Interrupts will be turned off and context will be saved, it is
-unnecessary to use irqsave.
-
-This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
-manipulation of protected fields is done using tasklet context or weaker, which
-makes spin_lock_bh() the correct choice.
+This patch adds suspend resume functions for Freescale DMA driver.
+.prepare callback is used to stop further descriptors from being added into the
+pending queue, and also issue pending queues into execution if there is any.
+.suspend callback makes sure all the pending jobs are cleaned up and all the
+channels are idle, and save the mode registers.
+.resume callback re-initializes the channels by restore the mode registers.
 
 Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
 ---
- drivers/dma/fsldma.c |   25 ++++++++++---------------
- 1 file changed, 10 insertions(+), 15 deletions(-)
+ drivers/dma/fsldma.c |   99 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/dma/fsldma.h |   16 ++++++++
+ 2 files changed, 115 insertions(+)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index f8eee60..c9bf54a 100644
+index c9bf54a..91482d2 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -396,10 +396,9 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
- 	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
- 	struct fsl_desc_sw *child;
--	unsigned long flags;
- 	dma_cookie_t cookie = -EINVAL;
+@@ -400,6 +400,14 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
  
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
+ 	spin_lock_bh(&chan->desc_lock);
  
++#ifdef CONFIG_PM
++	if (unlikely(chan->pm_state != RUNNING)) {
++		chan_dbg(chan, "cannot submit due to suspend\n");
++		spin_unlock_bh(&chan->desc_lock);
++		return -1;
++	}
++#endif
++
  	/*
  	 * assign cookies to all of the software descriptors
-@@ -412,7 +411,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 	/* put this transaction onto the tail of the pending queue */
- 	append_ld_queue(chan, desc);
- 
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
- 
- 	return cookie;
- }
-@@ -725,15 +724,14 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
- static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
- {
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
--	unsigned long flags;
- 
- 	chan_dbg(chan, "free all channel resources\n");
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
- 	fsldma_cleanup_descriptors(chan);
- 	fsldma_free_desc_list(chan, &chan->ld_pending);
- 	fsldma_free_desc_list(chan, &chan->ld_running);
- 	fsldma_free_desc_list(chan, &chan->ld_completed);
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
- 
- 	dma_pool_destroy(chan->desc_pool);
- 	chan->desc_pool = NULL;
-@@ -952,7 +950,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- {
- 	struct dma_slave_config *config;
- 	struct fsldma_chan *chan;
--	unsigned long flags;
- 	int size;
- 
- 	if (!dchan)
-@@ -962,7 +959,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- 
- 	switch (cmd) {
- 	case DMA_TERMINATE_ALL:
--		spin_lock_irqsave(&chan->desc_lock, flags);
-+		spin_lock_bh(&chan->desc_lock);
- 
- 		/* Halt the DMA engine */
- 		dma_halt(chan);
-@@ -973,7 +970,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- 		fsldma_free_desc_list(chan, &chan->ld_completed);
- 		chan->idle = true;
- 
--		spin_unlock_irqrestore(&chan->desc_lock, flags);
-+		spin_unlock_bh(&chan->desc_lock);
- 		return 0;
- 
- 	case DMA_SLAVE_CONFIG:
-@@ -1015,11 +1012,10 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
- {
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
--	unsigned long flags;
- 
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
- 	fsl_chan_xfer_ld_queue(chan);
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
- }
- 
- /**
-@@ -1118,11 +1114,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
- static void dma_do_tasklet(unsigned long data)
- {
- 	struct fsldma_chan *chan = (struct fsldma_chan *)data;
--	unsigned long flags;
- 
- 	chan_dbg(chan, "tasklet entry\n");
- 
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
- 
- 	/* the hardware is now idle and ready for more */
+ 	 * that make up this transaction
+@@ -1311,6 +1319,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
+ 	INIT_LIST_HEAD(&chan->ld_running);
+ 	INIT_LIST_HEAD(&chan->ld_completed);
  	chan->idle = true;
-@@ -1130,7 +1125,7 @@ static void dma_do_tasklet(unsigned long data)
- 	/* Run all cleanup for descriptors which have been completed */
- 	fsldma_cleanup_descriptors(chan);
++#ifdef CONFIG_PM
++	chan->pm_state = RUNNING;
++#endif
  
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
- 
- 	chan_dbg(chan, "tasklet exit\n");
+ 	chan->common.device = &fdev->common;
+ 	dma_cookie_init(&chan->common);
+@@ -1450,6 +1461,91 @@ static int fsldma_of_remove(struct platform_device *op)
+ 	return 0;
  }
+ 
++#ifdef CONFIG_PM
++static int fsldma_prepare(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct fsldma_device *fdev = platform_get_drvdata(pdev);
++	struct fsldma_chan *chan;
++	int i;
++
++	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
++		chan = fdev->chan[i];
++		if (!chan)
++			continue;
++
++		spin_lock_bh(&chan->desc_lock);
++		chan->pm_state = SUSPENDING;
++		if (!list_empty(&chan->ld_pending))
++			fsl_chan_xfer_ld_queue(chan);
++		spin_unlock_bh(&chan->desc_lock);
++	}
++
++	return 0;
++}
++
++static int fsldma_suspend(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct fsldma_device *fdev = platform_get_drvdata(pdev);
++	struct fsldma_chan *chan;
++	int i;
++
++	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
++		chan = fdev->chan[i];
++		if (!chan)
++			continue;
++
++		spin_lock_bh(&chan->desc_lock);
++		if (!chan->idle)
++			goto out;
++		chan->regs_save.mr = DMA_IN(chan, &chan->regs->mr, 32);
++		chan->pm_state = SUSPENDED;
++		spin_unlock_bh(&chan->desc_lock);
++	}
++	return 0;
++
++out:
++	for (; i >= 0; i--) {
++		chan = fdev->chan[i];
++		if (!chan)
++			continue;
++		spin_unlock_bh(&chan->desc_lock);
++	}
++	return -EBUSY;
++}
++
++static int fsldma_resume(struct device *dev)
++{
++	struct platform_device *pdev = to_platform_device(dev);
++	struct fsldma_device *fdev = platform_get_drvdata(pdev);
++	struct fsldma_chan *chan;
++	u32 mode;
++	int i;
++
++	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
++		chan = fdev->chan[i];
++		if (!chan)
++			continue;
++
++		spin_lock_bh(&chan->desc_lock);
++		mode = chan->regs_save.mr
++			& ~FSL_DMA_MR_CS & ~FSL_DMA_MR_CC & ~FSL_DMA_MR_CA;
++		DMA_OUT(chan, &chan->regs->mr, mode, 32);
++		chan->pm_state = RUNNING;
++		spin_unlock_bh(&chan->desc_lock);
++	}
++
++	return 0;
++}
++
++static const struct dev_pm_ops fsldma_pm_ops = {
++	.prepare	= fsldma_prepare,
++	.suspend	= fsldma_suspend,
++	.resume		= fsldma_resume,
++};
++#endif
++
+ static const struct of_device_id fsldma_of_ids[] = {
+ 	{ .compatible = "fsl,elo3-dma", },
+ 	{ .compatible = "fsl,eloplus-dma", },
+@@ -1462,6 +1558,9 @@ static struct platform_driver fsldma_of_driver = {
+ 		.name = "fsl-elo-dma",
+ 		.owner = THIS_MODULE,
+ 		.of_match_table = fsldma_of_ids,
++#ifdef CONFIG_PM
++		.pm = &fsldma_pm_ops,
++#endif
+ 	},
+ 	.probe = fsldma_of_probe,
+ 	.remove = fsldma_of_remove,
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index ec19517..eecaf9e 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -134,6 +134,18 @@ struct fsldma_device {
+ #define FSL_DMA_CHAN_PAUSE_EXT	0x00001000
+ #define FSL_DMA_CHAN_START_EXT	0x00002000
+ 
++#ifdef CONFIG_PM
++struct fsldma_chan_regs_save {
++	u32 mr;
++};
++
++enum fsldma_pm_state {
++	RUNNING = 0,
++	SUSPENDING,
++	SUSPENDED,
++};
++#endif
++
+ struct fsldma_chan {
+ 	char name[8];			/* Channel name */
+ 	struct fsldma_chan_regs __iomem *regs;
+@@ -161,6 +173,10 @@ struct fsldma_chan {
+ 	struct tasklet_struct tasklet;
+ 	u32 feature;
+ 	bool idle;			/* DMA controller is idle */
++#ifdef CONFIG_PM
++	struct fsldma_chan_regs_save regs_save;
++	enum fsldma_pm_state pm_state;
++#endif
+ 
+ 	void (*toggle_ext_pause)(struct fsldma_chan *fsl_chan, int enable);
+ 	void (*toggle_ext_start)(struct fsldma_chan *fsl_chan, int enable);
 -- 
 1.7.9.5
