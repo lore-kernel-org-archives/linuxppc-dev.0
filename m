@@ -1,18 +1,16 @@
 Return-Path: <hongbo.zhang@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2D6DB1400BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 14:28:02 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 85EDC14010A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 14:28:05 +1100 (EST)
 From: <hongbo.zhang@freescale.com>
 To: <vkoul@infradead.org>, <dan.j.williams@intel.com>,
  <dmaengine@vger.kernel.org>
-Subject: [PATCH v2 2/8] DMA: Freescale: unify register access methods
-Date: Fri, 4 Apr 2014 11:27:11 +0800
-Message-ID: <1396582037-23065-3-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
-References: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
+Subject: [PATCH v2 0/8] DMA: Freescale: driver cleanups and enhancements
+Date: Fri, 4 Apr 2014 11:27:09 +0800
+Message-ID: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, Hongbo Zhang <hongbo.zhang@freescale.com>,
@@ -28,188 +26,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-Methods of accessing DMA contorller registers are inconsistent, some registers
-are accessed by DMA_IN/OUT directly, while others are accessed by functions
-get/set_* which are wrappers of DMA_IN/OUT, and even for the BCR register, it
-is read by get_bcr but written by DMA_OUT.
-This patch unifies the inconsistent methods, all registers are accessed by
-get/set_* now.
+Hi Vinod Koul,
+Please have a look at the v2 patch set.
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
----
- drivers/dma/fsldma.c |   52 ++++++++++++++++++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 19 deletions(-)
+v1 -> v2 change:
+The only one change is introducing a new patch[1/7] to remove the unnecessary
+macro FSL_DMA_LD_DEBUG, thus the total patches number is 8 now (was 7)
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index ec50420..5f32cb8 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -61,6 +61,16 @@ static u32 get_sr(struct fsldma_chan *chan)
- 	return DMA_IN(chan, &chan->regs->sr, 32);
- }
- 
-+static void set_mr(struct fsldma_chan *chan, u32 val)
-+{
-+	DMA_OUT(chan, &chan->regs->mr, val, 32);
-+}
-+
-+static u32 get_mr(struct fsldma_chan *chan)
-+{
-+	return DMA_IN(chan, &chan->regs->mr, 32);
-+}
-+
- static void set_cdar(struct fsldma_chan *chan, dma_addr_t addr)
- {
- 	DMA_OUT(chan, &chan->regs->cdar, addr | FSL_DMA_SNEN, 64);
-@@ -71,6 +81,11 @@ static dma_addr_t get_cdar(struct fsldma_chan *chan)
- 	return DMA_IN(chan, &chan->regs->cdar, 64) & ~FSL_DMA_SNEN;
- }
- 
-+static void set_bcr(struct fsldma_chan *chan, u32 val)
-+{
-+	DMA_OUT(chan, &chan->regs->bcr, val, 32);
-+}
-+
- static u32 get_bcr(struct fsldma_chan *chan)
- {
- 	return DMA_IN(chan, &chan->regs->bcr, 32);
-@@ -135,7 +150,7 @@ static void set_ld_eol(struct fsldma_chan *chan, struct fsl_desc_sw *desc)
- static void dma_init(struct fsldma_chan *chan)
- {
- 	/* Reset the channel */
--	DMA_OUT(chan, &chan->regs->mr, 0, 32);
-+	set_mr(chan, 0);
- 
- 	switch (chan->feature & FSL_DMA_IP_MASK) {
- 	case FSL_DMA_IP_85XX:
-@@ -144,16 +159,15 @@ static void dma_init(struct fsldma_chan *chan)
- 		 * EOLNIE - End of links interrupt enable
- 		 * BWC - Bandwidth sharing among channels
- 		 */
--		DMA_OUT(chan, &chan->regs->mr, FSL_DMA_MR_BWC
--				| FSL_DMA_MR_EIE | FSL_DMA_MR_EOLNIE, 32);
-+		set_mr(chan, FSL_DMA_MR_BWC | FSL_DMA_MR_EIE
-+			| FSL_DMA_MR_EOLNIE);
- 		break;
- 	case FSL_DMA_IP_83XX:
- 		/* Set the channel to below modes:
- 		 * EOTIE - End-of-transfer interrupt enable
- 		 * PRC_RM - PCI read multiple
- 		 */
--		DMA_OUT(chan, &chan->regs->mr, FSL_DMA_MR_EOTIE
--				| FSL_DMA_MR_PRC_RM, 32);
-+		set_mr(chan, FSL_DMA_MR_EOTIE | FSL_DMA_MR_PRC_RM);
- 		break;
- 	}
- }
-@@ -175,10 +189,10 @@ static void dma_start(struct fsldma_chan *chan)
- {
- 	u32 mode;
- 
--	mode = DMA_IN(chan, &chan->regs->mr, 32);
-+	mode = get_mr(chan);
- 
- 	if (chan->feature & FSL_DMA_CHAN_PAUSE_EXT) {
--		DMA_OUT(chan, &chan->regs->bcr, 0, 32);
-+		set_bcr(chan, 0);
- 		mode |= FSL_DMA_MR_EMP_EN;
- 	} else {
- 		mode &= ~FSL_DMA_MR_EMP_EN;
-@@ -191,7 +205,7 @@ static void dma_start(struct fsldma_chan *chan)
- 		mode |= FSL_DMA_MR_CS;
- 	}
- 
--	DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+	set_mr(chan, mode);
- }
- 
- static void dma_halt(struct fsldma_chan *chan)
-@@ -200,7 +214,7 @@ static void dma_halt(struct fsldma_chan *chan)
- 	int i;
- 
- 	/* read the mode register */
--	mode = DMA_IN(chan, &chan->regs->mr, 32);
-+	mode = get_mr(chan);
- 
- 	/*
- 	 * The 85xx controller supports channel abort, which will stop
-@@ -209,14 +223,14 @@ static void dma_halt(struct fsldma_chan *chan)
- 	 */
- 	if ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
- 		mode |= FSL_DMA_MR_CA;
--		DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+		set_mr(chan, mode);
- 
- 		mode &= ~FSL_DMA_MR_CA;
- 	}
- 
- 	/* stop the DMA controller */
- 	mode &= ~(FSL_DMA_MR_CS | FSL_DMA_MR_EMS_EN);
--	DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+	set_mr(chan, mode);
- 
- 	/* wait for the DMA controller to become idle */
- 	for (i = 0; i < 100; i++) {
-@@ -245,7 +259,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *chan, int size)
- {
- 	u32 mode;
- 
--	mode = DMA_IN(chan, &chan->regs->mr, 32);
-+	mode = get_mr(chan);
- 
- 	switch (size) {
- 	case 0:
-@@ -259,7 +273,7 @@ static void fsl_chan_set_src_loop_size(struct fsldma_chan *chan, int size)
- 		break;
- 	}
- 
--	DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+	set_mr(chan, mode);
- }
- 
- /**
-@@ -277,7 +291,7 @@ static void fsl_chan_set_dst_loop_size(struct fsldma_chan *chan, int size)
- {
- 	u32 mode;
- 
--	mode = DMA_IN(chan, &chan->regs->mr, 32);
-+	mode = get_mr(chan);
- 
- 	switch (size) {
- 	case 0:
-@@ -291,7 +305,7 @@ static void fsl_chan_set_dst_loop_size(struct fsldma_chan *chan, int size)
- 		break;
- 	}
- 
--	DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+	set_mr(chan, mode);
- }
- 
- /**
-@@ -312,10 +326,10 @@ static void fsl_chan_set_request_count(struct fsldma_chan *chan, int size)
- 
- 	BUG_ON(size > 1024);
- 
--	mode = DMA_IN(chan, &chan->regs->mr, 32);
-+	mode = get_mr(chan);
- 	mode |= (__ilog2(size) << 24) & 0x0f000000;
- 
--	DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+	set_mr(chan, mode);
- }
- 
- /**
-@@ -889,9 +903,9 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
- 	if ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
- 		u32 mode;
- 
--		mode = DMA_IN(chan, &chan->regs->mr, 32);
-+		mode = get_mr(chan);
- 		mode &= ~FSL_DMA_MR_CS;
--		DMA_OUT(chan, &chan->regs->mr, mode, 32);
-+		set_mr(chan, mode);
- 	}
- 
- 	/*
+Hongbo Zhang (8):
+  DMA: Freescale: remove the unnecessary FSL_DMA_LD_DEBUG
+  DMA: Freescale: unify register access methods
+  DMA: Freescale: remove attribute DMA_INTERRUPT of dmaengine
+  DMA: Freescale: add fsl_dma_free_descriptor() to reduce code
+    duplication
+  DMA: Freescale: move functions to avoid forward declarations
+  DMA: Freescale: change descriptor release process for supporting
+    async_tx
+  DMA: Freescale: use spin_lock_bh instead of spin_lock_irqsave
+  DMA: Freescale: add suspend resume functions for DMA driver
+
+ drivers/dma/fsldma.c |  590 ++++++++++++++++++++++++++++++++------------------
+ drivers/dma/fsldma.h |   33 ++-
+ 2 files changed, 408 insertions(+), 215 deletions(-)
+
 -- 
 1.7.9.5
