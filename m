@@ -1,27 +1,22 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ve0-x234.google.com (mail-ve0-x234.google.com
- [IPv6:2607:f8b0:400c:c01::234])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 43ACD140080
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Apr 2014 00:00:42 +1100 (EST)
-Received: by mail-ve0-f180.google.com with SMTP id jz11so1373545veb.39
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Apr 2014 06:00:38 -0700 (PDT)
+Return-Path: <kas@node.shutemov.name>
+Received: from jenni1.inet.fi (mta-out.inet.fi [195.156.147.13])
+ by ozlabs.org (Postfix) with ESMTP id AAE67140096
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Apr 2014 00:20:42 +1100 (EST)
+Date: Fri, 4 Apr 2014 16:17:47 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
+Message-ID: <20140404131747.GA23076@node.dhcp.inet.fi>
+References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <533EA2B0.7080703@monstr.eu>
-References: <1396563423-30893-1-git-send-email-robherring2@gmail.com>
- <1396563423-30893-10-git-send-email-robherring2@gmail.com>
- <533EA2B0.7080703@monstr.eu>
-Date: Fri, 4 Apr 2014 08:00:38 -0500
-Message-ID: <CAL_JsqKFK8YDoODYKg5b8SmDzqdNSS6UvYr3_atzhcL2uR-=rA@mail.gmail.com>
-Subject: Re: [PATCH 09/20] of/fdt: create common debugfs
-From: Rob Herring <robherring2@gmail.com>
-To: Michal Simek <monstr@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
+ peterz@infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,74 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 4, 2014 at 7:16 AM, Michal Simek <monstr@monstr.eu> wrote:
-> On 04/04/2014 12:16 AM, Rob Herring wrote:
->> From: Rob Herring <robh@kernel.org>
->>
->> Both powerpc and microblaze have the same FDT blob in debugfs feature.
->> Move this to common location and remove the powerpc and microblaze
->> implementations. This feature could become more useful when FDT
->> overlay support is added.
->>
->> This changes the path of the blob from "$arch/flat-device-tree" to
->> "device-tree/flat-device-tree".
+On Fri, Apr 04, 2014 at 11:57:14AM +0530, Madhavan Srinivasan wrote:
+> Kirill A. Shutemov with faultaround patchset introduced
+> vm_ops->map_pages() for mapping easy accessible pages around
+> fault address in hope to reduce number of minor page faults.
+> 
+> This patch creates infrastructure to move the FAULT_AROUND_ORDER
+> to arch/ using Kconfig. This will enable architecture maintainers
+> to decide on suitable FAULT_AROUND_ORDER value based on
+> performance data for that architecture. Patch also adds
+> FAULT_AROUND_ORDER Kconfig element in arch/X86.
+> 
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>  arch/x86/Kconfig   |    4 ++++
+>  include/linux/mm.h |    9 +++++++++
+>  mm/memory.c        |   12 +++++-------
+>  3 files changed, 18 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index 9c0a657..5833f22 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -1177,6 +1177,10 @@ config DIRECT_GBPAGES
+>  	  support it. This can improve the kernel's performance a tiny bit by
+>  	  reducing TLB pressure. If in doubt, say "Y".
+>  
+> +config FAULT_AROUND_ORDER
+> +	int
+> +	default "4"
+> +
+>  # Common NUMA Features
+>  config NUMA
+>  	bool "Numa Memory Allocation and Scheduler Support"
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 0bd4359..b93c1c3 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -26,6 +26,15 @@ struct file_ra_state;
+>  struct user_struct;
+>  struct writeback_control;
+>  
+> +/*
+> + * Fault around order is a control knob to decide the fault around pages.
+> + * Default value is set to 0UL (disabled), but the arch can override it as
+> + * desired.
+> + */
+> +#ifndef CONFIG_FAULT_AROUND_ORDER
+> +#define CONFIG_FAULT_AROUND_ORDER 0
+> +#endif
+> +
 
-[snip]
+I don't think it should be in header file: nobody except mm/memory.c cares.
+Just put it instead '#define FAULT_AROUND_ORDER'.
 
->> -#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
->> -static struct debugfs_blob_wrapper flat_dt_blob;
->> -
->> -static int __init export_flat_device_tree(void)
->> -{
->> -     struct dentry *d;
->> -
->> -     flat_dt_blob.data = initial_boot_params;
->> -     flat_dt_blob.size = initial_boot_params->totalsize;
->
-> As I see even microblaze version was buggy.
+>  #ifndef CONFIG_NEED_MULTIPLE_NODES	/* Don't use mapnrs, do it properly */
+>  extern unsigned long max_mapnr;
+>  
+> diff --git a/mm/memory.c b/mm/memory.c
+> index b02c584..22a4a89 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -3358,10 +3358,8 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
+>  	update_mmu_cache(vma, address, pte);
+>  }
+>  
+> -#define FAULT_AROUND_ORDER 4
+> -
+>  #ifdef CONFIG_DEBUG_FS
+> -static unsigned int fault_around_order = FAULT_AROUND_ORDER;
+> +static unsigned int fault_around_order = CONFIG_FAULT_AROUND_ORDER;
+>  
+>  static int fault_around_order_get(void *data, u64 *val)
+>  {
+> @@ -3371,7 +3369,7 @@ static int fault_around_order_get(void *data, u64 *val)
+>  
+>  static int fault_around_order_set(void *data, u64 val)
+>  {
+> -	BUILD_BUG_ON((1UL << FAULT_AROUND_ORDER) > PTRS_PER_PTE);
+> +	BUILD_BUG_ON((1UL << CONFIG_FAULT_AROUND_ORDER) > PTRS_PER_PTE);
+>  	if (1UL << val > PTRS_PER_PTE)
+>  		return -EINVAL;
+>  	fault_around_order = val;
+> @@ -3406,14 +3404,14 @@ static inline unsigned long fault_around_pages(void)
+>  {
+>  	unsigned long nr_pages;
+>  
+> -	nr_pages = 1UL << FAULT_AROUND_ORDER;
+> +	nr_pages = 1UL << CONFIG_FAULT_AROUND_ORDER;
+>  	BUILD_BUG_ON(nr_pages > PTRS_PER_PTE);
+>  	return nr_pages;
+>  }
+>  
+>  static inline unsigned long fault_around_mask(void)
+>  {
+> -	return ~((1UL << (PAGE_SHIFT + FAULT_AROUND_ORDER)) - 1);
+> +	return ~((1UL << (PAGE_SHIFT + CONFIG_FAULT_AROUND_ORDER)) - 1);
+>  }
+>  #endif
+>  
+> @@ -3471,7 +3469,7 @@ static int do_read_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+>  	 * if page by the offset is not ready to be mapped (cold cache or
+>  	 * something).
+>  	 */
+> -	if (vma->vm_ops->map_pages) {
+> +	if ((vma->vm_ops->map_pages) && (fault_around_pages() > 1)) {
 
-How so?
+	if (vma->vm_ops->map_pages && fault_around_pages()) {
 
-> ...
->
->> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
->> index fa16a91..2085d47 100644
->> --- a/drivers/of/fdt.c
->> +++ b/drivers/of/fdt.c
->> @@ -20,6 +20,7 @@
->>  #include <linux/string.h>
->>  #include <linux/errno.h>
->>  #include <linux/slab.h>
->> +#include <linux/debugfs.h>
->>
->>  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
->>  #ifdef CONFIG_PPC
->> @@ -1084,4 +1085,27 @@ void __init unflatten_and_copy_device_tree(void)
->>       unflatten_device_tree();
->>  }
->>
->> +#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
->> +static struct debugfs_blob_wrapper flat_dt_blob;
->> +
->> +static int __init of_flat_dt_debugfs_export_fdt(void)
->> +{
->> +     struct dentry *d = debugfs_create_dir("device-tree", NULL);
->> +
->> +     if (!d)
->> +             return -ENOENT;
->> +
->> +     flat_dt_blob.data = initial_boot_params;
->> +     flat_dt_blob.size = fdt_totalsize(initial_boot_params);
->
-> Have you tried to compile this?
->
-> From my tests fdt_totalsize is not available for target just for host
-> from libfdt.h
->
-> drivers/of/fdt.c: In function 'of_flat_dt_debugfs_export_fdt':
-> drivers/of/fdt.c:957:2: error: implicit declaration of function 'fdt_totalsize' [-Werror=implicit-function-declaration]
+>  		pte = pte_offset_map_lock(mm, pmd, address, &ptl);
+>  		do_fault_around(vma, address, pte, pgoff, flags);
+>  		if (!pte_same(*pte, orig_pte))
+> -- 
+> 1.7.10.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Ah, it needs to be re-ordered after the libfdt conversion when
-libfdt.h gets added.
-
-Rob
+-- 
+ Kirill A. Shutemov
