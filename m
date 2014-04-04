@@ -1,37 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 17E2D1400DF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 11:43:09 +1100 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 4 Apr 2014 06:13:04 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1ED453940058
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 06:13:01 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s340gq8t66191562
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Apr 2014 06:12:53 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s340gw4L015793
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 4 Apr 2014 06:12:59 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, linux-mm@kvack.org
-Subject: Re: hugetlb: ensure hugepage access is denied if hugepages are not
- supported
-In-Reply-To: <20140403231413.GB17412@linux.vnet.ibm.com>
-References: <20140403231413.GB17412@linux.vnet.ibm.com>
-Date: Fri, 04 Apr 2014 06:12:56 +0530
-Message-ID: <87d2gxorfz.fsf@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id AF2191400AA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2014 14:28:01 +1100 (EST)
+From: <hongbo.zhang@freescale.com>
+To: <vkoul@infradead.org>, <dan.j.williams@intel.com>,
+ <dmaengine@vger.kernel.org>
+Subject: [PATCH v2 1/8] DMA: Freescale: remove the unnecessary FSL_DMA_LD_DEBUG
+Date: Fri, 4 Apr 2014 11:27:10 +0800
+Message-ID: <1396582037-23065-2-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
+References: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: paulus@samba.org, anton@samba.org, nyc@holomorphy.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: scottwood@freescale.com, Hongbo Zhang <hongbo.zhang@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,129 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Nishanth Aravamudan <nacc@linux.vnet.ibm.com> writes:
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
 
-> In KVM guests on Power, in a guest not backed by hugepages, we see the
-> following:
->
-> AnonHugePages:         0 kB
-> HugePages_Total:       0
-> HugePages_Free:        0
-> HugePages_Rsvd:        0
-> HugePages_Surp:        0
-> Hugepagesize:         64 kB
->
-> HPAGE_SHIFT == 0 in this configuration, which indicates that hugepages
-> are not supported at boot-time, but this is only checked in
-> hugetlb_init(). Extract the check to a helper function, and use it in a
-> few relevant places.
->
-> This does make hugetlbfs not supported (not registered at all) in this
-> environment. I believe this is fine, as there are no valid hugepages and
-> that won't change at runtime.
->
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Some codes are calling chan_dbg with FSL_DMA_LD_DEBUG surrounded, it is really
+unnecessary to use such a macro because chan_dbg is a wrapper of dev_dbg, we do
+have corresponding DEBUG macro to switch on/off dev_dbg, and most of the other
+codes are also calling chan_dbg directly without using FSL_DMA_LD_DEBUG.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+---
+ drivers/dma/fsldma.c |   10 ----------
+ 1 file changed, 10 deletions(-)
 
->
-> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-> index d19b30a..cc8fcc7 100644
-> --- a/fs/hugetlbfs/inode.c
-> +++ b/fs/hugetlbfs/inode.c
-> @@ -1017,6 +1017,11 @@ static int __init init_hugetlbfs_fs(void)
->  	int error;
->  	int i;
->
-> +	if (!hugepages_supported()) {
-> +		printk(KERN_ERR "hugetlbfs: Disabling because there are no supported hugepage sizes\n");
-> +		return -ENOTSUPP;
-> +	}
-> +
->  	error = bdi_init(&hugetlbfs_backing_dev_info);
->  	if (error)
->  		return error;
-> diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-> index 8c43cc4..0aea8de 100644
-> --- a/include/linux/hugetlb.h
-> +++ b/include/linux/hugetlb.h
-> @@ -450,4 +450,14 @@ static inline spinlock_t *huge_pte_lock(struct hstate *h,
->  	return ptl;
->  }
->
-> +static inline bool hugepages_supported(void)
-> +{
-> +	/*
-> +	 * Some platform decide whether they support huge pages at boot
-> +	 * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
-> +	 * there is no such support
-> +	 */
-> +	return HPAGE_SHIFT != 0;
-> +}
-> +
->  #endif /* _LINUX_HUGETLB_H */
-> diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-> index c01cb9f..1c99585 100644
-> --- a/mm/hugetlb.c
-> +++ b/mm/hugetlb.c
-> @@ -1949,11 +1949,7 @@ module_exit(hugetlb_exit);
->
->  static int __init hugetlb_init(void)
->  {
-> -	/* Some platform decide whether they support huge pages at boot
-> -	 * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
-> -	 * there is no such support
-> -	 */
-> -	if (HPAGE_SHIFT == 0)
-> +	if (!hugepages_supported())
->  		return 0;
->
->  	if (!size_to_hstate(default_hstate_size)) {
-> @@ -2069,6 +2065,9 @@ static int hugetlb_sysctl_handler_common(bool obey_mempolicy,
->  	unsigned long tmp;
->  	int ret;
->
-> +	if (!hugepages_supported())
-> +		return -ENOTSUPP;
-> +
->  	tmp = h->max_huge_pages;
->
->  	if (write && h->order >= MAX_ORDER)
-> @@ -2122,6 +2121,9 @@ int hugetlb_overcommit_handler(struct ctl_table *table, int write,
->  	unsigned long tmp;
->  	int ret;
->
-> +	if (!hugepages_supported())
-> +		return -ENOTSUPP;
-> +
->  	tmp = h->nr_overcommit_huge_pages;
->
->  	if (write && h->order >= MAX_ORDER)
-> @@ -2147,6 +2149,8 @@ out:
->  void hugetlb_report_meminfo(struct seq_file *m)
->  {
->  	struct hstate *h = &default_hstate;
-> +	if (!hugepages_supported())
-> +		return;
->  	seq_printf(m,
->  			"HugePages_Total:   %5lu\n"
->  			"HugePages_Free:    %5lu\n"
-> @@ -2163,6 +2167,8 @@ void hugetlb_report_meminfo(struct seq_file *m)
->  int hugetlb_report_node_meminfo(int nid, char *buf)
->  {
->  	struct hstate *h = &default_hstate;
-> +	if (!hugepages_supported())
-> +		return 0;
->  	return sprintf(buf,
->  		"Node %d HugePages_Total: %5u\n"
->  		"Node %d HugePages_Free:  %5u\n"
-> @@ -2177,6 +2183,9 @@ void hugetlb_show_meminfo(void)
->  	struct hstate *h;
->  	int nid;
->
-> +	if (!hugepages_supported())
-> +		return;
-> +
->  	for_each_node_state(nid, N_MEMORY)
->  		for_each_hstate(h)
->  			pr_info("Node %d hugepages_total=%u hugepages_free=%u hugepages_surp=%u hugepages_size=%lukB\n",
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index f157c6f..ec50420 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -426,9 +426,7 @@ static struct fsl_desc_sw *fsl_dma_alloc_descriptor(struct fsldma_chan *chan)
+ 	desc->async_tx.tx_submit = fsl_dma_tx_submit;
+ 	desc->async_tx.phys = pdesc;
+ 
+-#ifdef FSL_DMA_LD_DEBUG
+ 	chan_dbg(chan, "LD %p allocated\n", desc);
+-#endif
+ 
+ 	return desc;
+ }
+@@ -479,9 +477,7 @@ static void fsldma_free_desc_list(struct fsldma_chan *chan,
+ 
+ 	list_for_each_entry_safe(desc, _desc, list, node) {
+ 		list_del(&desc->node);
+-#ifdef FSL_DMA_LD_DEBUG
+ 		chan_dbg(chan, "LD %p free\n", desc);
+-#endif
+ 		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+ 	}
+ }
+@@ -493,9 +489,7 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
+ 
+ 	list_for_each_entry_safe_reverse(desc, _desc, list, node) {
+ 		list_del(&desc->node);
+-#ifdef FSL_DMA_LD_DEBUG
+ 		chan_dbg(chan, "LD %p free\n", desc);
+-#endif
+ 		dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+ 	}
+ }
+@@ -832,9 +826,7 @@ static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
+ 
+ 	/* Run the link descriptor callback function */
+ 	if (txd->callback) {
+-#ifdef FSL_DMA_LD_DEBUG
+ 		chan_dbg(chan, "LD %p callback\n", desc);
+-#endif
+ 		txd->callback(txd->callback_param);
+ 	}
+ 
+@@ -842,9 +834,7 @@ static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
+ 	dma_run_dependencies(txd);
+ 
+ 	dma_descriptor_unmap(txd);
+-#ifdef FSL_DMA_LD_DEBUG
+ 	chan_dbg(chan, "LD %p free\n", desc);
+-#endif
+ 	dma_pool_free(chan->desc_pool, desc, txd->phys);
+ }
+ 
+-- 
+1.7.9.5
