@@ -1,24 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by ozlabs.org (Postfix) with ESMTP id E776B1400F6
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Apr 2014 04:49:24 +1100 (EST)
-Date: Fri, 04 Apr 2014 13:50:56 -0400 (EDT)
-Message-Id: <20140404.135056.2103520199689146670.davem@davemloft.net>
-To: dave.hansen@intel.com
-Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <533EDB63.8090909@intel.com>
-References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
- <533EDB63.8090909@intel.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-arch@vger.kernel.org, rusty@rustcorp.com.au, maddy@linux.vnet.ibm.com,
- riel@redhat.com, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, peterz@infradead.org, ak@linux.intel.com, paulus@samba.org,
- mgorman@suse.de, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org, kirill.shutemov@linux.intel.com
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E03EE1400BE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Apr 2014 10:00:50 +1100 (EST)
+Message-ID: <1396652430.32034.122.camel@snotra.buserror.net>
+Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
+From: Scott Wood <scottwood@freescale.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Fri, 4 Apr 2014 18:00:30 -0500
+In-Reply-To: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: chenhui.zhao@freescale.com, linux-pm@vger.kernel.org,
+ daniel.lezcano@linaro.org, rjw@sisk.pl, jason.jin@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Hansen <dave.hansen@intel.com>
-Date: Fri, 04 Apr 2014 09:18:43 -0700
+On Tue, 2014-04-01 at 16:33 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> Add cpuidle support for e500 family, using cpuidle framework to
+> manage various low power modes. The new implementation will remain
+> compatible with original idle method.
+> 
+> I have done test about power consumption and latency. Cpuidle framework
+> will make CPU response time faster than original method, but power
+> consumption is higher than original method.
+> 
+> Power consumption:
+> The original method, power consumption is 10.51202 (W).
+> The cpuidle framework, power consumption is 10.5311 (W).
+> 
+> Latency:
+> The original method, avg latency is 6782 (us).
+> The cpuidle framework, avg latency is 6482 (us).
+> 
+> Initially, this supports PW10, PW20 and subsequent patches will support
+> DOZE/NAP and PH10, PH20.
 
-> On 04/03/2014 11:27 PM, Madhavan Srinivasan wrote:
->> This patch creates infrastructure to move the FAULT_AROUND_ORDER
->> to arch/ using Kconfig. This will enable architecture maintainers
->> to decide on suitable FAULT_AROUND_ORDER value based on
->> performance data for that architecture. Patch also adds
->> FAULT_AROUND_ORDER Kconfig element in arch/X86.
-> 
-> Please don't do it this way.
-> 
-> In mm/Kconfig, put
-> 
-> 	config FAULT_AROUND_ORDER
-> 		int
-> 		default 1234 if POWERPC
-> 		default 4
-> 
-> The way you have it now, every single architecture that needs to enable
-> this has to go put that in their Kconfig.  That's madness.  This way,
-> you only put it in one place, and folks only have to care if they want
-> to change the default to be something other than 4.
+Have you tried tuning the timebase bit for the original method, to match
+what you're doing in cpuidle and/or for general optimization?
 
-It looks more like it's necessary only to change the default, not
-to enable it.  Unless I read his patch wrong...
+Do you get similar results for a variety of workloads?
+
+> +static struct cpuidle_state pw_idle_states[] = {
+> +	{
+> +		.name = "pw10",
+> +		.desc = "pw10",
+> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+> +		.exit_latency = 0,
+> +		.target_residency = 0,
+> +		.enter = &pw10_enter
+> +	},
+> +
+> +	{
+> +		.name = "pw20",
+> +		.desc = "pw20-core-idle",
+> +		.flags = CPUIDLE_FLAG_TIME_VALID,
+> +		.exit_latency = 1,
+> +		.target_residency = 50,
+> +		.enter = &pw20_enter
+> +	},
+> +};
+
+Where did exit_latency and target_residency come from?  It looks rather
+different from the ~1ms delay before entering PW20 with the original
+method.
+
+Though, I'd have expected a shorter PW20 delay to have longer wake
+latency, due to entering the lower power state more often...
+
+> +static void replace_orig_idle(void *dummy)
+> +{
+> +	return;
+> +}
+
+Why?  If you're using this as some sort of barrier to ensure that all
+CPUs have done something before continuing, explain that, along with why
+it matters.
+
+-Scott
