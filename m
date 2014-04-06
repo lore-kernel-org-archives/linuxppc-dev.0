@@ -2,22 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C3C39140093
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 09:48:55 +1000 (EST)
-Message-ID: <1396828110.3671.21.camel@pasglop>
-Subject: Re: [PATCH 1/2] fixup: "powerpc/perf: Add support for the hv 24x7
- interface"
+ by ozlabs.org (Postfix) with ESMTPS id 3E644140103
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 09:49:48 +1000 (EST)
+Message-ID: <1396828173.3671.22.camel@pasglop>
+Subject: Re: [PATCH] powerpc/mm: numa pte should be handled via slow path in
+ get_user_pages_fast
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>
-Date: Mon, 07 Apr 2014 09:48:30 +1000
-In-Reply-To: <1396476654-20623-2-git-send-email-cody@linux.vnet.ibm.com>
-References: <1396476654-20623-1-git-send-email-cody@linux.vnet.ibm.com>
- <1396476654-20623-2-git-send-email-cody@linux.vnet.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Mon, 07 Apr 2014 09:49:33 +1000
+In-Reply-To: <1396454859-5274-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1396454859-5274-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: cody+local@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
- Michael Ellerman <michael@ellerman.id.au>, David.Laight@aculab.com,
- Anton Blanchard <anton@samba.org>, Linux PPC <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-04-02 at 15:10 -0700, Cody P Schafer wrote:
-> Make the "not enabled" message less awful.
+On Wed, 2014-04-02 at 21:37 +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/hv-24x7.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index 297c9105..3246ea2 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -491,7 +491,7 @@ static int hv_24x7_init(void)
->  
->  	hret = hv_perf_caps_get(&caps);
->  	if (hret) {
-> -		pr_info("could not obtain capabilities, error 0x%80lx, not enabling\n",
-> +		pr_info("could not obtain capabilities, not enabling (%ld)\n",
->  				hret);
+> We need to handle numa pte via the slow path
 
-That's not much less awful... The message gives 0 informations about
-where it comes from .. what is it that couldn't obtain capabilities ?
-
-Also, sentences start with a Capital.
+Is this -stable material ? If yes how far back ?
 
 Cheers,
 Ben.
- 
+
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/gup.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
+> index c5f734e20b0f..d8746684f606 100644
+> --- a/arch/powerpc/mm/gup.c
+> +++ b/arch/powerpc/mm/gup.c
+> @@ -36,6 +36,11 @@ static noinline int gup_pte_range(pmd_t pmd, unsigned long addr,
+>  	do {
+>  		pte_t pte = ACCESS_ONCE(*ptep);
+>  		struct page *page;
+> +		/*
+> +		 * Similar to the PMD case, NUMA hinting must take slow path
+> +		 */
+> +		if (pte_numa(pte))
+> +			return 0;
+>  
+>  		if ((pte_val(pte) & mask) != result)
+>  			return 0;
+> @@ -75,6 +80,14 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+>  		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
+>  			return 0;
+>  		if (pmd_huge(pmd) || pmd_large(pmd)) {
+> +			/*
+> +			 * NUMA hinting faults need to be handled in the GUP
+> +			 * slowpath for accounting purposes and so that they
+> +			 * can be serialised against THP migration.
+> +			 */
+> +			if (pmd_numa(pmd))
+> +				return 0;
+> +
+>  			if (!gup_hugepte((pte_t *)pmdp, PMD_SIZE, addr, next,
+>  					 write, pages, nr))
+>  				return 0;
