@@ -1,22 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+Return-Path: <prabhakar@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E03EE1400BE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Apr 2014 10:00:50 +1100 (EST)
-Message-ID: <1396652430.32034.122.camel@snotra.buserror.net>
-Subject: Re: [PATCH] cpuidle: add freescale e500 family porcessors idle support
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Fri, 4 Apr 2014 18:00:30 -0500
-In-Reply-To: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1396341234-40515-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id E5CCE1400E1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Apr 2014 23:18:44 +1000 (EST)
+Received: from mail56-am1 (localhost [127.0.0.1])	by mail56-am1-R.bigfish.com
+ (Postfix) with ESMTP id 55A46A01C3	for
+ <linuxppc-dev@lists.ozlabs.org>; Sun, 6 Apr 2014 13:18:27 +0000 (UTC)
+Message-ID: <53415417.3010802@freescale.com>
+Date: Sun, 6 Apr 2014 18:48:15 +0530
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
 MIME-Version: 1.0
-Cc: chenhui.zhao@freescale.com, linux-pm@vger.kernel.org,
- daniel.lezcano@linaro.org, rjw@sisk.pl, jason.jin@freescale.com,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [1/2, v9] powerpc/mpc85xx:Add initial device tree support of T104x
+References: <1390650059-19437-1-git-send-email-prabhakar@freescale.com>
+ <20140319223334.GA28875@home.buserror.net>
+In-Reply-To: <20140319223334.GA28875@home.buserror.net>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Varun Sethi <Varun.Sethi@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +30,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-04-01 at 16:33 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> Add cpuidle support for e500 family, using cpuidle framework to
-> manage various low power modes. The new implementation will remain
-> compatible with original idle method.
-> 
-> I have done test about power consumption and latency. Cpuidle framework
-> will make CPU response time faster than original method, but power
-> consumption is higher than original method.
-> 
-> Power consumption:
-> The original method, power consumption is 10.51202 (W).
-> The cpuidle framework, power consumption is 10.5311 (W).
-> 
-> Latency:
-> The original method, avg latency is 6782 (us).
-> The cpuidle framework, avg latency is 6482 (us).
-> 
-> Initially, this supports PW10, PW20 and subsequent patches will support
-> DOZE/NAP and PH10, PH20.
 
-Have you tried tuning the timebase bit for the original method, to match
-what you're doing in cpuidle and/or for general optimization?
+On 3/20/2014 4:03 AM, Scott Wood wrote:
+> On Sat, Jan 25, 2014 at 05:10:59PM +0530, Prabhakar Kushwaha wrote:
+>> +	corenet-cf@18000 {
+>> +		compatible = "fsl,corenet-cf";
+>> +		reg = <0x18000 0x1000>;
+>> +		interrupts = <16 2 1 31>;
+>> +		fsl,ccf-num-csdids = <32>;
+>> +		fsl,ccf-num-snoopids = <32>;
+>> +	};
+> I know this isn't a new problem, but this needs a binding -- and a
+> different compatible from p4080-era CCF.  AFAICT it's a completely
+> different programming model, and even the block version registers weren't
+> present in the original version.
 
-Do you get similar results for a variety of workloads?
+No binding present for corenet-cf looks like new binding needs to be 
+sent with possible compatabile.
 
-> +static struct cpuidle_state pw_idle_states[] = {
-> +	{
-> +		.name = "pw10",
-> +		.desc = "pw10",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 0,
-> +		.target_residency = 0,
-> +		.enter = &pw10_enter
-> +	},
-> +
-> +	{
-> +		.name = "pw20",
-> +		.desc = "pw20-core-idle",
-> +		.flags = CPUIDLE_FLAG_TIME_VALID,
-> +		.exit_latency = 1,
-> +		.target_residency = 50,
-> +		.enter = &pw20_enter
-> +	},
-> +};
 
-Where did exit_latency and target_residency come from?  It looks rather
-different from the ~1ms delay before entering PW20 with the original
-method.
+>> +/include/ "qoriq-mpic.dtsi"
+>> +
+>> +	guts: global-utilities@e0000 {
+>> +		compatible = "fsl,t1040-device-config", "fsl,qoriq-device-config-2.0";
+>> +		reg = <0xe0000 0xe00>;
+>> +		fsl,has-rstcr;
+>> +		fsl,liodn-bits = <12>;
+>> +	};
+>> +
+>> +	clockgen: global-utilities@e1000 {
+>> +		compatible = "fsl,t1040-clockgen", "fsl,qoriq-clockgen-2.0",
+>> +				   "fixed-clock";
+>> +		ranges = <0x0 0xe1000 0x1000>;
+>> +		clock-frequency = <100000000>;
+> Why is clock-frequency hardcoded here rather than supplied by U-Boot?
+> Especially since this is an SoC file, not a board file.
 
-Though, I'd have expected a shorter PW20 delay to have longer wake
-latency, due to entering the lower power state more often...
+Your are correct.
+Means, clock-frequency should be added to clockgen in board device tree ??
 
-> +static void replace_orig_idle(void *dummy)
-> +{
-> +	return;
-> +}
 
-Why?  If you're using this as some sort of barrier to ensure that all
-CPUs have done something before continuing, explain that, along with why
-it matters.
+>> +		reg = <0xe1000 0x1000>;
+>> +		clock-output-names = "sysclk";
+>> +		#address-cells = <1>;
+>> +		#size-cells = <1>;
+> clock-output-names and fixed-clock doesn't belong on this node.
 
--Scott
+Yes, clock-output-names and fixed-clock should be present in sysclk node.
+
+
+>
+>> +
+>> +		sysclk: sysclk {
+>> +			#clock-cells = <0>;
+>> +			compatible = "fsl,qoriq-sysclk-2.0";
+>> +			clock-output-names = "sysclk";
+>> +		};
+>> +
+>> +
+>> +		pll0: pll0@800 {
+>> +			#clock-cells = <1>;
+>> +			reg = <0x800 4>;
+>> +			compatible = "fsl,qoriq-core-pll-2.0";
+>> +			clocks = <&clockgen>;
+>> +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+>> +		};
+>> +
+>> +		pll1: pll1@820 {
+>> +			#clock-cells = <1>;
+>> +			reg = <0x820 4>;
+>> +			compatible = "fsl,qoriq-core-pll-2.0";
+>> +			clocks = <&clockgen>;
+>> +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+>> +		};
+> clocks should point to sysclk.
+
+got it!!
+
+>
+>> +	display@180000 {
+>> +		compatible = "fsl,t1040-diu", "fsl,diu";
+>> +		reg = <0x180000 1000>;
+>> +		interrupts = <74 2 0 0>;
+>> +	};
+>> +
+>> +/include/ "qoriq-sata2-0.dtsi"
+>> +sata@220000 {
+>> +			fsl,iommu-parent = <&pamu0>;
+>> +			fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
+>> +};
+>> +/include/ "qoriq-sata2-1.dtsi"
+>> +sata@221000 {
+>> +			fsl,iommu-parent = <&pamu0>;
+>> +			fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
+>> +};
+>> +/include/ "qoriq-sec5.0-0.dtsi"
+>> +};
+> Whitespace
+>
+>
+i did not find this whitespace :(
+
+
+Regards,
+Prabhakar
