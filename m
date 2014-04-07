@@ -1,28 +1,23 @@
-Return-Path: <nhorman@tuxdriver.com>
-Received: from smtp.tuxdriver.com
- (tuxdriver-1-pt.tunnel.tserv13.ash1.ipv6.he.net [IPv6:2001:470:7:9c9::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 70F671400E3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 01:37:09 +1000 (EST)
-Date: Mon, 7 Apr 2014 11:36:47 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: cscope: issue with symlinks in
- tools/testing/selftests/powerpc/copyloops/
-Message-ID: <20140407153647.GA17258@hmsreliant.think-freely.org>
-References: <1396530975.4361.28.camel@localhost.localdomain>
- <20140407104216.GB5287@hmsreliant.think-freely.org>
- <20140407124259.GZ11339@book.gsilab.sittig.org>
+ by ozlabs.org (Postfix) with ESMTPS id 5C2331400BE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 04:22:25 +1000 (EST)
+Message-ID: <1396894931.32034.168.camel@snotra.buserror.net>
+Subject: Re: [1/2,v9] powerpc/mpc85xx:Add initial device tree support of T104x
+From: Scott Wood <scottwood@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Date: Mon, 7 Apr 2014 13:22:11 -0500
+In-Reply-To: <53415417.3010802@freescale.com>
+References: <1390650059-19437-1-git-send-email-prabhakar@freescale.com>
+ <20140319223334.GA28875@home.buserror.net> <53415417.3010802@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140407124259.GZ11339@book.gsilab.sittig.org>
-Cc: Yann Droneaud <ydroneaud@opteya.com>, linux-kernel@vger.kernel.org,
- Neil Horman <nhorman@users.sourceforge.net>,
- cscope-devel@lists.sourceforge.net, Anton Blanchard <anton@samba.org>,
- Hans-Bernhard Broeker <broeker@physik.rwth-aachen.de>,
- linuxppc-dev@lists.ozlabs.org,
- Hans-Bernhard =?iso-8859-1?Q?Br=F6ker?= <broeker@users.sourceforge.net>
+Cc: Varun Sethi <Varun.Sethi@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,56 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 07, 2014 at 02:42:59PM +0200, Gerhard Sittig wrote:
-> On Mon, 2014-04-07 at 06:42 -0400, Neil Horman wrote:
-> > 
-> > On Thu, Apr 03, 2014 at 03:16:15PM +0200, Yann Droneaud wrote:
-> > > 
-> > > [ ... ]
-> > > 
-> > > cscope reports error when generating the cross-reference database:
-> > > 
-> > >     $ make ALLSOURCE_ARCHS=all O=./obj-cscope/ cscope
-> > >       GEN     cscope
-> > >     cscope: cannot find
-> > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
-> > >     cscope: cannot find
-> > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
-> > >     cscope: cannot find
-> > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
-> > >     cscope: cannot find
-> > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
-> > > 
-> > > And when calling cscope from ./obj-cscope/ directory, it reports errors
-> > > too.
-> > > 
-> > > Hopefully it doesn't stop it from working, so I'm still able to use
-> > > cscope to browse kernel sources.
-> > > 
-> > No, it won't stop it from working, it just won't search those files.  I don't
-> > recall exactly the reason, but IIRC there was a big discussion long ago about
-> > symlinks and our ability to support them (around version 1.94 I think).  We
-> > decided to not handle symlinks, as they would either point outside our search
-> > tree, which we didn't want to include, or would point to another file in the
-> > search tree, which made loading them pointless (as we would cover the search in
-> > the pointed file).
-> 
-> So there are valid reasons to not process those filesystem
-> entries.  Would it be useful to not emit the warnings then?  Or
-> to silent those warnings when the user knows it's perfectly legal
-> to skip those filesytem entries?  Like what you can do with the
-> ctags(1) command and its --links option.
-> 
-I would see no problem with an option to do that.  I'd like to make it opt-in,
-so that people who want to know about symlink issues will still see them, but
-I'd be supportive of an option to quiet them
-Neil
+On Sun, 2014-04-06 at 18:48 +0530, Prabhakar Kushwaha wrote:
+> On 3/20/2014 4:03 AM, Scott Wood wrote:
+> > On Sat, Jan 25, 2014 at 05:10:59PM +0530, Prabhakar Kushwaha wrote:
+> >> +	display@180000 {
+> >> +		compatible = "fsl,t1040-diu", "fsl,diu";
+> >> +		reg = <0x180000 1000>;
+> >> +		interrupts = <74 2 0 0>;
+> >> +	};
+> >> +
+> >> +/include/ "qoriq-sata2-0.dtsi"
+> >> +sata@220000 {
+> >> +			fsl,iommu-parent = <&pamu0>;
+> >> +			fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
+> >> +};
+> >> +/include/ "qoriq-sata2-1.dtsi"
+> >> +sata@221000 {
+> >> +			fsl,iommu-parent = <&pamu0>;
+> >> +			fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
+> >> +};
+> >> +/include/ "qoriq-sec5.0-0.dtsi"
+> >> +};
+> > Whitespace
+> >
+> >
+> i did not find this whitespace :(
 
-> 
-> virtually yours
-> Gerhard Sittig
-> -- 
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-> Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-> 
+Add a tab to the sata nodes' name and braces, and remove a tab from the
+sata nodes' content.
+
+-Scott
