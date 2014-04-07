@@ -1,17 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1396908466.3671.56.camel@pasglop>
-Subject: Re: [PATCH] powerpc/opal: Add missing include
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 08 Apr 2014 08:07:46 +1000
-In-Reply-To: <CAMuHMdV7BuSMu5gyhBcxY_8v+u3KnVStDgvC-JSN=hX3VZw3+g@mail.gmail.com>
-References: <13762.1395708188@ale.ozlabs.ibm.com>
- <CAMuHMdV7BuSMu5gyhBcxY_8v+u3KnVStDgvC-JSN=hX3VZw3+g@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Michael Neuling <mikey@neuling.org>, Linux-Next <linux-next@vger.kernel.org>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D95DE1400B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 09:21:48 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 8 Apr 2014 04:51:45 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 855D6394003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 04:51:43 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s37NLc1H5898682
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Apr 2014 04:51:39 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s37NLgJ9029929
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Apr 2014 04:51:42 +0530
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>, benh@kernel.crashing.org
+Subject: Re: [PATCH v2] powerpc/le: enable RTAS events support
+In-Reply-To: <20140404072750.20016.18969.stgit@bahia.local>
+References: <0140402175658.1b4a8c4d@bahia.local>
+ <20140404072750.20016.18969.stgit@bahia.local>
+Date: Tue, 08 Apr 2014 09:21:41 +1000
+Message-ID: <8738hoenei.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, anton@samba.org,
+ nfont@linux.vnet.ibm.com, geert@linux-m68k.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,46 +41,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-04-07 at 23:03 +0200, Geert Uytterhoeven wrote:
-> On Tue, Mar 25, 2014 at 1:43 AM, Michael Neuling <mikey@neuling.org> wrote:
-> > next-20140324 currently fails compiling celleb_defconfig with:
-> >
-> > arch/powerpc/include/asm/opal.h:894:42: error: 'struct notifier_block' declared inside parameter list [-Werror]
-> > arch/powerpc/include/asm/opal.h:894:42: error: its scope is only this definition or declaration, which is probably not what you want [-Werror]
-> > arch/powerpc/include/asm/opal.h:896:14: error: 'struct notifier_block' declared inside parameter list [-Werror]
-> >
-> > This is due to a missing include which is added here.
-> 
-> This build issue has now been in mainline since a few days.
+Greg Kurz <gkurz@linux.vnet.ibm.com> writes:
+> The current kernel code assumes big endian and parses RTAS events all
+> wrong. The most visible effect is that we cannot honor EPOW events,
+> meaning, for example, we cannot shut down a guest properly from the
+> hypervisor.
+>
+> This new patch is largely inspired by Nathan's work: we get rid of all
+> the bit fields in the RTAS event structures (even the unused ones, for
+> consistency). We also introduce endian safe accessors for the fields used
+> by the kernel (trivial rtas_error_type() accessor added for consistency).
+>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
 
-It's in my tree, I will send the patch upstream in the next couple of
-days (having a medical procedure today).
-
-Ben.
-
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> >
-> > diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> > index fe2aa0b..f57fb58 100644
-> > --- a/arch/powerpc/include/asm/opal.h
-> > +++ b/arch/powerpc/include/asm/opal.h
-> > @@ -177,6 +177,8 @@ extern int opal_enter_rtas(struct rtas_args *args,
-> >
-> >  #ifndef __ASSEMBLY__
-> >
-> > +#include <linux/notifier.h>
-> > +
-> >  /* Other enums */
-> >  enum OpalVendorApiTokens {
-> >         OPAL_START_VENDOR_API_RANGE = 1000, OPAL_END_VENDOR_API_RANGE = 1999
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
