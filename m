@@ -1,40 +1,25 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <nhorman@tuxdriver.com>
+Received: from smtp.tuxdriver.com
+ (tuxdriver-1-pt.tunnel.tserv13.ash1.ipv6.he.net [IPv6:2001:470:7:9c9::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 86FAA1400AC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 20:16:12 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Mon, 7 Apr 2014 20:16:05 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 07F4D2CE803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 20:16:02 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s379tJ7n57671894
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Apr 2014 19:55:19 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s37AG0Eb028650
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Apr 2014 20:16:01 +1000
-Message-ID: <53427AC1.9010801@linux.vnet.ibm.com>
-Date: Mon, 07 Apr 2014 15:45:29 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id D88351400EB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 21:27:29 +1000 (EST)
+Date: Mon, 7 Apr 2014 06:42:16 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Yann Droneaud <ydroneaud@opteya.com>
+Subject: Re: cscope: issue with symlinks in
+ tools/testing/selftests/powerpc/copyloops/
+Message-ID: <20140407104216.GB5287@hmsreliant.think-freely.org>
+References: <1396530975.4361.28.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Michael wang <wangyun@linux.vnet.ibm.com>
-Subject: Re: [PATCH] power,
- sched: stop updating inside arch_update_cpu_topology()
- when nothing to be update
-References: <533B8431.8090507@linux.vnet.ibm.com>
-In-Reply-To: <533B8431.8090507@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, LKML <linux-kernel@vger.kernel.org>, paulus@samba.org,
- alistair@popple.id.au, nfont@linux.vnet.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, rcj@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1396530975.4361.28.camel@localhost.localdomain>
+Cc: Hans-Bernhard =?iso-8859-1?Q?Br=F6ker?= <broeker@users.sourceforge.net>,
+ linux-kernel@vger.kernel.org, Neil Horman <nhorman@users.sourceforge.net>,
+ cscope-devel@lists.sourceforge.net, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org,
+ Hans-Bernhard Broeker <broeker@physik.rwth-aachen.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,130 +29,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-On 04/02/2014 08:59 AM, Michael wang wrote:
-> During the testing, we encounter below WARN followed by Oops:
+On Thu, Apr 03, 2014 at 03:16:15PM +0200, Yann Droneaud wrote:
+> Hi,
 > 
-> 	WARNING: at kernel/sched/core.c:6218
-> 	...
-> 	NIP [c000000000101660] .build_sched_domains+0x11d0/0x1200
-> 	LR [c000000000101358] .build_sched_domains+0xec8/0x1200
-> 	PACATMSCRATCH [800000000000f032]
-> 	Call Trace:
-> 	[c00000001b103850] [c000000000101358] .build_sched_domains+0xec8/0x1200
-> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
-> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
-> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
-> 	...
-> 	Oops: Kernel access of bad area, sig: 11 [#1]
-> 	...
-> 	NIP [c00000000045c000] .__bitmap_weight+0x60/0xf0
-> 	LR [c00000000010132c] .build_sched_domains+0xe9c/0x1200
-> 	PACATMSCRATCH [8000000000029032]
-> 	Call Trace:
-> 	[c00000001b1037a0] [c000000000288ff4] .kmem_cache_alloc_node_trace+0x184/0x3a0
-> 	[c00000001b103850] [c00000000010132c] .build_sched_domains+0xe9c/0x1200
-> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
-> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
-> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
-> 	...
+> I'm using cscope to browse kernel sources, but I'm facing warnings from
+> the tool since following commit:
 > 
-> This was caused by that 'sd->groups == NULL' after building groups, which
-> was caused by the empty 'sd->span'.
+> http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=22d651dcef536c75f75537290bf3da5038e68b6b
 > 
-> The cpu's domain contain nothing because the cpu was assigned to wrong
-> node inside arch_update_cpu_topology() by calling update_lookup_table()
-> with the uninitialized param, in the case when there is nothing to be
-> update.
+>     commit 22d651dcef536c75f75537290bf3da5038e68b6b
+>     Author: Michael Ellerman <mpe@ellerman.id.au>
+>     Date:   Tue Jan 21 15:22:17 2014 +1100
 > 
-
-Can you reword the above paragraph to something like this:
-
-The cpu's domain contained nothing because the cpu was assigned to a wrong
-node, due to the following unfortunate sequence of events:
-
-1. The hypervisor sent a topology update to the guest OS, to notify changes
-   to the cpu-node mapping. However, the update was actually redundant - i.e.,
-   the "new" mapping was exactly the same as the old one.
-
-2. Due to this, the 'updated_cpus' mask turned out to be empty after exiting
-   the 'for-loop' in arch_update_cpu_topology().
-
-3. So we ended up calling stop-machine() with an empty cpumask list, which made
-   stop-machine internally elect cpumask_first(cpu_online_mask), i.e., CPU0 as
-   the cpu to run the payload (the update_cpu_topology() function).
-
-4. This causes update_cpu_topology() to be run by CPU0. And since 'updates'
-   is kzalloc()'ed inside arch_update_cpu_topology(), update_cpu_topology()
-   finds update->cpu as well as update->new_nid to be 0. In other words, we
-   end up assigning CPU0 (and eventually its siblings) to node 0, incorrectly.
-
-This causes the sched-domain rebuild code to break and crash the system.
-
-
-> Thus we should stop the updating in such cases, this patch will achieve
-> this and fix the issue.
+>     selftests/powerpc: Import Anton's memcpy / copy_tofrom_user tests
+>     
+>     Turn Anton's memcpy / copy_tofrom_user test into something that can
+>     live in tools/testing/selftests.
+>     
+>     It requires one turd in arch/powerpc/lib/memcpy_64.S, but it's 
+>     pretty harmless IMHO.
+>     
+>     We are sailing very close to the wind with the feature macros. We 
+>     define them to nothing, which currently means we get a few extra 
+>     nops and include the unaligned calls.
+>     
+>     Signed-off-by: Anton Blanchard <anton@samba.org>
+>     Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-
-We can reword this part as:
-
-Fix this by skipping the topology update in cases where we find that
-the topology has not actually changed in reality (ie., spurious updates).
-
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> CC: Stephen Rothwell <sfr@canb.auug.org.au>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Robert Jennings <rcj@linux.vnet.ibm.com>
-> CC: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-> CC: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-> CC: Alistair Popple <alistair@popple.id.au>
-> Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
 > 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 30a42e2..6757690 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1591,6 +1591,14 @@ int arch_update_cpu_topology(void)
->  		cpu = cpu_last_thread_sibling(cpu);
->  	}
->  
-> +	/*
-> +	 * The 'cpu_associativity_changes_mask' could be cleared if
-> +	 * all the cpus it indicates won't change their node, in
-> +	 * which case the 'updated_cpus' will be empty.
-> +	 */
+> cscope reports error when generating the cross-reference database:
+> 
+>     $ make ALLSOURCE_ARCHS=all O=./obj-cscope/ cscope
+>       GEN     cscope
+>     cscope: cannot find
+> file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+>     cscope: cannot find
+> file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+>     cscope: cannot find
+> file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+>     cscope: cannot find
+> file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+> 
+> And when calling cscope from ./obj-cscope/ directory, it reports errors
+> too.
+> 
+> Hopefully it doesn't stop it from working, so I'm still able to use
+> cscope to browse kernel sources.
+> 
+No, it won't stop it from working, it just won't search those files.  I don't
+recall exactly the reason, but IIRC there was a big discussion long ago about
+symlinks and our ability to support them (around version 1.94 I think).  We
+decided to not handle symlinks, as they would either point outside our search
+tree, which we didn't want to include, or would point to another file in the
+search tree, which made loading them pointless (as we would cover the search in
+the pointed file).
 
-How about rewording the comment like this:
+Neil
 
-In cases where we have nothing to update (because the updates list
-is too short or because the new topology is same as the old one),
-skip invoking update_cpu_topology() via stop-machine(). This is
-necessary (and not just a fast-path optimization) because stop-machine
-can end up electing a random CPU to run update_cpu_topology(), and
-thus trick us into setting up incorrect cpu-node mappings (since
-'updates' is kzalloc()'ed).
-
-Regards,
-Srivatsa S. Bhat
-
-> +	if (!cpumask_weight(&updated_cpus))
-> +		goto out;
-> +
->  	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
->  
->  	/*
-> @@ -1612,6 +1620,7 @@ int arch_update_cpu_topology(void)
->  		changed = 1;
->  	}
->  
-> +out:
->  	kfree(updates);
->  	return changed;
->  }
+> It's a rather uncommon side effect of having (for the first time ?)
+> sources files as symlinks: looking for symlinks in the kernel sources
+> returns only:
+> 
+>     $ find . -type l
+>     ./arch/mips/boot/dts/include/dt-bindings
+>     ./arch/microblaze/boot/dts/system.dts
+>     ./arch/powerpc/boot/dts/include/dt-bindings
+>     ./arch/metag/boot/dts/include/dt-bindings
+>     ./arch/arm/boot/dts/include/dt-bindings
+>     ./tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
+>     ./tools/testing/selftests/powerpc/copyloops/memcpy_64.S
+>     ./tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
+>     ./tools/testing/selftests/powerpc/copyloops/copyuser_64.S
+>     ./obj-cscope/source
+>     ./Documentation/DocBook/vidioc-g-sliced-vbi-cap.xml
+>     ./Documentation/DocBook/vidioc-decoder-cmd.xml
+> ...
+>     ./Documentation/DocBook/media-func-ioctl.xml
+>     ./Documentation/DocBook/vidioc-enumoutput.xml
+> 
+> 
+> So one can wonder if having symlinked sources files is an expected
+> supported feature for kbuild and all the various kernel
+> tools/infrastructure ?
+> 
+> Regarding cscope specifically, it does not support symlink, and it's the
+> expected behavior according to the bug reports I was able to find:
+> 
+> #214 cscope ignores symlinks to files 
+> http://sourceforge.net/p/cscope/bugs/214/
+> 
+> #229 -I options doesn't handle symbolic link
+> http://sourceforge.net/p/cscope/bugs/229/
+> 
+> #247 cscope: cannot find file 
+> http://sourceforge.net/p/cscope/bugs/247/
+> 
+> #252 cscope: cannot find file *** 
+> http://sourceforge.net/p/cscope/bugs/252/
+> 
+> #261 Regression - version 15.7a does not follow symbolic links 
+> http://sourceforge.net/p/cscope/bugs/261/
+> 
+> 
+> Regards.
+> 
+> -- 
+> Yann Droneaud
+> OPTEYA
+> 
+> 
 > 
