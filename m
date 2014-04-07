@@ -1,34 +1,14 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-ee0-f53.google.com (mail-ee0-f53.google.com [74.125.83.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 738921400EA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 17:05:01 +1000 (EST)
-Received: by mail-ee0-f53.google.com with SMTP id b57so253185eek.26
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Apr 2014 00:04:56 -0700 (PDT)
-Message-ID: <53424E14.9080100@monstr.eu>
-Date: Mon, 07 Apr 2014 09:04:52 +0200
-From: Michal Simek <monstr@monstr.eu>
-MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 09/20] of/fdt: create common debugfs
-References: <1396563423-30893-1-git-send-email-robherring2@gmail.com>
- <1396563423-30893-10-git-send-email-robherring2@gmail.com>
- <533EA2B0.7080703@monstr.eu>
- <CAL_JsqKFK8YDoODYKg5b8SmDzqdNSS6UvYr3_atzhcL2uR-=rA@mail.gmail.com>
- <533EB207.1020203@monstr.eu>
- <CAL_Jsq+tf4wgjB7uTNipWEj5d6tPkd6QwO_xiW87P51Y_y48vw@mail.gmail.com>
- <533EBD7D.6090403@monstr.eu>
- <CAL_JsqJ28ajOD7UNG6nH07ACjOji_=WrL-K8rAqsRpYL-X1K6Q@mail.gmail.com>
-In-Reply-To: <CAL_JsqJ28ajOD7UNG6nH07ACjOji_=WrL-K8rAqsRpYL-X1K6Q@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="vRumugr6CW3eJWLUvk80gIGwsOUbLtQPp"
-Cc: Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Reply-To: monstr@monstr.eu
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by ozlabs.org (Postfix) with ESMTP id 5143A140084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 17:31:51 +1000 (EST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
+Subject: [PATCH v2] powerpc 32: Provides VIRT_CPU_ACCOUNTING
+Message-Id: <20140407073147.6F87E1A4BDE@localhost.localdomain>
+Date: Mon,  7 Apr 2014 09:31:47 +0200 (CEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,95 +18,294 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---vRumugr6CW3eJWLUvk80gIGwsOUbLtQPp
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
+Unlike PPC64, PPC32 doesn't use the PACA convention. Therefore the
+implementation is taken from the IA64 architecture.
+It is based on additional information added to the Task Info structure.
 
-On 04/07/2014 02:42 AM, Rob Herring wrote:
-> On Fri, Apr 4, 2014 at 9:11 AM, Michal Simek <monstr@monstr.eu> wrote:
->> On 04/04/2014 03:32 PM, Rob Herring wrote:
->>> On Fri, Apr 4, 2014 at 8:22 AM, Michal Simek <monstr@monstr.eu> wrote=
-:
->>>> On 04/04/2014 03:00 PM, Rob Herring wrote:
->>>>> On Fri, Apr 4, 2014 at 7:16 AM, Michal Simek <monstr@monstr.eu> wro=
-te:
->>>>>> On 04/04/2014 12:16 AM, Rob Herring wrote:
->>>>>>> From: Rob Herring <robh@kernel.org>
->>>>>>>
->>>>>>> Both powerpc and microblaze have the same FDT blob in debugfs fea=
-ture.
->>>>>>> Move this to common location and remove the powerpc and microblaz=
-e
->>>>>>> implementations. This feature could become more useful when FDT
->>>>>>> overlay support is added.
->>>>>
->>>>> [snip]
->>>
->>>> Anyway I am testing it for microblaze and getting problem
->>>> caused by this patch:
->>>> commit 3d2ee8571ac0580d49c3f41fa28336289934900a
->>>> Author: Rob Herring <robh@kernel.org>
->>>> Date:   Wed Apr 2 15:10:14 2014 -0500
->>>>
->>>>     of/fdt: Convert FDT functions to use libfdt
->>>>
->>>> And reason is that in unflatten_dt_node()
->>>>
->>>> pathp =3D fdt_get_name(blob, *poffset, &l);
->>>>
->>>> is returning NULL
->>>> and here
->>>>         /* version 0x10 has a more compact unit name here instead of=
- the full
->>>>          * path. we accumulate the full path size using "fpsize", we=
-'ll rebuild
->>>>          * it later. We detect this because the first character of t=
-he name is
->>>>          * not '/'.
->>>>          */
->>>>         if ((*pathp) !=3D '/') {
->>>>
->>>> code is trying to read it which is causing this kernel bug:
->>>> Oops: kernel access of bad area, sig: 11
->>>>
->>>> It means fdt_next_node(is doing something wrong)
->>>>
->>>> Any easy way how to debug it?
->>>
->>> I didn't think fdt_get_path should fail. Can you add a print of
->>> *poffset and pathp values.
->=20
-> I think I've fixed this now and updated the branch. Please test again
-> when you have a chance.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-yep. The updated branch works for Microblaze.
-
-Thanks,
-Michal
-
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
---vRumugr6CW3eJWLUvk80gIGwsOUbLtQPp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlNCThQACgkQykllyylKDCEJiwCfdEGS8yOP0utR8Zx76qHYzVtj
-hLkAn0AKSJ03/lx6Tm2Jbt5iHg952CMF
-=iGUs
------END PGP SIGNATURE-----
-
---vRumugr6CW3eJWLUvk80gIGwsOUbLtQPp--
+Index: b/arch/powerpc/Kconfig
+===================================================================
+--- a/arch/powerpc/Kconfig	(revision 5607)
++++ b/arch/powerpc/Kconfig	(revision 5611)
+@@ -138,6 +138,7 @@
+ 	select OLD_SIGSUSPEND
+ 	select OLD_SIGACTION if PPC32
+ 	select HAVE_DEBUG_STACKOVERFLOW
++	select HAVE_VIRT_CPU_ACCOUNTING
+ 
+ config EARLY_PRINTK
+ 	bool
+Index: a/arch/powerpc/kernel/time.c
+===================================================================
+--- a/arch/powerpc/kernel/time.c	(revision 5607)
++++ b/arch/powerpc/kernel/time.c	(revision 5611)
+@@ -162,7 +162,9 @@
+ 
+ cputime_t cputime_one_jiffy;
+ 
++#ifdef CONFIG_PPC_SPLPAR
+ void (*dtl_consumer)(struct dtl_entry *, u64);
++#endif
+ 
+ static void calc_cputime_factors(void)
+ {
+@@ -178,6 +180,7 @@
+ 	__cputime_clockt_factor = res.result_low;
+ }
+ 
++#ifdef CONFIG_PPC64
+ /*
+  * Read the SPURR on systems that have it, otherwise the PURR,
+  * or if that doesn't exist return the timebase value passed in.
+@@ -190,6 +193,7 @@
+ 		return mfspr(SPRN_PURR);
+ 	return tb;
+ }
++#endif
+ 
+ #ifdef CONFIG_PPC_SPLPAR
+ 
+@@ -291,6 +295,7 @@
+  * Account time for a transition between system, hard irq
+  * or soft irq state.
+  */
++#ifdef CONFIG_PPC64
+ static u64 vtime_delta(struct task_struct *tsk,
+ 			u64 *sys_scaled, u64 *stolen)
+ {
+@@ -377,7 +382,70 @@
+ 	get_paca()->utime_sspurr = 0;
+ 	account_user_time(tsk, utime, utimescaled);
+ }
++#else
+ 
++void vtime_account_user(struct task_struct *tsk)
++{
++	cputime_t delta_utime;
++	struct thread_info *ti = task_thread_info(tsk);
++
++	if (ti->ac_utime) {
++		delta_utime = ti->ac_utime;
++		account_user_time(tsk, delta_utime, delta_utime);
++		ti->ac_utime = 0;
++	}
++}
++
++/*
++ * Called from the context switch with interrupts disabled, to charge all
++ * accumulated times to the current process, and to prepare accounting on
++ * the next process.
++ */
++void arch_vtime_task_switch(struct task_struct *prev)
++{
++	struct thread_info *pi = task_thread_info(prev);
++	struct thread_info *ni = task_thread_info(current);
++
++	ni->ac_stamp = pi->ac_stamp;
++	ni->ac_stime = ni->ac_utime = 0;
++}
++
++/*
++ * Account time for a transition between system, hard irq or soft irq state.
++ * Note that this function is called with interrupts enabled.
++ */
++static cputime_t vtime_delta(struct task_struct *tsk)
++{
++	struct thread_info *ti = task_thread_info(tsk);
++	__u32 delta_stime;
++	__u32 now;
++
++	WARN_ON_ONCE(!irqs_disabled());
++
++	now = mftbl();
++
++	delta_stime = ti->ac_stime + (now - ti->ac_stamp);
++	ti->ac_stime = 0;
++	ti->ac_stamp = now;
++
++	return (cputime_t)delta_stime;
++}
++
++void vtime_account_system(struct task_struct *tsk)
++{
++	cputime_t delta = vtime_delta(tsk);
++
++	account_system_time(tsk, 0, delta, delta);
++}
++EXPORT_SYMBOL_GPL(vtime_account_system);
++
++void vtime_account_idle(struct task_struct *tsk)
++{
++	account_idle_time(vtime_delta(tsk));
++}
++
++#endif
++
+ #else /* ! CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+ #define calc_cputime_factors()
+ #endif
+@@ -871,6 +939,8 @@
+ 		       ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
+ 	}
+ 
++	mttbl(0);
++	mttbu(0);
+ 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
+ 	tb_ticks_per_sec = ppc_tb_freq;
+ 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
+Index: b/arch/powerpc/kernel/entry_32.S
+===================================================================
+--- a/arch/powerpc/kernel/entry_32.S	(revision 5607)
++++ b/arch/powerpc/kernel/entry_32.S	(revision 5611)
+@@ -177,6 +177,12 @@
+ 	addi	r12,r12,-1
+ 	stw	r12,4(r11)
+ #endif
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	CURRENT_THREAD_INFO(r9, r1)
++	tophys(r9, r9)
++	ACCOUNT_CPU_USER_ENTRY(r9, r11, r12)
++#endif
++
+ 	b	3f
+ 
+ 2:	/* if from kernel, check interrupted DOZE/NAP mode and
+@@ -406,6 +412,13 @@
+ 	lwarx	r7,0,r1
+ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
+ 	stwcx.	r0,0,r1			/* to clear the reservation */
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	andi.	r4,r8,MSR_PR
++	beq	3f
++	CURRENT_THREAD_INFO(r4, r1)
++	ACCOUNT_CPU_USER_EXIT(r4, r5, r7)
++3:
++#endif
+ 	lwz	r4,_LINK(r1)
+ 	lwz	r5,_CCR(r1)
+ 	mtlr	r4
+@@ -841,6 +854,10 @@
+ 	andis.	r10,r0,DBCR0_IDM@h
+ 	bnel-	load_dbcr0
+ #endif
++#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++	CURRENT_THREAD_INFO(r9, r1)
++	ACCOUNT_CPU_USER_EXIT(r9, r10, r11)
++#endif
+ 
+ 	b	restore
+ 
+Index: b/arch/powerpc/kernel/asm-offsets.c
+===================================================================
+--- a/arch/powerpc/kernel/asm-offsets.c	(revision 5607)
++++ b/arch/powerpc/kernel/asm-offsets.c	(revision 5611)
+@@ -167,6 +167,12 @@
+ 	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
+ 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
+ 	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
++#if defined(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) && defined(CONFIG_PPC32)
++	DEFINE(TI_AC_STAMP, offsetof(struct thread_info, ac_stamp));
++	DEFINE(TI_AC_LEAVE, offsetof(struct thread_info, ac_leave));
++	DEFINE(TI_AC_STIME, offsetof(struct thread_info, ac_stime));
++	DEFINE(TI_AC_UTIME, offsetof(struct thread_info, ac_utime));
++#endif
+ 
+ #ifdef CONFIG_PPC64
+ 	DEFINE(DCACHEL1LINESIZE, offsetof(struct ppc64_caches, dline_size));
+Index: b/arch/powerpc/include/asm/thread_info.h
+===================================================================
+--- a/arch/powerpc/include/asm/thread_info.h	(revision 5607)
++++ b/arch/powerpc/include/asm/thread_info.h	(revision 5611)
+@@ -43,6 +43,12 @@
+ 	int		cpu;			/* cpu we're on */
+ 	int		preempt_count;		/* 0 => preemptable,
+ 						   <0 => BUG */
++#if defined(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) && defined(CONFIG_PPC32)
++	u32 ac_stamp;
++	u32 ac_leave;
++	u32 ac_stime;
++	u32 ac_utime;
++#endif
+ 	struct restart_block restart_block;
+ 	unsigned long	local_flags;		/* private flags for thread */
+ 
+Index: b/arch/powerpc/include/asm/cputime.h
+===================================================================
+--- a/arch/powerpc/include/asm/cputime.h	(revision 5607)
++++ b/arch/powerpc/include/asm/cputime.h	(revision 5611)
+@@ -228,7 +228,11 @@
+ 
+ #define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
+ 
++#ifdef CONFIG_PPC64
+ static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
++#else
++extern void arch_vtime_task_switch(struct task_struct *tsk);
++#endif
+ 
+ #endif /* __KERNEL__ */
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+Index: b/arch/powerpc/include/asm/ppc_asm.h
+===================================================================
+--- a/arch/powerpc/include/asm/ppc_asm.h	(revision 5607)
++++ b/arch/powerpc/include/asm/ppc_asm.h	(revision 5611)
+@@ -25,10 +25,16 @@
+  */
+ 
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
++#ifdef CONFIG_PPC64
+ #define ACCOUNT_CPU_USER_ENTRY(ra, rb)
+ #define ACCOUNT_CPU_USER_EXIT(ra, rb)
++#else /* CONFIG_PPC64 */
++#define ACCOUNT_CPU_USER_ENTRY(ti, ra, rb)
++#define ACCOUNT_CPU_USER_EXIT(ti, ra, rb)
++#endif /* CONFIG_PPC64 */
+ #define ACCOUNT_STOLEN_TIME
+-#else
++#else /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
++#ifdef CONFIG_PPC64
+ #define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
+ 	MFTB(ra);			/* get timebase */		\
+ 	ld	rb,PACA_STARTTIME_USER(r13);				\
+@@ -68,7 +74,27 @@
+ #define ACCOUNT_STOLEN_TIME
+ 
+ #endif /* CONFIG_PPC_SPLPAR */
++#else /* CONFIG_PPC64 */
++#define ACCOUNT_CPU_USER_ENTRY(ti, ra, rb)				\
++	MFTB(ra);							\
++	lwz rb, TI_AC_LEAVE(ti);					\
++	stw ra, TI_AC_STAMP(ti);	/* AC_STAMP = NOW */		\
++	subf rb, rb, ra;		/* R = NOW - AC_LEAVE */	\
++	lwz ra, TI_AC_UTIME(ti);					\
++	add ra, rb, ra;			/* AC_UTIME += R */		\
++	stw ra, TI_AC_UTIME(ti);					\
+ 
++#define ACCOUNT_CPU_USER_EXIT(ti, ra, rb)				\
++	MFTB(ra);							\
++	lwz rb, TI_AC_STAMP(ti);					\
++	stw ra, TI_AC_LEAVE(ti);					\
++	subf rb, rb, ra;		/* R = NOW - AC_STAMP */	\
++	lwz ra, TI_AC_STIME(ti);					\
++	add ra, rb, ra;			/* AC_STIME += R */		\
++	stw ra, TI_AC_STIME(ti);					\
++
++#endif /* CONFIG_PPC64 */
++
+ #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
+ 
+ /*
+Index: b/arch/powerpc/platforms/Kconfig.cputype
+===================================================================
+--- a/arch/powerpc/platforms/Kconfig.cputype	(revision 5607)
++++ b/arch/powerpc/platforms/Kconfig.cputype	(revision 5611)
+@@ -1,7 +1,6 @@
+ config PPC64
+ 	bool "64-bit kernel"
+ 	default n
+-	select HAVE_VIRT_CPU_ACCOUNTING
+ 	help
+ 	  This option selects whether a 32-bit or a 64-bit kernel
+ 	  will be built.
