@@ -1,14 +1,37 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 5143A140084
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 17:31:51 +1000 (EST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
-Subject: [PATCH v2] powerpc 32: Provides VIRT_CPU_ACCOUNTING
-Message-Id: <20140407073147.6F87E1A4BDE@localhost.localdomain>
-Date: Mon,  7 Apr 2014 09:31:47 +0200 (CEST)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E09091400EA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 17:38:33 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 7 Apr 2014 13:08:29 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5B043E003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 13:12:37 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s377cWBP9044254
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Apr 2014 13:08:32 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s377cQhv025475
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 Apr 2014 13:08:26 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: numa pte should be handled via slow path in
+ get_user_pages_fast
+In-Reply-To: <1396828173.3671.22.camel@pasglop>
+References: <1396454859-5274-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1396828173.3671.22.camel@pasglop>
+Date: Mon, 07 Apr 2014 13:08:25 +0530
+Message-ID: <87eh19si6m.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,294 +41,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
-Unlike PPC64, PPC32 doesn't use the PACA convention. Therefore the
-implementation is taken from the IA64 architecture.
-It is based on additional information added to the Task Info structure.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> On Wed, 2014-04-02 at 21:37 +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> We need to handle numa pte via the slow path
+>
+> Is this -stable material ? If yes how far back ?
 
-Index: b/arch/powerpc/Kconfig
-===================================================================
---- a/arch/powerpc/Kconfig	(revision 5607)
-+++ b/arch/powerpc/Kconfig	(revision 5611)
-@@ -138,6 +138,7 @@
- 	select OLD_SIGSUSPEND
- 	select OLD_SIGACTION if PPC32
- 	select HAVE_DEBUG_STACKOVERFLOW
-+	select HAVE_VIRT_CPU_ACCOUNTING
- 
- config EARLY_PRINTK
- 	bool
-Index: a/arch/powerpc/kernel/time.c
-===================================================================
---- a/arch/powerpc/kernel/time.c	(revision 5607)
-+++ b/arch/powerpc/kernel/time.c	(revision 5611)
-@@ -162,7 +162,9 @@
- 
- cputime_t cputime_one_jiffy;
- 
-+#ifdef CONFIG_PPC_SPLPAR
- void (*dtl_consumer)(struct dtl_entry *, u64);
-+#endif
- 
- static void calc_cputime_factors(void)
- {
-@@ -178,6 +180,7 @@
- 	__cputime_clockt_factor = res.result_low;
- }
- 
-+#ifdef CONFIG_PPC64
- /*
-  * Read the SPURR on systems that have it, otherwise the PURR,
-  * or if that doesn't exist return the timebase value passed in.
-@@ -190,6 +193,7 @@
- 		return mfspr(SPRN_PURR);
- 	return tb;
- }
-+#endif
- 
- #ifdef CONFIG_PPC_SPLPAR
- 
-@@ -291,6 +295,7 @@
-  * Account time for a transition between system, hard irq
-  * or soft irq state.
-  */
-+#ifdef CONFIG_PPC64
- static u64 vtime_delta(struct task_struct *tsk,
- 			u64 *sys_scaled, u64 *stolen)
- {
-@@ -377,7 +382,70 @@
- 	get_paca()->utime_sspurr = 0;
- 	account_user_time(tsk, utime, utimescaled);
- }
-+#else
- 
-+void vtime_account_user(struct task_struct *tsk)
-+{
-+	cputime_t delta_utime;
-+	struct thread_info *ti = task_thread_info(tsk);
-+
-+	if (ti->ac_utime) {
-+		delta_utime = ti->ac_utime;
-+		account_user_time(tsk, delta_utime, delta_utime);
-+		ti->ac_utime = 0;
-+	}
-+}
-+
-+/*
-+ * Called from the context switch with interrupts disabled, to charge all
-+ * accumulated times to the current process, and to prepare accounting on
-+ * the next process.
-+ */
-+void arch_vtime_task_switch(struct task_struct *prev)
-+{
-+	struct thread_info *pi = task_thread_info(prev);
-+	struct thread_info *ni = task_thread_info(current);
-+
-+	ni->ac_stamp = pi->ac_stamp;
-+	ni->ac_stime = ni->ac_utime = 0;
-+}
-+
-+/*
-+ * Account time for a transition between system, hard irq or soft irq state.
-+ * Note that this function is called with interrupts enabled.
-+ */
-+static cputime_t vtime_delta(struct task_struct *tsk)
-+{
-+	struct thread_info *ti = task_thread_info(tsk);
-+	__u32 delta_stime;
-+	__u32 now;
-+
-+	WARN_ON_ONCE(!irqs_disabled());
-+
-+	now = mftbl();
-+
-+	delta_stime = ti->ac_stime + (now - ti->ac_stamp);
-+	ti->ac_stime = 0;
-+	ti->ac_stamp = now;
-+
-+	return (cputime_t)delta_stime;
-+}
-+
-+void vtime_account_system(struct task_struct *tsk)
-+{
-+	cputime_t delta = vtime_delta(tsk);
-+
-+	account_system_time(tsk, 0, delta, delta);
-+}
-+EXPORT_SYMBOL_GPL(vtime_account_system);
-+
-+void vtime_account_idle(struct task_struct *tsk)
-+{
-+	account_idle_time(vtime_delta(tsk));
-+}
-+
-+#endif
-+
- #else /* ! CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
- #define calc_cputime_factors()
- #endif
-@@ -871,6 +939,8 @@
- 		       ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
- 	}
- 
-+	mttbl(0);
-+	mttbu(0);
- 	tb_ticks_per_jiffy = ppc_tb_freq / HZ;
- 	tb_ticks_per_sec = ppc_tb_freq;
- 	tb_ticks_per_usec = ppc_tb_freq / 1000000;
-Index: b/arch/powerpc/kernel/entry_32.S
-===================================================================
---- a/arch/powerpc/kernel/entry_32.S	(revision 5607)
-+++ b/arch/powerpc/kernel/entry_32.S	(revision 5611)
-@@ -177,6 +177,12 @@
- 	addi	r12,r12,-1
- 	stw	r12,4(r11)
- #endif
-+#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-+	CURRENT_THREAD_INFO(r9, r1)
-+	tophys(r9, r9)
-+	ACCOUNT_CPU_USER_ENTRY(r9, r11, r12)
-+#endif
-+
- 	b	3f
- 
- 2:	/* if from kernel, check interrupted DOZE/NAP mode and
-@@ -406,6 +412,13 @@
- 	lwarx	r7,0,r1
- END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	stwcx.	r0,0,r1			/* to clear the reservation */
-+#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-+	andi.	r4,r8,MSR_PR
-+	beq	3f
-+	CURRENT_THREAD_INFO(r4, r1)
-+	ACCOUNT_CPU_USER_EXIT(r4, r5, r7)
-+3:
-+#endif
- 	lwz	r4,_LINK(r1)
- 	lwz	r5,_CCR(r1)
- 	mtlr	r4
-@@ -841,6 +854,10 @@
- 	andis.	r10,r0,DBCR0_IDM@h
- 	bnel-	load_dbcr0
- #endif
-+#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-+	CURRENT_THREAD_INFO(r9, r1)
-+	ACCOUNT_CPU_USER_EXIT(r9, r10, r11)
-+#endif
- 
- 	b	restore
- 
-Index: b/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- a/arch/powerpc/kernel/asm-offsets.c	(revision 5607)
-+++ b/arch/powerpc/kernel/asm-offsets.c	(revision 5611)
-@@ -167,6 +167,12 @@
- 	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
- 	DEFINE(TI_TASK, offsetof(struct thread_info, task));
- 	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
-+#if defined(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) && defined(CONFIG_PPC32)
-+	DEFINE(TI_AC_STAMP, offsetof(struct thread_info, ac_stamp));
-+	DEFINE(TI_AC_LEAVE, offsetof(struct thread_info, ac_leave));
-+	DEFINE(TI_AC_STIME, offsetof(struct thread_info, ac_stime));
-+	DEFINE(TI_AC_UTIME, offsetof(struct thread_info, ac_utime));
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	DEFINE(DCACHEL1LINESIZE, offsetof(struct ppc64_caches, dline_size));
-Index: b/arch/powerpc/include/asm/thread_info.h
-===================================================================
---- a/arch/powerpc/include/asm/thread_info.h	(revision 5607)
-+++ b/arch/powerpc/include/asm/thread_info.h	(revision 5611)
-@@ -43,6 +43,12 @@
- 	int		cpu;			/* cpu we're on */
- 	int		preempt_count;		/* 0 => preemptable,
- 						   <0 => BUG */
-+#if defined(CONFIG_VIRT_CPU_ACCOUNTING_NATIVE) && defined(CONFIG_PPC32)
-+	u32 ac_stamp;
-+	u32 ac_leave;
-+	u32 ac_stime;
-+	u32 ac_utime;
-+#endif
- 	struct restart_block restart_block;
- 	unsigned long	local_flags;		/* private flags for thread */
- 
-Index: b/arch/powerpc/include/asm/cputime.h
-===================================================================
---- a/arch/powerpc/include/asm/cputime.h	(revision 5607)
-+++ b/arch/powerpc/include/asm/cputime.h	(revision 5611)
-@@ -228,7 +228,11 @@
- 
- #define cputime64_to_clock_t(ct)	cputime_to_clock_t((cputime_t)(ct))
- 
-+#ifdef CONFIG_PPC64
- static inline void arch_vtime_task_switch(struct task_struct *tsk) { }
-+#else
-+extern void arch_vtime_task_switch(struct task_struct *tsk);
-+#endif
- 
- #endif /* __KERNEL__ */
- #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
-Index: b/arch/powerpc/include/asm/ppc_asm.h
-===================================================================
---- a/arch/powerpc/include/asm/ppc_asm.h	(revision 5607)
-+++ b/arch/powerpc/include/asm/ppc_asm.h	(revision 5611)
-@@ -25,10 +25,16 @@
-  */
- 
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
-+#ifdef CONFIG_PPC64
- #define ACCOUNT_CPU_USER_ENTRY(ra, rb)
- #define ACCOUNT_CPU_USER_EXIT(ra, rb)
-+#else /* CONFIG_PPC64 */
-+#define ACCOUNT_CPU_USER_ENTRY(ti, ra, rb)
-+#define ACCOUNT_CPU_USER_EXIT(ti, ra, rb)
-+#endif /* CONFIG_PPC64 */
- #define ACCOUNT_STOLEN_TIME
--#else
-+#else /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
-+#ifdef CONFIG_PPC64
- #define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
- 	MFTB(ra);			/* get timebase */		\
- 	ld	rb,PACA_STARTTIME_USER(r13);				\
-@@ -68,7 +74,27 @@
- #define ACCOUNT_STOLEN_TIME
- 
- #endif /* CONFIG_PPC_SPLPAR */
-+#else /* CONFIG_PPC64 */
-+#define ACCOUNT_CPU_USER_ENTRY(ti, ra, rb)				\
-+	MFTB(ra);							\
-+	lwz rb, TI_AC_LEAVE(ti);					\
-+	stw ra, TI_AC_STAMP(ti);	/* AC_STAMP = NOW */		\
-+	subf rb, rb, ra;		/* R = NOW - AC_LEAVE */	\
-+	lwz ra, TI_AC_UTIME(ti);					\
-+	add ra, rb, ra;			/* AC_UTIME += R */		\
-+	stw ra, TI_AC_UTIME(ti);					\
- 
-+#define ACCOUNT_CPU_USER_EXIT(ti, ra, rb)				\
-+	MFTB(ra);							\
-+	lwz rb, TI_AC_STAMP(ti);					\
-+	stw ra, TI_AC_LEAVE(ti);					\
-+	subf rb, rb, ra;		/* R = NOW - AC_STAMP */	\
-+	lwz ra, TI_AC_STIME(ti);					\
-+	add ra, rb, ra;			/* AC_STIME += R */		\
-+	stw ra, TI_AC_STIME(ti);					\
-+
-+#endif /* CONFIG_PPC64 */
-+
- #endif /* CONFIG_VIRT_CPU_ACCOUNTING_NATIVE */
- 
- /*
-Index: b/arch/powerpc/platforms/Kconfig.cputype
-===================================================================
---- a/arch/powerpc/platforms/Kconfig.cputype	(revision 5607)
-+++ b/arch/powerpc/platforms/Kconfig.cputype	(revision 5611)
-@@ -1,7 +1,6 @@
- config PPC64
- 	bool "64-bit kernel"
- 	default n
--	select HAVE_VIRT_CPU_ACCOUNTING
- 	help
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
+I am not sure we really need to backport this. We got numa faulting bits
+in 3.14. Currently there are two out-standing patches. One is this and
+the other. http://mid.gmane.org/1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com
+
+powernv: kvm: make _PAGE_NUMA take effect
+
+I would not consider them critical enough to impact the general user of
+3.14 kernel.
+
+-aneesh
+
+>
+> Cheers,
+> Ben.
+>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/mm/gup.c | 13 +++++++++++++
+>>  1 file changed, 13 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/mm/gup.c b/arch/powerpc/mm/gup.c
+>> index c5f734e20b0f..d8746684f606 100644
+>> --- a/arch/powerpc/mm/gup.c
+>> +++ b/arch/powerpc/mm/gup.c
+>> @@ -36,6 +36,11 @@ static noinline int gup_pte_range(pmd_t pmd, unsigned long addr,
+>>  	do {
+>>  		pte_t pte = ACCESS_ONCE(*ptep);
+>>  		struct page *page;
+>> +		/*
+>> +		 * Similar to the PMD case, NUMA hinting must take slow path
+>> +		 */
+>> +		if (pte_numa(pte))
+>> +			return 0;
+>>  
+>>  		if ((pte_val(pte) & mask) != result)
+>>  			return 0;
+>> @@ -75,6 +80,14 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+>>  		if (pmd_none(pmd) || pmd_trans_splitting(pmd))
+>>  			return 0;
+>>  		if (pmd_huge(pmd) || pmd_large(pmd)) {
+>> +			/*
+>> +			 * NUMA hinting faults need to be handled in the GUP
+>> +			 * slowpath for accounting purposes and so that they
+>> +			 * can be serialised against THP migration.
+>> +			 */
+>> +			if (pmd_numa(pmd))
+>> +				return 0;
+>> +
+>>  			if (!gup_hugepte((pte_t *)pmdp, PMD_SIZE, addr, next,
+>>  					 write, pages, nr))
+>>  				return 0;
