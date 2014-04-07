@@ -1,25 +1,17 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
- [IPv6:2a00:1450:400c:c00::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A5C6E1400E3
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Apr 2014 07:03:41 +1000 (EST)
-Received: by mail-wg0-f48.google.com with SMTP id l18so2818wgh.19
- for <linuxppc-dev@ozlabs.org>; Mon, 07 Apr 2014 14:03:37 -0700 (PDT)
+Return-Path: <thierry.fauck@free.fr>
+Received: from smtp6-g21.free.fr (smtp6-g21.free.fr [IPv6:2a01:e0c:1:1599::15])
+ by ozlabs.org (Postfix) with ESMTP id 0BB5C140098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 06:09:29 +1000 (EST)
+Received: from [192.168.10.108] (unknown [82.228.88.119])
+ by smtp6-g21.free.fr (Postfix) with ESMTP id 303E0822D8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Apr 2014 22:09:18 +0200 (CEST)
+Message-ID: <534305EC.2000409@free.fr>
+Date: Mon, 07 Apr 2014 22:09:16 +0200
+From: Thierry FAUCK <thierry.fauck@free.fr>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <13762.1395708188@ale.ozlabs.ibm.com>
-References: <13762.1395708188@ale.ozlabs.ibm.com>
-Date: Mon, 7 Apr 2014 23:03:36 +0200
-Message-ID: <CAMuHMdV7BuSMu5gyhBcxY_8v+u3KnVStDgvC-JSN=hX3VZw3+g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/opal: Add missing include
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Linux-Next <linux-next@vger.kernel.org>,
- Stephen Rothwell <sfr@canb.auug.org.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: tools/testing/selftests/ptrace/peeksiginfo.c bug
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +21,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 25, 2014 at 1:43 AM, Michael Neuling <mikey@neuling.org> wrote:
-> next-20140324 currently fails compiling celleb_defconfig with:
->
-> arch/powerpc/include/asm/opal.h:894:42: error: 'struct notifier_block' declared inside parameter list [-Werror]
-> arch/powerpc/include/asm/opal.h:894:42: error: its scope is only this definition or declaration, which is probably not what you want [-Werror]
-> arch/powerpc/include/asm/opal.h:896:14: error: 'struct notifier_block' declared inside parameter list [-Werror]
->
-> This is due to a missing include which is added here.
+Hello,
 
-This build issue has now been in mainline since a few days.
+Here is a fix to allow compilation of
+tools/testing/selftests/ptrace/peeksiginfo.c on ppc64/ppc64el.
+Canonical is waiting for the patch to be upstream.
+Thanks
 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
->
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index fe2aa0b..f57fb58 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -177,6 +177,8 @@ extern int opal_enter_rtas(struct rtas_args *args,
->
->  #ifndef __ASSEMBLY__
->
-> +#include <linux/notifier.h>
-> +
->  /* Other enums */
->  enum OpalVendorApiTokens {
->         OPAL_START_VENDOR_API_RANGE = 1000, OPAL_END_VENDOR_API_RANGE = 1999
+	Thierry
 
-Gr{oetje,eeting}s,
 
-                        Geert
 
+>From 48a9a9834377a74b603be12dcc76cda24105e33c Mon Sep 17 00:00:00 2001
+From: Thierry Fauck <thierry@linux.vnet.ibm.com>
+Date: Fri, 28 Feb 2014 16:17:50 +0100
+Subject: [PATCH] power: PAGE_SIZE may not be defined
+
+Some systems have a dynamic PAGE_SIZE value and do not add a definition
+for PAGE_SIZE. This value will have to be retrieved using getpagesize()
+or sysconf().
+
+Signed-off-by: Thierry Fauck <thierry@linux.vnet.ibm.com>
+---
+ tools/testing/selftests/ptrace/peeksiginfo.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/tools/testing/selftests/ptrace/peeksiginfo.c
+b/tools/testing/selftests/ptrace/peeksiginfo.c
+index d46558b..f2ccbbd 100644
+--- a/tools/testing/selftests/ptrace/peeksiginfo.c
++++ b/tools/testing/selftests/ptrace/peeksiginfo.c
+@@ -35,7 +35,9 @@ static int sys_ptrace(int request, pid_t pid, void
+*addr, void *data)
+   fprintf(stderr, \
+    "Error (%s:%d): " fmt, \
+    __FILE__, __LINE__, ##__VA_ARGS__)
+-
++#ifndef PAGE_SIZE
++#define PAGE_SIZE sysconf(_SC_PAGESIZE)
++#endif
+ static int check_error_paths(pid_t child)
+ {
+  struct ptrace_peeksiginfo_args arg;
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+1.9.0
