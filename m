@@ -1,28 +1,22 @@
-Return-Path: <nhorman@tuxdriver.com>
-Received: from smtp.tuxdriver.com
- (tuxdriver-1-pt.tunnel.tserv13.ash1.ipv6.he.net [IPv6:2001:470:7:9c9::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 797AE1400FD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 20:50:25 +1000 (EST)
-Date: Tue, 8 Apr 2014 06:49:59 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Gerhard Sittig <gsi@denx.de>
-Subject: Re: cscope: issue with symlinks in
- tools/testing/selftests/powerpc/copyloops/
-Message-ID: <20140408104959.GA26003@hmsreliant.think-freely.org>
-References: <1396530975.4361.28.camel@localhost.localdomain>
- <20140407104216.GB5287@hmsreliant.think-freely.org>
- <20140407124259.GZ11339@book.gsilab.sittig.org>
- <20140408075610.GJ11339@book.gsilab.sittig.org>
+ by ozlabs.org (Postfix) with ESMTPS id 73F7D1400C6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 21:26:30 +1000 (EST)
+Date: Tue, 8 Apr 2014 19:07:40 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] ASoC: fsl_sai: Fix Bit Clock Polarity configurations
+Message-ID: <20140408110738.GA10745@MrMyself>
+References: <1396595387-4371-1-git-send-email-Guangyu.Chen@freescale.com>
+ <20140404100532.GN14763@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140408075610.GJ11339@book.gsilab.sittig.org>
-Cc: Yann Droneaud <ydroneaud@opteya.com>, linux-kernel@vger.kernel.org,
- Neil Horman <nhorman@users.sourceforge.net>, Anton Blanchard <anton@samba.org>,
- Hans-Bernhard Broeker <broeker@physik.rwth-aachen.de>,
- linuxppc-dev@lists.ozlabs.org,
- Hans-Bernhard =?iso-8859-1?Q?Br=F6ker?= <broeker@users.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20140404100532.GN14763@sirena.org.uk>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,79 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 08, 2014 at 09:56:10AM +0200, Gerhard Sittig wrote:
-> [ removed cscope-devel from Cc:, non-subscriber mails get blocked anyway ]
+On Fri, Apr 04, 2014 at 11:05:32AM +0100, Mark Brown wrote:
+> On Fri, Apr 04, 2014 at 03:09:47PM +0800, Nicolin Chen wrote:
+> > The BCP bit in TCR4/RCR4 register rules as followings:
+> >   0 Bit clock is active high with drive outputs on rising edge
+> >     and sample inputs on falling edge.
+> >   1 Bit clock is active low with drive outputs on falling edge
+> >     and sample inputs on rising edge.
 > 
-> On Mon, 2014-04-07 at 14:42 +0200, Gerhard Sittig wrote:
-> > 
-> > On Mon, 2014-04-07 at 06:42 -0400, Neil Horman wrote:
-> > > 
-> > > On Thu, Apr 03, 2014 at 03:16:15PM +0200, Yann Droneaud wrote:
-> > > > 
-> > > > [ ... ]
-> > > > 
-> > > > cscope reports error when generating the cross-reference database:
-> > > > 
-> > > >     $ make ALLSOURCE_ARCHS=all O=./obj-cscope/ cscope
-> > > >       GEN     cscope
-> > > >     cscope: cannot find
-> > > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/copyuser_power7.S
-> > > >     cscope: cannot find
-> > > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/memcpy_64.S
-> > > >     cscope: cannot find
-> > > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/memcpy_power7.S
-> > > >     cscope: cannot find
-> > > > file /home/ydroneaud/src/linux/tools/testing/selftests/powerpc/copyloops/copyuser_64.S
-> > > > 
-> > > > And when calling cscope from ./obj-cscope/ directory, it reports errors
-> > > > too.
-> > > > 
-> > > > Hopefully it doesn't stop it from working, so I'm still able to use
-> > > > cscope to browse kernel sources.
-> > > > 
-> > > No, it won't stop it from working, it just won't search those files.  I don't
-> > > recall exactly the reason, but IIRC there was a big discussion long ago about
-> > > symlinks and our ability to support them (around version 1.94 I think).  We
-> > > decided to not handle symlinks, as they would either point outside our search
-> > > tree, which we didn't want to include, or would point to another file in the
-> > > search tree, which made loading them pointless (as we would cover the search in
-> > > the pointed file).
-> > 
-> > So there are valid reasons to not process those filesystem
-> > entries.  Would it be useful to not emit the warnings then?  Or
-> > to silent those warnings when the user knows it's perfectly legal
-> > to skip those filesytem entries?  Like what you can do with the
-> > ctags(1) command and its --links option.
-> 
-> For the record:  I got a response "off list" (actually to the
-> cscope list only which is closed for non-subscribers, while the
-> Linux related recipients were removed despite the fact that the
-> issue appears to be in Linux), see
-> http://article.gmane.org/gmane.comp.programming.tools.cscope.devel/105
-> 
-I don't agree with Hans here. He's right in that the Linux makefiles could
-exclude the symlinks from the index file that it builds, but if cscope were left
-to its own devices it would also exclude the assembly files and other code that
-it doesn't officially parse, but does more or less ok with.  We can argue all
-day weather its ok for Linux to do that, but the facts of the matter is that
-people use cscope  to search the linux source tree asm files and all, and while
-we could propose that the cscope makefile target filter out symlinks, it seems
-IMHO to be more difficult than its worth.  Adding code to silence db build
-warnings would be good.
+> Applied, thanks.
 
-> This reponse suggests that the issue is not in cscope(1) itself,
-> but instead is in how the cscope(1) command got invoked.  Which
-> translates into "the Linux infrastructure does something wrong".
-> 
-> A quick search identifies ./scripts/tags.sh:all_target_sources()
-> as the spot where symlinks should get filtered out.  Where both
-> paths of all_target_sources() end up calling all_sources().
-> 
-> 
-> virtually yours
-> Gerhard Sittig
-> -- 
-> DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-> HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-> Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-> 
+Sir, I can't find this patch on any of the remote branches: for-next,
+topic/fsl-sai and fix/fsl-sai. Where could I find it?
+
+Thank you,
+Nicolin
