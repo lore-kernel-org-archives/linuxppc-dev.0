@@ -1,40 +1,14 @@
-Return-Path: <wangyun@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 52013140113
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 13:19:45 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <wangyun@linux.vnet.ibm.com>;
- Tue, 8 Apr 2014 08:49:42 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 32B591258044
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 08:52:14 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s383JjFN8192498
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Apr 2014 08:49:45 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s383JdFc008311
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Apr 2014 08:49:40 +0530
-Message-ID: <53436AC8.5020705@linux.vnet.ibm.com>
-Date: Tue, 08 Apr 2014 11:19:36 +0800
-From: Michael wang <wangyun@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- benh@kernel.crashing.org, paulus@samba.org, nfont@linux.vnet.ibm.com,
- sfr@canb.auug.org.au, Andrew Morton <akpm@linux-foundation.org>,
- rcj@linux.vnet.ibm.com, jlarrew@linux.vnet.ibm.com,
- srivatsa.bhat@linux.vnet.ibm.com, alistair@popple.id.au
-Subject: [PATCH v2] power,
- sched: stop updating inside arch_update_cpu_topology()
- when nothing to be update
-References: <533B8431.8090507@linux.vnet.ibm.com>
-In-Reply-To: <533B8431.8090507@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:2:6])
+ by ozlabs.org (Postfix) with ESMTP id 12818140115
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2014 14:21:14 +1000 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/4xx: Fix section mismatch in ppc4xx_pci.c
+Date: Tue,  8 Apr 2014 14:20:19 +1000
+Message-Id: <1396930819-13173-1-git-send-email-alistair@popple.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,110 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since v1:
-	Edited the comment according to Srivatsa's suggestion.
+This patch fixes this section mismatch:
 
-During the testing, we encounter below WARN followed by Oops:
+WARNING: vmlinux.o(.text+0x1efc4): Section mismatch in reference from
+the function apm821xx_pciex_init_port_hw() to the function
+.init.text:ppc4xx_pciex_wait_on_sdr.isra.9()
 
-	WARNING: at kernel/sched/core.c:6218
-	...
-	NIP [c000000000101660] .build_sched_domains+0x11d0/0x1200
-	LR [c000000000101358] .build_sched_domains+0xec8/0x1200
-	PACATMSCRATCH [800000000000f032]
-	Call Trace:
-	[c00000001b103850] [c000000000101358] .build_sched_domains+0xec8/0x1200
-	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
-	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
-	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
-	...
-	Oops: Kernel access of bad area, sig: 11 [#1]
-	...
-	NIP [c00000000045c000] .__bitmap_weight+0x60/0xf0
-	LR [c00000000010132c] .build_sched_domains+0xe9c/0x1200
-	PACATMSCRATCH [8000000000029032]
-	Call Trace:
-	[c00000001b1037a0] [c000000000288ff4] .kmem_cache_alloc_node_trace+0x184/0x3a0
-	[c00000001b103850] [c00000000010132c] .build_sched_domains+0xe9c/0x1200
-	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
-	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
-	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
-	...
+The function apm821xx_pciex_init_port_hw() references the function
+__init ppc4xx_pciex_wait_on_sdr.isra.9().  This is often because
+apm821xx_pciex_init_port_hw lacks a __init annotation or the
+annotation of ppc4xx_pciex_wait_on_sdr.isra.9 is wrong.
 
-This was caused by that 'sd->groups == NULL' after building groups, which
-was caused by the empty 'sd->span'.
+apm821xx_pciex_init_port_hw is only referenced by a struct in
+__initdata, so it should be safe to add __init to
+apm821xx_pciex_init_port_hw.
 
-The cpu's domain contained nothing because the cpu was assigned to a wrong
-node, due to the following unfortunate sequence of events:
-
-1. The hypervisor sent a topology update to the guest OS, to notify changes
-   to the cpu-node mapping. However, the update was actually redundant - i.e.,
-   the "new" mapping was exactly the same as the old one.
-
-2. Due to this, the 'updated_cpus' mask turned out to be empty after exiting
-   the 'for-loop' in arch_update_cpu_topology().
-
-3. So we ended up calling stop-machine() with an empty cpumask list, which made
-   stop-machine internally elect cpumask_first(cpu_online_mask), i.e., CPU0 as
-   the cpu to run the payload (the update_cpu_topology() function).
-
-4. This causes update_cpu_topology() to be run by CPU0. And since 'updates'
-   is kzalloc()'ed inside arch_update_cpu_topology(), update_cpu_topology()
-   finds update->cpu as well as update->new_nid to be 0. In other words, we
-   end up assigning CPU0 (and eventually its siblings) to node 0, incorrectly.
-
-Along with the following wrong updating, it causes the sched-domain rebuild
-code to break and crash the system.
-
-Fix this by skipping the topology update in cases where we find that
-the topology has not actually changed in reality (ie., spurious updates).
-
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: Robert Jennings <rcj@linux.vnet.ibm.com>
-CC: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-CC: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-CC: Alistair Popple <alistair@popple.id.au>
-Suggested-by: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/mm/numa.c |   15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ arch/powerpc/sysdev/ppc4xx_pci.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 30a42e2..4ebbb9e 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1591,6 +1591,20 @@ int arch_update_cpu_topology(void)
- 		cpu = cpu_last_thread_sibling(cpu);
- 	}
- 
-+	/*
-+	 * In cases where we have nothing to update (because the updates list
-+	 * is too short or because the new topology is same as the old one),
-+	 * skip invoking update_cpu_topology() via stop-machine(). This is
-+	 * necessary (and not just a fast-path optimization) since stop-machine
-+	 * can end up electing a random CPU to run update_cpu_topology(), and
-+	 * thus trick us into setting up incorrect cpu-node mappings (since
-+	 * 'updates' is kzalloc()'ed).
-+	 *
-+	 * And for the similar reason, we will skip all the following updating.
-+	 */
-+	if (!cpumask_weight(&updated_cpus))
-+		goto out;
-+
- 	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
- 
- 	/*
-@@ -1612,6 +1626,7 @@ int arch_update_cpu_topology(void)
- 		changed = 1;
- 	}
- 
-+out:
- 	kfree(updates);
- 	return changed;
+diff --git a/arch/powerpc/sysdev/ppc4xx_pci.c b/arch/powerpc/sysdev/ppc4xx_pci.c
+index 64603a1..4914fd3 100644
+--- a/arch/powerpc/sysdev/ppc4xx_pci.c
++++ b/arch/powerpc/sysdev/ppc4xx_pci.c
+@@ -1058,7 +1058,7 @@ static int __init apm821xx_pciex_core_init(struct device_node *np)
+ 	return 1;
  }
+ 
+-static int apm821xx_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
++static int __init apm821xx_pciex_init_port_hw(struct ppc4xx_pciex_port *port)
+ {
+ 	u32 val;
+ 
 -- 
-1.7.9.5
+1.8.3.2
