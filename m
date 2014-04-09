@@ -1,22 +1,19 @@
-Return-Path: <prvs=0176ee39ec=valentin.longchamp@keymile.com>
-Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 01157140089
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 17:12:06 +1000 (EST)
-Message-ID: <5344EB3B.40401@keymile.com>
-Date: Wed, 09 Apr 2014 08:39:55 +0200
-From: Valentin Longchamp <valentin.longchamp@keymile.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 2/3] devcietree: bindings: add some MFD Keymile FPGAs
-References: <1395754915-14534-1-git-send-email-valentin.longchamp@keymile.com>	
- <1395754915-14534-3-git-send-email-valentin.longchamp@keymile.com>
- <1397004291.32034.327.camel@snotra.buserror.net>
-In-Reply-To: <1397004291.32034.327.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id B74B21400A1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 17:24:21 +1000 (EST)
+Message-ID: <1397028232.3671.131.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 09 Apr 2014 17:23:52 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,91 +23,141 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/09/2014 02:44 AM, Scott Wood wrote:
-> On Tue, 2014-03-25 at 14:41 +0100, Valentin Longchamp wrote:
->> These are the bindings for 2 MFD devices used on some of the Keymile boards.
->> The first one is the chassis managmenet bfticu FPGA.
->> The second one is the board controller (reset, LEDs, GPIOs) QRIO CPDL.
->> These FPGAs are used in the kmcoge4 board.
->>
->> This patch also add KEYMILE to the vendor-prefixes.
->>
->> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
->>
->> ---
->> Changes in v3:
->> - add a patch with the bindings for the KEYMILE FPGAs
->>
->> Changes in v2: None
->>
->>  Documentation/devicetree/bindings/mfd/bfticu.txt   | 26 ++++++++++++++++++++++
->>  Documentation/devicetree/bindings/mfd/qriox.txt    | 17 ++++++++++++++
->>  .../devicetree/bindings/vendor-prefixes.txt        |  1 +
->>  3 files changed, 44 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/mfd/bfticu.txt
->>  create mode 100644 Documentation/devicetree/bindings/mfd/qriox.txt
->>
->> diff --git a/Documentation/devicetree/bindings/mfd/bfticu.txt b/Documentation/devicetree/bindings/mfd/bfticu.txt
->> new file mode 100644
->> index 0000000..92de32e
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/mfd/bfticu.txt
->> @@ -0,0 +1,26 @@
->> +KEYMILE bfticu Chassis Management FPGA
->> +
->> +The bfticu is a multifunction device that manages the whole chassis.
->> +Its main functionality is to collect IRQs from the whole chassis and signals
->> +them to a single controller.
->> +
->> +Required properties:
->> +- compatible: "keymile,bfticu"
->> +- interrupt-controller: the bfticu FPGA is an interrupt controller
->> +- interrupts: the main IRQ line to signal the collected IRQs
->> +- #interrupt-cells : is 2
->> +	- The 1st cell is the local IRQ number on the bfticu
->> +	- The 2nd cell is the type of the IRQ (IRQ_TYPE_xxx)
-> 
-> Device tree bindings should not depend on the content of Linux headers.
-> One is stable ABI, and the other isn't.
-> 
-> If you want you can make the values the same for convenience, as is done
-> by IPIC, CPM PIC, etc -- but the values need to be explicitly stated in
-> the binding.  It'll still break if the Linux values change (so it may
-> not be a good idea to try to keep the values the same), but at least the
-> fix would be in Linux code rather than an ABI change.
+Hi Linus !
 
-OK. I will then explicitly give the list of the values.
+Here are a few more powerpc things for you.
 
-> 
->> diff --git a/Documentation/devicetree/bindings/mfd/qriox.txt b/Documentation/devicetree/bindings/mfd/qriox.txt
->> new file mode 100644
->> index 0000000..f301e2d
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/mfd/qriox.txt
->> @@ -0,0 +1,17 @@
->> +KEYMILE qrio Board Control CPLD
->> +
->> +The qrio is a multifunction device that controls the KEYMILE boards based on
->> +the kmp204x design.
->> +It is consists of a reset controller, watchdog timer, LEDs, and 2 IRQ capable
->> +GPIO blocks.
->> +
->> +Required properties:
->> +- compatible: "keymile,qriox"
->> +- reg: access on the parent local bus (chip select, offset in chip select, size)
->> +
->> +Example:
->> +
->> +	board-control@1,0 {
->> +		compatible = "keymile,qriox";
->> +		reg = <1 0 0x80>;
->> +	};
-> 
-> If it has GPIO blocks, shouldn't it be using the GPIO binding?
-> 
+So you'll find here the conversion of the two new firmware sysfs
+interfaces to the new API for self-removing files that Greg and Tejun
+introduced, so they can finally remove the old one.
 
-You are right it should. But this is currently being reworked (also in HW) and
-that's why I left it out completely, instead of submitting something subject to
-change.
+I'm also reverting the hwmon driver for powernv. I shouldn't have merged
+it, I got a bit carried away here. I hadn't realized it was never CCed
+to the relevant maintainer(s) and list(s), and happens to have some
+issues so I'm taking it out and it will come back via the proper
+channels.
 
-Valentin
+The rest is a bunch of LE fixes (argh, some of the new stuff was broken 
+on LE, I really need to start testing LE myself !) and various random
+fixes here and there.
+
+Finally one bit that's not strictly a fix, which is the HVC OPAL change
+to "kick" the HVC thread when the firmware tells us there is new
+incoming data. I don't feel like waiting for this one, it's simple
+enough, and it makes a big difference in console responsiveness which is
+good for my nerves.
+
+Cheers,
+Ben.
+
+The following changes since commit 18a1a7a1d862ae0794a0179473d08a414dd49234:
+
+  Merge git://git.kernel.org/pub/scm/linux/kernel/git/cmetcalf/linux-tile (2014-04-06 08:11:57 -0700)
+
+are available in the git repository at:
+
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to cc4f265ad9a37bdb1846c45eebe454c382f31d67:
+
+  powerpc/powernv Adapt opal-elog and opal-dump to new sysfs_remove_file_self (2014-04-09 13:51:50 +1000)
+
+----------------------------------------------------------------
+Aneesh Kumar K.V (1):
+      powerpc/mm: NUMA pte should be handled via slow path in get_user_pages_fast()
+
+Anton Blanchard (3):
+      powerpc/powernv: Fix endian issues with OPAL async code
+      powerpc/powernv: Fix endian issues with sensor code
+      powerpc: Add lq/stq emulation
+
+Benjamin Herrenschmidt (8):
+      powerpc: Adjust CPU_FTR_SMT on all platforms
+      powerpc: Make boot_cpuid common between 32 and 64-bit
+      powerpc/prom: early_init_dt_scan_cpus() updates cpu features only once
+      powerpc/ppc64: Gracefully handle early interrupts
+      powerpc/ppc64: Do not turn AIL (reloc-on interrupts) too early
+      powerpc/powernv: Add opal_notifier_unregister() and export to modules
+      tty/hvc_opal: Kick the HVC thread on OPAL console events
+      Revert "powerpc/powernv: hwmon driver for power values, fan rpm and temperature"
+
+Greg Kurz (1):
+      powerpc/le: Enable RTAS events support
+
+Joe Perches (1):
+      powerpc: Convert last uses of __FUNCTION__ to __func__
+
+Joel Stanley (2):
+      powerpc/powernv: Add OPAL message log interface
+      powerpc/powernv: Add invalid OPAL call
+
+Li Zhong (1):
+      powerpc: Use of_node_init() for the fakenode in msi_bitmap.c
+
+Mahesh Salgaonkar (1):
+      powerpc/book3s: Fix mc_recoverable_range buffer overrun issue.
+
+Michael Neuling (3):
+      powerpc/tm: Disable IRQ in tm_recheckpoint
+      powerpc: Remove dead code in sycall entry
+      powerpc/opal: Add missing include
+
+Michael Wang (1):
+      power, sched: stop updating inside arch_update_cpu_topology() when nothing to be update
+
+Monam Agarwal (1):
+      arch/powerpc: Use RCU_INIT_POINTER(x, NULL) in platforms/cell/spu_syscalls.c
+
+Stephen Chivers (1):
+      powerpc: Correct emulated mtfsf instruction
+
+Stewart Smith (1):
+      powerpc/powernv Adapt opal-elog and opal-dump to new sysfs_remove_file_self
+
+Tony Breeds (1):
+      powerpc/le: Avoid creatng R_PPC64_TOCSAVE relocations for modules.
+
+ arch/powerpc/Makefile                          |   1 +
+ arch/powerpc/include/asm/emulated_ops.h        |   1 +
+ arch/powerpc/include/asm/opal.h                |  19 +-
+ arch/powerpc/include/asm/rtas.h                | 127 ++++--
+ arch/powerpc/kernel/align.c                    |  52 ++-
+ arch/powerpc/kernel/cpu_setup_power.S          |   2 -
+ arch/powerpc/kernel/exceptions-64s.S           |   8 -
+ arch/powerpc/kernel/paca.c                     |   3 +-
+ arch/powerpc/kernel/process.c                  |  34 +-
+ arch/powerpc/kernel/prom.c                     |  58 +--
+ arch/powerpc/kernel/rtas.c                     |  15 +-
+ arch/powerpc/kernel/rtasd.c                    |  24 +-
+ arch/powerpc/kernel/setup-common.c             |   3 +
+ arch/powerpc/kernel/setup_32.c                 |   2 -
+ arch/powerpc/kernel/setup_64.c                 |  28 +-
+ arch/powerpc/kernel/signal_32.c                |   2 +
+ arch/powerpc/kernel/signal_64.c                |   2 +
+ arch/powerpc/kernel/tm.S                       |   2 +-
+ arch/powerpc/kernel/traps.c                    |   1 +
+ arch/powerpc/math-emu/mtfsf.c                  |  58 ++-
+ arch/powerpc/mm/gup.c                          |  13 +
+ arch/powerpc/mm/numa.c                         |  15 +
+ arch/powerpc/platforms/cell/spu_syscalls.c     |   2 +-
+ arch/powerpc/platforms/powernv/Makefile        |   1 +
+ arch/powerpc/platforms/powernv/opal-async.c    |   7 +-
+ arch/powerpc/platforms/powernv/opal-dump.c     |   9 +-
+ arch/powerpc/platforms/powernv/opal-elog.c     |   9 +-
+ arch/powerpc/platforms/powernv/opal-msglog.c   | 120 ++++++
+ arch/powerpc/platforms/powernv/opal-sensor.c   |   6 +-
+ arch/powerpc/platforms/powernv/opal-sysparam.c |   4 +-
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/opal.c          |  59 ++-
+ arch/powerpc/platforms/pseries/io_event_irq.c  |   6 +-
+ arch/powerpc/platforms/pseries/nvram.c         |  11 +-
+ arch/powerpc/platforms/pseries/ras.c           |  17 +-
+ arch/powerpc/sysdev/msi_bitmap.c               |   2 +-
+ drivers/hwmon/Kconfig                          |   8 -
+ drivers/hwmon/Makefile                         |   1 -
+ drivers/hwmon/ibmpowernv.c                     | 529 -------------------------
+ drivers/tty/hvc/hvc_opal.c                     |  22 +-
+ 40 files changed, 546 insertions(+), 738 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-msglog.c
+ delete mode 100644 drivers/hwmon/ibmpowernv.c
