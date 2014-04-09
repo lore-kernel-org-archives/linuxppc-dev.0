@@ -1,28 +1,32 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 258CE140115
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 18:57:29 +1000 (EST)
-Date: Wed, 9 Apr 2014 16:39:26 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v3 2/2] ARM: dts: Append clock bindings for sai2 on VF610
- platform
-Message-ID: <20140409083925.GB12559@MrMyself>
-References: <cover.1396605772.git.Guangyu.Chen@freescale.com>
- <08ba57a2fdce1a404a6bcb61e21e25509fcd6b30.1396605772.git.Guangyu.Chen@freescale.com>
- <20140409081137.GD28420@dragon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20140409081137.GD28420@dragon>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- broonie@kernel.org, ijc+devicetree@hellion.org.uk,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
- Li.Xiubo@freescale.com, rob@landley.net, galak@codeaurora.org,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 9BDDB1400BE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 18:59:23 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 9 Apr 2014 09:18:43 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 70ECF394014B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 09:17:45 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s393laUM38928580
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Apr 2014 09:17:36 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s393lfXn028784
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Apr 2014 09:17:42 +0530
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv Adapt opal-elog and opal-dump to new
+ sysfs_remove_file_self API from (removed) sysfs_schedule_callback
+Date: Wed,  9 Apr 2014 13:47:37 +1000
+Message-Id: <1397015257-31988-1-git-send-email-stewart@linux.vnet.ibm.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,74 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shawn,
+A merge fix for powernv opal-dump and opal-elog code with driver-next
 
-On Wed, Apr 09, 2014 at 04:11:38PM +0800, Shawn Guo wrote:
-> On Fri, Apr 04, 2014 at 06:08:13PM +0800, Nicolin Chen wrote:
-> > Since we added fours clock to the DT binding, we should update the current
-> > SAI dts/dtsi so as not to break their functions.
-> 
-> For the record, you're asking my ACK to have the dts change go via sound
-> tree for not breaking vf610 function on the sound branch,  while
-> ignoring the fact that the existing DTB will break with the new kernel
-> anyway.
-> 
-> I'm not completely happy with the approach, but considering that the
-> existing binding is incorrect, I'm fine with it as long as people agree
-> to go this way.
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal-dump.c |    9 ++-------
+ arch/powerpc/platforms/powernv/opal-elog.c |    9 ++-------
+ 2 files changed, 4 insertions(+), 14 deletions(-)
 
-Although I'm not a big fan of explaining, yet, I still want to say that
-actually I've balanced this way and your last suggestion against the v1.
-
-It'd be surely better to distinguish two platforms as you suggested if
-we are looking at this change alone since the change is nearly tiny and
-the code to specify them wouldn't be quite a lot. However, there's more
-work to do based on this patch, an auto-selecting clock source mechanism
-for SAI as a DAI master for example, which would need to drop the existing
-code and to add the new one. If vf610 is still using the old one, it would
-not benefit from the further feature and the code would be definitely ugly
-as we would have to add too many platform checks. So personally I prefer
-this reasonable change than the little sacrifice we're going to make here.
-
-Right now I feel grateful for what Sascha suggested to the DT bindings of
-fsl-spdif. It was a painstaking experience when getting it upstream last
-year but what's done at that moment makes the driver more flexible. So I
-think we should do the strict and comprehensive review for the clock part
-to every module from now on since an once-defined-DT-binding would be so
-painful to improved for us.
-
-Thank you,
-Nicolin
-
-> 
-> Shawn
-> 
-> > 
-> > Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
-> > Tested-by: Xiubo Li <Li.Xiubo@freescale.com>
-> > ---
-> >  arch/arm/boot/dts/vf610.dtsi | 6 ++++--
-> >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
-> > index d31ce1b..9fd0007 100644
-> > --- a/arch/arm/boot/dts/vf610.dtsi
-> > +++ b/arch/arm/boot/dts/vf610.dtsi
-> > @@ -139,8 +139,10 @@
-> >  				compatible = "fsl,vf610-sai";
-> >  				reg = <0x40031000 0x1000>;
-> >  				interrupts = <0 86 0x04>;
-> > -				clocks = <&clks VF610_CLK_SAI2>;
-> > -				clock-names = "sai";
-> > +				clocks = <&clks VF610_CLK_SAI2>,
-> > +				       <&clks VF610_CLK_SAI2>,
-> > +				       <&clks 0>, <&clks 0>;
-> > +				clock-names = "bus", "mclk1", "mclk2", "mclk3";
-> >  				status = "disabled";
-> >  			};
-> >  
-> > -- 
-> > 1.8.4
-> > 
-> > 
-> 
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+index 0c767c5..b9827b0 100644
+--- a/arch/powerpc/platforms/powernv/opal-dump.c
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -86,19 +86,14 @@ static int64_t dump_send_ack(uint32_t dump_id)
+ 	return rc;
+ }
+ 
+-static void delay_release_kobj(void *kobj)
+-{
+-	kobject_put((struct kobject *)kobj);
+-}
+-
+ static ssize_t dump_ack_store(struct dump_obj *dump_obj,
+ 			      struct dump_attribute *attr,
+ 			      const char *buf,
+ 			      size_t count)
+ {
+ 	dump_send_ack(dump_obj->id);
+-	sysfs_schedule_callback(&dump_obj->kobj, delay_release_kobj,
+-				&dump_obj->kobj, THIS_MODULE);
++	sysfs_remove_file_self(&dump_obj->kobj, &attr->attr);
++	kobject_put(&dump_obj->kobj);
+ 	return count;
+ }
+ 
+diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+index 1d7355b..ef7bc2a 100644
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -70,19 +70,14 @@ static ssize_t elog_ack_show(struct elog_obj *elog_obj,
+ 	return sprintf(buf, "ack - acknowledge log message\n");
+ }
+ 
+-static void delay_release_kobj(void *kobj)
+-{
+-	kobject_put((struct kobject *)kobj);
+-}
+-
+ static ssize_t elog_ack_store(struct elog_obj *elog_obj,
+ 			      struct elog_attribute *attr,
+ 			      const char *buf,
+ 			      size_t count)
+ {
+ 	opal_send_ack_elog(elog_obj->id);
+-	sysfs_schedule_callback(&elog_obj->kobj, delay_release_kobj,
+-				&elog_obj->kobj, THIS_MODULE);
++	sysfs_remove_file_self(&elog_obj->kobj, &attr->attr);
++	kobject_put(&elog_obj->kobj);
+ 	return count;
+ }
+ 
+-- 
+1.7.10.4
