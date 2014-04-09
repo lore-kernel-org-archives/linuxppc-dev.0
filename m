@@ -1,23 +1,23 @@
-Return-Path: <Diana.Craciun@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 152E31401FA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 22:23:54 +1000 (EST)
-Received: from mail125-tx2 (localhost [127.0.0.1])	by
- mail125-tx2-R.bigfish.com (Postfix) with ESMTP id 8B5204000DD	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 12:23:30 +0000 (UTC)
-From: Diana Craciun <diana.craciun@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2][powerpc/fsl] Updated T4240 corenet-cf node in device tree
-Date: Wed, 9 Apr 2014 15:23:18 +0300
-Message-ID: <1397046198-8496-2-git-send-email-diana.craciun@freescale.com>
-In-Reply-To: <1397046198-8496-1-git-send-email-diana.craciun@freescale.com>
-References: <1397046198-8496-1-git-send-email-diana.craciun@freescale.com>
+Return-Path: <dave.hansen@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 49B55140152
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 01:50:10 +1000 (EST)
+Message-ID: <53456B61.1040901@intel.com>
+Date: Wed, 09 Apr 2014 08:46:41 -0700
+From: Dave Hansen <dave.hansen@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Diana Craciun <Diana.Craciun@freescale.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
+References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <533EDB63.8090909@intel.com> <5344A312.80802@linux.vnet.ibm.com>
+In-Reply-To: <5344A312.80802@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
+ rusty@rustcorp.com.au, paulus@samba.org, mgorman@suse.de,
+ akpm@linux-foundation.org, mingo@kernel.org, kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Diana Craciun <Diana.Craciun@freescale.com>
+On 04/08/2014 06:32 PM, Madhavan Srinivasan wrote:
+>> > In mm/Kconfig, put
+>> > 
+>> > 	config FAULT_AROUND_ORDER
+>> > 		int
+>> > 		default 1234 if POWERPC
+>> > 		default 4
+>> > 
+>> > The way you have it now, every single architecture that needs to enable
+>> > this has to go put that in their Kconfig.  That's madness.  This way,
+> I though about it and decided not to do this way because, in future,
+> sub platforms of the architecture may decide to change the values. Also,
+> adding an if line for each architecture with different sub platforms
+> oring to it will look messy.
 
-Updated the compatible to reflect that CCF hardware
-is different on T4240
+I'm not sure why I'm trying here any more.  You do seem quite content to
+add as much cruft to ppc and every other architecture as possible.  If
+your theoretical scenario pops up, you simply do this in ppc:
 
-Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
----
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+config ARCH_FAULT_AROUND_ORDER
+	int
+	default 999
+	default 888 if OTHER_SILLY_POWERPC_SUBARCH
 
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index f99d74f..e1a8734 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -343,7 +343,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet2-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
--- 
-1.7.11.7
+But *ONLY* in the architectures that care about doing that stuff.  You
+leave every other architecture on the planet alone.  Then, in mm/Kconfig:
+
+config FAULT_AROUND_ORDER
+	int
+	default ARCH_FAULT_AROUND_ORDER if ARCH_FAULT_AROUND_ORDER
+	default 4
+
+Your way still requires going and individually touching every single
+architecture's Kconfig that wants to enable fault around.  That's not an
+acceptable solution.
