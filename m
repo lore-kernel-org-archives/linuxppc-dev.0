@@ -1,21 +1,22 @@
-Return-Path: <Gang.Liu@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 96FC414015F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 20:07:01 +1000 (EST)
-Received: from mail207-ch1 (localhost [127.0.0.1])	by
- mail207-ch1-R.bigfish.com (Postfix) with ESMTP id 20A011206E3	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 10:06:35 +0000 (UTC)
-From: Liu Gang <Gang.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <b07421@freescale.com>
-Subject: [PATCH] powerpc/rmu: Fix the error memory free parameters
-Date: Wed, 9 Apr 2014 18:04:45 +0800
-Message-ID: <1397037885-21060-1-git-send-email-Gang.Liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 497B01400BB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 20:25:44 +1000 (EST)
+Date: Wed, 9 Apr 2014 11:25:34 +0100
+From: Mel Gorman <mgorman@suse.de>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: hugetlb: ensure hugepage access is denied if hugepages are not
+ supported
+Message-ID: <20140409102534.GA27270@suse.de>
+References: <20140403231413.GB17412@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Liu Gang <Gang.Liu@freescale.com>, r61911@freescale.com
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <20140403231413.GB17412@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, paulus@samba.org, anton@samba.org, nyc@holomorphy.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ aneesh.kumar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are error parameters should be corrected when
-calling dma_free_coherent to free rmu rx-ring buffers
-in fsl_open_inb_mbox() function.
 
-Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- arch/powerpc/sysdev/fsl_rmu.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Thu, Apr 03, 2014 at 04:14:13PM -0700, Nishanth Aravamudan wrote:
+> In KVM guests on Power, in a guest not backed by hugepages, we see the
+> following:
+> 
+> AnonHugePages:         0 kB
+> HugePages_Total:       0
+> HugePages_Free:        0
+> HugePages_Rsvd:        0
+> HugePages_Surp:        0
+> Hugepagesize:         64 kB
+> 
+> HPAGE_SHIFT == 0 in this configuration, which indicates that hugepages
+> are not supported at boot-time, but this is only checked in
+> hugetlb_init(). Extract the check to a helper function, and use it in a
+> few relevant places.
+> 
+> This does make hugetlbfs not supported (not registered at all) in this
+> environment. I believe this is fine, as there are no valid hugepages and
+> that won't change at runtime.
+> 
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
-index 00e224a..b48197a 100644
---- a/arch/powerpc/sysdev/fsl_rmu.c
-+++ b/arch/powerpc/sysdev/fsl_rmu.c
-@@ -881,9 +881,9 @@ fsl_open_inb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entries)
- 	rc = request_irq(IRQ_RIO_RX(mport), fsl_rio_rx_handler, 0,
- 			 "msg_rx", (void *)mport);
- 	if (rc < 0) {
--		dma_free_coherent(priv->dev, RIO_MSG_BUFFER_SIZE,
--			rmu->msg_tx_ring.virt_buffer[i],
--			rmu->msg_tx_ring.phys_buffer[i]);
-+		dma_free_coherent(priv->dev,
-+			rmu->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
-+			rmu->msg_rx_ring.virt, rmu->msg_rx_ring.phys);
- 		goto out;
- 	}
- 
+Acked-by: Mel Gorman <mgorman@suse.de>
+
+This patch looks ok but the changelog misses important information from
+the original report which is probably why it fell through the cracks.
+Add the fact that you encountered a problem during mount to the changelog
+and resend it directly to Andrew. This part from your original report;
+
+	Currently, I am seeing the following when I `mount -t hugetlbfs
+	/none /dev/hugetlbfs`, and then simply do a `ls /dev/hugetlbfs`. I
+	think it's related to the fact that hugetlbfs is properly not
+	correctly setting itself up in this state?:
+
+	Unable to handle kernel paging request for data at address 0x00000031
+	Faulting instruction address: 0xc000000000245710
+	Oops: Kernel access of bad area, sig: 11 [#1]
+	SMP NR_CPUS=2048 NUMA pSeries
+	....
+
+It probably slipped through the cracks because from the changelog this
+looks like a minor formatting issue and not a functional fix.
+
+> 
+> diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+> index d19b30a..cc8fcc7 100644
+> --- a/fs/hugetlbfs/inode.c
+> +++ b/fs/hugetlbfs/inode.c
+> @@ -1017,6 +1017,11 @@ static int __init init_hugetlbfs_fs(void)
+>  	int error;
+>  	int i;
+>  
+> +	if (!hugepages_supported()) {
+> +		printk(KERN_ERR "hugetlbfs: Disabling because there are no supported hugepage sizes\n");
+> +		return -ENOTSUPP;
+> +	}
+> +
+>  	error = bdi_init(&hugetlbfs_backing_dev_info);
+>  	if (error)
+>  		return error;
+
+KERN_ERR feels like overkill for this type of issue. KERN_INFO?
+
 -- 
-1.8.5
+Mel Gorman
+SUSE Labs
