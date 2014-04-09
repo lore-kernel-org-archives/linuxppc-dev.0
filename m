@@ -1,34 +1,28 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1D088140116
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 18:54:57 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 9 Apr 2014 14:24:51 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 118E91258048
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 14:27:25 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s398shqf63176786
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Apr 2014 14:24:43 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s398snUg011155
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Apr 2014 14:24:49 +0530
-Message-ID: <1397033686.25199.33.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: [RFC PATCH powerpc] Protect remove_memory() with device hotplug lock
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Wed, 09 Apr 2014 16:54:46 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 258CE140115
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 18:57:29 +1000 (EST)
+Date: Wed, 9 Apr 2014 16:39:26 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v3 2/2] ARM: dts: Append clock bindings for sai2 on VF610
+ platform
+Message-ID: <20140409083925.GB12559@MrMyself>
+References: <cover.1396605772.git.Guangyu.Chen@freescale.com>
+ <08ba57a2fdce1a404a6bcb61e21e25509fcd6b30.1396605772.git.Guangyu.Chen@freescale.com>
+ <20140409081137.GD28420@dragon>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20140409081137.GD28420@dragon>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ broonie@kernel.org, ijc+devicetree@hellion.org.uk,
+ linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
+ Li.Xiubo@freescale.com, rob@landley.net, galak@codeaurora.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,97 +32,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While testing memory hot-remove, I found following dead lock:
+Hi Shawn,
 
-Process #1141 is drmgr, trying to remove some memory, i.e. memory499. 
-It holds the memory_hotplug_mutex, and blocks when trying to remove file
-"online" under dir memory499, in kernfs_drain(), at 
-        wait_event(root->deactivate_waitq,
-                   atomic_read(&kn->active) == KN_DEACTIVATED_BIAS);
+On Wed, Apr 09, 2014 at 04:11:38PM +0800, Shawn Guo wrote:
+> On Fri, Apr 04, 2014 at 06:08:13PM +0800, Nicolin Chen wrote:
+> > Since we added fours clock to the DT binding, we should update the current
+> > SAI dts/dtsi so as not to break their functions.
+> 
+> For the record, you're asking my ACK to have the dts change go via sound
+> tree for not breaking vf610 function on the sound branch,  while
+> ignoring the fact that the existing DTB will break with the new kernel
+> anyway.
+> 
+> I'm not completely happy with the approach, but considering that the
+> existing binding is incorrect, I'm fine with it as long as people agree
+> to go this way.
 
-Process #1120 is trying to online memory499 by 
-   echo 1 > memory499/online
+Although I'm not a big fan of explaining, yet, I still want to say that
+actually I've balanced this way and your last suggestion against the v1.
 
-In .kernfs_fop_write, it uses kernfs_get_active() to increase
-&kn->active, thus blocking process #1141. While itself is blocked later
-when trying to acquire memory_hotplug_mutex, which is held by process
-#1141. 
+It'd be surely better to distinguish two platforms as you suggested if
+we are looking at this change alone since the change is nearly tiny and
+the code to specify them wouldn't be quite a lot. However, there's more
+work to do based on this patch, an auto-selecting clock source mechanism
+for SAI as a DAI master for example, which would need to drop the existing
+code and to add the new one. If vf610 is still using the old one, it would
+not benefit from the further feature and the code would be definitely ugly
+as we would have to add too many platform checks. So personally I prefer
+this reasonable change than the little sacrifice we're going to make here.
 
-The backtrace of both processes are shown below:
+Right now I feel grateful for what Sascha suggested to the DT bindings of
+fsl-spdif. It was a painstaking experience when getting it upstream last
+year but what's done at that moment makes the driver more flexible. So I
+think we should do the strict and comprehensive review for the clock part
+to every module from now on since an once-defined-DT-binding would be so
+painful to improved for us.
 
-# cat /proc/1120/stack 
-[<c000000001b18600>] 0xc000000001b18600
-[<c000000000015044>] .__switch_to+0x144/0x200
-[<c000000000263ca4>] .online_pages+0x74/0x7b0
-[<c00000000055b40c>] .memory_subsys_online+0x9c/0x150
-[<c00000000053cbe8>] .device_online+0xb8/0x120
-[<c00000000053cd04>] .online_store+0xb4/0xc0
-[<c000000000538ce4>] .dev_attr_store+0x64/0xa0
-[<c00000000030f4ec>] .sysfs_kf_write+0x7c/0xb0
-[<c00000000030e574>] .kernfs_fop_write+0x154/0x1e0
-[<c000000000268450>] .vfs_write+0xe0/0x260
-[<c000000000269144>] .SyS_write+0x64/0x110
-[<c000000000009ffc>] syscall_exit+0x0/0x7c
+Thank you,
+Nicolin
 
-
-# cat /proc/1141/stack 
-[<c000000001b18600>] 0xc000000001b18600
-[<c000000000015044>] .__switch_to+0x144/0x200
-[<c00000000030be14>] .__kernfs_remove+0x204/0x300
-[<c00000000030d428>] .kernfs_remove_by_name_ns+0x68/0xf0
-[<c00000000030fb38>] .sysfs_remove_file_ns+0x38/0x60
-[<c000000000539354>] .device_remove_attrs+0x54/0xc0
-[<c000000000539fd8>] .device_del+0x158/0x250
-[<c00000000053a104>] .device_unregister+0x34/0xa0
-[<c00000000055bc14>] .unregister_memory_section+0x164/0x170
-[<c00000000024ee18>] .__remove_pages+0x108/0x4c0
-[<c00000000004b590>] .arch_remove_memory+0x60/0xc0
-[<c00000000026446c>] .remove_memory+0x8c/0xe0
-[<c00000000007f9f4>] .pseries_remove_memblock+0xd4/0x160
-[<c00000000007fcfc>] .pseries_memory_notifier+0x27c/0x290
-[<c0000000008ae6cc>] .notifier_call_chain+0x8c/0x100
-[<c0000000000d858c>] .__blocking_notifier_call_chain+0x6c/0xe0
-[<c00000000071ddec>] .of_property_notify+0x7c/0xc0
-[<c00000000071ed3c>] .of_update_property+0x3c/0x1b0
-[<c0000000000756cc>] .ofdt_write+0x3dc/0x740
-[<c0000000002f60fc>] .proc_reg_write+0xac/0x110
-[<c000000000268450>] .vfs_write+0xe0/0x260
-[<c000000000269144>] .SyS_write+0x64/0x110
-[<c000000000009ffc>] syscall_exit+0x0/0x7c
-
-This patch uses lock_device_hotplug() to protect remove_memory() called
-in pseries_remove_memblock(), which is also stated before function
-remove_memory():
-
- * NOTE: The caller must call lock_device_hotplug() to serialize hotplug
- * and online/offline operations before this call, as required by
- * try_offline_node().
- */     
-void __ref remove_memory(int nid, u64 start, u64 size)
-
-With this lock held, the other process(#1120 above) trying to online the
-memory block will retry the system call when calling
-lock_device_hotplug_sysfs(), and finally find No such device error. 
-
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/hotplug-memory.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 573b488..e96357c 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -109,10 +109,12 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
- 	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
- 	nid = memory_add_physaddr_to_nid(base);
- 
-+	lock_device_hotplug();
- 	for (i = 0; i < sections_per_block; i++) {
- 		remove_memory(nid, base, MIN_MEMORY_BLOCK_SIZE);
- 		base += MIN_MEMORY_BLOCK_SIZE;
- 	}
-+	unlock_device_hotplug();
- 
- 	/* Update memory regions for memory remove */
- 	memblock_remove(base, memblock_size);
+> 
+> Shawn
+> 
+> > 
+> > Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+> > Tested-by: Xiubo Li <Li.Xiubo@freescale.com>
+> > ---
+> >  arch/arm/boot/dts/vf610.dtsi | 6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
+> > index d31ce1b..9fd0007 100644
+> > --- a/arch/arm/boot/dts/vf610.dtsi
+> > +++ b/arch/arm/boot/dts/vf610.dtsi
+> > @@ -139,8 +139,10 @@
+> >  				compatible = "fsl,vf610-sai";
+> >  				reg = <0x40031000 0x1000>;
+> >  				interrupts = <0 86 0x04>;
+> > -				clocks = <&clks VF610_CLK_SAI2>;
+> > -				clock-names = "sai";
+> > +				clocks = <&clks VF610_CLK_SAI2>,
+> > +				       <&clks VF610_CLK_SAI2>,
+> > +				       <&clks 0>, <&clks 0>;
+> > +				clock-names = "bus", "mclk1", "mclk2", "mclk3";
+> >  				status = "disabled";
+> >  			};
+> >  
+> > -- 
+> > 1.8.4
+> > 
+> > 
+> 
