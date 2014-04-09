@@ -1,27 +1,25 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org [205.233.59.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7095814011F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 18:12:04 +1000 (EST)
-Date: Wed, 9 Apr 2014 16:11:38 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Subject: Re: [PATCH v3 2/2] ARM: dts: Append clock bindings for sai2 on VF610
- platform
-Message-ID: <20140409081137.GD28420@dragon>
-References: <cover.1396605772.git.Guangyu.Chen@freescale.com>
- <08ba57a2fdce1a404a6bcb61e21e25509fcd6b30.1396605772.git.Guangyu.Chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0B162140126
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 18:20:33 +1000 (EST)
+Date: Wed, 9 Apr 2014 10:20:08 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
+Message-ID: <20140409082008.GA10526@twins.programming.kicks-ass.net>
+References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <533EDB63.8090909@intel.com> <5344A312.80802@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <08ba57a2fdce1a404a6bcb61e21e25509fcd6b30.1396605772.git.Guangyu.Chen@freescale.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- broonie@kernel.org, ijc+devicetree@hellion.org.uk,
- linux-kernel@vger.kernel.org, robh+dt@kernel.org, timur@tabi.org,
- Li.Xiubo@freescale.com, rob@landley.net, galak@codeaurora.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5344A312.80802@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
+ linux-mm@kvack.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ Dave Hansen <dave.hansen@intel.com>, ak@linux.intel.com, paulus@samba.org,
+ mgorman@suse.de, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org, kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 04, 2014 at 06:08:13PM +0800, Nicolin Chen wrote:
-> Since we added fours clock to the DT binding, we should update the current
-> SAI dts/dtsi so as not to break their functions.
-
-For the record, you're asking my ACK to have the dts change go via sound
-tree for not breaking vf610 function on the sound branch,  while
-ignoring the fact that the existing DTB will break with the new kernel
-anyway.
-
-I'm not completely happy with the approach, but considering that the
-existing binding is incorrect, I'm fine with it as long as people agree
-to go this way.
-
-Shawn
-
+On Wed, Apr 09, 2014 at 07:02:02AM +0530, Madhavan Srinivasan wrote:
+> On Friday 04 April 2014 09:48 PM, Dave Hansen wrote:
+> > On 04/03/2014 11:27 PM, Madhavan Srinivasan wrote:
+> >> This patch creates infrastructure to move the FAULT_AROUND_ORDER
+> >> to arch/ using Kconfig. This will enable architecture maintainers
+> >> to decide on suitable FAULT_AROUND_ORDER value based on
+> >> performance data for that architecture. Patch also adds
+> >> FAULT_AROUND_ORDER Kconfig element in arch/X86.
+> > 
+> > Please don't do it this way.
+> > 
+> > In mm/Kconfig, put
+> > 
+> > 	config FAULT_AROUND_ORDER
+> > 		int
+> > 		default 1234 if POWERPC
+> > 		default 4
+> > 
+> > The way you have it now, every single architecture that needs to enable
+> > this has to go put that in their Kconfig.  That's madness.  This way,
 > 
-> Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
-> Tested-by: Xiubo Li <Li.Xiubo@freescale.com>
-> ---
->  arch/arm/boot/dts/vf610.dtsi | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/vf610.dtsi b/arch/arm/boot/dts/vf610.dtsi
-> index d31ce1b..9fd0007 100644
-> --- a/arch/arm/boot/dts/vf610.dtsi
-> +++ b/arch/arm/boot/dts/vf610.dtsi
-> @@ -139,8 +139,10 @@
->  				compatible = "fsl,vf610-sai";
->  				reg = <0x40031000 0x1000>;
->  				interrupts = <0 86 0x04>;
-> -				clocks = <&clks VF610_CLK_SAI2>;
-> -				clock-names = "sai";
-> +				clocks = <&clks VF610_CLK_SAI2>,
-> +				       <&clks VF610_CLK_SAI2>,
-> +				       <&clks 0>, <&clks 0>;
-> +				clock-names = "bus", "mclk1", "mclk2", "mclk3";
->  				status = "disabled";
->  			};
->  
-> -- 
-> 1.8.4
-> 
-> 
+> I though about it and decided not to do this way because, in future,
+> sub platforms of the architecture may decide to change the values. Also,
+> adding an if line for each architecture with different sub platforms
+> oring to it will look messy.
+
+This still misses out on Ben's objection that its impossible to get this
+right at compile time for many kernels, since they can boot and run on
+many different subarchs.
