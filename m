@@ -1,42 +1,22 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <prvs=0176ee39ec=valentin.longchamp@keymile.com>
+Received: from mail-de.keymile.com (mail-de.keymile.com [195.8.104.250])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 13B7414008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 11:45:00 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 9 Apr 2014 11:44:56 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D4C372BB0045
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 11:44:52 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s391iciI6750524
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Apr 2014 11:44:38 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s391ipBW030927
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Apr 2014 11:44:52 +1000
-Message-ID: <5344A603.90305@linux.vnet.ibm.com>
-Date: Wed, 09 Apr 2014 07:14:35 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 01157140089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2014 17:12:06 +1000 (EST)
+Message-ID: <5344EB3B.40401@keymile.com>
+Date: Wed, 09 Apr 2014 08:39:55 +0200
+From: Valentin Longchamp <valentin.longchamp@keymile.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>, dave.hansen@intel.com
-Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
-References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
- <533EDB63.8090909@intel.com>
- <20140404.135056.2103520199689146670.davem@davemloft.net>
-In-Reply-To: <20140404.135056.2103520199689146670.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
- peterz@infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 2/3] devcietree: bindings: add some MFD Keymile FPGAs
+References: <1395754915-14534-1-git-send-email-valentin.longchamp@keymile.com>	
+ <1395754915-14534-3-git-send-email-valentin.longchamp@keymile.com>
+ <1397004291.32034.327.camel@snotra.buserror.net>
+In-Reply-To: <1397004291.32034.327.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,37 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 04 April 2014 11:20 PM, David Miller wrote:
-> From: Dave Hansen <dave.hansen@intel.com>
-> Date: Fri, 04 Apr 2014 09:18:43 -0700
+On 04/09/2014 02:44 AM, Scott Wood wrote:
+> On Tue, 2014-03-25 at 14:41 +0100, Valentin Longchamp wrote:
+>> These are the bindings for 2 MFD devices used on some of the Keymile boards.
+>> The first one is the chassis managmenet bfticu FPGA.
+>> The second one is the board controller (reset, LEDs, GPIOs) QRIO CPDL.
+>> These FPGAs are used in the kmcoge4 board.
+>>
+>> This patch also add KEYMILE to the vendor-prefixes.
+>>
+>> Signed-off-by: Valentin Longchamp <valentin.longchamp@keymile.com>
+>>
+>> ---
+>> Changes in v3:
+>> - add a patch with the bindings for the KEYMILE FPGAs
+>>
+>> Changes in v2: None
+>>
+>>  Documentation/devicetree/bindings/mfd/bfticu.txt   | 26 ++++++++++++++++++++++
+>>  Documentation/devicetree/bindings/mfd/qriox.txt    | 17 ++++++++++++++
+>>  .../devicetree/bindings/vendor-prefixes.txt        |  1 +
+>>  3 files changed, 44 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/mfd/bfticu.txt
+>>  create mode 100644 Documentation/devicetree/bindings/mfd/qriox.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/bfticu.txt b/Documentation/devicetree/bindings/mfd/bfticu.txt
+>> new file mode 100644
+>> index 0000000..92de32e
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/bfticu.txt
+>> @@ -0,0 +1,26 @@
+>> +KEYMILE bfticu Chassis Management FPGA
+>> +
+>> +The bfticu is a multifunction device that manages the whole chassis.
+>> +Its main functionality is to collect IRQs from the whole chassis and signals
+>> +them to a single controller.
+>> +
+>> +Required properties:
+>> +- compatible: "keymile,bfticu"
+>> +- interrupt-controller: the bfticu FPGA is an interrupt controller
+>> +- interrupts: the main IRQ line to signal the collected IRQs
+>> +- #interrupt-cells : is 2
+>> +	- The 1st cell is the local IRQ number on the bfticu
+>> +	- The 2nd cell is the type of the IRQ (IRQ_TYPE_xxx)
 > 
->> On 04/03/2014 11:27 PM, Madhavan Srinivasan wrote:
->>> This patch creates infrastructure to move the FAULT_AROUND_ORDER
->>> to arch/ using Kconfig. This will enable architecture maintainers
->>> to decide on suitable FAULT_AROUND_ORDER value based on
->>> performance data for that architecture. Patch also adds
->>> FAULT_AROUND_ORDER Kconfig element in arch/X86.
->>
->> Please don't do it this way.
->>
->> In mm/Kconfig, put
->>
->> 	config FAULT_AROUND_ORDER
->> 		int
->> 		default 1234 if POWERPC
->> 		default 4
->>
->> The way you have it now, every single architecture that needs to enable
->> this has to go put that in their Kconfig.  That's madness.  This way,
->> you only put it in one place, and folks only have to care if they want
->> to change the default to be something other than 4.
+> Device tree bindings should not depend on the content of Linux headers.
+> One is stable ABI, and the other isn't.
 > 
-> It looks more like it's necessary only to change the default, not
-> to enable it.  Unless I read his patch wrong...
-> 
-Yes. With current patch, you only need to change the default by which
-you enable it.
+> If you want you can make the values the same for convenience, as is done
+> by IPIC, CPM PIC, etc -- but the values need to be explicitly stated in
+> the binding.  It'll still break if the Linux values change (so it may
+> not be a good idea to try to keep the values the same), but at least the
+> fix would be in Linux code rather than an ABI change.
 
-With regards
-Maddy
+OK. I will then explicitly give the list of the values.
+
 > 
+>> diff --git a/Documentation/devicetree/bindings/mfd/qriox.txt b/Documentation/devicetree/bindings/mfd/qriox.txt
+>> new file mode 100644
+>> index 0000000..f301e2d
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/qriox.txt
+>> @@ -0,0 +1,17 @@
+>> +KEYMILE qrio Board Control CPLD
+>> +
+>> +The qrio is a multifunction device that controls the KEYMILE boards based on
+>> +the kmp204x design.
+>> +It is consists of a reset controller, watchdog timer, LEDs, and 2 IRQ capable
+>> +GPIO blocks.
+>> +
+>> +Required properties:
+>> +- compatible: "keymile,qriox"
+>> +- reg: access on the parent local bus (chip select, offset in chip select, size)
+>> +
+>> +Example:
+>> +
+>> +	board-control@1,0 {
+>> +		compatible = "keymile,qriox";
+>> +		reg = <1 0 0x80>;
+>> +	};
+> 
+> If it has GPIO blocks, shouldn't it be using the GPIO binding?
+> 
+
+You are right it should. But this is currently being reworked (also in HW) and
+that's why I left it out completely, instead of submitting something subject to
+change.
+
+Valentin
