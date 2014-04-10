@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8D80E1400B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 19:16:00 +1000 (EST)
-Message-ID: <1397116463.3671.181.camel@pasglop>
-Subject: Re: [PATCH] Fix 3bc95598 'powerpc/PCI: Use list_for_each_entry()
- for bus traversal'
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Date: Thu, 10 Apr 2014 17:54:23 +1000
-In-Reply-To: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-References: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: bhelgaas@google.com, paulus@samba.org, wangyijing@huawei.com,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org
+ by ozlabs.org (Postfix) with ESMTPS id B3B9214008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 19:34:03 +1000 (EST)
+Message-ID: <53466573.7050901@freescale.com>
+Date: Thu, 10 Apr 2014 17:33:39 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+To: David Laight <David.Laight@ACULAB.COM>, "vkoul@infradead.org"
+ <vkoul@infradead.org>, "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>
+Subject: Re: [PATCH v3 2/8] DMA: Freescale: unify register access methods
+References: <1397113805-24171-1-git-send-email-hongbo.zhang@freescale.com>
+ <1397113805-24171-3-git-send-email-hongbo.zhang@freescale.com>
+ <063D6719AE5E284EB5DD2968C1650D6D0F6F4317@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D0F6F4317@AcuExch.aculab.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "leo.li@freescale.com" <leo.li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,57 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-04-10 at 02:51 -0400, Mike Qiu wrote:
-> Unable to handle kernel paging request for data at address 0x00000000
-> Faulting instruction address: 0xc000000000041d78
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> ...
-> NIP [c000000000041d78] .sys_pciconfig_iobase+0x68/0x1f0
-> LR [c000000000041e0c] .sys_pciconfig_iobase+0xfc/0x1f0
-> Call Trace:
-> [c0000003b4787db0] [c000000000041e0c] .sys_pciconfig_iobase+0xfc/0x1f0 (unreliable)
-> [c0000003b4787e30] [c000000000009ed8] syscall_exit+0x0/0x98
-> 
-> This bug was introduced by commit 3bc955987fb377f3c95bc29deb498e96819b8451
-> The root cause was the 'bus' has been set to null while try to access
-> bus->next.
 
-Good catch. Out of curiosity, what is using that syscall nowadays ? It's
-been long buggy in all sort of ways and is pretty much deprecated...
+On 04/10/2014 04:46 PM, David Laight wrote:
+> From: hongbo.zhang@freescale.com
+>> Methods of accessing DMA contorller registers are inconsistent, some registers
+>                                 ^^
 
-Cheers,
-Ben.
+Thanks.
+sorry, that it a typo.
+I would wait to see if there are other defects I have to correct, if yes 
+I can send a new iteration including this update, if no I would like to 
+know if the maintainer can do me the favor to correct it when merging 
+this patch, if still no, I will send a new iteration for this then.
 
-> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/kernel/pci_64.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 2a47790..7b6c1ae 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -209,6 +209,7 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
->  {
->  	struct pci_controller* hose;
->  	struct pci_bus *bus = NULL;
-> +	struct pci_bus *tmp_bus = NULL;
->  	struct device_node *hose_node;
->  
->  	/* Argh ! Please forgive me for that hack, but that's the
-> @@ -229,10 +230,12 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
->  	 * used on pre-domains setup. We return the first match
->  	 */
->  
-> -	list_for_each_entry(bus, &pci_root_buses, node) {
-> -		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
-> +	list_for_each_entry(tmp_bus, &pci_root_buses, node) {
-> +		if (in_bus >= tmp_bus->number &&
-> +		    in_bus <= tmp_bus->busn_res.end) {
-> +			bus = tmp_bus;
->  			break;
-> -		bus = NULL;
-> +		}
->  	}
->  	if (bus == NULL || bus->dev.of_node == NULL)
->  		return -ENODEV;
+>> are accessed by DMA_IN/OUT directly, while others are accessed by functions
+>> get/set_* which are wrappers of DMA_IN/OUT, and even for the BCR register, it
+>> is read by get_bcr but written by DMA_OUT.
+>> This patch unifies the inconsistent methods, all registers are accessed by
+>> get/set_* now.
+> 	David
+>
