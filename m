@@ -1,24 +1,35 @@
-Return-Path: <hongbo.zhang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6F5D214007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 16:55:39 +1000 (EST)
-Message-ID: <53464055.8060504@freescale.com>
-Date: Thu, 10 Apr 2014 14:55:17 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2365A140098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 17:04:15 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 10 Apr 2014 17:04:13 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2C6372CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 17:04:11 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3A73u6r11075874
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 17:03:56 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3A74ArJ008565
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 17:04:10 +1000
+Message-ID: <53464268.5090201@linux.vnet.ibm.com>
+Date: Thu, 10 Apr 2014 12:34:08 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: <vkoul@infradead.org>, <dan.j.williams@intel.com>,
- <dmaengine@vger.kernel.org>
-Subject: Re: [PATCH v2 8/8] DMA: Freescale: add suspend resume functions for
- DMA driver
-References: <1396582037-23065-1-git-send-email-hongbo.zhang@freescale.com>
- <1396582037-23065-9-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1396582037-23065-9-git-send-email-hongbo.zhang@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 01/60] powerpc/powernv: Return secondary CPUs to firmware
+ before FW update
+References: <1397063935-30478-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+In-Reply-To: <1397063935-30478-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,190 +39,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/09/2014 10:48 PM, Vasant Hegde wrote:
+> Firmware update on PowerNV platform takes several minutes. During
+> this time one CPU is stuck in FW and the kernel complains about "soft
+> lockups".
+>
 
-On 04/04/2014 11:27 AM, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+Ben,
+
+Sorry for the confusion in subject line.. Its just 1 patch.. not 1/60 .
+
+-Vasant
+
+> This patch returns all secondary CPUs to firmware before starting
+> firmware update process.
 >
-> This patch adds suspend resume functions for Freescale DMA driver.
-> .prepare callback is used to stop further descriptors from being added into the
-> pending queue, and also issue pending queues into execution if there is any.
-> .suspend callback makes sure all the pending jobs are cleaned up and all the
-> channels are idle, and save the mode registers.
-> .resume callback re-initializes the channels by restore the mode registers.
+> [ Reworked a bit and cleaned up -- BenH ]
 >
-> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > ---
->   drivers/dma/fsldma.c |   99 ++++++++++++++++++++++++++++++++++++++++++++++++++
->   drivers/dma/fsldma.h |   16 ++++++++
->   2 files changed, 115 insertions(+)
+>   arch/powerpc/include/asm/opal.h             |  1 +
+>   arch/powerpc/platforms/powernv/opal-flash.c | 47 ++++++++++++++++++++++++++---
+>   arch/powerpc/platforms/powernv/setup.c      | 25 +++++++++++++--
+>   3 files changed, 66 insertions(+), 7 deletions(-)
 >
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index c9bf54a..91482d2 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -400,6 +400,14 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
->   
->   	spin_lock_bh(&chan->desc_lock);
->   
-> +#ifdef CONFIG_PM
-> +	if (unlikely(chan->pm_state != RUNNING)) {
-> +		chan_dbg(chan, "cannot submit due to suspend\n");
-> +		spin_unlock_bh(&chan->desc_lock);
-> +		return -1;
-> +	}
-> +#endif
-> +
->   	/*
->   	 * assign cookies to all of the software descriptors
->   	 * that make up this transaction
-> @@ -1311,6 +1319,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
->   	INIT_LIST_HEAD(&chan->ld_running);
->   	INIT_LIST_HEAD(&chan->ld_completed);
->   	chan->idle = true;
-> +#ifdef CONFIG_PM
-> +	chan->pm_state = RUNNING;
-> +#endif
->   
->   	chan->common.device = &fdev->common;
->   	dma_cookie_init(&chan->common);
-> @@ -1450,6 +1461,91 @@ static int fsldma_of_remove(struct platform_device *op)
->   	return 0;
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 05a23d0..5c34170 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -922,6 +922,7 @@ extern unsigned long opal_get_boot_time(void);
+>   extern void opal_nvram_init(void);
+>   extern int opal_elog_register_init(void);
+>   extern void opal_flash_init(void);
+> +extern void opal_flash_term_callback(void);
+>   extern int opal_elog_init(void);
+>   extern void opal_platform_dump_init(void);
+>   extern void opal_sys_param_init(void);
+> diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
+> index 16e571b..11ab43f 100644
+> --- a/arch/powerpc/platforms/powernv/opal-flash.c
+> +++ b/arch/powerpc/platforms/powernv/opal-flash.c
+> @@ -20,6 +20,7 @@
+>   #include <linux/mm.h>
+>   #include <linux/vmalloc.h>
+>   #include <linux/pagemap.h>
+> +#include <linux/delay.h>
+>
+>   #include <asm/opal.h>
+>
+> @@ -388,11 +389,6 @@ static int opal_flash_update(int op)
+>   			(sg->num_entries * sizeof(struct opal_sg_entry) + 16);
+>   	}
+>
+> -	pr_alert("FLASH: Image is %u bytes\n", image_data.size);
+> -	pr_alert("FLASH: Image update requested\n");
+> -	pr_alert("FLASH: Image will be updated during system reboot\n");
+> -	pr_alert("FLASH: This will take several minutes. Do not power off!\n");
+> -
+>   flash:
+>   	rc = opal_update_flash(addr);
+>
+> @@ -400,6 +396,47 @@ invalid_img:
+>   	return rc;
 >   }
->   
-> +#ifdef CONFIG_PM
-> +static int fsldma_prepare(struct device *dev)
+>
+> +/* Return CPUs to OPAL before starting FW update */
+> +static void flash_return_cpu(void *info)
 > +{
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-> +	struct fsldma_chan *chan;
-> +	int i;
+> +	int cpu = smp_processor_id();
 > +
-> +	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
+> +	if (!cpu_online(cpu))
+> +		return;
 > +
-> +		spin_lock_bh(&chan->desc_lock);
-> +		chan->pm_state = SUSPENDING;
-> +		if (!list_empty(&chan->ld_pending))
-> +			fsl_chan_xfer_ld_queue(chan);
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
+> +	/* Disable IRQ */
+> +	hard_irq_disable();
 > +
-> +	return 0;
+> +	/* Return the CPU to OPAL */
+> +	opal_return_cpu();
 > +}
 > +
-> +static int fsldma_suspend(struct device *dev)
+> +/* This gets called just before system reboots */
+> +void opal_flash_term_callback(void)
 > +{
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-> +	struct fsldma_chan *chan;
-> +	int i;
+> +	struct cpumask mask;
 > +
-> +	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
+> +	if (update_flash_data.status != FLASH_IMG_READY)
+> +		return;
 > +
-> +		spin_lock_bh(&chan->desc_lock);
-> +		if (!chan->idle)
-> +			goto out;
-> +		chan->regs_save.mr = DMA_IN(chan, &chan->regs->mr, 32);
-> +		chan->pm_state = SUSPENDED;
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +	return 0;
+> +	pr_alert("FLASH: Flashing new firmware\n");
+> +	pr_alert("FLASH: Image is %u bytes\n", image_data.size);
+> +	pr_alert("FLASH: Performing flash and reboot/shutdown\n");
+> +	pr_alert("FLASH: This will take several minutes. Do not power off!\n");
 > +
-> +out:
-> +	for (; i >= 0; i--) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
-
-the pm_state should be restored too, e.g.
-     chan->pm_state = RUNNING;
-I will send new iteration for adding this.
-
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +	return -EBUSY;
+> +	/* Small delay to help getting the above message out */
+> +	msleep(500);
+> +
+> +	/* Return secondary CPUs to firmware */
+> +	cpumask_copy(&mask, cpu_online_mask);
+> +	cpumask_clear_cpu(smp_processor_id(), &mask);
+> +	if (!cpumask_empty(&mask))
+> +		smp_call_function_many(&mask,
+> +				       flash_return_cpu, NULL, false);
+> +	/* Hard disable interrupts */
+> +	hard_irq_disable();
 > +}
 > +
-> +static int fsldma_resume(struct device *dev)
+>   /*
+>    * Show candidate image status
+>    */
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+> index 1735678..42c16a6 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -98,11 +98,32 @@ static void pnv_show_cpuinfo(struct seq_file *m)
+>   	of_node_put(root);
+>   }
+>
+> +static void pnv_prepare_going_down(void)
 > +{
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-> +	struct fsldma_chan *chan;
-> +	u32 mode;
-> +	int i;
+> +	/*
+> +	 * Disable all notifiers from OPAL, we can't
+> +	 * service interrupts anymore anyway
+> +	 */
+> +	opal_notifier_disable();
 > +
-> +	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
+> +	/* Soft disable interrupts */
+> +	local_irq_disable();
 > +
-> +		spin_lock_bh(&chan->desc_lock);
-> +		mode = chan->regs_save.mr
-> +			& ~FSL_DMA_MR_CS & ~FSL_DMA_MR_CC & ~FSL_DMA_MR_CA;
-> +		DMA_OUT(chan, &chan->regs->mr, mode, 32);
-> +		chan->pm_state = RUNNING;
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +
-> +	return 0;
+> +	/*
+> +	 * Return secondary CPUs to firwmare if a flash update
+> +	 * is pending otherwise we will get all sort of error
+> +	 * messages about CPU being stuck etc.. This will also
+> +	 * have the side effect of hard disabling interrupts so
+> +	 * past this point, the kernel is effectively dead.
+> +	 */
+> +	opal_flash_term_callback();
 > +}
 > +
-> +static const struct dev_pm_ops fsldma_pm_ops = {
-> +	.prepare	= fsldma_prepare,
-> +	.suspend	= fsldma_suspend,
-> +	.resume		= fsldma_resume,
-> +};
-> +#endif
-> +
->   static const struct of_device_id fsldma_of_ids[] = {
->   	{ .compatible = "fsl,elo3-dma", },
->   	{ .compatible = "fsl,eloplus-dma", },
-> @@ -1462,6 +1558,9 @@ static struct platform_driver fsldma_of_driver = {
->   		.name = "fsl-elo-dma",
->   		.owner = THIS_MODULE,
->   		.of_match_table = fsldma_of_ids,
-> +#ifdef CONFIG_PM
-> +		.pm = &fsldma_pm_ops,
-> +#endif
->   	},
->   	.probe = fsldma_of_probe,
->   	.remove = fsldma_of_remove,
-> diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-> index ec19517..eecaf9e 100644
-> --- a/drivers/dma/fsldma.h
-> +++ b/drivers/dma/fsldma.h
-> @@ -134,6 +134,18 @@ struct fsldma_device {
->   #define FSL_DMA_CHAN_PAUSE_EXT	0x00001000
->   #define FSL_DMA_CHAN_START_EXT	0x00002000
->   
-> +#ifdef CONFIG_PM
-> +struct fsldma_chan_regs_save {
-> +	u32 mr;
-> +};
-> +
-> +enum fsldma_pm_state {
-> +	RUNNING = 0,
-> +	SUSPENDING,
-> +	SUSPENDED,
-> +};
-> +#endif
-> +
->   struct fsldma_chan {
->   	char name[8];			/* Channel name */
->   	struct fsldma_chan_regs __iomem *regs;
-> @@ -161,6 +173,10 @@ struct fsldma_chan {
->   	struct tasklet_struct tasklet;
->   	u32 feature;
->   	bool idle;			/* DMA controller is idle */
-> +#ifdef CONFIG_PM
-> +	struct fsldma_chan_regs_save regs_save;
-> +	enum fsldma_pm_state pm_state;
-> +#endif
->   
->   	void (*toggle_ext_pause)(struct fsldma_chan *fsl_chan, int enable);
->   	void (*toggle_ext_start)(struct fsldma_chan *fsl_chan, int enable);
+>   static void  __noreturn pnv_restart(char *cmd)
+>   {
+>   	long rc = OPAL_BUSY;
+>
+> -	opal_notifier_disable();
+> +	pnv_prepare_going_down();
+>
+>   	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+>   		rc = opal_cec_reboot();
+> @@ -119,7 +140,7 @@ static void __noreturn pnv_power_off(void)
+>   {
+>   	long rc = OPAL_BUSY;
+>
+> -	opal_notifier_disable();
+> +	pnv_prepare_going_down();
+>
+>   	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
+>   		rc = opal_cec_power_down(0);
+>
