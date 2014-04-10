@@ -1,32 +1,30 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kernelfans@gmail.com>
+Received: from mail-oa0-f41.google.com (mail-oa0-f41.google.com
+ [209.85.219.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5845E1400E4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 03:19:34 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Thu, 10 Apr 2014 03:19:28 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 66370357803F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 03:19:22 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s39HJ8R16553862
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 03:19:08 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s39HJLGs011713
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 03:19:22 +1000
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 01/60] powerpc/powernv: Return secondary CPUs to firmware
- before FW update
-Date: Wed,  9 Apr 2014 22:48:55 +0530
-Message-Id: <1397063935-30478-1-git-send-email-hegdevasant@linux.vnet.ibm.com>
-Cc: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 0708E140097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 13:28:25 +1000 (EST)
+Received: by mail-oa0-f41.google.com with SMTP id j17so3835528oag.14
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Apr 2014 20:28:23 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <53426385.2010102@suse.de>
+References: <1390292129-15871-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <8761pdk6x5.fsf@linux.vnet.ibm.com>
+ <C4D7ADEA-9CEB-4717-9AFD-CC8EFB18184A@suse.de>
+ <CAFgQCTs8LSXUi+AwxR9j+2-QRGw4EFZWx-JxktAnJ3VvwLJb9A@mail.gmail.com>
+ <533D47CD.906@suse.com> <87bnwdshzu.fsf@linux.vnet.ibm.com>
+ <53426385.2010102@suse.de>
+Date: Thu, 10 Apr 2014 11:28:22 +0800
+Message-ID: <CAFgQCTtbxRYMBVQL5Fw0254sFAZ_HSzkAfiH0ppNXacRSmxu-w@mail.gmail.com>
+Subject: Re: [PATCH v2] powernv: kvm: make _PAGE_NUMA take effect
+From: Liu ping fan <kernelfans@gmail.com>
+To: Alexander Graf <agraf@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: kvm-devel <kvm@vger.kernel.org>, kvm-ppc <kvm-ppc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,153 +34,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Firmware update on PowerNV platform takes several minutes. During
-this time one CPU is stuck in FW and the kernel complains about "soft
-lockups".
+On Mon, Apr 7, 2014 at 4:36 PM, Alexander Graf <agraf@suse.de> wrote:
+>
+> On 07.04.14 09:42, Aneesh Kumar K.V wrote:
+>>
+>> Alexander Graf <agraf@suse.com> writes:
+>>
+>>> On 03.04.14 04:36, Liu ping fan wrote:
+>>>>
+>>>> Hi Alex, could you help to pick up this patch? since  v3.14 kernel can
+>>>> enable numa fault for powerpc.
+>>>
+>>> What bad happens without this patch? We map a page even though it was
+>>> declared to get NUMA migrated? What happens next?
+>>
+>> Nothing much, we won't be properly accounting the numa access in the
+>> host.  What we want to achieve is to convert a guest access of the page to
+>> a host fault so that we can do proper numa access accounting in the
+>> host. This would enable us to migrate the page to the correct numa
+>> node.
+>
+>
+> Ok, so no breakages, just less performance. I wouldn't consider it stable
+> material then :).
+>
+Sorry to reply late, since I am half out of office during this period.
+I am puzzling about you reply.    Without this patch, the guest can
+NOT sense the numa changes and ask host to put the pages in right
+place.  So the pages which is used by guest will be always misplaced.
+The numa-fault method is inspired by real requirement to improve
+performance, so we should also consider the performance drop of guest.
+Right?
 
-This patch returns all secondary CPUs to firmware before starting
-firmware update process.
+Regards,
+Fan
 
-[ Reworked a bit and cleaned up -- BenH ]
-
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/include/asm/opal.h             |  1 +
- arch/powerpc/platforms/powernv/opal-flash.c | 47 ++++++++++++++++++++++++++---
- arch/powerpc/platforms/powernv/setup.c      | 25 +++++++++++++--
- 3 files changed, 66 insertions(+), 7 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 05a23d0..5c34170 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -922,6 +922,7 @@ extern unsigned long opal_get_boot_time(void);
- extern void opal_nvram_init(void);
- extern int opal_elog_register_init(void);
- extern void opal_flash_init(void);
-+extern void opal_flash_term_callback(void);
- extern int opal_elog_init(void);
- extern void opal_platform_dump_init(void);
- extern void opal_sys_param_init(void);
-diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
-index 16e571b..11ab43f 100644
---- a/arch/powerpc/platforms/powernv/opal-flash.c
-+++ b/arch/powerpc/platforms/powernv/opal-flash.c
-@@ -20,6 +20,7 @@
- #include <linux/mm.h>
- #include <linux/vmalloc.h>
- #include <linux/pagemap.h>
-+#include <linux/delay.h>
- 
- #include <asm/opal.h>
- 
-@@ -388,11 +389,6 @@ static int opal_flash_update(int op)
- 			(sg->num_entries * sizeof(struct opal_sg_entry) + 16);
- 	}
- 
--	pr_alert("FLASH: Image is %u bytes\n", image_data.size);
--	pr_alert("FLASH: Image update requested\n");
--	pr_alert("FLASH: Image will be updated during system reboot\n");
--	pr_alert("FLASH: This will take several minutes. Do not power off!\n");
--
- flash:
- 	rc = opal_update_flash(addr);
- 
-@@ -400,6 +396,47 @@ invalid_img:
- 	return rc;
- }
- 
-+/* Return CPUs to OPAL before starting FW update */
-+static void flash_return_cpu(void *info)
-+{
-+	int cpu = smp_processor_id();
-+
-+	if (!cpu_online(cpu))
-+		return;
-+
-+	/* Disable IRQ */
-+	hard_irq_disable();
-+
-+	/* Return the CPU to OPAL */
-+	opal_return_cpu();
-+}
-+
-+/* This gets called just before system reboots */
-+void opal_flash_term_callback(void)
-+{
-+	struct cpumask mask;
-+
-+	if (update_flash_data.status != FLASH_IMG_READY)
-+		return;
-+
-+	pr_alert("FLASH: Flashing new firmware\n");
-+	pr_alert("FLASH: Image is %u bytes\n", image_data.size);
-+	pr_alert("FLASH: Performing flash and reboot/shutdown\n");
-+	pr_alert("FLASH: This will take several minutes. Do not power off!\n");
-+
-+	/* Small delay to help getting the above message out */
-+	msleep(500);
-+
-+	/* Return secondary CPUs to firmware */
-+	cpumask_copy(&mask, cpu_online_mask);
-+	cpumask_clear_cpu(smp_processor_id(), &mask);
-+	if (!cpumask_empty(&mask))
-+		smp_call_function_many(&mask,
-+				       flash_return_cpu, NULL, false);
-+	/* Hard disable interrupts */
-+	hard_irq_disable();
-+}
-+
- /*
-  * Show candidate image status
-  */
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 1735678..42c16a6 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -98,11 +98,32 @@ static void pnv_show_cpuinfo(struct seq_file *m)
- 	of_node_put(root);
- }
- 
-+static void pnv_prepare_going_down(void)
-+{
-+	/*
-+	 * Disable all notifiers from OPAL, we can't
-+	 * service interrupts anymore anyway
-+	 */
-+	opal_notifier_disable();
-+
-+	/* Soft disable interrupts */
-+	local_irq_disable();
-+
-+	/*
-+	 * Return secondary CPUs to firwmare if a flash update
-+	 * is pending otherwise we will get all sort of error
-+	 * messages about CPU being stuck etc.. This will also
-+	 * have the side effect of hard disabling interrupts so
-+	 * past this point, the kernel is effectively dead.
-+	 */
-+	opal_flash_term_callback();
-+}
-+
- static void  __noreturn pnv_restart(char *cmd)
- {
- 	long rc = OPAL_BUSY;
- 
--	opal_notifier_disable();
-+	pnv_prepare_going_down();
- 
- 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
- 		rc = opal_cec_reboot();
-@@ -119,7 +140,7 @@ static void __noreturn pnv_power_off(void)
- {
- 	long rc = OPAL_BUSY;
- 
--	opal_notifier_disable();
-+	pnv_prepare_going_down();
- 
- 	while (rc == OPAL_BUSY || rc == OPAL_BUSY_EVENT) {
- 		rc = opal_cec_power_down(0);
--- 
-1.8.3.1
+>
+> Alex
+>
