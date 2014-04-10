@@ -1,43 +1,28 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A3D86140089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 18:29:37 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 10 Apr 2014 13:59:34 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8A019E0053
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 14:03:45 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3A8TanC5439952
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 13:59:36 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3A8TU0T018176
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 13:59:31 +0530
-Message-ID: <53465669.80701@linux.vnet.ibm.com>
-Date: Thu, 10 Apr 2014 13:59:29 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 69DD5140098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 18:48:01 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 15865-07 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 10 Apr 2014 09:47:51 +0100 (BST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: "'hongbo.zhang@freescale.com'" <hongbo.zhang@freescale.com>,
+ "vkoul@infradead.org" <vkoul@infradead.org>, "dan.j.williams@intel.com"
+ <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org"
+ <dmaengine@vger.kernel.org>
+Subject: RE: [PATCH v3 2/8] DMA: Freescale: unify register access methods
+Date: Thu, 10 Apr 2014 08:46:14 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6F4317@AcuExch.aculab.com>
+References: <1397113805-24171-1-git-send-email-hongbo.zhang@freescale.com>
+ <1397113805-24171-3-git-send-email-hongbo.zhang@freescale.com>
+In-Reply-To: <1397113805-24171-3-git-send-email-hongbo.zhang@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Dave Hansen <dave.hansen@intel.com>, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
-References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
- <533EDB63.8090909@intel.com> <5344A312.80802@linux.vnet.ibm.com>
- <20140409082008.GA10526@twins.programming.kicks-ass.net>
- <53456BE2.90905@intel.com>
-In-Reply-To: <53456BE2.90905@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
- x86@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "leo.li@freescale.com" <leo.li@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,21 +32,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 09 April 2014 09:18 PM, Dave Hansen wrote:
-> On 04/09/2014 01:20 AM, Peter Zijlstra wrote:
->> This still misses out on Ben's objection that its impossible to get this
->> right at compile time for many kernels, since they can boot and run on
->> many different subarchs.
-> 
-> Completely agree.  The Kconfig-time stuff should probably just be a knob
-> to turn it off completely, if anything.
-> 
-
-ok. Here is my thought. So to address Ben's concern, it would be better
-to have this as a variable with a default value (and the platform can
-override ride it). And a mm/Kconfig to disable it?
-Kindly let me know whether this will work.
-
-Thanks for review comments.
-With regards
-Maddy
+RnJvbTogaG9uZ2JvLnpoYW5nQGZyZWVzY2FsZS5jb20NCj4gTWV0aG9kcyBvZiBhY2Nlc3Npbmcg
+RE1BIGNvbnRvcmxsZXIgcmVnaXN0ZXJzIGFyZSBpbmNvbnNpc3RlbnQsIHNvbWUgcmVnaXN0ZXJz
+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXl4NCj4gYXJlIGFjY2Vzc2VkIGJ5IERN
+QV9JTi9PVVQgZGlyZWN0bHksIHdoaWxlIG90aGVycyBhcmUgYWNjZXNzZWQgYnkgZnVuY3Rpb25z
+DQo+IGdldC9zZXRfKiB3aGljaCBhcmUgd3JhcHBlcnMgb2YgRE1BX0lOL09VVCwgYW5kIGV2ZW4g
+Zm9yIHRoZSBCQ1IgcmVnaXN0ZXIsIGl0DQo+IGlzIHJlYWQgYnkgZ2V0X2JjciBidXQgd3JpdHRl
+biBieSBETUFfT1VULg0KPiBUaGlzIHBhdGNoIHVuaWZpZXMgdGhlIGluY29uc2lzdGVudCBtZXRo
+b2RzLCBhbGwgcmVnaXN0ZXJzIGFyZSBhY2Nlc3NlZCBieQ0KPiBnZXQvc2V0Xyogbm93Lg0KDQoJ
+RGF2aWQNCg0K
