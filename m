@@ -1,22 +1,25 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ig0-f170.google.com (mail-ig0-f170.google.com
+ [209.85.213.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 449F1140085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 01:25:36 +1000 (EST)
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: <broonie@kernel.org>
-Subject: [PATCH v6] ASoC: fsl_sai: Add clock controls for SAI
-Date: Thu, 10 Apr 2014 23:26:15 +0800
-Message-ID: <1397143575-10426-1-git-send-email-Guangyu.Chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9A67514007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 01:27:36 +1000 (EST)
+Received: by mail-ig0-f170.google.com with SMTP id uq10so927386igb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 08:27:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, linux-kernel@vger.kernel.org,
- robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com, rob@landley.net,
- galak@codeaurora.org, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+References: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 10 Apr 2014 09:27:12 -0600
+Message-ID: <CAErSpo6U7W+Nph3kCOBXcBTN7SeR9pVc5cfdQKTBDedWNnV8jg@mail.gmail.com>
+Subject: Re: [PATCH] Fix 3bc95598 'powerpc/PCI: Use list_for_each_entry() for
+ bus traversal'
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Yijing Wang <wangyijing@huawei.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, anton@samba.org,
+ "paulus@samba.org" <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,173 +29,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The SAI mainly has the following clocks:
-  bus clock
-    control and configure registers and to generate synchronous
-    interrupts and DMA requests.
+On Thu, Apr 10, 2014 at 12:51 AM, Mike Qiu <qiudayu@linux.vnet.ibm.com> wrote:
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc000000000041d78
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> ...
+> NIP [c000000000041d78] .sys_pciconfig_iobase+0x68/0x1f0
+> LR [c000000000041e0c] .sys_pciconfig_iobase+0xfc/0x1f0
+> Call Trace:
+> [c0000003b4787db0] [c000000000041e0c] .sys_pciconfig_iobase+0xfc/0x1f0 (unreliable)
+> [c0000003b4787e30] [c000000000009ed8] syscall_exit+0x0/0x98
+>
+> This bug was introduced by commit 3bc955987fb377f3c95bc29deb498e96819b8451
+> The root cause was the 'bus' has been set to null while try to access
+> bus->next.
+>
+> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/pci_64.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 2a47790..7b6c1ae 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -209,6 +209,7 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>  {
+>         struct pci_controller* hose;
+>         struct pci_bus *bus = NULL;
+> +       struct pci_bus *tmp_bus = NULL;
+>         struct device_node *hose_node;
+>
+>         /* Argh ! Please forgive me for that hack, but that's the
+> @@ -229,10 +230,12 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>          * used on pre-domains setup. We return the first match
+>          */
+>
+> -       list_for_each_entry(bus, &pci_root_buses, node) {
+> -               if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
+> +       list_for_each_entry(tmp_bus, &pci_root_buses, node) {
+> +               if (in_bus >= tmp_bus->number &&
+> +                   in_bus <= tmp_bus->busn_res.end) {
+> +                       bus = tmp_bus;
+>                         break;
+> -               bus = NULL;
+> +               }
 
-  mclk1, mclk2, mclk3
-    to generate the bit clock when the receiver or transmitter is
-    configured for an internally generated bit clock.
+Good fix, thanks.  Sorry we didn't catch it before you tripped over
+it.  Your code is much cleaner than the previous "clear out 'bus' if
+we didn't match" style.
 
-So this patch adds these clocks and their clock controls to the driver.
+Nit: I don't think you need to initialize tmp_bus to NULL.
 
-[ To concern the old DTB cases, I've added a bit of extra code to make
-  the driver compatible with them. And by marking clock NULL if failed
-  to get, the clk_prepare() or clk_get_rate() would easily return 0
-  so no further path should be broken. -- by Nicolin ]
+Ben, I'll pick this up for v3.15 since the original change
+(3bc955987fb3) went through my tree, unless you want to handle it.
 
-Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
-Acked-by: Xiubo Li <Li.Xiubo@freescale.com>
----
+Bjorn
 
-Changelog
-v6:
- * Dropped the dtsi change since it's no more demanded with this patch.
- * Removed Shawn's ACK since we no long change dtsi in this case.
-v5:
- * Dropped mclk preparing and enabling since we are not using them currecntly.
- * Made the change compatible to the old DTB.
- * Added returned error value print.
-v4:
- * Merged into single patch.
- * Fixed bus clock ID on vf610.
-v3:
- * Use int type for ret instead of u32.
- * Added Acked-by and Tested-by from Xiubo Li.
-v2:
- * Appended two extra mclks to the driver since SAI actually has three.
- * Renamed clock name to 'bus' and 'mclk' according to the reference manual.
-
- .../devicetree/bindings/sound/fsl-sai.txt          |  9 +++--
- sound/soc/fsl/fsl_sai.c                            | 38 ++++++++++++++++++++--
- sound/soc/fsl/fsl_sai.h                            |  4 +++
- 3 files changed, 46 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/sound/fsl-sai.txt b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-index 35c09fe..0f4e238 100644
---- a/Documentation/devicetree/bindings/sound/fsl-sai.txt
-+++ b/Documentation/devicetree/bindings/sound/fsl-sai.txt
-@@ -10,7 +10,8 @@ Required properties:
- - compatible: Compatible list, contains "fsl,vf610-sai" or "fsl,imx6sx-sai".
- - reg: Offset and length of the register set for the device.
- - clocks: Must contain an entry for each entry in clock-names.
--- clock-names : Must include the "sai" entry.
-+- clock-names : Must include the "bus" for register access and "mclk1" "mclk2"
-+  "mclk3" for bit clock and frame clock providing.
- - dmas : Generic dma devicetree binding as described in
-   Documentation/devicetree/bindings/dma/dma.txt.
- - dma-names : Two dmas have to be defined, "tx" and "rx".
-@@ -30,8 +31,10 @@ sai2: sai@40031000 {
- 	      reg = <0x40031000 0x1000>;
- 	      pinctrl-names = "default";
- 	      pinctrl-0 = <&pinctrl_sai2_1>;
--	      clocks = <&clks VF610_CLK_SAI2>;
--	      clock-names = "sai";
-+	      clocks = <&clks VF610_CLK_PLATFORM_BUS>,
-+		     <&clks VF610_CLK_SAI2>,
-+		     <&clks 0>, <&clks 0>;
-+	      clock-names = "bus", "mclk1", "mclk2", "mclk3";
- 	      dma-names = "tx", "rx";
- 	      dmas = <&edma0 0 VF610_EDMA_MUXID0_SAI2_TX>,
- 		   <&edma0 0 VF610_EDMA_MUXID0_SAI2_RX>;
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index db9f75e..5fff2e1 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -401,7 +401,15 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
- 		struct snd_soc_dai *cpu_dai)
- {
- 	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
-+	struct device *dev = &sai->pdev->dev;
- 	u32 reg;
-+	int ret;
-+
-+	ret = clk_prepare_enable(sai->bus_clk);
-+	if (ret) {
-+		dev_err(dev, "failed to enable bus clock: %d\n", ret);
-+		return ret;
-+	}
- 
- 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
- 		reg = FSL_SAI_TCR3;
-@@ -427,6 +435,8 @@ static void fsl_sai_shutdown(struct snd_pcm_substream *substream,
- 
- 	regmap_update_bits(sai->regmap, reg, FSL_SAI_CR3_TRCE,
- 			   ~FSL_SAI_CR3_TRCE);
-+
-+	clk_disable_unprepare(sai->bus_clk);
- }
- 
- static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
-@@ -559,7 +569,8 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 	struct fsl_sai *sai;
- 	struct resource *res;
- 	void __iomem *base;
--	int irq, ret;
-+	char tmp[8];
-+	int irq, ret, i;
- 
- 	sai = devm_kzalloc(&pdev->dev, sizeof(*sai), GFP_KERNEL);
- 	if (!sai)
-@@ -582,12 +593,35 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		return PTR_ERR(base);
- 
- 	sai->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
--			"sai", base, &fsl_sai_regmap_config);
-+			"bus", base, &fsl_sai_regmap_config);
-+
-+	/* Compatible with old DTB cases */
-+	if (IS_ERR(sai->regmap))
-+		sai->regmap = devm_regmap_init_mmio_clk(&pdev->dev,
-+				"sai", base, &fsl_sai_regmap_config);
- 	if (IS_ERR(sai->regmap)) {
- 		dev_err(&pdev->dev, "regmap init failed\n");
- 		return PTR_ERR(sai->regmap);
- 	}
- 
-+	/* No error out for old DTB cases but only mark the clock NULL */
-+	sai->bus_clk = devm_clk_get(&pdev->dev, "bus");
-+	if (IS_ERR(sai->bus_clk)) {
-+		dev_err(&pdev->dev, "failed to get bus clock: %ld\n",
-+				PTR_ERR(sai->bus_clk));
-+		sai->bus_clk = NULL;
-+	}
-+
-+	for (i = 0; i < FSL_SAI_MCLK_MAX; i++) {
-+		sprintf(tmp, "mclk%d", i + 1);
-+		sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
-+		if (IS_ERR(sai->mclk_clk[i])) {
-+			dev_err(&pdev->dev, "failed to get mclk%d clock: %ld\n",
-+					i + 1, PTR_ERR(sai->mclk_clk[i]));
-+			sai->mclk_clk[i] = NULL;
-+		}
-+	}
-+
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0) {
- 		dev_err(&pdev->dev, "no irq for node %s\n", np->full_name);
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index 677670d..0e6c9f5 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -119,6 +119,8 @@
- #define FSL_SAI_CLK_MAST2	2
- #define FSL_SAI_CLK_MAST3	3
- 
-+#define FSL_SAI_MCLK_MAX	3
-+
- /* SAI data transfer numbers per DMA request */
- #define FSL_SAI_MAXBURST_TX 6
- #define FSL_SAI_MAXBURST_RX 6
-@@ -126,6 +128,8 @@
- struct fsl_sai {
- 	struct platform_device *pdev;
- 	struct regmap *regmap;
-+	struct clk *bus_clk;
-+	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
- 
- 	bool big_endian_regs;
- 	bool big_endian_data;
--- 
-1.8.4
+>         }
+>         if (bus == NULL || bus->dev.of_node == NULL)
+>                 return -ENODEV;
+> --
+> 1.8.0.1
+>
