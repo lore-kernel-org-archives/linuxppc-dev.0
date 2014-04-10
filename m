@@ -1,24 +1,24 @@
-Return-Path: <linus.walleij@linaro.org>
-Received: from mail-ob0-f174.google.com (mail-ob0-f174.google.com
- [209.85.214.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DE685140085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 02:30:20 +1000 (EST)
-Received: by mail-ob0-f174.google.com with SMTP id wo20so4648439obc.19
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 09:30:17 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1396156455-4225-1-git-send-email-shc_work@mail.ru>
+Return-Path: <shc_work@mail.ru>
+Received: from fallback4.mail.ru (fallback4.mail.ru [94.100.176.42])
+ by ozlabs.org (Postfix) with ESMTP id 6C80D140081
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 02:42:19 +1000 (EST)
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+To: =?UTF-8?B?TGludXMgV2FsbGVpag==?= <linus.walleij@linaro.org>
+Subject: =?UTF-8?B?UmU6IFtQQVRDSF0gZ3BpbzogZ2U6IENvbnZlcnQgdG8gcGxhdGZvcm0gZHJp?=
+ =?UTF-8?B?dmVy?=
+Mime-Version: 1.0
+Date: Thu, 10 Apr 2014 20:37:42 +0400
+Message-ID: <1397147862.773277466@f426.i.mail.ru>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <CACRpkdZMabAQuribdmt=bK_1RF1_oSOeiEquXAuxyq3adtE8-g@mail.gmail.com>
 References: <1396156455-4225-1-git-send-email-shc_work@mail.ru>
-Date: Thu, 10 Apr 2014 18:30:16 +0200
-Message-ID: <CACRpkdZMabAQuribdmt=bK_1RF1_oSOeiEquXAuxyq3adtE8-g@mail.gmail.com>
-Subject: Re: [PATCH] gpio: ge: Convert to platform driver
-From: Linus Walleij <linus.walleij@linaro.org>
-To: Alexander Shiyan <shc_work@mail.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Alexandre Courbot <gnurou@gmail.com>
+ <CACRpkdZMabAQuribdmt=bK_1RF1_oSOeiEquXAuxyq3adtE8-g@mail.gmail.com>
+Cc: =?UTF-8?B?bGludXgtZ3Bpb0B2Z2VyLmtlcm5lbC5vcmc=?=
+ <linux-gpio@vger.kernel.org>,
+ =?UTF-8?B?bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcgbGlzdA==?=
+ <linuxppc-dev@lists.ozlabs.org>,
+ =?UTF-8?B?QWxleGFuZHJlIENvdXJib3Q=?= <gnurou@gmail.com>
+Reply-To: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,16 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 30, 2014 at 7:14 AM, Alexander Shiyan <shc_work@mail.ru> wrote:
-
-> This patch converts GE I/O FPGA GPIO driver to platform driver.
->
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
-> Only compile tested.
-
-Isn't it necessary to also patch affected platforms to add this
-device either as platform device or in their device trees?
-
-Yours,
-Linus Walleij
+VGh1LCAxMCBBcHIgMjAxNCAxODozMDoxNiArMDIwMCDQvtGCIExpbnVzIFdhbGxlaWogPGxpbnVz
+LndhbGxlaWpAbGluYXJvLm9yZz46Cj4gT24gU3VuLCBNYXIgMzAsIDIwMTQgYXQgNzoxNCBBTSwg
+QWxleGFuZGVyIFNoaXlhbiA8c2hjX3dvcmtAbWFpbC5ydT4gd3JvdGU6Cj4gCj4gPiBUaGlzIHBh
+dGNoIGNvbnZlcnRzIEdFIEkvTyBGUEdBIEdQSU8gZHJpdmVyIHRvIHBsYXRmb3JtIGRyaXZlci4K
+PiA+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBBbGV4YW5kZXIgU2hpeWFuIDxzaGNfd29ya0BtYWlsLnJ1
+Pgo+ID4gLS0tCj4gPiBPbmx5IGNvbXBpbGUgdGVzdGVkLgo+IAo+IElzbid0IGl0IG5lY2Vzc2Fy
+eSB0byBhbHNvIHBhdGNoIGFmZmVjdGVkIHBsYXRmb3JtcyB0byBhZGQgdGhpcwo+IGRldmljZSBl
+aXRoZXIgYXMgcGxhdGZvcm0gZGV2aWNlIG9yIGluIHRoZWlyIGRldmljZSB0cmVlcz8KClRoZSBk
+ZXZpY2UgaXMgYWxyZWFkeSBpbiB0aGUgdHJlZSwgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2dlKi5k
+dHMgZm9yIGV4YW1wbGUuCkluIGFueSBjYXNlLCBhcyBJIGhhdmUgc2FpZCwgSSB3aWxsIGRvIGEg
+c2Vjb25kIHZlcnNpb24sIGFzIHRoaXMgY29udGFpbnMgc29tZQppbmNvbnNpc3RlbmNpZXMuCgot
+LS0KCg==
