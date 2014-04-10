@@ -1,24 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C63C9140088
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 06:56:20 +1000 (EST)
-Message-ID: <1397163353.3671.194.camel@pasglop>
-Subject: Re: [PATCH] Fix 3bc95598 'powerpc/PCI: Use list_for_each_entry()
- for bus traversal'
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 11 Apr 2014 06:55:53 +1000
-In-Reply-To: <CAErSpo6U7W+Nph3kCOBXcBTN7SeR9pVc5cfdQKTBDedWNnV8jg@mail.gmail.com>
-References: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <CAErSpo6U7W+Nph3kCOBXcBTN7SeR9pVc5cfdQKTBDedWNnV8jg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Yijing Wang <wangyijing@huawei.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Mike Qiu <qiudayu@linux.vnet.ibm.com>, anton@samba.org,
- "paulus@samba.org" <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id 12DD81400D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 09:08:11 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 10 Apr 2014 19:08:08 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D3CFCC9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 19:08:01 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3AN85uj2818340
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 23:08:05 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3AN842Q002344
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 19:08:05 -0400
+Date: Thu, 10 Apr 2014 16:07:59 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Andrew Morton <akmp@linux-foundation.org>
+Subject: [PATCH] hugetlb: ensure hugepage access is denied if hugepages are
+ not supported
+Message-ID: <20140410230758.GC4181@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nadia Yvette Chambers <nyc@holomorphy.com>, linuxppc-dev@lists.ozlabs.org,
+ Mel Gorman <mgorman@suse.de>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +42,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-04-10 at 09:27 -0600, Bjorn Helgaas wrote:
-> Ben, I'll pick this up for v3.15 since the original change
-> (3bc955987fb3) went through my tree, unless you want to handle it.
+In KVM guests on Power, in a guest not backed by hugepages, we see the
+following:
 
-Nah, go for it, I'm about to go on vacation for a week :-)
+AnonHugePages:         0 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:         64 kB
 
-Thanks !
+HPAGE_SHIFT == 0 in this configuration, which indicates that hugepages
+are not supported at boot-time, but this is only checked in
+hugetlb_init(). Extract the check to a helper function, and use it in a
+few relevant places.
 
-Cheers,
-Ben.
+Without this change, I am seeing the following when I `mount -t
+hugetlbfs /none /dev/hugetlbfs`, and then simply do a `ls
+/dev/hugetlbfs`. I think it's related to the fact that hugetlbfs is
+properly not correctly setting itself up in this state?:
+
+Unable to handle kernel paging request for data at address 0x00000031
+Faulting instruction address: 0xc000000000245710
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2048 NUMA pSeries
+Modules linked in: pseries_rng rng_core virtio_net virtio_pci
+virtio_ring virtio
+CPU: 0 PID: 1807 Comm: ls Not tainted 3.14.0-rc7-00066-g774868c-dirty
+task: c00000007e804520 ti: c00000007aed4000 task.ti: c00000007aed4000
+NIP: c000000000245710 LR: c00000000024586c CTR: 0000000000000000
+REGS: c00000007aed74f0 TRAP: 0300   Not tainted
++(3.14.0-rc7-00066-g774868c-dirty)
+MSR: 8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 24002484  XER: 00000000
+CFAR: 00003fff91037760 DAR: 0000000000000031 DSISR: 40000000 SOFTE: 1
+GPR00: c00000000024586c c00000007aed7770 c000000000d85420 c00000007d7a0010
+GPR04: c000000000abcf20 c000000000ed7c78 0000000000000020 c000000000cbc880
+GPR08: 0000000000000000 0000000000000000 0000000080000000 0000000000000002
+GPR12: 0000000044002484 c00000000fe40000 0000000000000000 00000000100232f0
+GPR16: 0000000000000001 0000000000000000 0000000000000000 c00000007d794a40
+GPR20: 0000000000000000 0000000000000024 c00000007a49a200 c00000007a2bd000
+GPR24: c00000007aed7bb8 c00000007d7a0090 0000000000014800 0000000000000000
+GPR28: c00000007d7a0010 c00000007a49a210 c00000007d7a0150 0000000000000001
+NIP [c000000000245710] .time_out_leases+0x30/0x100
+LR [c00000000024586c] .__break_lease+0x8c/0x480
+Call Trace:
+[c00000007aed7770] [c0000000002434c0] .lease_alloc+0x20/0xe0 (unreliable)
+[c00000007aed77f0] [c00000000024586c] .__break_lease+0x8c/0x480
+[c00000007aed78e0] [c0000000001e0374] .do_dentry_open.isra.14+0xf4/0x370
+[c00000007aed7980] [c0000000001e0624] .finish_open+0x34/0x60
+[c00000007aed7a00] [c0000000001f519c] .do_last+0x56c/0xe40
+[c00000007aed7b20] [c0000000001f5b68] .path_openat+0xf8/0x800
+[c00000007aed7c40] [c0000000001f7810] .do_filp_open+0x40/0xb0
+[c00000007aed7d70] [c0000000001e1f08] .do_sys_open+0x198/0x2e0
+[c00000007aed7e30] [c00000000000a158] syscall_exit+0x0/0x98
+
+Additionally, using hugepages in such guests eventually crashes the
+guest kerenl, as hugepages aren't actually supported and we end up
+corrupting various lists in the core MM.
+
+This does make hugetlbfs not supported in this environment. I believe
+this is fine, as there are no valid hugepages and that won't change at
+runtime.
+
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Acked-by: Mel Gorman <mgorman@suse.de>
+
+---
+
+v1 -> v2: removed RFC
+v2 -> v3: updated changelog to include hugetlbfs crash and other error
+information, change hugetlbfs printk to KERN_INFO
+
+diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
+index 2040275..ea8d677 100644
+--- a/fs/hugetlbfs/inode.c
++++ b/fs/hugetlbfs/inode.c
+@@ -1030,6 +1030,11 @@ static int __init init_hugetlbfs_fs(void)
+ 	int error;
+ 	int i;
+ 
++	if (!hugepages_supported()) {
++		printk(KERN_INFO "hugetlbfs: Disabling because there are no supported hugepage sizes\n");
++		return -ENOTSUPP;
++	}
++
+ 	error = bdi_init(&hugetlbfs_backing_dev_info);
+ 	if (error)
+ 		return error;
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 5b337cf..b0f0a1c 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -460,4 +460,14 @@ static inline spinlock_t *huge_pte_lock(struct hstate *h,
+ 	return ptl;
+ }
+ 
++static inline bool hugepages_supported(void)
++{
++	/*
++	 * Some platform decide whether they support huge pages at boot
++	 * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
++	 * there is no such support
++	 */
++	return HPAGE_SHIFT != 0;
++}
++
+ #endif /* _LINUX_HUGETLB_H */
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index dd30f22..fd43528 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -1980,11 +1980,7 @@ static int __init hugetlb_init(void)
+ {
+ 	int i;
+ 
+-	/* Some platform decide whether they support huge pages at boot
+-	 * time. On these, such as powerpc, HPAGE_SHIFT is set to 0 when
+-	 * there is no such support
+-	 */
+-	if (HPAGE_SHIFT == 0)
++	if (!hugepages_supported())
+ 		return 0;
+ 
+ 	if (!size_to_hstate(default_hstate_size)) {
+@@ -2111,6 +2107,9 @@ static int hugetlb_sysctl_handler_common(bool obey_mempolicy,
+ 	unsigned long tmp;
+ 	int ret;
+ 
++	if (!hugepages_supported())
++		return -ENOTSUPP;
++
+ 	tmp = h->max_huge_pages;
+ 
+ 	if (write && h->order >= MAX_ORDER)
+@@ -2164,6 +2163,9 @@ int hugetlb_overcommit_handler(struct ctl_table *table, int write,
+ 	unsigned long tmp;
+ 	int ret;
+ 
++	if (!hugepages_supported())
++		return -ENOTSUPP;
++
+ 	tmp = h->nr_overcommit_huge_pages;
+ 
+ 	if (write && h->order >= MAX_ORDER)
+@@ -2189,6 +2191,8 @@ out:
+ void hugetlb_report_meminfo(struct seq_file *m)
+ {
+ 	struct hstate *h = &default_hstate;
++	if (!hugepages_supported())
++		return;
+ 	seq_printf(m,
+ 			"HugePages_Total:   %5lu\n"
+ 			"HugePages_Free:    %5lu\n"
+@@ -2205,6 +2209,8 @@ void hugetlb_report_meminfo(struct seq_file *m)
+ int hugetlb_report_node_meminfo(int nid, char *buf)
+ {
+ 	struct hstate *h = &default_hstate;
++	if (!hugepages_supported())
++		return 0;
+ 	return sprintf(buf,
+ 		"Node %d HugePages_Total: %5u\n"
+ 		"Node %d HugePages_Free:  %5u\n"
+@@ -2219,6 +2225,9 @@ void hugetlb_show_meminfo(void)
+ 	struct hstate *h;
+ 	int nid;
+ 
++	if (!hugepages_supported())
++		return;
++
+ 	for_each_node_state(nid, N_MEMORY)
+ 		for_each_hstate(h)
+ 			pr_info("Node %d hugepages_total=%u hugepages_free=%u hugepages_surp=%u hugepages_size=%lukB\n",
