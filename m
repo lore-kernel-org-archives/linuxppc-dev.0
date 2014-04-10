@@ -1,21 +1,36 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id 5FD981400EB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 22:06:26 +1000 (EST)
-Message-ID: <1397131557.11914.113.camel@smile.fi.intel.com>
-Subject: Re: [PATCH v3 8/8] DMA: Freescale: add suspend resume functions for
- DMA driver
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: hongbo.zhang@freescale.com
-Date: Thu, 10 Apr 2014 15:05:57 +0300
-In-Reply-To: <1397113805-24171-9-git-send-email-hongbo.zhang@freescale.com>
-References: <1397113805-24171-1-git-send-email-hongbo.zhang@freescale.com>
- <1397113805-24171-9-git-send-email-hongbo.zhang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: leo.li@freescale.com, vkoul@infradead.org, linux-kernel@vger.kernel.org,
- scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 93C271400DF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 23:02:25 +1000 (EST)
+Received: from /spool/local
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 10 Apr 2014 14:02:19 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id CDA7417D805C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 14:03:10 +0100 (BST)
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3AD2D2a63701110
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 13:02:13 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3AD2FuN023505
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 07:02:16 -0600
+Subject: [PATCH] PCI/hotplug/rphahp: Fix endianess issues
+To: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Thu, 10 Apr 2014 15:02:13 +0200
+Message-ID: <20140410130213.8435.16459.stgit@nimbus>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: mdroth@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,202 +40,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-04-10 at 15:10 +0800, hongbo.zhang@freescale.com wrote:
-> From: Hongbo Zhang <hongbo.zhang@freescale.com>
-> 
-> This patch adds suspend resume functions for Freescale DMA driver.
-> .prepare callback is used to stop further descriptors from being added into the
-> pending queue, and also issue pending queues into execution if there is any.
-> .suspend callback makes sure all the pending jobs are cleaned up and all the
-> channels are idle, and save the mode registers.
-> .resume callback re-initializes the channels by restore the mode registers.
+Numerical values stored in the device tree are encoded in Big Endian and
+should be byte swapped when running in Little Endian.
 
-Like we discussed with Vinod [1] the DMA controller drivers should go to
-suspend after users and come back before them.
+RPA hot plug module should convert those values as well.
 
-After you reconsider this point the patch logic might be modified a lot.
+Note that in rpaphp_get_drc_props the comparison between indexes[i+1] and
+*index is done using the BE values (whatever is the current endianess).
+This doesn't matter since we are checking for equality here. This way only
+the returned value is byte swapped.
 
-(Moreover, you abuse your own position to use only setters/getters to
-access to the DMAc registers)
+RPA also made RTAS calls which implies BE values to be used. According to
+the patch done in RTAS (http://patchwork.ozlabs.org/patch/336865), no
+additional conversion is required in RPA.
 
-[1] http://www.spinics.net/lists/kernel/msg1650974.html
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ drivers/pci/hotplug/rpaphp_core.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-
-> 
-> Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
-> ---
->  drivers/dma/fsldma.c |  100 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/dma/fsldma.h |   16 ++++++++
->  2 files changed, 116 insertions(+)
-> 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index c9bf54a..d6da222 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -400,6 +400,14 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
->  
->  	spin_lock_bh(&chan->desc_lock);
->  
-> +#ifdef CONFIG_PM
-> +	if (unlikely(chan->pm_state != RUNNING)) {
-> +		chan_dbg(chan, "cannot submit due to suspend\n");
-> +		spin_unlock_bh(&chan->desc_lock);
-> +		return -1;
-> +	}
-> +#endif
-> +
->  	/*
->  	 * assign cookies to all of the software descriptors
->  	 * that make up this transaction
-> @@ -1311,6 +1319,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
->  	INIT_LIST_HEAD(&chan->ld_running);
->  	INIT_LIST_HEAD(&chan->ld_completed);
->  	chan->idle = true;
-> +#ifdef CONFIG_PM
-> +	chan->pm_state = RUNNING;
-> +#endif
->  
->  	chan->common.device = &fdev->common;
->  	dma_cookie_init(&chan->common);
-> @@ -1450,6 +1461,92 @@ static int fsldma_of_remove(struct platform_device *op)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_PM
-> +static int fsldma_prepare(struct device *dev)
-> +{
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-> +	struct fsldma_chan *chan;
-> +	int i;
-> +
-> +	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
-> +
-> +		spin_lock_bh(&chan->desc_lock);
-> +		chan->pm_state = SUSPENDING;
-> +		if (!list_empty(&chan->ld_pending))
-> +			fsl_chan_xfer_ld_queue(chan);
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int fsldma_suspend(struct device *dev)
-> +{
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-> +	struct fsldma_chan *chan;
-> +	int i;
-> +
-> +	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
-> +
-> +		spin_lock_bh(&chan->desc_lock);
-> +		if (!chan->idle)
-> +			goto out;
-> +		chan->regs_save.mr = DMA_IN(chan, &chan->regs->mr, 32);
-> +		chan->pm_state = SUSPENDED;
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +	return 0;
-> +
-> +out:
-> +	for (; i >= 0; i--) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
-> +		chan->pm_state = RUNNING;
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +	return -EBUSY;
-> +}
-> +
-> +static int fsldma_resume(struct device *dev)
-> +{
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-> +	struct fsldma_chan *chan;
-> +	u32 mode;
-> +	int i;
-> +
-> +	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-> +		chan = fdev->chan[i];
-> +		if (!chan)
-> +			continue;
-> +
-> +		spin_lock_bh(&chan->desc_lock);
-> +		mode = chan->regs_save.mr
-> +			& ~FSL_DMA_MR_CS & ~FSL_DMA_MR_CC & ~FSL_DMA_MR_CA;
-> +		DMA_OUT(chan, &chan->regs->mr, mode, 32);
-> +		chan->pm_state = RUNNING;
-> +		spin_unlock_bh(&chan->desc_lock);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct dev_pm_ops fsldma_pm_ops = {
-> +	.prepare	= fsldma_prepare,
-> +	.suspend	= fsldma_suspend,
-> +	.resume		= fsldma_resume,
-> +};
-> +#endif
-> +
->  static const struct of_device_id fsldma_of_ids[] = {
->  	{ .compatible = "fsl,elo3-dma", },
->  	{ .compatible = "fsl,eloplus-dma", },
-> @@ -1462,6 +1559,9 @@ static struct platform_driver fsldma_of_driver = {
->  		.name = "fsl-elo-dma",
->  		.owner = THIS_MODULE,
->  		.of_match_table = fsldma_of_ids,
-> +#ifdef CONFIG_PM
-> +		.pm = &fsldma_pm_ops,
-> +#endif
->  	},
->  	.probe = fsldma_of_probe,
->  	.remove = fsldma_of_remove,
-> diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-> index ec19517..eecaf9e 100644
-> --- a/drivers/dma/fsldma.h
-> +++ b/drivers/dma/fsldma.h
-> @@ -134,6 +134,18 @@ struct fsldma_device {
->  #define FSL_DMA_CHAN_PAUSE_EXT	0x00001000
->  #define FSL_DMA_CHAN_START_EXT	0x00002000
->  
-> +#ifdef CONFIG_PM
-> +struct fsldma_chan_regs_save {
-> +	u32 mr;
-> +};
-> +
-> +enum fsldma_pm_state {
-> +	RUNNING = 0,
-> +	SUSPENDING,
-> +	SUSPENDED,
-> +};
-> +#endif
-> +
->  struct fsldma_chan {
->  	char name[8];			/* Channel name */
->  	struct fsldma_chan_regs __iomem *regs;
-> @@ -161,6 +173,10 @@ struct fsldma_chan {
->  	struct tasklet_struct tasklet;
->  	u32 feature;
->  	bool idle;			/* DMA controller is idle */
-> +#ifdef CONFIG_PM
-> +	struct fsldma_chan_regs_save regs_save;
-> +	enum fsldma_pm_state pm_state;
-> +#endif
->  
->  	void (*toggle_ext_pause)(struct fsldma_chan *fsl_chan, int enable);
->  	void (*toggle_ext_start)(struct fsldma_chan *fsl_chan, int enable);
-
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+diff --git a/drivers/pci/hotplug/rpaphp_core.c b/drivers/pci/hotplug/rpaphp_core.c
+index 4796c15..984d708 100644
+--- a/drivers/pci/hotplug/rpaphp_core.c
++++ b/drivers/pci/hotplug/rpaphp_core.c
+@@ -223,16 +223,16 @@ int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
+ 	type_tmp = (char *) &types[1];
+ 
+ 	/* Iterate through parent properties, looking for my-drc-index */
+-	for (i = 0; i < indexes[0]; i++) {
++	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
+ 		if ((unsigned int) indexes[i + 1] == *my_index) {
+ 			if (drc_name)
+ 				*drc_name = name_tmp;
+ 			if (drc_type)
+ 				*drc_type = type_tmp;
+ 			if (drc_index)
+-				*drc_index = *my_index;
++				*drc_index = be32_to_cpu(*my_index);
+ 			if (drc_power_domain)
+-				*drc_power_domain = domains[i+1];
++				*drc_power_domain = be32_to_cpu(domains[i+1]);
+ 			return 0;
+ 		}
+ 		name_tmp += (strlen(name_tmp) + 1);
+@@ -321,16 +321,19 @@ int rpaphp_add_slot(struct device_node *dn)
+ 	/* register PCI devices */
+ 	name = (char *) &names[1];
+ 	type = (char *) &types[1];
+-	for (i = 0; i < indexes[0]; i++) {
++	for (i = 0; i < be32_to_cpu(indexes[0]); i++) {
++		int index;
+ 
+-		slot = alloc_slot_struct(dn, indexes[i + 1], name, power_domains[i + 1]);
++		index = be32_to_cpu(indexes[i + 1]);
++		slot = alloc_slot_struct(dn, index, name,
++					 be32_to_cpu(power_domains[i + 1]));
+ 		if (!slot)
+ 			return -ENOMEM;
+ 
+ 		slot->type = simple_strtoul(type, NULL, 10);
+ 
+ 		dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
+-				indexes[i + 1], name, type);
++				index, name, type);
+ 
+ 		retval = rpaphp_enable_slot(slot);
+ 		if (!retval)
