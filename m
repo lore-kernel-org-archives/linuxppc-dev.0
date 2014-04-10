@@ -1,15 +1,15 @@
 Return-Path: <guangyu.chen@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 10FCB14007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 01:16:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 449F1140085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 01:25:36 +1000 (EST)
 From: Nicolin Chen <Guangyu.Chen@freescale.com>
 To: <broonie@kernel.org>
 Subject: [PATCH v6] ASoC: fsl_sai: Add clock controls for SAI
-Date: Thu, 10 Apr 2014 23:18:11 +0800
-Message-ID: <1397143092-10388-1-git-send-email-Guangyu.Chen@freescale.com>
+Date: Thu, 10 Apr 2014 23:26:15 +0800
+Message-ID: <1397143575-10426-1-git-send-email-Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
