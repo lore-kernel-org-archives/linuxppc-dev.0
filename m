@@ -1,28 +1,21 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 69DD5140098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 18:48:01 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 15865-07 for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 10 Apr 2014 09:47:51 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: "'hongbo.zhang@freescale.com'" <hongbo.zhang@freescale.com>,
- "vkoul@infradead.org" <vkoul@infradead.org>, "dan.j.williams@intel.com"
- <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org"
- <dmaengine@vger.kernel.org>
-Subject: RE: [PATCH v3 2/8] DMA: Freescale: unify register access methods
-Date: Thu, 10 Apr 2014 08:46:14 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F6F4317@AcuExch.aculab.com>
-References: <1397113805-24171-1-git-send-email-hongbo.zhang@freescale.com>
- <1397113805-24171-3-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1397113805-24171-3-git-send-email-hongbo.zhang@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "scottwood@freescale.com" <scottwood@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "leo.li@freescale.com" <leo.li@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8D80E1400B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Apr 2014 19:16:00 +1000 (EST)
+Message-ID: <1397116463.3671.181.camel@pasglop>
+Subject: Re: [PATCH] Fix 3bc95598 'powerpc/PCI: Use list_for_each_entry()
+ for bus traversal'
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Date: Thu, 10 Apr 2014 17:54:23 +1000
+In-Reply-To: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+References: <1397112695-3945-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: bhelgaas@google.com, paulus@samba.org, wangyijing@huawei.com,
+ linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,12 +25,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogaG9uZ2JvLnpoYW5nQGZyZWVzY2FsZS5jb20NCj4gTWV0aG9kcyBvZiBhY2Nlc3Npbmcg
-RE1BIGNvbnRvcmxsZXIgcmVnaXN0ZXJzIGFyZSBpbmNvbnNpc3RlbnQsIHNvbWUgcmVnaXN0ZXJz
-DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXl4NCj4gYXJlIGFjY2Vzc2VkIGJ5IERN
-QV9JTi9PVVQgZGlyZWN0bHksIHdoaWxlIG90aGVycyBhcmUgYWNjZXNzZWQgYnkgZnVuY3Rpb25z
-DQo+IGdldC9zZXRfKiB3aGljaCBhcmUgd3JhcHBlcnMgb2YgRE1BX0lOL09VVCwgYW5kIGV2ZW4g
-Zm9yIHRoZSBCQ1IgcmVnaXN0ZXIsIGl0DQo+IGlzIHJlYWQgYnkgZ2V0X2JjciBidXQgd3JpdHRl
-biBieSBETUFfT1VULg0KPiBUaGlzIHBhdGNoIHVuaWZpZXMgdGhlIGluY29uc2lzdGVudCBtZXRo
-b2RzLCBhbGwgcmVnaXN0ZXJzIGFyZSBhY2Nlc3NlZCBieQ0KPiBnZXQvc2V0Xyogbm93Lg0KDQoJ
-RGF2aWQNCg0K
+On Thu, 2014-04-10 at 02:51 -0400, Mike Qiu wrote:
+> Unable to handle kernel paging request for data at address 0x00000000
+> Faulting instruction address: 0xc000000000041d78
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> ...
+> NIP [c000000000041d78] .sys_pciconfig_iobase+0x68/0x1f0
+> LR [c000000000041e0c] .sys_pciconfig_iobase+0xfc/0x1f0
+> Call Trace:
+> [c0000003b4787db0] [c000000000041e0c] .sys_pciconfig_iobase+0xfc/0x1f0 (unreliable)
+> [c0000003b4787e30] [c000000000009ed8] syscall_exit+0x0/0x98
+> 
+> This bug was introduced by commit 3bc955987fb377f3c95bc29deb498e96819b8451
+> The root cause was the 'bus' has been set to null while try to access
+> bus->next.
+
+Good catch. Out of curiosity, what is using that syscall nowadays ? It's
+been long buggy in all sort of ways and is pretty much deprecated...
+
+Cheers,
+Ben.
+
+> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/kernel/pci_64.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+> index 2a47790..7b6c1ae 100644
+> --- a/arch/powerpc/kernel/pci_64.c
+> +++ b/arch/powerpc/kernel/pci_64.c
+> @@ -209,6 +209,7 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>  {
+>  	struct pci_controller* hose;
+>  	struct pci_bus *bus = NULL;
+> +	struct pci_bus *tmp_bus = NULL;
+>  	struct device_node *hose_node;
+>  
+>  	/* Argh ! Please forgive me for that hack, but that's the
+> @@ -229,10 +230,12 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+>  	 * used on pre-domains setup. We return the first match
+>  	 */
+>  
+> -	list_for_each_entry(bus, &pci_root_buses, node) {
+> -		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
+> +	list_for_each_entry(tmp_bus, &pci_root_buses, node) {
+> +		if (in_bus >= tmp_bus->number &&
+> +		    in_bus <= tmp_bus->busn_res.end) {
+> +			bus = tmp_bus;
+>  			break;
+> -		bus = NULL;
+> +		}
+>  	}
+>  	if (bus == NULL || bus->dev.of_node == NULL)
+>  		return -ENODEV;
