@@ -1,19 +1,26 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <dan.j.williams@gmail.com>
+Received: from mail-qa0-f46.google.com (mail-qa0-f46.google.com
+ [209.85.216.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6CC2C140083
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Apr 2014 00:08:47 +1000 (EST)
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: <broonie@kernel.org>
-Subject: [PATCH] ASoC: fsl_sai: Fix incorrect condition check in trigger()
-Date: Fri, 11 Apr 2014 22:10:00 +0800
-Message-ID: <1397225400-2769-1-git-send-email-Guangyu.Chen@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 6ABEB1400D4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Apr 2014 03:43:02 +1000 (EST)
+Received: by mail-qa0-f46.google.com with SMTP id i13so5604057qae.33
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 10:42:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+Sender: dan.j.williams@gmail.com
+In-Reply-To: <1397202086-22489-1-git-send-email-xuelin.shi@freescale.com>
+References: <1397202086-22489-1-git-send-email-xuelin.shi@freescale.com>
+Date: Fri, 11 Apr 2014 10:42:58 -0700
+Message-ID: <CAA9_cme=Bo3tYi0-bNXBRNLZnC-4FZyaSYZ=3iRD_5xfiVX5Mw@mail.gmail.com>
+Subject: Re: [PATCH v3] dmaengine: driver support for FSL RaidEngine device.
+From: Dan Williams <dan.j.williams@intel.com>
+To: xuelin.shi@freescale.com
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Harninder Rai <harninder.rai@freescale.com>, andriy.shevchenko@intel.com,
+ "Koul, Vinod" <vinod.koul@intel.com>, Naveen Burmi <naveenburmi@freescale.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +30,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch ASoC: fsl_sai: Fix buggy configurations in trigger() doesn't entirely
-fix the condition: FRDE of the current substream direction is being cleared
-while the code is still using the non-updated one.
+A few more comments:
 
-Thus this patch fixes this issue by checking the opposite one's FRDE alone
-since the current one's is absolutely disabled.
+On Fri, Apr 11, 2014 at 12:41 AM,  <xuelin.shi@freescale.com> wrote:
+> From: Xuelin Shi <xuelin.shi@freescale.com>
+>
+> The RaidEngine is a new FSL hardware used for Raid5/6 acceration.
+>
+> This patch enables the RaidEngine functionality and provides
+> hardware offloading capability for memcpy, xor and pq computation.
+> It works with async_tx.
+>
+> Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+> Signed-off-by: Naveen Burmi <naveenburmi@freescale.com>
+> Signed-off-by: Xuelin Shi <xuelin.shi@freescale.com>
+> ---
+>  changes for v3:
+>   - fix memory allocation flag GFP_xxx usage.
+>   - add re_jr_issue_pending call in cleanup.
+>   - remove unnecessary dma_run_dependencies(...).
+>   - use dma_cookie_complete(...) instead of direct updating cookie.
+>
+>  drivers/dma/Kconfig    |  11 +
+>  drivers/dma/Makefile   |   1 +
+>  drivers/dma/fsl_raid.c | 878 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/dma/fsl_raid.h | 308 +++++++++++++++++
+>  4 files changed, 1198 insertions(+)
+>  create mode 100644 drivers/dma/fsl_raid.c
+>  create mode 100644 drivers/dma/fsl_raid.h
+>
+> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
+> index 605b016..829f41c 100644
+> --- a/drivers/dma/Kconfig
+> +++ b/drivers/dma/Kconfig
+> @@ -100,6 +100,17 @@ config FSL_DMA
+>           EloPlus is on mpc85xx and mpc86xx and Pxxx parts, and the Elo3 is on
+>           some Txxx and Bxxx parts.
+>
+> +config FSL_RAID
+> +        tristate "Freescale RAID engine Support"
+> +        depends on FSL_SOC && !FSL_DMA
 
-Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
----
- sound/soc/fsl/fsl_sai.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+This won't work in the case where FSL_DMA=m.
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 9858d42..1716a41 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -343,7 +343,8 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- 		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
- 				   FSL_SAI_CSR_xIE_MASK, 0);
- 
--		if (!(tcsr & FSL_SAI_CSR_FRDE || rcsr & FSL_SAI_CSR_FRDE)) {
-+		/* Check if the opposite FRDE is also disabled */
-+		if (!(tx ? rcsr & FSL_SAI_CSR_FRDE : tcsr & FSL_SAI_CSR_FRDE)) {
- 			regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
- 					   FSL_SAI_CSR_TERE, 0);
- 			regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
--- 
-1.8.4
+Instead, I think you want to use "depends on
+!ASYNC_TX_ENABLE_CHANNEL_SWITCH" which is the actual dependency.
+
+> +        select DMA_ENGINE
+> +        select DMA_ENGINE_RAID
+> +        ---help---
+> +          Enable support for Freescale RAID Engine. RAID Engine is
+> +          available on some QorIQ SoCs (like P5020). It has
+> +          the capability to offload memcpy, xor and pq computation
+> +         for raid5/6.
+> +
+[..]
+> diff --git a/drivers/dma/fsl_raid.c b/drivers/dma/fsl_raid.c
+> new file mode 100644
+> index 0000000..4b389b1
+> --- /dev/null
+> +++ b/drivers/dma/fsl_raid.c
+> @@ -0,0 +1,878 @@
+[..]
+> +void fill_cfd_frame(struct cmpnd_frame *cf, u8 index,
+> +               size_t length, dma_addr_t addr, bool final)
+> +{
+> +       u32 efrl = length & CF_LENGTH_MASK;
+> +       efrl |= final << CF_FINAL_SHIFT;
+> +       cf[index].efrl32 = efrl;
+> +       cf[index].addr_high = (addr >> 32) & HWDESC_ADDR_HIGH_MASK;
+
+Use "upper_32_bits()" here otherwise:
+
+  drivers/dma/fsl_raid.c: In function 'fill_cfd_frame':
+  drivers/dma/fsl_raid.c:258:2: warning: right shift count >= width of type
+
+> +       cf[index].addr_low = (u32)addr;
+
+Use lower_32_bits() here to be symmetrical.
+
+> +}
+> +
+> +static struct fsl_re_dma_async_tx_desc *re_jr_init_desc(struct re_jr *jr,
+> +       struct fsl_re_dma_async_tx_desc *desc, void *cf, dma_addr_t paddr)
+> +{
+> +       desc->jr = jr;
+> +       desc->async_tx.tx_submit = re_jr_tx_submit;
+> +       dma_async_tx_descriptor_init(&desc->async_tx, &jr->chan);
+> +       INIT_LIST_HEAD(&desc->node);
+> +
+> +       desc->hwdesc.fmt32 = FRAME_FORMAT << HWDESC_FMT_SHIFT;
+> +       desc->hwdesc.lbea32 = (paddr >> 32) & HWDESC_ADDR_HIGH_MASK;
+
+Same comment/warning as above...
+
+> +       desc->hwdesc.addr_low = (u32)paddr;
+
+ditto.
