@@ -1,32 +1,32 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 06B1814017B
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 20:35:57 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9C8B4140146
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 20:36:07 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 11 Apr 2014 06:35:55 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 1BE0D38C8027
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 06:35:52 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3BAZqOr9503166
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 10:35:52 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3BAZpQ2029178
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 06:35:51 -0400
-Subject: [PATCH 1/3] ppc/powernv: Set the runlatch bits correctly for
- offline cpus
+ Fri, 11 Apr 2014 04:36:04 -0600
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 9DCE3C90042
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 06:35:57 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3BAa14Q63635492
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 10:36:01 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3BAa1Gk002158
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Apr 2014 06:36:01 -0400
+Subject: [PATCH 2/3] ppc/kvm: Set the runlatch bit of a CPU just before
+ starting guest
 To: linuxppc-dev@ozlabs.org
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Fri, 11 Apr 2014 16:01:48 +0530
-Message-ID: <20140411103148.27683.20726.stgit@preeti.in.ibm.com>
+Date: Fri, 11 Apr 2014 16:01:58 +0530
+Message-ID: <20140411103157.27683.79563.stgit@preeti.in.ibm.com>
 In-Reply-To: <20140411103030.27683.2107.stgit@preeti.in.ibm.com>
 References: <20140411103030.27683.2107.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
@@ -42,42 +42,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Up until now we have been setting the runlatch bits for a busy CPU and
-clearing it when a CPU enters idle state. The runlatch bit has thus
-been consistent with the utilization of a CPU as long as the CPU is online.
+The secondary threads in the core are kept offline before launching guests
+in kvm on powerpc: "371fefd6f2dc4666:KVM: PPC: Allow book3s_hv guests to use
+SMT processor modes."
 
-However when a CPU is hotplugged out the runlatch bit is not cleared. It
-needs to be cleared to indicate an unused CPU. Hence this patch has the
-runlatch bit cleared for an offline CPU just before entering an idle state
-and sets it immediately after it exits the idle state.
+Hence their runlatch bits are cleared. When the secondary threads are called
+in to start a guest, their runlatch bits need to be set to indicate that they
+are busy. The primary thread has its runlatch bit set though, but there is no
+harm in setting this bit once again. Hence set the runlatch bit for all
+threads before they start guest.
 
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Acked-by: Paul Mackerras <paulus@samba.org>
 Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/powerpc/platforms/powernv/smp.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 908672b..bf5fcd4 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -30,6 +30,7 @@
- #include <asm/cputhreads.h>
- #include <asm/xics.h>
- #include <asm/opal.h>
-+#include <asm/runlatch.h>
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index ffbb871..b254075 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -242,6 +242,12 @@ kvm_novcpu_exit:
+  */
+ 	.globl	kvm_start_guest
+ kvm_start_guest:
++
++	/* Set runlatch bit the minute you wake up from nap */
++	mfspr	r1, SPRN_CTRLF
++	ori 	r1, r1, 1
++	mtspr	SPRN_CTRLT, r1
++
+ 	ld	r2,PACATOC(r13)
  
- #include "powernv.h"
- 
-@@ -156,7 +157,9 @@ static void pnv_smp_cpu_kill_self(void)
- 	 */
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
- 	while (!generic_check_cpu_restart(cpu)) {
-+		ppc64_runlatch_off();
- 		power7_nap();
-+		ppc64_runlatch_on();
- 		if (!generic_check_cpu_restart(cpu)) {
- 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
- 			/* We may be getting an IPI, so we re-enable
+ 	li	r0,KVM_HWTHREAD_IN_KVM
