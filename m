@@ -1,32 +1,22 @@
-Return-Path: <pingfank@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 66BD514008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 21:43:02 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <pingfank@linux.vnet.ibm.com>;
- Fri, 11 Apr 2014 21:42:45 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5E7752CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 21:42:42 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3BBM3ZA10027116
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 21:22:04 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3BBgfpI002437
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 21:42:41 +1000
-From: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH v3] powerpc: kvm: make _PAGE_NUMA take effect
-Date: Fri, 11 Apr 2014 19:45:07 +0800
-Message-Id: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Alexander Graf <agraf@suse.de>,
- kvm@vger.kernel.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 61EC51400A8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Apr 2014 00:03:17 +1000 (EST)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.2 \(1874\))
+Subject: Re: [PATCH v3] powerpc: kvm: make _PAGE_NUMA take effect
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>
+Date: Fri, 11 Apr 2014 16:03:09 +0200
+Message-Id: <3DC9A8E1-547C-4660-AB61-BE371DEDA520@suse.de>
+References: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>
+To: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,33 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we mark pte with _PAGE_NUMA we already call mmu_notifier_invalidate_range_start
-and mmu_notifier_invalidate_range_end, which will mark existing guest hpte
-entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
-guest hpte entries.
 
-Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-v3:
-  rebased onto Alex's tree, branch kvm-ppc-next
-  substitue commit log with the more clear description in Aneesh's reply (thanks, Aneesh)
----
- arch/powerpc/kvm/book3s_hv_rm_mmu.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 11.04.2014, at 13:45, Liu Ping Fan <pingfank@linux.vnet.ibm.com> =
+wrote:
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 1d6c56a..1117525 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -234,7 +234,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
- 		pte_size = psize;
- 		pte = lookup_linux_pte_and_update(pgdir, hva, writing,
- 						  &pte_size);
--		if (pte_present(pte)) {
-+		if (pte_present(pte)&&!pte_numa(pte)) {
- 			if (writing && !pte_write(pte))
- 				/* make the actual HPTE be read-only */
- 				ptel = hpte_make_readonly(ptel);
--- 
-1.8.1.4
+> When we mark pte with _PAGE_NUMA we already call =
+mmu_notifier_invalidate_range_start
+> and mmu_notifier_invalidate_range_end, which will mark existing guest =
+hpte
+> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting =
+new
+> guest hpte entries.
+
+What happens when we don't? Why do we need the check? Why isn't it done =
+implicitly? What happens when we treat a NUMA marked page as =
+non-present? Why does it work out for us?
+
+Assume you have no idea what PAGE_NUMA is, but try to figure out what =
+this patch does and whether you need to cherry-pick it into your =
+downstream kernel. The description as is still is not very helpful for =
+that. It doesn't even explain what really changes with this patch =
+applied.
+
+>=20
+> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+> v3:
+>  rebased onto Alex's tree, branch kvm-ppc-next
+>  substitue commit log with the more clear description in Aneesh's =
+reply (thanks, Aneesh)
+> ---
+> arch/powerpc/kvm/book3s_hv_rm_mmu.c | 2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c =
+b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> index 1d6c56a..1117525 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> @@ -234,7 +234,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned =
+long flags,
+> 		pte_size =3D psize;
+> 		pte =3D lookup_linux_pte_and_update(pgdir, hva, writing,
+> 						  &pte_size);
+> -		if (pte_present(pte)) {
+> +		if (pte_present(pte)&&!pte_numa(pte)) {
+
+Spaces missing
+
+
+Alex
