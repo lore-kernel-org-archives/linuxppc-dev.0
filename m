@@ -1,22 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 61EC51400A8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Apr 2014 00:03:17 +1000 (EST)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.2 \(1874\))
-Subject: Re: [PATCH v3] powerpc: kvm: make _PAGE_NUMA take effect
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Date: Fri, 11 Apr 2014 16:03:09 +0200
-Message-Id: <3DC9A8E1-547C-4660-AB61-BE371DEDA520@suse.de>
-References: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>
-To: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 6CC2C140083
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Apr 2014 00:08:47 +1000 (EST)
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: <broonie@kernel.org>
+Subject: [PATCH] ASoC: fsl_sai: Fix incorrect condition check in trigger()
+Date: Fri, 11 Apr 2014 22:10:00 +0800
+Message-ID: <1397225400-2769-1-git-send-email-Guangyu.Chen@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Patch ASoC: fsl_sai: Fix buggy configurations in trigger() doesn't entirely
+fix the condition: FRDE of the current substream direction is being cleared
+while the code is still using the non-updated one.
 
-On 11.04.2014, at 13:45, Liu Ping Fan <pingfank@linux.vnet.ibm.com> =
-wrote:
+Thus this patch fixes this issue by checking the opposite one's FRDE alone
+since the current one's is absolutely disabled.
 
-> When we mark pte with _PAGE_NUMA we already call =
-mmu_notifier_invalidate_range_start
-> and mmu_notifier_invalidate_range_end, which will mark existing guest =
-hpte
-> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting =
-new
-> guest hpte entries.
+Signed-off-by: Nicolin Chen <Guangyu.Chen@freescale.com>
+---
+ sound/soc/fsl/fsl_sai.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-What happens when we don't? Why do we need the check? Why isn't it done =
-implicitly? What happens when we treat a NUMA marked page as =
-non-present? Why does it work out for us?
-
-Assume you have no idea what PAGE_NUMA is, but try to figure out what =
-this patch does and whether you need to cherry-pick it into your =
-downstream kernel. The description as is still is not very helpful for =
-that. It doesn't even explain what really changes with this patch =
-applied.
-
->=20
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
-> v3:
->  rebased onto Alex's tree, branch kvm-ppc-next
->  substitue commit log with the more clear description in Aneesh's =
-reply (thanks, Aneesh)
-> ---
-> arch/powerpc/kvm/book3s_hv_rm_mmu.c | 2 +-
-> 1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c =
-b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> index 1d6c56a..1117525 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-> @@ -234,7 +234,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned =
-long flags,
-> 		pte_size =3D psize;
-> 		pte =3D lookup_linux_pte_and_update(pgdir, hva, writing,
-> 						  &pte_size);
-> -		if (pte_present(pte)) {
-> +		if (pte_present(pte)&&!pte_numa(pte)) {
-
-Spaces missing
-
-
-Alex
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 9858d42..1716a41 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -343,7 +343,8 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx),
+ 				   FSL_SAI_CSR_xIE_MASK, 0);
+ 
+-		if (!(tcsr & FSL_SAI_CSR_FRDE || rcsr & FSL_SAI_CSR_FRDE)) {
++		/* Check if the opposite FRDE is also disabled */
++		if (!(tx ? rcsr & FSL_SAI_CSR_FRDE : tcsr & FSL_SAI_CSR_FRDE)) {
+ 			regmap_update_bits(sai->regmap, FSL_SAI_TCSR,
+ 					   FSL_SAI_CSR_TERE, 0);
+ 			regmap_update_bits(sai->regmap, FSL_SAI_RCSR,
+-- 
+1.8.4
