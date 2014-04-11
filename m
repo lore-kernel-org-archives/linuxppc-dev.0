@@ -1,25 +1,12 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [106.187.55.193])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 503F714009F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Apr 2014 09:11:20 +1000 (EST)
-Date: Thu, 10 Apr 2014 23:36:31 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Message-ID: <20140410223631.GG6518@sirena.org.uk>
-References: <1397143575-10426-1-git-send-email-Guangyu.Chen@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 11 Apr 2014 16:43:35 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] powerpc: Don't try to set LPCR unless we're in hypervisor mode
+Message-ID: <20140411064335.GA8806@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="jk/5KjyVsvxWSMIA"
-In-Reply-To: <1397143575-10426-1-git-send-email-Guangyu.Chen@freescale.com>
-Subject: Re: [PATCH v6] ASoC: fsl_sai: Add clock controls for SAI
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
- alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
- ijc+devicetree@hellion.org.uk, linux-kernel@vger.kernel.org,
- robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com, rob@landley.net,
- galak@codeaurora.org, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,39 +16,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit 8f619b5429d9 ("powerpc/ppc64: Do not turn AIL (reloc-on
+interrupts) too early") added code to set the AIL bit in the LPCR
+without checking whether the kernel is running in hypervisor mode.
+The result is that when the kernel is running as a guest (i.e.,
+under PowerKVM or PowerVM), the processor takes a privileged
+instruction interrupt at that point, causing a panic.  The visible
+result is that the kernel hangs after printing "returning from
+prom_init".
 
---jk/5KjyVsvxWSMIA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This fixes it by checking for hypervisor mode being available
+before setting LPCR.  If we are not in hypervisor mode, we enable
+relocation-on interrupts later in pSeries_setup_arch using the
+H_SET_MODE hcall.
 
-On Thu, Apr 10, 2014 at 11:26:15PM +0800, Nicolin Chen wrote:
-> The SAI mainly has the following clocks:
->   bus clock
->     control and configure registers and to generate synchronous
->     interrupts and DMA requests.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+Linus, Ben asked me to send this to you since he's about to be on
+vacation, and this bug stops the kernel from booting under a
+hypervisor on POWER8 machines.  He would like it to go in before rc1.
 
-Applied, thanks.
+ arch/powerpc/kernel/setup_64.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---jk/5KjyVsvxWSMIA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJTRxzsAAoJELSic+t+oim9+5cP/R5cdpTumXrEfPAIM2WIo0sQ
-gi/Fs1bR4L9HiEXNVOh7kueN4AzxE2Kn9ijRXX6J1R7VrD/vOMNzdai4AyYjJL0C
-LEU5SW2ehlC8/u1s4HP/6/XGmU9AyJDJjsuq4MPj9AeXsqNHXFmvfST6arZO1q/Q
-v18z7Tp+XKmR7/8to4+72AlctPXyKDTh0cZXkcayV7JUgbIsMNjn746Oo08umf2/
-ahF3L/nNnf5+sYg7j0ZHl7tjkgHSpq8ZPcj+NA5HktwAMJX1kEGcxIDPa7gKP/n6
-bSGGwmvEGlkeEWkb1ee4xsw46LQ++M+RtkDBc79FikTi/b8I+hw07yG4gtg8GYGS
-4NNRu1/IzoEWwzggdOjzqqA4vHcfbrO8i62X+kLx72CMVnHBYXR+2gMlOAo1OCla
-fJL6heywU3mqWXy6KLCBZ4Eb379GN3VXURamYc0FiYvlwFIz8554LAiT1SO4IFoa
-vwKi05GMLAZpEtDNxTrD6N6sZv2hCIsv7xAO/gxBiQJMZU+Lni4wOHWAkpu1OvhL
-bJsal3eH76R7JZ5F8e6/w3rabqHVSGaYjjERJIQGA7uMjoZkReHGDwStbmTUU4Yi
-fgkRcq4XEovtZ8LuYz+WI8vpe99F/5ipXpilJpmJTpIsRNBZYLxubBHvPztp6v12
-N//79nPMbYMsR+9Yiylm
-=7bWg
------END PGP SIGNATURE-----
-
---jk/5KjyVsvxWSMIA--
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 3d7a50a..fbe2437 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -201,7 +201,8 @@ static void cpu_ready_for_interrupts(void)
+ 	get_paca()->kernel_msr = MSR_KERNEL;
+ 
+ 	/* Enable AIL if supported */
+-	if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
++	if (cpu_has_feature(CPU_FTR_HVMODE) &&
++	    cpu_has_feature(CPU_FTR_ARCH_207S)) {
+ 		unsigned long lpcr = mfspr(SPRN_LPCR);
+ 		mtspr(SPRN_LPCR, lpcr | LPCR_AIL_3);
+ 	}
+-- 
+1.9.rc1
