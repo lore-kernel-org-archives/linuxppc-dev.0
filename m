@@ -1,24 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <amodra@gmail.com>
+Received: from mail-pa0-f43.google.com (mail-pa0-f43.google.com
+ [209.85.220.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A439014008B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 16:43:23 +1000 (EST)
-Message-ID: <534B8384.7050500@suse.de>
-Date: Mon, 14 Apr 2014 08:43:16 +0200
-From: Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id C634E140084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 16:53:37 +1000 (EST)
+Received: by mail-pa0-f43.google.com with SMTP id bj1so7896538pad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Apr 2014 23:53:34 -0700 (PDT)
+Date: Mon, 14 Apr 2014 16:23:29 +0930
+From: Alan Modra <amodra@gmail.com>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Subject: Re: Change MINSIGSTKSZ and SIGSTKSIZE
+Message-ID: <20140414065329.GT13391@bubble.grove.modra.org>
+References: <1397296795.11946.42.camel@hbabu-laptop>
 MIME-Version: 1.0
-To: Liu ping fan <kernelfans@gmail.com>
-Subject: Re: [PATCH v3] powerpc: kvm: make _PAGE_NUMA take effect
-References: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>	<3DC9A8E1-547C-4660-AB61-BE371DEDA520@suse.de>
- <CAFgQCTsbr9_Y24upMSuOTqdO-gAVySBxW=o6uK2UKHk9=uQihw@mail.gmail.com>
-In-Reply-To: <CAFgQCTsbr9_Y24upMSuOTqdO-gAVySBxW=o6uK2UKHk9=uQihw@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Liu Ping Fan <pingfank@linux.vnet.ibm.com>,
- "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
- kvm-ppc <kvm-ppc@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1397296795.11946.42.camel@hbabu-laptop>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Apr 12, 2014 at 02:59:55AM -0700, Haren Myneni wrote:
+> Alan, 
+> 	LTP test (signalstack02) is failing.
 
-On 13.04.14 04:27, Liu ping fan wrote:
-> On Fri, Apr 11, 2014 at 10:03 PM, Alexander Graf <agraf@suse.de> wrote:
->> On 11.04.2014, at 13:45, Liu Ping Fan <pingfank@linux.vnet.ibm.com> wrote:
->>
->>> When we mark pte with _PAGE_NUMA we already call mmu_notifier_invalidate_range_start
->>> and mmu_notifier_invalidate_range_end, which will mark existing guest hpte
->>> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
->>> guest hpte entries.
->> What happens when we don't? Why do we need the check? Why isn't it done implicitly? What happens when we treat a NUMA marked page as non-present? Why does it work out for us?
->>
->> Assume you have no idea what PAGE_NUMA is, but try to figure out what this patch does and whether you need to cherry-pick it into your downstream kernel. The description as is still is not very helpful for that. It doesn't even explain what really changes with this patch applied.
->>
-> Yeah.  what about appending the following description?  Can it make
-> the context clear?
-> "Guest should not setup a hpte for the page whose pte is marked with
-> _PAGE_NUMA, so on the host, the numa-fault mechanism can take effect
-> to check whether the page is placed correctly or not."
+Ignore the stupid test.  Do *NOT* change the kernel value to match
+glibc.  The two sets of constants are independent.
 
-Try to come up with a text that answers the following questions in order:
+The glibc constants are for user code, to allocate correctly sized
+signal stacks for all known kernels.  These constants are therefore
+the maximum values needed for known kernels.
 
-   - What does _PAGE_NUMA mean?
-   - How does page migration with _PAGE_NUMA work?
-   -> Why should we not map pages when _PAGE_NUMA is set?
-   - Which part of what needs to be done did the previous _PAGE_NUMA 
-patch address?
-   - What's the situation without this patch?
-   - Which scenario does this patch fix?
+The kernel constants are to check that user code is setting up a large
+enough signal stack *for that specific kernel, and user binary*.  If
+you make the kernel constants match current glibc, then old binaries
+that don't use htm or vsx will fail when run on a newer kernel.
 
-Once you have a text that answers those, you should have a good patch 
-description :).
+Ideally the kernel would detect whether a binary was going to use htm
+or vsx and adjust the minimum sizes, but it's a wee bit difficult for
+the kernel to know that ahead of time.
 
-Alex
+> This test expects -ENOMEM from
+> kernel when passing less than stack size (passing 4095). MINSIGSTKSZ in
+> signal.h (glibc) is changed to 4096 to support VSX changes
+> (https://sourceware.org/git/?p=glibc.git;a=commitdiff;h=f7c399cff5bd04ee9dc117fb6b0f39597dc047c6)  We should also change these values in kernel to match with glibc. Any issues? 
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/signal.h
+> b/arch/powerpc/include/uapi/
+> index 6c69ee9..18f498e 100644
+> --- a/arch/powerpc/include/uapi/asm/signal.h
+> +++ b/arch/powerpc/include/uapi/asm/signal.h
+> @@ -85,8 +85,8 @@ typedef struct {
+>  
+>  #define SA_RESTORER    0x04000000U
+>  
+> -#define MINSIGSTKSZ    2048
+> -#define SIGSTKSZ       8192
+> +#define MINSIGSTKSZ    4096
+> +#define SIGSTKSZ       16384
+> 
+> Thanks
+> Haren
+
+-- 
+Alan Modra
+Australia Development Lab, IBM
