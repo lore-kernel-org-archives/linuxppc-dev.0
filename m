@@ -1,20 +1,23 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id C327614010A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 23:26:55 +1000 (EST)
-Date: Mon, 14 Apr 2014 15:28:35 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] PCI/MSI: Phase out pci_enable_msi_block()
-Message-ID: <20140414132834.GA9164@dhcp-26-207.brq.redhat.com>
-References: <cover.1397458024.git.agordeev@redhat.com>
- <0b08613dc17cd608c1babc1f42b8919f60e1093f.1397458024.git.agordeev@redhat.com>
- <20140414120921.GA32132@dhcp-26-207.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140414120921.GA32132@dhcp-26-207.brq.redhat.com>
-Cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by ozlabs.org (Postfix) with ESMTP id 50447140112
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 23:40:36 +1000 (EST)
+Message-ID: <1397482830.11914.126.camel@smile.fi.intel.com>
+Subject: Re: [PATCH v3 4/8] DMA: Freescale: add fsl_dma_free_descriptor() to
+ reduce code duplication
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Hongbo Zhang <hongbo.zhang@freescale.com>
+Date: Mon, 14 Apr 2014 16:40:30 +0300
+In-Reply-To: <5347A46B.30206@freescale.com>
+References: <1397113805-24171-1-git-send-email-hongbo.zhang@freescale.com>
+ <1397113805-24171-5-git-send-email-hongbo.zhang@freescale.com>
+ <1397129361.11914.96.camel@smile.fi.intel.com>
+ <5347A46B.30206@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: leo.li@freescale.com, vkoul@infradead.org, linux-kernel@vger.kernel.org,
+ scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,174 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are no users of pci_enable_msi_block() function have
-left. Obsolete it in favor of pci_enable_msi_range() and
-pci_enable_msi_exact() functions.
+On Fri, 2014-04-11 at 16:14 +0800, Hongbo Zhang wrote:
+> On 04/10/2014 07:29 PM, Andy Shevchenko wrote:
+> > On Thu, 2014-04-10 at 15:10 +0800, hongbo.zhang@freescale.com wrote:
 
-Up until now, when enabling MSI mode for a device a single
-successful call to arch_msi_check_device() was followed by
-a single call to arch_setup_msi_irqs() function.
+[]
 
-Yet, if arch_msi_check_device() returned success we should be
-able to call arch_setup_msi_irqs() multiple times - while it
-returns a number of MSI vectors that could have been allocated
-(a third state).
+> >> @@ -819,8 +826,7 @@ static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
+> >>   	dma_run_dependencies(txd);
+> >>   
+> >>   	dma_descriptor_unmap(txd);
+> >> -	chan_dbg(chan, "LD %p free\n", desc);
+> >> -	dma_pool_free(chan->desc_pool, desc, txd->phys);
+> >> +	fsl_dma_free_descriptor(chan, desc);
+> > Here is no list_del() call since it's been called in dma_do_tasklet().
+> > What will be the result of double list_del() against the same node?
+> 
+> Not clear with your point.
+> This patch is only introducing a common fsl_dma_free_descriptor() to 
+> reduce code duplication. And later in the patch 6/8 the 
+> fsldma_cleanup_descriptor() is replaced by fsldma_cleanup_descriptorS().
 
-This update makes use of the assumption described above. It
-could have broke things had the architectures done any pre-
-allocations or switch to some state in a call to function
-arch_msi_check_device(). But because arch_msi_check_device()
-is expected stateless and MSI resources are allocated in a
-follow-up call to arch_setup_msi_irqs() we should be fine.
+In the last case you could have a broken kernel which will fails on
+double list_del(). I think it's better to leave this one untouched and
+you may remove it later.
 
-Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
-Cc: linux-mips@linux-mips.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: x86@kernel.org
-Cc: linux-pci@vger.kernel.org
----
- drivers/pci/msi.c   |   79 +++++++++++++++++++++-----------------------------
- include/linux/pci.h |    5 +--
- 2 files changed, 34 insertions(+), 50 deletions(-)
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 955ab79..fc669ab 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -883,50 +883,6 @@ int pci_msi_vec_count(struct pci_dev *dev)
- }
- EXPORT_SYMBOL(pci_msi_vec_count);
- 
--/**
-- * pci_enable_msi_block - configure device's MSI capability structure
-- * @dev: device to configure
-- * @nvec: number of interrupts to configure
-- *
-- * Allocate IRQs for a device with the MSI capability.
-- * This function returns a negative errno if an error occurs.  If it
-- * is unable to allocate the number of interrupts requested, it returns
-- * the number of interrupts it might be able to allocate.  If it successfully
-- * allocates at least the number of interrupts requested, it returns 0 and
-- * updates the @dev's irq member to the lowest new interrupt number; the
-- * other interrupt numbers allocated to this device are consecutive.
-- */
--int pci_enable_msi_block(struct pci_dev *dev, int nvec)
--{
--	int status, maxvec;
--
--	if (dev->current_state != PCI_D0)
--		return -EINVAL;
--
--	maxvec = pci_msi_vec_count(dev);
--	if (maxvec < 0)
--		return maxvec;
--	if (nvec > maxvec)
--		return maxvec;
--
--	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
--	if (status)
--		return status;
--
--	WARN_ON(!!dev->msi_enabled);
--
--	/* Check whether driver already requested MSI-X irqs */
--	if (dev->msix_enabled) {
--		dev_info(&dev->dev, "can't enable MSI "
--			 "(MSI-X already enabled)\n");
--		return -EINVAL;
--	}
--
--	status = msi_capability_init(dev, nvec);
--	return status;
--}
--EXPORT_SYMBOL(pci_enable_msi_block);
--
- void pci_msi_shutdown(struct pci_dev *dev)
- {
- 	struct msi_desc *desc;
-@@ -1132,14 +1088,45 @@ void pci_msi_init_pci_dev(struct pci_dev *dev)
-  **/
- int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- {
--	int nvec = maxvec;
-+	int nvec;
- 	int rc;
- 
-+	if (dev->current_state != PCI_D0)
-+		return -EINVAL;
-+
-+	WARN_ON(!!dev->msi_enabled);
-+
-+	/* Check whether driver already requested MSI-X irqs */
-+	if (dev->msix_enabled) {
-+		dev_info(&dev->dev,
-+			 "can't enable MSI (MSI-X already enabled)\n");
-+		return -EINVAL;
-+	}
-+
- 	if (maxvec < minvec)
- 		return -ERANGE;
- 
-+	nvec = pci_msi_vec_count(dev);
-+	if (nvec < 0)
-+		return nvec;
-+	else if (nvec < minvec)
-+		return -EINVAL;
-+	else if (nvec > maxvec)
-+		nvec = maxvec;
-+
-+	do {
-+		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
-+		if (rc < 0) {
-+			return rc;
-+		} else if (rc > 0) {
-+			if (rc < minvec)
-+				return -ENOSPC;
-+			nvec = rc;
-+		}
-+	} while (rc);
-+
- 	do {
--		rc = pci_enable_msi_block(dev, nvec);
-+		rc = msi_capability_init(dev, nvec);
- 		if (rc < 0) {
- 			return rc;
- 		} else if (rc > 0) {
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index aab57b4..499755e 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1158,7 +1158,6 @@ struct msix_entry {
- 
- #ifdef CONFIG_PCI_MSI
- int pci_msi_vec_count(struct pci_dev *dev);
--int pci_enable_msi_block(struct pci_dev *dev, int nvec);
- void pci_msi_shutdown(struct pci_dev *dev);
- void pci_disable_msi(struct pci_dev *dev);
- int pci_msix_vec_count(struct pci_dev *dev);
-@@ -1188,8 +1187,6 @@ static inline int pci_enable_msix_exact(struct pci_dev *dev,
- }
- #else
- static inline int pci_msi_vec_count(struct pci_dev *dev) { return -ENOSYS; }
--static inline int pci_enable_msi_block(struct pci_dev *dev, int nvec)
--{ return -ENOSYS; }
- static inline void pci_msi_shutdown(struct pci_dev *dev) { }
- static inline void pci_disable_msi(struct pci_dev *dev) { }
- static inline int pci_msix_vec_count(struct pci_dev *dev) { return -ENOSYS; }
-@@ -1244,7 +1241,7 @@ static inline void pcie_set_ecrc_checking(struct pci_dev *dev) { }
- static inline void pcie_ecrc_get_policy(char *str) { }
- #endif
- 
--#define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
-+#define pci_enable_msi(pdev)	pci_enable_msi_exact(pdev, 1)
- 
- #ifdef CONFIG_HT_IRQ
- /* The functions a driver should call */
--- 
-1.7.7.6
+Or move this patch after you have removed that lines.
 
 -- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
