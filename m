@@ -1,14 +1,19 @@
-Return-Path: <anton@samba.org>
-Date: Mon, 14 Apr 2014 21:55:25 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 3/3] powerpc: Bump BOOT_COMMAND_LINE_SIZE to 2048
-Message-ID: <20140414215525.332667a6@kryten>
-In-Reply-To: <20140414215405.319725d5@kryten>
-References: <20140414215405.319725d5@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 5CA8D1400CF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 22:08:13 +1000 (EST)
+Date: Mon, 14 Apr 2014 14:09:22 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] PCI/MSI: Phase out pci_enable_msi_block()
+Message-ID: <20140414120921.GA32132@dhcp-26-207.brq.redhat.com>
+References: <cover.1397458024.git.agordeev@redhat.com>
+ <0b08613dc17cd608c1babc1f42b8919f60e1093f.1397458024.git.agordeev@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0b08613dc17cd608c1babc1f42b8919f60e1093f.1397458024.git.agordeev@redhat.com>
+Cc: linux-pci@vger.kernel.org, linux-mips@linux-mips.org, x86@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,25 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Bump the boot wrapper BOOT_COMMAND_LINE_SIZE to match the
-kernel.
+On Mon, Apr 14, 2014 at 09:14:07AM +0200, Alexander Gordeev wrote:
+> @@ -1244,7 +1241,7 @@ static inline void pcie_set_ecrc_checking(struct pci_dev *dev) { }
+>  static inline void pcie_ecrc_get_policy(char *str) { }
+>  #endif
+>  
+> -#define pci_enable_msi(pdev)	pci_enable_msi_block(pdev, 1)
+> +#define pci_enable_msi(pdev)	pci_enable_msi_range(pdev, 1, 1)
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Self-Nack, it should have been pci_enable_msi_exact(pdev, 1) ^^^
 
-We export this in an ELF section so userspace tools can edit it.
-We should be safe so long as we are only increasing it shouldn't we?
+>  #ifdef CONFIG_HT_IRQ
+>  /* The functions a driver should call */
 
-Index: b/arch/powerpc/boot/ops.h
-===================================================================
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -15,7 +15,7 @@
- #include "types.h"
- #include "string.h"
- 
--#define	BOOT_COMMAND_LINE_SIZE	512
-+#define	BOOT_COMMAND_LINE_SIZE	2048
- #define	MAX_PATH_LEN		256
- #define	MAX_PROP_LEN		256 /* What should this be? */
- 
+-- 
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
