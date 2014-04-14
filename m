@@ -1,40 +1,29 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <qemulist@gmail.com>
+Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2CB931401B4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 17:48:36 +1000 (EST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 14 Apr 2014 08:48:33 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 5921E17D8059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:49:25 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3E7mUDO62914568
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 07:48:30 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3E7mTND014355
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 03:48:30 -0400
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH v2 07/15] powerpc/boot: define typedef ihandle as u32
-Date: Mon, 14 Apr 2014 09:47:06 +0200
-Message-Id: <1397461634-20949-8-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
-References: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1395651884.30488.10.camel@pasglop>
-References: <1395651884.30488.10.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 8FFC51400D5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 18:09:17 +1000 (EST)
+Received: by mail-la0-f51.google.com with SMTP id pv20so5490593lab.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 01:09:11 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <534B8384.7050500@suse.de>
+References: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>
+ <3DC9A8E1-547C-4660-AB61-BE371DEDA520@suse.de>
+ <CAFgQCTsbr9_Y24upMSuOTqdO-gAVySBxW=o6uK2UKHk9=uQihw@mail.gmail.com>
+ <534B8384.7050500@suse.de>
+From: liu ping fan <qemulist@gmail.com>
+Date: Mon, 14 Apr 2014 16:08:51 +0800
+Message-ID: <CAJnKYQ=0dpuO3XBQDpxBi=M_diwVRwA8wa-+JMXnFXYyAPVw-Q@mail.gmail.com>
+Subject: Re: [PATCH v3] powerpc: kvm: make _PAGE_NUMA take effect
+To: Alexander Graf <agraf@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Liu Ping Fan <pingfank@linux.vnet.ibm.com>,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ kvm-ppc <kvm-ppc@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Liu ping fan <kernelfans@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,54 +33,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes ihandle 64bit friendly.
+On Mon, Apr 14, 2014 at 2:43 PM, Alexander Graf <agraf@suse.de> wrote:
+>
+> On 13.04.14 04:27, Liu ping fan wrote:
+>>
+>> On Fri, Apr 11, 2014 at 10:03 PM, Alexander Graf <agraf@suse.de> wrote:
+>>>
+>>> On 11.04.2014, at 13:45, Liu Ping Fan <pingfank@linux.vnet.ibm.com>
+>>> wrote:
+>>>
+>>>> When we mark pte with _PAGE_NUMA we already call
+>>>> mmu_notifier_invalidate_range_start
+>>>> and mmu_notifier_invalidate_range_end, which will mark existing guest
+>>>> hpte
+>>>> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
+>>>> guest hpte entries.
+>>>
+>>> What happens when we don't? Why do we need the check? Why isn't it done
+>>> implicitly? What happens when we treat a NUMA marked page as non-present?
+>>> Why does it work out for us?
+>>>
+>>> Assume you have no idea what PAGE_NUMA is, but try to figure out what
+>>> this patch does and whether you need to cherry-pick it into your downstream
+>>> kernel. The description as is still is not very helpful for that. It doesn't
+>>> even explain what really changes with this patch applied.
+>>>
+>> Yeah.  what about appending the following description?  Can it make
+>> the context clear?
+>> "Guest should not setup a hpte for the page whose pte is marked with
+>> _PAGE_NUMA, so on the host, the numa-fault mechanism can take effect
+>> to check whether the page is placed correctly or not."
+>
+>
+> Try to come up with a text that answers the following questions in order:
+>
+I divide them into 3 groups, and answer them by 3 sections. Seems that
+it has the total story :)
+Please take a look.
 
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- arch/powerpc/boot/of.h    |    2 +-
- arch/powerpc/boot/oflib.c |   10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+>   - What does _PAGE_NUMA mean?
+Group 1 -> section 2
 
-diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index 504a0a31b685..e1ef620082f7 100644
---- a/arch/powerpc/boot/of.h
-+++ b/arch/powerpc/boot/of.h
-@@ -2,7 +2,7 @@
- #define _PPC_BOOT_OF_H_
- 
- typedef void *phandle;
--typedef void *ihandle;
-+typedef u32 ihandle;
- 
- void of_init(void *promptr);
- int of_call_prom(const char *service, int nargs, int nret, ...);
-diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 329437d0e943..956443fb9f65 100644
---- a/arch/powerpc/boot/oflib.c
-+++ b/arch/powerpc/boot/oflib.c
-@@ -106,7 +106,7 @@ static int string_match(const char *s1, const char *s2)
-  */
- static int need_map = -1;
- static ihandle chosen_mmu;
--static phandle memory;
-+static ihandle memory;
- 
- static int check_of_version(void)
- {
-@@ -135,10 +135,10 @@ static int check_of_version(void)
- 		printf("no mmu\n");
- 		return 0;
- 	}
--	memory = (ihandle) of_call_prom("open", 1, 1, "/memory");
--	if (memory == (ihandle) -1) {
--		memory = (ihandle) of_call_prom("open", 1, 1, "/memory@0");
--		if (memory == (ihandle) -1) {
-+	memory = of_call_prom("open", 1, 1, "/memory");
-+	if (memory == PROM_ERROR) {
-+		memory = of_call_prom("open", 1, 1, "/memory@0");
-+		if (memory == PROM_ERROR) {
- 			printf("no memory node\n");
- 			return 0;
- 		}
--- 
-1.7.10.4
+>   - How does page migration with _PAGE_NUMA work?
+>   -> Why should we not map pages when _PAGE_NUMA is set?
+Group 2 -> section 1
+(Note: for the 1st question in this group, I am not sure about the
+details, except that we can fix numa balancing by moving task or
+moving page.  So I comment as " migration should be involved to cut
+down the distance between the cpu and pages")
+
+>   - Which part of what needs to be done did the previous _PAGE_NUMA patch
+> address?
+>   - What's the situation without this patch?
+>   - Which scenario does this patch fix?
+>
+Group 3 -> section 3
+
+
+Numa fault is a method which help to achieve auto numa balancing.
+When such a page fault takes place, the page fault handler will check
+whether the page is placed correctly. If not, migration should be
+involved to cut down the distance between the cpu and pages.
+
+A pte with _PAGE_NUMA help to implement numa fault. It means not to
+allow the MMU to access the page directly. So a page fault is triggered
+and numa fault handler gets the opportunity to run checker.
+
+As for the access of MMU, we need special handling for the powernv's guest.
+When we mark a pte with _PAGE_NUMA, we already call mmu_notifier to
+invalidate it in guest's htab, but when we tried to re-insert them,
+we firstly try to fix it in real-mode. Only after this fails, we fallback
+to virt mode, and most of important, we run numa fault handler in virt
+mode.  This patch guards the way of real-mode to ensure that if a pte is
+marked with _PAGE_NUMA, it will NOT be fixed in real mode, instead, it will
+be fixed in virt mode and have the opportunity to be checked with placement.
+
+
+Thx,
+Fan
+
+
+> Once you have a text that answers those, you should have a good patch
+> description :).
+>
+> Alex
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
