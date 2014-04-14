@@ -1,21 +1,20 @@
-Return-Path: <stratosk@semaphore.gr>
-Received: from sema.semaphore.gr (unknown [78.46.194.137])
- (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com (unknown
+ [207.46.163.203]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C981A14008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 07:19:08 +1000 (EST)
-Message-ID: <534C4EDF.2050607@semaphore.gr>
-Date: Tue, 15 Apr 2014 00:10:55 +0300
-From: Stratos Karafotis <stratosk@semaphore.gr>
+ by ozlabs.org (Postfix) with ESMTPS id 81EAE14007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 08:29:17 +1000 (EST)
+Message-ID: <1397514507.20280.223.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/85xx: Add OCA4080 board support
+From: Scott Wood <scottwood@freescale.com>
+To: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
+Date: Mon, 14 Apr 2014 17:28:27 -0500
+In-Reply-To: <1397478910-26361-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+References: <1397478910-26361-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 18/20] cpufreq: pasemi: Use cpufreq_for_each_entry macro for
- iteration
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: stef.van.os@prodrive-technologies.com,
+ Martijn de Gouw <martijn.de.gouw@prodrive.nl>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,49 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cpufreq core supports the cpufreq_for_each_entry macro helper
-for iteration over the cpufreq_frequency_table, so use it.
+On Mon, 2014-04-14 at 14:35 +0200, Martijn de Gouw wrote:
+> +	lbc: localbus@ffe124000 {
+> +		reg = <0xf 0xfe124000 0 0x1000>;
+> +		ranges = <0 0 0xf 0xef800000 0x800000>;
+> +
+> +		flash@0,0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "cfi-flash";
+> +			reg = <0 0 0x00800000>;
+> +			bank-width = <2>;
+> +			device-width = <2>;
+> +			partition@rcw {
+> +				label = "rcw";
+> +				reg = <0x00000000 0x00020000>;
+> +			};
+> +			partition@fman-ucode {
+> +				label = "fman-ucode";
+> +				reg = <0x00020000 0x00020000>;
+> +			};
+> +			partition@user {
+> +				label = "user";
+> +				reg = <0x00040000 0x00680000>;
+> +			};
+> +			partition@env0 {
+> +				label = "env0";
+> +				reg = <0x006c0000 0x00020000>;
+> +			};
+> +			partition@env1 {
+> +				label = "env1";
+> +				reg = <0x006e0000 0x00020000>;
+> +			};
+> +			partition@u-boot {
+> +				label = "u-boot";
+> +				reg = <0x00700000 0x00080000>;
+> +			};
+> +			partition@u-boot-backup {
+> +				label = "u-boot-backup";
+> +				reg = <0x00780000 0x00080000>;
+> +			};
 
-It should have no functional changes.
+These are not valid unit addresses.  Regardless, please don't put
+partition info in the dts.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
-
-Please note that I was no able to compile test this patch due to 
-lack of cross compiler.
-
- drivers/cpufreq/pasemi-cpufreq.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 84c84b5..9a64492 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -136,9 +136,10 @@ void restore_astate(int cpu)
- 
- static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
-+	struct cpufreq_frequency_table *pos;
- 	const u32 *max_freqp;
- 	u32 max_freq;
--	int i, cur_astate;
-+	int cur_astate;
- 	struct resource res;
- 	struct device_node *cpu, *dn;
- 	int err = -ENODEV;
-@@ -197,10 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	pr_debug("initializing frequency table\n");
- 
- 	/* initialize frequency table */
--	for (i=0; pas_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
--		pas_freqs[i].frequency =
--			get_astate_freq(pas_freqs[i].driver_data) * 100000;
--		pr_debug("%d: %d\n", i, pas_freqs[i].frequency);
-+	cpufreq_for_each_entry(pos, pas_freqs) {
-+		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
-+		pr_debug("%lu: %d\n", pos - pas_freqs, pos->frequency);
- 	}
- 
- 	cur_astate = get_cur_astate(policy->cpu);
--- 
-1.9.0
+-Scott
