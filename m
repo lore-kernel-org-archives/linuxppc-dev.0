@@ -1,32 +1,33 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id ECFC51400CF
+ by ozlabs.org (Postfix) with ESMTPS id 05B6B1400F3
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 17:48:15 +1000 (EST)
 Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 14 Apr 2014 08:48:11 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id DE67617D806A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:49:02 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3E7m75S1245556
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 07:48:08 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3E7m7m9007281
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 01:48:07 -0600
+ Mon, 14 Apr 2014 08:48:12 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 813C01B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:48:11 +0100 (BST)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3E7mAsT56754310
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 07:48:10 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3E7m9Dr029346
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 01:48:09 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v2 05/15] powerpc/boot: add PROM_ERROR define in oflib
-Date: Mon, 14 Apr 2014 09:47:04 +0200
-Message-Id: <1397461634-20949-6-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 09/15] powerpc/boot: define byteswapping routines for
+ little endian
+Date: Mon, 14 Apr 2014 09:47:08 +0200
+Message-Id: <1397461634-20949-10-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
 References: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395651884.30488.10.camel@pasglop>
@@ -44,56 +45,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is mostly useful to make to the boot wrapper code closer with
-the kernel code in prom_init.
+These are not the most efficient versions of swab but the wrapper does
+not do much byte swapping. On a big endian cpu, these routines are
+a no-op.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
-
-Changes since v1:
-
- - moved PROM_ERROR definition in of.h. of_try_claim() will make 
-   use of it in the next patch.
-
- arch/powerpc/boot/of.h    |    2 ++
- arch/powerpc/boot/oflib.c |    6 +++---
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ arch/powerpc/boot/of.h   |    7 +++++++
+ arch/powerpc/boot/swab.h |   29 +++++++++++++++++++++++++++++
+ 2 files changed, 36 insertions(+)
+ create mode 100644 arch/powerpc/boot/swab.h
 
 diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index 40d95bf7402b..0f058ef69521 100644
+index e1ef620082f7..c8c1750aba0c 100644
 --- a/arch/powerpc/boot/of.h
 +++ b/arch/powerpc/boot/of.h
-@@ -23,4 +23,6 @@ typedef u32			__be32;
+@@ -1,6 +1,8 @@
+ #ifndef _PPC_BOOT_OF_H_
+ #define _PPC_BOOT_OF_H_
+ 
++#include "swab.h"
++
+ typedef void *phandle;
+ typedef u32 ihandle;
+ 
+@@ -21,8 +23,13 @@ void of_console_init(void);
+ 
+ typedef u32			__be32;
+ 
++#ifdef __LITTLE_ENDIAN__
++#define cpu_to_be32(x) swab32(x)
++#define be32_to_cpu(x) swab32(x)
++#else
  #define cpu_to_be32(x) (x)
  #define be32_to_cpu(x) (x)
++#endif
  
-+#define PROM_ERROR (-1u)
+ #define PROM_ERROR (-1u)
+ 
+diff --git a/arch/powerpc/boot/swab.h b/arch/powerpc/boot/swab.h
+new file mode 100644
+index 000000000000..d0e1431084ca
+--- /dev/null
++++ b/arch/powerpc/boot/swab.h
+@@ -0,0 +1,29 @@
++#ifndef _PPC_BOOT_SWAB_H_
++#define _PPC_BOOT_SWAB_H_
 +
- #endif /* _PPC_BOOT_OF_H_ */
-diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 0f72b1a42133..7f61f2eb5653 100644
---- a/arch/powerpc/boot/oflib.c
-+++ b/arch/powerpc/boot/oflib.c
-@@ -55,7 +55,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
- 		args.args[nargs+i] = 0;
- 
- 	if (prom(&args) < 0)
--		return -1;
-+		return PROM_ERROR;
- 
- 	return (nret > 0) ? be32_to_cpu(args.args[nargs]) : 0;
- }
-@@ -80,9 +80,9 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
- 		args.args[nargs+i] = 0;
- 
- 	if (prom(&args) < 0)
--		return -1;
-+		return PROM_ERROR;
- 
--	if (rets != (void *) 0)
-+	if (rets != NULL)
- 		for (i = 1; i < nret; ++i)
- 			rets[i-1] = be32_to_cpu(args.args[nargs+i]);
- 
++static inline u16 swab16(u16 x)
++{
++	return  ((x & (u16)0x00ffU) << 8) |
++		((x & (u16)0xff00U) >> 8);
++}
++
++static inline u32 swab32(u32 x)
++{
++	return  ((x & (u32)0x000000ffUL) << 24) |
++		((x & (u32)0x0000ff00UL) <<  8) |
++		((x & (u32)0x00ff0000UL) >>  8) |
++		((x & (u32)0xff000000UL) >> 24);
++}
++
++static inline u64 swab64(u64 x)
++{
++	return  (u64)((x & (u64)0x00000000000000ffULL) << 56) |
++		(u64)((x & (u64)0x000000000000ff00ULL) << 40) |
++		(u64)((x & (u64)0x0000000000ff0000ULL) << 24) |
++		(u64)((x & (u64)0x00000000ff000000ULL) <<  8) |
++		(u64)((x & (u64)0x000000ff00000000ULL) >>  8) |
++		(u64)((x & (u64)0x0000ff0000000000ULL) >> 24) |
++		(u64)((x & (u64)0x00ff000000000000ULL) >> 40) |
++		(u64)((x & (u64)0xff00000000000000ULL) >> 56);
++}
++#endif /* _PPC_BOOT_SWAB_H_ */
 -- 
 1.7.10.4
