@@ -1,18 +1,21 @@
-Return-Path: <joseph.salisbury@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id ABE73140093
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 04:59:00 +1000 (EST)
-Message-ID: <534C2FEB.2000803@canonical.com>
-Date: Mon, 14 Apr 2014 14:58:51 -0400
-From: Joseph Salisbury <joseph.salisbury@canonical.com>
+Return-Path: <stratosk@semaphore.gr>
+Received: from sema.semaphore.gr (unknown [78.46.194.137])
+ (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C981A14008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 07:19:08 +1000 (EST)
+Message-ID: <534C4EDF.2050607@semaphore.gr>
+Date: Tue, 15 Apr 2014 00:10:55 +0300
+From: Stratos Karafotis <stratosk@semaphore.gr>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH 1/1] powerpc: Increase COMMAND_LINE_SIZE to 2048 from 512.
-References: <cover.1397260361.git.joseph.salisbury@canonical.com>
- <84356b1cb9452226d54641a71e4b1363e78d4417.1397260362.git.joseph.salisbury@canonical.com>
-In-Reply-To: <84356b1cb9452226d54641a71e4b1363e78d4417.1397260362.git.joseph.salisbury@canonical.com>
+To: Olof Johansson <olof@lixom.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 18/20] cpufreq: pasemi: Use cpufreq_for_each_entry macro for
+ iteration
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, stable@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,42 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/14/2014 11:30 AM, Joseph Salisbury wrote:
-> BugLink: http://bugs.launchpad.net/bugs/1306677
->
-> While booting the PPC64EL kernel, the command line gets truncated to 512 characters. This is due to a hard limit of 512 defined for COMMAND_LINE_SIZE.  It would be beneficial to have a command line longer than 512 characters, as iscsi targets and cloud-init parameters are passed through the kernel command line.
->
-> Signed-off-by: Joseph Salisbury <joseph.salisbury@canonical.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org> (supporter:LINUX FOR POWERPC...)
-> Cc: Paul Mackerras <paulus@samba.org> (supporter:LINUX FOR POWERPC...)
-> Cc: linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC...)
-> Cc: linux-kernel@vger.kernel.org (open list)
-> Cc: stable@vger.kernel.org
->
-> ---
->  arch/powerpc/boot/ops.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-> index b3218ce..5a01fb1 100644
-> --- a/arch/powerpc/boot/ops.h
-> +++ b/arch/powerpc/boot/ops.h
-> @@ -15,7 +15,7 @@
->  #include "types.h"
->  #include "string.h"
->  
-> -#define	COMMAND_LINE_SIZE	512
-> +#define	COMMAND_LINE_SIZE	2048	
->  #define	MAX_PATH_LEN		256
->  #define	MAX_PROP_LEN		256 /* What should this be? */
->  
+The cpufreq core supports the cpufreq_for_each_entry macro helper
+for iteration over the cpufreq_frequency_table, so use it.
 
-After further review, it appears ppc does not actually use the define in
-the ppc headers but uses the common generic
-default(include/uapi/asm-generic/setup.h).  COMMAND_LINE_SIZE should
-probably become a kernel config option.  Do folks agree that is the
-correct thing to do?  If so, I can re-work the patch.
+It should have no functional changes.
 
-Thanks,
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
 
-Joe
+Please note that I was no able to compile test this patch due to 
+lack of cross compiler.
+
+ drivers/cpufreq/pasemi-cpufreq.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
+index 84c84b5..9a64492 100644
+--- a/drivers/cpufreq/pasemi-cpufreq.c
++++ b/drivers/cpufreq/pasemi-cpufreq.c
+@@ -136,9 +136,10 @@ void restore_astate(int cpu)
+ 
+ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
++	struct cpufreq_frequency_table *pos;
+ 	const u32 *max_freqp;
+ 	u32 max_freq;
+-	int i, cur_astate;
++	int cur_astate;
+ 	struct resource res;
+ 	struct device_node *cpu, *dn;
+ 	int err = -ENODEV;
+@@ -197,10 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	pr_debug("initializing frequency table\n");
+ 
+ 	/* initialize frequency table */
+-	for (i=0; pas_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
+-		pas_freqs[i].frequency =
+-			get_astate_freq(pas_freqs[i].driver_data) * 100000;
+-		pr_debug("%d: %d\n", i, pas_freqs[i].frequency);
++	cpufreq_for_each_entry(pos, pas_freqs) {
++		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
++		pr_debug("%lu: %d\n", pos - pas_freqs, pos->frequency);
+ 	}
+ 
+ 	cur_astate = get_cur_astate(policy->cpu);
+-- 
+1.9.0
