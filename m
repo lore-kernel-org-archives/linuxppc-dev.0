@@ -1,34 +1,32 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2D43014008B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 17:48:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6035B14008E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 17:48:13 +1000 (EST)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 14 Apr 2014 08:48:08 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 4EC9E1B0806E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:48:07 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3E7m5js852328
+ Mon, 14 Apr 2014 08:48:07 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 420A117D8059
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:49:00 +0100 (BST)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3E7m5vC48103474
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 07:48:05 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3E8m5GJ012995
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 02:48:06 -0600
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3E7m4ca007140
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 01:48:05 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v2 01/15] powerpc/boot: fix do_div for 64bit wrapper
-Date: Mon, 14 Apr 2014 09:47:00 +0200
-Message-Id: <1397461634-20949-2-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
-References: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 00/15] powerpc/boot: 64bit little endian wrapper
+Date: Mon, 14 Apr 2014 09:46:59 +0200
+Message-Id: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395651884.30488.10.camel@pasglop>
 References: <1395651884.30488.10.camel@pasglop>
 MIME-Version: 1.0
@@ -44,45 +42,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When the boot wrapper is compiled in 64bit, there is no need to
-use __div64_32.
+Hi,
 
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- arch/powerpc/boot/stdio.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+The following patchset adds support for 64bit little endian boot 
+wrapper. It is based on original code from Andrew Tauferner. 
 
-diff --git a/arch/powerpc/boot/stdio.c b/arch/powerpc/boot/stdio.c
-index 5b57800bbc67..a701261b1781 100644
---- a/arch/powerpc/boot/stdio.c
-+++ b/arch/powerpc/boot/stdio.c
-@@ -21,6 +21,18 @@ size_t strnlen(const char * s, size_t count)
- 	return sc - s;
- }
- 
-+#ifdef __powerpc64__
-+
-+# define do_div(n, base) ({						\
-+	unsigned int __base = (base);					\
-+	unsigned int __rem;						\
-+	__rem = ((unsigned long long)(n)) % __base;			\
-+	(n) = ((unsigned long long)(n)) / __base;			\
-+	__rem;								\
-+})
-+
-+#else
-+
- extern unsigned int __div64_32(unsigned long long *dividend,
- 			       unsigned int divisor);
- 
-@@ -39,6 +51,8 @@ extern unsigned int __div64_32(unsigned long long *dividend,
- 	__rem;								\
-  })
- 
-+#endif /* __powerpc64__ */
-+
- static int skip_atoi(const char **s)
- {
- 	int i, c;
+The first patches provide fixes for 64bit support. I also changed 
+the prom code to make it converge with the prom_init kernel code. 
+They have a lot in common and they could probably be merged.
+
+  powerpc/boot: fix do_div for 64bit wrapper
+  powerpc/boot: use a common prom_args struct in oflib
+  powerpc/boot: use prom_arg_t in oflib
+  powerpc/boot: add byteswapping routines in oflib
+  powerpc/boot: add PROM_ERROR define in oflib
+  powerpc/boot: rework of_claim() to make it 64bit friendly
+  powerpc/boot: define typedef ihandle as u32
+  powerpc/boot: fix compile warning in 64bit
+
+These are for little endian only:
+
+  powerpc/boot: define byteswapping routines for little endian
+  powerpc/boot: add 64bit and little endian support to addnote
+  powerpc/boot: add little endian support to elf utils
+
+and finally, these add support for the 64bit little endian boot 
+wrapper :
+
+  powerpc/boot: define a routine to enter prom
+  powerpc/boot: modify entry point for 64bit
+  powerpc/boot: add a global entry point for pseries
+  powerpc/boot: add support for 64bit little endian wrapper
+
+Here are some topics to discuss :
+
+  - to compile in 64bit, -m64 is added to the cross32 compiler.    
+  - There are still some compile warnings due to 64bit, in addnote 
+    and in the device tree library.
+  - the wrapper is compiled as a position independent executable. 
+
+This patchset is based on a 3.15-rc1 and was tested on qemu with 
+the -kernel option, yaboot and grub for little and big endian 
+guests. Tests were also done to check that the PowerVM stack was
+not broken by these changes.
+
+It is also available from :
+
+	https://github.com/legoater/linux zimagev2 
+
+Cheers,
+
+C. 
+
+Changes since v1 :
+
+  - Fixed Makefile for platforms generating a zImage.pseries 
+  - used PROM_ERROR (-1u) to test return addr when claiming memory
+  - removed patch modifying the call to the kernel entry point
+  - merged last 3 patches to preserve bisectability 
+
+Cédric Le Goater (15):
+  powerpc/boot: fix do_div for 64bit wrapper
+  powerpc/boot: use a common prom_args struct in oflib
+  powerpc/boot: use prom_arg_t in oflib
+  powerpc/boot: add byteswapping routines in oflib
+  powerpc/boot: add PROM_ERROR define in oflib
+  powerpc/boot: rework of_claim() to make it 64bit friendly
+  powerpc/boot: define typedef ihandle as u32
+  powerpc/boot: fix compile warning in 64bit
+  powerpc/boot: define byteswapping routines for little endian
+  powerpc/boot: add 64bit and little endian support to addnote
+  powerpc/boot: add little endian support to elf utils
+  powerpc/boot: define a routine to enter prom
+  powerpc/boot: modify entry point for 64bit
+  powerpc/boot: add a global entry point for pseries
+  powerpc/boot: add support for 64bit little endian wrapper
+
+ arch/powerpc/boot/Makefile             |   21 +++-
+ arch/powerpc/boot/addnote.c            |  128 +++++++++++++++--------
+ arch/powerpc/boot/crt0.S               |  180 +++++++++++++++++++++++++++++++-
+ arch/powerpc/boot/elf_util.c           |    4 +
+ arch/powerpc/boot/of.c                 |    4 +-
+ arch/powerpc/boot/of.h                 |   19 +++-
+ arch/powerpc/boot/ofconsole.c          |    6 +-
+ arch/powerpc/boot/oflib.c              |   92 ++++++++--------
+ arch/powerpc/boot/ppc_asm.h            |   12 +++
+ arch/powerpc/boot/pseries-head.S       |    8 ++
+ arch/powerpc/boot/stdio.c              |   14 +++
+ arch/powerpc/boot/swab.h               |   29 +++++
+ arch/powerpc/boot/wrapper              |   17 ++-
+ arch/powerpc/boot/zImage.lds.S         |   25 ++++-
+ arch/powerpc/platforms/Kconfig.cputype |    5 +
+ 15 files changed, 464 insertions(+), 100 deletions(-)
+ create mode 100644 arch/powerpc/boot/pseries-head.S
+ create mode 100644 arch/powerpc/boot/swab.h
+
 -- 
 1.7.10.4
