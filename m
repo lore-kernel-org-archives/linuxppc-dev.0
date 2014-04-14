@@ -1,20 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com (unknown
- [207.46.163.203]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 81EAE14007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 08:29:17 +1000 (EST)
-Message-ID: <1397514507.20280.223.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/85xx: Add OCA4080 board support
+ by ozlabs.org (Postfix) with ESMTPS id E35F21400D8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 09:27:34 +1000 (EST)
+Message-ID: <1397518031.20280.229.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/2] powerpc/mpc85xx: add two functions to get suspend
+ state which is standby or mem
 From: Scott Wood <scottwood@freescale.com>
-To: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
-Date: Mon, 14 Apr 2014 17:28:27 -0500
-In-Reply-To: <1397478910-26361-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
-References: <1397478910-26361-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Mon, 14 Apr 2014 18:27:11 -0500
+In-Reply-To: <1397442250-14886-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1397442250-14886-1-git-send-email-dongsheng.wang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: stef.van.os@prodrive-technologies.com,
- Martijn de Gouw <martijn.de.gouw@prodrive.nl>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
+ jason.jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,48 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-04-14 at 14:35 +0200, Martijn de Gouw wrote:
-> +	lbc: localbus@ffe124000 {
-> +		reg = <0xf 0xfe124000 0 0x1000>;
-> +		ranges = <0 0 0xf 0xef800000 0x800000>;
+On Mon, 2014-04-14 at 10:24 +0800, Dongsheng Wang wrote:
+> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> Add set_pm_suspend_state & pm_suspend_state functions to set/get suspend state.
+> When system going to sleep, devices can get the system suspend state(STANDBY/MEM)
+> through pm_suspend_state function and handle different situations.
+> 
+> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> 
+> diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+> index b564b5e..3853d43 100644
+> --- a/arch/powerpc/platforms/85xx/common.c
+> +++ b/arch/powerpc/platforms/85xx/common.c
+> @@ -8,6 +8,7 @@
+>  
+>  #include <linux/of_irq.h>
+>  #include <linux/of_platform.h>
+> +#include <linux/suspend.h>
+>  
+>  #include <asm/qe.h>
+>  #include <sysdev/cpm2_pic.h>
+> @@ -47,6 +48,19 @@ int __init mpc85xx_common_publish_devices(void)
+>  {
+>  	return of_platform_bus_probe(NULL, mpc85xx_common_ids, NULL);
+>  }
 > +
-> +		flash@0,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			compatible = "cfi-flash";
-> +			reg = <0 0 0x00800000>;
-> +			bank-width = <2>;
-> +			device-width = <2>;
-> +			partition@rcw {
-> +				label = "rcw";
-> +				reg = <0x00000000 0x00020000>;
-> +			};
-> +			partition@fman-ucode {
-> +				label = "fman-ucode";
-> +				reg = <0x00020000 0x00020000>;
-> +			};
-> +			partition@user {
-> +				label = "user";
-> +				reg = <0x00040000 0x00680000>;
-> +			};
-> +			partition@env0 {
-> +				label = "env0";
-> +				reg = <0x006c0000 0x00020000>;
-> +			};
-> +			partition@env1 {
-> +				label = "env1";
-> +				reg = <0x006e0000 0x00020000>;
-> +			};
-> +			partition@u-boot {
-> +				label = "u-boot";
-> +				reg = <0x00700000 0x00080000>;
-> +			};
-> +			partition@u-boot-backup {
-> +				label = "u-boot-backup";
-> +				reg = <0x00780000 0x00080000>;
-> +			};
+> +static suspend_state_t pm_state;
+> +
+> +void set_pm_suspend_state(suspend_state_t state)
+> +{
+> +	pm_state = state;
+> +}
+> +
+> +suspend_state_t pm_suspend_state(void)
+> +{
+> +	return pm_state;
+> +}
 
-These are not valid unit addresses.  Regardless, please don't put
-partition info in the dts.
+These need to be namespaced to indicate that they apply only to mpc85xx.
+Where do you plan on using these from, that mpc85xx can be safely
+assumed?
+
+This seems like a feature that should be implemented in generic code
+instead.
 
 -Scott
