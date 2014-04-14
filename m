@@ -1,25 +1,24 @@
-Return-Path: <xuelin.shi@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4B7B314008E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 12:48:44 +1000 (EST)
-From: Xuelin Shi <xuelin.shi@freescale.com>
-To: Dan Williams <dan.j.williams@intel.com>
-Subject: RE: [PATCH v3] dmaengine: driver support for FSL RaidEngine device.
-Date: Mon, 14 Apr 2014 02:48:37 +0000
-Message-ID: <0c8d1963a25648f8a8f820bbc55afe4f@BL2PR03MB147.namprd03.prod.outlook.com>
-References: <1397202086-22489-1-git-send-email-xuelin.shi@freescale.com>
- <CAA9_cme=Bo3tYi0-bNXBRNLZnC-4FZyaSYZ=3iRD_5xfiVX5Mw@mail.gmail.com>
-In-Reply-To: <CAA9_cme=Bo3tYi0-bNXBRNLZnC-4FZyaSYZ=3iRD_5xfiVX5Mw@mail.gmail.com>
-Content-Type: text/plain; charset="gb2312"
+ by ozlabs.org (Postfix) with ESMTPS id A439014008B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 16:43:23 +1000 (EST)
+Message-ID: <534B8384.7050500@suse.de>
+Date: Mon, 14 Apr 2014 08:43:16 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Cc: Harninder Rai <harninder.rai@freescale.com>,
- "andriy.shevchenko@intel.com" <andriy.shevchenko@intel.com>, "Koul,
- Vinod" <vinod.koul@intel.com>, Naveen Burmi <NaveenBurmi@freescale.com>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Liu ping fan <kernelfans@gmail.com>
+Subject: Re: [PATCH v3] powerpc: kvm: make _PAGE_NUMA take effect
+References: <1397216707-12795-1-git-send-email-pingfank@linux.vnet.ibm.com>	<3DC9A8E1-547C-4660-AB61-BE371DEDA520@suse.de>
+ <CAFgQCTsbr9_Y24upMSuOTqdO-gAVySBxW=o6uK2UKHk9=uQihw@mail.gmail.com>
+In-Reply-To: <CAFgQCTsbr9_Y24upMSuOTqdO-gAVySBxW=o6uK2UKHk9=uQihw@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Liu Ping Fan <pingfank@linux.vnet.ibm.com>,
+ "kvm@vger.kernel.org mailing list" <kvm@vger.kernel.org>,
+ kvm-ppc <kvm-ppc@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgRGFuLA0KDQpmc2wgZG1hIGRldmljZSBhbmQgZnNsIHJhaWQgZGV2aWNlIGFyZSB0d28gZGlm
-ZmVyZW5jdCBkZXZpY2VzIHRoYXQgYm90aCBwcm92aWRlIGFzeW5jX21lbWNweQ0KY2FwYWJpbGl0
-eSwgc28gSSB1c2UgIUZTTF9ETUEgdG8gZGlzYWJsZSB0aGUgZnNsIGRtYSBkZXZpY2UuIA0KDQpU
-aGF0J3MgdG8gc2F5LCBlaXRoZXIgc2VsZWN0IGZzbGRtYSBkZXZpY2UsIGVpdGhlciBmc2wgcmFp
-ZCBkZXZpY2UuDQoNClRoYW5rcywNClh1ZWxpbiBTaGkNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCkZyb206IGRhbi5qLndpbGxpYW1zQGdtYWlsLmNvbSBbbWFpbHRvOmRhbi5qLndpbGxp
-YW1zQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mIERhbiBXaWxsaWFtcw0KU2VudDogMjAxNMTqNNTC
-MTLI1SAxOjQzDQpUbzogU2hpIFh1ZWxpbi1CMjkyMzcNCkNjOiBLb3VsLCBWaW5vZDsgYW5kcml5
-LnNoZXZjaGVua29AaW50ZWwuY29tOyBkbWFlbmdpbmVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBw
-Yy1kZXY7IFJhaSBIYXJuaW5kZXItQjAxMDQ0OyBCdXJtaSBOYXZlZW4tQjE2NTAyDQpTdWJqZWN0
-OiBSZTogW1BBVENIIHYzXSBkbWFlbmdpbmU6IGRyaXZlciBzdXBwb3J0IGZvciBGU0wgUmFpZEVu
-Z2luZSBkZXZpY2UuDQoNCkEgZmV3IG1vcmUgY29tbWVudHM6DQoNCk9uIEZyaSwgQXByIDExLCAy
-MDE0IGF0IDEyOjQxIEFNLCAgPHh1ZWxpbi5zaGlAZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+IEZy
-b206IFh1ZWxpbiBTaGkgPHh1ZWxpbi5zaGlAZnJlZXNjYWxlLmNvbT4NCj4NCj4gVGhlIFJhaWRF
-bmdpbmUgaXMgYSBuZXcgRlNMIGhhcmR3YXJlIHVzZWQgZm9yIFJhaWQ1LzYgYWNjZXJhdGlvbi4N
-Cj4NCj4gVGhpcyBwYXRjaCBlbmFibGVzIHRoZSBSYWlkRW5naW5lIGZ1bmN0aW9uYWxpdHkgYW5k
-IHByb3ZpZGVzIGhhcmR3YXJlIA0KPiBvZmZsb2FkaW5nIGNhcGFiaWxpdHkgZm9yIG1lbWNweSwg
-eG9yIGFuZCBwcSBjb21wdXRhdGlvbi4NCj4gSXQgd29ya3Mgd2l0aCBhc3luY190eC4NCj4NCj4g
-U2lnbmVkLW9mZi1ieTogSGFybmluZGVyIFJhaSA8aGFybmluZGVyLnJhaUBmcmVlc2NhbGUuY29t
-Pg0KPiBTaWduZWQtb2ZmLWJ5OiBOYXZlZW4gQnVybWkgPG5hdmVlbmJ1cm1pQGZyZWVzY2FsZS5j
-b20+DQo+IFNpZ25lZC1vZmYtYnk6IFh1ZWxpbiBTaGkgPHh1ZWxpbi5zaGlAZnJlZXNjYWxlLmNv
-bT4NCj4gLS0tDQo+ICBjaGFuZ2VzIGZvciB2MzoNCj4gICAtIGZpeCBtZW1vcnkgYWxsb2NhdGlv
-biBmbGFnIEdGUF94eHggdXNhZ2UuDQo+ICAgLSBhZGQgcmVfanJfaXNzdWVfcGVuZGluZyBjYWxs
-IGluIGNsZWFudXAuDQo+ICAgLSByZW1vdmUgdW5uZWNlc3NhcnkgZG1hX3J1bl9kZXBlbmRlbmNp
-ZXMoLi4uKS4NCj4gICAtIHVzZSBkbWFfY29va2llX2NvbXBsZXRlKC4uLikgaW5zdGVhZCBvZiBk
-aXJlY3QgdXBkYXRpbmcgY29va2llLg0KPg0KPiAgZHJpdmVycy9kbWEvS2NvbmZpZyAgICB8ICAx
-MSArDQo+ICBkcml2ZXJzL2RtYS9NYWtlZmlsZSAgIHwgICAxICsNCj4gIGRyaXZlcnMvZG1hL2Zz
-bF9yYWlkLmMgfCA4NzggDQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysNCj4gIGRyaXZlcnMvZG1hL2ZzbF9yYWlkLmggfCAzMDggKysrKysrKysrKysr
-KysrKysNCj4gIDQgZmlsZXMgY2hhbmdlZCwgMTE5OCBpbnNlcnRpb25zKCspDQo+ICBjcmVhdGUg
-bW9kZSAxMDA2NDQgZHJpdmVycy9kbWEvZnNsX3JhaWQuYyAgY3JlYXRlIG1vZGUgMTAwNjQ0IA0K
-PiBkcml2ZXJzL2RtYS9mc2xfcmFpZC5oDQo+DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RtYS9L
-Y29uZmlnIGIvZHJpdmVycy9kbWEvS2NvbmZpZyBpbmRleCANCj4gNjA1YjAxNi4uODI5ZjQxYyAx
-MDA2NDQNCj4gLS0tIGEvZHJpdmVycy9kbWEvS2NvbmZpZw0KPiArKysgYi9kcml2ZXJzL2RtYS9L
-Y29uZmlnDQo+IEBAIC0xMDAsNiArMTAwLDE3IEBAIGNvbmZpZyBGU0xfRE1BDQo+ICAgICAgICAg
-ICBFbG9QbHVzIGlzIG9uIG1wYzg1eHggYW5kIG1wYzg2eHggYW5kIFB4eHggcGFydHMsIGFuZCB0
-aGUgRWxvMyBpcyBvbg0KPiAgICAgICAgICAgc29tZSBUeHh4IGFuZCBCeHh4IHBhcnRzLg0KPg0K
-PiArY29uZmlnIEZTTF9SQUlEDQo+ICsgICAgICAgIHRyaXN0YXRlICJGcmVlc2NhbGUgUkFJRCBl
-bmdpbmUgU3VwcG9ydCINCj4gKyAgICAgICAgZGVwZW5kcyBvbiBGU0xfU09DICYmICFGU0xfRE1B
-DQoNClRoaXMgd29uJ3Qgd29yayBpbiB0aGUgY2FzZSB3aGVyZSBGU0xfRE1BPW0uDQoNCkluc3Rl
-YWQsIEkgdGhpbmsgeW91IHdhbnQgdG8gdXNlICJkZXBlbmRzIG9uICFBU1lOQ19UWF9FTkFCTEVf
-Q0hBTk5FTF9TV0lUQ0giIHdoaWNoIGlzIHRoZSBhY3R1YWwgZGVwZW5kZW5jeS4NCg0KPiArICAg
-ICAgICBzZWxlY3QgRE1BX0VOR0lORQ0KPiArICAgICAgICBzZWxlY3QgRE1BX0VOR0lORV9SQUlE
-DQo+ICsgICAgICAgIC0tLWhlbHAtLS0NCj4gKyAgICAgICAgICBFbmFibGUgc3VwcG9ydCBmb3Ig
-RnJlZXNjYWxlIFJBSUQgRW5naW5lLiBSQUlEIEVuZ2luZSBpcw0KPiArICAgICAgICAgIGF2YWls
-YWJsZSBvbiBzb21lIFFvcklRIFNvQ3MgKGxpa2UgUDUwMjApLiBJdCBoYXMNCj4gKyAgICAgICAg
-ICB0aGUgY2FwYWJpbGl0eSB0byBvZmZsb2FkIG1lbWNweSwgeG9yIGFuZCBwcSBjb21wdXRhdGlv
-bg0KPiArICAgICAgICAgZm9yIHJhaWQ1LzYuDQo+ICsNClsuLl0NCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvZG1hL2ZzbF9yYWlkLmMgYi9kcml2ZXJzL2RtYS9mc2xfcmFpZC5jIG5ldyBmaWxlIA0K
-PiBtb2RlIDEwMDY0NCBpbmRleCAwMDAwMDAwLi40YjM4OWIxDQo+IC0tLSAvZGV2L251bGwNCj4g
-KysrIGIvZHJpdmVycy9kbWEvZnNsX3JhaWQuYw0KPiBAQCAtMCwwICsxLDg3OCBAQA0KWy4uXQ0K
-PiArdm9pZCBmaWxsX2NmZF9mcmFtZShzdHJ1Y3QgY21wbmRfZnJhbWUgKmNmLCB1OCBpbmRleCwN
-Cj4gKyAgICAgICAgICAgICAgIHNpemVfdCBsZW5ndGgsIGRtYV9hZGRyX3QgYWRkciwgYm9vbCBm
-aW5hbCkgew0KPiArICAgICAgIHUzMiBlZnJsID0gbGVuZ3RoICYgQ0ZfTEVOR1RIX01BU0s7DQo+
-ICsgICAgICAgZWZybCB8PSBmaW5hbCA8PCBDRl9GSU5BTF9TSElGVDsNCj4gKyAgICAgICBjZltp
-bmRleF0uZWZybDMyID0gZWZybDsNCj4gKyAgICAgICBjZltpbmRleF0uYWRkcl9oaWdoID0gKGFk
-ZHIgPj4gMzIpICYgSFdERVNDX0FERFJfSElHSF9NQVNLOw0KDQpVc2UgInVwcGVyXzMyX2JpdHMo
-KSIgaGVyZSBvdGhlcndpc2U6DQoNCiAgZHJpdmVycy9kbWEvZnNsX3JhaWQuYzogSW4gZnVuY3Rp
-b24gJ2ZpbGxfY2ZkX2ZyYW1lJzoNCiAgZHJpdmVycy9kbWEvZnNsX3JhaWQuYzoyNTg6Mjogd2Fy
-bmluZzogcmlnaHQgc2hpZnQgY291bnQgPj0gd2lkdGggb2YgdHlwZQ0KDQo+ICsgICAgICAgY2Zb
-aW5kZXhdLmFkZHJfbG93ID0gKHUzMilhZGRyOw0KDQpVc2UgbG93ZXJfMzJfYml0cygpIGhlcmUg
-dG8gYmUgc3ltbWV0cmljYWwuDQoNCj4gK30NCj4gKw0KPiArc3RhdGljIHN0cnVjdCBmc2xfcmVf
-ZG1hX2FzeW5jX3R4X2Rlc2MgKnJlX2pyX2luaXRfZGVzYyhzdHJ1Y3QgcmVfanIgKmpyLA0KPiAr
-ICAgICAgIHN0cnVjdCBmc2xfcmVfZG1hX2FzeW5jX3R4X2Rlc2MgKmRlc2MsIHZvaWQgKmNmLCBk
-bWFfYWRkcl90IA0KPiArcGFkZHIpIHsNCj4gKyAgICAgICBkZXNjLT5qciA9IGpyOw0KPiArICAg
-ICAgIGRlc2MtPmFzeW5jX3R4LnR4X3N1Ym1pdCA9IHJlX2pyX3R4X3N1Ym1pdDsNCj4gKyAgICAg
-ICBkbWFfYXN5bmNfdHhfZGVzY3JpcHRvcl9pbml0KCZkZXNjLT5hc3luY190eCwgJmpyLT5jaGFu
-KTsNCj4gKyAgICAgICBJTklUX0xJU1RfSEVBRCgmZGVzYy0+bm9kZSk7DQo+ICsNCj4gKyAgICAg
-ICBkZXNjLT5od2Rlc2MuZm10MzIgPSBGUkFNRV9GT1JNQVQgPDwgSFdERVNDX0ZNVF9TSElGVDsN
-Cj4gKyAgICAgICBkZXNjLT5od2Rlc2MubGJlYTMyID0gKHBhZGRyID4+IDMyKSAmIEhXREVTQ19B
-RERSX0hJR0hfTUFTSzsNCg0KU2FtZSBjb21tZW50L3dhcm5pbmcgYXMgYWJvdmUuLi4NCg0KPiAr
-ICAgICAgIGRlc2MtPmh3ZGVzYy5hZGRyX2xvdyA9ICh1MzIpcGFkZHI7DQoNCmRpdHRvLg0KDQoN
-Cg==
+
+On 13.04.14 04:27, Liu ping fan wrote:
+> On Fri, Apr 11, 2014 at 10:03 PM, Alexander Graf <agraf@suse.de> wrote:
+>> On 11.04.2014, at 13:45, Liu Ping Fan <pingfank@linux.vnet.ibm.com> wrote:
+>>
+>>> When we mark pte with _PAGE_NUMA we already call mmu_notifier_invalidate_range_start
+>>> and mmu_notifier_invalidate_range_end, which will mark existing guest hpte
+>>> entry as HPTE_V_ABSENT. Now we need to do that when we are inserting new
+>>> guest hpte entries.
+>> What happens when we don't? Why do we need the check? Why isn't it done implicitly? What happens when we treat a NUMA marked page as non-present? Why does it work out for us?
+>>
+>> Assume you have no idea what PAGE_NUMA is, but try to figure out what this patch does and whether you need to cherry-pick it into your downstream kernel. The description as is still is not very helpful for that. It doesn't even explain what really changes with this patch applied.
+>>
+> Yeah.  what about appending the following description?  Can it make
+> the context clear?
+> "Guest should not setup a hpte for the page whose pte is marked with
+> _PAGE_NUMA, so on the host, the numa-fault mechanism can take effect
+> to check whether the page is placed correctly or not."
+
+Try to come up with a text that answers the following questions in order:
+
+   - What does _PAGE_NUMA mean?
+   - How does page migration with _PAGE_NUMA work?
+   -> Why should we not map pages when _PAGE_NUMA is set?
+   - Which part of what needs to be done did the previous _PAGE_NUMA 
+patch address?
+   - What's the situation without this patch?
+   - Which scenario does this patch fix?
+
+Once you have a text that answers those, you should have a good patch 
+description :).
+
+Alex
