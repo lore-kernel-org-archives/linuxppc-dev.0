@@ -1,32 +1,32 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 638E1140114
+ by ozlabs.org (Postfix) with ESMTPS id 0876A14011C
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 17:48:17 +1000 (EST)
 Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 14 Apr 2014 08:48:13 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 601B617D805C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:49:07 +0100 (BST)
+ Mon, 14 Apr 2014 08:48:14 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 566C117D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 08:49:06 +0100 (BST)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3E7mCep4260148
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 07:48:12 GMT
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3E7mBFT63635678
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 07:48:11 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3E7mBYV029468
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 01:48:12 -0600
+ s3E7mAum029418
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 01:48:11 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v2 13/15] powerpc/boot: modify entry point for 64bit
-Date: Mon, 14 Apr 2014 09:47:12 +0200
-Message-Id: <1397461634-20949-14-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 11/15] powerpc/boot: add little endian support to elf utils
+Date: Mon, 14 Apr 2014 09:47:10 +0200
+Message-Id: <1397461634-20949-12-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
 References: <1397461634-20949-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395651884.30488.10.camel@pasglop>
@@ -44,178 +44,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds support a 64bit wrapper entry point. As in 32bit, the
-entry point does its own relocation and can be loaded at any address
-by the firmware.
-
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/crt0.S |  108 ++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 104 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/elf_util.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index dbd99d064828..689290561e69 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -1,17 +1,20 @@
- /*
-  * Copyright (C) Paul Mackerras 1997.
-  *
-+ * Adapted for 64 bit LE PowerPC by Andrew Tauferner
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-  * 2 of the License, or (at your option) any later version.
-  *
-- * NOTE: this code runs in 32 bit mode, is position-independent,
-- * and is packaged as ELF32.
-  */
- 
- #include "ppc_asm.h"
- 
-+RELA = 7
-+RELACOUNT = 0x6ffffff9
-+
- 	.text
- 	/* A procedure descriptor used when booting this as a COFF file.
- 	 * When making COFF, this comes first in the link and we're
-@@ -21,6 +24,20 @@
- _zimage_start_opd:
- 	.long	0x500000, 0, 0, 0
- 
-+#ifdef __powerpc64__
-+.balign 8
-+p_start:	.llong	_start
-+p_etext:	.llong	_etext
-+p_bss_start:	.llong	__bss_start
-+p_end:		.llong	_end
-+
-+p_toc:		.llong	__toc_start + 0x8000 - p_base
-+p_dyn:		.llong	__dynamic_start - p_base
-+p_rela:		.llong	__rela_dyn_start - p_base
-+p_prom:		.llong	0
-+	.weak	_platform_stack_top
-+p_pstack:	.llong	_platform_stack_top
+diff --git a/arch/powerpc/boot/elf_util.c b/arch/powerpc/boot/elf_util.c
+index 1567a0c0f05c..316552dea4d8 100644
+--- a/arch/powerpc/boot/elf_util.c
++++ b/arch/powerpc/boot/elf_util.c
+@@ -26,7 +26,11 @@ int parse_elf64(void *hdr, struct elf_info *info)
+ 	      elf64->e_ident[EI_MAG2]  == ELFMAG2	&&
+ 	      elf64->e_ident[EI_MAG3]  == ELFMAG3	&&
+ 	      elf64->e_ident[EI_CLASS] == ELFCLASS64	&&
++#ifdef __LITTLE_ENDIAN__
++	      elf64->e_ident[EI_DATA]  == ELFDATA2LSB	&&
 +#else
- p_start:	.long	_start
- p_etext:	.long	_etext
- p_bss_start:	.long	__bss_start
-@@ -28,6 +45,7 @@ p_end:		.long	_end
- 
- 	.weak	_platform_stack_top
- p_pstack:	.long	_platform_stack_top
+ 	      elf64->e_ident[EI_DATA]  == ELFDATA2MSB	&&
 +#endif
- 
- 	.weak	_zimage_start
- 	.globl	_zimage_start
-@@ -38,6 +56,7 @@ _zimage_start_lib:
- 	   and the address where we're running. */
- 	bl	.+4
- p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
-+#ifndef __powerpc64__
- 	/* grab the link address of the dynamic section in r11 */
- 	addis	r11,r10,(_GLOBAL_OFFSET_TABLE_-p_base)@ha
- 	lwz	r11,(_GLOBAL_OFFSET_TABLE_-p_base)@l(r11)
-@@ -51,8 +70,6 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
- 
- 	/* The dynamic section contains a series of tagged entries.
- 	 * We need the RELA and RELACOUNT entries. */
--RELA = 7
--RELACOUNT = 0x6ffffff9
- 	li	r9,0
- 	li	r0,0
- 9:	lwz	r8,0(r12)	/* get tag */
-@@ -120,7 +137,90 @@ RELACOUNT = 0x6ffffff9
- 	li	r0,0
- 	stwu	r0,-16(r1)	/* establish a stack frame */
- 6:
-+#else /* __powerpc64__ */
-+	/* Save the prom pointer at p_prom. */
-+	std	r5,(p_prom-p_base)(r10)
-+
-+	/* Set r2 to the TOC. */
-+	ld	r2,(p_toc-p_base)(r10)
-+	add	r2,r2,r10
-+
-+	/* Grab the link address of the dynamic section in r11. */
-+	ld	r11,-32768(r2)
-+	cmpwi	r11,0
-+	beq	3f              /* if not linked -pie then no dynamic section */
-+
-+	ld	r11,(p_dyn-p_base)(r10)
-+	add	r11,r11,r10
-+	ld	r9,(p_rela-p_base)(r10)
-+	add	r9,r9,r10
-+
-+	li	r7,0
-+	li	r8,0
-+9:	ld	r6,0(r11)       /* get tag */
-+	cmpdi	r6,0
-+	beq	12f              /* end of list */
-+	cmpdi	r6,RELA
-+	bne	10f
-+	ld	r7,8(r11)       /* get RELA pointer in r7 */
-+	b	11f
-+10:	addis	r6,r6,(-RELACOUNT)@ha
-+	cmpdi	r6,RELACOUNT@l
-+	bne	11f
-+	ld	r8,8(r11)       /* get RELACOUNT value in r8 */
-+11:	addi	r11,r11,16
-+	b	9b
-+12:
-+	cmpdi	r7,0            /* check we have both RELA and RELACOUNT */
-+	cmpdi	cr1,r8,0
-+	beq	3f
-+	beq	cr1,3f
-+
-+	/* Calcuate the runtime offset. */
-+	subf	r7,r7,r9
- 
-+	/* Run through the list of relocations and process the
-+	 * R_PPC64_RELATIVE ones. */
-+	mtctr	r8
-+13:	ld	r0,8(r9)        /* ELF64_R_TYPE(reloc->r_info) */
-+	cmpdi	r0,22           /* R_PPC64_RELATIVE */
-+	bne	3f
-+	ld	r6,0(r9)        /* reloc->r_offset */
-+	ld	r0,16(r9)       /* reloc->r_addend */
-+	add	r0,r0,r7
-+	stdx	r0,r7,r6
-+	addi	r9,r9,24
-+	bdnz	13b
-+
-+	/* Do a cache flush for our text, in case the loader didn't */
-+3:	ld	r9,p_start-p_base(r10)	/* note: these are relocated now */
-+	ld	r8,p_etext-p_base(r10)
-+4:	dcbf	r0,r9
-+	icbi	r0,r9
-+	addi	r9,r9,0x20
-+	cmpld	cr0,r9,r8
-+	blt	4b
-+	sync
-+	isync
-+
-+	/* Clear the BSS */
-+	ld	r9,p_bss_start-p_base(r10)
-+	ld	r8,p_end-p_base(r10)
-+	li	r0,0
-+5:	std	r0,0(r9)
-+	addi	r9,r9,8
-+	cmpld	cr0,r9,r8
-+	blt	5b
-+
-+	/* Possibly set up a custom stack */
-+	ld	r8,p_pstack-p_base(r10)
-+	cmpdi	r8,0
-+	beq	6f
-+	ld	r1,0(r8)
-+	li	r0,0
-+	stdu	r0,-16(r1)	/* establish a stack frame */
-+6:
-+#endif  /* __powerpc64__ */
- 	/* Call platform_init() */
- 	bl	platform_init
- 
+ 	      (elf64->e_type            == ET_EXEC ||
+ 	       elf64->e_type            == ET_DYN)	&&
+ 	      elf64->e_machine         == EM_PPC64))
 -- 
 1.7.10.4
