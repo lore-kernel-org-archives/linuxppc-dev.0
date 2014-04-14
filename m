@@ -3,20 +3,25 @@ Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
  [106.187.55.193])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1165614008B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 06:31:43 +1000 (EST)
-Date: Mon, 14 Apr 2014 21:31:26 +0100
+ by ozlabs.org (Postfix) with ESMTPS id CBBF114008B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 06:39:08 +1000 (EST)
+Date: Mon, 14 Apr 2014 21:38:51 +0100
 From: Mark Brown <broonie@kernel.org>
 To: Nicolin Chen <Guangyu.Chen@freescale.com>
-Message-ID: <20140414203126.GB25182@sirena.org.uk>
-References: <1397225400-2769-1-git-send-email-Guangyu.Chen@freescale.com>
+Message-ID: <20140414203851.GD25182@sirena.org.uk>
+References: <cover.1396432924.git.Guangyu.Chen@freescale.com>
+ <d09da3eb629143abd3f61ae037af4ddaf7286a83.1396432924.git.Guangyu.Chen@freescale.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="KVy3XSgRgEDVTe6j"
-In-Reply-To: <1397225400-2769-1-git-send-email-Guangyu.Chen@freescale.com>
-Subject: Re: [PATCH] ASoC: fsl_sai: Fix incorrect condition check in trigger()
-Cc: alsa-devel@alsa-project.org, Li.Xiubo@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, timur@tabi.org
+ protocol="application/pgp-signature"; boundary="bwMunqOr7B7rzQrh"
+In-Reply-To: <d09da3eb629143abd3f61ae037af4ddaf7286a83.1396432924.git.Guangyu.Chen@freescale.com>
+Subject: Re: [PATCH v2 2/2] ARM: dts: Append clock bindings for sai2 on VF610
+ platform
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org,
+ alsa-devel@alsa-project.org, pawel.moll@arm.com, linux-doc@vger.kernel.org,
+ ijc+devicetree@hellion.org.uk, linux-kernel@vger.kernel.org,
+ robh+dt@kernel.org, timur@tabi.org, Li.Xiubo@freescale.com, rob@landley.net,
+ galak@codeaurora.org, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,38 +32,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---KVy3XSgRgEDVTe6j
+--bwMunqOr7B7rzQrh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Apr 11, 2014 at 10:10:00PM +0800, Nicolin Chen wrote:
+On Wed, Apr 02, 2014 at 06:10:20PM +0800, Nicolin Chen wrote:
+> Since we added fours clock to the DT binding, we should update the current
+> SAI dts/dtsi so as not to break their functions.
 
-> +		/* Check if the opposite FRDE is also disabled */
-> +		if (!(tx ? rcsr & FSL_SAI_CSR_FRDE : tcsr & FSL_SAI_CSR_FRDE)) {
+This doesn't apply against v3.15-rc1, can you please check and resend?
 
-I've applied this since it's a fix but this is *not* a triumph of
-legibility, the ternery operator is often not helpful.
-
---KVy3XSgRgEDVTe6j
+--bwMunqOr7B7rzQrh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTTEWbAAoJELSic+t+oim9SbYP/iMzf8vQUEoMh6qZgtpcCJTp
-/kvf4ZihGLA906RM+siUvfuhP7RAbnEyMRzMdlQQTXj1ck/x15SPhW+7vNoXw8iS
-UE3YHazA8pBncQb60EV8VfVr3Hp38wxTp67TZLi80jAa3TEaYh7E3UqGIErqrapD
-zf2sYeSxESQaa5vxCylVqzOYMAexAUA2OJraGxez1j92zfE0FkCEs7UpXSsNeqh/
-Zr4IeF1lKxoXfITRPhkeApyg548O2TxewxVIGkrsJTSoCLhihCs9kkZtl0+v/IbZ
-htnnVEK7fehYVSzbNTl8UNaorthZye/sc9pGmYyZrvsd8yzZxf1lGAx3uHCNCYPh
-/BnuktjV1dd4pRMfWv+z9EBNHcZ2+QbsA3oBnmmRDq4CGJ5J7rHllL+FrcF1U+VH
-RS5XhafZhoEQurZsFskzc1xNGGBnRsevAKrQUBGWmwexGPKEqdXt1F06iF83jeSB
-qOtT3DQTRQK0xVmCz4jrhZYzlXaPQVvjY9TTYyS4htBXVkJFzUjqcNX/OfIDU+rU
-LAyrY4ATyI/AWSWVq5EdVGBuAWkK07hPIS2zC7D4nbs5Z0QwFU9k0umjjC2oSdOq
-zFcMN38o5m3Lzyl6lhAR+qBzCq5QR6BhUMIAeXTQ1Xb65cc6qDcb7VZURvQdD7mj
-45QN6hxuLEgx0UxDQWAs
-=Q04x
+iQIcBAEBAgAGBQJTTEdYAAoJELSic+t+oim909YP/1fePSP/VU6q5ZG2V6LA+Ien
+nDePfbzPoLOsJA05Wg8OFj1xKg5TLpnk7ZAqRr/kg4dLxp8QdEO1LlpR9f/YNBdw
+5NKYyQDCGNf6x0Qglbr8v2vrXlrV7CeWIeZ2PLE3S2O/0YZUXWGw7vy6mz/aNjFL
+DqyNM/MQft/FNHN+A4odSGRT+zQkDM6chtAqCQa7/Xw0y4F9OsbWQCRXb4Q+KxL1
+bYwoc2xHonhUgZD01M0k80SXGcXfiAYDfx5a5l5u7+K3hz0HVGudsHclaSI/cy4T
+PUGi3sZ9i+oLwdmrYtNPAmmllcY60+VTbdWdK2EJrE9MUpaCUOhtvoqqcQ1WD7iC
+iWaDJ8CCer4rHo090cPQwejlnb62VVeLsZrjKyZXMT/XupxnJQo7Nbhs7gSbUwWb
+mi6q+A/+DvyaMhZMbKRdjQhoED6xoQjArirWLmKiNPH95FPKDAwMo+AyqYvPGJWy
+5KAoMjDIaV7zrTlZSRGefgpBhKzCGQBxg+P2NSmantEX94rKW43kwQng5OlMRhV2
+nSQ/x3Wj0xPZwxhfQS/KDaGpS32KSnj1lFCbwLRFuNciphzmXRHI2/4IeVoQzvvZ
+yi+sATUjrrcshPU4qLdsp8h2GRiC6Uz06+hmCPElI2Bvby3xt5E4k2zv49KzlsqB
+LMedOA0Rd2Lg6ygCIfYE
+=3HvM
 -----END PGP SIGNATURE-----
 
---KVy3XSgRgEDVTe6j--
+--bwMunqOr7B7rzQrh--
