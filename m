@@ -1,19 +1,26 @@
-Return-Path: <martijn.de.gouw@prodrive-technologies.com>
-Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
- by ozlabs.org (Postfix) with ESMTP id 15202140093
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 21:24:42 +1000 (EST)
-Message-ID: <534D16F6.9090305@prodrive-technologies.com>
-Date: Tue, 15 Apr 2014 13:24:38 +0200
-From: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-la0-f46.google.com (mail-la0-f46.google.com
+ [209.85.215.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AB03A14007D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 21:44:36 +1000 (EST)
+Received: by mail-la0-f46.google.com with SMTP id hr17so6725205lab.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 04:44:30 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: Add OCA4080 board support
-References: <1397478910-26361-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
- <1397514507.20280.223.camel@snotra.buserror.net>
-In-Reply-To: <1397514507.20280.223.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: stef.van.os@prodrive-technologies.com,
- Martijn de Gouw <martijn.de.gouw@prodrive.nl>, linuxppc-dev@lists.ozlabs.org
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1397561816-9289-1-git-send-email-geert@linux-m68k.org>
+References: <1397561816-9289-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 15 Apr 2014 13:44:30 +0200
+Message-ID: <CAMuHMdVTg2DAkvoSh=TkhFMs3WV-3FR0-VqfO6jd5c06aYTT6g@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.15-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ adi-buildroot-devel@lists.sourceforge.net,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,57 +30,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/15/2014 12:28 AM, Scott Wood wrote:
-> On Mon, 2014-04-14 at 14:35 +0200, Martijn de Gouw wrote:
->> +	lbc: localbus@ffe124000 {
->> +		reg = <0xf 0xfe124000 0 0x1000>;
->> +		ranges = <0 0 0xf 0xef800000 0x800000>;
->> +
->> +		flash@0,0 {
->> +			#address-cells = <1>;
->> +			#size-cells = <1>;
->> +			compatible = "cfi-flash";
->> +			reg = <0 0 0x00800000>;
->> +			bank-width = <2>;
->> +			device-width = <2>;
->> +			partition@rcw {
->> +				label = "rcw";
->> +				reg = <0x00000000 0x00020000>;
->> +			};
->> +			partition@fman-ucode {
->> +				label = "fman-ucode";
->> +				reg = <0x00020000 0x00020000>;
->> +			};
->> +			partition@user {
->> +				label = "user";
->> +				reg = <0x00040000 0x00680000>;
->> +			};
->> +			partition@env0 {
->> +				label = "env0";
->> +				reg = <0x006c0000 0x00020000>;
->> +			};
->> +			partition@env1 {
->> +				label = "env1";
->> +				reg = <0x006e0000 0x00020000>;
->> +			};
->> +			partition@u-boot {
->> +				label = "u-boot";
->> +				reg = <0x00700000 0x00080000>;
->> +			};
->> +			partition@u-boot-backup {
->> +				label = "u-boot-backup";
->> +				reg = <0x00780000 0x00080000>;
->> +			};
+On Tue, Apr 15, 2014 at 1:36 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Below is the list of build error/warning regressions/improvements in
+> v3.15-rc1[1] compared to v3.14[2].
 >
-> These are not valid unit addresses.  Regardless, please don't put
-> partition info in the dts.
+> Summarized:
+>   - build errors: +30/-3
 
-How is this different than the partitions defined in i.e. p4080ds.dts?
-Of course I can remove them from the dts, but where should they be defined?
+> 30 regressions:
 
--- 
-Martijn de Gouw
-Engineer
-Prodrive Technologies B.V.
-Mobile: +31 63 17 76 161
-Phone:  +31 40 26 76 200
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_ANDCOND' undeclared (first use in this function):  => 178:17,
+100:16
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_AVPN' undeclared (first use in this function):  => 213:16, 99:16,
+177:17
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_BULK_REMOVE' undeclared (first use in this function):  => 268:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_CEDE' undeclared (first use in this function):  => 272:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_CPPR' undeclared (first use in this function):  => 279:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_ENTER' undeclared (first use in this function):  => 262:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_EOI' undeclared (first use in this function):  => 280:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_EXACT' undeclared (first use in this function):  => 56:6
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_IPI' undeclared (first use in this function):  => 281:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_IPOLL' undeclared (first use in this function):  => 282:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_NOT_FOUND' undeclared (first use in this function):  => 211:8, 97:8
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_PARAMETER' undeclared (first use in this function):  => 155:10
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_PROTECT' undeclared (first use in this function):  => 266:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_PTEG_FULL' undeclared (first use in this function):  => 55:8
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_PUT_TCE' undeclared (first use in this function):  => 270:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_REMOVE' undeclared (first use in this function):  => 264:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_RTAS' undeclared (first use in this function):  => 287:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_SUCCESS' undeclared (first use in this function):  => 108:8, 229:8,
+141:12, 75:8
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_TOO_HARD' undeclared (first use in this function):  => 246:12
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_XIRR' undeclared (first use in this function):  => 278:7
+  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
+'H_XIRR_X' undeclared (first use in this function):  => 283:7
+  + /scratch/kisskb/src/include/linux/kvm_host.h: error: array
+subscript is above array bounds [-Werror=array-bounds]:  => 436:19
+
+powerpc-randconfig
+
+  + /scratch/kisskb/src/drivers/cpufreq/powernv-cpufreq.c: error:
+implicit declaration of function 'cpu_sibling_mask'
+[-Werror=implicit-function-declaration]:  => 241:2
+
+ppc64_defconfig
+
+  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
+declaration of function 'gpio_direction_output'
+[-Werror=implicit-function-declaration]:  => 1102:4
+  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
+declaration of function 'gpio_free'
+[-Werror=implicit-function-declaration]:  => 1130:3
+  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
+declaration of function 'gpio_request'
+[-Werror=implicit-function-declaration]:  => 1097:4
+  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
+declaration of function 'gpio_set_value'
+[-Werror=implicit-function-declaration]:  => 169:3
+
+BF537-STAMP_defconfig
+
+  + error: "__invalidate_icache_range" [drivers/misc/lkdtm.ko]
+undefined!:  => N/A
+
+xtensa-allmodconfig (fix available, IIRC)
+
+  + error: "flush_icache_range" [drivers/misc/lkdtm.ko] undefined!:  => N/A
+
+mips-allmodconfig (fix available, IIRC)
+
+  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
+
+x86_64-randconfig
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvald
