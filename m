@@ -1,23 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <dan.j.williams@intel.com>
+Received: from mail-vc0-f171.google.com (mail-vc0-f171.google.com
+ [209.85.220.171])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BF53214007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 09:36:03 +1000 (EST)
-Message-ID: <1397518552.20280.235.camel@snotra.buserror.net>
-Subject: Re: [PATCH 2/2] fsl/mpic_timer: make mpic_timer to support deep
- sleep feature
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Mon, 14 Apr 2014 18:35:52 -0500
-In-Reply-To: <1397442250-14886-2-git-send-email-dongsheng.wang@freescale.com>
-References: <1397442250-14886-1-git-send-email-dongsheng.wang@freescale.com>
- <1397442250-14886-2-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id D5239140083
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 10:30:04 +1000 (EST)
+Received: by mail-vc0-f171.google.com with SMTP id lg15so8626937vcb.30
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2014 17:30:00 -0700 (PDT)
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
- jason.jin@freescale.com
+In-Reply-To: <0c8d1963a25648f8a8f820bbc55afe4f@BL2PR03MB147.namprd03.prod.outlook.com>
+References: <1397202086-22489-1-git-send-email-xuelin.shi@freescale.com>
+ <CAA9_cme=Bo3tYi0-bNXBRNLZnC-4FZyaSYZ=3iRD_5xfiVX5Mw@mail.gmail.com>
+ <0c8d1963a25648f8a8f820bbc55afe4f@BL2PR03MB147.namprd03.prod.outlook.com>
+Date: Mon, 14 Apr 2014 17:30:00 -0700
+Message-ID: <CAPcyv4go1ghjD7fiEzwPJmcjRMBv7p0t7Sm9Ki=1Hu-0GKqoCQ@mail.gmail.com>
+Subject: Re: [PATCH v3] dmaengine: driver support for FSL RaidEngine device.
+From: Dan Williams <dan.j.williams@intel.com>
+To: Xuelin Shi <xuelin.shi@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Harninder Rai <harninder.rai@freescale.com>,
+ "andriy.shevchenko@intel.com" <andriy.shevchenko@intel.com>, "Koul,
+ Vinod" <vinod.koul@intel.com>, Naveen Burmi <NaveenBurmi@freescale.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,80 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-04-14 at 10:24 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> 
-> At T104x platfrom the timer clock will be changed when system going to
-> deep sleep.
+On Sun, Apr 13, 2014 at 7:48 PM, Xuelin Shi <xuelin.shi@freescale.com> wrote:
+> Hi Dan,
+>
+> fsl dma device and fsl raid device are two differenct devices that both provide async_memcpy
+> capability, so I use !FSL_DMA to disable the fsl dma device.
+>
+> That's to say, either select fsldma device, either fsl raid device.
+>
 
-Could you elaborate on what is changing and why?
+Right, but that's not what your proposed Kconfig dependency line does.
 
-> +#include <asm/mpc85xx.h>
->  #include <asm/mpic_timer.h>
+You want something like "depends on FSL_SOC && !(FSL_DMA || FSL_DMA=m)"
 
-So much for, "The driver currently is only tested on fsl chip, but it
-can potentially support other global timers complying to OpenPIC
-standard."
-
->  #define FSL_GLOBAL_TIMER		0x1
-> @@ -71,8 +74,10 @@ struct timer_group_priv {
->  	struct timer_regs __iomem	*regs;
->  	struct mpic_timer		timer[TIMERS_PER_GROUP];
->  	struct list_head		node;
-> +	unsigned long			idle;
->  	unsigned int			timerfreq;
-> -	unsigned int			idle;
-
-Why?
-
-> +	unsigned int			suspended_timerfreq;
-> +	unsigned int			resume_timerfreq;
->  	unsigned int			flags;
->  	spinlock_t			lock;
->  	void __iomem			*group_tcr;
-> @@ -88,6 +93,7 @@ static struct cascade_priv cascade_timer[] = {
->  };
->  
->  static LIST_HEAD(timer_group_list);
-> +static int switch_freq_flag;
-
-Needs documentation, and based on "_flag" it should probably be a bool.
-
->  static void convert_ticks_to_time(struct timer_group_priv *priv,
->  		const u64 ticks, struct timeval *time)
-> @@ -423,6 +429,33 @@ struct mpic_timer *mpic_request_timer(irq_handler_t fn, void *dev,
->  }
->  EXPORT_SYMBOL(mpic_request_timer);
->  
-> +static void timer_group_get_suspended_freq(struct timer_group_priv *priv)
-> +{
-> +	struct device_node *np;
-> +
-> +	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-clockgen-2.0");
-> +	if (!np) {
-> +		pr_err("mpic timer: Missing clockgen device node.\n");
-
-Why is it an error to not have a 2.0 QorIQ clockgen?
-
-> +		return;
-> +	}
-> +
-> +	of_property_read_u32(np, "clock-frequency", &priv->suspended_timerfreq);
-> +	of_node_put(np);
-
-Shouldn't this go through the clock API?
-
-> +}
-> +
-> +static int need_to_switch_freq(void)
-> +{
-> +	u32 svr;
-> +
-> +	svr = mfspr(SPRN_SVR);
-> +	if (SVR_SOC_VER(svr) == SVR_T1040 ||
-> +			SVR_SOC_VER(svr) == SVR_T1042)
-> +		return 1;
-
-Explain why this is specific to T104x.
-
--Scott
+However, the more problematic option is ASYNC_TX_CHANNEL_SWITCH.  That
+option is problematic for RAID, so I propose "depend on
+!ASYNC_TX_CHANNEL_SWITCH" since that addresses both problems.
