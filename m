@@ -1,26 +1,34 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-la0-f46.google.com (mail-la0-f46.google.com
- [209.85.215.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AB03A14007D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 21:44:36 +1000 (EST)
-Received: by mail-la0-f46.google.com with SMTP id hr17so6725205lab.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 04:44:30 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1397561816-9289-1-git-send-email-geert@linux-m68k.org>
-References: <1397561816-9289-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 15 Apr 2014 13:44:30 +0200
-Message-ID: <CAMuHMdVTg2DAkvoSh=TkhFMs3WV-3FR0-VqfO6jd5c06aYTT6g@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.15-rc1
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-xtensa@linux-xtensa.org" <linux-xtensa@linux-xtensa.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- adi-buildroot-devel@lists.sourceforge.net,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>
+ by ozlabs.org (Postfix) with ESMTPS id B0373140076
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 00:00:44 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Tue, 15 Apr 2014 19:30:41 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1D0C03940023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 19:30:39 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3FE0Zbu33226774
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 19:30:35 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3FE0Mcm013621
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 19:30:22 +0530
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/mm: Fix ".__node_distance" undefined
+Date: Tue, 15 Apr 2014 10:00:17 -0400
+Message-Id: <1397570417-1714-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Cc: sfr@canb.auug.org.au, jlarrew@linux.vnet.ibm.com,
+ Mike Qiu <qiudayu@linux.vnet.ibm.com>, paulus@samba.org,
+ srivatsa.bhat@linux.vnet.ibm.com, alistair@popple.id.au,
+ nfont@linux.vnet.ibm.com, akpm@linux-foundation.org, rcj@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,107 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 15, 2014 at 1:36 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Below is the list of build error/warning regressions/improvements in
-> v3.15-rc1[1] compared to v3.14[2].
->
-> Summarized:
->   - build errors: +30/-3
+  CHK     include/config/kernel.release
+  CHK     include/generated/uapi/linux/version.h
+  CHK     include/generated/utsrelease.h
+  ...
+  Building modules, stage 2.
+WARNING: 1 bad relocations
+c0000000013d6a30 R_PPC64_ADDR64    uprobes_fetch_type_table
+  WRAP    arch/powerpc/boot/zImage.pseries
+  WRAP    arch/powerpc/boot/zImage.epapr
+  MODPOST 1849 modules
+ERROR: ".__node_distance" [drivers/block/nvme.ko] undefined!
+make[1]: *** [__modpost] Error 1
+make: *** [modules] Error 2
+make: *** Waiting for unfinished jobs....
 
-> 30 regressions:
+The reason is symbol "__node_distance" not been exported in powerpc.
 
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_ANDCOND' undeclared (first use in this function):  => 178:17,
-100:16
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_AVPN' undeclared (first use in this function):  => 213:16, 99:16,
-177:17
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_BULK_REMOVE' undeclared (first use in this function):  => 268:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_CEDE' undeclared (first use in this function):  => 272:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_CPPR' undeclared (first use in this function):  => 279:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_ENTER' undeclared (first use in this function):  => 262:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_EOI' undeclared (first use in this function):  => 280:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_EXACT' undeclared (first use in this function):  => 56:6
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_IPI' undeclared (first use in this function):  => 281:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_IPOLL' undeclared (first use in this function):  => 282:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_NOT_FOUND' undeclared (first use in this function):  => 211:8, 97:8
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_PARAMETER' undeclared (first use in this function):  => 155:10
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_PROTECT' undeclared (first use in this function):  => 266:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_PTEG_FULL' undeclared (first use in this function):  => 55:8
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_PUT_TCE' undeclared (first use in this function):  => 270:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_REMOVE' undeclared (first use in this function):  => 264:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_RTAS' undeclared (first use in this function):  => 287:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_SUCCESS' undeclared (first use in this function):  => 108:8, 229:8,
-141:12, 75:8
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_TOO_HARD' undeclared (first use in this function):  => 246:12
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_XIRR' undeclared (first use in this function):  => 278:7
-  + /scratch/kisskb/src/arch/powerpc/kvm/book3s_pr_papr.c: error:
-'H_XIRR_X' undeclared (first use in this function):  => 283:7
-  + /scratch/kisskb/src/include/linux/kvm_host.h: error: array
-subscript is above array bounds [-Werror=array-bounds]:  => 436:19
+Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-powerpc-randconfig
-
-  + /scratch/kisskb/src/drivers/cpufreq/powernv-cpufreq.c: error:
-implicit declaration of function 'cpu_sibling_mask'
-[-Werror=implicit-function-declaration]:  => 241:2
-
-ppc64_defconfig
-
-  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
-declaration of function 'gpio_direction_output'
-[-Werror=implicit-function-declaration]:  => 1102:4
-  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
-declaration of function 'gpio_free'
-[-Werror=implicit-function-declaration]:  => 1130:3
-  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
-declaration of function 'gpio_request'
-[-Werror=implicit-function-declaration]:  => 1097:4
-  + /scratch/kisskb/src/drivers/spi/spi-bfin5xx.c: error: implicit
-declaration of function 'gpio_set_value'
-[-Werror=implicit-function-declaration]:  => 169:3
-
-BF537-STAMP_defconfig
-
-  + error: "__invalidate_icache_range" [drivers/misc/lkdtm.ko]
-undefined!:  => N/A
-
-xtensa-allmodconfig (fix available, IIRC)
-
-  + error: "flush_icache_range" [drivers/misc/lkdtm.ko] undefined!:  => N/A
-
-mips-allmodconfig (fix available, IIRC)
-
-  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
-
-x86_64-randconfig
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvald
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 4ebbb9e..3b181b2 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -232,6 +232,7 @@ int __node_distance(int a, int b)
+ 
+ 	return distance;
+ }
++EXPORT_SYMBOL(__node_distance);
+ 
+ static void initialize_distance_lookup_table(int nid,
+ 		const __be32 *associativity)
+-- 
+1.8.3.1
