@@ -1,25 +1,22 @@
 Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0212.outbound.protection.outlook.com [207.46.163.212])
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 998F8140087
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 13:24:15 +1000 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 2/2] fsl/mpic_timer: make mpic_timer to support deep
- sleep feature
-Date: Tue, 15 Apr 2014 03:23:54 +0000
-Message-ID: <b1be56f51f4c4985af837685450f4eb2@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1397442250-14886-1-git-send-email-dongsheng.wang@freescale.com>
- <1397442250-14886-2-git-send-email-dongsheng.wang@freescale.com>
- <1397518552.20280.235.camel@snotra.buserror.net>
-In-Reply-To: <1397518552.20280.235.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 418D11400DA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 15:56:21 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v2 2/2] fsl/corenet_generic: add t104x platform diu special
+ initialization
+Date: Tue, 15 Apr 2014 13:53:49 +0800
+Message-ID: <1397541229-34383-2-git-send-email-dongsheng.wang@freescale.com>
+In-Reply-To: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, haokexin@gmail.com, prabhakar@freescale.com,
+ jason.jin@freescale.com, Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +26,220 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgQXByaWwgMTUsIDIwMTQgNzozNiBBTQ0KPiBUbzogV2FuZyBE
-b25nc2hlbmctQjQwNTM0DQo+IENjOiBKaW4gWmhlbmd4aW9uZy1SNjQxODg7IExpIFlhbmctTGVv
-LVI1ODQ3MjsgWmhhbyBDaGVuaHVpLUIzNTMzNjsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxh
-YnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8yXSBmc2wvbXBpY190aW1lcjogbWFrZSBt
-cGljX3RpbWVyIHRvIHN1cHBvcnQgZGVlcCBzbGVlcA0KPiBmZWF0dXJlDQo+IA0KPiBPbiBNb24s
-IDIwMTQtMDQtMTQgYXQgMTA6MjQgKzA4MDAsIERvbmdzaGVuZyBXYW5nIHdyb3RlOg0KPiA+IEZy
-b206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tPg0KPiA+DQo+
-ID4gQXQgVDEwNHggcGxhdGZyb20gdGhlIHRpbWVyIGNsb2NrIHdpbGwgYmUgY2hhbmdlZCB3aGVu
-IHN5c3RlbSBnb2luZyB0bw0KPiA+IGRlZXAgc2xlZXAuDQo+IA0KPiBDb3VsZCB5b3UgZWxhYm9y
-YXRlIG9uIHdoYXQgaXMgY2hhbmdpbmcgYW5kIHdoeT8NCj4gDQoNCk9rYXkuDQoNCj4gPiArI2lu
-Y2x1ZGUgPGFzbS9tcGM4NXh4Lmg+DQo+ID4gICNpbmNsdWRlIDxhc20vbXBpY190aW1lci5oPg0K
-PiANCj4gU28gbXVjaCBmb3IsICJUaGUgZHJpdmVyIGN1cnJlbnRseSBpcyBvbmx5IHRlc3RlZCBv
-biBmc2wgY2hpcCwgYnV0IGl0IGNhbg0KPiBwb3RlbnRpYWxseSBzdXBwb3J0IG90aGVyIGdsb2Jh
-bCB0aW1lcnMgY29tcGx5aW5nIHRvIE9wZW5QSUMgc3RhbmRhcmQuIg0KPiANCj4gPiAgI2RlZmlu
-ZSBGU0xfR0xPQkFMX1RJTUVSCQkweDENCj4gPiBAQCAtNzEsOCArNzQsMTAgQEAgc3RydWN0IHRp
-bWVyX2dyb3VwX3ByaXYgew0KPiA+ICAJc3RydWN0IHRpbWVyX3JlZ3MgX19pb21lbQkqcmVnczsN
-Cj4gPiAgCXN0cnVjdCBtcGljX3RpbWVyCQl0aW1lcltUSU1FUlNfUEVSX0dST1VQXTsNCj4gPiAg
-CXN0cnVjdCBsaXN0X2hlYWQJCW5vZGU7DQo+ID4gKwl1bnNpZ25lZCBsb25nCQkJaWRsZTsNCj4g
-PiAgCXVuc2lnbmVkIGludAkJCXRpbWVyZnJlcTsNCj4gPiAtCXVuc2lnbmVkIGludAkJCWlkbGU7
-DQo+IA0KPiBXaHk/DQo+IA0KDQpVbS4uLiBJdCBzaG91bGRuJ3QgYmUgaGFwcGVuZWQuLi5pIHdp
-bGwgcmVtb3ZlIHRoaXMuDQoNCj4gPiArCXVuc2lnbmVkIGludAkJCXN1c3BlbmRlZF90aW1lcmZy
-ZXE7DQo+ID4gKwl1bnNpZ25lZCBpbnQJCQlyZXN1bWVfdGltZXJmcmVxOw0KPiA+ICAJdW5zaWdu
-ZWQgaW50CQkJZmxhZ3M7DQo+ID4gIAlzcGlubG9ja190CQkJbG9jazsNCj4gPiAgCXZvaWQgX19p
-b21lbQkJCSpncm91cF90Y3I7DQo+ID4gQEAgLTg4LDYgKzkzLDcgQEAgc3RhdGljIHN0cnVjdCBj
-YXNjYWRlX3ByaXYgY2FzY2FkZV90aW1lcltdID0geyAgfTsNCj4gPg0KPiA+ICBzdGF0aWMgTElT
-VF9IRUFEKHRpbWVyX2dyb3VwX2xpc3QpOw0KPiA+ICtzdGF0aWMgaW50IHN3aXRjaF9mcmVxX2Zs
-YWc7DQo+IA0KPiBOZWVkcyBkb2N1bWVudGF0aW9uLCBhbmQgYmFzZWQgb24gIl9mbGFnIiBpdCBz
-aG91bGQgcHJvYmFibHkgYmUgYSBib29sLg0KPiANCg0KT2theS4NCg0KPiA+ICBzdGF0aWMgdm9p
-ZCBjb252ZXJ0X3RpY2tzX3RvX3RpbWUoc3RydWN0IHRpbWVyX2dyb3VwX3ByaXYgKnByaXYsDQo+
-ID4gIAkJY29uc3QgdTY0IHRpY2tzLCBzdHJ1Y3QgdGltZXZhbCAqdGltZSkgQEAgLTQyMyw2ICs0
-MjksMzMgQEAgc3RydWN0DQo+ID4gbXBpY190aW1lciAqbXBpY19yZXF1ZXN0X3RpbWVyKGlycV9o
-YW5kbGVyX3QgZm4sIHZvaWQgKmRldiwgIH0NCj4gPiBFWFBPUlRfU1lNQk9MKG1waWNfcmVxdWVz
-dF90aW1lcik7DQo+ID4NCj4gPiArc3RhdGljIHZvaWQgdGltZXJfZ3JvdXBfZ2V0X3N1c3BlbmRl
-ZF9mcmVxKHN0cnVjdCB0aW1lcl9ncm91cF9wcml2DQo+ID4gKypwcml2KSB7DQo+ID4gKwlzdHJ1
-Y3QgZGV2aWNlX25vZGUgKm5wOw0KPiA+ICsNCj4gPiArCW5wID0gb2ZfZmluZF9jb21wYXRpYmxl
-X25vZGUoTlVMTCwgTlVMTCwgImZzbCxxb3JpcS1jbG9ja2dlbi0yLjAiKTsNCj4gPiArCWlmICgh
-bnApIHsNCj4gPiArCQlwcl9lcnIoIm1waWMgdGltZXI6IE1pc3NpbmcgY2xvY2tnZW4gZGV2aWNl
-IG5vZGUuXG4iKTsNCj4gDQo+IFdoeSBpcyBpdCBhbiBlcnJvciB0byBub3QgaGF2ZSBhIDIuMCBR
-b3JJUSBjbG9ja2dlbj8NCj4gDQoNClRoaXMgd2lsbCBhZmZlY3QgdGhlIGFjY3VyYWN5IG9mIHRo
-ZSB0aW1lci4gQnV0IG5vdCBtZWFucyB0aGUgdGltZXIgY2Fubm90IHdvcmsuDQpNYXliZSB5b3Ug
-YXJlIHJpZ2h0LCB0aGlzIHByX2VyciBzaG91bGQgYmUgYSBwcl93YXJuLg0KDQo+ID4gKwkJcmV0
-dXJuOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCW9mX3Byb3BlcnR5X3JlYWRfdTMyKG5wLCAiY2xv
-Y2stZnJlcXVlbmN5IiwgJnByaXYtPnN1c3BlbmRlZF90aW1lcmZyZXEpOw0KPiA+ICsJb2Zfbm9k
-ZV9wdXQobnApOw0KPiANCj4gU2hvdWxkbid0IHRoaXMgZ28gdGhyb3VnaCB0aGUgY2xvY2sgQVBJ
-Pw0KPiANCg0KU29ycnksIEknbSBub3QgY2xlYXIgYWJvdXQgY2xvY2sgQVBJLCB5b3UgbWVhbiBm
-c2xfZ2V0X3N5c19mcmVxKCk/IE9yID8NCg0KVGhlIHRpbWVyIG9wZXJhdGVzIG9uIHN5c19yZWZf
-Y2xrIGZyZXF1ZW5jeSBkdXJpbmcgZGVlcCBzbGVlcC4gQW5kIFRoZSB0aW1lciBydW5zIG9uDQpw
-bGF0Zm9ybSBjbG9jay8yIGR1cmluZyBub3JtYWwgb3BlcmF0aW9uLg0KDQpmc2xfZ2V0X3N5c19m
-cmVxKCkgY2FuIGdldCBwbGF0Zm9ybSBjbG9jaywgYnV0IGNhbm5vdCBnZXQgc3lzX3JlZl9jbGsu
-DQoNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGludCBuZWVkX3RvX3N3aXRjaF9mcmVxKHZv
-aWQpDQo+ID4gK3sNCj4gPiArCXUzMiBzdnI7DQo+ID4gKw0KPiA+ICsJc3ZyID0gbWZzcHIoU1BS
-Tl9TVlIpOw0KPiA+ICsJaWYgKFNWUl9TT0NfVkVSKHN2cikgPT0gU1ZSX1QxMDQwIHx8DQo+ID4g
-KwkJCVNWUl9TT0NfVkVSKHN2cikgPT0gU1ZSX1QxMDQyKQ0KPiA+ICsJCXJldHVybiAxOw0KPiAN
-Cj4gRXhwbGFpbiB3aHkgdGhpcyBpcyBzcGVjaWZpYyB0byBUMTA0eC4NCj4gDQoNCk1waWMgdGlt
-ZXIgZnJlcSB3aWxsIGJlIGNoYW5nZSB3aGVuIHN5c3RlbSBnb2luZyB0byBkZWVwIHNsZWVwLiBT
-byB3ZSBuZWVkIHRvIHJlY2FsY3VsYXRlIHRoZSB0aW1lLg0KDQo+IC1TY290dA0KPiANCg0K
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
+
+T104x Platforms based on corenet_generic. The platforms DIU-block
+that need a special initialization to solve some callback functions,
+those functions depend on platform handle.
+
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+This patch is *depends on* Prabhakar Kushwaha support T104x patchset.
+
+v2: No change.
+diff --git a/arch/powerpc/platforms/85xx/fix/Makefile b/arch/powerpc/platforms/85xx/fix/Makefile
+index a8e8154..0530acd 100644
+--- a/arch/powerpc/platforms/85xx/fix/Makefile
++++ b/arch/powerpc/platforms/85xx/fix/Makefile
+@@ -1 +1,3 @@
+ obj-y += fix.o
++
++obj-y += t104x_diu.o
+diff --git a/arch/powerpc/platforms/85xx/fix/fix.c b/arch/powerpc/platforms/85xx/fix/fix.c
+index 7b59a52..c278eb1 100644
+--- a/arch/powerpc/platforms/85xx/fix/fix.c
++++ b/arch/powerpc/platforms/85xx/fix/fix.c
+@@ -21,6 +21,19 @@
+ 
+ static int fix_platform_init(void)
+ {
++	u32 svr;
++
++	svr = SVR_SOC_VER(mfspr(SPRN_SVR));
++
++	switch (svr) {
++	case SVR_T1040:
++	case SVR_T1042:
++		fix_t104x_diu_init();
++		break;
++	default:
++		pr_info("Platform is not need to fix anything\n");
++	}
++
+ 	return 0;
+ }
+ early_initcall(fix_platform_init);
+diff --git a/arch/powerpc/platforms/85xx/fix/fix.h b/arch/powerpc/platforms/85xx/fix/fix.h
+index 5a8c80e3..d27635f 100644
+--- a/arch/powerpc/platforms/85xx/fix/fix.h
++++ b/arch/powerpc/platforms/85xx/fix/fix.h
+@@ -1,4 +1,6 @@
+ #ifndef __CORENET_GENERIC_FIX_H__
+ #define __CORENET_GENERIC_FIX_H__
+ 
++extern void fix_t104x_diu_init(void);
++
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/fix/t104x_diu.c b/arch/powerpc/platforms/85xx/fix/t104x_diu.c
+new file mode 100644
+index 0000000..39c7242
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/fix/t104x_diu.c
+@@ -0,0 +1,155 @@
++/*
++ * T104x RDB Particular Setup
++ * Should apply for RDB platform of T1040 and it's personalities.
++ * viz T1040/T1042
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the
++ * Free Software Foundation; either version 2 of the License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++
++#include <asm/io.h>
++#include <sysdev/fsl_soc.h>
++
++#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
++/*DIU Pixel ClockCR offset in scfg*/
++#define CCSR_SCFG_PIXCLKCR      0x28
++
++/* DIU Pixel Clock bits of the PIXCLKCR */
++#define PIXCLKCR_PXCKEN		0x80000000
++#define PIXCLKCR_PXCKINV	0x40000000
++#define PIXCLKCR_PXCKDLY	0x0000FF00
++#define PIXCLKCR_PXCLK_MASK	0x00FF0000
++
++/* Some CPLD register definitions */
++#define CPLD_DIUCSR		0x16
++#define CPLD_DIUCSR_DVIEN	0x80
++#define CPLD_DIUCSR_BACKLIGHT	0x0f
++
++/**
++ * t104xrdb_set_monitor_port: switch the output to a different monitor port
++ */
++static void t104xrdb_set_monitor_port(enum fsl_diu_monitor_port port)
++{
++	struct device_node *cpld_node;
++	static void __iomem *cpld_base;
++
++	cpld_node = of_find_compatible_node(NULL, NULL, "fsl,t104xrdb-cpld");
++	if (!cpld_node) {
++		pr_err("T104xRDB: missing CPLD node\n");
++		return;
++	}
++
++	cpld_base = of_iomap(cpld_node, 0);
++	if (!cpld_base) {
++		pr_err("T104xRDB: could not map cpld registers\n");
++		goto exit;
++	}
++
++	switch (port) {
++	case FSL_DIU_PORT_DVI:
++		/* Enable the DVI(HDMI) port, disable the DFP and
++		 * the backlight
++		 */
++		clrbits8(cpld_base + CPLD_DIUCSR, CPLD_DIUCSR_DVIEN);
++		break;
++	case FSL_DIU_PORT_LVDS:
++		/*
++		 * LVDS also needs backlight enabled, otherwise the display
++		 * will be blank.
++		 */
++		/* Enable the DFP port, disable the DVI*/
++		setbits8(cpld_base + CPLD_DIUCSR, 0x01 << 8);
++		setbits8(cpld_base + CPLD_DIUCSR, 0x01 << 4);
++		setbits8(cpld_base + CPLD_DIUCSR, CPLD_DIUCSR_BACKLIGHT);
++		break;
++	default:
++		pr_err("T104xRDB: unsupported monitor port %i\n", port);
++	}
++
++exit:
++	of_node_put(cpld_node);
++}
++
++/**
++ * t104xrdb_set_pixel_clock: program the DIU's clock
++ *
++ * @pixclock: the wavelength, in picoseconds, of the clock
++ */
++static void t104xrdb_set_pixel_clock(unsigned int pixclock)
++{
++	struct device_node *scfg_np = NULL;
++	void __iomem *scfg;
++	unsigned long freq;
++	u64 temp;
++	u32 pxclk;
++
++	/* Map the global utilities registers. */
++	scfg_np = of_find_compatible_node(NULL, NULL, "fsl,t1040-scfg");
++	if (!scfg_np) {
++		freq = temp;
++		pr_err("T104xRDB: missing supplemental configuration unit device node\n");
++		return;
++	}
++
++	scfg = of_iomap(scfg_np, 0);
++	of_node_put(scfg_np);
++	if (!scfg) {
++		pr_err("T104xRDB: could not map device\n");
++		return;
++	}
++
++	/* Convert pixclock from a wavelength to a frequency */
++	temp = 1000000000000ULL;
++	do_div(temp, pixclock);
++	freq = temp;
++
++	/*
++	 * 'pxclk' is the ratio of the platform clock to the pixel clock.
++	 * This number is programmed into the PIXCLKCR register, and the valid
++	 * range of values is 2-255.
++	 */
++	pxclk = DIV_ROUND_CLOSEST(fsl_get_sys_freq(), freq);
++	pxclk = clamp_t(u32, pxclk, 2, 255);
++
++	/* Disable the pixel clock, and set it to non-inverted and no delay */
++	clrbits32(scfg + CCSR_SCFG_PIXCLKCR,
++		  PIXCLKCR_PXCKEN | PIXCLKCR_PXCKDLY | PIXCLKCR_PXCLK_MASK);
++
++	/* Enable the clock and set the pxclk */
++	setbits32(scfg + CCSR_SCFG_PIXCLKCR, PIXCLKCR_PXCKEN | (pxclk << 16));
++
++	iounmap(scfg);
++}
++
++/**
++ * t104xrdb_valid_monitor_port: set the monitor port for sysfs
++ */
++static enum fsl_diu_monitor_port
++t104xrdb_valid_monitor_port(enum fsl_diu_monitor_port port)
++{
++	switch (port) {
++	case FSL_DIU_PORT_DVI:
++	case FSL_DIU_PORT_LVDS:
++		return port;
++	default:
++		return FSL_DIU_PORT_DVI; /* Dual-link LVDS is not supported */
++	}
++}
++#endif
++
++void fix_t104x_diu_init(void)
++{
++#if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
++	diu_ops.set_monitor_port	= t104xrdb_set_monitor_port;
++	diu_ops.set_pixel_clock		= t104xrdb_set_pixel_clock;
++	diu_ops.valid_monitor_port	= t104xrdb_valid_monitor_port;
++#endif
++}
+-- 
+1.8.5
