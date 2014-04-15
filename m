@@ -1,37 +1,23 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F38BE140093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 03:11:19 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 15 Apr 2014 13:11:17 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 596696E801F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 13:11:07 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3FHBDqQ5636574
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 17:11:13 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3FHBDfh022791
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2014 13:11:13 -0400
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: [PATCH v2 6/6] powerpc/perf/hv-24x7: catalog version number is be64,
- not be32
-Date: Tue, 15 Apr 2014 10:10:55 -0700
-Message-Id: <1397581855-4585-7-git-send-email-cody@linux.vnet.ibm.com>
-In-Reply-To: <1397581855-4585-1-git-send-email-cody@linux.vnet.ibm.com>
-References: <1397581855-4585-1-git-send-email-cody@linux.vnet.ibm.com>
-Cc: Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, David.Laight@aculab.com,
- Anton Blanchard <anton@samba.org>, Cody P Schafer <cody@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1FA60140309
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 03:15:12 +1000 (EST)
+Message-ID: <1397582101.20280.241.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/85xx: Add OCA4080 board support
+From: Scott Wood <scottwood@freescale.com>
+To: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
+Date: Tue, 15 Apr 2014 12:15:01 -0500
+In-Reply-To: <534D16F6.9090305@prodrive-technologies.com>
+References: <1397478910-26361-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+ <1397514507.20280.223.camel@snotra.buserror.net>
+ <534D16F6.9090305@prodrive-technologies.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: stef.van.os@prodrive-technologies.com,
+ Martijn de Gouw <martijn.de.gouw@prodrive.nl>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,53 +27,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The catalog version number was changed from a be32 (with proceeding
-32bits of padding) to a be64, update the code to treat it as a be64
+On Tue, 2014-04-15 at 13:24 +0200, Martijn de Gouw wrote:
+> On 04/15/2014 12:28 AM, Scott Wood wrote:
+> > On Mon, 2014-04-14 at 14:35 +0200, Martijn de Gouw wrote:
+> >> +	lbc: localbus@ffe124000 {
+> >> +		reg = <0xf 0xfe124000 0 0x1000>;
+> >> +		ranges = <0 0 0xf 0xef800000 0x800000>;
+> >> +
+> >> +		flash@0,0 {
+> >> +			#address-cells = <1>;
+> >> +			#size-cells = <1>;
+> >> +			compatible = "cfi-flash";
+> >> +			reg = <0 0 0x00800000>;
+> >> +			bank-width = <2>;
+> >> +			device-width = <2>;
+> >> +			partition@rcw {
+> >> +				label = "rcw";
+> >> +				reg = <0x00000000 0x00020000>;
+> >> +			};
+> >> +			partition@fman-ucode {
+> >> +				label = "fman-ucode";
+> >> +				reg = <0x00020000 0x00020000>;
+> >> +			};
+> >> +			partition@user {
+> >> +				label = "user";
+> >> +				reg = <0x00040000 0x00680000>;
+> >> +			};
+> >> +			partition@env0 {
+> >> +				label = "env0";
+> >> +				reg = <0x006c0000 0x00020000>;
+> >> +			};
+> >> +			partition@env1 {
+> >> +				label = "env1";
+> >> +				reg = <0x006e0000 0x00020000>;
+> >> +			};
+> >> +			partition@u-boot {
+> >> +				label = "u-boot";
+> >> +				reg = <0x00700000 0x00080000>;
+> >> +			};
+> >> +			partition@u-boot-backup {
+> >> +				label = "u-boot-backup";
+> >> +				reg = <0x00780000 0x00080000>;
+> >> +			};
+> >
+> > These are not valid unit addresses.  Regardless, please don't put
+> > partition info in the dts.
+> 
+> How is this different than the partitions defined in i.e. p4080ds.dts?
 
-Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
----
- arch/powerpc/perf/hv-24x7.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+If you mean the unit addresses, they're supposed to be hex numbers that
+match reg.  If you mean why are they there at all in p4080ds.dts, a lot
+of existing trees have them but it's bad to mix configuration in with
+hardware description and we're discouraging putting partitions in new
+dts files.  It would be nice to clean up the old dts files as well,
+though I'm concerned about people who are currently relying on them.
+OTOH I'm also concerned about users for whom the dts partitions don't
+match reality...
 
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 95a67f8..9d4badc 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -171,7 +171,7 @@ static unsigned long h_get_24x7_catalog_page_(unsigned long phys_4096,
- }
- 
- static unsigned long h_get_24x7_catalog_page(char page[],
--					     u32 version, u32 index)
-+					     u64 version, u32 index)
- {
- 	return h_get_24x7_catalog_page_(virt_to_phys(page),
- 					version, index);
-@@ -185,7 +185,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
- 	ssize_t ret = 0;
- 	size_t catalog_len = 0, catalog_page_len = 0, page_count = 0;
- 	loff_t page_offset = 0;
--	uint32_t catalog_version_num = 0;
-+	uint64_t catalog_version_num = 0;
- 	void *page = kmem_cache_alloc(hv_page_cache, GFP_USER);
- 	struct hv_24x7_catalog_page_0 *page_0 = page;
- 	if (!page)
-@@ -197,7 +197,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
- 		goto e_free;
- 	}
- 
--	catalog_version_num = be32_to_cpu(page_0->version);
-+	catalog_version_num = be64_to_cpu(page_0->version);
- 	catalog_page_len = be32_to_cpu(page_0->length);
- 	catalog_len = catalog_page_len * 4096;
- 
-@@ -255,7 +255,7 @@ e_free:								\
- static DEVICE_ATTR_RO(_name)
- 
- PAGE_0_ATTR(catalog_version, "%lld\n",
--		(unsigned long long)be32_to_cpu(page_0->version));
-+		(unsigned long long)be64_to_cpu(page_0->version));
- PAGE_0_ATTR(catalog_len, "%lld\n",
- 		(unsigned long long)be32_to_cpu(page_0->length) * 4096);
- static BIN_ATTR_RO(catalog, 0/* real length varies */);
--- 
-1.9.2
+> Of course I can remove them from the dts, but where should they be defined?
+
+Either use mtdparts on the kernel command line, or have U-Boot generate
+the partition nodes at runtime based on the mtdparts environment
+variable (there is already code for this).
+
+-Scott
