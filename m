@@ -1,26 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <gsi@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 536B41400A8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 05:36:45 +1000 (EST)
-Message-ID: <1397676986.28539.10.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular
- initialization for platform
-From: Scott Wood <scottwood@freescale.com>
-To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
-Date: Wed, 16 Apr 2014 14:36:26 -0500
-In-Reply-To: <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
- <1397590755.20280.250.camel@snotra.buserror.net>
- <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id E07F4140089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 06:50:25 +1000 (EST)
+Date: Wed, 16 Apr 2014 22:44:10 +0200
+From: Gerhard Sittig <gsi@denx.de>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v11 5/6] dma: mpc512x: add device tree binding document
+Message-ID: <20140416204410.GP3528@book.gsilab.sittig.org>
+References: <1397559250-17680-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1397559250-17680-6-git-send-email-a13xp0p0v88@gmail.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "haokexin@gmail.com" <haokexin@gmail.com>,
- Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>,
- Jin Zhengxiong-R64188 <Jason.Jin@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1397559250-17680-6-git-send-email-a13xp0p0v88@gmail.com>
+Cc: devicetree@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>,
+ Anatolij Gustschin <agust@denx.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, dmaengine@vger.kernel.org,
+ Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +29,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-04-15 at 21:58 -0500, Wang Dongsheng-B40534 wrote:
+On Tue, 2014-04-15 at 14:54 +0400, Alexander Popov wrote:
 > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Wednesday, April 16, 2014 3:39 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: Jin Zhengxiong-R64188; haokexin@gmail.com; Kushwaha Prabhakar-B32579;
-> > linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular initialization
-> > for platform
-> > 
-> > On Tue, 2014-04-15 at 13:53 +0800, Dongsheng Wang wrote:
-> > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > >
-> > > Corenet_generic is a generic platform initialization. Those based on
-> > > the corenet_generic board maybe need a particular initialize to
-> > > enable/set some IP-Blocks. So add "Fix Generic Initialization" to solve
-> > > this kind of special cases.
-> > 
-> > I still don't understand what you mean by "fix".  What are you fixing,
-> > or what is fixed?
-> > 
-> > There is no need for adding an infrastructure layer here.  Just add a
-> > new piece of code for t104x diu, and have it be called by an appropriate
-> > initfunc.
-> > 
+> Introduce a device tree binding document for the MPC512x DMA controller
 > 
-> "fix" is means to handle some boards those based on corenet_generic config file,
-> But those boards may need some special handle. Perhaps these used to handle
-> special feature codes not have an appropriate initfunc we cannot *just find*
-> an appropriate place,
+> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+> Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
 
-I'm not asking you to "just find" anything.  I'm asking you to add an
-initfunc in a standalone file.
+I'm not certain whether the attribution is right.  Is the S-o-b
+appropriate when the patch is not "from" me?  As I've stated
+before, it's OK if you pick up and extend what I provide, but
+please don't pretend that I wrote what you did, and don't pretend
+that I ACKed or passed along your submission when I didn't.
 
-> if more and more boards need to do this, at that time maybe *initfunc*
-> looks very complicated.
 
-They would each have their own initfunc.  There is no reason to tie this
-in with anything else.
+This binding certainly needs further improvement to become a good
+one.  As I've communicated in the past, I was rather ignorant
+"back then" when I wrote v1 and v2 of the RFC.  We have learned
+something in the meantime.  Though I admit having gone silent
+after several review iterations.  Assumed you would pick up
+information that showed up several times on public lists.
 
-> > > --- a/arch/powerpc/platforms/85xx/Kconfig
-> > > +++ b/arch/powerpc/platforms/85xx/Kconfig
-> > > @@ -269,6 +269,17 @@ config CORENET_GENERIC
-> > >  	  The following boards are supported for both 32bit and 64bit kernel:
-> > >  	    P5020 DS and P5040 DS
-> > >
-> > > +config FIX_GENERIC_PLATFORM_INIT
-> > > +	bool "Fix Generic Initialization"
-> > > +	depends on CORENET_GENERIC
-> > 
-> > Why does this depend on CORENET_GENERIC?
-> > 
-> 
-> Because CORENET_GENERIC is a multiboards file, This is designed to handle this situation.
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> @@ -0,0 +1,51 @@
+> +* Freescale MPC512x and MPC8308 DMA Controller
+> +
+> +The DMA controller in the Freescale MPC512x and MPC8308 SoCs can move
+> +blocks of memory contents between memory and peripherals or
+> +from memory to memory.
+> +
+> +Refer to the "Generic DMA Controller and DMA request bindings" in
+> +the dma/dma.txt file for a more detailed description of binding.
+> +
+> +* DMA controller
+> +
+> +Required properties:
+> +- compatible: Should be one of
+> +	"fsl,mpc5121-dma"
+> +	"fsl,mpc8308-dma", "fsl,mpc5121-dma"
 
-This DIU code is going to be just as applicable to a custom T104x board
-which may or may not use CORENET_GENERIC.
+is this a duplicate?  looks funny, needs a fix
 
-> > > +	default y
-> > 
-> > No.
-> > 
-> 
-> Why not? This will not increase any redundant operations if there is not any boards need fix.
-> You can see my fix.c code.
+or is it a requirement that for MPC8308 you need to provide both
+compatible strings?  that would be wrong, as MPC8308 certainly is
+not an MPC5121
 
-default y should not be used for hardware specific code.
+a quick search reveals: the drivers/dma/mpc512x_dma.c Linux
+driver implementation is wrong, it should match on both strings;
+expecting the MPC8308 to disguise as an MPC5121 when it's not is
+inappropriate (and only went unnoticed because of missing
+bindings, I guess)
 
--Scott
+> +- reg: Address and size of the DMA controller's register set
+> +- interrupts: Interrupt for the DMA controller. Generic interrupt client node
+> +	is described in interrupt-controller/interrupts.txt
+
+'interrupts' only works in combinations with 'interrupt-parent',
+that actual .dts files don't have the latter in the nodes is an
+implementation detail but not a binding's requirement
+
+and an alternative method of specifying interrupts was introduced
+recently, a reference to the common binding without naming one
+specific property name could be most appropriate
+
+> +
+> +Optional properties:
+> +- #dma-cells: The length of the DMA specifier, must be <1> since
+> +	the DMA controller uses a fixed assignment of request lines
+> +	per channel. Refer to dma/dma.txt for the detailed description
+> +	of this property
+
+I'm afraid that a generic/common document does not and cannot
+describe the specific semantics of this provider's cells
+
+this binding should explicitly mention that the number of cells
+needs to be one, and that this one cell is the DMA channel (which
+translates to "peripheral request line"), because these
+assigments are fixed in hardware
+
+> +
+> +Example:
+> +
+> +	dma0: dma@14000 {
+> +		compatible = "fsl,mpc5121-dma";
+> +		reg = <0x14000 0x1800>;
+> +		interrupts = <65 0x8>;
+> +		#dma-cells = <1>;
+> +	};
+> +
+> +* DMA client
+
+the DMA provider's binding probably need not discuss client
+specs, a reference to the common binding should suffice if it's
+appropriate at all
+
+
+virtually yours
+Gerhard Sittig
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
+Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
