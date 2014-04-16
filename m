@@ -1,27 +1,23 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
+ [209.85.220.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EF826140096
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 16:06:41 +1000 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 2/2] fsl/mpic_timer: make mpic_timer to support deep
- sleep feature
-Date: Wed, 16 Apr 2014 06:06:33 +0000
-Message-ID: <f0b91a7ace28416b9aefc0ee26061c98@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1397442250-14886-1-git-send-email-dongsheng.wang@freescale.com>
- <1397442250-14886-2-git-send-email-dongsheng.wang@freescale.com>
- <1397518552.20280.235.camel@snotra.buserror.net>
- <b1be56f51f4c4985af837685450f4eb2@BN1PR03MB188.namprd03.prod.outlook.com>
- <1397595963.20280.279.camel@snotra.buserror.net>
-In-Reply-To: <1397595963.20280.279.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 7D8A014008E
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Apr 2014 16:48:06 +1000 (EST)
+Received: by mail-pa0-f50.google.com with SMTP id kq14so10610382pab.9
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Apr 2014 23:48:04 -0700 (PDT)
+Date: Tue, 15 Apr 2014 23:48:00 -0700
+From: Brian Norris <computersforpeace@gmail.com>
+To: Hou Zhiqiang <B48286@freescale.com>
+Subject: Re: [PATCH] mtd: m25p80: Modify the name of mtd_info
+Message-ID: <20140416064800.GO3131@norris-Latitude-E6410>
+References: <1395400578-5637-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1395400578-5637-1-git-send-email-B48286@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org, mingkai.hu@freescale.com,
+ linux-mtd@lists.infradead.org, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAxNiwgMjAxNCA1OjA2IEFNDQo+IFRvOiBXYW5n
-IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IEppbiBaaGVuZ3hpb25nLVI2NDE4ODsgTGkgWWFuZy1M
-ZW8tUjU4NDcyOyBaaGFvIENoZW5odWktQjM1MzM2OyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96
-bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIGZzbC9tcGljX3RpbWVyOiBtYWtl
-IG1waWNfdGltZXIgdG8gc3VwcG9ydCBkZWVwIHNsZWVwDQo+IGZlYXR1cmUNCj4gDQo+IE9uIE1v
-biwgMjAxNC0wNC0xNCBhdCAyMjoyMyAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3Rl
-Og0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29v
-ZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDE1LCAyMDE0IDc6MzYg
-QU0NCj4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+IENjOiBKaW4gWmhlbmd4
-aW9uZy1SNjQxODg7IExpIFlhbmctTGVvLVI1ODQ3MjsgWmhhbyBDaGVuaHVpLUIzNTMzNjsNCj4g
-bGludXhwcGMtDQo+ID4gPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6
-IFtQQVRDSCAyLzJdIGZzbC9tcGljX3RpbWVyOiBtYWtlIG1waWNfdGltZXIgdG8gc3VwcG9ydCBk
-ZWVwDQo+IHNsZWVwDQo+ID4gPiBmZWF0dXJlDQo+ID4gPg0KPiA+ID4gT24gTW9uLCAyMDE0LTA0
-LTE0IGF0IDEwOjI0ICswODAwLCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gRnJvbTog
-V2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+DQo+
-ID4gPiA+IEF0IFQxMDR4IHBsYXRmcm9tIHRoZSB0aW1lciBjbG9jayB3aWxsIGJlIGNoYW5nZWQg
-d2hlbiBzeXN0ZW0gZ29pbmcgdG8NCj4gPiA+ID4gZGVlcCBzbGVlcC4NCj4gPiA+DQo+ID4gPiBD
-b3VsZCB5b3UgZWxhYm9yYXRlIG9uIHdoYXQgaXMgY2hhbmdpbmcgYW5kIHdoeT8NCj4gPiA+DQo+
-ID4NCj4gPiBPa2F5Lg0KPiA+DQo+ID4gPiA+ICsjaW5jbHVkZSA8YXNtL21wYzg1eHguaD4NCj4g
-PiA+ID4gICNpbmNsdWRlIDxhc20vbXBpY190aW1lci5oPg0KPiA+ID4NCj4gPiA+IFNvIG11Y2gg
-Zm9yLCAiVGhlIGRyaXZlciBjdXJyZW50bHkgaXMgb25seSB0ZXN0ZWQgb24gZnNsIGNoaXAsIGJ1
-dCBpdCBjYW4NCj4gPiA+IHBvdGVudGlhbGx5IHN1cHBvcnQgb3RoZXIgZ2xvYmFsIHRpbWVycyBj
-b21wbHlpbmcgdG8gT3BlblBJQyBzdGFuZGFyZC4iDQo+ID4gPg0KPiA+ID4gPiAgI2RlZmluZSBG
-U0xfR0xPQkFMX1RJTUVSCQkweDENCj4gPiA+ID4gQEAgLTcxLDggKzc0LDEwIEBAIHN0cnVjdCB0
-aW1lcl9ncm91cF9wcml2IHsNCj4gPiA+ID4gIAlzdHJ1Y3QgdGltZXJfcmVncyBfX2lvbWVtCSpy
-ZWdzOw0KPiA+ID4gPiAgCXN0cnVjdCBtcGljX3RpbWVyCQl0aW1lcltUSU1FUlNfUEVSX0dST1VQ
-XTsNCj4gPiA+ID4gIAlzdHJ1Y3QgbGlzdF9oZWFkCQlub2RlOw0KPiA+ID4gPiArCXVuc2lnbmVk
-IGxvbmcJCQlpZGxlOw0KPiA+ID4gPiAgCXVuc2lnbmVkIGludAkJCXRpbWVyZnJlcTsNCj4gPiA+
-ID4gLQl1bnNpZ25lZCBpbnQJCQlpZGxlOw0KPiA+ID4NCj4gPiA+IFdoeT8NCj4gPiA+DQo+ID4N
-Cj4gPiBVbS4uLiBJdCBzaG91bGRuJ3QgYmUgaGFwcGVuZWQuLi5pIHdpbGwgcmVtb3ZlIHRoaXMu
-DQo+ID4NCj4gPiA+ID4gKwl1bnNpZ25lZCBpbnQJCQlzdXNwZW5kZWRfdGltZXJmcmVxOw0KPiA+
-ID4gPiArCXVuc2lnbmVkIGludAkJCXJlc3VtZV90aW1lcmZyZXE7DQo+ID4gPiA+ICAJdW5zaWdu
-ZWQgaW50CQkJZmxhZ3M7DQo+ID4gPiA+ICAJc3BpbmxvY2tfdAkJCWxvY2s7DQo+ID4gPiA+ICAJ
-dm9pZCBfX2lvbWVtCQkJKmdyb3VwX3RjcjsNCj4gPiA+ID4gQEAgLTg4LDYgKzkzLDcgQEAgc3Rh
-dGljIHN0cnVjdCBjYXNjYWRlX3ByaXYgY2FzY2FkZV90aW1lcltdID0geyAgfTsNCj4gPiA+ID4N
-Cj4gPiA+ID4gIHN0YXRpYyBMSVNUX0hFQUQodGltZXJfZ3JvdXBfbGlzdCk7DQo+ID4gPiA+ICtz
-dGF0aWMgaW50IHN3aXRjaF9mcmVxX2ZsYWc7DQo+ID4gPg0KPiA+ID4gTmVlZHMgZG9jdW1lbnRh
-dGlvbiwgYW5kIGJhc2VkIG9uICJfZmxhZyIgaXQgc2hvdWxkIHByb2JhYmx5IGJlIGEgYm9vbC4N
-Cj4gPiA+DQo+ID4NCj4gPiBPa2F5Lg0KPiA+DQo+ID4gPiA+ICBzdGF0aWMgdm9pZCBjb252ZXJ0
-X3RpY2tzX3RvX3RpbWUoc3RydWN0IHRpbWVyX2dyb3VwX3ByaXYgKnByaXYsDQo+ID4gPiA+ICAJ
-CWNvbnN0IHU2NCB0aWNrcywgc3RydWN0IHRpbWV2YWwgKnRpbWUpIEBAIC00MjMsNiArNDI5LDMz
-IEBADQo+IHN0cnVjdA0KPiA+ID4gPiBtcGljX3RpbWVyICptcGljX3JlcXVlc3RfdGltZXIoaXJx
-X2hhbmRsZXJfdCBmbiwgdm9pZCAqZGV2LCAgfQ0KPiA+ID4gPiBFWFBPUlRfU1lNQk9MKG1waWNf
-cmVxdWVzdF90aW1lcik7DQo+ID4gPiA+DQo+ID4gPiA+ICtzdGF0aWMgdm9pZCB0aW1lcl9ncm91
-cF9nZXRfc3VzcGVuZGVkX2ZyZXEoc3RydWN0IHRpbWVyX2dyb3VwX3ByaXYNCj4gPiA+ID4gKypw
-cml2KSB7DQo+ID4gPiA+ICsJc3RydWN0IGRldmljZV9ub2RlICpucDsNCj4gPiA+ID4gKw0KPiA+
-ID4gPiArCW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgImZzbCxxb3Jp
-cS1jbG9ja2dlbi0yLjAiKTsNCj4gPiA+ID4gKwlpZiAoIW5wKSB7DQo+ID4gPiA+ICsJCXByX2Vy
-cigibXBpYyB0aW1lcjogTWlzc2luZyBjbG9ja2dlbiBkZXZpY2Ugbm9kZS5cbiIpOw0KPiA+ID4N
-Cj4gPiA+IFdoeSBpcyBpdCBhbiBlcnJvciB0byBub3QgaGF2ZSBhIDIuMCBRb3JJUSBjbG9ja2dl
-bj8NCj4gPiA+DQo+ID4NCj4gPiBUaGlzIHdpbGwgYWZmZWN0IHRoZSBhY2N1cmFjeSBvZiB0aGUg
-dGltZXIuIEJ1dCBub3QgbWVhbnMgdGhlIHRpbWVyIGNhbm5vdA0KPiB3b3JrLg0KPiA+IE1heWJl
-IHlvdSBhcmUgcmlnaHQsIHRoaXMgcHJfZXJyIHNob3VsZCBiZSBhIHByX3dhcm4uDQo+IA0KPiBX
-aGF0IEkgbWVhbiBpcywgd2hhdCBpZiB0aGUgbXBpYyB0aW1lciBkcml2ZXIgaXMgdXNlZCB3aXRo
-IGRlZXAgc2xlZXAgb24NCj4gYSBkaWZmZXJlbnQgY2hpcCBzdWNoIGFzIG1wYzg1MzY/DQo+IA0K
-DQpPbmx5IFQxMDR4IGhhcyB0aGlzIGZlYXR1cmUsIG90aGVyIHBsYXRmb3JtIHdpbGwgbm90IGJl
-IGVmZmVjdC4NCkkgd2lsbCByZW1vdmUgdGhpcyBwcl9lcnIuDQoNCj4gPiA+ID4gKwkJcmV0dXJu
-Ow0KPiA+ID4gPiArCX0NCj4gPiA+ID4gKw0KPiA+ID4gPiArCW9mX3Byb3BlcnR5X3JlYWRfdTMy
-KG5wLCAiY2xvY2stZnJlcXVlbmN5IiwgJnByaXYtDQo+ID5zdXNwZW5kZWRfdGltZXJmcmVxKTsN
-Cj4gPiA+ID4gKwlvZl9ub2RlX3B1dChucCk7DQo+ID4gPg0KPiA+ID4gU2hvdWxkbid0IHRoaXMg
-Z28gdGhyb3VnaCB0aGUgY2xvY2sgQVBJPw0KPiA+ID4NCj4gPg0KPiA+IFNvcnJ5LCBJJ20gbm90
-IGNsZWFyIGFib3V0IGNsb2NrIEFQSSwgeW91IG1lYW4gZnNsX2dldF9zeXNfZnJlcSgpPyBPciA/
-DQo+IA0KPiBObywgSSBtZWFuIGRyaXZlcnMvY2xrLw0KPiANCj4gVGhvdWdoIEkgc3VwcG9zZSBt
-YW51YWxseSByZWFkaW5nIGNsb2NrLWZyZXF1ZW5jeSBpcyBPSywgYXMgdGhlDQo+IGNsb2NrLWZy
-ZXF1ZW5jeSBvbiB0aGUgY2xvY2tnZW4gbm9kZSBwcmVkYXRlZCB0aGUgaW50cm9kdWN0aW9uIG9m
-IGNsb2NrDQo+IGJpbmRpbmdzIHRvIHRoZSBkZXZpY2UgdHJlZS4NCj4gDQo+IERvbid0IHVzZSBm
-c2xfZ2V0X3N5c19mcmVxKCkuDQo+IA0KDQpObywgd2UgY2Fubm90IHVzZSBkcml2ZXJzL2Nsay8u
-IEJlY2F1c2UgY2xrLXBwYy1jb3JlbmV0LmMgb25seSBzdXBwb3J0IGNvcmVuZXQgcGxhdGZvcm0u
-DQoNCj4gPiA+ID4gK3N0YXRpYyBpbnQgbmVlZF90b19zd2l0Y2hfZnJlcSh2b2lkKQ0KPiA+ID4g
-PiArew0KPiA+ID4gPiArCXUzMiBzdnI7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlzdnIgPSBtZnNw
-cihTUFJOX1NWUik7DQo+ID4gPiA+ICsJaWYgKFNWUl9TT0NfVkVSKHN2cikgPT0gU1ZSX1QxMDQw
-IHx8DQo+ID4gPiA+ICsJCQlTVlJfU09DX1ZFUihzdnIpID09IFNWUl9UMTA0MikNCj4gPiA+ID4g
-KwkJcmV0dXJuIDE7DQo+ID4gPg0KPiA+ID4gRXhwbGFpbiB3aHkgdGhpcyBpcyBzcGVjaWZpYyB0
-byBUMTA0eC4NCj4gPiA+DQo+ID4NCj4gPiBNcGljIHRpbWVyIGZyZXEgd2lsbCBiZSBjaGFuZ2Ug
-d2hlbiBzeXN0ZW0gZ29pbmcgdG8gZGVlcCBzbGVlcC4gU28gd2UgbmVlZCB0bw0KPiByZWNhbGN1
-bGF0ZSB0aGUgdGltZS4NCj4gDQo+IERvIGFueSBvdGhlciBjaGlwcyB3aXRoIGRlZXAgc2xlZXAg
-aGF2ZSB0aGlzIHByb2JsZW0/DQo+IA0KDQpPbmx5IGhhcyBvbiBUMTA0eCByaWdodCBub3cuDQoN
-ClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCj4gLVNjb3R0DQo+IA0KDQo=
+On Fri, Mar 21, 2014 at 07:16:18PM +0800, Hou Zhiqiang wrote:
+> To specify spi flash layouts by "mtdparts=..." in cmdline, we must
+> give mtd_info a fixed name,because the cmdlinepart's parser will
+> match the name of mtd_info given in cmdline.
+> Now, if use DT, the mtd_info's name will be spi->dev->name. It
+> consists of spi_master->bus_num, and the spi_master->bus_num maybe
+> dynamically fetched. So, in this case, replace the component bus_num
+> with thei physical address of spi master.
+> 
+> Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
+> ---
+>  drivers/mtd/devices/m25p80.c | 18 +++++++++++++++---
+>  1 file changed, 15 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+> index 7eda71d..64450a2 100644
+> --- a/drivers/mtd/devices/m25p80.c
+> +++ b/drivers/mtd/devices/m25p80.c
+> @@ -30,6 +30,7 @@
+>  #include <linux/mtd/cfi.h>
+>  #include <linux/mtd/mtd.h>
+>  #include <linux/mtd/partitions.h>
+> +#include <linux/of_address.h>
+>  #include <linux/of_platform.h>
+>  
+>  #include <linux/spi/spi.h>
+> @@ -934,9 +935,11 @@ static int m25p_probe(struct spi_device *spi)
+>  	struct flash_platform_data	*data;
+>  	struct m25p			*flash;
+>  	struct flash_info		*info;
+> -	unsigned			i;
+> +	unsigned			i, ret;
+>  	struct mtd_part_parser_data	ppdata;
+>  	struct device_node *np = spi->dev.of_node;
+> +	struct resource res;
+> +	struct device_node *mnp = spi->master->dev.of_node;
+>  
+>  	/* Platform data helps sort out which chip type we have, as
+>  	 * well as how this board partitions it.  If we don't have
+> @@ -1009,8 +1012,17 @@ static int m25p_probe(struct spi_device *spi)
+>  
+>  	if (data && data->name)
+>  		flash->mtd.name = data->name;
+> -	else
+> -		flash->mtd.name = dev_name(&spi->dev);
+> +	else{
+> +		ret = of_address_to_resource(mnp, 0, &res);
+
+You're making a lot assumptions about the SPI master/device
+relationship -- that the master has a device-node; that the first
+resource of the master is its physical address (this is not guaranteed
+by DT semantics). Please do not do this.
+
+> +		if (ret) {
+> +			dev_err(&spi->dev, "failed to get spi master resource\n");
+> +			return ret;
+
+This is wrong. It breaks all !CONFIG_OF cases which didn't specify a
+name via platform data.
+
+> +		}
+> +		flash->mtd.name = kasprintf(GFP_KERNEL, "spi%x.%d",
+> +				(unsigned)res.start, spi->chip_select);
+> +		if (!flash->mtd.name)
+> +			return -ENOMEM;
+> +	}
+>  
+>  	flash->mtd.type = MTD_NORFLASH;
+>  	flash->mtd.writesize = 1;
+
+Brian
