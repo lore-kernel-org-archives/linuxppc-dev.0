@@ -1,25 +1,41 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0212.outbound.protection.outlook.com [207.46.163.212])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <wangyun@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C7791140099
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 12:58:28 +1000 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v2 1/2] fsl/corenet_generic: add a particular
- initialization for platform
-Date: Wed, 16 Apr 2014 02:58:08 +0000
-Message-ID: <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
- <1397590755.20280.250.camel@snotra.buserror.net>
-In-Reply-To: <1397590755.20280.250.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 510E914009F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 13:15:06 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <wangyun@linux.vnet.ibm.com>;
+ Wed, 16 Apr 2014 08:45:04 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id CE7CB3940049
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 08:45:01 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3G3Eu7l58065080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 08:44:56 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3G3F0lV024340
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 08:45:01 +0530
+Message-ID: <534DF5B1.7070702@linux.vnet.ibm.com>
+Date: Wed, 16 Apr 2014 11:14:57 +0800
+From: Michael wang <wangyun@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "haokexin@gmail.com" <haokexin@gmail.com>,
- "prabhakar@freescale.com" <prabhakar@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+To: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ benh@kernel.crashing.org, paulus@samba.org, nfont@linux.vnet.ibm.com,
+ sfr@canb.auug.org.au, Andrew Morton <akpm@linux-foundation.org>,
+ rcj@linux.vnet.ibm.com, jlarrew@linux.vnet.ibm.com,
+ srivatsa.bhat@linux.vnet.ibm.com, alistair@popple.id.au
+Subject: Re: [PATCH v2] power,
+ sched: stop updating inside arch_update_cpu_topology()
+ when nothing to be update
+References: <533B8431.8090507@linux.vnet.ibm.com>
+ <53436AC8.5020705@linux.vnet.ibm.com>
+In-Reply-To: <53436AC8.5020705@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +45,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAxNiwgMjAxNCAzOjM5IEFNDQo+IFRvOiBXYW5n
-IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IEppbiBaaGVuZ3hpb25nLVI2NDE4ODsgaGFva2V4aW5A
-Z21haWwuY29tOyBLdXNod2FoYSBQcmFiaGFrYXItQjMyNTc5Ow0KPiBsaW51eHBwYy1kZXZAbGlz
-dHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDEvMl0gZnNsL2NvcmVuZXRf
-Z2VuZXJpYzogYWRkIGEgcGFydGljdWxhciBpbml0aWFsaXphdGlvbg0KPiBmb3IgcGxhdGZvcm0N
-Cj4gDQo+IE9uIFR1ZSwgMjAxNC0wNC0xNSBhdCAxMzo1MyArMDgwMCwgRG9uZ3NoZW5nIFdhbmcg
-d3JvdGU6DQo+ID4gRnJvbTogV2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2Fs
-ZS5jb20+DQo+ID4NCj4gPiBDb3JlbmV0X2dlbmVyaWMgaXMgYSBnZW5lcmljIHBsYXRmb3JtIGlu
-aXRpYWxpemF0aW9uLiBUaG9zZSBiYXNlZCBvbg0KPiA+IHRoZSBjb3JlbmV0X2dlbmVyaWMgYm9h
-cmQgbWF5YmUgbmVlZCBhIHBhcnRpY3VsYXIgaW5pdGlhbGl6ZSB0bw0KPiA+IGVuYWJsZS9zZXQg
-c29tZSBJUC1CbG9ja3MuIFNvIGFkZCAiRml4IEdlbmVyaWMgSW5pdGlhbGl6YXRpb24iIHRvIHNv
-bHZlDQo+ID4gdGhpcyBraW5kIG9mIHNwZWNpYWwgY2FzZXMuDQo+IA0KPiBJIHN0aWxsIGRvbid0
-IHVuZGVyc3RhbmQgd2hhdCB5b3UgbWVhbiBieSAiZml4Ii4gIFdoYXQgYXJlIHlvdSBmaXhpbmcs
-DQo+IG9yIHdoYXQgaXMgZml4ZWQ/DQo+IA0KPiBUaGVyZSBpcyBubyBuZWVkIGZvciBhZGRpbmcg
-YW4gaW5mcmFzdHJ1Y3R1cmUgbGF5ZXIgaGVyZS4gIEp1c3QgYWRkIGENCj4gbmV3IHBpZWNlIG9m
-IGNvZGUgZm9yIHQxMDR4IGRpdSwgYW5kIGhhdmUgaXQgYmUgY2FsbGVkIGJ5IGFuIGFwcHJvcHJp
-YXRlDQo+IGluaXRmdW5jLg0KPiANCg0KImZpeCIgaXMgbWVhbnMgdG8gaGFuZGxlIHNvbWUgYm9h
-cmRzIHRob3NlIGJhc2VkIG9uIGNvcmVuZXRfZ2VuZXJpYyBjb25maWcgZmlsZSwNCkJ1dCB0aG9z
-ZSBib2FyZHMgbWF5IG5lZWQgc29tZSBzcGVjaWFsIGhhbmRsZS4gUGVyaGFwcyB0aGVzZSB1c2Vk
-IHRvIGhhbmRsZQ0Kc3BlY2lhbCBmZWF0dXJlIGNvZGVzIG5vdCBoYXZlIGFuIGFwcHJvcHJpYXRl
-IGluaXRmdW5jIHdlIGNhbm5vdCAqanVzdCBmaW5kKg0KYW4gYXBwcm9wcmlhdGUgcGxhY2UsIGlm
-IG1vcmUgYW5kIG1vcmUgYm9hcmRzIG5lZWQgdG8gZG8gdGhpcywgYXQgdGhhdCB0aW1lDQptYXli
-ZSAqaW5pdGZ1bmMqIGxvb2tzIHZlcnkgY29tcGxpY2F0ZWQuIFNvIHdlIG5lZWQgdGhpcyAiZml4
-IiBsYXllciB0byBkZWFsIHRoZW0uDQpXZSBuZWVkIGEgcGxhbiB0byBmaXggdGhvc2UgYm9hcmRz
-LCBub3QganVzdCBmaW5kIGFuIGluaXRmdW5jLiBJIHRoaW5rcyAiZml4Ig0KaXMgdGhlIGJlc3Qg
-aW5pdGZ1bmMgdG8gaGFuZGxlIHRob3NlIHNwZWNpYWwgdGhpbmdzLg0KDQpJZiAiZml4IiBpcyBu
-b3QgY2xlYXIsIGRpZCB5b3UgaGF2ZSBhIGdvb2QgaWRlYXI/IDopDQoNCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBXYW5nIERvbmdzaGVuZyA8ZG9uZ3NoZW5nLndhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPiAt
-LS0NCj4gPiAqdjIqDQo+ID4gIDEvIFNwbGl0IERJVSBjb2RlLg0KPiA+ICAyLyBtYWtlIGZpeC5j
-IGFzIGEgaW5kZXBlbmRlbnQgZHJpdmVyLg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMv
-cGxhdGZvcm1zLzg1eHgvS2NvbmZpZw0KPiBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9L
-Y29uZmlnDQo+ID4gaW5kZXggYzE3YWFlOC4uZmNlMjM0MSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNo
-L3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvS2NvbmZpZw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9w
-bGF0Zm9ybXMvODV4eC9LY29uZmlnDQo+ID4gQEAgLTI2OSw2ICsyNjksMTcgQEAgY29uZmlnIENP
-UkVORVRfR0VORVJJQw0KPiA+ICAJICBUaGUgZm9sbG93aW5nIGJvYXJkcyBhcmUgc3VwcG9ydGVk
-IGZvciBib3RoIDMyYml0IGFuZCA2NGJpdCBrZXJuZWw6DQo+ID4gIAkgICAgUDUwMjAgRFMgYW5k
-IFA1MDQwIERTDQo+ID4NCj4gPiArY29uZmlnIEZJWF9HRU5FUklDX1BMQVRGT1JNX0lOSVQNCj4g
-PiArCWJvb2wgIkZpeCBHZW5lcmljIEluaXRpYWxpemF0aW9uIg0KPiA+ICsJZGVwZW5kcyBvbiBD
-T1JFTkVUX0dFTkVSSUMNCj4gDQo+IFdoeSBkb2VzIHRoaXMgZGVwZW5kIG9uIENPUkVORVRfR0VO
-RVJJQz8NCj4gDQoNCkJlY2F1c2UgQ09SRU5FVF9HRU5FUklDIGlzIGEgbXVsdGlib2FyZHMgZmls
-ZSwgVGhpcyBpcyBkZXNpZ25lZCB0byBoYW5kbGUgdGhpcyBzaXR1YXRpb24uDQoNCj4gPiArCWRl
-ZmF1bHQgeQ0KPiANCj4gTm8uDQo+IA0KDQpXaHkgbm90PyBUaGlzIHdpbGwgbm90IGluY3JlYXNl
-IGFueSByZWR1bmRhbnQgb3BlcmF0aW9ucyBpZiB0aGVyZSBpcyBub3QgYW55IGJvYXJkcyBuZWVk
-IGZpeC4NCllvdSBjYW4gc2VlIG15IGZpeC5jIGNvZGUuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5n
-DQoNCj4gLVNjb3R0DQo+IA0KDQo=
+On 04/08/2014 11:19 AM, Michael wang wrote:
+> Since v1:
+> 	Edited the comment according to Srivatsa's suggestion.
+> 
+> During the testing, we encounter below WARN followed by Oops:
+
+Is there any more comments on this issue? Should we apply this fix?
+
+Regards,
+Michael Wang
+
+> 
+> 	WARNING: at kernel/sched/core.c:6218
+> 	...
+> 	NIP [c000000000101660] .build_sched_domains+0x11d0/0x1200
+> 	LR [c000000000101358] .build_sched_domains+0xec8/0x1200
+> 	PACATMSCRATCH [800000000000f032]
+> 	Call Trace:
+> 	[c00000001b103850] [c000000000101358] .build_sched_domains+0xec8/0x1200
+> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
+> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
+> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
+> 	...
+> 	Oops: Kernel access of bad area, sig: 11 [#1]
+> 	...
+> 	NIP [c00000000045c000] .__bitmap_weight+0x60/0xf0
+> 	LR [c00000000010132c] .build_sched_domains+0xe9c/0x1200
+> 	PACATMSCRATCH [8000000000029032]
+> 	Call Trace:
+> 	[c00000001b1037a0] [c000000000288ff4] .kmem_cache_alloc_node_trace+0x184/0x3a0
+> 	[c00000001b103850] [c00000000010132c] .build_sched_domains+0xe9c/0x1200
+> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
+> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
+> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
+> 	...
+> 
+> This was caused by that 'sd->groups == NULL' after building groups, which
+> was caused by the empty 'sd->span'.
+> 
+> The cpu's domain contained nothing because the cpu was assigned to a wrong
+> node, due to the following unfortunate sequence of events:
+> 
+> 1. The hypervisor sent a topology update to the guest OS, to notify changes
+>    to the cpu-node mapping. However, the update was actually redundant - i.e.,
+>    the "new" mapping was exactly the same as the old one.
+> 
+> 2. Due to this, the 'updated_cpus' mask turned out to be empty after exiting
+>    the 'for-loop' in arch_update_cpu_topology().
+> 
+> 3. So we ended up calling stop-machine() with an empty cpumask list, which made
+>    stop-machine internally elect cpumask_first(cpu_online_mask), i.e., CPU0 as
+>    the cpu to run the payload (the update_cpu_topology() function).
+> 
+> 4. This causes update_cpu_topology() to be run by CPU0. And since 'updates'
+>    is kzalloc()'ed inside arch_update_cpu_topology(), update_cpu_topology()
+>    finds update->cpu as well as update->new_nid to be 0. In other words, we
+>    end up assigning CPU0 (and eventually its siblings) to node 0, incorrectly.
+> 
+> Along with the following wrong updating, it causes the sched-domain rebuild
+> code to break and crash the system.
+> 
+> Fix this by skipping the topology update in cases where we find that
+> the topology has not actually changed in reality (ie., spurious updates).
+> 
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> CC: Stephen Rothwell <sfr@canb.auug.org.au>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: Robert Jennings <rcj@linux.vnet.ibm.com>
+> CC: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+> CC: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+> CC: Alistair Popple <alistair@popple.id.au>
+> Suggested-by: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+> Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/mm/numa.c |   15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 30a42e2..4ebbb9e 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -1591,6 +1591,20 @@ int arch_update_cpu_topology(void)
+>  		cpu = cpu_last_thread_sibling(cpu);
+>  	}
+>  
+> +	/*
+> +	 * In cases where we have nothing to update (because the updates list
+> +	 * is too short or because the new topology is same as the old one),
+> +	 * skip invoking update_cpu_topology() via stop-machine(). This is
+> +	 * necessary (and not just a fast-path optimization) since stop-machine
+> +	 * can end up electing a random CPU to run update_cpu_topology(), and
+> +	 * thus trick us into setting up incorrect cpu-node mappings (since
+> +	 * 'updates' is kzalloc()'ed).
+> +	 *
+> +	 * And for the similar reason, we will skip all the following updating.
+> +	 */
+> +	if (!cpumask_weight(&updated_cpus))
+> +		goto out;
+> +
+>  	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
+>  
+>  	/*
+> @@ -1612,6 +1626,7 @@ int arch_update_cpu_topology(void)
+>  		changed = 1;
+>  	}
+>  
+> +out:
+>  	kfree(updates);
+>  	return changed;
+>  }
+> 
