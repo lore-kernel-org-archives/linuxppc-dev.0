@@ -1,20 +1,26 @@
-Return-Path: <joseph.salisbury@canonical.com>
-Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id 760D414008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 04:00:54 +1000 (EST)
-Message-ID: <534EC54C.9080705@canonical.com>
-Date: Wed, 16 Apr 2014 14:00:44 -0400
-From: Joseph Salisbury <joseph.salisbury@canonical.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 536B41400A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 05:36:45 +1000 (EST)
+Message-ID: <1397676986.28539.10.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular
+ initialization for platform
+From: Scott Wood <scottwood@freescale.com>
+To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
+Date: Wed, 16 Apr 2014 14:36:26 -0500
+In-Reply-To: <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
+ <1397590755.20280.250.camel@snotra.buserror.net>
+ <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] powerpc: Increase COMMAND_LINE_SIZE to 2048 from 512.
-References: <cover.1397260361.git.joseph.salisbury@canonical.com>	
- <84356b1cb9452226d54641a71e4b1363e78d4417.1397260362.git.joseph.salisbury@canonical.com>	
- <534C2FEB.2000803@canonical.com> <1397555363.14218.6.camel@pasglop>
-In-Reply-To: <1397555363.14218.6.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org, anton@samba.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "haokexin@gmail.com" <haokexin@gmail.com>,
+ Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>,
+ Jin Zhengxiong-R64188 <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/15/2014 05:49 AM, Benjamin Herrenschmidt wrote:
-> On Mon, 2014-04-14 at 14:58 -0400, Joseph Salisbury wrote:
->> After further review, it appears ppc does not actually use the define
->> in
->> the ppc headers but uses the common generic
->> default(include/uapi/asm-generic/setup.h).  COMMAND_LINE_SIZE should
->> probably become a kernel config option.  Do folks agree that is the
->> correct thing to do?  If so, I can re-work the patch.
-> No objection on my side.
->
-> Make sure you remove any unused arch define while at it.
->
-> Cheers,
-> Ben.
->
->
-Hi Ben,
+On Tue, 2014-04-15 at 21:58 -0500, Wang Dongsheng-B40534 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, April 16, 2014 3:39 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: Jin Zhengxiong-R64188; haokexin@gmail.com; Kushwaha Prabhakar-B32579;
+> > linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular initialization
+> > for platform
+> > 
+> > On Tue, 2014-04-15 at 13:53 +0800, Dongsheng Wang wrote:
+> > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > >
+> > > Corenet_generic is a generic platform initialization. Those based on
+> > > the corenet_generic board maybe need a particular initialize to
+> > > enable/set some IP-Blocks. So add "Fix Generic Initialization" to solve
+> > > this kind of special cases.
+> > 
+> > I still don't understand what you mean by "fix".  What are you fixing,
+> > or what is fixed?
+> > 
+> > There is no need for adding an infrastructure layer here.  Just add a
+> > new piece of code for t104x diu, and have it be called by an appropriate
+> > initfunc.
+> > 
+> 
+> "fix" is means to handle some boards those based on corenet_generic config file,
+> But those boards may need some special handle. Perhaps these used to handle
+> special feature codes not have an appropriate initfunc we cannot *just find*
+> an appropriate place,
 
-I can think of two ways to add the new config option.  One would be to
-have a large entry in ~/arch/Kconfig, with a default COMMAND_LINE_SIZE
-line for each architecture.  The other way would be to have the default
-value for COMMAND_LINE_SIZE in the architecture sub-directory Kconfig
-file: ~/arch/powerpc/Kconfig for example.
+I'm not asking you to "just find" anything.  I'm asking you to add an
+initfunc in a standalone file.
 
-Do you have a preference for either way?
+> if more and more boards need to do this, at that time maybe *initfunc*
+> looks very complicated.
 
-Thanks,
+They would each have their own initfunc.  There is no reason to tie this
+in with anything else.
 
-Joe
+> > > --- a/arch/powerpc/platforms/85xx/Kconfig
+> > > +++ b/arch/powerpc/platforms/85xx/Kconfig
+> > > @@ -269,6 +269,17 @@ config CORENET_GENERIC
+> > >  	  The following boards are supported for both 32bit and 64bit kernel:
+> > >  	    P5020 DS and P5040 DS
+> > >
+> > > +config FIX_GENERIC_PLATFORM_INIT
+> > > +	bool "Fix Generic Initialization"
+> > > +	depends on CORENET_GENERIC
+> > 
+> > Why does this depend on CORENET_GENERIC?
+> > 
+> 
+> Because CORENET_GENERIC is a multiboards file, This is designed to handle this situation.
+
+This DIU code is going to be just as applicable to a custom T104x board
+which may or may not use CORENET_GENERIC.
+
+> > > +	default y
+> > 
+> > No.
+> > 
+> 
+> Why not? This will not increase any redundant operations if there is not any boards need fix.
+> You can see my fix.c code.
+
+default y should not be used for hardware specific code.
+
+-Scott
