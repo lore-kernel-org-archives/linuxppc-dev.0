@@ -1,21 +1,20 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 243EB1400B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 22:27:46 +1000 (EST)
-Message-ID: <534E773A.2090909@suse.de>
-Date: Wed, 16 Apr 2014 14:27:38 +0200
-From: Alexander Graf <agraf@suse.de>
+Return-Path: <joseph.salisbury@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id 760D414008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 04:00:54 +1000 (EST)
+Message-ID: <534EC54C.9080705@canonical.com>
+Date: Wed, 16 Apr 2014 14:00:44 -0400
+From: Joseph Salisbury <joseph.salisbury@canonical.com>
 MIME-Version: 1.0
-To: Liu Ping Fan <pingfank@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v4] powerpc: kvm: make _PAGE_NUMA take effect
-References: <1397550820-29993-1-git-send-email-pingfank@linux.vnet.ibm.com>
-In-Reply-To: <1397550820-29993-1-git-send-email-pingfank@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] powerpc: Increase COMMAND_LINE_SIZE to 2048 from 512.
+References: <cover.1397260361.git.joseph.salisbury@canonical.com>	
+ <84356b1cb9452226d54641a71e4b1363e78d4417.1397260362.git.joseph.salisbury@canonical.com>	
+ <534C2FEB.2000803@canonical.com> <1397555363.14218.6.camel@pasglop>
+In-Reply-To: <1397555363.14218.6.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 15.04.14 10:33, Liu Ping Fan wrote:
-> Numa fault is a method which help to achieve auto numa balancing.
-> When such a page fault takes place, the page fault handler will check
-> whether the page is placed correctly. If not, migration should be
-> involved to cut down the distance between the cpu and pages.
+On 04/15/2014 05:49 AM, Benjamin Herrenschmidt wrote:
+> On Mon, 2014-04-14 at 14:58 -0400, Joseph Salisbury wrote:
+>> After further review, it appears ppc does not actually use the define
+>> in
+>> the ppc headers but uses the common generic
+>> default(include/uapi/asm-generic/setup.h).  COMMAND_LINE_SIZE should
+>> probably become a kernel config option.  Do folks agree that is the
+>> correct thing to do?  If so, I can re-work the patch.
+> No objection on my side.
 >
-> A pte with _PAGE_NUMA help to implement numa fault. It means not to
-> allow the MMU to access the page directly. So a page fault is triggered
-> and numa fault handler gets the opportunity to run checker.
+> Make sure you remove any unused arch define while at it.
 >
-> As for the access of MMU, we need special handling for the powernv's guest.
-> When we mark a pte with _PAGE_NUMA, we already call mmu_notifier to
-> invalidate it in guest's htab, but when we tried to re-insert them,
-> we firstly try to map it in real-mode. Only after this fails, we fallback
-> to virt mode, and most of important, we run numa fault handler in virt
-> mode.  This patch guards the way of real-mode to ensure that if a pte is
-> marked with _PAGE_NUMA, it will NOT be mapped in real mode, instead, it will
-> be mapped in virt mode and have the opportunity to be checked with placement.
+> Cheers,
+> Ben.
 >
-> Signed-off-by: Liu Ping Fan <pingfank@linux.vnet.ibm.com>
-> Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+Hi Ben,
 
-Thanks, applied to for-3.15.
+I can think of two ways to add the new config option.  One would be to
+have a large entry in ~/arch/Kconfig, with a default COMMAND_LINE_SIZE
+line for each architecture.  The other way would be to have the default
+value for COMMAND_LINE_SIZE in the architecture sub-directory Kconfig
+file: ~/arch/powerpc/Kconfig for example.
 
+Do you have a preference for either way?
 
-Alex
+Thanks,
+
+Joe
