@@ -1,41 +1,27 @@
-Return-Path: <wangyun@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 510E914009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 13:15:06 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <wangyun@linux.vnet.ibm.com>;
- Wed, 16 Apr 2014 08:45:04 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id CE7CB3940049
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 08:45:01 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3G3Eu7l58065080
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 08:44:56 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3G3F0lV024340
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 08:45:01 +0530
-Message-ID: <534DF5B1.7070702@linux.vnet.ibm.com>
-Date: Wed, 16 Apr 2014 11:14:57 +0800
-From: Michael wang <wangyun@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id EF826140096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2014 16:06:41 +1000 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 2/2] fsl/mpic_timer: make mpic_timer to support deep
+ sleep feature
+Date: Wed, 16 Apr 2014 06:06:33 +0000
+Message-ID: <f0b91a7ace28416b9aefc0ee26061c98@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1397442250-14886-1-git-send-email-dongsheng.wang@freescale.com>
+ <1397442250-14886-2-git-send-email-dongsheng.wang@freescale.com>
+ <1397518552.20280.235.camel@snotra.buserror.net>
+ <b1be56f51f4c4985af837685450f4eb2@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1397595963.20280.279.camel@snotra.buserror.net>
+In-Reply-To: <1397595963.20280.279.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- benh@kernel.crashing.org, paulus@samba.org, nfont@linux.vnet.ibm.com,
- sfr@canb.auug.org.au, Andrew Morton <akpm@linux-foundation.org>,
- rcj@linux.vnet.ibm.com, jlarrew@linux.vnet.ibm.com,
- srivatsa.bhat@linux.vnet.ibm.com, alistair@popple.id.au
-Subject: Re: [PATCH v2] power,
- sched: stop updating inside arch_update_cpu_topology()
- when nothing to be update
-References: <533B8431.8090507@linux.vnet.ibm.com>
- <53436AC8.5020705@linux.vnet.ibm.com>
-In-Reply-To: <53436AC8.5020705@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,116 +31,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/08/2014 11:19 AM, Michael wang wrote:
-> Since v1:
-> 	Edited the comment according to Srivatsa's suggestion.
-> 
-> During the testing, we encounter below WARN followed by Oops:
-
-Is there any more comments on this issue? Should we apply this fix?
-
-Regards,
-Michael Wang
-
-> 
-> 	WARNING: at kernel/sched/core.c:6218
-> 	...
-> 	NIP [c000000000101660] .build_sched_domains+0x11d0/0x1200
-> 	LR [c000000000101358] .build_sched_domains+0xec8/0x1200
-> 	PACATMSCRATCH [800000000000f032]
-> 	Call Trace:
-> 	[c00000001b103850] [c000000000101358] .build_sched_domains+0xec8/0x1200
-> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
-> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
-> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
-> 	...
-> 	Oops: Kernel access of bad area, sig: 11 [#1]
-> 	...
-> 	NIP [c00000000045c000] .__bitmap_weight+0x60/0xf0
-> 	LR [c00000000010132c] .build_sched_domains+0xe9c/0x1200
-> 	PACATMSCRATCH [8000000000029032]
-> 	Call Trace:
-> 	[c00000001b1037a0] [c000000000288ff4] .kmem_cache_alloc_node_trace+0x184/0x3a0
-> 	[c00000001b103850] [c00000000010132c] .build_sched_domains+0xe9c/0x1200
-> 	[c00000001b1039a0] [c00000000010aad4] .partition_sched_domains+0x484/0x510
-> 	[c00000001b103aa0] [c00000000016d0a8] .rebuild_sched_domains+0x68/0xa0
-> 	[c00000001b103b30] [c00000000005cbf0] .topology_work_fn+0x10/0x30
-> 	...
-> 
-> This was caused by that 'sd->groups == NULL' after building groups, which
-> was caused by the empty 'sd->span'.
-> 
-> The cpu's domain contained nothing because the cpu was assigned to a wrong
-> node, due to the following unfortunate sequence of events:
-> 
-> 1. The hypervisor sent a topology update to the guest OS, to notify changes
->    to the cpu-node mapping. However, the update was actually redundant - i.e.,
->    the "new" mapping was exactly the same as the old one.
-> 
-> 2. Due to this, the 'updated_cpus' mask turned out to be empty after exiting
->    the 'for-loop' in arch_update_cpu_topology().
-> 
-> 3. So we ended up calling stop-machine() with an empty cpumask list, which made
->    stop-machine internally elect cpumask_first(cpu_online_mask), i.e., CPU0 as
->    the cpu to run the payload (the update_cpu_topology() function).
-> 
-> 4. This causes update_cpu_topology() to be run by CPU0. And since 'updates'
->    is kzalloc()'ed inside arch_update_cpu_topology(), update_cpu_topology()
->    finds update->cpu as well as update->new_nid to be 0. In other words, we
->    end up assigning CPU0 (and eventually its siblings) to node 0, incorrectly.
-> 
-> Along with the following wrong updating, it causes the sched-domain rebuild
-> code to break and crash the system.
-> 
-> Fix this by skipping the topology update in cases where we find that
-> the topology has not actually changed in reality (ie., spurious updates).
-> 
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> CC: Stephen Rothwell <sfr@canb.auug.org.au>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Robert Jennings <rcj@linux.vnet.ibm.com>
-> CC: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-> CC: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-> CC: Alistair Popple <alistair@popple.id.au>
-> Suggested-by: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-> Signed-off-by: Michael Wang <wangyun@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/mm/numa.c |   15 +++++++++++++++
->  1 file changed, 15 insertions(+)
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 30a42e2..4ebbb9e 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1591,6 +1591,20 @@ int arch_update_cpu_topology(void)
->  		cpu = cpu_last_thread_sibling(cpu);
->  	}
->  
-> +	/*
-> +	 * In cases where we have nothing to update (because the updates list
-> +	 * is too short or because the new topology is same as the old one),
-> +	 * skip invoking update_cpu_topology() via stop-machine(). This is
-> +	 * necessary (and not just a fast-path optimization) since stop-machine
-> +	 * can end up electing a random CPU to run update_cpu_topology(), and
-> +	 * thus trick us into setting up incorrect cpu-node mappings (since
-> +	 * 'updates' is kzalloc()'ed).
-> +	 *
-> +	 * And for the similar reason, we will skip all the following updating.
-> +	 */
-> +	if (!cpumask_weight(&updated_cpus))
-> +		goto out;
-> +
->  	stop_machine(update_cpu_topology, &updates[0], &updated_cpus);
->  
->  	/*
-> @@ -1612,6 +1626,7 @@ int arch_update_cpu_topology(void)
->  		changed = 1;
->  	}
->  
-> +out:
->  	kfree(updates);
->  	return changed;
->  }
-> 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAxNiwgMjAxNCA1OjA2IEFNDQo+IFRvOiBXYW5n
+IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IEppbiBaaGVuZ3hpb25nLVI2NDE4ODsgTGkgWWFuZy1M
+ZW8tUjU4NDcyOyBaaGFvIENoZW5odWktQjM1MzM2OyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96
+bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIGZzbC9tcGljX3RpbWVyOiBtYWtl
+IG1waWNfdGltZXIgdG8gc3VwcG9ydCBkZWVwIHNsZWVwDQo+IGZlYXR1cmUNCj4gDQo+IE9uIE1v
+biwgMjAxNC0wNC0xNCBhdCAyMjoyMyAtMDUwMCwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3Rl
+Og0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29v
+ZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDE1LCAyMDE0IDc6MzYg
+QU0NCj4gPiA+IFRvOiBXYW5nIERvbmdzaGVuZy1CNDA1MzQNCj4gPiA+IENjOiBKaW4gWmhlbmd4
+aW9uZy1SNjQxODg7IExpIFlhbmctTGVvLVI1ODQ3MjsgWmhhbyBDaGVuaHVpLUIzNTMzNjsNCj4g
+bGludXhwcGMtDQo+ID4gPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6
+IFtQQVRDSCAyLzJdIGZzbC9tcGljX3RpbWVyOiBtYWtlIG1waWNfdGltZXIgdG8gc3VwcG9ydCBk
+ZWVwDQo+IHNsZWVwDQo+ID4gPiBmZWF0dXJlDQo+ID4gPg0KPiA+ID4gT24gTW9uLCAyMDE0LTA0
+LTE0IGF0IDEwOjI0ICswODAwLCBEb25nc2hlbmcgV2FuZyB3cm90ZToNCj4gPiA+ID4gRnJvbTog
+V2FuZyBEb25nc2hlbmcgPGRvbmdzaGVuZy53YW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gPiA+DQo+
+ID4gPiA+IEF0IFQxMDR4IHBsYXRmcm9tIHRoZSB0aW1lciBjbG9jayB3aWxsIGJlIGNoYW5nZWQg
+d2hlbiBzeXN0ZW0gZ29pbmcgdG8NCj4gPiA+ID4gZGVlcCBzbGVlcC4NCj4gPiA+DQo+ID4gPiBD
+b3VsZCB5b3UgZWxhYm9yYXRlIG9uIHdoYXQgaXMgY2hhbmdpbmcgYW5kIHdoeT8NCj4gPiA+DQo+
+ID4NCj4gPiBPa2F5Lg0KPiA+DQo+ID4gPiA+ICsjaW5jbHVkZSA8YXNtL21wYzg1eHguaD4NCj4g
+PiA+ID4gICNpbmNsdWRlIDxhc20vbXBpY190aW1lci5oPg0KPiA+ID4NCj4gPiA+IFNvIG11Y2gg
+Zm9yLCAiVGhlIGRyaXZlciBjdXJyZW50bHkgaXMgb25seSB0ZXN0ZWQgb24gZnNsIGNoaXAsIGJ1
+dCBpdCBjYW4NCj4gPiA+IHBvdGVudGlhbGx5IHN1cHBvcnQgb3RoZXIgZ2xvYmFsIHRpbWVycyBj
+b21wbHlpbmcgdG8gT3BlblBJQyBzdGFuZGFyZC4iDQo+ID4gPg0KPiA+ID4gPiAgI2RlZmluZSBG
+U0xfR0xPQkFMX1RJTUVSCQkweDENCj4gPiA+ID4gQEAgLTcxLDggKzc0LDEwIEBAIHN0cnVjdCB0
+aW1lcl9ncm91cF9wcml2IHsNCj4gPiA+ID4gIAlzdHJ1Y3QgdGltZXJfcmVncyBfX2lvbWVtCSpy
+ZWdzOw0KPiA+ID4gPiAgCXN0cnVjdCBtcGljX3RpbWVyCQl0aW1lcltUSU1FUlNfUEVSX0dST1VQ
+XTsNCj4gPiA+ID4gIAlzdHJ1Y3QgbGlzdF9oZWFkCQlub2RlOw0KPiA+ID4gPiArCXVuc2lnbmVk
+IGxvbmcJCQlpZGxlOw0KPiA+ID4gPiAgCXVuc2lnbmVkIGludAkJCXRpbWVyZnJlcTsNCj4gPiA+
+ID4gLQl1bnNpZ25lZCBpbnQJCQlpZGxlOw0KPiA+ID4NCj4gPiA+IFdoeT8NCj4gPiA+DQo+ID4N
+Cj4gPiBVbS4uLiBJdCBzaG91bGRuJ3QgYmUgaGFwcGVuZWQuLi5pIHdpbGwgcmVtb3ZlIHRoaXMu
+DQo+ID4NCj4gPiA+ID4gKwl1bnNpZ25lZCBpbnQJCQlzdXNwZW5kZWRfdGltZXJmcmVxOw0KPiA+
+ID4gPiArCXVuc2lnbmVkIGludAkJCXJlc3VtZV90aW1lcmZyZXE7DQo+ID4gPiA+ICAJdW5zaWdu
+ZWQgaW50CQkJZmxhZ3M7DQo+ID4gPiA+ICAJc3BpbmxvY2tfdAkJCWxvY2s7DQo+ID4gPiA+ICAJ
+dm9pZCBfX2lvbWVtCQkJKmdyb3VwX3RjcjsNCj4gPiA+ID4gQEAgLTg4LDYgKzkzLDcgQEAgc3Rh
+dGljIHN0cnVjdCBjYXNjYWRlX3ByaXYgY2FzY2FkZV90aW1lcltdID0geyAgfTsNCj4gPiA+ID4N
+Cj4gPiA+ID4gIHN0YXRpYyBMSVNUX0hFQUQodGltZXJfZ3JvdXBfbGlzdCk7DQo+ID4gPiA+ICtz
+dGF0aWMgaW50IHN3aXRjaF9mcmVxX2ZsYWc7DQo+ID4gPg0KPiA+ID4gTmVlZHMgZG9jdW1lbnRh
+dGlvbiwgYW5kIGJhc2VkIG9uICJfZmxhZyIgaXQgc2hvdWxkIHByb2JhYmx5IGJlIGEgYm9vbC4N
+Cj4gPiA+DQo+ID4NCj4gPiBPa2F5Lg0KPiA+DQo+ID4gPiA+ICBzdGF0aWMgdm9pZCBjb252ZXJ0
+X3RpY2tzX3RvX3RpbWUoc3RydWN0IHRpbWVyX2dyb3VwX3ByaXYgKnByaXYsDQo+ID4gPiA+ICAJ
+CWNvbnN0IHU2NCB0aWNrcywgc3RydWN0IHRpbWV2YWwgKnRpbWUpIEBAIC00MjMsNiArNDI5LDMz
+IEBADQo+IHN0cnVjdA0KPiA+ID4gPiBtcGljX3RpbWVyICptcGljX3JlcXVlc3RfdGltZXIoaXJx
+X2hhbmRsZXJfdCBmbiwgdm9pZCAqZGV2LCAgfQ0KPiA+ID4gPiBFWFBPUlRfU1lNQk9MKG1waWNf
+cmVxdWVzdF90aW1lcik7DQo+ID4gPiA+DQo+ID4gPiA+ICtzdGF0aWMgdm9pZCB0aW1lcl9ncm91
+cF9nZXRfc3VzcGVuZGVkX2ZyZXEoc3RydWN0IHRpbWVyX2dyb3VwX3ByaXYNCj4gPiA+ID4gKypw
+cml2KSB7DQo+ID4gPiA+ICsJc3RydWN0IGRldmljZV9ub2RlICpucDsNCj4gPiA+ID4gKw0KPiA+
+ID4gPiArCW5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgImZzbCxxb3Jp
+cS1jbG9ja2dlbi0yLjAiKTsNCj4gPiA+ID4gKwlpZiAoIW5wKSB7DQo+ID4gPiA+ICsJCXByX2Vy
+cigibXBpYyB0aW1lcjogTWlzc2luZyBjbG9ja2dlbiBkZXZpY2Ugbm9kZS5cbiIpOw0KPiA+ID4N
+Cj4gPiA+IFdoeSBpcyBpdCBhbiBlcnJvciB0byBub3QgaGF2ZSBhIDIuMCBRb3JJUSBjbG9ja2dl
+bj8NCj4gPiA+DQo+ID4NCj4gPiBUaGlzIHdpbGwgYWZmZWN0IHRoZSBhY2N1cmFjeSBvZiB0aGUg
+dGltZXIuIEJ1dCBub3QgbWVhbnMgdGhlIHRpbWVyIGNhbm5vdA0KPiB3b3JrLg0KPiA+IE1heWJl
+IHlvdSBhcmUgcmlnaHQsIHRoaXMgcHJfZXJyIHNob3VsZCBiZSBhIHByX3dhcm4uDQo+IA0KPiBX
+aGF0IEkgbWVhbiBpcywgd2hhdCBpZiB0aGUgbXBpYyB0aW1lciBkcml2ZXIgaXMgdXNlZCB3aXRo
+IGRlZXAgc2xlZXAgb24NCj4gYSBkaWZmZXJlbnQgY2hpcCBzdWNoIGFzIG1wYzg1MzY/DQo+IA0K
+DQpPbmx5IFQxMDR4IGhhcyB0aGlzIGZlYXR1cmUsIG90aGVyIHBsYXRmb3JtIHdpbGwgbm90IGJl
+IGVmZmVjdC4NCkkgd2lsbCByZW1vdmUgdGhpcyBwcl9lcnIuDQoNCj4gPiA+ID4gKwkJcmV0dXJu
+Ow0KPiA+ID4gPiArCX0NCj4gPiA+ID4gKw0KPiA+ID4gPiArCW9mX3Byb3BlcnR5X3JlYWRfdTMy
+KG5wLCAiY2xvY2stZnJlcXVlbmN5IiwgJnByaXYtDQo+ID5zdXNwZW5kZWRfdGltZXJmcmVxKTsN
+Cj4gPiA+ID4gKwlvZl9ub2RlX3B1dChucCk7DQo+ID4gPg0KPiA+ID4gU2hvdWxkbid0IHRoaXMg
+Z28gdGhyb3VnaCB0aGUgY2xvY2sgQVBJPw0KPiA+ID4NCj4gPg0KPiA+IFNvcnJ5LCBJJ20gbm90
+IGNsZWFyIGFib3V0IGNsb2NrIEFQSSwgeW91IG1lYW4gZnNsX2dldF9zeXNfZnJlcSgpPyBPciA/
+DQo+IA0KPiBObywgSSBtZWFuIGRyaXZlcnMvY2xrLw0KPiANCj4gVGhvdWdoIEkgc3VwcG9zZSBt
+YW51YWxseSByZWFkaW5nIGNsb2NrLWZyZXF1ZW5jeSBpcyBPSywgYXMgdGhlDQo+IGNsb2NrLWZy
+ZXF1ZW5jeSBvbiB0aGUgY2xvY2tnZW4gbm9kZSBwcmVkYXRlZCB0aGUgaW50cm9kdWN0aW9uIG9m
+IGNsb2NrDQo+IGJpbmRpbmdzIHRvIHRoZSBkZXZpY2UgdHJlZS4NCj4gDQo+IERvbid0IHVzZSBm
+c2xfZ2V0X3N5c19mcmVxKCkuDQo+IA0KDQpObywgd2UgY2Fubm90IHVzZSBkcml2ZXJzL2Nsay8u
+IEJlY2F1c2UgY2xrLXBwYy1jb3JlbmV0LmMgb25seSBzdXBwb3J0IGNvcmVuZXQgcGxhdGZvcm0u
+DQoNCj4gPiA+ID4gK3N0YXRpYyBpbnQgbmVlZF90b19zd2l0Y2hfZnJlcSh2b2lkKQ0KPiA+ID4g
+PiArew0KPiA+ID4gPiArCXUzMiBzdnI7DQo+ID4gPiA+ICsNCj4gPiA+ID4gKwlzdnIgPSBtZnNw
+cihTUFJOX1NWUik7DQo+ID4gPiA+ICsJaWYgKFNWUl9TT0NfVkVSKHN2cikgPT0gU1ZSX1QxMDQw
+IHx8DQo+ID4gPiA+ICsJCQlTVlJfU09DX1ZFUihzdnIpID09IFNWUl9UMTA0MikNCj4gPiA+ID4g
+KwkJcmV0dXJuIDE7DQo+ID4gPg0KPiA+ID4gRXhwbGFpbiB3aHkgdGhpcyBpcyBzcGVjaWZpYyB0
+byBUMTA0eC4NCj4gPiA+DQo+ID4NCj4gPiBNcGljIHRpbWVyIGZyZXEgd2lsbCBiZSBjaGFuZ2Ug
+d2hlbiBzeXN0ZW0gZ29pbmcgdG8gZGVlcCBzbGVlcC4gU28gd2UgbmVlZCB0bw0KPiByZWNhbGN1
+bGF0ZSB0aGUgdGltZS4NCj4gDQo+IERvIGFueSBvdGhlciBjaGlwcyB3aXRoIGRlZXAgc2xlZXAg
+aGF2ZSB0aGlzIHByb2JsZW0/DQo+IA0KDQpPbmx5IGhhcyBvbiBUMTA0eCByaWdodCBub3cuDQoN
+ClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCj4gLVNjb3R0DQo+IA0KDQo=
