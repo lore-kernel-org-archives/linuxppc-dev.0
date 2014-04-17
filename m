@@ -1,24 +1,37 @@
-Return-Path: <gsi@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E07F4140089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 06:50:25 +1000 (EST)
-Date: Wed, 16 Apr 2014 22:44:10 +0200
-From: Gerhard Sittig <gsi@denx.de>
-To: Alexander Popov <a13xp0p0v88@gmail.com>
-Subject: Re: [PATCH RFC v11 5/6] dma: mpc512x: add device tree binding document
-Message-ID: <20140416204410.GP3528@book.gsilab.sittig.org>
-References: <1397559250-17680-1-git-send-email-a13xp0p0v88@gmail.com>
- <1397559250-17680-6-git-send-email-a13xp0p0v88@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id B37F9140096
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 13:10:28 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Thu, 17 Apr 2014 08:40:24 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1674D3940048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 08:40:21 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3H3AF2C6488420
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 08:40:15 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3H3AKO6014649
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 08:40:20 +0530
+Message-ID: <534F4618.6080405@linux.vnet.ibm.com>
+Date: Thu, 17 Apr 2014 11:10:16 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1397559250-17680-6-git-send-email-a13xp0p0v88@gmail.com>
-Cc: devicetree@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>,
- Anatolij Gustschin <agust@denx.de>, Arnd Bergmann <arnd@arndb.de>,
- Vinod Koul <vinod.koul@intel.com>, dmaengine@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/mm: Fix ".__node_distance" undefined
+References: <1397570417-1714-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+In-Reply-To: <1397570417-1714-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: sfr@canb.auug.org.au, jlarrew@linux.vnet.ibm.com, paulus@samba.org,
+ srivatsa.bhat@linux.vnet.ibm.com, alistair@popple.id.au,
+ nfont@linux.vnet.ibm.com, akpm@linux-foundation.org, rcj@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,105 +42,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-04-15 at 14:54 +0400, Alexander Popov wrote:
-> 
-> Introduce a device tree binding document for the MPC512x DMA controller
-> 
-> Signed-off-by: Gerhard Sittig <gsi@denx.de>
-> Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+Any update about this patch ?
 
-I'm not certain whether the attribution is right.  Is the S-o-b
-appropriate when the patch is not "from" me?  As I've stated
-before, it's OK if you pick up and extend what I provide, but
-please don't pretend that I wrote what you did, and don't pretend
-that I ACKed or passed along your submission when I didn't.
-
-
-This binding certainly needs further improvement to become a good
-one.  As I've communicated in the past, I was rather ignorant
-"back then" when I wrote v1 and v2 of the RFC.  We have learned
-something in the meantime.  Though I admit having gone silent
-after several review iterations.  Assumed you would pick up
-information that showed up several times on public lists.
-
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
-> @@ -0,0 +1,51 @@
-> +* Freescale MPC512x and MPC8308 DMA Controller
-> +
-> +The DMA controller in the Freescale MPC512x and MPC8308 SoCs can move
-> +blocks of memory contents between memory and peripherals or
-> +from memory to memory.
-> +
-> +Refer to the "Generic DMA Controller and DMA request bindings" in
-> +the dma/dma.txt file for a more detailed description of binding.
-> +
-> +* DMA controller
-> +
-> +Required properties:
-> +- compatible: Should be one of
-> +	"fsl,mpc5121-dma"
-> +	"fsl,mpc8308-dma", "fsl,mpc5121-dma"
-
-is this a duplicate?  looks funny, needs a fix
-
-or is it a requirement that for MPC8308 you need to provide both
-compatible strings?  that would be wrong, as MPC8308 certainly is
-not an MPC5121
-
-a quick search reveals: the drivers/dma/mpc512x_dma.c Linux
-driver implementation is wrong, it should match on both strings;
-expecting the MPC8308 to disguise as an MPC5121 when it's not is
-inappropriate (and only went unnoticed because of missing
-bindings, I guess)
-
-> +- reg: Address and size of the DMA controller's register set
-> +- interrupts: Interrupt for the DMA controller. Generic interrupt client node
-> +	is described in interrupt-controller/interrupts.txt
-
-'interrupts' only works in combinations with 'interrupt-parent',
-that actual .dts files don't have the latter in the nodes is an
-implementation detail but not a binding's requirement
-
-and an alternative method of specifying interrupts was introduced
-recently, a reference to the common binding without naming one
-specific property name could be most appropriate
-
-> +
-> +Optional properties:
-> +- #dma-cells: The length of the DMA specifier, must be <1> since
-> +	the DMA controller uses a fixed assignment of request lines
-> +	per channel. Refer to dma/dma.txt for the detailed description
-> +	of this property
-
-I'm afraid that a generic/common document does not and cannot
-describe the specific semantics of this provider's cells
-
-this binding should explicitly mention that the number of cells
-needs to be one, and that this one cell is the DMA channel (which
-translates to "peripheral request line"), because these
-assigments are fixed in hardware
-
-> +
-> +Example:
-> +
-> +	dma0: dma@14000 {
-> +		compatible = "fsl,mpc5121-dma";
-> +		reg = <0x14000 0x1800>;
-> +		interrupts = <65 0x8>;
-> +		#dma-cells = <1>;
-> +	};
-> +
-> +* DMA client
-
-the DMA provider's binding probably need not discuss client
-specs, a reference to the common binding should suffice if it's
-appropriate at all
-
-
-virtually yours
-Gerhard Sittig
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr. 5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
+Thanks
+Mike
+On 04/15/2014 10:00 PM, Mike Qiu wrote:
+>    CHK     include/config/kernel.release
+>    CHK     include/generated/uapi/linux/version.h
+>    CHK     include/generated/utsrelease.h
+>    ...
+>    Building modules, stage 2.
+> WARNING: 1 bad relocations
+> c0000000013d6a30 R_PPC64_ADDR64    uprobes_fetch_type_table
+>    WRAP    arch/powerpc/boot/zImage.pseries
+>    WRAP    arch/powerpc/boot/zImage.epapr
+>    MODPOST 1849 modules
+> ERROR: ".__node_distance" [drivers/block/nvme.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> make: *** Waiting for unfinished jobs....
+>
+> The reason is symbol "__node_distance" not been exported in powerpc.
+>
+> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/mm/numa.c | 1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 4ebbb9e..3b181b2 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -232,6 +232,7 @@ int __node_distance(int a, int b)
+>
+>   	return distance;
+>   }
+> +EXPORT_SYMBOL(__node_distance);
+>
+>   static void initialize_distance_lookup_table(int nid,
+>   		const __be32 *associativity)
