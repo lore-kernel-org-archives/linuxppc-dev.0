@@ -1,22 +1,26 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
+ [209.85.220.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2B46F140089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 17:00:23 +1000 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>, "linux-pm@vger.kernel.org"
- <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: Powerpc: e1000e cannot work normally after system resume from
- sleep(standby)
-Date: Thu, 17 Apr 2014 07:00:16 +0000
-Message-ID: <5f7a898d9d6e4b7ea5c781d40c483a88@BN1PR03MB188.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 6843F1400BB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 17:22:52 +1000 (EST)
+Received: by mail-pa0-f49.google.com with SMTP id lj1so68399pab.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 00:22:49 -0700 (PDT)
+From: Brian Norris <computersforpeace@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/5] defconfigs: add MTD_SPI_NOR (dependency for M25P80)
+Date: Thu, 17 Apr 2014 00:21:44 -0700
+Message-Id: <1397719309-2022-1-git-send-email-computersforpeace@gmail.com>
+Cc: Marek Vasut <marex@denx.de>, linux-mips@linux-mips.org,
+ Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>,
+ linux-sh@vger.kernel.org, Steven Miao <realmz6@gmail.com>,
+ adi-buildroot-devel@lists.sourceforge.net, Ralf Baechle <ralf@linux-mips.org>,
+ linux-tegra@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>,
+ linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ Sascha Hauer <kernel@pengutronix.de>, Olof Johansson <olof@lixom.net>,
+ Paul Mackerras <paulus@samba.org>, Brian Norris <computersforpeace@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Shawn Guo <shawn.guo@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,181 +32,94 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi all,
 
-Now I'm developing Freescale PCIe power management feature. The following i=
-s my PCIe
-suspend/resume code.
+We are introducing a new SPI-NOR library/framework for MTD, to support various
+types of SPI-NOR flash controllers which require (or benefit from) intimate
+knowledge of the flash interface, rather than just the relatively dumb SPI
+interface. This library borrows much of the m25p80 driver for its abstraction
+and moves this code into a spi-nor module.
 
-when I test system wake up from sleep(STANDBY), I got below calltrace. Look=
-s like e1000e
-cannot transfer data, maybe watchdog has some issue. Or maybe some of the o=
-ther causes.
-I think this is not root cause. Because If changed mdelay(10) to 20ms. E100=
-0 will work normal.
-Maybe e1000e need more time to recover? Or ?
+This means CONFIG_M25P80 now has a dependency on CONFIG_MTD_SPI_NOR, which
+should be added to the defconfigs. I'm not sure what is the best process for
+doing this. Should each $ARCH maintainer just take their respective patch, even
+if the MTD_SPI_NOR Kconfig symbol is not defined for them yet? Or should
+maintainers plan on merging the relevant SPI-NOR code into their trees during
+the development cycle? Or some third option?
 
-Here are my test results:
-E1000e plug in PCIe slot 1, we need to delay 10ms.
-E1000e plug in PCIe slot 2, we need to delay 20ms.
-E1000e plug in PCIe slot 3, we need to delay 60ms.
+Anyway, the patches are here. Please keep general comments to the cover letter,
+so all parties can see.
 
-Anyone have any idea about this?
+This series is based on the development repo for MTD, in the 'spinor' branch:
 
+  git://git.infradead.org/l2-mtd.git +spinor
 
-*Suspend flow*:=20
-if (fsl_pcie_check_link(hose))
-		return;
+This series is available in the same repo at:
 
-/* Send PME_Turn_Off Message Request */
-setbits32(&pci->pex_pmcr, PEX_PMCR_PTOMR);
+  git://git.infradead.org/l2-mtd.git +defconfigs
 
-/* Wait trun off done */
-/* RC will get this detect quickly */
-for (i =3D 0; i < 50; i++) {
-	dr =3D in_be32(&pci->pex_pme_mes_dr);
-	if (dr & ENL23_DETECT_BIT) {
-			out_be32(&pci->pex_pme_mes_dr, dr);
-			break;
-	}
+I tried locally merging this into linux-next and saw a trivial conflict in
+arch/arm/configs/shmobile_defconfig. I can resubmit based on an appropriate
+tree, if requested.
 
-	udelay(1000);
-}
+Thanks,
+Brian
 
-/*
- * "PCI Bus Power Management Interface Specification" define
- * Minimum System Software Guaranteed Delays
- *
- * D0, D1 or D2 --> D3, need delay 10ms.
- * But we need to delay more time when EP plug in p1022 slot2.
- */
-mdelay(10);
+P.S. I was going to purely automatically generate this diff as follows, but
+it generated a lot of defconfig noise:
 
+	#!/bin/sh
+	for i in arm blackfin mips powerpc sh
+	do 
+		for j in `git grep -l M25P80 arch/$i/configs`
+		do 
+			echo $j
+			cp $j .config
+			echo CONFIG_MTD_SPI_NOR=y >> .config
+			make ARCH=$i savedefconfig
+			mv defconfig $j
+		done
+	done
 
-*Resume flow*:
-if (fsl_pcie_check_link(hose))
-		return;
+So I did a mixed approach, where I filtered most of the noise out of the diff.
 
-/* Send Exit L2 State Message */
-setbits32(&pci->pex_pmcr, PEX_PMCR_EXL2S);
+Brian Norris (5):
+  ARM: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
+  blackfin: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
+  mips: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
+  powerpc: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
+  sh: defconfig: add MTD_SPI_NOR (new dependency for M25P80)
 
-/* Wait exit done */
-/* RC will get this detect quickly */
-for (i =3D 0; i < 50; i++) {
-	dr =3D in_be32(&pci->pex_pme_mes_dr);
-	if (dr & EXL23_DETECT_BIT) {
-			out_be32(&pci->pex_pme_mes_dr, dr);
-			break;
-	}
+ arch/arm/configs/bockw_defconfig               | 2 +-
+ arch/arm/configs/dove_defconfig                | 2 +-
+ arch/arm/configs/imx_v6_v7_defconfig           | 1 +
+ arch/arm/configs/keystone_defconfig            | 1 +
+ arch/arm/configs/kirkwood_defconfig            | 1 +
+ arch/arm/configs/koelsch_defconfig             | 1 +
+ arch/arm/configs/lager_defconfig               | 1 +
+ arch/arm/configs/lpc32xx_defconfig             | 2 +-
+ arch/arm/configs/multi_v5_defconfig            | 1 +
+ arch/arm/configs/multi_v7_defconfig            | 1 +
+ arch/arm/configs/mvebu_v5_defconfig            | 1 +
+ arch/arm/configs/mvebu_v7_defconfig            | 1 +
+ arch/arm/configs/mxs_defconfig                 | 1 +
+ arch/arm/configs/sama5_defconfig               | 2 +-
+ arch/arm/configs/shmobile_defconfig            | 1 +
+ arch/arm/configs/tegra_defconfig               | 1 +
+ arch/blackfin/configs/BF526-EZBRD_defconfig    | 2 +-
+ arch/blackfin/configs/BF527-EZKIT-V2_defconfig | 2 +-
+ arch/blackfin/configs/BF527-EZKIT_defconfig    | 2 +-
+ arch/blackfin/configs/BF548-EZKIT_defconfig    | 2 +-
+ arch/blackfin/configs/BF609-EZKIT_defconfig    | 2 +-
+ arch/blackfin/configs/BlackStamp_defconfig     | 3 +--
+ arch/blackfin/configs/H8606_defconfig          | 3 +--
+ arch/mips/configs/ath79_defconfig              | 3 +--
+ arch/mips/configs/db1xxx_defconfig             | 1 +
+ arch/mips/configs/rt305x_defconfig             | 2 +-
+ arch/powerpc/configs/corenet32_smp_defconfig   | 2 +-
+ arch/powerpc/configs/corenet64_smp_defconfig   | 2 +-
+ arch/powerpc/configs/mpc85xx_defconfig         | 2 +-
+ arch/powerpc/configs/mpc85xx_smp_defconfig     | 2 +-
+ arch/sh/configs/sh7757lcr_defconfig            | 2 +-
+ 31 files changed, 31 insertions(+), 21 deletions(-)
 
-	udelay(1000);
-}
-
-/*
- * "PCI Bus Power Management Interface Specification" define
- * Minimum System Software Guaranteed Delays
- *
- * D3 hot --> D0, need delay 10ms.
- * But we need to delay more time when EP plug in p1022 slot2.
- */
-mdelay(10);
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-					CALL TRACE
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-[root@p1022 /root]# udhcpc -i eth0
-udhcpc (v1.11.2) started
-IPv6: ADDRCONF(NETDEV_UP): eth0: link is not ready
-Sending discover...
-e1000e: eth0 NIC Link is Up 1000 Mbps Full Duplex, Flow Control: Rx/Tx
-IPv6: ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-Sending discover...
-Sending discover...
-NETDEV WATCHDOG: eth0 (e1000e): transmit queue 0 timed out
-------------[ cut here ]------------
-WARNING: at net/sched/sch_generic.c:264
-Modules linked in:
-CPU: 1 PID: 0 Comm: swapper/1 Not tainted 3.14.0-173871-g9964256-dirty #42
-task: ee0534e0 ti: ee070000 task.ti: ee070000
-NIP: c036267c LR: c036267c CTR: c028b834
-REGS: ee071d00 TRAP: 0700   Not tainted  (3.14.0-173871-g9964256-dirty)
-MSR: 00029000 <CE,EE,ME>  CR: 42000022  XER: 20000000
-
-GPR00: c036267c ee071db0 ee0534e0 0000003a c16393b0 c16398e8 01079000 c05c0=
-3a8
-GPR08: 00000001 00000001 01079000 00000132 00000132 00000000 00000004 c05ed=
-040
-GPR16: 00000001 00000100 00000004 fffef539 00000000 c05c10c0 00000038 fffff=
-fff
-GPR24: 00000000 00000001 ee070000 00000004 c05e0000 c05f0000 ee3c0000 00000=
-000
-NIP [c036267c] dev_watchdog+0x2c8/0x2d8
-LR [c036267c] dev_watchdog+0x2c8/0x2d8
-Call Trace:
-[ee071db0] [c036267c] dev_watchdog+0x2c8/0x2d8 (unreliable)
-[ee071de0] [c004778c] call_timer_fn.isra.24+0x28/0x84
-[ee071e00] [c00479b8] run_timer_softirq+0x1d0/0x248
-[ee071e40] [c004090c] __do_softirq+0x104/0x20c
-[ee071ea0] [c0040cd8] irq_exit+0xa4/0xc8
-[ee071eb0] [c0009ef4] timer_interrupt+0xb8/0xdc
-[ee071ed0] [c000f57c] ret_from_except+0x0/0x18
---- Exception: 901 at arch_cpu_idle+0x24/0x5c
-    LR =3D arch_cpu_idle+0x24/0x5c
-[ee071f90] [c0089534] rcu_idle_enter+0xa4/0xd0 (unreliable)
-[ee071fa0] [c0076010] cpu_startup_entry+0x120/0x17c
-[ee071fd0] [c0010bbc] start_secondary+0x214/0x224
-[ee071ff0] [c0002154] __secondary_start+0x7c/0xc8
-Instruction dump:
-4e800421 80fe0224 4bffff4c 7fc3f378 4bfe5401 7fc4f378 7c651b78 3c60c055
-7fe6fb78 3863e0f4 4cc63182 480e9a05 <0fe00000> 39200001 993c6f38 4bffffb4
----[ end trace 2d4f2cedfa86e32f ]---
-e1000e 0002:05:00.0: Net device Info
-e1000e: Device Name     state            trans_start      last_rx
-e1000e: eth0            0000000000000003 00000000FFFEF040 0000000000000000
-e1000e 0002:05:00.0: Register Dump
-e1000e:  Register Name   Value
-e1000e: CTRL            58100248
-e1000e: STATUS          00080783
-e1000e: CTRL_EXT        18580000
-e1000e: ICR             00000000
-e1000e: RCTL            04008002
-e1000e: RDLEN           00001000
-e1000e: RDH             0000001d
-e1000e: RDT             000000f0
-e1000e: RDTR            00000020
-e1000e: RXDCTL[0-1]     01040420 01040420
-e1000e: ERT             00000000
-e1000e: RDBAL           2d390000
-e1000e: RDBAH           00000000
-e1000e: RDFH            0000020a
-e1000e: RDFT            0000020a
-e1000e: RDFHS           0000020a
-e1000e: RDFTS           0000020a
-e1000e: RDFPC           00000000
-e1000e: TCTL            3103f0fa
-e1000e: TDBAL           2e158000
-e1000e: TDBAH           00000000
-e1000e: TDLEN           00001000
-e1000e: TDH             00000001
-e1000e: TDT             00000001
-e1000e: TIDV            00000008
-e1000e: TXDCTL[0-1]     0141011f 0141011f
-e1000e: TADV            00000020
-e1000e: TARC[0-1]       04000403 00000403
-e1000e: TDFH            00001000
-e1000e: TDFT            00001012
-e1000e: TDFHS           00001000
-e1000e: TDFTS           00001000
-e1000e: TDFPC           00000000
-e1000e 0002:05:00.0: Tx Ring Summary
-e1000e: Queue [NTU] [NTC] [bi(ntc)->dma  ] leng ntw timestamp
-e1000e:      0     1     0 000000002C809802 005A   0 00000000FFFEF044
-e1000e 0002:05:00.0: Rx Ring Summary
-e1000e: Queue [NTU] [NTC]
-e1000e:      0    FF     0
-e1000e 0002:05:00.0 eth0: Reset adapter unexpectedly
+-- 
+1.8.3.2
