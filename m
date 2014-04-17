@@ -1,21 +1,19 @@
-Return-Path: <Shruti@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <leif.lindholm@linaro.org>
+Received: from mail-wg0-f43.google.com (mail-wg0-f43.google.com [74.125.82.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9B6E31400F1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 22:21:51 +1000 (EST)
-From: Shruti Kanetkar <Shruti@Freescale.com>
-To: <scottwood@Freescale.com>
-Subject: [PATCH 2/6] powerpc/corenet: Enable muxing MDIO buses via FPGA
-Date: Fri, 18 Apr 2014 07:21:29 -0500
-Message-ID: <1397823693-27977-2-git-send-email-Shruti@Freescale.com>
-In-Reply-To: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
-References: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, Shruti Kanetkar <Shruti@Freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 8EB7F140096
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 03:43:06 +1000 (EST)
+Received: by mail-wg0-f43.google.com with SMTP id x13so727639wgg.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 10:43:00 -0700 (PDT)
+From: Leif Lindholm <leif.lindholm@linaro.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] of: dts: enable memory@0 quirk for PPC32 only
+Date: Thu, 17 Apr 2014 18:41:58 +0100
+Message-Id: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Leif Lindholm <leif.lindholm@linaro.org>,
+ patches@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Andy Fleming <afleming@gmail.com>
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
----
- arch/powerpc/configs/corenet32_smp_defconfig  | 1 +
- arch/powerpc/configs/corenet64_smp_defconfig  | 1 +
- arch/powerpc/platforms/85xx/corenet_generic.c | 3 +++
- 3 files changed, 5 insertions(+)
+drivers/of/fdt.c contains a workaround for a missing memory type
+entry on longtrail firmware. Make that quirk PPC32 only, and while
+at it - fix up the .dts files in the tree currently working only
+because of that quirk.
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index 548b21c..132d9f6 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -104,6 +104,7 @@ CONFIG_AT803X_PHY=y
- CONFIG_FIXED_PHY=y
- CONFIG_MDIO_BUS_MUX=y
- CONFIG_MDIO_BUS_MUX_GPIO=y
-+CONFIG_MDIO_BUS_MUX_MMIOREG=y
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index cbe7afb..b355552 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -99,6 +99,7 @@ CONFIG_E1000E=y
- CONFIG_MDIO_BUS_MUX=y
- CONFIG_MDIO_BUS_MUX_GPIO=y
- CONFIG_INPUT_FF_MEMLESS=m
-+CONFIG_MDIO_BUS_MUX_MMIOREG=y
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index dc9e24e..814faae 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -80,6 +80,9 @@ static const struct of_device_id of_device_ids[] = {
- 		.compatible	= "mdio-mux-gpio"
- 	},
- 	{
-+		.compatible	= "fsl,fpga-ngpixis"
-+	},
-+	{
- 		.compatible	= "fsl,srio",
- 	},
- 	{
+Cc: devicetree@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>
+
+Leif Lindholm (3):
+  arm: dts: add device_type="memory" for ste-ccu8540
+  mips: dts: add device_type="memory" where missing
+  of: Handle memory@0 node on PPC32 only
+
+ arch/arm/boot/dts/ste-ccu8540.dts     |    1 +
+ arch/mips/lantiq/dts/easy50712.dts    |    1 +
+ arch/mips/ralink/dts/mt7620a_eval.dts |    1 +
+ arch/mips/ralink/dts/rt2880_eval.dts  |    1 +
+ arch/mips/ralink/dts/rt3052_eval.dts  |    1 +
+ arch/mips/ralink/dts/rt3883_eval.dts  |    1 +
+ drivers/of/fdt.c                      |    7 ++++++-
+ 7 files changed, 12 insertions(+), 1 deletion(-)
+
 -- 
-1.8.3.1
+1.7.10.4
