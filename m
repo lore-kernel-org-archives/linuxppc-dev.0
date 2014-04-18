@@ -1,30 +1,21 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ve0-f170.google.com (mail-ve0-f170.google.com
- [209.85.128.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A9E471400BE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Apr 2014 07:28:21 +1000 (EST)
-Received: by mail-ve0-f170.google.com with SMTP id pa12so3829589veb.29
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 14:28:17 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 2984614007A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Apr 2014 07:33:53 +1000 (EST)
+Message-ID: <1397856821.1694.126.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2] powerpc/fsl: Added binding for Freescale CoreNet
+ coherency fabric (CCF)
+From: Scott Wood <scottwood@freescale.com>
+To: Diana Craciun <diana.craciun@freescale.com>
+Date: Fri, 18 Apr 2014 16:33:41 -0500
+In-Reply-To: <1397833917-12611-1-git-send-email-diana.craciun@freescale.com>
+References: <1397833917-12611-1-git-send-email-diana.craciun@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <20140418201313.GG5904@bivouac.eciton.net>
-References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
- <CAL_JsqL8B2ZY7ACXKX3J8VN5ukjKWuycgfDZpp4kYzBxg6BLmQ@mail.gmail.com>
- <20140418124821.GE5904@bivouac.eciton.net>
- <CAL_JsqKdFyhHfkcC1E9QuKjQTrXwoELYG+CFTpgf2-jqDvxGmA@mail.gmail.com>
- <20140418201313.GG5904@bivouac.eciton.net>
-Date: Fri, 18 Apr 2014 16:28:17 -0500
-Message-ID: <CAL_Jsq+L14rgYq5swC3H109DThiyDajmTJpO=y562jcE97K-fg@mail.gmail.com>
-Subject: Re: [PATCH 0/3] of: dts: enable memory@0 quirk for PPC32 only
-From: Rob Herring <robherring2@gmail.com>
-To: Leif Lindholm <leif.lindholm@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linaro Patches <patches@linaro.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 18, 2014 at 3:13 PM, Leif Lindholm <leif.lindholm@linaro.org> wrote:
-> On Fri, Apr 18, 2014 at 10:37:58AM -0500, Rob Herring wrote:
->> >> But why do you need this?
->> >
->> > Apart from the current code permitting recreating a 15+ year old
->> > firmware bug into completely new platform ports?
->>
->> I would prefer to see a "WARN_ON(!IS_ENABLED(CONFIG_PPC32));" added here.
->
-> In addition to, or instead of, the QUIRK ifdef?
+On Fri, 2014-04-18 at 18:11 +0300, Diana Craciun wrote:
+> From: Diana Craciun <Diana.Craciun@freescale.com>
+> 
+> The CoreNet coherency fabric is a fabric-oriented, conectivity
+> infrastructure that enables the implementation of coherent, multicore
+> systems. The CCF acts as a central interconnect for cores,
+> platform-level caches, memory subsystem, peripheral devices and I/O host
+> bridges in the system.
+> 
+> Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
+> ---
+>  .../devicetree/bindings/powerpc/fsl/ccf.txt        | 36 ++++++++++++++++++++++
+>  1 file changed, 36 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+> new file mode 100644
+> index 0000000..f0b7143
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+> @@ -0,0 +1,36 @@
+> +Freescale CoreNet Coherency Fabric(CCF) Device Tree Binding
+> +
+> +DESCRIPTION
+> +
+> +The CoreNet coherency fabric is a fabric-oriented, connectivity infrastructure
+> +that enables the implementation of coherent, multicore systems.
+> +
+> +Required properties:
+> +
+> +- compatible : <string>
+> +		Must include "fsl,corenetX-cf", "fsl,corenet-cf" - CoreNet coherency 
+> +		fabric version X
 
-Instead of because I don't see how you handle the ARM board
-compatibility with the ifdef. (And please, no ifdef for that board).
+Specify "fsl,corenet1-cf" and "fsl,corenet2-cf" rather than
+"fsl,corenetX-cf" (given there's nothing in a chip manual that you can
+correlate with the value of X), and provide example chips for each.
 
->> Really, I would like to see quirks like this fixed up out of line from
->> the normal flow somewhat like how PCI quirks are handled. So in this
->> example, we would just add the missing property to the dtb for the
->> broken platform before doing the memory scan. That does then require
->> libfdt which is something I'm working on.
->
-> Getting rid of all this handling from generic code would clearly be
-> preferable. Is that code going in in the near future, or could we add
-> the quirk as a stopgap?
+Also specify that "fsl,corenet-cf" represents the registers that are
+common between the two versions (not arbitrary "fsl,corenetX-cf" -- if
+there's ever an "fsl,corenet3-cf" it may not be compatible with this),
+and is retained for compatibility reasons.
 
-Some sort of quirk infrastructure is not going to happen soon. It's
-just an idea bouncing in my head ATM.
-
->> > Because the UEFI stub for arm/arm64 needs to delete all of the "memory"
->> > nodes from the DT. And it would be nice to at least not have to compile
->> > the "and also delete anything called memory@0" into the arm64 image. Or
->> > any image not including support for affected platforms.
->>
->> I don't see why you would handle that in the EFI stub. Given our lack
->> of validation, I can see there is a chance this happens but I think it
->> is pretty small. Given we only have a ARM board, I'd say we are doing
->> surprisingly well.
->
-> I'm not too bothered personally, but Mark Rutland handed me a patch to
-> improve the memory node handling in the stub, and he seemed to really
-> want this there. You guys can fight it out :)
-
-Simply put, we shouldn't put work-arounds in new code for new platforms.
-
-> What would be the effect of the UEFI code adding all its memblocks,
-> minus the reserved areas, and then the DT code doing a memblock_add
-> of all RAM (including reserved areas)? Would memblock_reserve()s on
-> the protected regions suffice to prevent crazy stuff from happening?
-
-So use UEFI to add the memory, but then add reserved areas with DT?
-I'm not sure I follow, but even if I did I don't know memblock code
-well enough to say what it would do.
-
-Rob
+-Scott
