@@ -1,31 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
- [209.85.215.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Shruti@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D45211400EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 23:11:09 +1000 (EST)
-Received: by mail-la0-f53.google.com with SMTP id b8so1340536lan.26
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 06:11:04 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 1FA531400E5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 22:21:49 +1000 (EST)
+From: Shruti Kanetkar <Shruti@Freescale.com>
+To: <scottwood@Freescale.com>
+Subject: [PATCH 1/6] powerpc/corenet: Enable muxing MDIO buses via GPIO
+Date: Fri, 18 Apr 2014 07:21:28 -0500
+Message-ID: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20140418125924.GF5904@bivouac.eciton.net>
-References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
- <1397756521-29387-4-git-send-email-leif.lindholm@linaro.org>
- <CAMuHMdXBNWum7UJ95uT2hwTd1b5C8ebF2LQ4T-A+RS80p7MH=A@mail.gmail.com>
- <20140418125924.GF5904@bivouac.eciton.net>
-Date: Fri, 18 Apr 2014 15:11:03 +0200
-Message-ID: <CAMuHMdUYisn2ejxd_SJ3LDsCgVKkPPT4hgS0-2znm=VFyfMDeQ@mail.gmail.com>
-Subject: Re: [PATCH 3/3] of: Handle memory@0 node on PPC32 only
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Leif Lindholm <leif.lindholm@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, patches@linaro.org,
- Lee Jones <lee.jones@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Rob Herring <robherring2@gmail.com>, Grant Likely <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: devicetree@vger.kernel.org, Andy Fleming <afleming@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Shruti Kanetkar <Shruti@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +23,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hei Leif,
+From: Andy Fleming <afleming@gmail.com>
 
-On Fri, Apr 18, 2014 at 2:59 PM, Leif Lindholm <leif.lindholm@linaro.org> wrote:
-> On Fri, Apr 18, 2014 at 10:04:15AM +0200, Geert Uytterhoeven wrote:
->> On Thu, Apr 17, 2014 at 7:42 PM, Leif Lindholm <leif.lindholm@linaro.org> wrote:
->> > In order to deal with an firmware bug on a specific ppc32 platform
->> > (longtrail), early_init_dt_scan_memory() looks for a node called
->> > memory@0 on all platforms. Restrict this quirk to ppc32 kernels only.
->>
->> This breaks backwards compatibilty with old DTSes (at least on ARM/MIPS,
->> where you added the missing property in patches 1 and 2 of the series)?
->
-> As Rob said in response to 0/3, the MIPSs would likely not be affected,
-> since they embed the DT.
->
-> How about the below v2 3/3 to address the ARM platform?
+Signed-off-by: Andy Fleming <afleming@gmail.com>
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig  | 2 ++
+ arch/powerpc/configs/corenet64_smp_defconfig  | 2 ++
+ arch/powerpc/platforms/85xx/corenet_generic.c | 3 +++
+ 3 files changed, 7 insertions(+)
 
-Looks fine to me, thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index bbd794d..548b21c 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -102,6 +102,8 @@ CONFIG_E1000E=y
+ CONFIG_VITESSE_PHY=y
+ CONFIG_AT803X_PHY=y
+ CONFIG_FIXED_PHY=y
++CONFIG_MDIO_BUS_MUX=y
++CONFIG_MDIO_BUS_MUX_GPIO=y
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+ # CONFIG_INPUT_MOUSE is not set
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 5c7fa19..cbe7afb 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -96,6 +96,8 @@ CONFIG_SATA_SIL24=y
+ CONFIG_NETDEVICES=y
+ CONFIG_DUMMY=y
+ CONFIG_E1000E=y
++CONFIG_MDIO_BUS_MUX=y
++CONFIG_MDIO_BUS_MUX_GPIO=y
+ CONFIG_INPUT_FF_MEMLESS=m
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 8e4b1e1..dc9e24e 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -77,6 +77,9 @@ static const struct of_device_id of_device_ids[] = {
+ 		.compatible	= "simple-bus"
+ 	},
+ 	{
++		.compatible	= "mdio-mux-gpio"
++	},
++	{
+ 		.compatible	= "fsl,srio",
+ 	},
+ 	{
+-- 
+1.8.3.1
