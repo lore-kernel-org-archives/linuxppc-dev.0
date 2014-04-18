@@ -1,19 +1,21 @@
 Return-Path: <Shruti@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe005.messaging.microsoft.com [207.46.163.28])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1FA531400E5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 22:21:49 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CCB0F1400EF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 22:21:50 +1000 (EST)
 From: Shruti Kanetkar <Shruti@Freescale.com>
 To: <scottwood@Freescale.com>
-Subject: [PATCH 1/6] powerpc/corenet: Enable muxing MDIO buses via GPIO
-Date: Fri, 18 Apr 2014 07:21:28 -0500
-Message-ID: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
+Subject: [PATCH 3/6] net/fsl_pq_mdio: Document supported compatibles
+Date: Fri, 18 Apr 2014 07:21:30 -0500
+Message-ID: <1397823693-27977-3-git-send-email-Shruti@Freescale.com>
+In-Reply-To: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
+References: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, Andy Fleming <afleming@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Shruti Kanetkar <Shruti@Freescale.com>
+Cc: devicetree@vger.kernel.org, Shruti Kanetkar <Shruti@Freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andy Fleming <afleming@gmail.com>
+The device tree binding(s) document has fallen out of sync with the
+driver code. Update the list of supported devices to reflect current
+driver capabilities
 
-Signed-off-by: Andy Fleming <afleming@gmail.com>
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
 ---
- arch/powerpc/configs/corenet32_smp_defconfig  | 2 ++
- arch/powerpc/configs/corenet64_smp_defconfig  | 2 ++
- arch/powerpc/platforms/85xx/corenet_generic.c | 3 +++
- 3 files changed, 7 insertions(+)
+ Documentation/devicetree/bindings/net/fsl-tsec-phy.txt | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..548b21c 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -102,6 +102,8 @@ CONFIG_E1000E=y
- CONFIG_VITESSE_PHY=y
- CONFIG_AT803X_PHY=y
- CONFIG_FIXED_PHY=y
-+CONFIG_MDIO_BUS_MUX=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
- # CONFIG_INPUT_MOUSE is not set
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 5c7fa19..cbe7afb 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -96,6 +96,8 @@ CONFIG_SATA_SIL24=y
- CONFIG_NETDEVICES=y
- CONFIG_DUMMY=y
- CONFIG_E1000E=y
-+CONFIG_MDIO_BUS_MUX=y
-+CONFIG_MDIO_BUS_MUX_GPIO=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
- # CONFIG_INPUT_KEYBOARD is not set
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index 8e4b1e1..dc9e24e 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -77,6 +77,9 @@ static const struct of_device_id of_device_ids[] = {
- 		.compatible	= "simple-bus"
- 	},
- 	{
-+		.compatible	= "mdio-mux-gpio"
-+	},
-+	{
- 		.compatible	= "fsl,srio",
- 	},
- 	{
+diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+index d2ea460..14b72fc 100644
+--- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
++++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+@@ -8,7 +8,16 @@ of how to define a PHY.
+ Required properties:
+   - reg : Offset and length of the register set for the device
+   - compatible : Should define the compatible device type for the
+-    mdio.  Currently, this is most likely to be "fsl,gianfar-mdio"
++    mdio. Currently supported strings/devices are:
++	- "fsl,gianfar-tbi"
++	- "fsl,gianfar-mdio"
++	- "fsl,etsec2-tbi"
++	- "fsl,etsec2-mdio"
++	- "fsl,ucc-mdio"
++	- "fsl,fman-mdio"
++    When device_type is "mdio", the following strings are also considered:
++	- "gianfar"
++	- "ucc_geth_phy"
+ 
+ Example:
+ 
 -- 
 1.8.3.1
