@@ -1,23 +1,28 @@
-Return-Path: <Diana.Craciun@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-ve0-f178.google.com (mail-ve0-f178.google.com
+ [209.85.128.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DFE5E1400FB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Apr 2014 01:21:41 +1000 (EST)
-Received: from mail44-am1 (localhost [127.0.0.1])	by mail44-am1-R.bigfish.com
- (Postfix) with ESMTP id 5D6423602FA	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 18 Apr 2014 15:20:48 +0000 (UTC)
-From: Diana Craciun <diana.craciun@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/fsl: Updated device trees for platforms with corenet
- version 2
-Date: Fri, 18 Apr 2014 18:21:10 +0300
-Message-ID: <1397834470-12844-1-git-send-email-diana.craciun@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 48A131400FB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Apr 2014 01:38:02 +1000 (EST)
+Received: by mail-ve0-f178.google.com with SMTP id jw12so3129882veb.37
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 08:37:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Diana Craciun <Diana.Craciun@freescale.com>
+In-Reply-To: <20140418124821.GE5904@bivouac.eciton.net>
+References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
+ <CAL_JsqL8B2ZY7ACXKX3J8VN5ukjKWuycgfDZpp4kYzBxg6BLmQ@mail.gmail.com>
+ <20140418124821.GE5904@bivouac.eciton.net>
+Date: Fri, 18 Apr 2014 10:37:58 -0500
+Message-ID: <CAL_JsqKdFyhHfkcC1E9QuKjQTrXwoELYG+CFTpgf2-jqDvxGmA@mail.gmail.com>
+Subject: Re: [PATCH 0/3] of: dts: enable memory@0 quirk for PPC32 only
+From: Rob Herring <robherring2@gmail.com>
+To: Leif Lindholm <leif.lindholm@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Linaro Patches <patches@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,102 +32,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Diana Craciun <Diana.Craciun@freescale.com>
+On Fri, Apr 18, 2014 at 7:48 AM, Leif Lindholm <leif.lindholm@linaro.org> wrote:
+> On Thu, Apr 17, 2014 at 07:43:13PM -0500, Rob Herring wrote:
+>> On Thu, Apr 17, 2014 at 12:41 PM, Leif Lindholm
+>> <leif.lindholm@linaro.org> wrote:
+>> > drivers/of/fdt.c contains a workaround for a missing memory type
+>> > entry on longtrail firmware. Make that quirk PPC32 only, and while
+>> > at it - fix up the .dts files in the tree currently working only
+>> > because of that quirk.
+>>
+>> But why do you need this?
+>
+> Apart from the current code permitting recreating a 15+ year old
+> firmware bug into completely new platform ports?
 
-Updated the device trees according to the corenet-cf
-binding definition.
+I would prefer to see a "WARN_ON(!IS_ENABLED(CONFIG_PPC32));" added here.
 
-Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
----
- arch/powerpc/boot/dts/b4860emu.dts          | 2 +-
- arch/powerpc/boot/dts/fsl/b4420si-post.dtsi | 4 ----
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi | 4 ----
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 2 +-
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/t4240emu.dts          | 2 +-
- 6 files changed, 4 insertions(+), 12 deletions(-)
+Really, I would like to see quirks like this fixed up out of line from
+the normal flow somewhat like how PCI quirks are handled. So in this
+example, we would just add the missing property to the dtb for the
+broken platform before doing the memory scan. That does then require
+libfdt which is something I'm working on.
 
-diff --git a/arch/powerpc/boot/dts/b4860emu.dts b/arch/powerpc/boot/dts/b4860emu.dts
-index 7290021..e41e2a2 100644
---- a/arch/powerpc/boot/dts/b4860emu.dts
-+++ b/arch/powerpc/boot/dts/b4860emu.dts
-@@ -157,7 +157,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,b4-corenet-cf";
-+		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 0>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-index 60566f99..d678944 100644
---- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-@@ -76,10 +76,6 @@
- 		compatible = "fsl,b4420-l3-cache-controller", "cache";
- 	};
- 
--	corenet-cf@18000 {
--		compatible = "fsl,b4420-corenet-cf";
--	};
--
- 	guts: global-utilities@e0000 {
- 		compatible = "fsl,b4420-device-config", "fsl,qoriq-device-config-2.0";
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index cbc354b..582381d 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -120,10 +120,6 @@
- 		compatible = "fsl,b4860-l3-cache-controller", "cache";
- 	};
- 
--	corenet-cf@18000 {
--		compatible = "fsl,b4860-corenet-cf";
--	};
--
- 	guts: global-utilities@e0000 {
- 		compatible = "fsl,b4860-device-config", "fsl,qoriq-device-config-2.0";
- 	};
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 4f6e482..376988c 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -158,7 +158,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,b4-corenet-cf";
-+		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 0>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index f99d74f..c13ce99 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -343,7 +343,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/t4240emu.dts b/arch/powerpc/boot/dts/t4240emu.dts
-index ee24ab3..c719dcc 100644
---- a/arch/powerpc/boot/dts/t4240emu.dts
-+++ b/arch/powerpc/boot/dts/t4240emu.dts
-@@ -213,7 +213,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet2-cf", "fsl, corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
--- 
-1.7.11.7
+> Because the UEFI stub for arm/arm64 needs to delete all of the "memory"
+> nodes from the DT. And it would be nice to at least not have to compile
+> the "and also delete anything called memory@0" into the arm64 image. Or
+> any image not including support for affected platforms.
+
+I don't see why you would handle that in the EFI stub. Given our lack
+of validation, I can see there is a chance this happens but I think it
+is pretty small. Given we only have a ARM board, I'd say we are doing
+surprisingly well.
+
+Rob
+
+>> >  arch/arm/boot/dts/ste-ccu8540.dts     |    1 +
+>> >  arch/mips/lantiq/dts/easy50712.dts    |    1 +
+>> >  arch/mips/ralink/dts/mt7620a_eval.dts |    1 +
+>> >  arch/mips/ralink/dts/rt2880_eval.dts  |    1 +
+>> >  arch/mips/ralink/dts/rt3052_eval.dts  |    1 +
+>> >  arch/mips/ralink/dts/rt3883_eval.dts  |    1 +
+>>
+>> I'm not worried about these MIPS dts files because they are all
+>> built-in, but you are breaking compatibility with old dtbs for this
+>> ARM board.
+>
+> Yeah, sorry. Sending out a v2 of part 3 shortly.
+>
+> /
+>     Leif
