@@ -1,22 +1,28 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-wg0-f43.google.com (mail-wg0-f43.google.com [74.125.82.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8684514008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 18:52:08 +1000 (EST)
-Received: from mail105-ch1 (localhost [127.0.0.1])	by
- mail105-ch1-R.bigfish.com (Postfix) with ESMTP id 684B5220717	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 08:51:17 +0000 (UTC)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>, <yorksun@freescale.com>
-Subject: [PATCH] powerpc/diu: adjust DIU initialization entry
-Date: Fri, 18 Apr 2014 16:49:21 +0800
-Message-ID: <1397810961-3831-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 58E12140077
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 21:29:48 +1000 (EST)
+Received: by mail-wg0-f43.google.com with SMTP id x13so428362wgg.14
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 04:29:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org,
- Wang Dongsheng <dongsheng.wang@freescale.com>, jason.jin@freescale.com
+In-Reply-To: <20140416204410.GP3528@book.gsilab.sittig.org>
+References: <1397559250-17680-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1397559250-17680-6-git-send-email-a13xp0p0v88@gmail.com>
+ <20140416204410.GP3528@book.gsilab.sittig.org>
+Date: Fri, 18 Apr 2014 15:29:42 +0400
+Message-ID: <CAF0T0X4TqhZ=niKRgArG-s1cD6uRH0UZDqGyTLpde_aHBFTVtw@mail.gmail.com>
+Subject: Re: [PATCH RFC v11 5/6] dma: mpc512x: add device tree binding document
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: devicetree@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>,
+ Anatolij Gustschin <agust@denx.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, Alexander Popov <a13xp0p0v88@gmail.com>,
+ dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,274 +32,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+Thanks for your reply, Gerhard
 
-Move fsl_diu_init into diu probe function, because it should be
-initialized when system get diu device tree node, not always do
-initialization.
+2014-04-17 0:44 GMT+04:00 Gerhard Sittig <gsi@denx.de>:
+> On Tue, 2014-04-15 at 14:54 +0400, Alexander Popov wrote:
+>>
+>> Introduce a device tree binding document for the MPC512x DMA controller
+>>
+>> Signed-off-by: Gerhard Sittig <gsi@denx.de>
+>> Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+>
+> I'm not certain whether the attribution is right.  Is the S-o-b
+> appropriate when the patch is not "from" me? As I've stated
+> before, it's OK if you pick up and extend what I provide, but
+> please don't pretend that I wrote what you did,
+Thanks. I've read the corresponding part of
+Documentation/SubmittingPatches once again and now I see
+my mistake.
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> and don't pretend
+> that I ACKed or passed along your submission when I didn't.
+I didn't have any malicious intent.
 
-diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
-index e8758b9..75ab20e 100644
---- a/drivers/video/fsl-diu-fb.c
-+++ b/drivers/video/fsl-diu-fb.c
-@@ -1680,6 +1680,99 @@ static ssize_t show_monitor(struct device *device,
- 	return 0;
- }
- 
-+#ifndef MODULE
-+static int __init fsl_diu_setup(char *options)
-+{
-+	char *opt;
-+	unsigned long val;
-+
-+	if (!options || !*options)
-+		return 0;
-+
-+	while ((opt = strsep(&options, ",")) != NULL) {
-+		if (!*opt)
-+			continue;
-+		if (!strncmp(opt, "monitor=", 8)) {
-+			monitor_port = fsl_diu_name_to_port(opt + 8);
-+		} else if (!strncmp(opt, "bpp=", 4)) {
-+			if (!kstrtoul(opt + 4, 10, &val))
-+				default_bpp = val;
-+		} else
-+			fb_mode = opt;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+static int fsl_diu_perpare(void)
-+{
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+	struct device_node *np;
-+	const u32 *prop;
-+#endif
-+	int ret;
-+#ifndef MODULE
-+	char *option;
-+
-+	/*
-+	 * For kernel boot options (in 'video=xxxfb:<options>' format)
-+	 */
-+	if (fb_get_options("fslfb", &option))
-+		return -ENODEV;
-+	fsl_diu_setup(option);
-+#else
-+	monitor_port = fsl_diu_name_to_port(monitor_string);
-+#endif
-+	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
-+
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+	np = of_find_node_by_type(NULL, "cpu");
-+	if (!np) {
-+		pr_err("fsl-diu-fb: can't find 'cpu' device node\n");
-+		return -ENODEV;
-+	}
-+
-+	prop = of_get_property(np, "d-cache-size", NULL);
-+	if (prop == NULL) {
-+		pr_err("fsl-diu-fb: missing 'd-cache-size'\n");
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * Freescale PLRU requires 13/8 times the cache size to do a proper
-+	 * displacement flush
-+	 */
-+	coherence_data_size = be32_to_cpup(prop) * 13;
-+	coherence_data_size /= 8;
-+
-+	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
-+		 coherence_data_size);
-+
-+	prop = of_get_property(np, "d-cache-line-size", NULL);
-+	if (prop == NULL) {
-+		pr_err("fsl-diu-fb: missing 'd-cache-line-size'\n");
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+	d_cache_line_size = be32_to_cpup(prop);
-+
-+	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
-+		 d_cache_line_size);
-+
-+	of_node_put(np);
-+	coherence_data = vmalloc(coherence_data_size);
-+	if (!coherence_data) {
-+		pr_err("fsl-diu-fb: could not allocate coherence data\n");
-+		pr_err("coherence_data_size=%zu)\n", coherence_data_size);
-+		return -ENOMEM;
-+	}
-+
-+#endif
-+	return ret;
-+}
-+
- static int fsl_diu_probe(struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
-@@ -1690,10 +1783,14 @@ static int fsl_diu_probe(struct platform_device *pdev)
- 	unsigned int i;
- 	int ret;
- 
-+	fsl_diu_perpare();
-+
- 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
- 				   &dma_addr, GFP_DMA | __GFP_ZERO);
--	if (!data)
--		return -ENOMEM;
-+	if (!data) {
-+		ret = -ENOMEM;
-+		goto out_perpare;
-+	}
- 	data->dma_addr = dma_addr;
- 
- 	/*
-@@ -1819,6 +1916,11 @@ error:
- 
- 	iounmap(data->diu_reg);
- 
-+out_perpare:
-+#if defined(CONFIG_NOT_COHERENT_CACHE)
-+	if (coherence_data)
-+		vfree(coherence_data);
-+#endif
- 	return ret;
- }
- 
-@@ -1837,34 +1939,12 @@ static int fsl_diu_remove(struct platform_device *pdev)
- 
- 	iounmap(data->diu_reg);
- 
-+#if defined(CONFIG_NOT_COHERENT_CACHE)
-+	vfree(coherence_data);
-+#endif
- 	return 0;
- }
- 
--#ifndef MODULE
--static int __init fsl_diu_setup(char *options)
--{
--	char *opt;
--	unsigned long val;
--
--	if (!options || !*options)
--		return 0;
--
--	while ((opt = strsep(&options, ",")) != NULL) {
--		if (!*opt)
--			continue;
--		if (!strncmp(opt, "monitor=", 8)) {
--			monitor_port = fsl_diu_name_to_port(opt + 8);
--		} else if (!strncmp(opt, "bpp=", 4)) {
--			if (!kstrtoul(opt + 4, 10, &val))
--				default_bpp = val;
--		} else
--			fb_mode = opt;
--	}
--
--	return 0;
--}
--#endif
--
- static struct of_device_id fsl_diu_match[] = {
- #ifdef CONFIG_PPC_MPC512x
- 	{
-@@ -1892,88 +1972,12 @@ static struct platform_driver fsl_diu_driver = {
- 
- static int __init fsl_diu_init(void)
- {
--#ifdef CONFIG_NOT_COHERENT_CACHE
--	struct device_node *np;
--	const u32 *prop;
--#endif
--	int ret;
--#ifndef MODULE
--	char *option;
--
--	/*
--	 * For kernel boot options (in 'video=xxxfb:<options>' format)
--	 */
--	if (fb_get_options("fslfb", &option))
--		return -ENODEV;
--	fsl_diu_setup(option);
--#else
--	monitor_port = fsl_diu_name_to_port(monitor_string);
--#endif
--	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
--
--#ifdef CONFIG_NOT_COHERENT_CACHE
--	np = of_find_node_by_type(NULL, "cpu");
--	if (!np) {
--		pr_err("fsl-diu-fb: can't find 'cpu' device node\n");
--		return -ENODEV;
--	}
--
--	prop = of_get_property(np, "d-cache-size", NULL);
--	if (prop == NULL) {
--		pr_err("fsl-diu-fb: missing 'd-cache-size' property' "
--		       "in 'cpu' node\n");
--		of_node_put(np);
--		return -ENODEV;
--	}
--
--	/*
--	 * Freescale PLRU requires 13/8 times the cache size to do a proper
--	 * displacement flush
--	 */
--	coherence_data_size = be32_to_cpup(prop) * 13;
--	coherence_data_size /= 8;
--
--	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
--		 coherence_data_size);
--
--	prop = of_get_property(np, "d-cache-line-size", NULL);
--	if (prop == NULL) {
--		pr_err("fsl-diu-fb: missing 'd-cache-line-size' property' "
--		       "in 'cpu' node\n");
--		of_node_put(np);
--		return -ENODEV;
--	}
--	d_cache_line_size = be32_to_cpup(prop);
--
--	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
--		 d_cache_line_size);
--
--	of_node_put(np);
--	coherence_data = vmalloc(coherence_data_size);
--	if (!coherence_data) {
--		pr_err("fsl-diu-fb: could not allocate coherence data "
--		       "(size=%zu)\n", coherence_data_size);
--		return -ENOMEM;
--	}
--
--#endif
--
--	ret = platform_driver_register(&fsl_diu_driver);
--	if (ret) {
--		pr_err("fsl-diu-fb: failed to register platform driver\n");
--#if defined(CONFIG_NOT_COHERENT_CACHE)
--		vfree(coherence_data);
--#endif
--	}
--	return ret;
-+	return platform_driver_register(&fsl_diu_driver);
- }
- 
- static void __exit fsl_diu_exit(void)
- {
- 	platform_driver_unregister(&fsl_diu_driver);
--#if defined(CONFIG_NOT_COHERENT_CACHE)
--	vfree(coherence_data);
--#endif
- }
- 
- module_init(fsl_diu_init);
--- 
-1.8.5
+> This binding certainly needs further improvement to become a good
+> one.  As I've communicated in the past, I was rather ignorant
+> "back then" when I wrote v1 and v2 of the RFC.  We have learned
+> something in the meantime.  Though I admit having gone silent
+> after several review iterations.  Assumed you would pick up
+> information that showed up several times on public lists.
+>
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+>> @@ -0,0 +1,51 @@
+>> +* Freescale MPC512x and MPC8308 DMA Controller
+>> +
+>> +The DMA controller in the Freescale MPC512x and MPC8308 SoCs can move
+>> +blocks of memory contents between memory and peripherals or
+>> +from memory to memory.
+>> +
+>> +Refer to the "Generic DMA Controller and DMA request bindings" in
+>> +the dma/dma.txt file for a more detailed description of binding.
+>> +
+>> +* DMA controller
+>> +
+>> +Required properties:
+>> +- compatible: Should be one of
+>> +     "fsl,mpc5121-dma"
+>> +     "fsl,mpc8308-dma", "fsl,mpc5121-dma"
+>
+> is this a duplicate?  looks funny, needs a fix
+>
+> or is it a requirement that for MPC8308 you need to provide both
+> compatible strings?  that would be wrong, as MPC8308 certainly is
+> not an MPC5121
+>
+> a quick search reveals: the drivers/dma/mpc512x_dma.c Linux
+> driver implementation is wrong, it should match on both strings;
+> expecting the MPC8308 to disguise as an MPC5121 when it's not is
+> inappropriate (and only went unnoticed because of missing
+> bindings, I guess)
+I can try to fix that and add a new patch to the series.
+
+>> +- reg: Address and size of the DMA controller's register set
+>> +- interrupts: Interrupt for the DMA controller. Generic interrupt client node
+>> +     is described in interrupt-controller/interrupts.txt
+>
+> 'interrupts' only works in combinations with 'interrupt-parent',
+> that actual .dts files don't have the latter in the nodes is an
+> implementation detail but not a binding's requirement
+Excuse me, I didn't understand your point.
+
+> and an alternative method of specifying interrupts was introduced
+> recently, a reference to the common binding without naming one
+> specific property name could be most appropriate
+Excuse me, I haven't found such an example.
+
+>> +
+>> +Optional properties:
+>> +- #dma-cells: The length of the DMA specifier, must be <1> since
+>> +     the DMA controller uses a fixed assignment of request lines
+>> +     per channel. Refer to dma/dma.txt for the detailed description
+>> +     of this property
+>
+> I'm afraid that a generic/common document does not and cannot
+> describe the specific semantics of this provider's cells
+Ok, I see.
+
+> this binding should explicitly mention that the number of cells
+> needs to be one, and that this one cell is the DMA channel (which
+> translates to "peripheral request line"), because these
+> assigments are fixed in hardware
+Ok.
+
+>> +
+>> +Example:
+>> +
+>> +     dma0: dma@14000 {
+>> +             compatible = "fsl,mpc5121-dma";
+>> +             reg = <0x14000 0x1800>;
+>> +             interrupts = <65 0x8>;
+>> +             #dma-cells = <1>;
+>> +     };
+>> +
+>> +* DMA client
+>
+> the DMA provider's binding probably need not discuss client
+> specs, a reference to the common binding should suffice if it's
+> appropriate at all
+Ok.
+
+Best regards,
+Alexander
