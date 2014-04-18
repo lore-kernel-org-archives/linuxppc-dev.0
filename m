@@ -1,24 +1,22 @@
-Return-Path: <hongbo.zhang@freescale.com>
+Return-Path: <Dongsheng.Wang@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A3170140115
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 18:19:02 +1000 (EST)
-From: <hongbo.zhang@freescale.com>
-To: <vkoul@infradead.org>, <dan.j.williams@intel.com>,
- <dmaengine@vger.kernel.org>
-Subject: [PATCH v4 8/8] DMA: Freescale: add suspend resume functions for DMA
- driver
-Date: Fri, 18 Apr 2014 16:17:51 +0800
-Message-ID: <1397809071-5353-9-git-send-email-hongbo.zhang@freescale.com>
-In-Reply-To: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
-References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8684514008E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 18:52:08 +1000 (EST)
+Received: from mail105-ch1 (localhost [127.0.0.1])	by
+ mail105-ch1-R.bigfish.com (Postfix) with ESMTP id 684B5220717	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 08:51:17 +0000 (UTC)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>, <yorksun@freescale.com>
+Subject: [PATCH] powerpc/diu: adjust DIU initialization entry
+Date: Fri, 18 Apr 2014 16:49:21 +0800
+Message-ID: <1397810961-3831-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, Hongbo Zhang <hongbo.zhang@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- leo.li@freescale.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <dongsheng.wang@freescale.com>, jason.jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,186 +26,274 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-This patch adds suspend resume functions for Freescale DMA driver.
-.prepare callback is used to stop further descriptors from being added into the
-pending queue, and also issue pending queues into execution if there is any.
-.suspend callback makes sure all the pending jobs are cleaned up and all the
-channels are idle, and save the mode registers.
-.resume callback re-initializes the channels by restore the mode registers.
+Move fsl_diu_init into diu probe function, because it should be
+initialized when system get diu device tree node, not always do
+initialization.
 
-Signed-off-by: Hongbo Zhang <hongbo.zhang@freescale.com>
----
- drivers/dma/fsldma.c |  100 ++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/dma/fsldma.h |   16 ++++++++
- 2 files changed, 116 insertions(+)
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 6e1c9b3..836fc27 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -400,6 +400,14 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 
- 	spin_lock_bh(&chan->desc_lock);
- 
-+#ifdef CONFIG_PM
-+	if (unlikely(chan->pm_state != RUNNING)) {
-+		chan_dbg(chan, "cannot submit due to suspend\n");
-+		spin_unlock_bh(&chan->desc_lock);
-+		return -1;
-+	}
-+#endif
-+
- 	/*
- 	 * assign cookies to all of the software descriptors
- 	 * that make up this transaction
-@@ -1312,6 +1320,9 @@ static int fsl_dma_chan_probe(struct fsldma_device *fdev,
- 	INIT_LIST_HEAD(&chan->ld_running);
- 	INIT_LIST_HEAD(&chan->ld_completed);
- 	chan->idle = true;
-+#ifdef CONFIG_PM
-+	chan->pm_state = RUNNING;
-+#endif
- 
- 	chan->common.device = &fdev->common;
- 	dma_cookie_init(&chan->common);
-@@ -1451,6 +1462,92 @@ static int fsldma_of_remove(struct platform_device *op)
+diff --git a/drivers/video/fsl-diu-fb.c b/drivers/video/fsl-diu-fb.c
+index e8758b9..75ab20e 100644
+--- a/drivers/video/fsl-diu-fb.c
++++ b/drivers/video/fsl-diu-fb.c
+@@ -1680,6 +1680,99 @@ static ssize_t show_monitor(struct device *device,
  	return 0;
  }
  
-+#ifdef CONFIG_PM
-+static int fsldma_prepare(struct device *dev)
++#ifndef MODULE
++static int __init fsl_diu_setup(char *options)
 +{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-+	struct fsldma_chan *chan;
-+	int i;
++	char *opt;
++	unsigned long val;
 +
-+	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-+		chan = fdev->chan[i];
-+		if (!chan)
++	if (!options || !*options)
++		return 0;
++
++	while ((opt = strsep(&options, ",")) != NULL) {
++		if (!*opt)
 +			continue;
-+
-+		spin_lock_bh(&chan->desc_lock);
-+		chan->pm_state = SUSPENDING;
-+		if (!list_empty(&chan->ld_pending))
-+			fsl_chan_xfer_ld_queue(chan);
-+		spin_unlock_bh(&chan->desc_lock);
++		if (!strncmp(opt, "monitor=", 8)) {
++			monitor_port = fsl_diu_name_to_port(opt + 8);
++		} else if (!strncmp(opt, "bpp=", 4)) {
++			if (!kstrtoul(opt + 4, 10, &val))
++				default_bpp = val;
++		} else
++			fb_mode = opt;
 +	}
 +
 +	return 0;
 +}
-+
-+static int fsldma_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-+	struct fsldma_chan *chan;
-+	int i;
-+
-+	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-+		chan = fdev->chan[i];
-+		if (!chan)
-+			continue;
-+
-+		spin_lock_bh(&chan->desc_lock);
-+		if (!chan->idle)
-+			goto out;
-+		chan->regs_save.mr = get_mr(chan);
-+		chan->pm_state = SUSPENDED;
-+		spin_unlock_bh(&chan->desc_lock);
-+	}
-+	return 0;
-+
-+out:
-+	for (; i >= 0; i--) {
-+		chan = fdev->chan[i];
-+		if (!chan)
-+			continue;
-+		chan->pm_state = RUNNING;
-+		spin_unlock_bh(&chan->desc_lock);
-+	}
-+	return -EBUSY;
-+}
-+
-+static int fsldma_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct fsldma_device *fdev = platform_get_drvdata(pdev);
-+	struct fsldma_chan *chan;
-+	u32 mode;
-+	int i;
-+
-+	for (i = 0; i < FSL_DMA_MAX_CHANS_PER_DEVICE; i++) {
-+		chan = fdev->chan[i];
-+		if (!chan)
-+			continue;
-+
-+		spin_lock_bh(&chan->desc_lock);
-+		mode = chan->regs_save.mr
-+			& ~FSL_DMA_MR_CS & ~FSL_DMA_MR_CC & ~FSL_DMA_MR_CA;
-+		set_mr(chan, mode);
-+		chan->pm_state = RUNNING;
-+		spin_unlock_bh(&chan->desc_lock);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops fsldma_pm_ops = {
-+	.prepare	= fsldma_prepare,
-+	.suspend	= fsldma_suspend,
-+	.resume		= fsldma_resume,
-+};
 +#endif
 +
- static const struct of_device_id fsldma_of_ids[] = {
- 	{ .compatible = "fsl,elo3-dma", },
- 	{ .compatible = "fsl,eloplus-dma", },
-@@ -1463,6 +1560,9 @@ static struct platform_driver fsldma_of_driver = {
- 		.name = "fsl-elo-dma",
- 		.owner = THIS_MODULE,
- 		.of_match_table = fsldma_of_ids,
-+#ifdef CONFIG_PM
-+		.pm = &fsldma_pm_ops,
++static int fsl_diu_perpare(void)
++{
++#ifdef CONFIG_NOT_COHERENT_CACHE
++	struct device_node *np;
++	const u32 *prop;
 +#endif
- 	},
- 	.probe = fsldma_of_probe,
- 	.remove = fsldma_of_remove,
-diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
-index ec19517..eecaf9e 100644
---- a/drivers/dma/fsldma.h
-+++ b/drivers/dma/fsldma.h
-@@ -134,6 +134,18 @@ struct fsldma_device {
- #define FSL_DMA_CHAN_PAUSE_EXT	0x00001000
- #define FSL_DMA_CHAN_START_EXT	0x00002000
++	int ret;
++#ifndef MODULE
++	char *option;
++
++	/*
++	 * For kernel boot options (in 'video=xxxfb:<options>' format)
++	 */
++	if (fb_get_options("fslfb", &option))
++		return -ENODEV;
++	fsl_diu_setup(option);
++#else
++	monitor_port = fsl_diu_name_to_port(monitor_string);
++#endif
++	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
++
++#ifdef CONFIG_NOT_COHERENT_CACHE
++	np = of_find_node_by_type(NULL, "cpu");
++	if (!np) {
++		pr_err("fsl-diu-fb: can't find 'cpu' device node\n");
++		return -ENODEV;
++	}
++
++	prop = of_get_property(np, "d-cache-size", NULL);
++	if (prop == NULL) {
++		pr_err("fsl-diu-fb: missing 'd-cache-size'\n");
++		of_node_put(np);
++		return -ENODEV;
++	}
++
++	/*
++	 * Freescale PLRU requires 13/8 times the cache size to do a proper
++	 * displacement flush
++	 */
++	coherence_data_size = be32_to_cpup(prop) * 13;
++	coherence_data_size /= 8;
++
++	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
++		 coherence_data_size);
++
++	prop = of_get_property(np, "d-cache-line-size", NULL);
++	if (prop == NULL) {
++		pr_err("fsl-diu-fb: missing 'd-cache-line-size'\n");
++		of_node_put(np);
++		return -ENODEV;
++	}
++	d_cache_line_size = be32_to_cpup(prop);
++
++	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
++		 d_cache_line_size);
++
++	of_node_put(np);
++	coherence_data = vmalloc(coherence_data_size);
++	if (!coherence_data) {
++		pr_err("fsl-diu-fb: could not allocate coherence data\n");
++		pr_err("coherence_data_size=%zu)\n", coherence_data_size);
++		return -ENOMEM;
++	}
++
++#endif
++	return ret;
++}
++
+ static int fsl_diu_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -1690,10 +1783,14 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	unsigned int i;
+ 	int ret;
  
-+#ifdef CONFIG_PM
-+struct fsldma_chan_regs_save {
-+	u32 mr;
-+};
++	fsl_diu_perpare();
 +
-+enum fsldma_pm_state {
-+	RUNNING = 0,
-+	SUSPENDING,
-+	SUSPENDED,
-+};
-+#endif
-+
- struct fsldma_chan {
- 	char name[8];			/* Channel name */
- 	struct fsldma_chan_regs __iomem *regs;
-@@ -161,6 +173,10 @@ struct fsldma_chan {
- 	struct tasklet_struct tasklet;
- 	u32 feature;
- 	bool idle;			/* DMA controller is idle */
-+#ifdef CONFIG_PM
-+	struct fsldma_chan_regs_save regs_save;
-+	enum fsldma_pm_state pm_state;
-+#endif
+ 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+ 				   &dma_addr, GFP_DMA | __GFP_ZERO);
+-	if (!data)
+-		return -ENOMEM;
++	if (!data) {
++		ret = -ENOMEM;
++		goto out_perpare;
++	}
+ 	data->dma_addr = dma_addr;
  
- 	void (*toggle_ext_pause)(struct fsldma_chan *fsl_chan, int enable);
- 	void (*toggle_ext_start)(struct fsldma_chan *fsl_chan, int enable);
+ 	/*
+@@ -1819,6 +1916,11 @@ error:
+ 
+ 	iounmap(data->diu_reg);
+ 
++out_perpare:
++#if defined(CONFIG_NOT_COHERENT_CACHE)
++	if (coherence_data)
++		vfree(coherence_data);
++#endif
+ 	return ret;
+ }
+ 
+@@ -1837,34 +1939,12 @@ static int fsl_diu_remove(struct platform_device *pdev)
+ 
+ 	iounmap(data->diu_reg);
+ 
++#if defined(CONFIG_NOT_COHERENT_CACHE)
++	vfree(coherence_data);
++#endif
+ 	return 0;
+ }
+ 
+-#ifndef MODULE
+-static int __init fsl_diu_setup(char *options)
+-{
+-	char *opt;
+-	unsigned long val;
+-
+-	if (!options || !*options)
+-		return 0;
+-
+-	while ((opt = strsep(&options, ",")) != NULL) {
+-		if (!*opt)
+-			continue;
+-		if (!strncmp(opt, "monitor=", 8)) {
+-			monitor_port = fsl_diu_name_to_port(opt + 8);
+-		} else if (!strncmp(opt, "bpp=", 4)) {
+-			if (!kstrtoul(opt + 4, 10, &val))
+-				default_bpp = val;
+-		} else
+-			fb_mode = opt;
+-	}
+-
+-	return 0;
+-}
+-#endif
+-
+ static struct of_device_id fsl_diu_match[] = {
+ #ifdef CONFIG_PPC_MPC512x
+ 	{
+@@ -1892,88 +1972,12 @@ static struct platform_driver fsl_diu_driver = {
+ 
+ static int __init fsl_diu_init(void)
+ {
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-	struct device_node *np;
+-	const u32 *prop;
+-#endif
+-	int ret;
+-#ifndef MODULE
+-	char *option;
+-
+-	/*
+-	 * For kernel boot options (in 'video=xxxfb:<options>' format)
+-	 */
+-	if (fb_get_options("fslfb", &option))
+-		return -ENODEV;
+-	fsl_diu_setup(option);
+-#else
+-	monitor_port = fsl_diu_name_to_port(monitor_string);
+-#endif
+-	pr_info("Freescale Display Interface Unit (DIU) framebuffer driver\n");
+-
+-#ifdef CONFIG_NOT_COHERENT_CACHE
+-	np = of_find_node_by_type(NULL, "cpu");
+-	if (!np) {
+-		pr_err("fsl-diu-fb: can't find 'cpu' device node\n");
+-		return -ENODEV;
+-	}
+-
+-	prop = of_get_property(np, "d-cache-size", NULL);
+-	if (prop == NULL) {
+-		pr_err("fsl-diu-fb: missing 'd-cache-size' property' "
+-		       "in 'cpu' node\n");
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-
+-	/*
+-	 * Freescale PLRU requires 13/8 times the cache size to do a proper
+-	 * displacement flush
+-	 */
+-	coherence_data_size = be32_to_cpup(prop) * 13;
+-	coherence_data_size /= 8;
+-
+-	pr_debug("fsl-diu-fb: coherence data size is %zu bytes\n",
+-		 coherence_data_size);
+-
+-	prop = of_get_property(np, "d-cache-line-size", NULL);
+-	if (prop == NULL) {
+-		pr_err("fsl-diu-fb: missing 'd-cache-line-size' property' "
+-		       "in 'cpu' node\n");
+-		of_node_put(np);
+-		return -ENODEV;
+-	}
+-	d_cache_line_size = be32_to_cpup(prop);
+-
+-	pr_debug("fsl-diu-fb: cache lines size is %u bytes\n",
+-		 d_cache_line_size);
+-
+-	of_node_put(np);
+-	coherence_data = vmalloc(coherence_data_size);
+-	if (!coherence_data) {
+-		pr_err("fsl-diu-fb: could not allocate coherence data "
+-		       "(size=%zu)\n", coherence_data_size);
+-		return -ENOMEM;
+-	}
+-
+-#endif
+-
+-	ret = platform_driver_register(&fsl_diu_driver);
+-	if (ret) {
+-		pr_err("fsl-diu-fb: failed to register platform driver\n");
+-#if defined(CONFIG_NOT_COHERENT_CACHE)
+-		vfree(coherence_data);
+-#endif
+-	}
+-	return ret;
++	return platform_driver_register(&fsl_diu_driver);
+ }
+ 
+ static void __exit fsl_diu_exit(void)
+ {
+ 	platform_driver_unregister(&fsl_diu_driver);
+-#if defined(CONFIG_NOT_COHERENT_CACHE)
+-	vfree(coherence_data);
+-#endif
+ }
+ 
+ module_init(fsl_diu_init);
 -- 
-1.7.9.5
+1.8.5
