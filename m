@@ -1,31 +1,28 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-f178.google.com (mail-lb0-f178.google.com
+ [209.85.217.178])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 11F7D1400EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 16:31:02 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id ld10so1172988pab.12
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2014 23:30:59 -0700 (PDT)
-Date: Thu, 17 Apr 2014 23:30:54 -0700
-From: Brian Norris <computersforpeace@gmail.com>
-To: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH 0/5] defconfigs: add MTD_SPI_NOR (dependency for M25P80)
-Message-ID: <20140418063054.GK5512@norris-Latitude-E6410>
-References: <1397719309-2022-1-git-send-email-computersforpeace@gmail.com>
- <20140417105302.GA32603@ulmo>
+ by ozlabs.org (Postfix) with ESMTPS id D10A614007A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 18:04:21 +1000 (EST)
+Received: by mail-lb0-f178.google.com with SMTP id s7so1146294lbd.37
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 01:04:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140417105302.GA32603@ulmo>
-Cc: Marek Vasut <marex@denx.de>, linux-mips@linux-mips.org,
- Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>,
- linux-sh@vger.kernel.org, Steven Miao <realmz6@gmail.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>, adi-buildroot-devel@lists.sourceforge.net,
- linux-tegra@vger.kernel.org, linux-mtd@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>,
- Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Shawn Guo <shawn.guo@freescale.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1397756521-29387-4-git-send-email-leif.lindholm@linaro.org>
+References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
+ <1397756521-29387-4-git-send-email-leif.lindholm@linaro.org>
+Date: Fri, 18 Apr 2014 10:04:15 +0200
+Message-ID: <CAMuHMdXBNWum7UJ95uT2hwTd1b5C8ebF2LQ4T-A+RS80p7MH=A@mail.gmail.com>
+Subject: Re: [PATCH 3/3] of: Handle memory@0 node on PPC32 only
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Leif Lindholm <leif.lindholm@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, patches@linaro.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Grant Likely <grant.likely@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Leif,
 
-On Thu, Apr 17, 2014 at 12:53:03PM +0200, Thierry Reding wrote:
-> On Thu, Apr 17, 2014 at 12:21:44AM -0700, Brian Norris wrote:
-> > We are introducing a new SPI-NOR library/framework for MTD, to support various
-> > types of SPI-NOR flash controllers which require (or benefit from) intimate
-> > knowledge of the flash interface, rather than just the relatively dumb SPI
-> > interface. This library borrows much of the m25p80 driver for its abstraction
-> > and moves this code into a spi-nor module.
-> 
-> If this is a common library, then the more common approach to solve this
-> would be to have each driver that uses it to select MTD_SPI_NOR rather
-> than depend on it. That way you can drop this whole series to update the
-> default configurations.
+On Thu, Apr 17, 2014 at 7:42 PM, Leif Lindholm <leif.lindholm@linaro.org> wrote:
+> In order to deal with an firmware bug on a specific ppc32 platform
+> (longtrail), early_init_dt_scan_memory() looks for a node called
+> memory@0 on all platforms. Restrict this quirk to ppc32 kernels only.
 
-But does MTD_SPI_NOR (and drivers/mtd/spi-nor/) qualify as a "library"
-or as a "subsystem"? I thought the latter were typically expected to be
-user-selectable options, not automatically-"select"ed.
+This breaks backwards compatibilty with old DTSes (at least on ARM/MIPS,
+where you added the missing property in patches 1 and 2 of the series)?
 
-I would say that, except for its age, MTD_SPI_NOR is very similar in to
-MTD_NAND (driver/mtd/nand/), which I'd consider a kind of subsystem, and
-which users must select before they are asked about drivers which fall
-under its category.
+For the Longtrail, I don't care much anymore, as mine died in 2004.
+AFAIK, there have never been many users anyway.
 
-Perhaps my usage of the word "library" in the description was a mistake,
-as I don't exactly consider it like a library in the sense of many other
-"select"ed libraries.
+> Signed-off-by: Leif Lindholm <leif.lindholm@linaro.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/of/fdt.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index fa16a91..7368472 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -887,14 +887,19 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+>
+>         /* We are scanning "memory" nodes only */
+>         if (type == NULL) {
+> +#ifdef CONFIG_PPC32
+>                 /*
+>                  * The longtrail doesn't have a device_type on the
+>                  * /memory node, so look for the node called /memory@0.
+>                  */
+>                 if (depth != 1 || strcmp(uname, "memory@0") != 0)
+>                         return 0;
+> -       } else if (strcmp(type, "memory") != 0)
+> +#else
+> +               return 0;
+> +#endif
+> +       } else if (strcmp(type, "memory") != 0) {
+>                 return 0;
+> +       }
+>
+>         reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
+>         if (reg == NULL)
 
-Brian
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
