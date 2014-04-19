@@ -1,31 +1,18 @@
-Return-Path: <leif.lindholm@linaro.org>
-Received: from mail-wi0-f171.google.com (mail-wi0-f171.google.com
- [209.85.212.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <schivers@csc.com>
+Received: from mail87.messagelabs.com (mail87.messagelabs.com [216.82.250.19])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 06B551400F2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 Apr 2014 10:33:13 +1000 (EST)
-Received: by mail-wi0-f171.google.com with SMTP id q5so59421wiv.16
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2014 17:33:08 -0700 (PDT)
-Date: Sat, 19 Apr 2014 01:36:34 +0100
-From: Leif Lindholm <leif.lindholm@linaro.org>
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 0/3] of: dts: enable memory@0 quirk for PPC32 only
-Message-ID: <20140419003634.GI5904@bivouac.eciton.net>
-References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
- <CAL_JsqL8B2ZY7ACXKX3J8VN5ukjKWuycgfDZpp4kYzBxg6BLmQ@mail.gmail.com>
- <20140418124821.GE5904@bivouac.eciton.net>
- <CAL_JsqKdFyhHfkcC1E9QuKjQTrXwoELYG+CFTpgf2-jqDvxGmA@mail.gmail.com>
- <20140418201313.GG5904@bivouac.eciton.net>
- <CAL_Jsq+L14rgYq5swC3H109DThiyDajmTJpO=y562jcE97K-fg@mail.gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id A1E451400C6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Apr 2014 09:45:50 +1000 (EST)
+Date: Sun, 20 Apr 2014 09:43:10 +1000
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: legacy_serial support MVME5100 UARTS with
+ shifted registers
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_Jsq+L14rgYq5swC3H109DThiyDajmTJpO=y562jcE97K-fg@mail.gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linaro Patches <patches@linaro.org>
+Message-Id: <20140419234310.DBC49E075A@canberra.localdomain>
+From: schivers@csc.com (Stephen Chivers)
+Cc: schivers@csc.com, linuxppc-dev@lists.ozlabs.org, cproctor@csc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,55 +22,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 18, 2014 at 04:28:17PM -0500, Rob Herring wrote:
-> >> > Apart from the current code permitting recreating a 15+ year old
-> >> > firmware bug into completely new platform ports?
-> >>
-> >> I would prefer to see a "WARN_ON(!IS_ENABLED(CONFIG_PPC32));" added here.
-> >
-> > In addition to, or instead of, the QUIRK ifdef?
-> 
-> Instead of because I don't see how you handle the ARM board
-> compatibility with the ifdef. (And please, no ifdef for that board).
+This patch adds support to legacy serial for
+UARTS with shifted registers.
 
-Umm, according to my memory as well as my sent mail folder, I cc:d you
-on v2 of part 3. Could you have a look at that, please?
+The MVME5100 Single Board Computer is a PowerPC platform
+that has 16550 style UARTS with register addresses that are
+16 bytes apart (shifted by 4).
 
-A WARN_ON would still mean this ancient workaround for a specific ppc32
-platform remains enabled on ~10 architectures that don't use it.
+Commit 	309257484cc1a592e8ac5fbdd8cd661be2b80bf8 
+"powerpc: Cleanup udbg_16550 and add support for LPC PIO-only UARTs"
+added support to udbg_16550 for shifted registers by adding a "stride"
+parameter to the initialisation operations for Programmed IO and
+Memory Mapped IO.
 
-> >> Really, I would like to see quirks like this fixed up out of line from
-> >> the normal flow somewhat like how PCI quirks are handled. So in this
-> >> example, we would just add the missing property to the dtb for the
-> >> broken platform before doing the memory scan. That does then require
-> >> libfdt which is something I'm working on.
-> >
-> > Getting rid of all this handling from generic code would clearly be
-> > preferable. Is that code going in in the near future, or could we add
-> > the quirk as a stopgap?
-> 
-> Some sort of quirk infrastructure is not going to happen soon. It's
-> just an idea bouncing in my head ATM.
+As a consequence it is now possible to use the services of legacy serial
+to provide early serial console messages for the MVME5100.
 
-Mmm...
+An added benefit of this is that the serial console will always be
+"ttyS0" irrespective of whether the computer is fitted with extra
+PCI 8250 interface boards or not.
 
-> > What would be the effect of the UEFI code adding all its memblocks,
-> > minus the reserved areas, and then the DT code doing a memblock_add
-> > of all RAM (including reserved areas)? Would memblock_reserve()s on
-> > the protected regions suffice to prevent crazy stuff from happening?
-> 
-> So use UEFI to add the memory, but then add reserved areas with DT?
+I have tested this patch using the four PowerPC platforms available to me:
 
-No, to add memory and reserved areas based on UEFI memory map.
-And then add any memory@0/!type nodes as well, if they're left around.
+	MVME5100 - shifted registers,
+	SAM440EP - unshifted registers,
+	MPC8349 - unshifted registers,
+	MVME4100 - unshifted registers.
 
-> I'm not sure I follow, but even if I did I don't know memblock code
-> well enough to say what it would do.
+Signed-off-by: Stephen Chivers <schivers@csc.com>
+---
+ arch/powerpc/kernel/legacy_serial.c        |   21 +++++++++++++++------
+ arch/powerpc/platforms/embedded6xx/Kconfig |    1 +
+ 2 files changed, 16 insertions(+), 6 deletions(-)
 
-If we did end up with stray memory@0/!type nodes, we could initialise
-memblock multiple times with overlapping but incompatible areas.
-And I don't know if that would be a problem. Which makes me a little
-bit nervous.
-
-/
-    Leif
+diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
+index 40bd7bd..85fb16e 100644
+--- a/arch/powerpc/kernel/legacy_serial.c
++++ b/arch/powerpc/kernel/legacy_serial.c
+@@ -71,8 +71,9 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 				  phys_addr_t taddr, unsigned long irq,
+ 				  upf_t flags, int irq_check_parent)
+ {
+-	const __be32 *clk, *spd;
++	const __be32 *clk, *spd, *rs;
+ 	u32 clock = BASE_BAUD * 16;
++	u32 shift = 0;
+ 	int index;
+ 
+ 	/* get clock freq. if present */
+@@ -83,6 +84,11 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 	/* get default speed if present */
+ 	spd = of_get_property(np, "current-speed", NULL);
+ 
++	/* get register shift if present */
++	rs = of_get_property(np, "reg-shift", NULL);
++	if (rs && *rs)
++		shift = be32_to_cpup(rs);
++
+ 	/* If we have a location index, then try to use it */
+ 	if (want_index >= 0 && want_index < MAX_LEGACY_SERIAL_PORTS)
+ 		index = want_index;
+@@ -126,6 +132,7 @@ static int __init add_legacy_port(struct device_node *np, int want_index,
+ 	legacy_serial_ports[index].uartclk = clock;
+ 	legacy_serial_ports[index].irq = irq;
+ 	legacy_serial_ports[index].flags = flags;
++	legacy_serial_ports[index].regshift = shift;
+ 	legacy_serial_infos[index].taddr = taddr;
+ 	legacy_serial_infos[index].np = of_node_get(np);
+ 	legacy_serial_infos[index].clock = clock;
+@@ -163,9 +170,8 @@ static int __init add_legacy_soc_port(struct device_node *np,
+ 	if (of_get_property(np, "clock-frequency", NULL) == NULL)
+ 		return -1;
+ 
+-	/* if reg-shift or offset, don't try to use it */
+-	if ((of_get_property(np, "reg-shift", NULL) != NULL) ||
+-		(of_get_property(np, "reg-offset", NULL) != NULL))
++	/* if reg-offset don't try to use it */
++	if ((of_get_property(np, "reg-offset", NULL) != NULL))
+ 		return -1;
+ 
+ 	/* if rtas uses this device, don't try to use it as well */
+@@ -315,17 +321,20 @@ static void __init setup_legacy_serial_console(int console)
+ 	struct legacy_serial_info *info = &legacy_serial_infos[console];
+ 	struct plat_serial8250_port *port = &legacy_serial_ports[console];
+ 	void __iomem *addr;
++	unsigned int stride;
++
++	stride = 1 << port->regshift;
+ 
+ 	/* Check if a translated MMIO address has been found */
+ 	if (info->taddr) {
+ 		addr = ioremap(info->taddr, 0x1000);
+ 		if (addr == NULL)
+ 			return;
+-		udbg_uart_init_mmio(addr, 1);
++		udbg_uart_init_mmio(addr, stride);
+ 	} else {
+ 		/* Check if it's PIO and we support untranslated PIO */
+ 		if (port->iotype == UPIO_PORT && isa_io_special)
+-			udbg_uart_init_pio(port->iobase, 1);
++			udbg_uart_init_pio(port->iobase, stride);
+ 		else
+ 			return;
+ 	}
+diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
+index 2a7024d..a25f496 100644
+--- a/arch/powerpc/platforms/embedded6xx/Kconfig
++++ b/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -65,6 +65,7 @@ config MVME5100
+ 	select PPC_INDIRECT_PCI
+ 	select PPC_I8259
+ 	select PPC_NATIVE
++	select PPC_UDBG_16550
+ 	help
+ 	  This option enables support for the Motorola (now Emerson) MVME5100
+ 	  board.
