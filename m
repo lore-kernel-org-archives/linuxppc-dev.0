@@ -1,18 +1,24 @@
-Return-Path: <stern+534fffee@rowland.harvard.edu>
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
- by ozlabs.org (Postfix) with SMTP id A7D3F140076
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 04:02:58 +1000 (EST)
-Date: Sun, 20 Apr 2014 13:56:15 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Punnaiah Choudary Kalluri <punnaiah.choudary.kalluri@xilinx.com>
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5CCD014009B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 05:12:17 +1000 (EST)
+Message-ID: <5354175B.3070109@pengutronix.de>
+Date: Sun, 20 Apr 2014 20:52:11 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
+MIME-Version: 1.0
+To: Punnaiah Choudary Kalluri <punnaiah.choudary.kalluri@xilinx.com>,
+ leoli@freescale.com, balbi@ti.com, michal.simek@xilinx.com
 Subject: Re: [RFC PATCH 0/2] usb: Reuse fsl driver code for synopsys usb
  controller
+References: <7aed4ee6-69e7-4f9f-9f45-675bc695089c@CO9EHSMHS031.ehs.local>
 In-Reply-To: <7aed4ee6-69e7-4f9f-9f45-675bc695089c@CO9EHSMHS031.ehs.local>
-Message-ID: <Pine.LNX.4.44L0.1404201354410.7666-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-usb@vger.kernel.org, michal.simek@xilinx.com, balbi@ti.com,
- linux-kernel@vger.kernel.org, kalluripunnaiahchoudary@gmail.com,
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="pmvvGVFxVpXF3EStVhMQPAHlmlk8pKBL1"
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Peter Chen <peter.chen@freescale.com>, kalluripunnaiahchoudary@gmail.com,
  kpc528@gmail.com, Punnaiah Choudary Kalluri <punnaia@xilinx.com>,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,31 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 20 Apr 2014, Punnaiah Choudary Kalluri wrote:
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--pmvvGVFxVpXF3EStVhMQPAHlmlk8pKBL1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> Zynq soc contains a dual role usb controller and this IP is from synopsys. We
-> observed that there is driver available for this controller from freescale and
+On 04/20/2014 06:27 PM, Punnaiah Choudary Kalluri wrote:
+> Zynq soc contains a dual role usb controller and this IP is from synops=
+ys. We
+> observed that there is driver available for this controller from freesc=
+ale and
 > decided to reuse this driver for zynq use.
-> 
-> Here is the link for zynq soc TRM. Please refer chapter 15 for usb controller
-> related information.
-> http://www.xilinx.com/support/documentation/user_guides/ug585-Zynq-7000-TRM.pdf
-> 
-> The following series of patches add initial support for zynq soc in fsl gadget controller
-> driver and fsl host controller driver.
-> 
-> Based on these patches, I have the following concerns and sugesstions
-> 
-> Since the freescale usb driver is for synopsys IP, Please consider rebranding
-> this driver name and config options to reflect that it is a sysnopsys IP. So
-> that other vendors who using this IP can reuse thie driver.
-> 
-> Also the ehci-fsl.c is for powerpc based soc's, and zynq is ARM based, i have
-> protected the code which is specifc to freescale with CONFIG_FSL_SOC. Please
-> suggest if there is a better way of doing this?
 
-Filling the code with #ifdef lines is definitely not a good way to go.  
-Ordinary "if" statements would be a lot better, if you can't figure out 
-a reasonable way to encapsulate the differences.
+Have a look drivers/usb/chipidea. It's maintained by Peter Chen (Cc'ed)
+and is in better shape than the freescale driver.
 
-Alan Stern
+Marc
+
+--=20
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+
+
+--pmvvGVFxVpXF3EStVhMQPAHlmlk8pKBL1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+
+iEYEARECAAYFAlNUF18ACgkQjTAFq1RaXHOe/gCfaQTcIGRWutnvCgxpLF5zt/zz
+ckwAniLxhuJdXwoFWp2o59jgg1v8X8GS
+=x9vH
+-----END PGP SIGNATURE-----
+
+--pmvvGVFxVpXF3EStVhMQPAHlmlk8pKBL1--
