@@ -1,28 +1,39 @@
-Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f52.google.com (mail-oa0-f52.google.com
- [209.85.219.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A6C521400B0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 16:01:08 +1000 (EST)
-Received: by mail-oa0-f52.google.com with SMTP id l6so3830143oag.39
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Apr 2014 23:01:05 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5A2E31400B0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 16:04:04 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 21 Apr 2014 11:34:00 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8D05C1258048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 11:36:39 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3L63sZV13828580
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 11:33:54 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3L63tJw018892
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 11:33:55 +0530
+Date: Mon, 21 Apr 2014 14:03:53 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: clear the refcount for pci_dev on
+ powernv platform
+Message-ID: <20140421060353.GB24712@richard>
+References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1398051334.19682.14.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
-References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
- <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
-Date: Mon, 21 Apr 2014 11:31:05 +0530
-Message-ID: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>,
- Mike Turquette <mike.turquette@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1398051334.19682.14.camel@pasglop>
+Cc: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com,
+ Gavin Shan <gwshan@au1.ibm.com>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,48 +43,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> If the clock doesn't exist, clk_get_rate() returns -EINVAL
-
-You clk_get_rate() isn't written well then, it should return zero.
-@Mike: I didn't see this clearly mentioned in clk.h, should we fix
-that?
-
->, which becomes
-> a large number (freq is u32), failing the "freq < min_cpufreq" test.
-> Explicitly test for "(u32)-EINVAL" to fix this.
-
-That's a bad check. We should have done this instead:
-
-(s32)freq < 0; but that would be true for high values of clock. And that's
-why clk_get_rate() must return zero for errors.
-
-> Update the comment, and fix a grammer issue while we're at it.
+On Mon, Apr 21, 2014 at 01:35:34PM +1000, Benjamin Herrenschmidt wrote:
+>On Mon, 2014-04-21 at 10:25 +0800, Wei Yang wrote:
+>> When pcibios_remove_pci_devices() is removing pci devices, it will release
+>> pci device respectively. When the refcount of the device is 0, the pci_dev
+>> structure will be destroyed.
+>> 
+>> On PowerNV platform, the pci_dev will not be destroyed since the refcount is
+>> not 0.
+>> 
+>> After applying the patch, this warning is cleared during the EEH hotplug
+>> event.
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c |    7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+>You have to be careful here. We take a reference to the device in the
+>structure eeh_dev, that means we might access it after it's freed if
+>we don't increase the refcount.
+
+Ben,
+
+Thanks for reminding.
+
+Hmm, I checked the eeh_dev structure, there is a field pdev in eeh_dev, which
+is not a ref to the device.
+
+Then I did a check in eeh hotplug code patch. The pci_dev remove/install
+happens in eeh_reset_device(), between pcibios_remove_pci_devices() and
+pcibios_add_pci_devices(). During this period, we will try to clear/set the PE
+state and restore the BAR of a pci device. But the BAR is restored through the
+device node instead of pci_dev structure. As my understanding the eeh code
+here has the assumption that these pci devices in the same PE are removed.
+Maybe I missed something, needs confirmation from Gavin.
+
+The code I removed in this patch is introduced in commit
+184cd4a3(powerpc/powernv: PCI support for p7IOC under OPAL v2).
+Sounds the original purpose is to make sure a pci device is covered by a Bus
+PE, so don't remove it. After booting up, Bus PE will always be there, which
+means we will always hold a refcount to a pci device.
+
+I didn't come up with a better idea, or leaving the warning is fine.
+
+Any comments are welcome :)
+
 >
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index 53881d78a931..7027eab814ce 100644
-> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -179,10 +179,11 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 clk = of_clk_get(data->parent, i);
->                 freq = clk_get_rate(clk);
->                 /*
-> -                * the clock is valid if its frequency is not masked
-> -                * and large than minimum allowed frequency.
-> +                * the clock is valid if it exists, its frequency is not
-> +                * masked, and larger than minimum allowed frequency.
->                  */
-> -               if (freq < min_cpufreq || (mask & (1 << i)))
-> +               if (freq == (u32)-EINVAL || freq < min_cpufreq ||
-> +                   (mask & (1 << i)))
->                         table[i].frequency = CPUFREQ_ENTRY_INVALID;
->                 else
->                         table[i].frequency = freq / 1000;
-> --
-> 1.7.9.5
+>Cheers,
+>Ben.
 >
