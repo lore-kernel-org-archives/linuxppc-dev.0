@@ -1,22 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <marex@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2B0D51400FC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 11:11:01 +1000 (EST)
-Message-ID: <1398118442.1694.190.camel@snotra.buserror.net>
-Subject: Re: [PATCH 5/6] powerpc/corenet: Add DPAA FMan support to the SoC
- device tree(s)
-From: Scott Wood <scottwood@freescale.com>
-To: Shruti Kanetkar <Shruti@Freescale.com>
-Date: Mon, 21 Apr 2014 17:14:02 -0500
-In-Reply-To: <1397823693-27977-5-git-send-email-Shruti@Freescale.com>
-References: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
- <1397823693-27977-5-git-send-email-Shruti@Freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id 0EFBC1400D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 11:25:29 +1000 (EST)
+From: Marek Vasut <marex@denx.de>
+To: Brian Norris <computersforpeace@gmail.com>
+Subject: Re: [PATCH 0/5] defconfigs: add MTD_SPI_NOR (dependency for M25P80)
+Date: Mon, 21 Apr 2014 16:52:39 +0200
+References: <1397719309-2022-1-git-send-email-computersforpeace@gmail.com>
+ <20140417105302.GA32603@ulmo> <20140418063054.GK5512@norris-Latitude-E6410>
+In-Reply-To: <20140418063054.GK5512@norris-Latitude-E6410>
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Message-Id: <201404211652.39704.marex@denx.de>
+Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
+ Stephen Warren <swarren@wwwdotorg.org>, linux-sh@vger.kernel.org,
+ Steven Miao <realmz6@gmail.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+ Ralf Baechle <ralf@linux-mips.org>, adi-buildroot-devel@lists.sourceforge.net,
+ linux-tegra@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>,
+ linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org,
+ Sascha Hauer <kernel@pengutronix.de>, Olof Johansson <olof@lixom.net>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Shawn Guo <shawn.guo@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-04-18 at 07:21 -0500, Shruti Kanetkar wrote:
-> FMan 1 Gb/s MACs (dTSEC and mEMAC) have support for SGMII PHYs.
-> Add support for the internal SerDes TBI PHYs
+On Friday, April 18, 2014 at 08:30:54 AM, Brian Norris wrote:
+> Hi,
 > 
-> Based on prior work by Andy Fleming <afleming@gmail.com>
+> On Thu, Apr 17, 2014 at 12:53:03PM +0200, Thierry Reding wrote:
+> > On Thu, Apr 17, 2014 at 12:21:44AM -0700, Brian Norris wrote:
+> > > We are introducing a new SPI-NOR library/framework for MTD, to support
+> > > various types of SPI-NOR flash controllers which require (or benefit
+> > > from) intimate knowledge of the flash interface, rather than just the
+> > > relatively dumb SPI interface. This library borrows much of the m25p80
+> > > driver for its abstraction and moves this code into a spi-nor module.
+> > 
+> > If this is a common library, then the more common approach to solve this
+> > would be to have each driver that uses it to select MTD_SPI_NOR rather
+> > than depend on it. That way you can drop this whole series to update the
+> > default configurations.
 > 
-> Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
-> ---
->  arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  28 +++++
->  arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  51 +++++++++
->  arch/powerpc/boot/dts/fsl/p1023si-post.dtsi |  14 +++
->  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |  64 ++++++++++++
->  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |  64 ++++++++++++
->  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 104 +++++++++++++++++++
->  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |  64 ++++++++++++
->  arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 128 +++++++++++++++++++++++
->  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 154 ++++++++++++++++++++++++++++
->  9 files changed, 671 insertions(+)
+> But does MTD_SPI_NOR (and drivers/mtd/spi-nor/) qualify as a "library"
+> or as a "subsystem"? I thought the latter were typically expected to be
+> user-selectable options, not automatically-"select"ed.
+
+I agree the "subsystem" is user-selectable while the "library" is to be 
+'select'ed .
+
+> I would say that, except for its age, MTD_SPI_NOR is very similar in to
+> MTD_NAND (driver/mtd/nand/), which I'd consider a kind of subsystem, and
+> which users must select before they are asked about drivers which fall
+> under its category.
 > 
-> diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> index cbc354b..45b0ff5 100644
-> --- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-> @@ -172,6 +172,34 @@
->  		compatible = "fsl,b4860-rcpm", "fsl,qoriq-rcpm-2.0";
->  	};
->  
-> +/include/ "qoriq-fman3-0-1g-4.dtsi"
-> +/include/ "qoriq-fman3-0-1g-5.dtsi"
-> +/include/ "qoriq-fman3-0-10g-0.dtsi"
-> +/include/ "qoriq-fman3-0-10g-1.dtsi"
-> +	fman@400000 {
-> +		ethernet@e8000 {
-> +			tbi-handle = <&tbi4>;
-> +		};
+> Perhaps my usage of the word "library" in the description was a mistake,
+> as I don't exactly consider it like a library in the sense of many other
+> "select"ed libraries.
 
-Binding needed
+It did look like a library to me at first, but it's rather a subsystem that 
+contains a small library in it. Thus, I retract my previous comment about using 
+'select' and add :
 
-Where is the "reg" for these unit addresses?
+Acked-by: Marek Vasut <marex@denx.de>
 
-> +		mdio@e9000 {
-> +			tbi4: tbi-phy@8 {
-> +				reg = <0x8>;
-> +				device_type = "tbi-phy";
-> +			};
-> +		};
-
-Binding needed for tbi-phy device_type.  Why are we using device_type at
-all for this?
-
--Scott
+Best regards,
+Marek Vasut
