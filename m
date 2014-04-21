@@ -1,21 +1,22 @@
 Return-Path: <viresh.kumar@linaro.org>
-Received: from mail-oa0-f42.google.com (mail-oa0-f42.google.com
- [209.85.219.42])
+Received: from mail-oa0-f52.google.com (mail-oa0-f52.google.com
+ [209.85.219.52])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 65C0B1400BB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 15:52:49 +1000 (EST)
-Received: by mail-oa0-f42.google.com with SMTP id i4so3859362oah.15
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Apr 2014 22:52:45 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id A6C521400B0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 16:01:08 +1000 (EST)
+Received: by mail-oa0-f52.google.com with SMTP id l6so3830143oag.39
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 Apr 2014 23:01:05 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1397728407-13909-2-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
 References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
- <1397728407-13909-2-git-send-email-geert+renesas@glider.be>
-Date: Mon, 21 Apr 2014 11:22:45 +0530
-Message-ID: <CAKohpokx2uYH_xC0NZkuD06fQ3QiTLJKwW+YqKHcL-Zw+MGASw@mail.gmail.com>
-Subject: Re: [PATCH 2/3] cpufreq: ppc: Fix integer overflow in expression
+ <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
+Date: Mon, 21 Apr 2014 11:31:05 +0530
+Message-ID: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
+Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
 From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Geert Uytterhoeven <geert+renesas@glider.be>,
+ Mike Turquette <mike.turquette@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>,
@@ -32,32 +33,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> On 32-bit, "12 * NSEC_PER_SEC" doesn't fit in "unsigned long"
-> (NSEC_PER_SEC is a "long" constant), causing an integer overflow:
->
-> drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init':
-> drivers/cpufreq/ppc-corenet-cpufreq.c:211:9: warning: integer overflow in expression [-Woverflow]
->
-> Force the intermediate to be 64-bit by adding an "ULL" suffix to the
-> constant multiplier to fix this.
+> If the clock doesn't exist, clk_get_rate() returns -EINVAL
+
+You clk_get_rate() isn't written well then, it should return zero.
+@Mike: I didn't see this clearly mentioned in clk.h, should we fix
+that?
+
+>, which becomes
+> a large number (freq is u32), failing the "freq < min_cpufreq" test.
+> Explicitly test for "(u32)-EINVAL" to fix this.
+
+That's a bad check. We should have done this instead:
+
+(s32)freq < 0; but that would be true for high values of clock. And that's
+why clk_get_rate() must return zero for errors.
+
+> Update the comment, and fix a grammer issue while we're at it.
 >
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/cpufreq/ppc-corenet-cpufreq.c |    7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 >
 > diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index e78f9c806de4..53881d78a931 100644
+> index 53881d78a931..7027eab814ce 100644
 > --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
 > +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -208,7 +208,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 per_cpu(cpu_data, i) = data;
+> @@ -179,10 +179,11 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>                 clk = of_clk_get(data->parent, i);
+>                 freq = clk_get_rate(clk);
+>                 /*
+> -                * the clock is valid if its frequency is not masked
+> -                * and large than minimum allowed frequency.
+> +                * the clock is valid if it exists, its frequency is not
+> +                * masked, and larger than minimum allowed frequency.
+>                  */
+> -               if (freq < min_cpufreq || (mask & (1 << i)))
+> +               if (freq == (u32)-EINVAL || freq < min_cpufreq ||
+> +                   (mask & (1 << i)))
+>                         table[i].frequency = CPUFREQ_ENTRY_INVALID;
+>                 else
+>                         table[i].frequency = freq / 1000;
+> --
+> 1.7.9.5
 >
->         policy->cpuinfo.transition_latency =
-> -                               (12 * NSEC_PER_SEC) / fsl_get_sys_freq();
-> +                               (12ULL * NSEC_PER_SEC) / fsl_get_sys_freq();
->         of_node_put(np);
->
->         return 0;
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
