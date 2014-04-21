@@ -1,31 +1,36 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-lb0-f178.google.com (mail-lb0-f178.google.com
- [209.85.217.178])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1C7D514008C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 18:01:20 +1000 (EST)
-Received: by mail-lb0-f178.google.com with SMTP id s7so2950786lbd.37
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 01:01:13 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id B014D1400D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 18:02:39 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 21 Apr 2014 13:32:35 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A96793940058
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 13:32:31 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3L82cgJ7995768
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 13:32:38 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3L82VBq022649
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 13:32:31 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: Fix tlbie to add AVAL fields for 64K pages
+In-Reply-To: <1398057937.19682.39.camel@pasglop>
+References: <1398056856-17891-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1398057937.19682.39.camel@pasglop>
+Date: Mon, 21 Apr 2014 13:32:30 +0530
+Message-ID: <87wqejkt49.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
- <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
- <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
-Date: Mon, 21 Apr 2014 10:01:13 +0200
-Message-ID: <CAMuHMdV7p93j_nbyOtjKo8na02C8YYcL4DcqjY2TP=9x_se+4w@mail.gmail.com>
-Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- Mike Turquette <mike.turquette@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,67 +40,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Viresh,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Mon, Apr 21, 2014 at 8:01 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->> If the clock doesn't exist, clk_get_rate() returns -EINVAL
+> On Mon, 2014-04-21 at 10:37 +0530, Aneesh Kumar K.V wrote:
+>> The if condition check was based on a draft ISA doc. Remove the same.
 >
-> You clk_get_rate() isn't written well then, it should return zero.
+> Is this a real bug ? Do we need to send that back to stable ?
 
-You're right, thanks!
-Once again I looked at the wrong clk_get_rate() implementation :-(
-These non-CCF variants should die soon...
+We haven't found any issues without the patch. I found that by code
+reading when implementing THP support for powerkvm guest.  Also that if condition
+issue is only applicable for 64K base page size. ie, when base page size and
+actual page size both are 64K. Now for 64K bits we have bits 58..61
+already in AVA field of tlbie instruction. But ISA requires that we have
+them also in AVAL field. Since they are duplicate bits may be we are
+ok ?
 
-So the original code was correct: if the clock is not valid, freq == 0,
-and thus "freq < min_cpufreq" is true.
+-aneesh
 
-> @Mike: I didn't see this clearly mentioned in clk.h, should we fix
-> that?
 >
->>, which becomes
->> a large number (freq is u32), failing the "freq < min_cpufreq" test.
->> Explicitly test for "(u32)-EINVAL" to fix this.
+> Ben.
 >
-> That's a bad check. We should have done this instead:
->
-> (s32)freq < 0; but that would be true for high values of clock. And that's
-> why clk_get_rate() must return zero for errors.
->
->> Update the comment, and fix a grammer issue while we're at it.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 >> ---
->>  drivers/cpufreq/ppc-corenet-cpufreq.c |    7 ++++---
->>  1 file changed, 4 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
->> index 53881d78a931..7027eab814ce 100644
->> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
->> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
->> @@ -179,10 +179,11 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>                 clk = of_clk_get(data->parent, i);
->>                 freq = clk_get_rate(clk);
->>                 /*
->> -                * the clock is valid if its frequency is not masked
->> -                * and large than minimum allowed frequency.
->> +                * the clock is valid if it exists, its frequency is not
->> +                * masked, and larger than minimum allowed frequency.
->>                  */
->> -               if (freq < min_cpufreq || (mask & (1 << i)))
->> +               if (freq == (u32)-EINVAL || freq < min_cpufreq ||
->> +                   (mask & (1 << i)))
->>                         table[i].frequency = CPUFREQ_ENTRY_INVALID;
->>                 else
->>                         table[i].frequency = freq / 1000;
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>>  arch/powerpc/mm/hash_native_64.c | 38 ++++++++++++++++----------------------
+>>  1 file changed, 16 insertions(+), 22 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+>> index 3ea26c25590b..cf1d325eae8b 100644
+>> --- a/arch/powerpc/mm/hash_native_64.c
+>> +++ b/arch/powerpc/mm/hash_native_64.c
+>> @@ -82,17 +82,14 @@ static inline void __tlbie(unsigned long vpn, int psize, int apsize, int ssize)
+>>  		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
+>>  		va |= penc << 12;
+>>  		va |= ssize << 8;
+>> -		/* Add AVAL part */
+>> -		if (psize != apsize) {
+>> -			/*
+>> -			 * MPSS, 64K base page size and 16MB parge page size
+>> -			 * We don't need all the bits, but rest of the bits
+>> -			 * must be ignored by the processor.
+>> -			 * vpn cover upto 65 bits of va. (0...65) and we need
+>> -			 * 58..64 bits of va.
+>> -			 */
+>> -			va |= (vpn & 0xfe);
+>> -		}
+>> +		/*
+>> +		 * AVAL bits:
+>> +		 * We don't need all the bits, but rest of the bits
+>> +		 * must be ignored by the processor.
+>> +		 * vpn cover upto 65 bits of va. (0...65) and we need
+>> +		 * 58..64 bits of va.
+>> +		 */
+>> +		va |= (vpn & 0xfe); /* AVAL */
+>>  		va |= 1; /* L */
+>>  		asm volatile(ASM_FTR_IFCLR("tlbie %0,1", PPC_TLBIE(%1,%0), %2)
+>>  			     : : "r" (va), "r"(0), "i" (CPU_FTR_ARCH_206)
+>> @@ -133,17 +130,14 @@ static inline void __tlbiel(unsigned long vpn, int psize, int apsize, int ssize)
+>>  		va &= ~((1ul << mmu_psize_defs[apsize].shift) - 1);
+>>  		va |= penc << 12;
+>>  		va |= ssize << 8;
+>> -		/* Add AVAL part */
+>> -		if (psize != apsize) {
+>> -			/*
+>> -			 * MPSS, 64K base page size and 16MB parge page size
+>> -			 * We don't need all the bits, but rest of the bits
+>> -			 * must be ignored by the processor.
+>> -			 * vpn cover upto 65 bits of va. (0...65) and we need
+>> -			 * 58..64 bits of va.
+>> -			 */
+>> -			va |= (vpn & 0xfe);
+>> -		}
+>> +		/*
+>> +		 * AVAL bits:
+>> +		 * We don't need all the bits, but rest of the bits
+>> +		 * must be ignored by the processor.
+>> +		 * vpn cover upto 65 bits of va. (0...65) and we need
+>> +		 * 58..64 bits of va.
+>> +		 */
+>> +		va |= (vpn & 0xfe);
+>>  		va |= 1; /* L */
+>>  		asm volatile(".long 0x7c000224 | (%0 << 11) | (1 << 21)"
+>>  			     : : "r"(va) : "memory");
