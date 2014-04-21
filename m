@@ -1,19 +1,19 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A3CA714010B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 11:07:46 +1000 (EST)
-Message-ID: <1398118262.1694.188.camel@snotra.buserror.net>
-Subject: Re: [PATCH 4/6] powerpc/corenet: Create the dts components for the
- DPAA FMan
+ by ozlabs.org (Postfix) with ESMTPS id 2B0D51400FC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 11:11:01 +1000 (EST)
+Message-ID: <1398118442.1694.190.camel@snotra.buserror.net>
+Subject: Re: [PATCH 5/6] powerpc/corenet: Add DPAA FMan support to the SoC
+ device tree(s)
 From: Scott Wood <scottwood@freescale.com>
 To: Shruti Kanetkar <Shruti@Freescale.com>
-Date: Mon, 21 Apr 2014 17:11:02 -0500
-In-Reply-To: <1397823693-27977-4-git-send-email-Shruti@Freescale.com>
+Date: Mon, 21 Apr 2014 17:14:02 -0500
+In-Reply-To: <1397823693-27977-5-git-send-email-Shruti@Freescale.com>
 References: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
- <1397823693-27977-4-git-send-email-Shruti@Freescale.com>
+ <1397823693-27977-5-git-send-email-Shruti@Freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -27,94 +27,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Fri, 2014-04-18 at 07:21 -0500, Shruti Kanetkar wrote:
-> +fman@400000 {
-> +	mdio@f1000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		compatible = "fsl,fman-xmdio";
-> +		reg = <0xf1000 0x1000>;
-> +	};
-> +};
+> FMan 1 Gb/s MACs (dTSEC and mEMAC) have support for SGMII PHYs.
+> Add support for the internal SerDes TBI PHYs
+> 
+> Based on prior work by Andy Fleming <afleming@gmail.com>
+> 
+> Signed-off-by: Shruti Kanetkar <Shruti@Freescale.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  28 +++++
+>  arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |  51 +++++++++
+>  arch/powerpc/boot/dts/fsl/p1023si-post.dtsi |  14 +++
+>  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |  64 ++++++++++++
+>  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |  64 ++++++++++++
+>  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 104 +++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |  64 ++++++++++++
+>  arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 128 +++++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 154 ++++++++++++++++++++++++++++
+>  9 files changed, 671 insertions(+)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+> index cbc354b..45b0ff5 100644
+> --- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
+> @@ -172,6 +172,34 @@
+>  		compatible = "fsl,b4860-rcpm", "fsl,qoriq-rcpm-2.0";
+>  	};
+>  
+> +/include/ "qoriq-fman3-0-1g-4.dtsi"
+> +/include/ "qoriq-fman3-0-1g-5.dtsi"
+> +/include/ "qoriq-fman3-0-10g-0.dtsi"
+> +/include/ "qoriq-fman3-0-10g-1.dtsi"
+> +	fman@400000 {
+> +		ethernet@e8000 {
+> +			tbi-handle = <&tbi4>;
+> +		};
 
-I'd like to see a complete fman binding before we start adding pieces.
+Binding needed
 
-> +fman@400000 {
-> +	mdio0: mdio@e1120 {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		compatible = "fsl,fman-mdio";
-> +		reg = <0xe1120 0xee0>;
-> +	};
-> +};
+Where is the "reg" for these unit addresses?
 
-What is the difference between "fsl,fman-mdio" and "fsl,fman-xmdio"?  I
-don't see the latter on the list of compatibles in patch 3/6.
+> +		mdio@e9000 {
+> +			tbi4: tbi-phy@8 {
+> +				reg = <0x8>;
+> +				device_type = "tbi-phy";
+> +			};
+> +		};
 
-Within each category, is the exact fman version discoverable from the
-mdio registers?
-
-> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
-> new file mode 100644
-> index 0000000..ced5786
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/qoriq-fman3-1.dtsi
-> @@ -0,0 +1,52 @@
-> +/*
-> + * QorIQ FMan v3 device tree stub [ controller @ offset 0x500000 ]
-> + *
-> + * Copyright 2012 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *       notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *       notice, this list of conditions and the following disclaimer in the
-> + *       documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *       names of its contributors may be used to endorse or promote products
-> + *       derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> +*/
-> +
-> +fman@500000 {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	compatible = "simple-bus";
-
-Why is this simple-bus?
-
-> +
-> +	/* mdio nodes for fman v3 @ 0x500000 */
-> +	mdio@fc000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		reg = <0xfc000 0x1000>;
-> +	};
-> +
-> +	mdio@fd000 {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		reg = <0xfd000 0x1000>;
-> +	};
-> +};
-
-Where's the compatible?  Why is this file different from all the others?
+Binding needed for tbi-phy device_type.  Why are we using device_type at
+all for this?
 
 -Scott
