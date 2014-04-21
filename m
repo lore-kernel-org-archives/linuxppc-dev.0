@@ -1,27 +1,37 @@
-Return-Path: <stratosk@semaphore.gr>
-Received: from sema.semaphore.gr (unknown [78.46.194.137])
- (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CC84014007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 11:29:48 +1000 (EST)
-Message-ID: <5355A327.3020308@semaphore.gr>
-Date: Tue, 22 Apr 2014 02:00:55 +0300
-From: Stratos Karafotis <stratosk@semaphore.gr>
+ by ozlabs.org (Postfix) with ESMTPS id 4D2351400CF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 12:04:46 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 22 Apr 2014 09:34:15 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 18F572BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 09:34:13 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3LNXvg69765160
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 09:33:58 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3LNYBKm031119
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 09:34:11 +1000
+Date: Tue, 22 Apr 2014 09:34:23 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: clear the refcount for pci_dev on
+ powernv platform
+Message-ID: <20140421233423.GA4023@shangw>
+References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH v4 2/8] cpufreq: Use cpufreq_for_each_* macros for frequency
- table iteration
-References: <534DB1EB.1080401@semaphore.gr>
-In-Reply-To: <534DB1EB.1080401@semaphore.gr>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,732 +41,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The cpufreq core now supports the cpufreq_for_each_entry and
-cpufreq_for_each_valid_entry macros helpers for iteration over the
-cpufreq_frequency_table, so use them.
+On Mon, Apr 21, 2014 at 10:25:18AM +0800, Wei Yang wrote:
+>When pcibios_remove_pci_devices() is removing pci devices, it will release
+>pci device respectively. When the refcount of the device is 0, the pci_dev
+>structure will be destroyed.
+>
+>On PowerNV platform, the pci_dev will not be destroyed since the refcount is
+>not 0.
+>
 
-It should have no functional changes.
+Richard, the above description is true. However, it's not relevant to the
+issue (backtrace). I don't quite understand the scenario you had. You're
+doing hotplug on VFs or PF? I guess it would be full-hotplug instead of
+partial hotplug.
 
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/acpi-cpufreq.c       |  9 +++---
- drivers/cpufreq/arm_big_little.c     | 16 +++++------
- drivers/cpufreq/cpufreq_stats.c      | 24 ++++++----------
- drivers/cpufreq/dbx500-cpufreq.c     |  8 ++----
- drivers/cpufreq/elanfreq.c           |  9 +++---
- drivers/cpufreq/exynos-cpufreq.c     | 11 ++++---
- drivers/cpufreq/exynos5440-cpufreq.c | 30 +++++++++----------
- drivers/cpufreq/freq_table.c         | 56 ++++++++++++++++--------------------
- drivers/cpufreq/longhaul.c           | 13 ++++-----
- drivers/cpufreq/pasemi-cpufreq.c     | 10 +++----
- drivers/cpufreq/powernow-k6.c        | 14 ++++-----
- drivers/cpufreq/ppc_cbe_cpufreq.c    |  9 +++---
- drivers/cpufreq/s3c2416-cpufreq.c    | 40 +++++++++++---------------
- drivers/cpufreq/s3c64xx-cpufreq.c    | 15 ++++------
- 14 files changed, 117 insertions(+), 147 deletions(-)
+It seems that the IOMMU group wasn't detached correctly and then we tried
+to attach it again. Or the IOMMU group was attached for towice? :-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 000e4e0..b0c18ed 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -213,7 +213,7 @@ static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
- 
- static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
- {
--	int i;
-+	struct cpufreq_frequency_table *pos;
- 	struct acpi_processor_performance *perf;
- 
- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-@@ -223,10 +223,9 @@ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
- 
- 	perf = data->acpi_data;
- 
--	for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		if (msr == perf->states[data->freq_table[i].driver_data].status)
--			return data->freq_table[i].frequency;
--	}
-+	cpufreq_for_each_entry(pos, data->freq_table)
-+		if (msr == perf->states[pos->driver_data].status)
-+			return pos->frequency;
- 	return data->freq_table[0].frequency;
- }
- 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index bad2ed3..1f4d4e3 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -226,22 +226,22 @@ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
- /* get the minimum frequency in the cpufreq_frequency_table */
- static inline u32 get_table_min(struct cpufreq_frequency_table *table)
- {
--	int i;
-+	struct cpufreq_frequency_table *pos;
- 	uint32_t min_freq = ~0;
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++)
--		if (table[i].frequency < min_freq)
--			min_freq = table[i].frequency;
-+	cpufreq_for_each_entry(pos, table)
-+		if (pos->frequency < min_freq)
-+			min_freq = pos->frequency;
- 	return min_freq;
- }
- 
- /* get the maximum frequency in the cpufreq_frequency_table */
- static inline u32 get_table_max(struct cpufreq_frequency_table *table)
- {
--	int i;
-+	struct cpufreq_frequency_table *pos;
- 	uint32_t max_freq = 0;
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++)
--		if (table[i].frequency > max_freq)
--			max_freq = table[i].frequency;
-+	cpufreq_for_each_entry(pos, table)
-+		if (pos->frequency > max_freq)
-+			max_freq = pos->frequency;
- 	return max_freq;
- }
- 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index ecaaebf..0cd9b4d 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -182,11 +182,11 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- 
- static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
- {
--	unsigned int i, j, count = 0, ret = 0;
-+	unsigned int i, count = 0, ret = 0;
- 	struct cpufreq_stats *stat;
- 	unsigned int alloc_size;
- 	unsigned int cpu = policy->cpu;
--	struct cpufreq_frequency_table *table;
-+	struct cpufreq_frequency_table *pos, *table;
- 
- 	table = cpufreq_frequency_get_table(cpu);
- 	if (unlikely(!table))
-@@ -205,12 +205,8 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
- 	stat->cpu = cpu;
- 	per_cpu(cpufreq_stats_table, cpu) = stat;
- 
--	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	cpufreq_for_each_valid_entry(pos, table)
- 		count++;
--	}
- 
- 	alloc_size = count * sizeof(int) + count * sizeof(u64);
- 
-@@ -228,15 +224,11 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
- #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
- 	stat->trans_table = stat->freq_table + count;
- #endif
--	j = 0;
--	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
--		if (freq_table_get_index(stat, freq) == -1)
--			stat->freq_table[j++] = freq;
--	}
--	stat->state_num = j;
-+	i = 0;
-+	cpufreq_for_each_valid_entry(pos, table)
-+		if (freq_table_get_index(stat, pos->frequency) == -1)
-+			stat->freq_table[i++] = pos->frequency;
-+	stat->state_num = i;
- 	spin_lock(&cpufreq_stats_lock);
- 	stat->last_time = get_jiffies_64();
- 	stat->last_index = freq_table_get_index(stat, policy->cur);
-diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-index 412a78b..4bebc1b 100644
---- a/drivers/cpufreq/dbx500-cpufreq.c
-+++ b/drivers/cpufreq/dbx500-cpufreq.c
-@@ -45,7 +45,7 @@ static struct cpufreq_driver dbx500_cpufreq_driver = {
- 
- static int dbx500_cpufreq_probe(struct platform_device *pdev)
- {
--	int i = 0;
-+	struct cpufreq_frequency_table *pos;
- 
- 	freq_table = dev_get_platdata(&pdev->dev);
- 	if (!freq_table) {
-@@ -60,10 +60,8 @@ static int dbx500_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	pr_info("dbx500-cpufreq: Available frequencies:\n");
--	while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
--		pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
--		i++;
--	}
-+	cpufreq_for_each_entry(pos, freq_table)
-+		pr_info("  %d Mhz\n", pos->frequency / 1000);
- 
- 	return cpufreq_register_driver(&dbx500_cpufreq_driver);
- }
-diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-index 7f5d2a6..1c06e78 100644
---- a/drivers/cpufreq/elanfreq.c
-+++ b/drivers/cpufreq/elanfreq.c
-@@ -147,7 +147,7 @@ static int elanfreq_target(struct cpufreq_policy *policy,
- static int elanfreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(0);
--	unsigned int i;
-+	struct cpufreq_frequency_table *pos;
- 
- 	/* capability check */
- 	if ((c->x86_vendor != X86_VENDOR_AMD) ||
-@@ -159,10 +159,9 @@ static int elanfreq_cpu_init(struct cpufreq_policy *policy)
- 		max_freq = elanfreq_get_cpu_frequency(0);
- 
- 	/* table init */
--	for (i = 0; (elanfreq_table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		if (elanfreq_table[i].frequency > max_freq)
--			elanfreq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
--	}
-+	cpufreq_for_each_entry(pos, elanfreq_table)
-+		if (pos->frequency > max_freq)
-+			pos->frequency = CPUFREQ_ENTRY_INVALID;
- 
- 	/* cpuinfo and default policy values */
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index f99cfe2..9c13255 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -29,17 +29,16 @@ static unsigned int locking_frequency;
- static int exynos_cpufreq_get_index(unsigned int freq)
- {
- 	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
--	int index;
-+	struct cpufreq_frequency_table *pos;
- 
--	for (index = 0;
--		freq_table[index].frequency != CPUFREQ_TABLE_END; index++)
--		if (freq_table[index].frequency == freq)
-+	cpufreq_for_each_entry(pos, freq_table)
-+		if (pos->frequency == freq)
- 			break;
- 
--	if (freq_table[index].frequency == CPUFREQ_TABLE_END)
-+	if (pos->frequency == CPUFREQ_TABLE_END)
- 		return -EINVAL;
- 
--	return index;
-+	return pos - freq_table;
- }
- 
- static int exynos_cpufreq_scale(unsigned int target_freq)
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index a6b8214..f33f25b 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -114,25 +114,23 @@ static struct cpufreq_freqs freqs;
- 
- static int init_div_table(void)
- {
--	struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-+	struct cpufreq_frequency_table *pos, *freq_tbl = dvfs_info->freq_table;
- 	unsigned int tmp, clk_div, ema_div, freq, volt_id;
--	int i = 0;
- 	struct dev_pm_opp *opp;
- 
- 	rcu_read_lock();
--	for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
--
-+	cpufreq_for_each_entry(pos, freq_tbl) {
- 		opp = dev_pm_opp_find_freq_exact(dvfs_info->dev,
--					freq_tbl[i].frequency * 1000, true);
-+					pos->frequency * 1000, true);
- 		if (IS_ERR(opp)) {
- 			rcu_read_unlock();
- 			dev_err(dvfs_info->dev,
- 				"failed to find valid OPP for %u KHZ\n",
--				freq_tbl[i].frequency);
-+				pos->frequency);
- 			return PTR_ERR(opp);
- 		}
- 
--		freq = freq_tbl[i].frequency / 1000; /* In MHZ */
-+		freq = pos->frequency / 1000; /* In MHZ */
- 		clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
- 					<< P0_7_CPUCLKDEV_SHIFT;
- 		clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
-@@ -157,7 +155,8 @@ static int init_div_table(void)
- 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
- 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
- 
--		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
-+		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
-+						(pos - freq_tbl));
- 	}
- 
- 	rcu_read_unlock();
-@@ -166,8 +165,9 @@ static int init_div_table(void)
- 
- static void exynos_enable_dvfs(unsigned int cur_frequency)
- {
--	unsigned int tmp, i, cpu;
-+	unsigned int tmp, cpu;
- 	struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
-+	struct cpufreq_frequency_table *pos;
- 	/* Disable DVFS */
- 	__raw_writel(0,	dvfs_info->base + XMU_DVFS_CTRL);
- 
-@@ -182,15 +182,15 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
- 	 __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
- 
- 	/* Set initial performance index */
--	for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
--		if (freq_table[i].frequency == cur_frequency)
-+	cpufreq_for_each_entry(pos, freq_table)
-+		if (pos->frequency == cur_frequency)
- 			break;
- 
--	if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
-+	if (pos->frequency == CPUFREQ_TABLE_END) {
- 		dev_crit(dvfs_info->dev, "Boot up frequency not supported\n");
- 		/* Assign the highest frequency */
--		i = 0;
--		cur_frequency = freq_table[i].frequency;
-+		pos = freq_table;
-+		cur_frequency = pos->frequency;
- 	}
- 
- 	dev_info(dvfs_info->dev, "Setting dvfs initial frequency = %uKHZ",
-@@ -199,7 +199,7 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
- 	for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
- 		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
- 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
--		tmp |= (i << C0_3_PSTATE_NEW_SHIFT);
-+		tmp |= ((pos - freq_table) << C0_3_PSTATE_NEW_SHIFT);
- 		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
- 	}
- 
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index 08e7bbc..cf004a5 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -21,22 +21,19 @@
- int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
- 				    struct cpufreq_frequency_table *table)
- {
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int min_freq = ~0;
- 	unsigned int max_freq = 0;
--	unsigned int i;
-+	unsigned int freq;
- 
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID) {
--			pr_debug("table entry %u is invalid, skipping\n", i);
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		freq = pos->frequency;
- 
--			continue;
--		}
- 		if (!cpufreq_boost_enabled()
--		    && (table[i].flags & CPUFREQ_BOOST_FREQ))
-+		    && (pos->flags & CPUFREQ_BOOST_FREQ))
- 			continue;
- 
--		pr_debug("table entry %u: %u kHz\n", i, freq);
-+		pr_debug("table entry %lu: %u kHz\n", pos - table, freq);
- 		if (freq < min_freq)
- 			min_freq = freq;
- 		if (freq > max_freq)
-@@ -57,7 +54,8 @@ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_cpuinfo);
- int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table)
- {
--	unsigned int next_larger = ~0, freq, i = 0;
-+	struct cpufreq_frequency_table *pos;
-+	unsigned int freq, next_larger = ~0;
- 	bool found = false;
- 
- 	pr_debug("request for verification of policy (%u - %u kHz) for cpu %u\n",
-@@ -65,9 +63,9 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 
- 	cpufreq_verify_within_cpu_limits(policy);
- 
--	for (; freq = table[i].frequency, freq != CPUFREQ_TABLE_END; i++) {
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		freq = pos->frequency;
-+
- 		if ((freq >= policy->min) && (freq <= policy->max)) {
- 			found = true;
- 			break;
-@@ -118,7 +116,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 		.driver_data = ~0,
- 		.frequency = 0,
- 	};
--	unsigned int i;
-+	struct cpufreq_frequency_table *pos;
-+	unsigned int freq, i = 0;
- 
- 	pr_debug("request for target %u kHz (relation: %u) for cpu %u\n",
- 					target_freq, relation, policy->cpu);
-@@ -132,10 +131,10 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 		break;
- 	}
- 
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		unsigned int freq = table[i].frequency;
--		if (freq == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	cpufreq_for_each_valid_entry(pos, table) {
-+		freq = pos->frequency;
-+
-+		i = pos - table;
- 		if ((freq < policy->min) || (freq > policy->max))
- 			continue;
- 		switch (relation) {
-@@ -184,8 +183,7 @@ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
- int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
- 		unsigned int freq)
- {
--	struct cpufreq_frequency_table *table;
--	int i;
-+	struct cpufreq_frequency_table *pos, *table;
- 
- 	table = cpufreq_frequency_get_table(policy->cpu);
- 	if (unlikely(!table)) {
-@@ -193,10 +191,9 @@ int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
- 		return -ENOENT;
- 	}
- 
--	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
--		if (table[i].frequency == freq)
--			return i;
--	}
-+	cpufreq_for_each_valid_entry(pos, table)
-+		if (pos->frequency == freq)
-+			return pos - table;
- 
- 	return -EINVAL;
- }
-@@ -208,16 +205,13 @@ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_index);
- static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf,
- 				    bool show_boost)
- {
--	unsigned int i = 0;
- 	ssize_t count = 0;
--	struct cpufreq_frequency_table *table = policy->freq_table;
-+	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
- 
- 	if (!table)
- 		return -ENODEV;
- 
--	for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
--		if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	cpufreq_for_each_valid_entry(pos, table) {
- 		/*
- 		 * show_boost = true and driver_data = BOOST freq
- 		 * display BOOST freqs
-@@ -229,10 +223,10 @@ static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf,
- 		 * show_boost = false and driver_data != BOOST freq
- 		 * display NON BOOST freqs
- 		 */
--		if (show_boost ^ (table[i].flags & CPUFREQ_BOOST_FREQ))
-+		if (show_boost ^ (pos->flags & CPUFREQ_BOOST_FREQ))
- 			continue;
- 
--		count += sprintf(&buf[count], "%d ", table[i].frequency);
-+		count += sprintf(&buf[count], "%d ", pos->frequency);
- 	}
- 	count += sprintf(&buf[count], "\n");
- 
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index d00e5d1..5e12646 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -528,6 +528,7 @@ static int longhaul_get_ranges(void)
- 
- static void longhaul_setup_voltagescaling(void)
- {
-+	struct cpufreq_frequency_table *freq_pos;
- 	union msr_longhaul longhaul;
- 	struct mV_pos minvid, maxvid, vid;
- 	unsigned int j, speed, pos, kHz_step, numvscales;
-@@ -606,18 +607,16 @@ static void longhaul_setup_voltagescaling(void)
- 	/* Calculate kHz for one voltage step */
- 	kHz_step = (highest_speed - min_vid_speed) / numvscales;
- 
--	j = 0;
--	while (longhaul_table[j].frequency != CPUFREQ_TABLE_END) {
--		speed = longhaul_table[j].frequency;
-+	cpufreq_for_each_entry(freq_pos, longhaul_table) {
-+		speed = freq_pos->frequency;
- 		if (speed > min_vid_speed)
- 			pos = (speed - min_vid_speed) / kHz_step + minvid.pos;
- 		else
- 			pos = minvid.pos;
--		longhaul_table[j].driver_data |= mV_vrm_table[pos] << 8;
-+		freq_pos->driver_data |= mV_vrm_table[pos] << 8;
- 		vid = vrm_mV_table[mV_vrm_table[pos]];
--		printk(KERN_INFO PFX "f: %d kHz, index: %d, vid: %d mV\n",
--				speed, j, vid.mV);
--		j++;
-+		printk(KERN_INFO PFX "f: %u kHz, index: %u, vid: %d mV\n",
-+				speed, freq_pos - longhaul_table, vid.mV);
- 	}
- 
- 	can_scale_voltage = 1;
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index 84c84b5..9a64492 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -136,9 +136,10 @@ void restore_astate(int cpu)
- 
- static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
-+	struct cpufreq_frequency_table *pos;
- 	const u32 *max_freqp;
- 	u32 max_freq;
--	int i, cur_astate;
-+	int cur_astate;
- 	struct resource res;
- 	struct device_node *cpu, *dn;
- 	int err = -ENODEV;
-@@ -197,10 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	pr_debug("initializing frequency table\n");
- 
- 	/* initialize frequency table */
--	for (i=0; pas_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
--		pas_freqs[i].frequency =
--			get_astate_freq(pas_freqs[i].driver_data) * 100000;
--		pr_debug("%d: %d\n", i, pas_freqs[i].frequency);
-+	cpufreq_for_each_entry(pos, pas_freqs) {
-+		pos->frequency = get_astate_freq(pos->driver_data) * 100000;
-+		pr_debug("%lu: %d\n", pos - pas_freqs, pos->frequency);
- 	}
- 
- 	cur_astate = get_cur_astate(policy->cpu);
-diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-index 49f120e..a133236 100644
---- a/drivers/cpufreq/powernow-k6.c
-+++ b/drivers/cpufreq/powernow-k6.c
-@@ -159,6 +159,7 @@ static int powernow_k6_target(struct cpufreq_policy *policy,
- 
- static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
- {
-+	struct cpufreq_frequency_table *pos;
- 	unsigned int i, f;
- 	unsigned khz;
- 
-@@ -176,12 +177,11 @@ static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
- 		}
- 	}
- 	if (param_max_multiplier) {
--		for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
--			if (clock_ratio[i].driver_data == param_max_multiplier) {
-+		cpufreq_for_each_entry(pos, clock_ratio)
-+			if (pos->driver_data == param_max_multiplier) {
- 				max_multiplier = param_max_multiplier;
- 				goto have_max_multiplier;
- 			}
--		}
- 		printk(KERN_ERR "powernow-k6: invalid max_multiplier parameter, valid parameters 20, 30, 35, 40, 45, 50, 55, 60\n");
- 		return -EINVAL;
- 	}
-@@ -209,12 +209,12 @@ have_busfreq:
- 	param_busfreq = busfreq * 10;
- 
- 	/* table init */
--	for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
--		f = clock_ratio[i].driver_data;
-+	cpufreq_for_each_entry(pos, clock_ratio) {
-+		f = pos->driver_data;
- 		if (f > max_multiplier)
--			clock_ratio[i].frequency = CPUFREQ_ENTRY_INVALID;
-+			pos->frequency = CPUFREQ_ENTRY_INVALID;
- 		else
--			clock_ratio[i].frequency = busfreq * f;
-+			pos->frequency = busfreq * f;
- 	}
- 
- 	/* cpuinfo and default policy values */
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-index 5be8a48..b550d5c 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-@@ -67,9 +67,10 @@ static int set_pmode(unsigned int cpu, unsigned int slow_mode)
- 
- static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
-+	struct cpufreq_frequency_table *pos;
- 	const u32 *max_freqp;
- 	u32 max_freq;
--	int i, cur_pmode;
-+	int cur_pmode;
- 	struct device_node *cpu;
- 
- 	cpu = of_get_cpu_node(policy->cpu, NULL);
-@@ -102,9 +103,9 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	pr_debug("initializing frequency table\n");
- 
- 	/* initialize frequency table */
--	for (i=0; cbe_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
--		cbe_freqs[i].frequency = max_freq / cbe_freqs[i].driver_data;
--		pr_debug("%d: %d\n", i, cbe_freqs[i].frequency);
-+	cpufreq_for_each_entry(pos, cbe_freqs) {
-+		pos->frequency = max_freq / pos->driver_data;
-+		pr_debug("%lu: %d\n", pos - cbe_freqs, pos->frequency);
- 	}
- 
- 	/* if DEBUG is enabled set_pmode() measures the latency
-diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
-index 4626f90..2fd53ea 100644
---- a/drivers/cpufreq/s3c2416-cpufreq.c
-+++ b/drivers/cpufreq/s3c2416-cpufreq.c
-@@ -266,7 +266,7 @@ out:
- static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
- {
- 	int count, v, i, found;
--	struct cpufreq_frequency_table *freq;
-+	struct cpufreq_frequency_table *pos;
- 	struct s3c2416_dvfs *dvfs;
- 
- 	count = regulator_count_voltages(s3c_freq->vddarm);
-@@ -275,12 +275,11 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
- 		return;
- 	}
- 
--	freq = s3c_freq->freq_table;
--	while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
--		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	if (!count)
-+		goto out;
- 
--		dvfs = &s3c2416_dvfs_table[freq->driver_data];
-+	cpufreq_for_each_valid_entry(pos, s3c_freq->freq_table) {
-+		dvfs = &s3c2416_dvfs_table[pos->driver_data];
- 		found = 0;
- 
- 		/* Check only the min-voltage, more is always ok on S3C2416 */
-@@ -292,13 +291,12 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
- 
- 		if (!found) {
- 			pr_debug("cpufreq: %dkHz unsupported by regulator\n",
--				 freq->frequency);
--			freq->frequency = CPUFREQ_ENTRY_INVALID;
-+				 pos->frequency);
-+			pos->frequency = CPUFREQ_ENTRY_INVALID;
- 		}
--
--		freq++;
- 	}
- 
-+out:
- 	/* Guessed */
- 	s3c_freq->regulator_latency = 1 * 1000 * 1000;
- }
-@@ -338,7 +336,7 @@ static struct notifier_block s3c2416_cpufreq_reboot_notifier = {
- static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
- {
- 	struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
--	struct cpufreq_frequency_table *freq;
-+	struct cpufreq_frequency_table *pos;
- 	struct clk *msysclk;
- 	unsigned long rate;
- 	int ret;
-@@ -427,31 +425,27 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	s3c_freq->regulator_latency = 0;
- #endif
- 
--	freq = s3c_freq->freq_table;
--	while (freq->frequency != CPUFREQ_TABLE_END) {
-+	cpufreq_for_each_entry(pos, s3c_freq->freq_table) {
- 		/* special handling for dvs mode */
--		if (freq->driver_data == 0) {
-+		if (pos->driver_data == 0) {
- 			if (!s3c_freq->hclk) {
- 				pr_debug("cpufreq: %dkHz unsupported as it would need unavailable dvs mode\n",
--					 freq->frequency);
--				freq->frequency = CPUFREQ_ENTRY_INVALID;
-+					 pos->frequency);
-+				pos->frequency = CPUFREQ_ENTRY_INVALID;
- 			} else {
--				freq++;
- 				continue;
- 			}
- 		}
- 
- 		/* Check for frequencies we can generate */
- 		rate = clk_round_rate(s3c_freq->armdiv,
--				      freq->frequency * 1000);
-+				      pos->frequency * 1000);
- 		rate /= 1000;
--		if (rate != freq->frequency) {
-+		if (rate != pos->frequency) {
- 			pr_debug("cpufreq: %dkHz unsupported by clock (clk_round_rate return %lu)\n",
--				 freq->frequency, rate);
--			freq->frequency = CPUFREQ_ENTRY_INVALID;
-+				pos->frequency, rate);
-+			pos->frequency = CPUFREQ_ENTRY_INVALID;
- 		}
--
--		freq++;
- 	}
- 
- 	/* Datasheet says PLL stabalisation time must be at least 300us,
-diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-index ff7d3ec..176e84c 100644
---- a/drivers/cpufreq/s3c64xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-@@ -118,11 +118,10 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 		pr_err("Unable to check supported voltages\n");
- 	}
- 
--	freq = s3c64xx_freq_table;
--	while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
--		if (freq->frequency == CPUFREQ_ENTRY_INVALID)
--			continue;
-+	if (!count)
-+		goto out;
- 
-+	cpufreq_for_each_valid_entry(freq, s3c64xx_freq_table) {
- 		dvfs = &s3c64xx_dvfs_table[freq->driver_data];
- 		found = 0;
- 
-@@ -137,10 +136,9 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
- 				 freq->frequency);
- 			freq->frequency = CPUFREQ_ENTRY_INVALID;
- 		}
--
--		freq++;
- 	}
- 
-+out:
- 	/* Guess based on having to do an I2C/SPI write; in future we
- 	 * will be able to query the regulator performance here. */
- 	regulator_latency = 1 * 1000 * 1000;
-@@ -179,8 +177,7 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	}
- #endif
- 
--	freq = s3c64xx_freq_table;
--	while (freq->frequency != CPUFREQ_TABLE_END) {
-+	cpufreq_for_each_entry(freq, s3c64xx_freq_table) {
- 		unsigned long r;
- 
- 		/* Check for frequencies we can generate */
-@@ -196,8 +193,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
- 		 * frequency is the maximum we can support. */
- 		if (!vddarm && freq->frequency > clk_get_rate(policy->clk) / 1000)
- 			freq->frequency = CPUFREQ_ENTRY_INVALID;
--
--		freq++;
- 	}
- 
- 	/* Datasheet says PLL stabalisation time (if we were to use
--- 
-1.9.0
+The IOMMU group is expected to be detached like this, please investigate
+for more why it wasn't detached correctly.
+
+pcibios_remove_pci_devices()
+pci_stop_and_remove_bus_device()
+pci_remove_bus_device()
+pci_destroy_dev()
+
+static void pci_destroy_dev(struct pci_dev *dev)
+{
+        if (!dev->dev.kobj.parent)
+                return;
+
+        device_del(&dev->dev);              /* It's calling iommu_del_device() */
+
+        down_write(&pci_bus_sem);
+        list_del(&dev->bus_list);
+        up_write(&pci_bus_sem);
+
+        pci_free_resources(dev);
+        put_device(&dev->dev);		    /* It's calling pcibios_release_device() */
+}
+
+Thanks,
+Gavin
+
+>After applying the patch, this warning is cleared during the EEH hotplug
+>event.
+>
+>[  204.123609] ------------[ cut here ]------------
+>[  204.123645] WARNING: at arch/powerpc/kernel/iommu.c:1125
+>[  204.123680] Modules linked in: xt_CHECKSUM nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT bnep bluetooth 6lowpan_iphc rfkill xt_conntrack ebtable_nat ebtable_broute bridge stp llc mlx4_ib ib_sa ib_mad ib_core ib_addr ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw bnx2x tg3 mlx4_core nfsd ptp mdio ses libcrc32c nfs_acl enclosure be2net pps_core shpchp lockd kvm uinput sunrpc binfmt_misc lpfc scsi_transport_fc ipr scsi_tgt
+>[  204.124356] CPU: 18 PID: 650 Comm: eehd Not tainted 3.14.0-rc5yw+ #102
+>[  204.124400] task: c0000027ed485670 ti: c0000027ed50c000 task.ti: c0000027ed50c000
+>[  204.124453] NIP: c00000000003cf80 LR: c00000000006c648 CTR: c00000000006c5c0
+>[  204.124506] REGS: c0000027ed50f440 TRAP: 0700   Not tainted  (3.14.0-rc5yw+)
+>[  204.124558] MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 88008084  XER: 20000000
+>[  204.124682] CFAR: c00000000006c644 SOFTE: 1
+>GPR00: c00000000006c648 c0000027ed50f6c0 c000000001398380 c0000027ec260300
+>GPR04: c0000027ea92c000 c00000000006ad00 c0000000016e41b0 0000000000000110
+>GPR08: c0000000012cd4c0 0000000000000001 c0000027ec2602ff 0000000000000062
+>GPR12: 0000000028008084 c00000000fdca200 c0000000000d1d90 c0000027ec281a80
+>GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
+>GPR24: 000000005342697b 0000000000002906 c000001fe6ac9800 c000001fe6ac9800
+>GPR28: 0000000000000000 c0000000016e3a80 c0000027ea92c090 c0000027ea92c000
+>[  204.125353] NIP [c00000000003cf80] .iommu_add_device+0x30/0x1f0
+>[  204.125399] LR [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
+>[  204.125443] Call Trace:
+>[  204.125464] [c0000027ed50f6c0] [c0000027ed50f750] 0xc0000027ed50f750 (unreliable)
+>[  204.125526] [c0000027ed50f750] [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
+>[  204.125588] [c0000027ed50f7d0] [c000000000069cc8] .pnv_pci_dma_dev_setup+0x78/0x340
+>[  204.125650] [c0000027ed50f870] [c000000000044408] .pcibios_setup_device+0x88/0x2f0
+>[  204.125712] [c0000027ed50f940] [c000000000046040] .pcibios_setup_bus_devices+0x60/0xd0
+>[  204.125774] [c0000027ed50f9c0] [c000000000043acc] .pcibios_add_pci_devices+0xdc/0x1c0
+>[  204.125837] [c0000027ed50fa50] [c00000000086f970] .eeh_reset_device+0x36c/0x4f0
+>[  204.125939] [c0000027ed50fb20] [c00000000003a2d8] .eeh_handle_normal_event+0x448/0x480
+>[  204.126068] [c0000027ed50fbc0] [c00000000003a35c] .eeh_handle_event+0x4c/0x340
+>[  204.126192] [c0000027ed50fc80] [c00000000003a74c] .eeh_event_handler+0xfc/0x1b0
+>[  204.126319] [c0000027ed50fd30] [c0000000000d1ea0] .kthread+0x110/0x130
+>[  204.126430] [c0000027ed50fe30] [c00000000000a460] .ret_from_kernel_thread+0x5c/0x7c
+>[  204.126556] Instruction dump:
+>[  204.126610] 7c0802a6 fba1ffe8 fbc1fff0 fbe1fff8 f8010010 f821ff71 7c7e1b78 60000000
+>[  204.126787] 60000000 e87e0298 3143ffff 7d2a1910 <0b090000> 2fa90000 40de00c8 ebfe0218
+>[  204.126966] ---[ end trace 6e7aefd80add2973 ]---
+>
+>This patch clear the step to get reference.
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> arch/powerpc/platforms/powernv/pci-ioda.c |    1 -
+> 1 file changed, 1 deletion(-)
+>
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index e2270f4..fc4edda 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -561,7 +561,6 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+> 				pci_name(dev));
+> 			continue;
+> 		}
+>-		pci_dev_get(dev);
+> 		pdn->pcidev = dev;
+> 		pdn->pe_number = pe->pe_number;
+> 		pe->dma_weight += pnv_ioda_dma_weight(dev);
+>-- 
+>1.7.9.5
+>
