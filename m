@@ -1,40 +1,31 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-f178.google.com (mail-lb0-f178.google.com
+ [209.85.217.178])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 85FFF14007D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 16:11:46 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 21 Apr 2014 11:41:42 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id CA7F2E0044
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 11:46:03 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3L6BbD653936292
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 11:41:37 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3L6BdVG021923
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 11:41:39 +0530
-Date: Mon, 21 Apr 2014 14:11:37 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH 2/2] powerpc/powernc: revert part of commit d905c5df(PPC:
- POWERNV: move iommu_add_device earlier)
-Message-ID: <20140421061137.GC24712@richard>
-References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1398047119-6861-2-git-send-email-weiyang@linux.vnet.ibm.com>
- <1398051452.19682.15.camel@pasglop>
- <20140421052213.GA24712@richard>
+ by ozlabs.org (Postfix) with ESMTPS id 1C7D514008C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 18:01:20 +1000 (EST)
+Received: by mail-lb0-f178.google.com with SMTP id s7so2950786lbd.37
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2014 01:01:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140421052213.GA24712@richard>
-Cc: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
+References: <1397728407-13909-1-git-send-email-geert+renesas@glider.be>
+ <1397728407-13909-3-git-send-email-geert+renesas@glider.be>
+ <CAKohpo=GZxUBA63k8-vAQWvoUEikCBNGNrWK87vzn=geVL3_gQ@mail.gmail.com>
+Date: Mon, 21 Apr 2014 10:01:13 +0200
+Message-ID: <CAMuHMdV7p93j_nbyOtjKo8na02C8YYcL4DcqjY2TP=9x_se+4w@mail.gmail.com>
+Subject: Re: [PATCH 3/3] cpufreq: ppc: Fix handling of non-existent clocks
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+ Mike Turquette <mike.turquette@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,36 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2014 at 01:22:13PM +0800, Wei Yang wrote:
->On Mon, Apr 21, 2014 at 01:37:32PM +1000, Benjamin Herrenschmidt wrote:
->>On Mon, 2014-04-21 at 10:25 +0800, Wei Yang wrote:
->>> Here is a draft call flow:
->>> 
->>> pci_device_add
->>>    pcibios_add_device
->>>       pci_dma_dev_setup
->>>          pnv_pci_dma_dev_setup
->>>             pnv_pci_ioda_dma_dev_setup
->>>                set_iommu_table_base_and_group <--- here
->>> device_add
->>> 
->>> When set_iommu_table_base_and_group() is invoked int
->>> pnv_pci_ioda_dma_dev_setup(), the dev->kobj->sd is not initialized. The
->>> dev->kobj->sd is initialized in device_add().
->>> 
->>> After applying this patch, the error
->>>     iommu_tce: 0003:05:00.0 has not been added, ret=-14
->>> is cleared.
->>> 
->>> This patch revert the change for pnv_pci_ioda_dma_dev_setup() from commit
->>> d905c5df(PPC: POWERNV: move iommu_add_device earlier).
->>
->>But in that case, is the group still set ?
->
->I think so.
->
->iommu_add_device() will be invoked when device_add() notify the pci bus.
->
+Hi Viresh,
 
-Did a quick test, after applying this patch, the logic would be the same for
-VF and PF hotplug, the iommu_group is created with corresponding device.
+On Mon, Apr 21, 2014 at 8:01 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17 April 2014 15:23, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>> If the clock doesn't exist, clk_get_rate() returns -EINVAL
+>
+> You clk_get_rate() isn't written well then, it should return zero.
+
+You're right, thanks!
+Once again I looked at the wrong clk_get_rate() implementation :-(
+These non-CCF variants should die soon...
+
+So the original code was correct: if the clock is not valid, freq == 0,
+and thus "freq < min_cpufreq" is true.
+
+> @Mike: I didn't see this clearly mentioned in clk.h, should we fix
+> that?
+>
+>>, which becomes
+>> a large number (freq is u32), failing the "freq < min_cpufreq" test.
+>> Explicitly test for "(u32)-EINVAL" to fix this.
+>
+> That's a bad check. We should have done this instead:
+>
+> (s32)freq < 0; but that would be true for high values of clock. And that's
+> why clk_get_rate() must return zero for errors.
+>
+>> Update the comment, and fix a grammer issue while we're at it.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> ---
+>>  drivers/cpufreq/ppc-corenet-cpufreq.c |    7 ++++---
+>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
+>> index 53881d78a931..7027eab814ce 100644
+>> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
+>> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
+>> @@ -179,10 +179,11 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>                 clk = of_clk_get(data->parent, i);
+>>                 freq = clk_get_rate(clk);
+>>                 /*
+>> -                * the clock is valid if its frequency is not masked
+>> -                * and large than minimum allowed frequency.
+>> +                * the clock is valid if it exists, its frequency is not
+>> +                * masked, and larger than minimum allowed frequency.
+>>                  */
+>> -               if (freq < min_cpufreq || (mask & (1 << i)))
+>> +               if (freq == (u32)-EINVAL || freq < min_cpufreq ||
+>> +                   (mask & (1 << i)))
+>>                         table[i].frequency = CPUFREQ_ENTRY_INVALID;
+>>                 else
+>>                         table[i].frequency = freq / 1000;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
