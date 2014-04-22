@@ -1,38 +1,38 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C12711400BE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 17:44:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 98FE01400F4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 18:10:48 +1000 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 22 Apr 2014 13:14:44 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1DFE4E0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:19:07 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3M7ib8N66650202
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:14:37 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3M7idqc024057
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:14:40 +0530
-Date: Tue, 22 Apr 2014 15:44:37 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/powernv: clear the refcount for pci_dev on
- powernv platform
-Message-ID: <20140422074437.GB6431@richard>
-References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20140421233423.GA4023@shangw>
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Tue, 22 Apr 2014 18:10:43 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 422B43578047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 18:10:42 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3M7neEP50921528
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 17:49:41 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3M8Ae6V005628
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 18:10:41 +1000
+Message-ID: <535623FE.3030702@linux.vnet.ibm.com>
+Date: Tue, 22 Apr 2014 13:40:38 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140421233423.GA4023@shangw>
-Cc: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>, benh@kernel.crashing.org,
+ paulus@samba.org, stewart@linux.vnet.ibm.com
+Subject: Re: [PATCH 4/6] powerpc/powernv: Fix little endian issues in OPAL
+ error log code
+References: <1398142887-24109-1-git-send-email-anton@samba.org>
+ <1398142887-24109-4-git-send-email-anton@samba.org>
+In-Reply-To: <1398142887-24109-4-git-send-email-anton@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,79 +42,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 22, 2014 at 09:34:23AM +1000, Gavin Shan wrote:
->On Mon, Apr 21, 2014 at 10:25:18AM +0800, Wei Yang wrote:
->>When pcibios_remove_pci_devices() is removing pci devices, it will release
->>pci device respectively. When the refcount of the device is 0, the pci_dev
->>structure will be destroyed.
->>
->>On PowerNV platform, the pci_dev will not be destroyed since the refcount is
->>not 0.
->>
+On 04/22/2014 10:31 AM, Anton Blanchard wrote:
+> Fix little endian issues with the OPAL error log code.
 >
->Richard, the above description is true. However, it's not relevant to the
->issue (backtrace). I don't quite understand the scenario you had. You're
->doing hotplug on VFs or PF? I guess it would be full-hotplug instead of
->partial hotplug.
-
-I am doing hotplug on PF.
-
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/include/asm/opal.h            | 2 +-
+>   arch/powerpc/platforms/powernv/opal-elog.c | 9 ++++++++-
+>   2 files changed, 9 insertions(+), 2 deletions(-)
 >
->It seems that the IOMMU group wasn't detached correctly and then we tried
->to attach it again. Or the IOMMU group was attached for towice? :-)
-
-Did more tests and find it is a little out of expectation. The conclusion is:
-1. The iommu group is detached correctly, 
-2. The iommu group is attached three times
-3. The warning is cleared based on the first patch instead of this one.
-
-The three times to attach the iommu_group is:
-
-    pci_device_add
-       ...
-       set_iommu_table_base_and_group   <- 1st time, fail
-    device_add
-       ...
-       tce_iommu_bus_notifier           <- 2nd time, succees
-    pcibios_add_pci_devices
-       ...
-       pcibios_setup_bus_devices        <- 3rd time, re-attach
-
-The error in patch 1 happens at the first time, since the dev->kobj->sd is not
-initialized.
-The warning in patch 2 happens at the 3rd time, since iommu group is already
-attached in the 2nd time.
-
-So this patch(the 2nd one) doesn't contribute to clear the warning and error.
-Only the first patch did it. Please ignore this one.
-
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index cb7d52e..1a752ac 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -859,7 +859,7 @@ int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
+>   		      uint32_t addr, __be32 *data, uint32_t sz);
 >
->The IOMMU group is expected to be detached like this, please investigate
->for more why it wasn't detached correctly.
+>   int64_t opal_read_elog(uint64_t buffer, uint64_t size, uint64_t log_id);
+> -int64_t opal_get_elog_size(uint64_t *log_id, uint64_t *size, uint64_t *elog_type);
+> +int64_t opal_get_elog_size(__be64 *log_id, __be64 *size, __be64 *elog_type);
+>   int64_t opal_write_elog(uint64_t buffer, uint64_t size, uint64_t offset);
+>   int64_t opal_send_ack_elog(uint64_t log_id);
+>   void opal_resend_pending_logs(void);
+> diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+> index 7e3821e..10268c4 100644
+> --- a/arch/powerpc/platforms/powernv/opal-elog.c
+> +++ b/arch/powerpc/platforms/powernv/opal-elog.c
+> @@ -238,18 +238,25 @@ static struct elog_obj *create_elog_obj(uint64_t id, size_t size, uint64_t type)
 >
->pcibios_remove_pci_devices()
->pci_stop_and_remove_bus_device()
->pci_remove_bus_device()
->pci_destroy_dev()
+>   static void elog_work_fn(struct work_struct *work)
+>   {
+> +	__be64 size;
+> +	__be64 id;
+> +	__be64 type;
+>   	uint64_t elog_size;
+>   	uint64_t log_id;
+>   	uint64_t elog_type;
+>   	int rc;
+>   	char name[2+16+1];
+>
+> -	rc = opal_get_elog_size(&log_id, &elog_size, &elog_type);
+> +	rc = opal_get_elog_size(&id, &size, &type);
+>   	if (rc != OPAL_SUCCESS) {
+>   		pr_err("ELOG: Opal log read failed\n");
+>   		return;
+>   	}
+>
+> +	elog_size = be64_to_cpu(size);
+> +	log_id = be64_to_cpu(id);
 
->
->static void pci_destroy_dev(struct pci_dev *dev)
->{
->        if (!dev->dev.kobj.parent)
->                return;
->
->        device_del(&dev->dev);              /* It's calling iommu_del_device() */
->
->        down_write(&pci_bus_sem);
->        list_del(&dev->bus_list);
->        up_write(&pci_bus_sem);
->
->        pci_free_resources(dev);
->        put_device(&dev->dev);		    /* It's calling pcibios_release_device() */
->}
->
+Anton,
 
+Shouldn't we covert Log ID back to BE format in ACK function (elog_ack_store() ) ?
 
--- 
-Richard Yang
-Help you, Help me
+Rest looks good.
+
+-Vasant
+
+> +	elog_type = be64_to_cpu(type);
+> +
+>   	BUG_ON(elog_size > OPAL_MAX_ERRLOG_SIZE);
+>
+>   	if (elog_size >= OPAL_MAX_ERRLOG_SIZE)
+>
