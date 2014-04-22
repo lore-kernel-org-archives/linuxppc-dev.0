@@ -1,23 +1,40 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0238.outbound.protection.outlook.com [207.46.163.238])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7306C1400FA
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Apr 2014 08:37:13 +1000 (EST)
-Message-ID: <1398206224.1694.254.camel@snotra.buserror.net>
-Subject: Re: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT, and
- DBCR0_ACTIVE_EVENTS
-From: Scott Wood <scottwood@freescale.com>
-To: shiva7 <sivasakthi7@outlook.com>
-Date: Tue, 22 Apr 2014 17:37:04 -0500
-In-Reply-To: <1398205896.1694.252.camel@snotra.buserror.net>
-References: <5167457E.1050205@genband.com>
- <1398170592855-81732.post@n7.nabble.com>
- <1398205896.1694.252.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id DDB6E1400EC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 09:00:26 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 23 Apr 2014 09:00:24 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1AEED2BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 09:00:22 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3MMdTII63045796
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 08:39:29 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3MN0KS8014080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 09:00:21 +1000
+Date: Wed, 23 Apr 2014 09:00:33 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: clear the refcount for pci_dev on
+ powernv platform
+Message-ID: <20140422230033.GA12208@shangw>
+References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140421233423.GA4023@shangw> <20140422074437.GB6431@richard>
+ <1398155109.19682.89.camel@pasglop>
 MIME-Version: 1.0
-Cc: Chris Friesen <chris.friesen@genband.com>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1398155109.19682.89.camel@pasglop>
+Cc: aik@au1.ibm.com, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +44,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-04-22 at 17:31 -0500, Scott Wood wrote:
-> On Tue, 2014-04-22 at 05:43 -0700, shiva7 wrote:
-> > I have the same question as like above posted by Mr. Chirs. 
-> 
-> I had to google the subject to find what e-mail you were talking about
-> -- it was posted a year ago:
-> 
-> http://marc.info/?l=linuxppc-embedded&m=136572252330650&w=2
-> 
-> Next time please quote the e-mail if you're trying to revive a thread,
-> and keep the original poster on CC.
-> 
-> I've quoted it here:
-> 
-> > Sorry for the bunch of emails, I'm working on some new stuff and running 
-> > into issues.
-> > 
-> > For CONFIG_BOOKE it appears that DBCR0_ACTIVE_EVENTS includes DBCR0_ICMP 
-> > but not DBCR0_BRT.  Is that just because none of the code paths 
-> > currently using DBCR0_ACTIVE_EVENTS need to check DBCR0_BT?
-> 
-> Perhaps it was just an oversight.  I've CCed Dave Kleikamp and Torez
-> Smith, who added DBCR0_ACTIVE_EVENTS.
+On Tue, Apr 22, 2014 at 06:25:09PM +1000, Benjamin Herrenschmidt wrote:
+>On Tue, 2014-04-22 at 15:44 +0800, Wei Yang wrote:
+>> So this patch(the 2nd one) doesn't contribute to clear the warning and
+>> error.
+>> Only the first patch did it. Please ignore this one.
+>
+>But is it correct ? It's not right to keep a refcount elevated if we
+>don't have to.
+>
+>Gavin, can you get to the bottom of that refcount business ?
+>
 
-...and both of those e-mails bounced, so it may be that nobody who is
-listening knows the answer.  Feel free to submit a patch that adds it,
-with the changelog explaining why it should be included.
+Ben, "struct pci_dn::pcidev" was used by EEH originally. We don't
+use it any more. So it can be removed.
 
--Scott
+Currently, EEH has following 4 functions to do conversion from
+one to another. None of them relies on "struct pci_dn::pcidev".
+
+of_node_to_eeh_dev()	device_node -> pci_dn -> eeh_dev
+pci_dev_to_eeh_dev()    pci_dev     -> device -> archdata -> eeh_dev
+eeh_dev_to_of_node()    eeh_dev     -> device_node
+eeh_dev_to_pci_dev()    eeh_dev     -> pci_dev
+
+The side effect of holding pci_dev refcount is the pci_dev, eeh_dev,
+eeh_pe instance can't be free'ed during fully hotplug though EEH can
+survive. It's reasonable to remove it.
+
+Thanks,
+Gavin
