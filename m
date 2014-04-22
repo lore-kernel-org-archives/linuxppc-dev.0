@@ -2,10 +2,12 @@ Return-Path: <anton@ozlabs.org>
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, hegdevasant@linux.vnet.ibm.com,
  stewart@linux.vnet.ibm.com
-Subject: [PATCH 1/6] powerpc/powernv: Use uint64_t instead of size_t in OPAL
- APIs
-Date: Tue, 22 Apr 2014 15:01:22 +1000
-Message-Id: <1398142887-24109-1-git-send-email-anton@samba.org>
+Subject: [PATCH 2/6] powerpc/powernv: Remove some OPAL function declaration
+ duplication
+Date: Tue, 22 Apr 2014 15:01:23 +1000
+Message-Id: <1398142887-24109-2-git-send-email-anton@samba.org>
+In-Reply-To: <1398142887-24109-1-git-send-email-anton@samba.org>
+References: <1398142887-24109-1-git-send-email-anton@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -16,61 +18,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Using size_t in our APIs is asking for trouble, especially
-when some OPAL calls use size_t pointers.
+We had some duplication of the internal OPAL functions.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
-Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h            | 12 ++++++------
- arch/powerpc/platforms/powernv/opal-elog.c |  2 +-
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/opal.h | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index a2efdaa..2a34485 100644
+index 2a34485..cb7d52e 100644
 --- a/arch/powerpc/include/asm/opal.h
 +++ b/arch/powerpc/include/asm/opal.h
-@@ -858,8 +858,8 @@ int64_t opal_lpc_write(uint32_t chip_id, enum OpalLPCAddressType addr_type,
- int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
- 		      uint32_t addr, __be32 *data, uint32_t sz);
- 
--int64_t opal_read_elog(uint64_t buffer, size_t size, uint64_t log_id);
--int64_t opal_get_elog_size(uint64_t *log_id, size_t *size, uint64_t *elog_type);
-+int64_t opal_read_elog(uint64_t buffer, uint64_t size, uint64_t log_id);
-+int64_t opal_get_elog_size(uint64_t *log_id, uint64_t *size, uint64_t *elog_type);
- int64_t opal_write_elog(uint64_t buffer, uint64_t size, uint64_t offset);
- int64_t opal_send_ack_elog(uint64_t log_id);
- void opal_resend_pending_logs(void);
-@@ -874,13 +874,13 @@ int64_t opal_dump_read(uint32_t dump_id, uint64_t buffer);
- int64_t opal_dump_ack(uint32_t dump_id);
- int64_t opal_dump_resend_notification(void);
- 
--int64_t opal_get_msg(uint64_t buffer, size_t size);
--int64_t opal_check_completion(uint64_t buffer, size_t size, uint64_t token);
-+int64_t opal_get_msg(uint64_t buffer, uint64_t size);
-+int64_t opal_check_completion(uint64_t buffer, uint64_t size, uint64_t token);
- int64_t opal_sync_host_reboot(void);
- int64_t opal_get_param(uint64_t token, uint32_t param_id, uint64_t buffer,
--		size_t length);
-+		uint64_t length);
- int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
--		size_t length);
-+		uint64_t length);
+@@ -884,7 +884,8 @@ int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
  int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
  
  /* Internal functions */
-diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
-index ef7bc2a..7e3821e 100644
---- a/arch/powerpc/platforms/powernv/opal-elog.c
-+++ b/arch/powerpc/platforms/powernv/opal-elog.c
-@@ -238,7 +238,7 @@ static struct elog_obj *create_elog_obj(uint64_t id, size_t size, uint64_t type)
+-extern int early_init_dt_scan_opal(unsigned long node, const char *uname, int depth, void *data);
++extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
++				   int depth, void *data);
+ extern int early_init_dt_scan_recoverable_ranges(unsigned long node,
+ 				 const char *uname, int depth, void *data);
  
- static void elog_work_fn(struct work_struct *work)
- {
--	size_t elog_size;
-+	uint64_t elog_size;
- 	uint64_t log_id;
- 	uint64_t elog_type;
- 	int rc;
+@@ -893,10 +894,6 @@ extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
+ 
+ extern void hvc_opal_init_early(void);
+ 
+-/* Internal functions */
+-extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+-				   int depth, void *data);
+-
+ extern int opal_notifier_register(struct notifier_block *nb);
+ extern int opal_notifier_unregister(struct notifier_block *nb);
+ 
+@@ -906,9 +903,6 @@ extern void opal_notifier_enable(void);
+ extern void opal_notifier_disable(void);
+ extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
+ 
+-extern int opal_get_chars(uint32_t vtermno, char *buf, int count);
+-extern int opal_put_chars(uint32_t vtermno, const char *buf, int total_len);
+-
+ extern int __opal_async_get_token(void);
+ extern int opal_async_get_token_interruptible(void);
+ extern int __opal_async_release_token(int token);
+@@ -916,8 +910,6 @@ extern int opal_async_release_token(int token);
+ extern int opal_async_wait_response(uint64_t token, struct opal_msg *msg);
+ extern int opal_get_sensor_data(u32 sensor_hndl, u32 *sensor_data);
+ 
+-extern void hvc_opal_init_early(void);
+-
+ struct rtc_time;
+ extern int opal_set_rtc_time(struct rtc_time *tm);
+ extern void opal_get_rtc_time(struct rtc_time *tm);
 -- 
 1.8.3.2
