@@ -1,17 +1,17 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 23 Apr 2014 07:34:27 +1000
+Date: Wed, 23 Apr 2014 08:02:24 +1000
 From: Anton Blanchard <anton@samba.org>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/6] powerpc/powernv: Create OPAL sglist helper
- functions and fix endian issues
-Message-ID: <20140423073427.425ed7d1@kryten>
-In-Reply-To: <5356335A.1080704@linux.vnet.ibm.com>
-References: <1398142887-24109-1-git-send-email-anton@samba.org>
- <1398142887-24109-5-git-send-email-anton@samba.org>
- <5356335A.1080704@linux.vnet.ibm.com>
+To: Alan Modra <amodra@gmail.com>
+Subject: Re: [PATCH 10/33] powerpc: Ignore TOC relocations
+Message-ID: <20140423080224.14c3530f@kryten>
+In-Reply-To: <20140326093602.GM18201@bubble.grove.modra.org>
+References: <1395747879-5948-1-git-send-email-anton@samba.org>
+ <1395747879-5948-11-git-send-email-anton@samba.org>
+ <20140326093602.GM18201@bubble.grove.modra.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: stewart@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: mikey@neuling.org, rusty@rustcorp.com.au, ulrich.weigand@de.ibm.com,
+ mjw@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Alan,
 
-Hi,
+> > The linker fixes up TOC. relocations, so prom_init_check.sh should
+> > ignore them.
+> 
+> Err, .TOC. you mean.  Presumably something strips off the leading dot
+> somewhere?
 
-> Shouldn't we convert addr and id before passing to opal_dump_read()
-> here ?
+Yeah, the script strips them:
 
-int64_t opal_dump_read(uint32_t dump_id, uint64_t buffer);
+        # On 64-bit nm gives us the function descriptors, which have
+        # a leading . on the name, so strip it off here.
+        UNDEF="${UNDEF#.}"
 
-All arguments are passed via register, so byteswaping the arguments
-would break it.
+I'll modify the commit message to be less confusing.
 
 Anton
