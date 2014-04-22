@@ -1,23 +1,29 @@
-Return-Path: <sivasakthi7@outlook.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-ee0-f50.google.com (mail-ee0-f50.google.com [74.125.83.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CB54114008E
- for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2014 23:00:28 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <sivasakthi7@outlook.com>) id 1Wca2a-0000Gk-SV
- for linuxppc-dev@ozlabs.org; Tue, 22 Apr 2014 05:43:12 -0700
-Date: Tue, 22 Apr 2014 05:43:12 -0700 (PDT)
-From: shiva7 <sivasakthi7@outlook.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1398170592855-81732.post@n7.nabble.com>
-In-Reply-To: <5167457E.1050205@genband.com>
-References: <5167457E.1050205@genband.com>
-Subject: Re: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT, and
- DBCR0_ACTIVE_EVENTS
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id 10B121400F9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 23:35:31 +1000 (EST)
+Received: by mail-ee0-f50.google.com with SMTP id c13so4590458eek.23
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 06:35:26 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: [PATCH 3/3] of: Handle memory@0 node on PPC32 only
+To: Leif Lindholm <leif.lindholm@linaro.org>, Geert Uytterhoeven
+ <geert@linux-m68k.org>
+In-Reply-To: <20140418125924.GF5904@bivouac.eciton.net>
+References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
+ <1397756521-29387-4-git-send-email-leif.lindholm@linaro.org>
+ <CAMuHMdXBNWum7UJ95uT2hwTd1b5C8ebF2LQ4T-A+RS80p7MH=A@mail.gmail.com>
+ <20140418125924.GF5904@bivouac.eciton.net>
+Date: Tue, 22 Apr 2014 14:35:15 +0100
+Message-Id: <20140422133515.E7A0BC40754@trevor.secretlab.ca>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, patches@linaro.org,
+ Lee Jones <lee.jones@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Rob Herring <robherring2@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,13 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have the same question as like above posted by Mr. Chirs. 
+On Fri, 18 Apr 2014 13:59:24 +0100, Leif Lindholm <leif.lindholm@linaro.org> wrote:
+> Hi Geert,
+> 
+> On Fri, Apr 18, 2014 at 10:04:15AM +0200, Geert Uytterhoeven wrote:
+> > On Thu, Apr 17, 2014 at 7:42 PM, Leif Lindholm <leif.lindholm@linaro.org> wrote:
+> > > In order to deal with an firmware bug on a specific ppc32 platform
+> > > (longtrail), early_init_dt_scan_memory() looks for a node called
+> > > memory@0 on all platforms. Restrict this quirk to ppc32 kernels only.
+> > 
+> > This breaks backwards compatibilty with old DTSes (at least on ARM/MIPS,
+> > where you added the missing property in patches 1 and 2 of the series)?
+> 
+> As Rob said in response to 0/3, the MIPSs would likely not be affected,
+> since they embed the DT.
+> 
+> > For the Longtrail, I don't care much anymore, as mine died in 2004.
+> > AFAIK, there have never been many users anyway.
+> 
+> There are still a few mentions of it under arch/powerpc/, so I wouldn't
+> want to be the one to kill it off...
+> 
+> How about the below v2 3/3 to address the ARM platform?
 
-Could someone help to understand why the debug BRT bit not handled in debug
-context sys call? Intentional or need volunteer to finish up this part :)
+The problem with this approach is that selecting one board that needs it
+automatically makes it active for all boards. It would need to be
+something more like the following:
 
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 399e242e1a42..55d65b2b4c74 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -887,12 +887,10 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+ 
+ 	/* We are scanning "memory" nodes only */
+ 	if (type == NULL) {
+-		/*
+-		 * The longtrail doesn't have a device_type on the
+-		 * /memory node, so look for the node called /memory@0.
+-		 */
+ 		if (depth != 1 || strcmp(uname, "memory@0") != 0)
+ 			return 0;
++		if (!of_flat_dt_match(dt_root, memory_quirk_list))
++			return 0;
+ 	} else if (strcmp(type, "memory") != 0)
+ 		return 0;
+ 
+With a list of compatible properties for affected boards.
 
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/questions-on-CONFIG-PPC-ADV-DEBUG-REGS-DBCR0-BRT-and-DBCR0-ACTIVE-EVENTS-tp70147p81732.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+g.
