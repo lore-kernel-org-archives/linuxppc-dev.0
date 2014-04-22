@@ -1,24 +1,12 @@
-Return-Path: <shijie8@gmail.com>
-Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
- [209.85.192.176])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A115140082
- for <linuxppc-dev@ozlabs.org>; Tue, 22 Apr 2014 12:37:53 +1000 (EST)
-Received: by mail-pd0-f176.google.com with SMTP id r10so4295788pdi.7
- for <linuxppc-dev@ozlabs.org>; Mon, 21 Apr 2014 19:37:50 -0700 (PDT)
-Date: Mon, 21 Apr 2014 23:30:45 +0800
-From: Huang Shijie <shijie8@gmail.com>
-To: Hou Zhiqiang <B48286@freescale.com>
-Subject: Re: [PATCH V4] mtd: m25p80: Modify the name of mtd_info
-Message-ID: <20140421153042.GA3498@localhost.localdomain>
-References: <1398078381-22452-1-git-send-email-B48286@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1398078381-22452-1-git-send-email-B48286@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, linux-mtd@lists.infradead.org,
- scottwood@freescale.com, mingkai.hu@freescale.com, computersforpeace@gmail.com,
- dwmw2@infradead.org
+Return-Path: <anton@ozlabs.org>
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, hegdevasant@linux.vnet.ibm.com,
+ stewart@linux.vnet.ibm.com
+Subject: [PATCH 1/6] powerpc/powernv: Use uint64_t instead of size_t in OPAL
+ APIs
+Date: Tue, 22 Apr 2014 15:01:22 +1000
+Message-Id: <1398142887-24109-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +16,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 21, 2014 at 07:06:21PM +0800, Hou Zhiqiang wrote:
-> To specify spi flash layouts by "mtdparts=..." in cmdline, we must
-> give mtd_info a fixed name,because the cmdlinepart's parser will
-> match the name of mtd_info given in cmdline.
-> Now, if use DT, the mtd_info's name will be spi->dev->name. It
-> consists of spi_master->bus_num, and the spi_master->bus_num maybe
-> dynamically fetched. So, in this case, replace the component bus_num
-> with thei physical address of spi master.
-> 
-> Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
-> ---
-> V4:
-> 	add check no-NULL for pointer of master's device node, and if it failed
-> 	to get physcial address of the master, then name the mtd_info by the
-> 	name of spi->dev.
-> V3:
-> 	Fix a bug, matching unsigned long long with "%llx".
-> V2:
-> 	1. Fix some code style issue.
-> 	2. Cast physical address to unsigned long long.
-> 
->  drivers/mtd/devices/m25p80.c | 16 ++++++++++++++--
-please rebase this patch on the latest l2-mtd tree.
+Using size_t in our APIs is asking for trouble, especially
+when some OPAL calls use size_t pointers.
 
-thanks
-Huang Shijie
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Reviewed-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/opal.h            | 12 ++++++------
+ arch/powerpc/platforms/powernv/opal-elog.c |  2 +-
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index a2efdaa..2a34485 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -858,8 +858,8 @@ int64_t opal_lpc_write(uint32_t chip_id, enum OpalLPCAddressType addr_type,
+ int64_t opal_lpc_read(uint32_t chip_id, enum OpalLPCAddressType addr_type,
+ 		      uint32_t addr, __be32 *data, uint32_t sz);
+ 
+-int64_t opal_read_elog(uint64_t buffer, size_t size, uint64_t log_id);
+-int64_t opal_get_elog_size(uint64_t *log_id, size_t *size, uint64_t *elog_type);
++int64_t opal_read_elog(uint64_t buffer, uint64_t size, uint64_t log_id);
++int64_t opal_get_elog_size(uint64_t *log_id, uint64_t *size, uint64_t *elog_type);
+ int64_t opal_write_elog(uint64_t buffer, uint64_t size, uint64_t offset);
+ int64_t opal_send_ack_elog(uint64_t log_id);
+ void opal_resend_pending_logs(void);
+@@ -874,13 +874,13 @@ int64_t opal_dump_read(uint32_t dump_id, uint64_t buffer);
+ int64_t opal_dump_ack(uint32_t dump_id);
+ int64_t opal_dump_resend_notification(void);
+ 
+-int64_t opal_get_msg(uint64_t buffer, size_t size);
+-int64_t opal_check_completion(uint64_t buffer, size_t size, uint64_t token);
++int64_t opal_get_msg(uint64_t buffer, uint64_t size);
++int64_t opal_check_completion(uint64_t buffer, uint64_t size, uint64_t token);
+ int64_t opal_sync_host_reboot(void);
+ int64_t opal_get_param(uint64_t token, uint32_t param_id, uint64_t buffer,
+-		size_t length);
++		uint64_t length);
+ int64_t opal_set_param(uint64_t token, uint32_t param_id, uint64_t buffer,
+-		size_t length);
++		uint64_t length);
+ int64_t opal_sensor_read(uint32_t sensor_hndl, int token, __be32 *sensor_data);
+ 
+ /* Internal functions */
+diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+index ef7bc2a..7e3821e 100644
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -238,7 +238,7 @@ static struct elog_obj *create_elog_obj(uint64_t id, size_t size, uint64_t type)
+ 
+ static void elog_work_fn(struct work_struct *work)
+ {
+-	size_t elog_size;
++	uint64_t elog_size;
+ 	uint64_t log_id;
+ 	uint64_t elog_type;
+ 	int rc;
+-- 
+1.8.3.2
