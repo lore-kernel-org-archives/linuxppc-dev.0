@@ -1,25 +1,25 @@
-Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from pide.tip.net.au (pide.tip.net.au [101.0.96.218])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 402751400E5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 12:22:25 +1000 (EST)
-Date: Mon, 21 Apr 2014 10:18:57 -0500
-From: Felipe Balbi <balbi@ti.com>
-To: Punnaiah Choudary Kalluri <punnaiah.choudary.kalluri@xilinx.com>
-Subject: Re: [RFC PATCH 0/2] usb: Reuse fsl driver code for synopsys usb
- controller
-Message-ID: <20140421151857.GH27341@saruman.home>
-References: <7aed4ee6-69e7-4f9f-9f45-675bc695089c@CO9EHSMHS031.ehs.local>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="+sHJum3is6Tsg7/J"
-In-Reply-To: <7aed4ee6-69e7-4f9f-9f45-675bc695089c@CO9EHSMHS031.ehs.local>
-Cc: linux-usb@vger.kernel.org, michal.simek@xilinx.com, balbi@ti.com,
- linux-kernel@vger.kernel.org, kalluripunnaiahchoudary@gmail.com,
- kpc528@gmail.com, Punnaiah Choudary Kalluri <punnaia@xilinx.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
-Reply-To: balbi@ti.com
+ by ozlabs.org (Postfix) with ESMTPS id 3A6D11400E0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:09:40 +1000 (EST)
+Date: Tue, 22 Apr 2014 13:09:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH 3/4] ARCH: AUDIT: implement syscall_get_arch for all arches
+Message-Id: <20140422130931.940f53412d30730aa4bc820b@canb.auug.org.au>
+In-Reply-To: <1395266643-3139-3-git-send-email-eparis@redhat.com>
+References: <1395266643-3139-1-git-send-email-eparis@redhat.com>
+ <1395266643-3139-3-git-send-email-eparis@redhat.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__22_Apr_2014_13_09_31_+1000_flia9hF+yPUdnFYF"
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au,
+ linux@openrisc.net, linux-audit@redhat.com, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,83 +29,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---+sHJum3is6Tsg7/J
-Content-Type: text/plain; charset=us-ascii
+--Signature=_Tue__22_Apr_2014_13_09_31_+1000_flia9hF+yPUdnFYF
+Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sun, Apr 20, 2014 at 09:57:03PM +0530, Punnaiah Choudary Kalluri wrote:
-> Zynq soc contains a dual role usb controller and this IP is from synopsys=
-=2E We
-> observed that there is driver available for this controller from freescal=
-e and
-> decided to reuse this driver for zynq use.
->=20
-> Here is the link for zynq soc TRM. Please refer chapter 15 for usb contro=
-ller
-> related information.
-> http://www.xilinx.com/support/documentation/user_guides/ug585-Zynq-7000-T=
-RM.pdf
->=20
-> The following series of patches add initial support for zynq soc in fsl g=
-adget controller
-> driver and fsl host controller driver.
->=20
-> Based on these patches, I have the following concerns and sugesstions
->=20
-> Since the freescale usb driver is for synopsys IP, Please consider rebran=
-ding
-> this driver name and config options to reflect that it is a sysnopsys IP.=
- So
-> that other vendors who using this IP can reuse thie driver.
->=20
-> Also the ehci-fsl.c is for powerpc based soc's, and zynq is ARM based, i =
-have
-> protected the code which is specifc to freescale with CONFIG_FSL_SOC. Ple=
-ase
-> suggest if there is a better way of doing this?
->=20
-> Punnaiah Choudary Kalluri (2):
->   usb: gadget: fsl_udc: Add support for zynq usb device controller
->   usb: ehci-fsl: Add support for zynq usb host controller
->=20
->  drivers/usb/gadget/Kconfig        |    2 +-
->  drivers/usb/gadget/Makefile       |    1 +
->  drivers/usb/gadget/fsl_mxc_udc.c  |   21 ++++++++++++
->  drivers/usb/gadget/fsl_udc_core.c |    5 +++
->  drivers/usb/gadget/fsl_usb2_udc.h |    2 +-
->  drivers/usb/host/Kconfig          |    2 +-
->  drivers/usb/host/ehci-fsl.c       |   63 +++++++++++++++++++++++++++++++=
-+++++-
->  drivers/usb/host/fsl-mph-dr-of.c  |    9 +++++
->  8 files changed, 101 insertions(+), 4 deletions(-)
+Hi Eric,
 
-as somebody else already mentioned, chipidea is the way to go.
+[I just noticed that this turned up in linux-next ...]
 
+On Wed, 19 Mar 2014 18:04:02 -0400 Eric Paris <eparis@redhat.com> wrote:
+>
+> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/as=
+m/syscall.h
+> index b54b2ad..4271544 100644
+> --- a/arch/powerpc/include/asm/syscall.h
+> +++ b/arch/powerpc/include/asm/syscall.h
+> @@ -13,6 +13,8 @@
+>  #ifndef _ASM_SYSCALL_H
+>  #define _ASM_SYSCALL_H	1
+> =20
+> +#include <uapi/linux/audit.h>
+> +#include <linux/compat.h>
+
+You don't need linux/compat.h, I think, but you do need to include
+linux/thread_info.h for is_32bit_task() below.
+
+>  #include <linux/sched.h>
+> =20
+>  /* ftrace syscalls requires exporting the sys_call_table */
+> @@ -86,4 +88,14 @@ static inline void syscall_set_arguments(struct task_s=
+truct *task,
+>  	memcpy(&regs->gpr[3 + i], args, n * sizeof(args[0]));
+>  }
+> =20
+> +static inline int syscall_get_arch(void)
+> +{
+> +	int arch =3D AUDIT_ARCH_PPC;
+> +
+> +#ifdef CONFIG_PPC64
+> +	if (!is_32bit_task())
+> +		arch =3D AUDIT_ARCH_PPC64;
+> +#endif
+> +	return arch;
+
+This could just be
+
+	return is_32bit_task() ? AUDIT_ARCH_PPC : AUDIT_ARCH_PPC64;
+
+as is_32bit_task() is always defined (and is (1) for !CONFIG_PPC64).
 
 --=20
-balbi
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
---+sHJum3is6Tsg7/J
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+--Signature=_Tue__22_Apr_2014_13_09_31_+1000_flia9hF+yPUdnFYF
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBAgAGBQJTVTbhAAoJEIaOsuA1yqREs6cP/iu8JzXHJcyXk6gQtkt3OymZ
-pa5N6Crh1p0r+6uS9L6hkrI0ipESYJMFg2GOxB1IC9YM+NIWRki7E7EHIjo/9wt6
-36hATXYE+lFiuksCexk8HGpyrftRd1KqCJOj5ma5ppZf6vP2nhhx1tgASIwHFZav
-rDDGw3LfEEa9m07aJayXzmQ1Fk9Yr18FkExwq7H6x4R886RU15BrpO3hWukjdTbM
-yivgDbCLxlKsYZbXQlKx4f3Q89g9xjoJ7F30lo5yZwq6u17lr8vjBA4nCTHa+Em+
-WT6KuhsNzVMw5Ga3SulvjNsgi1FnHlckHEzW/7fclY6jWEeG5OvZY+Ab6PaGqAOf
-M9a3WY6lZJ+0GcjMs20NgEOquounvT80iaTAAceULWJ4hEnsLvXrRU8XgkAYjzl7
-fX75lPfSXgjt/1GGgLPi9VMDdK35HsT7Ty1k+8rpuZGpfwm6ldqYJ0thwsgca8H+
-BjgQDnDg29nW90rzrKRj0KRpDWkcPL3aQS+tak2g9sibQ1Rf4pmccgqbTzYAF6Dg
-pofgzkgNA5WjuFoPexeL3i8smjLRF1itmo7DAG0EVNo9MqAWtKooNvSWRW2kbYPj
-wR932yhN45d5cWasd9RUy81eO2gEDmdWEJ9RUI1GtFcxcQWzXxrYpEK3Shw69vFa
-e0osVxJGFzWZNFxIXZA9
-=cO9c
+iQIcBAEBCAAGBQJTVd1wAAoJEMDTa8Ir7ZwVHfUQAJBjX5ikUyun82MFtAMdTh2x
+9nOveILFcSwGt4ZDyYica+UARDkB0KbtMB38pF7MPePG9f93twRYMnRskrM5XaN0
+GDLOJxVoikuMRlt2HxyIVmrLs0JvCccOZz+Uy1Pq50RlB+GqBqCPbDMd7IZBQYKb
+MdPoYr+0wIe2eMYRc+Rj9CBzCuY79FoQhCl6rIMsQRJ1/SrD7zvDP8x8J2n/8hpk
++jbgeX30zDIQlCP/a5MjSBFdmqW6N8d5GKLcNPdBSdWe0Ff8G/d/8gz8Q2lvyNxQ
+dZdNxa116iZwE5H8p6zLchiwyel3vZzvLCMILCoc1ysMxQXx9Z+sfroFAjYjClm9
+EIzBfzV7GR8QsssjCKSkcfFgfviHxIWFWo1ypmlnU/HMNkDB4ywHF6u6t8sx54c0
+ZAfKuXa4gs+y99SuEoNbqPB1ssGwhFGdPV9A5n5m5aP8BaRYDFvat7rKA46mWCE2
+JFA5CNWHCqzR3Ap/FDht3SeTNFUmDOnY/mfLB5CtjYg8HoTkAT+GB2eXKM9nn5nB
+9UiqxLBFgfp1S0aFYlQqixJN872WxkT3L+V7V9DSwLR83RS4PBoSTWKivdZ4/01Y
+DOhcrsMkZuOtcJO5QQrZ7hU31ngIHOuVdesryVcVTnh28r1IfviH/YW9xXoC9aS1
+axXNb3h4pYFXeMyYxoZ0
+=gnUE
 -----END PGP SIGNATURE-----
 
---+sHJum3is6Tsg7/J--
+--Signature=_Tue__22_Apr_2014_13_09_31_+1000_flia9hF+yPUdnFYF--
