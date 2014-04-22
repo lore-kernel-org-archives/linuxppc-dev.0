@@ -1,22 +1,38 @@
-Return-Path: <rusty@ozlabs.org>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Dave Hansen <dave.hansen@intel.com>,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org, linux-arch@vger.kernel.org,
- x86@kernel.org
-Subject: Re: [PATCH V2 1/2] mm: move FAULT_AROUND_ORDER to arch/
-In-Reply-To: <53456B61.1040901@intel.com>
-References: <1396592835-24767-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1396592835-24767-2-git-send-email-maddy@linux.vnet.ibm.com>
- <533EDB63.8090909@intel.com> <5344A312.80802@linux.vnet.ibm.com>
- <53456B61.1040901@intel.com>
-Date: Tue, 22 Apr 2014 16:52:17 +0930
-Message-ID: <87vbu1hlqu.fsf@rustcorp.com.au>
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C12711400BE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 17:44:48 +1000 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 22 Apr 2014 13:14:44 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1DFE4E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:19:07 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3M7ib8N66650202
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:14:37 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3M7idqc024057
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 13:14:40 +0530
+Date: Tue, 22 Apr 2014 15:44:37 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: clear the refcount for pci_dev on
+ powernv platform
+Message-ID: <20140422074437.GB6431@richard>
+References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140421233423.GA4023@shangw>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org, paulus@samba.org,
- mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140421233423.GA4023@shangw>
+Cc: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,87 +42,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dave Hansen <dave.hansen@intel.com> writes:
-> On 04/08/2014 06:32 PM, Madhavan Srinivasan wrote:
->>> > In mm/Kconfig, put
->>> > 
->>> > 	config FAULT_AROUND_ORDER
->>> > 		int
->>> > 		default 1234 if POWERPC
->>> > 		default 4
->>> > 
->>> > The way you have it now, every single architecture that needs to enable
->>> > this has to go put that in their Kconfig.  That's madness.  This way,
->> I though about it and decided not to do this way because, in future,
->> sub platforms of the architecture may decide to change the values. Also,
->> adding an if line for each architecture with different sub platforms
->> oring to it will look messy.
+On Tue, Apr 22, 2014 at 09:34:23AM +1000, Gavin Shan wrote:
+>On Mon, Apr 21, 2014 at 10:25:18AM +0800, Wei Yang wrote:
+>>When pcibios_remove_pci_devices() is removing pci devices, it will release
+>>pci device respectively. When the refcount of the device is 0, the pci_dev
+>>structure will be destroyed.
+>>
+>>On PowerNV platform, the pci_dev will not be destroyed since the refcount is
+>>not 0.
+>>
 >
-> I'm not sure why I'm trying here any more.  You do seem quite content to
-> add as much cruft to ppc and every other architecture as possible.  If
-> your theoretical scenario pops up, you simply do this in ppc:
+>Richard, the above description is true. However, it's not relevant to the
+>issue (backtrace). I don't quite understand the scenario you had. You're
+>doing hotplug on VFs or PF? I guess it would be full-hotplug instead of
+>partial hotplug.
+
+I am doing hotplug on PF.
+
 >
-> config ARCH_FAULT_AROUND_ORDER
-> 	int
-> 	default 999
-> 	default 888 if OTHER_SILLY_POWERPC_SUBARCH
+>It seems that the IOMMU group wasn't detached correctly and then we tried
+>to attach it again. Or the IOMMU group was attached for towice? :-)
+
+Did more tests and find it is a little out of expectation. The conclusion is:
+1. The iommu group is detached correctly, 
+2. The iommu group is attached three times
+3. The warning is cleared based on the first patch instead of this one.
+
+The three times to attach the iommu_group is:
+
+    pci_device_add
+       ...
+       set_iommu_table_base_and_group   <- 1st time, fail
+    device_add
+       ...
+       tce_iommu_bus_notifier           <- 2nd time, succees
+    pcibios_add_pci_devices
+       ...
+       pcibios_setup_bus_devices        <- 3rd time, re-attach
+
+The error in patch 1 happens at the first time, since the dev->kobj->sd is not
+initialized.
+The warning in patch 2 happens at the 3rd time, since iommu group is already
+attached in the 2nd time.
+
+So this patch(the 2nd one) doesn't contribute to clear the warning and error.
+Only the first patch did it. Please ignore this one.
+
 >
-> But *ONLY* in the architectures that care about doing that stuff.  You
-> leave every other architecture on the planet alone.  Then, in mm/Kconfig:
+>The IOMMU group is expected to be detached like this, please investigate
+>for more why it wasn't detached correctly.
 >
-> config FAULT_AROUND_ORDER
-> 	int
-> 	default ARCH_FAULT_AROUND_ORDER if ARCH_FAULT_AROUND_ORDER
-> 	default 4
+>pcibios_remove_pci_devices()
+>pci_stop_and_remove_bus_device()
+>pci_remove_bus_device()
+>pci_destroy_dev()
+
 >
-> Your way still requires going and individually touching every single
-> architecture's Kconfig that wants to enable fault around.  That's not an
-> acceptable solution.
+>static void pci_destroy_dev(struct pci_dev *dev)
+>{
+>        if (!dev->dev.kobj.parent)
+>                return;
+>
+>        device_del(&dev->dev);              /* It's calling iommu_del_device() */
+>
+>        down_write(&pci_bus_sem);
+>        list_del(&dev->bus_list);
+>        up_write(&pci_bus_sem);
+>
+>        pci_free_resources(dev);
+>        put_device(&dev->dev);		    /* It's calling pcibios_release_device() */
+>}
+>
 
-Why bother with Kconfig at all?  It seems like a weird indirection.
 
-And talking about future tuning seems like a separate issue, if and when
-someone does the work.  For the moment, let's keep it simple (as below).
-
-If you really want Kconfig, then just go straight from
-ARCH_FAULT_AROUND_ORDER, ie:
-
-        #ifdef CONFIG_ARCH_FAULT_AROUND_ORDER
-        #define FAULT_AROUND_ORDER CONFIG_ARCH_FAULT_AROUND_ORDER
-        #else
-        #define FAULT_AROUND_ORDER 4
-        #endif
-
-Then powerpc's Kconfig defines CONFIG_ARCH_FAULT_AROUND_ORDER, and
-we're done.
-
-Cheers,
-Rusty.
-
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index 32e4e212b9c1..b519c5c53cfc 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -412,4 +412,7 @@ typedef struct page *pgtable_t;
- #include <asm-generic/memory_model.h>
- #endif /* __ASSEMBLY__ */
- 
-+/* Measured on a 4 socket Power7 system (128 Threads and 128GB memory) */
-+#define FAULT_AROUND_ORDER 3
-+
- #endif /* _ASM_POWERPC_PAGE_H */
-diff --git a/mm/memory.c b/mm/memory.c
-index d0f0bef3be48..9aa47e9ec7ba 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3382,7 +3382,10 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
- 	update_mmu_cache(vma, address, pte);
- }
- 
-+/* Archs can override, but this seems to work for x86. */
-+#ifndef FAULT_AROUND_ORDER
- #define FAULT_AROUND_ORDER 4
-+#endif
- 
- #ifdef CONFIG_DEBUG_FS
- static unsigned int fault_around_order = FAULT_AROUND_ORDER;
+-- 
+Richard Yang
+Help you, Help me
