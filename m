@@ -1,27 +1,25 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-wg0-f42.google.com (mail-wg0-f42.google.com [74.125.82.42])
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
+ [209.85.217.170])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6EBA4140128
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:52:38 +1000 (EST)
-Received: by mail-wg0-f42.google.com with SMTP id y10so871329wgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:52:33 -0700 (PDT)
-Message-ID: <5357C59E.8080400@monstr.eu>
-Date: Wed, 23 Apr 2014 15:52:30 +0200
-From: Michal Simek <monstr@monstr.eu>
-MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 14/21] of/fdt: create common debugfs
-References: <1398215901-25609-1-git-send-email-robherring2@gmail.com>
- <1398215901-25609-15-git-send-email-robherring2@gmail.com>
-In-Reply-To: <1398215901-25609-15-git-send-email-robherring2@gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="88UUtkXqPO4B5klRm7exJsF1Uu6jmCtbo"
-Cc: devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
-Reply-To: monstr@monstr.eu
+ by ozlabs.org (Postfix) with ESMTPS id 71CC9140151
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:53:42 +1000 (EST)
+Received: by mail-lb0-f170.google.com with SMTP id s7so808519lbd.29
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:53:37 -0700 (PDT)
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org
+Subject: [PATCH RFC v12 1/7] dma: mpc512x: reorder mpc8308 specific
+ instructions
+Date: Wed, 23 Apr 2014 17:53:23 +0400
+Message-Id: <1398261209-5578-2-git-send-email-a13xp0p0v88@gmail.com>
+In-Reply-To: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
+References: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,187 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---88UUtkXqPO4B5klRm7exJsF1Uu6jmCtbo
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Concentrate the specific code for MPC8308 in the 'if' branch
+and handle MPC512x in the 'else' branch.
+This modification only reorders instructions but doesn't change behaviour.
 
-On 04/23/2014 03:18 AM, Rob Herring wrote:
-> From: Rob Herring <robh@kernel.org>
->=20
-> Both powerpc and microblaze have the same FDT blob in debugfs feature.
-> Move this to common location and remove the powerpc and microblaze
-> implementations. This feature could become more useful when FDT
-> overlay support is added.
->=20
-> This changes the path of the blob from "$arch/flat-device-tree" to
-> "device-tree/flat-device-tree".
->=20
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Michal Simek <monstr@monstr.eu>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
-> v2: move to after libfdt conversion
->=20
->  arch/microblaze/kernel/prom.c | 31 -------------------------------
->  arch/powerpc/kernel/prom.c    | 21 ---------------------
->  drivers/of/fdt.c              | 24 ++++++++++++++++++++++++
->  3 files changed, 24 insertions(+), 52 deletions(-)
->=20
-> diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/pro=
-m.c
-> index c766306..68f0999 100644
-> --- a/arch/microblaze/kernel/prom.c
-> +++ b/arch/microblaze/kernel/prom.c
-> @@ -114,34 +114,3 @@ void __init early_init_devtree(void *params)
-> =20
->  	pr_debug(" <- early_init_devtree()\n");
->  }
-> -
-> -/*******
-> - *
-> - * New implementation of the OF "find" APIs, return a refcounted
-> - * object, call of_node_put() when done.  The device tree and list
-> - * are protected by a rw_lock.
-> - *
-> - * Note that property management will need some locking as well,
-> - * this isn't dealt with yet.
-> - *
-> - *******/
-> -
-> -#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
-> -static struct debugfs_blob_wrapper flat_dt_blob;
-> -
-> -static int __init export_flat_device_tree(void)
-> -{
-> -	struct dentry *d;
-> -
-> -	flat_dt_blob.data =3D initial_boot_params;
-> -	flat_dt_blob.size =3D initial_boot_params->totalsize;
-> -
-> -	d =3D debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
-> -				of_debugfs_root, &flat_dt_blob);
-> -	if (!d)
-> -		return 1;
-> -
-> -	return 0;
-> -}
-> -device_initcall(export_flat_device_tree);
-> -#endif
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index f971134..03624ce 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -29,7 +29,6 @@
->  #include <linux/bitops.h>
->  #include <linux/export.h>
->  #include <linux/kexec.h>
-> -#include <linux/debugfs.h>
->  #include <linux/irq.h>
->  #include <linux/memblock.h>
->  #include <linux/of.h>
-> @@ -924,23 +923,3 @@ bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
->  {
->  	return (int)phys_id =3D=3D get_hard_smp_processor_id(cpu);
->  }
-> -
-> -#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
-> -static struct debugfs_blob_wrapper flat_dt_blob;
-> -
-> -static int __init export_flat_device_tree(void)
-> -{
-> -	struct dentry *d;
-> -
-> -	flat_dt_blob.data =3D initial_boot_params;
-> -	flat_dt_blob.size =3D be32_to_cpu(initial_boot_params->totalsize);
-> -
-> -	d =3D debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
-> -				powerpc_debugfs_root, &flat_dt_blob);
-> -	if (!d)
-> -		return 1;
-> -
-> -	return 0;
-> -}
-> -__initcall(export_flat_device_tree);
-> -#endif
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 0b38a6a..4129f74 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -20,6 +20,7 @@
->  #include <linux/errno.h>
->  #include <linux/slab.h>
->  #include <linux/libfdt.h>
-> +#include <linux/debugfs.h>
-> =20
->  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
->  #include <asm/page.h>
-> @@ -916,4 +917,27 @@ void __init unflatten_and_copy_device_tree(void)
->  	unflatten_device_tree();
->  }
-> =20
-> +#if defined(CONFIG_DEBUG_FS) && defined(DEBUG)
-> +static struct debugfs_blob_wrapper flat_dt_blob;
-> +
-> +static int __init of_flat_dt_debugfs_export_fdt(void)
-> +{
-> +	struct dentry *d =3D debugfs_create_dir("device-tree", NULL);
-> +
-> +	if (!d)
-> +		return -ENOENT;
-> +
-> +	flat_dt_blob.data =3D initial_boot_params;
-> +	flat_dt_blob.size =3D fdt_totalsize(initial_boot_params);
+Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+Acked-by: Anatolij Gustschin <agust@denx.de>
+---
+ drivers/dma/mpc512x_dma.c | 42 +++++++++++++++++++++++++-----------------
+ 1 file changed, 25 insertions(+), 17 deletions(-)
 
-As I wrote in different patch. I would move this to the end of this
-series and
-flat_dt_blob.size =3D of_get_flat_dt_size();
-
-> +
-> +	d =3D debugfs_create_blob("flat-device-tree", S_IFREG | S_IRUSR,
-> +				d, &flat_dt_blob);
-> +	if (!d)
-> +		return -ENOENT;
-> +
-> +	return 0;
-> +}
-> +module_init(of_flat_dt_debugfs_export_fdt);
-> +#endif
-> +
->  #endif /* CONFIG_OF_EARLY_FLATTREE */
->=20
-
-Other than comment above:
-For Microblaze:
-Tested-by: Michal Simek <monstr@monstr.eu>
-
-Thanks,
-Michal
-
-
---=20
-Michal Simek, Ing. (M.Eng), OpenPGP -> KeyID: FE3D1F91
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel - Microblaze cpu - http://www.monstr.eu/fdt/
-Maintainer of Linux kernel - Xilinx Zynq ARM architecture
-Microblaze U-BOOT custodian and responsible for u-boot arm zynq platform
-
-
-
---88UUtkXqPO4B5klRm7exJsF1Uu6jmCtbo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://www.enigmail.net/
-
-iEYEARECAAYFAlNXxZ4ACgkQykllyylKDCF3RQCfXnnWAfDfmGWypy71NoANLTHj
-ciIAniVfzjzk3tzlgxXG9bABc6s9tMI8
-=CNyh
------END PGP SIGNATURE-----
-
---88UUtkXqPO4B5klRm7exJsF1Uu6jmCtbo--
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+index 448750d..2ce248b 100644
+--- a/drivers/dma/mpc512x_dma.c
++++ b/drivers/dma/mpc512x_dma.c
+@@ -52,9 +52,17 @@
+ #define MPC_DMA_DESCRIPTORS	64
+ 
+ /* Macro definitions */
+-#define MPC_DMA_CHANNELS	64
+ #define MPC_DMA_TCD_OFFSET	0x1000
+ 
++/*
++ * Maximum channel counts for individual hardware variants
++ * and the maximum channel count over all supported controllers,
++ * used for data structure size
++ */
++#define MPC8308_DMACHAN_MAX	16
++#define MPC512x_DMACHAN_MAX	64
++#define MPC_DMA_CHANNELS	64
++
+ /* Arbitration mode of group and channel */
+ #define MPC_DMA_DMACR_EDCG	(1 << 31)
+ #define MPC_DMA_DMACR_ERGA	(1 << 3)
+@@ -710,10 +718,10 @@ static int mpc_dma_probe(struct platform_device *op)
+ 
+ 	dma = &mdma->dma;
+ 	dma->dev = dev;
+-	if (!mdma->is_mpc8308)
+-		dma->chancnt = MPC_DMA_CHANNELS;
++	if (mdma->is_mpc8308)
++		dma->chancnt = MPC8308_DMACHAN_MAX;
+ 	else
+-		dma->chancnt = 16; /* MPC8308 DMA has only 16 channels */
++		dma->chancnt = MPC512x_DMACHAN_MAX;
+ 	dma->device_alloc_chan_resources = mpc_dma_alloc_chan_resources;
+ 	dma->device_free_chan_resources = mpc_dma_free_chan_resources;
+ 	dma->device_issue_pending = mpc_dma_issue_pending;
+@@ -747,7 +755,19 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	 * - Round-robin group arbitration,
+ 	 * - Round-robin channel arbitration.
+ 	 */
+-	if (!mdma->is_mpc8308) {
++	if (mdma->is_mpc8308) {
++		/* MPC8308 has 16 channels and lacks some registers */
++		out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_ERCA);
++
++		/* enable snooping */
++		out_be32(&mdma->regs->dmagpor, MPC_DMA_DMAGPOR_SNOOP_ENABLE);
++		/* Disable error interrupts */
++		out_be32(&mdma->regs->dmaeeil, 0);
++
++		/* Clear interrupts status */
++		out_be32(&mdma->regs->dmaintl, 0xFFFF);
++		out_be32(&mdma->regs->dmaerrl, 0xFFFF);
++	} else {
+ 		out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_EDCG |
+ 					MPC_DMA_DMACR_ERGA | MPC_DMA_DMACR_ERCA);
+ 
+@@ -768,18 +788,6 @@ static int mpc_dma_probe(struct platform_device *op)
+ 		/* Route interrupts to IPIC */
+ 		out_be32(&mdma->regs->dmaihsa, 0);
+ 		out_be32(&mdma->regs->dmailsa, 0);
+-	} else {
+-		/* MPC8308 has 16 channels and lacks some registers */
+-		out_be32(&mdma->regs->dmacr, MPC_DMA_DMACR_ERCA);
+-
+-		/* enable snooping */
+-		out_be32(&mdma->regs->dmagpor, MPC_DMA_DMAGPOR_SNOOP_ENABLE);
+-		/* Disable error interrupts */
+-		out_be32(&mdma->regs->dmaeeil, 0);
+-
+-		/* Clear interrupts status */
+-		out_be32(&mdma->regs->dmaintl, 0xFFFF);
+-		out_be32(&mdma->regs->dmaerrl, 0xFFFF);
+ 	}
+ 
+ 	/* Register DMA engine */
+-- 
+1.8.4.2
