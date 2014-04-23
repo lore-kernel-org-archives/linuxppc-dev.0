@@ -1,20 +1,12 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6BE46140084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 07:02:24 +1000 (EST)
-Message-ID: <1398286933.7841.49.camel@snotra.buserror.net>
-Subject: Re: [PATCH] net/phy:  tune get_phy_c45_ids to support more c45 phy
-From: Scott Wood <scottwood@freescale.com>
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Date: Wed, 23 Apr 2014 16:02:13 -0500
-In-Reply-To: <1398246951-27303-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1398246951-27303-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: trini@ti.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Thu, 24 Apr 2014 07:25:34 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc/powernv: Fix little endian issues in OPAL flash code
+Message-ID: <20140424072534.54351b71@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +16,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-04-23 at 17:55 +0800, Shengzhou Liu wrote:
-> As some C45 10G PHYs(e.g. Cortina CS4315/CS4340 PHY) have
-> zero Devices In package, current driver can't get correct
-> devices_in_package value by non-zero Devices In package.
-> so let's probe more with zero Devices In package to support
-> more C45 PHYs which have zero Devices In package.
-> 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
-> Tested with CS4315 on T2080RDB, this patch have no impact on previous XAUI phy with verification. 
-> 
->  drivers/net/phy/phy_device.c | 25 +++++++++++++++++++++----
->  1 file changed, 21 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
-> index cfb5110..8fd777e 100644
-> --- a/drivers/net/phy/phy_device.c
-> +++ b/drivers/net/phy/phy_device.c
+With this patch I was able to update firmware on an LE kernel.
 
-You need to send this to the netdev list and maintainer.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/platforms/powernv/opal-flash.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
--Scott
+diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
+index 10ae1b6..becd7be 100644
+--- a/arch/powerpc/platforms/powernv/opal-flash.c
++++ b/arch/powerpc/platforms/powernv/opal-flash.c
+@@ -128,11 +128,15 @@ static DEFINE_MUTEX(image_data_mutex);
+  */
+ static inline void opal_flash_validate(void)
+ {
+-	struct validate_flash_t *args_buf = &validate_flash_data;
++	long ret;
++	void *buf = validate_flash_data.buf;
++	__be32 size, result;
++
++	ret = opal_validate_flash(__pa(buf), &size, &result);
+ 
+-	args_buf->status = opal_validate_flash(__pa(args_buf->buf),
+-					       &(args_buf->buf_size),
+-					       &(args_buf->result));
++	validate_flash_data.status = ret;
++	validate_flash_data.buf_size = be32_to_cpu(size);
++	validate_flash_data.result = be32_to_cpu(result);
+ }
+ 
+ /*
+-- 
+1.8.3.2
