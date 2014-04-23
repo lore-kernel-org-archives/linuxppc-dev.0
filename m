@@ -1,33 +1,30 @@
-Return-Path: <leif.lindholm@linaro.org>
-Received: from mail-we0-f169.google.com (mail-we0-f169.google.com
- [74.125.82.169])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (gw-1.arm.linux.org.uk [78.32.30.217])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 60F481400E5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 03:21:53 +1000 (EST)
-Received: by mail-we0-f169.google.com with SMTP id w62so1172721wes.28
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 10:21:48 -0700 (PDT)
-Date: Wed, 23 Apr 2014 18:25:23 +0100
-From: Leif Lindholm <leif.lindholm@linaro.org>
-To: Grant Likely <grant.likely@secretlab.ca>,
- Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH 0/3] of: dts: enable memory@0 quirk for PPC32 only
-Message-ID: <20140423172523.GM5904@bivouac.eciton.net>
-References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
- <CAL_JsqL8B2ZY7ACXKX3J8VN5ukjKWuycgfDZpp4kYzBxg6BLmQ@mail.gmail.com>
- <20140418124821.GE5904@bivouac.eciton.net>
- <CAL_JsqKdFyhHfkcC1E9QuKjQTrXwoELYG+CFTpgf2-jqDvxGmA@mail.gmail.com>
- <20140422130829.CA29DC4042C@trevor.secretlab.ca>
- <20140422140526.GK5904@bivouac.eciton.net>
- <20140423131508.6E53BC408D2@trevor.secretlab.ca>
+ by ozlabs.org (Postfix) with ESMTPS id 2AA251400F6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 05:06:36 +1000 (EST)
+Date: Wed, 23 Apr 2014 19:55:34 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Anton Vorontsov <anton@enomsg.org>, Barry Song <baohua@kernel.org>,
+ Ben Dooks <ben-linux@fluff.org>, Chris Ball <chris@printf.net>,
+ devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Jaehoon Chung <jh80.chung@samsung.com>, Kumar Gala <galak@codeaurora.org>,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-mmc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-tegra@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
+ Michal Simek <michal.simek@xilinx.com>, Pawel Moll <pawel.moll@arm.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Rob Herring <robh+dt@kernel.org>,
+ Sascha Hauer <kernel@pengutronix.de>, Seungwon Jeon <tgih.jun@samsung.com>,
+ Shawn Guo <shawn.guo@freescale.com>, spear-devel@list.st.com,
+ Stephen Warren <swarren@wwwdotorg.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.linux@gmail.com>
+Subject: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
+Message-ID: <20140423185534.GA26756@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140423131508.6E53BC408D2@trevor.secretlab.ca>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Rob Herring <robherring2@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linaro Patches <patches@linaro.org>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,30 +34,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 23, 2014 at 02:15:08PM +0100, Grant Likely wrote:
-> > The reason for me doing that is because we (including you) agreed at
-> > the discussion held during LCU13 that this was the safest way of
-> > preventing "mischief" like userland trying to read information from
-> > /proc/device-tree...
-> 
-> I'm not the most consistent of people. I often change my mind and then
-> have no recollection of ever thinking differently.
+All,
 
-And that is fine, but you were not the only person agreeing.
+This is where I'm at with trying to clean up the SDHCI mess, and sort out
+issues I've noticed when trying to get UHS support working on CuBoxes.
+This is my full patch set, but I recommend not applying patch 37 as there
+appears to be a hardware issue preventing it working reliably.
 
-> Userland reading from /proc/device-tree isn't so much a problem, but
-> kernel drivers doing it might be.
-> 
-> But, regardless of whether or not the stub clears out the memory
-> nodes, it is still I think good practice for the kernel to make the
-> decision to ignore memory nodes, and not rely on them being cleared
-> correctly.
+In any case, patches 0-33 inclusive are the SDHCI clean up, based against
+v3.15-rc1.  Patches 34 and 35 are Olof's Wifi support, 36 is my fix against
+those, and 38 adds the Broadcom Wifi and BT support for CuBox.
 
-I also remember you saying that relaxing restrictions later on is a lot
-easier than tightening them. On that basis, can we please get the UEFI
-set merged before we start redefining the stub/kernel protocol which was
-agreed at LCU (November last year) after spending a month or two trying
-to get sufficient number of interested parties in the same room?
+The questions over how to handle these devices were never properly settled,
+so I recommend against merging patch 34 onwards.  As for the rest, I'm not
+planning on any further work, so it may be a good idea for people to
+consider testing them with a view to getting them merged.
 
-/
-	Leif
+ Documentation/devicetree/bindings/mmc/mmc.txt |  11 +
+ arch/arm/boot/dts/imx6qdl-cubox-i.dtsi        |  34 +-
+ arch/arm/boot/dts/imx6qdl-microsom.dtsi       |  98 ++++
+ drivers/mmc/core/core.c                       |  42 ++
+ drivers/mmc/core/host.c                       |  68 +++
+ drivers/mmc/core/sdio_irq.c                   |  41 +-
+ drivers/mmc/host/Kconfig                      |  63 +--
+ drivers/mmc/host/dw_mmc.c                     |   2 +
+ drivers/mmc/host/sdhci-acpi.c                 |   8 +
+ drivers/mmc/host/sdhci-bcm-kona.c             |   4 +
+ drivers/mmc/host/sdhci-bcm2835.c              |   4 +
+ drivers/mmc/host/sdhci-cns3xxx.c              |  13 +-
+ drivers/mmc/host/sdhci-dove.c                 |   4 +
+ drivers/mmc/host/sdhci-esdhc-imx.c            |  82 +--
+ drivers/mmc/host/sdhci-esdhc.h                |   4 +-
+ drivers/mmc/host/sdhci-of-arasan.c            |   4 +
+ drivers/mmc/host/sdhci-of-esdhc.c             |  70 ++-
+ drivers/mmc/host/sdhci-of-hlwd.c              |   4 +
+ drivers/mmc/host/sdhci-pci.c                  |   9 +-
+ drivers/mmc/host/sdhci-pltfm.c                |   4 +
+ drivers/mmc/host/sdhci-pxav2.c                |  14 +-
+ drivers/mmc/host/sdhci-pxav3.c                |  13 +-
+ drivers/mmc/host/sdhci-s3c.c                  |  36 +-
+ drivers/mmc/host/sdhci-sirf.c                 |   4 +
+ drivers/mmc/host/sdhci-spear.c                |   5 +-
+ drivers/mmc/host/sdhci-tegra.c                |  27 +-
+ drivers/mmc/host/sdhci.c                      | 728 +++++++++++++-------------
+ drivers/mmc/host/sdhci.h                      |  20 +-
+ include/linux/mmc/host.h                      |   8 +
+ include/linux/mmc/sdhci.h                     |  15 +-
+ 30 files changed, 885 insertions(+), 554 deletions(-)
+
+
+-- 
+FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+improving, and getting towards what was expected from it.
