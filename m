@@ -1,12 +1,12 @@
 Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-lb0-f181.google.com (mail-lb0-f181.google.com
- [209.85.217.181])
+Received: from mail-lb0-f172.google.com (mail-lb0-f172.google.com
+ [209.85.217.172])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 52583140153
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:53:42 +1000 (EST)
-Received: by mail-lb0-f181.google.com with SMTP id c11so781492lbj.40
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:53:38 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id F1048140150
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:53:43 +1000 (EST)
+Received: by mail-lb0-f172.google.com with SMTP id c11so814464lbj.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:53:39 -0700 (PDT)
 From: Alexander Popov <a13xp0p0v88@gmail.com>
 To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
@@ -14,13 +14,11 @@ To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  dmaengine@vger.kernel.org
-Subject: [PATCH RFC v12 2/7] dma: mpc512x: separate 'compatible' values for
- MPC512x and MPC8308
-Date: Wed, 23 Apr 2014 17:53:24 +0400
-Message-Id: <1398261209-5578-3-git-send-email-a13xp0p0v88@gmail.com>
+Subject: [PATCH RFC v12 3/7] dma: mpc512x: add support for peripheral transfers
+Date: Wed, 23 Apr 2014 17:53:25 +0400
+Message-Id: <1398261209-5578-4-git-send-email-a13xp0p0v88@gmail.com>
 In-Reply-To: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
 References: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
-Cc: devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,53 +28,324 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-MPC512x and MPC8308 have similar DMA controllers, but are independent SoCs.
-DMA controller driver should have separate 'compatible' values for these SoCs.
+Introduce support for slave s/g transfer preparation and the associated
+device control callback in the MPC512x DMA controller driver, which adds
+support for data transfers between memory and peripheral I/O to the
+previously supported mem-to-mem transfers.
 
 Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
 ---
- arch/powerpc/boot/dts/mpc8308_p1m.dts | 2 +-
- arch/powerpc/boot/dts/mpc8308rdb.dts  | 2 +-
- drivers/dma/mpc512x_dma.c             | 1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/dma/mpc512x_dma.c | 239 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 234 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-index 651e4f5..57f86cd 100644
---- a/arch/powerpc/boot/dts/mpc8308_p1m.dts
-+++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-@@ -296,7 +296,7 @@
- 		};
- 
- 		dma@2c000 {
--			compatible = "fsl,mpc8308-dma", "fsl,mpc5121-dma";
-+			compatible = "fsl,mpc8308-dma";
- 			reg = <0x2c000 0x1800>;
- 			interrupts = <3 0x8
- 					94 0x8>;
-diff --git a/arch/powerpc/boot/dts/mpc8308rdb.dts b/arch/powerpc/boot/dts/mpc8308rdb.dts
-index 9ce45f2..d0211f0 100644
---- a/arch/powerpc/boot/dts/mpc8308rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8308rdb.dts
-@@ -265,7 +265,7 @@
- 		};
- 
- 		dma@2c000 {
--			compatible = "fsl,mpc8308-dma", "fsl,mpc5121-dma";
-+			compatible = "fsl,mpc8308-dma";
- 			reg = <0x2c000 0x1800>;
- 			interrupts = <3 0x8
- 					94 0x8>;
 diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 2ce248b..0b17f4d 100644
+index 0b17f4d..ca2fe03 100644
 --- a/drivers/dma/mpc512x_dma.c
 +++ b/drivers/dma/mpc512x_dma.c
-@@ -815,6 +815,7 @@ static int mpc_dma_remove(struct platform_device *op)
+@@ -2,6 +2,7 @@
+  * Copyright (C) Freescale Semicondutor, Inc. 2007, 2008.
+  * Copyright (C) Semihalf 2009
+  * Copyright (C) Ilya Yanok, Emcraft Systems 2010
++ * Copyright (C) Alexander Popov, Promcontroller 2014
+  *
+  * Written by Piotr Ziecik <kosmo@semihalf.com>. Hardware description
+  * (defines, structures and comments) was taken from MPC5121 DMA driver
+@@ -29,8 +30,17 @@
+  */
  
- static struct of_device_id mpc_dma_match[] = {
- 	{ .compatible = "fsl,mpc5121-dma", },
-+	{ .compatible = "fsl,mpc8308-dma", },
- 	{},
+ /*
+- * This is initial version of MPC5121 DMA driver. Only memory to memory
+- * transfers are supported (tested using dmatest module).
++ * MPC512x and MPC8308 DMA driver. It supports
++ * memory to memory data transfers (tested using dmatest module) and
++ * data transfers between memory and peripheral I/O memory
++ * by means of slave s/g with these limitations:
++ *  - chunked transfers (transfers with more than one part) are refused
++ *     as long as proper support for scatter/gather is missing;
++ *  - transfers on MPC8308 always start from software as this SoC appears
++ *     not to have external request lines for peripheral flow control;
++ *  - minimal memory <-> I/O memory transfer chunk is 4 bytes and consequently
++ *     source and destination addresses must be 4-byte aligned
++ *     and transfer size must be aligned on (4 * maxburst) boundary;
+  */
+ 
+ #include <linux/module.h>
+@@ -189,6 +199,7 @@ struct mpc_dma_desc {
+ 	dma_addr_t			tcd_paddr;
+ 	int				error;
+ 	struct list_head		node;
++	int				will_access_peripheral;
  };
  
+ struct mpc_dma_chan {
+@@ -201,6 +212,12 @@ struct mpc_dma_chan {
+ 	struct mpc_dma_tcd		*tcd;
+ 	dma_addr_t			tcd_paddr;
+ 
++	/* Settings for access to peripheral FIFO */
++	dma_addr_t			src_per_paddr;
++	u32				src_tcd_nunits;
++	dma_addr_t			dst_per_paddr;
++	u32				dst_tcd_nunits;
++
+ 	/* Lock for this structure */
+ 	spinlock_t			lock;
+ };
+@@ -251,8 +268,23 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+ 	struct mpc_dma_desc *mdesc;
+ 	int cid = mchan->chan.chan_id;
+ 
+-	/* Move all queued descriptors to active list */
+-	list_splice_tail_init(&mchan->queued, &mchan->active);
++	while (!list_empty(&mchan->queued)) {
++		mdesc = list_first_entry(&mchan->queued,
++						struct mpc_dma_desc, node);
++		/*
++		 * Grab either several mem-to-mem transfer descriptors
++		 * or one peripheral transfer descriptor,
++		 * don't mix mem-to-mem and peripheral transfer descriptors
++		 * within the same 'active' list.
++		 */
++		if (mdesc->will_access_peripheral) {
++			if (list_empty(&mchan->active))
++				list_move_tail(&mdesc->node, &mchan->active);
++			break;
++		} else {
++			list_move_tail(&mdesc->node, &mchan->active);
++		}
++	}
+ 
+ 	/* Chain descriptors into one transaction */
+ 	list_for_each_entry(mdesc, &mchan->active, node) {
+@@ -278,7 +310,17 @@ static void mpc_dma_execute(struct mpc_dma_chan *mchan)
+ 
+ 	if (first != prev)
+ 		mdma->tcd[cid].e_sg = 1;
+-	out_8(&mdma->regs->dmassrt, cid);
++
++	if (mdma->is_mpc8308) {
++		/* MPC8308, no request lines, software initiated start */
++		out_8(&mdma->regs->dmassrt, cid);
++	} else if (first->will_access_peripheral) {
++		/* Peripherals involved, start by external request signal */
++		out_8(&mdma->regs->dmaserq, cid);
++	} else {
++		/* Memory to memory transfer, software initiated start */
++		out_8(&mdma->regs->dmassrt, cid);
++	}
+ }
+ 
+ /* Handle interrupt on one half of DMA controller (32 channels) */
+@@ -596,6 +638,7 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+ 	}
+ 
+ 	mdesc->error = 0;
++	mdesc->will_access_peripheral = 0;
+ 	tcd = mdesc->tcd;
+ 
+ 	/* Prepare Transfer Control Descriptor for this transaction */
+@@ -643,6 +686,189 @@ mpc_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
+ 	return &mdesc->desc;
+ }
+ 
++static struct dma_async_tx_descriptor *
++mpc_dma_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
++		unsigned int sg_len, enum dma_transfer_direction direction,
++		unsigned long flags, void *context)
++{
++	struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
++	struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
++	struct mpc_dma_desc *mdesc = NULL;
++	dma_addr_t per_paddr;
++	u32 tcd_nunits;
++	struct mpc_dma_tcd *tcd;
++	unsigned long iflags;
++	struct scatterlist *sg;
++	size_t len;
++	int iter, i;
++
++	/* Currently there is no proper support for scatter/gather */
++	if (sg_len != 1)
++		return NULL;
++
++	if (!is_slave_direction(direction))
++		return NULL;
++
++	for_each_sg(sgl, sg, sg_len, i) {
++		spin_lock_irqsave(&mchan->lock, iflags);
++
++		mdesc = list_first_entry(&mchan->free,
++						struct mpc_dma_desc, node);
++		if (!mdesc) {
++			spin_unlock_irqrestore(&mchan->lock, iflags);
++			/* Try to free completed descriptors */
++			mpc_dma_process_completed(mdma);
++			return NULL;
++		}
++
++		list_del(&mdesc->node);
++
++		if (direction == DMA_DEV_TO_MEM) {
++			per_paddr = mchan->src_per_paddr;
++			tcd_nunits = mchan->src_tcd_nunits;
++		} else {
++			per_paddr = mchan->dst_per_paddr;
++			tcd_nunits = mchan->dst_tcd_nunits;
++		}
++
++		spin_unlock_irqrestore(&mchan->lock, iflags);
++
++		if (per_paddr == 0 || tcd_nunits == 0)
++			goto err_prep;
++
++		mdesc->error = 0;
++		mdesc->will_access_peripheral = 1;
++
++		/* Prepare Transfer Control Descriptor for this transaction */
++		tcd = mdesc->tcd;
++
++		memset(tcd, 0, sizeof(struct mpc_dma_tcd));
++
++		if (!IS_ALIGNED(sg_dma_address(sg), 4))
++			goto err_prep;
++
++		if (direction == DMA_DEV_TO_MEM) {
++			tcd->saddr = per_paddr;
++			tcd->daddr = sg_dma_address(sg);
++			tcd->soff = 0;
++			tcd->doff = 4;
++		} else {
++			tcd->saddr = sg_dma_address(sg);
++			tcd->daddr = per_paddr;
++			tcd->soff = 4;
++			tcd->doff = 0;
++		}
++
++		tcd->ssize = MPC_DMA_TSIZE_4;
++		tcd->dsize = MPC_DMA_TSIZE_4;
++
++		len = sg_dma_len(sg);
++		tcd->nbytes = tcd_nunits * 4;
++		if (!IS_ALIGNED(len, tcd->nbytes))
++			goto err_prep;
++
++		iter = len / tcd->nbytes;
++		if (iter >= 1 << 15) {
++			/* len is too big */
++			goto err_prep;
++		}
++		/* citer_linkch contains the high bits of iter */
++		tcd->biter = iter & 0x1ff;
++		tcd->biter_linkch = iter >> 9;
++		tcd->citer = tcd->biter;
++		tcd->citer_linkch = tcd->biter_linkch;
++
++		tcd->e_sg = 0;
++		tcd->d_req = 1;
++
++		/* Place descriptor in prepared list */
++		spin_lock_irqsave(&mchan->lock, iflags);
++		list_add_tail(&mdesc->node, &mchan->prepared);
++		spin_unlock_irqrestore(&mchan->lock, iflags);
++	}
++
++	return &mdesc->desc;
++
++err_prep:
++	/* Put the descriptor back */
++	spin_lock_irqsave(&mchan->lock, iflags);
++	list_add_tail(&mdesc->node, &mchan->free);
++	spin_unlock_irqrestore(&mchan->lock, iflags);
++
++	return NULL;
++}
++
++static int mpc_dma_device_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd,
++							unsigned long arg)
++{
++	struct mpc_dma_chan *mchan;
++	struct mpc_dma *mdma;
++	struct dma_slave_config *cfg;
++	unsigned long flags;
++
++	mchan = dma_chan_to_mpc_dma_chan(chan);
++	switch (cmd) {
++	case DMA_TERMINATE_ALL:
++		/* Disable channel requests */
++		mdma = dma_chan_to_mpc_dma(chan);
++
++		spin_lock_irqsave(&mchan->lock, flags);
++
++		out_8(&mdma->regs->dmacerq, chan->chan_id);
++		list_splice_tail_init(&mchan->prepared, &mchan->free);
++		list_splice_tail_init(&mchan->queued, &mchan->free);
++		list_splice_tail_init(&mchan->active, &mchan->free);
++
++		spin_unlock_irqrestore(&mchan->lock, flags);
++
++		return 0;
++	case DMA_SLAVE_CONFIG:
++		/*
++		 * Constraints:
++		 *  - only transfers between a peripheral device and
++		 *     memory are supported;
++		 *  - minimal transfer chunk is 4 bytes and consequently
++		 *     source and destination addresses must be 4-byte aligned
++		 *     and transfer size must be aligned on (4 * maxburst)
++		 *     boundary;
++		 *  - during the transfer RAM address is being incremented by
++		 *     the size of minimal transfer chunk;
++		 *  - peripheral port's address is constant during the transfer.
++		 */
++
++		cfg = (void *)arg;
++
++		if (cfg->src_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES ||
++		    cfg->dst_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES ||
++		    !IS_ALIGNED(cfg->src_addr, 4) ||
++		    !IS_ALIGNED(cfg->dst_addr, 4)) {
++			return -EINVAL;
++		}
++
++		spin_lock_irqsave(&mchan->lock, flags);
++
++		mchan->src_per_paddr = cfg->src_addr;
++		mchan->src_tcd_nunits = cfg->src_maxburst;
++		mchan->dst_per_paddr = cfg->dst_addr;
++		mchan->dst_tcd_nunits = cfg->dst_maxburst;
++
++		/* Apply defaults */
++		if (mchan->src_tcd_nunits == 0)
++			mchan->src_tcd_nunits = 1;
++		if (mchan->dst_tcd_nunits == 0)
++			mchan->dst_tcd_nunits = 1;
++
++		spin_unlock_irqrestore(&mchan->lock, flags);
++
++		return 0;
++	default:
++		/* Unknown command */
++		break;
++	}
++
++	return -ENXIO;
++}
++
+ static int mpc_dma_probe(struct platform_device *op)
+ {
+ 	struct device_node *dn = op->dev.of_node;
+@@ -727,9 +953,12 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	dma->device_issue_pending = mpc_dma_issue_pending;
+ 	dma->device_tx_status = mpc_dma_tx_status;
+ 	dma->device_prep_dma_memcpy = mpc_dma_prep_memcpy;
++	dma->device_prep_slave_sg = mpc_dma_prep_slave_sg;
++	dma->device_control = mpc_dma_device_control;
+ 
+ 	INIT_LIST_HEAD(&dma->channels);
+ 	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
++	dma_cap_set(DMA_SLAVE, dma->cap_mask);
+ 
+ 	for (i = 0; i < dma->chancnt; i++) {
+ 		mchan = &mdma->channels[i];
 -- 
 1.8.4.2
