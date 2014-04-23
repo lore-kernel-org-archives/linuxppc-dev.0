@@ -1,23 +1,41 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ob0-f182.google.com (mail-ob0-f182.google.com
- [209.85.214.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4E10914029B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 11:19:17 +1000 (EST)
-Received: by mail-ob0-f182.google.com with SMTP id uy5so294958obc.41
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2014 18:19:14 -0700 (PDT)
-From: Rob Herring <robherring2@gmail.com>
-To: Grant Likely <grant.likely@linaro.org>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
-Subject: [PATCH v2 21/21] of: push struct boot_param_header and defines into
- powerpc
-Date: Tue, 22 Apr 2014 20:18:21 -0500
-Message-Id: <1398215901-25609-22-git-send-email-robherring2@gmail.com>
-In-Reply-To: <1398215901-25609-1-git-send-email-robherring2@gmail.com>
-References: <1398215901-25609-1-git-send-email-robherring2@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 892DB1400DB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 11:56:46 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 23 Apr 2014 07:26:43 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3FAE91258044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:29:24 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3N1uiHg8258018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:26:45 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3N1ucgg012412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:26:38 +0530
+Date: Wed, 23 Apr 2014 09:56:36 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: clear the refcount for pci_dev on
+ powernv platform
+Message-ID: <20140423015636.GC4811@richard>
+References: <1398047119-6861-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140421233423.GA4023@shangw> <20140422074437.GB6431@richard>
+ <1398155109.19682.89.camel@pasglop> <20140422230033.GA12208@shangw>
+ <1398212778.19682.129.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1398212778.19682.129.camel@pasglop>
+Cc: aik@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,121 +45,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring <robh@kernel.org>
+On Wed, Apr 23, 2014 at 10:26:18AM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2014-04-23 at 09:00 +1000, Gavin Shan wrote:
+>> The side effect of holding pci_dev refcount is the pci_dev, eeh_dev,
+>> eeh_pe instance can't be free'ed during fully hotplug though EEH can
+>> survive. It's reasonable to remove it.
+>
+>Allright. Can you guys refresh that patch with an updated cset
+>comment and shoot it upstream ?
 
-Now powerpc is the only user of struct boot_param_header and FDT defines,
-so they can be moved into the powerpc architecture code.
+Glad to do so.
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
-v2: no change
+>
+>Thanks !
+>
+>Cheers,
+>Ben.
+>
 
- arch/powerpc/include/asm/prom.h | 39 +++++++++++++++++++++++++++++++++++++++
- include/linux/of_fdt.h          | 37 -------------------------------------
- 2 files changed, 39 insertions(+), 37 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-index d977b9b..74b79f0 100644
---- a/arch/powerpc/include/asm/prom.h
-+++ b/arch/powerpc/include/asm/prom.h
-@@ -26,6 +26,45 @@
- #include <linux/of_irq.h>
- #include <linux/platform_device.h>
- 
-+#define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
-+#define OF_DT_END_NODE		0x2		/* End node */
-+#define OF_DT_PROP		0x3		/* Property: name off, size,
-+						 * content */
-+#define OF_DT_NOP		0x4		/* nop */
-+#define OF_DT_END		0x9
-+
-+#define OF_DT_VERSION		0x10
-+
-+/*
-+ * This is what gets passed to the kernel by prom_init or kexec
-+ *
-+ * The dt struct contains the device tree structure, full pathes and
-+ * property contents. The dt strings contain a separate block with just
-+ * the strings for the property names, and is fully page aligned and
-+ * self contained in a page, so that it can be kept around by the kernel,
-+ * each property name appears only once in this page (cheap compression)
-+ *
-+ * the mem_rsvmap contains a map of reserved ranges of physical memory,
-+ * passing it here instead of in the device-tree itself greatly simplifies
-+ * the job of everybody. It's just a list of u64 pairs (base/size) that
-+ * ends when size is 0
-+ */
-+struct boot_param_header {
-+	__be32	magic;			/* magic word OF_DT_HEADER */
-+	__be32	totalsize;		/* total size of DT block */
-+	__be32	off_dt_struct;		/* offset to structure */
-+	__be32	off_dt_strings;		/* offset to strings */
-+	__be32	off_mem_rsvmap;		/* offset to memory reserve map */
-+	__be32	version;		/* format version */
-+	__be32	last_comp_version;	/* last compatible version */
-+	/* version 2 fields below */
-+	__be32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
-+	/* version 3 fields below */
-+	__be32	dt_strings_size;	/* size of the DT strings block */
-+	/* version 17 fields below */
-+	__be32	dt_struct_size;		/* size of the DT structure block */
-+};
-+
- /*
-  * OF address retreival & translation
-  */
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index 1f882e1..5c0ab05 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -17,45 +17,8 @@
- 
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER		0xd00dfeed	/* marker */
--#define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
--#define OF_DT_END_NODE		0x2		/* End node */
--#define OF_DT_PROP		0x3		/* Property: name off, size,
--						 * content */
--#define OF_DT_NOP		0x4		/* nop */
--#define OF_DT_END		0x9
--
--#define OF_DT_VERSION		0x10
- 
- #ifndef __ASSEMBLY__
--/*
-- * This is what gets passed to the kernel by prom_init or kexec
-- *
-- * The dt struct contains the device tree structure, full pathes and
-- * property contents. The dt strings contain a separate block with just
-- * the strings for the property names, and is fully page aligned and
-- * self contained in a page, so that it can be kept around by the kernel,
-- * each property name appears only once in this page (cheap compression)
-- *
-- * the mem_rsvmap contains a map of reserved ranges of physical memory,
-- * passing it here instead of in the device-tree itself greatly simplifies
-- * the job of everybody. It's just a list of u64 pairs (base/size) that
-- * ends when size is 0
-- */
--struct boot_param_header {
--	__be32	magic;			/* magic word OF_DT_HEADER */
--	__be32	totalsize;		/* total size of DT block */
--	__be32	off_dt_struct;		/* offset to structure */
--	__be32	off_dt_strings;		/* offset to strings */
--	__be32	off_mem_rsvmap;		/* offset to memory reserve map */
--	__be32	version;		/* format version */
--	__be32	last_comp_version;	/* last compatible version */
--	/* version 2 fields below */
--	__be32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
--	/* version 3 fields below */
--	__be32	dt_strings_size;	/* size of the DT strings block */
--	/* version 17 fields below */
--	__be32	dt_struct_size;		/* size of the DT structure block */
--};
- 
- #if defined(CONFIG_OF_FLATTREE)
- 
 -- 
-1.9.1
+Richard Yang
+Help you, Help me
