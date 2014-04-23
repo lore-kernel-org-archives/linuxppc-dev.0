@@ -1,27 +1,18 @@
-Return-Path: <mark.rutland@arm.com>
-Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
- [217.140.96.50]) by ozlabs.org (Postfix) with ESMTP id 0AEC01400F9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 20:48:35 +1000 (EST)
-Date: Wed, 23 Apr 2014 11:35:36 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Rob Herring <robherring2@gmail.com>, Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 3/3] of: Handle memory@0 node on PPC32 only
-Message-ID: <20140423103536.GC30036@e106331-lin.cambridge.arm.com>
-References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
- <1397756521-29387-4-git-send-email-leif.lindholm@linaro.org>
- <CAMuHMdXBNWum7UJ95uT2hwTd1b5C8ebF2LQ4T-A+RS80p7MH=A@mail.gmail.com>
- <20140418125924.GF5904@bivouac.eciton.net>
- <CAL_JsqJTMWKh3gsv0TnRap82+7BM4XaT4ZAWkQmyfvzTqOq12g@mail.gmail.com>
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0D6C714008B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 20:54:12 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>, <trini@ti.com>
+Subject: [PATCH] net/phy:  tune get_phy_c45_ids to support more c45 phy
+Date: Wed, 23 Apr 2014 17:55:51 +0800
+Message-ID: <1398246951-27303-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAL_JsqJTMWKh3gsv0TnRap82+7BM4XaT4ZAWkQmyfvzTqOq12g@mail.gmail.com>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Linaro Patches <patches@linaro.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Leif Lindholm <leif.lindholm@linaro.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
- "grant.likely@linaro.org" <grant.likely@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +22,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+As some C45 10G PHYs(e.g. Cortina CS4315/CS4340 PHY) have
+zero Devices In package, current driver can't get correct
+devices_in_package value by non-zero Devices In package.
+so let's probe more with zero Devices In package to support
+more C45 PHYs which have zero Devices In package.
 
-> > diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
-> > index 889005f..230c747 100644
-> > --- a/drivers/of/Kconfig
-> > +++ b/drivers/of/Kconfig
-> > @@ -77,4 +77,7 @@ config OF_RESERVED_MEM
-> >         help
-> >           Helpers to allow for reservation of memory regions
-> >
-> > +config OF_MEMORY_AT_0_QUIRK
-> > +       def_bool n
-> 
-> I do not like this because it would not scale to many quirks. As I
-> said,, my preference here would be to just add a WARN.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+Tested with CS4315 on T2080RDB, this patch have no impact on previous XAUI phy with verification. 
 
-I would very much like to be able to remove the quirk entirely for arm64
-if possible, which would require more than the addition of a WARN.
+ drivers/net/phy/phy_device.c | 25 +++++++++++++++++++++----
+ 1 file changed, 21 insertions(+), 4 deletions(-)
 
-> The other option is get approval to break compatibility on the ST
-> platform. It may not be a concern on certain platforms.
-
-Lee, would you be able to provide an answer either way so we can get
-the discussion moving?
-
-Cheers,
-Mark.
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index cfb5110..8fd777e 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -244,12 +244,29 @@ static int get_phy_c45_ids(struct mii_bus *bus, int addr, u32 *phy_id,
+ 			return -EIO;
+ 		c45_ids->devices_in_package |= (phy_reg & 0xffff);
+ 
+-		/* If mostly Fs, there is no device there,
+-		 * let's get out of here.
++		/* If mostly Fs, let's continue to probe more
++		 * as some 10G PHYs have zero Devices In package
++		 * e.g. Cortina CS4315/CS4340 PHY.
+ 		 */
+ 		if ((c45_ids->devices_in_package & 0x1fffffff) == 0x1fffffff) {
+-			*phy_id = 0xffffffff;
+-			return 0;
++			reg_addr = MII_ADDR_C45 | 0 << 16 | 6;
++			phy_reg = mdiobus_read(bus, addr, reg_addr);
++			if (phy_reg < 0)
++				return -EIO;
++			c45_ids->devices_in_package = (phy_reg & 0xffff) << 16;
++			reg_addr = MII_ADDR_C45 | 0 << 16 | 5;
++			phy_reg = mdiobus_read(bus, addr, reg_addr);
++			if (phy_reg < 0)
++				return -EIO;
++			c45_ids->devices_in_package |= (phy_reg & 0xffff);
++			/* If mostly Fs, there is no device there,
++			 * let's get out of here.
++			 */
++			if ((c45_ids->devices_in_package & 0x1fffffff) ==
++							0x1fffffff) {
++				*phy_id = 0xffffffff;
++				return 0;
++			}
+ 		}
+ 	}
+ 
+-- 
+1.8.0
