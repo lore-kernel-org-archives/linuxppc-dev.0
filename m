@@ -1,12 +1,12 @@
 Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-f45.google.com (mail-la0-f45.google.com
- [209.85.215.45])
+Received: from mail-la0-f48.google.com (mail-la0-f48.google.com
+ [209.85.215.48])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C0C32140285
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:53:49 +1000 (EST)
-Received: by mail-la0-f45.google.com with SMTP id hr17so809389lab.32
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:53:44 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 78301140297
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:53:50 +1000 (EST)
+Received: by mail-la0-f48.google.com with SMTP id gf5so784968lab.7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:53:45 -0700 (PDT)
 From: Alexander Popov <a13xp0p0v88@gmail.com>
 To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
@@ -14,9 +14,10 @@ To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  dmaengine@vger.kernel.org
-Subject: [PATCH RFC v12 6/7] dma: mpc512x: add device tree binding document
-Date: Wed, 23 Apr 2014 17:53:28 +0400
-Message-Id: <1398261209-5578-7-git-send-email-a13xp0p0v88@gmail.com>
+Subject: [PATCH RFC v12 7/7] dma: mpc512x: register for device tree channel
+ lookup
+Date: Wed, 23 Apr 2014 17:53:29 +0400
+Message-Id: <1398261209-5578-8-git-send-email-a13xp0p0v88@gmail.com>
 In-Reply-To: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
 References: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
 Cc: devicetree@vger.kernel.org
@@ -29,59 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a device tree binding document for the MPC512x DMA controller
+Register the controller for device tree based lookup of DMA channels
+(non-fatal for backwards compatibility with older device trees) and
+provide the '#dma-cells' property in the shared mpc5121.dtsi file
 
 Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
 ---
- .../devicetree/bindings/dma/mpc512x-dma.txt        | 40 ++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+ arch/powerpc/boot/dts/mpc5121.dtsi |  1 +
+ drivers/dma/mpc512x_dma.c          | 13 ++++++++++++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/dma/mpc512x-dma.txt b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
-new file mode 100644
-index 0000000..b1cbc3f
---- /dev/null
-+++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
-@@ -0,0 +1,40 @@
-+* Freescale MPC512x and MPC8308 DMA Controller
+diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
+index 2c0e155..7f9d14f 100644
+--- a/arch/powerpc/boot/dts/mpc5121.dtsi
++++ b/arch/powerpc/boot/dts/mpc5121.dtsi
+@@ -498,6 +498,7 @@
+ 			compatible = "fsl,mpc5121-dma";
+ 			reg = <0x14000 0x1800>;
+ 			interrupts = <65 0x8>;
++			#dma-cells = <1>;
+ 		};
+ 	};
+ 
+diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
+index d2c5f79..fa0614e 100644
+--- a/drivers/dma/mpc512x_dma.c
++++ b/drivers/dma/mpc512x_dma.c
+@@ -52,6 +52,7 @@
+ #include <linux/of_address.h>
+ #include <linux/of_device.h>
+ #include <linux/of_irq.h>
++#include <linux/of_dma.h>
+ #include <linux/of_platform.h>
+ 
+ #include <linux/random.h>
+@@ -1031,7 +1032,15 @@ static int mpc_dma_probe(struct platform_device *op)
+ 	if (retval)
+ 		goto err_free2;
+ 
+-	return retval;
++	/* Register with OF helpers for DMA lookups (nonfatal) */
++	if (dev->of_node) {
++		retval = of_dma_controller_register(dev->of_node,
++						of_dma_xlate_by_chan_id, mdma);
++		if (retval)
++			dev_warn(dev, "Could not register for OF lookup\n");
++	}
 +
-+The DMA controller in Freescale MPC512x and MPC8308 SoCs can move
-+blocks of memory contents between memory and peripherals or
-+from memory to memory.
-+
-+Refer to "Generic DMA Controller and DMA request bindings" in
-+the dma/dma.txt file for a more detailed description of binding.
-+
-+Required properties:
-+- compatible: Should be "fsl,mpc5121-dma" or "fsl,mpc8308-dma"
-+- reg: Address and size of the DMA controller's register set
-+- Interrupt for the DMA controller. Syntax of interrupt client node
-+	is described in interrupt-controller/interrupts.txt
-+
-+Optional properties:
-+- #dma-cells: The length of the DMA specifier, must be <1>.
-+	Each channel of this DMA controller has a peripheral request line,
-+	this assignment is fixed in hardware. The cell in dmas property
-+	of a client device represents the channel number
-+
-+Example:
-+
-+	dma0: dma@14000 {
-+		compatible = "fsl,mpc5121-dma";
-+		reg = <0x14000 0x1800>;
-+		interrupts = <65 0x8>;
-+		#dma-cells = <1>;
-+	};
-+
-+DMA clients must use the format described in dma/dma.txt
-+
-+Example:
-+
-+	sdhc@1500 {
-+		compatible = "fsl,mpc5121-sdhc";
-+		/* ... */
-+		dmas = <&dma0 30>;
-+		dma-names = "rx-tx";
-+	};
++	return 0;
+ 
+ err_free2:
+ 	if (mdma->is_mpc8308)
+@@ -1052,6 +1061,8 @@ static int mpc_dma_remove(struct platform_device *op)
+ 	struct device *dev = &op->dev;
+ 	struct mpc_dma *mdma = dev_get_drvdata(dev);
+ 
++	if (dev->of_node)
++		of_dma_controller_free(dev->of_node);
+ 	dma_async_device_unregister(&mdma->dma);
+ 	if (mdma->is_mpc8308) {
+ 		free_irq(mdma->irq2, mdma);
 -- 
 1.8.4.2
