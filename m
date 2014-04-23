@@ -1,19 +1,22 @@
-Return-Path: <Gang.Liu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com (unknown
- [207.46.163.185]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <Diana.Craciun@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EA11A1400A7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 17:31:49 +1000 (EST)
-From: "Gang.Liu@freescale.com" <Gang.Liu@freescale.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Scott
- Wood" <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/rmu: Fix the error memory free parameters
-Date: Wed, 23 Apr 2014 07:16:52 +0000
-Message-ID: <ca1ab68874204c8d8d8468a424274bd9@BLUPR03MB407.namprd03.prod.outlook.com>
-References: <1397037885-21060-1-git-send-email-Gang.Liu@freescale.com>
-In-Reply-To: <1397037885-21060-1-git-send-email-Gang.Liu@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 89B171400A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 18:42:43 +1000 (EST)
+Message-ID: <5357794F.4010503@freescale.com>
+Date: Wed, 23 Apr 2014 11:26:55 +0300
+From: Diana Craciun <diana.craciun@freescale.com>
 MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl: Updated device trees for platforms with
+ corenet version 2
+References: <1397834470-12844-1-git-send-email-diana.craciun@freescale.com>
+ <1397858858.1694.133.camel@snotra.buserror.net>
+In-Reply-To: <1397858858.1694.133.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+On 04/19/2014 01:07 AM, Scott Wood wrote:
+> On Fri, 2014-04-18 at 18:21 +0300, Diana Craciun wrote:
+>> From: Diana Craciun <Diana.Craciun@freescale.com>
+>>
+>> Updated the device trees according to the corenet-cf
+>> binding definition.
+>>
+>> Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
+>> ---
+>>   arch/powerpc/boot/dts/b4860emu.dts          | 2 +-
+>>   arch/powerpc/boot/dts/fsl/b4420si-post.dtsi | 4 ----
+>>   arch/powerpc/boot/dts/fsl/b4860si-post.dtsi | 4 ----
+>>   arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 2 +-
+>>   arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 2 +-
+>>   arch/powerpc/boot/dts/t4240emu.dts          | 2 +-
+>>   6 files changed, 4 insertions(+), 12 deletions(-)
+> Could you update the corenet version 1 trees as well?
+>
+> -Scott
+>
+>
 
-Do you have some comments about this patch,
-or would you please help to apply it?
+Yes, sure, I have this on my to do list.
 
-Thanks a lot!
-Liu Gang
-
-> -----Original Message-----
-> From: Liu Gang [mailto:Gang.Liu@freescale.com]
-> Sent: Wednesday, April 09, 2014 6:05 PM
-> To: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421
-> Cc: Zang Roy-R61911; Liu Gang-B34182
-> Subject: [PATCH] powerpc/rmu: Fix the error memory free parameters
->=20
-> There are error parameters should be corrected when calling
-> dma_free_coherent to free rmu rx-ring buffers in fsl_open_inb_mbox()
-> function.
->=20
-> Signed-off-by: Liu Gang <Gang.Liu@freescale.com>
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
->  arch/powerpc/sysdev/fsl_rmu.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/sysdev/fsl_rmu.c
-> b/arch/powerpc/sysdev/fsl_rmu.c index 00e224a..b48197a 100644
-> --- a/arch/powerpc/sysdev/fsl_rmu.c
-> +++ b/arch/powerpc/sysdev/fsl_rmu.c
-> @@ -881,9 +881,9 @@ fsl_open_inb_mbox(struct rio_mport *mport, void
-> *dev_id, int mbox, int entries)
->  	rc =3D request_irq(IRQ_RIO_RX(mport), fsl_rio_rx_handler, 0,
->  			 "msg_rx", (void *)mport);
->  	if (rc < 0) {
-> -		dma_free_coherent(priv->dev, RIO_MSG_BUFFER_SIZE,
-> -			rmu->msg_tx_ring.virt_buffer[i],
-> -			rmu->msg_tx_ring.phys_buffer[i]);
-> +		dma_free_coherent(priv->dev,
-> +			rmu->msg_rx_ring.size * RIO_MAX_MSG_SIZE,
-> +			rmu->msg_rx_ring.virt, rmu->msg_rx_ring.phys);
->  		goto out;
->  	}
->=20
-> --
-> 1.8.5
->=20
+Diana
