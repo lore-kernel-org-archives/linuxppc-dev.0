@@ -1,30 +1,32 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1B6A01400F6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 12:27:05 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E279A1401F5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 12:27:22 +1000 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 23 Apr 2014 07:57:03 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id BC528394003E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:56:59 +0530 (IST)
+ Wed, 23 Apr 2014 07:57:19 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 653093940048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:57:17 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3N2Qslp4587892
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:56:54 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3N2ROMV8520186
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:57:24 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3N2QwoA021058
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:56:58 +0530
+ s3N2R8eR021350
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 07:57:16 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] powerpc/powernv: reduce multi-hit of iommu_add_device()
-Date: Wed, 23 Apr 2014 10:26:32 +0800
-Message-Id: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] powerpc/powernv: release the refcount for pci_dev
+Date: Wed, 23 Apr 2014 10:26:33 +0800
+Message-Id: <1398219993-6326-2-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, aik@au1.ibm.com,
  gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,91 +38,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During the EEH hotplug event, iommu_add_device() will be invoked three times
-and two of them will trigger warning or error.
+On PowerNV platform, we are holding an unnecessary refcount on a pci_dev, which
+leads to the pci_dev is not destroyed when hotplugging a pci device.
 
-The three times to invoke the iommu_add_device() are:
-
-    pci_device_add
-       ...
-       set_iommu_table_base_and_group   <- 1st time, fail
-    device_add
-       ...
-       tce_iommu_bus_notifier           <- 2nd time, succees
-    pcibios_add_pci_devices
-       ...
-       pcibios_setup_bus_devices        <- 3rd time, re-attach
-
-The first time fails, since the dev->kobj->sd is not initialized. The
-dev->kobj->sd is initialized in device_add().
-The third time's warning is triggered by the re-attach of the iommu_group.
-
-After applying this patch, the error
-
-    iommu_tce: 0003:05:00.0 has not been added, ret=-14
-
-and the warning
-
-    [  204.123609] ------------[ cut here ]------------
-    [  204.123645] WARNING: at arch/powerpc/kernel/iommu.c:1125
-    [  204.123680] Modules linked in: xt_CHECKSUM nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT bnep bluetooth 6lowpan_iphc rfkill xt_conntrack ebtable_nat ebtable_broute bridge stp llc mlx4_ib ib_sa ib_mad ib_core ib_addr ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw bnx2x tg3 mlx4_core nfsd ptp mdio ses libcrc32c nfs_acl enclosure be2net pps_core shpchp lockd kvm uinput sunrpc binfmt_misc lpfc scsi_transport_fc ipr scsi_tgt
-    [  204.124356] CPU: 18 PID: 650 Comm: eehd Not tainted 3.14.0-rc5yw+ #102
-    [  204.124400] task: c0000027ed485670 ti: c0000027ed50c000 task.ti: c0000027ed50c000
-    [  204.124453] NIP: c00000000003cf80 LR: c00000000006c648 CTR: c00000000006c5c0
-    [  204.124506] REGS: c0000027ed50f440 TRAP: 0700   Not tainted  (3.14.0-rc5yw+)
-    [  204.124558] MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 88008084  XER: 20000000
-    [  204.124682] CFAR: c00000000006c644 SOFTE: 1
-    GPR00: c00000000006c648 c0000027ed50f6c0 c000000001398380 c0000027ec260300
-    GPR04: c0000027ea92c000 c00000000006ad00 c0000000016e41b0 0000000000000110
-    GPR08: c0000000012cd4c0 0000000000000001 c0000027ec2602ff 0000000000000062
-    GPR12: 0000000028008084 c00000000fdca200 c0000000000d1d90 c0000027ec281a80
-    GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-    GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
-    GPR24: 000000005342697b 0000000000002906 c000001fe6ac9800 c000001fe6ac9800
-    GPR28: 0000000000000000 c0000000016e3a80 c0000027ea92c090 c0000027ea92c000
-    [  204.125353] NIP [c00000000003cf80] .iommu_add_device+0x30/0x1f0
-    [  204.125399] LR [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
-    [  204.125443] Call Trace:
-    [  204.125464] [c0000027ed50f6c0] [c0000027ed50f750] 0xc0000027ed50f750 (unreliable)
-    [  204.125526] [c0000027ed50f750] [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
-    [  204.125588] [c0000027ed50f7d0] [c000000000069cc8] .pnv_pci_dma_dev_setup+0x78/0x340
-    [  204.125650] [c0000027ed50f870] [c000000000044408] .pcibios_setup_device+0x88/0x2f0
-    [  204.125712] [c0000027ed50f940] [c000000000046040] .pcibios_setup_bus_devices+0x60/0xd0
-    [  204.125774] [c0000027ed50f9c0] [c000000000043acc] .pcibios_add_pci_devices+0xdc/0x1c0
-    [  204.125837] [c0000027ed50fa50] [c00000000086f970] .eeh_reset_device+0x36c/0x4f0
-    [  204.125939] [c0000027ed50fb20] [c00000000003a2d8] .eeh_handle_normal_event+0x448/0x480
-    [  204.126068] [c0000027ed50fbc0] [c00000000003a35c] .eeh_handle_event+0x4c/0x340
-    [  204.126192] [c0000027ed50fc80] [c00000000003a74c] .eeh_event_handler+0xfc/0x1b0
-    [  204.126319] [c0000027ed50fd30] [c0000000000d1ea0] .kthread+0x110/0x130
-    [  204.126430] [c0000027ed50fe30] [c00000000000a460] .ret_from_kernel_thread+0x5c/0x7c
-    [  204.126556] Instruction dump:
-    [  204.126610] 7c0802a6 fba1ffe8 fbc1fff0 fbe1fff8 f8010010 f821ff71 7c7e1b78 60000000
-    [  204.126787] 60000000 e87e0298 3143ffff 7d2a1910 <0b090000> 2fa90000 40de00c8 ebfe0218
-    [  204.126966] ---[ end trace 6e7aefd80add2973 ]---
-
-are cleared.
-
-This patch removes iommu_add_device() in pnv_pci_ioda_dma_dev_setup(), which
-revert part of the change in commit d905c5df(PPC: POWERNV: move
-iommu_add_device earlier).
+This patch release the unnecessary refcount.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c |    1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index bc8e74e..bd3870e 100644
+index bd3870e..cec6a75 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1423,7 +1423,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
- 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
--	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
-+	set_iommu_table_base(&pdev->dev, pe->tce32_table);
- }
- 
- static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+@@ -558,7 +558,6 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 				pci_name(dev));
+ 			continue;
+ 		}
+-		pci_dev_get(dev);
+ 		pdn->pcidev = dev;
+ 		pdn->pe_number = pe->pe_number;
+ 		pe->dma_weight += pnv_ioda_dma_weight(dev);
 -- 
 1.7.9.5
