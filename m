@@ -1,26 +1,22 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-f48.google.com (mail-la0-f48.google.com
- [209.85.215.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Diana.Craciun@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0208.outbound.protection.outlook.com [207.46.163.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 78301140297
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 23:53:50 +1000 (EST)
-Received: by mail-la0-f48.google.com with SMTP id gf5so784968lab.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 06:53:45 -0700 (PDT)
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org
-Subject: [PATCH RFC v12 7/7] dma: mpc512x: register for device tree channel
- lookup
-Date: Wed, 23 Apr 2014 17:53:29 +0400
-Message-Id: <1398261209-5578-8-git-send-email-a13xp0p0v88@gmail.com>
-In-Reply-To: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
-Cc: devicetree@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 04E2014009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 00:16:50 +1000 (EST)
+Message-ID: <5357CB33.4070207@freescale.com>
+Date: Wed, 23 Apr 2014 17:16:19 +0300
+From: Diana Craciun <diana.craciun@freescale.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2] powerpc/fsl: Added binding for Freescale CoreNet
+ coherency fabric (CCF)
+References: <1397833917-12611-1-git-send-email-diana.craciun@freescale.com>
+ <1397856821.1694.126.camel@snotra.buserror.net>
+In-Reply-To: <1397856821.1694.126.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +26,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the controller for device tree based lookup of DMA channels
-(non-fatal for backwards compatibility with older device trees) and
-provide the '#dma-cells' property in the shared mpc5121.dtsi file
+On 04/19/2014 12:33 AM, Scott Wood wrote:
+> On Fri, 2014-04-18 at 18:11 +0300, Diana Craciun wrote:
+>> From: Diana Craciun <Diana.Craciun@freescale.com>
+>>
+>> The CoreNet coherency fabric is a fabric-oriented, conectivity
+>> infrastructure that enables the implementation of coherent, multicore
+>> systems. The CCF acts as a central interconnect for cores,
+>> platform-level caches, memory subsystem, peripheral devices and I/O host
+>> bridges in the system.
+>>
+>> Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
+>> ---
+>>   .../devicetree/bindings/powerpc/fsl/ccf.txt        | 36 ++++++++++++++++++++++
+>>   1 file changed, 36 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+>> new file mode 100644
+>> index 0000000..f0b7143
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+>> @@ -0,0 +1,36 @@
+>> +Freescale CoreNet Coherency Fabric(CCF) Device Tree Binding
+>> +
+>> +DESCRIPTION
+>> +
+>> +The CoreNet coherency fabric is a fabric-oriented, connectivity infrastructure
+>> +that enables the implementation of coherent, multicore systems.
+>> +
+>> +Required properties:
+>> +
+>> +- compatible : <string>
+>> +		Must include "fsl,corenetX-cf", "fsl,corenet-cf" - CoreNet coherency
+>> +		fabric version X
+> Specify "fsl,corenet1-cf" and "fsl,corenet2-cf" rather than
+> "fsl,corenetX-cf" (given there's nothing in a chip manual that you can
+> correlate with the value of X), and provide example chips for each.
 
-Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
----
- arch/powerpc/boot/dts/mpc5121.dtsi |  1 +
- drivers/dma/mpc512x_dma.c          | 13 ++++++++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+OK.
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 2c0e155..7f9d14f 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -498,6 +498,7 @@
- 			compatible = "fsl,mpc5121-dma";
- 			reg = <0x14000 0x1800>;
- 			interrupts = <65 0x8>;
-+			#dma-cells = <1>;
- 		};
- 	};
- 
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index d2c5f79..fa0614e 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -52,6 +52,7 @@
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
-+#include <linux/of_dma.h>
- #include <linux/of_platform.h>
- 
- #include <linux/random.h>
-@@ -1031,7 +1032,15 @@ static int mpc_dma_probe(struct platform_device *op)
- 	if (retval)
- 		goto err_free2;
- 
--	return retval;
-+	/* Register with OF helpers for DMA lookups (nonfatal) */
-+	if (dev->of_node) {
-+		retval = of_dma_controller_register(dev->of_node,
-+						of_dma_xlate_by_chan_id, mdma);
-+		if (retval)
-+			dev_warn(dev, "Could not register for OF lookup\n");
-+	}
-+
-+	return 0;
- 
- err_free2:
- 	if (mdma->is_mpc8308)
-@@ -1052,6 +1061,8 @@ static int mpc_dma_remove(struct platform_device *op)
- 	struct device *dev = &op->dev;
- 	struct mpc_dma *mdma = dev_get_drvdata(dev);
- 
-+	if (dev->of_node)
-+		of_dma_controller_free(dev->of_node);
- 	dma_async_device_unregister(&mdma->dma);
- 	if (mdma->is_mpc8308) {
- 		free_irq(mdma->irq2, mdma);
--- 
-1.8.4.2
+> Also specify that "fsl,corenet-cf" represents the registers that are
+> common between the two versions (not arbitrary "fsl,corenetX-cf" -- if
+> there's ever an "fsl,corenet3-cf" it may not be compatible with this),
+> and is retained for compatibility reasons.
+>
+
+What do you mean by common?  There are the csdids and snoop ids 
+registers which are common  between the two versions but only by name 
+because the register format is not the same.
+
+Diana
