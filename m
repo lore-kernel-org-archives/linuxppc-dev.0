@@ -1,15 +1,38 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 23 Apr 2014 12:49:02 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, rusty@rustcorp.com.au,
- ulrich.weigand@de.ibm.com, amodra@gmail.com, mikey@neuling.org,
- mjw@linux.vnet.ibm.com, rostedt@goodmis.org, philippe.bergheaud@fr.ibm.com,
- mpe@ellerman.id.au
-Subject: [git pull] Please pull abiv2 branch
-Message-ID: <20140423124902.5be9dab0@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id C06F3140104
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 14:36:59 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 23 Apr 2014 14:36:57 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A50B02BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 14:36:54 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3N4G1GH53149860
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 14:16:02 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3N4arX3029509
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2014 14:36:53 +1000
+Message-ID: <53574362.8010501@linux.vnet.ibm.com>
+Date: Wed, 23 Apr 2014 10:06:50 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 6/6] powerpc/powernv: Fix little endian issues in OPAL
+ dump code
+References: <1398142887-24109-1-git-send-email-anton@samba.org>
+ <1398142887-24109-6-git-send-email-anton@samba.org>
+ <53562921.6050300@linux.vnet.ibm.com> <20140423073115.6a7d4802@kryten>
+In-Reply-To: <20140423073115.6a7d4802@kryten>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: stewart@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,137 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 04/23/2014 03:01 AM, Anton Blanchard wrote:
+> Hi,
+>
+>> -int64_t opal_dump_info(uint32_t *dump_id, uint32_t *dump_size);
+>> -int64_t opal_dump_info2(uint32_t *dump_id, uint32_t *dump_size, uint32_t *dump_type);
+>> +int64_t opal_dump_info(__be32 *dump_id, __be32 *dump_size);
+>> +int64_t opal_dump_info2(__be32 *dump_id, __be32 *dump_size, __be32 *dump_type);
+>>   int64_t opal_dump_read(uint32_t dump_id, uint64_t buffer);
+>>   int64_t opal_dump_ack(uint32_t dump_id);
+>>
+>> Shouldn't we change above two functions as well ?
+>
+> No, there are no endian issues here because we pass the values via
+> register. The only endian issues are for values we pass via pointer.
+>
 
-Hi Ben,
+Anton,
 
-Here are the ABIv2 patches rebased against 3.15-rc2.
+Thanks for the clarification..
 
-The main changes since the last posting:
 
-powerpc: Don't build assembly files with ABIv2
-	Added so each patch in the series builds and we don't have any
-	bisect issues.
-
-selftests/powerpc: Update for ABIv2
-	Fixes build issues with the copyloop tests.
-
-Anton
---
-
-The following changes since commit a798c10faf62a505d24e5f6213fbaf904a39623f:
-
-  Linux 3.15-rc2 (2014-04-20 11:08:50 -0700)
-
-are available in the git repository at:
-
-  git://github.com/antonblanchard/linux.git abiv2
-
-for you to fetch changes up to cec4b7eaf09d330e94e8e94133d360e6f1855974:
-
-  selftests/powerpc: Update for ABIv2 (2014-04-23 11:41:07 +1000)
-
-----------------------------------------------------------------
-Anton Blanchard (30):
-      powerpc: Don't build assembly files with ABIv2
-      powerpc: No need to use dot symbols when branching to a function
-      powerpc: Remove superflous function descriptors in assembly only code
-      powerpc: Don't use a function descriptor for system call table
-      powerpc: Remove some unnecessary uses of _GLOBAL() and _STATIC()
-      powerpc: Remove _INIT_GLOBAL(), _STATIC() and _INIT_STATIC()
-      powerpc: Remove dot symbol usage in exception macros
-      powerpc: Create DOTSYM to wrap dot symbol usage
-      powerpc: Remove function descriptors and dot symbols on new ABI
-      powerpc: ABIv2 function calls must place target address in r12
-      powerpc: Ignore .TOC. relocations
-      powerpc: Add ABIv2 support to ppc_function_entry
-      powerpc: Use ppc_function_entry instead of open coding it
-      powerpc: Fix branch patching code for ABIv2
-      powerpc: Fix kernel thread creation on ABIv2
-      powerpc: Fix ABIv2 issues with stack offsets in assembly code
-      powerpc/tm: Use STK_PARAM
-      powerpc/tm: Fix GOT save offset for ABIv2
-      powerpc/tracing: TRACE_WITH_FRAME_BUFFER creates invalid stack frames
-      powerpc: Fix SMP issues with ppc64le ABIv2
-      powerpc: Fix ABIv2 issue with dereference_function_descriptor
-      powerpc: Add _GLOBAL_TOC for ABIv2 assembly functions exported to modules
-      powerpc: ftrace_caller, _mcount is exported to modules so needs _GLOBAL_TOC()
-      powerpc/kprobes: Fix ABIv2 issues with kprobe_lookup_name
-      powerpc/modules: Create is_module_trampoline()
-      powerpc/modules: Create module_trampoline_target()
-      powerpc/ftrace: Use module loader helpers to parse trampolines
-      powerpc/ftrace: Fix ABIv2 issues with __ftrace_make_call
-      powerpc: Build little endian ppc64 kernel with ABIv2
-      selftests/powerpc: Update for ABIv2
-
-Rusty Russell (11):
-      powerpc: make module stub code endian independent
-      powerpc: modules implement R_PPC64_TOCSAVE relocation.
-      powerpc: EXPORT_SYMBOL(.TOC.)
-      powerpc: module: handle MODVERSION for .TOC.
-      powerpc: Fix up TOC. for modules.
-      powerpc: Handle new ELFv2 module relocations
-      powerpc: modules: comment about de-dotifying symbols when using the ELFv2 ABI.
-      powerpc: modules: change r2 save/restore offset for ELFv2 ABI.
-      powerpc: modules: use r12 for stub jump address.
-      powerpc: modules: skip r2 setup for ELFv2
-      powerpc: modules: implement stubs for ELFv2 ABI.
-
-Ulrich Weigand (1):
-      powerpc: Fix unsafe accesses to parameter area in ELFv2
-
- arch/powerpc/Makefile                              |  11 +-
- arch/powerpc/boot/util.S                           |   4 +-
- arch/powerpc/include/asm/code-patching.h           |  40 ++-
- arch/powerpc/include/asm/context_tracking.h        |   4 +-
- arch/powerpc/include/asm/exception-64e.h           |   6 +-
- arch/powerpc/include/asm/exception-64s.h           |   2 +-
- arch/powerpc/include/asm/ftrace.h                  |   2 +
- arch/powerpc/include/asm/irqflags.h                |   8 +-
- arch/powerpc/include/asm/kprobes.h                 |   5 +-
- arch/powerpc/include/asm/linkage.h                 |   2 +
- arch/powerpc/include/asm/module.h                  |   4 +
- arch/powerpc/include/asm/ppc_asm.h                 |  72 +++---
- arch/powerpc/include/asm/sections.h                |   2 +
- arch/powerpc/include/asm/systbl.h                  |   6 +-
- arch/powerpc/include/uapi/asm/elf.h                |  10 +-
- arch/powerpc/kernel/cpu_setup_fsl_booke.S          |  28 +--
- arch/powerpc/kernel/entry_64.S                     | 117 +++++----
- arch/powerpc/kernel/exceptions-64e.S               | 140 +++++------
- arch/powerpc/kernel/exceptions-64s.S               | 206 +++++++--------
- arch/powerpc/kernel/ftrace.c                       | 137 +++-------
- arch/powerpc/kernel/head_64.S                      | 117 ++++-----
- arch/powerpc/kernel/idle_book3e.S                  |   2 +-
- arch/powerpc/kernel/idle_power4.S                  |   2 +-
- arch/powerpc/kernel/idle_power7.S                  |   4 +-
- arch/powerpc/kernel/misc_64.S                      |  46 +++-
- arch/powerpc/kernel/module_64.c                    | 279 +++++++++++++++++----
- arch/powerpc/kernel/process.c                      |  17 +-
- arch/powerpc/kernel/prom_init_check.sh             |   2 +-
- arch/powerpc/kernel/setup_64.c                     |   2 +-
- arch/powerpc/kernel/systbl.S                       |  18 +-
- arch/powerpc/kernel/tm.S                           |  13 +-
- arch/powerpc/kvm/book3s_hv_interrupts.S            |   2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S            |  34 +--
- arch/powerpc/lib/copypage_64.S                     |   2 +-
- arch/powerpc/lib/copypage_power7.S                 |  12 +-
- arch/powerpc/lib/copyuser_64.S                     |   2 +-
- arch/powerpc/lib/copyuser_power7.S                 |  32 +--
- arch/powerpc/lib/hweight_64.S                      |   8 +-
- arch/powerpc/lib/mem_64.S                          |   4 +-
- arch/powerpc/lib/memcpy_64.S                       |  10 +-
- arch/powerpc/lib/memcpy_power7.S                   |  26 +-
- arch/powerpc/mm/hash_low_64.S                      |  44 ++--
- arch/powerpc/mm/hash_utils_64.c                    |  36 ++-
- arch/powerpc/mm/slb.c                              |  12 +-
- arch/powerpc/mm/slb_low.S                          |  12 +-
- arch/powerpc/platforms/85xx/smp.c                  |   3 +-
- arch/powerpc/platforms/cell/smp.c                  |   5 +-
- arch/powerpc/platforms/pasemi/powersave.S          |   2 +-
- arch/powerpc/platforms/powernv/opal-takeover.S     |   2 +
- arch/powerpc/platforms/powernv/opal-wrappers.S     |   4 +-
- arch/powerpc/platforms/powernv/smp.c               |   5 +-
- arch/powerpc/platforms/pseries/hvCall.S            |   4 +-
- arch/powerpc/platforms/pseries/smp.c               |   5 +-
- arch/powerpc/platforms/wsp/scom_smp.c              |   3 +-
- .../selftests/powerpc/copyloops/asm/ppc_asm.h      |   5 +-
- 55 files changed, 902 insertions(+), 680 deletions(-)
+-Vasant
