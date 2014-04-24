@@ -1,33 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CD331140172
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:32 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 17936140179
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:33 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 24 Apr 2014 18:00:32 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id D72C22BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:29 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B34A22CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7dQPV3473688
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:26 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O7dafG9044236
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:36 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80SGZ017475
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:29 +1000
+ s3O80TBJ017499
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 13/25] powerpc/eeh: No hotplug on permanently removed dev
-Date: Thu, 24 Apr 2014 18:00:19 +1000
-Message-Id: <1398326431-24305-14-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 15/25] powerpc/pseries: Fix overwritten PE state
+Date: Thu, 24 Apr 2014 18:00:21 +1000
+Message-Id: <1398326431-24305-16-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linux-stable <stable@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,305 +38,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The issue was detected in a bit complicated test case where
-we have multiple hierarchical PEs shown as following figure:
+In pseries_eeh_get_state(), EEH_STATE_UNAVAILABLE is always
+overwritten by EEH_STATE_NOT_SUPPORT because of the missed
+"break" there. The patch fixes the issue.
 
-                +-----------------+
-                | PE#3     p2p#0  |
-                |          p2p#1  |
-                +-----------------+
-                        |
-                +-----------------+
-                | PE#4     pdev#0 |
-                |          pdev#1 |
-                +-----------------+
-
-PE#4 (have 2 PCI devices) is the child of PE#3, which has 2 p2p
-bridges. We accidentally had less-known scenario: PE#4 was removed
-permanently from the system because of permanent failure (e.g.
-exceeding the max allowd failure times in last hour), then we detects
-EEH errors on PE#3 and tried to recover it. However, eeh_dev instances
-for pdev#0/1 were not detached from PE#4, which was still connected to
-PE#3. All of that was because of the fact that we rely on count-based
-pcibios_release_device(), which isn't reliable enough. When doing
-recovery for PE#3, we still apply hotplug on PE#4 and pdev#0/1, which
-are not valid any more. Eventually, we run into kernel crash.
-
-The patch fixes above issue from two aspects. For unplug, we simply
-skip those permanently removed PE, whose state is (EEH_PE_STATE_ISOLATED
-&& !EEH_PE_STATE_RECOVERING) and its frozen count should be greater
-than EEH_MAX_ALLOWED_FREEZES. For plug, we marked all permanently
-removed EEH devices with EEH_DEV_REMOVED and return 0xFF's on read
-its PCI config so that PCI core will omit them.
-
+Reported-by: Joe Perches <joe@perches.com>
+Cc: linux-stable <stable@vger.kernel.org>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h       |  1 +
- arch/powerpc/include/asm/ppc-pci.h   |  1 +
- arch/powerpc/kernel/eeh_driver.c     | 48 ++++++++++++++++++++++++++++++------
- arch/powerpc/kernel/eeh_pe.c         | 47 +++++++++++++++++++++++++++++------
- arch/powerpc/kernel/pci_of_scan.c    |  9 +++++++
- arch/powerpc/platforms/powernv/pci.c | 13 +++++++---
- 6 files changed, 100 insertions(+), 19 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_pseries.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index f4a9321..2841eca 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -98,6 +98,7 @@ struct eeh_pe {
- 
- #define EEH_DEV_NO_HANDLER	(1 << 8)	/* No error handler	*/
- #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
-+#define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
- 
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index ed57fa7..db1e2b8 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -58,6 +58,7 @@ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
- int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
- void eeh_pe_state_mark(struct eeh_pe *pe, int state);
- void eeh_pe_state_clear(struct eeh_pe *pe, int state);
-+void eeh_pe_dev_mode_mark(struct eeh_pe *pe, int mode);
- 
- void eeh_sysfs_add_device(struct pci_dev *pdev);
- void eeh_sysfs_remove_device(struct pci_dev *pdev);
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 1f1e2cc..f99ba9b 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -171,6 +171,15 @@ static void eeh_enable_irq(struct pci_dev *dev)
- 	}
- }
- 
-+static bool eeh_dev_removed(struct eeh_dev *edev)
-+{
-+	/* EEH device removed ? */
-+	if (!edev || (edev->mode & EEH_DEV_REMOVED))
-+		return true;
-+
-+	return false;
-+}
-+
- /**
-  * eeh_report_error - Report pci error to each device driver
-  * @data: eeh device
-@@ -187,10 +196,8 @@ static void *eeh_report_error(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	/* We might not have the associated PCI device,
--	 * then we should continue for next one.
--	 */
--	if (!dev) return NULL;
-+	if (!dev || eeh_dev_removed(edev))
-+		return NULL;
- 	dev->error_state = pci_channel_io_frozen;
- 
- 	driver = eeh_pcid_get(dev);
-@@ -230,6 +237,9 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
-+	if (!dev || eeh_dev_removed(edev))
-+		return NULL;
-+
- 	driver = eeh_pcid_get(dev);
- 	if (!driver) return NULL;
- 
-@@ -267,7 +277,8 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	if (!dev) return NULL;
-+	if (!dev || eeh_dev_removed(edev))
-+		return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
- 	driver = eeh_pcid_get(dev);
-@@ -307,7 +318,8 @@ static void *eeh_report_resume(void *data, void *userdata)
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	struct pci_driver *driver;
- 
--	if (!dev) return NULL;
-+	if (!dev || eeh_dev_removed(edev))
-+		return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
- 	driver = eeh_pcid_get(dev);
-@@ -343,7 +355,8 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	struct pci_driver *driver;
- 
--	if (!dev) return NULL;
-+	if (!dev || eeh_dev_removed(edev))
-+		return NULL;
- 	dev->error_state = pci_channel_io_perm_failure;
- 
- 	driver = eeh_pcid_get(dev);
-@@ -380,6 +393,16 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 	if (!dev || (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
- 		return NULL;
- 
-+	/*
-+	 * We rely on count-based pcibios_release_device() to
-+	 * detach permanently offlined PEs. Unfortunately, that's
-+	 * not reliable enough. We might have the permanently
-+	 * offlined PEs attached, but we needn't take care of
-+	 * them and their child devices.
-+	 */
-+	if (eeh_dev_removed(edev))
-+		return NULL;
-+
- 	driver = eeh_pcid_get(dev);
- 	if (driver) {
- 		eeh_pcid_put(dev);
-@@ -694,8 +717,17 @@ perm_error:
- 	/* Notify all devices that they're about to go down. */
- 	eeh_pe_dev_traverse(pe, eeh_report_failure, NULL);
- 
--	/* Shut down the device drivers for good. */
-+	/* Mark the PE to be removed permanently */
-+	pe->freeze_count = EEH_MAX_ALLOWED_FREEZES + 1;
-+
-+	/*
-+	 * Shut down the device drivers for good. We mark
-+	 * all removed devices correctly to avoid access
-+	 * the their PCI config any more.
-+	 */
- 	if (frozen_bus) {
-+		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
-+
- 		pci_lock_rescan_remove();
- 		pcibios_remove_pci_devices(frozen_bus);
- 		pci_unlock_rescan_remove();
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index f0c353f..995c2a2 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -503,13 +503,17 @@ static void *__eeh_pe_state_mark(void *data, void *flag)
- 	struct eeh_dev *edev, *tmp;
- 	struct pci_dev *pdev;
- 
--	/*
--	 * Mark the PE with the indicated state. Also,
--	 * the associated PCI device will be put into
--	 * I/O frozen state to avoid I/O accesses from
--	 * the PCI device driver.
--	 */
-+	/* Keep the state of permanently removed PE intact */
-+	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
-+	    (state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
-+		return NULL;
-+
- 	pe->state |= state;
-+
-+	/* Offline PCI devices if applicable */
-+	if (state != EEH_PE_ISOLATED)
-+		return NULL;
-+
- 	eeh_pe_for_each_dev(pe, edev, tmp) {
- 		pdev = eeh_dev_to_pci_dev(edev);
- 		if (pdev)
-@@ -532,6 +536,27 @@ void eeh_pe_state_mark(struct eeh_pe *pe, int state)
- 	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
- }
- 
-+static void *__eeh_pe_dev_mode_mark(void *data, void *flag)
-+{
-+	struct eeh_dev *edev = data;
-+	int mode = *((int *)flag);
-+
-+	edev->mode |= mode;
-+
-+	return NULL;
-+}
-+
-+/**
-+ * eeh_pe_dev_state_mark - Mark state for all device under the PE
-+ * @pe: EEH PE
-+ *
-+ * Mark specific state for all child devices of the PE.
-+ */
-+void eeh_pe_dev_mode_mark(struct eeh_pe *pe, int mode)
-+{
-+	eeh_pe_dev_traverse(pe, __eeh_pe_dev_mode_mark, &mode);
-+}
-+
- /**
-  * __eeh_pe_state_clear - Clear state for the PE
-  * @data: EEH PE
-@@ -546,8 +571,16 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
- 	struct eeh_pe *pe = (struct eeh_pe *)data;
- 	int state = *((int *)flag);
- 
-+	/* Keep the state of permanently removed PE intact */
-+	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
-+	    (state & EEH_PE_ISOLATED))
-+		return NULL;
-+
- 	pe->state &= ~state;
--	pe->check_count = 0;
-+
-+	/* Clear check count since last isolation */
-+	if (state & EEH_PE_ISOLATED)
-+		pe->check_count = 0;
- 
- 	return NULL;
- }
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index 83c26d8..ea6470c 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -304,6 +304,9 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
- 	struct pci_dev *dev = NULL;
- 	const __be32 *reg;
- 	int reglen, devfn;
-+#ifdef CONFIG_EEH
-+	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
-+#endif
- 
- 	pr_debug("  * %s\n", dn->full_name);
- 	if (!of_device_is_available(dn))
-@@ -321,6 +324,12 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
- 		return dev;
- 	}
- 
-+	/* Device removed permanently ? */
-+#ifdef CONFIG_EEH
-+	if (edev && (edev->mode & EEH_DEV_REMOVED))
-+		return NULL;
-+#endif
-+
- 	/* create a new pci_dev for this device */
- 	dev = of_create_pci_dev(dn, bus, devfn);
- 	if (!dev)
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index f98cf99..eefbfcc 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -441,11 +441,16 @@ static bool pnv_pci_cfg_check(struct pci_controller *hose,
- 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
- 		return true;
- 
--	/* PE reset ? */
-+	/* PE reset or device removed ? */
- 	edev = of_node_to_eeh_dev(dn);
--	if (edev && edev->pe &&
--	    (edev->pe->state & EEH_PE_RESET))
--		return false;
-+	if (edev) {
-+		if (edev->pe &&
-+		    (edev->pe->state & EEH_PE_RESET))
-+			return false;
-+
-+		if (edev->mode & EEH_DEV_REMOVED)
-+			return false;
-+	}
- 
- 	return true;
- }
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index 9d58a53..2f1ba64 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -496,6 +496,7 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *state)
+ 			} else {
+ 				result = EEH_STATE_NOT_SUPPORT;
+ 			}
++			break;
+ 		default:
+ 			result = EEH_STATE_NOT_SUPPORT;
+ 		}
 -- 
 1.8.3.2
