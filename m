@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Dongsheng.Wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 36360140131
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2014 16:14:37 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s3O6EQkW017637
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2014 01:14:30 -0500
-Message-ID: <1398320065.14519.1.camel@pasglop>
-Subject: [PATCH] powerpc/powernv: Fix kexec races going back to OPAL
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Date: Thu, 24 Apr 2014 16:14:25 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 1B4A2140167
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 16:14:48 +1000 (EST)
+From: Dongsheng Wang <dongsheng.wang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v2 2/2] fsl/mpic_timer: make mpic_timer to support deep sleep
+ feature
+Date: Thu, 24 Apr 2014 14:12:19 +0800
+Message-ID: <1398319939-36348-1-git-send-email-dongsheng.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
+ jason.jin@freescale.com, Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,91 +24,300 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a subtle race when sending CPUs back to OPAL on kexec.
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
 
-We mark them as "in real mode" right before we send them down. Once
-we've booted the new kernel, it might try to call opal_reinit_cpus()
-to change endianness, and that requires all CPUs to be spinning inside
-OPAL.
+At T104x platfrom the timer clock will be changed from platform_clock
+to sys_ref_clock when system going to deep sleep.
 
-However there is no synchronization here and we've observed cases
-where the returning CPUs hadn't established their new state inside
-OPAL before opal_reinit_cpus() is called, causing it to fail.
+So before system going to deep sleep, we need to change time to adapt
+to the new frequency that is sys_ref_clock. And after resume from deep
+sleep, restore the time that based on platform_clock.
 
-The proper fix is to actually wait for them to go down all the way
-from the kexec'ing kernel.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
 ---
- arch/powerpc/platforms/powernv/setup.c | 48 ++++++++++++++++++++++++++++++++--
- 1 file changed, 46 insertions(+), 2 deletions(-)
+*v2*
+Remove some unnecessary warning message.
+Remove "switch_freq_flag", it's unnecessary.
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 42c16a6..1eb3684 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -183,18 +183,62 @@ static void pnv_shutdown(void)
+Modify the description of the patch.
+
+diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
+index 9d9b062..71ad368 100644
+--- a/arch/powerpc/sysdev/mpic_timer.c
++++ b/arch/powerpc/sysdev/mpic_timer.c
+@@ -18,6 +18,7 @@
+ #include <linux/mm.h>
+ #include <linux/interrupt.h>
+ #include <linux/slab.h>
++#include <linux/suspend.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_device.h>
+@@ -26,7 +27,9 @@
+ #include <sysdev/fsl_soc.h>
+ #include <asm/io.h>
+ 
++#include <asm/mpc85xx.h>
+ #include <asm/mpic_timer.h>
++#include <asm/pm.h>
+ 
+ #define FSL_GLOBAL_TIMER		0x1
+ 
+@@ -72,6 +75,8 @@ struct timer_group_priv {
+ 	struct mpic_timer		timer[TIMERS_PER_GROUP];
+ 	struct list_head		node;
+ 	unsigned int			timerfreq;
++	unsigned int			suspended_timerfreq;
++	unsigned int			resume_timerfreq;
+ 	unsigned int			idle;
+ 	unsigned int			flags;
+ 	spinlock_t			lock;
+@@ -423,6 +428,33 @@ struct mpic_timer *mpic_request_timer(irq_handler_t fn, void *dev,
+ }
+ EXPORT_SYMBOL(mpic_request_timer);
+ 
++static void timer_group_get_suspended_freq(struct timer_group_priv *priv)
++{
++	struct device_node *np;
++
++	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-clockgen-2.0");
++	if (!np)
++		return;
++
++	of_property_read_u32(np, "clock-frequency", &priv->suspended_timerfreq);
++	of_node_put(np);
++
++	if (!priv->suspended_timerfreq)
++		pr_warn("Mpic timer will not be accurate during deep sleep.\n");
++}
++
++static int need_to_switch_freq(void)
++{
++	u32 svr;
++
++	svr = mfspr(SPRN_SVR);
++	if (SVR_SOC_VER(svr) == SVR_T1040 ||
++			SVR_SOC_VER(svr) == SVR_T1042)
++		return 1;
++
++	return 0;
++}
++
+ static int timer_group_get_freq(struct device_node *np,
+ 			struct timer_group_priv *priv)
+ {
+@@ -437,6 +469,13 @@ static int timer_group_get_freq(struct device_node *np,
+ 					&priv->timerfreq);
+ 			of_node_put(dn);
+ 		}
++
++		/*
++		 * For deep sleep, if system goes to deep sleep,
++		 * timer freq will be changed.
++		 */
++		if (need_to_switch_freq())
++			timer_group_get_suspended_freq(priv);
+ 	}
+ 
+ 	if (priv->timerfreq <= 0)
+@@ -445,6 +484,7 @@ static int timer_group_get_freq(struct device_node *np,
+ 	if (priv->flags & FSL_GLOBAL_TIMER) {
+ 		div = (1 << (MPIC_TIMER_TCR_CLKDIV >> 8)) * 8;
+ 		priv->timerfreq /= div;
++		priv->suspended_timerfreq /= div;
+ 	}
+ 
+ 	return 0;
+@@ -564,14 +604,182 @@ out:
+ 	kfree(priv);
  }
  
- #ifdef CONFIG_KEXEC
-+static void pnv_kexec_wait_secondaries_down(void)
++static void mpic_reset_time(struct mpic_timer *handle, struct timeval *bcr_time,
++				struct timeval *ccr_time)
 +{
-+	int my_cpu, i, notified = -1;
++	struct timer_group_priv *priv = container_of(handle,
++			struct timer_group_priv, timer[handle->num]);
 +
-+	my_cpu = get_cpu();
++	u64 ccr_ticks = 0;
++	u64 bcr_ticks = 0;
 +
-+	for_each_online_cpu(i) {
-+		uint8_t status;
-+		int64_t rc;
++	/* switch bcr time */
++	convert_time_to_ticks(priv, bcr_time, &bcr_ticks);
 +
-+		if (i == my_cpu)
-+			continue;
++	/* switch ccr time */
++	convert_time_to_ticks(priv, ccr_time, &ccr_ticks);
 +
-+		for (;;) {
-+			rc = opal_query_cpu_status(get_hard_smp_processor_id(i),
-+						   &status);
-+			if (rc != OPAL_SUCCESS || status != OPAL_THREAD_STARTED)
-+				break;
-+			barrier();
-+			if (i != notified) {
-+				printk(KERN_INFO "kexec: waiting for cpu %d "
-+				       "(physical %d) to enter OPAL\n",
-+				       i, paca[i].hw_cpu_id);
-+				notified = i;
-+			}
-+		}
++	if (handle->cascade_handle) {
++		u32 tmp_ticks;
++		u32 rem_ticks;
++
++		/* reset ccr ticks to bcr */
++		tmp_ticks = div_u64_rem(ccr_ticks, MAX_TICKS_CASCADE,
++					&rem_ticks);
++		out_be32(&priv->regs[handle->num].gtbcr,
++			tmp_ticks | TIMER_STOP);
++		out_be32(&priv->regs[handle->num - 1].gtbcr, rem_ticks);
++
++		/* start timer */
++		clrbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
++
++		/* reset bcr */
++		tmp_ticks = div_u64_rem(bcr_ticks, MAX_TICKS_CASCADE,
++					&rem_ticks);
++		out_be32(&priv->regs[handle->num].gtbcr,
++			tmp_ticks & ~TIMER_STOP);
++		out_be32(&priv->regs[handle->num - 1].gtbcr, rem_ticks);
++	} else {
++		/* reset ccr ticks to bcr */
++		out_be32(&priv->regs[handle->num].gtbcr,
++			ccr_ticks | TIMER_STOP);
++		/* start timer */
++		clrbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
++		/* reset bcr */
++		out_be32(&priv->regs[handle->num].gtbcr,
++			bcr_ticks & ~TIMER_STOP);
 +	}
 +}
 +
- static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
- {
- 	xics_kexec_teardown_cpu(secondary);
- 
--	/* Return secondary CPUs to firmware on OPAL v3 */
--	if (firmware_has_feature(FW_FEATURE_OPALv3) && secondary) {
-+	/* On OPAL v3, we return all CPUs to firmware */
++static void do_switch_time(struct mpic_timer *handle, unsigned int new_freq)
++{
++	struct timer_group_priv *priv = container_of(handle,
++			struct timer_group_priv, timer[handle->num]);
++	struct timeval ccr_time;
++	struct timeval bcr_time;
++	unsigned int timerfreq;
++	u32 test_stop;
++	u64 ticks;
 +
-+	if (!firmware_has_feature(FW_FEATURE_OPALv3))
++	test_stop = in_be32(&priv->regs[handle->num].gtbcr);
++	test_stop &= TIMER_STOP;
++	if (test_stop)
 +		return;
 +
-+	if (secondary) {
-+		/* Return secondary CPUs to firmware on OPAL v3 */
- 		mb();
- 		get_paca()->kexec_state = KEXEC_STATE_REAL_MODE;
- 		mb();
- 
- 		/* Return the CPU to OPAL */
- 		opal_return_cpu();
-+	} else if (crash_shutdown) {
-+		/*
-+		 * On crash, we don't wait for secondaries to go
-+		 * down as they might be unreachable or hung, so
-+		 * instead we just wait a bit and move on.
-+		 */
-+		mdelay(1);
++	/* stop timer, prepare reset time */
++	setbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
++
++	/* get bcr time */
++	if (handle->cascade_handle) {
++		u32 tmp_ticks;
++
++		tmp_ticks = in_be32(&priv->regs[handle->num].gtbcr);
++		tmp_ticks &= ~TIMER_STOP;
++		ticks = ((u64)tmp_ticks & UINT_MAX) * (u64)MAX_TICKS_CASCADE;
++		tmp_ticks = in_be32(&priv->regs[handle->num - 1].gtbcr);
++		ticks += tmp_ticks;
 +	} else {
-+		/* Primary waits for the secondaries to have reached OPAL */
-+		pnv_kexec_wait_secondaries_down();
++		ticks = in_be32(&priv->regs[handle->num].gtbcr);
++		ticks &= ~TIMER_STOP;
++	}
++	convert_ticks_to_time(priv, ticks, &bcr_time);
++
++	/* get ccr time */
++	mpic_get_remain_time(handle, &ccr_time);
++
++	/* recalculate timer time */
++	timerfreq = priv->timerfreq;
++	priv->timerfreq = new_freq;
++	mpic_reset_time(handle, &bcr_time, &ccr_time);
++	priv->timerfreq = timerfreq;
++}
++
++static void switch_group_timer(struct timer_group_priv *priv,
++				unsigned int new_freq)
++{
++	int i, num;
++
++	for (i = 0; i < TIMERS_PER_GROUP; i++) {
++		num = TIMERS_PER_GROUP - 1 - i;
++		/* cascade */
++		if ((i + 1) < TIMERS_PER_GROUP &&
++				priv->timer[num].cascade_handle) {
++			do_switch_time(&priv->timer[num], new_freq);
++			i++;
++			continue;
++		}
++
++		if (!test_bit(i, (unsigned long *)&priv->idle))
++			do_switch_time(&priv->timer[num], new_freq);
++	}
++}
++
++static int mpic_timer_suspend(void)
++{
++	struct timer_group_priv *priv;
++	suspend_state_t pm_state;
++
++	pm_state = pm_suspend_state();
++
++	list_for_each_entry(priv, &timer_group_list, node) {
++		/* timer not be used */
++		if (priv->idle == 0xf)
++			continue;
++
++		switch (pm_state) {
++		case PM_SUSPEND_STANDBY:
++			break;
++		case PM_SUSPEND_MEM:
++			if (!priv->suspended_timerfreq)
++				continue;
++
++			/* will switch timers, a set of timer */
++			switch_group_timer(priv, priv->suspended_timerfreq);
++
++			/* Software: switch timerfreq to suspended freq */
++			priv->resume_timerfreq = priv->timerfreq;
++			priv->timerfreq = priv->suspended_timerfreq;
++			break;
++		default:
++			break;
++		}
++	}
++
++	return 0;
++}
++
+ static void mpic_timer_resume(void)
+ {
+ 	struct timer_group_priv *priv;
++	suspend_state_t pm_state;
++
++	pm_state = pm_suspend_state();
+ 
+ 	list_for_each_entry(priv, &timer_group_list, node) {
+ 		/* Init FSL timer hardware */
+ 		if (priv->flags & FSL_GLOBAL_TIMER)
+ 			setbits32(priv->group_tcr, MPIC_TIMER_TCR_CLKDIV);
++
++		/* timer not be used */
++		if (priv->idle == 0xf)
++			continue;
++
++		switch (pm_state) {
++		case PM_SUSPEND_STANDBY:
++			break;
++		case PM_SUSPEND_MEM:
++			if (!priv->suspended_timerfreq)
++				continue;
++
++			/* will switch timers, a set of timer */
++			switch_group_timer(priv, priv->resume_timerfreq);
++
++			/* restore timerfreq */
++			priv->timerfreq = priv->resume_timerfreq;
++			break;
++		default:
++			break;
++		}
  	}
  }
- #endif /* CONFIG_KEXEC */
+ 
+@@ -581,6 +789,7 @@ static const struct of_device_id mpic_timer_ids[] = {
+ };
+ 
+ static struct syscore_ops mpic_timer_syscore_ops = {
++	.suspend = mpic_timer_suspend,
+ 	.resume = mpic_timer_resume,
+ };
+ 
+-- 
+1.8.5
