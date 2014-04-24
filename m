@@ -2,9 +2,10 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Alexander Graf <agraf@suse.de>
-Subject: [PATCH 1/6] KVM: PPC: Book3S HV: Rework the secondary inhibit code
-Date: Thu, 24 Apr 2014 11:32:40 +1000
-Message-Id: <1398303165-6576-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/6] powerpc/powernv: Make it possible to skip the IRQHAPPENED
+ check in power7_nap()
+Date: Thu, 24 Apr 2014 11:32:41 +1000
+Message-Id: <1398303165-6576-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1398303165-6576-1-git-send-email-mikey@neuling.org>
 References: <1398303165-6576-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, kvm@vger.kernel.org,
@@ -21,195 +22,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-As part of the support for split core on POWER8, we want to be able to
-block splitting of the core while KVM VMs are active.
+To support split core we need to be able to force all secondaries into
+nap, so the core can detect they are idle and do an unsplit.
 
-The logic to do that would be exactly the same as the code we currently
-have for inhibiting onlining of secondaries.
-
-Instead of adding an identical mechanism to block split core, rework the
-secondary inhibit code to be a "HV KVM is active" check. We can then use
-that in both the cpu hotplug code and the upcoming split core code.
+Currently power7_nap() will return without napping if there is an irq
+pending. We want to ignore the pending irq and nap anyway, we will deal
+with the interrupt later.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/kvm_ppc.h   |  7 +++++++
- arch/powerpc/include/asm/smp.h       |  8 --------
- arch/powerpc/kernel/smp.c            | 34 +++-------------------------------
- arch/powerpc/kvm/book3s_hv.c         |  8 ++++----
- arch/powerpc/kvm/book3s_hv_builtin.c | 31 +++++++++++++++++++++++++++++++
- 5 files changed, 45 insertions(+), 43 deletions(-)
+ arch/powerpc/include/asm/processor.h | 2 +-
+ arch/powerpc/kernel/idle_power7.S    | 9 +++++++++
+ arch/powerpc/platforms/powernv/smp.c | 2 +-
+ 3 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 4096f16..2c8e399 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -337,6 +337,10 @@ static inline void kvmppc_fast_vcpu_kick(struct kvm_vcpu *vcpu)
- 	vcpu->kvm->arch.kvm_ops->fast_vcpu_kick(vcpu);
- }
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index d660dc3..6d59072 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -449,7 +449,7 @@ extern unsigned long cpuidle_disable;
+ enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
  
-+extern void kvm_hv_vm_activated(void);
-+extern void kvm_hv_vm_deactivated(void);
-+extern bool kvm_hv_mode_active(void);
-+
- #else
- static inline void __init kvm_cma_reserve(void)
- {}
-@@ -356,6 +360,9 @@ static inline void kvmppc_fast_vcpu_kick(struct kvm_vcpu *vcpu)
- {
- 	kvm_vcpu_kick(vcpu);
- }
-+
-+static inline bool kvm_hv_mode_active(void)		{ return false; }
-+
- #endif
- 
- #ifdef CONFIG_KVM_XICS
-diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-index ff51046..5a6614a 100644
---- a/arch/powerpc/include/asm/smp.h
-+++ b/arch/powerpc/include/asm/smp.h
-@@ -68,14 +68,6 @@ void generic_mach_cpu_die(void);
- void generic_set_cpu_dead(unsigned int cpu);
- void generic_set_cpu_up(unsigned int cpu);
- int generic_check_cpu_restart(unsigned int cpu);
--
--extern void inhibit_secondary_onlining(void);
--extern void uninhibit_secondary_onlining(void);
--
--#else /* HOTPLUG_CPU */
--static inline void inhibit_secondary_onlining(void) {}
--static inline void uninhibit_secondary_onlining(void) {}
--
- #endif
- 
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index e2a4232..6edae3d 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -36,6 +36,7 @@
- #include <linux/atomic.h>
- #include <asm/irq.h>
- #include <asm/hw_irq.h>
-+#include <asm/kvm_ppc.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/prom.h>
-@@ -457,38 +458,9 @@ int generic_check_cpu_restart(unsigned int cpu)
- 	return per_cpu(cpu_state, cpu) == CPU_UP_PREPARE;
- }
- 
--static atomic_t secondary_inhibit_count;
--
--/*
-- * Don't allow secondary CPU threads to come online
-- */
--void inhibit_secondary_onlining(void)
--{
--	/*
--	 * This makes secondary_inhibit_count stable during cpu
--	 * online/offline operations.
--	 */
--	get_online_cpus();
--
--	atomic_inc(&secondary_inhibit_count);
--	put_online_cpus();
--}
--EXPORT_SYMBOL_GPL(inhibit_secondary_onlining);
--
--/*
-- * Allow secondary CPU threads to come online again
-- */
--void uninhibit_secondary_onlining(void)
--{
--	get_online_cpus();
--	atomic_dec(&secondary_inhibit_count);
--	put_online_cpus();
--}
--EXPORT_SYMBOL_GPL(uninhibit_secondary_onlining);
--
--static int secondaries_inhibited(void)
-+static bool secondaries_inhibited(void)
- {
--	return atomic_read(&secondary_inhibit_count);
-+	return kvm_hv_mode_active();
- }
- 
- #else /* HOTPLUG_CPU */
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 8227dba..d7b74f8 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2317,10 +2317,10 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 	spin_lock_init(&kvm->arch.slot_phys_lock);
- 
- 	/*
--	 * Don't allow secondary CPU threads to come online
--	 * while any KVM VMs exist.
-+	 * Track that we now have a HV mode VM active. This blocks secondary
-+	 * CPU threads from coming online.
- 	 */
--	inhibit_secondary_onlining();
-+	kvm_hv_vm_activated();
- 
- 	return 0;
- }
-@@ -2336,7 +2336,7 @@ static void kvmppc_free_vcores(struct kvm *kvm)
- 
- static void kvmppc_core_destroy_vm_hv(struct kvm *kvm)
- {
--	uninhibit_secondary_onlining();
-+	kvm_hv_vm_deactivated();
- 
- 	kvmppc_free_vcores(kvm);
- 	if (kvm->arch.rma) {
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index 8cd0dae..7cde8a6 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -6,6 +6,7 @@
-  * published by the Free Software Foundation.
-  */
- 
-+#include <linux/cpu.h>
- #include <linux/kvm_host.h>
- #include <linux/preempt.h>
- #include <linux/export.h>
-@@ -181,3 +182,33 @@ void __init kvm_cma_reserve(void)
- 		kvm_cma_declare_contiguous(selected_size, align_size);
- 	}
- }
-+
-+/*
-+ * When running HV mode KVM we need to block certain operations while KVM VMs
-+ * exist in the system. We use a counter of VMs to track this.
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+-extern void power7_nap(void);
++extern void power7_nap(int check_irq);
+ extern void power7_sleep(void);
+ extern void flush_instruction_cache(void);
+ extern void hard_reset_now(void);
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index c3ab869..063c7cb 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -39,6 +39,10 @@
+  * Pass requested state in r3:
+  * 	0 - nap
+  * 	1 - sleep
 + *
-+ * One of the operations we need to block is onlining of secondaries, so we
-+ * protect hv_vm_count with get/put_online_cpus().
-+ */
-+static atomic_t hv_vm_count;
-+
-+void kvm_hv_vm_activated(void)
-+{
-+	get_online_cpus();
-+	atomic_inc(&hv_vm_count);
-+	put_online_cpus();
-+}
-+EXPORT_SYMBOL_GPL(kvm_hv_vm_activated);
-+
-+void kvm_hv_vm_deactivated(void)
-+{
-+	get_online_cpus();
-+	atomic_dec(&hv_vm_count);
-+	put_online_cpus();
-+}
-+EXPORT_SYMBOL_GPL(kvm_hv_vm_deactivated);
-+
-+bool kvm_hv_mode_active(void)
-+{
-+	return atomic_read(&hv_vm_count) != 0;
-+}
++ * To check IRQ_HAPPENED in r4
++ * 	0 - don't check
++ * 	1 - check
+  */
+ _GLOBAL(power7_powersave_common)
+ 	/* Use r3 to pass state nap/sleep/winkle */
+@@ -71,6 +75,8 @@ _GLOBAL(power7_powersave_common)
+ 	lbz	r0,PACAIRQHAPPENED(r13)
+ 	cmpwi	cr0,r0,0
+ 	beq	1f
++	cmpwi	cr0,r4,0
++	beq	1f
+ 	addi	r1,r1,INT_FRAME_SIZE
+ 	ld	r0,16(r1)
+ 	mtlr	r0
+@@ -115,14 +121,17 @@ _GLOBAL(power7_idle)
+ 	cmpwi	0,r4,0
+ 	beqlr
+ 	/* fall through */
++	li	r3, 1
+ 
+ _GLOBAL(power7_nap)
++	mr	r4,r3
+ 	li	r3,0
+ 	b	power7_powersave_common
+ 	/* No return */
+ 
+ _GLOBAL(power7_sleep)
+ 	li	r3,1
++	li	r4,0
+ 	b	power7_powersave_common
+ 	/* No return */
+ 
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 908672b..ab8b4ad 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -156,7 +156,7 @@ static void pnv_smp_cpu_kill_self(void)
+ 	 */
+ 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
+ 	while (!generic_check_cpu_restart(cpu)) {
+-		power7_nap();
++		power7_nap(1);
+ 		if (!generic_check_cpu_restart(cpu)) {
+ 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
+ 			/* We may be getting an IPI, so we re-enable
 -- 
 1.8.3.2
