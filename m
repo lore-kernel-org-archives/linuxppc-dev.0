@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B7F9B140181
+ by ozlabs.org (Postfix) with ESMTPS id 0191F140179
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:33 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 24 Apr 2014 18:00:33 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 94ACD2BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:31 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7dSNP6226290
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:28 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80UOB004263
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id ED4F13578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O80Gbg131514
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:16 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O80URW015024
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 17/25] powerpc/eeh: Make the delay for PE reset unified
-Date: Thu, 24 Apr 2014 18:00:23 +1000
-Message-Id: <1398326431-24305-18-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 19/25] powrpc/powernv: Reset PHB in kdump kernel
+Date: Thu, 24 Apr 2014 18:00:25 +1000
+Message-Id: <1398326431-24305-20-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,137 +37,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Basically, we have 3 types of resets to fulfil PE reset: fundamental,
-hot and PHB reset. For the later 2 cases, we need PCI bus reset hold
-and settlement delay as specified by PCI spec. PowerNV and pSeries
-platforms are running on top of different firmware and some of the
-delays have been covered by underly firmware (PowerNV).
+In the kdump scenario, the first kerenl doesn't shutdown PCI devices
+and the kdump kerenl clean PHB IODA table at the early probe time.
+That means the kdump kerenl can't support PCI transactions piled
+by the first kerenl. Otherwise, lots of EEH errors and frozen PEs
+will be detected.
 
-The patch makes the delays unified to be done in backend, instead of
-EEH core.
+In order to avoid the EEH errors, the PHB is resetted to drop all
+PCI transaction from the first kerenl.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               | 10 ++++++++++
- arch/powerpc/kernel/eeh.c                    | 13 -------------
- arch/powerpc/platforms/powernv/eeh-ioda.c    | 12 +++++++++++-
- arch/powerpc/platforms/pseries/eeh_pseries.c | 10 +++++++++-
- 4 files changed, 30 insertions(+), 15 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 15 +++++++++++----
+ arch/powerpc/platforms/powernv/pci-ioda.c | 12 ++++++++++++
+ arch/powerpc/platforms/powernv/pci.h      |  1 +
+ 3 files changed, 24 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 2841eca..b76f58c 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -39,6 +39,16 @@ struct device_node;
- #define EEH_PROBE_MODE_DEVTREE	0x8	/* From device tree	*/
- 
- /*
-+ * Delay for PE reset, all in ms
-+ *
-+ * PCI specification has reset hold time of 100 milliseconds.
-+ * We have 250 milliseconds here. The PCI bus settlement time
-+ * is specified as 1.5 seconds and we have 1.8 seconds.
-+ */
-+#define EEH_PE_RST_HOLD_TIME		250
-+#define EEH_PE_RST_SETTLE_TIME		1800
-+
-+/*
-  * The struct is used to trace PE related EEH functionality.
-  * In theory, there will have one instance of the struct to
-  * be created against particular PE. In nature, PEs corelate
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 1e409a2..3764fb7 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -639,20 +639,7 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
- 	else
- 		eeh_ops->reset(pe, EEH_RESET_HOT);
- 
--	/* The PCI bus requires that the reset be held high for at least
--	 * a 100 milliseconds. We wait a bit longer 'just in case'.
--	 */
--#define PCI_BUS_RST_HOLD_TIME_MSEC 250
--	msleep(PCI_BUS_RST_HOLD_TIME_MSEC);
--
- 	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
--
--	/* After a PCI slot has been reset, the PCI Express spec requires
--	 * a 1.5 second idle time for the bus to stabilize, before starting
--	 * up traffic.
--	 */
--#define PCI_BUS_SETTLE_TIME_MSEC 1800
--	msleep(PCI_BUS_SETTLE_TIME_MSEC);
- }
- 
- /**
 diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 0844e00..268cd46 100644
+index 58ef809..753f08e 100644
 --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
 +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -417,9 +417,13 @@ static int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
+@@ -388,13 +388,16 @@ static s64 ioda_eeh_phb_poll(struct pnv_phb *phb)
+ 		if (rc <= 0)
+ 			break;
  
- 	/*
- 	 * Poll state of the PHB until the request is done
--	 * successfully.
-+	 * successfully. The PHB reset is usually PHB complete
-+	 * reset followed by hot reset on root bus. So we also
-+	 * need the PCI bus settlement delay.
- 	 */
- 	rc = ioda_eeh_phb_poll(phb);
-+	if (option == EEH_RESET_DEACTIVATE)
-+		msleep(EEH_PE_RST_SETTLE_TIME);
- out:
- 	if (rc != OPAL_SUCCESS)
- 		return -EIO;
-@@ -457,6 +461,8 @@ static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
- 
- 	/* Poll state of the PHB until the request is done */
- 	rc = ioda_eeh_phb_poll(phb);
-+	if (option == EEH_RESET_DEACTIVATE)
-+		msleep(EEH_PE_RST_SETTLE_TIME);
- out:
- 	if (rc != OPAL_SUCCESS)
- 		return -EIO;
-@@ -480,11 +486,15 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
- 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
- 		ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
- 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
-+
-+		msleep(EEH_PE_RST_HOLD_TIME);
- 		break;
- 	case EEH_RESET_DEACTIVATE:
- 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
- 		ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
- 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
-+
-+		msleep(EEH_PE_RST_SETTLE_TIME);
- 		break;
+-		msleep(rc);
++		if (system_state < SYSTEM_RUNNING)
++			udelay(1000 * rc);
++		else
++			msleep(rc);
  	}
  
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 2f1ba64..0bec0c0 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -532,11 +532,19 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
- 	/* If fundamental-reset not supported, try hot-reset */
- 	if (option == EEH_RESET_FUNDAMENTAL &&
- 	    ret == -8) {
-+		option = EEH_RESET_HOT;
- 		ret = rtas_call(ibm_set_slot_reset, 4, 1, NULL,
- 				config_addr, BUID_HI(pe->phb->buid),
--				BUID_LO(pe->phb->buid), EEH_RESET_HOT);
-+				BUID_LO(pe->phb->buid), option);
- 	}
- 
-+	/* We need reset hold or settlement delay */
-+	if (option == EEH_RESET_FUNDAMENTAL ||
-+	    option == EEH_RESET_HOT)
-+		msleep(EEH_PE_RST_HOLD_TIME);
-+	else
-+		msleep(EEH_PE_RST_SETTLE_TIME);
-+
- 	return ret;
+ 	return rc;
  }
  
+-static int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
++int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
+ {
+ 	struct pnv_phb *phb = hose->private_data;
+ 	s64 rc = OPAL_HARDWARE;
+@@ -422,8 +425,12 @@ static int ioda_eeh_phb_reset(struct pci_controller *hose, int option)
+ 	 * need the PCI bus settlement delay.
+ 	 */
+ 	rc = ioda_eeh_phb_poll(phb);
+-	if (option == EEH_RESET_DEACTIVATE)
+-		msleep(EEH_PE_RST_SETTLE_TIME);
++	if (option == EEH_RESET_DEACTIVATE) {
++		if (system_state < SYSTEM_RUNNING)
++			udelay(1000 * EEH_PE_RST_SETTLE_TIME);
++		else
++			msleep(EEH_PE_RST_SETTLE_TIME);
++	}
+ out:
+ 	if (rc != OPAL_SUCCESS)
+ 		return -EIO;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 0bfc4d1..6a2cb37 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/pci.h>
++#include <linux/crash_dump.h>
+ #include <linux/debugfs.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
+@@ -1394,6 +1395,17 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
+ 	if (rc)
+ 		pr_warning("  OPAL Error %ld performing IODA table reset !\n", rc);
++
++	/* If we're running in kdump kerenl, the previous kerenl never
++	 * shutdown PCI devices correctly. We already got IODA table
++	 * cleaned out. So we have to issue PHB reset to stop all PCI
++	 * transactions from previous kerenl.
++	 */
++	if (is_kdump_kernel()) {
++		pr_info("  Issue PHB reset ...\n");
++		ioda_eeh_phb_reset(hose, EEH_RESET_FUNDAMENTAL);
++		ioda_eeh_phb_reset(hose, OPAL_DEASSERT_RESET);
++	}
+ }
+ 
+ void __init pnv_pci_init_ioda2_phb(struct device_node *np)
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 34a0974..676232c 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -205,5 +205,6 @@ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+ extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 					__be64 *startp, __be64 *endp, bool rm);
+ extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
++extern int ioda_eeh_phb_reset(struct pci_controller *hose, int option);
+ 
+ #endif /* __POWERNV_PCI_H */
 -- 
 1.8.3.2
