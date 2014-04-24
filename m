@@ -1,32 +1,32 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 48290140120
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:23:55 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A64B0140123
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:23:56 +1000 (EST)
 Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
  Thu, 24 Apr 2014 08:23:52 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id CED5617D804E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:24:48 +0100 (BST)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7NnL464749758
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 3DDD22190046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:23:42 +0100 (BST)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O7NnJr60620970
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 07:23:49 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O7Nm6T019926
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O7Nn9S025785
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 01:23:49 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v2 04/15] powerpc/boot: add byteswapping routines in oflib
-Date: Thu, 24 Apr 2014 09:23:28 +0200
-Message-Id: <1398324219-8919-5-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 05/15] powerpc/boot: add PROM_ERROR define in oflib
+Date: Thu, 24 Apr 2014 09:23:29 +0200
+Message-Id: <1398324219-8919-6-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
 References: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395651884.30488.10.camel@pasglop>
@@ -44,113 +44,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Values will need to be byte-swapped when calling prom (big endian) from
-a little endian boot wrapper.
+This is mostly useful to make to the boot wrapper code closer with
+the kernel code in prom_init.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/of.h        |    3 +++
- arch/powerpc/boot/ofconsole.c |    6 ++++--
- arch/powerpc/boot/oflib.c     |   22 +++++++++++-----------
- 3 files changed, 18 insertions(+), 13 deletions(-)
+
+Changes since v1:
+
+ - moved PROM_ERROR definition in of.h. of_try_claim() will make 
+   use of it in the next patch.
+
+ arch/powerpc/boot/of.h    |    2 ++
+ arch/powerpc/boot/oflib.c |    6 +++---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index 5da03d9b9463..40d95bf7402b 100644
+index 40d95bf7402b..0f058ef69521 100644
 --- a/arch/powerpc/boot/of.h
 +++ b/arch/powerpc/boot/of.h
-@@ -20,4 +20,7 @@ void of_console_init(void);
+@@ -23,4 +23,6 @@ typedef u32			__be32;
+ #define cpu_to_be32(x) (x)
+ #define be32_to_cpu(x) (x)
  
- typedef u32			__be32;
- 
-+#define cpu_to_be32(x) (x)
-+#define be32_to_cpu(x) (x)
++#define PROM_ERROR (-1u)
 +
  #endif /* _PPC_BOOT_OF_H_ */
-diff --git a/arch/powerpc/boot/ofconsole.c b/arch/powerpc/boot/ofconsole.c
-index ce0e02424453..8b754702460a 100644
---- a/arch/powerpc/boot/ofconsole.c
-+++ b/arch/powerpc/boot/ofconsole.c
-@@ -18,7 +18,7 @@
- 
- #include "of.h"
- 
--static void *of_stdout_handle;
-+static unsigned int of_stdout_handle;
- 
- static int of_console_open(void)
- {
-@@ -27,8 +27,10 @@ static int of_console_open(void)
- 	if (((devp = of_finddevice("/chosen")) != NULL)
- 	    && (of_getprop(devp, "stdout", &of_stdout_handle,
- 			   sizeof(of_stdout_handle))
--		== sizeof(of_stdout_handle)))
-+		== sizeof(of_stdout_handle))) {
-+		of_stdout_handle = be32_to_cpu(of_stdout_handle);
- 		return 0;
-+	}
- 
- 	return -1;
- }
 diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 3b0c9458504f..0f72b1a42133 100644
+index 0f72b1a42133..7f61f2eb5653 100644
 --- a/arch/powerpc/boot/oflib.c
 +++ b/arch/powerpc/boot/oflib.c
-@@ -42,13 +42,13 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
- 	struct prom_args args;
- 	va_list list;
+@@ -55,7 +55,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
+ 		args.args[nargs+i] = 0;
  
--	args.service = ADDR(service);
--	args.nargs = nargs;
--	args.nret = nret;
-+	args.service = cpu_to_be32(ADDR(service));
-+	args.nargs = cpu_to_be32(nargs);
-+	args.nret = cpu_to_be32(nret);
- 
- 	va_start(list, nret);
- 	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, prom_arg_t);
-+		args.args[i] = cpu_to_be32(va_arg(list, prom_arg_t));
- 	va_end(list);
- 
- 	for (i = 0; i < nret; i++)
-@@ -57,7 +57,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
  	if (prom(&args) < 0)
- 		return -1;
+-		return -1;
++		return PROM_ERROR;
  
--	return (nret > 0)? args.args[nargs]: 0;
-+	return (nret > 0) ? be32_to_cpu(args.args[nargs]) : 0;
+ 	return (nret > 0) ? be32_to_cpu(args.args[nargs]) : 0;
  }
+@@ -80,9 +80,9 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
+ 		args.args[nargs+i] = 0;
  
- static int of_call_prom_ret(const char *service, int nargs, int nret,
-@@ -67,13 +67,13 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
- 	struct prom_args args;
- 	va_list list;
+ 	if (prom(&args) < 0)
+-		return -1;
++		return PROM_ERROR;
  
--	args.service = ADDR(service);
--	args.nargs = nargs;
--	args.nret = nret;
-+	args.service = cpu_to_be32(ADDR(service));
-+	args.nargs = cpu_to_be32(nargs);
-+	args.nret = cpu_to_be32(nret);
- 
- 	va_start(list, rets);
- 	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, prom_arg_t);
-+		args.args[i] = cpu_to_be32(va_arg(list, prom_arg_t));
- 	va_end(list);
- 
- 	for (i = 0; i < nret; i++)
-@@ -84,9 +84,9 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
- 
- 	if (rets != (void *) 0)
+-	if (rets != (void *) 0)
++	if (rets != NULL)
  		for (i = 1; i < nret; ++i)
--			rets[i-1] = args.args[nargs+i];
-+			rets[i-1] = be32_to_cpu(args.args[nargs+i]);
+ 			rets[i-1] = be32_to_cpu(args.args[nargs+i]);
  
--	return (nret > 0)? args.args[nargs]: 0;
-+	return (nret > 0) ? be32_to_cpu(args.args[nargs]) : 0;
- }
- 
- /* returns true if s2 is a prefix of s1 */
 -- 
 1.7.10.4
