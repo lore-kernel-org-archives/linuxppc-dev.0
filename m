@@ -1,32 +1,32 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 25B4A14011D
+ by ozlabs.org (Postfix) with ESMTPS id 2839F14011F
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:23:55 +1000 (EST)
 Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 24 Apr 2014 08:23:51 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 17CC21B08040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:23:54 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7NmeY196998
+ Thu, 24 Apr 2014 08:23:50 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1BE43219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:23:41 +0100 (BST)
+Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
+ [9.149.37.213])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O7NmQt4260154
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 07:23:48 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O7Nlkg031647
+Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O7NlpN025060
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 01:23:48 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v2 03/15] powerpc/boot: use prom_arg_t in oflib
-Date: Thu, 24 Apr 2014 09:23:27 +0200
-Message-Id: <1398324219-8919-4-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 02/15] powerpc/boot: use a common prom_args struct in oflib
+Date: Thu, 24 Apr 2014 09:23:26 +0200
+Message-Id: <1398324219-8919-3-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
 References: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395651884.30488.10.camel@pasglop>
@@ -44,62 +44,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch updates the wrapper code to converge with the kernel code in
-prom_init.
+This patch fixes warnings when the wrapper is compiled in 64bit and
+updates the boot wrapper code related to prom to converge with the
+kernel code in prom_init. This should make the review of changes easier.
+
+The kernel has a different number of possible arguments (10) when
+entering prom. There does not seem to be any good reason to have
+12 in the wrapper, so the patch changes this value to args[10] in
+the prom_args struct.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/oflib.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/powerpc/boot/of.h    |    2 ++
+ arch/powerpc/boot/oflib.c |   29 +++++++++++++++--------------
+ 2 files changed, 17 insertions(+), 14 deletions(-)
 
+diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
+index e4c68f7391c5..5da03d9b9463 100644
+--- a/arch/powerpc/boot/of.h
++++ b/arch/powerpc/boot/of.h
+@@ -18,4 +18,6 @@ int of_setprop(const void *phandle, const char *name, const void *buf,
+ /* Console functions */
+ void of_console_init(void);
+ 
++typedef u32			__be32;
++
+ #endif /* _PPC_BOOT_OF_H_ */
 diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index c3288a3446b3..3b0c9458504f 100644
+index b0ec9cf3eaaf..c3288a3446b3 100644
 --- a/arch/powerpc/boot/oflib.c
 +++ b/arch/powerpc/boot/oflib.c
-@@ -16,6 +16,8 @@
+@@ -16,6 +16,15 @@
  
  #include "of.h"
  
-+typedef u32 prom_arg_t;
++/* The following structure is used to communicate with open firmware.
++ * All arguments in and out are in big endian format. */
++struct prom_args {
++	__be32 service;	/* Address of service name string. */
++	__be32 nargs;	/* Number of input arguments. */
++	__be32 nret;	/* Number of output arguments. */
++	__be32 args[10];	/* Input/output arguments. */
++};
 +
- /* The following structure is used to communicate with open firmware.
-  * All arguments in and out are in big endian format. */
- struct prom_args {
-@@ -46,7 +48,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
+ static int (*prom) (void *);
  
- 	va_start(list, nret);
- 	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, unsigned int);
-+		args.args[i] = va_arg(list, prom_arg_t);
- 	va_end(list);
- 
- 	for (i = 0; i < nret; i++)
-@@ -59,7 +61,7 @@ int of_call_prom(const char *service, int nargs, int nret, ...)
+ void of_init(void *promptr)
+@@ -23,18 +32,15 @@ void of_init(void *promptr)
+ 	prom = (int (*)(void *))promptr;
  }
  
- static int of_call_prom_ret(const char *service, int nargs, int nret,
--			    unsigned int *rets, ...)
-+			    prom_arg_t *rets, ...)
++#define ADDR(x)		(u32)(unsigned long)(x)
++
+ int of_call_prom(const char *service, int nargs, int nret, ...)
  {
  	int i;
- 	struct prom_args args;
-@@ -71,7 +73,7 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
+-	struct prom_args {
+-		const char *service;
+-		int nargs;
+-		int nret;
+-		unsigned int args[12];
+-	} args;
++	struct prom_args args;
+ 	va_list list;
  
- 	va_start(list, rets);
- 	for (i = 0; i < nargs; i++)
--		args.args[i] = va_arg(list, unsigned int);
-+		args.args[i] = va_arg(list, prom_arg_t);
- 	va_end(list);
+-	args.service = service;
++	args.service = ADDR(service);
+ 	args.nargs = nargs;
+ 	args.nret = nret;
  
- 	for (i = 0; i < nret; i++)
-@@ -148,7 +150,7 @@ static int check_of_version(void)
- void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
+@@ -56,15 +62,10 @@ static int of_call_prom_ret(const char *service, int nargs, int nret,
+ 			    unsigned int *rets, ...)
  {
- 	int ret;
--	unsigned int result;
-+	prom_arg_t result;
+ 	int i;
+-	struct prom_args {
+-		const char *service;
+-		int nargs;
+-		int nret;
+-		unsigned int args[12];
+-	} args;
++	struct prom_args args;
+ 	va_list list;
  
- 	if (need_map < 0)
- 		need_map = check_of_version();
+-	args.service = service;
++	args.service = ADDR(service);
+ 	args.nargs = nargs;
+ 	args.nret = nret;
+ 
 -- 
 1.7.10.4
