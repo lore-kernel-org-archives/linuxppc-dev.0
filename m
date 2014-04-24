@@ -2,31 +2,32 @@ Return-Path: <clg@fr.ibm.com>
 Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5FEA3140120
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:23:57 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1E733140134
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:23:56 +1000 (EST)
 Received: from /spool/local
  by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 24 Apr 2014 08:23:53 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B37A01B08051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:23:56 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7NpCY60489890
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 07:23:51 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O8NoeM010700
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 02:23:50 -0600
+ Thu, 24 Apr 2014 08:23:52 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 50D0C17D8047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:24:50 +0100 (BST)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O7NoZP66977950
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 07:23:50 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O7NooN011503
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 01:23:50 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v2 07/15] powerpc/boot: define typedef ihandle as u32
-Date: Thu, 24 Apr 2014 09:23:31 +0200
-Message-Id: <1398324219-8919-8-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 06/15] powerpc/boot: rework of_claim() to make it 64bit
+ friendly
+Date: Thu, 24 Apr 2014 09:23:30 +0200
+Message-Id: <1398324219-8919-7-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
 References: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1395651884.30488.10.camel@pasglop>
@@ -44,54 +45,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes ihandle 64bit friendly.
+This patch fixes 64bit compile warnings and updates the wrapper code
+to converge the kernel code in prom_init.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- arch/powerpc/boot/of.h    |    2 +-
- arch/powerpc/boot/oflib.c |   10 +++++-----
- 2 files changed, 6 insertions(+), 6 deletions(-)
 
+Changes since v1:
+
+ - use PROM_ERROR to test return addr
+
+ arch/powerpc/boot/of.c    |    4 ++--
+ arch/powerpc/boot/of.h    |    3 ++-
+ arch/powerpc/boot/oflib.c |   15 ++++++++-------
+ 3 files changed, 12 insertions(+), 10 deletions(-)
+
+diff --git a/arch/powerpc/boot/of.c b/arch/powerpc/boot/of.c
+index 62e2f43ec1df..7ca910cb2fc6 100644
+--- a/arch/powerpc/boot/of.c
++++ b/arch/powerpc/boot/of.c
+@@ -40,8 +40,8 @@ static void *of_try_claim(unsigned long size)
+ #ifdef DEBUG
+ 		printf("    trying: 0x%08lx\n\r", claim_base);
+ #endif
+-		addr = (unsigned long)of_claim(claim_base, size, 0);
+-		if ((void *)addr != (void *)-1)
++		addr = (unsigned long) of_claim(claim_base, size, 0);
++		if (addr != PROM_ERROR)
+ 			break;
+ 	}
+ 	if (addr == 0)
 diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index 504a0a31b685..e1ef620082f7 100644
+index 0f058ef69521..504a0a31b685 100644
 --- a/arch/powerpc/boot/of.h
 +++ b/arch/powerpc/boot/of.h
-@@ -2,7 +2,7 @@
- #define _PPC_BOOT_OF_H_
- 
- typedef void *phandle;
--typedef void *ihandle;
-+typedef u32 ihandle;
+@@ -6,7 +6,8 @@ typedef void *ihandle;
  
  void of_init(void *promptr);
  int of_call_prom(const char *service, int nargs, int nret, ...);
+-void *of_claim(unsigned long virt, unsigned long size, unsigned long align);
++unsigned int of_claim(unsigned long virt, unsigned long size,
++	unsigned long align);
+ void *of_vmlinux_alloc(unsigned long size);
+ void of_exit(void);
+ void *of_finddevice(const char *name);
 diff --git a/arch/powerpc/boot/oflib.c b/arch/powerpc/boot/oflib.c
-index 329437d0e943..956443fb9f65 100644
+index 7f61f2eb5653..329437d0e943 100644
 --- a/arch/powerpc/boot/oflib.c
 +++ b/arch/powerpc/boot/oflib.c
-@@ -106,7 +106,7 @@ static int string_match(const char *s1, const char *s2)
-  */
- static int need_map = -1;
- static ihandle chosen_mmu;
--static phandle memory;
-+static ihandle memory;
+@@ -147,7 +147,8 @@ static int check_of_version(void)
+ 	return 1;
+ }
  
- static int check_of_version(void)
+-void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
++unsigned int of_claim(unsigned long virt, unsigned long size,
++		      unsigned long align)
  {
-@@ -135,10 +135,10 @@ static int check_of_version(void)
- 		printf("no mmu\n");
- 		return 0;
- 	}
--	memory = (ihandle) of_call_prom("open", 1, 1, "/memory");
--	if (memory == (ihandle) -1) {
--		memory = (ihandle) of_call_prom("open", 1, 1, "/memory@0");
--		if (memory == (ihandle) -1) {
-+	memory = of_call_prom("open", 1, 1, "/memory");
-+	if (memory == PROM_ERROR) {
-+		memory = of_call_prom("open", 1, 1, "/memory@0");
-+		if (memory == PROM_ERROR) {
- 			printf("no memory node\n");
- 			return 0;
- 		}
+ 	int ret;
+ 	prom_arg_t result;
+@@ -155,32 +156,32 @@ void *of_claim(unsigned long virt, unsigned long size, unsigned long align)
+ 	if (need_map < 0)
+ 		need_map = check_of_version();
+ 	if (align || !need_map)
+-		return (void *) of_call_prom("claim", 3, 1, virt, size, align);
++		return of_call_prom("claim", 3, 1, virt, size, align);
+ 
+ 	ret = of_call_prom_ret("call-method", 5, 2, &result, "claim", memory,
+ 			       align, size, virt);
+ 	if (ret != 0 || result == -1)
+-		return (void *) -1;
++		return  -1;
+ 	ret = of_call_prom_ret("call-method", 5, 2, &result, "claim", chosen_mmu,
+ 			       align, size, virt);
+ 	/* 0x12 == coherent + read/write */
+ 	ret = of_call_prom("call-method", 6, 1, "map", chosen_mmu,
+ 			   0x12, size, virt, virt);
+-	return (void *) virt;
++	return virt;
+ }
+ 
+ void *of_vmlinux_alloc(unsigned long size)
+ {
+ 	unsigned long start = (unsigned long)_start, end = (unsigned long)_end;
+-	void *addr;
++	unsigned long addr;
+ 	void *p;
+ 
+ 	/* With some older POWER4 firmware we need to claim the area the kernel
+ 	 * will reside in.  Newer firmwares don't need this so we just ignore
+ 	 * the return value.
+ 	 */
+-	addr = of_claim(start, end - start, 0);
+-	printf("Trying to claim from 0x%lx to 0x%lx (0x%lx) got %p\r\n",
++	addr = (unsigned long) of_claim(start, end - start, 0);
++	printf("Trying to claim from 0x%lx to 0x%lx (0x%lx) got %lx\r\n",
+ 	       start, end, end - start, addr);
+ 
+ 	p = malloc(size);
 -- 
 1.7.10.4
