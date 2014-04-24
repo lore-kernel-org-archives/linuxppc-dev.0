@@ -1,40 +1,28 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qc0-f170.google.com (mail-qc0-f170.google.com
- [209.85.216.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 222DF14009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 21:13:09 +1000 (EST)
-Received: by mail-qc0-f170.google.com with SMTP id x13so2354906qcv.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 04:13:05 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 3A19214011D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 04:46:38 +1000 (EST)
+Message-ID: <1398365188.7841.154.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular
+ initialization for platform
+From: Scott Wood <scottwood@freescale.com>
+To: Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
+Date: Thu, 24 Apr 2014 13:46:28 -0500
+In-Reply-To: <30c9d29df995426d9e01ffdf09fb1f33@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
+ <1397590755.20280.250.camel@snotra.buserror.net>
+ <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1397676986.28539.10.camel@snotra.buserror.net>
+ <30c9d29df995426d9e01ffdf09fb1f33@BN1PR03MB188.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <20140424105745.GM26756@n2100.arm.linux.org.uk>
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
- <CAPDyKFozP69yngKAkdwHYyyvi+pdLEm05udOmBiVshQFi4hnLQ@mail.gmail.com>
- <20140424101726.GH26756@n2100.arm.linux.org.uk>
- <CAPDyKFrGReKF0ucer7D195boEoQW26=4vDXT+=Wn6BO-p_B1gQ@mail.gmail.com>
- <20140424105745.GM26756@n2100.arm.linux.org.uk>
-Date: Thu, 24 Apr 2014 13:13:05 +0200
-Message-ID: <CAPDyKFr=2=dg1NTYb1_EAgxXZq2Rd+o2Q2B5TE+GZwr8MUU1_Q@mail.gmail.com>
-Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>,
- linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>,
- Chris Ball <chris@printf.net>, Thierry Reding <thierry.reding@gmail.com>,
- Anton Vorontsov <anton@enomsg.org>, Michal Simek <michal.simek@xilinx.com>,
- Jaehoon Chung <jh80.chung@samsung.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- spear-devel@list.st.com, Rob Herring <robh+dt@kernel.org>,
- Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- Shawn Guo <shawn.guo@freescale.com>, Barry Song <baohua@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-mmc <linux-mmc@vger.kernel.org>,
- Viresh Kumar <viresh.linux@gmail.com>, Sascha Hauer <kernel@pengutronix.de>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "haokexin@gmail.com" <haokexin@gmail.com>,
+ Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>,
+ Jin Zhengxiong-R64188 <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,63 +32,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24 April 2014 12:57, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> On Thu, Apr 24, 2014 at 12:52:11PM +0200, Ulf Hansson wrote:
->> On 24 April 2014 12:17, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
->> > On Thu, Apr 24, 2014 at 10:25:42AM +0200, Ulf Hansson wrote:
->> >> I have looked though the patches up until patch 33 and this is clearly
->> >> a nice piece of clean-up /fixes work for sdhci. Besides my minor
->> >> comments per patch, I don't have any objections code-review wise to
->> >> proceed merging them.
->> >>
->> >> I have also tried to applied them on Chris' mmc-next branch,
->> >> unfortunate it fails at patch 23, so it would be nice to get a
->> >> re-based patchset for the mmc-next branch.
->> >
->> > I /could/ rebase it but then I wouldn't be able to produce the patch
->> > sets/patches for others [*] (such as the Novena project) to derive
->> > their kernel tree from my iMX6 patch set.
->> >
->> > What I'd prefer is to keep the patch set intact, and provide Chris
->> > with a pull request for it up to patch 33, which would need a
->> > conflict fixed - and this would mean that I can be sure that what
->> > I'm testing, and what I'm distributing is what Chris will also be
->> > submitting.
->>
->> Whether there are more than one conflict, I don't know. I just stopped
->> at patch 23.
->>
->> Moreover, there are other patches for sdhci that have been posted and
->> being discussed. In principle, we then need to put all these on hold
->> to prevent further conflicts. I guess that doable, as long as we don't
->> to that for too long. Maybe Chris have some more thoughts how to
->> handle this!?
->
-> This is nothing new or unexpected - it was last posted back in February,
-> and I elected that it should be held off until after the last merge
-> window.
->
-> Unfortunately, I didn't have time to post it immediately after the merge
-> window closed, partly because it needed to be rebased on top of tglx's
-> IRQ changes on which it depends.  I was carrying those as separate commits
-> to the ones Thomas was carrying in his tree - and in the event, Thomas had
-> modified his patches slightly between sending me copies of them and the
-> versions he sent during the merge window.
+On Thu, 2014-04-24 at 01:43 -0500, Wang Dongsheng-B40534 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, April 17, 2014 3:36 AM
+> > To: Wang Dongsheng-B40534
+> > Cc: Jin Zhengxiong-R64188; haokexin@gmail.com; Kushwaha Prabhakar-B32579;
+> > linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular initialization
+> > for platform
+> > 
+> > On Tue, 2014-04-15 at 21:58 -0500, Wang Dongsheng-B40534 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Wednesday, April 16, 2014 3:39 AM
+> > > > To: Wang Dongsheng-B40534
+> > > > Cc: Jin Zhengxiong-R64188; haokexin@gmail.com; Kushwaha
+> > > > Prabhakar-B32579; linuxppc-dev@lists.ozlabs.org
+> > > > Subject: Re: [PATCH v2 1/2] fsl/corenet_generic: add a particular
+> > > > initialization for platform
+> > > >
+> > > > On Tue, 2014-04-15 at 13:53 +0800, Dongsheng Wang wrote:
+> > > > > From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > >
+> > > > > Corenet_generic is a generic platform initialization. Those based
+> > > > > on the corenet_generic board maybe need a particular initialize to
+> > > > > enable/set some IP-Blocks. So add "Fix Generic Initialization" to
+> > > > > solve this kind of special cases.
+> > > >
+> > > > I still don't understand what you mean by "fix".  What are you
+> > > > fixing, or what is fixed?
+> > > >
+> > > > There is no need for adding an infrastructure layer here.  Just add
+> > > > a new piece of code for t104x diu, and have it be called by an
+> > > > appropriate initfunc.
+> > > >
+> > >
+> > > "fix" is means to handle some boards those based on corenet_generic
+> > > config file, But those boards may need some special handle. Perhaps
+> > > these used to handle special feature codes not have an appropriate
+> > > initfunc we cannot *just find* an appropriate place,
+> > 
+> > I'm not asking you to "just find" anything.  I'm asking you to add an initfunc
+> > in a standalone file.
+> > 
+> > > if more and more boards need to do this, at that time maybe *initfunc*
+> > > looks very complicated.
+> > 
+> > They would each have their own initfunc.  There is no reason to tie this in with
+> > anything else.
+> > 
+> 
+> Sorry, if those platforms are using corenet_generic, I don’t see any standalone file
+> for initfunc of platform. That's why I'm adding "fix" layer.
 
-Okay, so let's keep up the frequency here then. I only had some minor
-comments, please fix them and send a v2.
+It's totally unnecessary.
 
-How about if I resolve the conflicts and send the pull request to
-Chris? I suppose it makes life a bit easier for Chris.
+Just do this:
 
-Kind regards
-Ulf Hansson
+t104x_diu_init(void)
+{
+	if (t104x diu not in the device tree)
+		return;
 
->
-> --
-> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-> improving, and getting towards what was expected from it.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	...
+}
+
+early_initcall(t104x_diu_init);
+
+> > > > > +config FIX_GENERIC_PLATFORM_INIT
+> > > > > +	bool "Fix Generic Initialization"
+> > > > > +	depends on CORENET_GENERIC
+> > > >
+> > > > Why does this depend on CORENET_GENERIC?
+> > > >
+> > >
+> > > Because CORENET_GENERIC is a multiboards file, This is designed to handle this
+> > situation.
+> > 
+> > This DIU code is going to be just as applicable to a custom T104x board which
+> > may or may not use CORENET_GENERIC.
+> > 
+> 
+> "fix" is a middle layer, it's not only for T104xrdb-DIU.
+
+My point is a custom t104x board might not use CORENET_GENERIC.
+
+> > > > > +	default y
+> > > >
+> > > > No.
+> > > >
+> > >
+> > > Why not? This will not increase any redundant operations if there is not any
+> > boards need fix.
+> > > You can see my fix.c code.
+> > 
+> > default y should not be used for hardware specific code.
+> > 
+> 
+> fix.c and hardware no relationship at all. :), It's just a software layer.
+
+No relationship to hardware, yet it depends on CORENET_GENERIC, reads a
+Freescale-specific SPR, and lives in arch/powerpc/platforms/85xx. :-)
+
+-Scott
