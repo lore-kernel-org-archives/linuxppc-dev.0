@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C2B2A140171
+ by ozlabs.org (Postfix) with ESMTPS id CD331140172
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:32 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 24 Apr 2014 18:00:30 +1000
+ Thu, 24 Apr 2014 18:00:32 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3274B3578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:28 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D72C22BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:29 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7dObg7143884
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:25 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80Rxj004111
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:27 +1000
+ s3O7dQPV3473688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:26 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O80SGZ017475
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:29 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 08/25] powerpc/eeh: Avoid I/O access during PE reset
-Date: Thu, 24 Apr 2014 18:00:14 +1000
-Message-Id: <1398326431-24305-9-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 13/25] powerpc/eeh: No hotplug on permanently removed dev
+Date: Thu, 24 Apr 2014 18:00:19 +1000
+Message-Id: <1398326431-24305-14-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,285 +37,305 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have suffered recrusive frozen PE a lot, which was caused
-by IO accesses during the PE reset. Ben came up with the good
-idea to keep frozen PE until recovery (BAR restore) gets done.
-With that, IO accesses during PE reset are dropped by hardware
-and wouldn't incur the recrusive frozen PE any more.
+The issue was detected in a bit complicated test case where
+we have multiple hierarchical PEs shown as following figure:
 
-The patch implements the idea. We don't clear the frozen state
-until PE reset is done completely. During the period, the EEH
-core expects unfrozen state from backend to keep going. So we
-have to reuse EEH_PE_RESET flag, which has been set during PE
-reset, to return normal state from backend. The side effect is
-we have to clear frozen state for towice (PE reset and clear it
-explicitly), but that's harmless.
+                +-----------------+
+                | PE#3     p2p#0  |
+                |          p2p#1  |
+                +-----------------+
+                        |
+                +-----------------+
+                | PE#4     pdev#0 |
+                |          pdev#1 |
+                +-----------------+
 
-We have some limitations on pHyp. pHyp doesn't allow to enable
-IO or DMA for unfrozen PE. So we don't enable them on unfrozen PE
-in eeh_pci_enable(). We have to enable IO before grabbing logs on
-pHyp. Otherwise, 0xFF's is always returned from PCI config space.
-Also, we had wrong return value from eeh_pci_enable() for
-EEH_OPT_THAW_DMA case. The patch fixes it too.
+PE#4 (have 2 PCI devices) is the child of PE#3, which has 2 p2p
+bridges. We accidentally had less-known scenario: PE#4 was removed
+permanently from the system because of permanent failure (e.g.
+exceeding the max allowd failure times in last hour), then we detects
+EEH errors on PE#3 and tried to recover it. However, eeh_dev instances
+for pdev#0/1 were not detached from PE#4, which was still connected to
+PE#3. All of that was because of the fact that we rely on count-based
+pcibios_release_device(), which isn't reliable enough. When doing
+recovery for PE#3, we still apply hotplug on PE#4 and pdev#0/1, which
+are not valid any more. Eventually, we run into kernel crash.
+
+The patch fixes above issue from two aspects. For unplug, we simply
+skip those permanently removed PE, whose state is (EEH_PE_STATE_ISOLATED
+&& !EEH_PE_STATE_RECOVERING) and its frozen count should be greater
+than EEH_MAX_ALLOWED_FREEZES. For plug, we marked all permanently
+removed EEH devices with EEH_DEV_REMOVED and return 0xFF's on read
+its PCI config so that PCI core will omit them.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 | 50 ++++++++++++++----
- arch/powerpc/kernel/eeh_driver.c          | 35 +++++++++++++
- arch/powerpc/platforms/powernv/eeh-ioda.c | 84 +++++++++----------------------
- 3 files changed, 99 insertions(+), 70 deletions(-)
+ arch/powerpc/include/asm/eeh.h       |  1 +
+ arch/powerpc/include/asm/ppc-pci.h   |  1 +
+ arch/powerpc/kernel/eeh_driver.c     | 48 ++++++++++++++++++++++++++++++------
+ arch/powerpc/kernel/eeh_pe.c         | 47 +++++++++++++++++++++++++++++------
+ arch/powerpc/kernel/pci_of_scan.c    |  9 +++++++
+ arch/powerpc/platforms/powernv/pci.c | 13 +++++++---
+ 6 files changed, 100 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index cc728e8..25f3753 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -238,9 +238,13 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
- 	 * the data from PCI config space because it should return
- 	 * 0xFF's. For ER, we still retrieve the data from the PCI
- 	 * config space.
-+	 *
-+	 * For pHyp, we have to enable IO for log retrieval. Otherwise,
-+	 * 0xFF's is always returned from PCI config space.
- 	 */
- 	if (!(pe->type & EEH_PE_PHB)) {
--		eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
-+		if (eeh_probe_mode_devtree())
-+			eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
- 		eeh_ops->configure_bridge(pe);
- 		eeh_pe_restore_bars(pe);
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index f4a9321..2841eca 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -98,6 +98,7 @@ struct eeh_pe {
  
-@@ -509,16 +513,42 @@ EXPORT_SYMBOL(eeh_check_failure);
-  */
- int eeh_pci_enable(struct eeh_pe *pe, int function)
- {
--	int rc;
-+	int rc, flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
-+
-+	/*
-+	 * pHyp doesn't allow to enable IO or DMA on unfrozen PE.
-+	 * Also, it's pointless to enable them on unfrozen PE. So
-+	 * we have the check here.
-+	 */
-+	if (function == EEH_OPT_THAW_MMIO ||
-+	    function == EEH_OPT_THAW_DMA) {
-+		rc = eeh_ops->get_state(pe, NULL);
-+		if (rc < 0)
-+			return rc;
-+
-+		/* Needn't to enable or already enabled */
-+		if ((rc == EEH_STATE_NOT_SUPPORT) ||
-+		    ((rc & flags) == flags))
-+			return 0;
-+	}
+ #define EEH_DEV_NO_HANDLER	(1 << 8)	/* No error handler	*/
+ #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
++#define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
  
- 	rc = eeh_ops->set_option(pe, function);
- 	if (rc)
--		pr_warning("%s: Unexpected state change %d on PHB#%d-PE#%x, err=%d\n",
--			__func__, function, pe->phb->global_number, pe->addr, rc);
-+		pr_warn("%s: Unexpected state change %d on "
-+			"PHB#%d-PE#%x, err=%d\n",
-+			__func__, function, pe->phb->global_number,
-+			pe->addr, rc);
+ struct eeh_dev {
+ 	int mode;			/* EEH mode			*/
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index ed57fa7..db1e2b8 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -58,6 +58,7 @@ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
+ int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
+ void eeh_pe_state_mark(struct eeh_pe *pe, int state);
+ void eeh_pe_state_clear(struct eeh_pe *pe, int state);
++void eeh_pe_dev_mode_mark(struct eeh_pe *pe, int mode);
  
- 	rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
--	if (rc > 0 && (rc & EEH_STATE_MMIO_ENABLED) &&
--	   (function == EEH_OPT_THAW_MMIO))
-+	if (rc <= 0)
-+		return rc;
-+
-+	if ((function == EEH_OPT_THAW_MMIO) &&
-+	    (rc & EEH_STATE_MMIO_ENABLED))
-+		return 0;
-+
-+	if ((function == EEH_OPT_THAW_DMA) &&
-+	    (rc & EEH_STATE_DMA_ENABLED))
- 		return 0;
- 
- 	return rc;
-@@ -639,11 +669,13 @@ int eeh_reset_pe(struct eeh_pe *pe)
- 	for (i=0; i<3; i++) {
- 		eeh_reset_pe_once(pe);
- 
-+		/*
-+		 * EEH_PE_ISOLATED is expected to be removed after
-+		 * BAR restore.
-+		 */
- 		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
--		if ((rc & flags) == flags) {
--			eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
-+		if ((rc & flags) == flags)
- 			return 0;
--		}
- 
- 		if (rc < 0) {
- 			pr_err("%s: Unrecoverable slot failure on PHB#%d-PE#%x",
+ void eeh_sysfs_add_device(struct pci_dev *pdev);
+ void eeh_sysfs_remove_device(struct pci_dev *pdev);
 diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 6d91b51..1f1e2cc 100644
+index 1f1e2cc..f99ba9b 100644
 --- a/arch/powerpc/kernel/eeh_driver.c
 +++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -417,6 +417,36 @@ static void *eeh_pe_detach_dev(void *data, void *userdata)
- 	return NULL;
+@@ -171,6 +171,15 @@ static void eeh_enable_irq(struct pci_dev *dev)
+ 	}
  }
  
-+/*
-+ * Explicitly clear PE's frozen state for PowerNV where
-+ * we have frozen PE until BAR restore is completed. It's
-+ * harmless to clear it for pSeries. To be consistent with
-+ * PE reset (for 3 times), we try to clear the frozen state
-+ * for 3 times as well.
-+ */
-+static int eeh_clear_pe_frozen_state(struct eeh_pe *pe)
++static bool eeh_dev_removed(struct eeh_dev *edev)
 +{
-+	int i, rc;
++	/* EEH device removed ? */
++	if (!edev || (edev->mode & EEH_DEV_REMOVED))
++		return true;
 +
-+	for (i = 0; i < 3; i++) {
-+		rc = eeh_pci_enable(pe, EEH_OPT_THAW_MMIO);
-+		if (rc)
-+			continue;
-+		rc = eeh_pci_enable(pe, EEH_OPT_THAW_DMA);
-+		if (!rc)
-+			break;
-+	}
-+
-+	/* The PE has been isolated, clear it */
-+	if (rc)
-+		pr_warn("%s: Can't clear frozen PHB#%x-PE#%x (%d)\n",
-+			__func__, pe->phb->global_number, pe->addr, rc);
-+	else
-+		eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
-+
-+	return rc;
++	return false;
 +}
 +
  /**
-  * eeh_reset_device - Perform actual reset of a pci slot
-  * @pe: EEH PE
-@@ -474,6 +504,11 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	eeh_pe_restore_bars(pe);
- 	eeh_pe_state_clear(pe, EEH_PE_RESET);
+  * eeh_report_error - Report pci error to each device driver
+  * @data: eeh device
+@@ -187,10 +196,8 @@ static void *eeh_report_error(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
  
-+	/* Clear frozen state */
-+	rc = eeh_clear_pe_frozen_state(pe);
-+	if (rc)
-+		return rc;
+-	/* We might not have the associated PCI device,
+-	 * then we should continue for next one.
+-	 */
+-	if (!dev) return NULL;
++	if (!dev || eeh_dev_removed(edev))
++		return NULL;
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+ 	driver = eeh_pcid_get(dev);
+@@ -230,6 +237,9 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
++	if (!dev || eeh_dev_removed(edev))
++		return NULL;
 +
- 	/* Give the system 5 seconds to finish running the user-space
- 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes,
- 	 * this is a hack, but if we don't do this, and try to bring
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index ed6c686..6bdae8d 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -268,6 +268,21 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- 		return EEH_STATE_NOT_SUPPORT;
- 	}
+ 	driver = eeh_pcid_get(dev);
+ 	if (!driver) return NULL;
+ 
+@@ -267,7 +277,8 @@ static void *eeh_report_reset(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev) return NULL;
++	if (!dev || eeh_dev_removed(edev))
++		return NULL;
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	driver = eeh_pcid_get(dev);
+@@ -307,7 +318,8 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	struct pci_driver *driver;
+ 
+-	if (!dev) return NULL;
++	if (!dev || eeh_dev_removed(edev))
++		return NULL;
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	driver = eeh_pcid_get(dev);
+@@ -343,7 +355,8 @@ static void *eeh_report_failure(void *data, void *userdata)
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	struct pci_driver *driver;
+ 
+-	if (!dev) return NULL;
++	if (!dev || eeh_dev_removed(edev))
++		return NULL;
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+ 	driver = eeh_pcid_get(dev);
+@@ -380,6 +393,16 @@ static void *eeh_rmv_device(void *data, void *userdata)
+ 	if (!dev || (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE))
+ 		return NULL;
  
 +	/*
-+	 * If we're in middle of PE reset, return normal
-+	 * state to keep EEH core going. For PHB reset, we
-+	 * still expect to have fenced PHB cleared with
-+	 * PHB reset.
++	 * We rely on count-based pcibios_release_device() to
++	 * detach permanently offlined PEs. Unfortunately, that's
++	 * not reliable enough. We might have the permanently
++	 * offlined PEs attached, but we needn't take care of
++	 * them and their child devices.
 +	 */
-+	if (!(pe->type & EEH_PE_PHB) &&
-+	    (pe->state & EEH_PE_RESET)) {
-+		result = (EEH_STATE_MMIO_ACTIVE |
-+			  EEH_STATE_DMA_ACTIVE |
-+			  EEH_STATE_MMIO_ENABLED |
-+			  EEH_STATE_DMA_ENABLED);
-+		return result;
-+	}
++	if (eeh_dev_removed(edev))
++		return NULL;
 +
- 	/* Retrieve PE status through OPAL */
- 	pe_no = pe->addr;
- 	ret = opal_pci_eeh_freeze_status(phb->opal_id, pe_no,
-@@ -347,52 +362,6 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- 	return result;
+ 	driver = eeh_pcid_get(dev);
+ 	if (driver) {
+ 		eeh_pcid_put(dev);
+@@ -694,8 +717,17 @@ perm_error:
+ 	/* Notify all devices that they're about to go down. */
+ 	eeh_pe_dev_traverse(pe, eeh_report_failure, NULL);
+ 
+-	/* Shut down the device drivers for good. */
++	/* Mark the PE to be removed permanently */
++	pe->freeze_count = EEH_MAX_ALLOWED_FREEZES + 1;
++
++	/*
++	 * Shut down the device drivers for good. We mark
++	 * all removed devices correctly to avoid access
++	 * the their PCI config any more.
++	 */
+ 	if (frozen_bus) {
++		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
++
+ 		pci_lock_rescan_remove();
+ 		pcibios_remove_pci_devices(frozen_bus);
+ 		pci_unlock_rescan_remove();
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index f0c353f..995c2a2 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -503,13 +503,17 @@ static void *__eeh_pe_state_mark(void *data, void *flag)
+ 	struct eeh_dev *edev, *tmp;
+ 	struct pci_dev *pdev;
+ 
+-	/*
+-	 * Mark the PE with the indicated state. Also,
+-	 * the associated PCI device will be put into
+-	 * I/O frozen state to avoid I/O accesses from
+-	 * the PCI device driver.
+-	 */
++	/* Keep the state of permanently removed PE intact */
++	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
++	    (state & (EEH_PE_ISOLATED | EEH_PE_RECOVERING)))
++		return NULL;
++
+ 	pe->state |= state;
++
++	/* Offline PCI devices if applicable */
++	if (state != EEH_PE_ISOLATED)
++		return NULL;
++
+ 	eeh_pe_for_each_dev(pe, edev, tmp) {
+ 		pdev = eeh_dev_to_pci_dev(edev);
+ 		if (pdev)
+@@ -532,6 +536,27 @@ void eeh_pe_state_mark(struct eeh_pe *pe, int state)
+ 	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
  }
  
--static int ioda_eeh_pe_clear(struct eeh_pe *pe)
--{
--	struct pci_controller *hose;
--	struct pnv_phb *phb;
--	u32 pe_no;
--	u8 fstate;
--	u16 pcierr;
--	s64 ret;
--
--	pe_no = pe->addr;
--	hose = pe->phb;
--	phb = pe->phb->private_data;
--
--	/* Clear the EEH error on the PE */
--	ret = opal_pci_eeh_freeze_clear(phb->opal_id,
--			pe_no, OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
--	if (ret) {
--		pr_err("%s: Failed to clear EEH error for "
--		       "PHB#%x-PE#%x, err=%lld\n",
--		       __func__, hose->global_number, pe_no, ret);
--		return -EIO;
--	}
--
--	/*
--	 * Read the PE state back and verify that the frozen
--	 * state has been removed.
--	 */
--	ret = opal_pci_eeh_freeze_status(phb->opal_id, pe_no,
--			&fstate, &pcierr, NULL);
--	if (ret) {
--		pr_err("%s: Failed to get EEH status on "
--		       "PHB#%x-PE#%x\n, err=%lld\n",
--		       __func__, hose->global_number, pe_no, ret);
--		return -EIO;
--	}
--
--	if (fstate != OPAL_EEH_STOPPED_NOT_FROZEN) {
--		pr_err("%s: Frozen state not cleared on "
--		       "PHB#%x-PE#%x, sts=%x\n",
--		       __func__, hose->global_number, pe_no, fstate);
--		return -EIO;
--	}
--
--	return 0;
--}
--
- static s64 ioda_eeh_phb_poll(struct pnv_phb *phb)
- {
- 	s64 rc = OPAL_HARDWARE;
-@@ -524,27 +493,20 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- 	int ret;
++static void *__eeh_pe_dev_mode_mark(void *data, void *flag)
++{
++	struct eeh_dev *edev = data;
++	int mode = *((int *)flag);
++
++	edev->mode |= mode;
++
++	return NULL;
++}
++
++/**
++ * eeh_pe_dev_state_mark - Mark state for all device under the PE
++ * @pe: EEH PE
++ *
++ * Mark specific state for all child devices of the PE.
++ */
++void eeh_pe_dev_mode_mark(struct eeh_pe *pe, int mode)
++{
++	eeh_pe_dev_traverse(pe, __eeh_pe_dev_mode_mark, &mode);
++}
++
+ /**
+  * __eeh_pe_state_clear - Clear state for the PE
+  * @data: EEH PE
+@@ -546,8 +571,16 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
+ 	struct eeh_pe *pe = (struct eeh_pe *)data;
+ 	int state = *((int *)flag);
  
- 	/*
--	 * Anyway, we have to clear the problematic state for the
--	 * corresponding PE. However, we needn't do it if the PE
--	 * is PHB associated. That means the PHB is having fatal
--	 * errors and it needs reset. Further more, the AIB interface
--	 * isn't reliable any more.
--	 */
--	if (!(pe->type & EEH_PE_PHB) &&
--	    (option == EEH_RESET_HOT ||
--	    option == EEH_RESET_FUNDAMENTAL)) {
--		ret = ioda_eeh_pe_clear(pe);
--		if (ret)
--			return -EIO;
--	}
--
--	/*
- 	 * The rules applied to reset, either fundamental or hot reset:
- 	 *
- 	 * We always reset the direct upstream bridge of the PE. If the
- 	 * direct upstream bridge isn't root bridge, we always take hot
- 	 * reset no matter what option (fundamental or hot) is. Otherwise,
- 	 * we should do the reset according to the required option.
-+	 *
-+	 * Here, we have different design to pHyp, which always clear the
-+	 * frozen state during PE reset. However, the good idea here from
-+	 * benh is to keep frozen state before we get PE reset done completely
-+	 * (until BAR restore). With the frozen state, HW drops illegal IO
-+	 * or MMIO access, which can incur recrusive frozen PE during PE
-+	 * reset. The side effect is that EEH core has to clear the frozen
-+	 * state explicitly after BAR restore.
- 	 */
- 	if (pe->type & EEH_PE_PHB) {
- 		ret = ioda_eeh_phb_reset(hose, option);
++	/* Keep the state of permanently removed PE intact */
++	if ((pe->freeze_count > EEH_MAX_ALLOWED_FREEZES) &&
++	    (state & EEH_PE_ISOLATED))
++		return NULL;
++
+ 	pe->state &= ~state;
+-	pe->check_count = 0;
++
++	/* Clear check count since last isolation */
++	if (state & EEH_PE_ISOLATED)
++		pe->check_count = 0;
+ 
+ 	return NULL;
+ }
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 83c26d8..ea6470c 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -304,6 +304,9 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
+ 	struct pci_dev *dev = NULL;
+ 	const __be32 *reg;
+ 	int reglen, devfn;
++#ifdef CONFIG_EEH
++	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
++#endif
+ 
+ 	pr_debug("  * %s\n", dn->full_name);
+ 	if (!of_device_is_available(dn))
+@@ -321,6 +324,12 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
+ 		return dev;
+ 	}
+ 
++	/* Device removed permanently ? */
++#ifdef CONFIG_EEH
++	if (edev && (edev->mode & EEH_DEV_REMOVED))
++		return NULL;
++#endif
++
+ 	/* create a new pci_dev for this device */
+ 	dev = of_create_pci_dev(dn, bus, devfn);
+ 	if (!dev)
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index f98cf99..eefbfcc 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -441,11 +441,16 @@ static bool pnv_pci_cfg_check(struct pci_controller *hose,
+ 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
+ 		return true;
+ 
+-	/* PE reset ? */
++	/* PE reset or device removed ? */
+ 	edev = of_node_to_eeh_dev(dn);
+-	if (edev && edev->pe &&
+-	    (edev->pe->state & EEH_PE_RESET))
+-		return false;
++	if (edev) {
++		if (edev->pe &&
++		    (edev->pe->state & EEH_PE_RESET))
++			return false;
++
++		if (edev->mode & EEH_DEV_REMOVED)
++			return false;
++	}
+ 
+ 	return true;
+ }
 -- 
 1.8.3.2
