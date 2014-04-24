@@ -1,33 +1,34 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B5D5114018B
+ by ozlabs.org (Postfix) with ESMTPS id C6F0C14018F
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:34 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 24 Apr 2014 18:00:34 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1AF9C3578048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:31 +1000 (EST)
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E40AA2CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O80GbJ54722676
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:16 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O7daL311272292
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:36 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80USq017551
+ s3O80TNX017512
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 20/25] powerpc/eeh: Can't recover from non-PE-reset case
-Date: Thu, 24 Apr 2014 18:00:26 +1000
-Message-Id: <1398326431-24305-21-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 16/25] powerpc/powernv: Reset root port in firmware
+Date: Thu, 24 Apr 2014 18:00:22 +1000
+Message-Id: <1398326431-24305-17-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linux-stable <stable@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,50 +38,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When PCI_ERS_RESULT_CAN_RECOVER returned from device drivers, the
-EEH core should enable I/O and DMA for the affected PE. However,
-it was missed to have DMA enabled in eeh_handle_normal_event().
-Besides, the frozen state of the affected PE should be cleared
-after successful recovery, but we didn't.
+Resetting root port has more stuff to do than that for PCIe switch
+ports and we should have resetting root port done in firmware instead
+of the kernel itself. The problem was introduced by commit 5b2e198e
+("powerpc/powernv: Rework EEH reset").
 
-The patch fixes both of the issues as above.
-
+Cc: linux-stable <stable@vger.kernel.org>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh_driver.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index f99ba9b..7100a5b 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -640,7 +640,6 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
- 			result = PCI_ERS_RESULT_NEED_RESET;
- 		} else {
- 			pr_info("EEH: Notify device drivers to resume I/O\n");
--			result = PCI_ERS_RESULT_NONE;
- 			eeh_pe_dev_traverse(pe, eeh_report_mmio_enabled, &result);
- 		}
- 	}
-@@ -652,10 +651,17 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 3a755b5..0844e00 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -510,12 +510,10 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+ 	int ret;
  
- 		if (rc < 0)
- 			goto hard_fail;
--		if (rc)
-+		if (rc) {
- 			result = PCI_ERS_RESULT_NEED_RESET;
--		else
-+		} else {
-+			/*
-+			 * We didn't do PE reset for the case. The PE
-+			 * is still in frozen state. Clear it before
-+			 * resuming the PE.
-+			 */
-+			eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
- 			result = PCI_ERS_RESULT_RECOVERED;
-+		}
- 	}
- 
- 	/* If any device has a hard failure, then shut off everything. */
+ 	/*
+-	 * The rules applied to reset, either fundamental or hot reset:
+-	 *
+-	 * We always reset the direct upstream bridge of the PE. If the
+-	 * direct upstream bridge isn't root bridge, we always take hot
+-	 * reset no matter what option (fundamental or hot) is. Otherwise,
+-	 * we should do the reset according to the required option.
++	 * For PHB reset, we always have complete reset. For those PEs whose
++	 * primary bus derived from root complex (root bus) or root port
++	 * (usually bus#1), we apply hot or fundamental reset on the root port.
++	 * For other PEs, we always have hot reset on the PE primary bus.
+ 	 *
+ 	 * Here, we have different design to pHyp, which always clear the
+ 	 * frozen state during PE reset. However, the good idea here from
+@@ -529,7 +527,8 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+ 		ret = ioda_eeh_phb_reset(hose, option);
+ 	} else {
+ 		bus = eeh_pe_bus_get(pe);
+-		if (pci_is_root_bus(bus))
++		if (pci_is_root_bus(bus) ||
++		    pci_is_root_bus(bus->parent))
+ 			ret = ioda_eeh_root_reset(hose, option);
+ 		else
+ 			ret = ioda_eeh_bridge_reset(bus->self, option);
 -- 
 1.8.3.2
