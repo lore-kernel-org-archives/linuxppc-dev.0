@@ -1,36 +1,32 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
- [209.85.216.51])
+Return-Path: <leif.lindholm@linaro.org>
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 46E7A14008C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:25:47 +1000 (EST)
-Received: by mail-qa0-f51.google.com with SMTP id j7so1937348qaq.24
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 01:25:42 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id CEB7E14011C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 19:23:11 +1000 (EST)
+Received: by mail-wi0-f179.google.com with SMTP id z2so725315wiv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 02:23:06 -0700 (PDT)
+Date: Thu, 24 Apr 2014 10:26:42 +0100
+From: Leif Lindholm <leif.lindholm@linaro.org>
+To: Grant Likely <grant.likely@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 3/3] of: Handle memory@0 node on PPC32 only
+Message-ID: <20140424092642.GQ5904@bivouac.eciton.net>
+References: <1397756521-29387-1-git-send-email-leif.lindholm@linaro.org>
+ <1397756521-29387-4-git-send-email-leif.lindholm@linaro.org>
+ <CAMuHMdXBNWum7UJ95uT2hwTd1b5C8ebF2LQ4T-A+RS80p7MH=A@mail.gmail.com>
+ <20140418125924.GF5904@bivouac.eciton.net>
+ <20140422133515.E7A0BC40754@trevor.secretlab.ca>
+ <20140423104528.GD30036@e106331-lin.cambridge.arm.com>
+ <20140423131058.D94B6C408D2@trevor.secretlab.ca>
 MIME-Version: 1.0
-In-Reply-To: <20140423185534.GA26756@n2100.arm.linux.org.uk>
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
-Date: Thu, 24 Apr 2014 10:25:42 +0200
-Message-ID: <CAPDyKFozP69yngKAkdwHYyyvi+pdLEm05udOmBiVshQFi4hnLQ@mail.gmail.com>
-Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>,
- linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>,
- Chris Ball <chris@printf.net>, Thierry Reding <thierry.reding@gmail.com>,
- Anton Vorontsov <anton@enomsg.org>, Michal Simek <michal.simek@xilinx.com>,
- Jaehoon Chung <jh80.chung@samsung.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- spear-devel@list.st.com, Rob Herring <robh+dt@kernel.org>,
- Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- Shawn Guo <shawn.guo@freescale.com>, Barry Song <baohua@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-mmc <linux-mmc@vger.kernel.org>,
- Viresh Kumar <viresh.linux@gmail.com>, Sascha Hauer <kernel@pengutronix.de>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140423131058.D94B6C408D2@trevor.secretlab.ca>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "patches@linaro.org" <patches@linaro.org>, Lee Jones <lee.jones@linaro.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Rob Herring <robherring2@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,73 +36,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23 April 2014 20:55, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> All,
->
-> This is where I'm at with trying to clean up the SDHCI mess, and sort out
-> issues I've noticed when trying to get UHS support working on CuBoxes.
-> This is my full patch set, but I recommend not applying patch 37 as there
-> appears to be a hardware issue preventing it working reliably.
->
-> In any case, patches 0-33 inclusive are the SDHCI clean up, based against
-> v3.15-rc1.  Patches 34 and 35 are Olof's Wifi support, 36 is my fix against
-> those, and 38 adds the Broadcom Wifi and BT support for CuBox.
->
-> The questions over how to handle these devices were never properly settled,
-> so I recommend against merging patch 34 onwards.  As for the rest, I'm not
-> planning on any further work, so it may be a good idea for people to
-> consider testing them with a view to getting them merged.
->
+On Wed, Apr 23, 2014 at 02:10:58PM +0100, Grant Likely wrote:
+> > Does anyone have a LongTrail DT to hand, and if so does the root have a
+> > compatible string? From grepping through the kernel I could only find a
+> > model string ("IBM,LongTrail").
+> 
+> Actually, on LongTrail this can be removed from the common code
+> entirely. It has real open firmware and PowerPC already has the
+> infrastructure for fixing up the device tree.
+> 
+> Here's a draft patch that I've compile tested, but nothing else.
 
-I have looked though the patches up until patch 33 and this is clearly
-a nice piece of clean-up /fixes work for sdhci. Besides my minor
-comments per patch, I don't have any objections code-review wise to
-proceed merging them.
+I would certainly be happy with that.
 
-I have also tried to applied them on Chris' mmc-next branch,
-unfortunate it fails at patch 23, so it would be nice to get a
-re-based patchset for the mmc-next branch.
+Consider my 3/3 withdrawn.
 
-Kind regards
-Ulf Hansson
+And if the kernel proper will stop honoring nodes with no type,
+there is no need for the stub to treat those specially either.
 
->  Documentation/devicetree/bindings/mmc/mmc.txt |  11 +
->  arch/arm/boot/dts/imx6qdl-cubox-i.dtsi        |  34 +-
->  arch/arm/boot/dts/imx6qdl-microsom.dtsi       |  98 ++++
->  drivers/mmc/core/core.c                       |  42 ++
->  drivers/mmc/core/host.c                       |  68 +++
->  drivers/mmc/core/sdio_irq.c                   |  41 +-
->  drivers/mmc/host/Kconfig                      |  63 +--
->  drivers/mmc/host/dw_mmc.c                     |   2 +
->  drivers/mmc/host/sdhci-acpi.c                 |   8 +
->  drivers/mmc/host/sdhci-bcm-kona.c             |   4 +
->  drivers/mmc/host/sdhci-bcm2835.c              |   4 +
->  drivers/mmc/host/sdhci-cns3xxx.c              |  13 +-
->  drivers/mmc/host/sdhci-dove.c                 |   4 +
->  drivers/mmc/host/sdhci-esdhc-imx.c            |  82 +--
->  drivers/mmc/host/sdhci-esdhc.h                |   4 +-
->  drivers/mmc/host/sdhci-of-arasan.c            |   4 +
->  drivers/mmc/host/sdhci-of-esdhc.c             |  70 ++-
->  drivers/mmc/host/sdhci-of-hlwd.c              |   4 +
->  drivers/mmc/host/sdhci-pci.c                  |   9 +-
->  drivers/mmc/host/sdhci-pltfm.c                |   4 +
->  drivers/mmc/host/sdhci-pxav2.c                |  14 +-
->  drivers/mmc/host/sdhci-pxav3.c                |  13 +-
->  drivers/mmc/host/sdhci-s3c.c                  |  36 +-
->  drivers/mmc/host/sdhci-sirf.c                 |   4 +
->  drivers/mmc/host/sdhci-spear.c                |   5 +-
->  drivers/mmc/host/sdhci-tegra.c                |  27 +-
->  drivers/mmc/host/sdhci.c                      | 728 +++++++++++++-------------
->  drivers/mmc/host/sdhci.h                      |  20 +-
->  include/linux/mmc/host.h                      |   8 +
->  include/linux/mmc/sdhci.h                     |  15 +-
->  30 files changed, 885 insertions(+), 554 deletions(-)
->
->
-> --
-> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-> improving, and getting towards what was expected from it.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+/
+    Leif
+
+> g.
+> 
+> ---
+> 
+> diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> index 078145acf7fb..18b2c3fee98f 100644
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2587,9 +2587,18 @@ static void __init fixup_device_tree_chrp(void)
+>  	phandle ph;
+>  	u32 prop[6];
+>  	u32 rloc = 0x01006000; /* IO space; PCI device = 12 */
+> -	char *name;
+> +	char *name, strprop[16];
+>  	int rc;
+>  
+> +	/* Deal with missing device_type in LongTrail memory node */
+> +	name = "/memory@0";
+> +	ph = call_prom("finddevice", 1, 1, ADDR(name));
+> +	rc = prom_getprop(ph, "device_type", strprop, sizeof(strprop));
+> +	if (rc == PROM_ERROR || strcmp(strprop, "memory") != 0) {
+> +		prom_printf("Fixing up missing device_type on /memory@0 node...\n");
+> +		prom_setprop(ph, name, "device_type", "memory", sizeof("memory"));
+> +	}
+> +
+>  	name = "/pci@80000000/isa@c";
+>  	ph = call_prom("finddevice", 1, 1, ADDR(name));
+>  	if (!PHANDLE_VALID(ph)) {
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 7a2ef7bb8022..7cda0d279cbe 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -886,14 +886,7 @@ int __init early_init_dt_scan_memory(unsigned long node, const char *uname,
+>  	unsigned long l;
+>  
+>  	/* We are scanning "memory" nodes only */
+> -	if (type == NULL) {
+> -		/*
+> -		 * The longtrail doesn't have a device_type on the
+> -		 * /memory node, so look for the node called /memory@0.
+> -		 */
+> -		if (depth != 1 || strcmp(uname, "memory@0") != 0)
+> -			return 0;
+> -	} else if (strcmp(type, "memory") != 0)
+> +	if (!type || strcmp(type, "memory") != 0)
+>  		return 0;
+>  
+>  	reg = of_get_flat_dt_prop(node, "linux,usable-memory", &l);
+> 
