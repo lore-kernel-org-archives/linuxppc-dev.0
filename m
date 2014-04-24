@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8F7F5140134
+ by ozlabs.org (Postfix) with ESMTPS id C4845140155
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:35 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 24 Apr 2014 18:00:35 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5EEA12BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:33 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D44173578048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:32 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7dcJV47710328
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:39 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80WHF004388
+ s3O7dcsD47710326
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:38 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O80V83023537
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:32 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 25/25] powerpc/prom: Stop scanning dev-tree for fdump early
-Date: Thu, 24 Apr 2014 18:00:31 +1000
-Message-Id: <1398326431-24305-26-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 22/25] powerpc/powernv: Missed IOMMU table type
+Date: Thu, 24 Apr 2014 18:00:28 +1000
+Message-Id: <1398326431-24305-23-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,45 +37,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Function early_init_dt_scan_fw_dump() is called to scan the device
-tree for fdump properties under node "rtas". Any one of them is
-invalid, we can stop scanning the device tree early by returning
-"1". It would save a bit time during boot.
+In function pnv_pci_ioda2_setup_dma_pe(), the IOMMU table type is
+set to (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE) unconditionally.
+It was just set to TCE_PCI by pnv_pci_setup_iommu_table(). So the
+primary IOMMU table type (TCE_PCI) is lost. The patch fixes it.
+
+Also, pnv_pci_setup_iommu_table() already set "tbl->it_busno" to
+zero and we needn't do it again. The patch removes the redundant
+assignment.
+
+The patch also fixes similar issues in pnv_pci_ioda_setup_dma_pe().
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/fadump.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 2230fd0..0266774 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -69,7 +69,7 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 	 */
- 	token = of_get_flat_dt_prop(node, "ibm,configure-kernel-dump", NULL);
- 	if (!token)
--		return 0;
-+		return 1;
- 
- 	fw_dump.fadump_supported = 1;
- 	fw_dump.ibm_configure_kernel_dump = *token;
-@@ -92,7 +92,7 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 					&size);
- 
- 	if (!sections)
--		return 0;
-+		return 1;
- 
- 	num_sections = size / (3 * sizeof(u32));
- 
-@@ -110,6 +110,7 @@ int __init early_init_dt_scan_fw_dump(unsigned long node,
- 			break;
- 		}
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 6a2cb37..1934327 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -665,12 +665,12 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		 * errors, and on the first pass the data will be a relative
+ 		 * bus number, print that out instead.
+ 		 */
+-		tbl->it_busno = 0;
+ 		pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+ 		tbl->it_index = (unsigned long)ioremap(pe->tce_inval_reg_phys,
+ 				8);
+-		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE |
+-			       TCE_PCI_SWINV_PAIR;
++		tbl->it_type |= (TCE_PCI_SWINV_CREATE |
++				 TCE_PCI_SWINV_FREE   |
++				 TCE_PCI_SWINV_PAIR);
  	}
-+
- 	return 1;
- }
- 
+ 	iommu_init_table(tbl, phb->hose->node);
+ 	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
+@@ -795,11 +795,10 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		 * errors, and on the first pass the data will be a relative
+ 		 * bus number, print that out instead.
+ 		 */
+-		tbl->it_busno = 0;
+ 		pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+ 		tbl->it_index = (unsigned long)ioremap(pe->tce_inval_reg_phys,
+ 				8);
+-		tbl->it_type = TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE;
++		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
+ 	}
+ 	iommu_init_table(tbl, phb->hose->node);
+ 	iommu_register_group(tbl, pci_domain_nr(pe->pbus), pe->pe_number);
 -- 
 1.8.3.2
