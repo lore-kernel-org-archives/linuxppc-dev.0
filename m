@@ -1,27 +1,39 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A0E9D14011B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 16:43:52 +1000 (EST)
-From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v2 1/2] fsl/corenet_generic: add a particular
- initialization for platform
-Date: Thu, 24 Apr 2014 06:43:45 +0000
-Message-ID: <30c9d29df995426d9e01ffdf09fb1f33@BN1PR03MB188.namprd03.prod.outlook.com>
-References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
- <1397590755.20280.250.camel@snotra.buserror.net>
- <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
- <1397676986.28539.10.camel@snotra.buserror.net>
-In-Reply-To: <1397676986.28539.10.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 0F64D140112
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:23:54 +1000 (EST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Thu, 24 Apr 2014 08:23:49 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7C88817D805C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 08:24:46 +0100 (BST)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3O7NlbL67043374
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 07:23:47 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3O7Nk5R025679
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 01:23:46 -0600
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH v2 00/15] powerpc/boot: 64bit little endian wrapper (rebased
+ on v3.15-rc2)
+Date: Thu, 24 Apr 2014 09:23:24 +0200
+Message-Id: <1398324219-8919-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1395651884.30488.10.camel@pasglop>
+References: <1395651884.30488.10.camel@pasglop>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "haokexin@gmail.com" <haokexin@gmail.com>,
- "prabhakar@freescale.com" <prabhakar@freescale.com>,
- "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,65 +43,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIEFwcmlsIDE3LCAyMDE0IDM6MzYgQU0NCj4gVG86IFdhbmcg
-RG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogSmluIFpoZW5neGlvbmctUjY0MTg4OyBoYW9rZXhpbkBn
-bWFpbC5jb207IEt1c2h3YWhhIFByYWJoYWthci1CMzI1Nzk7DQo+IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMS8yXSBmc2wvY29yZW5ldF9n
-ZW5lcmljOiBhZGQgYSBwYXJ0aWN1bGFyIGluaXRpYWxpemF0aW9uDQo+IGZvciBwbGF0Zm9ybQ0K
-PiANCj4gT24gVHVlLCAyMDE0LTA0LTE1IGF0IDIxOjU4IC0wNTAwLCBXYW5nIERvbmdzaGVuZy1C
-NDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4g
-PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAx
-NiwgMjAxNCAzOjM5IEFNDQo+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiBD
-YzogSmluIFpoZW5neGlvbmctUjY0MTg4OyBoYW9rZXhpbkBnbWFpbC5jb207IEt1c2h3YWhhDQo+
-ID4gPiBQcmFiaGFrYXItQjMyNTc5OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+
-ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAxLzJdIGZzbC9jb3JlbmV0X2dlbmVyaWM6IGFkZCBh
-IHBhcnRpY3VsYXINCj4gPiA+IGluaXRpYWxpemF0aW9uIGZvciBwbGF0Zm9ybQ0KPiA+ID4NCj4g
-PiA+IE9uIFR1ZSwgMjAxNC0wNC0xNSBhdCAxMzo1MyArMDgwMCwgRG9uZ3NoZW5nIFdhbmcgd3Jv
-dGU6DQo+ID4gPiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2Nh
-bGUuY29tPg0KPiA+ID4gPg0KPiA+ID4gPiBDb3JlbmV0X2dlbmVyaWMgaXMgYSBnZW5lcmljIHBs
-YXRmb3JtIGluaXRpYWxpemF0aW9uLiBUaG9zZSBiYXNlZA0KPiA+ID4gPiBvbiB0aGUgY29yZW5l
-dF9nZW5lcmljIGJvYXJkIG1heWJlIG5lZWQgYSBwYXJ0aWN1bGFyIGluaXRpYWxpemUgdG8NCj4g
-PiA+ID4gZW5hYmxlL3NldCBzb21lIElQLUJsb2Nrcy4gU28gYWRkICJGaXggR2VuZXJpYyBJbml0
-aWFsaXphdGlvbiIgdG8NCj4gPiA+ID4gc29sdmUgdGhpcyBraW5kIG9mIHNwZWNpYWwgY2FzZXMu
-DQo+ID4gPg0KPiA+ID4gSSBzdGlsbCBkb24ndCB1bmRlcnN0YW5kIHdoYXQgeW91IG1lYW4gYnkg
-ImZpeCIuICBXaGF0IGFyZSB5b3UNCj4gPiA+IGZpeGluZywgb3Igd2hhdCBpcyBmaXhlZD8NCj4g
-PiA+DQo+ID4gPiBUaGVyZSBpcyBubyBuZWVkIGZvciBhZGRpbmcgYW4gaW5mcmFzdHJ1Y3R1cmUg
-bGF5ZXIgaGVyZS4gIEp1c3QgYWRkDQo+ID4gPiBhIG5ldyBwaWVjZSBvZiBjb2RlIGZvciB0MTA0
-eCBkaXUsIGFuZCBoYXZlIGl0IGJlIGNhbGxlZCBieSBhbg0KPiA+ID4gYXBwcm9wcmlhdGUgaW5p
-dGZ1bmMuDQo+ID4gPg0KPiA+DQo+ID4gImZpeCIgaXMgbWVhbnMgdG8gaGFuZGxlIHNvbWUgYm9h
-cmRzIHRob3NlIGJhc2VkIG9uIGNvcmVuZXRfZ2VuZXJpYw0KPiA+IGNvbmZpZyBmaWxlLCBCdXQg
-dGhvc2UgYm9hcmRzIG1heSBuZWVkIHNvbWUgc3BlY2lhbCBoYW5kbGUuIFBlcmhhcHMNCj4gPiB0
-aGVzZSB1c2VkIHRvIGhhbmRsZSBzcGVjaWFsIGZlYXR1cmUgY29kZXMgbm90IGhhdmUgYW4gYXBw
-cm9wcmlhdGUNCj4gPiBpbml0ZnVuYyB3ZSBjYW5ub3QgKmp1c3QgZmluZCogYW4gYXBwcm9wcmlh
-dGUgcGxhY2UsDQo+IA0KPiBJJ20gbm90IGFza2luZyB5b3UgdG8gImp1c3QgZmluZCIgYW55dGhp
-bmcuICBJJ20gYXNraW5nIHlvdSB0byBhZGQgYW4gaW5pdGZ1bmMNCj4gaW4gYSBzdGFuZGFsb25l
-IGZpbGUuDQo+IA0KPiA+IGlmIG1vcmUgYW5kIG1vcmUgYm9hcmRzIG5lZWQgdG8gZG8gdGhpcywg
-YXQgdGhhdCB0aW1lIG1heWJlICppbml0ZnVuYyoNCj4gPiBsb29rcyB2ZXJ5IGNvbXBsaWNhdGVk
-Lg0KPiANCj4gVGhleSB3b3VsZCBlYWNoIGhhdmUgdGhlaXIgb3duIGluaXRmdW5jLiAgVGhlcmUg
-aXMgbm8gcmVhc29uIHRvIHRpZSB0aGlzIGluIHdpdGgNCj4gYW55dGhpbmcgZWxzZS4NCj4gDQoN
-ClNvcnJ5LCBpZiB0aG9zZSBwbGF0Zm9ybXMgYXJlIHVzaW5nIGNvcmVuZXRfZ2VuZXJpYywgSSBk
-b27igJl0IHNlZSBhbnkgc3RhbmRhbG9uZSBmaWxlDQpmb3IgaW5pdGZ1bmMgb2YgcGxhdGZvcm0u
-IFRoYXQncyB3aHkgSSdtIGFkZGluZyAiZml4IiBsYXllci4NCg0KQlRXLCBpZiBJIG1pc3NlZCBz
-b21ldGhpbmcgYWJvdXQgImNvcmVuZXRfZ2VuZXJpYyBzdGFuZGFsb25lIGZpbGUiIHBsZWFzZSBs
-ZXQgbWUga25vdy4NCg0KPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgv
-S2NvbmZpZw0KPiA+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvS2NvbmZp
-Zw0KPiA+ID4gPiBAQCAtMjY5LDYgKzI2OSwxNyBAQCBjb25maWcgQ09SRU5FVF9HRU5FUklDDQo+
-ID4gPiA+ICAJICBUaGUgZm9sbG93aW5nIGJvYXJkcyBhcmUgc3VwcG9ydGVkIGZvciBib3RoIDMy
-Yml0IGFuZCA2NGJpdA0KPiBrZXJuZWw6DQo+ID4gPiA+ICAJICAgIFA1MDIwIERTIGFuZCBQNTA0
-MCBEUw0KPiA+ID4gPg0KPiA+ID4gPiArY29uZmlnIEZJWF9HRU5FUklDX1BMQVRGT1JNX0lOSVQN
-Cj4gPiA+ID4gKwlib29sICJGaXggR2VuZXJpYyBJbml0aWFsaXphdGlvbiINCj4gPiA+ID4gKwlk
-ZXBlbmRzIG9uIENPUkVORVRfR0VORVJJQw0KPiA+ID4NCj4gPiA+IFdoeSBkb2VzIHRoaXMgZGVw
-ZW5kIG9uIENPUkVORVRfR0VORVJJQz8NCj4gPiA+DQo+ID4NCj4gPiBCZWNhdXNlIENPUkVORVRf
-R0VORVJJQyBpcyBhIG11bHRpYm9hcmRzIGZpbGUsIFRoaXMgaXMgZGVzaWduZWQgdG8gaGFuZGxl
-IHRoaXMNCj4gc2l0dWF0aW9uLg0KPiANCj4gVGhpcyBESVUgY29kZSBpcyBnb2luZyB0byBiZSBq
-dXN0IGFzIGFwcGxpY2FibGUgdG8gYSBjdXN0b20gVDEwNHggYm9hcmQgd2hpY2gNCj4gbWF5IG9y
-IG1heSBub3QgdXNlIENPUkVORVRfR0VORVJJQy4NCj4gDQoNCiJmaXgiIGlzIGEgbWlkZGxlIGxh
-eWVyLCBpdCdzIG5vdCBvbmx5IGZvciBUMTA0eHJkYi1ESVUuDQoNCj4gPiA+ID4gKwlkZWZhdWx0
-IHkNCj4gPiA+DQo+ID4gPiBOby4NCj4gPiA+DQo+ID4NCj4gPiBXaHkgbm90PyBUaGlzIHdpbGwg
-bm90IGluY3JlYXNlIGFueSByZWR1bmRhbnQgb3BlcmF0aW9ucyBpZiB0aGVyZSBpcyBub3QgYW55
-DQo+IGJvYXJkcyBuZWVkIGZpeC4NCj4gPiBZb3UgY2FuIHNlZSBteSBmaXguYyBjb2RlLg0KPiAN
-Cj4gZGVmYXVsdCB5IHNob3VsZCBub3QgYmUgdXNlZCBmb3IgaGFyZHdhcmUgc3BlY2lmaWMgY29k
-ZS4NCj4gDQoNCmZpeC5jIGFuZCBoYXJkd2FyZSBubyByZWxhdGlvbnNoaXAgYXQgYWxsLiA6KSwg
-SXQncyBqdXN0IGEgc29mdHdhcmUgbGF5ZXIuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCj4g
-LVNjb3R0DQo+IA0KDQo=
+Hi,
+
+The following patchset adds support for 64bit little endian boot 
+wrapper. It is based on original code from Andrew Tauferner. 
+
+The first patches provide fixes for 64bit support. I also changed 
+the prom code to make it converge with the prom_init kernel code. 
+They have a lot in common and they could probably be merged.
+
+  powerpc/boot: fix do_div for 64bit wrapper
+  powerpc/boot: use a common prom_args struct in oflib
+  powerpc/boot: use prom_arg_t in oflib
+  powerpc/boot: add byteswapping routines in oflib
+  powerpc/boot: add PROM_ERROR define in oflib
+  powerpc/boot: rework of_claim() to make it 64bit friendly
+  powerpc/boot: define typedef ihandle as u32
+  powerpc/boot: fix compile warning in 64bit
+
+These are for little endian only:
+
+  powerpc/boot: define byteswapping routines for little endian
+  powerpc/boot: add 64bit and little endian support to addnote
+  powerpc/boot: add little endian support to elf utils
+
+and finally, these add support for the 64bit little endian boot 
+wrapper :
+
+  powerpc/boot: define a routine to enter prom
+  powerpc/boot: modify entry point for 64bit
+  powerpc/boot: add a global entry point for pseries
+  powerpc/boot: add support for 64bit little endian wrapper
+
+Here are some topics to discuss :
+
+  - to compile in 64bit, -m64 is added to the cross32 compiler.    
+  - There are still some compile warnings due to 64bit, in addnote 
+    and in the device tree library.
+  - the wrapper is compiled as a position independent executable. 
+
+This patchset is based on a 3.15-rc2 and was tested on qemu with 
+the -kernel option, yaboot and grub for little and big endian 
+guests. Tests were also done to check that the PowerVM stack was
+not broken by these changes.
+
+It is also available from :
+
+	https://github.com/legoater/linux v3.15-rc2-zimagev2 
+
+Cheers,
+
+C. 
+
+Changes since v1 :
+
+  - Fixed Makefile for platforms generating a zImage.pseries 
+  - used PROM_ERROR (-1u) to test return addr when claiming memory
+  - removed patch modifying the call to the kernel entry point
+  - merged last 3 patches to preserve bisectability 
+
+Cédric Le Goater (15):
+  powerpc/boot: fix do_div for 64bit wrapper
+  powerpc/boot: use a common prom_args struct in oflib
+  powerpc/boot: use prom_arg_t in oflib
+  powerpc/boot: add byteswapping routines in oflib
+  powerpc/boot: add PROM_ERROR define in oflib
+  powerpc/boot: rework of_claim() to make it 64bit friendly
+  powerpc/boot: define typedef ihandle as u32
+  powerpc/boot: fix compile warning in 64bit
+  powerpc/boot: define byteswapping routines for little endian
+  powerpc/boot: add 64bit and little endian support to addnote
+  powerpc/boot: add little endian support to elf utils
+  powerpc/boot: define a routine to enter prom
+  powerpc/boot: modify entry point for 64bit
+  powerpc/boot: add a global entry point for pseries
+  powerpc/boot: add support for 64bit little endian wrapper
+
+ arch/powerpc/boot/Makefile             |   21 +++-
+ arch/powerpc/boot/addnote.c            |  128 +++++++++++++++--------
+ arch/powerpc/boot/crt0.S               |  180 +++++++++++++++++++++++++++++++-
+ arch/powerpc/boot/elf_util.c           |    4 +
+ arch/powerpc/boot/of.c                 |    4 +-
+ arch/powerpc/boot/of.h                 |   19 +++-
+ arch/powerpc/boot/ofconsole.c          |    6 +-
+ arch/powerpc/boot/oflib.c              |   92 ++++++++--------
+ arch/powerpc/boot/ppc_asm.h            |   12 +++
+ arch/powerpc/boot/pseries-head.S       |    8 ++
+ arch/powerpc/boot/stdio.c              |   14 +++
+ arch/powerpc/boot/swab.h               |   29 +++++
+ arch/powerpc/boot/wrapper              |   17 ++-
+ arch/powerpc/boot/zImage.lds.S         |   25 ++++-
+ arch/powerpc/platforms/Kconfig.cputype |    5 +
+ 15 files changed, 464 insertions(+), 100 deletions(-)
+ create mode 100644 arch/powerpc/boot/pseries-head.S
+ create mode 100644 arch/powerpc/boot/swab.h
+
+-- 
+1.7.10.4
