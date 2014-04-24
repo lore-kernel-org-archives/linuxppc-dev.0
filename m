@@ -1,20 +1,27 @@
 Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0242.outbound.protection.outlook.com [207.46.163.242])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1B4A2140167
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 16:14:48 +1000 (EST)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH v2 2/2] fsl/mpic_timer: make mpic_timer to support deep sleep
- feature
-Date: Thu, 24 Apr 2014 14:12:19 +0800
-Message-ID: <1398319939-36348-1-git-send-email-dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id A0E9D14011B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 16:43:52 +1000 (EST)
+From: "Dongsheng.Wang@freescale.com" <Dongsheng.Wang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v2 1/2] fsl/corenet_generic: add a particular
+ initialization for platform
+Date: Thu, 24 Apr 2014 06:43:45 +0000
+Message-ID: <30c9d29df995426d9e01ffdf09fb1f33@BN1PR03MB188.namprd03.prod.outlook.com>
+References: <1397541229-34383-1-git-send-email-dongsheng.wang@freescale.com>
+ <1397590755.20280.250.camel@snotra.buserror.net>
+ <77e2c53b2f154faba68c8b7ac760accc@BN1PR03MB188.namprd03.prod.outlook.com>
+ <1397676986.28539.10.camel@snotra.buserror.net>
+In-Reply-To: <1397676986.28539.10.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
- jason.jin@freescale.com, Wang Dongsheng <dongsheng.wang@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "haokexin@gmail.com" <haokexin@gmail.com>,
+ "prabhakar@freescale.com" <prabhakar@freescale.com>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,300 +31,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
-
-At T104x platfrom the timer clock will be changed from platform_clock
-to sys_ref_clock when system going to deep sleep.
-
-So before system going to deep sleep, we need to change time to adapt
-to the new frequency that is sys_ref_clock. And after resume from deep
-sleep, restore the time that based on platform_clock.
-
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
----
-*v2*
-Remove some unnecessary warning message.
-Remove "switch_freq_flag", it's unnecessary.
-
-Modify the description of the patch.
-
-diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
-index 9d9b062..71ad368 100644
---- a/arch/powerpc/sysdev/mpic_timer.c
-+++ b/arch/powerpc/sysdev/mpic_timer.c
-@@ -18,6 +18,7 @@
- #include <linux/mm.h>
- #include <linux/interrupt.h>
- #include <linux/slab.h>
-+#include <linux/suspend.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
-@@ -26,7 +27,9 @@
- #include <sysdev/fsl_soc.h>
- #include <asm/io.h>
- 
-+#include <asm/mpc85xx.h>
- #include <asm/mpic_timer.h>
-+#include <asm/pm.h>
- 
- #define FSL_GLOBAL_TIMER		0x1
- 
-@@ -72,6 +75,8 @@ struct timer_group_priv {
- 	struct mpic_timer		timer[TIMERS_PER_GROUP];
- 	struct list_head		node;
- 	unsigned int			timerfreq;
-+	unsigned int			suspended_timerfreq;
-+	unsigned int			resume_timerfreq;
- 	unsigned int			idle;
- 	unsigned int			flags;
- 	spinlock_t			lock;
-@@ -423,6 +428,33 @@ struct mpic_timer *mpic_request_timer(irq_handler_t fn, void *dev,
- }
- EXPORT_SYMBOL(mpic_request_timer);
- 
-+static void timer_group_get_suspended_freq(struct timer_group_priv *priv)
-+{
-+	struct device_node *np;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,qoriq-clockgen-2.0");
-+	if (!np)
-+		return;
-+
-+	of_property_read_u32(np, "clock-frequency", &priv->suspended_timerfreq);
-+	of_node_put(np);
-+
-+	if (!priv->suspended_timerfreq)
-+		pr_warn("Mpic timer will not be accurate during deep sleep.\n");
-+}
-+
-+static int need_to_switch_freq(void)
-+{
-+	u32 svr;
-+
-+	svr = mfspr(SPRN_SVR);
-+	if (SVR_SOC_VER(svr) == SVR_T1040 ||
-+			SVR_SOC_VER(svr) == SVR_T1042)
-+		return 1;
-+
-+	return 0;
-+}
-+
- static int timer_group_get_freq(struct device_node *np,
- 			struct timer_group_priv *priv)
- {
-@@ -437,6 +469,13 @@ static int timer_group_get_freq(struct device_node *np,
- 					&priv->timerfreq);
- 			of_node_put(dn);
- 		}
-+
-+		/*
-+		 * For deep sleep, if system goes to deep sleep,
-+		 * timer freq will be changed.
-+		 */
-+		if (need_to_switch_freq())
-+			timer_group_get_suspended_freq(priv);
- 	}
- 
- 	if (priv->timerfreq <= 0)
-@@ -445,6 +484,7 @@ static int timer_group_get_freq(struct device_node *np,
- 	if (priv->flags & FSL_GLOBAL_TIMER) {
- 		div = (1 << (MPIC_TIMER_TCR_CLKDIV >> 8)) * 8;
- 		priv->timerfreq /= div;
-+		priv->suspended_timerfreq /= div;
- 	}
- 
- 	return 0;
-@@ -564,14 +604,182 @@ out:
- 	kfree(priv);
- }
- 
-+static void mpic_reset_time(struct mpic_timer *handle, struct timeval *bcr_time,
-+				struct timeval *ccr_time)
-+{
-+	struct timer_group_priv *priv = container_of(handle,
-+			struct timer_group_priv, timer[handle->num]);
-+
-+	u64 ccr_ticks = 0;
-+	u64 bcr_ticks = 0;
-+
-+	/* switch bcr time */
-+	convert_time_to_ticks(priv, bcr_time, &bcr_ticks);
-+
-+	/* switch ccr time */
-+	convert_time_to_ticks(priv, ccr_time, &ccr_ticks);
-+
-+	if (handle->cascade_handle) {
-+		u32 tmp_ticks;
-+		u32 rem_ticks;
-+
-+		/* reset ccr ticks to bcr */
-+		tmp_ticks = div_u64_rem(ccr_ticks, MAX_TICKS_CASCADE,
-+					&rem_ticks);
-+		out_be32(&priv->regs[handle->num].gtbcr,
-+			tmp_ticks | TIMER_STOP);
-+		out_be32(&priv->regs[handle->num - 1].gtbcr, rem_ticks);
-+
-+		/* start timer */
-+		clrbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
-+
-+		/* reset bcr */
-+		tmp_ticks = div_u64_rem(bcr_ticks, MAX_TICKS_CASCADE,
-+					&rem_ticks);
-+		out_be32(&priv->regs[handle->num].gtbcr,
-+			tmp_ticks & ~TIMER_STOP);
-+		out_be32(&priv->regs[handle->num - 1].gtbcr, rem_ticks);
-+	} else {
-+		/* reset ccr ticks to bcr */
-+		out_be32(&priv->regs[handle->num].gtbcr,
-+			ccr_ticks | TIMER_STOP);
-+		/* start timer */
-+		clrbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
-+		/* reset bcr */
-+		out_be32(&priv->regs[handle->num].gtbcr,
-+			bcr_ticks & ~TIMER_STOP);
-+	}
-+}
-+
-+static void do_switch_time(struct mpic_timer *handle, unsigned int new_freq)
-+{
-+	struct timer_group_priv *priv = container_of(handle,
-+			struct timer_group_priv, timer[handle->num]);
-+	struct timeval ccr_time;
-+	struct timeval bcr_time;
-+	unsigned int timerfreq;
-+	u32 test_stop;
-+	u64 ticks;
-+
-+	test_stop = in_be32(&priv->regs[handle->num].gtbcr);
-+	test_stop &= TIMER_STOP;
-+	if (test_stop)
-+		return;
-+
-+	/* stop timer, prepare reset time */
-+	setbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
-+
-+	/* get bcr time */
-+	if (handle->cascade_handle) {
-+		u32 tmp_ticks;
-+
-+		tmp_ticks = in_be32(&priv->regs[handle->num].gtbcr);
-+		tmp_ticks &= ~TIMER_STOP;
-+		ticks = ((u64)tmp_ticks & UINT_MAX) * (u64)MAX_TICKS_CASCADE;
-+		tmp_ticks = in_be32(&priv->regs[handle->num - 1].gtbcr);
-+		ticks += tmp_ticks;
-+	} else {
-+		ticks = in_be32(&priv->regs[handle->num].gtbcr);
-+		ticks &= ~TIMER_STOP;
-+	}
-+	convert_ticks_to_time(priv, ticks, &bcr_time);
-+
-+	/* get ccr time */
-+	mpic_get_remain_time(handle, &ccr_time);
-+
-+	/* recalculate timer time */
-+	timerfreq = priv->timerfreq;
-+	priv->timerfreq = new_freq;
-+	mpic_reset_time(handle, &bcr_time, &ccr_time);
-+	priv->timerfreq = timerfreq;
-+}
-+
-+static void switch_group_timer(struct timer_group_priv *priv,
-+				unsigned int new_freq)
-+{
-+	int i, num;
-+
-+	for (i = 0; i < TIMERS_PER_GROUP; i++) {
-+		num = TIMERS_PER_GROUP - 1 - i;
-+		/* cascade */
-+		if ((i + 1) < TIMERS_PER_GROUP &&
-+				priv->timer[num].cascade_handle) {
-+			do_switch_time(&priv->timer[num], new_freq);
-+			i++;
-+			continue;
-+		}
-+
-+		if (!test_bit(i, (unsigned long *)&priv->idle))
-+			do_switch_time(&priv->timer[num], new_freq);
-+	}
-+}
-+
-+static int mpic_timer_suspend(void)
-+{
-+	struct timer_group_priv *priv;
-+	suspend_state_t pm_state;
-+
-+	pm_state = pm_suspend_state();
-+
-+	list_for_each_entry(priv, &timer_group_list, node) {
-+		/* timer not be used */
-+		if (priv->idle == 0xf)
-+			continue;
-+
-+		switch (pm_state) {
-+		case PM_SUSPEND_STANDBY:
-+			break;
-+		case PM_SUSPEND_MEM:
-+			if (!priv->suspended_timerfreq)
-+				continue;
-+
-+			/* will switch timers, a set of timer */
-+			switch_group_timer(priv, priv->suspended_timerfreq);
-+
-+			/* Software: switch timerfreq to suspended freq */
-+			priv->resume_timerfreq = priv->timerfreq;
-+			priv->timerfreq = priv->suspended_timerfreq;
-+			break;
-+		default:
-+			break;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- static void mpic_timer_resume(void)
- {
- 	struct timer_group_priv *priv;
-+	suspend_state_t pm_state;
-+
-+	pm_state = pm_suspend_state();
- 
- 	list_for_each_entry(priv, &timer_group_list, node) {
- 		/* Init FSL timer hardware */
- 		if (priv->flags & FSL_GLOBAL_TIMER)
- 			setbits32(priv->group_tcr, MPIC_TIMER_TCR_CLKDIV);
-+
-+		/* timer not be used */
-+		if (priv->idle == 0xf)
-+			continue;
-+
-+		switch (pm_state) {
-+		case PM_SUSPEND_STANDBY:
-+			break;
-+		case PM_SUSPEND_MEM:
-+			if (!priv->suspended_timerfreq)
-+				continue;
-+
-+			/* will switch timers, a set of timer */
-+			switch_group_timer(priv, priv->resume_timerfreq);
-+
-+			/* restore timerfreq */
-+			priv->timerfreq = priv->resume_timerfreq;
-+			break;
-+		default:
-+			break;
-+		}
- 	}
- }
- 
-@@ -581,6 +789,7 @@ static const struct of_device_id mpic_timer_ids[] = {
- };
- 
- static struct syscore_ops mpic_timer_syscore_ops = {
-+	.suspend = mpic_timer_suspend,
- 	.resume = mpic_timer_resume,
- };
- 
--- 
-1.8.5
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIEFwcmlsIDE3LCAyMDE0IDM6MzYgQU0NCj4gVG86IFdhbmcg
+RG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogSmluIFpoZW5neGlvbmctUjY0MTg4OyBoYW9rZXhpbkBn
+bWFpbC5jb207IEt1c2h3YWhhIFByYWJoYWthci1CMzI1Nzk7DQo+IGxpbnV4cHBjLWRldkBsaXN0
+cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMS8yXSBmc2wvY29yZW5ldF9n
+ZW5lcmljOiBhZGQgYSBwYXJ0aWN1bGFyIGluaXRpYWxpemF0aW9uDQo+IGZvciBwbGF0Zm9ybQ0K
+PiANCj4gT24gVHVlLCAyMDE0LTA0LTE1IGF0IDIxOjU4IC0wNTAwLCBXYW5nIERvbmdzaGVuZy1C
+NDA1MzQgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4g
+PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAx
+NiwgMjAxNCAzOjM5IEFNDQo+ID4gPiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4gPiBD
+YzogSmluIFpoZW5neGlvbmctUjY0MTg4OyBoYW9rZXhpbkBnbWFpbC5jb207IEt1c2h3YWhhDQo+
+ID4gPiBQcmFiaGFrYXItQjMyNTc5OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+
+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAxLzJdIGZzbC9jb3JlbmV0X2dlbmVyaWM6IGFkZCBh
+IHBhcnRpY3VsYXINCj4gPiA+IGluaXRpYWxpemF0aW9uIGZvciBwbGF0Zm9ybQ0KPiA+ID4NCj4g
+PiA+IE9uIFR1ZSwgMjAxNC0wNC0xNSBhdCAxMzo1MyArMDgwMCwgRG9uZ3NoZW5nIFdhbmcgd3Jv
+dGU6DQo+ID4gPiA+IEZyb206IFdhbmcgRG9uZ3NoZW5nIDxkb25nc2hlbmcud2FuZ0BmcmVlc2Nh
+bGUuY29tPg0KPiA+ID4gPg0KPiA+ID4gPiBDb3JlbmV0X2dlbmVyaWMgaXMgYSBnZW5lcmljIHBs
+YXRmb3JtIGluaXRpYWxpemF0aW9uLiBUaG9zZSBiYXNlZA0KPiA+ID4gPiBvbiB0aGUgY29yZW5l
+dF9nZW5lcmljIGJvYXJkIG1heWJlIG5lZWQgYSBwYXJ0aWN1bGFyIGluaXRpYWxpemUgdG8NCj4g
+PiA+ID4gZW5hYmxlL3NldCBzb21lIElQLUJsb2Nrcy4gU28gYWRkICJGaXggR2VuZXJpYyBJbml0
+aWFsaXphdGlvbiIgdG8NCj4gPiA+ID4gc29sdmUgdGhpcyBraW5kIG9mIHNwZWNpYWwgY2FzZXMu
+DQo+ID4gPg0KPiA+ID4gSSBzdGlsbCBkb24ndCB1bmRlcnN0YW5kIHdoYXQgeW91IG1lYW4gYnkg
+ImZpeCIuICBXaGF0IGFyZSB5b3UNCj4gPiA+IGZpeGluZywgb3Igd2hhdCBpcyBmaXhlZD8NCj4g
+PiA+DQo+ID4gPiBUaGVyZSBpcyBubyBuZWVkIGZvciBhZGRpbmcgYW4gaW5mcmFzdHJ1Y3R1cmUg
+bGF5ZXIgaGVyZS4gIEp1c3QgYWRkDQo+ID4gPiBhIG5ldyBwaWVjZSBvZiBjb2RlIGZvciB0MTA0
+eCBkaXUsIGFuZCBoYXZlIGl0IGJlIGNhbGxlZCBieSBhbg0KPiA+ID4gYXBwcm9wcmlhdGUgaW5p
+dGZ1bmMuDQo+ID4gPg0KPiA+DQo+ID4gImZpeCIgaXMgbWVhbnMgdG8gaGFuZGxlIHNvbWUgYm9h
+cmRzIHRob3NlIGJhc2VkIG9uIGNvcmVuZXRfZ2VuZXJpYw0KPiA+IGNvbmZpZyBmaWxlLCBCdXQg
+dGhvc2UgYm9hcmRzIG1heSBuZWVkIHNvbWUgc3BlY2lhbCBoYW5kbGUuIFBlcmhhcHMNCj4gPiB0
+aGVzZSB1c2VkIHRvIGhhbmRsZSBzcGVjaWFsIGZlYXR1cmUgY29kZXMgbm90IGhhdmUgYW4gYXBw
+cm9wcmlhdGUNCj4gPiBpbml0ZnVuYyB3ZSBjYW5ub3QgKmp1c3QgZmluZCogYW4gYXBwcm9wcmlh
+dGUgcGxhY2UsDQo+IA0KPiBJJ20gbm90IGFza2luZyB5b3UgdG8gImp1c3QgZmluZCIgYW55dGhp
+bmcuICBJJ20gYXNraW5nIHlvdSB0byBhZGQgYW4gaW5pdGZ1bmMNCj4gaW4gYSBzdGFuZGFsb25l
+IGZpbGUuDQo+IA0KPiA+IGlmIG1vcmUgYW5kIG1vcmUgYm9hcmRzIG5lZWQgdG8gZG8gdGhpcywg
+YXQgdGhhdCB0aW1lIG1heWJlICppbml0ZnVuYyoNCj4gPiBsb29rcyB2ZXJ5IGNvbXBsaWNhdGVk
+Lg0KPiANCj4gVGhleSB3b3VsZCBlYWNoIGhhdmUgdGhlaXIgb3duIGluaXRmdW5jLiAgVGhlcmUg
+aXMgbm8gcmVhc29uIHRvIHRpZSB0aGlzIGluIHdpdGgNCj4gYW55dGhpbmcgZWxzZS4NCj4gDQoN
+ClNvcnJ5LCBpZiB0aG9zZSBwbGF0Zm9ybXMgYXJlIHVzaW5nIGNvcmVuZXRfZ2VuZXJpYywgSSBk
+b27igJl0IHNlZSBhbnkgc3RhbmRhbG9uZSBmaWxlDQpmb3IgaW5pdGZ1bmMgb2YgcGxhdGZvcm0u
+IFRoYXQncyB3aHkgSSdtIGFkZGluZyAiZml4IiBsYXllci4NCg0KQlRXLCBpZiBJIG1pc3NlZCBz
+b21ldGhpbmcgYWJvdXQgImNvcmVuZXRfZ2VuZXJpYyBzdGFuZGFsb25lIGZpbGUiIHBsZWFzZSBs
+ZXQgbWUga25vdy4NCg0KPiA+ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgv
+S2NvbmZpZw0KPiA+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvS2NvbmZp
+Zw0KPiA+ID4gPiBAQCAtMjY5LDYgKzI2OSwxNyBAQCBjb25maWcgQ09SRU5FVF9HRU5FUklDDQo+
+ID4gPiA+ICAJICBUaGUgZm9sbG93aW5nIGJvYXJkcyBhcmUgc3VwcG9ydGVkIGZvciBib3RoIDMy
+Yml0IGFuZCA2NGJpdA0KPiBrZXJuZWw6DQo+ID4gPiA+ICAJICAgIFA1MDIwIERTIGFuZCBQNTA0
+MCBEUw0KPiA+ID4gPg0KPiA+ID4gPiArY29uZmlnIEZJWF9HRU5FUklDX1BMQVRGT1JNX0lOSVQN
+Cj4gPiA+ID4gKwlib29sICJGaXggR2VuZXJpYyBJbml0aWFsaXphdGlvbiINCj4gPiA+ID4gKwlk
+ZXBlbmRzIG9uIENPUkVORVRfR0VORVJJQw0KPiA+ID4NCj4gPiA+IFdoeSBkb2VzIHRoaXMgZGVw
+ZW5kIG9uIENPUkVORVRfR0VORVJJQz8NCj4gPiA+DQo+ID4NCj4gPiBCZWNhdXNlIENPUkVORVRf
+R0VORVJJQyBpcyBhIG11bHRpYm9hcmRzIGZpbGUsIFRoaXMgaXMgZGVzaWduZWQgdG8gaGFuZGxl
+IHRoaXMNCj4gc2l0dWF0aW9uLg0KPiANCj4gVGhpcyBESVUgY29kZSBpcyBnb2luZyB0byBiZSBq
+dXN0IGFzIGFwcGxpY2FibGUgdG8gYSBjdXN0b20gVDEwNHggYm9hcmQgd2hpY2gNCj4gbWF5IG9y
+IG1heSBub3QgdXNlIENPUkVORVRfR0VORVJJQy4NCj4gDQoNCiJmaXgiIGlzIGEgbWlkZGxlIGxh
+eWVyLCBpdCdzIG5vdCBvbmx5IGZvciBUMTA0eHJkYi1ESVUuDQoNCj4gPiA+ID4gKwlkZWZhdWx0
+IHkNCj4gPiA+DQo+ID4gPiBOby4NCj4gPiA+DQo+ID4NCj4gPiBXaHkgbm90PyBUaGlzIHdpbGwg
+bm90IGluY3JlYXNlIGFueSByZWR1bmRhbnQgb3BlcmF0aW9ucyBpZiB0aGVyZSBpcyBub3QgYW55
+DQo+IGJvYXJkcyBuZWVkIGZpeC4NCj4gPiBZb3UgY2FuIHNlZSBteSBmaXguYyBjb2RlLg0KPiAN
+Cj4gZGVmYXVsdCB5IHNob3VsZCBub3QgYmUgdXNlZCBmb3IgaGFyZHdhcmUgc3BlY2lmaWMgY29k
+ZS4NCj4gDQoNCmZpeC5jIGFuZCBoYXJkd2FyZSBubyByZWxhdGlvbnNoaXAgYXQgYWxsLiA6KSwg
+SXQncyBqdXN0IGEgc29mdHdhcmUgbGF5ZXIuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCj4g
+LVNjb3R0DQo+IA0KDQo=
