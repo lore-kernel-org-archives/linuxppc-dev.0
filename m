@@ -1,35 +1,36 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
+ [209.85.216.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E00BE1401B2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:37 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 24 Apr 2014 18:00:37 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4EE372BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:33 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7dTtG36634756
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:30 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80WqS023587
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:32 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH 24/25] PCI: Fix return value from pci_user_{read,
- write}_config_*()
-Date: Thu, 24 Apr 2014 18:00:30 +1000
-Message-Id: <1398326431-24305-25-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Gavin Shan <shangw@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 46E7A14008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:25:47 +1000 (EST)
+Received: by mail-qa0-f51.google.com with SMTP id j7so1937348qaq.24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 01:25:42 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20140423185534.GA26756@n2100.arm.linux.org.uk>
+References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
+Date: Thu, 24 Apr 2014 10:25:42 +0200
+Message-ID: <CAPDyKFozP69yngKAkdwHYyyvi+pdLEm05udOmBiVshQFi4hnLQ@mail.gmail.com>
+Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Cc: Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>,
+ linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>,
+ Chris Ball <chris@printf.net>, Thierry Reding <thierry.reding@gmail.com>,
+ Anton Vorontsov <anton@enomsg.org>, Michal Simek <michal.simek@xilinx.com>,
+ Jaehoon Chung <jh80.chung@samsung.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ spear-devel@list.st.com, Rob Herring <robh+dt@kernel.org>,
+ Ben Dooks <ben-linux@fluff.org>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ Shawn Guo <shawn.guo@freescale.com>, Barry Song <baohua@kernel.org>,
+ Randy Dunlap <rdunlap@infradead.org>, linux-mmc <linux-mmc@vger.kernel.org>,
+ Viresh Kumar <viresh.linux@gmail.com>, Sascha Hauer <kernel@pengutronix.de>,
+ Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,92 +40,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCI accessors from user space pci_user_{read,write}_config_*()
-return negative error number, which was introduced by commit
-34e32072 ("PCI: handle positive error codes"). That patch coverts
-all positive error numbers from platform specific PCI config
-accessors to -EINVAL. The upper layer calling to those PCI config
-accessors hardly know the specific cause from the return value
-when hitting failures.
+On 23 April 2014 20:55, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> All,
+>
+> This is where I'm at with trying to clean up the SDHCI mess, and sort out
+> issues I've noticed when trying to get UHS support working on CuBoxes.
+> This is my full patch set, but I recommend not applying patch 37 as there
+> appears to be a hardware issue preventing it working reliably.
+>
+> In any case, patches 0-33 inclusive are the SDHCI clean up, based against
+> v3.15-rc1.  Patches 34 and 35 are Olof's Wifi support, 36 is my fix against
+> those, and 38 adds the Broadcom Wifi and BT support for CuBox.
+>
+> The questions over how to handle these devices were never properly settled,
+> so I recommend against merging patch 34 onwards.  As for the rest, I'm not
+> planning on any further work, so it may be a good idea for people to
+> consider testing them with a view to getting them merged.
+>
 
-The patch fixes the issue by doing the conversion (from positive
-to negative) using existing function pcibios_err_to_errno().
+I have looked though the patches up until patch 33 and this is clearly
+a nice piece of clean-up /fixes work for sdhci. Besides my minor
+comments per patch, I don't have any objections code-review wise to
+proceed merging them.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- drivers/pci/access.c | 12 ++++--------
- include/linux/pci.h  |  6 ++++--
- 2 files changed, 8 insertions(+), 10 deletions(-)
+I have also tried to applied them on Chris' mmc-next branch,
+unfortunate it fails at patch 23, so it would be nice to get a
+re-based patchset for the mmc-next branch.
 
-diff --git a/drivers/pci/access.c b/drivers/pci/access.c
-index 7f8b78c..8c148f3 100644
---- a/drivers/pci/access.c
-+++ b/drivers/pci/access.c
-@@ -148,7 +148,7 @@ static noinline void pci_wait_cfg(struct pci_dev *dev)
- int pci_user_read_config_##size						\
- 	(struct pci_dev *dev, int pos, type *val)			\
- {									\
--	int ret = 0;							\
-+	int ret = PCIBIOS_SUCCESSFUL;					\
- 	u32 data = -1;							\
- 	if (PCI_##size##_BAD)						\
- 		return -EINVAL;						\
-@@ -159,9 +159,7 @@ int pci_user_read_config_##size						\
- 					pos, sizeof(type), &data);	\
- 	raw_spin_unlock_irq(&pci_lock);				\
- 	*val = (type)data;						\
--	if (ret > 0)							\
--		ret = -EINVAL;						\
--	return ret;							\
-+	return pcibios_err_to_errno(ret);				\
- }									\
- EXPORT_SYMBOL_GPL(pci_user_read_config_##size);
- 
-@@ -170,7 +168,7 @@ EXPORT_SYMBOL_GPL(pci_user_read_config_##size);
- int pci_user_write_config_##size					\
- 	(struct pci_dev *dev, int pos, type val)			\
- {									\
--	int ret = -EIO;							\
-+	int ret = PCIBIOS_SUCCESSFUL;					\
- 	if (PCI_##size##_BAD)						\
- 		return -EINVAL;						\
- 	raw_spin_lock_irq(&pci_lock);				\
-@@ -179,9 +177,7 @@ int pci_user_write_config_##size					\
- 	ret = dev->bus->ops->write(dev->bus, dev->devfn,		\
- 					pos, sizeof(type), val);	\
- 	raw_spin_unlock_irq(&pci_lock);				\
--	if (ret > 0)							\
--		ret = -EINVAL;						\
--	return ret;							\
-+	return pcibios_err_to_errno(ret);				\
- }									\
- EXPORT_SYMBOL_GPL(pci_user_write_config_##size);
- 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index aab57b4..1682cb1 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -518,7 +518,7 @@ static inline int pcibios_err_to_errno(int err)
- 	case PCIBIOS_FUNC_NOT_SUPPORTED:
- 		return -ENOENT;
- 	case PCIBIOS_BAD_VENDOR_ID:
--		return -EINVAL;
-+		return -ENOTTY;
- 	case PCIBIOS_DEVICE_NOT_FOUND:
- 		return -ENODEV;
- 	case PCIBIOS_BAD_REGISTER_NUMBER:
-@@ -527,9 +527,11 @@ static inline int pcibios_err_to_errno(int err)
- 		return -EIO;
- 	case PCIBIOS_BUFFER_TOO_SMALL:
- 		return -ENOSPC;
-+	default:
-+		return -err;
- 	}
- 
--	return -ENOTTY;
-+	return -ERANGE;
- }
- 
- /* Low-level architecture-dependent routines */
--- 
-1.8.3.2
+Kind regards
+Ulf Hansson
+
+>  Documentation/devicetree/bindings/mmc/mmc.txt |  11 +
+>  arch/arm/boot/dts/imx6qdl-cubox-i.dtsi        |  34 +-
+>  arch/arm/boot/dts/imx6qdl-microsom.dtsi       |  98 ++++
+>  drivers/mmc/core/core.c                       |  42 ++
+>  drivers/mmc/core/host.c                       |  68 +++
+>  drivers/mmc/core/sdio_irq.c                   |  41 +-
+>  drivers/mmc/host/Kconfig                      |  63 +--
+>  drivers/mmc/host/dw_mmc.c                     |   2 +
+>  drivers/mmc/host/sdhci-acpi.c                 |   8 +
+>  drivers/mmc/host/sdhci-bcm-kona.c             |   4 +
+>  drivers/mmc/host/sdhci-bcm2835.c              |   4 +
+>  drivers/mmc/host/sdhci-cns3xxx.c              |  13 +-
+>  drivers/mmc/host/sdhci-dove.c                 |   4 +
+>  drivers/mmc/host/sdhci-esdhc-imx.c            |  82 +--
+>  drivers/mmc/host/sdhci-esdhc.h                |   4 +-
+>  drivers/mmc/host/sdhci-of-arasan.c            |   4 +
+>  drivers/mmc/host/sdhci-of-esdhc.c             |  70 ++-
+>  drivers/mmc/host/sdhci-of-hlwd.c              |   4 +
+>  drivers/mmc/host/sdhci-pci.c                  |   9 +-
+>  drivers/mmc/host/sdhci-pltfm.c                |   4 +
+>  drivers/mmc/host/sdhci-pxav2.c                |  14 +-
+>  drivers/mmc/host/sdhci-pxav3.c                |  13 +-
+>  drivers/mmc/host/sdhci-s3c.c                  |  36 +-
+>  drivers/mmc/host/sdhci-sirf.c                 |   4 +
+>  drivers/mmc/host/sdhci-spear.c                |   5 +-
+>  drivers/mmc/host/sdhci-tegra.c                |  27 +-
+>  drivers/mmc/host/sdhci.c                      | 728 +++++++++++++-------------
+>  drivers/mmc/host/sdhci.h                      |  20 +-
+>  include/linux/mmc/host.h                      |   8 +
+>  include/linux/mmc/sdhci.h                     |  15 +-
+>  30 files changed, 885 insertions(+), 554 deletions(-)
+>
+>
+> --
+> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+> improving, and getting towards what was expected from it.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
