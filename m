@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 37CF314017E
+ by ozlabs.org (Postfix) with ESMTPS id 9EEA4140179
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:33 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 24 Apr 2014 18:00:32 +1000
+ Thu, 24 Apr 2014 18:00:33 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B2C012CE8051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:29 +1000 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ED4052CE8056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3O7dQoK67043536
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:26 +1000
+ s3O7dRVc22085786
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 17:39:27 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3O80SPS014928
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:29 +1000
+ s3O80Tev015011
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 18:00:30 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 12/25] powerpc/eeh: Allow to disable EEH
-Date: Thu, 24 Apr 2014 18:00:18 +1000
-Message-Id: <1398326431-24305-13-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 18/25] powerpc/pci: Mask linkDown on resetting PCI bus
+Date: Thu, 24 Apr 2014 18:00:24 +1000
+Message-Id: <1398326431-24305-19-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1398326431-24305-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -37,169 +37,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch introduces bootarg "eeh=off" to disable EEH functinality.
-Also, it creates /sys/kerenl/debug/powerpc/eeh_enable to disable
-or enable EEH functionality. By default, we have the functionality
-enabled.
+The problem was initially reported by Wendy who tried pass through
+IPR adapter, which was connected to PHB root port directly, to KVM
+based guest. When doing that, pci_reset_bridge_secondary_bus() was
+called by VFIO driver and linkDown was detected by the root port.
+That caused all PEs to be frozen.
 
-For PowerNV platform, we will restore to have the conventional
-mechanism of clearing frozen PE during PCI config access if we're
-going to disable EEH functionality. Conversely, we will rely on
-EEH for error recovery.
+The patch fixes the issue by routing the reset for the secondary bus
+of root port to underly firmware. For that, one more weak function
+pci_reset_secondary_bus() is introduced so that the individual platforms
+can override that and do specific reset for bridge's secondary bus.
 
-The patch also fixes the issue that we missed to cover the case
-of disabled EEH functionality in function ioda_eeh_event(). Those
-events driven by interrupt should be cleared to avoid endless
-reporting.
-
+Reported-by: Wendy Xiong <wenxiong@linux.vnet.ibm.com>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 | 47 ++++++++++++++++++++++++++++++-
- arch/powerpc/platforms/powernv/eeh-ioda.c | 29 +++++++++++++++----
+ arch/powerpc/include/asm/machdep.h        |  3 +++
+ arch/powerpc/kernel/pci-common.c          | 20 ++++++++++++++++
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 38 +++++++++++++++++++++++++++++--
+ arch/powerpc/platforms/powernv/pci-ioda.c |  1 +
  arch/powerpc/platforms/powernv/pci.h      |  1 +
- 3 files changed, 70 insertions(+), 7 deletions(-)
+ drivers/pci/pci.c                         | 21 ++++++++++-------
+ 6 files changed, 74 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 06d2b7c..1e409a2 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -22,6 +22,7 @@
-  */
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 5b6c03f..240b137 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -241,6 +241,9 @@ struct machdep_calls {
+ 	/* Called during PCI resource reassignment */
+ 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
  
- #include <linux/delay.h>
-+#include <linux/debugfs.h>
- #include <linux/sched.h>
++	/* Reset the secondary bus of bridge */
++	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
++
+ 	/* Called to shutdown machine specific hardware not already controlled
+ 	 * by other drivers.
+ 	 */
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index d9476c1..f9ca509 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -21,6 +21,7 @@
+ #include <linux/string.h>
  #include <linux/init.h>
- #include <linux/list.h>
-@@ -132,6 +133,15 @@ static struct eeh_stats eeh_stats;
+ #include <linux/bootmem.h>
++#include <linux/delay.h>
+ #include <linux/export.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
+@@ -120,6 +121,25 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+ 	return 1;
+ }
  
- #define IS_BRIDGE(class_code) (((class_code)<<16) == PCI_BASE_CLASS_BRIDGE)
- 
-+static int __init eeh_setup(char *str)
++void pcibios_reset_secondary_bus(struct pci_dev *dev)
 +{
-+	if (!strcmp(str, "off"))
-+		eeh_subsystem_flags |= EEH_FORCE_DISABLED;
++	u16 ctrl;
 +
-+	return 1;
-+}
-+__setup("eeh=", eeh_setup);
-+
- /**
-  * eeh_gather_pci_data - Copy assorted PCI config space registers to buff
-  * @edev: device to report data for
-@@ -1117,10 +1127,45 @@ static const struct file_operations proc_eeh_operations = {
- 	.release   = single_release,
- };
- 
-+#ifdef CONFIG_DEBUG_FS
-+static int eeh_enable_dbgfs_set(void *data, u64 val)
-+{
-+	if (val)
-+		eeh_subsystem_flags &= ~EEH_FORCE_DISABLED;
-+	else
-+		eeh_subsystem_flags |= EEH_FORCE_DISABLED;
-+
-+	/* Notify the backend */
-+	if (eeh_ops->post_init)
-+		eeh_ops->post_init();
-+
-+	return 0;
-+}
-+
-+static int eeh_enable_dbgfs_get(void *data, u64 *val)
-+{
-+	if (eeh_enabled())
-+		*val = 0x1ul;
-+	else
-+		*val = 0x0ul;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(eeh_enable_dbgfs_ops, eeh_enable_dbgfs_get,
-+			eeh_enable_dbgfs_set, "0x%llx\n");
-+#endif
-+
- static int __init eeh_init_proc(void)
- {
--	if (machine_is(pseries) || machine_is(powernv))
-+	if (machine_is(pseries) || machine_is(powernv)) {
- 		proc_create("powerpc/eeh", 0, NULL, &proc_eeh_operations);
-+#ifdef CONFIG_DEBUG_FS
-+		debugfs_create_file("eeh_enable", 0600,
-+                                    powerpc_debugfs_root, NULL,
-+                                    &eeh_enable_dbgfs_ops);
-+#endif
++	if (ppc_md.pcibios_reset_secondary_bus) {
++		ppc_md.pcibios_reset_secondary_bus(dev);
++		return;
 +	}
 +
- 	return 0;
- }
- __initcall(eeh_init_proc);
++	pci_read_config_word(dev, PCI_BRIDGE_CONTROL, &ctrl);
++	ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
++	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
++	msleep(2);
++
++	ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
++	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
++	ssleep(1);
++}
++
+ static resource_size_t pcibios_io_size(const struct pci_controller *hose)
+ {
+ #ifdef CONFIG_PPC64
 diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 6bdae8d..35ec394 100644
+index 268cd46..58ef809 100644
 --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
 +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -42,11 +42,19 @@ static int ioda_eeh_event(struct notifier_block *nb,
+@@ -474,6 +474,8 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
+ 
  {
- 	uint64_t changed_evts = (uint64_t)change;
+ 	struct device_node *dn = pci_device_to_OF_node(dev);
++	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
++	int aer = edev ? edev->aer_cap : 0;
+ 	u32 ctrl;
  
--	/* We simply send special EEH event */
--	if ((changed_evts & OPAL_EVENT_PCI_ERROR) &&
--	    (events & OPAL_EVENT_PCI_ERROR) &&
--	    eeh_enabled())
-+	/*
-+	 * We simply send special EEH event if EEH has
-+	 * been enabled, or clear pending events in
-+	 * case that we enable EEH soon
-+	 */
-+	if (!(changed_evts & OPAL_EVENT_PCI_ERROR) ||
-+	    !(events & OPAL_EVENT_PCI_ERROR))
-+		return 0;
+ 	pr_debug("%s: Reset PCI bus %04x:%02x with option %d\n",
+@@ -483,24 +485,56 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
+ 	switch (option) {
+ 	case EEH_RESET_FUNDAMENTAL:
+ 	case EEH_RESET_HOT:
++		/* Don't report linkDown event */
++		if (aer) {
++			eeh_ops->read_config(dn, aer + PCI_ERR_UNCOR_MASK,
++					     4, &ctrl);
++			ctrl |= PCI_ERR_UNC_SURPDN;
++                        eeh_ops->write_config(dn, aer + PCI_ERR_UNCOR_MASK,
++					      4, ctrl);
++                }
 +
-+	if (eeh_enabled())
- 		eeh_send_failure_event(NULL);
-+	else
-+		opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
+ 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
+ 		ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
+ 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
+-
+ 		msleep(EEH_PE_RST_HOLD_TIME);
++
+ 		break;
+ 	case EEH_RESET_DEACTIVATE:
+ 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
+ 		ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
+ 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
+-
+ 		msleep(EEH_PE_RST_SETTLE_TIME);
++
++		/* Continue reporting linkDown event */
++		if (aer) {
++			eeh_ops->read_config(dn, aer + PCI_ERR_UNCOR_MASK,
++					     4, &ctrl);
++			ctrl &= ~PCI_ERR_UNC_SURPDN;
++			eeh_ops->write_config(dn, aer + PCI_ERR_UNCOR_MASK,
++					      4, ctrl);
++		}
++
+ 		break;
+ 	}
  
  	return 0;
  }
-@@ -141,7 +149,9 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
- 	}
  
- #ifdef CONFIG_DEBUG_FS
--	if (phb->dbgfs) {
-+	if (!phb->has_dbgfs && phb->dbgfs) {
-+		phb->has_dbgfs = 1;
++void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
++{
++	struct pci_controller *hose;
 +
- 		debugfs_create_file("err_injct_outbound", 0600,
- 				    phb->dbgfs, hose,
- 				    &ioda_eeh_outb_dbgfs_ops);
-@@ -154,7 +164,14 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
- 	}
- #endif
++	if (pci_is_root_bus(dev->bus)) {
++		hose = pci_bus_to_host(dev->bus);
++		ioda_eeh_root_reset(hose, EEH_RESET_HOT);
++		ioda_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
++	} else {
++		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT);
++		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
++	}
++}
++
+ /**
+  * ioda_eeh_reset - Reset the indicated PE
+  * @pe: EEH PE
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 3b2b4fb..0bfc4d1 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1387,6 +1387,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+ 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+ 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
++	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
  
--	phb->flags |= PNV_PHB_FLAG_EEH;
-+	/* If EEH is enabled, we're going to rely on that.
-+	 * Otherwise, we restore to conventional mechanism
-+	 * to clear frozen PE during PCI config access.
-+	 */
-+	if (eeh_enabled())
-+		phb->flags |= PNV_PHB_FLAG_EEH;
-+	else
-+		phb->flags &= ~PNV_PHB_FLAG_EEH;
- 
- 	return 0;
- }
+ 	/* Reset IODA tables to a clean state */
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 94e3495..39ec697 100644
+index 39ec697..34a0974 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -101,6 +101,7 @@ struct pnv_phb {
- #endif
+@@ -204,5 +204,6 @@ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
+ extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 					__be64 *startp, __be64 *endp, bool rm);
++extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
  
- #ifdef CONFIG_DEBUG_FS
-+	int			has_dbgfs;
- 	struct dentry		*dbgfs;
- #endif
+ #endif /* __POWERNV_PCI_H */
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 7325d43..633382d 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -3167,14 +3167,7 @@ static int pci_pm_reset(struct pci_dev *dev, int probe)
+ 	return 0;
+ }
  
+-/**
+- * pci_reset_bridge_secondary_bus - Reset the secondary bus on a PCI bridge.
+- * @dev: Bridge device
+- *
+- * Use the bridge control register to assert reset on the secondary bus.
+- * Devices on the secondary bus are left in power-on state.
+- */
+-void pci_reset_bridge_secondary_bus(struct pci_dev *dev)
++void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+ {
+ 	u16 ctrl;
+ 
+@@ -3199,6 +3192,18 @@ void pci_reset_bridge_secondary_bus(struct pci_dev *dev)
+ 	 */
+ 	ssleep(1);
+ }
++
++/**
++ * pci_reset_bridge_secondary_bus - Reset the secondary bus on a PCI bridge.
++ * @dev: Bridge device
++ *
++ * Use the bridge control register to assert reset on the secondary bus.
++ * Devices on the secondary bus are left in power-on state.
++ */
++void pci_reset_bridge_secondary_bus(struct pci_dev *dev)
++{
++	pcibios_reset_secondary_bus(dev);
++}
+ EXPORT_SYMBOL_GPL(pci_reset_bridge_secondary_bus);
+ 
+ static int pci_parent_bus_reset(struct pci_dev *dev, int probe)
 -- 
 1.8.3.2
