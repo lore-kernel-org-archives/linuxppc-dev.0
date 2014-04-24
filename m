@@ -1,20 +1,19 @@
-Return-Path: <Dongsheng.Wang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AEF4F140086
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Apr 2014 16:14:29 +1000 (EST)
-From: Dongsheng Wang <dongsheng.wang@freescale.com>
-To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
-Subject: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which is
- STANDBY or MEM
-Date: Thu, 24 Apr 2014 14:11:48 +0800
-Message-ID: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
- jason.jin@freescale.com, Wang Dongsheng <dongsheng.wang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 36360140131
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2014 16:14:37 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s3O6EQkW017637
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Apr 2014 01:14:30 -0500
+Message-ID: <1398320065.14519.1.camel@pasglop>
+Subject: [PATCH] powerpc/powernv: Fix kexec races going back to OPAL
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Thu, 24 Apr 2014 16:14:25 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,136 +23,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
+We have a subtle race when sending CPUs back to OPAL on kexec.
 
-Add set_pm_suspend_state & pm_suspend_state functions to set/get
-suspend state. When system going to sleep or deep sleep, devices
-can get the system suspend state(STANDBY/MEM) through pm_suspend_state
-function and to handle different situations.
+We mark them as "in real mode" right before we send them down. Once
+we've booted the new kernel, it might try to call opal_reinit_cpus()
+to change endianness, and that requires all CPUs to be spinning inside
+OPAL.
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+However there is no synchronization here and we've observed cases
+where the returning CPUs hadn't established their new state inside
+OPAL before opal_reinit_cpus() is called, causing it to fail.
+
+The proper fix is to actually wait for them to go down all the way
+from the kexec'ing kernel.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-*v2*
-Move pm api from fsl platform to powerpc general framework.
+ arch/powerpc/platforms/powernv/setup.c | 48 ++++++++++++++++++++++++++++++++--
+ 1 file changed, 46 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pm.h b/arch/powerpc/include/asm/pm.h
-new file mode 100644
-index 0000000..00ddbf1
---- /dev/null
-+++ b/arch/powerpc/include/asm/pm.h
-@@ -0,0 +1,26 @@
-+/*
-+ * asm/pm.h
-+ *
-+ * Definitions for any platform related flags or structures for
-+ * Power Management.
-+ *
-+ * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
-+ *
-+ * Copyright 2014 Freescale Semiconductor, Inc
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+
-+#ifndef _POWERPC_PM_H_
-+#define _POWERPC_PM_H_
-+#ifdef __KERNEL__
-+#include <linux/suspend.h>
-+
-+extern void set_pm_suspend_state(suspend_state_t state);
-+extern suspend_state_t pm_suspend_state(void);
-+
-+#endif /* __KERNEL__ */
-+#endif /* _POWERPC_PM_H_ */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index fcc9a89..2060145 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -28,7 +28,7 @@ endif
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 42c16a6..1eb3684 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -183,18 +183,62 @@ static void pnv_shutdown(void)
+ }
  
- obj-y				:= cputable.o ptrace.o syscalls.o \
- 				   irq.o align.o signal_32.o pmc.o vdso.o \
--				   process.o systbl.o idle.o \
-+				   process.o systbl.o idle.o pm.o \
- 				   signal.o sysfs.o cacheinfo.o time.o \
- 				   prom.o traps.o setup-common.o \
- 				   udbg.o misc.o io.o dma.o \
-diff --git a/arch/powerpc/kernel/pm.c b/arch/powerpc/kernel/pm.c
-new file mode 100644
-index 0000000..23d3c94
---- /dev/null
-+++ b/arch/powerpc/kernel/pm.c
-@@ -0,0 +1,26 @@
-+/*
-+ * PowerPC General Power Management Implementation
-+ *
-+ * Copyright 2014 Freescale Semiconductor, Inc.
-+ * Author: Wang Dongsheng <dongsheng.wang@freescale.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the
-+ * Free Software Foundation; either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/suspend.h>
-+#include <asm/pm.h>
-+
-+static suspend_state_t pm_state;
-+
-+void set_pm_suspend_state(suspend_state_t state)
+ #ifdef CONFIG_KEXEC
++static void pnv_kexec_wait_secondaries_down(void)
 +{
-+	pm_state = state;
++	int my_cpu, i, notified = -1;
++
++	my_cpu = get_cpu();
++
++	for_each_online_cpu(i) {
++		uint8_t status;
++		int64_t rc;
++
++		if (i == my_cpu)
++			continue;
++
++		for (;;) {
++			rc = opal_query_cpu_status(get_hard_smp_processor_id(i),
++						   &status);
++			if (rc != OPAL_SUCCESS || status != OPAL_THREAD_STARTED)
++				break;
++			barrier();
++			if (i != notified) {
++				printk(KERN_INFO "kexec: waiting for cpu %d "
++				       "(physical %d) to enter OPAL\n",
++				       i, paca[i].hw_cpu_id);
++				notified = i;
++			}
++		}
++	}
 +}
 +
-+suspend_state_t pm_suspend_state(void)
-+{
-+	return pm_state;
-+}
-diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-index 8cf4aa0..fd777ca 100644
---- a/arch/powerpc/sysdev/fsl_pmc.c
-+++ b/arch/powerpc/sysdev/fsl_pmc.c
-@@ -21,6 +21,8 @@
- #include <linux/of_address.h>
- #include <linux/of_platform.h>
- 
-+#include <asm/pm.h>
-+
- struct pmc_regs {
- 	__be32 devdisr;
- 	__be32 devdisr2;
-@@ -52,12 +54,20 @@ static int pmc_suspend_valid(suspend_state_t state)
+ static void pnv_kexec_cpu_down(int crash_shutdown, int secondary)
  {
- 	if (state != PM_SUSPEND_STANDBY)
- 		return 0;
+ 	xics_kexec_teardown_cpu(secondary);
+ 
+-	/* Return secondary CPUs to firmware on OPAL v3 */
+-	if (firmware_has_feature(FW_FEATURE_OPALv3) && secondary) {
++	/* On OPAL v3, we return all CPUs to firmware */
 +
-+	set_pm_suspend_state(state);
- 	return 1;
- }
- 
-+static void pmc_suspend_end(void)
-+{
-+	set_pm_suspend_state(PM_SUSPEND_ON);
-+}
++	if (!firmware_has_feature(FW_FEATURE_OPALv3))
++		return;
 +
- static const struct platform_suspend_ops pmc_suspend_ops = {
- 	.valid = pmc_suspend_valid,
- 	.enter = pmc_suspend_enter,
-+	.end	= pmc_suspend_end,
- };
++	if (secondary) {
++		/* Return secondary CPUs to firmware on OPAL v3 */
+ 		mb();
+ 		get_paca()->kexec_state = KEXEC_STATE_REAL_MODE;
+ 		mb();
  
- static int pmc_probe(struct platform_device *ofdev)
-@@ -68,6 +78,7 @@ static int pmc_probe(struct platform_device *ofdev)
- 
- 	pmc_dev = &ofdev->dev;
- 	suspend_set_ops(&pmc_suspend_ops);
-+	set_pm_suspend_state(PM_SUSPEND_ON);
- 	return 0;
+ 		/* Return the CPU to OPAL */
+ 		opal_return_cpu();
++	} else if (crash_shutdown) {
++		/*
++		 * On crash, we don't wait for secondaries to go
++		 * down as they might be unreachable or hung, so
++		 * instead we just wait a bit and move on.
++		 */
++		mdelay(1);
++	} else {
++		/* Primary waits for the secondaries to have reached OPAL */
++		pnv_kexec_wait_secondaries_down();
+ 	}
  }
- 
--- 
-1.8.5
+ #endif /* CONFIG_KEXEC */
