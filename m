@@ -1,44 +1,13 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qg0-f52.google.com (mail-qg0-f52.google.com
- [209.85.192.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8DCF1140153
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 21:40:07 +1000 (EST)
-Received: by mail-qg0-f52.google.com with SMTP id j5so3949606qga.11
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 04:40:03 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20140425112018.GJ26756@n2100.arm.linux.org.uk>
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
- <CAPDyKFozP69yngKAkdwHYyyvi+pdLEm05udOmBiVshQFi4hnLQ@mail.gmail.com>
- <20140424101726.GH26756@n2100.arm.linux.org.uk>
- <CAPDyKFrGReKF0ucer7D195boEoQW26=4vDXT+=Wn6BO-p_B1gQ@mail.gmail.com>
- <20140424105745.GM26756@n2100.arm.linux.org.uk>
- <CAPDyKFr=2=dg1NTYb1_EAgxXZq2Rd+o2Q2B5TE+GZwr8MUU1_Q@mail.gmail.com>
- <20140425090343.GH26756@n2100.arm.linux.org.uk>
- <CAPDyKFpAiegwfh=kA8NyB+DdwKT=wSGJsB=gbEgLbyv0RJ2EOQ@mail.gmail.com>
- <20140425112018.GJ26756@n2100.arm.linux.org.uk>
-Date: Fri, 25 Apr 2014 13:40:03 +0200
-Message-ID: <CAPDyKFo-V4--vK2anHUNn3hgevnAC6cE+vvRjF__sQ8dqK8AdQ@mail.gmail.com>
-Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>,
- linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>,
- Chris Ball <chris@printf.net>, Thierry Reding <thierry.reding@gmail.com>,
- Anton Vorontsov <anton@enomsg.org>, Michal Simek <michal.simek@xilinx.com>,
- Jaehoon Chung <jh80.chung@samsung.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- spear-devel@list.st.com, Rob Herring <robh+dt@kernel.org>,
- Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- Shawn Guo <shawn.guo@freescale.com>, Barry Song <baohua@kernel.org>,
- Randy Dunlap <rdunlap@infradead.org>, linux-mmc <linux-mmc@vger.kernel.org>,
- Viresh Kumar <viresh.linux@gmail.com>, Sascha Hauer <kernel@pengutronix.de>,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@ozlabs.org>
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	nfont@linux.vnet.ibm.com
+Subject: [PATCH 1/2] powerpc: Allow ppc_md platform hook to override
+ memory_block_size_bytes
+Date: Fri, 25 Apr 2014 21:42:28 +1000
+Message-Id: <1398426149-27359-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,55 +17,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 25 April 2014 13:20, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> On Fri, Apr 25, 2014 at 01:18:28PM +0200, Ulf Hansson wrote:
->> On 25 April 2014 11:03, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
->> > On Thu, Apr 24, 2014 at 01:13:05PM +0200, Ulf Hansson wrote:
->> >> On 24 April 2014 12:57, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
->> >> > This is nothing new or unexpected - it was last posted back in February,
->> >> > and I elected that it should be held off until after the last merge
->> >> > window.
->> >> >
->> >> > Unfortunately, I didn't have time to post it immediately after the merge
->> >> > window closed, partly because it needed to be rebased on top of tglx's
->> >> > IRQ changes on which it depends.  I was carrying those as separate commits
->> >> > to the ones Thomas was carrying in his tree - and in the event, Thomas had
->> >> > modified his patches slightly between sending me copies of them and the
->> >> > versions he sent during the merge window.
->> >>
->> >> Okay, so let's keep up the frequency here then. I only had some minor
->> >> comments, please fix them and send a v2.
->> >
->> > Right, so I've updated the patches, and added one ack to one patch.
->> > That seems insufficient to me - the only platform these have been
->> > tested on is iMX6, which is sdhci-esdhc-imx.c.
->> >
->> > They _really_ need testing elsewhere too.  Or is the plan to merge
->> > them and then see about getting people to test them and fix them up
->> > afterwards?
->>
->> I was hoping people could start doing tests, before Chris actually
->> decided to pull them in. Now, if that doesn't happen, we could just
->> merge them, as you say, and thus we have to fix potential problems
->> afterwards. I would expect you to help out if problem occurs.
->>
->> If we decide to not merge in a while, I am not sure how long we could
->> prevent other sdhci patches from being merged. I guess Chris will have
->> to take the final call.
->
-> Or we just drop them for yet another cycle and show how mainline kernel
-> development sucks, why getting stuff into mainline is utterly painful,
-> and why using vendor kernels is /soo/ much better than this crap.
+The pseries platform code unconditionally overrides
+memory_block_size_bytes regardless of the running platform.
 
-Dropping them is too me a bad option and I really don't think that
-should be needed.
+Create a ppc_md hook that so each platform can choose to
+do what it wants.
 
-I would like to encourage people to help out with testing and I
-suppose we have to give this at least some time.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/include/asm/machdep.h              |  1 +
+ arch/powerpc/kernel/setup_64.c                  |  8 ++++++++
+ arch/powerpc/platforms/pseries/hotplug-memory.c | 17 +++--------------
+ arch/powerpc/platforms/pseries/pseries.h        |  2 ++
+ arch/powerpc/platforms/pseries/setup.c          |  1 +
+ 5 files changed, 15 insertions(+), 14 deletions(-)
 
-Anyway, post your new version. I will create the pull request based on that.
-
->
-> --
-> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-> improving, and getting towards what was expected from it.
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index 5b6c03f..1f1c828 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -98,6 +98,7 @@ struct machdep_calls {
+ 	void		(*iommu_save)(void);
+ 	void		(*iommu_restore)(void);
+ #endif
++	unsigned long	(*memory_block_size)(void);
+ #endif /* CONFIG_PPC64 */
+ 
+ 	void		(*pci_dma_dev_setup)(struct pci_dev *dev);
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index fbe2437..eaeb0e7 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -36,6 +36,7 @@
+ #include <linux/lockdep.h>
+ #include <linux/memblock.h>
+ #include <linux/hugetlb.h>
++#include <linux/memory.h>
+ 
+ #include <asm/io.h>
+ #include <asm/kdump.h>
+@@ -780,6 +781,13 @@ void __init setup_per_cpu_areas(void)
+ }
+ #endif
+ 
++unsigned long memory_block_size_bytes(void)
++{
++	if (ppc_md.memory_block_size)
++		return ppc_md.memory_block_size();
++
++	return MIN_MEMORY_BLOCK_SIZE;
++}
+ 
+ #if defined(CONFIG_PPC_INDIRECT_PIO) || defined(CONFIG_PPC_INDIRECT_MMIO)
+ struct ppc_pci_io ppc_pci_io;
+diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
+index 573b488..b926fbb 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c
++++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -21,7 +21,7 @@
+ #include <asm/prom.h>
+ #include <asm/sparsemem.h>
+ 
+-static unsigned long get_memblock_size(void)
++unsigned long pseries_memory_block_size(void)
+ {
+ 	struct device_node *np;
+ 	unsigned int memblock_size = MIN_MEMORY_BLOCK_SIZE;
+@@ -64,17 +64,6 @@ static unsigned long get_memblock_size(void)
+ 	return memblock_size;
+ }
+ 
+-/* WARNING: This is going to override the generic definition whenever
+- * pseries is built-in regardless of what platform is active at boot
+- * time. This is fine for now as this is the only "option" and it
+- * should work everywhere. If not, we'll have to turn this into a
+- * ppc_md. callback
+- */
+-unsigned long memory_block_size_bytes(void)
+-{
+-	return get_memblock_size();
+-}
+-
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ static int pseries_remove_memory(u64 start, u64 size)
+ {
+@@ -105,7 +94,7 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
+ 		return 0;
+ 	}
+ 
+-	block_sz = memory_block_size_bytes();
++	block_sz = pseries_memory_block_size();
+ 	sections_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
+ 	nid = memory_add_physaddr_to_nid(base);
+ 
+@@ -199,7 +188,7 @@ static int pseries_update_drconf_memory(struct of_prop_reconfig *pr)
+ 	u32 *p;
+ 	int i, rc = -EINVAL;
+ 
+-	memblock_size = get_memblock_size();
++	memblock_size = pseries_memory_block_size();
+ 	if (!memblock_size)
+ 		return -EINVAL;
+ 
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 9921953..361add6 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -64,4 +64,6 @@ extern int dlpar_detach_node(struct device_node *);
+ struct pci_host_bridge;
+ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
+ 
++unsigned long pseries_memory_block_size(void);
++
+ #endif /* _PSERIES_PSERIES_H */
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 2db8cc6..6e01fba 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -806,4 +806,5 @@ define_machine(pseries) {
+ #ifdef CONFIG_KEXEC
+ 	.machine_kexec          = pSeries_machine_kexec,
+ #endif
++	.memory_block_size	= pseries_memory_block_size,
+ };
+-- 
+1.8.3.2
