@@ -1,30 +1,26 @@
-Return-Path: <prabhakar.csengg@gmail.com>
-Received: from mail-vc0-f170.google.com (mail-vc0-f170.google.com
- [209.85.220.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <rmk+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from pandora.arm.linux.org.uk (gw-1.arm.linux.org.uk [78.32.30.217])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AE35D140170
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 22:32:19 +1000 (EST)
-Received: by mail-vc0-f170.google.com with SMTP id hr9so4658659vcb.15
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 05:32:15 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <5355A327.3020308@semaphore.gr>
-References: <534DB1EB.1080401@semaphore.gr> <5355A327.3020308@semaphore.gr>
-From: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Date: Fri, 25 Apr 2014 18:01:44 +0530
-Message-ID: <CA+V-a8swMCPkf=rwbLOjiqAgpaQ7TZPutTQTh_sSFmbJvHz-1Q@mail.gmail.com>
-Subject: Re: [PATCH v4 2/8] cpufreq: Use cpufreq_for_each_* macros for
- frequency table iteration
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Content-Type: text/plain; charset=UTF-8
-Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by ozlabs.org (Postfix) with ESMTPS id 8CBFD1402C1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 23:27:11 +1000 (EST)
+In-Reply-To: <20140425132245.GO26756@n2100.arm.linux.org.uk>
+References: <20140425132245.GO26756@n2100.arm.linux.org.uk>
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+To: Chris Ball <chris@printf.net>, linux-mmc@vger.kernel.org,
+ Markus Pargmann <mpa@pengutronix.de>
+Subject: [PATCH 22/32] mmc: sdhci: convert sdhci_set_uhs_signaling() into a
+ library function
+Message-Id: <E1Wdg9A-00080H-Pt@rmk-PC.arm.linux.org.uk>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Date: Fri, 25 Apr 2014 14:26:32 +0100
+Cc: Barry Song <baohua@kernel.org>, spear-devel@list.st.com,
+ Stephen Warren <swarren@wwwdotorg.org>, Anton Vorontsov <anton@enomsg.org>,
+ Ulf Hansson <ulf.hansson@linaro.org>, Michal Simek <michal.simek@xilinx.com>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Viresh Kumar <viresh.linux@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
+ linux-tegra@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,754 +30,308 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stratos,
+Add sdhci_set_uhs_signaling() and always call the set_uhs_signaling
+method.  This avoids quirks being added into sdhci_set_uhs_signaling().
 
-Thanks for the patch.
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/mmc/host/sdhci-acpi.c      |  2 ++
+ drivers/mmc/host/sdhci-bcm-kona.c  |  1 +
+ drivers/mmc/host/sdhci-bcm2835.c   |  1 +
+ drivers/mmc/host/sdhci-cns3xxx.c   |  1 +
+ drivers/mmc/host/sdhci-dove.c      |  1 +
+ drivers/mmc/host/sdhci-of-arasan.c |  1 +
+ drivers/mmc/host/sdhci-of-esdhc.c  |  1 +
+ drivers/mmc/host/sdhci-of-hlwd.c   |  1 +
+ drivers/mmc/host/sdhci-pci.c       |  1 +
+ drivers/mmc/host/sdhci-pltfm.c     |  1 +
+ drivers/mmc/host/sdhci-pxav2.c     |  1 +
+ drivers/mmc/host/sdhci-pxav3.c     |  1 +
+ drivers/mmc/host/sdhci-s3c.c       |  1 +
+ drivers/mmc/host/sdhci-sirf.c      |  1 +
+ drivers/mmc/host/sdhci-spear.c     |  1 +
+ drivers/mmc/host/sdhci-tegra.c     |  1 +
+ drivers/mmc/host/sdhci.c           | 43 ++++++++++++++++++++------------------
+ drivers/mmc/host/sdhci.h           |  1 +
+ 18 files changed, 41 insertions(+), 20 deletions(-)
 
-On Tue, Apr 22, 2014 at 4:30 AM, Stratos Karafotis
-<stratosk@semaphore.gr> wrote:
-> The cpufreq core now supports the cpufreq_for_each_entry and
-> cpufreq_for_each_valid_entry macros helpers for iteration over the
-> cpufreq_frequency_table, so use them.
->
-> It should have no functional changes.
->
-This patch produces following build warning,
-
-drivers/cpufreq/freq_table.c: In function 'cpufreq_frequency_table_cpuinfo':
-drivers/cpufreq/freq_table.c:36:3: warning: format '%lu' expects
-argument of type 'long unsigned int', but argument 2 has type 'int'
-[-Wformat=]
-   pr_debug("table entry %lu: %u kHz\n", pos - table, freq);
-
-Thanks,
---Prabhakar Lad
-
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c       |  9 +++---
->  drivers/cpufreq/arm_big_little.c     | 16 +++++------
->  drivers/cpufreq/cpufreq_stats.c      | 24 ++++++----------
->  drivers/cpufreq/dbx500-cpufreq.c     |  8 ++----
->  drivers/cpufreq/elanfreq.c           |  9 +++---
->  drivers/cpufreq/exynos-cpufreq.c     | 11 ++++---
->  drivers/cpufreq/exynos5440-cpufreq.c | 30 +++++++++----------
->  drivers/cpufreq/freq_table.c         | 56 ++++++++++++++++--------------------
->  drivers/cpufreq/longhaul.c           | 13 ++++-----
->  drivers/cpufreq/pasemi-cpufreq.c     | 10 +++----
->  drivers/cpufreq/powernow-k6.c        | 14 ++++-----
->  drivers/cpufreq/ppc_cbe_cpufreq.c    |  9 +++---
->  drivers/cpufreq/s3c2416-cpufreq.c    | 40 +++++++++++---------------
->  drivers/cpufreq/s3c64xx-cpufreq.c    | 15 ++++------
->  14 files changed, 117 insertions(+), 147 deletions(-)
->
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 000e4e0..b0c18ed 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -213,7 +213,7 @@ static unsigned extract_io(u32 value, struct acpi_cpufreq_data *data)
->
->  static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
->  {
-> -       int i;
-> +       struct cpufreq_frequency_table *pos;
->         struct acpi_processor_performance *perf;
->
->         if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD)
-> @@ -223,10 +223,9 @@ static unsigned extract_msr(u32 msr, struct acpi_cpufreq_data *data)
->
->         perf = data->acpi_data;
->
-> -       for (i = 0; data->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -               if (msr == perf->states[data->freq_table[i].driver_data].status)
-> -                       return data->freq_table[i].frequency;
-> -       }
-> +       cpufreq_for_each_entry(pos, data->freq_table)
-> +               if (msr == perf->states[pos->driver_data].status)
-> +                       return pos->frequency;
->         return data->freq_table[0].frequency;
->  }
->
-> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> index bad2ed3..1f4d4e3 100644
-> --- a/drivers/cpufreq/arm_big_little.c
-> +++ b/drivers/cpufreq/arm_big_little.c
-> @@ -226,22 +226,22 @@ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
->  /* get the minimum frequency in the cpufreq_frequency_table */
->  static inline u32 get_table_min(struct cpufreq_frequency_table *table)
->  {
-> -       int i;
-> +       struct cpufreq_frequency_table *pos;
->         uint32_t min_freq = ~0;
-> -       for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++)
-> -               if (table[i].frequency < min_freq)
-> -                       min_freq = table[i].frequency;
-> +       cpufreq_for_each_entry(pos, table)
-> +               if (pos->frequency < min_freq)
-> +                       min_freq = pos->frequency;
->         return min_freq;
->  }
->
->  /* get the maximum frequency in the cpufreq_frequency_table */
->  static inline u32 get_table_max(struct cpufreq_frequency_table *table)
->  {
-> -       int i;
-> +       struct cpufreq_frequency_table *pos;
->         uint32_t max_freq = 0;
-> -       for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++)
-> -               if (table[i].frequency > max_freq)
-> -                       max_freq = table[i].frequency;
-> +       cpufreq_for_each_entry(pos, table)
-> +               if (pos->frequency > max_freq)
-> +                       max_freq = pos->frequency;
->         return max_freq;
->  }
->
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index ecaaebf..0cd9b4d 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -182,11 +182,11 @@ static void cpufreq_stats_free_table(unsigned int cpu)
->
->  static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  {
-> -       unsigned int i, j, count = 0, ret = 0;
-> +       unsigned int i, count = 0, ret = 0;
->         struct cpufreq_stats *stat;
->         unsigned int alloc_size;
->         unsigned int cpu = policy->cpu;
-> -       struct cpufreq_frequency_table *table;
-> +       struct cpufreq_frequency_table *pos, *table;
->
->         table = cpufreq_frequency_get_table(cpu);
->         if (unlikely(!table))
-> @@ -205,12 +205,8 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->         stat->cpu = cpu;
->         per_cpu(cpufreq_stats_table, cpu) = stat;
->
-> -       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -               unsigned int freq = table[i].frequency;
-> -               if (freq == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> +       cpufreq_for_each_valid_entry(pos, table)
->                 count++;
-> -       }
->
->         alloc_size = count * sizeof(int) + count * sizeof(u64);
->
-> @@ -228,15 +224,11 @@ static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
->  #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
->         stat->trans_table = stat->freq_table + count;
->  #endif
-> -       j = 0;
-> -       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -               unsigned int freq = table[i].frequency;
-> -               if (freq == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> -               if (freq_table_get_index(stat, freq) == -1)
-> -                       stat->freq_table[j++] = freq;
-> -       }
-> -       stat->state_num = j;
-> +       i = 0;
-> +       cpufreq_for_each_valid_entry(pos, table)
-> +               if (freq_table_get_index(stat, pos->frequency) == -1)
-> +                       stat->freq_table[i++] = pos->frequency;
-> +       stat->state_num = i;
->         spin_lock(&cpufreq_stats_lock);
->         stat->last_time = get_jiffies_64();
->         stat->last_index = freq_table_get_index(stat, policy->cur);
-> diff --git a/drivers/cpufreq/dbx500-cpufreq.c b/drivers/cpufreq/dbx500-cpufreq.c
-> index 412a78b..4bebc1b 100644
-> --- a/drivers/cpufreq/dbx500-cpufreq.c
-> +++ b/drivers/cpufreq/dbx500-cpufreq.c
-> @@ -45,7 +45,7 @@ static struct cpufreq_driver dbx500_cpufreq_driver = {
->
->  static int dbx500_cpufreq_probe(struct platform_device *pdev)
->  {
-> -       int i = 0;
-> +       struct cpufreq_frequency_table *pos;
->
->         freq_table = dev_get_platdata(&pdev->dev);
->         if (!freq_table) {
-> @@ -60,10 +60,8 @@ static int dbx500_cpufreq_probe(struct platform_device *pdev)
->         }
->
->         pr_info("dbx500-cpufreq: Available frequencies:\n");
-> -       while (freq_table[i].frequency != CPUFREQ_TABLE_END) {
-> -               pr_info("  %d Mhz\n", freq_table[i].frequency/1000);
-> -               i++;
-> -       }
-> +       cpufreq_for_each_entry(pos, freq_table)
-> +               pr_info("  %d Mhz\n", pos->frequency / 1000);
->
->         return cpufreq_register_driver(&dbx500_cpufreq_driver);
->  }
-> diff --git a/drivers/cpufreq/elanfreq.c b/drivers/cpufreq/elanfreq.c
-> index 7f5d2a6..1c06e78 100644
-> --- a/drivers/cpufreq/elanfreq.c
-> +++ b/drivers/cpufreq/elanfreq.c
-> @@ -147,7 +147,7 @@ static int elanfreq_target(struct cpufreq_policy *policy,
->  static int elanfreq_cpu_init(struct cpufreq_policy *policy)
->  {
->         struct cpuinfo_x86 *c = &cpu_data(0);
-> -       unsigned int i;
-> +       struct cpufreq_frequency_table *pos;
->
->         /* capability check */
->         if ((c->x86_vendor != X86_VENDOR_AMD) ||
-> @@ -159,10 +159,9 @@ static int elanfreq_cpu_init(struct cpufreq_policy *policy)
->                 max_freq = elanfreq_get_cpu_frequency(0);
->
->         /* table init */
-> -       for (i = 0; (elanfreq_table[i].frequency != CPUFREQ_TABLE_END); i++) {
-> -               if (elanfreq_table[i].frequency > max_freq)
-> -                       elanfreq_table[i].frequency = CPUFREQ_ENTRY_INVALID;
-> -       }
-> +       cpufreq_for_each_entry(pos, elanfreq_table)
-> +               if (pos->frequency > max_freq)
-> +                       pos->frequency = CPUFREQ_ENTRY_INVALID;
->
->         /* cpuinfo and default policy values */
->         policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-> index f99cfe2..9c13255 100644
-> --- a/drivers/cpufreq/exynos-cpufreq.c
-> +++ b/drivers/cpufreq/exynos-cpufreq.c
-> @@ -29,17 +29,16 @@ static unsigned int locking_frequency;
->  static int exynos_cpufreq_get_index(unsigned int freq)
->  {
->         struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
-> -       int index;
-> +       struct cpufreq_frequency_table *pos;
->
-> -       for (index = 0;
-> -               freq_table[index].frequency != CPUFREQ_TABLE_END; index++)
-> -               if (freq_table[index].frequency == freq)
-> +       cpufreq_for_each_entry(pos, freq_table)
-> +               if (pos->frequency == freq)
->                         break;
->
-> -       if (freq_table[index].frequency == CPUFREQ_TABLE_END)
-> +       if (pos->frequency == CPUFREQ_TABLE_END)
->                 return -EINVAL;
->
-> -       return index;
-> +       return pos - freq_table;
->  }
->
->  static int exynos_cpufreq_scale(unsigned int target_freq)
-> diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-> index a6b8214..f33f25b 100644
-> --- a/drivers/cpufreq/exynos5440-cpufreq.c
-> +++ b/drivers/cpufreq/exynos5440-cpufreq.c
-> @@ -114,25 +114,23 @@ static struct cpufreq_freqs freqs;
->
->  static int init_div_table(void)
->  {
-> -       struct cpufreq_frequency_table *freq_tbl = dvfs_info->freq_table;
-> +       struct cpufreq_frequency_table *pos, *freq_tbl = dvfs_info->freq_table;
->         unsigned int tmp, clk_div, ema_div, freq, volt_id;
-> -       int i = 0;
->         struct dev_pm_opp *opp;
->
->         rcu_read_lock();
-> -       for (i = 0; freq_tbl[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -
-> +       cpufreq_for_each_entry(pos, freq_tbl) {
->                 opp = dev_pm_opp_find_freq_exact(dvfs_info->dev,
-> -                                       freq_tbl[i].frequency * 1000, true);
-> +                                       pos->frequency * 1000, true);
->                 if (IS_ERR(opp)) {
->                         rcu_read_unlock();
->                         dev_err(dvfs_info->dev,
->                                 "failed to find valid OPP for %u KHZ\n",
-> -                               freq_tbl[i].frequency);
-> +                               pos->frequency);
->                         return PTR_ERR(opp);
->                 }
->
-> -               freq = freq_tbl[i].frequency / 1000; /* In MHZ */
-> +               freq = pos->frequency / 1000; /* In MHZ */
->                 clk_div = ((freq / CPU_DIV_FREQ_MAX) & P0_7_CPUCLKDEV_MASK)
->                                         << P0_7_CPUCLKDEV_SHIFT;
->                 clk_div |= ((freq / CPU_ATB_FREQ_MAX) & P0_7_ATBCLKDEV_MASK)
-> @@ -157,7 +155,8 @@ static int init_div_table(void)
->                 tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
->                         | ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
->
-> -               __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 * i);
-> +               __raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
-> +                                               (pos - freq_tbl));
->         }
->
->         rcu_read_unlock();
-> @@ -166,8 +165,9 @@ static int init_div_table(void)
->
->  static void exynos_enable_dvfs(unsigned int cur_frequency)
->  {
-> -       unsigned int tmp, i, cpu;
-> +       unsigned int tmp, cpu;
->         struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
-> +       struct cpufreq_frequency_table *pos;
->         /* Disable DVFS */
->         __raw_writel(0, dvfs_info->base + XMU_DVFS_CTRL);
->
-> @@ -182,15 +182,15 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
->          __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
->
->         /* Set initial performance index */
-> -       for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++)
-> -               if (freq_table[i].frequency == cur_frequency)
-> +       cpufreq_for_each_entry(pos, freq_table)
-> +               if (pos->frequency == cur_frequency)
->                         break;
->
-> -       if (freq_table[i].frequency == CPUFREQ_TABLE_END) {
-> +       if (pos->frequency == CPUFREQ_TABLE_END) {
->                 dev_crit(dvfs_info->dev, "Boot up frequency not supported\n");
->                 /* Assign the highest frequency */
-> -               i = 0;
-> -               cur_frequency = freq_table[i].frequency;
-> +               pos = freq_table;
-> +               cur_frequency = pos->frequency;
->         }
->
->         dev_info(dvfs_info->dev, "Setting dvfs initial frequency = %uKHZ",
-> @@ -199,7 +199,7 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
->         for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
->                 tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
->                 tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
-> -               tmp |= (i << C0_3_PSTATE_NEW_SHIFT);
-> +               tmp |= ((pos - freq_table) << C0_3_PSTATE_NEW_SHIFT);
->                 __raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
->         }
->
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index 08e7bbc..cf004a5 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -21,22 +21,19 @@
->  int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
->                                     struct cpufreq_frequency_table *table)
->  {
-> +       struct cpufreq_frequency_table *pos;
->         unsigned int min_freq = ~0;
->         unsigned int max_freq = 0;
-> -       unsigned int i;
-> +       unsigned int freq;
->
-> -       for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-> -               unsigned int freq = table[i].frequency;
-> -               if (freq == CPUFREQ_ENTRY_INVALID) {
-> -                       pr_debug("table entry %u is invalid, skipping\n", i);
-> +       cpufreq_for_each_valid_entry(pos, table) {
-> +               freq = pos->frequency;
->
-> -                       continue;
-> -               }
->                 if (!cpufreq_boost_enabled()
-> -                   && (table[i].flags & CPUFREQ_BOOST_FREQ))
-> +                   && (pos->flags & CPUFREQ_BOOST_FREQ))
->                         continue;
->
-> -               pr_debug("table entry %u: %u kHz\n", i, freq);
-> +               pr_debug("table entry %lu: %u kHz\n", pos - table, freq);
->                 if (freq < min_freq)
->                         min_freq = freq;
->                 if (freq > max_freq)
-> @@ -57,7 +54,8 @@ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_cpuinfo);
->  int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
->                                    struct cpufreq_frequency_table *table)
->  {
-> -       unsigned int next_larger = ~0, freq, i = 0;
-> +       struct cpufreq_frequency_table *pos;
-> +       unsigned int freq, next_larger = ~0;
->         bool found = false;
->
->         pr_debug("request for verification of policy (%u - %u kHz) for cpu %u\n",
-> @@ -65,9 +63,9 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
->
->         cpufreq_verify_within_cpu_limits(policy);
->
-> -       for (; freq = table[i].frequency, freq != CPUFREQ_TABLE_END; i++) {
-> -               if (freq == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> +       cpufreq_for_each_valid_entry(pos, table) {
-> +               freq = pos->frequency;
-> +
->                 if ((freq >= policy->min) && (freq <= policy->max)) {
->                         found = true;
->                         break;
-> @@ -118,7 +116,8 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
->                 .driver_data = ~0,
->                 .frequency = 0,
->         };
-> -       unsigned int i;
-> +       struct cpufreq_frequency_table *pos;
-> +       unsigned int freq, i = 0;
->
->         pr_debug("request for target %u kHz (relation: %u) for cpu %u\n",
->                                         target_freq, relation, policy->cpu);
-> @@ -132,10 +131,10 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
->                 break;
->         }
->
-> -       for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-> -               unsigned int freq = table[i].frequency;
-> -               if (freq == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> +       cpufreq_for_each_valid_entry(pos, table) {
-> +               freq = pos->frequency;
-> +
-> +               i = pos - table;
->                 if ((freq < policy->min) || (freq > policy->max))
->                         continue;
->                 switch (relation) {
-> @@ -184,8 +183,7 @@ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
->  int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
->                 unsigned int freq)
->  {
-> -       struct cpufreq_frequency_table *table;
-> -       int i;
-> +       struct cpufreq_frequency_table *pos, *table;
->
->         table = cpufreq_frequency_get_table(policy->cpu);
->         if (unlikely(!table)) {
-> @@ -193,10 +191,9 @@ int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
->                 return -ENOENT;
->         }
->
-> -       for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> -               if (table[i].frequency == freq)
-> -                       return i;
-> -       }
-> +       cpufreq_for_each_valid_entry(pos, table)
-> +               if (pos->frequency == freq)
-> +                       return pos - table;
->
->         return -EINVAL;
->  }
-> @@ -208,16 +205,13 @@ EXPORT_SYMBOL_GPL(cpufreq_frequency_table_get_index);
->  static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf,
->                                     bool show_boost)
->  {
-> -       unsigned int i = 0;
->         ssize_t count = 0;
-> -       struct cpufreq_frequency_table *table = policy->freq_table;
-> +       struct cpufreq_frequency_table *pos, *table = policy->freq_table;
->
->         if (!table)
->                 return -ENODEV;
->
-> -       for (i = 0; (table[i].frequency != CPUFREQ_TABLE_END); i++) {
-> -               if (table[i].frequency == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> +       cpufreq_for_each_valid_entry(pos, table) {
->                 /*
->                  * show_boost = true and driver_data = BOOST freq
->                  * display BOOST freqs
-> @@ -229,10 +223,10 @@ static ssize_t show_available_freqs(struct cpufreq_policy *policy, char *buf,
->                  * show_boost = false and driver_data != BOOST freq
->                  * display NON BOOST freqs
->                  */
-> -               if (show_boost ^ (table[i].flags & CPUFREQ_BOOST_FREQ))
-> +               if (show_boost ^ (pos->flags & CPUFREQ_BOOST_FREQ))
->                         continue;
->
-> -               count += sprintf(&buf[count], "%d ", table[i].frequency);
-> +               count += sprintf(&buf[count], "%d ", pos->frequency);
->         }
->         count += sprintf(&buf[count], "\n");
->
-> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> index d00e5d1..5e12646 100644
-> --- a/drivers/cpufreq/longhaul.c
-> +++ b/drivers/cpufreq/longhaul.c
-> @@ -528,6 +528,7 @@ static int longhaul_get_ranges(void)
->
->  static void longhaul_setup_voltagescaling(void)
->  {
-> +       struct cpufreq_frequency_table *freq_pos;
->         union msr_longhaul longhaul;
->         struct mV_pos minvid, maxvid, vid;
->         unsigned int j, speed, pos, kHz_step, numvscales;
-> @@ -606,18 +607,16 @@ static void longhaul_setup_voltagescaling(void)
->         /* Calculate kHz for one voltage step */
->         kHz_step = (highest_speed - min_vid_speed) / numvscales;
->
-> -       j = 0;
-> -       while (longhaul_table[j].frequency != CPUFREQ_TABLE_END) {
-> -               speed = longhaul_table[j].frequency;
-> +       cpufreq_for_each_entry(freq_pos, longhaul_table) {
-> +               speed = freq_pos->frequency;
->                 if (speed > min_vid_speed)
->                         pos = (speed - min_vid_speed) / kHz_step + minvid.pos;
->                 else
->                         pos = minvid.pos;
-> -               longhaul_table[j].driver_data |= mV_vrm_table[pos] << 8;
-> +               freq_pos->driver_data |= mV_vrm_table[pos] << 8;
->                 vid = vrm_mV_table[mV_vrm_table[pos]];
-> -               printk(KERN_INFO PFX "f: %d kHz, index: %d, vid: %d mV\n",
-> -                               speed, j, vid.mV);
-> -               j++;
-> +               printk(KERN_INFO PFX "f: %u kHz, index: %u, vid: %d mV\n",
-> +                               speed, freq_pos - longhaul_table, vid.mV);
->         }
->
->         can_scale_voltage = 1;
-> diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-> index 84c84b5..9a64492 100644
-> --- a/drivers/cpufreq/pasemi-cpufreq.c
-> +++ b/drivers/cpufreq/pasemi-cpufreq.c
-> @@ -136,9 +136,10 @@ void restore_astate(int cpu)
->
->  static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> +       struct cpufreq_frequency_table *pos;
->         const u32 *max_freqp;
->         u32 max_freq;
-> -       int i, cur_astate;
-> +       int cur_astate;
->         struct resource res;
->         struct device_node *cpu, *dn;
->         int err = -ENODEV;
-> @@ -197,10 +198,9 @@ static int pas_cpufreq_cpu_init(struct cpufreq_policy *policy)
->         pr_debug("initializing frequency table\n");
->
->         /* initialize frequency table */
-> -       for (i=0; pas_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
-> -               pas_freqs[i].frequency =
-> -                       get_astate_freq(pas_freqs[i].driver_data) * 100000;
-> -               pr_debug("%d: %d\n", i, pas_freqs[i].frequency);
-> +       cpufreq_for_each_entry(pos, pas_freqs) {
-> +               pos->frequency = get_astate_freq(pos->driver_data) * 100000;
-> +               pr_debug("%lu: %d\n", pos - pas_freqs, pos->frequency);
->         }
->
->         cur_astate = get_cur_astate(policy->cpu);
-> diff --git a/drivers/cpufreq/powernow-k6.c b/drivers/cpufreq/powernow-k6.c
-> index 49f120e..a133236 100644
-> --- a/drivers/cpufreq/powernow-k6.c
-> +++ b/drivers/cpufreq/powernow-k6.c
-> @@ -159,6 +159,7 @@ static int powernow_k6_target(struct cpufreq_policy *policy,
->
->  static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
->  {
-> +       struct cpufreq_frequency_table *pos;
->         unsigned int i, f;
->         unsigned khz;
->
-> @@ -176,12 +177,11 @@ static int powernow_k6_cpu_init(struct cpufreq_policy *policy)
->                 }
->         }
->         if (param_max_multiplier) {
-> -               for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
-> -                       if (clock_ratio[i].driver_data == param_max_multiplier) {
-> +               cpufreq_for_each_entry(pos, clock_ratio)
-> +                       if (pos->driver_data == param_max_multiplier) {
->                                 max_multiplier = param_max_multiplier;
->                                 goto have_max_multiplier;
->                         }
-> -               }
->                 printk(KERN_ERR "powernow-k6: invalid max_multiplier parameter, valid parameters 20, 30, 35, 40, 45, 50, 55, 60\n");
->                 return -EINVAL;
->         }
-> @@ -209,12 +209,12 @@ have_busfreq:
->         param_busfreq = busfreq * 10;
->
->         /* table init */
-> -       for (i = 0; (clock_ratio[i].frequency != CPUFREQ_TABLE_END); i++) {
-> -               f = clock_ratio[i].driver_data;
-> +       cpufreq_for_each_entry(pos, clock_ratio) {
-> +               f = pos->driver_data;
->                 if (f > max_multiplier)
-> -                       clock_ratio[i].frequency = CPUFREQ_ENTRY_INVALID;
-> +                       pos->frequency = CPUFREQ_ENTRY_INVALID;
->                 else
-> -                       clock_ratio[i].frequency = busfreq * f;
-> +                       pos->frequency = busfreq * f;
->         }
->
->         /* cpuinfo and default policy values */
-> diff --git a/drivers/cpufreq/ppc_cbe_cpufreq.c b/drivers/cpufreq/ppc_cbe_cpufreq.c
-> index 5be8a48..b550d5c 100644
-> --- a/drivers/cpufreq/ppc_cbe_cpufreq.c
-> +++ b/drivers/cpufreq/ppc_cbe_cpufreq.c
-> @@ -67,9 +67,10 @@ static int set_pmode(unsigned int cpu, unsigned int slow_mode)
->
->  static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  {
-> +       struct cpufreq_frequency_table *pos;
->         const u32 *max_freqp;
->         u32 max_freq;
-> -       int i, cur_pmode;
-> +       int cur_pmode;
->         struct device_node *cpu;
->
->         cpu = of_get_cpu_node(policy->cpu, NULL);
-> @@ -102,9 +103,9 @@ static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
->         pr_debug("initializing frequency table\n");
->
->         /* initialize frequency table */
-> -       for (i=0; cbe_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
-> -               cbe_freqs[i].frequency = max_freq / cbe_freqs[i].driver_data;
-> -               pr_debug("%d: %d\n", i, cbe_freqs[i].frequency);
-> +       cpufreq_for_each_entry(pos, cbe_freqs) {
-> +               pos->frequency = max_freq / pos->driver_data;
-> +               pr_debug("%lu: %d\n", pos - cbe_freqs, pos->frequency);
->         }
->
->         /* if DEBUG is enabled set_pmode() measures the latency
-> diff --git a/drivers/cpufreq/s3c2416-cpufreq.c b/drivers/cpufreq/s3c2416-cpufreq.c
-> index 4626f90..2fd53ea 100644
-> --- a/drivers/cpufreq/s3c2416-cpufreq.c
-> +++ b/drivers/cpufreq/s3c2416-cpufreq.c
-> @@ -266,7 +266,7 @@ out:
->  static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
->  {
->         int count, v, i, found;
-> -       struct cpufreq_frequency_table *freq;
-> +       struct cpufreq_frequency_table *pos;
->         struct s3c2416_dvfs *dvfs;
->
->         count = regulator_count_voltages(s3c_freq->vddarm);
-> @@ -275,12 +275,11 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
->                 return;
->         }
->
-> -       freq = s3c_freq->freq_table;
-> -       while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
-> -               if (freq->frequency == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> +       if (!count)
-> +               goto out;
->
-> -               dvfs = &s3c2416_dvfs_table[freq->driver_data];
-> +       cpufreq_for_each_valid_entry(pos, s3c_freq->freq_table) {
-> +               dvfs = &s3c2416_dvfs_table[pos->driver_data];
->                 found = 0;
->
->                 /* Check only the min-voltage, more is always ok on S3C2416 */
-> @@ -292,13 +291,12 @@ static void __init s3c2416_cpufreq_cfg_regulator(struct s3c2416_data *s3c_freq)
->
->                 if (!found) {
->                         pr_debug("cpufreq: %dkHz unsupported by regulator\n",
-> -                                freq->frequency);
-> -                       freq->frequency = CPUFREQ_ENTRY_INVALID;
-> +                                pos->frequency);
-> +                       pos->frequency = CPUFREQ_ENTRY_INVALID;
->                 }
-> -
-> -               freq++;
->         }
->
-> +out:
->         /* Guessed */
->         s3c_freq->regulator_latency = 1 * 1000 * 1000;
->  }
-> @@ -338,7 +336,7 @@ static struct notifier_block s3c2416_cpufreq_reboot_notifier = {
->  static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
->  {
->         struct s3c2416_data *s3c_freq = &s3c2416_cpufreq;
-> -       struct cpufreq_frequency_table *freq;
-> +       struct cpufreq_frequency_table *pos;
->         struct clk *msysclk;
->         unsigned long rate;
->         int ret;
-> @@ -427,31 +425,27 @@ static int __init s3c2416_cpufreq_driver_init(struct cpufreq_policy *policy)
->         s3c_freq->regulator_latency = 0;
->  #endif
->
-> -       freq = s3c_freq->freq_table;
-> -       while (freq->frequency != CPUFREQ_TABLE_END) {
-> +       cpufreq_for_each_entry(pos, s3c_freq->freq_table) {
->                 /* special handling for dvs mode */
-> -               if (freq->driver_data == 0) {
-> +               if (pos->driver_data == 0) {
->                         if (!s3c_freq->hclk) {
->                                 pr_debug("cpufreq: %dkHz unsupported as it would need unavailable dvs mode\n",
-> -                                        freq->frequency);
-> -                               freq->frequency = CPUFREQ_ENTRY_INVALID;
-> +                                        pos->frequency);
-> +                               pos->frequency = CPUFREQ_ENTRY_INVALID;
->                         } else {
-> -                               freq++;
->                                 continue;
->                         }
->                 }
->
->                 /* Check for frequencies we can generate */
->                 rate = clk_round_rate(s3c_freq->armdiv,
-> -                                     freq->frequency * 1000);
-> +                                     pos->frequency * 1000);
->                 rate /= 1000;
-> -               if (rate != freq->frequency) {
-> +               if (rate != pos->frequency) {
->                         pr_debug("cpufreq: %dkHz unsupported by clock (clk_round_rate return %lu)\n",
-> -                                freq->frequency, rate);
-> -                       freq->frequency = CPUFREQ_ENTRY_INVALID;
-> +                               pos->frequency, rate);
-> +                       pos->frequency = CPUFREQ_ENTRY_INVALID;
->                 }
-> -
-> -               freq++;
->         }
->
->         /* Datasheet says PLL stabalisation time must be at least 300us,
-> diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> index ff7d3ec..176e84c 100644
-> --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> @@ -118,11 +118,10 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
->                 pr_err("Unable to check supported voltages\n");
->         }
->
-> -       freq = s3c64xx_freq_table;
-> -       while (count > 0 && freq->frequency != CPUFREQ_TABLE_END) {
-> -               if (freq->frequency == CPUFREQ_ENTRY_INVALID)
-> -                       continue;
-> +       if (!count)
-> +               goto out;
->
-> +       cpufreq_for_each_valid_entry(freq, s3c64xx_freq_table) {
->                 dvfs = &s3c64xx_dvfs_table[freq->driver_data];
->                 found = 0;
->
-> @@ -137,10 +136,9 @@ static void __init s3c64xx_cpufreq_config_regulator(void)
->                                  freq->frequency);
->                         freq->frequency = CPUFREQ_ENTRY_INVALID;
->                 }
-> -
-> -               freq++;
->         }
->
-> +out:
->         /* Guess based on having to do an I2C/SPI write; in future we
->          * will be able to query the regulator performance here. */
->         regulator_latency = 1 * 1000 * 1000;
-> @@ -179,8 +177,7 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
->         }
->  #endif
->
-> -       freq = s3c64xx_freq_table;
-> -       while (freq->frequency != CPUFREQ_TABLE_END) {
-> +       cpufreq_for_each_entry(freq, s3c64xx_freq_table) {
->                 unsigned long r;
->
->                 /* Check for frequencies we can generate */
-> @@ -196,8 +193,6 @@ static int s3c64xx_cpufreq_driver_init(struct cpufreq_policy *policy)
->                  * frequency is the maximum we can support. */
->                 if (!vddarm && freq->frequency > clk_get_rate(policy->clk) / 1000)
->                         freq->frequency = CPUFREQ_ENTRY_INVALID;
-> -
-> -               freq++;
->         }
->
->         /* Datasheet says PLL stabalisation time (if we were to use
-> --
-> 1.9.0
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+diff --git a/drivers/mmc/host/sdhci-acpi.c b/drivers/mmc/host/sdhci-acpi.c
+index 323e2a688563..8ce3c28cb76e 100644
+--- a/drivers/mmc/host/sdhci-acpi.c
++++ b/drivers/mmc/host/sdhci-acpi.c
+@@ -106,6 +106,7 @@ static const struct sdhci_ops sdhci_acpi_ops_dflt = {
+ 	.enable_dma = sdhci_acpi_enable_dma,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_ops sdhci_acpi_ops_int = {
+@@ -113,6 +114,7 @@ static const struct sdhci_ops sdhci_acpi_ops_int = {
+ 	.enable_dma = sdhci_acpi_enable_dma,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ 	.hw_reset   = sdhci_acpi_int_hw_reset,
+ };
+ 
+diff --git a/drivers/mmc/host/sdhci-bcm-kona.c b/drivers/mmc/host/sdhci-bcm-kona.c
+index e610811c09b0..dd780c315a63 100644
+--- a/drivers/mmc/host/sdhci-bcm-kona.c
++++ b/drivers/mmc/host/sdhci-bcm-kona.c
+@@ -212,6 +212,7 @@ static struct sdhci_ops sdhci_bcm_kona_ops = {
+ 	.platform_send_init_74_clocks = sdhci_bcm_kona_init_74_clocks,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ 	.card_event = sdhci_bcm_kona_card_event,
+ };
+ 
+diff --git a/drivers/mmc/host/sdhci-bcm2835.c b/drivers/mmc/host/sdhci-bcm2835.c
+index 74906d6008e1..46af9a439d7b 100644
+--- a/drivers/mmc/host/sdhci-bcm2835.c
++++ b/drivers/mmc/host/sdhci-bcm2835.c
+@@ -136,6 +136,7 @@ static const struct sdhci_ops bcm2835_sdhci_ops = {
+ 	.get_min_clock = bcm2835_sdhci_get_min_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_pltfm_data bcm2835_sdhci_pdata = {
+diff --git a/drivers/mmc/host/sdhci-cns3xxx.c b/drivers/mmc/host/sdhci-cns3xxx.c
+index 587d73ef33ff..14b74075589a 100644
+--- a/drivers/mmc/host/sdhci-cns3xxx.c
++++ b/drivers/mmc/host/sdhci-cns3xxx.c
+@@ -81,6 +81,7 @@ static const struct sdhci_ops sdhci_cns3xxx_ops = {
+ 	.set_clock	= sdhci_cns3xxx_set_clock,
+ 	.set_bus_width	= sdhci_set_bus_width,
+ 	.reset          = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_pltfm_data sdhci_cns3xxx_pdata = {
+diff --git a/drivers/mmc/host/sdhci-dove.c b/drivers/mmc/host/sdhci-dove.c
+index 8ef4ab52f8e0..0d315f4496c8 100644
+--- a/drivers/mmc/host/sdhci-dove.c
++++ b/drivers/mmc/host/sdhci-dove.c
+@@ -89,6 +89,7 @@ static const struct sdhci_ops sdhci_dove_ops = {
+ 	.set_clock = sdhci_set_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_pltfm_data sdhci_dove_pdata = {
+diff --git a/drivers/mmc/host/sdhci-of-arasan.c b/drivers/mmc/host/sdhci-of-arasan.c
+index f0ee594f25d1..5bd1092310f2 100644
+--- a/drivers/mmc/host/sdhci-of-arasan.c
++++ b/drivers/mmc/host/sdhci-of-arasan.c
+@@ -57,6 +57,7 @@ static struct sdhci_ops sdhci_arasan_ops = {
+ 	.get_timeout_clock = sdhci_arasan_get_timeout_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static struct sdhci_pltfm_data sdhci_arasan_pdata = {
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index c4f8cd3f83c8..fcaeae5f55b8 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -309,6 +309,7 @@ static const struct sdhci_ops sdhci_esdhc_ops = {
+ 	.adma_workaround = esdhci_of_adma_workaround,
+ 	.set_bus_width = esdhc_pltfm_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_pltfm_data sdhci_esdhc_pdata = {
+diff --git a/drivers/mmc/host/sdhci-of-hlwd.c b/drivers/mmc/host/sdhci-of-hlwd.c
+index a4a1f0f2c0a0..b341661369a2 100644
+--- a/drivers/mmc/host/sdhci-of-hlwd.c
++++ b/drivers/mmc/host/sdhci-of-hlwd.c
+@@ -61,6 +61,7 @@ static const struct sdhci_ops sdhci_hlwd_ops = {
+ 	.set_clock = sdhci_set_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_pltfm_data sdhci_hlwd_pdata = {
+diff --git a/drivers/mmc/host/sdhci-pci.c b/drivers/mmc/host/sdhci-pci.c
+index b3a28f6b170e..52c42fcc284c 100644
+--- a/drivers/mmc/host/sdhci-pci.c
++++ b/drivers/mmc/host/sdhci-pci.c
+@@ -1082,6 +1082,7 @@ static const struct sdhci_ops sdhci_pci_ops = {
+ 	.enable_dma	= sdhci_pci_enable_dma,
+ 	.set_bus_width	= sdhci_pci_set_bus_width,
+ 	.reset		= sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ 	.hw_reset		= sdhci_pci_hw_reset,
+ };
+ 
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index 1fb89f44bd58..7e834fb78f42 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -48,6 +48,7 @@ static const struct sdhci_ops sdhci_pltfm_ops = {
+ 	.set_clock = sdhci_set_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ #ifdef CONFIG_OF
+diff --git a/drivers/mmc/host/sdhci-pxav2.c b/drivers/mmc/host/sdhci-pxav2.c
+index db5257bf032e..3c0f3c0a1cc8 100644
+--- a/drivers/mmc/host/sdhci-pxav2.c
++++ b/drivers/mmc/host/sdhci-pxav2.c
+@@ -116,6 +116,7 @@ static const struct sdhci_ops pxav2_sdhci_ops = {
+ 	.get_max_clock = sdhci_pltfm_clk_get_max_clock,
+ 	.set_bus_width = pxav2_mmc_set_bus_width,
+ 	.reset         = pxav2_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ #ifdef CONFIG_OF
+diff --git a/drivers/mmc/host/sdhci-pxav3.c b/drivers/mmc/host/sdhci-pxav3.c
+index 05574104a254..f4f128947561 100644
+--- a/drivers/mmc/host/sdhci-pxav3.c
++++ b/drivers/mmc/host/sdhci-pxav3.c
+@@ -229,6 +229,7 @@ static const struct sdhci_ops pxav3_sdhci_ops = {
+ 	.get_max_clock = sdhci_pltfm_clk_get_max_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = pxav3_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static struct sdhci_pltfm_data sdhci_pxav3_pdata = {
+diff --git a/drivers/mmc/host/sdhci-s3c.c b/drivers/mmc/host/sdhci-s3c.c
+index 0ac075dfd844..76d7c12d8ef9 100644
+--- a/drivers/mmc/host/sdhci-s3c.c
++++ b/drivers/mmc/host/sdhci-s3c.c
+@@ -374,6 +374,7 @@ static struct sdhci_ops sdhci_s3c_ops = {
+ 	.get_min_clock		= sdhci_s3c_get_min_clock,
+ 	.set_bus_width		= sdhci_s3c_set_bus_width,
+ 	.reset			= sdhci_reset,
++	.set_uhs_signaling	= sdhci_set_uhs_signaling,
+ };
+ 
+ static void sdhci_s3c_notify_change(struct platform_device *dev, int state)
+diff --git a/drivers/mmc/host/sdhci-sirf.c b/drivers/mmc/host/sdhci-sirf.c
+index 3b775348b470..17004531d089 100644
+--- a/drivers/mmc/host/sdhci-sirf.c
++++ b/drivers/mmc/host/sdhci-sirf.c
+@@ -32,6 +32,7 @@ static struct sdhci_ops sdhci_sirf_ops = {
+ 	.get_max_clock	= sdhci_sirf_get_max_clk,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static struct sdhci_pltfm_data sdhci_sirf_pdata = {
+diff --git a/drivers/mmc/host/sdhci-spear.c b/drivers/mmc/host/sdhci-spear.c
+index 8bf64ab36720..9d535c7336ef 100644
+--- a/drivers/mmc/host/sdhci-spear.c
++++ b/drivers/mmc/host/sdhci-spear.c
+@@ -41,6 +41,7 @@ static const struct sdhci_ops sdhci_pltfm_ops = {
+ 	.set_clock = sdhci_set_clock,
+ 	.set_bus_width = sdhci_set_bus_width,
+ 	.reset = sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ #ifdef CONFIG_OF
+diff --git a/drivers/mmc/host/sdhci-tegra.c b/drivers/mmc/host/sdhci-tegra.c
+index a0a8b5cc3b0c..d06b6ff60432 100644
+--- a/drivers/mmc/host/sdhci-tegra.c
++++ b/drivers/mmc/host/sdhci-tegra.c
+@@ -156,6 +156,7 @@ static const struct sdhci_ops tegra_sdhci_ops = {
+ 	.set_clock  = sdhci_set_clock,
+ 	.set_bus_width = tegra_sdhci_set_bus_width,
+ 	.reset      = tegra_sdhci_reset,
++	.set_uhs_signaling = sdhci_set_uhs_signaling,
+ };
+ 
+ static const struct sdhci_pltfm_data sdhci_tegra20_pdata = {
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index bbf8d8bcfde6..1d88345f88cd 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -1404,6 +1404,28 @@ void sdhci_set_bus_width(struct sdhci_host *host, int width)
+ }
+ EXPORT_SYMBOL_GPL(sdhci_set_bus_width);
+ 
++void sdhci_set_uhs_signaling(struct sdhci_host *host, unsigned timing)
++{
++	u16 ctrl_2;
++
++	ctrl_2 = sdhci_readw(host, SDHCI_HOST_CONTROL2);
++	/* Select Bus Speed Mode for host */
++	ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
++	if ((timing == MMC_TIMING_MMC_HS200) ||
++	    (timing == MMC_TIMING_UHS_SDR104))
++		ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
++	else if (timing == MMC_TIMING_UHS_SDR12)
++		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
++	else if (timing == MMC_TIMING_UHS_SDR25)
++		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
++	else if (timing == MMC_TIMING_UHS_SDR50)
++		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
++	else if (timing == MMC_TIMING_UHS_DDR50)
++		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
++	sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
++}
++EXPORT_SYMBOL_GPL(sdhci_set_uhs_signaling);
++
+ static void sdhci_do_set_ios(struct sdhci_host *host, struct mmc_ios *ios)
+ {
+ 	unsigned long flags;
+@@ -1507,31 +1529,12 @@ static void sdhci_do_set_ios(struct sdhci_host *host, struct mmc_ios *ios)
+ 			host->ops->set_clock(host, host->clock);
+ 		}
+ 
+-
+ 		/* Reset SD Clock Enable */
+ 		clk = sdhci_readw(host, SDHCI_CLOCK_CONTROL);
+ 		clk &= ~SDHCI_CLOCK_CARD_EN;
+ 		sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
+ 
+-		if (host->ops->set_uhs_signaling)
+-			host->ops->set_uhs_signaling(host, ios->timing);
+-		else {
+-			ctrl_2 = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+-			/* Select Bus Speed Mode for host */
+-			ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+-			if ((ios->timing == MMC_TIMING_MMC_HS200) ||
+-			    (ios->timing == MMC_TIMING_UHS_SDR104))
+-				ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
+-			else if (ios->timing == MMC_TIMING_UHS_SDR12)
+-				ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
+-			else if (ios->timing == MMC_TIMING_UHS_SDR25)
+-				ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
+-			else if (ios->timing == MMC_TIMING_UHS_SDR50)
+-				ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
+-			else if (ios->timing == MMC_TIMING_UHS_DDR50)
+-				ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
+-			sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
+-		}
++		host->ops->set_uhs_signaling(host, ios->timing);
+ 
+ 		if (!(host->quirks2 & SDHCI_QUIRK2_PRESET_VALUE_BROKEN) &&
+ 				((ios->timing == MMC_TIMING_UHS_SDR12) ||
+diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
+index 3179a8053019..7a35395e5f56 100644
+--- a/drivers/mmc/host/sdhci.h
++++ b/drivers/mmc/host/sdhci.h
+@@ -403,6 +403,7 @@ static inline bool sdhci_sdio_irq_enabled(struct sdhci_host *host)
+ void sdhci_set_clock(struct sdhci_host *host, unsigned int clock);
+ void sdhci_set_bus_width(struct sdhci_host *host, int width);
+ void sdhci_reset(struct sdhci_host *host, u8 mask);
++void sdhci_set_uhs_signaling(struct sdhci_host *host, unsigned timing);
+ 
+ #ifdef CONFIG_PM
+ extern int sdhci_suspend_host(struct sdhci_host *host);
+-- 
+1.8.3.1
