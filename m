@@ -1,28 +1,20 @@
-Return-Path: <stratosk@semaphore.gr>
-Received: from sema.semaphore.gr (unknown [78.46.194.137])
- (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 89FFD140129
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Apr 2014 01:11:28 +1000 (EST)
-Message-ID: <535A7B18.9070505@semaphore.gr>
-Date: Fri, 25 Apr 2014 18:11:20 +0300
-From: Stratos Karafotis <stratosk@semaphore.gr>
-MIME-Version: 1.0
-To: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Subject: Re: [PATCH v4 2/8] cpufreq: Use cpufreq_for_each_* macros for
- frequency table iteration
-References: <534DB1EB.1080401@semaphore.gr> <5355A327.3020308@semaphore.gr>
- <CA+V-a8swMCPkf=rwbLOjiqAgpaQ7TZPutTQTh_sSFmbJvHz-1Q@mail.gmail.com>
-In-Reply-To: <CA+V-a8swMCPkf=rwbLOjiqAgpaQ7TZPutTQTh_sSFmbJvHz-1Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
+ by ozlabs.org (Postfix) with ESMTP id 380F31400B2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Apr 2014 02:58:11 +1000 (EST)
+Date: Fri, 25 Apr 2014 12:49:03 -0400 (EDT)
+Message-Id: <20140425.124903.145066741692796378.davem@davemloft.net>
+To: wangyijing@huawei.com
+Subject: Re: [PATCH 07/13] sparc/PCI: Use new pci_is_bridge() to simplify code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1398417515-8740-8-git-send-email-wangyijing@huawei.com>
+References: <1398417515-8740-1-git-send-email-wangyijing@huawei.com>
+ <1398417515-8740-8-git-send-email-wangyijing@huawei.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, bhelgaas@google.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +24,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Prabhakar,
+From: Yijing Wang <wangyijing@huawei.com>
+Date: Fri, 25 Apr 2014 17:18:29 +0800
 
-On 25/04/2014 03:31 μμ, Prabhakar Lad wrote:
-> Hi Stratos,
+> Now we can use new pci_is_bridge() helper function
+> to simplify code.
 > 
-> Thanks for the patch.
-> 
-> On Tue, Apr 22, 2014 at 4:30 AM, Stratos Karafotis
-> <stratosk@semaphore.gr> wrote:
->> The cpufreq core now supports the cpufreq_for_each_entry and
->> cpufreq_for_each_valid_entry macros helpers for iteration over the
->> cpufreq_frequency_table, so use them.
->>
->> It should have no functional changes.
->>
-> This patch produces following build warning,
-> 
-> drivers/cpufreq/freq_table.c: In function 'cpufreq_frequency_table_cpuinfo':
-> drivers/cpufreq/freq_table.c:36:3: warning: format '%lu' expects
-> argument of type 'long unsigned int', but argument 2 has type 'int'
-> [-Wformat=]
->    pr_debug("table entry %lu: %u kHz\n", pos - table, freq);
+> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 
-Thanks for this finding.
-I will fix it and resend the patch.
-
-
-Stratos Karafotis
+Acked-by: David S. Miller <davem@davemloft.net>
