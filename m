@@ -2,13 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E4898140213
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 19:26:18 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8EACC141389
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 19:26:19 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 10/13] PCI, cpcihp: Use new pci_is_bridge() to simplify code
-Date: Fri, 25 Apr 2014 17:18:32 +0800
-Message-ID: <1398417515-8740-11-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH 08/13] PCI, rpaphp: Use new pci_is_bridge() to simplify code
+Date: Fri, 25 Apr 2014 17:18:30 +0800
+Message-ID: <1398417515-8740-9-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1398417515-8740-1-git-send-email-wangyijing@huawei.com>
 References: <1398417515-8740-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -31,22 +31,22 @@ to simplify code.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/pci/hotplug/cpci_hotplug_pci.c |    3 +--
+ drivers/pci/hotplug/rpadlpar_core.c |    3 +--
  1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpci_hotplug_pci.c b/drivers/pci/hotplug/cpci_hotplug_pci.c
-index 8c14648..9843371 100644
---- a/drivers/pci/hotplug/cpci_hotplug_pci.c
-+++ b/drivers/pci/hotplug/cpci_hotplug_pci.c
-@@ -289,8 +289,7 @@ int __ref cpci_configure_slot(struct slot *slot)
- 	list_for_each_entry(dev, &parent->devices, bus_list)
- 		if (PCI_SLOT(dev->devfn) != PCI_SLOT(slot->devfn))
- 			continue;
--		if ((dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) ||
--		    (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS))
-+		if (pci_is_bridge(dev))
- 			pci_hp_add_bridge(dev);
+diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
+index 4fcdeed..7660232 100644
+--- a/drivers/pci/hotplug/rpadlpar_core.c
++++ b/drivers/pci/hotplug/rpadlpar_core.c
+@@ -157,8 +157,7 @@ static void dlpar_pci_add_bus(struct device_node *dn)
+ 	}
  
+ 	/* Scan below the new bridge */
+-	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
+-	    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
++	if (pci_is_bridge(dev))
+ 		of_scan_pci_bridge(dev);
  
+ 	/* Map IO space for child bus, which may or may not succeed */
 -- 
 1.7.1
