@@ -1,22 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 204C1140134
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Apr 2014 07:45:58 +1000 (EST)
-Message-ID: <1398462328.24575.20.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which
- is STANDBY or MEM
-From: Scott Wood <scottwood@freescale.com>
-To: Dongsheng Wang <dongsheng.wang@freescale.com>
-Date: Fri, 25 Apr 2014 16:45:28 -0500
-In-Reply-To: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
-References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <palves@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 93CE71400AD
+ for <linuxppc-dev@ozlabs.org>; Sat, 26 Apr 2014 09:42:58 +1000 (EST)
+Message-ID: <535AF2E9.1000005@redhat.com>
+Date: Sat, 26 Apr 2014 00:42:33 +0100
+From: Pedro Alves <palves@redhat.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, chenhui.zhao@freescale.com,
- jason.jin@freescale.com
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] powerpc, ptrace: Add new ptrace request macros for
+ transactional memory
+References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1396422144-11032-3-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1396422144-11032-3-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,19 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
-> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+On 04/02/2014 08:02 AM, Anshuman Khandual wrote:
+> This patch adds following new sets of ptrace request macros for transactional
+> memory expanding the existing ptrace ABI on PowerPC.
 > 
-> Add set_pm_suspend_state & pm_suspend_state functions to set/get
-> suspend state. When system going to sleep or deep sleep, devices
-> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
-> function and to handle different situations.
+> 	/* TM special purpose registers */
+> 	PTRACE_GETTM_SPRREGS
+> 	PTRACE_SETTM_SPRREGS
 > 
-> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> ---
-> *v2*
-> Move pm api from fsl platform to powerpc general framework.
+> 	/* TM checkpointed GPR registers */
+> 	PTRACE_GETTM_CGPRREGS
+> 	PTRACE_SETTM_CGPRREGS
+> 
+> 	/* TM checkpointed FPR registers */
+> 	PTRACE_GETTM_CFPRREGS
+> 	PTRACE_SETTM_CFPRREGS
+> 
+> 	/* TM checkpointed VMX registers */
+> 	PTRACE_GETTM_CVMXREGS
+> 	PTRACE_SETTM_CVMXREGS
 
-What is powerpc-specific about this?
+Urgh, we're _still_ adding specialized register specific calls?
+Why aren't these exported as new register sets, accessible through
+PTRACE_GETREGSET /  PTRACE_SETREGSET?  That's supposed to be the
+Modern Way to do things.
 
--Scott
+-- 
+Pedro Alves
