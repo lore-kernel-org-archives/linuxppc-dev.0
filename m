@@ -1,14 +1,14 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (gw-1.arm.linux.org.uk [78.32.30.217])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qg0-f52.google.com (mail-qg0-f52.google.com
+ [209.85.192.52])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4A9DB14007C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 21:21:31 +1000 (EST)
-Date: Fri, 25 Apr 2014 12:20:18 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
-Message-ID: <20140425112018.GJ26756@n2100.arm.linux.org.uk>
+ by ozlabs.org (Postfix) with ESMTPS id 8DCF1140153
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 21:40:07 +1000 (EST)
+Received: by mail-qg0-f52.google.com with SMTP id j5so3949606qga.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 04:40:03 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20140425112018.GJ26756@n2100.arm.linux.org.uk>
 References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
  <CAPDyKFozP69yngKAkdwHYyyvi+pdLEm05udOmBiVshQFi4hnLQ@mail.gmail.com>
  <20140424101726.GH26756@n2100.arm.linux.org.uk>
@@ -17,10 +17,13 @@ References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
  <CAPDyKFr=2=dg1NTYb1_EAgxXZq2Rd+o2Q2B5TE+GZwr8MUU1_Q@mail.gmail.com>
  <20140425090343.GH26756@n2100.arm.linux.org.uk>
  <CAPDyKFpAiegwfh=kA8NyB+DdwKT=wSGJsB=gbEgLbyv0RJ2EOQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPDyKFpAiegwfh=kA8NyB+DdwKT=wSGJsB=gbEgLbyv0RJ2EOQ@mail.gmail.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+ <20140425112018.GJ26756@n2100.arm.linux.org.uk>
+Date: Fri, 25 Apr 2014 13:40:03 +0200
+Message-ID: <CAPDyKFo-V4--vK2anHUNn3hgevnAC6cE+vvRjF__sQ8dqK8AdQ@mail.gmail.com>
+Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
 Cc: Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>,
  linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>,
  Chris Ball <chris@printf.net>, Thierry Reding <thierry.reding@gmail.com>,
@@ -45,45 +48,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 25, 2014 at 01:18:28PM +0200, Ulf Hansson wrote:
-> On 25 April 2014 11:03, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> > On Thu, Apr 24, 2014 at 01:13:05PM +0200, Ulf Hansson wrote:
-> >> On 24 April 2014 12:57, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> >> > This is nothing new or unexpected - it was last posted back in February,
-> >> > and I elected that it should be held off until after the last merge
-> >> > window.
-> >> >
-> >> > Unfortunately, I didn't have time to post it immediately after the merge
-> >> > window closed, partly because it needed to be rebased on top of tglx's
-> >> > IRQ changes on which it depends.  I was carrying those as separate commits
-> >> > to the ones Thomas was carrying in his tree - and in the event, Thomas had
-> >> > modified his patches slightly between sending me copies of them and the
-> >> > versions he sent during the merge window.
-> >>
-> >> Okay, so let's keep up the frequency here then. I only had some minor
-> >> comments, please fix them and send a v2.
-> >
-> > Right, so I've updated the patches, and added one ack to one patch.
-> > That seems insufficient to me - the only platform these have been
-> > tested on is iMX6, which is sdhci-esdhc-imx.c.
-> >
-> > They _really_ need testing elsewhere too.  Or is the plan to merge
-> > them and then see about getting people to test them and fix them up
-> > afterwards?
-> 
-> I was hoping people could start doing tests, before Chris actually
-> decided to pull them in. Now, if that doesn't happen, we could just
-> merge them, as you say, and thus we have to fix potential problems
-> afterwards. I would expect you to help out if problem occurs.
-> 
-> If we decide to not merge in a while, I am not sure how long we could
-> prevent other sdhci patches from being merged. I guess Chris will have
-> to take the final call.
+On 25 April 2014 13:20, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> On Fri, Apr 25, 2014 at 01:18:28PM +0200, Ulf Hansson wrote:
+>> On 25 April 2014 11:03, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+>> > On Thu, Apr 24, 2014 at 01:13:05PM +0200, Ulf Hansson wrote:
+>> >> On 24 April 2014 12:57, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+>> >> > This is nothing new or unexpected - it was last posted back in February,
+>> >> > and I elected that it should be held off until after the last merge
+>> >> > window.
+>> >> >
+>> >> > Unfortunately, I didn't have time to post it immediately after the merge
+>> >> > window closed, partly because it needed to be rebased on top of tglx's
+>> >> > IRQ changes on which it depends.  I was carrying those as separate commits
+>> >> > to the ones Thomas was carrying in his tree - and in the event, Thomas had
+>> >> > modified his patches slightly between sending me copies of them and the
+>> >> > versions he sent during the merge window.
+>> >>
+>> >> Okay, so let's keep up the frequency here then. I only had some minor
+>> >> comments, please fix them and send a v2.
+>> >
+>> > Right, so I've updated the patches, and added one ack to one patch.
+>> > That seems insufficient to me - the only platform these have been
+>> > tested on is iMX6, which is sdhci-esdhc-imx.c.
+>> >
+>> > They _really_ need testing elsewhere too.  Or is the plan to merge
+>> > them and then see about getting people to test them and fix them up
+>> > afterwards?
+>>
+>> I was hoping people could start doing tests, before Chris actually
+>> decided to pull them in. Now, if that doesn't happen, we could just
+>> merge them, as you say, and thus we have to fix potential problems
+>> afterwards. I would expect you to help out if problem occurs.
+>>
+>> If we decide to not merge in a while, I am not sure how long we could
+>> prevent other sdhci patches from being merged. I guess Chris will have
+>> to take the final call.
+>
+> Or we just drop them for yet another cycle and show how mainline kernel
+> development sucks, why getting stuff into mainline is utterly painful,
+> and why using vendor kernels is /soo/ much better than this crap.
 
-Or we just drop them for yet another cycle and show how mainline kernel
-development sucks, why getting stuff into mainline is utterly painful,
-and why using vendor kernels is /soo/ much better than this crap.
+Dropping them is too me a bad option and I really don't think that
+should be needed.
 
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+I would like to encourage people to help out with testing and I
+suppose we have to give this at least some time.
+
+Anyway, post your new version. I will create the pull request based on that.
+
+>
+> --
+> FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
+> improving, and getting towards what was expected from it.
