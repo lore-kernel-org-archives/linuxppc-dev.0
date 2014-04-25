@@ -2,13 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 034501402AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 19:25:09 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5D97A1402C7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Apr 2014 19:26:05 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 11/13] PCI, acpiphp: Use new pci_is_bridge() to simplify code
-Date: Fri, 25 Apr 2014 17:18:33 +0800
-Message-ID: <1398417515-8740-12-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH 06/13] powerpc/PCI: Use new pci_is_bridge() to simplify code
+Date: Fri, 25 Apr 2014 17:18:28 +0800
+Message-ID: <1398417515-8740-7-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1398417515-8740-1-git-send-email-wangyijing@huawei.com>
 References: <1398417515-8740-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -31,22 +31,37 @@ to simplify code.
 
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- drivers/pci/hotplug/acpiphp_glue.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/pci-hotplug.c |    3 +--
+ arch/powerpc/kernel/pci_of_scan.c |    3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index bccc27e..f1f9bd1 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -516,8 +516,7 @@ static void __ref enable_slot(struct acpiphp_slot *slot)
- 			if (PCI_SLOT(dev->devfn) != slot->device)
- 				continue;
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index c1e17ae..5b78917 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -98,8 +98,7 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+ 		max = bus->busn_res.start;
+ 		for (pass = 0; pass < 2; pass++) {
+ 			list_for_each_entry(dev, &bus->devices, bus_list) {
+-				if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
+-				    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
++				if (pci_is_bridge(dev))
+ 					max = pci_scan_bridge(bus, dev,
+ 							      max, pass);
+ 			}
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index 83c26d8..059e244 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -362,8 +362,7 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
  
--			if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
--			    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS) {
-+			if (pci_is_bridge(dev)) {
- 				max = pci_scan_bridge(bus, dev, max, pass);
- 				if (pass && dev->subordinate) {
- 					check_hotplug_bridge(slot, dev);
+ 	/* Now scan child busses */
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
+-		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS) {
++		if (pci_is_bridge(dev)) {
+ 			of_scan_pci_bridge(dev);
+ 		}
+ 	}
 -- 
 1.7.1
