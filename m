@@ -1,28 +1,18 @@
-Return-Path: <stratosk@semaphore.gr>
-Received: from sema.semaphore.gr (unknown [78.46.194.137])
- (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jeffm@suse.com>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F1732140141
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Apr 2014 21:35:44 +1000 (EST)
-Message-ID: <535B9A09.9060902@semaphore.gr>
-Date: Sat, 26 Apr 2014 14:35:37 +0300
-From: Stratos Karafotis <stratosk@semaphore.gr>
+ by ozlabs.org (Postfix) with ESMTPS id 4B59D1400D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 08:10:49 +1000 (EST)
+Message-ID: <535D8063.4060407@suse.com>
+Date: Sun, 27 Apr 2014 18:10:43 -0400
+From: Jeff Mahoney <jeffm@suse.com>
 MIME-Version: 1.0
-To: Prabhakar Lad <prabhakar.csengg@gmail.com>
-Subject: Re: [PATCH v5 2/8] cpufreq: Use cpufreq_for_each_* macros for
- frequency table iteration
-References: <535AC26A.1000006@semaphore.gr>
- <CA+V-a8sg9sBi5mf9KoFWrCJjw6WN+tGrb=bgJwfV3VDZ2DGYig@mail.gmail.com>
-In-Reply-To: <CA+V-a8sg9sBi5mf9KoFWrCJjw6WN+tGrb=bgJwfV3VDZ2DGYig@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Kukjin Kim <kgene.kim@samsung.com>, linux-pm@vger.kernel.org,
- Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>,
- "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
- linux-samsung-soc <linux-samsung-soc@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: export flush_icache_range
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Prabhakar,
+Commit aac416fc38c (lkdtm: flush icache and report actions) calls
+flush_icache_range from a module. It's exported on most architectures
+that implement it, but not on powerpc. This patch exports it to fix
+the module link failure.
 
-On 26/04/2014 12:57 μμ, Prabhakar Lad wrote:
-> Hi Stratos,
-> 
-> Thanks for the patch,
-> 
-> On Sat, Apr 26, 2014 at 1:45 AM, Stratos Karafotis
-> <stratosk@semaphore.gr> wrote:
->> The cpufreq core now supports the cpufreq_for_each_entry and
->> cpufreq_for_each_valid_entry macros helpers for iteration over the
->> cpufreq_frequency_table, so use them.
->>
->> It should have no functional changes.
->>
->> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> 
-> For patches 1 & 2:  Acked-by: Lad, Prabhakar <prabhakar.csengg@gmail.com>
-> 
-> and for patch 3: Acked-and-tested-by: Lad, Prabhakar
-> <prabhakar.csengg@gmail.com>
-> 
-> Thanks,
-> --Prabhakar lad
-> 
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+---
+ arch/powerpc/kernel/ppc_ksyms.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Thank you very much!
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -120,6 +120,7 @@ EXPORT_SYMBOL(giveup_spe);
+ EXPORT_SYMBOL(flush_instruction_cache);
+ #endif
+ EXPORT_SYMBOL(flush_dcache_range);
++EXPORT_SYMBOL(flush_icache_range);
+ 
+ #ifdef CONFIG_SMP
+ #ifdef CONFIG_PPC32
 
-
-Stratos Karafotis
+-- 
+Jeff Mahoney
+SUSE Labs
