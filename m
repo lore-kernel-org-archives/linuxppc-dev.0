@@ -1,33 +1,25 @@
-Return-Path: <chris@void.printf.net>
-Received: from void.printf.net (void.printf.net [89.145.121.20])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <amodra@gmail.com>
+Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
+ [209.85.220.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AA8BE1400B9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 03:26:42 +1000 (EST)
-From: Chris Ball <chris@printf.net>
-To: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
- <535E84FB.4080305@wwwdotorg.org>
-Date: Mon, 28 Apr 2014 17:52:00 +0100
-In-Reply-To: <535E84FB.4080305@wwwdotorg.org> (Stephen Warren's message of
- "Mon, 28 Apr 2014 10:42:35 -0600")
-Message-ID: <86mwf5tn0v.fsf@void.printf.net>
+ by ozlabs.org (Postfix) with ESMTPS id F1DAC1400FF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 09:46:59 +1000 (EST)
+Received: by mail-pa0-f47.google.com with SMTP id fa1so403660pad.20
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 16:46:57 -0700 (PDT)
+Date: Tue, 29 Apr 2014 09:16:50 +0930
+From: Alan Modra <amodra@gmail.com>
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Subject: Re: [git pull] Please pull abiv2 branch
+Message-ID: <20140428234649.GK3397@bubble.grove.modra.org>
+References: <20140423124902.5be9dab0@kryten>
+ <535E6804.5050508@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>,
- linux-doc@vger.kernel.org, Seungwon Jeon <tgih.jun@samsung.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Anton Vorontsov <anton@enomsg.org>, Michal Simek <michal.simek@xilinx.com>,
- Jaehoon Chung <jh80.chung@samsung.com>, linux-arm-kernel@lists.infradead.org,
- devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, spear-devel@list.st.com,
- Rob Herring <robh+dt@kernel.org>, Ben Dooks <ben-linux@fluff.org>,
- linux-tegra@vger.kernel.org, Shawn Guo <shawn.guo@freescale.com>,
- Barry Song <baohua@kernel.org>, Randy Dunlap <rdunlap@infradead.org>,
- linux-mmc@vger.kernel.org, Viresh Kumar <viresh.linux@gmail.com>,
- Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>,
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <535E6804.5050508@linux.vnet.ibm.com>
+Cc: philippe.bergheaud@fr.ibm.com, mikey@neuling.org, rusty@rustcorp.com.au,
+ rostedt@goodmis.org, ulrich.weigand@de.ibm.com, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, mjw@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,22 +30,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, Apr 28, 2014 at 04:39:00PM +0200, Philippe Bergheaud wrote:
+> Kernel will not load modules because TOC. has no CRC.
+> Is this expected ? Shouldn't TOC. have a CRC ?
 
-On Mon, Apr 28 2014, Stephen Warren wrote:
-> The series,
-> Tested-by: Stephen Warren <swarren@nvidia.com>
->
-> (On an NVIDIA Tegra "Jetson TK1" board, with the patches applied on top
-> of next-20140428, also with Andrew Bresticker's Tegra SDHCI patches
-> "mmc: tegra: disable UHS modes" and "mmc: tegra: fix reporting of base
-> clock frequency" applied)
+TOC. is really .TOC.  (The kernel build process strips off a leading
+dot from symbol names.)  .TOC. is a special symbol giving the toc
+base, so no, it shouldn't have a CRC.
 
-Thanks very much Stephen, Russell for the series, and Ulf.
-
-This seems like a good time to merge to mmc-next and call for testing
-in linux-next -- I'm happy to merge a v2 PR when ready.
-
-- Chris.
 -- 
-Chris Ball   <http://printf.net/>
+Alan Modra
+Australia Development Lab, IBM
