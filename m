@@ -2,22 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0C2DA1400B5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 11:38:05 +1000 (EST)
-Message-ID: <1398649066.30694.2.camel@pasglop>
-Subject: Re: [PATCH v2 21/21] of: push struct boot_param_header and defines
- into powerpc
+ by ozlabs.org (Postfix) with ESMTPS id E113F14009B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 14:48:25 +1000 (EST)
+Message-ID: <1398660478.30694.10.camel@pasglop>
+Subject: Re: [PATCH v2 6/6] powerpc/perf/hv-24x7: catalog version number is
+ be64, not be32
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Rob Herring <robherring2@gmail.com>
-Date: Mon, 28 Apr 2014 11:37:46 +1000
-In-Reply-To: <1398215901-25609-22-git-send-email-robherring2@gmail.com>
-References: <1398215901-25609-1-git-send-email-robherring2@gmail.com>
- <1398215901-25609-22-git-send-email-robherring2@gmail.com>
+To: Cody P Schafer <cody@linux.vnet.ibm.com>
+Date: Mon, 28 Apr 2014 14:47:58 +1000
+In-Reply-To: <1397581855-4585-7-git-send-email-cody@linux.vnet.ibm.com>
+References: <1397581855-4585-1-git-send-email-cody@linux.vnet.ibm.com>
+ <1397581855-4585-7-git-send-email-cody@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Michael Ellerman <michael@ellerman.id.au>, David.Laight@aculab.com,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,130 +27,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-04-22 at 20:18 -0500, Rob Herring wrote:
-> From: Rob Herring <robh@kernel.org>
+On Tue, 2014-04-15 at 10:10 -0700, Cody P Schafer wrote:
+> The catalog version number was changed from a be32 (with proceeding
+> 32bits of padding) to a be64, update the code to treat it as a be64
 > 
-> Now powerpc is the only user of struct boot_param_header and FDT defines,
-> so they can be moved into the powerpc architecture code.
+> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+> --
+
+Have you tested this ?
+
+It doesn't build for me:
+
+arch/powerpc/perf/hv-24x7.c: In function 'catalog_read':
+arch/powerpc/perf/hv-24x7.c:223:3: error: format '%d' expects argument of type 'int', but argument 2 has type 'uint64_t' [-Werror=format]
+cc1: all warnings being treated as errors
+
+I'll fix that up in my tree.
+
+Cheers,
+Ben.
+
+>  arch/powerpc/perf/hv-24x7.c | 8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 > 
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
-
-I assume we want to get rid of that too eventually ? :-)
-
-We should be able to get the definitions from libfdt too....
-
-In the meantime:
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
---
-
-> v2: no change
-> 
->  arch/powerpc/include/asm/prom.h | 39 +++++++++++++++++++++++++++++++++++++++
->  include/linux/of_fdt.h          | 37 -------------------------------------
->  2 files changed, 39 insertions(+), 37 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/prom.h b/arch/powerpc/include/asm/prom.h
-> index d977b9b..74b79f0 100644
-> --- a/arch/powerpc/include/asm/prom.h
-> +++ b/arch/powerpc/include/asm/prom.h
-> @@ -26,6 +26,45 @@
->  #include <linux/of_irq.h>
->  #include <linux/platform_device.h>
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index 95a67f8..9d4badc 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -171,7 +171,7 @@ static unsigned long h_get_24x7_catalog_page_(unsigned long phys_4096,
+>  }
 >  
-> +#define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
-> +#define OF_DT_END_NODE		0x2		/* End node */
-> +#define OF_DT_PROP		0x3		/* Property: name off, size,
-> +						 * content */
-> +#define OF_DT_NOP		0x4		/* nop */
-> +#define OF_DT_END		0x9
-> +
-> +#define OF_DT_VERSION		0x10
-> +
-> +/*
-> + * This is what gets passed to the kernel by prom_init or kexec
-> + *
-> + * The dt struct contains the device tree structure, full pathes and
-> + * property contents. The dt strings contain a separate block with just
-> + * the strings for the property names, and is fully page aligned and
-> + * self contained in a page, so that it can be kept around by the kernel,
-> + * each property name appears only once in this page (cheap compression)
-> + *
-> + * the mem_rsvmap contains a map of reserved ranges of physical memory,
-> + * passing it here instead of in the device-tree itself greatly simplifies
-> + * the job of everybody. It's just a list of u64 pairs (base/size) that
-> + * ends when size is 0
-> + */
-> +struct boot_param_header {
-> +	__be32	magic;			/* magic word OF_DT_HEADER */
-> +	__be32	totalsize;		/* total size of DT block */
-> +	__be32	off_dt_struct;		/* offset to structure */
-> +	__be32	off_dt_strings;		/* offset to strings */
-> +	__be32	off_mem_rsvmap;		/* offset to memory reserve map */
-> +	__be32	version;		/* format version */
-> +	__be32	last_comp_version;	/* last compatible version */
-> +	/* version 2 fields below */
-> +	__be32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
-> +	/* version 3 fields below */
-> +	__be32	dt_strings_size;	/* size of the DT strings block */
-> +	/* version 17 fields below */
-> +	__be32	dt_struct_size;		/* size of the DT structure block */
-> +};
-> +
->  /*
->   * OF address retreival & translation
->   */
-> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-> index 1f882e1..5c0ab05 100644
-> --- a/include/linux/of_fdt.h
-> +++ b/include/linux/of_fdt.h
-> @@ -17,45 +17,8 @@
+>  static unsigned long h_get_24x7_catalog_page(char page[],
+> -					     u32 version, u32 index)
+> +					     u64 version, u32 index)
+>  {
+>  	return h_get_24x7_catalog_page_(virt_to_phys(page),
+>  					version, index);
+> @@ -185,7 +185,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
+>  	ssize_t ret = 0;
+>  	size_t catalog_len = 0, catalog_page_len = 0, page_count = 0;
+>  	loff_t page_offset = 0;
+> -	uint32_t catalog_version_num = 0;
+> +	uint64_t catalog_version_num = 0;
+>  	void *page = kmem_cache_alloc(hv_page_cache, GFP_USER);
+>  	struct hv_24x7_catalog_page_0 *page_0 = page;
+>  	if (!page)
+> @@ -197,7 +197,7 @@ static ssize_t catalog_read(struct file *filp, struct kobject *kobj,
+>  		goto e_free;
+>  	}
 >  
->  /* Definitions used by the flattened device tree */
->  #define OF_DT_HEADER		0xd00dfeed	/* marker */
-> -#define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
-> -#define OF_DT_END_NODE		0x2		/* End node */
-> -#define OF_DT_PROP		0x3		/* Property: name off, size,
-> -						 * content */
-> -#define OF_DT_NOP		0x4		/* nop */
-> -#define OF_DT_END		0x9
-> -
-> -#define OF_DT_VERSION		0x10
+> -	catalog_version_num = be32_to_cpu(page_0->version);
+> +	catalog_version_num = be64_to_cpu(page_0->version);
+>  	catalog_page_len = be32_to_cpu(page_0->length);
+>  	catalog_len = catalog_page_len * 4096;
 >  
->  #ifndef __ASSEMBLY__
-> -/*
-> - * This is what gets passed to the kernel by prom_init or kexec
-> - *
-> - * The dt struct contains the device tree structure, full pathes and
-> - * property contents. The dt strings contain a separate block with just
-> - * the strings for the property names, and is fully page aligned and
-> - * self contained in a page, so that it can be kept around by the kernel,
-> - * each property name appears only once in this page (cheap compression)
-> - *
-> - * the mem_rsvmap contains a map of reserved ranges of physical memory,
-> - * passing it here instead of in the device-tree itself greatly simplifies
-> - * the job of everybody. It's just a list of u64 pairs (base/size) that
-> - * ends when size is 0
-> - */
-> -struct boot_param_header {
-> -	__be32	magic;			/* magic word OF_DT_HEADER */
-> -	__be32	totalsize;		/* total size of DT block */
-> -	__be32	off_dt_struct;		/* offset to structure */
-> -	__be32	off_dt_strings;		/* offset to strings */
-> -	__be32	off_mem_rsvmap;		/* offset to memory reserve map */
-> -	__be32	version;		/* format version */
-> -	__be32	last_comp_version;	/* last compatible version */
-> -	/* version 2 fields below */
-> -	__be32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
-> -	/* version 3 fields below */
-> -	__be32	dt_strings_size;	/* size of the DT strings block */
-> -	/* version 17 fields below */
-> -	__be32	dt_struct_size;		/* size of the DT structure block */
-> -};
+> @@ -255,7 +255,7 @@ e_free:								\
+>  static DEVICE_ATTR_RO(_name)
 >  
->  #if defined(CONFIG_OF_FLATTREE)
->  
+>  PAGE_0_ATTR(catalog_version, "%lld\n",
+> -		(unsigned long long)be32_to_cpu(page_0->version));
+> +		(unsigned long long)be64_to_cpu(page_0->version));
+>  PAGE_0_ATTR(catalog_len, "%lld\n",
+>  		(unsigned long long)be32_to_cpu(page_0->length) * 4096);
+>  static BIN_ATTR_RO(catalog, 0/* real length varies */);
