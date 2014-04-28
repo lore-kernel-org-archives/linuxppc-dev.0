@@ -1,18 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1C0311400D3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 16:52:50 +1000 (EST)
-Message-ID: <1398667957.30694.24.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 28 Apr 2014 16:52:37 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 9E8151400DB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 19:03:12 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 28 Apr 2014 19:02:51 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id F24942BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 19:02:47 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3S92XdA7930112
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 19:02:33 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3S91hYv026627
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 19:01:44 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
+Subject: [PATCH V3 0/2] mm: FAULT_AROUND_ORDER patchset performance data for
+ powerpc
+Date: Mon, 28 Apr 2014 14:31:28 +0530
+Message-Id: <1398675690-16186-1-git-send-email-maddy@linux.vnet.ibm.com>
+Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
+ rusty@rustcorp.com.au, dave.hansen@intel.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, paulus@samba.org,
+ mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,117 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+Kirill A. Shutemov with 8c6e50b029 commit introduced
+vm_ops->map_pages() for mapping easy accessible pages around
+fault address in hope to reduce number of minor page faults.
 
-Here is a bunch of post-merge window fixes that have been accumulating
-in patchwork while I was on vacation or buried under other stuff last
-week.
+This patch creates infrastructure to modify the FAULT_AROUND_ORDER
+value using mm/Kconfig. This will enable architecture maintainers
+to decide on suitable FAULT_AROUND_ORDER value based on
+performance data for that architecture. First patch also defaults
+FAULT_AROUND_ORDER Kconfig element to 4. Second patch list
+out the performance numbers for powerpc (platform pseries) and
+initialize the fault around order variable for pseries platform of
+powerpc.
 
-We have the now usual batch of LE fixes from Anton (sadly some new stuff
-that went into this merge window had endian issues, we'll try to make
-sure we do better next time)
+V3 Changes:
+  Replaced FAULT_AROUND_ORDER macro to a variable to support arch's that
+   supports sub platforms.
+  Made changes in commit messages.
 
-Some fixes and cleanups to the new 24x7 performance monitoring stuff
-(mostly typos and cleaning up printk's)
+V2 Changes:
+  Created Kconfig parameter for FAULT_AROUND_ORDER
+  Added check in do_read_fault to handle FAULT_AROUND_ORDER value of 0
+  Made changes in commit messages.
 
-A series of fixes for an issue with our runlatch bit, which wasn't set
-properly for offlined threads/cores and under KVM, causing potentially
-some counters to misbehave along with possible power management issues.
+Madhavan Srinivasan (2):
+  mm: move FAULT_AROUND_ORDER to arch/
+  powerpc/pseries: init fault_around_order for pseries
 
-A fix for kexec nasty race where the new kernel wouldn't "see" the
-secondary processors having reached back into firmware in time.
+ arch/powerpc/platforms/pseries/setup.c |    5 +++++
+ mm/Kconfig                             |    8 ++++++++
+ mm/memory.c                            |   11 ++++-------
+ 3 files changed, 17 insertions(+), 7 deletions(-)
 
-And finally a few other misc (and pretty simple) bug fixes.
-
-Cheers,
-Ben.
-
-The following changes since commit a798c10faf62a505d24e5f6213fbaf904a39623f:
-
-  Linux 3.15-rc2 (2014-04-20 11:08:50 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to e4565362c7adc31201135c4b6d649fc1bdc3bf20:
-
-  powerpc/4xx: Fix section mismatch in ppc4xx_pci.c (2014-04-28 16:32:53 +1000)
-
-----------------------------------------------------------------
-Alistair Popple (1):
-      powerpc/4xx: Fix section mismatch in ppc4xx_pci.c
-
-Aneesh Kumar K.V (1):
-      powerpc/mm: Fix tlbie to add AVAL fields for 64K pages
-
-Anton Blanchard (11):
-      powerpc/powernv: Fix little endian issues in OPAL flash code
-      powerpc/powernv: Use uint64_t instead of size_t in OPAL APIs
-      powerpc/powernv: Remove some OPAL function declaration duplication
-      powerpc/powernv: Fix little endian issues with opal_do_notifier calls
-      powerpc/powernv: Fix little endian issues in OPAL error log code
-      powerpc/powernv: Create OPAL sglist helper functions and fix endian issues
-      powerpc/powernv: Fix little endian issues in OPAL dump code
-      powerpc: Rename duplicate COMMAND_LINE_SIZE define
-      powerpc: Bump COMMAND_LINE_SIZE to 2048
-      powerpc: Bump BOOT_COMMAND_LINE_SIZE to 2048
-      powerpc: Fix error return in rtas_flash module init
-
-Benjamin Herrenschmidt (1):
-      powerpc/powernv: Fix kexec races going back to OPAL
-
-Cody P Schafer (6):
-      powerpc/perf/hv_24x7: Probe errors changed to pr_debug(), padding fixed
-      powerpc/perf/hv_gpci: Probe failures use pr_debug(), and padding reduced
-      powerpc/perf/hv-gpci: Make device attr static
-      powerpc/perf/hv-24x7: Use (unsigned long) not (u32) values when calling plpar_hcall_norets()
-      powerpc/perf/hv-24x7: Remove [static 4096], sparse chokes on it
-      powerpc/perf/hv-24x7: Catalog version number is be64, not be32
-
-Jeff Mahoney (1):
-      powerpc: Export flush_icache_range
-
-Joel Stanley (5):
-      powerpc/powernv: Fix sysparam sysfs error handling
-      powerpc/powernv: Use ssize_t for sysparam return values
-      powerpc/powernv: Check sysfs size before copying
-      powerpc/powernv: Fix typos in sysparam code
-      powerpc/powernv: Check sysparam size before creation
-
-Li Zhong (2):
-      powerpc: Fix Oops in rtas_stop_self()
-      powerpc/pseries: Protect remove_memory() with device hotplug lock
-
-Preeti U Murthy (3):
-      ppc/powernv: Set the runlatch bits correctly for offline cpus
-      ppc/kvm: Set the runlatch bit of a CPU just before starting guest
-      ppc/kvm: Clear the runlatch bit of a vcpu before napping
-
-Wei Yang (2):
-      powerpc/powernv: Reduce multi-hit of iommu_add_device()
-      powerpc/powernv: Release the refcount for pci_dev
-
- arch/powerpc/boot/main.c                        |   8 +-
- arch/powerpc/boot/ops.h                         |   2 +-
- arch/powerpc/boot/ps3.c                         |   4 +-
- arch/powerpc/include/asm/opal.h                 |  42 ++++-----
- arch/powerpc/include/uapi/asm/setup.h           |   7 +-
- arch/powerpc/kernel/ppc_ksyms.c                 |   1 +
- arch/powerpc/kernel/rtas_flash.c                |   2 +-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S         |  18 +++-
- arch/powerpc/mm/hash_native_64.c                |  38 ++++----
- arch/powerpc/perf/hv-24x7.c                     |  35 ++++---
- arch/powerpc/perf/hv-gpci.c                     |   6 +-
- arch/powerpc/platforms/powernv/opal-dump.c      |  94 +++----------------
- arch/powerpc/platforms/powernv/opal-elog.c      |  11 ++-
- arch/powerpc/platforms/powernv/opal-flash.c     | 118 ++----------------------
- arch/powerpc/platforms/powernv/opal-sysparam.c  |  32 +++++--
- arch/powerpc/platforms/powernv/opal.c           |  69 +++++++++++++-
- arch/powerpc/platforms/powernv/pci-ioda.c       |   3 +-
- arch/powerpc/platforms/powernv/setup.c          |  48 +++++++++-
- arch/powerpc/platforms/powernv/smp.c            |   3 +
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |   5 +-
- arch/powerpc/platforms/pseries/hotplug-memory.c |  10 +-
- arch/powerpc/sysdev/ppc4xx_pci.c                |   2 +-
- 22 files changed, 273 insertions(+), 285 deletions(-)
+-- 
+1.7.10.4
