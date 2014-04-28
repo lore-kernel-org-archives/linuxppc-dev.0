@@ -1,39 +1,36 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <aik@au1.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5D66D140079
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 20:32:25 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 91BC81400AB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:36 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 28 Apr 2014 20:32:21 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@au1.ibm.com>;
+ Mon, 28 Apr 2014 23:35:35 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 913932CE8047
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 20:32:16 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8571E2BB005C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:34 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3SAW1ug9306442
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 20:32:01 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3SAWFjb007586
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 20:32:15 +1000
-Message-ID: <535E2DC9.7080602@linux.vnet.ibm.com>
-Date: Mon, 28 Apr 2014 16:00:33 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ s3SDZJlY11927882
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:19 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3SDZX6N023452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:33 +1000
+Message-ID: <535E5924.8040503@au1.ibm.com>
+Date: Mon, 28 Apr 2014 23:35:32 +1000
+From: Alexey Kardashevskiy <aik@au1.ibm.com>
 MIME-Version: 1.0
-To: Pedro Alves <palves@redhat.com>
-Subject: Re: [PATCH 2/3] powerpc, ptrace: Add new ptrace request macros for
- transactional memory
-References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1396422144-11032-3-git-send-email-khandual@linux.vnet.ibm.com>
- <535AF2E9.1000005@redhat.com>
-In-Reply-To: <535AF2E9.1000005@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
+ iommu_add_device()
+References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=KOI8-R
+Cc: gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,34 +40,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/26/2014 05:12 AM, Pedro Alves wrote:
-> On 04/02/2014 08:02 AM, Anshuman Khandual wrote:
->> This patch adds following new sets of ptrace request macros for transactional
->> memory expanding the existing ptrace ABI on PowerPC.
->>
->> 	/* TM special purpose registers */
->> 	PTRACE_GETTM_SPRREGS
->> 	PTRACE_SETTM_SPRREGS
->>
->> 	/* TM checkpointed GPR registers */
->> 	PTRACE_GETTM_CGPRREGS
->> 	PTRACE_SETTM_CGPRREGS
->>
->> 	/* TM checkpointed FPR registers */
->> 	PTRACE_GETTM_CFPRREGS
->> 	PTRACE_SETTM_CFPRREGS
->>
->> 	/* TM checkpointed VMX registers */
->> 	PTRACE_GETTM_CVMXREGS
->> 	PTRACE_SETTM_CVMXREGS
+On 04/23/2014 12:26 PM, Wei Yang wrote:
+> During the EEH hotplug event, iommu_add_device() will be invoked three times
+> and two of them will trigger warning or error.
 > 
-> Urgh, we're _still_ adding specialized register specific calls?
-> Why aren't these exported as new register sets, accessible through
-> PTRACE_GETREGSET /  PTRACE_SETREGSET?  That's supposed to be the
-> Modern Way to do things.
+> The three times to invoke the iommu_add_device() are:
+> 
+>     pci_device_add
+>        ...
+>        set_iommu_table_base_and_group   <- 1st time, fail
+>     device_add
+>        ...
+>        tce_iommu_bus_notifier           <- 2nd time, succees
+>     pcibios_add_pci_devices
+>        ...
+>        pcibios_setup_bus_devices        <- 3rd time, re-attach
+> 
+> The first time fails, since the dev->kobj->sd is not initialized. The
+> dev->kobj->sd is initialized in device_add().
+> The third time's warning is triggered by the re-attach of the iommu_group.
+> 
+> After applying this patch, the error
 
-All these new register sets can be accessed through PTRACE_GETREGSET
-/SETREGSET requests with the new NT_PPC_* core note types added in the
-previous patch. PowerPC already has some register specific ptrace
-requests, so thought of adding some new requests for transactional
-memory purpose. But yes these are redundant and can be dropped.
+Nack.
+
+The patch still seems incorrect and we actually need to remove
+tce_iommu_bus_notifier completely as pcibios_setup_bus_devices is called
+from another notifier anyway. Could you please test it?
+
+
+> 
+>     iommu_tce: 0003:05:00.0 has not been added, ret=-14
+> 
+> and the warning
+> 
+>     [  204.123609] ------------[ cut here ]------------
+>     [  204.123645] WARNING: at arch/powerpc/kernel/iommu.c:1125
+>     [  204.123680] Modules linked in: xt_CHECKSUM nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT bnep bluetooth 6lowpan_iphc rfkill xt_conntrack ebtable_nat ebtable_broute bridge stp llc mlx4_ib ib_sa ib_mad ib_core ib_addr ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw bnx2x tg3 mlx4_core nfsd ptp mdio ses libcrc32c nfs_acl enclosure be2net pps_core shpchp lockd kvm uinput sunrpc binfmt_misc lpfc scsi_transport_fc ipr scsi_tgt
+>     [  204.124356] CPU: 18 PID: 650 Comm: eehd Not tainted 3.14.0-rc5yw+ #102
+>     [  204.124400] task: c0000027ed485670 ti: c0000027ed50c000 task.ti: c0000027ed50c000
+>     [  204.124453] NIP: c00000000003cf80 LR: c00000000006c648 CTR: c00000000006c5c0
+>     [  204.124506] REGS: c0000027ed50f440 TRAP: 0700   Not tainted  (3.14.0-rc5yw+)
+>     [  204.124558] MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 88008084  XER: 20000000
+>     [  204.124682] CFAR: c00000000006c644 SOFTE: 1
+>     GPR00: c00000000006c648 c0000027ed50f6c0 c000000001398380 c0000027ec260300
+>     GPR04: c0000027ea92c000 c00000000006ad00 c0000000016e41b0 0000000000000110
+>     GPR08: c0000000012cd4c0 0000000000000001 c0000027ec2602ff 0000000000000062
+>     GPR12: 0000000028008084 c00000000fdca200 c0000000000d1d90 c0000027ec281a80
+>     GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+>     GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
+>     GPR24: 000000005342697b 0000000000002906 c000001fe6ac9800 c000001fe6ac9800
+>     GPR28: 0000000000000000 c0000000016e3a80 c0000027ea92c090 c0000027ea92c000
+>     [  204.125353] NIP [c00000000003cf80] .iommu_add_device+0x30/0x1f0
+>     [  204.125399] LR [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
+>     [  204.125443] Call Trace:
+>     [  204.125464] [c0000027ed50f6c0] [c0000027ed50f750] 0xc0000027ed50f750 (unreliable)
+>     [  204.125526] [c0000027ed50f750] [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
+>     [  204.125588] [c0000027ed50f7d0] [c000000000069cc8] .pnv_pci_dma_dev_setup+0x78/0x340
+>     [  204.125650] [c0000027ed50f870] [c000000000044408] .pcibios_setup_device+0x88/0x2f0
+>     [  204.125712] [c0000027ed50f940] [c000000000046040] .pcibios_setup_bus_devices+0x60/0xd0
+>     [  204.125774] [c0000027ed50f9c0] [c000000000043acc] .pcibios_add_pci_devices+0xdc/0x1c0
+>     [  204.125837] [c0000027ed50fa50] [c00000000086f970] .eeh_reset_device+0x36c/0x4f0
+>     [  204.125939] [c0000027ed50fb20] [c00000000003a2d8] .eeh_handle_normal_event+0x448/0x480
+>     [  204.126068] [c0000027ed50fbc0] [c00000000003a35c] .eeh_handle_event+0x4c/0x340
+>     [  204.126192] [c0000027ed50fc80] [c00000000003a74c] .eeh_event_handler+0xfc/0x1b0
+>     [  204.126319] [c0000027ed50fd30] [c0000000000d1ea0] .kthread+0x110/0x130
+>     [  204.126430] [c0000027ed50fe30] [c00000000000a460] .ret_from_kernel_thread+0x5c/0x7c
+>     [  204.126556] Instruction dump:
+>     [  204.126610] 7c0802a6 fba1ffe8 fbc1fff0 fbe1fff8 f8010010 f821ff71 7c7e1b78 60000000
+>     [  204.126787] 60000000 e87e0298 3143ffff 7d2a1910 <0b090000> 2fa90000 40de00c8 ebfe0218
+>     [  204.126966] ---[ end trace 6e7aefd80add2973 ]---
+> 
+> are cleared.
+> 
+> This patch removes iommu_add_device() in pnv_pci_ioda_dma_dev_setup(), which
+> revert part of the change in commit d905c5df(PPC: POWERNV: move
+> iommu_add_device earlier).
+> 
+> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index bc8e74e..bd3870e 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1423,7 +1423,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+>  
+>  	pe = &phb->ioda.pe_array[pdn->pe_number];
+>  	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+> -	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
+> +	set_iommu_table_base(&pdev->dev, pe->tce32_table);
+>  }
+>  
+>  static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+> 
+
+
+-- 
+Alexey Kardashevskiy
+IBM OzLabs, LTC Team
+
+e-mail: aik@au1.ibm.com
+notes: Alexey Kardashevskiy/Australia/IBM
