@@ -1,36 +1,35 @@
-Return-Path: <aik@au1.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91BC81400AB
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:36 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CB829140098
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 00:16:30 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@au1.ibm.com>;
- Mon, 28 Apr 2014 23:35:35 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8571E2BB005C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:34 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3SDZJlY11927882
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:19 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3SDZX6N023452
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 23:35:33 +1000
-Message-ID: <535E5924.8040503@au1.ibm.com>
-Date: Mon, 28 Apr 2014 23:35:32 +1000
-From: Alexey Kardashevskiy <aik@au1.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 28 Apr 2014 19:46:27 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id B15921258053
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:45:16 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3SEGJTT50921692
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:20 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3SEGOAO032236
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:24 +0530
+Subject: [PATCH 1/2] powerpc/book3s: Improve machine check handling for
+ unhandled errors
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 28 Apr 2014 19:46:22 +0530
+Message-ID: <20140428141622.5522.6901.stgit@mars>
 MIME-Version: 1.0
-To: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
- iommu_add_device()
-References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: gwshan@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Cc: Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,107 +39,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/23/2014 12:26 PM, Wei Yang wrote:
-> During the EEH hotplug event, iommu_add_device() will be invoked three times
-> and two of them will trigger warning or error.
-> 
-> The three times to invoke the iommu_add_device() are:
-> 
->     pci_device_add
->        ...
->        set_iommu_table_base_and_group   <- 1st time, fail
->     device_add
->        ...
->        tce_iommu_bus_notifier           <- 2nd time, succees
->     pcibios_add_pci_devices
->        ...
->        pcibios_setup_bus_devices        <- 3rd time, re-attach
-> 
-> The first time fails, since the dev->kobj->sd is not initialized. The
-> dev->kobj->sd is initialized in device_add().
-> The third time's warning is triggered by the re-attach of the iommu_group.
-> 
-> After applying this patch, the error
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Nack.
+Current code does not check for unhandled/unrecovered errors and return from
+interrupt if it is recoverable exception which in-turn triggers same machine
+check exception in a loop causing hypervisor to be unresponsive.
 
-The patch still seems incorrect and we actually need to remove
-tce_iommu_bus_notifier completely as pcibios_setup_bus_devices is called
-from another notifier anyway. Could you please test it?
+This patch fixes this situation and forces hypervisor to panic for
+unhandled/unrecovered errors.
 
+This patch also fixes another issue where unrecoverable_exception routine
+was called in real mode in case of unrecoverable exception (MSR_RI = 0).
+This causes another exception vector 0x300 (data access) during system crash
+leading to confusion while debugging cause of the system crash.
 
-> 
->     iommu_tce: 0003:05:00.0 has not been added, ret=-14
-> 
-> and the warning
-> 
->     [  204.123609] ------------[ cut here ]------------
->     [  204.123645] WARNING: at arch/powerpc/kernel/iommu.c:1125
->     [  204.123680] Modules linked in: xt_CHECKSUM nf_conntrack_netbios_ns nf_conntrack_broadcast ipt_MASQUERADE ip6t_REJECT bnep bluetooth 6lowpan_iphc rfkill xt_conntrack ebtable_nat ebtable_broute bridge stp llc mlx4_ib ib_sa ib_mad ib_core ib_addr ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw bnx2x tg3 mlx4_core nfsd ptp mdio ses libcrc32c nfs_acl enclosure be2net pps_core shpchp lockd kvm uinput sunrpc binfmt_misc lpfc scsi_transport_fc ipr scsi_tgt
->     [  204.124356] CPU: 18 PID: 650 Comm: eehd Not tainted 3.14.0-rc5yw+ #102
->     [  204.124400] task: c0000027ed485670 ti: c0000027ed50c000 task.ti: c0000027ed50c000
->     [  204.124453] NIP: c00000000003cf80 LR: c00000000006c648 CTR: c00000000006c5c0
->     [  204.124506] REGS: c0000027ed50f440 TRAP: 0700   Not tainted  (3.14.0-rc5yw+)
->     [  204.124558] MSR: 9000000000029032 <SF,HV,EE,ME,IR,DR,RI>  CR: 88008084  XER: 20000000
->     [  204.124682] CFAR: c00000000006c644 SOFTE: 1
->     GPR00: c00000000006c648 c0000027ed50f6c0 c000000001398380 c0000027ec260300
->     GPR04: c0000027ea92c000 c00000000006ad00 c0000000016e41b0 0000000000000110
->     GPR08: c0000000012cd4c0 0000000000000001 c0000027ec2602ff 0000000000000062
->     GPR12: 0000000028008084 c00000000fdca200 c0000000000d1d90 c0000027ec281a80
->     GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
->     GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000001
->     GPR24: 000000005342697b 0000000000002906 c000001fe6ac9800 c000001fe6ac9800
->     GPR28: 0000000000000000 c0000000016e3a80 c0000027ea92c090 c0000027ea92c000
->     [  204.125353] NIP [c00000000003cf80] .iommu_add_device+0x30/0x1f0
->     [  204.125399] LR [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
->     [  204.125443] Call Trace:
->     [  204.125464] [c0000027ed50f6c0] [c0000027ed50f750] 0xc0000027ed50f750 (unreliable)
->     [  204.125526] [c0000027ed50f750] [c00000000006c648] .pnv_pci_ioda_dma_dev_setup+0x88/0xb0
->     [  204.125588] [c0000027ed50f7d0] [c000000000069cc8] .pnv_pci_dma_dev_setup+0x78/0x340
->     [  204.125650] [c0000027ed50f870] [c000000000044408] .pcibios_setup_device+0x88/0x2f0
->     [  204.125712] [c0000027ed50f940] [c000000000046040] .pcibios_setup_bus_devices+0x60/0xd0
->     [  204.125774] [c0000027ed50f9c0] [c000000000043acc] .pcibios_add_pci_devices+0xdc/0x1c0
->     [  204.125837] [c0000027ed50fa50] [c00000000086f970] .eeh_reset_device+0x36c/0x4f0
->     [  204.125939] [c0000027ed50fb20] [c00000000003a2d8] .eeh_handle_normal_event+0x448/0x480
->     [  204.126068] [c0000027ed50fbc0] [c00000000003a35c] .eeh_handle_event+0x4c/0x340
->     [  204.126192] [c0000027ed50fc80] [c00000000003a74c] .eeh_event_handler+0xfc/0x1b0
->     [  204.126319] [c0000027ed50fd30] [c0000000000d1ea0] .kthread+0x110/0x130
->     [  204.126430] [c0000027ed50fe30] [c00000000000a460] .ret_from_kernel_thread+0x5c/0x7c
->     [  204.126556] Instruction dump:
->     [  204.126610] 7c0802a6 fba1ffe8 fbc1fff0 fbe1fff8 f8010010 f821ff71 7c7e1b78 60000000
->     [  204.126787] 60000000 e87e0298 3143ffff 7d2a1910 <0b090000> 2fa90000 40de00c8 ebfe0218
->     [  204.126966] ---[ end trace 6e7aefd80add2973 ]---
-> 
-> are cleared.
-> 
-> This patch removes iommu_add_device() in pnv_pci_ioda_dma_dev_setup(), which
-> revert part of the change in commit d905c5df(PPC: POWERNV: move
-> iommu_add_device earlier).
-> 
-> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/pci-ioda.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index bc8e74e..bd3870e 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1423,7 +1423,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
->  
->  	pe = &phb->ioda.pe_array[pdn->pe_number];
->  	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
-> -	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
-> +	set_iommu_table_base(&pdev->dev, pe->tce32_table);
->  }
->  
->  static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
-> 
+Also turn ME bit off while going down, so that when another MCE is hit during
+panic path, system will checkstop and hypervisor will get restarted cleanly
+by SP.
 
+With the above fixes we now throw correct console messages (see below) while
+crashing the system in case of unhandled/unrecoverable machine checks.
 
--- 
-Alexey Kardashevskiy
-IBM OzLabs, LTC Team
+--------------
+Severe Machine check interrupt [[Not recovered]
+  Initiator: CPU
+  Error type: UE [Instruction fetch]
+    Effective address: 0000000030002864
+Oops: Machine check, sig: 7 [#1]
+SMP NR_CPUS=2048 NUMA PowerNV
+Modules linked in: bork(O) bridge stp llc kvm [last unloaded: bork]
+CPU: 36 PID: 55162 Comm: bash Tainted: G           O 3.14.0mce #1
+task: c000002d72d022d0 ti: c000000007ec0000 task.ti: c000002d72de4000
+NIP: 0000000030002864 LR: 00000000300151a4 CTR: 000000003001518c
+REGS: c000000007ec3d80 TRAP: 0200   Tainted: G           O  (3.14.0mce)
+MSR: 9000000000041002 <SF,HV,ME,RI>  CR: 28222848  XER: 20000000
+CFAR: 0000000030002838 DAR: d0000000004d0000 DSISR: 00000000 SOFTE: 1
+GPR00: 000000003001512c 0000000031f92cb0 0000000030078af0 0000000030002864
+GPR04: d0000000004d0000 0000000000000000 0000000030002864 ffffffffffffffc9
+GPR08: 0000000000000024 0000000030008af0 000000000000002c c00000000150e728
+GPR12: 9000000000041002 0000000031f90000 0000000010142550 0000000040000000
+GPR16: 0000000010143cdc 0000000000000000 00000000101306fc 00000000101424dc
+GPR20: 00000000101424e0 000000001013c6f0 0000000000000000 0000000000000000
+GPR24: 0000000010143ce0 00000000100f6440 c000002d72de7e00 c000002d72860250
+GPR28: c000002d72860240 c000002d72ac0038 0000000000000008 0000000000040000
+NIP [0000000030002864] 0x30002864
+LR [00000000300151a4] 0x300151a4
+Call Trace:
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+---[ end trace 7285f0beac1e29d3 ]---
 
-e-mail: aik@au1.ibm.com
-notes: Alexey Kardashevskiy/Australia/IBM
+Sending IPI to other CPUs
+IPI complete
+OPAL V3 detected !
+--------------
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/exceptions-64s.S |   40 +++++++++++++++++++++++++++++++---
+ 1 file changed, 37 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 3afd391..e7eded1 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1389,6 +1389,7 @@ machine_check_handle_early:
+ 	bl	.save_nvgprs
+ 	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	bl	.machine_check_early
++	std	r3,RESULT(r1)	/* Save result */
+ 	ld	r12,_MSR(r1)
+ #ifdef	CONFIG_PPC_P7_NAP
+ 	/*
+@@ -1443,11 +1444,33 @@ machine_check_handle_early:
+ 	 */
+ 	andi.	r11,r12,MSR_RI
+ 	bne	2f
+-1:	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.unrecoverable_exception
+-	b	1b
++1:	mfspr	r11,SPRN_SRR0
++	ld	r10,PACAKBASE(r13)
++	LOAD_HANDLER(r10,unrecover_mce)
++	mtspr	SPRN_SRR0,r10
++	ld	r10,PACAKMSR(r13)
++	/*
++	 * We are going down. But there are chances that we might get hit by
++	 * another MCE during panic path and we may run into unstable state
++	 * with no way out. Hence, turn ME bit off while going down, so that
++	 * when another MCE is hit during panic path, system will checkstop
++	 * and hypervisor will get restarted cleanly by SP.
++	 */
++	li	r3,MSR_ME
++	andc	r10,r10,r3		/* Turn off MSR_ME */
++	mtspr	SPRN_SRR1,r10
++	rfid
++	b	.
+ 2:
+ 	/*
++	 * Check if we have successfully handled/recovered from error, if not
++	 * then stay on emergency stack and panic.
++	 */
++	ld	r3,RESULT(r1)	/* Load result */
++	cmpdi	r3,0		/* see if we handled MCE successfully */
++
++	beq	1b		/* if !handled then panic */
++	/*
+ 	 * Return from MC interrupt.
+ 	 * Queue up the MCE event so that we can log it later, while
+ 	 * returning from kernel or opal call.
+@@ -1460,6 +1483,17 @@ machine_check_handle_early:
+ 	MACHINE_CHECK_HANDLER_WINDUP
+ 	b	machine_check_pSeries
+ 
++unrecover_mce:
++	/* Invoke machine_check_exception to print MCE event and panic. */
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.machine_check_exception
++	/*
++	 * We will not reach here. Even if we did, there is no way out. Call
++	 * unrecoverable_exception and die.
++	 */
++1:	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.unrecoverable_exception
++	b	1b
+ /*
+  * r13 points to the PACA, r9 contains the saved CR,
+  * r12 contain the saved SRR1, SRR0 is still ready for return
