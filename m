@@ -1,39 +1,35 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <swarren@wwwdotorg.org>
+Received: from avon.wwwdotorg.org (avon.wwwdotorg.org [70.85.31.133])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3723314009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 00:39:45 +1000 (EST)
-Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Mon, 28 Apr 2014 15:39:41 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id A8D562190041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 15:39:31 +0100 (BST)
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3SEddeH1442296
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 14:39:39 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3SEdao7012448
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 08:39:38 -0600
-Message-ID: <535E6804.5050508@linux.vnet.ibm.com>
-Date: Mon, 28 Apr 2014 16:39:00 +0200
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7B3D8140087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 02:50:19 +1000 (EST)
+Message-ID: <535E84FB.4080305@wwwdotorg.org>
+Date: Mon, 28 Apr 2014 10:42:35 -0600
+From: Stephen Warren <swarren@wwwdotorg.org>
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [git pull] Please pull abiv2 branch
-References: <20140423124902.5be9dab0@kryten>
-In-Reply-To: <20140423124902.5be9dab0@kryten>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: philippe.bergheaud@fr.ibm.com, mikey@neuling.org, amodra@gmail.com,
- rusty@rustcorp.com.au, rostedt@goodmis.org, ulrich.weigand@de.ibm.com,
- paulus@samba.org, mjw@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Anton Vorontsov <anton@enomsg.org>,
+ Barry Song <baohua@kernel.org>, Ben Dooks <ben-linux@fluff.org>,
+ Chris Ball <chris@printf.net>,
+ devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Jaehoon Chung <jh80.chung@samsung.com>,
+ Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org,
+ linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-tegra@vger.kernel.org,
+ Mark Rutland <mark.rutland@arm.com>,
+ Michal Simek <michal.simek@xilinx.com>, Pawel Moll <pawel.moll@arm.com>,
+ Randy Dunlap <rdunlap@infradead.org>,
+ Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>,
+ Seungwon Jeon <tgih.jun@samsung.com>,
+ Shawn Guo <shawn.guo@freescale.com>, spear-devel@list.st.com,
+ Thierry Reding <thierry.reding@gmail.com>,
+ Ulf Hansson <ulf.hansson@linaro.org>,
+ Viresh Kumar <viresh.linux@gmail.com>
+Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
+References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
+In-Reply-To: <20140423185534.GA26756@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,15 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard wrote:
-> Here are the ABIv2 patches rebased against 3.15-rc2.
+On 04/23/2014 12:55 PM, Russell King - ARM Linux wrote:
+> All,
+> 
+> This is where I'm at with trying to clean up the SDHCI mess, and sort out
+> issues I've noticed when trying to get UHS support working on CuBoxes.
+> This is my full patch set, but I recommend not applying patch 37 as there
+> appears to be a hardware issue preventing it working reliably.
+> 
+> In any case, patches 0-33 inclusive are the SDHCI clean up, based against
+> v3.15-rc1.  Patches 34 and 35 are Olof's Wifi support, 36 is my fix against
+> those, and 38 adds the Broadcom Wifi and BT support for CuBox.
+> 
+> The questions over how to handle these devices were never properly settled,
+> so I recommend against merging patch 34 onwards.  As for the rest, I'm not
+> planning on any further work, so it may be a good idea for people to
+> consider testing them with a view to getting them merged.
 
-After recompiling 3.15-rc2 with the ABIv2 patches,
-I see the following line in Modules.symvers:
+The series,
+Tested-by: Stephen Warren <swarren@nvidia.com>
 
-     0x00000000 TOC. vmlinux EXPORT_SYMBOL
-
-Kernel will not load modules because TOC. has no CRC.
-Is this expected ? Shouldn't TOC. have a CRC ?
-
-Philippe
+(On an NVIDIA Tegra "Jetson TK1" board, with the patches applied on top
+of next-20140428, also with Andrew Bresticker's Tegra SDHCI patches
+"mmc: tegra: disable UHS modes" and "mmc: tegra: fix reporting of base
+clock frequency" applied)
