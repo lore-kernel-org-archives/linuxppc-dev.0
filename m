@@ -1,32 +1,34 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CB829140098
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 00:16:30 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 42045140174
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 00:16:36 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 28 Apr 2014 19:46:27 +0530
+ Mon, 28 Apr 2014 19:46:33 +0530
 Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id B15921258053
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:45:16 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id B7C7CE0058
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:49 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3SEGJTT50921692
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:20 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3SEGOAO032236
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:24 +0530
-Subject: [PATCH 1/2] powerpc/book3s: Improve machine check handling for
- unhandled errors
+ s3SEGPUV43581690
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:25 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3SEGUQu002914
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:30 +0530
+Subject: [PATCH 2/2] powerpc/book3s: Add stack overflow check in machine
+ check handler.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 28 Apr 2014 19:46:22 +0530
-Message-ID: <20140428141622.5522.6901.stgit@mars>
+Date: Mon, 28 Apr 2014 19:46:29 +0530
+Message-ID: <20140428141629.5522.57918.stgit@mars>
+In-Reply-To: <20140428141622.5522.6901.stgit@mars>
+References: <20140428141622.5522.6901.stgit@mars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Michael Neuling <mikey@neuling.org>
@@ -41,129 +43,66 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Current code does not check for unhandled/unrecovered errors and return from
-interrupt if it is recoverable exception which in-turn triggers same machine
-check exception in a loop causing hypervisor to be unresponsive.
-
-This patch fixes this situation and forces hypervisor to panic for
-unhandled/unrecovered errors.
-
-This patch also fixes another issue where unrecoverable_exception routine
-was called in real mode in case of unrecoverable exception (MSR_RI = 0).
-This causes another exception vector 0x300 (data access) during system crash
-leading to confusion while debugging cause of the system crash.
-
-Also turn ME bit off while going down, so that when another MCE is hit during
-panic path, system will checkstop and hypervisor will get restarted cleanly
-by SP.
-
-With the above fixes we now throw correct console messages (see below) while
-crashing the system in case of unhandled/unrecoverable machine checks.
-
---------------
-Severe Machine check interrupt [[Not recovered]
-  Initiator: CPU
-  Error type: UE [Instruction fetch]
-    Effective address: 0000000030002864
-Oops: Machine check, sig: 7 [#1]
-SMP NR_CPUS=2048 NUMA PowerNV
-Modules linked in: bork(O) bridge stp llc kvm [last unloaded: bork]
-CPU: 36 PID: 55162 Comm: bash Tainted: G           O 3.14.0mce #1
-task: c000002d72d022d0 ti: c000000007ec0000 task.ti: c000002d72de4000
-NIP: 0000000030002864 LR: 00000000300151a4 CTR: 000000003001518c
-REGS: c000000007ec3d80 TRAP: 0200   Tainted: G           O  (3.14.0mce)
-MSR: 9000000000041002 <SF,HV,ME,RI>  CR: 28222848  XER: 20000000
-CFAR: 0000000030002838 DAR: d0000000004d0000 DSISR: 00000000 SOFTE: 1
-GPR00: 000000003001512c 0000000031f92cb0 0000000030078af0 0000000030002864
-GPR04: d0000000004d0000 0000000000000000 0000000030002864 ffffffffffffffc9
-GPR08: 0000000000000024 0000000030008af0 000000000000002c c00000000150e728
-GPR12: 9000000000041002 0000000031f90000 0000000010142550 0000000040000000
-GPR16: 0000000010143cdc 0000000000000000 00000000101306fc 00000000101424dc
-GPR20: 00000000101424e0 000000001013c6f0 0000000000000000 0000000000000000
-GPR24: 0000000010143ce0 00000000100f6440 c000002d72de7e00 c000002d72860250
-GPR28: c000002d72860240 c000002d72ac0038 0000000000000008 0000000000040000
-NIP [0000000030002864] 0x30002864
-LR [00000000300151a4] 0x300151a4
-Call Trace:
-Instruction dump:
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
-XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
----[ end trace 7285f0beac1e29d3 ]---
-
-Sending IPI to other CPUs
-IPI complete
-OPAL V3 detected !
---------------
+Currently machine check handler does not check for stack overflow for
+nested machine check. If we hit another MCE while inside the machine check
+handler repeatedly from same address then we get into risk of stack
+overflow which can cause huge memory corruption. This patch limits the
+nested MCE level to 4 and panic when we cross level 4.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   40 +++++++++++++++++++++++++++++++---
- 1 file changed, 37 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/exceptions-64s.S |   24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
 
 diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 3afd391..e7eded1 100644
+index e7eded1..06774d8 100644
 --- a/arch/powerpc/kernel/exceptions-64s.S
 +++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1389,6 +1389,7 @@ machine_check_handle_early:
- 	bl	.save_nvgprs
- 	addi	r3,r1,STACK_FRAME_OVERHEAD
- 	bl	.machine_check_early
-+	std	r3,RESULT(r1)	/* Save result */
- 	ld	r12,_MSR(r1)
- #ifdef	CONFIG_PPC_P7_NAP
- 	/*
-@@ -1443,11 +1444,33 @@ machine_check_handle_early:
- 	 */
- 	andi.	r11,r12,MSR_RI
- 	bne	2f
--1:	addi	r3,r1,STACK_FRAME_OVERHEAD
--	bl	.unrecoverable_exception
--	b	1b
-+1:	mfspr	r11,SPRN_SRR0
-+	ld	r10,PACAKBASE(r13)
-+	LOAD_HANDLER(r10,unrecover_mce)
-+	mtspr	SPRN_SRR0,r10
-+	ld	r10,PACAKMSR(r13)
-+	/*
-+	 * We are going down. But there are chances that we might get hit by
-+	 * another MCE during panic path and we may run into unstable state
-+	 * with no way out. Hence, turn ME bit off while going down, so that
-+	 * when another MCE is hit during panic path, system will checkstop
-+	 * and hypervisor will get restarted cleanly by SP.
+@@ -439,9 +439,9 @@ BEGIN_FTR_SECTION
+ 	 * R9		= CR
+ 	 * Original R9 to R13 is saved on PACA_EXMC
+ 	 *
+-	 * Switch to mc_emergency stack and handle re-entrancy (though we
+-	 * currently don't test for overflow). Save MCE registers srr1,
+-	 * srr0, dar and dsisr and then set ME=1
++	 * Switch to mc_emergency stack and handle re-entrancy (we limit
++	 * the nested MCE upto level 4 to avoid stack overflow).
++	 * Save MCE registers srr1, srr0, dar and dsisr and then set ME=1
+ 	 *
+ 	 * We use paca->in_mce to check whether this is the first entry or
+ 	 * nested machine check. We increment paca->in_mce to track nested
+@@ -464,6 +464,9 @@ BEGIN_FTR_SECTION
+ 0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
+ 	addi	r10,r10,1		/* increment paca->in_mce */
+ 	sth	r10,PACA_IN_MCE(r13)
++	/* Limit nested MCE to level 4 to avoid stack overflow */
++	cmpwi	r10,4
++	bgt	2f			/* Check if we hit limit of 4 */
+ 	std	r11,GPR1(r1)		/* Save r1 on the stack. */
+ 	std	r11,0(r1)		/* make stack chain pointer */
+ 	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
+@@ -482,10 +485,23 @@ BEGIN_FTR_SECTION
+ 	ori	r11,r11,MSR_RI		/* turn on RI bit */
+ 	ld	r12,PACAKBASE(r13)	/* get high part of &label */
+ 	LOAD_HANDLER(r12, machine_check_handle_early)
+-	mtspr	SPRN_SRR0,r12
++1:	mtspr	SPRN_SRR0,r12
+ 	mtspr	SPRN_SRR1,r11
+ 	rfid
+ 	b	.	/* prevent speculative execution */
++2:
++	/* Stack overflow. Stay on emergency stack and panic.
++	 * Keep the ME bit off while panic-ing, so that if we hit
++	 * another machine check we checkstop.
 +	 */
-+	li	r3,MSR_ME
-+	andc	r10,r10,r3		/* Turn off MSR_ME */
-+	mtspr	SPRN_SRR1,r10
-+	rfid
-+	b	.
- 2:
- 	/*
-+	 * Check if we have successfully handled/recovered from error, if not
-+	 * then stay on emergency stack and panic.
-+	 */
-+	ld	r3,RESULT(r1)	/* Load result */
-+	cmpdi	r3,0		/* see if we handled MCE successfully */
-+
-+	beq	1b		/* if !handled then panic */
-+	/*
- 	 * Return from MC interrupt.
- 	 * Queue up the MCE event so that we can log it later, while
- 	 * returning from kernel or opal call.
-@@ -1460,6 +1483,17 @@ machine_check_handle_early:
- 	MACHINE_CHECK_HANDLER_WINDUP
- 	b	machine_check_pSeries
- 
-+unrecover_mce:
-+	/* Invoke machine_check_exception to print MCE event and panic. */
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.machine_check_exception
-+	/*
-+	 * We will not reach here. Even if we did, there is no way out. Call
-+	 * unrecoverable_exception and die.
-+	 */
-+1:	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.unrecoverable_exception
++	addi	r1,r1,INT_FRAME_SIZE	/* go back to previous stack frame */
++	ld	r11,PACAKMSR(r13)
++	ld	r12,PACAKBASE(r13)
++	LOAD_HANDLER(r12, unrecover_mce)
++	li	r10,MSR_ME
++	andc	r11,r11,r10		/* Turn off MSR_ME */
 +	b	1b
- /*
-  * r13 points to the PACA, r9 contains the saved CR,
-  * r12 contain the saved SRR1, SRR0 is still ready for return
++	b	.	/* prevent speculative execution */
+ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+ 
+ machine_check_pSeries:
