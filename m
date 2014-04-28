@@ -1,13 +1,13 @@
 Return-Path: <joseph.salisbury@canonical.com>
 Received: from youngberry.canonical.com (youngberry.canonical.com
- [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id 13A711400BE
+ [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id 147491400DE
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 07:11:32 +1000 (EST)
 From: Joseph Salisbury <joseph.salisbury@canonical.com>
 To: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 3/3][RFC][v1] powerpc: kconfig: Increase the size of
- COMMAND_LINE_SIZE to 2048 from 512 for powerpc.
-Date: Mon, 28 Apr 2014 17:11:25 -0400
-Message-Id: <2640a93711258c5a6e72e7fed8f89ddd25504d5b.1398287637.git.joseph.salisbury@canonical.com>
+Subject: [PATCH 2/3][RFC][v1] powerpc: Change the powerpc architecture to use
+ Kconfig to set COMMAND_LINE_SIZE.
+Date: Mon, 28 Apr 2014 17:11:24 -0400
+Message-Id: <ea6384682cc09ce4dc18a2e8549df59c61faf851.1398287637.git.joseph.salisbury@canonical.com>
 In-Reply-To: <cover.1398287636.git.joseph.salisbury@canonical.com>
 References: <cover.1398287636.git.joseph.salisbury@canonical.com>
 In-Reply-To: <cover.1398287636.git.joseph.salisbury@canonical.com>
@@ -22,27 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-BugLink: http://bugs.launchpad.net/bugs/1306677
-
-While booting the PPC64EL kernel, the command line gets truncated to 512 characters. This is due to a limit of 512 defined for COMMAND_LINE_SIZE.  It would be beneficial to have a command line longer than 512 characters, as iscsi targets and cloud-init parameters are passed through the kernel command line.
+The powerpc architecture currently uses asm-generic to set the value of COMMAND_LINE_SIZE.  This change will allow the value of COMMAND_LINE_SIZE to be set specifically for powerpc without affecting other architectures that may use asm-generic.
 
 Signed-off-by: Joseph Salisbury <joseph.salisbury@canonical.com>
 ---
- arch/powerpc/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/setup.h      | 2 --
+ arch/powerpc/include/uapi/asm/setup.h | 1 -
+ 2 files changed, 3 deletions(-)
+ delete mode 100644 arch/powerpc/include/uapi/asm/setup.h
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 3426bdc..becee70 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -614,7 +614,7 @@ config CMDLINE_BOOL
+diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
+index 11ba86e..c7b62c3 100644
+--- a/arch/powerpc/include/asm/setup.h
++++ b/arch/powerpc/include/asm/setup.h
+@@ -1,8 +1,6 @@
+ #ifndef _ASM_POWERPC_SETUP_H
+ #define _ASM_POWERPC_SETUP_H
  
- config COMMAND_LINE_SIZE
-         int "Maximum size of the command line."
--        default "512"
-+        default "2048"
-         help
-         This is the per architecture maximum command line size.
+-#include <uapi/asm/setup.h>
+-
+ #ifndef __ASSEMBLY__
+ extern void ppc_printk_progress(char *s, unsigned short hex);
  
+diff --git a/arch/powerpc/include/uapi/asm/setup.h b/arch/powerpc/include/uapi/asm/setup.h
+deleted file mode 100644
+index 552df83..0000000
+--- a/arch/powerpc/include/uapi/asm/setup.h
++++ /dev/null
+@@ -1 +0,0 @@
+-#include <asm-generic/setup.h>
 -- 
 1.9.1
