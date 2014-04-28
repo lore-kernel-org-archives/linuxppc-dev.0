@@ -1,35 +1,18 @@
-Return-Path: <swarren@wwwdotorg.org>
-Received: from avon.wwwdotorg.org (avon.wwwdotorg.org [70.85.31.133])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7B3D8140087
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 02:50:19 +1000 (EST)
-Message-ID: <535E84FB.4080305@wwwdotorg.org>
-Date: Mon, 28 Apr 2014 10:42:35 -0600
-From: Stephen Warren <swarren@wwwdotorg.org>
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
- Anton Vorontsov <anton@enomsg.org>,
- Barry Song <baohua@kernel.org>, Ben Dooks <ben-linux@fluff.org>,
- Chris Ball <chris@printf.net>,
- devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Jaehoon Chung <jh80.chung@samsung.com>,
- Kumar Gala <galak@codeaurora.org>, linux-arm-kernel@lists.infradead.org,
- linux-doc@vger.kernel.org, linux-mmc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-tegra@vger.kernel.org,
- Mark Rutland <mark.rutland@arm.com>,
- Michal Simek <michal.simek@xilinx.com>, Pawel Moll <pawel.moll@arm.com>,
- Randy Dunlap <rdunlap@infradead.org>,
- Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>,
- Seungwon Jeon <tgih.jun@samsung.com>,
- Shawn Guo <shawn.guo@freescale.com>, spear-devel@list.st.com,
- Thierry Reding <thierry.reding@gmail.com>,
- Ulf Hansson <ulf.hansson@linaro.org>,
- Viresh Kumar <viresh.linux@gmail.com>
-Subject: Re: [PATCH 00/38] MMC updates, plus CuBox-i WiFi support
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
-In-Reply-To: <20140423185534.GA26756@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <joseph.salisbury@canonical.com>
+Received: from youngberry.canonical.com (youngberry.canonical.com
+ [91.189.89.112]) by ozlabs.org (Postfix) with ESMTP id 13A711400BE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 07:11:32 +1000 (EST)
+From: Joseph Salisbury <joseph.salisbury@canonical.com>
+To: linux-kernel@vger.kernel.org, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 3/3][RFC][v1] powerpc: kconfig: Increase the size of
+ COMMAND_LINE_SIZE to 2048 from 512 for powerpc.
+Date: Mon, 28 Apr 2014 17:11:25 -0400
+Message-Id: <2640a93711258c5a6e72e7fed8f89ddd25504d5b.1398287637.git.joseph.salisbury@canonical.com>
+In-Reply-To: <cover.1398287636.git.joseph.salisbury@canonical.com>
+References: <cover.1398287636.git.joseph.salisbury@canonical.com>
+In-Reply-To: <cover.1398287636.git.joseph.salisbury@canonical.com>
+References: <cover.1398287636.git.joseph.salisbury@canonical.com>
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,27 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/23/2014 12:55 PM, Russell King - ARM Linux wrote:
-> All,
-> 
-> This is where I'm at with trying to clean up the SDHCI mess, and sort out
-> issues I've noticed when trying to get UHS support working on CuBoxes.
-> This is my full patch set, but I recommend not applying patch 37 as there
-> appears to be a hardware issue preventing it working reliably.
-> 
-> In any case, patches 0-33 inclusive are the SDHCI clean up, based against
-> v3.15-rc1.  Patches 34 and 35 are Olof's Wifi support, 36 is my fix against
-> those, and 38 adds the Broadcom Wifi and BT support for CuBox.
-> 
-> The questions over how to handle these devices were never properly settled,
-> so I recommend against merging patch 34 onwards.  As for the rest, I'm not
-> planning on any further work, so it may be a good idea for people to
-> consider testing them with a view to getting them merged.
+BugLink: http://bugs.launchpad.net/bugs/1306677
 
-The series,
-Tested-by: Stephen Warren <swarren@nvidia.com>
+While booting the PPC64EL kernel, the command line gets truncated to 512 characters. This is due to a limit of 512 defined for COMMAND_LINE_SIZE.  It would be beneficial to have a command line longer than 512 characters, as iscsi targets and cloud-init parameters are passed through the kernel command line.
 
-(On an NVIDIA Tegra "Jetson TK1" board, with the patches applied on top
-of next-20140428, also with Andrew Bresticker's Tegra SDHCI patches
-"mmc: tegra: disable UHS modes" and "mmc: tegra: fix reporting of base
-clock frequency" applied)
+Signed-off-by: Joseph Salisbury <joseph.salisbury@canonical.com>
+---
+ arch/powerpc/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 3426bdc..becee70 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -614,7 +614,7 @@ config CMDLINE_BOOL
+ 
+ config COMMAND_LINE_SIZE
+         int "Maximum size of the command line."
+-        default "512"
++        default "2048"
+         help
+         This is the per architecture maximum command line size.
+ 
+-- 
+1.9.1
