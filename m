@@ -1,27 +1,20 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-lb0-f171.google.com (mail-lb0-f171.google.com
- [209.85.217.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <B48286@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B62751400D5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 15:53:12 +1000 (EST)
-Received: by mail-lb0-f171.google.com with SMTP id u14so1685556lbd.2
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Apr 2014 22:53:06 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6404A1400A9
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 16:31:01 +1000 (EST)
+From: Hou Zhiqiang <B48286@freescale.com>
+To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH V5] mtd: m25p80: modify the name of mtd_info
+Date: Mon, 28 Apr 2014 14:28:25 +0800
+Message-ID: <1398666505-4907-1-git-send-email-B48286@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1398462328.24575.20.camel@snotra.buserror.net>
-References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
- <1398462328.24575.20.camel@snotra.buserror.net>
-Date: Mon, 28 Apr 2014 13:53:06 +0800
-Message-ID: <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which is
- STANDBY or MEM
-From: Leo Li <pku.leo@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Dongsheng Wang <dongsheng.wang@freescale.com>,
- =?UTF-8?B?5q2j6ZuEIOmHkQ==?= <jason.jin@freescale.com>,
- Zhao Chenhui <chenhui.zhao@freescale.com>
+Content-Type: text/plain
+Cc: shijie8@gmail.com, Hou Zhiqiang <B48286@freescale.com>,
+ scottwood@freescale.com, mingkai.hu@freescale.com, computersforpeace@gmail.com,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,27 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
-> On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
->> From: Wang Dongsheng <dongsheng.wang@freescale.com>
->>
->> Add set_pm_suspend_state & pm_suspend_state functions to set/get
->> suspend state. When system going to sleep or deep sleep, devices
->> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
->> function and to handle different situations.
->>
->> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
->> ---
->> *v2*
->> Move pm api from fsl platform to powerpc general framework.
->
-> What is powerpc-specific about this?
+To specify spi flash layouts by "mtdparts=..." in cmdline, we must
+give mtd_info a fixed name, because the cmdlinepart's parser will
+match the name of mtd_info given in cmdline.
+Now, if it use DT, the mtd_info's name will be spi->dev->name. It
+consists of spi_master->bus_num, and the spi_master->bus_num maybe
+dynamically fetched. So, in this case, replace the component bus_num
+with the physical address of spi master.
 
-Generally I agree with you.  But I had the discussion about this topic
-a while ago with the PM maintainer.  He suggestion to go with the
-platform way.
+Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
+---
+V5:
+	Rebase on the latest l2-mtd tree.
+V4:
+	add check no-NULL for pointer of master's device node, and if it failed
+	to get physcial address of the master, then name the mtd_info by the
+	name of spi->dev.
+V3:
+	Fix a bug, matching unsigned long long with "%llx".
+V2:
+	1. Fix some code style issue.
+	2. Cast physical address to unsigned long long.
 
-https://lkml.org/lkml/2013/8/16/505
+ drivers/mtd/devices/m25p80.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Regards,
-Leo
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 1557d8f..329aa2c 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -26,6 +26,7 @@
+ #include <linux/spi/spi.h>
+ #include <linux/spi/flash.h>
+ #include <linux/mtd/spi-nor.h>
++#include <linux/of_address.h>
+ 
+ #define	MAX_CMD_SIZE		6
+ struct m25p {
+@@ -196,6 +197,8 @@ static int m25p_probe(struct spi_device *spi)
+ 	struct m25p *flash;
+ 	struct spi_nor *nor;
+ 	enum read_mode mode = SPI_NOR_NORMAL;
++	struct resource res;
++	struct device_node *mnp = spi->master->dev.of_node;
+ 	int ret;
+ 
+ 	flash = devm_kzalloc(&spi->dev, sizeof(*flash), GFP_KERNEL);
+@@ -228,6 +231,17 @@ static int m25p_probe(struct spi_device *spi)
+ 	data = dev_get_platdata(&spi->dev);
+ 	ppdata.of_node = spi->dev.of_node;
+ 
++	if (mnp) {
++		ret = of_address_to_resource(mnp, 0, &res);
++		if (!ret) {
++			flash->mtd.name = kasprintf(GFP_KERNEL, "spi%llx.%d",
++					(unsigned long long)res.start,
++					spi->chip_select);
++			if (!flash->mtd.name)
++				return -ENOMEM;
++		}
++	}
++
+ 	return mtd_device_parse_register(&flash->mtd, NULL, &ppdata,
+ 			data ? data->parts : NULL,
+ 			data ? data->nr_parts : 0);
+-- 
+1.8.5
