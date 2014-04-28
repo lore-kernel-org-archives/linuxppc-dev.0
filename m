@@ -1,20 +1,18 @@
-Return-Path: <B48286@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6404A1400A9
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 16:31:01 +1000 (EST)
-From: Hou Zhiqiang <B48286@freescale.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH V5] mtd: m25p80: modify the name of mtd_info
-Date: Mon, 28 Apr 2014 14:28:25 +0800
-Message-ID: <1398666505-4907-1-git-send-email-B48286@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: shijie8@gmail.com, Hou Zhiqiang <B48286@freescale.com>,
- scottwood@freescale.com, mingkai.hu@freescale.com, computersforpeace@gmail.com,
- dwmw2@infradead.org
+ by ozlabs.org (Postfix) with ESMTPS id 1C0311400D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Apr 2014 16:52:50 +1000 (EST)
+Message-ID: <1398667957.30694.24.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 28 Apr 2014 16:52:37 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,69 +22,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To specify spi flash layouts by "mtdparts=..." in cmdline, we must
-give mtd_info a fixed name, because the cmdlinepart's parser will
-match the name of mtd_info given in cmdline.
-Now, if it use DT, the mtd_info's name will be spi->dev->name. It
-consists of spi_master->bus_num, and the spi_master->bus_num maybe
-dynamically fetched. So, in this case, replace the component bus_num
-with the physical address of spi master.
+Hi Linus !
 
-Signed-off-by: Hou Zhiqiang <B48286@freescale.com>
----
-V5:
-	Rebase on the latest l2-mtd tree.
-V4:
-	add check no-NULL for pointer of master's device node, and if it failed
-	to get physcial address of the master, then name the mtd_info by the
-	name of spi->dev.
-V3:
-	Fix a bug, matching unsigned long long with "%llx".
-V2:
-	1. Fix some code style issue.
-	2. Cast physical address to unsigned long long.
+Here is a bunch of post-merge window fixes that have been accumulating
+in patchwork while I was on vacation or buried under other stuff last
+week.
 
- drivers/mtd/devices/m25p80.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+We have the now usual batch of LE fixes from Anton (sadly some new stuff
+that went into this merge window had endian issues, we'll try to make
+sure we do better next time)
 
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index 1557d8f..329aa2c 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -26,6 +26,7 @@
- #include <linux/spi/spi.h>
- #include <linux/spi/flash.h>
- #include <linux/mtd/spi-nor.h>
-+#include <linux/of_address.h>
- 
- #define	MAX_CMD_SIZE		6
- struct m25p {
-@@ -196,6 +197,8 @@ static int m25p_probe(struct spi_device *spi)
- 	struct m25p *flash;
- 	struct spi_nor *nor;
- 	enum read_mode mode = SPI_NOR_NORMAL;
-+	struct resource res;
-+	struct device_node *mnp = spi->master->dev.of_node;
- 	int ret;
- 
- 	flash = devm_kzalloc(&spi->dev, sizeof(*flash), GFP_KERNEL);
-@@ -228,6 +231,17 @@ static int m25p_probe(struct spi_device *spi)
- 	data = dev_get_platdata(&spi->dev);
- 	ppdata.of_node = spi->dev.of_node;
- 
-+	if (mnp) {
-+		ret = of_address_to_resource(mnp, 0, &res);
-+		if (!ret) {
-+			flash->mtd.name = kasprintf(GFP_KERNEL, "spi%llx.%d",
-+					(unsigned long long)res.start,
-+					spi->chip_select);
-+			if (!flash->mtd.name)
-+				return -ENOMEM;
-+		}
-+	}
-+
- 	return mtd_device_parse_register(&flash->mtd, NULL, &ppdata,
- 			data ? data->parts : NULL,
- 			data ? data->nr_parts : 0);
--- 
-1.8.5
+Some fixes and cleanups to the new 24x7 performance monitoring stuff
+(mostly typos and cleaning up printk's)
+
+A series of fixes for an issue with our runlatch bit, which wasn't set
+properly for offlined threads/cores and under KVM, causing potentially
+some counters to misbehave along with possible power management issues.
+
+A fix for kexec nasty race where the new kernel wouldn't "see" the
+secondary processors having reached back into firmware in time.
+
+And finally a few other misc (and pretty simple) bug fixes.
+
+Cheers,
+Ben.
+
+The following changes since commit a798c10faf62a505d24e5f6213fbaf904a39623f:
+
+  Linux 3.15-rc2 (2014-04-20 11:08:50 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to e4565362c7adc31201135c4b6d649fc1bdc3bf20:
+
+  powerpc/4xx: Fix section mismatch in ppc4xx_pci.c (2014-04-28 16:32:53 +1000)
+
+----------------------------------------------------------------
+Alistair Popple (1):
+      powerpc/4xx: Fix section mismatch in ppc4xx_pci.c
+
+Aneesh Kumar K.V (1):
+      powerpc/mm: Fix tlbie to add AVAL fields for 64K pages
+
+Anton Blanchard (11):
+      powerpc/powernv: Fix little endian issues in OPAL flash code
+      powerpc/powernv: Use uint64_t instead of size_t in OPAL APIs
+      powerpc/powernv: Remove some OPAL function declaration duplication
+      powerpc/powernv: Fix little endian issues with opal_do_notifier calls
+      powerpc/powernv: Fix little endian issues in OPAL error log code
+      powerpc/powernv: Create OPAL sglist helper functions and fix endian issues
+      powerpc/powernv: Fix little endian issues in OPAL dump code
+      powerpc: Rename duplicate COMMAND_LINE_SIZE define
+      powerpc: Bump COMMAND_LINE_SIZE to 2048
+      powerpc: Bump BOOT_COMMAND_LINE_SIZE to 2048
+      powerpc: Fix error return in rtas_flash module init
+
+Benjamin Herrenschmidt (1):
+      powerpc/powernv: Fix kexec races going back to OPAL
+
+Cody P Schafer (6):
+      powerpc/perf/hv_24x7: Probe errors changed to pr_debug(), padding fixed
+      powerpc/perf/hv_gpci: Probe failures use pr_debug(), and padding reduced
+      powerpc/perf/hv-gpci: Make device attr static
+      powerpc/perf/hv-24x7: Use (unsigned long) not (u32) values when calling plpar_hcall_norets()
+      powerpc/perf/hv-24x7: Remove [static 4096], sparse chokes on it
+      powerpc/perf/hv-24x7: Catalog version number is be64, not be32
+
+Jeff Mahoney (1):
+      powerpc: Export flush_icache_range
+
+Joel Stanley (5):
+      powerpc/powernv: Fix sysparam sysfs error handling
+      powerpc/powernv: Use ssize_t for sysparam return values
+      powerpc/powernv: Check sysfs size before copying
+      powerpc/powernv: Fix typos in sysparam code
+      powerpc/powernv: Check sysparam size before creation
+
+Li Zhong (2):
+      powerpc: Fix Oops in rtas_stop_self()
+      powerpc/pseries: Protect remove_memory() with device hotplug lock
+
+Preeti U Murthy (3):
+      ppc/powernv: Set the runlatch bits correctly for offline cpus
+      ppc/kvm: Set the runlatch bit of a CPU just before starting guest
+      ppc/kvm: Clear the runlatch bit of a vcpu before napping
+
+Wei Yang (2):
+      powerpc/powernv: Reduce multi-hit of iommu_add_device()
+      powerpc/powernv: Release the refcount for pci_dev
+
+ arch/powerpc/boot/main.c                        |   8 +-
+ arch/powerpc/boot/ops.h                         |   2 +-
+ arch/powerpc/boot/ps3.c                         |   4 +-
+ arch/powerpc/include/asm/opal.h                 |  42 ++++-----
+ arch/powerpc/include/uapi/asm/setup.h           |   7 +-
+ arch/powerpc/kernel/ppc_ksyms.c                 |   1 +
+ arch/powerpc/kernel/rtas_flash.c                |   2 +-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S         |  18 +++-
+ arch/powerpc/mm/hash_native_64.c                |  38 ++++----
+ arch/powerpc/perf/hv-24x7.c                     |  35 ++++---
+ arch/powerpc/perf/hv-gpci.c                     |   6 +-
+ arch/powerpc/platforms/powernv/opal-dump.c      |  94 +++----------------
+ arch/powerpc/platforms/powernv/opal-elog.c      |  11 ++-
+ arch/powerpc/platforms/powernv/opal-flash.c     | 118 ++----------------------
+ arch/powerpc/platforms/powernv/opal-sysparam.c  |  32 +++++--
+ arch/powerpc/platforms/powernv/opal.c           |  69 +++++++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c       |   3 +-
+ arch/powerpc/platforms/powernv/setup.c          |  48 +++++++++-
+ arch/powerpc/platforms/powernv/smp.c            |   3 +
+ arch/powerpc/platforms/pseries/hotplug-cpu.c    |   5 +-
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  10 +-
+ arch/powerpc/sysdev/ppc4xx_pci.c                |   2 +-
+ 22 files changed, 273 insertions(+), 285 deletions(-)
