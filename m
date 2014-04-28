@@ -1,34 +1,32 @@
 Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42045140174
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 00:16:36 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 96E3814017D
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 00:17:25 +1000 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Mon, 28 Apr 2014 19:46:33 +0530
+ Mon, 28 Apr 2014 19:47:22 +0530
 Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B7C7CE0058
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:49 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 39E6E394004E
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:47:20 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3SEGPUV43581690
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:25 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3SEGUQu002914
- for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:46:30 +0530
-Subject: [PATCH 2/2] powerpc/book3s: Add stack overflow check in machine
- check handler.
+ s3SEHDJg49610924
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:47:13 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3SEHIWe007957
+ for <linuxppc-dev@ozlabs.org>; Mon, 28 Apr 2014 19:47:19 +0530
+Subject: [PATCH] powerpc/book3s: Increment the mce counter during
+ machine_check_early call.
 From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 28 Apr 2014 19:46:29 +0530
-Message-ID: <20140428141629.5522.57918.stgit@mars>
-In-Reply-To: <20140428141622.5522.6901.stgit@mars>
-References: <20140428141622.5522.6901.stgit@mars>
+Date: Mon, 28 Apr 2014 19:47:17 +0530
+Message-ID: <20140428141717.5582.73823.stgit@mars>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: Michael Neuling <mikey@neuling.org>
@@ -43,66 +41,32 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-Currently machine check handler does not check for stack overflow for
-nested machine check. If we hit another MCE while inside the machine check
-handler repeatedly from same address then we get into risk of stack
-overflow which can cause huge memory corruption. This patch limits the
-nested MCE level to 4 and panic when we cross level 4.
+We don't see MCE counter getting increased in /proc/interrupts which gives
+false impression of no MCE occurred even when there were MCE events.
+The machine check early handling was added for PowerKVM and we missed to
+increment the MCE count in the early handler.
+
+We also increment mce counters in the machine_check_exception call, but
+in most cases where we handle the error hypervisor never reaches there
+unless its fatal and we want to crash. Only during fatal situation we may
+see double increment of mce count. We need to fix that. But for
+now it always good to have some count increased instead of zero.
 
 Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
+ arch/powerpc/kernel/traps.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index e7eded1..06774d8 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -439,9 +439,9 @@ BEGIN_FTR_SECTION
- 	 * R9		= CR
- 	 * Original R9 to R13 is saved on PACA_EXMC
- 	 *
--	 * Switch to mc_emergency stack and handle re-entrancy (though we
--	 * currently don't test for overflow). Save MCE registers srr1,
--	 * srr0, dar and dsisr and then set ME=1
-+	 * Switch to mc_emergency stack and handle re-entrancy (we limit
-+	 * the nested MCE upto level 4 to avoid stack overflow).
-+	 * Save MCE registers srr1, srr0, dar and dsisr and then set ME=1
- 	 *
- 	 * We use paca->in_mce to check whether this is the first entry or
- 	 * nested machine check. We increment paca->in_mce to track nested
-@@ -464,6 +464,9 @@ BEGIN_FTR_SECTION
- 0:	subi	r1,r1,INT_FRAME_SIZE	/* alloc stack frame */
- 	addi	r10,r10,1		/* increment paca->in_mce */
- 	sth	r10,PACA_IN_MCE(r13)
-+	/* Limit nested MCE to level 4 to avoid stack overflow */
-+	cmpwi	r10,4
-+	bgt	2f			/* Check if we hit limit of 4 */
- 	std	r11,GPR1(r1)		/* Save r1 on the stack. */
- 	std	r11,0(r1)		/* make stack chain pointer */
- 	mfspr	r11,SPRN_SRR0		/* Save SRR0 */
-@@ -482,10 +485,23 @@ BEGIN_FTR_SECTION
- 	ori	r11,r11,MSR_RI		/* turn on RI bit */
- 	ld	r12,PACAKBASE(r13)	/* get high part of &label */
- 	LOAD_HANDLER(r12, machine_check_handle_early)
--	mtspr	SPRN_SRR0,r12
-+1:	mtspr	SPRN_SRR0,r12
- 	mtspr	SPRN_SRR1,r11
- 	rfid
- 	b	.	/* prevent speculative execution */
-+2:
-+	/* Stack overflow. Stay on emergency stack and panic.
-+	 * Keep the ME bit off while panic-ing, so that if we hit
-+	 * another machine check we checkstop.
-+	 */
-+	addi	r1,r1,INT_FRAME_SIZE	/* go back to previous stack frame */
-+	ld	r11,PACAKMSR(r13)
-+	ld	r12,PACAKBASE(r13)
-+	LOAD_HANDLER(r12, unrecover_mce)
-+	li	r10,MSR_ME
-+	andc	r11,r11,r10		/* Turn off MSR_ME */
-+	b	1b
-+	b	.	/* prevent speculative execution */
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1bd7ca2..239f1cd 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -295,6 +295,8 @@ long machine_check_early(struct pt_regs *regs)
+ {
+ 	long handled = 0;
  
- machine_check_pSeries:
++	__get_cpu_var(irq_stat).mce_exceptions++;
++
+ 	if (cur_cpu_spec && cur_cpu_spec->machine_check_early)
+ 		handled = cur_cpu_spec->machine_check_early(regs);
+ 	return handled;
