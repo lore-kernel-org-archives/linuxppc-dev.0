@@ -1,22 +1,27 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 71B5C1400AC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 03:12:43 +1000 (EST)
-Message-ID: <1398791552.24575.56.camel@snotra.buserror.net>
-Subject: Re: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and
- use-after-unmap
+ by ozlabs.org (Postfix) with ESMTPS id DC4021400B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 08:47:25 +1000 (EST)
+Message-ID: <1398811632.24575.98.camel@snotra.buserror.net>
+Subject: Re: [PATCH v2 1/2] powerpc/pm: add api to get suspend state which
+ is STANDBY or MEM
 From: Scott Wood <scottwood@freescale.com>
-To: Liu Gang-B34182 <Gang.Liu@freescale.com>
-Date: Tue, 29 Apr 2014 12:12:32 -0500
-In-Reply-To: <dd70c20406d242b694b16e898cc2cddf@BY2PR03MB412.namprd03.prod.outlook.com>
-References: <1398735103-16513-1-git-send-email-scottwood@freescale.com>
- <dd70c20406d242b694b16e898cc2cddf@BY2PR03MB412.namprd03.prod.outlook.com>
+To: Leo Li <pku.leo@gmail.com>
+Date: Tue, 29 Apr 2014 17:47:12 -0500
+In-Reply-To: <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
+References: <1398319908-30166-1-git-send-email-dongsheng.wang@freescale.com>
+ <1398462328.24575.20.camel@snotra.buserror.net>
+ <CADRPPNTGRyLSSjcdpdZL95NVnRepR_ZqvVk1zrMU3ZOL0_bbNQ@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Zhao Chenhui <chenhui.zhao@freescale.com>, linux-pm@vger.kernel.org,
+ "Rafael
+ J. Wysocki" <rjw@rjwysocki.net>, Dongsheng Wang <dongsheng.wang@freescale.com>,
+ =?UTF-8?Q?=E6=AD=A3=E9=9B=84_=E9=87=91?= <jason.jin@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-04-28 at 23:04 -0500, Liu Gang-B34182 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, April 29, 2014 9:32 AM
-> > To: linuxppc-dev@lists.ozlabs.org
-> > Cc: Wood Scott-B07421; Liu Gang-B34182
-> > Subject: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and use-
-> > after-unmap
-> > 
-> > Several of the error paths from fsl_rio_setup are missing error messages.
-> > 
-> > Worse, fsl_rio_setup initializes several global pointers and does not
-> > NULL them out after freeing/unmapping on error.  This caused
-> > fsl_rio_mcheck_exception() to crash when accessing rio_regs_win which was
-> > non-NULL but had been unmapped.
-> > 
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > Cc: Liu Gang <Gang.Liu@freescale.com>
-> > ---
-> > Liu Gang, are you sure all of these error conditions are fatal?  Why does
-> > the rio driver fail if rmu is not present (e.g.  on t4240)?
+On Mon, 2014-04-28 at 13:53 +0800, Leo Li wrote:
+> On Sat, Apr 26, 2014 at 5:45 AM, Scott Wood <scottwood@freescale.com> wrote:
+> > On Thu, 2014-04-24 at 14:11 +0800, Dongsheng Wang wrote:
+> >> From: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >>
+> >> Add set_pm_suspend_state & pm_suspend_state functions to set/get
+> >> suspend state. When system going to sleep or deep sleep, devices
+> >> can get the system suspend state(STANDBY/MEM) through pm_suspend_state
+> >> function and to handle different situations.
+> >>
+> >> Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> >> ---
+> >> *v2*
+> >> Move pm api from fsl platform to powerpc general framework.
+> >
+> > What is powerpc-specific about this?
 > 
-> Hi Scott, I think the errors you modified in the patch are serious and should
-> be fixed. Thanks very much!
-> And in fact, the rio driver can be used just for the submodule of the SRIO: RMU.
-> It should be used with arch/powerpc/sysdev/fsl_rmu.c and there should have the
-> RMU module.
-> The fsl_rio.c implements some basic and needed works to support the RMU running well.
-
-I don't quite follow -- is it expected that rio can work without rmu, or
-not?  As is, fsl_rio_setup() will error out if it doesn't find an
-fsl,srio-rmu-handle property.
-
-> In addition, could you please help to apply the following patch:
+> Generally I agree with you.  But I had the discussion about this topic
+> a while ago with the PM maintainer.  He suggestion to go with the
+> platform way.
 > 
-> http://patchwork.ozlabs.org/patch/337810/
+> https://lkml.org/lkml/2013/8/16/505
 
-Yes, I'll apply it when I do my next batch of patch applications.
+If what he meant was whether you could do what this patch does, then you
+can answer him with, "No, because it got nacked as not being platform or
+arch specific."  Oh, and you're still using .valid as the hook to set
+the platform state, which is awful -- I think .begin is what you want to
+use.
+
+If we did it in powerpc code, then what would we do on ARM?  Copy the
+code?  No.
+
+Now, a more legitimate objection to putting it in generic code might be
+that "standby" and "mem" are loosely defined and the knowledge of how a
+driver should react to each is platform specific -- but your patch
+doesn't address that.  You still have the driver itself interpret what
+"standby" and "mem" mean.
+
+As for "in analogy with ACPI suspend operations", can someone familiar
+with ACPI explain what is meant?
 
 -Scott
