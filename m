@@ -1,18 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1398741164.8217.6.camel@concordia>
-Subject: Re: [PATCH v2 6/6] powerpc/perf/hv-24x7: catalog version number is
- be64, not be32
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>
-Date: Tue, 29 Apr 2014 13:12:44 +1000
-In-Reply-To: <535DE027.5050700@linux.vnet.ibm.com>
-References: <1397581855-4585-1-git-send-email-cody@linux.vnet.ibm.com>
- <1397581855-4585-7-git-send-email-cody@linux.vnet.ibm.com>
- <1398660478.30694.10.camel@pasglop> <535DE027.5050700@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: David.Laight@aculab.com, Linux PPC <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Anton Blanchard <anton@samba.org>
+Return-Path: <Gang.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B1F92140088
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 14:04:16 +1000 (EST)
+From: "Gang.Liu@freescale.com" <Gang.Liu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and
+ use-after-unmap
+Date: Tue, 29 Apr 2014 04:04:09 +0000
+Message-ID: <dd70c20406d242b694b16e898cc2cddf@BY2PR03MB412.namprd03.prod.outlook.com>
+References: <1398735103-16513-1-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1398735103-16513-1-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2014-04-27 at 21:59 -0700, Cody P Schafer wrote:
-> On 04/27/2014 09:47 PM, Benjamin Herrenschmidt wrote:
-> > On Tue, 2014-04-15 at 10:10 -0700, Cody P Schafer wrote:
-> >> The catalog version number was changed from a be32 (with proceeding
-> >> 32bits of padding) to a be64, update the code to treat it as a be64
-> >>
-> >> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> >> --
-> >
-> > Have you tested this ?
-> >
-> > It doesn't build for me:
-> >
-> > arch/powerpc/perf/hv-24x7.c: In function 'catalog_read':
-> > arch/powerpc/perf/hv-24x7.c:223:3: error: format '%d' expects argument of type 'int', but argument 2 has type 'uint64_t' [-Werror=format]
-> > cc1: all warnings being treated as errors
-> 
-> I have, and I wasn't initially sure how I managed to miss that 
-> warning-as-error. On examination: My config (for some reason) has 
-> CONFIG_PPC_DISABLE_WERROR=y set (probably because it's a variation of a 
-> distro config).
 
-Please test build with ppc64_defconfig at least.
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Tuesday, April 29, 2014 9:32 AM
+> To: linuxppc-dev@lists.ozlabs.org
+> Cc: Wood Scott-B07421; Liu Gang-B34182
+> Subject: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and use-
+> after-unmap
+>=20
+> Several of the error paths from fsl_rio_setup are missing error messages.
+>=20
+> Worse, fsl_rio_setup initializes several global pointers and does not
+> NULL them out after freeing/unmapping on error.  This caused
+> fsl_rio_mcheck_exception() to crash when accessing rio_regs_win which was
+> non-NULL but had been unmapped.
+>=20
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Cc: Liu Gang <Gang.Liu@freescale.com>
+> ---
+> Liu Gang, are you sure all of these error conditions are fatal?  Why does
+> the rio driver fail if rmu is not present (e.g.  on t4240)?
 
-cheers
+Hi Scott, I think the errors you modified in the patch are serious and shou=
+ld
+be fixed. Thanks very much!
+And in fact, the rio driver can be used just for the submodule of the SRIO:=
+ RMU.
+It should be used with arch/powerpc/sysdev/fsl_rmu.c and there should have =
+the
+RMU module.
+The fsl_rio.c implements some basic and needed works to support the RMU run=
+ning well.
+
+In addition, could you please help to apply the following patch:
+
+http://patchwork.ozlabs.org/patch/337810/
+
+Thanks!
+Liu Gang  =20
+> ---
+>  arch/powerpc/sysdev/fsl_rio.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
