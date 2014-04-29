@@ -1,38 +1,37 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 200671400AC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 16:50:10 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CF0551400B7
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 17:02:20 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 29 Apr 2014 12:20:00 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5764C1258053
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 12:18:49 +0530 (IST)
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 29 Apr 2014 12:32:17 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 56061E0044
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 12:32:33 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3T6o4fr5833152
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 12:20:05 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3T7275m55050446
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 12:32:08 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3T6nvVE027489
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 12:19:57 +0530
-Date: Tue, 29 Apr 2014 14:49:55 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@au1.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
- iommu_add_device()
-Message-ID: <20140429064955.GA5066@richard>
-References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <535E5924.8040503@au1.ibm.com>
+ s3T72B0v011862
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 12:32:11 +0530
+Message-ID: <535F4E10.2020300@linux.vnet.ibm.com>
+Date: Tue, 29 Apr 2014 12:30:32 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <535E5924.8040503@au1.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/3] Add new ptrace request macros on PowerPC
+References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <533BD922.4070009@linux.vnet.ibm.com>
+In-Reply-To: <533BD922.4070009@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, avagin@openvz.org, linux-kernel@vger.kernel.org,
+ oleg@redhat.com, linuxppc-dev@ozlabs.org, roland@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,104 +41,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 28, 2014 at 11:35:32PM +1000, Alexey Kardashevskiy wrote:
->On 04/23/2014 12:26 PM, Wei Yang wrote:
->> During the EEH hotplug event, iommu_add_device() will be invoked three times
->> and two of them will trigger warning or error.
->> 
->> The three times to invoke the iommu_add_device() are:
->> 
->>     pci_device_add
->>        ...
->>        set_iommu_table_base_and_group   <- 1st time, fail
->>     device_add
->>        ...
->>        tce_iommu_bus_notifier           <- 2nd time, succees
->>     pcibios_add_pci_devices
->>        ...
->>        pcibios_setup_bus_devices        <- 3rd time, re-attach
->> 
->> The first time fails, since the dev->kobj->sd is not initialized. The
->> dev->kobj->sd is initialized in device_add().
->> The third time's warning is triggered by the re-attach of the iommu_group.
->> 
->> After applying this patch, the error
->
->Nack.
->
->The patch still seems incorrect and we actually need to remove
->tce_iommu_bus_notifier completely as pcibios_setup_bus_devices is called
->from another notifier anyway. Could you please test it?
->
->
+On 04/02/2014 03:02 PM, Anshuman Khandual wrote:
+> On 04/02/2014 12:32 PM, Anshuman Khandual wrote:
+>> 	This patch series adds new ELF note sections which are used to
+>> create new ptrace request macros for various transactional memory and
+>> miscellaneous registers on PowerPC. Please find the test case exploiting
+>> the new ptrace request macros and it's results on a POWER8 system.
+>>
+>> RFC: https://lkml.org/lkml/2014/4/1/292
+>>
+>> ============================== Results ==============================
+>> -------TM specific SPR------
+>> TM TFHAR: 100009dc
+>> TM TEXASR: de000001ac000001
+>> TM TFIAR: c00000000003f386
+>> TM CH ORIG_MSR: 900000050000f032
+>> TM CH TAR: 6
+>> TM CH PPR: c000000000000
+>> TM CH DSCR: 1
+>> -------TM checkpointed GPR-----
+>> TM CH GPR[0]: 1000097c
+>> TM CH GPR[1]: 5
+>> TM CH GPR[2]: 6
+>> TM CH GPR[7]: 1
+>> TM CH NIP: 100009dc
+>> TM CH LINK: 1000097c
+>> TM CH CCR: 22000422
+>> -------TM running GPR-----
+>> TM RN GPR[0]: 1000097c
+>> TM RN GPR[1]: 7
+>> TM RN GPR[2]: 8
+>> TM RN GPR[7]: 5
+>> TM RN NIP: 100009fc
+>> TM RN LINK: 1000097c
+>> TM RN CCR: 2000422
+>> -------TM running FPR-----
+>> TM RN FPR[0]: 1002d3a3780
+>> TM RN FPR[1]: 7
+>> TM RN FPR[2]: 8
+>> TM RN FPSCR: 0
+>> -------TM checkpointed FPR-----
+>> TM CH FPR[0]: 1002d3a3780
+>> TM CH FPR[1]: 5
+>> TM CH FPR[2]: 6
+>> TM CH FPSCR: 0
+>> -------Running miscellaneous registers-------
+> TM RN DSCR: 0
+> 
+> There is a problem in here which I forgot to mention. The running DSCR value
+> comes from thread->dscr component of the target process. While we are inside the
+> transaction (which is the case here as we are stuck at "b ." instruction and
+> have not reached TEND) thread->dscr should have the running value of the DSCR
+> register at that point of time. Here we expect the DSCR value to be 5 instead
+> of 0 as shown in the output above. During the tests when I moved the "b ." after
+> TEND, the thread->dscr gets the value of 5 while all check pointed reg values are
+> thrown away. I believe there is some problem in the way thread->dscr context
+> is saved away inside the TM section. Will look into this problem further and
+> keep informed.
 
-Hi, Alexey,
+Reason behind this inconsistent DSCR register value is because of the following commit
+where the kernel reverts the DSCR register into a default value to avoid running with
+the user set value for a long time, thus preventing any potential performance degradation.
+Same reason applies to the PPR register as well. So its not a problem but an expected
+behaviour.
 
-Nice to see your comment. Let me show what I got fist.
+commit e9bdc3d6143d1c4b8d8ce5231fc958268331f983
+Author: Michael Neuling <mikey@neuling.org>
+Date:   Thu Sep 26 13:29:09 2013 +1000
 
-Generally, when kernel enumerate on the pci device, following functions will
-be invoked.
+    powerpc/tm: Switch out userspace PPR and DSCR sooner
 
-     pci_device_add
-        pcibios_setup_bus_device
-        ...
-        set_iommu_table_base_and_group   
-     device_add
-        ...
-        tce_iommu_bus_notifier           
-     pcibios_fixp_bus
-        pcibios_add_pci_devices
-        ...
-        pcibios_setup_bus_devices        
+    When we do a treclaim or trecheckpoint we end up running with userspace
+    PPR and DSCR values.  Currently we don't do anything special to avoid
+    running with user values which could cause a severe performance
+    degradation.
 
->From the call flow, we see for a normall pci device, the
-pcibios_setup_bus_device() will be invoked twice.
+    This patch moves the PPR and DSCR save and restore around treclaim and
+    trecheckpoint so that we run with user values for a much shorter period.
+    More care is taken with the PPR as it's impact is greater than the DSCR.
 
-At the bootup time, none of them succeed to setup the dma, since the PE is not
-assigned or the tbl is not set. The iommu tbl and group is setup in
-pnv_pci_ioda_setup_DMA().
-
-This call flow maintains the same when EEH error happens on Bus PE, while the
-behavior is a little different. 
-
-     pci_device_add
-        pcibios_setup_bus_device
-        ...
-        set_iommu_table_base_and_group   <- fail, kobj->sd is not initialized
-     device_add
-        ...
-        tce_iommu_bus_notifier           <- succeed
-     pcibios_fixp_bus
-        pcibios_add_pci_devices
-        ...
-        pcibios_setup_bus_devices        <- warning, re-attach
-
-While this call flow will change a little on a VF. For a VF,
-pcibios_fixp_bus() will not be invoked. Current behavior is this.
-
-     pci_device_add
-        pcibios_setup_bus_device
-        ...
-        set_iommu_table_base_and_group   <- fail, kobj->sd is not initialized
-     device_add
-        ...
-        tce_iommu_bus_notifier           <- succeed
-
-And if an EEH error happens just on a VF, I believe the same call flow should
-go for recovery. (This is not set down, still under discussion with Gavin.)
-
-My conclusion is:
-1. remove the tce_iommu_bus_notifier completely will make the VF not work.
-   So I choose to revert the code and attach make the iommu group attachment
-   just happens in one place.
-
-BTW, I know my patch is not a perfect one. For a PF, the tbl will still be set
-twice. I am not sure why we need to invoke pcibios_setup_device() twice on a
-PF, maybe some platform need to fixup some thing after the pci_bus is added.
-So I don't remove one of them to solve the problem.
-
-If you have a better idea, I am glad to take it.
-
--- 
-Richard Yang
-Help you, Help me
+    This is similar to user exceptions, where we run HTM_MEDIUM early to
+    ensure that we don't run with a userspace PPR values in the kernel.
