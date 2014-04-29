@@ -1,41 +1,28 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael.neuling@gmail.com>
+Received: from mail-pb0-f41.google.com (mail-pb0-f41.google.com
+ [209.85.160.41])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 111CF14010D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 19:39:23 +1000 (EST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Tue, 29 Apr 2014 10:39:20 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 651C0219005E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 10:39:09 +0100 (BST)
-Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
- [9.149.37.250])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3T9dHK253018854
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 09:39:17 GMT
-Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3T9dF15021233
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 03:39:16 -0600
-Message-ID: <535F7319.8030201@linux.vnet.ibm.com>
-Date: Tue, 29 Apr 2014 11:38:33 +0200
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 33FEA1400BE
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 18:22:34 +1000 (EST)
+Received: by mail-pb0-f41.google.com with SMTP id rr13so6878504pbb.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 01:22:32 -0700 (PDT)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [git pull] Please pull abiv2 branch
-References: <20140423124902.5be9dab0@kryten>
- <535E6804.5050508@linux.vnet.ibm.com> <877g69t1my.fsf@rustcorp.com.au>
-In-Reply-To: <877g69t1my.fsf@rustcorp.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: philippe.bergheaud@fr.ibm.com, mikey@neuling.org, amodra@gmail.com,
- rostedt@goodmis.org, ulrich.weigand@de.ibm.com, mjw@linux.vnet.ibm.com,
- Anton Blanchard <anton@samba.org>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org
+Sender: michael.neuling@gmail.com
+In-Reply-To: <535F5BDE.2030309@linux.vnet.ibm.com>
+References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <533BD922.4070009@linux.vnet.ibm.com>
+ <535F4E10.2020300@linux.vnet.ibm.com>
+ <CAEjGV6yi5YY95tM-HY4akN4BGXGn4chA8_sCaqvWx3HPSu2V3w@mail.gmail.com>
+ <535F5BDE.2030309@linux.vnet.ibm.com>
+Date: Tue, 29 Apr 2014 18:22:31 +1000
+Message-ID: <CAEjGV6y8MRiCfRBtWjNfrwKMccROEAJw2rPVc_u+r=tAo2EcHQ@mail.gmail.com>
+Subject: Re: [PATCH 0/3] Add new ptrace request macros on PowerPC
+From: Michael Neuling <mikey@neuling.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: multipart/alternative; boundary=047d7b15a21d21b33c04f82a2261
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+ avagin@openvz.org, roland@redhat.com, oleg@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,40 +32,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rusty Russell wrote:
-> Philippe Bergheaud <felix@linux.vnet.ibm.com> writes:
-> 
->>Anton Blanchard wrote:
->>
->>>Here are the ABIv2 patches rebased against 3.15-rc2.
->>
->>After recompiling 3.15-rc2 with the ABIv2 patches,
->>I see the following line in Modules.symvers:
->>
->>     0x00000000 TOC. vmlinux EXPORT_SYMBOL
->>
->>Kernel will not load modules because TOC. has no CRC.
->>Is this expected ? Shouldn't TOC. have a CRC ?
-> 
-> 
-> What happens when you try to load a module?  It should work...
+--047d7b15a21d21b33c04f82a2261
+Content-Type: text/plain; charset=UTF-8
 
-My mistake, sorry: kernel 3.15-rc2 crashes at boot, in the SLES12
-Beta5 environment that I am using, before any module load attempt.
+That's not what that patch does. It shouldn't make any user visible changes
+to DSCR or PPR.
 
-The problem happens with the SLES12 kernel of the day 3.12.17,
-plus the backported ABIv2 patch set.  Boot fails with:
-     kernel: ibmveth: no symbol version for TOC.
-     kernel: ibmveth: Unknown symbol TOC. (err -22)
-     kernel: scsi_mod: no symbol version for TOC.
-     kernel: scsi_mod: Unknown symbol TOC. (err -22)
+Over syscall PPR and DSCR may change. Depending on your test case, that may
+be your problem.
 
-In the rescue shell, repeating a plain modprobe fails again:
-     :/# modprobe scsi_mod
-     modprobe: ERROR: could not insert 'scsi_mod': Invalid argument
+Mikey
+On 29 Apr 2014 18:02, "Anshuman Khandual" <khandual@linux.vnet.ibm.com>
+wrote:
 
-And finally, modprobe succeeds with --force:
-     :/# modprobe --force scsi_mod
-     scsi_mod: module has bad taint, not creating trace events
+> On 04/29/2014 12:36 PM, Michael Neuling wrote:
+> > How is it causing the problem?
+>
+> As mentioned before, what I thought to be a problem is
+> something expected behaviour. So it's not a problem any
+> more. DSCR value inside the transaction will fall back
+> to default as kernel wont let user specified value to
+> remain applied for a long time.
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
 
-Philippe
+--047d7b15a21d21b33c04f82a2261
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<p dir=3D"ltr">That&#39;s not what that patch does. It shouldn&#39;t make a=
+ny user visible changes to DSCR or PPR.</p>
+<p dir=3D"ltr">Over syscall PPR and DSCR may change. Depending on your test=
+ case, that may be your problem.</p>
+<p dir=3D"ltr">Mikey</p>
+<div class=3D"gmail_quote">On 29 Apr 2014 18:02, &quot;Anshuman Khandual&qu=
+ot; &lt;<a href=3D"mailto:khandual@linux.vnet.ibm.com">khandual@linux.vnet.=
+ibm.com</a>&gt; wrote:<br type=3D"attribution"><blockquote class=3D"gmail_q=
+uote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1e=
+x">
+On 04/29/2014 12:36 PM, Michael Neuling wrote:<br>
+&gt; How is it causing the problem?<br>
+<br>
+As mentioned before, what I thought to be a problem is<br>
+something expected behaviour. So it&#39;s not a problem any<br>
+more. DSCR value inside the transaction will fall back<br>
+to default as kernel wont let user specified value to<br>
+remain applied for a long time.<br>
+<br>
+--<br>
+To unsubscribe from this list: send the line &quot;unsubscribe linux-kernel=
+&quot; in<br>
+the body of a message to <a href=3D"mailto:majordomo@vger.kernel.org">major=
+domo@vger.kernel.org</a><br>
+More majordomo info at =C2=A0<a href=3D"http://vger.kernel.org/majordomo-in=
+fo.html" target=3D"_blank">http://vger.kernel.org/majordomo-info.html</a><b=
+r>
+Please read the FAQ at =C2=A0<a href=3D"http://www.tux.org/lkml/" target=3D=
+"_blank">http://www.tux.org/lkml/</a><br>
+<br>
+</blockquote></div>
+
+--047d7b15a21d21b33c04f82a2261--
