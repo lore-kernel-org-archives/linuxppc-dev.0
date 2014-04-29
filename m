@@ -1,18 +1,21 @@
 Return-Path: <rusty@ozlabs.org>
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [git pull] Please pull abiv2 branch
-In-Reply-To: <535E6804.5050508@linux.vnet.ibm.com>
-References: <20140423124902.5be9dab0@kryten>
- <535E6804.5050508@linux.vnet.ibm.com>
-Date: Tue, 29 Apr 2014 10:03:57 +0930
-Message-ID: <877g69t1my.fsf@rustcorp.com.au>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH V3 2/2] powerpc/pseries: init fault_around_order for
+ pseries
+In-Reply-To: <1398675690-16186-3-git-send-email-maddy@linux.vnet.ibm.com>
+References: <1398675690-16186-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1398675690-16186-3-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Tue, 29 Apr 2014 11:48:40 +0930
+Message-ID: <877g686fpb.fsf@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: philippe.bergheaud@fr.ibm.com, mikey@neuling.org, amodra@gmail.com,
- rostedt@goodmis.org, ulrich.weigand@de.ibm.com, mjw@linux.vnet.ibm.com,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
+ dave.hansen@intel.com, Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ paulus@samba.org, mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,19 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Philippe Bergheaud <felix@linux.vnet.ibm.com> writes:
-> Anton Blanchard wrote:
->> Here are the ABIv2 patches rebased against 3.15-rc2.
->
-> After recompiling 3.15-rc2 with the ABIv2 patches,
-> I see the following line in Modules.symvers:
->
->      0x00000000 TOC. vmlinux EXPORT_SYMBOL
->
-> Kernel will not load modules because TOC. has no CRC.
-> Is this expected ? Shouldn't TOC. have a CRC ?
+Madhavan Srinivasan <maddy@linux.vnet.ibm.com> writes:
+> diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+> index 2db8cc6..c87e6b6 100644
+> --- a/arch/powerpc/platforms/pseries/setup.c
+> +++ b/arch/powerpc/platforms/pseries/setup.c
+> @@ -74,6 +74,8 @@ int CMO_SecPSP = -1;
+>  unsigned long CMO_PageSize = (ASM_CONST(1) << IOMMU_PAGE_SHIFT_4K);
+>  EXPORT_SYMBOL(CMO_PageSize);
+>  
+> +extern unsigned int fault_around_order;
+> +
 
-What happens when you try to load a module?  It should work...
+It's considered bad form to do this.  Put the declaration in linux/mm.h.
 
-Cheers,
+Thanks,
 Rusty.
+PS.  But we're getting there! :)
