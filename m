@@ -1,21 +1,38 @@
-Return-Path: <Gang.Liu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B1F92140088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 14:04:16 +1000 (EST)
-From: "Gang.Liu@freescale.com" <Gang.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and
- use-after-unmap
-Date: Tue, 29 Apr 2014 04:04:09 +0000
-Message-ID: <dd70c20406d242b694b16e898cc2cddf@BY2PR03MB412.namprd03.prod.outlook.com>
-References: <1398735103-16513-1-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1398735103-16513-1-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 200671400AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 16:50:10 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 29 Apr 2014 12:20:00 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5764C1258053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 12:18:49 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3T6o4fr5833152
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 12:20:05 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3T6nvVE027489
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 12:19:57 +0530
+Date: Tue, 29 Apr 2014 14:49:55 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@au1.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
+ iommu_add_device()
+Message-ID: <20140429064955.GA5066@richard>
+References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <535E5924.8040503@au1.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <535E5924.8040503@au1.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +42,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Apr 28, 2014 at 11:35:32PM +1000, Alexey Kardashevskiy wrote:
+>On 04/23/2014 12:26 PM, Wei Yang wrote:
+>> During the EEH hotplug event, iommu_add_device() will be invoked three times
+>> and two of them will trigger warning or error.
+>> 
+>> The three times to invoke the iommu_add_device() are:
+>> 
+>>     pci_device_add
+>>        ...
+>>        set_iommu_table_base_and_group   <- 1st time, fail
+>>     device_add
+>>        ...
+>>        tce_iommu_bus_notifier           <- 2nd time, succees
+>>     pcibios_add_pci_devices
+>>        ...
+>>        pcibios_setup_bus_devices        <- 3rd time, re-attach
+>> 
+>> The first time fails, since the dev->kobj->sd is not initialized. The
+>> dev->kobj->sd is initialized in device_add().
+>> The third time's warning is triggered by the re-attach of the iommu_group.
+>> 
+>> After applying this patch, the error
+>
+>Nack.
+>
+>The patch still seems incorrect and we actually need to remove
+>tce_iommu_bus_notifier completely as pcibios_setup_bus_devices is called
+>from another notifier anyway. Could you please test it?
+>
+>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, April 29, 2014 9:32 AM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: Wood Scott-B07421; Liu Gang-B34182
-> Subject: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and use-
-> after-unmap
->=20
-> Several of the error paths from fsl_rio_setup are missing error messages.
->=20
-> Worse, fsl_rio_setup initializes several global pointers and does not
-> NULL them out after freeing/unmapping on error.  This caused
-> fsl_rio_mcheck_exception() to crash when accessing rio_regs_win which was
-> non-NULL but had been unmapped.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> Cc: Liu Gang <Gang.Liu@freescale.com>
-> ---
-> Liu Gang, are you sure all of these error conditions are fatal?  Why does
-> the rio driver fail if rmu is not present (e.g.  on t4240)?
+Hi, Alexey,
 
-Hi Scott, I think the errors you modified in the patch are serious and shou=
-ld
-be fixed. Thanks very much!
-And in fact, the rio driver can be used just for the submodule of the SRIO:=
- RMU.
-It should be used with arch/powerpc/sysdev/fsl_rmu.c and there should have =
-the
-RMU module.
-The fsl_rio.c implements some basic and needed works to support the RMU run=
-ning well.
+Nice to see your comment. Let me show what I got fist.
 
-In addition, could you please help to apply the following patch:
+Generally, when kernel enumerate on the pci device, following functions will
+be invoked.
 
-http://patchwork.ozlabs.org/patch/337810/
+     pci_device_add
+        pcibios_setup_bus_device
+        ...
+        set_iommu_table_base_and_group   
+     device_add
+        ...
+        tce_iommu_bus_notifier           
+     pcibios_fixp_bus
+        pcibios_add_pci_devices
+        ...
+        pcibios_setup_bus_devices        
 
-Thanks!
-Liu Gang  =20
-> ---
->  arch/powerpc/sysdev/fsl_rio.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
+>From the call flow, we see for a normall pci device, the
+pcibios_setup_bus_device() will be invoked twice.
+
+At the bootup time, none of them succeed to setup the dma, since the PE is not
+assigned or the tbl is not set. The iommu tbl and group is setup in
+pnv_pci_ioda_setup_DMA().
+
+This call flow maintains the same when EEH error happens on Bus PE, while the
+behavior is a little different. 
+
+     pci_device_add
+        pcibios_setup_bus_device
+        ...
+        set_iommu_table_base_and_group   <- fail, kobj->sd is not initialized
+     device_add
+        ...
+        tce_iommu_bus_notifier           <- succeed
+     pcibios_fixp_bus
+        pcibios_add_pci_devices
+        ...
+        pcibios_setup_bus_devices        <- warning, re-attach
+
+While this call flow will change a little on a VF. For a VF,
+pcibios_fixp_bus() will not be invoked. Current behavior is this.
+
+     pci_device_add
+        pcibios_setup_bus_device
+        ...
+        set_iommu_table_base_and_group   <- fail, kobj->sd is not initialized
+     device_add
+        ...
+        tce_iommu_bus_notifier           <- succeed
+
+And if an EEH error happens just on a VF, I believe the same call flow should
+go for recovery. (This is not set down, still under discussion with Gavin.)
+
+My conclusion is:
+1. remove the tce_iommu_bus_notifier completely will make the VF not work.
+   So I choose to revert the code and attach make the iommu group attachment
+   just happens in one place.
+
+BTW, I know my patch is not a perfect one. For a PF, the tbl will still be set
+twice. I am not sure why we need to invoke pcibios_setup_device() twice on a
+PF, maybe some platform need to fixup some thing after the pci_bus is added.
+So I don't remove one of them to solve the problem.
+
+If you have a better idea, I am glad to take it.
+
+-- 
+Richard Yang
+Help you, Help me
