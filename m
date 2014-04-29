@@ -1,38 +1,41 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0915F1400E9
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 18:01:15 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C35691400FE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 19:35:53 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 29 Apr 2014 18:01:13 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Tue, 29 Apr 2014 19:35:52 +1000
 Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 38E6F3578054
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 18:01:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 51D302BB005B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 19:35:50 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3T80suQ66322678
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 18:00:54 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3T817ng022117
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Apr 2014 18:01:08 +1000
-Message-ID: <535F5BDE.2030309@linux.vnet.ibm.com>
-Date: Tue, 29 Apr 2014 13:29:26 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ s3T9ZYq07799076
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 19:35:35 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3T9XbGA026659
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 19:33:38 +1000
+Message-ID: <535F71EA.6070604@linux.vnet.ibm.com>
+Date: Tue, 29 Apr 2014 15:03:30 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 0/3] Add new ptrace request macros on PowerPC
-References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
- <533BD922.4070009@linux.vnet.ibm.com>	<535F4E10.2020300@linux.vnet.ibm.com>
- <CAEjGV6yi5YY95tM-HY4akN4BGXGn4chA8_sCaqvWx3HPSu2V3w@mail.gmail.com>
-In-Reply-To: <CAEjGV6yi5YY95tM-HY4akN4BGXGn4chA8_sCaqvWx3HPSu2V3w@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
- avagin@openvz.org, roland@redhat.com, oleg@redhat.com
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3 1/2] mm: move FAULT_AROUND_ORDER to arch/
+References: <1398675690-16186-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1398675690-16186-2-git-send-email-maddy@linux.vnet.ibm.com>
+ <20140428090649.GD27561@twins.programming.kicks-ass.net>
+In-Reply-To: <20140428090649.GD27561@twins.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
+ dave.hansen@intel.com, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,11 +45,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/29/2014 12:36 PM, Michael Neuling wrote:
-> How is it causing the problem?
+On Monday 28 April 2014 02:36 PM, Peter Zijlstra wrote:
+> On Mon, Apr 28, 2014 at 02:31:29PM +0530, Madhavan Srinivasan wrote:
+>> +unsigned int fault_around_order = CONFIG_FAULT_AROUND_ORDER;
+> 
+> __read_mostly?
+> 
+Agreed. Will add it.
 
-As mentioned before, what I thought to be a problem is
-something expected behaviour. So it's not a problem any
-more. DSCR value inside the transaction will fall back
-to default as kernel wont let user specified value to
-remain applied for a long time.
+Thanks for review.
+With regards
+Maddy
