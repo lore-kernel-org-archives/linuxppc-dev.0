@@ -1,12 +1,14 @@
 Return-Path: <anton@samba.org>
-Date: Wed, 30 Apr 2014 09:10:54 +1000
+Date: Wed, 30 Apr 2014 09:12:01 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, felix@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+To: benh@kernel.crashing.org, paulus@samba.org, felix@linux.vnet.ibm.com
 Subject: [PATCH] powerpc: memcpy optimization for 64bit LE
-Message-ID: <20140430091054.4de84c9b@kryten>
+Message-ID: <20140430091201.5eefbeb8@kryten>
+In-Reply-To: <20140430091054.4de84c9b@kryten>
+References: <20140430091054.4de84c9b@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,6 +17,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 
 Unaligned stores take alignment exceptions on POWER7 running in little-endian.
 This is a dumb little-endian base memcpy that prevents unaligned stores.
