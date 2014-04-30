@@ -1,23 +1,20 @@
 Return-Path: <stuart.yoder@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+ (mail-bn1lp0142.outbound.protection.outlook.com [207.46.163.142])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B6B5A140082
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 09:14:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 22F651400F6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 09:23:23 +1000 (EST)
 From: Stuart Yoder <stuart.yoder@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH][v2] powerpc: move epapr paravirt init of power_save to
- an initcall
-Date: Wed, 30 Apr 2014 23:14:04 +0000
-Message-ID: <9b1e3af9124447ed8a923ee3c1f93766@DM2PR03MB352.namprd03.prod.outlook.com>
-References: <1398889209-10350-1-git-send-email-stuart.yoder@freescale.com>
- <1398898118.24575.223.camel@snotra.buserror.net>
-In-Reply-To: <1398898118.24575.223.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+To: <benh@kernel.crashing.org>, <scottwood@freescale.com>
+Subject: [PATCH][v3] powerpc: move epapr paravirt init of power_save to an
+ initcall
+Date: Wed, 30 Apr 2014 18:23:12 -0500
+Message-ID: <1398900192-2646-1-git-send-email-stuart.yoder@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de,
+ Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,49 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAzMCwgMjAxNCA1OjQ5IFBNDQo+IFRvOiBZb2Rl
-ciBTdHVhcnQtQjA4MjQ4DQo+IENjOiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBhZ3JhZkBzdXNlLmRlDQo+IFN1YmplY3Q6IFJlOiBb
-UEFUQ0hdW3YyXSBwb3dlcnBjOiBtb3ZlIGVwYXByIHBhcmF2aXJ0IGluaXQgb2YgcG93ZXJfc2F2
-ZQ0KPiB0byBhbiBpbml0Y2FsbA0KPiANCj4gT24gV2VkLCAyMDE0LTA0LTMwIGF0IDE1OjIwIC0w
-NTAwLCBTdHVhcnQgWW9kZXIgd3JvdGU6DQo+ID4gRnJvbTogU3R1YXJ0IFlvZGVyIDxzdHVhcnQu
-eW9kZXJAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IHNvbWUgcmVzdHJ1Y3R1cmluZyBvZiBlcGFw
-ciBwYXJhdmlydCBpbml0IHJlc3VsdGVkIGluDQo+ID4gcHBjX21kLnBvd2VyX3NhdmUgYmVpbmcg
-c2V0LCBhbmQgdGhlbiBvdmVyd3JpdHRlbiB0bw0KPiA+IE5VTEwgZHVyaW5nIG1hY2hpbmVfaW5p
-dC4gIFRoaXMgcGF0Y2ggc3BsaXRzIHRoZQ0KPiA+IGluaXRpYWxpemF0aW9uIG9mIHBwY19tZC5w
-b3dlcl9zYXZlIG91dCBpbnRvIGEgcG9zdGNvcmUNCj4gPiBpbml0IGNhbGwuDQo+ID4NCj4gPiBT
-aWduZWQtb2ZmLWJ5OiBTdHVhcnQgWW9kZXIgPHN0dWFydC55b2RlckBmcmVlc2NhbGUuY29tPg0K
-PiA+IC0tLQ0KPiA+DQo+ID4gLXYyOiBkb24ndCBpdGVyYXRlIG92ZXIgdGhlIGVudGlyZSBEVCwg
-anVzdCBsb29rIGF0DQo+ID4gIHRoZSBoeXBlcnZpc29yIG5vZGUNCj4gPg0KPiA+ICBhcmNoL3Bv
-d2VycGMva2VybmVsL2VwYXByX3BhcmF2aXJ0LmMgfCAgIDI1ICsrKysrKysrKysrKysrKysrKysr
-LS0tLS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDIwIGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25z
-KC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9lcGFwcl9wYXJh
-dmlydC5jDQo+IGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9lcGFwcl9wYXJhdmlydC5jDQo+ID4gaW5k
-ZXggNzg5OGJlOS4uYTAxZGY1ZSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMva2VybmVs
-L2VwYXByX3BhcmF2aXJ0LmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMva2VybmVsL2VwYXByX3Bh
-cmF2aXJ0LmMNCj4gPiBAQCAtNTMsMTEgKzUzLDYgQEAgc3RhdGljIGludCBfX2luaXQgZWFybHlf
-aW5pdF9kdF9zY2FuX2VwYXByKHVuc2lnbmVkDQo+IGxvbmcgbm9kZSwNCj4gPiAgI2VuZGlmDQo+
-ID4gIAl9DQo+ID4NCj4gPiAtI2lmICFkZWZpbmVkKENPTkZJR182NEJJVCkgfHwgZGVmaW5lZChD
-T05GSUdfUFBDX0JPT0szRV82NCkNCj4gPiAtCWlmIChvZl9nZXRfZmxhdF9kdF9wcm9wKG5vZGUs
-ICJoYXMtaWRsZSIsIE5VTEwpKQ0KPiA+IC0JCXBwY19tZC5wb3dlcl9zYXZlID0gZXBhcHJfZXZf
-aWRsZTsNCj4gPiAtI2VuZGlmDQo+ID4gLQ0KPiA+ICAJZXBhcHJfcGFyYXZpcnRfZW5hYmxlZCA9
-IHRydWU7DQo+ID4NCj4gPiAgCXJldHVybiAxOw0KPiA+IEBAIC03MCwzICs2NSwyMyBAQCBpbnQg
-X19pbml0IGVwYXByX3BhcmF2aXJ0X2Vhcmx5X2luaXQodm9pZCkNCj4gPiAgCXJldHVybiAwOw0K
-PiA+ICB9DQo+ID4NCj4gPiArc3RhdGljIGludCBfX2luaXQgZXBhcHJfaWRsZV9pbml0KHZvaWQp
-DQo+ID4gK3sNCj4gPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbm9kZTsNCj4gPiArDQo+ID4gKwlp
-ZiAoIWVwYXByX3BhcmF2aXJ0X2VuYWJsZWQpDQo+ID4gKwkJcmV0dXJuIDA7DQo+ID4gKw0KPiA+
-ICsJbm9kZSA9IG9mX2ZpbmRfbm9kZV9ieV9wYXRoKCIvaHlwZXJ2aXNvciIpOw0KPiA+ICsJaWYg
-KCFub2RlKQ0KPiA+ICsJCXJldHVybiAtRU5PREVWOw0KPiA+ICsNCj4gPiArI2lmICFkZWZpbmVk
-KENPTkZJR182NEJJVCkgfHwgZGVmaW5lZChDT05GSUdfUFBDX0JPT0szRV82NCkNCj4gPiArCWlm
-IChvZl9nZXRfcHJvcGVydHkobm9kZSwgImhhcy1pZGxlIiwgTlVMTCkpDQo+ID4gKwkJcHBjX21k
-LnBvd2VyX3NhdmUgPSBlcGFwcl9ldl9pZGxlOw0KPiA+ICsjZW5kaWYNCj4gPiArDQo+ID4gKwly
-ZXR1cm4gMDsNCj4gPiArfQ0KPiANCj4gV2h5IGR1cGxpY2F0ZSB0aGUgc2VhcmNoLWZvci1odi1u
-b2RlIGNvZGU/ICBKdXN0IGhhdmUgdGhlIGVhcmx5IGluaXQNCj4gZnVuYyBzZXQgYSBmbGFnIGlu
-ZGljYXRpbmcgd2hldGhlciBoYXMtaWRsZSB3YXMgZm91bmQsIGFuZCBoYXZlDQo+IGVwYXByX2lk
-bGVfaW5pdCBhY3Qgb24gdGhhdCBmbGFnLg0KDQpUaGF0J3MgYSBnb29kIGlkZWEsIGFuZCB0aGUg
-cGF0Y2ggd291bGQgYmUgcXVpdGUgYSBiaXQgc21hbGxlci4gDQpJJ2xsIGRvIHRoYXQgYW5kIGxl
-YXZlIHRoZSBzdHVmZiBpbiBlYXJseV9pbml0X2R0X3NjYW5fZXBhcHIoKSBhbG9uZQ0KbW9zdGx5
-LiAgIFRoZW4gYXMgYSBzZXBhcmF0ZSBzdGVwIHdlIGNvdWxkIHB1dCBiYWNrIHRoZSBjb2RlIHRo
-YXQNCmxvb2tzIGF0IG9ubHkgL2h5cGVydmlzb3IgKGJhc2VkIG9uIGZlZWRiYWNrIGZyb20gTGF1
-cmVudGl1KS4NCg0KU3R1YXJ0DQo=
+From: Stuart Yoder <stuart.yoder@freescale.com>
+
+some restructuring of epapr paravirt init resulted in
+ppc_md.power_save being set, and then overwritten to
+NULL during machine_init.  This patch splits the
+initialization of ppc_md.power_save out into a postcore
+init call.
+
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
+-v3
+   -changed approach slightly, set flag in the dt scanning
+    code and just look at that flag in the initcall
+
+
+ arch/powerpc/kernel/epapr_paravirt.c |   12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
+index 7898be9..6596cd7 100644
+--- a/arch/powerpc/kernel/epapr_paravirt.c
++++ b/arch/powerpc/kernel/epapr_paravirt.c
+@@ -30,6 +30,7 @@ extern u32 epapr_ev_idle_start[];
+ #endif
+ 
+ bool epapr_paravirt_enabled;
++bool epapr_has_idle;
+ 
+ static int __init early_init_dt_scan_epapr(unsigned long node,
+ 					   const char *uname,
+@@ -55,7 +56,7 @@ static int __init early_init_dt_scan_epapr(unsigned long node,
+ 
+ #if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
+ 	if (of_get_flat_dt_prop(node, "has-idle", NULL))
+-		ppc_md.power_save = epapr_ev_idle;
++		epapr_has_idle = true;
+ #endif
+ 
+ 	epapr_paravirt_enabled = true;
+@@ -70,3 +71,12 @@ int __init epapr_paravirt_early_init(void)
+ 	return 0;
+ }
+ 
++static int __init epapr_idle_init(void)
++{
++	if (epapr_has_idle)
++		ppc_md.power_save = epapr_ev_idle;
++
++	return 0;
++}
++
++postcore_initcall(epapr_idle_init);
+-- 
+1.7.9.7
