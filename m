@@ -1,26 +1,21 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-wg0-f46.google.com (mail-wg0-f46.google.com [74.125.82.46])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-ob0-f176.google.com (mail-ob0-f176.google.com
+ [209.85.214.176])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8CD0B1400A9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 15:47:00 +1000 (EST)
-Received: by mail-wg0-f46.google.com with SMTP id n12so159876wgh.17
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 22:46:56 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
-Date: Wed, 30 Apr 2014 09:46:54 +0400
-Message-ID: <CAF0T0X7=dEE0Cs=EjOm0GoLspiZa7uOPQDk9qr9U7ircRxnmNw@mail.gmail.com>
-Subject: Re: [PATCH RFC v12 0/7] MPC512x DMA slave s/g support, OF DMA lookup
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: devicetree@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 5E92B14010E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 16:04:10 +1000 (EST)
+Received: by mail-ob0-f176.google.com with SMTP id wp4so1441413obc.21
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 23:04:06 -0700 (PDT)
+From: Rob Herring <robherring2@gmail.com>
+To: linux-kernel@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH] powerpc: fix skipping call to early_init_fdt_scan_reserved_mem
+Date: Wed, 30 Apr 2014 01:03:52 -0500
+Message-Id: <1398837832-30052-1-git-send-email-robherring2@gmail.com>
+Cc: Rob Herring <robh@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello
+From: Rob Herring <robh@kernel.org>
 
-2014-04-23 17:53 GMT+04:00 Alexander Popov <a13xp0p0v88@gmail.com>:
-> Changes in v12:
->  A new patch (part 2/7) is added to this series.
->  Part 6/7:
->  - change the description of 'compatible' property according part 2/7;
->  - improve the document according Gerhard's feedback;
+The call to early_init_fdt_scan_reserved_mem will be skipped if
+reserved-ranges is not found. Move the call earlier so that it is called
+unconditionally.
 
-Could I have a feedback? Is the binding document fine now?
-Thanks!
+Signed-off-by: Rob Herring <robh@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Tested-by: Stephen Chivers <schivers@csc.com>
+---
+I found this issue in testing of my fdt clean-up series (thanks to 
+Stephen). Since the reserved memory support is new, I don't think it is 
+critical to fix this for 3.15. I plan to include this with my fdt series 
+for 3.16 unless I hear otherwise.
 
-> Alexander Popov (7):
->   dma: mpc512x: reorder mpc8308 specific instructions
->   dma: mpc512x: separate 'compatible' values for MPC512x and MPC8308
->   dma: mpc512x: add support for peripheral transfers
->   dma: mpc512x: fix freeing resources in mpc_dma_probe() and
->     mpc_dma_remove()
->   dma: of: add common xlate function for matching by channel id
->   dma: mpc512x: add device tree binding document
->   dma: mpc512x: register for device tree channel lookup
->
->  .../devicetree/bindings/dma/mpc512x-dma.txt        |  40 +++
->  arch/powerpc/boot/dts/mpc5121.dtsi                 |   1 +
->  arch/powerpc/boot/dts/mpc8308_p1m.dts              |   2 +-
->  arch/powerpc/boot/dts/mpc8308rdb.dts               |   2 +-
->  drivers/dma/mpc512x_dma.c                          | 346 ++++++++++++++++++---
->  drivers/dma/of-dma.c                               |  35 +++
->  include/linux/of_dma.h                             |   4 +
->  7 files changed, 390 insertions(+), 40 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
->
-> --
-> 1.8.4.2
->
+Rob
 
-Best regards,
-Alexander
+ arch/powerpc/kernel/prom.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 668aa47..d657549 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -567,6 +567,8 @@ static void __init early_reserve_mem_dt(void)
+ 	unsigned long i, len, dt_root;
+ 	const __be32 *prop;
+ 
++	early_init_fdt_scan_reserved_mem();
++
+ 	dt_root = of_get_flat_dt_root();
+ 
+ 	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
+@@ -589,8 +591,6 @@ static void __init early_reserve_mem_dt(void)
+ 			memblock_reserve(base, size);
+ 		}
+ 	}
+-
+-	early_init_fdt_scan_reserved_mem();
+ }
+ 
+ static void __init early_reserve_mem(void)
+-- 
+1.9.1
