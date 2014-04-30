@@ -1,22 +1,39 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C8D94140106
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 09:16:06 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>
-Subject: [PATCH 2/2] powerpc: fix smp_processor_id() in preemptible splat in
- set_breakpoint
-Date: Tue, 29 Apr 2014 15:25:17 -0400
-Message-ID: <1398799517-47879-3-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1398799517-47879-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1398799517-47879-1-git-send-email-paul.gortmaker@windriver.com>
+ by ozlabs.org (Postfix) with ESMTPS id 126AB1400A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 10:27:59 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 30 Apr 2014 10:27:58 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7C7FA2CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 10:27:56 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3U06j6I53805248
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 10:06:46 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3U0Rsrk030150
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 10:27:55 +1000
+Date: Wed, 30 Apr 2014 10:28:12 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
+ iommu_add_device()
+Message-ID: <20140430002812.GA13183@shangw>
+References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <535E5924.8040503@au1.ibm.com> <20140429064955.GA5066@richard>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140429064955.GA5066@richard>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@au1.ibm.com>,
+ gwshan@linux.vnet.ibm.com
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,173 +43,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, on 8641D, which doesn't set CONFIG_HAVE_HW_BREAKPOINT
-we get the following splat:
+On Tue, Apr 29, 2014 at 02:49:55PM +0800, Wei Yang wrote:
+>On Mon, Apr 28, 2014 at 11:35:32PM +1000, Alexey Kardashevskiy wrote:
+>>On 04/23/2014 12:26 PM, Wei Yang wrote:
 
-BUG: using smp_processor_id() in preemptible [00000000] code: login/1382
-caller is set_breakpoint+0x1c/0xa0
-CPU: 0 PID: 1382 Comm: login Not tainted 3.15.0-rc3-00041-g2aafe1a4d451 #1
-Call Trace:
-[decd5d80] [c0008dc4] show_stack+0x50/0x158 (unreliable)
-[decd5dc0] [c03c6fa0] dump_stack+0x7c/0xdc
-[decd5de0] [c01f8818] check_preemption_disabled+0xf4/0x104
-[decd5e00] [c00086b8] set_breakpoint+0x1c/0xa0
-[decd5e10] [c00d4530] flush_old_exec+0x2bc/0x588
-[decd5e40] [c011c468] load_elf_binary+0x2ac/0x1164
-[decd5ec0] [c00d35f8] search_binary_handler+0xc4/0x1f8
-[decd5ef0] [c00d4ee8] do_execve+0x3d8/0x4b8
-[decd5f40] [c001185c] ret_from_syscall+0x0/0x38
- --- Exception: c01 at 0xfeee554
-    LR = 0xfeee7d4
+.../...
 
-The call path in this case is:
+>Generally, when kernel enumerate on the pci device, following functions will
+>be invoked.
+>
+>     pci_device_add
+>        pcibios_setup_bus_device
+>        ...
+>        set_iommu_table_base_and_group   
+>     device_add
+>        ...
+>        tce_iommu_bus_notifier           
+>     pcibios_fixup_bus
+>        pcibios_add_pci_devices
+>        ...
+>        pcibios_setup_bus_devices        
+>
+>From the call flow, we see for a normall pci device, the
+>pcibios_setup_bus_device() will be invoked twice.
+>
+>At the bootup time, none of them succeed to setup the dma, since the PE is not
+>assigned or the tbl is not set. The iommu tbl and group is setup in
+>pnv_pci_ioda_setup_DMA().
+>
 
-	flush_thread
-	   --> set_debug_reg_defaults
-	     --> set_breakpoint
-	       --> __get_cpu_var
+Yes, we don't assign PE# for PCI devices until ppc_md.pcibios_fixup().
+We gets IOMMU group and IOMMU group device registered in ppc_md.pcibios_fixup().
 
-Since preemption is enabled in the cleanup of flush thread, and
-there is no need to disable it, introduce the distinction between
-set_breakpoint and __set_breakpoint, leaving only the flush_thread
-instance as the current user of set_breakpoint.
+As Alexy already pointed out, "tce_iommu_bus_notifier" doesn't take effect
+during system boot stage.
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- arch/powerpc/include/asm/debug.h         |  1 +
- arch/powerpc/include/asm/hw_breakpoint.h |  2 +-
- arch/powerpc/kernel/hw_breakpoint.c      |  8 ++++----
- arch/powerpc/kernel/process.c            | 11 +++++++++--
- arch/powerpc/kernel/signal.c             |  2 +-
- arch/powerpc/xmon/xmon.c                 |  2 +-
- 6 files changed, 17 insertions(+), 9 deletions(-)
+>This call flow maintains the same when EEH error happens on Bus PE, while the
+>behavior is a little different. 
+>
+>     pci_device_add
+>        pcibios_setup_bus_device
+>        ...
+>        set_iommu_table_base_and_group   <- fail, kobj->sd is not initialized
+>     device_add
+>        ...
+>        tce_iommu_bus_notifier           <- succeed
+>     pcibios_fixp_bus
+>        pcibios_add_pci_devices
+>        ...
+>        pcibios_setup_bus_devices        <- warning, re-attach
+>
+>While this call flow will change a little on a VF. For a VF,
+>pcibios_fixp_bus() will not be invoked. Current behavior is this.
+>
+>     pci_device_add
+>        pcibios_setup_bus_device
+>        ...
+>        set_iommu_table_base_and_group   <- fail, kobj->sd is not initialized
+>     device_add
+>        ...
+>        tce_iommu_bus_notifier           <- succeed
+>
 
-diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
-index 1d7f966d3b18..a954e4975049 100644
---- a/arch/powerpc/include/asm/debug.h
-+++ b/arch/powerpc/include/asm/debug.h
-@@ -47,6 +47,7 @@ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
- #endif
- 
- void set_breakpoint(struct arch_hw_breakpoint *brk);
-+void __set_breakpoint(struct arch_hw_breakpoint *brk);
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- extern void do_send_trap(struct pt_regs *regs, unsigned long address,
- 			 unsigned long error_code, int signal_code, int brkpt);
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index eb0f4ac75c4c..ac6432d9be46 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -79,7 +79,7 @@ static inline void hw_breakpoint_disable(void)
- 	brk.address = 0;
- 	brk.type = 0;
- 	brk.len = 0;
--	set_breakpoint(&brk);
-+	__set_breakpoint(&brk);
- }
- extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
- 
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index b0a1792279bb..0bb5918faaaf 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -72,7 +72,7 @@ int arch_install_hw_breakpoint(struct perf_event *bp)
- 	 * If so, DABR will be populated in single_step_dabr_instruction().
- 	 */
- 	if (current->thread.last_hit_ubp != bp)
--		set_breakpoint(info);
-+		__set_breakpoint(info);
- 
- 	return 0;
- }
-@@ -198,7 +198,7 @@ void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs)
- 
- 	info = counter_arch_bp(tsk->thread.last_hit_ubp);
- 	regs->msr &= ~MSR_SE;
--	set_breakpoint(info);
-+	__set_breakpoint(info);
- 	tsk->thread.last_hit_ubp = NULL;
- }
- 
-@@ -284,7 +284,7 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
- 	if (!(info->type & HW_BRK_TYPE_EXTRANEOUS_IRQ))
- 		perf_bp_event(bp, regs);
- 
--	set_breakpoint(info);
-+	__set_breakpoint(info);
- out:
- 	rcu_read_unlock();
- 	return rc;
-@@ -316,7 +316,7 @@ int __kprobes single_step_dabr_instruction(struct die_args *args)
- 	if (!(info->type & HW_BRK_TYPE_EXTRANEOUS_IRQ))
- 		perf_bp_event(bp, regs);
- 
--	set_breakpoint(info);
-+	__set_breakpoint(info);
- 	current->thread.last_hit_ubp = NULL;
- 
- 	/*
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index c4e3d50e86f8..bc2d668b68ed 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -495,7 +495,7 @@ static inline int set_dawr(struct arch_hw_breakpoint *brk)
- 	return 0;
- }
- 
--void set_breakpoint(struct arch_hw_breakpoint *brk)
-+void __set_breakpoint(struct arch_hw_breakpoint *brk)
- {
- 	__get_cpu_var(current_brk) = *brk;
- 
-@@ -505,6 +505,13 @@ void set_breakpoint(struct arch_hw_breakpoint *brk)
- 		set_dabr(brk);
- }
- 
-+void set_breakpoint(struct arch_hw_breakpoint *brk)
-+{
-+	preempt_disable();
-+	__set_breakpoint(brk);
-+	preempt_enable();
-+}
-+
- #ifdef CONFIG_PPC64
- DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
- #endif
-@@ -834,7 +841,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
-  */
- #ifndef CONFIG_HAVE_HW_BREAKPOINT
- 	if (unlikely(!hw_brk_match(&__get_cpu_var(current_brk), &new->thread.hw_brk)))
--		set_breakpoint(&new->thread.hw_brk);
-+		__set_breakpoint(&new->thread.hw_brk);
- #endif /* CONFIG_HAVE_HW_BREAKPOINT */
- #endif
- 
-diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
-index 8fc4177ed65a..1c794cef2883 100644
---- a/arch/powerpc/kernel/signal.c
-+++ b/arch/powerpc/kernel/signal.c
-@@ -134,7 +134,7 @@ static int do_signal(struct pt_regs *regs)
- 	 */
- 	if (current->thread.hw_brk.address &&
- 		current->thread.hw_brk.type)
--		set_breakpoint(&current->thread.hw_brk);
-+		__set_breakpoint(&current->thread.hw_brk);
- #endif
- 	/* Re-enable the breakpoints for the signal stack */
- 	thread_change_pc(current, regs);
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 08504e75b2c7..d3759b7a5535 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -759,7 +759,7 @@ static void insert_cpu_bpts(void)
- 		brk.address = dabr.address;
- 		brk.type = (dabr.enabled & HW_BRK_TYPE_DABR) | HW_BRK_TYPE_PRIV_ALL;
- 		brk.len = 8;
--		set_breakpoint(&brk);
-+		__set_breakpoint(&brk);
- 	}
- 	if (iabr && cpu_has_feature(CPU_FTR_IABR))
- 		mtspr(SPRN_IABR, iabr->address
--- 
-1.9.0
+It seems that we have 2 problems here:
+
+- For non-SRIOV case, pcibios_setup_device() is called for towice. That
+  seems incorrect. We could simply remove pcibios_setup_bus_devices()
+  from pcibios_fixup_bus().
+
+- It's too early to register IOMMU group/device in pnv_pci_ioda_dma_dev_setup()
+  because the sysfs entries of the PCI device aren't finalized yet. So we could
+  remove all logic we have in pnv_pci_ioda_dma_dev_setup() and just purely rely
+  on "tce_iommu_bus_notifier".
+
+By the way, I never tried EEH on SRIOV PF/VFs. However, I never hit similar
+issue in non-SRIOV cases.
+
+Thanks,
+Gavin
