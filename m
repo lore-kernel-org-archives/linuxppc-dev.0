@@ -1,15 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1398840308.5722.5.camel@concordia>
-Subject: Re: [PATCH v2] powerpc: Add cpu family documentation
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Date: Wed, 30 Apr 2014 16:45:08 +1000
-In-Reply-To: <1391553822.6733.189.camel@snotra.buserror.net>
-References: <1391229347-23026-1-git-send-email-mpe@ellerman.id.au>
- <1391553822.6733.189.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 2/2] powerpc/pseries: init fault_around_order for
+ pseries
+In-Reply-To: <20140429070632.GB27951@gmail.com>
+References: <1398675690-16186-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1398675690-16186-3-git-send-email-maddy@linux.vnet.ibm.com>
+ <20140429070632.GB27951@gmail.com>
+Date: Wed, 30 Apr 2014 16:34:11 +0930
+Message-ID: <87d2fz47tg.fsf@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-arch@vger.kernel.org, riel@redhat.com, ak@linux.intel.com,
+ dave.hansen@intel.com, peterz@infradead.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ mgorman@suse.de, Linus Torvalds <torvalds@linux-foundation.org>,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,229 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-02-04 at 16:43 -0600, Scott Wood wrote:
-> On Sat, 2014-02-01 at 15:35 +1100, Michael Ellerman wrote:
-> > This patch adds some documentation on the different cpu families
-> > supported by arch/powerpc.
-> > 
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > ---
-> > v2: Reworked formatting to avoid wrapping.
-> >     Fixed up Freescale details.
-> > 
-> > 
-> >  Documentation/powerpc/cpu_families.txt | 227 +++++++++++++++++++++++++++++++++
-> >  1 file changed, 227 insertions(+)
-> >  create mode 100644 Documentation/powerpc/cpu_families.txt
-> > 
-> > diff --git a/Documentation/powerpc/cpu_families.txt b/Documentation/powerpc/cpu_families.txt
-> > new file mode 100644
-> > index 0000000..fa4f159
-> > --- /dev/null
-> > +++ b/Documentation/powerpc/cpu_families.txt
-> > @@ -0,0 +1,227 @@
-> > +CPU Families
-> > +============
-> > +
-> > +This document tries to summarise some of the different cpu families that exist
-> > +and are supported by arch/powerpc.
-> > +
-> > +
-> > +Book3S (aka sPAPR)
-> > +------------------
-> > +
-> > + - Hash MMU
-> > + - Mix of 32 & 64 bit
-> > +
-> > +   +--------------+                              +----------------+
-> > +   |  Old POWER   | ---------------------------> | RS64 (threads) |
-> > +   +--------------+                              +----------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+                              +----------------+    +-------+
-> > +   |     601      | ---------------------------> |      603       | -> |  740  |
-> > +   +--------------+                              +----------------+    +-------+
-> > +          |                                              |
-> > +          |                                              |
-> > +          v                                              v
-> > +   +--------------+                              +----------------+    +-------+
-> > +   |     604      |                              |    750 (G3)    | -> | 750CX |
-> > +   +--------------+                              +----------------+    +-------+
-> > +          |                                              |                 |
-> > +          |                                              |                 |
-> > +          v                                              v                 v
-> > +   +--------------+                              +----------------+    +-------+
-> > +   | 620 (64 bit) |                              |      7400      |    | 750CL |
-> > +   +--------------+                              +----------------+    +-------+
-> > +          |                                              |                 |
-> > +          |                                              |                 |
-> > +          v                                              v                 v
-> > +   +--------------+                              +----------------+    +-------+
-> > +   |  POWER3/630  |                              |      7410      |    | 750FX |
-> > +   +--------------+                              +----------------+    +-------+
-> > +          |                                              |
-> > +          |                                              |
-> > +          v                                              v
-> > +   +--------------+                              +----------------+
-> > +   |   POWER3+    |                              |      7450      |
-> > +   +--------------+                              +----------------+
-> > +          |                                              |
-> > +          |                                              |
-> > +          v                                              v
-> > +   +--------------+                              +----------------+
-> > +   |    POWER4    |                              |      7455      |
-> > +   +--------------+                              +----------------+
-> > +          |                                              |
-> > +          |                                              |
-> > +          v                                              v
-> > +   +--------------+                  +-------+   +----------------+
-> > +   |   POWER4+    | ---------------> |  970  |   |      7447      |
-> > +   +--------------+                  +-------+   +----------------+
-> > +          |                              |               |
-> > +          |                              |               |
-> > +          v                              v               v
-> > +   +--------------+     +-------+    +-------+   +----------------+
-> > +   |    POWER5    | --> | Cell  |    | 970FX |   |      7448      |
-> > +   +--------------+     +-------+    +-------+   +----------------+
-> > +          |                              |
-> > +          |                              |
-> > +          v                              v
-> > +   +--------------+                  +-------+
-> > +   |   POWER5+    |                  | 970MP |
-> > +   +--------------+                  +-------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |   POWER5++   |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |    POWER6    |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |    POWER7    |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |   POWER7+    |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |    POWER8    |
-> > +   +--------------+
-> > +
-> > +
-> > +   +---------------+
-> > +   | PA6T (64 bit) |
-> > +   +---------------+
-> 
-> Missing e300 (603 derivative) and e600 (7448 derivative).
+Ingo Molnar <mingo@kernel.org> writes:
+> * Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+>
+>> Performance data for different FAULT_AROUND_ORDER values from 4 socket
+>> Power7 system (128 Threads and 128GB memory). perf stat with repeat of 5
+>> is used to get the stddev values. Test ran in v3.14 kernel (Baseline) and
+>> v3.15-rc1 for different fault around order values.
+>> 
+>> FAULT_AROUND_ORDER      Baseline        1               3               4               5               8
+>> 
+>> Linux build (make -j64)
+>> minor-faults            47,437,359      35,279,286      25,425,347      23,461,275      22,002,189      21,435,836
+>> times in seconds        347.302528420   344.061588460   340.974022391   348.193508116   348.673900158   350.986543618
+>>  stddev for time        ( +-  1.50% )   ( +-  0.73% )   ( +-  1.13% )   ( +-  1.01% )   ( +-  1.89% )   ( +-  1.55% )
+>>  %chg time to baseline                  -0.9%           -1.8%           0.2%            0.39%           1.06%
+>
+> Probably too noisy.
 
-Happy to add them, where do they hang off?
+A little, but 3 still looks like the winner.
 
-> > +IBM BookE
-> > +---------
-> > +
-> > + - Software loaded TLB.
-> > + - All 32 bit
-> > +
-> > +   +--------------+
-> > +   |     401      |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |     403      |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |     405      |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> 
-> Are 40x considered booke?
+>> Linux rebuild (make -j64)
+>> minor-faults            941,552         718,319         486,625         440,124         410,510         397,416
+>> times in seconds        30.569834718    31.219637539    31.319370649    31.434285472    31.972367174    31.443043580
+>>  stddev for time        ( +-  1.07% )   ( +-  0.13% )   ( +-  0.43% )   ( +-  0.18% )   ( +-  0.95% )   ( +-  0.58% )
+>>  %chg time to baseline                  2.1%            2.4%            2.8%            4.58%           2.85%
+>
+> Here it looks like a speedup. Optimal value: 5+.
 
-You tell me.
- 
-> > +Motorola/Freescale 8xx
-> > +----------------------
-> > +
-> > + - Software loaded with hardware assist.
-> > + - All 32 bit
-> > +
-> > +   +--------------+
-> > +   |     8xx      |
-> > +   +--------------+
-> > +          |
-> > +          |
-> > +          v
-> > +   +--------------+
-> > +   |     850      |
-> > +   +--------------+
-> 
-> Is the core of MPC850 different from other MPC8xx?
+No, lower time is better.  Baseline (no faultaround) wins.
 
-Dunno, maybe someone who works at Freescale knows ;)
 
-> > +Freescale BookE
-> > +---------------
-> > +
-> > + - Software loaded TLB.
-> > + - e6500 adds HW loaded indirect TLB entries.
-> > + - Mix of 32 & 64 bit
-> > +
-> > +   +--------------+
-> > +   |     e200     |
-> > +   +--------------+
-> > +
-> > +
-> > +   +--------------------------------+
-> > +   |              e500              |
-> > +   +--------------------------------+
-> > +                   |
-> > +                   |
-> > +                   v
-> > +   +--------------------------------+
-> > +   |             e500v2             |
-> > +   +--------------------------------+
-> > +                   |
-> > +                   |
-> > +                   v
-> > +   +--------------------------------+
-> > +   |             e500mc             |
-> > +   +--------------------------------+
-> > +                   |
-> > +                   |
-> > +                   v
-> > +   +--------------------------------+
-> > +   |    e5500 (Book3e) (64 bit)     |
-> > +   +--------------------------------+
-> > +                   |
-> > +                   |
-> > +                   v
-> > +   +--------------------------------+
-> > +   | e6500 (HW TLB) (Multithreaded) |
-> > +   +--------------------------------+
-> 
-> Why (Book3e) on e5500?  e500mc is also an ISA 2.06 book3e core.
+etc.
 
-OK. I'll move Book3e to e500mc. It's implied that it continues to apply to the
-derivatives.
+It's not a huge surprise that a 64k page arch wants a smaller value than
+a 4k system.  But I agree: I don't see much upside for FAO > 0, but I do
+see downside.
 
-cheers
+Most extreme results:
+Order 1: 2% loss on recompile.  10% win 4% loss on seq.  9% loss random.
+Order 3: 2% loss on recompile.  6% win 5% loss on seq.  14% loss on random.
+Order 4: 2.8% loss on recompile. 10% win 7% loss on seq.  9% loss on random.
+
+> I'm starting to suspect that maybe workloads ought to be given a 
+> choice in this matter, via madvise() or such.
+
+I really don't think they'll be able to use it; it'll change far too
+much with machine and kernel updates.  I think we should apply patch #1
+(with fixes) to make it a variable, then set it to 0 for PPC.
+
+Cheers,
+Rusty.
