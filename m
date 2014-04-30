@@ -1,18 +1,24 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/3] Add new ptrace request macros on PowerPC
-In-reply-to: <535F997B.3000500@linux.vnet.ibm.com>
-References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
- <533BD922.4070009@linux.vnet.ibm.com> <535F4E10.2020300@linux.vnet.ibm.com>
- <CAEjGV6yi5YY95tM-HY4akN4BGXGn4chA8_sCaqvWx3HPSu2V3w@mail.gmail.com>
- <535F5BDE.2030309@linux.vnet.ibm.com>
- <CAEjGV6y8MRiCfRBtWjNfrwKMccROEAJw2rPVc_u+r=tAo2EcHQ@mail.gmail.com>
- <535F997B.3000500@linux.vnet.ibm.com>
-Date: Wed, 30 Apr 2014 10:29:05 +1000
-Message-ID: <20730.1398817745@ale.ozlabs.ibm.com>
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
- avagin@openvz.org, roland@redhat.com, oleg@redhat.com
+Return-Path: <schivers@csc.com.au>
+Received: from mail1.bemta8.messagelabs.com (mail1.bemta8.messagelabs.com
+ [216.82.243.201])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EA784140081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 10:41:19 +1000 (EST)
+In-Reply-To: <1398215901-25609-1-git-send-email-robherring2@gmail.com>
+References: <1398215901-25609-1-git-send-email-robherring2@gmail.com>
+To: Rob Herring <robherring2@gmail.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH v2 00/21] FDT clean-ups and libfdt support
+From: Stephen N Chivers <schivers@csc.com.au>
+Message-ID: <OFAA1D4E52.AF067B90-ONCA257CCA.0001CA91-CA257CCA.00031A7A@csc.com>
+Date: Wed, 30 Apr 2014 11:33:53 +1100
+Content-Type: text/plain; charset="US-ASCII"
+Cc: devicetree@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
+ Chris Zankel <chris@zankel.net>, Aurelien Jacquiot <a-jacquiot@ti.com>,
+ linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Grant Likely <grant.likely@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org, James Hogan <james.hogan@imgtec.co>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,40 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-
-> On 04/29/2014 01:52 PM, Michael Neuling wrote:
-> > That's not what that patch does. It shouldn't make any user visible changes
-> > to DSCR or PPR.
+> From: Rob Herring <robherring2@gmail.com>
+> To: Grant Likely <grant.likely@linaro.org>, linux-
+> kernel@vger.kernel.org, devicetree@vger.kernel.org
+> Cc: Rob Herring <robh@kernel.org>, Aurelien Jacquiot <a-
+> jacquiot@ti.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+> Chris Zankel <chris@zankel.net>, "H. Peter Anvin" <hpa@zytor.com>, 
+> Ingo Molnar <mingo@redhat.com>, James Hogan <james.hogan@imgtec.co>
+> Date: 04/30/2014 09:45 AM
+> Subject: [PATCH v2 00/21] FDT clean-ups and libfdt support
+> Sent by: linux-kernel-owner@vger.kernel.org
 > 
-> It may not when it runs uninterrupted but after the tracee process has
-> stopped, thread.dscr reflects the default DSCR value as mentioned
-> before. This can be proved by changing the "dscr_default" value in
-> arch/powerpc/sysfs.c file.
-
-The intention with DSCR is that if the user changes the DSCR, the kernel
-should always save/restore it.  If you are seeing something else, then
-that is a bug.  Anton has a test case for this here:
-
-  http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
-
-If that is failing, then there is a bug that we need to fix.
-
-The PPR is the same, except that the kernel can change it over a
-syscall.
-
-> > Over syscall PPR and DSCR may change.
-
-Sorry, this should be only PPR.  DSCR shouldn't change over a syscall,
-at least that's the intention.
-
-> > Depending on your test case, that may
-> > be your problem.
+> From: Rob Herring <robh@kernel.org>
 > 
-> I would guess when the tracee process stops for ptrace analysis, tm_reclaim or
-> tm_recheckpoint path might be crossed which is causing this dscr_default value
-> to go into thread_struct.
+> This is a series of clean-ups of architecture FDT code and converts the
+> core FDT code over to using libfdt functions. This is in preparation
+> to add FDT based address translation parsing functions for early
+> console support. This series removes direct access to FDT data from all
+> arches except powerpc.
+> 
+> The current MIPS lantiq and xlp DT code is buggy as built-in DTBs need
+> to be copied out of init section. Patches 2 and 3 should be applied to
+> 3.15.
+> 
+> Changes in v2 are relatively minor. There was a bug in the unflattening
+> code where walking up the tree was not being handled correctly (thanks
+> to Michal Simek). I re-worked things a bit to avoid globally adding
+> libfdt include paths.
+> 
+> A branch is available here[1], and I plan to put into linux-next in a 
+few
+> days. Please test! I've compiled on arm, arm64, mips, microblaze, 
+xtensa,
+> and powerpc and booted on arm and arm64.
+I have tested this for PowerPC using a snapshot of libfdt[1] collected 
+from
+the today (30/04/2014).
 
-That shouldn't happen.  If that's happening, it's a bug.
+The computers used were 32 bit, Freescale and IBM/AMCC CPUs:
 
-Mikey
+        MVME5100 - Motorola/Fresscale CPU - PPCBug firmware
+        SAM440EP - IBM/AMCC - U-Boot firmware
+
+Tested-by: Stephen Chivers <schivers@csc.com>
+
+Stephen Chivers,
+CSC Australia Pty. Ltd.
+
+[1] git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git libfdt
