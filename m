@@ -1,40 +1,21 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BE4E7140094
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:28:09 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 30 Apr 2014 13:28:08 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E65DA357804F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:28:06 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s3U3Rpj98388982
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:27:52 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s3U3S58N013628
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:28:05 +1000
-Date: Wed, 30 Apr 2014 11:28:03 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
- iommu_add_device()
-Message-ID: <20140430032803.GB4755@richard>
-References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <535E5924.8040503@au1.ibm.com> <20140429064955.GA5066@richard>
- <20140430002812.GA13183@shangw>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140430002812.GA13183@shangw>
-Cc: linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@au1.ibm.com>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 710071400E0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 14:57:15 +1000 (EST)
+Message-ID: <1398833787.31586.8.camel@pasglop>
+Subject: Re: [PATCH] powerpc 32: Provides VIRT_CPU_ACCOUNTING
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Wed, 30 Apr 2014 14:56:27 +1000
+In-Reply-To: <1395266717.12479.293.camel@snotra.buserror.net>
+References: <20140319215241.236B21A4BDE@localhost.localdomain>
+ <1395266717.12479.293.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,59 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 30, 2014 at 10:28:12AM +1000, Gavin Shan wrote:
->
->It seems that we have 2 problems here:
->
->- For non-SRIOV case, pcibios_setup_device() is called for towice. That
->  seems incorrect. We could simply remove pcibios_setup_bus_devices()
->  from pcibios_fixup_bus().
+On Wed, 2014-03-19 at 17:05 -0500, Scott Wood wrote:
+> On Wed, 2014-03-19 at 22:52 +0100, Christophe Leroy wrote:
+> > This patch provides VIRT_CPU_ACCOUTING to PPC32 architecture.
+> > Unlike PPC64, PPC32 doesn't provide the PACA register. Therefore the
+> > implementation is similar to the one done in the IA64 architecture.
+> > It is based on additional information added to the Task Info structure.
+> 
+> PACA isn't a register -- just a convention for how Linux uses a GPR.
+> Maybe it's time to use it on PPC32 as well?
 
-I have thought about this solution before, but I guess this would have some
-side effect on other platforms.
+PACA is actually a data structure and you really really don't want it
+on ppc32 :-) Having a register point to current works, having a register
+point to per-cpu data instead works too (ie, change what we do today),
+but don't introduce a PACA *please* :-)
 
-Well, just did a test by removing this line in pcibios_fixup_bus(), the result
-is:
-1. system up, thanks god.
-2. no one invoke the pcibios_setup_device() at bootup time.
-
-The reason for no one invoke the pcibios_setup_device() is: in
-pcibios_add_device() it will check whether the bus is added before calling
-pcibios_setup_device(). And at this time, the bus is not added.
-
-Still wierd, why the system could be up. But one thing for sure is, no one
-invoke the pcibios_setup_device() at bootup stage. So this solution may not
-work.
-
->
->- It's too early to register IOMMU group/device in pnv_pci_ioda_dma_dev_setup()
->  because the sysfs entries of the PCI device aren't finalized yet. So we could
->  remove all logic we have in pnv_pci_ioda_dma_dev_setup() and just purely rely
->  on "tce_iommu_bus_notifier".
-
-This would be another solution. 
-
-One concern:
-
-    If we want to do like this, we need to retrieve the pe information and
-    get the tce32_table base in tce_iommu_bus_notifier. Hmm... looks a little
-    not that nice.
-
->
->By the way, I never tried EEH on SRIOV PF/VFs. However, I never hit similar
->issue in non-SRIOV cases.
-
-I have test this case on a PF with no VF enabled.
-
-I just make the mlx4_pci_err_detected() return PCI_ERS_RESULT_NONE and do
-nothing. So this will force the eeh to do a hotplug recovery.
-
-You could have a try on your machine too.
-
->
->Thanks,
->Gavin
-
--- 
-Richard Yang
-Help you, Help me
+> 
+> > Index: b/arch/powerpc/kernel/asm-offsets.c
+> > ===================================================================
+> > --- b/arch/powerpc/kernel/asm-offsets.c	(revision 5607)
+> > +++ b/arch/powerpc/kernel/asm-offsets.c	(revision 5608)
+> > @@ -167,6 +167,10 @@
+> >  	DEFINE(TI_PREEMPT, offsetof(struct thread_info, preempt_count));
+> >  	DEFINE(TI_TASK, offsetof(struct thread_info, task));
+> >  	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
+> > +	DEFINE(TI_AC_STAMP, offsetof(struct thread_info, ac_stamp));
+> > +	DEFINE(TI_AC_LEAVE, offsetof(struct thread_info, ac_leave));
+> > +	DEFINE(TI_AC_STIME, offsetof(struct thread_info, ac_stime));
+> > +	DEFINE(TI_AC_UTIME, offsetof(struct thread_info, ac_utime));
+> 
+> Doesn't this need to be protected by #ifdef
+> CONFIG_VIRT_CPU_ACCOUNTING_NATIVE?
+> 
+> >  
+> >  #ifdef CONFIG_PPC64
+> >  	DEFINE(DCACHEL1LINESIZE, offsetof(struct ppc64_caches, dline_size));
+> > Index: b/arch/powerpc/include/asm/thread_info.h
+> > ===================================================================
+> > --- b/arch/powerpc/include/asm/thread_info.h	(revision 5607)
+> > +++ b/arch/powerpc/include/asm/thread_info.h	(revision 5608)
+> > @@ -43,6 +43,12 @@
+> >  	int		cpu;			/* cpu we're on */
+> >  	int		preempt_count;		/* 0 => preemptable,
+> >  						   <0 => BUG */
+> > +#ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+> > +	__u32 ac_stamp;
+> > +	__u32 ac_leave;
+> > +	__u32 ac_stime;
+> > +	__u32 ac_utime;
+> > +#endif
+> 
+> This isn't uapi; why not use "u32"?
+> 
+> Plus, it should be made clear that this is only used on 32-bit.
+> 
+> >  	struct restart_block restart_block;
+> >  	unsigned long	local_flags;		/* private flags for thread */
+> >  
+> > @@ -58,6 +64,8 @@
+> >  	.task =		&tsk,			\
+> >  	.exec_domain =	&default_exec_domain,	\
+> >  	.cpu =		0,			\
+> > +	.ac_stime =	0,			\
+> > +	.ac_utime =	0,			\
+> 
+> Also needs to be ifdeffed -- which isn't going to work in a macro, so
+> maybe remove the ifdef from the variable declarations, or just let the
+> fields be initialized to zero by default.  Or add PACA to 32-bit. :-)
+> 
+> -Scott
+> 
