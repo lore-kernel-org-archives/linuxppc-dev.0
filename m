@@ -1,21 +1,15 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-ob0-f176.google.com (mail-ob0-f176.google.com
- [209.85.214.176])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5E92B14010E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 16:04:10 +1000 (EST)
-Received: by mail-ob0-f176.google.com with SMTP id wp4so1441413obc.21
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2014 23:04:06 -0700 (PDT)
-From: Rob Herring <robherring2@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH] powerpc: fix skipping call to early_init_fdt_scan_reserved_mem
-Date: Wed, 30 Apr 2014 01:03:52 -0500
-Message-Id: <1398837832-30052-1-git-send-email-robherring2@gmail.com>
-Cc: Rob Herring <robh@kernel.org>, Paul Mackerras <paulus@samba.org>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1398840308.5722.5.camel@concordia>
+Subject: Re: [PATCH v2] powerpc: Add cpu family documentation
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Date: Wed, 30 Apr 2014 16:45:08 +1000
+In-Reply-To: <1391553822.6733.189.camel@snotra.buserror.net>
+References: <1391229347-23026-1-git-send-email-mpe@ellerman.id.au>
+ <1391553822.6733.189.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,50 +19,229 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rob Herring <robh@kernel.org>
+On Tue, 2014-02-04 at 16:43 -0600, Scott Wood wrote:
+> On Sat, 2014-02-01 at 15:35 +1100, Michael Ellerman wrote:
+> > This patch adds some documentation on the different cpu families
+> > supported by arch/powerpc.
+> > 
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> > v2: Reworked formatting to avoid wrapping.
+> >     Fixed up Freescale details.
+> > 
+> > 
+> >  Documentation/powerpc/cpu_families.txt | 227 +++++++++++++++++++++++++++++++++
+> >  1 file changed, 227 insertions(+)
+> >  create mode 100644 Documentation/powerpc/cpu_families.txt
+> > 
+> > diff --git a/Documentation/powerpc/cpu_families.txt b/Documentation/powerpc/cpu_families.txt
+> > new file mode 100644
+> > index 0000000..fa4f159
+> > --- /dev/null
+> > +++ b/Documentation/powerpc/cpu_families.txt
+> > @@ -0,0 +1,227 @@
+> > +CPU Families
+> > +============
+> > +
+> > +This document tries to summarise some of the different cpu families that exist
+> > +and are supported by arch/powerpc.
+> > +
+> > +
+> > +Book3S (aka sPAPR)
+> > +------------------
+> > +
+> > + - Hash MMU
+> > + - Mix of 32 & 64 bit
+> > +
+> > +   +--------------+                              +----------------+
+> > +   |  Old POWER   | ---------------------------> | RS64 (threads) |
+> > +   +--------------+                              +----------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+                              +----------------+    +-------+
+> > +   |     601      | ---------------------------> |      603       | -> |  740  |
+> > +   +--------------+                              +----------------+    +-------+
+> > +          |                                              |
+> > +          |                                              |
+> > +          v                                              v
+> > +   +--------------+                              +----------------+    +-------+
+> > +   |     604      |                              |    750 (G3)    | -> | 750CX |
+> > +   +--------------+                              +----------------+    +-------+
+> > +          |                                              |                 |
+> > +          |                                              |                 |
+> > +          v                                              v                 v
+> > +   +--------------+                              +----------------+    +-------+
+> > +   | 620 (64 bit) |                              |      7400      |    | 750CL |
+> > +   +--------------+                              +----------------+    +-------+
+> > +          |                                              |                 |
+> > +          |                                              |                 |
+> > +          v                                              v                 v
+> > +   +--------------+                              +----------------+    +-------+
+> > +   |  POWER3/630  |                              |      7410      |    | 750FX |
+> > +   +--------------+                              +----------------+    +-------+
+> > +          |                                              |
+> > +          |                                              |
+> > +          v                                              v
+> > +   +--------------+                              +----------------+
+> > +   |   POWER3+    |                              |      7450      |
+> > +   +--------------+                              +----------------+
+> > +          |                                              |
+> > +          |                                              |
+> > +          v                                              v
+> > +   +--------------+                              +----------------+
+> > +   |    POWER4    |                              |      7455      |
+> > +   +--------------+                              +----------------+
+> > +          |                                              |
+> > +          |                                              |
+> > +          v                                              v
+> > +   +--------------+                  +-------+   +----------------+
+> > +   |   POWER4+    | ---------------> |  970  |   |      7447      |
+> > +   +--------------+                  +-------+   +----------------+
+> > +          |                              |               |
+> > +          |                              |               |
+> > +          v                              v               v
+> > +   +--------------+     +-------+    +-------+   +----------------+
+> > +   |    POWER5    | --> | Cell  |    | 970FX |   |      7448      |
+> > +   +--------------+     +-------+    +-------+   +----------------+
+> > +          |                              |
+> > +          |                              |
+> > +          v                              v
+> > +   +--------------+                  +-------+
+> > +   |   POWER5+    |                  | 970MP |
+> > +   +--------------+                  +-------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |   POWER5++   |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |    POWER6    |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |    POWER7    |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |   POWER7+    |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |    POWER8    |
+> > +   +--------------+
+> > +
+> > +
+> > +   +---------------+
+> > +   | PA6T (64 bit) |
+> > +   +---------------+
+> 
+> Missing e300 (603 derivative) and e600 (7448 derivative).
 
-The call to early_init_fdt_scan_reserved_mem will be skipped if
-reserved-ranges is not found. Move the call earlier so that it is called
-unconditionally.
+Happy to add them, where do they hang off?
 
-Signed-off-by: Rob Herring <robh@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Tested-by: Stephen Chivers <schivers@csc.com>
----
-I found this issue in testing of my fdt clean-up series (thanks to 
-Stephen). Since the reserved memory support is new, I don't think it is 
-critical to fix this for 3.15. I plan to include this with my fdt series 
-for 3.16 unless I hear otherwise.
+> > +IBM BookE
+> > +---------
+> > +
+> > + - Software loaded TLB.
+> > + - All 32 bit
+> > +
+> > +   +--------------+
+> > +   |     401      |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |     403      |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |     405      |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> 
+> Are 40x considered booke?
 
-Rob
-
- arch/powerpc/kernel/prom.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 668aa47..d657549 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -567,6 +567,8 @@ static void __init early_reserve_mem_dt(void)
- 	unsigned long i, len, dt_root;
- 	const __be32 *prop;
+You tell me.
  
-+	early_init_fdt_scan_reserved_mem();
-+
- 	dt_root = of_get_flat_dt_root();
- 
- 	prop = of_get_flat_dt_prop(dt_root, "reserved-ranges", &len);
-@@ -589,8 +591,6 @@ static void __init early_reserve_mem_dt(void)
- 			memblock_reserve(base, size);
- 		}
- 	}
--
--	early_init_fdt_scan_reserved_mem();
- }
- 
- static void __init early_reserve_mem(void)
--- 
-1.9.1
+> > +Motorola/Freescale 8xx
+> > +----------------------
+> > +
+> > + - Software loaded with hardware assist.
+> > + - All 32 bit
+> > +
+> > +   +--------------+
+> > +   |     8xx      |
+> > +   +--------------+
+> > +          |
+> > +          |
+> > +          v
+> > +   +--------------+
+> > +   |     850      |
+> > +   +--------------+
+> 
+> Is the core of MPC850 different from other MPC8xx?
+
+Dunno, maybe someone who works at Freescale knows ;)
+
+> > +Freescale BookE
+> > +---------------
+> > +
+> > + - Software loaded TLB.
+> > + - e6500 adds HW loaded indirect TLB entries.
+> > + - Mix of 32 & 64 bit
+> > +
+> > +   +--------------+
+> > +   |     e200     |
+> > +   +--------------+
+> > +
+> > +
+> > +   +--------------------------------+
+> > +   |              e500              |
+> > +   +--------------------------------+
+> > +                   |
+> > +                   |
+> > +                   v
+> > +   +--------------------------------+
+> > +   |             e500v2             |
+> > +   +--------------------------------+
+> > +                   |
+> > +                   |
+> > +                   v
+> > +   +--------------------------------+
+> > +   |             e500mc             |
+> > +   +--------------------------------+
+> > +                   |
+> > +                   |
+> > +                   v
+> > +   +--------------------------------+
+> > +   |    e5500 (Book3e) (64 bit)     |
+> > +   +--------------------------------+
+> > +                   |
+> > +                   |
+> > +                   v
+> > +   +--------------------------------+
+> > +   | e6500 (HW TLB) (Multithreaded) |
+> > +   +--------------------------------+
+> 
+> Why (Book3e) on e5500?  e500mc is also an ISA 2.06 book3e core.
+
+OK. I'll move Book3e to e500mc. It's implied that it continues to apply to the
+derivatives.
+
+cheers
