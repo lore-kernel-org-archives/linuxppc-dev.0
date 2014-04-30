@@ -1,21 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <martin@hinner.info>
+Received: from mail-qc0-f181.google.com (mail-qc0-f181.google.com
+ [209.85.216.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 65C0014010E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 19:52:31 +1000 (EST)
-Message-ID: <5360C7D3.2090708@suse.de>
-Date: Wed, 30 Apr 2014 11:52:19 +0200
-From: Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id EE0C914010D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 19:59:40 +1000 (EST)
+Received: by mail-qc0-f181.google.com with SMTP id x3so1560990qcv.40
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 02:59:37 -0700 (PDT)
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 0/6] Implement split core for POWER8
-References: <1398303165-6576-1-git-send-email-mikey@neuling.org>
- <9524.1398834577@ale.ozlabs.ibm.com>
-In-Reply-To: <9524.1398834577@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
+Date: Wed, 30 Apr 2014 11:59:37 +0200
+Message-ID: <CAPVwjkycrRQsCDAOdHPh-jDvy1fgWbojiqM97+dSo6iaVXTe=g@mail.gmail.com>
+Subject: GNU binutils & PowerPC VLE
+From: Martin Hinner <martin@hinner.info>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,28 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-On 30.04.14 07:09, Michael Neuling wrote:
->> This patch series implements split core mode on POWER8.  This enables up to 4
->> subcores per core which can each independently run guests (per guest SPRs like
->> SDR1, LPIDR etc are replicated per subcore).  Lots more documentation on this
->> feature in the code and commit messages.
->>
->> Most of this code is in the powernv platform but there's a couple of KVM
->> specific patches too.
->>
->> Alex: If you're happy with the KVM patches, please ACK them and benh can hold
->> this series.
-> Alex,
->
-> Any chance we can get an ACK on these two KVM patches so benh can put
-> this series in his next branch?
+  I know this topic does not exactly fit this mailing list, but I
+think it's better to ask here than on binutils.
 
-For patches 1/6 and 5/6:
+  I need to assemble and disassemble some PowerPC VLE (variable length
+encoding)  e200 code. Binutils as of 2.23.2 support VLE. But when I
+try to use objdump -D with  -m powerpc:vle or -M vle I get plain
+32-bit powerpc ISA disassembly (instead of 16bit instructions). Tried
+to change input file format, endianity, etc. What am I doing wrong?
 
-   Acked-by: Alexander Graf <agraf@suse.de>
+Thank you,
 
-However, please make sure to get Paul's ack as well.
-
-
-Alex
+Martin
