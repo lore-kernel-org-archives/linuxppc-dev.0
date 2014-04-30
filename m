@@ -1,22 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9AAC3140099
- for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2014 04:29:14 +1000 (EST)
-Message-ID: <1398882547.24575.211.camel@snotra.buserror.net>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
 Subject: Re: [PATCH v2] powerpc: Add cpu family documentation
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 30 Apr 2014 13:29:07 -0500
+Date: Wed, 30 Apr 2014 20:33:49 +0200
+Message-ID: <6387264.sEWrGGhGJ9@wuerfel>
 In-Reply-To: <1398840308.5722.5.camel@concordia>
 References: <1391229347-23026-1-git-send-email-mpe@ellerman.id.au>
  <1391553822.6733.189.camel@snotra.buserror.net>
  <1398840308.5722.5.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset="us-ascii"
+Cc: Scott Wood <scottwood@freescale.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,35 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-04-30 at 16:45 +1000, Michael Ellerman wrote:
-> On Tue, 2014-02-04 at 16:43 -0600, Scott Wood wrote: 
-> > Missing e300 (603 derivative) and e600 (7448 derivative).
-> 
-> Happy to add them, where do they hang off?
-
-e300 hangs off 603 and e600 hangs off 7448. :-)
-
-> > > +Motorola/Freescale 8xx
-> > > +----------------------
-> > > +
-> > > + - Software loaded with hardware assist.
-> > > + - All 32 bit
-> > > +
+On Wednesday 30 April 2014 16:45:08 Michael Ellerman wrote:
+> > > +          v                                              v
+> > > +   +--------------+                  +-------+   +----------------+
+> > > +   |   POWER4+    | ---------------> |  970  |   |      7447      |
+> > > +   +--------------+                  +-------+   +----------------+
+> > > +          |                              |               |
+> > > +          |                              |               |
+> > > +          v                              v               v
+> > > +   +--------------+     +-------+    +-------+   +----------------+
+> > > +   |    POWER5    | --> | Cell  |    | 970FX |   |      7448      |
+> > > +   +--------------+     +-------+    +-------+   +----------------+
+> > > +          |                              |
+> > > +          |                              |
+> > > +          v                              v
+> > > +   +--------------+                  +-------+
+> > > +   |   POWER5+    |                  | 970MP |
+> > > +   +--------------+                  +-------+
+> > > +          |
+> > > +          |
+> > > +          v
 > > > +   +--------------+
-> > > +   |     8xx      |
+> > > +   |   POWER5++   |
 > > > +   +--------------+
 > > > +          |
 > > > +          |
 > > > +          v
 > > > +   +--------------+
-> > > +   |     850      |
+> > > +   |    POWER6    |
 > > > +   +--------------+
-> > 
-> > Is the core of MPC850 different from other MPC8xx?
-> 
-> Dunno, maybe someone who works at Freescale knows ;)
+> > > +          |
+> > > +          |
+> > > +          v
 
-I think they're the same -- I was just wondering if you had some
-difference in mind that led you to single it out.
+I think Cell and POWER6 are somewhat misrepresented here. Cell (together with
+Xenon, which is the same core) is basically an independent development unrelated
+to POWER5. POWER6 shares a lot of concepts with Cell, and IIRC is much closer
+related to Cell than to POWER5, though I don't remember which one was designed
+first. Probably code went both ways, and POWER6 got some enhancements that didn't
+make it into the Cell PPU. They both contain VMX (Altivec) and have an in-order
+pipeline.
 
--Scott
+POWER6 is also closely related to z10, while POWER7 then includes aspects of
+both POWER5 and POWER6 but no longer shares much with z196, which in turn is
+derived from z10.
+
+	Arnd
