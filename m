@@ -1,23 +1,40 @@
-Return-Path: <Gang.Liu@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91D2A14008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 12:58:27 +1000 (EST)
-From: "Gang.Liu@freescale.com" <Gang.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/fsl-rio: Fix fsl_rio_setup error paths and
- use-after-unmap
-Date: Wed, 30 Apr 2014 02:58:07 +0000
-Message-ID: <d524dfb27f1045c79d439dee19c00fcb@BY2PR03MB412.namprd03.prod.outlook.com>
-References: <1398735103-16513-1-git-send-email-scottwood@freescale.com>
- <dd70c20406d242b694b16e898cc2cddf@BY2PR03MB412.namprd03.prod.outlook.com>
- <1398791552.24575.56.camel@snotra.buserror.net>
-In-Reply-To: <1398791552.24575.56.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id BE4E7140094
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:28:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 30 Apr 2014 13:28:08 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E65DA357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:28:06 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s3U3Rpj98388982
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:27:52 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s3U3S58N013628
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 13:28:05 +1000
+Date: Wed, 30 Apr 2014 11:28:03 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/powernv: reduce multi-hit of
+ iommu_add_device()
+Message-ID: <20140430032803.GB4755@richard>
+References: <1398219993-6326-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <535E5924.8040503@au1.ibm.com> <20140429064955.GA5066@richard>
+ <20140430002812.GA13183@shangw>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140430002812.GA13183@shangw>
+Cc: linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@au1.ibm.com>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +44,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwgMzAsIDIwMTQgMToxMyBBTQ0KPiBUbzogTGl1IEdh
-bmctQjM0MTgyDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIXSBwb3dlcnBjL2ZzbC1yaW86IEZpeCBmc2xfcmlvX3NldHVwIGVycm9yIHBh
-dGhzIGFuZA0KPiB1c2UtYWZ0ZXItdW5tYXANCj4gDQo+IE9uIE1vbiwgMjAxNC0wNC0yOCBhdCAy
-MzowNCAtMDUwMCwgTGl1IEdhbmctQjM0MTgyIHdyb3RlOg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiBTZW50OiBU
-dWVzZGF5LCBBcHJpbCAyOSwgMjAxNCA5OjMyIEFNDQo+ID4gPiBUbzogbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmcNCj4gPiA+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgTGl1IEdhbmctQjM0
-MTgyDQo+ID4gPiBTdWJqZWN0OiBbUEFUQ0hdIHBvd2VycGMvZnNsLXJpbzogRml4IGZzbF9yaW9f
-c2V0dXAgZXJyb3IgcGF0aHMgYW5kDQo+ID4gPiB1c2UtIGFmdGVyLXVubWFwDQo+ID4gPg0KPiA+
-ID4gU2V2ZXJhbCBvZiB0aGUgZXJyb3IgcGF0aHMgZnJvbSBmc2xfcmlvX3NldHVwIGFyZSBtaXNz
-aW5nIGVycm9yDQo+IG1lc3NhZ2VzLg0KPiA+ID4NCj4gPiA+IFdvcnNlLCBmc2xfcmlvX3NldHVw
-IGluaXRpYWxpemVzIHNldmVyYWwgZ2xvYmFsIHBvaW50ZXJzIGFuZCBkb2VzDQo+ID4gPiBub3Qg
-TlVMTCB0aGVtIG91dCBhZnRlciBmcmVlaW5nL3VubWFwcGluZyBvbiBlcnJvci4gIFRoaXMgY2F1
-c2VkDQo+ID4gPiBmc2xfcmlvX21jaGVja19leGNlcHRpb24oKSB0byBjcmFzaCB3aGVuIGFjY2Vz
-c2luZyByaW9fcmVnc193aW4NCj4gPiA+IHdoaWNoIHdhcyBub24tTlVMTCBidXQgaGFkIGJlZW4g
-dW5tYXBwZWQuDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogU2NvdHQgV29vZCA8c2NvdHR3
-b29kQGZyZWVzY2FsZS5jb20+DQo+ID4gPiBDYzogTGl1IEdhbmcgPEdhbmcuTGl1QGZyZWVzY2Fs
-ZS5jb20+DQo+ID4gPiAtLS0NCj4gPiA+IExpdSBHYW5nLCBhcmUgeW91IHN1cmUgYWxsIG9mIHRo
-ZXNlIGVycm9yIGNvbmRpdGlvbnMgYXJlIGZhdGFsPyAgV2h5DQo+ID4gPiBkb2VzIHRoZSByaW8g
-ZHJpdmVyIGZhaWwgaWYgcm11IGlzIG5vdCBwcmVzZW50IChlLmcuICBvbiB0NDI0MCk/DQo+ID4N
-Cj4gPiBIaSBTY290dCwgSSB0aGluayB0aGUgZXJyb3JzIHlvdSBtb2RpZmllZCBpbiB0aGUgcGF0
-Y2ggYXJlIHNlcmlvdXMgYW5kDQo+ID4gc2hvdWxkIGJlIGZpeGVkLiBUaGFua3MgdmVyeSBtdWNo
-IQ0KPiA+IEFuZCBpbiBmYWN0LCB0aGUgcmlvIGRyaXZlciBjYW4gYmUgdXNlZCBqdXN0IGZvciB0
-aGUgc3VibW9kdWxlIG9mIHRoZQ0KPiBTUklPOiBSTVUuDQo+ID4gSXQgc2hvdWxkIGJlIHVzZWQg
-d2l0aCBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9ybXUuYyBhbmQgdGhlcmUgc2hvdWxkDQo+ID4g
-aGF2ZSB0aGUgUk1VIG1vZHVsZS4NCj4gPiBUaGUgZnNsX3Jpby5jIGltcGxlbWVudHMgc29tZSBi
-YXNpYyBhbmQgbmVlZGVkIHdvcmtzIHRvIHN1cHBvcnQgdGhlIFJNVQ0KPiBydW5uaW5nIHdlbGwu
-DQo+IA0KPiBJIGRvbid0IHF1aXRlIGZvbGxvdyAtLSBpcyBpdCBleHBlY3RlZCB0aGF0IHJpbyBj
-YW4gd29yayB3aXRob3V0IHJtdSwgb3INCj4gbm90PyAgQXMgaXMsIGZzbF9yaW9fc2V0dXAoKSB3
-aWxsIGVycm9yIG91dCBpZiBpdCBkb2Vzbid0IGZpbmQgYW4NCj4gZnNsLHNyaW8tcm11LWhhbmRs
-ZSBwcm9wZXJ0eS4NCg0KZnNsX3Jpb19zZXR1cCgpIGRvZXNuJ3QgZXhwZWN0IHRoYXQgcmlvIGNh
-biB3b3JrIHdpdGhvdXQgcm11LiBBbGwgdGhlIHJpbw0KZHJpdmVycyBqdXN0IGhhcyBvbmUgcHVy
-cG9zZSwgaXQncyBybXUuIEJ1dCBybXUgaXMgYSBzdWJtb2R1bGUgb2YgdGhlIHJpbywNCnNvIHRo
-ZSBkcml2ZXIgc2hvdWxkIHBhcnNlIHJpbyBpbiBkdGIgYW5kIGZpbmlzaCBzb21lIGluaXRpYWwg
-d29ya3MgZmlyc3QsDQphbmQgdGhlbiB0byBzZXR1cCBybXUuDQpUaGF0J3Mgd2h5IHRoZSBkcml2
-ZXJzIGNhbm5vdCBqdXN0IGhhdmUgYSBzdWNoIGFzIHJtdV9zZXR1cCgpIHRvIHBhcnNlDQpmc2ws
-c3Jpby1ybXUtaGFuZGxlIHByb3BlcnR5Lg0KDQpUaGFua3MsDQpMaXUgR2FuZw0KIA0K
+On Wed, Apr 30, 2014 at 10:28:12AM +1000, Gavin Shan wrote:
+>
+>It seems that we have 2 problems here:
+>
+>- For non-SRIOV case, pcibios_setup_device() is called for towice. That
+>  seems incorrect. We could simply remove pcibios_setup_bus_devices()
+>  from pcibios_fixup_bus().
+
+I have thought about this solution before, but I guess this would have some
+side effect on other platforms.
+
+Well, just did a test by removing this line in pcibios_fixup_bus(), the result
+is:
+1. system up, thanks god.
+2. no one invoke the pcibios_setup_device() at bootup time.
+
+The reason for no one invoke the pcibios_setup_device() is: in
+pcibios_add_device() it will check whether the bus is added before calling
+pcibios_setup_device(). And at this time, the bus is not added.
+
+Still wierd, why the system could be up. But one thing for sure is, no one
+invoke the pcibios_setup_device() at bootup stage. So this solution may not
+work.
+
+>
+>- It's too early to register IOMMU group/device in pnv_pci_ioda_dma_dev_setup()
+>  because the sysfs entries of the PCI device aren't finalized yet. So we could
+>  remove all logic we have in pnv_pci_ioda_dma_dev_setup() and just purely rely
+>  on "tce_iommu_bus_notifier".
+
+This would be another solution. 
+
+One concern:
+
+    If we want to do like this, we need to retrieve the pe information and
+    get the tce32_table base in tce_iommu_bus_notifier. Hmm... looks a little
+    not that nice.
+
+>
+>By the way, I never tried EEH on SRIOV PF/VFs. However, I never hit similar
+>issue in non-SRIOV cases.
+
+I have test this case on a PF with no VF enabled.
+
+I just make the mlx4_pci_err_detected() return PCI_ERS_RESULT_NONE and do
+nothing. So this will force the eeh to do a hotplug recovery.
+
+You could have a try on your machine too.
+
+>
+>Thanks,
+>Gavin
+
+-- 
+Richard Yang
+Help you, Help me
