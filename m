@@ -1,23 +1,18 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
- [209.85.192.169])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6C672140149
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 16:27:53 +1000 (EST)
-Received: by mail-pd0-f169.google.com with SMTP id z10so1423889pdj.28
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 23:27:51 -0700 (PDT)
-From: Brian Norris <computersforpeace@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 11/12] powerpc: defconfigs: add MTD_SPI_NOR (new dependency
- for M25P80)
-Date: Wed, 30 Apr 2014 23:26:46 -0700
-Message-Id: <1398925607-7482-12-git-send-email-computersforpeace@gmail.com>
-In-Reply-To: <1398925607-7482-1-git-send-email-computersforpeace@gmail.com>
-References: <1398925607-7482-1-git-send-email-computersforpeace@gmail.com>
-Cc: Marek Vasut <marex@denx.de>, Huang Shijie <b32955@freescale.com>,
- linux-mtd@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
- Brian Norris <computersforpeace@gmail.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews06.kpnxchange.com (cpsmtpb-ews06.kpnxchange.com
+ [213.75.39.9]) by ozlabs.org (Postfix) with ESMTP id 9697F140114
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 19:40:48 +1000 (EST)
+Message-ID: <1398936447.4121.12.camel@x220>
+Subject: Re: [4/5] IBM Akebono: Add the Akebono platform
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Alistair Popple <alistair@popple.id.au>
+Date: Thu, 01 May 2014 11:27:27 +0200
+In-Reply-To: <1394077948-8395-5-git-send-email-alistair@popple.id.au>
+References: <1394077948-8395-5-git-send-email-alistair@popple.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,103 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These defconfigs contain the CONFIG_M25P80 symbol, which is now
-dependent on the MTD_SPI_NOR symbol. Add CONFIG_MTD_SPI_NOR to satisfy
-the new dependency.
+On Thu, 2014-03-06 at 14:52 +1100, Alistair Popple wrote:
+> This patch adds support for the IBM Akebono board.
 
-At the same time, drop the now-nonexistent CONFIG_MTD_CHAR symbol.
+This patch just landed in linux-next (ie, in next-20140501).
 
-Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
----
- arch/powerpc/configs/corenet32_smp_defconfig | 2 +-
- arch/powerpc/configs/corenet64_smp_defconfig | 2 +-
- arch/powerpc/configs/mpc85xx_defconfig       | 2 +-
- arch/powerpc/configs/mpc85xx_smp_defconfig   | 2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+> Signed-off-by: Alistair Popple <alistair@popple.id.au>
+>[...]
+> --- a/arch/powerpc/platforms/44x/Kconfig
+> +++ b/arch/powerpc/platforms/44x/Kconfig
+> @@ -199,6 +199,32 @@ config CURRITUCK
+>  	help
+>  	  This option enables support for the IBM Currituck (476fpe) evaluation board
+>  
+> +config AKEBONO
+> +	bool "IBM Akebono (476gtr) Support"
+> +	depends on PPC_47x
+> +	default n
+> +	select SWIOTLB
+> +	select 476FPE
+> +	select PPC4xx_PCI_EXPRESS
+> +	select I2C
+> +	select I2C_IBM_IIC
+> +	select NETDEVICES
+> +	select ETHERNET
+> +	select NET_VENDOR_IBM
+> +	select IBM_EMAC_EMAC4
+> +	select IBM_EMAC_RGMII_WOL
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794deb6eb..fceaa893d37c 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -69,7 +69,6 @@ CONFIG_DEVTMPFS=y
- CONFIG_DEVTMPFS_MOUNT=y
- CONFIG_MTD=y
- CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLOCK=y
- CONFIG_MTD_CFI=y
- CONFIG_MTD_CFI_AMDSTD=y
-@@ -78,6 +77,7 @@ CONFIG_MTD_M25P80=y
- CONFIG_MTD_NAND=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_SPI_NOR=y
- CONFIG_PROC_DEVICETREE=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 5c7fa19ae4ef..9c8d58a50df2 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -61,7 +61,6 @@ CONFIG_DEVTMPFS_MOUNT=y
- CONFIG_MTD=y
- CONFIG_MTD_OF_PARTS=y
- CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLKDEVS=y
- CONFIG_MTD_BLOCK=y
- CONFIG_FTL=y
-@@ -82,6 +81,7 @@ CONFIG_MTD_NAND=y
- CONFIG_MTD_NAND_IDS=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_MTD_UBI_WL_THRESHOLD=4096
- CONFIG_MTD_UBI_BEB_RESERVE=1
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 19f0fbe5ba4b..33d9c8aef4eb 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -83,7 +83,6 @@ CONFIG_DEVTMPFS_MOUNT=y
- CONFIG_MTD=y
- CONFIG_MTD_OF_PARTS=y
- CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLKDEVS=y
- CONFIG_MTD_BLOCK=y
- CONFIG_FTL=y
-@@ -104,6 +103,7 @@ CONFIG_MTD_NAND=y
- CONFIG_MTD_NAND_IDS=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_MTD_UBI_WL_THRESHOLD=4096
- CONFIG_MTD_UBI_BEB_RESERVE=1
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 062312e1fe1a..25174f9a6615 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -86,7 +86,6 @@ CONFIG_DEVTMPFS_MOUNT=y
- CONFIG_MTD=y
- CONFIG_MTD_OF_PARTS=y
- CONFIG_MTD_CMDLINE_PARTS=y
--CONFIG_MTD_CHAR=y
- CONFIG_MTD_BLKDEVS=y
- CONFIG_MTD_BLOCK=y
- CONFIG_FTL=y
-@@ -107,6 +106,7 @@ CONFIG_MTD_NAND=y
- CONFIG_MTD_NAND_IDS=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
-+CONFIG_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_MTD_UBI_WL_THRESHOLD=4096
- CONFIG_MTD_UBI_BEB_RESERVE=1
--- 
-1.8.3.2
+The patch that added this symbol (and the related driver) was submitted
+in https://lkml.org/lkml/2014/2/21/25 . It's not (yet) included in
+linux-next. Is it queued somewhere else?
+
+> +	select USB
+> +	select USB_OHCI_HCD_PLATFORM
+> +	select USB_EHCI_HCD_PLATFORM
+> +	select MMC_SDHCI
+> +	select MMC_SDHCI_PLTFM
+> +	select MMC_SDHCI_OF_476GTR
+
+The plan to add MMC_SDHCI_OF_476GTR seems to have been abandoned (see
+the discussion of https://lkml.org/lkml/2014/2/21/24 ). So this select
+is not needed. Should I submit a trivial patch to drop this select?
+
+> +	select ATA
+> +	select SATA_AHCI_PLATFORM
+> +	help
+> +	  This option enables support for the IBM Akebono (476gtr) evaluation board
+> +
+> +
+>  config ICON
+>  	bool "Icon"
+>  	depends on 44x
+
+
+Paul Bolle
