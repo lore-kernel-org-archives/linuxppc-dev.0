@@ -1,16 +1,17 @@
 Return-Path: <mihai.caraman@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 97094140111
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 10:46:04 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5B264140112
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 10:46:05 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH v2 0/4] KVM: PPC: Read guest instruction from
- kvmppc_get_last_inst()
-Date: Thu, 1 May 2014 03:45:48 +0300
-Message-ID: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH v2 2/4] KVM: PPC: Book3e: Add TLBSEL/TSIZE defines for MAS0/1
+Date: Thu, 1 May 2014 03:45:50 +0300
+Message-ID: <1398905152-18091-3-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
+References: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
@@ -24,35 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Read guest last instruction from kvmppc_get_last_inst() allowing the function
-to fail in order to emulate again. On bookehv architecture search for
-the physical address and kmap it, instead of using Load External PID (lwepx)
-instruction. This fixes an infinite loop caused by lwepx's data TLB miss
-exception handled in the host and the TODO for execute-but-not-read entries
-and TLB eviction.
+Add defines MAS0_GET_TLBSEL() and MAS1_GET_TSIZE() to Book3E.
 
-Mihai Caraman (4):
-  KVM: PPC: e500mc: Revert "add load inst fixup"
-  KVM: PPC: Book3e: Add TLBSEL/TSIZE defines for MAS0/1
-  KVM: PPC: Alow kvmppc_get_last_inst() to fail
-  KVM: PPC: Bookehv: Get vcpu's last instruction for emulation
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+v2:
+ - no change
 
- arch/powerpc/include/asm/kvm_book3s.h    | 26 ---------
- arch/powerpc/include/asm/kvm_booke.h     |  5 --
- arch/powerpc/include/asm/kvm_ppc.h       |  2 +
- arch/powerpc/include/asm/mmu-book3e.h    |  7 ++-
- arch/powerpc/kvm/book3s.c                | 32 +++++++++++
- arch/powerpc/kvm/book3s.h                |  1 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c      | 16 ++----
- arch/powerpc/kvm/book3s_paired_singles.c | 42 ++++++++------
- arch/powerpc/kvm/book3s_pr.c             | 36 +++++++-----
- arch/powerpc/kvm/booke.c                 | 14 +++++
- arch/powerpc/kvm/booke.h                 |  3 +
- arch/powerpc/kvm/bookehv_interrupts.S    | 54 ++----------------
- arch/powerpc/kvm/e500_mmu_host.c         | 98 ++++++++++++++++++++++++++++++++
- arch/powerpc/kvm/emulate.c               | 18 ++++--
- arch/powerpc/kvm/powerpc.c               | 10 +++-
- 15 files changed, 235 insertions(+), 129 deletions(-)
+ arch/powerpc/include/asm/mmu-book3e.h | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index 901dac6..60a949a 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -40,7 +40,11 @@
+ 
+ /* MAS registers bit definitions */
+ 
+-#define MAS0_TLBSEL(x)		(((x) << 28) & 0x30000000)
++#define MAS0_TLBSEL_MASK	0x30000000
++#define MAS0_TLBSEL_SHIFT	28
++#define MAS0_TLBSEL(x)		(((x) << MAS0_TLBSEL_SHIFT) & MAS0_TLBSEL_MASK)
++#define MAS0_GET_TLBSEL(mas0)	(((mas0) & MAS0_TLBSEL_MASK) >> \
++			MAS0_TLBSEL_SHIFT)
+ #define MAS0_ESEL_MASK		0x0FFF0000
+ #define MAS0_ESEL_SHIFT		16
+ #define MAS0_ESEL(x)		(((x) << MAS0_ESEL_SHIFT) & MAS0_ESEL_MASK)
+@@ -58,6 +62,7 @@
+ #define MAS1_TSIZE_MASK		0x00000f80
+ #define MAS1_TSIZE_SHIFT	7
+ #define MAS1_TSIZE(x)		(((x) << MAS1_TSIZE_SHIFT) & MAS1_TSIZE_MASK)
++#define MAS1_GET_TSIZE(mas1)	(((mas1) & MAS1_TSIZE_MASK) >> MAS1_TSIZE_SHIFT)
+ 
+ #define MAS2_EPN		(~0xFFFUL)
+ #define MAS2_X0			0x00000040
 -- 
 1.7.11.7
