@@ -1,37 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5249A140119
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2014 01:14:17 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 2 May 2014 01:14:12 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 015F92CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2014 01:14:10 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s41Er6So27394050
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 May 2014 00:53:07 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s41FE8ov006557
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 May 2014 01:14:09 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] PPC: BOOK3S: Disable/Enable TM looking at the ibm,
- pa-features device tree entry
-In-Reply-To: <20060.1398920500@ale.ozlabs.ibm.com>
-References: <1398845480-9945-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20060.1398920500@ale.ozlabs.ibm.com>
-Date: Thu, 01 May 2014 20:44:03 +0530
-Message-ID: <87r44dbkg4.fsf@linux.vnet.ibm.com>
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 7EFB9140115
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2014 02:06:25 +1000 (EST)
+Date: Thu, 1 May 2014 18:07:39 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 2/2] PCI/MSI: Phase out pci_enable_msi_block()
+Message-ID: <20140501160738.GA10407@dhcp-26-207.brq.redhat.com>
+References: <cover.1397458024.git.agordeev@redhat.com>
+ <0b08613dc17cd608c1babc1f42b8919f60e1093f.1397458024.git.agordeev@redhat.com>
+ <20140414120921.GA32132@dhcp-26-207.brq.redhat.com>
+ <20140414132834.GA9164@dhcp-26-207.brq.redhat.com>
+ <20140430234933.GB31315@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140430234933.GB31315@google.com>
+Cc: linux-mips@linux-mips.org, linux-s390@vger.kernel.org,
+ linux-pci@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,57 +27,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> writes:
+On Wed, Apr 30, 2014 at 05:49:33PM -0600, Bjorn Helgaas wrote:
+> I mistakenly assumed this would have to wait because I thought there were
+> other pci_enable_msi_block() users that wouldn't be removed until the v3.16
+> merge window.  But I think I was wrong: I put your GenWQE patch in my tree,
+> and I think that was the last use, so I can just add this patch on top.
 
-> Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
->
->> Runtime disable transactional memory feature looking at pa-features
->> device tree entry. This provides a mechanism to disable TM on P8
->> systems.
->
-> What are we actually achieving with this?
+That is right, GenWQE is the last one.
 
-PAPR compliance  :) ? Also I wanted to disable guest kernel from doing
-TM related save restore. Guest kernel already look at the cpu feature
-before doing that. Hence needed a mechanism to disable the feature. 
+> But I need a little help understanding the changelog:
+> 
+> > Up until now, when enabling MSI mode for a device a single
+> > successful call to arch_msi_check_device() was followed by
+> > a single call to arch_setup_msi_irqs() function.
+> 
+> I understand this part; the following two paths call
+> arch_msi_check_device() once and then arch_setup_msi_irqs() once:
+> 
+>   pci_enable_msi_block
+>     pci_msi_check_device
+>       arch_msi_check_device
+>     msi_capability_init
+>       arch_setup_msi_irqs
+> 
+>   pci_enable_msix
+>     pci_msi_check_device
+>       arch_msi_check_device
+>     msix_capability_init
+>       arch_setup_msi_irqs
+> 
+> > Yet, if arch_msi_check_device() returned success we should be
+> > able to call arch_setup_msi_irqs() multiple times - while it
+> > returns a number of MSI vectors that could have been allocated
+> > (a third state).
+> 
+> I don't know what you mean by "a third state."
 
-Things like
+That is "a number of MSI vectors that could have been allocated", which
+is neither success nor failure. In previous conversations someone branded
+it this as "third state".
 
-static inline void __switch_to_tm(struct task_struct *prev)
-{
-	if (cpu_has_feature(CPU_FTR_TM)) {
-		tm_enable();
-		tm_reclaim_task(prev);
-	}
-}
+> Previously we only called arch_msi_check_device() once.  After your patch,
+> pci_enable_msi_range() can call it several times.  The only non-trivial
+> implementation of arch_msi_check_device() is in powerpc, and all the
+> ppc_md.msi_check_device() possibilities look safe to call multiple times.
 
+Yep, I see it the same way.
 
->
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kernel/prom.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->> 
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index 668aa4791fd7..537bd7e7db0b 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -161,6 +161,11 @@ static struct ibm_pa_feature {
->>  	{CPU_FTR_NODSISRALIGN, 0, 0,	1, 1, 1},
->>  	{0, MMU_FTR_CI_LARGE_PAGE, 0,	1, 2, 0},
->>  	{CPU_FTR_REAL_LE, PPC_FEATURE_TRUE_LE, 5, 0, 0},
->> +	/*
->> +	 * We should use CPU_FTR_TM_COMP so that if we disable TM, it won't get
->> +	 * enabled via device tree
->> +	 */
->> +	{CPU_FTR_TM_COMP, 0, 0,		22, 0, 0},
->
-> What does this do to guests?  Will it turn TM unavailable into an
-> illegal instruction?
->
+> After your patch, the pci_enable_msi_range() path can also call
+> arch_setup_msi_irqs() several times.  I don't see a problem with that --
+> even if the first call succeeds and allocates something, then a subsequent
+> call fails, I assume the allocations will be cleaned up when
+> msi_capability_init() calls free_msi_irqs().
 
-Good suggestion. I guess it should be facility unavailable interrupt ?
-I should also make the sure __init_HFSCR only set HFSCR_TM only if the
-cpu feature is enabled ?
+Well, the potential problem related to the fact arch_msi_check_device()
+could be called with 'nvec1' while arch_setup_msi_irqs() could be called
+with 'nvec2', where 'nvec1' > 'nvec2'.
 
--aneesh
+While it is not a problem with current implementations, in therory it is
+possible free_msi_irqs() could be called with 'nvec2' and fail to clean
+up 'nvec1' - 'nvec2' number of resources.
+
+The only assumption that makes the above scenario impossible is if
+arch_msi_check_device() is stateless.
+
+Again, that is purely theoretical with no particular architecture in mind.
+
+> > This update makes use of the assumption described above. It
+> > could have broke things had the architectures done any pre-
+> > allocations or switch to some state in a call to function
+> > arch_msi_check_device(). But because arch_msi_check_device()
+> > is expected stateless and MSI resources are allocated in a
+> > follow-up call to arch_setup_msi_irqs() we should be fine.
+> 
+> I guess you mean that your patch assumes arch_msi_check_device() is
+> stateless.  That looks like a safe assumption to me.
+
+Moreover, if arch_msi_check_device() was not stateless then it would
+be superfluous, since all state switches and allocations are done in
+arch_setup_msi_irqs() anyway.
+
+In fact, I think arch_msi_check_device() could be eliminated, but I
+do not want to engage with PPC folks at this stage ;)
+
+> arch_setup_msi_irqs() is clearly not stateless, but I assume
+> free_msi_irqs() is enough to clean up any state if we fail.
+> 
+> Bjorn
+
+-- 
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
