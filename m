@@ -1,16 +1,15 @@
 Return-Path: <mihai.caraman@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9D302140111
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 10:46:05 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A502D140115
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 10:46:08 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH v2 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction for
- emulation
-Date: Thu, 1 May 2014 03:45:52 +0300
-Message-ID: <1398905152-18091-5-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH v2 3/4] KVM: PPC: Alow kvmppc_get_last_inst() to fail
+Date: Thu, 1 May 2014 03:45:51 +0300
+Message-ID: <1398905152-18091-4-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
 References: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -26,201 +25,491 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On bookehv vcpu's last instruction is read using load external pid
-(lwepx) instruction. lwepx exceptions (DTLB_MISS, DSI and LRAT) need
-to be handled by KVM. These exceptions originate from host state
-(MSR[GS] = 0) which implies additional checks in DO_KVM macro (beside
-the current MSR[GS] = 1) by looking at the Exception Syndrome Register
-(ESR[EPID]) and the External PID Load Context Register (EPLC[EGS]).
-Doing this on each Data TLB miss exception is obvious too intrusive
-for the host.
+On book3e, guest last instruction was read on the exist path using load
+external pid (lwepx) dedicated instruction. lwepx failures have to be
+handled by KVM and this would require additional checks in DO_KVM hooks
+(beside MSR[GS] = 1). However extra checks on host fast path are commonly
+considered too intrusive.
 
-Get rid of lwepx and acquire last instuction in kvmppc_get_last_inst()
-by searching for the physical address and kmap it. This fixes an
-infinite loop caused by lwepx's data TLB miss handled in the host
-and the TODO for TLB eviction and execute-but-not-read entries.
+This patch lay down the path for an altenative solution, by allowing
+kvmppc_get_lat_inst() function to fail. Booke architectures may choose
+to read guest instruction from kvmppc_ld_inst() and to instruct the
+emulation layer either to fail or to emulate again.
+
+emulation_result enum defintion is not accesible from book3 asm headers.
+Move kvmppc_get_last_inst() definitions that require emulation_result
+to source files.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
 v2:
- - reworked patch description
- - used pr_* functions
+ - integrated kvmppc_get_last_inst() in book3s code and checked build
  - addressed cosmetic feedback
+ - please validate book3s functionality!
 
- arch/powerpc/kvm/bookehv_interrupts.S | 37 ++++----------
- arch/powerpc/kvm/e500_mmu_host.c      | 93 ++++++++++++++++++++++++++++++++++-
- 2 files changed, 101 insertions(+), 29 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s.h    | 26 --------------------
+ arch/powerpc/include/asm/kvm_booke.h     |  5 ----
+ arch/powerpc/include/asm/kvm_ppc.h       |  2 ++
+ arch/powerpc/kvm/book3s.c                | 32 ++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s.h                |  1 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      | 16 +++---------
+ arch/powerpc/kvm/book3s_paired_singles.c | 42 ++++++++++++++++++++------------
+ arch/powerpc/kvm/book3s_pr.c             | 36 +++++++++++++++++----------
+ arch/powerpc/kvm/booke.c                 | 14 +++++++++++
+ arch/powerpc/kvm/booke.h                 |  3 +++
+ arch/powerpc/kvm/e500_mmu_host.c         |  7 ++++++
+ arch/powerpc/kvm/emulate.c               | 18 +++++++++-----
+ arch/powerpc/kvm/powerpc.c               | 10 ++++++--
+ 13 files changed, 132 insertions(+), 80 deletions(-)
 
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 925da71..65eff4c 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -122,38 +122,14 @@
- 1:
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index bb1e38a..e2a89f3 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -273,32 +273,6 @@ static inline bool kvmppc_need_byteswap(struct kvm_vcpu *vcpu)
+ 	return (vcpu->arch.shared->msr & MSR_LE) != (MSR_KERNEL & MSR_LE);
+ }
  
- 	.if	\flags & NEED_EMU
--	/*
--	 * This assumes you have external PID support.
--	 * To support a bookehv CPU without external PID, you'll
--	 * need to look up the TLB entry and create a temporary mapping.
--	 *
--	 * FIXME: we don't currently handle if the lwepx faults.  PR-mode
--	 * booke doesn't handle it either.  Since Linux doesn't use
--	 * broadcast tlbivax anymore, the only way this should happen is
--	 * if the guest maps its memory execute-but-not-read, or if we
--	 * somehow take a TLB miss in the middle of this entry code and
--	 * evict the relevant entry.  On e500mc, all kernel lowmem is
--	 * bolted into TLB1 large page mappings, and we don't use
--	 * broadcast invalidates, so we should not take a TLB miss here.
--	 *
--	 * Later we'll need to deal with faults here.  Disallowing guest
--	 * mappings that are execute-but-not-read could be an option on
--	 * e500mc, but not on chips with an LRAT if it is used.
--	 */
+-static inline u32 kvmppc_get_last_inst_internal(struct kvm_vcpu *vcpu, ulong pc)
+-{
+-	/* Load the instruction manually if it failed to do so in the
+-	 * exit path */
+-	if (vcpu->arch.last_inst == KVM_INST_FETCH_FAILED)
+-		kvmppc_ld(vcpu, &pc, sizeof(u32), &vcpu->arch.last_inst, false);
 -
--	mfspr	r3, SPRN_EPLC	/* will already have correct ELPID and EGS */
- 	PPC_STL	r15, VCPU_GPR(R15)(r4)
- 	PPC_STL	r16, VCPU_GPR(R16)(r4)
- 	PPC_STL	r17, VCPU_GPR(R17)(r4)
- 	PPC_STL	r18, VCPU_GPR(R18)(r4)
- 	PPC_STL	r19, VCPU_GPR(R19)(r4)
--	mr	r8, r3
- 	PPC_STL	r20, VCPU_GPR(R20)(r4)
--	rlwimi	r8, r6, EPC_EAS_SHIFT - MSR_IR_LG, EPC_EAS
- 	PPC_STL	r21, VCPU_GPR(R21)(r4)
--	rlwimi	r8, r6, EPC_EPR_SHIFT - MSR_PR_LG, EPC_EPR
- 	PPC_STL	r22, VCPU_GPR(R22)(r4)
--	rlwimi	r8, r10, EPC_EPID_SHIFT, EPC_EPID
- 	PPC_STL	r23, VCPU_GPR(R23)(r4)
- 	PPC_STL	r24, VCPU_GPR(R24)(r4)
- 	PPC_STL	r25, VCPU_GPR(R25)(r4)
-@@ -163,10 +139,15 @@
- 	PPC_STL	r29, VCPU_GPR(R29)(r4)
- 	PPC_STL	r30, VCPU_GPR(R30)(r4)
- 	PPC_STL	r31, VCPU_GPR(R31)(r4)
--	mtspr	SPRN_EPLC, r8
--	isync
--	lwepx   r9, 0, r5
--	mtspr	SPRN_EPLC, r3
-+
-+	/*
-+	 * We don't use external PID support. lwepx faults would need to be
-+	 * handled by KVM and this implies aditional code in DO_KVM (for
-+	 * DTB_MISS, DSI and LRAT) to check ESR[EPID] and EPLC[EGS] which
-+	 * is too intrusive for the host. Get last instuction in
-+	 * kvmppc_get_last_inst().
-+	 */
-+	li	r9, KVM_INST_FETCH_FAILED
- 	stw	r9, VCPU_LAST_INST(r4)
- 	.endif
+-	return kvmppc_need_byteswap(vcpu) ? swab32(vcpu->arch.last_inst) :
+-		vcpu->arch.last_inst;
+-}
+-
+-static inline u32 kvmppc_get_last_inst(struct kvm_vcpu *vcpu)
+-{
+-	return kvmppc_get_last_inst_internal(vcpu, kvmppc_get_pc(vcpu));
+-}
+-
+-/*
+- * Like kvmppc_get_last_inst(), but for fetching a sc instruction.
+- * Because the sc instruction sets SRR0 to point to the following
+- * instruction, we have to fetch from pc - 4.
+- */
+-static inline u32 kvmppc_get_last_sc(struct kvm_vcpu *vcpu)
+-{
+-	return kvmppc_get_last_inst_internal(vcpu, kvmppc_get_pc(vcpu) - 4);
+-}
+-
+ static inline ulong kvmppc_get_fault_dar(struct kvm_vcpu *vcpu)
+ {
+ 	return vcpu->arch.fault_dar;
+diff --git a/arch/powerpc/include/asm/kvm_booke.h b/arch/powerpc/include/asm/kvm_booke.h
+index 80d46b5..6db1ca0 100644
+--- a/arch/powerpc/include/asm/kvm_booke.h
++++ b/arch/powerpc/include/asm/kvm_booke.h
+@@ -69,11 +69,6 @@ static inline bool kvmppc_need_byteswap(struct kvm_vcpu *vcpu)
+ 	return false;
+ }
  
+-static inline u32 kvmppc_get_last_inst(struct kvm_vcpu *vcpu)
+-{
+-	return vcpu->arch.last_inst;
+-}
+-
+ static inline void kvmppc_set_ctr(struct kvm_vcpu *vcpu, ulong val)
+ {
+ 	vcpu->arch.ctr = val;
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 4096f16..6e7c358 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -72,6 +72,8 @@ extern int kvmppc_sanity_check(struct kvm_vcpu *vcpu);
+ extern int kvmppc_subarch_vcpu_init(struct kvm_vcpu *vcpu);
+ extern void kvmppc_subarch_vcpu_uninit(struct kvm_vcpu *vcpu);
+ 
++extern int kvmppc_get_last_inst(struct kvm_vcpu *vcpu, u32 *inst);
++
+ /* Core-specific hooks */
+ 
+ extern void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 gvaddr, gpa_t gpaddr,
+diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+index 94e597e..3553735 100644
+--- a/arch/powerpc/kvm/book3s.c
++++ b/arch/powerpc/kvm/book3s.c
+@@ -463,6 +463,38 @@ mmio:
+ }
+ EXPORT_SYMBOL_GPL(kvmppc_ld);
+ 
++int kvmppc_get_last_inst_internal(struct kvm_vcpu *vcpu, ulong pc, u32 *inst)
++{
++	int ret = EMULATE_DONE;
++
++	/* Load the instruction manually if it failed to do so in the
++	 * exit path */
++	if (vcpu->arch.last_inst == KVM_INST_FETCH_FAILED)
++		ret = kvmppc_ld(vcpu, &pc, sizeof(u32), &vcpu->arch.last_inst,
++			false);
++
++	*inst = kvmppc_need_byteswap(vcpu) ? swab32(vcpu->arch.last_inst) :
++		vcpu->arch.last_inst;
++
++	return ret;
++}
++
++int kvmppc_get_last_inst(struct kvm_vcpu *vcpu, u32 *inst)
++{
++	return kvmppc_get_last_inst_internal(vcpu, kvmppc_get_pc(vcpu), inst);
++}
++
++/*
++ * Like kvmppc_get_last_inst(), but for fetching a sc instruction.
++ * Because the sc instruction sets SRR0 to point to the following
++ * instruction, we have to fetch from pc - 4.
++ */
++int kvmppc_get_last_sc(struct kvm_vcpu *vcpu, u32 *inst)
++{
++	return kvmppc_get_last_inst_internal(vcpu, kvmppc_get_pc(vcpu) - 4,
++		inst);
++}
++
+ int kvm_arch_vcpu_setup(struct kvm_vcpu *vcpu)
+ {
+ 	return 0;
+diff --git a/arch/powerpc/kvm/book3s.h b/arch/powerpc/kvm/book3s.h
+index 4bf956c..d85839d 100644
+--- a/arch/powerpc/kvm/book3s.h
++++ b/arch/powerpc/kvm/book3s.h
+@@ -30,5 +30,6 @@ extern int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu,
+ 					int sprn, ulong *spr_val);
+ extern int kvmppc_book3s_init_pr(void);
+ extern void kvmppc_book3s_exit_pr(void);
++extern int kvmppc_get_last_sc(struct kvm_vcpu *vcpu, u32 *inst);
+ 
+ #endif
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index fb25ebc..7ffcc24 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -541,21 +541,13 @@ static int instruction_is_store(unsigned int instr)
+ static int kvmppc_hv_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 				  unsigned long gpa, gva_t ea, int is_store)
+ {
+-	int ret;
+ 	u32 last_inst;
+-	unsigned long srr0 = kvmppc_get_pc(vcpu);
+ 
+-	/* We try to load the last instruction.  We don't let
+-	 * emulate_instruction do it as it doesn't check what
+-	 * kvmppc_ld returns.
++	/*
+ 	 * If we fail, we just return to the guest and try executing it again.
+ 	 */
+-	if (vcpu->arch.last_inst == KVM_INST_FETCH_FAILED) {
+-		ret = kvmppc_ld(vcpu, &srr0, sizeof(u32), &last_inst, false);
+-		if (ret != EMULATE_DONE || last_inst == KVM_INST_FETCH_FAILED)
+-			return RESUME_GUEST;
+-		vcpu->arch.last_inst = last_inst;
+-	}
++	if (kvmppc_get_last_inst(vcpu, &last_inst) != EMULATE_DONE)
++		return RESUME_GUEST;
+ 
+ 	/*
+ 	 * WARNING: We do not know for sure whether the instruction we just
+@@ -569,7 +561,7 @@ static int kvmppc_hv_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	 * we just return and retry the instruction.
+ 	 */
+ 
+-	if (instruction_is_store(kvmppc_get_last_inst(vcpu)) != !!is_store)
++	if (instruction_is_store(last_inst) != !!is_store)
+ 		return RESUME_GUEST;
+ 
+ 	/*
+diff --git a/arch/powerpc/kvm/book3s_paired_singles.c b/arch/powerpc/kvm/book3s_paired_singles.c
+index c1abd95..9a6e565 100644
+--- a/arch/powerpc/kvm/book3s_paired_singles.c
++++ b/arch/powerpc/kvm/book3s_paired_singles.c
+@@ -637,26 +637,36 @@ static int kvmppc_ps_one_in(struct kvm_vcpu *vcpu, bool rc,
+ 
+ int kvmppc_emulate_paired_single(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ {
+-	u32 inst = kvmppc_get_last_inst(vcpu);
+-	enum emulation_result emulated = EMULATE_DONE;
+-
+-	int ax_rd = inst_get_field(inst, 6, 10);
+-	int ax_ra = inst_get_field(inst, 11, 15);
+-	int ax_rb = inst_get_field(inst, 16, 20);
+-	int ax_rc = inst_get_field(inst, 21, 25);
+-	short full_d = inst_get_field(inst, 16, 31);
+-
+-	u64 *fpr_d = &VCPU_FPR(vcpu, ax_rd);
+-	u64 *fpr_a = &VCPU_FPR(vcpu, ax_ra);
+-	u64 *fpr_b = &VCPU_FPR(vcpu, ax_rb);
+-	u64 *fpr_c = &VCPU_FPR(vcpu, ax_rc);
+-
+-	bool rcomp = (inst & 1) ? true : false;
+-	u32 cr = kvmppc_get_cr(vcpu);
++	u32 inst;
++	enum emulation_result emulated;
++	int ax_rd, ax_ra, ax_rb, ax_rc;
++	short full_d;
++	u64 *fpr_d, *fpr_a, *fpr_b, *fpr_c;
++
++	bool rcomp;
++	u32 cr;
+ #ifdef DEBUG
+ 	int i;
+ #endif
+ 
++	emulated = kvmppc_get_last_inst(vcpu, &inst);
++	if (emulated != EMULATE_DONE)
++		return emulated;
++
++	ax_rd = inst_get_field(inst, 6, 10);
++	ax_ra = inst_get_field(inst, 11, 15);
++	ax_rb = inst_get_field(inst, 16, 20);
++	ax_rc = inst_get_field(inst, 21, 25);
++	full_d = inst_get_field(inst, 16, 31);
++
++	fpr_d = &VCPU_FPR(vcpu, ax_rd);
++	fpr_a = &VCPU_FPR(vcpu, ax_ra);
++	fpr_b = &VCPU_FPR(vcpu, ax_rb);
++	fpr_c = &VCPU_FPR(vcpu, ax_rc);
++
++	rcomp = (inst & 1) ? true : false;
++	cr = kvmppc_get_cr(vcpu);
++
+ 	if (!kvmppc_inst_is_paired_single(vcpu, inst))
+ 		return EMULATE_FAIL;
+ 
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index c5c052a..b7fffd1 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -608,12 +608,9 @@ void kvmppc_giveup_ext(struct kvm_vcpu *vcpu, ulong msr)
+ 
+ static int kvmppc_read_inst(struct kvm_vcpu *vcpu)
+ {
+-	ulong srr0 = kvmppc_get_pc(vcpu);
+-	u32 last_inst = kvmppc_get_last_inst(vcpu);
+-	int ret;
++	u32 last_inst;
+ 
+-	ret = kvmppc_ld(vcpu, &srr0, sizeof(u32), &last_inst, false);
+-	if (ret == -ENOENT) {
++	if (kvmppc_get_last_inst(vcpu, &last_inst) == -ENOENT) {
+ 		ulong msr = vcpu->arch.shared->msr;
+ 
+ 		msr = kvmppc_set_field(msr, 33, 33, 1);
+@@ -867,15 +864,18 @@ int kvmppc_handle_exit_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 	{
+ 		enum emulation_result er;
+ 		ulong flags;
++		u32 last_inst;
+ 
+ program_interrupt:
+ 		flags = vcpu->arch.shadow_srr1 & 0x1f0000ull;
++		kvmppc_get_last_inst(vcpu, &last_inst);
+ 
+ 		if (vcpu->arch.shared->msr & MSR_PR) {
+ #ifdef EXIT_DEBUG
+-			printk(KERN_INFO "Userspace triggered 0x700 exception at 0x%lx (0x%x)\n", kvmppc_get_pc(vcpu), kvmppc_get_last_inst(vcpu));
++			pr_info("Userspace triggered 0x700 exception at\n"
++			    "0x%lx (0x%x)\n", kvmppc_get_pc(vcpu), last_inst);
+ #endif
+-			if ((kvmppc_get_last_inst(vcpu) & 0xff0007ff) !=
++			if ((last_inst & 0xff0007ff) !=
+ 			    (INS_DCBZ & 0xfffffff7)) {
+ 				kvmppc_core_queue_program(vcpu, flags);
+ 				r = RESUME_GUEST;
+@@ -894,7 +894,7 @@ program_interrupt:
+ 			break;
+ 		case EMULATE_FAIL:
+ 			printk(KERN_CRIT "%s: emulation at %lx failed (%08x)\n",
+-			       __func__, kvmppc_get_pc(vcpu), kvmppc_get_last_inst(vcpu));
++			       __func__, kvmppc_get_pc(vcpu), last_inst);
+ 			kvmppc_core_queue_program(vcpu, flags);
+ 			r = RESUME_GUEST;
+ 			break;
+@@ -911,8 +911,12 @@ program_interrupt:
+ 		break;
+ 	}
+ 	case BOOK3S_INTERRUPT_SYSCALL:
++	{
++		u32 last_sc;
++
++		kvmppc_get_last_sc(vcpu, &last_sc);
+ 		if (vcpu->arch.papr_enabled &&
+-		    (kvmppc_get_last_sc(vcpu) == 0x44000022) &&
++		    (last_sc == 0x44000022) &&
+ 		    !(vcpu->arch.shared->msr & MSR_PR)) {
+ 			/* SC 1 papr hypercalls */
+ 			ulong cmd = kvmppc_get_gpr(vcpu, 3);
+@@ -957,6 +961,7 @@ program_interrupt:
+ 			r = RESUME_GUEST;
+ 		}
+ 		break;
++	}
+ 	case BOOK3S_INTERRUPT_FP_UNAVAIL:
+ 	case BOOK3S_INTERRUPT_ALTIVEC:
+ 	case BOOK3S_INTERRUPT_VSX:
+@@ -985,15 +990,20 @@ program_interrupt:
+ 		break;
+ 	}
+ 	case BOOK3S_INTERRUPT_ALIGNMENT:
++	{
++		u32 last_inst;
++
+ 		if (kvmppc_read_inst(vcpu) == EMULATE_DONE) {
+-			vcpu->arch.shared->dsisr = kvmppc_alignment_dsisr(vcpu,
+-				kvmppc_get_last_inst(vcpu));
+-			vcpu->arch.shared->dar = kvmppc_alignment_dar(vcpu,
+-				kvmppc_get_last_inst(vcpu));
++			kvmppc_get_last_inst(vcpu, &last_inst);
++			vcpu->arch.shared->dsisr =
++				kvmppc_alignment_dsisr(vcpu, last_inst);
++			vcpu->arch.shared->dar =
++				kvmppc_alignment_dar(vcpu, last_inst);
+ 			kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+ 		}
+ 		r = RESUME_GUEST;
+ 		break;
++	}
+ 	case BOOK3S_INTERRUPT_MACHINE_CHECK:
+ 	case BOOK3S_INTERRUPT_TRACE:
+ 		kvmppc_book3s_queue_irqprio(vcpu, exit_nr);
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index ab62109..df25db0 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -752,6 +752,9 @@ static int emulation_exit(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 		 * they were actually modified by emulation. */
+ 		return RESUME_GUEST_NV;
+ 
++	case EMULATE_AGAIN:
++		return RESUME_GUEST;
++
+ 	case EMULATE_DO_DCR:
+ 		run->exit_reason = KVM_EXIT_DCR;
+ 		return RESUME_HOST;
+@@ -1911,6 +1914,17 @@ void kvmppc_core_vcpu_put(struct kvm_vcpu *vcpu)
+ 	vcpu->kvm->arch.kvm_ops->vcpu_put(vcpu);
+ }
+ 
++int kvmppc_get_last_inst(struct kvm_vcpu *vcpu, u32 *inst)
++{
++	int result = EMULATE_DONE;
++
++	if (vcpu->arch.last_inst == KVM_INST_FETCH_FAILED)
++		result = kvmppc_ld_inst(vcpu, &vcpu->arch.last_inst);
++	*inst = vcpu->arch.last_inst;
++
++	return result;
++}
++
+ int __init kvmppc_booke_init(void)
+ {
+ #ifndef CONFIG_KVM_BOOKE_HV
+diff --git a/arch/powerpc/kvm/booke.h b/arch/powerpc/kvm/booke.h
+index b632cd3..d07a154 100644
+--- a/arch/powerpc/kvm/booke.h
++++ b/arch/powerpc/kvm/booke.h
+@@ -80,6 +80,9 @@ int kvmppc_booke_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ int kvmppc_booke_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val);
+ int kvmppc_booke_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val);
+ 
++
++extern int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr);
++
+ /* low-level asm code to transfer guest state */
+ void kvmppc_load_guest_spe(struct kvm_vcpu *vcpu);
+ void kvmppc_save_guest_spe(struct kvm_vcpu *vcpu);
 diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index fcccbb3..94b8be0 100644
+index dd2cc03..fcccbb3 100644
 --- a/arch/powerpc/kvm/e500_mmu_host.c
 +++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -607,11 +607,102 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
+@@ -34,6 +34,7 @@
+ #include "e500.h"
+ #include "timing.h"
+ #include "e500_mmu_host.h"
++#include "booke.h"
+ 
+ #include "trace_booke.h"
+ 
+@@ -606,6 +607,12 @@ void kvmppc_mmu_map(struct kvm_vcpu *vcpu, u64 eaddr, gpa_t gpaddr,
  	}
  }
  
-+#ifdef CONFIG_KVM_BOOKE_HV
++
 +int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr)
 +{
-+	gva_t geaddr;
-+	hpa_t addr;
-+	hfn_t pfn;
-+	hva_t eaddr;
-+	u32 mas0, mas1, mas2, mas3;
-+	u64 mas7_mas3;
-+	struct page *page;
-+	unsigned int addr_space, psize_shift;
-+	bool pr;
-+	unsigned long flags;
-+
-+	/* Search TLB for guest pc to get the real address */
-+	geaddr = kvmppc_get_pc(vcpu);
-+	addr_space = (vcpu->arch.shared->msr & MSR_IS) >> MSR_IR_LG;
-+
-+	local_irq_save(flags);
-+	mtspr(SPRN_MAS6, (vcpu->arch.pid << MAS6_SPID_SHIFT) | addr_space);
-+	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
-+	asm volatile("tlbsx 0, %[geaddr]\n" : :
-+		     [geaddr] "r" (geaddr));
-+	mtspr(SPRN_MAS5, 0);
-+	mtspr(SPRN_MAS8, 0);
-+	mas0 = mfspr(SPRN_MAS0);
-+	mas1 = mfspr(SPRN_MAS1);
-+	mas2 = mfspr(SPRN_MAS2);
-+	mas3 = mfspr(SPRN_MAS3);
-+	mas7_mas3 = (((u64) mfspr(SPRN_MAS7)) << 32) | mas3;
-+	local_irq_restore(flags);
-+
-+	/*
-+	 * If the TLB entry for guest pc was evicted, return to the guest.
-+	 * There are high chances to find a valid TLB entry next time.
-+	 */
-+	if (!(mas1 & MAS1_VALID))
-+		return EMULATE_AGAIN;
- 
-+	/*
-+	 * Another thread may rewrite the TLB entry in parallel, don't
-+	 * execute from the address if the execute permission is not set
-+	 */
-+	pr = vcpu->arch.shared->msr & MSR_PR;
-+	if ((pr && !(mas3 & MAS3_UX)) || (!pr && !(mas3 & MAS3_SX))) {
-+		pr_debug("Instuction emulation from a guest page\n"
-+				"withot execute permission\n");
-+		kvmppc_core_queue_program(vcpu, 0);
-+		return EMULATE_AGAIN;
-+	}
-+
-+	/*
-+	 * We will map the real address through a cacheable page, so we will
-+	 * not support cache-inhibited guest pages. Fortunately emulated
-+	 * instructions should not live there.
-+	 */
-+	if (mas2 & MAS2_I) {
-+		pr_debug("Instuction emulation from cache-inhibited\n"
-+				"guest pages is not supported\n");
-+		return EMULATE_FAIL;
-+	}
-+
-+	/* Get page size */
-+	psize_shift = MAS1_GET_TSIZE(mas1) + 10;
-+
-+	/* Map a page and get guest's instruction */
-+	addr = (mas7_mas3 & (~0ULL << psize_shift)) |
-+	       (geaddr & ((1ULL << psize_shift) - 1ULL));
-+	pfn = addr >> PAGE_SHIFT;
-+
-+	/* Guard us against emulation from devices area */
-+	if (unlikely(!page_is_ram(pfn))) {
-+		pr_debug("Instruction emulation from non-RAM host\n"
-+				"pages is not supported\n");
-+		return EMULATE_FAIL;
-+	}
-+
-+	if (unlikely(!pfn_valid(pfn))) {
-+		pr_debug("Invalid frame number\n");
-+		return EMULATE_FAIL;
-+	}
-+
-+	page = pfn_to_page(pfn);
-+	eaddr = (unsigned long)kmap_atomic(page);
-+	eaddr |= addr & ~PAGE_MASK;
-+	*instr = *(u32 *)eaddr;
-+	kunmap_atomic((u32 *)eaddr);
-+
-+	return EMULATE_DONE;
++	return EMULATE_FAIL;
 +}
-+#else
- int kvmppc_ld_inst(struct kvm_vcpu *vcpu, u32 *instr)
- {
- 	return EMULATE_FAIL;
--}
-+};
-+#endif
- 
++
  /************* MMU Notifiers *************/
  
+ int kvm_unmap_hva(struct kvm *kvm, unsigned long hva)
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index c2b887b..e281d32 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -224,19 +224,25 @@ static int kvmppc_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+  * from opcode tables in the future. */
+ int kvmppc_emulate_instruction(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ {
+-	u32 inst = kvmppc_get_last_inst(vcpu);
+-	int ra = get_ra(inst);
+-	int rs = get_rs(inst);
+-	int rt = get_rt(inst);
+-	int sprn = get_sprn(inst);
+-	enum emulation_result emulated = EMULATE_DONE;
++	u32 inst;
++	int ra, rs, rt, sprn;
++	enum emulation_result emulated;
+ 	int advance = 1;
+ 
+ 	/* this default type might be overwritten by subcategories */
+ 	kvmppc_set_exit_type(vcpu, EMULATED_INST_EXITS);
+ 
++	emulated = kvmppc_get_last_inst(vcpu, &inst);
++	if (emulated != EMULATE_DONE)
++		return emulated;
++
+ 	pr_debug("Emulating opcode %d / %d\n", get_op(inst), get_xop(inst));
+ 
++	ra = get_ra(inst);
++	rs = get_rs(inst);
++	rt = get_rt(inst);
++	sprn = get_sprn(inst);
++
+ 	switch (get_op(inst)) {
+ 	case OP_TRAP:
+ #ifdef CONFIG_PPC_BOOK3S
+diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
+index 3cf541a..fdc1ee3 100644
+--- a/arch/powerpc/kvm/powerpc.c
++++ b/arch/powerpc/kvm/powerpc.c
+@@ -220,6 +220,9 @@ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 		 * actually modified. */
+ 		r = RESUME_GUEST_NV;
+ 		break;
++	case EMULATE_AGAIN:
++		r = RESUME_GUEST;
++		break;
+ 	case EMULATE_DO_MMIO:
+ 		run->exit_reason = KVM_EXIT_MMIO;
+ 		/* We must reload nonvolatiles because "update" load/store
+@@ -229,11 +232,14 @@ int kvmppc_emulate_mmio(struct kvm_run *run, struct kvm_vcpu *vcpu)
+ 		r = RESUME_HOST_NV;
+ 		break;
+ 	case EMULATE_FAIL:
++	{
++		u32 last_inst;
++		kvmppc_get_last_inst(vcpu, &last_inst);
+ 		/* XXX Deliver Program interrupt to guest. */
+-		printk(KERN_EMERG "%s: emulation failed (%08x)\n", __func__,
+-		       kvmppc_get_last_inst(vcpu));
++		pr_emerg("%s: emulation failed (%08x)\n", __func__, last_inst);
+ 		r = RESUME_HOST;
+ 		break;
++	}
+ 	default:
+ 		WARN_ON(1);
+ 		r = RESUME_GUEST;
 -- 
 1.7.11.7
