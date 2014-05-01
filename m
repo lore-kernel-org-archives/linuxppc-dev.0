@@ -3,33 +3,21 @@ Received: from mail-pd0-f169.google.com (mail-pd0-f169.google.com
  [209.85.192.169])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C99BF140106
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 16:27:22 +1000 (EST)
-Received: by mail-pd0-f169.google.com with SMTP id z10so1423465pdj.28
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 23:27:19 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 6C672140149
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 16:27:53 +1000 (EST)
+Received: by mail-pd0-f169.google.com with SMTP id z10so1423889pdj.28
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2014 23:27:51 -0700 (PDT)
 From: Brian Norris <computersforpeace@gmail.com>
 To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 00/12] defconfigs: add MTD_SPI_NOR (new subsystem
- dependency for M25P80)
-Date: Wed, 30 Apr 2014 23:26:35 -0700
-Message-Id: <1398925607-7482-1-git-send-email-computersforpeace@gmail.com>
-Cc: Andrew Lunn <andrew@lunn.ch>, Steven Miao <realmz6@gmail.com>,
- linux-mips@linux-mips.org, Nicolas Ferre <nicolas.ferre@atmel.com>,
- Thierry Reding <thierry.reding@gmail.com>, linux-mtd@lists.infradead.org,
- Marek Vasut <marex@denx.de>, Russell King <linux@arm.linux.org.uk>,
- linux-sh@vger.kernel.org, Shawn Guo <shawn.guo@freescale.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
- Roland Stigge <stigge@antcom.de>, Jason Cooper <jason@lakedaemon.net>,
- Arnd Bergmann <arnd@arndb.de>, Stephen Warren <swarren@wwwdotorg.org>,
- adi-buildroot-devel@lists.sourceforge.net, Simon Horman <horms@verge.net.au>,
- linux-tegra@vger.kernel.org, Andrew Victor <linux@maxim.org.za>,
- linux-arm-kernel@lists.infradead.org, Ralf Baechle <ralf@linux-mips.org>,
- Huang Shijie <b32955@freescale.com>,
- Santosh Shilimkar <santosh.shilimkar@ti.com>,
- Sascha Hauer <kernel@pengutronix.de>, Olof Johansson <olof@lixom.net>,
- Paul Mackerras <paulus@samba.org>, Brian Norris <computersforpeace@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2 11/12] powerpc: defconfigs: add MTD_SPI_NOR (new dependency
+ for M25P80)
+Date: Wed, 30 Apr 2014 23:26:46 -0700
+Message-Id: <1398925607-7482-12-git-send-email-computersforpeace@gmail.com>
+In-Reply-To: <1398925607-7482-1-git-send-email-computersforpeace@gmail.com>
+References: <1398925607-7482-1-git-send-email-computersforpeace@gmail.com>
+Cc: Marek Vasut <marex@denx.de>, Huang Shijie <b32955@freescale.com>,
+ linux-mtd@lists.infradead.org, Paul Mackerras <paulus@samba.org>,
+ Brian Norris <computersforpeace@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,85 +27,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v1 --> v2: split ARM defconfig changes into their sub-architectures. No change
-           in the overall diff.
+These defconfigs contain the CONFIG_M25P80 symbol, which is now
+dependent on the MTD_SPI_NOR symbol. Add CONFIG_MTD_SPI_NOR to satisfy
+the new dependency.
 
-Hi all,
+At the same time, drop the now-nonexistent CONFIG_MTD_CHAR symbol.
 
-We are introducing a new SPI-NOR subsystem/framework for MTD, to support
-various types of SPI-NOR flash controllers which require (or benefit from)
-intimate knowledge of the flash interface, rather than just the relatively dumb
-SPI interface. This framework borrows much of the m25p80 driver for its
-abstraction and moves this code into a spi-nor module.
+Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+---
+ arch/powerpc/configs/corenet32_smp_defconfig | 2 +-
+ arch/powerpc/configs/corenet64_smp_defconfig | 2 +-
+ arch/powerpc/configs/mpc85xx_defconfig       | 2 +-
+ arch/powerpc/configs/mpc85xx_smp_defconfig   | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-This means CONFIG_M25P80 now has a dependency on CONFIG_MTD_SPI_NOR, which
-should be added to the defconfigs. I expect that each (sub)architecture
-maintainer can merge these patches to their own tree.
-
-Note that without the new CONFIG_MTD_SPI_NOR symbol in your defconfig, Kconfig
-will automatically drop M25P80 for you.
-
-Please keep general comments to the cover letter, so all parties can see.
-
-This series is based on 3.15-rc1.
-
-The SPI-NOR development code (in -next, queued for 3.16) is here:
-
-  git://git.infradead.org/l2-mtd.git +spinor
-
-This defconfig series is available in the same repo at:
-
-  git://git.infradead.org/l2-mtd.git +defconfigs
-
-Thanks,
-Brian
-
-Brian Norris (12):
-  ARM: imx/mxs defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: keystone: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: tegra: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: lpc32xx: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: at91: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: shmobile: add MTD_SPI_NOR (new dependency for M25P80)
-  ARM: marvell: add MTD_SPI_NOR (new dependency for M25P80)
-  blackfin: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
-  mips: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
-  powerpc: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
-  sh: defconfig: add MTD_SPI_NOR (new dependency for M25P80)
-
- arch/arm/configs/bockw_defconfig               | 2 +-
- arch/arm/configs/dove_defconfig                | 2 +-
- arch/arm/configs/imx_v6_v7_defconfig           | 1 +
- arch/arm/configs/keystone_defconfig            | 1 +
- arch/arm/configs/kirkwood_defconfig            | 1 +
- arch/arm/configs/koelsch_defconfig             | 1 +
- arch/arm/configs/lager_defconfig               | 1 +
- arch/arm/configs/lpc32xx_defconfig             | 2 +-
- arch/arm/configs/multi_v5_defconfig            | 1 +
- arch/arm/configs/multi_v7_defconfig            | 1 +
- arch/arm/configs/mvebu_v5_defconfig            | 1 +
- arch/arm/configs/mvebu_v7_defconfig            | 1 +
- arch/arm/configs/mxs_defconfig                 | 1 +
- arch/arm/configs/sama5_defconfig               | 2 +-
- arch/arm/configs/shmobile_defconfig            | 1 +
- arch/arm/configs/tegra_defconfig               | 1 +
- arch/blackfin/configs/BF526-EZBRD_defconfig    | 2 +-
- arch/blackfin/configs/BF527-EZKIT-V2_defconfig | 2 +-
- arch/blackfin/configs/BF527-EZKIT_defconfig    | 2 +-
- arch/blackfin/configs/BF548-EZKIT_defconfig    | 2 +-
- arch/blackfin/configs/BF609-EZKIT_defconfig    | 2 +-
- arch/blackfin/configs/BlackStamp_defconfig     | 3 +--
- arch/blackfin/configs/H8606_defconfig          | 3 +--
- arch/mips/configs/ath79_defconfig              | 3 +--
- arch/mips/configs/db1xxx_defconfig             | 1 +
- arch/mips/configs/rt305x_defconfig             | 2 +-
- arch/powerpc/configs/corenet32_smp_defconfig   | 2 +-
- arch/powerpc/configs/corenet64_smp_defconfig   | 2 +-
- arch/powerpc/configs/mpc85xx_defconfig         | 2 +-
- arch/powerpc/configs/mpc85xx_smp_defconfig     | 2 +-
- arch/sh/configs/sh7757lcr_defconfig            | 2 +-
- 31 files changed, 31 insertions(+), 21 deletions(-)
-
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index bbd794deb6eb..fceaa893d37c 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -69,7 +69,6 @@ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+@@ -78,6 +77,7 @@ CONFIG_MTD_M25P80=y
+ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
++CONFIG_MTD_SPI_NOR=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 5c7fa19ae4ef..9c8d58a50df2 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -61,7 +61,6 @@ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
+ CONFIG_MTD_OF_PARTS=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLKDEVS=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_FTL=y
+@@ -82,6 +81,7 @@ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_IDS=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
++CONFIG_MTD_SPI_NOR=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_WL_THRESHOLD=4096
+ CONFIG_MTD_UBI_BEB_RESERVE=1
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index 19f0fbe5ba4b..33d9c8aef4eb 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -83,7 +83,6 @@ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
+ CONFIG_MTD_OF_PARTS=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLKDEVS=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_FTL=y
+@@ -104,6 +103,7 @@ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_IDS=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
++CONFIG_MTD_SPI_NOR=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_WL_THRESHOLD=4096
+ CONFIG_MTD_UBI_BEB_RESERVE=1
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 062312e1fe1a..25174f9a6615 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -86,7 +86,6 @@ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_MTD=y
+ CONFIG_MTD_OF_PARTS=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLKDEVS=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_FTL=y
+@@ -107,6 +106,7 @@ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_IDS=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
++CONFIG_MTD_SPI_NOR=y
+ CONFIG_MTD_UBI=y
+ CONFIG_MTD_UBI_WL_THRESHOLD=4096
+ CONFIG_MTD_UBI_BEB_RESERVE=1
 -- 
 1.8.3.2
