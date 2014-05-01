@@ -1,18 +1,21 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews06.kpnxchange.com (cpsmtpb-ews06.kpnxchange.com
- [213.75.39.9]) by ozlabs.org (Postfix) with ESMTP id 9697F140114
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2014 19:40:48 +1000 (EST)
-Message-ID: <1398936447.4121.12.camel@x220>
-Subject: Re: [4/5] IBM Akebono: Add the Akebono platform
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Alistair Popple <alistair@popple.id.au>
-Date: Thu, 01 May 2014 11:27:27 +0200
-In-Reply-To: <1394077948-8395-5-git-send-email-alistair@popple.id.au>
-References: <1394077948-8395-5-git-send-email-alistair@popple.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org
+Return-Path: <palves@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 025D0140114
+ for <linuxppc-dev@ozlabs.org>; Thu,  1 May 2014 23:41:31 +1000 (EST)
+Message-ID: <53624EF7.8090603@redhat.com>
+Date: Thu, 01 May 2014 14:41:11 +0100
+From: Pedro Alves <palves@redhat.com>
+MIME-Version: 1.0
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] powerpc, ptrace: Add new ptrace request macros for
+ transactional memory
+References: <1396422144-11032-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1396422144-11032-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <535AF2E9.1000005@redhat.com> <535E2DC9.7080602@linux.vnet.ibm.com>
+In-Reply-To: <535E2DC9.7080602@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,58 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-03-06 at 14:52 +1100, Alistair Popple wrote:
-> This patch adds support for the IBM Akebono board.
+On 04/28/2014 11:30 AM, Anshuman Khandual wrote:
+> On 04/26/2014 05:12 AM, Pedro Alves wrote:
+>> On 04/02/2014 08:02 AM, Anshuman Khandual wrote:
+>>> This patch adds following new sets of ptrace request macros for transactional
+>>> memory expanding the existing ptrace ABI on PowerPC.
+>>>
+>>> 	/* TM special purpose registers */
+>>> 	PTRACE_GETTM_SPRREGS
+>>> 	PTRACE_SETTM_SPRREGS
+>>>
+>>> 	/* TM checkpointed GPR registers */
+>>> 	PTRACE_GETTM_CGPRREGS
+>>> 	PTRACE_SETTM_CGPRREGS
+>>>
+>>> 	/* TM checkpointed FPR registers */
+>>> 	PTRACE_GETTM_CFPRREGS
+>>> 	PTRACE_SETTM_CFPRREGS
+>>>
+>>> 	/* TM checkpointed VMX registers */
+>>> 	PTRACE_GETTM_CVMXREGS
+>>> 	PTRACE_SETTM_CVMXREGS
+>>
+>> Urgh, we're _still_ adding specialized register specific calls?
+>> Why aren't these exported as new register sets, accessible through
+>> PTRACE_GETREGSET /  PTRACE_SETREGSET?  That's supposed to be the
+>> Modern Way to do things.
+> 
+> All these new register sets can be accessed through PTRACE_GETREGSET
+> /SETREGSET requests with the new NT_PPC_* core note types added in the
+> previous patch. PowerPC already has some register specific ptrace
+> requests, so thought of adding some new requests for transactional
+> memory purpose. But yes these are redundant and can be dropped.
 
-This patch just landed in linux-next (ie, in next-20140501).
+Thank you.  I assume you guys will be working on gdb support for this,
+and I'm really hoping that transaction support in the kernel is being
+made uniform across archs.  E.g., on s390, PTRACE_GETREGSET returns
+ENODATA if the ptracee was interrupted outside transactions.
 
-> Signed-off-by: Alistair Popple <alistair@popple.id.au>
->[...]
-> --- a/arch/powerpc/platforms/44x/Kconfig
-> +++ b/arch/powerpc/platforms/44x/Kconfig
-> @@ -199,6 +199,32 @@ config CURRITUCK
->  	help
->  	  This option enables support for the IBM Currituck (476fpe) evaluation board
->  
-> +config AKEBONO
-> +	bool "IBM Akebono (476gtr) Support"
-> +	depends on PPC_47x
-> +	default n
-> +	select SWIOTLB
-> +	select 476FPE
-> +	select PPC4xx_PCI_EXPRESS
-> +	select I2C
-> +	select I2C_IBM_IIC
-> +	select NETDEVICES
-> +	select ETHERNET
-> +	select NET_VENDOR_IBM
-> +	select IBM_EMAC_EMAC4
-> +	select IBM_EMAC_RGMII_WOL
+  https://sourceware.org/ml/gdb-patches/2013-06/msg00273.html
 
-The patch that added this symbol (and the related driver) was submitted
-in https://lkml.org/lkml/2014/2/21/25 . It's not (yet) included in
-linux-next. Is it queued somewhere else?
-
-> +	select USB
-> +	select USB_OHCI_HCD_PLATFORM
-> +	select USB_EHCI_HCD_PLATFORM
-> +	select MMC_SDHCI
-> +	select MMC_SDHCI_PLTFM
-> +	select MMC_SDHCI_OF_476GTR
-
-The plan to add MMC_SDHCI_OF_476GTR seems to have been abandoned (see
-the discussion of https://lkml.org/lkml/2014/2/21/24 ). So this select
-is not needed. Should I submit a trivial patch to drop this select?
-
-> +	select ATA
-> +	select SATA_AHCI_PLATFORM
-> +	help
-> +	  This option enables support for the IBM Akebono (476gtr) evaluation board
-> +
-> +
->  config ICON
->  	bool "Icon"
->  	depends on 44x
-
-
-Paul Bolle
+-- 
+Pedro Alves
