@@ -1,27 +1,18 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 0AA68140134
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2014 20:14:59 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 18177-01 for <linuxppc-dev@lists.ozlabs.org>;
- Fri,  2 May 2014 11:14:46 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Alexander Graf' <agraf@suse.de>, Mihai Caraman
- <mihai.caraman@freescale.com>
-Subject: RE: [PATCH v2 4/4] KVM: PPC: Bookehv: Get vcpu's last instruction
- for emulation
-Date: Fri, 2 May 2014 10:12:51 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D0F705051@AcuExch.aculab.com>
-References: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
- <1398905152-18091-5-git-send-email-mihai.caraman@freescale.com>
- <53636CFA.5050006@suse.de>
-In-Reply-To: <53636CFA.5050006@suse.de>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <James.Hogan@imgtec.com>
+Received: from mailapp01.imgtec.com (unknown [195.59.15.197])
+ by ozlabs.org (Postfix) with ESMTP id 456FD140124
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2014 20:37:20 +1000 (EST)
+From: James Hogan <james.hogan@imgtec.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>
+Subject: [PATCH] powerpc: Remove non-uapi linkage.h export
+Date: Fri, 2 May 2014 11:20:41 +0100
+Message-ID: <1399026041-28615-1-git-send-email-james.hogan@imgtec.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Content-Type: text/plain
+Cc: David Howells <dhowells@redhat.com>, David Woodhouse <dwmw2@infradead.org>,
+ James Hogan <james.hogan@imgtec.com>, linuxppc-dev@lists.ozlabs.org,
+ Al Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQWxleGFuZGVyIEdyYWYNCi4uLg0KPiA+ICsJcGFnZSA9IHBmbl90b19wYWdlKHBmbik7
-DQo+ID4gKwllYWRkciA9ICh1bnNpZ25lZCBsb25nKWttYXBfYXRvbWljKHBhZ2UpOw0KPiA+ICsJ
-ZWFkZHIgfD0gYWRkciAmIH5QQUdFX01BU0s7DQo+ID4gKwkqaW5zdHIgPSAqKHUzMiAqKWVhZGRy
-Ow0KPiA+ICsJa3VubWFwX2F0b21pYygodTMyICopZWFkZHIpOw0KPiANCj4gSSB0aGluayBJJ2Qg
-cmF0aGVyIHdyaXRlIHRoaXMgYXMNCj4gDQo+ICAgICppbnN0ciA9ICoodTMyICopKGVhZGRyIHwg
-KGFkZHIgJiB+UEFHRSkpOw0KPiAgICBrdW5tYXBfYXRvbWljKCh2b2lkKillYWRkcik7DQo+IA0K
-PiB0byBtYWtlIHN1cmUgd2UgcGFzcyB0aGUgdW5tYXAgZnVuY3Rpb24gdGhlIHNhbWUgdmFsdWUg
-d2UgZ290IGZyb20gdGhlDQo+IG1hcCBmdW5jdGlvbi4NCj4gDQo+IE90aGVyd2lzZSBsb29rcyBn
-b29kIHRvIG1lLg0KDQpJcyB0aGVyZSBhbnkgbWlsZWFnZSBpbiBrZWVwaW5nIGEgdmlydHVhbCBh
-ZGRyZXNzIHBhZ2UgYWxsb2NhdGVkIChwZXIgY3B1KQ0KZm9yIHRoaXMgKGFuZCBzaW1pbGFyKSBh
-Y2Nlc3NlcyB0byBwaHlzaWNhbCBtZW1vcnk/DQpOb3QgaGF2aW5nIHRvIHNlYXJjaCBmb3IgYSBm
-cmVlIFZBIHBhZ2UgbWlnaHQgc3BlZWQgdGhpbmdzIHVwIChpZiB0aGF0IG1hdHRlcnMpLg0KDQpZ
-b3UgYWxzbyBwcm9iYWJseSB3YW50IHRoZSBwYWdlIG1hcHBlZCB1bmNhY2hlZCAtIG5vIHBvaW50
-IHBvbGx1dGluZyB0aGUgZGF0YQ0KY2FjaGUuDQoNCglEYXZpZA0KDQo=
+The arch/powerpc/include/asm/linkage.h is being unintentionally exported
+in the kernel headers since commit e1b5bb6d1236 (consolidate
+cond_syscall and SYSCALL_ALIAS declarations) when
+arch/powerpc/include/uapi/asm/linkage.h was deleted but the header-y not
+removed from the Kbuild file. This happens because Makefile.headersinst
+still checks the old asm/ directory if the specified header doesn't
+exist in the uapi directory.
+
+The asm/linkage.h shouldn't ever have been exported anyway. No other
+arch does and it doesn't contain anything useful to userland, so remove
+the header-y line from the Kbuild file which triggers the export.
+
+Signed-off-by: James Hogan <james.hogan@imgtec.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: David Howells <dhowells@redhat.com>
+---
+ arch/powerpc/include/uapi/asm/Kbuild | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
+index 48be855ef37b..7a3f795ac218 100644
+--- a/arch/powerpc/include/uapi/asm/Kbuild
++++ b/arch/powerpc/include/uapi/asm/Kbuild
+@@ -15,7 +15,6 @@ header-y += ioctls.h
+ header-y += ipcbuf.h
+ header-y += kvm.h
+ header-y += kvm_para.h
+-header-y += linkage.h
+ header-y += mman.h
+ header-y += msgbuf.h
+ header-y += nvram.h
+-- 
+1.9.2
