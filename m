@@ -1,40 +1,24 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7A353140159
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 May 2014 03:47:47 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <linuxram@us.ibm.com>;
- Fri, 2 May 2014 13:47:44 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 473406E8041
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2014 13:47:34 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s42HlfxA55377990
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 May 2014 17:47:41 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s42HleI6014446
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 May 2014 13:47:40 -0400
-Date: Fri, 2 May 2014 10:47:36 -0700
-From: Ram Pai <linuxram@us.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] powerpc: crtsaveres.o needed only when -Os flag is
- enabled
-Message-ID: <20140502174736.GA5045@ram.oc3035372033.ibm.com>
-References: <1398729908-15787-1-git-send-email-linuxram@us.ibm.com>
- <87wqe4age2.fsf@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 94FB114013F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 May 2014 09:14:37 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH v2 1/4] KVM: PPC: e500mc: Revert "add load inst fixup"
+Date: Fri, 2 May 2014 23:14:29 +0000
+Message-ID: <1399072472827.57968@freescale.com>
+References: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
+ <1398905152-18091-2-git-send-email-mihai.caraman@freescale.com>,
+ <53636436.60002@suse.de>
+In-Reply-To: <53636436.60002@suse.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87wqe4age2.fsf@linux.vnet.ibm.com>
-Cc: hartb@us.ibm.com, paulus@samba.org, anton@samba.org, tony@ozlabs.au.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,53 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 02, 2014 at 11:09:17AM +0530, Aneesh Kumar K.V wrote:
-> Ram Pai <linuxram@us.ibm.com> writes:
-> 
-> >     powerpc: crtsaveres.o needed only when -Os flag is enabled
-> >     
-> >     Currently on powerpc arch, out-of-tree module fails to build without
-> >     crtsaveres.o, even when the module has no dependency on the symbols
-> >     provided by the file; when built without the -Os flag.
-> >     
-> >     BTW: '-Os' flag is enabled when CONFIG_CC_OPTIMIZE_FOR_SIZE is
-> >     configured.
-> >     
-> >     This patch fixes that problem.
-> >     
-> > Signed-off-by: Ram Pai <linuxram@us.ibm.com>
-> >
-> > diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> > index 4c0cedf..cf12f38 100644
-> > --- a/arch/powerpc/Makefile
-> > +++ b/arch/powerpc/Makefile
-> > @@ -157,7 +157,10 @@ CPP		= $(CC) -E $(KBUILD_CFLAGS)
-> >  
-> >  CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
-> >  
-> > +ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-> >  KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-> > +endif
-> > +
-> >  
-> >  # No AltiVec or VSX instructions when building kernel
-> >  KBUILD_CFLAGS += $(call cc-option,-mno-altivec)
-> >
-> 
-> So if we enable CONFIG_CC_OPTIMIZE_FOR_SIZE can we build out-of-tree
-> module with this patch ?
-
-	Yes, provided crtsaveres.o is available.
-
-
-If crtsaveres.o is not available; some distro dont ship it, than
-out-of-tree module linking will fail.
-
-Some distro don't ship crtsaveres.o since they do not want
-kernel and modules to be built with space optimization. In such cases
-requiring crtsaveres.o to be available during module building, even
-when the module is not built for space optimization is wrong.
-
-This patch fixes that issue.
-
-RP
+> From: Alexander Graf <agraf@suse.de>=0A=
+> Sent: Friday, May 2, 2014 12:24 PM=0A=
+> To: Caraman Mihai Claudiu-B02008=0A=
+> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-dev@lists.ozla=
+bs.org=0A=
+> Subject: Re: [PATCH v2 1/4] KVM: PPC: e500mc: Revert "add load inst fixup=
+"=0A=
+> =0A=
+> On 05/01/2014 02:45 AM, Mihai Caraman wrote:=0A=
+> > The commit 1d628af7 "add load inst fixup" made an attempt to handle=0A=
+> > failures generated by reading the guest current instruction. The fixup=
+=0A=
+> > code that was added works by chance hiding the real issue.=0A=
+> >=0A=
+> > Load external pid (lwepx) instruction, used by KVM to read guest=0A=
+> > instructions, is executed in a subsituted guest translation context=0A=
+> > (EPLC[EGS] =3D 1). In consequence lwepx's TLB error and data storage=0A=
+> > interrupts need to be handled by KVM, even though these interrupts=0A=
+> > are generated from host context (MSR[GS] =3D 0).=0A=
+> >=0A=
+> > Currently, KVM hooks only interrupts generated from guest context=0A=
+> > (MSR[GS] =3D 1), doing minimal checks on the fast path to avoid host=0A=
+> > performance degradation. As a result, the host kernel handles lwepx=0A=
+> > faults searching the faulting guest data address (loaded in DEAR) in=0A=
+> > its own Logical Partition ID (LPID) 0 context. In case a host translati=
+on=0A=
+> > is found the execution returns to the lwepx instruction instead of the=
+=0A=
+> > fixup, the host ending up in an infinite loop.=0A=
+> >=0A=
+> > Revert the commit "add load inst fixup". lwepx issue will be addressed=
+=0A=
+> > in a subsequent patch without needing fixup code.=0A=
+> >=0A=
+> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>=0A=
+> =0A=
+> Just a random idea: Could we just switch IVOR2 during the critical lwepx=
+=0A=
+> phase? In fact, we could even do that later when we're already in C code=
+=0A=
+> and try to recover the last instruction. The code IVOR2 would point to=0A=
+> would simply set the register we're trying to read to as LAST_INST_FAIL=
+=0A=
+> and rfi.=0A=
+=0A=
+This was the first idea that sprang to my mind inspired from how DO_KVM=0A=
+is hooked on PR. I actually did a simple POC for e500mc/e5500, but this wil=
+l=0A=
+not work on e6500 which has shared IVORs between HW threads.=0A=
+=0A=
+-Mike=
