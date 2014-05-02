@@ -1,24 +1,21 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B8297140106
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 May 2014 01:44:39 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id kp14so1105162pab.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 May 2014 08:44:36 -0700 (PDT)
+Return-Path: <vinod.koul@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id 063FA140133
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 May 2014 03:01:32 +1000 (EST)
+Date: Fri, 2 May 2014 22:18:26 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: hongbo.zhang@freescale.com
+Subject: Re: [PATCH v4 1/8] DMA: Freescale: remove the unnecessary
+ FSL_DMA_LD_DEBUG
+Message-ID: <20140502164826.GC32284@intel.com>
+References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
+ <1397809071-5353-2-git-send-email-hongbo.zhang@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1399045268-18344-1-git-send-email-geert@linux-m68k.org>
-References: <1399045268-18344-1-git-send-email-geert@linux-m68k.org>
-Date: Fri, 2 May 2014 17:44:36 +0200
-Message-ID: <CAMuHMdU=YJ-W9KaE7Y4Q0pYEQ=rb9GKG7qQX1tsm2AJ8AC3bhQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.15-rc3
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1397809071-5353-2-git-send-email-hongbo.zhang@freescale.com>
+Cc: leo.li@freescale.com, vkoul@infradead.org, linux-kernel@vger.kernel.org,
+ scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 2, 2014 at 5:41 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.15-rc3[1]  to v3.15-rc2[3], the summaries are:
->   - build errors: +5/-9
+On Fri, Apr 18, 2014 at 04:17:44PM +0800, hongbo.zhang@freescale.com wrote:
+> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+> 
+> Some codes are calling chan_dbg with FSL_DMA_LD_DEBUG surrounded, it is really
+> unnecessary to use such a macro because chan_dbg is a wrapper of dev_dbg, we do
+> have corresponding DEBUG macro to switch on/off dev_dbg, and most of the other
+> codes are also calling chan_dbg directly without using FSL_DMA_LD_DEBUG.
+>
+Applied, thanks
 
-  + /scratch/kisskb/src/arch/um/os-Linux/mem.c: error: 'TMPFS_MAGIC'
-undeclared (first use in this function):  => 31
-  + /scratch/kisskb/src/arch/um/os-Linux/mem.c: error: (Each
-undeclared identifier is reported only once:  => 31
-  + /scratch/kisskb/src/arch/um/os-Linux/mem.c: error: for each
-function it appears in.):  => 31
-  + /scratch/kisskb/src/arch/um/os-Linux/mem.c: error: linux/magic.h:
-No such file or directory:  => 16:25
-
-um-defconfig
-
-  + error: No rule to make target include/config/auto.conf:  => N/A
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/7427/ (all 119 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/7401/ (all 119 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+~Vinod
+ 
