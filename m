@@ -1,35 +1,33 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A995E1400EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:36:11 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B6C1914018A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 09:28:51 +1000 (EST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 4 May 2014 23:06:09 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4DE3B3940048
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 May 2014 23:06:07 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s44Ha9iG55443650
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 4 May 2014 23:06:09 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s44Ha6we002930
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 4 May 2014 23:06:06 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [RFC PATCH] KVM: PPC: BOOK3S: HV: THP support for guest
-In-Reply-To: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Sun, 04 May 2014 23:06:05 +0530
-Message-ID: <87wqe1a1kq.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 5 May 2014 09:28:50 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B5DB22BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 09:28:46 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s44N7dx566584694
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 09:07:39 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s44NSjLr012230
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 09:28:45 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH 3/3] powerpc/powernv: Don't escalate non-existing frozen PE
+Date: Mon,  5 May 2014 09:29:04 +1000
+Message-Id: <1399246144-20247-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1399246144-20247-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1399246144-20247-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,210 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Commit cb5b242c ("powerpc/eeh: Escalate error on non-existing PE")
+escalates the frozen state on non-existing PE to fenced PHB. It
+was to improve kdump reliability. After that, commit 361f2a2a
+("powrpc/powernv: Reset PHB in kdump kernel") was introduced to
+issue complete reset on all PHBs to increase the reliability of
+kdump kernel.
 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/kvm_book3s_64.h | 146 ++++++++++++++++++++++++++-----
->  arch/powerpc/kvm/book3s_hv.c             |   7 ++
->  2 files changed, 130 insertions(+), 23 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-> index 51388befeddb..f03ea8f90576 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> @@ -77,34 +77,122 @@ static inline long try_lock_hpte(unsigned long *hpte, unsigned long bits)
->  	return old == 0;
->  }
->
-> +static inline int __hpte_actual_psize(unsigned int lp, int psize)
-> +{
-> +	int i, shift;
-> +	unsigned int mask;
-> +
-> +	/* start from 1 ignoring MMU_PAGE_4K */
-> +	for (i = 1; i < MMU_PAGE_COUNT; i++) {
-> +
-> +		/* invalid penc */
-> +		if (mmu_psize_defs[psize].penc[i] == -1)
-> +			continue;
-> +		/*
-> +		 * encoding bits per actual page size
-> +		 *        PTE LP     actual page size
-> +		 *    rrrr rrrz		>=8KB
-> +		 *    rrrr rrzz		>=16KB
-> +		 *    rrrr rzzz		>=32KB
-> +		 *    rrrr zzzz		>=64KB
-> +		 * .......
-> +		 */
-> +		shift = mmu_psize_defs[i].shift - LP_SHIFT;
-> +		if (shift > LP_BITS)
-> +			shift = LP_BITS;
-> +		mask = (1 << shift) - 1;
-> +		if ((lp & mask) == mmu_psize_defs[psize].penc[i])
-> +			return i;
-> +	}
-> +	return -1;
-> +}
-> +
->  static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
->  					     unsigned long pte_index)
->  {
-> -	unsigned long rb, va_low;
-> +	int b_size, a_size;
-> +	unsigned int penc;
-> +	unsigned long rb = 0, va_low, sllp;
-> +	unsigned int lp = (r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
-> +
-> +	if (!(v & HPTE_V_LARGE)) {
-> +		/* both base and actual psize is 4k */
-> +		b_size = MMU_PAGE_4K;
-> +		a_size = MMU_PAGE_4K;
-> +	} else {
-> +		for (b_size = 0; b_size < MMU_PAGE_COUNT; b_size++) {
-> +
-> +			/* valid entries have a shift value */
-> +			if (!mmu_psize_defs[b_size].shift)
-> +				continue;
->
-> +			a_size = __hpte_actual_psize(lp, b_size);
-> +			if (a_size != -1)
-> +				break;
-> +		}
-> +	}
-> +	/*
-> +	 * Ignore the top 14 bits of va
-> +	 * v have top two bits covering segment size, hence move
-> +	 * by 16 bits, Also clear the lower HPTE_V_AVPN_SHIFT (7) bits.
-> +	 * AVA field in v also have the lower 23 bits ignored.
-> +	 * For base page size 4K we need 14 .. 65 bits (so need to
-> +	 * collect extra 11 bits)
-> +	 * For others we need 14..14+i
-> +	 */
-> +	/* This covers 14..54 bits of va*/
->  	rb = (v & ~0x7fUL) << 16;		/* AVA field */
-> +	/*
-> +	 * AVA in v had cleared lower 23 bits. We need to derive
-> +	 * that from pteg index
-> +	 */
->  	va_low = pte_index >> 3;
->  	if (v & HPTE_V_SECONDARY)
->  		va_low = ~va_low;
-> -	/* xor vsid from AVA */
-> +	/*
-> +	 * get the vpn bits from va_low using reverse of hashing.
-> +	 * In v we have va with 23 bits dropped and then left shifted
-> +	 * HPTE_V_AVPN_SHIFT (7) bits. Now to find vsid we need
-> +	 * right shift it with (SID_SHIFT - (23 - 7))
-> +	 */
->  	if (!(v & HPTE_V_1TB_SEG))
-> -		va_low ^= v >> 12;
-> +		va_low ^= v >> (SID_SHIFT - 16);
->  	else
-> -		va_low ^= v >> 24;
-> +		va_low ^= v >> (SID_SHIFT_1T - 16);
->  	va_low &= 0x7ff;
-> -	if (v & HPTE_V_LARGE) {
-> -		rb |= 1;			/* L field */
-> -		if (cpu_has_feature(CPU_FTR_ARCH_206) &&
-> -		    (r & 0xff000)) {
-> -			/* non-16MB large page, must be 64k */
-> -			/* (masks depend on page size) */
-> -			rb |= 0x1000;		/* page encoding in LP field */
-> -			rb |= (va_low & 0x7f) << 16; /* 7b of VA in AVA/LP field */
-> -			rb |= ((va_low << 4) & 0xf0);	/* AVAL field (P7 doesn't seem to care) */
-> -		}
-> -	} else {
-> -		/* 4kB page */
-> -		rb |= (va_low & 0x7ff) << 12;	/* remaining 11b of VA */
-> +
-> +	switch (b_size) {
-> +	case MMU_PAGE_4K:
-> +		sllp = ((mmu_psize_defs[a_size].sllp & SLB_VSID_L) >> 6) |
-> +			((mmu_psize_defs[a_size].sllp & SLB_VSID_LP) >> 4);
-> +		rb |= sllp << 5;	/*  AP field */
-> +		rb |= (va_low & 0x7ff) << 12;	/* remaining 11 bits of AVA */
-> +		break;
-> +	default:
-> +	{
-> +		int aval_shift;
-> +		/*
-> +		 * remaining 7bits of AVA/LP fields
-> +		 * Also contain the rr bits of LP
-> +		 */
-> +		rb |= (va_low & 0x7f) << 16;
-> +		/*
-> +		 * Now clear not needed LP bits based on actual psize
-> +		 */
-> +		rb &= ~((1ul << mmu_psize_defs[a_size].shift) - 1);
-> +		/*
-> +		 * AVAL field 58..77 - base_page_shift bits of va
-> +		 * we have space for 58..64 bits, Missing bits should
-> +		 * be zero filled. +1 is to take care of L bit shift
-> +		 */
-> +		aval_shift = 64 - (77 - mmu_psize_defs[b_size].shift) + 1;
-> +		rb |= ((va_low << aval_shift) & 0xfe);
-> +
-> +		rb |= 1;		/* L field */
-> +		penc = mmu_psize_defs[b_size].penc[a_size];
-> +		rb |= penc << 12;	/* LP field */
-> +		break;
-> +	}
->  	}
->  	rb |= (v >> 54) & 0x300;		/* B field */
->  	return rb;
-> @@ -112,14 +200,26 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
->
->  static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
->  {
-> +	int size, a_size;
-> +	/* Look at the 8 bit LP value */
-> +	unsigned int lp = (l >> LP_SHIFT) & ((1 << LP_BITS) - 1);
-> +
->  	/* only handle 4k, 64k and 16M pages for now */
->  	if (!(h & HPTE_V_LARGE))
-> -		return 1ul << 12;		/* 4k page */
-> -	if ((l & 0xf000) == 0x1000 && cpu_has_feature(CPU_FTR_ARCH_206))
-> -		return 1ul << 16;		/* 64k page */
-> -	if ((l & 0xff000) == 0)
-> -		return 1ul << 24;		/* 16M page */
-> -	return 0;				/* error */
-> +		return 1ul << 12;
-> +	else {
-> +		for (size = 0; size < MMU_PAGE_COUNT; size++) {
-> +			/* valid entries have a shift value */
-> +			if (!mmu_psize_defs[size].shift)
-> +				continue;
-> +
-> +			a_size = __hpte_actual_psize(lp, size);
-> +			if (a_size != -1)
-> +				return 1ul << mmu_psize_defs[a_size].shift;
-> +		}
-> +
-> +	}
-> +	return 0;
->  }
->
->  static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 8227dba5af0f..a38d3289320a 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -1949,6 +1949,13 @@ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
->  	 * support pte_enc here
->  	 */
->  	(*sps)->enc[0].pte_enc = def->penc[linux_psize];
-> +	/*
-> +	 * Add 16MB MPSS support
-> +	 */
-> +	if (linux_psize != MMU_PAGE_16M) {
-> +		(*sps)->enc[1].page_shift = 24;
-> +		(*sps)->enc[1].pte_enc = def->penc[MMU_PAGE_16M];
-> +	}
+Commit cb5b242c becomes unuseful and it would be reverted.
 
-We ideally want to do this only when the guest memory is backed up by
-hugetlbfs. I was thinking qemu should ensure that. But then i am not
-sure existing qemu work that way. So we may want to look at how to
-enable MPSS.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
--aneesh
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 65feec6..1b5982f 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -884,13 +884,12 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 			 * it again.
+ 			 */
+ 			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe)) {
+-				*pe = phb_pe;
+-				pr_err("EEH: Escalated frozen PHB#%x-"
+-				       "PE#%llx (%s) detected\n",
+-					hose->global_number,
+-					frozen_pe_no,
+-					eeh_pe_loc_get(phb_pe));
+-				ret = EEH_NEXT_ERR_FENCED_PHB;
++				/* Try best to clear it */
++				pr_info("EEH: Clear non-existing PHB#%x-PE#%llx\n",
++					hose->global_number, frozen_pe_no);
++				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
++					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
++				ret = EEH_NEXT_ERR_NONE;
+ 			} else if ((*pe)->state & EEH_PE_ISOLATED) {
+ 				ret = EEH_NEXT_ERR_NONE;
+ 			} else {
+-- 
+1.8.3.2
