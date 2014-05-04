@@ -1,30 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 59A3814018C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:19:11 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D4F7414017D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:21:29 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 5 May 2014 03:19:09 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6DF462BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:19:05 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s44HIorH10420672
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:18:50 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s44HJ4mu019005
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:19:05 +1000
+ Mon, 5 May 2014 03:21:28 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id E86C62BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:21:26 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s44H0KWY5439788
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:00:20 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s44HLQc0019606
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:21:26 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH V4] KVM: PPC: BOOK3S: PR: Enable Little Endian PR guest
-Date: Sun,  4 May 2014 22:48:52 +0530
-Message-Id: <1399223932-17840-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V4] POWERPC: BOOK3S: KVM: Use the saved dar value and generic
+ make_dsisr
+Date: Sun,  4 May 2014 22:51:15 +0530
+Message-Id: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,142 +37,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch make sure we inherit the LE bit correctly in different case
-so that we can run Little Endian distro in PR mode
+Although it's optional IBM POWER cpus always had DAR value set on
+alignment interrupt. So don't try to compute these values.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
 Changes from V3:
-* Address review comments.
-  * rebase to new kernel so that intr_msr is moved instead of adding a new variable
-  * Drop the lock since we are single threaded for PR KVM
+* Use make_dsisr instead of checking feature flag to decide whether to use
+  saved dsisr or not
 
- arch/powerpc/include/asm/kvm_host.h |  2 +-
- arch/powerpc/kernel/asm-offsets.c   |  2 +-
- arch/powerpc/kvm/book3s_64_mmu.c    |  2 +-
- arch/powerpc/kvm/book3s_pr.c        | 29 ++++++++++++++++++++++++++++-
- 4 files changed, 31 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/disassemble.h | 34 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/align.c            | 34 +--------------------------
+ arch/powerpc/kvm/book3s_emulate.c      | 43 ++++------------------------------
+ 3 files changed, 40 insertions(+), 71 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 1eaea2dea174..d342f8efc843 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -562,6 +562,7 @@ struct kvm_vcpu_arch {
- #ifdef CONFIG_PPC_BOOK3S
- 	ulong fault_dar;
- 	u32 fault_dsisr;
-+	unsigned long intr_msr;
- #endif
+diff --git a/arch/powerpc/include/asm/disassemble.h b/arch/powerpc/include/asm/disassemble.h
+index 856f8deb557a..6330a61b875a 100644
+--- a/arch/powerpc/include/asm/disassemble.h
++++ b/arch/powerpc/include/asm/disassemble.h
+@@ -81,4 +81,38 @@ static inline unsigned int get_oc(u32 inst)
+ {
+ 	return (inst >> 11) & 0x7fff;
+ }
++
++#define IS_XFORM(inst)	(get_op(inst)  == 31)
++#define IS_DSFORM(inst)	(get_op(inst) >= 56)
++
++/*
++ * Create a DSISR value from the instruction
++ */
++static inline unsigned make_dsisr(unsigned instr)
++{
++	unsigned dsisr;
++
++
++	/* bits  6:15 --> 22:31 */
++	dsisr = (instr & 0x03ff0000) >> 16;
++
++	if (IS_XFORM(instr)) {
++		/* bits 29:30 --> 15:16 */
++		dsisr |= (instr & 0x00000006) << 14;
++		/* bit     25 -->    17 */
++		dsisr |= (instr & 0x00000040) << 8;
++		/* bits 21:24 --> 18:21 */
++		dsisr |= (instr & 0x00000780) << 3;
++	} else {
++		/* bit      5 -->    17 */
++		dsisr |= (instr & 0x04000000) >> 12;
++		/* bits  1: 4 --> 18:21 */
++		dsisr |= (instr & 0x78000000) >> 17;
++		/* bits 30:31 --> 12:13 */
++		if (IS_DSFORM(instr))
++			dsisr |= (instr & 0x00000003) << 18;
++	}
++
++	return dsisr;
++}
+ #endif /* __ASM_PPC_DISASSEMBLE_H__ */
+diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
+index 94908af308d8..34f55524d456 100644
+--- a/arch/powerpc/kernel/align.c
++++ b/arch/powerpc/kernel/align.c
+@@ -25,14 +25,13 @@
+ #include <asm/cputable.h>
+ #include <asm/emulated_ops.h>
+ #include <asm/switch_to.h>
++#include <asm/disassemble.h>
  
- #ifdef CONFIG_BOOKE
-@@ -654,7 +655,6 @@ struct kvm_vcpu_arch {
- 	spinlock_t tbacct_lock;
- 	u64 busy_stolen;
- 	u64 busy_preempt;
--	unsigned long intr_msr;
- #endif
+ struct aligninfo {
+ 	unsigned char len;
+ 	unsigned char flags;
  };
  
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index dba8140ebc20..6a4b77d197f3 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -493,7 +493,6 @@ int main(void)
- 	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
- 	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa.pinned_addr));
- 	DEFINE(VCPU_VPA_DIRTY, offsetof(struct kvm_vcpu, arch.vpa.dirty));
--	DEFINE(VCPU_INTR_MSR, offsetof(struct kvm_vcpu, arch.intr_msr));
- #endif
- #ifdef CONFIG_PPC_BOOK3S
- 	DEFINE(VCPU_VCPUID, offsetof(struct kvm_vcpu, vcpu_id));
-@@ -528,6 +527,7 @@ int main(void)
- 	DEFINE(VCPU_SLB_NR, offsetof(struct kvm_vcpu, arch.slb_nr));
- 	DEFINE(VCPU_FAULT_DSISR, offsetof(struct kvm_vcpu, arch.fault_dsisr));
- 	DEFINE(VCPU_FAULT_DAR, offsetof(struct kvm_vcpu, arch.fault_dar));
-+	DEFINE(VCPU_INTR_MSR, offsetof(struct kvm_vcpu, arch.intr_msr));
- 	DEFINE(VCPU_LAST_INST, offsetof(struct kvm_vcpu, arch.last_inst));
- 	DEFINE(VCPU_TRAP, offsetof(struct kvm_vcpu, arch.trap));
- 	DEFINE(VCPU_CFAR, offsetof(struct kvm_vcpu, arch.cfar));
-diff --git a/arch/powerpc/kvm/book3s_64_mmu.c b/arch/powerpc/kvm/book3s_64_mmu.c
-index 83da1f868fd5..8231b83c493b 100644
---- a/arch/powerpc/kvm/book3s_64_mmu.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu.c
-@@ -38,7 +38,7 @@
+-#define IS_XFORM(inst)	(((inst) >> 26) == 31)
+-#define IS_DSFORM(inst)	(((inst) >> 26) >= 56)
  
- static void kvmppc_mmu_book3s_64_reset_msr(struct kvm_vcpu *vcpu)
+ #define INVALID	{ 0, 0 }
+ 
+@@ -192,37 +191,6 @@ static struct aligninfo aligninfo[128] = {
+ };
+ 
+ /*
+- * Create a DSISR value from the instruction
+- */
+-static inline unsigned make_dsisr(unsigned instr)
+-{
+-	unsigned dsisr;
+-
+-
+-	/* bits  6:15 --> 22:31 */
+-	dsisr = (instr & 0x03ff0000) >> 16;
+-
+-	if (IS_XFORM(instr)) {
+-		/* bits 29:30 --> 15:16 */
+-		dsisr |= (instr & 0x00000006) << 14;
+-		/* bit     25 -->    17 */
+-		dsisr |= (instr & 0x00000040) << 8;
+-		/* bits 21:24 --> 18:21 */
+-		dsisr |= (instr & 0x00000780) << 3;
+-	} else {
+-		/* bit      5 -->    17 */
+-		dsisr |= (instr & 0x04000000) >> 12;
+-		/* bits  1: 4 --> 18:21 */
+-		dsisr |= (instr & 0x78000000) >> 17;
+-		/* bits 30:31 --> 12:13 */
+-		if (IS_DSFORM(instr))
+-			dsisr |= (instr & 0x00000003) << 18;
+-	}
+-
+-	return dsisr;
+-}
+-
+-/*
+  * The dcbz (data cache block zero) instruction
+  * gives an alignment fault if used on non-cacheable
+  * memory.  We handle the fault mainly for the
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 99d40f8977e8..04c38f049dfd 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -569,48 +569,14 @@ unprivileged:
+ 
+ u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst)
  {
--	kvmppc_set_msr(vcpu, MSR_SF);
-+	kvmppc_set_msr(vcpu, vcpu->arch.intr_msr);
+-	u32 dsisr = 0;
+-
+-	/*
+-	 * This is what the spec says about DSISR bits (not mentioned = 0):
+-	 *
+-	 * 12:13		[DS]	Set to bits 30:31
+-	 * 15:16		[X]	Set to bits 29:30
+-	 * 17			[X]	Set to bit 25
+-	 *			[D/DS]	Set to bit 5
+-	 * 18:21		[X]	Set to bits 21:24
+-	 *			[D/DS]	Set to bits 1:4
+-	 * 22:26			Set to bits 6:10 (RT/RS/FRT/FRS)
+-	 * 27:31			Set to bits 11:15 (RA)
+-	 */
+-
+-	switch (get_op(inst)) {
+-	/* D-form */
+-	case OP_LFS:
+-	case OP_LFD:
+-	case OP_STFD:
+-	case OP_STFS:
+-		dsisr |= (inst >> 12) & 0x4000;	/* bit 17 */
+-		dsisr |= (inst >> 17) & 0x3c00; /* bits 18:21 */
+-		break;
+-	/* X-form */
+-	case 31:
+-		dsisr |= (inst << 14) & 0x18000; /* bits 15:16 */
+-		dsisr |= (inst << 8)  & 0x04000; /* bit 17 */
+-		dsisr |= (inst << 3)  & 0x03c00; /* bits 18:21 */
+-		break;
+-	default:
+-		printk(KERN_INFO "KVM: Unaligned instruction 0x%x\n", inst);
+-		break;
+-	}
+-
+-	dsisr |= (inst >> 16) & 0x03ff; /* bits 22:31 */
+-
+-	return dsisr;
++	return make_dsisr(inst);
  }
  
- static struct kvmppc_slb *kvmppc_mmu_book3s_64_find_slbe(
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index f30cdfee800d..466273aca58b 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -249,7 +249,7 @@ static void kvmppc_recalc_shadow_msr(struct kvm_vcpu *vcpu)
- 	ulong smsr = vcpu->arch.shared->msr;
- 
- 	/* Guest MSR values */
--	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE;
-+	smsr &= MSR_FE0 | MSR_FE1 | MSR_SF | MSR_SE | MSR_BE | MSR_LE;
- 	/* Process MSR values */
- 	smsr |= MSR_ME | MSR_RI | MSR_IR | MSR_DR | MSR_PR | MSR_EE;
- 	/* External providers the guest reserved */
-@@ -1118,6 +1118,15 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 	case KVM_REG_PPC_HIOR:
- 		*val = get_reg_val(id, to_book3s(vcpu)->hior);
- 		break;
-+	case KVM_REG_PPC_LPCR:
-+		/*
-+		 * We are only interested in the LPCR_ILE bit
-+		 */
-+		if (vcpu->arch.intr_msr & MSR_LE)
-+			*val = get_reg_val(id, LPCR_ILE);
-+		else
-+			*val = get_reg_val(id, 0);
-+		break;
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -1126,6 +1135,20 @@ static int kvmppc_get_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 	return r;
- }
- 
-+static void kvmppc_set_lpcr_pr(struct kvm_vcpu *vcpu, u64 new_lpcr)
-+{
-+	/*
-+	 * If ILE (interrupt little-endian) has changed, update the
-+	 * MSR_LE bit in the intr_msr for each vcpu in this vcore.
-+	 */
-+	if ((new_lpcr & LPCR_ILE) != (vcpu->arch.intr_msr & MSR_LE)) {
-+		if (new_lpcr & LPCR_ILE)
-+			vcpu->arch.intr_msr |= MSR_LE;
-+		else
-+			vcpu->arch.intr_msr &= ~MSR_LE;
-+	}
-+}
-+
- static int kvmppc_set_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 				 union kvmppc_one_reg *val)
+ ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
  {
-@@ -1136,6 +1159,9 @@ static int kvmppc_set_one_reg_pr(struct kvm_vcpu *vcpu, u64 id,
- 		to_book3s(vcpu)->hior = set_reg_val(id, *val);
- 		to_book3s(vcpu)->hior_explicit = true;
- 		break;
-+	case KVM_REG_PPC_LPCR:
-+		kvmppc_set_lpcr_pr(vcpu, set_reg_val(id, *val));
-+		break;
- 	default:
- 		r = -EINVAL;
- 		break;
-@@ -1188,6 +1214,7 @@ static struct kvm_vcpu *kvmppc_core_vcpu_create_pr(struct kvm *kvm,
- 	vcpu->arch.pvr = 0x3C0301;
- 	if (mmu_has_feature(MMU_FTR_1T_SEGMENT))
- 		vcpu->arch.pvr = mfspr(SPRN_PVR);
-+	vcpu->arch.intr_msr = MSR_SF;
- #else
- 	/* default to book3s_32 (750) */
- 	vcpu->arch.pvr = 0x84202;
++#ifdef CONFIG_PPC_BOOK3S_64
++	return vcpu->arch.fault_dar;
++#else
+ 	ulong dar = 0;
+ 	ulong ra = get_ra(inst);
+ 	ulong rb = get_rb(inst);
+@@ -635,4 +601,5 @@ ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
+ 	}
+ 
+ 	return dar;
++#endif
+ }
 -- 
 1.9.1
