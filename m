@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D4F7414017D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:21:29 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F11B014018B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:25:32 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 5 May 2014 03:21:28 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E86C62BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:21:26 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s44H0KWY5439788
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:00:20 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s44HLQc0019606
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:21:26 +1000
+ Mon, 5 May 2014 03:25:32 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 5AF482BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:25:30 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s44H4EEb8913340
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:04:14 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s44HPTtZ007462
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:25:30 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH V4] POWERPC: BOOK3S: KVM: Use the saved dar value and generic
- make_dsisr
-Date: Sun,  4 May 2014 22:51:15 +0530
-Message-Id: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH] KVM: PPC: BOOK3S: HV: Don't try to allocate from kernel page
+ allocator for hash page table.
+Date: Sun,  4 May 2014 22:55:22 +0530
+Message-Id: <1399224322-22028-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,183 +37,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Although it's optional IBM POWER cpus always had DAR value set on
-alignment interrupt. So don't try to compute these values.
+We reserve 5% of total ram for CMA allocation and not using that can
+result in us running out of numa node memory with specific
+configuration. One caveat is we may not have node local hpt with pinned
+vcpu configuration. But currently libvirt also pins the vcpu to cpuset
+after creating hash page table.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
-Changes from V3:
-* Use make_dsisr instead of checking feature flag to decide whether to use
-  saved dsisr or not
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 23 ++++++-----------------
+ 1 file changed, 6 insertions(+), 17 deletions(-)
 
- arch/powerpc/include/asm/disassemble.h | 34 +++++++++++++++++++++++++++
- arch/powerpc/kernel/align.c            | 34 +--------------------------
- arch/powerpc/kvm/book3s_emulate.c      | 43 ++++------------------------------
- 3 files changed, 40 insertions(+), 71 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/disassemble.h b/arch/powerpc/include/asm/disassemble.h
-index 856f8deb557a..6330a61b875a 100644
---- a/arch/powerpc/include/asm/disassemble.h
-+++ b/arch/powerpc/include/asm/disassemble.h
-@@ -81,4 +81,38 @@ static inline unsigned int get_oc(u32 inst)
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index fb25ebc0af0c..f32896ffd784 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -52,7 +52,7 @@ static void kvmppc_rmap_reset(struct kvm *kvm);
+ 
+ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
  {
- 	return (inst >> 11) & 0x7fff;
- }
-+
-+#define IS_XFORM(inst)	(get_op(inst)  == 31)
-+#define IS_DSFORM(inst)	(get_op(inst) >= 56)
-+
-+/*
-+ * Create a DSISR value from the instruction
-+ */
-+static inline unsigned make_dsisr(unsigned instr)
-+{
-+	unsigned dsisr;
-+
-+
-+	/* bits  6:15 --> 22:31 */
-+	dsisr = (instr & 0x03ff0000) >> 16;
-+
-+	if (IS_XFORM(instr)) {
-+		/* bits 29:30 --> 15:16 */
-+		dsisr |= (instr & 0x00000006) << 14;
-+		/* bit     25 -->    17 */
-+		dsisr |= (instr & 0x00000040) << 8;
-+		/* bits 21:24 --> 18:21 */
-+		dsisr |= (instr & 0x00000780) << 3;
-+	} else {
-+		/* bit      5 -->    17 */
-+		dsisr |= (instr & 0x04000000) >> 12;
-+		/* bits  1: 4 --> 18:21 */
-+		dsisr |= (instr & 0x78000000) >> 17;
-+		/* bits 30:31 --> 12:13 */
-+		if (IS_DSFORM(instr))
-+			dsisr |= (instr & 0x00000003) << 18;
-+	}
-+
-+	return dsisr;
-+}
- #endif /* __ASM_PPC_DISASSEMBLE_H__ */
-diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
-index 94908af308d8..34f55524d456 100644
---- a/arch/powerpc/kernel/align.c
-+++ b/arch/powerpc/kernel/align.c
-@@ -25,14 +25,13 @@
- #include <asm/cputable.h>
- #include <asm/emulated_ops.h>
- #include <asm/switch_to.h>
-+#include <asm/disassemble.h>
- 
- struct aligninfo {
- 	unsigned char len;
- 	unsigned char flags;
- };
- 
--#define IS_XFORM(inst)	(((inst) >> 26) == 31)
--#define IS_DSFORM(inst)	(((inst) >> 26) >= 56)
- 
- #define INVALID	{ 0, 0 }
- 
-@@ -192,37 +191,6 @@ static struct aligninfo aligninfo[128] = {
- };
- 
- /*
-- * Create a DSISR value from the instruction
-- */
--static inline unsigned make_dsisr(unsigned instr)
--{
--	unsigned dsisr;
--
--
--	/* bits  6:15 --> 22:31 */
--	dsisr = (instr & 0x03ff0000) >> 16;
--
--	if (IS_XFORM(instr)) {
--		/* bits 29:30 --> 15:16 */
--		dsisr |= (instr & 0x00000006) << 14;
--		/* bit     25 -->    17 */
--		dsisr |= (instr & 0x00000040) << 8;
--		/* bits 21:24 --> 18:21 */
--		dsisr |= (instr & 0x00000780) << 3;
--	} else {
--		/* bit      5 -->    17 */
--		dsisr |= (instr & 0x04000000) >> 12;
--		/* bits  1: 4 --> 18:21 */
--		dsisr |= (instr & 0x78000000) >> 17;
--		/* bits 30:31 --> 12:13 */
--		if (IS_DSFORM(instr))
--			dsisr |= (instr & 0x00000003) << 18;
--	}
--
--	return dsisr;
--}
--
--/*
-  * The dcbz (data cache block zero) instruction
-  * gives an alignment fault if used on non-cacheable
-  * memory.  We handle the fault mainly for the
-diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
-index 99d40f8977e8..04c38f049dfd 100644
---- a/arch/powerpc/kvm/book3s_emulate.c
-+++ b/arch/powerpc/kvm/book3s_emulate.c
-@@ -569,48 +569,14 @@ unprivileged:
- 
- u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst)
- {
--	u32 dsisr = 0;
--
--	/*
--	 * This is what the spec says about DSISR bits (not mentioned = 0):
--	 *
--	 * 12:13		[DS]	Set to bits 30:31
--	 * 15:16		[X]	Set to bits 29:30
--	 * 17			[X]	Set to bit 25
--	 *			[D/DS]	Set to bit 5
--	 * 18:21		[X]	Set to bits 21:24
--	 *			[D/DS]	Set to bits 1:4
--	 * 22:26			Set to bits 6:10 (RT/RS/FRT/FRS)
--	 * 27:31			Set to bits 11:15 (RA)
--	 */
--
--	switch (get_op(inst)) {
--	/* D-form */
--	case OP_LFS:
--	case OP_LFD:
--	case OP_STFD:
--	case OP_STFS:
--		dsisr |= (inst >> 12) & 0x4000;	/* bit 17 */
--		dsisr |= (inst >> 17) & 0x3c00; /* bits 18:21 */
--		break;
--	/* X-form */
--	case 31:
--		dsisr |= (inst << 14) & 0x18000; /* bits 15:16 */
--		dsisr |= (inst << 8)  & 0x04000; /* bit 17 */
--		dsisr |= (inst << 3)  & 0x03c00; /* bits 18:21 */
--		break;
--	default:
--		printk(KERN_INFO "KVM: Unaligned instruction 0x%x\n", inst);
--		break;
--	}
--
--	dsisr |= (inst >> 16) & 0x03ff; /* bits 22:31 */
--
--	return dsisr;
-+	return make_dsisr(inst);
- }
- 
- ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
- {
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	return vcpu->arch.fault_dar;
-+#else
- 	ulong dar = 0;
- 	ulong ra = get_ra(inst);
- 	ulong rb = get_rb(inst);
-@@ -635,4 +601,5 @@ ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
+-	unsigned long hpt;
++	unsigned long hpt = 0;
+ 	struct revmap_entry *rev;
+ 	struct page *page = NULL;
+ 	long order = KVM_DEFAULT_HPT_ORDER;
+@@ -64,22 +64,11 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
  	}
  
- 	return dar;
-+#endif
- }
+ 	kvm->arch.hpt_cma_alloc = 0;
+-	/*
+-	 * try first to allocate it from the kernel page allocator.
+-	 * We keep the CMA reserved for failed allocation.
+-	 */
+-	hpt = __get_free_pages(GFP_KERNEL | __GFP_ZERO | __GFP_REPEAT |
+-			       __GFP_NOWARN, order - PAGE_SHIFT);
+-
+-	/* Next try to allocate from the preallocated pool */
+-	if (!hpt) {
+-		VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
+-		page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
+-		if (page) {
+-			hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
+-			kvm->arch.hpt_cma_alloc = 1;
+-		} else
+-			--order;
++	VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
++	page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
++	if (page) {
++		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
++		kvm->arch.hpt_cma_alloc = 1;
+ 	}
+ 
+ 	/* Lastly try successively smaller sizes from the page allocator */
 -- 
 1.9.1
