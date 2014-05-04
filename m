@@ -1,32 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B878B14018C
+ by ozlabs.org (Postfix) with ESMTPS id B7B4514018B
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 09:28:51 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Mon, 5 May 2014 09:28:49 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D7863578047
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7C7D52CE8040
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 09:28:46 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s44N7T653408318
+ s44N7TOW2294090
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 09:07:30 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s44NSjvV002681
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s44NSj0C019155
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 09:28:45 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH 2/3] powerpc/eeh: Report frozen parent PE prior to child PE
-Date: Mon,  5 May 2014 09:29:03 +1000
-Message-Id: <1399246144-20247-2-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1399246144-20247-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1399246144-20247-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] powerpc/eeh: Clear frozen state for child PE
+Date: Mon,  5 May 2014 09:29:02 +1000
+Message-Id: <1399246144-20247-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,125 +35,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we have the corner case of frozen parent and child PE at the
-same time, we have to handle the frozen parent PE prior to the
-child. Without clearning the frozen state on parent PE, the child
-PE can't be recovered successfully.
-
-The patch searches the EEH PE hierarchy tree and returns the toppest
-frozen PE to be handled. It ensures the frozen parent PE will be
-handled prior to child PE.
+Since commit cb523e09 ("powerpc/eeh: Avoid I/O access during PE
+reset"), the PE is kept as frozen state on hardware level until
+the PE reset is done completely. After that, we explicitly clear
+the frozen state of the affected PE. However, there might have
+frozen child PEs of the affected PE and we also need clear their
+frozen state as well. Otherwise, the recovery is going to fail.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 | 27 ++++++++++++++++++++++++---
- arch/powerpc/platforms/powernv/eeh-ioda.c | 30 ++++++++++++++++++++++++++++--
- 2 files changed, 52 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/eeh_driver.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 9f8de75..33d683a 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -357,10 +357,11 @@ out:
- int eeh_dev_check_failure(struct eeh_dev *edev)
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index 7100a5b..8bb40e7 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -447,8 +447,9 @@ static void *eeh_pe_detach_dev(void *data, void *userdata)
+  * PE reset (for 3 times), we try to clear the frozen state
+  * for 3 times as well.
+  */
+-static int eeh_clear_pe_frozen_state(struct eeh_pe *pe)
++static void *__eeh_clear_pe_frozen_state(void *data, void *flag)
  {
- 	int ret;
-+	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	unsigned long flags;
- 	struct device_node *dn;
- 	struct pci_dev *dev;
--	struct eeh_pe *pe;
-+	struct eeh_pe *pe, *parent_pe;
- 	int rc = 0;
- 	const char *location;
++	struct eeh_pe *pe = (struct eeh_pe *)data;
+ 	int i, rc;
  
-@@ -438,14 +439,34 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	 */
- 	if ((ret < 0) ||
- 	    (ret == EEH_STATE_NOT_SUPPORT) ||
--	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
--	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
-+	    ((ret & active_flags) == active_flags)) {
- 		eeh_stats.false_positives++;
- 		pe->false_positives++;
- 		rc = 0;
- 		goto dn_unlock;
+ 	for (i = 0; i < 3; i++) {
+@@ -461,13 +462,24 @@ static int eeh_clear_pe_frozen_state(struct eeh_pe *pe)
  	}
  
-+	/*
-+	 * It should be corner case that the parent PE has been
-+	 * put into frozen state as well. We should take care
-+	 * that at first.
-+	 */
-+	parent_pe = pe->parent;
-+	while (parent_pe) {
-+		/* Hit the ceiling ? */
-+		if (parent_pe->type & EEH_PE_PHB)
-+			break;
-+
-+		/* Frozen parent PE ? */
-+		ret = eeh_ops->get_state(parent_pe, NULL);
-+		if (ret > 0 &&
-+		    (ret & active_flags) != active_flags)
-+			pe = parent_pe;
-+
-+		/* Next parent level */
-+		parent_pe = parent_pe->parent;
+ 	/* The PE has been isolated, clear it */
+-	if (rc)
++	if (rc) {
+ 		pr_warn("%s: Can't clear frozen PHB#%x-PE#%x (%d)\n",
+ 			__func__, pe->phb->global_number, pe->addr, rc);
+-	else
++		return (void *)pe;
 +	}
 +
- 	eeh_stats.slot_resets++;
++	return NULL;
++}
++
++static int eeh_clear_pe_frozen_state(struct eeh_pe *pe)
++{
++	void *rc;
++
++	rc = eeh_pe_traverse(pe, __eeh_clear_pe_frozen_state, NULL);
++	if (!rc)
+ 		eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
  
- 	/* Avoid repeated reports of this failure, including problems
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index e5b88c5..65feec6 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -783,11 +783,12 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- {
- 	struct pci_controller *hose;
- 	struct pnv_phb *phb;
--	struct eeh_pe *phb_pe;
-+	struct eeh_pe *phb_pe, *parent_pe;
- 	u64 frozen_pe_no;
-+	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
- 	u16 err_type, severity;
- 	long rc;
--	int ret = EEH_NEXT_ERR_NONE;
-+	int state, ret = EEH_NEXT_ERR_NONE;
+-	return rc;
++	return rc ? -EIO : 0;
+ }
  
- 	/*
- 	 * While running here, it's safe to purge the event queue.
-@@ -920,6 +921,31 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		}
- 
- 		/*
-+		 * We probably have the frozen parent PE out there and
-+		 * we need have to handle frozen parent PE firstly.
-+		 */
-+		if (ret == EEH_NEXT_ERR_FROZEN_PE) {
-+			parent_pe = (*pe)->parent;
-+			while (parent_pe) {
-+				/* Hit the ceiling ? */
-+				if (parent_pe->type & EEH_PE_PHB)
-+					break;
-+
-+				/* Frozen parent PE ? */
-+				state = ioda_eeh_get_state(parent_pe);
-+				if (state > 0 &&
-+				    (state & active_flags) != active_flags)
-+					*pe = parent_pe;
-+
-+				/* Next parent level */
-+				parent_pe = parent_pe->parent;
-+			}
-+
-+			/* We possibly migrate to another PE */
-+			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
-+		}
-+
-+		/*
- 		 * If we have no errors on the specific PHB or only
- 		 * informative error there, we continue poking it.
- 		 * Otherwise, we need actions to be taken by upper
+ /**
 -- 
 1.8.3.2
