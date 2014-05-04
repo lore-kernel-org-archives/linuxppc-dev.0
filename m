@@ -1,30 +1,30 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B836D1401B4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:26:15 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9E29514018B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:30:35 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 5 May 2014 03:26:15 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6975A2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:26:13 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s44H4wom1442232
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:04:58 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s44HQCi6007915
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:26:13 +1000
+ Mon, 5 May 2014 03:30:33 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1A69F3578048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 03:30:31 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s44HUGfL3801562
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:30:16 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s44HUUre004353
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 03:30:30 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options on
-Date: Sun,  4 May 2014 22:56:08 +0530
-Message-Id: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [RFC PATCH] KVM: PPC: BOOK3S: HV: THP support for guest
+Date: Sun,  4 May 2014 23:00:16 +0530
+Message-Id: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,93 +36,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With debug option "sleep inside atomic section checking" enabled we get
-the below WARN_ON during a PR KVM boot. This is because upstream now
-have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
-warning by adding preempt_disable/enable around floating point and altivec
-enable.
-
-WARNING: at arch/powerpc/kernel/process.c:156
-Modules linked in: kvm_pr kvm
-CPU: 1 PID: 3990 Comm: qemu-system-ppc Tainted: G        W     3.15.0-rc1+ #4
-task: c0000000eb85b3a0 ti: c0000000ec59c000 task.ti: c0000000ec59c000
-NIP: c000000000015c84 LR: d000000003334644 CTR: c000000000015c00
-REGS: c0000000ec59f140 TRAP: 0700   Tainted: G        W      (3.15.0-rc1+)
-MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 42000024  XER: 20000000
-CFAR: c000000000015c24 SOFTE: 1
-GPR00: d000000003334644 c0000000ec59f3c0 c000000000e2fa40 c0000000e2f80000
-GPR04: 0000000000000800 0000000000002000 0000000000000001 8000000000000000
-GPR08: 0000000000000001 0000000000000001 0000000000002000 c000000000015c00
-GPR12: d00000000333da18 c00000000fb80900 0000000000000000 0000000000000000
-GPR16: 0000000000000000 0000000000000000 0000000000000000 00003fffce4e0fa1
-GPR20: 0000000000000010 0000000000000001 0000000000000002 00000000100b9a38
-GPR24: 0000000000000002 0000000000000000 0000000000000000 0000000000000013
-GPR28: 0000000000000000 c0000000eb85b3a0 0000000000002000 c0000000e2f80000
-NIP [c000000000015c84] .enable_kernel_fp+0x84/0x90
-LR [d000000003334644] .kvmppc_handle_ext+0x134/0x190 [kvm_pr]
-Call Trace:
-[c0000000ec59f3c0] [0000000000000010] 0x10 (unreliable)
-[c0000000ec59f430] [d000000003334644] .kvmppc_handle_ext+0x134/0x190 [kvm_pr]
-[c0000000ec59f4c0] [d00000000324b380] .kvmppc_set_msr+0x30/0x50 [kvm]
-[c0000000ec59f530] [d000000003337cac] .kvmppc_core_emulate_op_pr+0x16c/0x5e0 [kvm_pr]
-[c0000000ec59f5f0] [d00000000324a944] .kvmppc_emulate_instruction+0x284/0xa80 [kvm]
-[c0000000ec59f6c0] [d000000003336888] .kvmppc_handle_exit_pr+0x488/0xb70 [kvm_pr]
-[c0000000ec59f790] [d000000003338d34] kvm_start_lightweight+0xcc/0xdc [kvm_pr]
-[c0000000ec59f960] [d000000003336288] .kvmppc_vcpu_run_pr+0xc8/0x190 [kvm_pr]
-[c0000000ec59f9f0] [d00000000324c880] .kvmppc_vcpu_run+0x30/0x50 [kvm]
-[c0000000ec59fa60] [d000000003249e74] .kvm_arch_vcpu_ioctl_run+0x54/0x1b0 [kvm]
-[c0000000ec59faf0] [d000000003244948] .kvm_vcpu_ioctl+0x478/0x760 [kvm]
-[c0000000ec59fcb0] [c000000000224e34] .do_vfs_ioctl+0x4d4/0x790
-[c0000000ec59fd90] [c000000000225148] .SyS_ioctl+0x58/0xb0
-[c0000000ec59fe30] [c00000000000a1e4] syscall_exit+0x0/0x98
-
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s_pr.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/powerpc/include/asm/kvm_book3s_64.h | 146 ++++++++++++++++++++++++++-----
+ arch/powerpc/kvm/book3s_hv.c             |   7 ++
+ 2 files changed, 130 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
-index c5c052a9729c..f30cdfee800d 100644
---- a/arch/powerpc/kvm/book3s_pr.c
-+++ b/arch/powerpc/kvm/book3s_pr.c
-@@ -683,16 +683,20 @@ static int kvmppc_handle_ext(struct kvm_vcpu *vcpu, unsigned int exit_nr,
- #endif
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 51388befeddb..f03ea8f90576 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -77,34 +77,122 @@ static inline long try_lock_hpte(unsigned long *hpte, unsigned long bits)
+ 	return old == 0;
+ }
  
- 	if (msr & MSR_FP) {
-+		preempt_disable();
- 		enable_kernel_fp();
- 		load_fp_state(&vcpu->arch.fp);
- 		t->fp_save_area = &vcpu->arch.fp;
-+		preempt_enable();
- 	}
++static inline int __hpte_actual_psize(unsigned int lp, int psize)
++{
++	int i, shift;
++	unsigned int mask;
++
++	/* start from 1 ignoring MMU_PAGE_4K */
++	for (i = 1; i < MMU_PAGE_COUNT; i++) {
++
++		/* invalid penc */
++		if (mmu_psize_defs[psize].penc[i] == -1)
++			continue;
++		/*
++		 * encoding bits per actual page size
++		 *        PTE LP     actual page size
++		 *    rrrr rrrz		>=8KB
++		 *    rrrr rrzz		>=16KB
++		 *    rrrr rzzz		>=32KB
++		 *    rrrr zzzz		>=64KB
++		 * .......
++		 */
++		shift = mmu_psize_defs[i].shift - LP_SHIFT;
++		if (shift > LP_BITS)
++			shift = LP_BITS;
++		mask = (1 << shift) - 1;
++		if ((lp & mask) == mmu_psize_defs[psize].penc[i])
++			return i;
++	}
++	return -1;
++}
++
+ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+ 					     unsigned long pte_index)
+ {
+-	unsigned long rb, va_low;
++	int b_size, a_size;
++	unsigned int penc;
++	unsigned long rb = 0, va_low, sllp;
++	unsigned int lp = (r >> LP_SHIFT) & ((1 << LP_BITS) - 1);
++
++	if (!(v & HPTE_V_LARGE)) {
++		/* both base and actual psize is 4k */
++		b_size = MMU_PAGE_4K;
++		a_size = MMU_PAGE_4K;
++	} else {
++		for (b_size = 0; b_size < MMU_PAGE_COUNT; b_size++) {
++
++			/* valid entries have a shift value */
++			if (!mmu_psize_defs[b_size].shift)
++				continue;
  
- 	if (msr & MSR_VEC) {
- #ifdef CONFIG_ALTIVEC
-+		preempt_disable();
- 		enable_kernel_altivec();
- 		load_vr_state(&vcpu->arch.vr);
- 		t->vr_save_area = &vcpu->arch.vr;
-+		preempt_enable();
- #endif
++			a_size = __hpte_actual_psize(lp, b_size);
++			if (a_size != -1)
++				break;
++		}
++	}
++	/*
++	 * Ignore the top 14 bits of va
++	 * v have top two bits covering segment size, hence move
++	 * by 16 bits, Also clear the lower HPTE_V_AVPN_SHIFT (7) bits.
++	 * AVA field in v also have the lower 23 bits ignored.
++	 * For base page size 4K we need 14 .. 65 bits (so need to
++	 * collect extra 11 bits)
++	 * For others we need 14..14+i
++	 */
++	/* This covers 14..54 bits of va*/
+ 	rb = (v & ~0x7fUL) << 16;		/* AVA field */
++	/*
++	 * AVA in v had cleared lower 23 bits. We need to derive
++	 * that from pteg index
++	 */
+ 	va_low = pte_index >> 3;
+ 	if (v & HPTE_V_SECONDARY)
+ 		va_low = ~va_low;
+-	/* xor vsid from AVA */
++	/*
++	 * get the vpn bits from va_low using reverse of hashing.
++	 * In v we have va with 23 bits dropped and then left shifted
++	 * HPTE_V_AVPN_SHIFT (7) bits. Now to find vsid we need
++	 * right shift it with (SID_SHIFT - (23 - 7))
++	 */
+ 	if (!(v & HPTE_V_1TB_SEG))
+-		va_low ^= v >> 12;
++		va_low ^= v >> (SID_SHIFT - 16);
+ 	else
+-		va_low ^= v >> 24;
++		va_low ^= v >> (SID_SHIFT_1T - 16);
+ 	va_low &= 0x7ff;
+-	if (v & HPTE_V_LARGE) {
+-		rb |= 1;			/* L field */
+-		if (cpu_has_feature(CPU_FTR_ARCH_206) &&
+-		    (r & 0xff000)) {
+-			/* non-16MB large page, must be 64k */
+-			/* (masks depend on page size) */
+-			rb |= 0x1000;		/* page encoding in LP field */
+-			rb |= (va_low & 0x7f) << 16; /* 7b of VA in AVA/LP field */
+-			rb |= ((va_low << 4) & 0xf0);	/* AVAL field (P7 doesn't seem to care) */
+-		}
+-	} else {
+-		/* 4kB page */
+-		rb |= (va_low & 0x7ff) << 12;	/* remaining 11b of VA */
++
++	switch (b_size) {
++	case MMU_PAGE_4K:
++		sllp = ((mmu_psize_defs[a_size].sllp & SLB_VSID_L) >> 6) |
++			((mmu_psize_defs[a_size].sllp & SLB_VSID_LP) >> 4);
++		rb |= sllp << 5;	/*  AP field */
++		rb |= (va_low & 0x7ff) << 12;	/* remaining 11 bits of AVA */
++		break;
++	default:
++	{
++		int aval_shift;
++		/*
++		 * remaining 7bits of AVA/LP fields
++		 * Also contain the rr bits of LP
++		 */
++		rb |= (va_low & 0x7f) << 16;
++		/*
++		 * Now clear not needed LP bits based on actual psize
++		 */
++		rb &= ~((1ul << mmu_psize_defs[a_size].shift) - 1);
++		/*
++		 * AVAL field 58..77 - base_page_shift bits of va
++		 * we have space for 58..64 bits, Missing bits should
++		 * be zero filled. +1 is to take care of L bit shift
++		 */
++		aval_shift = 64 - (77 - mmu_psize_defs[b_size].shift) + 1;
++		rb |= ((va_low << aval_shift) & 0xfe);
++
++		rb |= 1;		/* L field */
++		penc = mmu_psize_defs[b_size].penc[a_size];
++		rb |= penc << 12;	/* LP field */
++		break;
++	}
  	}
+ 	rb |= (v >> 54) & 0x300;		/* B field */
+ 	return rb;
+@@ -112,14 +200,26 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
  
-@@ -716,13 +720,17 @@ static void kvmppc_handle_lost_ext(struct kvm_vcpu *vcpu)
- 		return;
+ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+ {
++	int size, a_size;
++	/* Look at the 8 bit LP value */
++	unsigned int lp = (l >> LP_SHIFT) & ((1 << LP_BITS) - 1);
++
+ 	/* only handle 4k, 64k and 16M pages for now */
+ 	if (!(h & HPTE_V_LARGE))
+-		return 1ul << 12;		/* 4k page */
+-	if ((l & 0xf000) == 0x1000 && cpu_has_feature(CPU_FTR_ARCH_206))
+-		return 1ul << 16;		/* 64k page */
+-	if ((l & 0xff000) == 0)
+-		return 1ul << 24;		/* 16M page */
+-	return 0;				/* error */
++		return 1ul << 12;
++	else {
++		for (size = 0; size < MMU_PAGE_COUNT; size++) {
++			/* valid entries have a shift value */
++			if (!mmu_psize_defs[size].shift)
++				continue;
++
++			a_size = __hpte_actual_psize(lp, size);
++			if (a_size != -1)
++				return 1ul << mmu_psize_defs[a_size].shift;
++		}
++
++	}
++	return 0;
+ }
  
- 	if (lost_ext & MSR_FP) {
-+		preempt_disable();
- 		enable_kernel_fp();
- 		load_fp_state(&vcpu->arch.fp);
-+		preempt_enable();
- 	}
- #ifdef CONFIG_ALTIVEC
- 	if (lost_ext & MSR_VEC) {
-+		preempt_disable();
- 		enable_kernel_altivec();
- 		load_vr_state(&vcpu->arch.vr);
-+		preempt_enable();
- 	}
- #endif
- 	current->thread.regs->msr |= lost_ext;
+ static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
+diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+index 8227dba5af0f..a38d3289320a 100644
+--- a/arch/powerpc/kvm/book3s_hv.c
++++ b/arch/powerpc/kvm/book3s_hv.c
+@@ -1949,6 +1949,13 @@ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
+ 	 * support pte_enc here
+ 	 */
+ 	(*sps)->enc[0].pte_enc = def->penc[linux_psize];
++	/*
++	 * Add 16MB MPSS support
++	 */
++	if (linux_psize != MMU_PAGE_16M) {
++		(*sps)->enc[1].page_shift = 24;
++		(*sps)->enc[1].pte_enc = def->penc[MMU_PAGE_16M];
++	}
+ 	(*sps)++;
+ }
+ 
 -- 
 1.9.1
