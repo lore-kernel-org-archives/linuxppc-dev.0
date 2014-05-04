@@ -1,21 +1,21 @@
 Return-Path: <hongbo.zhang@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9C44914015E
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 May 2014 18:55:38 +1000 (EST)
-Message-ID: <5365FCF2.9090008@freescale.com>
-Date: Sun, 4 May 2014 16:40:18 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 25105140186
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 May 2014 20:22:47 +1000 (EST)
+Message-ID: <536614E7.9050301@freescale.com>
+Date: Sun, 4 May 2014 18:22:31 +0800
 From: Hongbo Zhang <hongbo.zhang@freescale.com>
 MIME-Version: 1.0
 To: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v4 7/8] DMA: Freescale: use spin_lock_bh instead of
- spin_lock_irqsave
+Subject: Re: [PATCH v4 8/8] DMA: Freescale: add suspend resume functions for
+ DMA driver
 References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
- <1397809071-5353-8-git-send-email-hongbo.zhang@freescale.com>
- <20140502165143.GI32284@intel.com>
-In-Reply-To: <20140502165143.GI32284@intel.com>
+ <1397809071-5353-9-git-send-email-hongbo.zhang@freescale.com>
+ <20140502164604.GB32284@intel.com>
+In-Reply-To: <20140502164604.GB32284@intel.com>
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Cc: leo.li@freescale.com, vkoul@infradead.org, linux-kernel@vger.kernel.org,
  scottwood@freescale.com, dmaengine@vger.kernel.org, dan.j.williams@intel.com,
@@ -30,19 +30,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 05/03/2014 12:51 AM, Vinod Koul wrote:
-> On Fri, Apr 18, 2014 at 04:17:50PM +0800, hongbo.zhang@freescale.com wrote:
+On 05/03/2014 12:46 AM, Vinod Koul wrote:
+> On Fri, Apr 18, 2014 at 04:17:51PM +0800, hongbo.zhang@freescale.com wrote:
 >> From: Hongbo Zhang <hongbo.zhang@freescale.com>
 >>
->> The usage of spin_lock_irqsave() is a stronger locking mechanism than is
->> required throughout the driver. The minimum locking required should be used
->> instead. Interrupts will be turned off and context will be saved, it is
->> unnecessary to use irqsave.
+>> This patch adds suspend resume functions for Freescale DMA driver.
+>> .prepare callback is used to stop further descriptors from being added into the
+>> pending queue, and also issue pending queues into execution if there is any.
+>> .suspend callback makes sure all the pending jobs are cleaned up and all the
+>> channels are idle, and save the mode registers.
+>> .resume callback re-initializes the channels by restore the mode registers.
 >>
->> This patch changes all instances of spin_lock_irqsave() to spin_lock_bh(). All
->> manipulation of protected fields is done using tasklet context or weaker, which
->> makes spin_lock_bh() the correct choice.
->>
-> This doesnt apply, perhpas due to depends on 6/8
+>> +
+>> +static const struct dev_pm_ops fsldma_pm_ops = {
+>> +	.prepare	= fsldma_prepare,
+>> +	.suspend	= fsldma_suspend,
+>> +	.resume		= fsldma_resume,
+>> +};
+> I think this is not correct. We discussed this sometime back on list. The
+> DMAengine drivers should use late resume and early suspend to ensure they get
+> suspended after clients (who should use normal ones) and resume before them
 >
-So let's wait for the review result of 6/8.
+OK, will update it like this:
+use .suspend to take place of current .prepare
+use .suspend_late to take place of current .suspend
+use .resume_early to take place of current .resume
