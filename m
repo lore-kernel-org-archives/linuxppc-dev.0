@@ -2,15 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2033214010D
+ by ozlabs.org (Postfix) with ESMTPS id 223DB140147
  for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 May 2014 14:26:45 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 08/13] PCI, rpaphp: Use new pci_is_bridge() to simplify code
-Date: Sun, 4 May 2014 12:23:43 +0800
-Message-ID: <1399177428-3784-9-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1399177428-3784-1-git-send-email-wangyijing@huawei.com>
-References: <1399177428-3784-1-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v2 00/13] Refactor pci_is_brdige() to simplify code
+Date: Sun, 4 May 2014 12:23:35 +0800
+Message-ID: <1399177428-3784-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org, x86@kernel.org,
@@ -26,28 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we can use new pci_is_bridge() helper function
-to simplify code.
+v1->v2: Add comments for new pci_is_bridge().
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
----
- drivers/pci/hotplug/rpadlpar_core.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+This patchset rename the current pci_is_bridge() to pci_has_subordinate(), 
+and introduce a new pci_is_bridge() which determine pci bridge by check
+dev->hdr_type. The new one is more accurate. PCI Spec define the pci
+device is a bridge by the dev->hdr_type = 0x01 || 0x02.
 
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index 4fcdeed..7660232 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -157,8 +157,7 @@ static void dlpar_pci_add_bus(struct device_node *dn)
- 	}
- 
- 	/* Scan below the new bridge */
--	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
--	    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
-+	if (pci_is_bridge(dev))
- 		of_scan_pci_bridge(dev);
- 
- 	/* Map IO space for child bus, which may or may not succeed */
--- 
-1.7.1
+There is no guarantee that a PCI bridge must attached a subordinate bus.
+When PCI bridge is created but before the scan child bus, it has no 
+subordinate bus. Also users can remove the pci bus using
+interface pci_remove_bus() in remove.c. 
+
+So use new pci_is_bridge() check if the PCI device is bridge is better
+choice. If user want check PCI bridge whether has a subordinate bus,
+pci_has_subordinate() is a candidate.
+
+
+Yijing Wang (13):
+  PCI: rename pci_is_bridge() to pci_has_subordinate()
+  PCI: Introduce new pci_is_bridge() helper function
+  PCI: Use new pci_is_bridge() to simplify code
+  x86/PCI: Use new pci_is_bridge() to simplify code
+  IA64/PCI: Use new pci_is_bridge() to simplify code
+  powerpc/PCI: Use new pci_is_bridge() to simplify code
+  sparc/PCI: Use new pci_is_bridge() to simplify code
+  PCI, rpaphp: Use new pci_is_bridge() to simplify code
+  PCI, shpchp: Use new pci_is_bridge() to simplify code
+  PCI, cpcihp: Use new pci_is_bridge() to simplify code
+  PCI, acpiphp: Use new pci_is_bridge() to simplify code
+  PCI, pcmcia: Use new pci_is_bridge() to simplify code
+  PCI, pciehp: Use new pci_is_bridge() to simplify code
+
+ arch/ia64/pci/fixup.c                  |    4 +---
+ arch/powerpc/kernel/pci-hotplug.c      |    3 +--
+ arch/powerpc/kernel/pci_of_scan.c      |    3 +--
+ arch/sparc/kernel/pci.c                |    3 +--
+ arch/x86/pci/fixup.c                   |    4 +---
+ drivers/pci/hotplug/acpiphp_glue.c     |    3 +--
+ drivers/pci/hotplug/cpci_hotplug_pci.c |    3 +--
+ drivers/pci/hotplug/pciehp_pci.c       |    3 +--
+ drivers/pci/hotplug/rpadlpar_core.c    |    3 +--
+ drivers/pci/hotplug/shpchp_pci.c       |    3 +--
+ drivers/pci/pci-acpi.c                 |    8 +-------
+ drivers/pci/pci-driver.c               |    8 ++++----
+ drivers/pci/pci.h                      |    2 +-
+ drivers/pci/probe.c                    |    3 +--
+ drivers/pci/setup-bus.c                |    4 +---
+ drivers/pcmcia/cardbus.c               |    3 +--
+ include/linux/pci.h                    |   13 +++++++++++++
+ 17 files changed, 32 insertions(+), 41 deletions(-)
