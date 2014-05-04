@@ -2,13 +2,13 @@ Return-Path: <wangyijing@huawei.com>
 Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
  (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A16A0141972
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 May 2014 14:31:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6092A141984
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 May 2014 14:31:49 +1000 (EST)
 From: Yijing Wang <wangyijing@huawei.com>
 To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 07/13] sparc/PCI: Use new pci_is_bridge() to simplify code
-Date: Sun, 4 May 2014 12:23:42 +0800
-Message-ID: <1399177428-3784-8-git-send-email-wangyijing@huawei.com>
+Subject: [PATCH v2 13/13] PCI, pciehp: Use new pci_is_bridge() to simplify code
+Date: Sun, 4 May 2014 12:23:48 +0800
+Message-ID: <1399177428-3784-14-git-send-email-wangyijing@huawei.com>
 In-Reply-To: <1399177428-3784-1-git-send-email-wangyijing@huawei.com>
 References: <1399177428-3784-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
@@ -29,25 +29,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Now we can use new pci_is_bridge() helper function
 to simplify code.
 
-Acked-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Yijing Wang <wangyijing@huawei.com>
 ---
- arch/sparc/kernel/pci.c |    3 +--
+ drivers/pci/hotplug/pciehp_pci.c |    3 +--
  1 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-index 1555bbc..857ad77 100644
---- a/arch/sparc/kernel/pci.c
-+++ b/arch/sparc/kernel/pci.c
-@@ -543,8 +543,7 @@ static void pci_of_scan_bus(struct pci_pbm_info *pbm,
- 			printk("PCI: dev header type: %x\n",
- 			       dev->hdr_type);
- 
--		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
--		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
-+		if (pci_is_bridge(dev))
- 			of_scan_pci_bridge(pbm, child, dev);
+diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
+index 1b53306..b6cb1df 100644
+--- a/drivers/pci/hotplug/pciehp_pci.c
++++ b/drivers/pci/hotplug/pciehp_pci.c
+@@ -62,8 +62,7 @@ int pciehp_configure_device(struct slot *p_slot)
  	}
- }
+ 
+ 	list_for_each_entry(dev, &parent->devices, bus_list)
+-		if ((dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) ||
+-				(dev->hdr_type == PCI_HEADER_TYPE_CARDBUS))
++		if (pci_is_bridge(dev))
+ 			pci_hp_add_bridge(dev);
+ 
+ 	pci_assign_unassigned_bridge_resources(bridge);
 -- 
 1.7.1
