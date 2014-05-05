@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8E8E81401DE
+ by ozlabs.org (Postfix) with ESMTPS id C018D1401FA
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:28:02 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Mon, 5 May 2014 11:28:02 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C60B72BB0040
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D8FB22CE8054
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:59 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s451RisC59965514
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:44 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s451RxqE011633
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4516q1m55574542
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:06:52 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s451Rwl4013873
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:59 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 18/22] powerpc/eeh: Avoid event on passed PE
-Date: Mon,  5 May 2014 11:28:07 +1000
-Message-Id: <1399253291-3975-19-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 17/22] powerpc/kvm: Connect EEH RTAS emulation backend
+Date: Mon,  5 May 2014 11:28:06 +1000
+Message-Id: <1399253291-3975-18-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -38,49 +38,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we detects frozen state on PE that has been passed to guest, we
-needn't handle it. Instead, we rely on the guest to detect and recover
-it. The patch avoid EEH event on the frozen passed PE so that the guest
-can have chance to handle that.
+The patch intends to connect the KVM module with the backend for
+EEH RTAS emulation. In turn, we can handle the EEH RTAS services
+from the guest.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 | 8 ++++++++
- arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/kvm_ppc.h |  7 +++++++
+ arch/powerpc/kvm/book3s_rtas.c     | 40 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 33d683a..a2121e8 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -399,6 +399,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	if (ret > 0)
- 		return ret;
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 4096f16..18b51a1 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -29,6 +29,9 @@
+ #include <linux/kvm_types.h>
+ #include <linux/kvm_host.h>
+ #include <linux/bug.h>
++#ifdef CONFIG_KVM_EEH
++#include <asm/rtas.h>
++#endif
+ #ifdef CONFIG_PPC_BOOK3S
+ #include <asm/kvm_book3s.h>
+ #else
+@@ -166,6 +169,10 @@ int kvm_vcpu_ioctl_interrupt(struct kvm_vcpu *vcpu, struct kvm_interrupt *irq);
+ extern int kvm_vm_ioctl_rtas_define_token(struct kvm *kvm, void __user *argp);
+ extern int kvmppc_rtas_hcall(struct kvm_vcpu *vcpu);
+ extern void kvmppc_rtas_tokens_free(struct kvm *kvm);
++#ifdef CONFIG_KVM_EEH
++extern void kvmppc_eeh_rtas(struct kvm_vcpu *vcpu,
++			    struct rtas_args *args, int flag);
++#endif
+ extern int kvmppc_xics_set_xive(struct kvm *kvm, u32 irq, u32 server,
+ 				u32 priority);
+ extern int kvmppc_xics_get_xive(struct kvm *kvm, u32 irq, u32 *server,
+diff --git a/arch/powerpc/kvm/book3s_rtas.c b/arch/powerpc/kvm/book3s_rtas.c
+index 7a05315..17bdb4a 100644
+--- a/arch/powerpc/kvm/book3s_rtas.c
++++ b/arch/powerpc/kvm/book3s_rtas.c
+@@ -16,6 +16,8 @@
+ #include <asm/kvm_ppc.h>
+ #include <asm/hvcall.h>
+ #include <asm/rtas.h>
++#include <asm/ppc-pci.h>
++#include <asm/eeh.h>
  
-+	/*
-+	 * If the PE has been passed to guest, we won't check the
-+	 * state. Instead, let the guest handle it if the PE has
-+	 * been frozen.
-+	 */
-+	if (eeh_pe_passed(pe))
-+		return 0;
+ #ifdef CONFIG_KVM_XICS
+ static void kvm_rtas_set_xive(struct kvm_vcpu *vcpu, struct rtas_args *args)
+@@ -103,6 +105,24 @@ out:
+ }
+ #endif /* CONFIG_KVM_XICS */
+ 
++#ifdef CONFIG_KVM_EEH
 +
- 	/* If we already have a pending isolation event for this
- 	 * slot, we know it's bad already, we don't need to check.
- 	 * Do this checking under a lock; as multiple PCI devices
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 1b5982f..03a3ed2 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -890,7 +890,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
- 					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 				ret = EEH_NEXT_ERR_NONE;
--			} else if ((*pe)->state & EEH_PE_ISOLATED) {
-+			} else if ((*pe)->state & EEH_PE_ISOLATED ||
-+				   eeh_pe_passed(*pe)) {
- 				ret = EEH_NEXT_ERR_NONE;
- 			} else {
- 				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
++#define KVM_RTAS_EEH_FUNC(name, flag)			\
++static void kvm_rtas_eeh_##name(struct kvm_vcpu *vcpu,	\
++				struct rtas_args *args)	\
++{							\
++	kvmppc_eeh_rtas(vcpu, args, flag);		\
++}
++
++KVM_RTAS_EEH_FUNC(set_option,	eeh_rtas_set_option)
++KVM_RTAS_EEH_FUNC(set_reset,	eeh_rtas_set_slot_reset)
++KVM_RTAS_EEH_FUNC(read_state2,	eeh_rtas_read_slot_reset_state2)
++KVM_RTAS_EEH_FUNC(addr_info2,	eeh_rtas_get_config_addr_info2)
++KVM_RTAS_EEH_FUNC(error_detail,	eeh_rtas_slot_error_detail)
++KVM_RTAS_EEH_FUNC(configure_pe,	eeh_rtas_configure_pe)
++
++#endif /* CONFIG_KVM_EEH */
++
+ struct rtas_handler {
+ 	void (*handler)(struct kvm_vcpu *vcpu, struct rtas_args *args);
+ 	char *name;
+@@ -115,6 +135,26 @@ static struct rtas_handler rtas_handlers[] = {
+ 	{ .name = "ibm,int-off",  .handler = kvm_rtas_int_off },
+ 	{ .name = "ibm,int-on",   .handler = kvm_rtas_int_on },
+ #endif
++#ifdef CONFIG_KVM_EEH
++	{ .name = "ibm,set-eeh-option",
++	  .handler = kvm_rtas_eeh_set_option
++	},
++	{ .name = "ibm,set-slot-reset",
++	  .handler = kvm_rtas_eeh_set_reset
++	},
++	{ .name = "ibm,read-slot-reset-state2",
++	  .handler = kvm_rtas_eeh_read_state2
++	},
++	{ .name = "ibm,get-config-addr-info2",
++	  .handler = kvm_rtas_eeh_addr_info2
++	},
++	{ .name = "ibm,slot-error-detail",
++	  .handler = kvm_rtas_eeh_error_detail
++	},
++	{ .name = "ibm,configure-pe",
++	  .handler = kvm_rtas_eeh_configure_pe
++	}
++#endif /* CONFIG_KVM_EEH */
+ };
+ 
+ struct rtas_token_definition {
 -- 
 1.8.3.2
