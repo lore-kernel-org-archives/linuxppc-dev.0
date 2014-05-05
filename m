@@ -2,17 +2,17 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B48BC140314
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 21:26:19 +1000 (EST)
-Message-ID: <53677558.50900@suse.de>
-Date: Mon, 05 May 2014 13:26:16 +0200
+ by ozlabs.org (Postfix) with ESMTPS id B103B14030D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 21:29:59 +1000 (EST)
+Message-ID: <5367762D.4030503@suse.de>
+Date: Mon, 05 May 2014 13:29:49 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: BOOK3S: HV: Don't try to allocate from kernel
- page allocator for hash page table.
-References: <1399224322-22028-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1399224322-22028-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options
+ on
+References: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
@@ -25,62 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/04/2014 07:25 PM, Aneesh Kumar K.V wrote:
-> We reserve 5% of total ram for CMA allocation and not using that can
-> result in us running out of numa node memory with specific
-> configuration. One caveat is we may not have node local hpt with pinned
-> vcpu configuration. But currently libvirt also pins the vcpu to cpuset
-> after creating hash page table.
+On 05/04/2014 07:26 PM, Aneesh Kumar K.V wrote:
+> With debug option "sleep inside atomic section checking" enabled we get
+> the below WARN_ON during a PR KVM boot. This is because upstream now
+> have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
+> warning by adding preempt_disable/enable around floating point and altivec
+> enable.
+>
+> WARNING: at arch/powerpc/kernel/process.c:156
+> Modules linked in: kvm_pr kvm
+> CPU: 1 PID: 3990 Comm: qemu-system-ppc Tainted: G        W     3.15.0-rc1+ #4
+> task: c0000000eb85b3a0 ti: c0000000ec59c000 task.ti: c0000000ec59c000
+> NIP: c000000000015c84 LR: d000000003334644 CTR: c000000000015c00
+> REGS: c0000000ec59f140 TRAP: 0700   Tainted: G        W      (3.15.0-rc1+)
+> MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 42000024  XER: 20000000
+> CFAR: c000000000015c24 SOFTE: 1
+> GPR00: d000000003334644 c0000000ec59f3c0 c000000000e2fa40 c0000000e2f80000
+> GPR04: 0000000000000800 0000000000002000 0000000000000001 8000000000000000
+> GPR08: 0000000000000001 0000000000000001 0000000000002000 c000000000015c00
+> GPR12: d00000000333da18 c00000000fb80900 0000000000000000 0000000000000000
+> GPR16: 0000000000000000 0000000000000000 0000000000000000 00003fffce4e0fa1
+> GPR20: 0000000000000010 0000000000000001 0000000000000002 00000000100b9a38
+> GPR24: 0000000000000002 0000000000000000 0000000000000000 0000000000000013
+> GPR28: 0000000000000000 c0000000eb85b3a0 0000000000002000 c0000000e2f80000
+> NIP [c000000000015c84] .enable_kernel_fp+0x84/0x90
+> LR [d000000003334644] .kvmppc_handle_ext+0x134/0x190 [kvm_pr]
+> Call Trace:
+> [c0000000ec59f3c0] [0000000000000010] 0x10 (unreliable)
+> [c0000000ec59f430] [d000000003334644] .kvmppc_handle_ext+0x134/0x190 [kvm_pr]
+> [c0000000ec59f4c0] [d00000000324b380] .kvmppc_set_msr+0x30/0x50 [kvm]
+> [c0000000ec59f530] [d000000003337cac] .kvmppc_core_emulate_op_pr+0x16c/0x5e0 [kvm_pr]
+> [c0000000ec59f5f0] [d00000000324a944] .kvmppc_emulate_instruction+0x284/0xa80 [kvm]
+> [c0000000ec59f6c0] [d000000003336888] .kvmppc_handle_exit_pr+0x488/0xb70 [kvm_pr]
+> [c0000000ec59f790] [d000000003338d34] kvm_start_lightweight+0xcc/0xdc [kvm_pr]
+> [c0000000ec59f960] [d000000003336288] .kvmppc_vcpu_run_pr+0xc8/0x190 [kvm_pr]
+> [c0000000ec59f9f0] [d00000000324c880] .kvmppc_vcpu_run+0x30/0x50 [kvm]
+> [c0000000ec59fa60] [d000000003249e74] .kvm_arch_vcpu_ioctl_run+0x54/0x1b0 [kvm]
+> [c0000000ec59faf0] [d000000003244948] .kvm_vcpu_ioctl+0x478/0x760 [kvm]
+> [c0000000ec59fcb0] [c000000000224e34] .do_vfs_ioctl+0x4d4/0x790
+> [c0000000ec59fd90] [c000000000225148] .SyS_ioctl+0x58/0xb0
+> [c0000000ec59fe30] [c00000000000a1e4] syscall_exit+0x0/0x98
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-I don't understand the problem. Can you please elaborate?
+Thanks, applied to kvm-ppc-queue.
 
 
 Alex
-
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/kvm/book3s_64_mmu_hv.c | 23 ++++++-----------------
->   1 file changed, 6 insertions(+), 17 deletions(-)
->
-> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> index fb25ebc0af0c..f32896ffd784 100644
-> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-> @@ -52,7 +52,7 @@ static void kvmppc_rmap_reset(struct kvm *kvm);
->   
->   long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
->   {
-> -	unsigned long hpt;
-> +	unsigned long hpt = 0;
->   	struct revmap_entry *rev;
->   	struct page *page = NULL;
->   	long order = KVM_DEFAULT_HPT_ORDER;
-> @@ -64,22 +64,11 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
->   	}
->   
->   	kvm->arch.hpt_cma_alloc = 0;
-> -	/*
-> -	 * try first to allocate it from the kernel page allocator.
-> -	 * We keep the CMA reserved for failed allocation.
-> -	 */
-> -	hpt = __get_free_pages(GFP_KERNEL | __GFP_ZERO | __GFP_REPEAT |
-> -			       __GFP_NOWARN, order - PAGE_SHIFT);
-> -
-> -	/* Next try to allocate from the preallocated pool */
-> -	if (!hpt) {
-> -		VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
-> -		page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
-> -		if (page) {
-> -			hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
-> -			kvm->arch.hpt_cma_alloc = 1;
-> -		} else
-> -			--order;
-> +	VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
-> +	page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
-> +	if (page) {
-> +		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
-> +		kvm->arch.hpt_cma_alloc = 1;
->   	}
->   
->   	/* Lastly try successively smaller sizes from the page allocator */
