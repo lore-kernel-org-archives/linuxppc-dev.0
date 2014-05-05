@@ -2,16 +2,17 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6357D1402FC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 21:17:07 +1000 (EST)
-Message-ID: <5367732D.6000802@suse.de>
-Date: Mon, 05 May 2014 13:17:01 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 39757140312
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 21:19:33 +1000 (EST)
+Message-ID: <536773C2.1070502@suse.de>
+Date: Mon, 05 May 2014 13:19:30 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V5] KVM: PPC: BOOK3S: PR: Enable Little Endian PR guest
-References: <1399259384-6623-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1399259384-6623-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V4] POWERPC: BOOK3S: KVM: Use the saved dar value and
+ generic make_dsisr
+References: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
  kvm@vger.kernel.org
@@ -24,13 +25,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2014 05:09 AM, Aneesh Kumar K.V wrote:
-> This patch make sure we inherit the LE bit correctly in different case
-> so that we can run Little Endian distro in PR mode
+On 05/04/2014 07:21 PM, Aneesh Kumar K.V wrote:
+> Although it's optional IBM POWER cpus always had DAR value set on
+> alignment interrupt. So don't try to compute these values.
 >
 > Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+> Changes from V3:
+> * Use make_dsisr instead of checking feature flag to decide whether to use
+>    saved dsisr or not
+>
+>   arch/powerpc/include/asm/disassemble.h | 34 +++++++++++++++++++++++++++
+>   arch/powerpc/kernel/align.c            | 34 +--------------------------
+>   arch/powerpc/kvm/book3s_emulate.c      | 43 ++++------------------------------
+>   3 files changed, 40 insertions(+), 71 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/disassemble.h b/arch/powerpc/include/asm/disassemble.h
+> index 856f8deb557a..6330a61b875a 100644
+> --- a/arch/powerpc/include/asm/disassemble.h
+> +++ b/arch/powerpc/include/asm/disassemble.h
+> @@ -81,4 +81,38 @@ static inline unsigned int get_oc(u32 inst)
+>   {
+>   	return (inst >> 11) & 0x7fff;
+>   }
+> +
+> +#define IS_XFORM(inst)	(get_op(inst)  == 31)
+> +#define IS_DSFORM(inst)	(get_op(inst) >= 56)
+> +
+> +/*
+> + * Create a DSISR value from the instruction
+> + */
+> +static inline unsigned make_dsisr(unsigned instr)
+> +{
+> +	unsigned dsisr;
+> +
+> +
+> +	/* bits  6:15 --> 22:31 */
+> +	dsisr = (instr & 0x03ff0000) >> 16;
+> +
+> +	if (IS_XFORM(instr)) {
+> +		/* bits 29:30 --> 15:16 */
+> +		dsisr |= (instr & 0x00000006) << 14;
+> +		/* bit     25 -->    17 */
+> +		dsisr |= (instr & 0x00000040) << 8;
+> +		/* bits 21:24 --> 18:21 */
+> +		dsisr |= (instr & 0x00000780) << 3;
+> +	} else {
+> +		/* bit      5 -->    17 */
+> +		dsisr |= (instr & 0x04000000) >> 12;
+> +		/* bits  1: 4 --> 18:21 */
+> +		dsisr |= (instr & 0x78000000) >> 17;
+> +		/* bits 30:31 --> 12:13 */
+> +		if (IS_DSFORM(instr))
+> +			dsisr |= (instr & 0x00000003) << 18;
+> +	}
+> +
+> +	return dsisr;
+> +}
+>   #endif /* __ASM_PPC_DISASSEMBLE_H__ */
+> diff --git a/arch/powerpc/kernel/align.c b/arch/powerpc/kernel/align.c
+> index 94908af308d8..34f55524d456 100644
+> --- a/arch/powerpc/kernel/align.c
+> +++ b/arch/powerpc/kernel/align.c
+> @@ -25,14 +25,13 @@
+>   #include <asm/cputable.h>
+>   #include <asm/emulated_ops.h>
+>   #include <asm/switch_to.h>
+> +#include <asm/disassemble.h>
+>   
+>   struct aligninfo {
+>   	unsigned char len;
+>   	unsigned char flags;
+>   };
+>   
+> -#define IS_XFORM(inst)	(((inst) >> 26) == 31)
+> -#define IS_DSFORM(inst)	(((inst) >> 26) >= 56)
+>   
+>   #define INVALID	{ 0, 0 }
+>   
+> @@ -192,37 +191,6 @@ static struct aligninfo aligninfo[128] = {
+>   };
+>   
+>   /*
+> - * Create a DSISR value from the instruction
+> - */
+> -static inline unsigned make_dsisr(unsigned instr)
+> -{
+> -	unsigned dsisr;
+> -
+> -
+> -	/* bits  6:15 --> 22:31 */
+> -	dsisr = (instr & 0x03ff0000) >> 16;
+> -
+> -	if (IS_XFORM(instr)) {
+> -		/* bits 29:30 --> 15:16 */
+> -		dsisr |= (instr & 0x00000006) << 14;
+> -		/* bit     25 -->    17 */
+> -		dsisr |= (instr & 0x00000040) << 8;
+> -		/* bits 21:24 --> 18:21 */
+> -		dsisr |= (instr & 0x00000780) << 3;
+> -	} else {
+> -		/* bit      5 -->    17 */
+> -		dsisr |= (instr & 0x04000000) >> 12;
+> -		/* bits  1: 4 --> 18:21 */
+> -		dsisr |= (instr & 0x78000000) >> 17;
+> -		/* bits 30:31 --> 12:13 */
+> -		if (IS_DSFORM(instr))
+> -			dsisr |= (instr & 0x00000003) << 18;
+> -	}
+> -
+> -	return dsisr;
+> -}
+> -
+> -/*
+>    * The dcbz (data cache block zero) instruction
+>    * gives an alignment fault if used on non-cacheable
+>    * memory.  We handle the fault mainly for the
+> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+> index 99d40f8977e8..04c38f049dfd 100644
+> --- a/arch/powerpc/kvm/book3s_emulate.c
+> +++ b/arch/powerpc/kvm/book3s_emulate.c
+> @@ -569,48 +569,14 @@ unprivileged:
+>   
+>   u32 kvmppc_alignment_dsisr(struct kvm_vcpu *vcpu, unsigned int inst)
+>   {
+> -	u32 dsisr = 0;
+> -
+> -	/*
+> -	 * This is what the spec says about DSISR bits (not mentioned = 0):
+> -	 *
+> -	 * 12:13		[DS]	Set to bits 30:31
+> -	 * 15:16		[X]	Set to bits 29:30
+> -	 * 17			[X]	Set to bit 25
+> -	 *			[D/DS]	Set to bit 5
+> -	 * 18:21		[X]	Set to bits 21:24
+> -	 *			[D/DS]	Set to bits 1:4
+> -	 * 22:26			Set to bits 6:10 (RT/RS/FRT/FRS)
+> -	 * 27:31			Set to bits 11:15 (RA)
+> -	 */
+> -
+> -	switch (get_op(inst)) {
+> -	/* D-form */
+> -	case OP_LFS:
+> -	case OP_LFD:
+> -	case OP_STFD:
+> -	case OP_STFS:
+> -		dsisr |= (inst >> 12) & 0x4000;	/* bit 17 */
+> -		dsisr |= (inst >> 17) & 0x3c00; /* bits 18:21 */
+> -		break;
+> -	/* X-form */
+> -	case 31:
+> -		dsisr |= (inst << 14) & 0x18000; /* bits 15:16 */
+> -		dsisr |= (inst << 8)  & 0x04000; /* bit 17 */
+> -		dsisr |= (inst << 3)  & 0x03c00; /* bits 18:21 */
+> -		break;
+> -	default:
+> -		printk(KERN_INFO "KVM: Unaligned instruction 0x%x\n", inst);
+> -		break;
+> -	}
+> -
+> -	dsisr |= (inst >> 16) & 0x03ff; /* bits 22:31 */
+> -
+> -	return dsisr;
+> +	return make_dsisr(inst);
+>   }
+>   
+>   ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)
+>   {
+> +#ifdef CONFIG_PPC_BOOK3S_64
+> +	return vcpu->arch.fault_dar;
 
-Thanks, applied to kvm-ppc-queue.
+How about PA6T and G5s?
 
 
 Alex
