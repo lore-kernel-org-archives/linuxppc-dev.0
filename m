@@ -2,25 +2,24 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 68AFA1414A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 01:10:31 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C5625140E3B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 01:16:28 +1000 (EST)
 Content-Type: text/plain;
 	charset=us-ascii
 Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH V4] POWERPC: BOOK3S: KVM: Use the saved dar value and
- generic make_dsisr
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: HV: Don't try to allocate from kernel
+ page allocator for hash page table.
 From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <87fvko9t4d.fsf@linux.vnet.ibm.com>
-Date: Mon, 5 May 2014 17:10:25 +0200
-Message-Id: <D6E2811F-11B5-4DD0-A205-0C7A69421450@suse.de>
-References: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <536773C2.1070502@suse.de> <87tx949u9d.fsf@linux.vnet.ibm.com>
- <5367A39D.9080709@suse.de> <87fvko9t4d.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87r4489ttk.fsf@linux.vnet.ibm.com>
+Date: Mon, 5 May 2014 17:16:05 +0200
+Message-Id: <20FFDF8F-1A3D-4719-B492-1E4B70F9D1B4@suse.de>
+References: <1399224322-22028-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <53677558.50900@suse.de> <87r4489ttk.fsf@linux.vnet.ibm.com>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+Cc: "paulus@samba.org" <paulus@samba.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "paulus@samba.org" <paulus@samba.org>, "olofj@google.com" <olofj@google.com>
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +31,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-> Am 05.05.2014 um 16:50 schrieb "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet=
+> Am 05.05.2014 um 16:35 schrieb "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet=
 .ibm.com>:
 >=20
 > Alexander Graf <agraf@suse.de> writes:
 >=20
->>> On 05/05/2014 04:26 PM, Aneesh Kumar K.V wrote:
->>> Alexander Graf <agraf@suse.de> writes:
->>>=20
->>>>> On 05/04/2014 07:21 PM, Aneesh Kumar K.V wrote:
->>>>> Although it's optional IBM POWER cpus always had DAR value set on
->>>>> alignment interrupt. So don't try to compute these values.
->>>>>=20
->>>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->>>>> ---
->>>>> Changes from V3:
->>>>> * Use make_dsisr instead of checking feature flag to decide whether to=
- use
->>>>>    saved dsisr or not
->>> ....
->>>=20
->>>>>   ulong kvmppc_alignment_dar(struct kvm_vcpu *vcpu, unsigned int inst)=
-
->>>>>   {
->>>>> +#ifdef CONFIG_PPC_BOOK3S_64
->>>>> +    return vcpu->arch.fault_dar;
->>>> How about PA6T and G5s?
->>> Paul mentioned that BOOK3S always had DAR value set on alignment
->>> interrupt. And the patch is to enable/collect correct DAR value when
->>> running with Little Endian PR guest. Now to limit the impact and to
->>> enable Little Endian PR guest, I ended up doing the conditional code
->>> only for book3s 64 for which we know for sure that we set DAR value.
+>>> On 05/04/2014 07:25 PM, Aneesh Kumar K.V wrote:
+>>> We reserve 5% of total ram for CMA allocation and not using that can
+>>> result in us running out of numa node memory with specific
+>>> configuration. One caveat is we may not have node local hpt with pinned
+>>> vcpu configuration. But currently libvirt also pins the vcpu to cpuset
+>>> after creating hash page table.
 >>=20
->> Yes, and I'm asking whether we know that this statement holds true for=20=
-
->> PA6T and G5 chips which I wouldn't consider IBM POWER. Since the G5 is=20=
-
->> at least developed by IBM, I'd assume its semantics here are similar to=20=
-
->> POWER4, but for PA6T I wouldn't be so sure.
+>> I don't understand the problem. Can you please elaborate?
 >=20
-> I will have to defer to Paul on that question. But that should not
-> prevent this patch from going upstream right ?
+> Lets take a system with 100GB RAM. We reserve around 5GB for htab
+> allocation. Now if we use rest of available memory for hugetlbfs
+> (because we want all the guest to be backed by huge pages), we would
+> end up in a situation where we have a few GB of free RAM and 5GB of CMA
+> reserve area. Now if we allow hash page table allocation to consume the
+> free space, we would end up hitting page allocation failure for other
+> non movable kernel allocation even though we still have 5GB CMA reserve
+> space free.
 
-Regressions are big no-gos.
+Isn't this a greater problem? We should start swapping before we hit the poi=
+nt where non movable kernel allocation fails, no?
+
+The fact that KVM uses a good number of normal kernel pages is maybe subopti=
+mal, but shouldn't be a critical problem.
+
 
 Alex
 
