@@ -1,27 +1,37 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7173314027A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 22:51:23 +1000 (EST)
-Message-ID: <53678595.4090707@freescale.com>
-Date: Mon, 5 May 2014 15:35:33 +0300
-From: Tudor Laurentiu <b10716@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 339EC140110
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 22:55:38 +1000 (EST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Mon, 5 May 2014 13:55:33 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 28961219004D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 13:55:23 +0100 (BST)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s45CtVbm61734956
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 12:55:31 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s45CtU0j015921
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 06:55:31 -0600
+Message-ID: <53678A66.4040506@linux.vnet.ibm.com>
+Date: Mon, 05 May 2014 14:56:06 +0200
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] powerpc: move epapr paravirt init of power_save to an
- initcall
-References: <1398887641-20705-1-git-send-email-stuart.yoder@freescale.com>
- <5361556D.7080805@suse.de>
- <33939d8249c34c8fb694da3e94196211@DM2PR03MB352.namprd03.prod.outlook.com>
- <53615872.3010006@suse.de> <5367815F.5010509@freescale.com>
- <53678236.7060206@suse.de>
-In-Reply-To: <53678236.7060206@suse.de>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, Laurentiu.Tudor@freescale.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Stuart Yoder <stuart.yoder@freescale.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: memcpy optimization for 64bit LE
+References: <20140430091054.4de84c9b@kryten>
+In-Reply-To: <20140430091054.4de84c9b@kryten>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,105 +41,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2014 03:21 PM, Alexander Graf wrote:
-> On 05/05/2014 02:17 PM, Tudor Laurentiu wrote:
->> On 04/30/2014 11:09 PM, Alexander Graf wrote:
->>>
->>> On 30.04.14 22:03, Stuart Yoder wrote:
->>>>
->>>>> -----Original Message-----
->>>>> From: Alexander Graf [mailto:agraf@suse.de]
->>>>> Sent: Wednesday, April 30, 2014 2:56 PM
->>>>> To: Yoder Stuart-B08248; benh@kernel.crashing.org; Wood Scott-B07421
->>>>> Cc: linuxppc-dev@lists.ozlabs.org
->>>>> Subject: Re: [PATCH] powerpc: move epapr paravirt init of
->>>>> power_save to
->>>>> an initcall
->>>>>
->>>>>
->>>>> On 30.04.14 21:54, Stuart Yoder wrote:
->>>>>> From: Stuart Yoder <stuart.yoder@freescale.com>
->>>>>>
->>>>>> some restructuring of epapr paravirt init resulted in
->>>>>> ppc_md.power_save being set, and then overwritten to
->>>>>> NULL during machine_init.  This patch splits the
->>>>>> initialization of ppc_md.power_save out into a postcore
->>>>>> init call.
->>>>>>
->>>>>> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
->>>>>> ---
->>>>>>    arch/powerpc/kernel/epapr_paravirt.c |   25
->>>>>> ++++++++++++++++++++-----
->>>>>>    1 file changed, 20 insertions(+), 5 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/kernel/epapr_paravirt.c
->>>>> b/arch/powerpc/kernel/epapr_paravirt.c
->>>>>> index 6300c13..c49b69c 100644
->>>>>> --- a/arch/powerpc/kernel/epapr_paravirt.c
->>>>>> +++ b/arch/powerpc/kernel/epapr_paravirt.c
->>>>>> @@ -52,11 +52,6 @@ static int __init
->>>>>> early_init_dt_scan_epapr(unsigned
->>>>> long node,
->>>>>>    #endif
->>>>>>        }
->>>>>>
->>>>>> -#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->>>>>> -    if (of_get_flat_dt_prop(node, "has-idle", NULL))
->>>>>> -        ppc_md.power_save = epapr_ev_idle;
->>>>>> -#endif
->>>>>> -
->>>>>>        epapr_paravirt_enabled = true;
->>>>>>
->>>>>>        return 1;
->>>>>> @@ -69,3 +64,23 @@ int __init epapr_paravirt_early_init(void)
->>>>>>        return 0;
->>>>>>    }
->>>>>>
->>>>>> +static int __init epapr_idle_init_dt_scan(unsigned long node,
->>>>>> +                       const char *uname,
->>>>>> +                       int depth, void *data)
->>>>>> +{
->>>>>> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
->>>>>> +    if (of_get_flat_dt_prop(node, "has-idle", NULL))
->>>>>> +        ppc_md.power_save = epapr_ev_idle;
->>>>>> +#endif
->>>>>> +    return 0;
->>>>>> +}
->>>>>> +
->>>>>> +static int __init epapr_idle_init(void)
->>>>>> +{
->>>>>> +    if (epapr_paravirt_enabled)
->>>>>> +        of_scan_flat_dt(epapr_idle_init_dt_scan, NULL);
->>>>> Doesn't this scan all nodes? We only want to match on
->>>>> /hypervisor/has-idle, no?
->>>> I cut/pasted from  the approach the existing code in that file
->>>> took, but yes you're right we just need the one property.
->>>> Let me respin that to look at the hypervisor node only.
->>>
->>> Yeah, the same commit that introduced the breakage on has-idle also
->>> removed the explicit check for /hypervisor.
->>>
->>> Laurentiu, was this change on purpose?
->>>
->>
->> Alex,
->>
->> IIRC, at that time i had to switch from the normal "of" functions to a
->> completely different api that's available in early init stage. This
->> early "of" api is pretty limited (e.g. doesn't have a way to address a
->> specific node) and i had to use that function that scans the whole tree.
->
-> Ok, so it is an accident. Could you please post a patch that checks that
-> the node we're looking at is called "hypervisor"? The simple API should
-> give you enough information for that at least. Maybe you could even
-> check that the parent node is the root node.
->
+Anton Blanchard wrote:
+> Unaligned stores take alignment exceptions on POWER7 running in little-endian.
+> This is a dumb little-endian base memcpy that prevents unaligned stores.
+> Once booted the feature fixup code switches over to the VMX copy loops
+> (which are already endian safe).
+> 
+> The question is what we do before that switch over. The base 64bit
+> memcpy takes alignment exceptions on POWER7 so we can't use it as is.
+> Fixing the causes of alignment exception would slow it down, because
+> we'd need to ensure all loads and stores are aligned either through
+> rotate tricks or bytewise loads and stores. Either would be bad for
+> all other 64bit platforms.
+> 
+> [ I simplified the loop a bit - Anton ]
+Got it.
 
-Just had a quick look and it looks that that early fdt api was improved 
-with a function that allows specifying a starting path for the scan 
-(of_scan_flat_dt_by_path() added in commit 
-57d74bcf3072b65bde5aa540cedc976a75c48e5c). So i think we can simply use 
-that instead.
+The 3 instructions that you have removed were modifying r5 for no reason,
+as the last instruction was always resetting r5 to its initial value.
 
----
-Best Regards, Laurentiu
+Philippe
