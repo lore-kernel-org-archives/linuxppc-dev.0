@@ -1,31 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 763D8140216
+ by ozlabs.org (Postfix) with ESMTPS id 8E8E81401DE
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:28:02 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 5 May 2014 11:28:01 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id A5FFB2BB004A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:58 +1000 (EST)
+ Mon, 5 May 2014 11:28:02 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C60B72BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:59 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4516pgm21037278
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:06:51 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s451RisC59965514
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:44 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s451Rv4V011578
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:58 +1000
+ s451RxqE011633
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:59 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 14/22] powerpc/eeh: Emulate RTAS call ibm,
- get-config-addr-info2
-Date: Mon,  5 May 2014 11:28:03 +1000
-Message-Id: <1399253291-3975-15-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 18/22] powerpc/eeh: Avoid event on passed PE
+Date: Mon,  5 May 2014 11:28:07 +1000
+Message-Id: <1399253291-3975-19-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -39,92 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The RTAS call "ibm,get-config-addr-info2" is being used by guest
-to retrieve the corresponding PE number for the specified PCI device.
-The patch implements the backend to support the emulation of the
-RTAS call.
+If we detects frozen state on PE that has been passed to guest, we
+needn't handle it. Instead, we rely on the guest to detect and recover
+it. The patch avoid EEH event on the frozen passed PE so that the guest
+can have chance to handle that.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-rtas.c | 59 +++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+ arch/powerpc/kernel/eeh.c                 | 8 ++++++++
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-rtas.c b/arch/powerpc/platforms/powernv/eeh-rtas.c
-index 031ee8c..4a9c2c7 100644
---- a/arch/powerpc/platforms/powernv/eeh-rtas.c
-+++ b/arch/powerpc/platforms/powernv/eeh-rtas.c
-@@ -334,6 +334,62 @@ out:
- 	return ret;
- }
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 33d683a..a2121e8 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -399,6 +399,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 	if (ret > 0)
+ 		return ret;
  
-+static int kvmppc_eeh_get_addr2(struct kvm_vcpu *vcpu,
-+				struct rtas_args *args)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	struct eeh_dev *edev;
-+	struct eeh_pe *pe;
-+	struct eeh_vfio_pci_addr addr;
-+	int opcode;
-+	int ret = 0;
-+
-+	/* Sanity check on parameter */
-+	if (args->nargs != 4 || args->nret != 2) {
-+		pr_warn("%s: Non-matched arguments (%d, %d) - (4, 2)\n",
-+			__func__, args->nargs, args->nret);
-+		ret = -3;
-+		goto out;
-+	}
-+
-+	/* Check on the operation code */
-+	opcode = args->args[3];
-+	if (opcode != 0 && opcode != 1) {
-+		pr_warn("%s: opcode %d out of range (0, 1)\n",
-+			__func__, opcode);
-+		ret = -3;
-+		goto out;
-+	}
-+
-+	/* Figure out address */
-+	if (kvmppc_eeh_format_addr(vcpu, args, &addr, true, &edev, &pe)) {
-+		ret = -3;
-+		goto out;
-+	}
-+
-+	/* Insure that the EEH stuff has been initialized */
-+	hose = pe->phb;
-+	phb = hose->private_data;
-+	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
-+		pr_warn("%s: EEH disabled on PHB#%d\n",
-+			__func__, hose->global_number);
-+		ret = -3;
-+		goto out;
-+	}
-+
 +	/*
-+	 * Fill result according to opcode. We don't differentiate
-+	 * PCI bus and device sensitive PE here.
++	 * If the PE has been passed to guest, we won't check the
++	 * state. Instead, let the guest handle it if the PE has
++	 * been frozen.
 +	 */
-+	if (opcode == 0)
-+		args->rets[1] = pe->gaddr.pe_addr;
-+	else
-+		args->rets[1] = 1;
-+out:
-+	return ret;
-+}
++	if (eeh_pe_passed(pe))
++		return 0;
 +
- /**
-  * kvmppc_eeh_rtas - Backend for EEH RTAS emulation
-  * @vcpu: KVM virtual CPU
-@@ -359,6 +415,9 @@ void kvmppc_eeh_rtas(struct kvm_vcpu *vcpu, struct rtas_args *args, int op)
- 	case eeh_rtas_read_slot_reset_state2:
- 		ret = kvmppc_eeh_get_state2(vcpu, args);
- 		break;
-+	case eeh_rtas_get_config_addr_info2:
-+		ret = kvmppc_eeh_get_addr2(vcpu, args);
-+		break;
- 	default:
- 		pr_warn("%s: Unsupported EEH RTAS service#%d\n",
- 			__func__, op);
+ 	/* If we already have a pending isolation event for this
+ 	 * slot, we know it's bad already, we don't need to check.
+ 	 * Do this checking under a lock; as multiple PCI devices
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 1b5982f..03a3ed2 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -890,7 +890,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
+ 					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
+ 				ret = EEH_NEXT_ERR_NONE;
+-			} else if ((*pe)->state & EEH_PE_ISOLATED) {
++			} else if ((*pe)->state & EEH_PE_ISOLATED ||
++				   eeh_pe_passed(*pe)) {
+ 				ret = EEH_NEXT_ERR_NONE;
+ 			} else {
+ 				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
 -- 
 1.8.3.2
