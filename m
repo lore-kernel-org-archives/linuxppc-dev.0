@@ -1,37 +1,21 @@
-Return-Path: <felix@linux.vnet.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 339EC140110
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 22:55:38 +1000 (EST)
-Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <felix@linux.vnet.ibm.com>;
- Mon, 5 May 2014 13:55:33 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 28961219004D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 13:55:23 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s45CtVbm61734956
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 12:55:31 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s45CtU0j015921
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 06:55:31 -0600
-Message-ID: <53678A66.4040506@linux.vnet.ibm.com>
-Date: Mon, 05 May 2014 14:56:06 +0200
-From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: memcpy optimization for 64bit LE
-References: <20140430091054.4de84c9b@kryten>
-In-Reply-To: <20140430091054.4de84c9b@kryten>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 71A88140325
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 00:04:40 +1000 (EST)
+Message-ID: <1399298412.24318.521.camel@ul30vt.home>
+Subject: Re: [PATCH RFC 00/22] EEH Support for VFIO PCI devices on PowerKVM
+ guest
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Mon, 05 May 2014 08:00:12 -0600
+In-Reply-To: <53677C6C.8060508@suse.de>
+References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <53677C6C.8060508@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ kvm-ppc@vger.kernel.org, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anton Blanchard wrote:
-> Unaligned stores take alignment exceptions on POWER7 running in little-endian.
-> This is a dumb little-endian base memcpy that prevents unaligned stores.
-> Once booted the feature fixup code switches over to the VMX copy loops
-> (which are already endian safe).
+On Mon, 2014-05-05 at 13:56 +0200, Alexander Graf wrote:
+> On 05/05/2014 03:27 AM, Gavin Shan wrote:
+> > The series of patches intends to support EEH for PCI devices, which have been
+> > passed through to PowerKVM based guest via VFIO. The implementation is
+> > straightforward based on the issues or problems we have to resolve to support
+> > EEH for PowerKVM based guest.
+> >
+> > - Emulation for EEH RTAS requests. Thanksfully, we already have infrastructure
+> >    to emulate XICS. Without introducing new mechanism, we just extend that
+> >    existing infrastructure to support EEH RTAS emulation. EEH RTAS requests
+> >    initiated from guest are posted to host where the requests get handled or
+> >    delivered to underly firmware for further handling. For that, the host kerenl
+> >    has to maintain the PCI address (host domain/bus/slot/function to guest's
+> >    PHB BUID/bus/slot/function) mapping via KVM VFIO device. The address mapping
+> >    will be built when initializing VFIO device in QEMU and destroied when the
+> >    VFIO device in QEMU is going to offline, or VM is destroy.
 > 
-> The question is what we do before that switch over. The base 64bit
-> memcpy takes alignment exceptions on POWER7 so we can't use it as is.
-> Fixing the causes of alignment exception would slow it down, because
-> we'd need to ensure all loads and stores are aligned either through
-> rotate tricks or bytewise loads and stores. Either would be bad for
-> all other 64bit platforms.
+> Do you also expose all those interfaces to user space? VFIO is as much 
+> about user space device drivers as it is about device assignment.
 > 
-> [ I simplified the loop a bit - Anton ]
-Got it.
+> I would like to first see an implementation that doesn't touch KVM 
+> emulation code at all but instead routes everything through QEMU. As a 
+> second step we can then accelerate performance critical paths inside of KVM.
+> 
+> That way we ensure that user space device drivers have all the power 
+> over a device they need to drive it.
 
-The 3 instructions that you have removed were modifying r5 for no reason,
-as the last instruction was always resetting r5 to its initial value.
-
-Philippe
++1
