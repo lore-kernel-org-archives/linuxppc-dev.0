@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 09B6F1401D9
+ by ozlabs.org (Postfix) with ESMTPS id 1E65A1401DB
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:58 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 5 May 2014 11:27:56 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7D7F33578048
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:53 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4516bcq59048120
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:06:37 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s451RqAh013655
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:53 +1000
+ Mon, 5 May 2014 11:27:57 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7F7E42BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:55 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4516m2k21037258
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:06:48 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s451RsVq011701
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:55 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 03/22] powerpc/eeh: Search EEH device by guest address
-Date: Mon,  5 May 2014 11:27:52 +1000
-Message-Id: <1399253291-3975-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 08/22] kvm: Address mapping for VFIO device
+Date: Mon,  5 May 2014 11:27:57 +1000
+Message-Id: <1399253291-3975-9-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -38,89 +38,166 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch introduces function eeh_vfio_dev_get() to search the EEH
-device according to its guest address, which is made up of VM indicator,
-PHB BUID, bus, slot and function number. The function is useful in the
-backends for EEH RTAS emulation.
+The address (domain/bus/slot/function) looks different from the
+perspective of host and guest. We have to setup the mapping for
+EEH and tear it down accordingly. The patch introduces additional
+attributes to KVM VFIO device for address mapping or unmapping.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h |  6 ++++++
- arch/powerpc/kernel/eeh_pe.c   | 45 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 51 insertions(+)
+ arch/powerpc/kvm/Kconfig  |  1 +
+ arch/powerpc/kvm/Makefile |  3 +++
+ include/uapi/linux/kvm.h  | 10 ++++++++
+ virt/kvm/vfio.c           | 60 ++++++++++++++++++++++++++++++++++++++++++++++-
+ 4 files changed, 73 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 8bfb167..b12e3e9 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -384,6 +384,12 @@ static inline void eeh_remove_device(struct pci_dev *dev) { }
- #define EEH_IO_ERROR_VALUE(size) (-1UL)
- #endif /* CONFIG_EEH */
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index 743d2d9..6764fc5 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -64,6 +64,7 @@ config KVM_BOOK3S_64
+ 	select KVM_BOOK3S_64_HANDLER
+ 	select KVM
+ 	select KVM_BOOK3S_PR_POSSIBLE if !KVM_BOOK3S_HV_POSSIBLE
++	select KVM_VFIO if VFIO
+ 	---help---
+ 	  Support running unmodified book3s_64 and book3s_32 guest kernels
+ 	  in virtual machines on book3s_64 host processors.
+diff --git a/arch/powerpc/kvm/Makefile b/arch/powerpc/kvm/Makefile
+index ce569b6..673038d 100644
+--- a/arch/powerpc/kvm/Makefile
++++ b/arch/powerpc/kvm/Makefile
+@@ -97,6 +97,9 @@ endif
+ kvm-book3s_64-objs-$(CONFIG_KVM_XICS) += \
+ 	book3s_xics.o
  
++kvm-book3s_64-objs-$(CONFIG_KVM_VFIO) += \
++	$(addprefix ../../../virt/kvm/, vfio.o)
 +
-+#ifdef CONFIG_KVM_EEH
-+struct eeh_dev *eeh_vfio_dev_get(struct eeh_vfio_pci_addr *addr);
+ kvm-book3s_64-module-objs += \
+ 	$(KVM)/kvm_main.o \
+ 	$(KVM)/eventfd.o \
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index a8f4ee5..97b4d1e 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -932,9 +932,19 @@ struct kvm_device_attr {
+ #define  KVM_DEV_VFIO_GROUP			1
+ #define   KVM_DEV_VFIO_GROUP_ADD			1
+ #define   KVM_DEV_VFIO_GROUP_DEL			2
++#define  KVM_DEV_VFIO_DEV			2
++#define   KVM_DEV_VFIO_DEV_EEH_MAP			1
++#define   KVM_DEV_VFIO_DEV_EEH_UNMAP			2
+ #define KVM_DEV_TYPE_ARM_VGIC_V2	5
+ #define KVM_DEV_TYPE_FLIC		6
+ 
++struct kvm_vfio_pci_addr {
++	__u32 domain;	/* Host PHB domain	*/
++	__u32 bdn;	/* Host bus/dev/func	*/
++	__u64 gbuid;	/* Guet PHB BUID	*/
++	__u32 gbdn;	/* Guest bus/dev/func	*/
++};
 +
-+#endif /* CONFIG_KVM_EEH */
-+
- #ifdef CONFIG_PPC64
  /*
-  * MMIO read/write operations with EEH support.
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index fbd01eb..dba7c82 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -248,6 +248,51 @@ struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
- 	return pe;
+  * ioctls for VM fds
+  */
+diff --git a/virt/kvm/vfio.c b/virt/kvm/vfio.c
+index ba1a93f..778015d 100644
+--- a/virt/kvm/vfio.c
++++ b/virt/kvm/vfio.c
+@@ -28,6 +28,10 @@ struct kvm_vfio {
+ 	struct list_head group_list;
+ 	struct mutex lock;
+ 	bool noncoherent;
++#ifdef CONFIG_KVM_EEH
++	kvm_vfio_dev_eeh_map eeh_map;
++	kvm_vfio_dev_eeh_unmap eeh_unmap;
++#endif
+ };
+ 
+ static struct vfio_group *kvm_vfio_group_get_external_user(struct file *filep)
+@@ -201,12 +205,53 @@ static int kvm_vfio_set_group(struct kvm_device *dev, long attr, u64 arg)
+ 	return -ENXIO;
  }
  
++static int kvm_vfio_set_dev(struct kvm_device *dev, long attr, u64 arg)
++{
++	struct kvm_vfio *kv = dev->private;
++	struct kvm_vfio_pci_addr addr;
++	int ret = -ENXIO;
++
++	switch (attr) {
 +#ifdef CONFIG_KVM_EEH
-+static void *__eeh_vfio_dev_get(void *data, void *flag)
-+{
-+	struct eeh_pe *pe = (struct eeh_pe *)data;
-+	struct eeh_vfio_pci_addr *addr = (struct eeh_vfio_pci_addr *)flag;
-+	struct eeh_dev *edev, *tmp;
++	case KVM_DEV_VFIO_DEV_EEH_MAP:
++		if (copy_from_user(&addr, (void __user *)arg, sizeof(addr))) {
++			ret = -EFAULT;
++			break;
++		}
 +
-+	eeh_pe_for_each_dev(pe, edev, tmp) {
-+		if (!eeh_dev_passed(edev))
-+			continue;
++		if (kv->eeh_map)
++			ret = kv->eeh_map(dev->kvm, addr.domain,
++					  addr.bdn, addr.gbuid, addr.gbdn);
++		else
++			ret = 0;
 +
-+		/* Comparing the address in the guest */
-+		if (addr->kvm     == edev->gaddr.kvm &&
-+		    addr->buid_hi == edev->gaddr.buid_hi &&
-+		    addr->buid_lo == edev->gaddr.buid_lo &&
-+		    addr->bus     == edev->gaddr.bus &&
-+		    addr->devfn   == edev->gaddr.devfn)
-+			return edev;
++		break;
++	case KVM_DEV_VFIO_DEV_EEH_UNMAP:
++		if (copy_from_user(&addr, (void __user *)arg, sizeof(addr))) {
++			ret = -EFAULT;
++			break;
++		}
++
++		if (kv->eeh_unmap)
++			ret = kv->eeh_unmap(dev->kvm, addr.domain, addr.bdn);
++		else
++			ret = 0;
++
++		break;
++#endif
 +	}
 +
-+	return NULL;
++	return ret;
 +}
 +
-+/**
-+ * eeh_vfio_dev_get - Search EEH device based on guest's address
-+ * @addr: EEH device guest address
-+ *
-+ * Search the EEH device according to its guest's address, which
-+ * is made up of PHB BUID, and PCI config address.
-+ */
-+struct eeh_dev *eeh_vfio_dev_get(struct eeh_vfio_pci_addr *addr)
-+{
-+	struct eeh_pe *root;
-+	struct eeh_dev *edev;
+ static int kvm_vfio_set_attr(struct kvm_device *dev,
+ 			     struct kvm_device_attr *attr)
+ {
+ 	switch (attr->group) {
+ 	case KVM_DEV_VFIO_GROUP:
+ 		return kvm_vfio_set_group(dev, attr->attr, attr->addr);
++	case KVM_DEV_VFIO_DEV:
++		return kvm_vfio_set_dev(dev, attr->attr, attr->addr);
+ 	}
+ 
+ 	return -ENXIO;
+@@ -224,6 +269,16 @@ static int kvm_vfio_has_attr(struct kvm_device *dev,
+ 		}
+ 
+ 		break;
++	case KVM_DEV_VFIO_DEV:
++		switch (attr->attr) {
++#ifdef CONFIG_KVM_EEH
++		case KVM_DEV_VFIO_DEV_EEH_MAP:
++		case KVM_DEV_VFIO_DEV_EEH_UNMAP:
++			return 0;
++#endif
++		}
 +
-+	list_for_each_entry(root, &eeh_phb_pe, child) {
-+		edev = eeh_pe_traverse(root, __eeh_vfio_dev_get, addr);
-+		if (edev)
-+			return edev;
-+	}
-+
-+	return NULL;
-+}
-+#endif /* CONFIG_KVM_EEH */
-+
- /**
-  * eeh_pe_get_parent - Retrieve the parent PE
-  * @edev: EEH device
++		break;
+ 	}
+ 
+ 	return -ENXIO;
+@@ -262,7 +317,10 @@ static int kvm_vfio_create(struct kvm_device *dev, u32 type)
+ 
+ 	INIT_LIST_HEAD(&kv->group_list);
+ 	mutex_init(&kv->lock);
+-
++#ifdef CONFIG_KVM_EEH
++	kv->eeh_map = kvm_vfio_eeh_dev_map;
++	kv->eeh_unmap = kvm_vfio_eeh_dev_unmap;
++#endif
+ 	dev->private = kv;
+ 
+ 	return 0;
 -- 
 1.8.3.2
