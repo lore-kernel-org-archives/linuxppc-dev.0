@@ -1,19 +1,20 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
- [81.169.146.216])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5A0F01402FA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 19:41:41 +1000 (EST)
-Message-ID: <53675CCF.1000300@xenosoft.de>
-Date: Mon, 05 May 2014 11:41:35 +0200
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+ by ozlabs.org (Postfix) with ESMTPS id 6357D1402FC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 21:17:07 +1000 (EST)
+Message-ID: <5367732D.6000802@suse.de>
+Date: Mon, 05 May 2014 13:17:01 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: Boot problems with a PA6T board
-References: <5366649E.4030102@xenosoft.de> <1399268891.4600.3.camel@concordia>
-In-Reply-To: <1399268891.4600.3.camel@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V5] KVM: PPC: BOOK3S: PR: Enable Little Endian PR guest
+References: <1399259384-6623-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1399259384-6623-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-Thanks a lot for your answer. They reasoned that "starting cpu hw idx 
-0... failed" is reported because that core of the CPU is already up and 
-running.
-
-I have built a git kernel from 2014-04-02.
-
--> git clone 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux-git
--> git show 3e75c6de1ac33fe3500f44573d9212dc82c99f59
--> git checkout -f 3e75c6de1ac33fe3500f44573d9212dc82c99f59; git clean -fdx
-
-This kernel booted and showed a Kernel Panic with the following error 
-message:
-
-Oops: Machine check, sig: 7 [#1]
-
-Rgds,
-
-Christian
-
-
-On 05.05.2014 07:48, Michael Ellerman wrote:
-> On Sun, 2014-05-04 at 18:02 +0200, Christian Zigotzky wrote:
->> Hi All,
->>
->> The RC 1, 2, and 3 of the kernel 3.15 don't boot on my PA6T board with a
->> Radeon HD 6870 graphics card.
->>
->> Screenshot:
->> http://forum.hyperion-entertainment.biz/download/file.php?id=1060&mode=view
->>
->> The kernel 3.14 starts without any problems. Has anyone a tip for me,
->> please?
-> The line that says "starting cpu hw idx 0... failed" looks a little worrying.
-> Do you see that on 3.14 as well?
+On 05/05/2014 05:09 AM, Aneesh Kumar K.V wrote:
+> This patch make sure we inherit the LE bit correctly in different case
+> so that we can run Little Endian distro in PR mode
 >
-> Otherwise bisection is probably your best bet.
->
-> cheers
->
->
->
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+Thanks, applied to kvm-ppc-queue.
+
+
+Alex
