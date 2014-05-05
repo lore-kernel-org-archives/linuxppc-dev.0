@@ -1,22 +1,26 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Laurentiu.Tudor@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A8E29140316
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 21:56:33 +1000 (EST)
-Message-ID: <53677C6C.8060508@suse.de>
-Date: Mon, 05 May 2014 13:56:28 +0200
-From: Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id 78985140321
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 22:17:45 +1000 (EST)
+Message-ID: <5367815F.5010509@freescale.com>
+Date: Mon, 5 May 2014 15:17:35 +0300
+From: Tudor Laurentiu <b10716@freescale.com>
 MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH RFC 00/22] EEH Support for VFIO PCI devices on PowerKVM
- guest
-References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, kvm-ppc@vger.kernel.org,
- alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] powerpc: move epapr paravirt init of power_save to an
+ initcall
+References: <1398887641-20705-1-git-send-email-stuart.yoder@freescale.com>
+ <5361556D.7080805@suse.de>
+ <33939d8249c34c8fb694da3e94196211@DM2PR03MB352.namprd03.prod.outlook.com>
+ <53615872.3010006@suse.de>
+In-Reply-To: <53615872.3010006@suse.de>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: Scott Wood <scottwood@freescale.com>, Laurentiu.Tudor@freescale.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2014 03:27 AM, Gavin Shan wrote:
-> The series of patches intends to support EEH for PCI devices, which have been
-> passed through to PowerKVM based guest via VFIO. The implementation is
-> straightforward based on the issues or problems we have to resolve to support
-> EEH for PowerKVM based guest.
+On 04/30/2014 11:09 PM, Alexander Graf wrote:
 >
-> - Emulation for EEH RTAS requests. Thanksfully, we already have infrastructure
->    to emulate XICS. Without introducing new mechanism, we just extend that
->    existing infrastructure to support EEH RTAS emulation. EEH RTAS requests
->    initiated from guest are posted to host where the requests get handled or
->    delivered to underly firmware for further handling. For that, the host kerenl
->    has to maintain the PCI address (host domain/bus/slot/function to guest's
->    PHB BUID/bus/slot/function) mapping via KVM VFIO device. The address mapping
->    will be built when initializing VFIO device in QEMU and destroied when the
->    VFIO device in QEMU is going to offline, or VM is destroy.
+> On 30.04.14 22:03, Stuart Yoder wrote:
+>>
+>>> -----Original Message-----
+>>> From: Alexander Graf [mailto:agraf@suse.de]
+>>> Sent: Wednesday, April 30, 2014 2:56 PM
+>>> To: Yoder Stuart-B08248; benh@kernel.crashing.org; Wood Scott-B07421
+>>> Cc: linuxppc-dev@lists.ozlabs.org
+>>> Subject: Re: [PATCH] powerpc: move epapr paravirt init of power_save to
+>>> an initcall
+>>>
+>>>
+>>> On 30.04.14 21:54, Stuart Yoder wrote:
+>>>> From: Stuart Yoder <stuart.yoder@freescale.com>
+>>>>
+>>>> some restructuring of epapr paravirt init resulted in
+>>>> ppc_md.power_save being set, and then overwritten to
+>>>> NULL during machine_init.  This patch splits the
+>>>> initialization of ppc_md.power_save out into a postcore
+>>>> init call.
+>>>>
+>>>> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+>>>> ---
+>>>>    arch/powerpc/kernel/epapr_paravirt.c |   25
+>>>> ++++++++++++++++++++-----
+>>>>    1 file changed, 20 insertions(+), 5 deletions(-)
+>>>>
+>>>> diff --git a/arch/powerpc/kernel/epapr_paravirt.c
+>>> b/arch/powerpc/kernel/epapr_paravirt.c
+>>>> index 6300c13..c49b69c 100644
+>>>> --- a/arch/powerpc/kernel/epapr_paravirt.c
+>>>> +++ b/arch/powerpc/kernel/epapr_paravirt.c
+>>>> @@ -52,11 +52,6 @@ static int __init early_init_dt_scan_epapr(unsigned
+>>> long node,
+>>>>    #endif
+>>>>        }
+>>>>
+>>>> -#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
+>>>> -    if (of_get_flat_dt_prop(node, "has-idle", NULL))
+>>>> -        ppc_md.power_save = epapr_ev_idle;
+>>>> -#endif
+>>>> -
+>>>>        epapr_paravirt_enabled = true;
+>>>>
+>>>>        return 1;
+>>>> @@ -69,3 +64,23 @@ int __init epapr_paravirt_early_init(void)
+>>>>        return 0;
+>>>>    }
+>>>>
+>>>> +static int __init epapr_idle_init_dt_scan(unsigned long node,
+>>>> +                       const char *uname,
+>>>> +                       int depth, void *data)
+>>>> +{
+>>>> +#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
+>>>> +    if (of_get_flat_dt_prop(node, "has-idle", NULL))
+>>>> +        ppc_md.power_save = epapr_ev_idle;
+>>>> +#endif
+>>>> +    return 0;
+>>>> +}
+>>>> +
+>>>> +static int __init epapr_idle_init(void)
+>>>> +{
+>>>> +    if (epapr_paravirt_enabled)
+>>>> +        of_scan_flat_dt(epapr_idle_init_dt_scan, NULL);
+>>> Doesn't this scan all nodes? We only want to match on
+>>> /hypervisor/has-idle, no?
+>> I cut/pasted from  the approach the existing code in that file
+>> took, but yes you're right we just need the one property.
+>> Let me respin that to look at the hypervisor node only.
+>
+> Yeah, the same commit that introduced the breakage on has-idle also
+> removed the explicit check for /hypervisor.
+>
+> Laurentiu, was this change on purpose?
+>
 
-Do you also expose all those interfaces to user space? VFIO is as much 
-about user space device drivers as it is about device assignment.
+Alex,
 
-I would like to first see an implementation that doesn't touch KVM 
-emulation code at all but instead routes everything through QEMU. As a 
-second step we can then accelerate performance critical paths inside of KVM.
+IIRC, at that time i had to switch from the normal "of" functions to a 
+completely different api that's available in early init stage. This 
+early "of" api is pretty limited (e.g. doesn't have a way to address a 
+specific node) and i had to use that function that scans the whole tree.
 
-That way we ensure that user space device drivers have all the power 
-over a device they need to drive it.
-
-
-Alex
+---
+Best Regards, Laurentiu
