@@ -1,15 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 5 May 2014 09:59:10 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4] KVM: PPC: BOOK3S: PR: Enable Little Endian PR guest
-Message-ID: <20140504235910.GA5978@iris.ozlabs.ibm.com>
-References: <1399223932-17840-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1399223932-17840-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id ED3A2140172
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:55 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 5 May 2014 11:27:54 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8809F2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:51 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s451RaWE10682878
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:36 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s451RoS5013606
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:51 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Subject: [PATCH RFC 00/22] EEH Support for VFIO PCI devices on PowerKVM guest
+Date: Mon,  5 May 2014 11:27:49 +1000
+Message-Id: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,22 +36,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 04, 2014 at 10:48:52PM +0530, Aneesh Kumar K.V wrote:
-> This patch make sure we inherit the LE bit correctly in different case
-> so that we can run Little Endian distro in PR mode
+The series of patches intends to support EEH for PCI devices, which have been
+passed through to PowerKVM based guest via VFIO. The implementation is
+straightforward based on the issues or problems we have to resolve to support
+EEH for PowerKVM based guest.
 
-[snip]
+- Emulation for EEH RTAS requests. Thanksfully, we already have infrastructure
+  to emulate XICS. Without introducing new mechanism, we just extend that
+  existing infrastructure to support EEH RTAS emulation. EEH RTAS requests
+  initiated from guest are posted to host where the requests get handled or
+  delivered to underly firmware for further handling. For that, the host kerenl
+  has to maintain the PCI address (host domain/bus/slot/function to guest's
+  PHB BUID/bus/slot/function) mapping via KVM VFIO device. The address mapping
+  will be built when initializing VFIO device in QEMU and destroied when the
+  VFIO device in QEMU is going to offline, or VM is destroy.
 
-> +static void kvmppc_set_lpcr_pr(struct kvm_vcpu *vcpu, u64 new_lpcr)
-> +{
-> +	/*
-> +	 * If ILE (interrupt little-endian) has changed, update the
-> +	 * MSR_LE bit in the intr_msr for each vcpu in this vcore.
-> +	 */
-> +	if ((new_lpcr & LPCR_ILE) != (vcpu->arch.intr_msr & MSR_LE)) {
+- The infrastructure for error injection is introduced. The emulation for the
+  related RTAS services is similar to what we do for EEH/XICS RTAS requests.
+  For now, we just support PCI error injection. We need extend it for injecting
+  other types of errors in future.
 
-Since LPCR_ILE != MSR_LE, this condition is always going to be true.
-I suggest you remove this if statement and just do the body
-unconditionally.
+The series of patches requires corresponding firmware changes from Mike Qiu to
+support error injection and QEMU changes to support EEH for guest. It also needs
+QEMU changes to support it. QEMU patchset will be sent separately.
 
-Paul.
+I usually use command line (not virsh) to start PowerKVM based guests on Firebird-L
+machine with different types of PCI devices assigend (passed through) to guest.
+Following cases have been tested. The EEH error can be injected by utility "errinjct"
+running on guest successfully and we can recover from the EEH error successfully.
+
+Testing on P7
+=============
+
+- Emulex adapter
+- USB (OHCI) PCI adapter
+
+Testing on P8
+=============
+
+- MLX4 adapter (Partially)
+- USB (xHCI) PCI adapter
+
+-----
+
+arch/powerpc/include/asm/book3s_errinjct.h     |  97 ++++++++++++++++++++++++
+arch/powerpc/include/asm/eeh.h                 |  78 ++++++++++++++++++++
+arch/powerpc/include/asm/kvm_ppc.h             |   7 ++
+arch/powerpc/include/asm/opal.h                |  65 ++++++++++++++++
+arch/powerpc/kernel/eeh.c                      |   8 ++
+arch/powerpc/kernel/eeh_pe.c                   | 297 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/kvm/Kconfig                       |  17 +++++
+arch/powerpc/kvm/Makefile                      |   6 ++
+arch/powerpc/kvm/book3s_errinjct.c             | 329 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/kvm/book3s_hv.c                   |   2 +
+arch/powerpc/kvm/book3s_rtas.c                 |  67 +++++++++++++++++
+arch/powerpc/platforms/powernv/Makefile        |   2 +
+arch/powerpc/platforms/powernv/eeh-ioda.c      |   3 +-
+arch/powerpc/platforms/powernv/eeh-rtas.c      | 551 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/platforms/powernv/errinjct.c      | 215 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+include/linux/kvm_host.h                       |  21 ++++++
+include/uapi/linux/kvm.h                       |  10 +++
+virt/kvm/vfio.c                                |  60 ++++++++++++++-
+19 files changed, 1834 insertions(+), 2 deletions(-)
+create mode 100644 arch/powerpc/include/asm/book3s_errinjct.h
+create mode 100644 arch/powerpc/kvm/book3s_errinjct.c
+create mode 100644 arch/powerpc/platforms/powernv/eeh-rtas.c
+create mode 100644 arch/powerpc/platforms/powernv/errinjct.c
+
+Thanks,
+Gavin
