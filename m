@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 141161401AA
+ by ozlabs.org (Postfix) with ESMTPS id 208E9140294
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:28:00 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 5 May 2014 11:27:58 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 082623578048
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:56 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4516n8W21037262
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:06:49 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s451RtcO011512
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:55 +1000
+ Mon, 5 May 2014 11:27:59 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8FAD12CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 11:27:57 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4516fCt66125910
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:06:41 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s451Ruk8001122
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 5 May 2014 11:27:57 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 09/22] powerpc/powernv: EEH RTAS emulation backend
-Date: Mon,  5 May 2014 11:27:58 +1000
-Message-Id: <1399253291-3975-10-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 12/22] powerpc/eeh: Emulate RTAS call ibm,set-slot-reset
+Date: Mon,  5 May 2014 11:28:01 +1000
+Message-Id: <1399253291-3975-13-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -38,132 +38,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The implementation of EEH RTAS emulation is split up into 2 layers:
-kvm and powernv platform layer. The KVM layer is quite simple to
-dispatch RTAS requests from guest to powernv platform layer. After
-that, the powernv platform layer takes care of the details, process
-the request and return result to kvm layer.
-
-The patch implements the infrastructure of powernv platform layer
-for EEH RTAS emulation.
+The RTAS call "ibm,set-slot-reset" is being used to reset one
+particular PE, either foundamental or hot reset. The patche intends
+to implement the backend to emulate the RTAS call.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h            | 18 +++++++++
- arch/powerpc/platforms/powernv/Makefile   |  1 +
- arch/powerpc/platforms/powernv/eeh-rtas.c | 64 +++++++++++++++++++++++++++++++
- 3 files changed, 83 insertions(+)
- create mode 100644 arch/powerpc/platforms/powernv/eeh-rtas.c
+ arch/powerpc/platforms/powernv/eeh-rtas.c | 92 +++++++++++++++++++++++++++++++
+ 1 file changed, 92 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 677c719..7384dee 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -49,6 +49,24 @@ struct device_node;
- #define EEH_PE_RST_SETTLE_TIME		1800
- 
- #ifdef CONFIG_KVM_EEH
-+
-+/*
-+ * Those EEH RTAS operations are going to be emulated.
-+ * According to PAPR specification, there're much more
-+ * operations. However, the following RTAS operations
-+ * are enough for EEH in guest to work properly.
-+ */
-+enum {
-+	eeh_rtas_first			= 0,
-+	eeh_rtas_set_option		= 0,
-+	eeh_rtas_set_slot_reset		= 1,
-+	eeh_rtas_read_slot_reset_state2	= 2,
-+	eeh_rtas_get_config_addr_info2	= 3,
-+	eeh_rtas_slot_error_detail	= 4,
-+	eeh_rtas_configure_pe		= 5,
-+	eeh_rtas_last			= 5
-+};
-+
- struct eeh_vfio_pci_addr {
- 	struct kvm	*kvm;		/* KVM identifier		*/
- 	unsigned int	buid_hi;	/* PHB BUID high		*/
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 63cebb9..d8ea670 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -6,5 +6,6 @@ obj-y			+= opal-msglog.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
- obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
-+obj-$(CONFIG_KVM_EEH)	+= eeh-rtas.o
- obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
- obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
 diff --git a/arch/powerpc/platforms/powernv/eeh-rtas.c b/arch/powerpc/platforms/powernv/eeh-rtas.c
-new file mode 100644
-index 0000000..fded461
---- /dev/null
+index 1a037fd..3e38d13 100644
+--- a/arch/powerpc/platforms/powernv/eeh-rtas.c
 +++ b/arch/powerpc/platforms/powernv/eeh-rtas.c
-@@ -0,0 +1,64 @@
-+/*
-+ * The file intends to implement emulation for EEH related RTAS services,
-+ * which is expected to be done inside hypervisor. The specific RTAS
-+ * service is identified by its unique token. Currently, the tokens
-+ * are assigned by QEMU in a dynamic way and the dedicated hcall (0xf000)
-+ * was introduced for the purpose of RTAS emulation either in hypervisor
-+ * or QEMU.
-+ *
-+ * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2014.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/bootmem.h>
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/irq.h>
-+#include <linux/kernel.h>
-+#include <linux/kvm_host.h>
-+#include <linux/msi.h>
-+#include <linux/pci.h>
-+#include <linux/string.h>
-+
-+#include <asm/rtas.h>
-+#include <asm/eeh.h>
-+#include <asm/eeh_event.h>
-+#include <asm/io.h>
-+#include <asm/iommu.h>
-+#include <asm/opal.h>
-+#include <asm/msi_bitmap.h>
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc-pci.h>
-+#include <asm/tce.h>
-+
-+#include "powernv.h"
-+#include "pci.h"
-+
-+/**
-+ * kvmppc_eeh_rtas - Backend for EEH RTAS emulation
-+ * @vcpu: KVM virtual CPU
-+ * @args: RTAS parameter
-+ * @op: identifier of the specific EEH RTAS service
-+ *
-+ * The function will be called when the hypervisor receives emulation
-+ * request on EEH RTAS from guest. Accordingly, it will dispatch to
-+ * specific functions to handle the request.
-+ */
-+void kvmppc_eeh_rtas(struct kvm_vcpu *vcpu, struct rtas_args *args, int op)
+@@ -171,6 +171,95 @@ out:
+ 	return ret;
+ }
+ 
++static int kvmppc_eeh_set_reset(struct kvm_vcpu *vcpu,
++				struct rtas_args *args)
 +{
-+	int ret = -3;
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	struct eeh_dev *edev;
++	struct eeh_pe *pe;
++	struct eeh_vfio_pci_addr addr;
++	int opcode;
++	int ret = 0;
 +
-+	/* Parse the requested service */
-+	switch (op) {
-+	default:
-+		pr_warn("%s: Unsupported EEH RTAS service#%d\n",
-+			__func__, op);
++	/* Sanity check on parameter */
++	if (args->nargs != 4 || args->nret != 1) {
++		pr_warn("%s: Non-matched arguments (%d, %d) - (4, 1)\n",
++			__func__, args->nargs, args->nret);
++		ret = -3;
++		goto out;
 +	}
 +
-+	args->rets[0] = ret;
++	/* Sanity check on opcode */
++	opcode = args->args[3];
++	if (opcode != EEH_RESET_DEACTIVATE &&
++	    opcode != EEH_RESET_HOT &&
++	    opcode != EEH_RESET_FUNDAMENTAL) {
++		pr_warn("%s: Unsupported opcode %d\n",
++			__func__, opcode);
++		ret = -3;
++		goto out;
++	}
++
++	/* Figure out the address. We always have PE address */
++	if (kvmppc_eeh_format_addr(vcpu, args, &addr, false, &edev, &pe)) {
++		ret = -3;
++		goto out;
++	}
++
++	/* Insure that the EEH stuff has been initialized */
++	hose = pe->phb;
++	phb = hose->private_data;
++	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
++		pr_warn("%s: EEH disable on PHB#%d\n",
++			__func__, hose->global_number);
++		ret = -7;
++		goto out;
++	}
++
++	/* Call into the IODA dependent backend to do the reset */
++	if (!phb->eeh_ops ||
++	    !phb->eeh_ops->set_option ||
++	    !phb->eeh_ops->reset) {
++		pr_warn("%s: Unsupported request\n", __func__);
++		ret = -7;
++	} else {
++		/*
++		 * The frozen PE might be caused by the mechanism called
++		 * PAPR error injection, which is supposed to be one-shot
++		 * without "sticky" bit as being stated by the spec. But
++		 * the reality isn't that, at least on P7IOC. So we have
++		 * to clear that to avoid recrusive error, which fail the
++		 * recovery.
++		 */
++		if (opcode == EEH_RESET_DEACTIVATE)
++			opal_pci_reset(phb->opal_id,
++				       OPAL_PHB_ERROR,
++				       OPAL_ASSERT_RESET);
++
++		if (phb->eeh_ops->reset(pe, opcode)) {
++			pr_warn("%s: Failure from backend\n",
++				__func__);
++			ret = -1;
++			goto out;
++		}
++
++		/*
++		 * The PE is still in frozen state and we need clear that.
++		 * It's good to clear frozen state after deassert to avoid
++		 * messy IO access during reset, which might cause recrusive
++		 * frozen PE.
++		 */
++		if (opcode == EEH_RESET_DEACTIVATE) {
++			phb->eeh_ops->set_option(pe, EEH_OPT_THAW_MMIO);
++			phb->eeh_ops->set_option(pe, EEH_OPT_THAW_DMA);
++		}
++	}
++
++out:
++	return ret;
 +}
++
+ /**
+  * kvmppc_eeh_rtas - Backend for EEH RTAS emulation
+  * @vcpu: KVM virtual CPU
+@@ -190,6 +279,9 @@ void kvmppc_eeh_rtas(struct kvm_vcpu *vcpu, struct rtas_args *args, int op)
+ 	case eeh_rtas_set_option:
+ 		ret = kvmppc_eeh_set_option(vcpu, args);
+ 		break;
++	case eeh_rtas_set_slot_reset:
++		ret = kvmppc_eeh_set_reset(vcpu, args);
++		break;
+ 	default:
+ 		pr_warn("%s: Unsupported EEH RTAS service#%d\n",
+ 			__func__, op);
 -- 
 1.8.3.2
