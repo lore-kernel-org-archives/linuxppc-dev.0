@@ -1,36 +1,19 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo4-p00-ob.smtp.rzone.de (mo4-p00-ob.smtp.rzone.de
+ [81.169.146.216])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AEAEC140303
- for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2014 19:11:08 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 5 May 2014 14:41:04 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 90F54394003E
- for <linuxppc-dev@ozlabs.org>; Mon,  5 May 2014 14:41:01 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s459B0sV24903786
- for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2014 14:41:00 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s459AsKQ025001
- for <linuxppc-dev@ozlabs.org>; Mon, 5 May 2014 14:40:56 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [V6 06/11] powerpc,
- perf: Re-arrange PMU based branch filter processing in POWER8
-Date: Mon,  5 May 2014 14:39:08 +0530
-Message-Id: <1399280953-31442-7-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, ak@linux.intel.com, eranian@google.com,
- michael@ellerman.id.au, acme@ghostprotocols.net, sukadev@linux.vnet.ibm.com,
- mingo@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 5A0F01402FA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2014 19:41:41 +1000 (EST)
+Message-ID: <53675CCF.1000300@xenosoft.de>
+Date: Mon, 05 May 2014 11:41:35 +0200
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: Boot problems with a PA6T board
+References: <5366649E.4030102@xenosoft.de> <1399268891.4600.3.camel@concordia>
+In-Reply-To: <1399268891.4600.3.camel@concordia>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,55 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch does some code re-arrangements to make it clear that
-it ignores any separate privilege level branch filter request
-and does not support any combinations of HW PMU branch filters.
+Hi Michael,
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/perf/power8-pmu.c | 21 +++++++--------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+Thanks a lot for your answer. They reasoned that "starting cpu hw idx 
+0... failed" is reported because that core of the CPU is already up and 
+running.
 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index fe2763b..13f47f5 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -635,8 +635,6 @@ static int power8_generic_events[] = {
- 
- static u64 power8_bhrb_filter_map(u64 branch_sample_type)
- {
--	u64 pmu_bhrb_filter = 0;
--
- 	/* BHRB and regular PMU events share the same privilege state
- 	 * filter configuration. BHRB is always recorded along with a
- 	 * regular PMU event. As the privilege state filter is handled
-@@ -644,20 +642,15 @@ static u64 power8_bhrb_filter_map(u64 branch_sample_type)
- 	 * PMU event, we ignore any separate BHRB specific request.
- 	 */
- 
--	/* No branch filter requested */
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY)
--		return pmu_bhrb_filter;
--
--	/* Invalid branch filter options - HW does not support */
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_RETURN)
--		return -1;
-+	/* Ignore user, kernel, hv bits */
-+	branch_sample_type &= ~PERF_SAMPLE_BRANCH_PLM_ALL;
- 
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_IND_CALL)
--		return -1;
-+	/* No branch filter requested */
-+	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY)
-+		return 0;
- 
--	if (branch_sample_type & PERF_SAMPLE_BRANCH_ANY_CALL) {
--		pmu_bhrb_filter |= POWER8_MMCRA_IFM1;
--		return pmu_bhrb_filter;
-+	if (branch_sample_type == PERF_SAMPLE_BRANCH_ANY_CALL) {
-+		return POWER8_MMCRA_IFM1;
- 	}
- 
- 	/* Every thing else is unsupported */
--- 
-1.7.11.7
+I have built a git kernel from 2014-04-02.
+
+-> git clone 
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux-git
+-> git show 3e75c6de1ac33fe3500f44573d9212dc82c99f59
+-> git checkout -f 3e75c6de1ac33fe3500f44573d9212dc82c99f59; git clean -fdx
+
+This kernel booted and showed a Kernel Panic with the following error 
+message:
+
+Oops: Machine check, sig: 7 [#1]
+
+Rgds,
+
+Christian
+
+
+On 05.05.2014 07:48, Michael Ellerman wrote:
+> On Sun, 2014-05-04 at 18:02 +0200, Christian Zigotzky wrote:
+>> Hi All,
+>>
+>> The RC 1, 2, and 3 of the kernel 3.15 don't boot on my PA6T board with a
+>> Radeon HD 6870 graphics card.
+>>
+>> Screenshot:
+>> http://forum.hyperion-entertainment.biz/download/file.php?id=1060&mode=view
+>>
+>> The kernel 3.14 starts without any problems. Has anyone a tip for me,
+>> please?
+> The line that says "starting cpu hw idx 0... failed" looks a little worrying.
+> Do you see that on 3.14 as well?
+>
+> Otherwise bisection is probably your best bet.
+>
+> cheers
+>
+>
+>
