@@ -1,16 +1,40 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 6 May 2014 14:20:58 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] KVM: PPC: BOOK3S: HV: THP support for guest
-Message-ID: <20140506042058.GA25186@drongo>
-References: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <53677834.5010808@suse.de> <87lhug9taz.fsf@linux.vnet.ibm.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 952F5140E6A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 14:26:28 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 6 May 2014 14:26:26 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0555B2CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 14:26:24 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4645Fhe7602436
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 May 2014 14:05:15 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s464QNZg014652
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 May 2014 14:26:23 +1000
+Date: Tue, 6 May 2014 14:26:22 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH RFC 00/22] EEH Support for VFIO PCI devices on PowerKVM
+ guest
+Message-ID: <20140506042622.GA24228@shangw>
+References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <53677C6C.8060508@suse.de> <1399298412.24318.521.camel@ul30vt.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87lhug9taz.fsf@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+In-Reply-To: <1399298412.24318.521.camel@ul30vt.home>
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,46 +44,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 05, 2014 at 08:17:00PM +0530, Aneesh Kumar K.V wrote:
-> Alexander Graf <agraf@suse.de> writes:
-> 
-> > On 05/04/2014 07:30 PM, Aneesh Kumar K.V wrote:
-> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >
-> > No patch description, no proper explanations anywhere why you're doing 
-> > what. All of that in a pretty sensitive piece of code. There's no way 
-> > this patch can go upstream in its current form.
-> >
-> 
-> Sorry about being vague. Will add a better commit message. The goal is
-> to export MPSS support to guest if the host support the same. MPSS
-> support is exported via penc encoding in "ibm,segment-page-sizes". The
-> actual format can be found at htab_dt_scan_page_sizes. When the guest
-> memory is backed by hugetlbfs we expose the penc encoding the host
-> support to guest via kvmppc_add_seg_page_size. 
+On Mon, May 05, 2014 at 08:00:12AM -0600, Alex Williamson wrote:
+>On Mon, 2014-05-05 at 13:56 +0200, Alexander Graf wrote:
+>> On 05/05/2014 03:27 AM, Gavin Shan wrote:
+>> > The series of patches intends to support EEH for PCI devices, which have been
+>> > passed through to PowerKVM based guest via VFIO. The implementation is
+>> > straightforward based on the issues or problems we have to resolve to support
+>> > EEH for PowerKVM based guest.
+>> >
+>> > - Emulation for EEH RTAS requests. Thanksfully, we already have infrastructure
+>> >    to emulate XICS. Without introducing new mechanism, we just extend that
+>> >    existing infrastructure to support EEH RTAS emulation. EEH RTAS requests
+>> >    initiated from guest are posted to host where the requests get handled or
+>> >    delivered to underly firmware for further handling. For that, the host kerenl
+>> >    has to maintain the PCI address (host domain/bus/slot/function to guest's
+>> >    PHB BUID/bus/slot/function) mapping via KVM VFIO device. The address mapping
+>> >    will be built when initializing VFIO device in QEMU and destroied when the
+>> >    VFIO device in QEMU is going to offline, or VM is destroy.
+>> 
+>> Do you also expose all those interfaces to user space? VFIO is as much 
+>> about user space device drivers as it is about device assignment.
+>> 
 
-In a case like this it's good to assume the reader doesn't know very
-much about Power CPUs, and probably isn't familiar with acronyms such
-as MPSS.  The patch needs an introductory paragraph explaining that on
-recent IBM Power CPUs, while the hashed page table is looked up using
-the page size from the segmentation hardware (i.e. the SLB), it is
-possible to have the HPT entry indicate a larger page size.  Thus for
-example it is possible to put a 16MB page in a 64kB segment, but since
-the hash lookup is done using a 64kB page size, it may be necessary to
-put multiple entries in the HPT for a single 16MB page.  This
-capability is called mixed page-size segment (MPSS).  With MPSS,
-there are two relevant page sizes: the base page size, which is the
-size used in searching the HPT, and the actual page size, which is the
-size indicated in the HPT entry.  Note that the actual page size is
-always >= base page size.
+Yep, all the interfaces are exported to user space. 
 
-> Now the challenge to THP support is to make sure that our henter,
-> hremove etc decode base page size and actual page size correctly
-> from the hash table entry values. Most of the changes is to do that.
-> Rest of the stuff is already handled by kvm. 
-> 
-> NOTE: It is much easier to read the code after applying the patch rather
-> than reading the diff. I have added comments around each steps in the
-> code.
+>> I would like to first see an implementation that doesn't touch KVM 
+>> emulation code at all but instead routes everything through QEMU. As a 
+>> second step we can then accelerate performance critical paths inside of KVM.
+>> 
 
-Paul.
+Ok. I'll change the implementation. However, the QEMU still has to
+poll/push information from/to host kerenl. So the best place for that
+would be tce_iommu_driver_ops::ioctl as EEH is Power specific feature.
+
+For the error injection, I guess I have to put the logic token management
+into QEMU and error injection request will be handled by QEMU and then
+routed to host kernel via additional syscall as we did for pSeries.
+
+>> That way we ensure that user space device drivers have all the power 
+>> over a device they need to drive it.
+>
+>+1
+>
+
+Thanks,
+Gavin
