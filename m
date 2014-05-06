@@ -3,13 +3,15 @@ Received: from na01-by2-obe.outbound.protection.outlook.com
  (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A354D1400C6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 05:21:57 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D34241402C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 05:22:04 +1000 (EST)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2 v2] bootmem/powerpc: Unify bootmem initialization
-Date: Tue, 6 May 2014 13:48:03 -0500
-Message-ID: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH 2/2 v2] powerpc: Enable NO_BOOTMEM
+Date: Tue, 6 May 2014 13:48:04 -0500
+Message-ID: <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Emil Medve <Emilian.Medve@Freescale.com>
@@ -22,94 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unify the low/highmem code path from do_init_bootmem() by using (the)
-lowmem related variables/parameters even when the low/highmem split
-is not needed (64-bit) or configured. In such cases the "lowmem"
-variables/parameters continue to observe the definition by referring
-to memory directly mapped by the kernel
+Currently bootmem is just a wrapper around memblock. This gets rid of
+the wrapper code just as other ARHC(es) did: x86, arm, etc.
+
+For now only cover !NUMA systems/builds
 
 Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 ---
 
-v2: Rebased, no changes
+v2: Acknowledge that NUMA systems/builds are not covered by this patch
 
- arch/powerpc/mm/mem.c | 36 ++++++++++++++++--------------------
- 1 file changed, 16 insertions(+), 20 deletions(-)
+ arch/powerpc/Kconfig  | 3 +++
+ arch/powerpc/mm/mem.c | 8 ++++++++
+ 2 files changed, 11 insertions(+)
 
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index e099899..07b164b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -475,6 +475,9 @@ config SYS_SUPPORTS_HUGETLBFS
+ 
+ source "mm/Kconfig"
+ 
++config NO_BOOTMEM
++	def_bool !NUMA
++
+ config ARCH_MEMORY_PROBE
+ 	def_bool y
+ 	depends on MEMORY_HOTPLUG
 diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 32202c9..eaf5d1d8 100644
+index eaf5d1d8..d3e1d5f 100644
 --- a/arch/powerpc/mm/mem.c
 +++ b/arch/powerpc/mm/mem.c
-@@ -188,27 +188,31 @@ EXPORT_SYMBOL_GPL(walk_system_ram_range);
+@@ -187,10 +187,12 @@ EXPORT_SYMBOL_GPL(walk_system_ram_range);
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
  void __init do_init_bootmem(void)
  {
++#ifndef CONFIG_NO_BOOTMEM
  	unsigned long start, bootmap_pages;
--	unsigned long total_pages;
  	struct memblock_region *reg;
  	int boot_mapsize;
-+	phys_addr_t _total_lowmem;
-+	phys_addr_t _lowmem_end_addr;
+ 	phys_addr_t _total_lowmem;
++#endif
+ 	phys_addr_t _lowmem_end_addr;
  
--	max_low_pfn = max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
--	total_pages = (memblock_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
--#ifdef CONFIG_HIGHMEM
--	total_pages = total_lowmem >> PAGE_SHIFT;
--	max_low_pfn = lowmem_end_addr >> PAGE_SHIFT;
-+#ifndef CONFIG_HIGHMEM
-+	_lowmem_end_addr = memblock_end_of_DRAM();
-+#else
-+	_lowmem_end_addr = lowmem_end_addr;
- #endif
+ #ifndef CONFIG_HIGHMEM
+@@ -203,6 +205,7 @@ void __init do_init_bootmem(void)
+ 	max_low_pfn = _lowmem_end_addr >> PAGE_SHIFT;
+ 	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
  
-+	max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
-+	max_low_pfn = _lowmem_end_addr >> PAGE_SHIFT;
-+	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
-+
++#ifndef CONFIG_NO_BOOTMEM
  	/*
  	 * Find an area to use for the bootmem bitmap.  Calculate the size of
  	 * bitmap required as (Total Memory) / PAGE_SIZE / BITS_PER_BYTE.
- 	 * Add 1 additional page in case the address isn't page-aligned.
- 	 */
--	bootmap_pages = bootmem_bootmap_pages(total_pages);
-+	_total_lowmem = _lowmem_end_addr - memstart_addr;
-+	bootmap_pages = bootmem_bootmap_pages(_total_lowmem >> PAGE_SHIFT);
- 
+@@ -214,12 +217,14 @@ void __init do_init_bootmem(void)
  	start = memblock_alloc(bootmap_pages << PAGE_SHIFT, PAGE_SIZE);
  
--	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
  	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
++#endif
  
  	/* Place all memblock_regions in the same node and merge contiguous
-@@ -219,26 +223,18 @@ void __init do_init_bootmem(void)
+ 	 * memblock_regions
+ 	 */
+ 	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, &memblock.memory, 0);
+ 
++#ifndef CONFIG_NO_BOOTMEM
  	/* Add all physical memory to the bootmem map, mark each area
  	 * present.
  	 */
--#ifdef CONFIG_HIGHMEM
--	free_bootmem_with_active_regions(0, lowmem_end_addr >> PAGE_SHIFT);
-+	free_bootmem_with_active_regions(0, max_low_pfn);
- 
- 	/* reserve the sections we're already using */
- 	for_each_memblock(reserved, reg) {
--		unsigned long top = reg->base + reg->size - 1;
--		if (top < lowmem_end_addr)
-+		if (reg->base + reg->size - 1 < _lowmem_end_addr)
- 			reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
--		else if (reg->base < lowmem_end_addr) {
--			unsigned long trunc_size = lowmem_end_addr - reg->base;
-+		else if (reg->base < _lowmem_end_addr) {
-+			unsigned long trunc_size = _lowmem_end_addr - reg->base;
+@@ -234,11 +239,14 @@ void __init do_init_bootmem(void)
  			reserve_bootmem(reg->base, trunc_size, BOOTMEM_DEFAULT);
  		}
  	}
--#else
--	free_bootmem_with_active_regions(0, max_pfn);
++#endif
  
--	/* reserve the sections we're already using */
--	for_each_memblock(reserved, reg)
--		reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
--#endif
  	/* XXX need to clip this if using highmem? */
  	sparse_memory_present_with_active_regions(0);
  
++#ifndef CONFIG_NO_BOOTMEM
+ 	init_bootmem_done = 1;
++#endif
+ }
+ 
+ /* mark pages that don't exist as nosave */
 -- 
 1.9.2
