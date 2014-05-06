@@ -1,33 +1,39 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 37C481413BE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 01:55:53 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 840541413EA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 02:08:39 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 7 May 2014 01:55:52 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 961C52BB004A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 01:55:50 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s46FYWnE52559944
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 01:34:32 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s46FtnLi030508
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 01:55:50 +1000
+ Tue, 6 May 2014 21:38:36 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id B463C3940049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 21:38:31 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s46G8d7W61735014
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 May 2014 21:38:40 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s46G8VlS010837
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 May 2014 21:38:31 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH V2] KVM: PPC: BOOK3S: HV: Prefer CMA region for hash page
- table allocation
-Date: Tue,  6 May 2014 21:24:18 +0530
-Message-Id: <1399391658-1308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [RFC PATCH] KVM: PPC: BOOK3S: HV: THP support for guest
+In-Reply-To: <5368FE66.5040809@suse.de>
+References: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <5368A78D.4070509@suse.de> <1399368400.18906.9.camel@pasglop>
+ <5368ADE3.1050503@suse.de> <87oazbq73t.fsf@linux.vnet.ibm.com>
+ <5368FE66.5040809@suse.de>
+Date: Tue, 06 May 2014 21:38:30 +0530
+Message-ID: <87ha52ritd.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,65 +43,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Today when KVM tries to reserve memory for the hash page table it
-allocates from the normal page allocator first. If that fails it
-falls back to CMA's reserved region. One of the side effects of
-this is that we could end up exhausting the page allocator and
-get linux into OOM conditions while we still have plenty of space
-available in CMA.
+Alexander Graf <agraf@suse.de> writes:
 
-This patch addresses this issue by first trying hash page table
-allocation from CMA's reserved region before falling back to the normal
-page allocator. So if we run out of memory, we really are out of memory.
+> On 05/06/2014 05:06 PM, Aneesh Kumar K.V wrote:
+>> Alexander Graf <agraf@suse.de> writes:
+>>
+>>> On 05/06/2014 11:26 AM, Benjamin Herrenschmidt wrote:
+>>>> On Tue, 2014-05-06 at 11:12 +0200, Alexander Graf wrote:
+>>>>
+>> .....
+>>
+>>
+>> I updated the commit message as below. Let me know if this is ok.
+>>
+>>      KVM: PPC: BOOK3S: HV: THP support for guest
+>
+> This has nothing to do with THP.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-* Changes from V1
-  * Update commit message 
+THP support in guest depend on KVM advertising MPSS feature. We already
+have rest of the changes needed to support transparent huge pages
+upstream. (We do support THP with PowerVM LPAR already). The primary
+motivation of this patch is to enable THP in powerkvm guest. 
 
- arch/powerpc/kvm/book3s_64_mmu_hv.c | 23 ++++++-----------------
- 1 file changed, 6 insertions(+), 17 deletions(-)
+>
+>>      
+>>      On recent IBM Power CPUs, while the hashed page table is looked up using
+>>      the page size from the segmentation hardware (i.e. the SLB), it is
+>>      possible to have the HPT entry indicate a larger page size.  Thus for
+>>      example it is possible to put a 16MB page in a 64kB segment, but since
+>>      the hash lookup is done using a 64kB page size, it may be necessary to
+>>      put multiple entries in the HPT for a single 16MB page.  This
+>>      capability is called mixed page-size segment (MPSS).  With MPSS,
+>>      there are two relevant page sizes: the base page size, which is the
+>>      size used in searching the HPT, and the actual page size, which is the
+>>      size indicated in the HPT entry. [ Note that the actual page size is
+>>      always >= base page size ].
+>>      
+>>      We advertise MPSS feature to guest only if the host CPU supports the
+>>      same. We use "ibm,segment-page-sizes" device tree node to advertise
+>>      the MPSS support. The penc encoding indicate whether we support
+>>      a specific combination of base page size and actual page size
+>>      in the same segment. It is also the value used in the L|LP encoding
+>>      of HPTE entry.
+>>      
+>>      In-order to support MPSS in guest, KVM need to handle the below details
+>>      * advertise MPSS via ibm,segment-page-sizes
+>>      * Decode the base and actual page size correctly from the HPTE entry
+>>        so that we know what we are dealing with in H_ENTER and and can do
+>
+> Which code path exactly changes for H_ENTER?
 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index fb25ebc0af0c..f32896ffd784 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -52,7 +52,7 @@ static void kvmppc_rmap_reset(struct kvm *kvm);
- 
- long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
- {
--	unsigned long hpt;
-+	unsigned long hpt = 0;
- 	struct revmap_entry *rev;
- 	struct page *page = NULL;
- 	long order = KVM_DEFAULT_HPT_ORDER;
-@@ -64,22 +64,11 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
- 	}
- 
- 	kvm->arch.hpt_cma_alloc = 0;
--	/*
--	 * try first to allocate it from the kernel page allocator.
--	 * We keep the CMA reserved for failed allocation.
--	 */
--	hpt = __get_free_pages(GFP_KERNEL | __GFP_ZERO | __GFP_REPEAT |
--			       __GFP_NOWARN, order - PAGE_SHIFT);
--
--	/* Next try to allocate from the preallocated pool */
--	if (!hpt) {
--		VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
--		page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
--		if (page) {
--			hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
--			kvm->arch.hpt_cma_alloc = 1;
--		} else
--			--order;
-+	VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
-+	page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
-+	if (page) {
-+		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
-+		kvm->arch.hpt_cma_alloc = 1;
- 	}
- 
- 	/* Lastly try successively smaller sizes from the page allocator */
--- 
-1.9.1
+There is no real code path changes. Any code path that use
+hpte_page_size() is impacted. We return actual page size there. 
+
+>
+>>        the appropriate TLB invalidation in H_REMOVE and evictions.
+>
+> Apart from the grammar (which is pretty broken for the part that is not 
+> copied from Paul) and the subject line this sounds quite reasonable.
+>
+
+Wll try to fix.
+
+-aneesh
