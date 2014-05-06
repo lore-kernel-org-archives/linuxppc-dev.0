@@ -1,19 +1,19 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0204.outbound.protection.outlook.com [207.46.163.204])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 619351402B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 11:18:41 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 46B8C140FD7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 11:37:52 +1000 (EST)
 From: Scott Wood <scottwood@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4] powerpc/fsl: Add binding for Freescale CCF
-Date: Mon, 5 May 2014 20:17:57 -0500
-Message-ID: <1399339077-16289-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH] powerpc/fsl: Add fsl,portid-mapping to corenet1-cf chips
+Date: Mon, 5 May 2014 20:37:35 -0500
+Message-ID: <1399340255-18612-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Diana Craciun <Diana.Craciun@freescale.com>, devicetree@vger.kernel.org,
- Scott Wood <scottwood@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, devicetree@vger.kernel.org,
+ Diana Craciun <diana.craciun@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,125 +23,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Diana Craciun <Diana.Craciun@freescale.com>
-
-The CoreNet coherency fabric is a fabric-oriented, conectivity
-infrastructure that enables the implementation of coherent, multicore
-systems. The CCF acts as a central interconnect for cores,
-platform-level caches, memory subsystem, peripheral devices and I/O host
-bridges in the system.
-
-Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
-[scottwood@freescale.com: formatting and minor changes]
 Signed-off-by: Scott Wood <scottwood@freescale.com>
+Cc: Diana Craciun <diana.craciun@freescale.com>
 ---
-v4: Fixed various formatting issues, minor edits for clarity, and
-made fsl,portid-mapping an optional property.
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 1 +
+ arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi  | 4 ++++
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 1 +
+ arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi  | 4 ++++
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 1 +
+ arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi  | 8 ++++++++
+ arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 1 +
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi  | 2 ++
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 1 +
+ arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi  | 4 ++++
+ 10 files changed, 27 insertions(+)
 
- .../devicetree/bindings/powerpc/fsl/ccf.txt        | 46 ++++++++++++++++++++++
- .../devicetree/bindings/powerpc/fsl/cpus.txt       | 11 ++++++
- .../devicetree/bindings/powerpc/fsl/pamu.txt       | 10 +++++
- 3 files changed, 67 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
-
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
-new file mode 100644
-index 0000000..454da7e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
-@@ -0,0 +1,46 @@
-+Freescale CoreNet Coherency Fabric(CCF) Device Tree Binding
-+
-+DESCRIPTION
-+
-+The CoreNet coherency fabric is a fabric-oriented, connectivity infrastructure
-+that enables the implementation of coherent, multicore systems.
-+
-+Required properties:
-+
-+- compatible: <string list>
-+		fsl,corenet1-cf - CoreNet coherency fabric version 1.
-+		Example chips: T4240, B4860
-+
-+		fsl,corenet2-cf - CoreNet coherency fabric version 2.
-+		Example chips: P5040, P5020, P4080, P3041, P2041
-+
-+		fsl,corenet-cf - Used to represent the common registers
-+		between CCF version 1 and CCF version 2.  This compatible
-+		is retained for compatibility reasons, as it was already
-+		used for both CCF version 1 chips and CCF version 2
-+		chips.  It should be specified after either
-+		"fsl,corenet1-cf" or "fsl,corenet2-cf".
-+
-+- reg: <prop-encoded-array>
-+		A standard property. Represents the CCF registers.
-+
-+- interrupts: <prop-encoded-array>
-+		Interrupt mapping for CCF error interrupt.
-+
-+- fsl,ccf-num-csdids: <u32>
-+		Specifies the number of Coherency Subdomain ID Port Mapping
-+		Registers that are supported by the CCF.
-+
-+- fsl,ccf-num-snoopids: <u32>
-+		Specifies the number of Snoop ID Port Mapping Registers that
-+		are supported by CCF.
-+
-+Example:
-+
-+	corenet-cf@18000 {
-+		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
-+		reg = <0x18000 0x1000>;
-+		interrupts = <16 2 1 31>;
-+		fsl,ccf-num-csdids = <32>;
-+		fsl,ccf-num-snoopids = <32>;
-+	};
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt b/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
-index 922c30a..f8cd239 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/cpus.txt
-@@ -20,3 +20,14 @@ PROPERTIES
- 	a property named fsl,eref-[CAT], where [CAT] is the abbreviated category
- 	name with all uppercase letters converted to lowercase, indicates that
- 	the category is supported by the implementation.
-+
-+    - fsl,portid-mapping
-+	Usage: optional
-+	Value type: <u32>
-+	Definition: The Coherency Subdomain ID Port Mapping Registers and
-+	Snoop ID Port Mapping registers, which are part of the CoreNet
-+	Coherency fabric (CCF), provide a CoreNet Coherency Subdomain
-+	ID/CoreNet Snoop ID to cpu mapping functions.  Certain bits from
-+	these registers should be set if the coresponding CPU should be
-+	snooped.  This property defines a bitmask which selects the bit
-+	that should be set if this cpu should be snooped.
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pamu.txt b/Documentation/devicetree/bindings/powerpc/fsl/pamu.txt
-index 1f5e329..c2b2899 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/pamu.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/pamu.txt
-@@ -34,6 +34,15 @@ Optional properties:
- 		  for legacy drivers.
- - interrupt-parent : <phandle>
- 		  Phandle to interrupt controller
-+- fsl,portid-mapping : <u32>
-+		  The Coherency Subdomain ID Port Mapping Registers and
-+		  Snoop ID Port Mapping registers, which are part of the
-+		  CoreNet Coherency fabric (CCF), provide a CoreNet
-+		  Coherency Subdomain ID/CoreNet Snoop ID to pamu mapping
-+		  functions.  Certain bits from these registers should be
-+		  set if PAMUs should be snooped.  This property defines
-+		  a bitmask which selects the bits that should be set if
-+		  PAMUs should be snooped.
- 
- Child nodes:
- 
-@@ -88,6 +97,7 @@ Example:
- 		compatible = "fsl,pamu-v1.0", "fsl,pamu";
- 		reg = <0x20000 0x5000>;
- 		ranges = <0 0x20000 0x5000>;
-+		fsl,portid-mapping = <0xf80000>;
- 		#address-cells = <1>;
- 		#size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
+index b5daa4c..5290df8 100644
+--- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
+@@ -262,6 +262,7 @@
  		interrupts = <
+ 			24 2 0 0
+ 			16 2 1 30>;
++		fsl,portid-mapping = <0x0f000000>;
+ 
+ 		pamu0: pamu@0 {
+ 			reg = <0 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
+index 22f3b14..b1ea147 100644
+--- a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
+@@ -83,6 +83,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_0>;
++			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -92,6 +93,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -101,6 +103,7 @@
+ 			reg = <2>;
+ 			clocks = <&mux2>;
+ 			next-level-cache = <&L2_2>;
++			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -110,6 +113,7 @@
+ 			reg = <3>;
+ 			clocks = <&mux3>;
+ 			next-level-cache = <&L2_3>;
++			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
+index 5abd1fc..cd63cb1 100644
+--- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
+@@ -289,6 +289,7 @@
+ 		interrupts = <
+ 			24 2 0 0
+ 			16 2 1 30>;
++		fsl,portid-mapping = <0x0f000000>;
+ 
+ 		pamu0: pamu@0 {
+ 			reg = <0 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
+index 468e8be..dc5f4b3 100644
+--- a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
+@@ -84,6 +84,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_0>;
++			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -93,6 +94,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -102,6 +104,7 @@
+ 			reg = <2>;
+ 			clocks = <&mux2>;
+ 			next-level-cache = <&L2_2>;
++			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -111,6 +114,7 @@
+ 			reg = <3>;
+ 			clocks = <&mux3>;
+ 			next-level-cache = <&L2_3>;
++			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+index bf0e7c9..12947cc 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+@@ -297,6 +297,7 @@
+ 		interrupts = <
+ 			24 2 0 0
+ 			16 2 1 30>;
++		fsl,portid-mapping = <0x00f80000>;
+ 
+ 		pamu0: pamu@0 {
+ 			reg = <0 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
+index 0040b5a..38bde09 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
+@@ -83,6 +83,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_0>;
++			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -92,6 +93,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -101,6 +103,7 @@
+ 			reg = <2>;
+ 			clocks = <&mux2>;
+ 			next-level-cache = <&L2_2>;
++			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -110,6 +113,7 @@
+ 			reg = <3>;
+ 			clocks = <&mux3>;
+ 			next-level-cache = <&L2_3>;
++			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -119,6 +123,7 @@
+ 			reg = <4>;
+ 			clocks = <&mux4>;
+ 			next-level-cache = <&L2_4>;
++			fsl,portid-mapping = <0x08000000>;
+ 			L2_4: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -128,6 +133,7 @@
+ 			reg = <5>;
+ 			clocks = <&mux5>;
+ 			next-level-cache = <&L2_5>;
++			fsl,portid-mapping = <0x04000000>;
+ 			L2_5: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -137,6 +143,7 @@
+ 			reg = <6>;
+ 			clocks = <&mux6>;
+ 			next-level-cache = <&L2_6>;
++			fsl,portid-mapping = <0x02000000>;
+ 			L2_6: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -146,6 +153,7 @@
+ 			reg = <7>;
+ 			clocks = <&mux7>;
+ 			next-level-cache = <&L2_7>;
++			fsl,portid-mapping = <0x01000000>;
+ 			L2_7: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
+index f7ca9f4..4c4a2b0 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
+@@ -294,6 +294,7 @@
+ 		interrupts = <
+ 			24 2 0 0
+ 			16 2 1 30>;
++		fsl,portid-mapping = <0x3c000000>;
+ 
+ 		pamu0: pamu@0 {
+ 			reg = <0 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+index fe1a2e6..1cc61e1 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+@@ -90,6 +90,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_0>;
++			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -99,6 +100,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+index 91477b5..67296fd 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
+@@ -248,6 +248,7 @@
+ 		#size-cells = <1>;
+ 		interrupts = <24 2 0 0
+ 			      16 2 1 30>;
++		fsl,portid-mapping = <0x0f800000>;
+ 
+ 		pamu0: pamu@0 {
+ 			reg = <0 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+index 3674686..b048a2b 100644
+--- a/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi
+@@ -83,6 +83,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_0>;
++			fsl,portid-mapping = <0x80000000>;
+ 			L2_0: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -92,6 +93,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x40000000>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -101,6 +103,7 @@
+ 			reg = <2>;
+ 			clocks = <&mux2>;
+ 			next-level-cache = <&L2_2>;
++			fsl,portid-mapping = <0x20000000>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -110,6 +113,7 @@
+ 			reg = <3>;
+ 			clocks = <&mux3>;
+ 			next-level-cache = <&L2_3>;
++			fsl,portid-mapping = <0x10000000>;
+ 			L2_3: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
 -- 
 1.9.1
