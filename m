@@ -1,27 +1,40 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 24E3B1412CC
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 17:05:47 +1000 (EST)
-Message-ID: <536889C6.1050603@suse.de>
-Date: Tue, 06 May 2014 09:05:42 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] KVM: PPC: BOOK3S: HV: Don't try to allocate from kernel
- page allocator for hash page table.
-References: <1399224322-22028-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>	
- <53677558.50900@suse.de> <87r4489ttk.fsf@linux.vnet.ibm.com>	
- <20FFDF8F-1A3D-4719-B492-1E4B70F9D1B4@suse.de>
- <1399334797.20388.71.camel@pasglop>
-In-Reply-To: <1399334797.20388.71.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 5C3AE140B00
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 17:15:06 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Tue, 6 May 2014 17:15:04 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id F28413578047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 17:15:00 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s467Ekll11141402
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 May 2014 17:14:46 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s467F0cC027809
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 May 2014 17:15:00 +1000
+Message-ID: <1399360499.20388.107.camel@pasglop>
+Subject: Re: [PATCH RFC 00/22] EEH Support for VFIO PCI devices on PowerKVM
+ guest
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 06 May 2014 17:14:59 +1000
+In-Reply-To: <536887A3.30703@suse.de>
+References: <1399253291-3975-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <53677C6C.8060508@suse.de> <1399298412.24318.521.camel@ul30vt.home>
+ <20140506042622.GA24228@shangw> <536887A3.30703@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
+ qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +44,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-05-06 at 08:56 +0200, Alexander Graf wrote:
+> > For the error injection, I guess I have to put the logic token
+> management
+> > into QEMU and error injection request will be handled by QEMU and
+> then
+> > routed to host kernel via additional syscall as we did for pSeries.
+> 
+> Yes, start off without in-kernel XICS so everything simply lives in 
+> QEMU. Then add callbacks into the in-kernel XICS to inject these 
+> interrupts if we don't have wide enough interfaces already.
 
-On 06.05.14 02:06, Benjamin Herrenschmidt wrote:
-> On Mon, 2014-05-05 at 17:16 +0200, Alexander Graf wrote:
->> Isn't this a greater problem? We should start swapping before we hit
->> the point where non movable kernel allocation fails, no?
-> Possibly but the fact remains, this can be avoided by making sure that
-> if we create a CMA reserve for KVM, then it uses it rather than using
-> the rest of main memory for hash tables.
+It's got nothing to do with XICS ... :-)
 
-So why were we preferring non-CMA memory before? Considering that Aneesh 
-introduced that logic in fa61a4e3 I suppose this was just a mistake?
+But yes, we can route everything via qemu for now, then we'll need
+at least one of the call to have a "direct" path but we should probably
+strive to even make it real mode if that's possible, it's the one that
+Linux will call whenever an MMIO returns all f's to check if the
+underlying PE is frozen.
 
->> The fact that KVM uses a good number of normal kernel pages is maybe
->> suboptimal, but shouldn't be a critical problem.
-> The point is that we explicitly reserve those pages in CMA for use
-> by KVM for that specific purpose, but the current code tries first
-> to get them out of the normal pool.
->
-> This is not an optimal behaviour and is what Aneesh patches are
-> trying to fix.
+But we can do that as a second stage.
 
-I agree, and I agree that it's worth it to make better use of our 
-resources. But we still shouldn't crash.
+In fact going via VFIO ioctl's does make the whole security and
+translation model much simpler initially.
 
-However, reading through this thread I think I've slowly grasped what 
-the problem is. The hugetlbfs size calculation.
-
-I guess something in your stack overreserves huge pages because it 
-doesn't account for the fact that some part of system memory is already 
-reserved for CMA.
-
-So the underlying problem is something completely orthogonal. The patch 
-body as is is fine, but the patch description should simply say that we 
-should prefer the CMA region because it's already reserved for us for 
-this purpose and we make better use of our available resources that way.
-
-All the bits about pinning, numa, libvirt and whatnot don't really 
-matter and are just details that led Aneesh to find this non-optimal 
-allocation.
-
-
-Alex
+Cheers,
+Ben.
