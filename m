@@ -1,25 +1,33 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C73241413C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 01:54:46 +1000 (EST)
-Message-ID: <536905C2.1030206@suse.de>
-Date: Tue, 06 May 2014 17:54:42 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-Subject: Re: [PATCH v2 1/4] KVM: PPC: e500mc: Revert "add load inst fixup"
-References: <1398905152-18091-1-git-send-email-mihai.caraman@freescale.com>
- <1398905152-18091-2-git-send-email-mihai.caraman@freescale.com>
- <53636436.60002@suse.de> <1399072472827.57968@freescale.com>
- <76DD19C1-EBCD-485A-B847-21304903E139@suse.de>
- <887e9723335940fdae0073000ba2d299@BY2PR03MB508.namprd03.prod.outlook.com>
-In-Reply-To: <887e9723335940fdae0073000ba2d299@BY2PR03MB508.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 37C481413BE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 01:55:53 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 7 May 2014 01:55:52 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 961C52BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 01:55:50 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s46FYWnE52559944
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 01:34:32 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s46FtnLi030508
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 01:55:50 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH V2] KVM: PPC: BOOK3S: HV: Prefer CMA region for hash page
+ table allocation
+Date: Tue,  6 May 2014 21:24:18 +0530
+Message-Id: <1399391658-1308-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +37,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/06/2014 05:48 PM, mihai.caraman@freescale.com wrote:
->> -----Original Message-----
->> From: Alexander Graf [mailto:agraf@suse.de]
->> Sent: Sunday, May 04, 2014 1:14 AM
->> To: Caraman Mihai Claudiu-B02008
->> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
->> dev@lists.ozlabs.org
->> Subject: Re: [PATCH v2 1/4] KVM: PPC: e500mc: Revert "add load inst
->> fixup"
->>
->>
->>
->> Am 03.05.2014 um 01:14 schrieb "mihai.caraman@freescale.com"
->> <mihai.caraman@freescale.com>:
->>
->>>> From: Alexander Graf <agraf@suse.de>
->>>> Sent: Friday, May 2, 2014 12:24 PM
->>> This was the first idea that sprang to my mind inspired from how DO_KVM
->>> is hooked on PR. I actually did a simple POC for e500mc/e5500, but this
->> will
->>> not work on e6500 which has shared IVORs between HW threads.
->> What if we combine the ideas? On read we flip the IVOR to a separate
->> handler that checks for a field in the PACA. Only if that field is set,
->> we treat the fault as kvm fault, otherwise we jump into the normal
->> handler.
->>
->> I suppose we'd have to also take a lock to make sure we don't race with
->> the other thread when it wants to also read a guest instruction, but you
->> get the idea.
-> This might be a solution for TLB eviction but not for execute-but-not-read
-> entries which requires access from host context.
+Today when KVM tries to reserve memory for the hash page table it
+allocates from the normal page allocator first. If that fails it
+falls back to CMA's reserved region. One of the side effects of
+this is that we could end up exhausting the page allocator and
+get linux into OOM conditions while we still have plenty of space
+available in CMA.
 
-Good point :).
+This patch addresses this issue by first trying hash page table
+allocation from CMA's reserved region before falling back to the normal
+page allocator. So if we run out of memory, we really are out of memory.
 
->
->> I have no idea whether this would be any faster, it's more of a
->> brainstorming thing really. But regardless this patch set would be a move
->> into the right direction.
->>
->> Btw, do we have any guarantees that we don't get scheduled away before we
->> run kvmppc_get_last_inst()? If we run on a different core we can't read
->> the inst anymore. Hrm.
-> It was your suggestion to move the logic from kvmppc_handle_exit() irq
-> disabled area to kvmppc_get_last_inst():
->
-> http://git.freescale.com/git/cgit.cgi/ppc/sdk/linux.git/tree/arch/powerpc/kvm/booke.c
->
-> Still, what is wrong if we get scheduled on another core? We will emulate
-> again and the guest will populate the TLB on the new core.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+* Changes from V1
+  * Update commit message 
 
-Yes, it means we have to get the EMULATE_AGAIN code paths correct :). It 
-also means we lose some performance with preemptive kernel configurations.
+ arch/powerpc/kvm/book3s_64_mmu_hv.c | 23 ++++++-----------------
+ 1 file changed, 6 insertions(+), 17 deletions(-)
 
-
-Alex
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index fb25ebc0af0c..f32896ffd784 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -52,7 +52,7 @@ static void kvmppc_rmap_reset(struct kvm *kvm);
+ 
+ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
+ {
+-	unsigned long hpt;
++	unsigned long hpt = 0;
+ 	struct revmap_entry *rev;
+ 	struct page *page = NULL;
+ 	long order = KVM_DEFAULT_HPT_ORDER;
+@@ -64,22 +64,11 @@ long kvmppc_alloc_hpt(struct kvm *kvm, u32 *htab_orderp)
+ 	}
+ 
+ 	kvm->arch.hpt_cma_alloc = 0;
+-	/*
+-	 * try first to allocate it from the kernel page allocator.
+-	 * We keep the CMA reserved for failed allocation.
+-	 */
+-	hpt = __get_free_pages(GFP_KERNEL | __GFP_ZERO | __GFP_REPEAT |
+-			       __GFP_NOWARN, order - PAGE_SHIFT);
+-
+-	/* Next try to allocate from the preallocated pool */
+-	if (!hpt) {
+-		VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
+-		page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
+-		if (page) {
+-			hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
+-			kvm->arch.hpt_cma_alloc = 1;
+-		} else
+-			--order;
++	VM_BUG_ON(order < KVM_CMA_CHUNK_ORDER);
++	page = kvm_alloc_hpt(1 << (order - PAGE_SHIFT));
++	if (page) {
++		hpt = (unsigned long)pfn_to_kaddr(page_to_pfn(page));
++		kvm->arch.hpt_cma_alloc = 1;
+ 	}
+ 
+ 	/* Lastly try successively smaller sizes from the page allocator */
+-- 
+1.9.1
