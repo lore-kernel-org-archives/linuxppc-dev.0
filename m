@@ -1,20 +1,23 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D34241402C9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 05:22:04 +1000 (EST)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2 v2] powerpc: Enable NO_BOOTMEM
-Date: Tue, 6 May 2014 13:48:04 -0500
-Message-ID: <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
-In-Reply-To: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9BFD41401AF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 06:36:04 +1000 (EST)
+Message-ID: <1399408553.18906.29.camel@pasglop>
+Subject: Re: [RFC PATCH] KVM: PPC: BOOK3S: HV: THP support for guest
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 07 May 2014 06:35:53 +1000
+In-Reply-To: <87ha52ritd.fsf@linux.vnet.ibm.com>
+References: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <5368A78D.4070509@suse.de> <1399368400.18906.9.camel@pasglop>
+ <5368ADE3.1050503@suse.de> <87oazbq73t.fsf@linux.vnet.ibm.com>
+ <5368FE66.5040809@suse.de> <87ha52ritd.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,88 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently bootmem is just a wrapper around memblock. This gets rid of
-the wrapper code just as other ARHC(es) did: x86, arm, etc.
+On Tue, 2014-05-06 at 21:38 +0530, Aneesh Kumar K.V wrote:
 
-For now only cover !NUMA systems/builds
+> >> I updated the commit message as below. Let me know if this is ok.
+> >>
+> >>      KVM: PPC: BOOK3S: HV: THP support for guest
+> >
+> > This has nothing to do with THP.
+> 
+> THP support in guest depend on KVM advertising MPSS feature. We already
+> have rest of the changes needed to support transparent huge pages
+> upstream. (We do support THP with PowerVM LPAR already). The primary
+> motivation of this patch is to enable THP in powerkvm guest. 
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
----
+I would argue (nit picking, I know ... :-) that the subject should be
+"Enable MPSS support for guests", and the description can then explain
+that this allows Linux guests to use THP.
 
-v2: Acknowledge that NUMA systems/builds are not covered by this patch
+Cheers,
+Ben.
 
- arch/powerpc/Kconfig  | 3 +++
- arch/powerpc/mm/mem.c | 8 ++++++++
- 2 files changed, 11 insertions(+)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e099899..07b164b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -475,6 +475,9 @@ config SYS_SUPPORTS_HUGETLBFS
- 
- source "mm/Kconfig"
- 
-+config NO_BOOTMEM
-+	def_bool !NUMA
-+
- config ARCH_MEMORY_PROBE
- 	def_bool y
- 	depends on MEMORY_HOTPLUG
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index eaf5d1d8..d3e1d5f 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -187,10 +187,12 @@ EXPORT_SYMBOL_GPL(walk_system_ram_range);
- #ifndef CONFIG_NEED_MULTIPLE_NODES
- void __init do_init_bootmem(void)
- {
-+#ifndef CONFIG_NO_BOOTMEM
- 	unsigned long start, bootmap_pages;
- 	struct memblock_region *reg;
- 	int boot_mapsize;
- 	phys_addr_t _total_lowmem;
-+#endif
- 	phys_addr_t _lowmem_end_addr;
- 
- #ifndef CONFIG_HIGHMEM
-@@ -203,6 +205,7 @@ void __init do_init_bootmem(void)
- 	max_low_pfn = _lowmem_end_addr >> PAGE_SHIFT;
- 	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
- 
-+#ifndef CONFIG_NO_BOOTMEM
- 	/*
- 	 * Find an area to use for the bootmem bitmap.  Calculate the size of
- 	 * bitmap required as (Total Memory) / PAGE_SIZE / BITS_PER_BYTE.
-@@ -214,12 +217,14 @@ void __init do_init_bootmem(void)
- 	start = memblock_alloc(bootmap_pages << PAGE_SHIFT, PAGE_SIZE);
- 
- 	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
-+#endif
- 
- 	/* Place all memblock_regions in the same node and merge contiguous
- 	 * memblock_regions
- 	 */
- 	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, &memblock.memory, 0);
- 
-+#ifndef CONFIG_NO_BOOTMEM
- 	/* Add all physical memory to the bootmem map, mark each area
- 	 * present.
- 	 */
-@@ -234,11 +239,14 @@ void __init do_init_bootmem(void)
- 			reserve_bootmem(reg->base, trunc_size, BOOTMEM_DEFAULT);
- 		}
- 	}
-+#endif
- 
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
- 
-+#ifndef CONFIG_NO_BOOTMEM
- 	init_bootmem_done = 1;
-+#endif
- }
- 
- /* mark pages that don't exist as nosave */
--- 
-1.9.2
+> >
+> >>      
+> >>      On recent IBM Power CPUs, while the hashed page table is looked up using
+> >>      the page size from the segmentation hardware (i.e. the SLB), it is
+> >>      possible to have the HPT entry indicate a larger page size.  Thus for
+> >>      example it is possible to put a 16MB page in a 64kB segment, but since
+> >>      the hash lookup is done using a 64kB page size, it may be necessary to
+> >>      put multiple entries in the HPT for a single 16MB page.  This
+> >>      capability is called mixed page-size segment (MPSS).  With MPSS,
+> >>      there are two relevant page sizes: the base page size, which is the
+> >>      size used in searching the HPT, and the actual page size, which is the
+> >>      size indicated in the HPT entry. [ Note that the actual page size is
+> >>      always >= base page size ].
+> >>      
+> >>      We advertise MPSS feature to guest only if the host CPU supports the
+> >>      same. We use "ibm,segment-page-sizes" device tree node to advertise
+> >>      the MPSS support. The penc encoding indicate whether we support
+> >>      a specific combination of base page size and actual page size
+> >>      in the same segment. It is also the value used in the L|LP encoding
+> >>      of HPTE entry.
+> >>      
+> >>      In-order to support MPSS in guest, KVM need to handle the below details
+> >>      * advertise MPSS via ibm,segment-page-sizes
+> >>      * Decode the base and actual page size correctly from the HPTE entry
+> >>        so that we know what we are dealing with in H_ENTER and and can do
+> >
+> > Which code path exactly changes for H_ENTER?
+> 
+> There is no real code path changes. Any code path that use
+> hpte_page_size() is impacted. We return actual page size there. 
+> 
+> >
+> >>        the appropriate TLB invalidation in H_REMOVE and evictions.
+> >
+> > Apart from the grammar (which is pretty broken for the part that is not 
+> > copied from Paul) and the subject line this sounds quite reasonable.
+> >
+> 
+> Wll try to fix.
+> 
+> -aneesh
