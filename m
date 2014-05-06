@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 823C51402EA
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 10:07:40 +1000 (EST)
-Message-ID: <1399334847.20388.72.camel@pasglop>
+Return-Path: <paulus@ozlabs.org>
+Date: Tue, 6 May 2014 10:41:33 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Alexander Graf <agraf@suse.de>
 Subject: Re: [PATCH V4] POWERPC: BOOK3S: KVM: Use the saved dar value and
  generic make_dsisr
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Tue, 06 May 2014 10:07:27 +1000
-In-Reply-To: <5367A39D.9080709@suse.de>
+Message-ID: <20140506004133.GA12595@iris.ozlabs.ibm.com>
 References: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <536773C2.1070502@suse.de> <87tx949u9d.fsf@linux.vnet.ibm.com>
- <5367A39D.9080709@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, olofj@google.com, kvm-ppc@vger.kernel.org,
- paulus@samba.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ <536773C2.1070502@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <536773C2.1070502@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +22,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-05-05 at 16:43 +0200, Alexander Graf wrote:
-> > Paul mentioned that BOOK3S always had DAR value set on alignment
-> > interrupt. And the patch is to enable/collect correct DAR value when
-> > running with Little Endian PR guest. Now to limit the impact and to
-> > enable Little Endian PR guest, I ended up doing the conditional code
-> > only for book3s 64 for which we know for sure that we set DAR value.
+On Mon, May 05, 2014 at 01:19:30PM +0200, Alexander Graf wrote:
+> On 05/04/2014 07:21 PM, Aneesh Kumar K.V wrote:
+> >+#ifdef CONFIG_PPC_BOOK3S_64
+> >+	return vcpu->arch.fault_dar;
 > 
-> Yes, and I'm asking whether we know that this statement holds true for 
-> PA6T and G5 chips which I wouldn't consider IBM POWER. Since the G5 is 
-> at least developed by IBM, I'd assume its semantics here are similar to 
-> POWER4, but for PA6T I wouldn't be so sure.
+> How about PA6T and G5s?
 
-I am not aware of any PowerPC processor that does not set DAR on
-alignment interrupts. Paul, are you ?
+G5 sets DAR on an alignment interrupt.
 
-Cheers,
-Ben.
+As for PA6T, I don't know for sure, but if it doesn't, ordinary
+alignment interrupts wouldn't be handled properly, since the code in
+arch/powerpc/kernel/align.c assumes DAR contains the address being
+accessed on all PowerPC CPUs.
+
+Did PA Semi ever publish a user manual for the PA6T, I wonder?
+
+Paul.
