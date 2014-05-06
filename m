@@ -1,18 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Tue, 6 May 2014 10:41:33 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH V4] POWERPC: BOOK3S: KVM: Use the saved dar value and
- generic make_dsisr
-Message-ID: <20140506004133.GA12595@iris.ozlabs.ibm.com>
-References: <1399224075-18041-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <536773C2.1070502@suse.de>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6FBC7140B00
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 10:47:09 +1000 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/fsl-booke64: Set vmemmap_psize to 4K
+Date: Mon, 5 May 2014 19:46:55 -0500
+Message-ID: <1399337215-15086-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <536773C2.1070502@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 05, 2014 at 01:19:30PM +0200, Alexander Graf wrote:
-> On 05/04/2014 07:21 PM, Aneesh Kumar K.V wrote:
-> >+#ifdef CONFIG_PPC_BOOK3S_64
-> >+	return vcpu->arch.fault_dar;
-> 
-> How about PA6T and G5s?
+The only way Freescale booke chips support mappings larger than 4K
+is via TLB1.  The only way we support (direct) TLB1 entries is via
+hugetlb, which is not what map_kernel_page() does when given a large
+page size.
 
-G5 sets DAR on an alignment interrupt.
+Without this, a kernel with CONFIG_SPARSEMEM_VMEMMAP enabled crashes on
+boot with messages such as:
 
-As for PA6T, I don't know for sure, but if it doesn't, ordinary
-alignment interrupts wouldn't be handled properly, since the code in
-arch/powerpc/kernel/align.c assumes DAR contains the address being
-accessed on all PowerPC CPUs.
+PID hash table entries: 4096 (order: 3, 32768 bytes)
+Sorting __ex_table...
+BUG: Bad page state in process swapper  pfn:00a2f
+page:8000040000023a48 count:0 mapcount:0 mapping:0000040000ffce48 index:0x40000ffbe50
+page flags: 0x40000ffda40(active|arch_1|private|private_2|head|tail|swapcache|mappedtodisk|reclaim|swapbacked|unevictable|mlocked)
+page dumped because: PAGE_FLAGS_CHECK_AT_FREE flag(s) set
+bad because of flags:
+page flags: 0x311840(active|private|private_2|swapcache|unevictable|mlocked)
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper Not tainted 3.15.0-rc1-00003-g7fa250c #299
+Call Trace:
+[c00000000098ba20] [c000000000008b3c] .show_stack+0x7c/0x1cc (unreliable)
+[c00000000098baf0] [c00000000060aa50] .dump_stack+0x88/0xb4
+[c00000000098bb70] [c0000000000c0468] .bad_page+0x144/0x1a0
+[c00000000098bc10] [c0000000000c0628] .free_pages_prepare+0x164/0x17c
+[c00000000098bcc0] [c0000000000c24cc] .free_hot_cold_page+0x48/0x214
+[c00000000098bd60] [c00000000086c318] .free_all_bootmem+0x1fc/0x354
+[c00000000098be70] [c00000000085da84] .mem_init+0xac/0xdc
+[c00000000098bef0] [c0000000008547b0] .start_kernel+0x21c/0x4d4
+[c00000000098bf90] [c000000000000448] .start_here_common+0x20/0x58
 
-Did PA Semi ever publish a user manual for the PA6T, I wonder?
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/mm/tlb_nohash.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Paul.
+diff --git a/arch/powerpc/mm/tlb_nohash.c b/arch/powerpc/mm/tlb_nohash.c
+index ae3d5b7..92cb18d 100644
+--- a/arch/powerpc/mm/tlb_nohash.c
++++ b/arch/powerpc/mm/tlb_nohash.c
+@@ -596,8 +596,13 @@ static void __early_init_mmu(int boot_cpu)
+ 	/* XXX This should be decided at runtime based on supported
+ 	 * page sizes in the TLB, but for now let's assume 16M is
+ 	 * always there and a good fit (which it probably is)
++	 *
++	 * Freescale booke only supports 4K pages in TLB0, so use that.
+ 	 */
+-	mmu_vmemmap_psize = MMU_PAGE_16M;
++	if (mmu_has_feature(MMU_FTR_TYPE_FSL_E))
++		mmu_vmemmap_psize = MMU_PAGE_4K;
++	else
++		mmu_vmemmap_psize = MMU_PAGE_16M;
+ 
+ 	/* XXX This code only checks for TLB 0 capabilities and doesn't
+ 	 *     check what page size combos are supported by the HW. It
+-- 
+1.9.1
