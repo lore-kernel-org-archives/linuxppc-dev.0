@@ -1,22 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ee0-f47.google.com (mail-ee0-f47.google.com [74.125.83.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4F6C9140E3B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 19:39:51 +1000 (EST)
-Message-ID: <5368ADE3.1050503@suse.de>
-Date: Tue, 06 May 2014 11:39:47 +0200
-From: Alexander Graf <agraf@suse.de>
+ by ozlabs.org (Postfix) with ESMTPS id 6ACBE14132E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2014 21:29:26 +1000 (EST)
+Received: by mail-ee0-f47.google.com with SMTP id c13so594516eek.20
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 May 2014 04:29:21 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 6 May 2014 13:29:17 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH V3 2/2] powerpc/pseries: init fault_around_order for
+ pseries
+Message-ID: <20140506112917.GA29525@gmail.com>
+References: <1398675690-16186-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <1398675690-16186-3-git-send-email-maddy@linux.vnet.ibm.com>
+ <20140429070632.GB27951@gmail.com> <87d2fz47tg.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH] KVM: PPC: BOOK3S: HV: THP support for guest
-References: <1399224616-25142-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <5368A78D.4070509@suse.de> <1399368400.18906.9.camel@pasglop>
-In-Reply-To: <1399368400.18906.9.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87d2fz47tg.fsf@rustcorp.com.au>
+Cc: linux-arch@vger.kernel.org, riel@redhat.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
+ peterz@infradead.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +34,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/06/2014 11:26 AM, Benjamin Herrenschmidt wrote:
-> On Tue, 2014-05-06 at 11:12 +0200, Alexander Graf wrote:
->
->> So if I understand this patch correctly, it simply introduces logic to
->> handle page sizes other than 4k, 64k, 16M by analyzing the actual page
->> size field in the HPTE. Mind to explain why exactly that enables us to
->> use THP?
->>
->> What exactly is the flow if the pages are not backed by huge pages? What
->> is the flow when they start to get backed by huge pages?
-> The hypervisor doesn't care about segments ... but it needs to properly
-> decode the page size requested by the guest, if anything, to issue the
-> right form of tlbie instruction.
->
-> The encoding in the HPTE for a 16M page inside a 64K segment is
-> different than the encoding for a 16M in a 16M segment, this is done so
-> that the encoding carries both information, which allows broadcast
-> tlbie to properly find the right set in the TLB for invalidations among
-> others.
->
-> So from a KVM perspective, we don't know whether the guest is doing THP
-> or something else (Linux calls it THP but all we care here is that this
-> is MPSS, another guest than Linux might exploit that differently).
 
-Ugh. So we're just talking about a guest using MPSS here? Not about the 
-host doing THP? I must've missed that part.
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
->
-> What we do know is that if we advertise MPSS, we need to decode the page
-> sizes encoded in the HPTE so that we know what we are dealing with in
-> H_ENTER and can do the appropriate TLB invalidations in H_REMOVE &
-> evictions.
+> Ingo Molnar <mingo@kernel.org> writes:
+> > * Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
+> >
+> >> Performance data for different FAULT_AROUND_ORDER values from 4 socket
+> >> Power7 system (128 Threads and 128GB memory). perf stat with repeat of 5
+> >> is used to get the stddev values. Test ran in v3.14 kernel (Baseline) and
+> >> v3.15-rc1 for different fault around order values.
+> >> 
+> >> FAULT_AROUND_ORDER      Baseline        1               3               4               5               8
+> >> 
+> >> Linux build (make -j64)
+> >> minor-faults            47,437,359      35,279,286      25,425,347      23,461,275      22,002,189      21,435,836
+> >> times in seconds        347.302528420   344.061588460   340.974022391   348.193508116   348.673900158   350.986543618
+> >>  stddev for time        ( +-  1.50% )   ( +-  0.73% )   ( +-  1.13% )   ( +-  1.01% )   ( +-  1.89% )   ( +-  1.55% )
+> >>  %chg time to baseline                  -0.9%           -1.8%           0.2%            0.39%           1.06%
+> >
+> > Probably too noisy.
+> 
+> A little, but 3 still looks like the winner.
+> 
+> >> Linux rebuild (make -j64)
+> >> minor-faults            941,552         718,319         486,625         440,124         410,510         397,416
+> >> times in seconds        30.569834718    31.219637539    31.319370649    31.434285472    31.972367174    31.443043580
+> >>  stddev for time        ( +-  1.07% )   ( +-  0.13% )   ( +-  0.43% )   ( +-  0.18% )   ( +-  0.95% )   ( +-  0.58% )
+> >>  %chg time to baseline                  2.1%            2.4%            2.8%            4.58%           2.85%
+> >
+> > Here it looks like a speedup. Optimal value: 5+.
+> 
+> No, lower time is better.  Baseline (no faultaround) wins.
+> 
+> 
+> etc.
 
-Yes. That makes a lot of sense. So this patch really is all about 
-enabling MPSS support for 16MB pages. No more, no less.
+ah, yeah, you are right. Brainfart of the week...
 
->
->>> +			if (a_size != -1)
->>> +				return 1ul << mmu_psize_defs[a_size].shift;
->>> +		}
->>> +
->>> +	}
->>> +	return 0;
->>>    }
->>>    
->>>    static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
->>> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
->>> index 8227dba5af0f..a38d3289320a 100644
->>> --- a/arch/powerpc/kvm/book3s_hv.c
->>> +++ b/arch/powerpc/kvm/book3s_hv.c
->>> @@ -1949,6 +1949,13 @@ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
->>>    	 * support pte_enc here
->>>    	 */
->>>    	(*sps)->enc[0].pte_enc = def->penc[linux_psize];
->>> +	/*
->>> +	 * Add 16MB MPSS support
->>> +	 */
->>> +	if (linux_psize != MMU_PAGE_16M) {
->>> +		(*sps)->enc[1].page_shift = 24;
->>> +		(*sps)->enc[1].pte_enc = def->penc[MMU_PAGE_16M];
->>> +	}
->> So this basically indicates that every segment (except for the 16MB one)
->> can also handle 16MB MPSS page sizes? I suppose you want to remove the
->> comment in kvm_vm_ioctl_get_smmu_info_hv() that says we don't do MPSS here.
-> I haven't reviewed the code there, make sure it will indeed do a
-> different encoding for every combination of segment/actual page size.
->
->> Can we also ensure that every system we run on can do MPSS?
-> P7 and P8 are identical in that regard. However 970 doesn't do MPSS so
-> let's make sure we get that right.
+> It's not a huge surprise that a 64k page arch wants a smaller value 
+> than a 4k system.  But I agree: I don't see much upside for FAO > 0, 
+> but I do see downside.
+> 
+> Most extreme results:
+> Order 1: 2% loss on recompile.  10% win 4% loss on seq.  9% loss random.
+> Order 3: 2% loss on recompile.  6% win 5% loss on seq.  14% loss on random.
+> Order 4: 2.8% loss on recompile. 10% win 7% loss on seq.  9% loss on random.
+> 
+> > I'm starting to suspect that maybe workloads ought to be given a 
+> > choice in this matter, via madvise() or such.
+> 
+> I really don't think they'll be able to use it; it'll change far too 
+> much with machine and kernel updates. [...]
 
-yes. When / if people can easily get their hands on p7/p8 bare metal 
-systems I'll be more than happy to remove 970 support as well, but for 
-now it's probably good to keep in.
+Do we know that?
 
+> [...] I think we should apply patch
+> #1 (with fixes) to make it a variable, then set it to 0 for PPC.
 
-Alex
+Ok, agreed - at least until contrary data comes around.
+
+Thanks,
+
+	Ingo
