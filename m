@@ -1,37 +1,37 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C44D414027C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 16:35:37 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E58F914028F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 17:58:38 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 7 May 2014 16:35:37 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1DFF62CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 16:35:35 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s476EPqc42467566
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 16:14:25 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s476ZYbx016725
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 16:35:34 +1000
+ Wed, 7 May 2014 13:28:34 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 937BEE005F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 13:28:56 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s477wZwX50069726
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 13:28:35 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s477wSch014954
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 13:28:29 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>, benh@kernel.crashing.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/2 v2] powerpc: Enable NO_BOOTMEM
-In-Reply-To: <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
-References: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
- <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
-Date: Wed, 07 May 2014 12:05:30 +0530
-Message-ID: <87lhueumdp.fsf@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options on
+In-Reply-To: <20140507055626.GA26650@iris.ozlabs.ibm.com>
+References: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140507055626.GA26650@iris.ozlabs.ibm.com>
+Date: Wed, 07 May 2014 13:28:27 +0530
+Message-ID: <87iopiuijg.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,37 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Emil Medve <Emilian.Medve@Freescale.com> writes:
+Paul Mackerras <paulus@samba.org> writes:
 
-> Currently bootmem is just a wrapper around memblock. This gets rid of
-> the wrapper code just as other ARHC(es) did: x86, arm, etc.
+> On Sun, May 04, 2014 at 10:56:08PM +0530, Aneesh Kumar K.V wrote:
+>> With debug option "sleep inside atomic section checking" enabled we get
+>> the below WARN_ON during a PR KVM boot. This is because upstream now
+>> have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
+>> warning by adding preempt_disable/enable around floating point and altivec
+>> enable.
 >
-> For now only cover !NUMA systems/builds
+> This worries me a bit.  In this code:
 >
-> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-> ---
+>>  	if (msr & MSR_FP) {
+>> +		preempt_disable();
+>>  		enable_kernel_fp();
+>>  		load_fp_state(&vcpu->arch.fp);
+>>  		t->fp_save_area = &vcpu->arch.fp;
+>> +		preempt_enable();
 >
-> v2: Acknowledge that NUMA systems/builds are not covered by this patch
->
->  arch/powerpc/Kconfig  | 3 +++
->  arch/powerpc/mm/mem.c | 8 ++++++++
->  2 files changed, 11 insertions(+)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index e099899..07b164b 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -475,6 +475,9 @@ config SYS_SUPPORTS_HUGETLBFS
->  
->  source "mm/Kconfig"
->  
-> +config NO_BOOTMEM
-> +	def_bool !NUMA
+> What would happen if we actually did get preempted at this point?
+> Wouldn't we lose the FP state we just loaded?
 
+I was not sure we have got CONFIG_PREEMPT working with kvm. So i was
+not looking at preempted case. But yes, if we have PREEMPT enabled it
+would break as per the current code. 
 
-There is actually one in  mm/Kconfig
+>
+> In other words, how come we're not already preempt-disabled at this
+> point?
 
-So I guess you should make the platform that you are interested
-/tested just do select No_BOOTMEM like we do in arch/arm/Kconfig etc ?
+I don't see us disabling preempt in the code path. Are you suggesting
+that we should be preempt disabled for the whole duration of
+kvmppc_handle_ext ? 
 
 -aneesh
