@@ -1,20 +1,37 @@
-Return-Path: <Diana.Craciun@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 76A62140144
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 16:29:34 +1000 (EST)
-From: Diana Craciun <diana.craciun@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2] powerpc/fsl: Updated corenet-cf compatible string for
- corenet1-cf chips
-Date: Wed, 7 May 2014 09:29:17 +0300
-Message-ID: <1399444157-1207-1-git-send-email-diana.craciun@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id C44D414027C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 16:35:37 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 7 May 2014 16:35:37 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1DFF62CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 16:35:35 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s476EPqc42467566
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 16:14:25 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s476ZYbx016725
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 16:35:34 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Emil Medve <Emilian.Medve@Freescale.com>, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 2/2 v2] powerpc: Enable NO_BOOTMEM
+In-Reply-To: <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
+References: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
+Date: Wed, 07 May 2014 12:05:30 +0530
+Message-ID: <87lhueumdp.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, devicetree@vger.kernel.org,
- Diana Craciun <Diana.Craciun@freescale.com>
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,87 +41,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Diana Craciun <Diana.Craciun@freescale.com>
+Emil Medve <Emilian.Medve@Freescale.com> writes:
 
-Updated the device trees according to the corenet-cf
-binding definition.
+> Currently bootmem is just a wrapper around memblock. This gets rid of
+> the wrapper code just as other ARHC(es) did: x86, arm, etc.
+>
+> For now only cover !NUMA systems/builds
+>
+> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+> ---
+>
+> v2: Acknowledge that NUMA systems/builds are not covered by this patch
+>
+>  arch/powerpc/Kconfig  | 3 +++
+>  arch/powerpc/mm/mem.c | 8 ++++++++
+>  2 files changed, 11 insertions(+)
+>
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index e099899..07b164b 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -475,6 +475,9 @@ config SYS_SUPPORTS_HUGETLBFS
+>  
+>  source "mm/Kconfig"
+>  
+> +config NO_BOOTMEM
+> +	def_bool !NUMA
 
-Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
----
-v2:
-	Added missing p5040
 
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+There is actually one in  mm/Kconfig
 
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index e2987a3..b5daa4c 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -246,7 +246,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet1-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index 7af6d45..5abd1fc 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -273,7 +273,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet1-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index 2415e1f..bf0e7c9 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -281,7 +281,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet1-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index 2985de4..f7ca9f4 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -278,7 +278,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet1-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index 546a899..91477b5 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-@@ -233,7 +233,7 @@
- 	};
- 
- 	corenet-cf@18000 {
--		compatible = "fsl,corenet-cf";
-+		compatible = "fsl,corenet1-cf", "fsl,corenet-cf";
- 		reg = <0x18000 0x1000>;
- 		interrupts = <16 2 1 31>;
- 		fsl,ccf-num-csdids = <32>;
--- 
-1.7.11.7
+So I guess you should make the platform that you are interested
+/tested just do select No_BOOTMEM like we do in arch/arm/Kconfig etc ?
+
+-aneesh
