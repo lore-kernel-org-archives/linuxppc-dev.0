@@ -1,27 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0189.outbound.protection.outlook.com [207.46.163.189])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4A0701401B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 09:14:13 +1000 (EST)
-Message-ID: <1399504442.15726.353.camel@snotra.buserror.net>
-Subject: Re: [PATCH 5/6] powerpc/corenet: Add DPAA FMan support to the SoC
- device tree(s)
+ by ozlabs.org (Postfix) with ESMTPS id 8D4C71401A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 09:20:28 +1000 (EST)
+Message-ID: <1399504804.15726.354.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/1] booke/watchdog: refine and clean up the codes
 From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Wed, 7 May 2014 18:14:02 -0500
-In-Reply-To: <5368811A.3060609@Freescale.com>
-References: <1397823693-27977-1-git-send-email-Shruti@Freescale.com>
- <1397823693-27977-5-git-send-email-Shruti@Freescale.com>
- <1398118442.1694.190.camel__272.432543761347$1398129129$gmane$org@snotra.buserror.net>
- <53661DAB.10808@Freescale.com>
- <1399332886.15726.161.camel@snotra.buserror.net>
- <5368811A.3060609@Freescale.com>
+To: Tang Yuantian <Yuantian.Tang@freescale.com>
+Date: Wed, 7 May 2014 18:20:04 -0500
+In-Reply-To: <1399433437-19520-1-git-send-email-Yuantian.Tang@freescale.com>
+References: <1399433437-19520-1-git-send-email-Yuantian.Tang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, Kanetkar Shruti-B44454 <Shruti@Freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-05-06 at 01:28 -0500, Emil Medve wrote:
-> Hello Scott,
+On Wed, 2014-05-07 at 11:30 +0800, Tang Yuantian wrote:
+> From: Tang Yuantian <yuantian.tang@freescale.com>
 > 
+> Basically, this patch does the following:
+> 1. Move the codes of parsing boot parameters from setup-common.c
+>    to driver. In this way, code reader can know directly that
+>    there are boot parameters that can change the timeout.
+> 2. Make boot parameter 'booke_wdt_period' effective.
+>    currently, when driver is loaded, default timeout is always
+>    being used in stead of booke_wdt_period.
+> 3. Wrap up the watchdog timeout in device struct and clean up
+>    unnecessary codes.
 > 
-> On 05/05/2014 06:34 PM, Scott Wood wrote:
-> > On Sun, 2014-05-04 at 05:59 -0500, Emil Medve wrote:
-> >>  Anyway, most days PHYs can be discovered so they don't use/need
-> >> compatible properties. That's I guess part of the reason we don't have
-> >> bindings for them PHY nodes
-> > 
-> > I don't see why there couldn't be a compatible that describes the
-> > standard programming interface.
-> 
-> Because it can be detected at runtime and I guess stuff like that should
-> stay out of the device tree. I'm using PCI as an analogy here
+> Signed-off-by: Tang Yuantian <yuantian.tang@freescale.com>
+> ---
+>  arch/powerpc/kernel/setup-common.c | 27 --------------------
+>  drivers/watchdog/booke_wdt.c       | 51 ++++++++++++++++++++++++--------------
+>  2 files changed, 33 insertions(+), 45 deletions(-)
 
-But in this case aren't you using a standardized component of the
-programming model itself to probe the specific PHY type?  I think a
-better analogy is the "cfi-flash" compatible.
+Acked-by: Scott Wood <scottwood@freescale.com>
+
+...but it looks like you didn't send this to the WDT maintainer and
+list.
 
 -Scott
