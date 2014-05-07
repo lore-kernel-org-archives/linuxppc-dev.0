@@ -1,18 +1,15 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A944E1401F0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 13:48:04 +1000 (EST)
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH 1/1] booke/watchdog: refine and clean up the codes
-Date: Wed, 7 May 2014 11:30:37 +0800
-Message-ID: <1399433437-19520-1-git-send-email-Yuantian.Tang@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 7 May 2014 15:56:27 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options on
+Message-ID: <20140507055626.GA26650@iris.ozlabs.ibm.com>
+References: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <yuantian.tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,183 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <yuantian.tang@freescale.com>
+On Sun, May 04, 2014 at 10:56:08PM +0530, Aneesh Kumar K.V wrote:
+> With debug option "sleep inside atomic section checking" enabled we get
+> the below WARN_ON during a PR KVM boot. This is because upstream now
+> have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
+> warning by adding preempt_disable/enable around floating point and altivec
+> enable.
 
-Basically, this patch does the following:
-1. Move the codes of parsing boot parameters from setup-common.c
-   to driver. In this way, code reader can know directly that
-   there are boot parameters that can change the timeout.
-2. Make boot parameter 'booke_wdt_period' effective.
-   currently, when driver is loaded, default timeout is always
-   being used in stead of booke_wdt_period.
-3. Wrap up the watchdog timeout in device struct and clean up
-   unnecessary codes.
+This worries me a bit.  In this code:
 
-Signed-off-by: Tang Yuantian <yuantian.tang@freescale.com>
----
- arch/powerpc/kernel/setup-common.c | 27 --------------------
- drivers/watchdog/booke_wdt.c       | 51 ++++++++++++++++++++++++--------------
- 2 files changed, 33 insertions(+), 45 deletions(-)
+>  	if (msr & MSR_FP) {
+> +		preempt_disable();
+>  		enable_kernel_fp();
+>  		load_fp_state(&vcpu->arch.fp);
+>  		t->fp_save_area = &vcpu->arch.fp;
+> +		preempt_enable();
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index bc76cc6..5874aef 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -715,33 +715,6 @@ static int powerpc_debugfs_init(void)
- arch_initcall(powerpc_debugfs_init);
- #endif
- 
--#ifdef CONFIG_BOOKE_WDT
--extern u32 booke_wdt_enabled;
--extern u32 booke_wdt_period;
--
--/* Checks wdt=x and wdt_period=xx command-line option */
--notrace int __init early_parse_wdt(char *p)
--{
--	if (p && strncmp(p, "0", 1) != 0)
--		booke_wdt_enabled = 1;
--
--	return 0;
--}
--early_param("wdt", early_parse_wdt);
--
--int __init early_parse_wdt_period(char *p)
--{
--	unsigned long ret;
--	if (p) {
--		if (!kstrtol(p, 0, &ret))
--			booke_wdt_period = ret;
--	}
--
--	return 0;
--}
--early_param("wdt_period", early_parse_wdt_period);
--#endif	/* CONFIG_BOOKE_WDT */
--
- void ppc_printk_progress(char *s, unsigned short hex)
- {
- 	pr_info("%s\n", s);
-diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-index a8dbceb3..08a7853 100644
---- a/drivers/watchdog/booke_wdt.c
-+++ b/drivers/watchdog/booke_wdt.c
-@@ -41,6 +41,28 @@ u32 booke_wdt_period = CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT;
- #define WDTP_MASK	(TCR_WP_MASK)
- #endif
- 
-+/* Checks wdt=x and wdt_period=xx command-line option */
-+notrace int __init early_parse_wdt(char *p)
-+{
-+	if (p && strncmp(p, "0", 1) != 0)
-+		booke_wdt_enabled = 1;
-+
-+	return 0;
-+}
-+early_param("wdt", early_parse_wdt);
-+
-+int __init early_parse_wdt_period(char *p)
-+{
-+	unsigned long ret;
-+	if (p) {
-+		if (!kstrtol(p, 0, &ret))
-+			booke_wdt_period = ret;
-+	}
-+
-+	return 0;
-+}
-+early_param("wdt_period", early_parse_wdt_period);
-+
- #ifdef CONFIG_PPC_FSL_BOOK3E
- 
- /* For the specified period, determine the number of seconds
-@@ -103,17 +125,18 @@ static unsigned int sec_to_period(unsigned int secs)
- static void __booke_wdt_set(void *data)
- {
- 	u32 val;
-+	struct watchdog_device *wdog = data;
- 
- 	val = mfspr(SPRN_TCR);
- 	val &= ~WDTP_MASK;
--	val |= WDTP(booke_wdt_period);
-+	val |= WDTP(sec_to_period(wdog->timeout));
- 
- 	mtspr(SPRN_TCR, val);
- }
- 
--static void booke_wdt_set(void)
-+static void booke_wdt_set(void *data)
- {
--	on_each_cpu(__booke_wdt_set, NULL, 0);
-+	on_each_cpu(__booke_wdt_set, data, 0);
- }
- 
- static void __booke_wdt_ping(void *data)
-@@ -131,12 +154,13 @@ static int booke_wdt_ping(struct watchdog_device *wdog)
- static void __booke_wdt_enable(void *data)
- {
- 	u32 val;
-+	struct watchdog_device *wdog = data;
- 
- 	/* clear status before enabling watchdog */
- 	__booke_wdt_ping(NULL);
- 	val = mfspr(SPRN_TCR);
- 	val &= ~WDTP_MASK;
--	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
-+	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(sec_to_period(wdog->timeout)));
- 
- 	mtspr(SPRN_TCR, val);
- }
-@@ -162,25 +186,17 @@ static void __booke_wdt_disable(void *data)
- 
- }
- 
--static void __booke_wdt_start(struct watchdog_device *wdog)
-+static int booke_wdt_start(struct watchdog_device *wdog)
- {
--	on_each_cpu(__booke_wdt_enable, NULL, 0);
-+	on_each_cpu(__booke_wdt_enable, wdog, 0);
- 	pr_debug("watchdog enabled (timeout = %u sec)\n", wdog->timeout);
--}
- 
--static int booke_wdt_start(struct watchdog_device *wdog)
--{
--	if (booke_wdt_enabled == 0) {
--		booke_wdt_enabled = 1;
--		__booke_wdt_start(wdog);
--	}
- 	return 0;
- }
- 
- static int booke_wdt_stop(struct watchdog_device *wdog)
- {
- 	on_each_cpu(__booke_wdt_disable, NULL, 0);
--	booke_wdt_enabled = 0;
- 	pr_debug("watchdog disabled\n");
- 
- 	return 0;
-@@ -191,9 +207,8 @@ static int booke_wdt_set_timeout(struct watchdog_device *wdt_dev,
- {
- 	if (timeout > MAX_WDT_TIMEOUT)
- 		return -EINVAL;
--	booke_wdt_period = sec_to_period(timeout);
- 	wdt_dev->timeout = timeout;
--	booke_wdt_set();
-+	booke_wdt_set(wdt_dev);
- 
- 	return 0;
- }
-@@ -231,10 +246,10 @@ static int __init booke_wdt_init(void)
- 	pr_info("powerpc book-e watchdog driver loaded\n");
- 	booke_wdt_info.firmware_version = cur_cpu_spec->pvr_value;
- 	booke_wdt_set_timeout(&booke_wdt_dev,
--			      period_to_sec(CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT));
-+			      period_to_sec(booke_wdt_period));
- 	watchdog_set_nowayout(&booke_wdt_dev, nowayout);
- 	if (booke_wdt_enabled)
--		__booke_wdt_start(&booke_wdt_dev);
-+		booke_wdt_start(&booke_wdt_dev);
- 
- 	ret = watchdog_register_device(&booke_wdt_dev);
- 
--- 
-1.8.5
+What would happen if we actually did get preempted at this point?
+Wouldn't we lose the FP state we just loaded?
+
+In other words, how come we're not already preempt-disabled at this
+point?
+
+Paul.
