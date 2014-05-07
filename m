@@ -1,31 +1,22 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mailxx.hitachi.co.jp (mailxx.hitachi.co.jp [133.145.228.50])
- by ozlabs.org (Postfix) with ESMTP id A776E1401EF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 22:10:24 +1000 (EST)
-Message-ID: <536A2013.8020609@hitachi.com>
-Date: Wed, 07 May 2014 20:59:15 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0058.outbound.protection.outlook.com [207.46.100.58])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9DD841401A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 05:18:38 +1000 (EST)
+Message-ID: <536A7D7E.8070509@Freescale.com>
+Date: Wed, 7 May 2014 13:37:50 -0500
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
-Subject: Re: [RFT PATCH -next ] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-References: <536A16A6.5040709@hitachi.com>
- <20140507115551.22259.70581.stgit@ltc230.yrl.intra.hitachi.co.jp>
-In-Reply-To: <20140507115551.22259.70581.stgit@ltc230.yrl.intra.hitachi.co.jp>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>,
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH 2/2 v2] powerpc: Enable NO_BOOTMEM
+References: <1399402084-6325-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1399402084-6325-2-git-send-email-Emilian.Medve@Freescale.com>
+ <87lhueumdp.fsf@linux.vnet.ibm.com>
+In-Reply-To: <87lhueumdp.fsf@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,143 +26,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tony, Benjamin and Paul,
-
-I've tried to fix this bug, but since I don't have either ppc64 nor ia64,
-this patch is not tested on those archs. Please review and test it on
-those machines.
-
-Thank you,
-
-(2014/05/07 20:55), Masami Hiramatsu wrote:
-> On ia64 and ppc64, the function pointer does not point the
-> entry address of the function, but the address of function
-> discriptor (which contains the entry address and misc
-> data.) Since the kprobes passes the function pointer stored
-> by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
-> initalizing its blacklist, it fails and reports many errors
-> as below.
-> 
->   Failed to find blacklist 0001013168300000
->   Failed to find blacklist 0001013000f0a000
->   Failed to find blacklist 000101315f70a000
->   Failed to find blacklist 000101324c80a000
->   Failed to find blacklist 0001013063f0a000
->   Failed to find blacklist 000101327800a000
->   Failed to find blacklist 0001013277f0a000
->   Failed to find blacklist 000101315a70a000
->   Failed to find blacklist 0001013277e0a000
->   Failed to find blacklist 000101305a20a000
->   Failed to find blacklist 0001013277d0a000
->   Failed to find blacklist 00010130bdc0a000
->   Failed to find blacklist 00010130dc20a000
->   Failed to find blacklist 000101309a00a000
->   Failed to find blacklist 0001013277c0a000
->   Failed to find blacklist 0001013277b0a000
->   Failed to find blacklist 0001013277a0a000
->   Failed to find blacklist 000101327790a000
->   Failed to find blacklist 000101303140a000
->   Failed to find blacklist 0001013a3280a000
-> 
-> To fix this bug, this introduces function_entry() macro to
-> retrieve the entry address from the given function pointer,
-> and uses it in NOKPROBE_SYMBOL().
-> 
-> 
-> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> Reported-by: Tony Luck <tony.luck@gmail.com>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: Fenghua Yu <fenghua.yu@intel.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Kevin Hao <haokexin@gmail.com>
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/ia64/include/asm/types.h    |    2 ++
->  arch/powerpc/include/asm/types.h |   11 +++++++++++
->  include/linux/kprobes.h          |    3 ++-
->  include/linux/types.h            |    4 ++++
->  4 files changed, 19 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
-> index 4c351b1..6ab7b6c 100644
-> --- a/arch/ia64/include/asm/types.h
-> +++ b/arch/ia64/include/asm/types.h
-> @@ -27,5 +27,7 @@ struct fnptr {
->  	unsigned long gp;
->  };
->  
-> +#define constant_function_entry(fn) (((struct fnptr *)(fn))->ip)
-> +
->  #endif /* !__ASSEMBLY__ */
->  #endif /* _ASM_IA64_TYPES_H */
-> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
-> index bfb6ded..fd297b8 100644
-> --- a/arch/powerpc/include/asm/types.h
-> +++ b/arch/powerpc/include/asm/types.h
-> @@ -25,6 +25,17 @@ typedef struct {
->  	unsigned long env;
->  } func_descr_t;
->  
-> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
-> +/*
-> + * On PPC64 ABIv1 the function pointer actually points to the
-> + * function's descriptor. The first entry in the descriptor is the
-> + * address of the function text.
-> + */
-> +#define constant_function_entry(fn)	(((func_descr_t *)(fn))->entry)
-> +#else
-> +#define constant_function_entry(fn)	((unsigned long)(fn))
-> +#endif
-> +
->  #endif /* __ASSEMBLY__ */
->  
->  #endif /* _ASM_POWERPC_TYPES_H */
-> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
-> index e059507..637eafe 100644
-> --- a/include/linux/kprobes.h
-> +++ b/include/linux/kprobes.h
-> @@ -40,6 +40,7 @@
->  #include <linux/rcupdate.h>
->  #include <linux/mutex.h>
->  #include <linux/ftrace.h>
-> +#include <linux/types.h>
->  
->  #ifdef CONFIG_KPROBES
->  #include <asm/kprobes.h>
-> @@ -485,7 +486,7 @@ static inline int enable_jprobe(struct jprobe *jp)
->  #define __NOKPROBE_SYMBOL(fname)			\
->  static unsigned long __used				\
->  	__attribute__((section("_kprobe_blacklist")))	\
-> -	_kbl_addr_##fname = (unsigned long)fname;
-> +	_kbl_addr_##fname = constant_function_entry(fname);
->  #define NOKPROBE_SYMBOL(fname)	__NOKPROBE_SYMBOL(fname)
->  #else
->  #define NOKPROBE_SYMBOL(fname)
-> diff --git a/include/linux/types.h b/include/linux/types.h
-> index 4d118ba..78e2d7d 100644
-> --- a/include/linux/types.h
-> +++ b/include/linux/types.h
-> @@ -212,5 +212,9 @@ struct callback_head {
->  };
->  #define rcu_head callback_head
->  
-> +#ifndef constant_function_entry
-> +#define constant_function_entry(fn)	((unsigned long)(fn))
-> +#endif
-> +
->  #endif /*  __ASSEMBLY__ */
->  #endif /* _LINUX_TYPES_H */
-> 
-> 
-> 
+Hello Aneesh,
 
 
--- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+On 05/07/2014 01:35 AM, Aneesh Kumar K.V wrote:
+> Emil Medve <Emilian.Medve@Freescale.com> writes:
+> 
+>> Currently bootmem is just a wrapper around memblock. This gets rid of
+>> the wrapper code just as other ARHC(es) did: x86, arm, etc.
+>>
+>> For now only cover !NUMA systems/builds
+>>
+>> Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+>> ---
+>>
+>> v2: Acknowledge that NUMA systems/builds are not covered by this patch
+>>
+>>  arch/powerpc/Kconfig  | 3 +++
+>>  arch/powerpc/mm/mem.c | 8 ++++++++
+>>  2 files changed, 11 insertions(+)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index e099899..07b164b 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -475,6 +475,9 @@ config SYS_SUPPORTS_HUGETLBFS
+>>  
+>>  source "mm/Kconfig"
+>>  
+>> +config NO_BOOTMEM
+>> +	def_bool !NUMA
+> 
+> 
+> There is actually one in  mm/Kconfig
+> 
+> So I guess you should make the platform that you are interested
+> /tested just do select No_BOOTMEM like we do in arch/arm/Kconfig etc ?
+
+I had a look at what was done for x86 and I missed why the mm/Kconfig
+symbol was added. Will include your suggestion in the next version
+
+
+Cheers,
