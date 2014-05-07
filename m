@@ -1,37 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E58F914028F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 17:58:38 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 7 May 2014 13:28:34 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 937BEE005F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 13:28:56 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s477wZwX50069726
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 13:28:35 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s477wSch014954
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 7 May 2014 13:28:29 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options on
-In-Reply-To: <20140507055626.GA26650@iris.ozlabs.ibm.com>
-References: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20140507055626.GA26650@iris.ozlabs.ibm.com>
-Date: Wed, 07 May 2014 13:28:27 +0530
-Message-ID: <87iopiuijg.fsf@linux.vnet.ibm.com>
+Return-Path: <andriy.shevchenko@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id DECD9140216
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 18:32:01 +1000 (EST)
+From: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+To: Hongbo Zhang <hongbo.zhang@freescale.com>
+Subject: Re: [PATCH v4 8/8] DMA: Freescale: add suspend resume functions for
+ DMA driver
+Date: Wed, 7 May 2014 08:31:34 +0000
+Message-ID: <1399451493.2677.11.camel@smile.fi.intel.com>
+References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
+ <1397809071-5353-9-git-send-email-hongbo.zhang@freescale.com>
+ <20140502164604.GB32284@intel.com> <536614E7.9050301@freescale.com>
+In-Reply-To: <536614E7.9050301@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Cc: "leo.li@freescale.com" <leo.li@freescale.com>, "Koul,
+ Vinod" <vinod.koul@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>,
+ "vkoul@infradead.org" <vkoul@infradead.org>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "Williams,
+ Dan J" <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,37 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
-
-> On Sun, May 04, 2014 at 10:56:08PM +0530, Aneesh Kumar K.V wrote:
->> With debug option "sleep inside atomic section checking" enabled we get
->> the below WARN_ON during a PR KVM boot. This is because upstream now
->> have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
->> warning by adding preempt_disable/enable around floating point and altivec
->> enable.
->
-> This worries me a bit.  In this code:
->
->>  	if (msr & MSR_FP) {
->> +		preempt_disable();
->>  		enable_kernel_fp();
->>  		load_fp_state(&vcpu->arch.fp);
->>  		t->fp_save_area = &vcpu->arch.fp;
->> +		preempt_enable();
->
-> What would happen if we actually did get preempted at this point?
-> Wouldn't we lose the FP state we just loaded?
-
-I was not sure we have got CONFIG_PREEMPT working with kvm. So i was
-not looking at preempted case. But yes, if we have PREEMPT enabled it
-would break as per the current code. 
-
->
-> In other words, how come we're not already preempt-disabled at this
-> point?
-
-I don't see us disabling preempt in the code path. Are you suggesting
-that we should be preempt disabled for the whole duration of
-kvmppc_handle_ext ? 
-
--aneesh
+T24gU3VuLCAyMDE0LTA1LTA0IGF0IDE4OjIyICswODAwLCBIb25nYm8gWmhhbmcgd3JvdGU6DQo+
+IE9uIDA1LzAzLzIwMTQgMTI6NDYgQU0sIFZpbm9kIEtvdWwgd3JvdGU6DQo+ID4gT24gRnJpLCBB
+cHIgMTgsIDIwMTQgYXQgMDQ6MTc6NTFQTSArMDgwMCwgaG9uZ2JvLnpoYW5nQGZyZWVzY2FsZS5j
+b20gd3JvdGU6DQo+ID4+IEZyb206IEhvbmdibyBaaGFuZyA8aG9uZ2JvLnpoYW5nQGZyZWVzY2Fs
+ZS5jb20+DQo+ID4+DQo+ID4+IFRoaXMgcGF0Y2ggYWRkcyBzdXNwZW5kIHJlc3VtZSBmdW5jdGlv
+bnMgZm9yIEZyZWVzY2FsZSBETUEgZHJpdmVyLg0KPiA+PiAucHJlcGFyZSBjYWxsYmFjayBpcyB1
+c2VkIHRvIHN0b3AgZnVydGhlciBkZXNjcmlwdG9ycyBmcm9tIGJlaW5nIGFkZGVkIGludG8gdGhl
+DQo+ID4+IHBlbmRpbmcgcXVldWUsIGFuZCBhbHNvIGlzc3VlIHBlbmRpbmcgcXVldWVzIGludG8g
+ZXhlY3V0aW9uIGlmIHRoZXJlIGlzIGFueS4NCj4gPj4gLnN1c3BlbmQgY2FsbGJhY2sgbWFrZXMg
+c3VyZSBhbGwgdGhlIHBlbmRpbmcgam9icyBhcmUgY2xlYW5lZCB1cCBhbmQgYWxsIHRoZQ0KPiA+
+PiBjaGFubmVscyBhcmUgaWRsZSwgYW5kIHNhdmUgdGhlIG1vZGUgcmVnaXN0ZXJzLg0KPiA+PiAu
+cmVzdW1lIGNhbGxiYWNrIHJlLWluaXRpYWxpemVzIHRoZSBjaGFubmVscyBieSByZXN0b3JlIHRo
+ZSBtb2RlIHJlZ2lzdGVycy4NCj4gPj4NCj4gPj4gKw0KPiA+PiArc3RhdGljIGNvbnN0IHN0cnVj
+dCBkZXZfcG1fb3BzIGZzbGRtYV9wbV9vcHMgPSB7DQo+ID4+ICsJLnByZXBhcmUJPSBmc2xkbWFf
+cHJlcGFyZSwNCj4gPj4gKwkuc3VzcGVuZAk9IGZzbGRtYV9zdXNwZW5kLA0KPiA+PiArCS5yZXN1
+bWUJCT0gZnNsZG1hX3Jlc3VtZSwNCj4gPj4gK307DQo+ID4gSSB0aGluayB0aGlzIGlzIG5vdCBj
+b3JyZWN0LiBXZSBkaXNjdXNzZWQgdGhpcyBzb21ldGltZSBiYWNrIG9uIGxpc3QuIFRoZQ0KPiA+
+IERNQWVuZ2luZSBkcml2ZXJzIHNob3VsZCB1c2UgbGF0ZSByZXN1bWUgYW5kIGVhcmx5IHN1c3Bl
+bmQgdG8gZW5zdXJlIHRoZXkgZ2V0DQo+ID4gc3VzcGVuZGVkIGFmdGVyIGNsaWVudHMgKHdobyBz
+aG91bGQgdXNlIG5vcm1hbCBvbmVzKSBhbmQgcmVzdW1lIGJlZm9yZSB0aGVtDQo+ID4NCj4gT0ss
+IHdpbGwgdXBkYXRlIGl0IGxpa2UgdGhpczoNCj4gdXNlIC5zdXNwZW5kIHRvIHRha2UgcGxhY2Ug
+b2YgY3VycmVudCAucHJlcGFyZQ0KDQpDb3VsZCB5b3UgcmVtb3ZlIHRoaXMgYXQgYWxsPw0KDQpB
+bnN3ZXJpbmcgdG8geW91ciBwcmV2aW91cyBzdGF0ZW1lbnRzIEkgY291bGQgc2F5IHRoYXQuDQpE
+ZXZpY2UgZHJpdmVycyAoRE1BYyB1c2VycykgdGhhdCBkb24ndCBpbXBsZW1lbnQgLnN1c3BlbmQg
+Y2FsbGJhY2sgYXJlDQpvbiB0aGVpciBvd24gd2l0aCB0cm91YmxlcywgeW91IGhhdmUgbm90IHRv
+IGNhcmUgYWJvdXQgdGhlbSBpbiB0aGUgRE1BDQpkcml2ZXIuDQoNCj4gdXNlIC5zdXNwZW5kX2xh
+dGUgdG8gdGFrZSBwbGFjZSBvZiBjdXJyZW50IC5zdXNwZW5kDQo+IHVzZSAucmVzdW1lX2Vhcmx5
+IHRvIHRha2UgcGxhY2Ugb2YgY3VycmVudCAucmVzdW1lDQo+IA0KPiANCj4gDQo+IC0tDQo+IFRv
+IHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBk
+bWFlbmdpbmUiIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5r
+ZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5v
+cmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQoNCi0tIA0KQW5keSBTaGV2Y2hlbmtvIDxhbmRyaXku
+c2hldmNoZW5rb0BpbnRlbC5jb20+DQpJbnRlbCBGaW5sYW5kIE95DQotLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KSW50
+ZWwgRmlubGFuZCBPeQpSZWdpc3RlcmVkIEFkZHJlc3M6IFBMIDI4MSwgMDAxODEgSGVsc2lua2kg
+CkJ1c2luZXNzIElkZW50aXR5IENvZGU6IDAzNTc2MDYgLSA0IApEb21pY2lsZWQgaW4gSGVsc2lu
+a2kgCgpUaGlzIGUtbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRzIG1heSBjb250YWluIGNvbmZpZGVu
+dGlhbCBtYXRlcmlhbCBmb3IKdGhlIHNvbGUgdXNlIG9mIHRoZSBpbnRlbmRlZCByZWNpcGllbnQo
+cykuIEFueSByZXZpZXcgb3IgZGlzdHJpYnV0aW9uCmJ5IG90aGVycyBpcyBzdHJpY3RseSBwcm9o
+aWJpdGVkLiBJZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQKcmVjaXBpZW50LCBwbGVhc2UgY29u
+dGFjdCB0aGUgc2VuZGVyIGFuZCBkZWxldGUgYWxsIGNvcGllcy4K
