@@ -1,27 +1,23 @@
-Return-Path: <andriy.shevchenko@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id DECD9140216
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 18:32:01 +1000 (EST)
-From: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
-To: Hongbo Zhang <hongbo.zhang@freescale.com>
-Subject: Re: [PATCH v4 8/8] DMA: Freescale: add suspend resume functions for
- DMA driver
-Date: Wed, 7 May 2014 08:31:34 +0000
-Message-ID: <1399451493.2677.11.camel@smile.fi.intel.com>
-References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
- <1397809071-5353-9-git-send-email-hongbo.zhang@freescale.com>
- <20140502164604.GB32284@intel.com> <536614E7.9050301@freescale.com>
-In-Reply-To: <536614E7.9050301@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 229631401F0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 21:37:58 +1000 (EST)
+Message-ID: <536A1B11.2030101@suse.de>
+Date: Wed, 07 May 2014 13:37:53 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Cc: "leo.li@freescale.com" <leo.li@freescale.com>, "Koul,
- Vinod" <vinod.koul@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- "vkoul@infradead.org" <vkoul@infradead.org>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, "Williams,
- Dan J" <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options
+ on
+References: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20140507055626.GA26650@iris.ozlabs.ibm.com>
+In-Reply-To: <20140507055626.GA26650@iris.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gU3VuLCAyMDE0LTA1LTA0IGF0IDE4OjIyICswODAwLCBIb25nYm8gWmhhbmcgd3JvdGU6DQo+
-IE9uIDA1LzAzLzIwMTQgMTI6NDYgQU0sIFZpbm9kIEtvdWwgd3JvdGU6DQo+ID4gT24gRnJpLCBB
-cHIgMTgsIDIwMTQgYXQgMDQ6MTc6NTFQTSArMDgwMCwgaG9uZ2JvLnpoYW5nQGZyZWVzY2FsZS5j
-b20gd3JvdGU6DQo+ID4+IEZyb206IEhvbmdibyBaaGFuZyA8aG9uZ2JvLnpoYW5nQGZyZWVzY2Fs
-ZS5jb20+DQo+ID4+DQo+ID4+IFRoaXMgcGF0Y2ggYWRkcyBzdXNwZW5kIHJlc3VtZSBmdW5jdGlv
-bnMgZm9yIEZyZWVzY2FsZSBETUEgZHJpdmVyLg0KPiA+PiAucHJlcGFyZSBjYWxsYmFjayBpcyB1
-c2VkIHRvIHN0b3AgZnVydGhlciBkZXNjcmlwdG9ycyBmcm9tIGJlaW5nIGFkZGVkIGludG8gdGhl
-DQo+ID4+IHBlbmRpbmcgcXVldWUsIGFuZCBhbHNvIGlzc3VlIHBlbmRpbmcgcXVldWVzIGludG8g
-ZXhlY3V0aW9uIGlmIHRoZXJlIGlzIGFueS4NCj4gPj4gLnN1c3BlbmQgY2FsbGJhY2sgbWFrZXMg
-c3VyZSBhbGwgdGhlIHBlbmRpbmcgam9icyBhcmUgY2xlYW5lZCB1cCBhbmQgYWxsIHRoZQ0KPiA+
-PiBjaGFubmVscyBhcmUgaWRsZSwgYW5kIHNhdmUgdGhlIG1vZGUgcmVnaXN0ZXJzLg0KPiA+PiAu
-cmVzdW1lIGNhbGxiYWNrIHJlLWluaXRpYWxpemVzIHRoZSBjaGFubmVscyBieSByZXN0b3JlIHRo
-ZSBtb2RlIHJlZ2lzdGVycy4NCj4gPj4NCj4gPj4gKw0KPiA+PiArc3RhdGljIGNvbnN0IHN0cnVj
-dCBkZXZfcG1fb3BzIGZzbGRtYV9wbV9vcHMgPSB7DQo+ID4+ICsJLnByZXBhcmUJPSBmc2xkbWFf
-cHJlcGFyZSwNCj4gPj4gKwkuc3VzcGVuZAk9IGZzbGRtYV9zdXNwZW5kLA0KPiA+PiArCS5yZXN1
-bWUJCT0gZnNsZG1hX3Jlc3VtZSwNCj4gPj4gK307DQo+ID4gSSB0aGluayB0aGlzIGlzIG5vdCBj
-b3JyZWN0LiBXZSBkaXNjdXNzZWQgdGhpcyBzb21ldGltZSBiYWNrIG9uIGxpc3QuIFRoZQ0KPiA+
-IERNQWVuZ2luZSBkcml2ZXJzIHNob3VsZCB1c2UgbGF0ZSByZXN1bWUgYW5kIGVhcmx5IHN1c3Bl
-bmQgdG8gZW5zdXJlIHRoZXkgZ2V0DQo+ID4gc3VzcGVuZGVkIGFmdGVyIGNsaWVudHMgKHdobyBz
-aG91bGQgdXNlIG5vcm1hbCBvbmVzKSBhbmQgcmVzdW1lIGJlZm9yZSB0aGVtDQo+ID4NCj4gT0ss
-IHdpbGwgdXBkYXRlIGl0IGxpa2UgdGhpczoNCj4gdXNlIC5zdXNwZW5kIHRvIHRha2UgcGxhY2Ug
-b2YgY3VycmVudCAucHJlcGFyZQ0KDQpDb3VsZCB5b3UgcmVtb3ZlIHRoaXMgYXQgYWxsPw0KDQpB
-bnN3ZXJpbmcgdG8geW91ciBwcmV2aW91cyBzdGF0ZW1lbnRzIEkgY291bGQgc2F5IHRoYXQuDQpE
-ZXZpY2UgZHJpdmVycyAoRE1BYyB1c2VycykgdGhhdCBkb24ndCBpbXBsZW1lbnQgLnN1c3BlbmQg
-Y2FsbGJhY2sgYXJlDQpvbiB0aGVpciBvd24gd2l0aCB0cm91YmxlcywgeW91IGhhdmUgbm90IHRv
-IGNhcmUgYWJvdXQgdGhlbSBpbiB0aGUgRE1BDQpkcml2ZXIuDQoNCj4gdXNlIC5zdXNwZW5kX2xh
-dGUgdG8gdGFrZSBwbGFjZSBvZiBjdXJyZW50IC5zdXNwZW5kDQo+IHVzZSAucmVzdW1lX2Vhcmx5
-IHRvIHRha2UgcGxhY2Ugb2YgY3VycmVudCAucmVzdW1lDQo+IA0KPiANCj4gDQo+IC0tDQo+IFRv
-IHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBk
-bWFlbmdpbmUiIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5r
-ZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5v
-cmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQoNCi0tIA0KQW5keSBTaGV2Y2hlbmtvIDxhbmRyaXku
-c2hldmNoZW5rb0BpbnRlbC5jb20+DQpJbnRlbCBGaW5sYW5kIE95DQotLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KSW50
-ZWwgRmlubGFuZCBPeQpSZWdpc3RlcmVkIEFkZHJlc3M6IFBMIDI4MSwgMDAxODEgSGVsc2lua2kg
-CkJ1c2luZXNzIElkZW50aXR5IENvZGU6IDAzNTc2MDYgLSA0IApEb21pY2lsZWQgaW4gSGVsc2lu
-a2kgCgpUaGlzIGUtbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRzIG1heSBjb250YWluIGNvbmZpZGVu
-dGlhbCBtYXRlcmlhbCBmb3IKdGhlIHNvbGUgdXNlIG9mIHRoZSBpbnRlbmRlZCByZWNpcGllbnQo
-cykuIEFueSByZXZpZXcgb3IgZGlzdHJpYnV0aW9uCmJ5IG90aGVycyBpcyBzdHJpY3RseSBwcm9o
-aWJpdGVkLiBJZiB5b3UgYXJlIG5vdCB0aGUgaW50ZW5kZWQKcmVjaXBpZW50LCBwbGVhc2UgY29u
-dGFjdCB0aGUgc2VuZGVyIGFuZCBkZWxldGUgYWxsIGNvcGllcy4K
+On 05/07/2014 07:56 AM, Paul Mackerras wrote:
+> On Sun, May 04, 2014 at 10:56:08PM +0530, Aneesh Kumar K.V wrote:
+>> With debug option "sleep inside atomic section checking" enabled we get
+>> the below WARN_ON during a PR KVM boot. This is because upstream now
+>> have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
+>> warning by adding preempt_disable/enable around floating point and altivec
+>> enable.
+> This worries me a bit.  In this code:
+>
+>>   	if (msr & MSR_FP) {
+>> +		preempt_disable();
+>>   		enable_kernel_fp();
+>>   		load_fp_state(&vcpu->arch.fp);
+>>   		t->fp_save_area = &vcpu->arch.fp;
+>> +		preempt_enable();
+> What would happen if we actually did get preempted at this point?
+> Wouldn't we lose the FP state we just loaded?
+>
+> In other words, how come we're not already preempt-disabled at this
+> point?
+
+This is probably because we're trying to confuse Linux :). The entry 
+path happens with interrupts hard disabled, but preempt enabled so that 
+Linux doesn't consider the guest time as non-preemptible. That's the 
+only call I could find where preempt is logically enabled (though it 
+really isn't).
+
+
+Alex
