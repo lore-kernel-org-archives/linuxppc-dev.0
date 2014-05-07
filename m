@@ -1,15 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 7 May 2014 15:56:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix WARN_ON with debug options on
-Message-ID: <20140507055626.GA26650@iris.ozlabs.ibm.com>
-References: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <Diana.Craciun@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com (unknown
+ [207.46.163.142]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EC2A7140213
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2014 16:14:32 +1000 (EST)
+Message-ID: <5369CF3E.2000608@freescale.com>
+Date: Wed, 7 May 2014 09:14:22 +0300
+From: Diana Craciun <diana.craciun@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1399224368-22122-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl: Updated corenet-cf compatible string for
+ corenet1-cf chips
+References: <1399388176-25257-1-git-send-email-diana.craciun@freescale.com>
+ <1399395448.15726.185.camel@snotra.buserror.net>
+In-Reply-To: <1399395448.15726.185.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,26 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 04, 2014 at 10:56:08PM +0530, Aneesh Kumar K.V wrote:
-> With debug option "sleep inside atomic section checking" enabled we get
-> the below WARN_ON during a PR KVM boot. This is because upstream now
-> have PREEMPT_COUNT enabled even if we have preempt disabled. Fix the
-> warning by adding preempt_disable/enable around floating point and altivec
-> enable.
+On 05/06/2014 07:57 PM, Scott Wood wrote:
+> On Tue, 2014-05-06 at 17:56 +0300, Diana Craciun wrote:
+>> From: Diana Craciun <Diana.Craciun@freescale.com>
+>>
+>> Updated the device trees according to the corenet-cf
+>> binding definition.
+>>
+>> Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
+>> ---
+>>   arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 2 +-
+>>   arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 2 +-
+>>   arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 2 +-
+>>   arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 2 +-
+>>   4 files changed, 4 insertions(+), 4 deletions(-)
+> Oops, I meant to include this in the patch I sent, but forgot to squash
+> the two patches together. :-P
+>
+> Where's p5040?
 
-This worries me a bit.  In this code:
+Ups, somehow I failed to commit that file, respinning....
 
->  	if (msr & MSR_FP) {
-> +		preempt_disable();
->  		enable_kernel_fp();
->  		load_fp_state(&vcpu->arch.fp);
->  		t->fp_save_area = &vcpu->arch.fp;
-> +		preempt_enable();
-
-What would happen if we actually did get preempted at this point?
-Wouldn't we lose the FP state we just loaded?
-
-In other words, how come we're not already preempt-disabled at this
-point?
-
-Paul.
+Diana
