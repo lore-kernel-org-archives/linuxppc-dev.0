@@ -1,19 +1,19 @@
 Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0203.outbound.protection.outlook.com [207.46.163.203])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 42D1F140177
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 12:07:53 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id AA23D1401AD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 13:14:54 +1000 (EST)
 From: <Yuantian.Tang@freescale.com>
-To: <wim@iguana.be>
-Subject: [PATCH 1/1] booke/watchdog: refine and clean up the codes
-Date: Thu, 8 May 2014 10:04:26 +0800
-Message-ID: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
+To: <scottwood@freescale.com>
+Subject: [PATCH v2] clk: qoriq: Update the clock bindings
+Date: Thu, 8 May 2014 11:12:10 +0800
+Message-ID: <1399518730-40458-1-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, Tang Yuantian <yuantian.tang@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Tang
+ Yuantian <yuantian.tang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,184 +25,50 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Tang Yuantian <yuantian.tang@freescale.com>
 
-Basically, this patch does the following:
-1. Move the codes of parsing boot parameters from setup-common.c
-   to driver. In this way, code reader can know directly that
-   there are boot parameters that can change the timeout.
-2. Make boot parameter 'booke_wdt_period' effective.
-   currently, when driver is loaded, default timeout is always
-   being used in stead of booke_wdt_period.
-3. Wrap up the watchdog timeout in device struct and clean up
-   unnecessary codes.
+Main changs include:
+	- Clarified the clock nodes' version number
+	- Fixed a issue in example
 
-Signed-off-by: Tang Yuantian <yuantian.tang@freescale.com>
-Acked-by: Scott Wood <scottwood@freescale.com>
+Singed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
 ---
-resend to watchdog maintainer
+v2:
+	- rename this binding
+	- rewrite the description
 
- arch/powerpc/kernel/setup-common.c | 27 --------------------
- drivers/watchdog/booke_wdt.c       | 51 ++++++++++++++++++++++++--------------
- 2 files changed, 33 insertions(+), 45 deletions(-)
+ .../bindings/clock/{corenet-clock.txt => qoriq-clock.txt}      | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+ rename Documentation/devicetree/bindings/clock/{corenet-clock.txt => qoriq-clock.txt} (95%)
 
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index bc76cc6..5874aef 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -715,33 +715,6 @@ static int powerpc_debugfs_init(void)
- arch_initcall(powerpc_debugfs_init);
- #endif
+diff --git a/Documentation/devicetree/bindings/clock/corenet-clock.txt b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+similarity index 95%
+rename from Documentation/devicetree/bindings/clock/corenet-clock.txt
+rename to Documentation/devicetree/bindings/clock/qoriq-clock.txt
+index 24711af..5666812 100644
+--- a/Documentation/devicetree/bindings/clock/corenet-clock.txt
++++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
+@@ -7,6 +7,14 @@ which can then be passed to a variety of internal logic, including
+ cores and peripheral IP blocks.
+ Please refer to the Reference Manual for details.
  
--#ifdef CONFIG_BOOKE_WDT
--extern u32 booke_wdt_enabled;
--extern u32 booke_wdt_period;
--
--/* Checks wdt=x and wdt_period=xx command-line option */
--notrace int __init early_parse_wdt(char *p)
--{
--	if (p && strncmp(p, "0", 1) != 0)
--		booke_wdt_enabled = 1;
--
--	return 0;
--}
--early_param("wdt", early_parse_wdt);
--
--int __init early_parse_wdt_period(char *p)
--{
--	unsigned long ret;
--	if (p) {
--		if (!kstrtol(p, 0, &ret))
--			booke_wdt_period = ret;
--	}
--
--	return 0;
--}
--early_param("wdt_period", early_parse_wdt_period);
--#endif	/* CONFIG_BOOKE_WDT */
--
- void ppc_printk_progress(char *s, unsigned short hex)
- {
- 	pr_info("%s\n", s);
-diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-index a8dbceb3..08a7853 100644
---- a/drivers/watchdog/booke_wdt.c
-+++ b/drivers/watchdog/booke_wdt.c
-@@ -41,6 +41,28 @@ u32 booke_wdt_period = CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT;
- #define WDTP_MASK	(TCR_WP_MASK)
- #endif
- 
-+/* Checks wdt=x and wdt_period=xx command-line option */
-+notrace int __init early_parse_wdt(char *p)
-+{
-+	if (p && strncmp(p, "0", 1) != 0)
-+		booke_wdt_enabled = 1;
++All references to "1.0" and "2.0" refer to the QorIQ chassis version to
++which the chip complies.
 +
-+	return 0;
-+}
-+early_param("wdt", early_parse_wdt);
++Chassis Version		Example Chips
++---------------		-------------
++1.0			p4080, p5020, p5040
++2.0			t4240, b4860, t1040
 +
-+int __init early_parse_wdt_period(char *p)
-+{
-+	unsigned long ret;
-+	if (p) {
-+		if (!kstrtol(p, 0, &ret))
-+			booke_wdt_period = ret;
-+	}
-+
-+	return 0;
-+}
-+early_param("wdt_period", early_parse_wdt_period);
-+
- #ifdef CONFIG_PPC_FSL_BOOK3E
+ 1. Clock Block Binding
  
- /* For the specified period, determine the number of seconds
-@@ -103,17 +125,18 @@ static unsigned int sec_to_period(unsigned int secs)
- static void __booke_wdt_set(void *data)
- {
- 	u32 val;
-+	struct watchdog_device *wdog = data;
+ Required properties:
+@@ -85,7 +93,7 @@ Example for clock block and clock provider:
+ 			#clock-cells = <0>;
+ 			compatible = "fsl,qoriq-sysclk-1.0";
+ 			clock-output-names = "sysclk";
+-		}
++		};
  
- 	val = mfspr(SPRN_TCR);
- 	val &= ~WDTP_MASK;
--	val |= WDTP(booke_wdt_period);
-+	val |= WDTP(sec_to_period(wdog->timeout));
- 
- 	mtspr(SPRN_TCR, val);
- }
- 
--static void booke_wdt_set(void)
-+static void booke_wdt_set(void *data)
- {
--	on_each_cpu(__booke_wdt_set, NULL, 0);
-+	on_each_cpu(__booke_wdt_set, data, 0);
- }
- 
- static void __booke_wdt_ping(void *data)
-@@ -131,12 +154,13 @@ static int booke_wdt_ping(struct watchdog_device *wdog)
- static void __booke_wdt_enable(void *data)
- {
- 	u32 val;
-+	struct watchdog_device *wdog = data;
- 
- 	/* clear status before enabling watchdog */
- 	__booke_wdt_ping(NULL);
- 	val = mfspr(SPRN_TCR);
- 	val &= ~WDTP_MASK;
--	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(booke_wdt_period));
-+	val |= (TCR_WIE|TCR_WRC(WRC_CHIP)|WDTP(sec_to_period(wdog->timeout)));
- 
- 	mtspr(SPRN_TCR, val);
- }
-@@ -162,25 +186,17 @@ static void __booke_wdt_disable(void *data)
- 
- }
- 
--static void __booke_wdt_start(struct watchdog_device *wdog)
-+static int booke_wdt_start(struct watchdog_device *wdog)
- {
--	on_each_cpu(__booke_wdt_enable, NULL, 0);
-+	on_each_cpu(__booke_wdt_enable, wdog, 0);
- 	pr_debug("watchdog enabled (timeout = %u sec)\n", wdog->timeout);
--}
- 
--static int booke_wdt_start(struct watchdog_device *wdog)
--{
--	if (booke_wdt_enabled == 0) {
--		booke_wdt_enabled = 1;
--		__booke_wdt_start(wdog);
--	}
- 	return 0;
- }
- 
- static int booke_wdt_stop(struct watchdog_device *wdog)
- {
- 	on_each_cpu(__booke_wdt_disable, NULL, 0);
--	booke_wdt_enabled = 0;
- 	pr_debug("watchdog disabled\n");
- 
- 	return 0;
-@@ -191,9 +207,8 @@ static int booke_wdt_set_timeout(struct watchdog_device *wdt_dev,
- {
- 	if (timeout > MAX_WDT_TIMEOUT)
- 		return -EINVAL;
--	booke_wdt_period = sec_to_period(timeout);
- 	wdt_dev->timeout = timeout;
--	booke_wdt_set();
-+	booke_wdt_set(wdt_dev);
- 
- 	return 0;
- }
-@@ -231,10 +246,10 @@ static int __init booke_wdt_init(void)
- 	pr_info("powerpc book-e watchdog driver loaded\n");
- 	booke_wdt_info.firmware_version = cur_cpu_spec->pvr_value;
- 	booke_wdt_set_timeout(&booke_wdt_dev,
--			      period_to_sec(CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT));
-+			      period_to_sec(booke_wdt_period));
- 	watchdog_set_nowayout(&booke_wdt_dev, nowayout);
- 	if (booke_wdt_enabled)
--		__booke_wdt_start(&booke_wdt_dev);
-+		booke_wdt_start(&booke_wdt_dev);
- 
- 	ret = watchdog_register_device(&booke_wdt_dev);
- 
+ 		pll0: pll0@800 {
+ 			#clock-cells = <1>;
 -- 
 1.8.5
