@@ -1,25 +1,21 @@
-Return-Path: <hongbo.zhang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5CEFF14008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 20:04:10 +1000 (EST)
-Message-ID: <536B568C.10402@freescale.com>
-Date: Thu, 8 May 2014 18:03:56 +0800
-From: Hongbo Zhang <hongbo.zhang@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 03FC114008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 20:07:04 +1000 (EST)
+Message-ID: <536B5743.2060708@suse.de>
+Date: Thu, 08 May 2014 12:06:59 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Vinod Koul <vinod.koul@intel.com>, <dan.j.williams@intel.com>
-Subject: Re: [PATCH v4 6/8] DMA: Freescale: change descriptor release process
- for supporting async_tx
-References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
- <1397809071-5353-7-git-send-email-hongbo.zhang@freescale.com>
- <20140502165053.GH32284@intel.com>
-In-Reply-To: <20140502165053.GH32284@intel.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: leo.li@freescale.com, vkoul@infradead.org, linux-kernel@vger.kernel.org,
- scottwood@freescale.com, dmaengine@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V5] KVM: PPC: BOOK3S: Use the saved dar value and generic
+ make_dsisr
+References: <1399386622-21407-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1399386622-21407-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,10 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/06/2014 04:30 PM, Aneesh Kumar K.V wrote:
+> Although it's optional IBM POWER cpus always had DAR value set on
+> alignment interrupt. So don't try to compute these values.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-On 05/03/2014 12:50 AM, Vinod Koul wrote:
-> On Fri, Apr 18, 2014 at 04:17:49PM +0800, hongbo.zhang@freescale.com wrote:
->
-> This need review from Dan ...
->
-Dan, could you please have a look at this? thanks.
+The patch body is fine now. The commit message however is not. The patch 
+does two things:
+
+   * Merge DSISR calculation with Linux's implementation
+   * Use the real DAR on book3s_64 alignment interrupts
+
+In fact, you probably should make this 2 patches.
+
+
+Alex
