@@ -1,18 +1,35 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0190.outbound.protection.outlook.com [207.46.163.190])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B31D1140104
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 17:40:37 +1000 (EST)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/2 v3] bootmem/powerpc: Unify bootmem initialization
-Date: Thu, 8 May 2014 02:06:38 -0500
-Message-ID: <1399532799-1557-1-git-send-email-Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Emil Medve <Emilian.Medve@Freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5A740140094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 19:01:51 +1000 (EST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Thu, 8 May 2014 10:01:46 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id D88FC1B08051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 10:01:54 +0100 (BST)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4891ghE25428030
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 May 2014 09:01:43 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4891dcE016229
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 May 2014 03:01:41 -0600
+Message-ID: <1399539689.2906.16.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: [RFC PATCH] powerpc: fix wrong sp saved in save_stack_trace()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Thu, 08 May 2014 17:01:29 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,96 +39,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Unify the low/highmem code path from do_init_bootmem() by using (the)
-lowmem related variables/parameters even when the low/highmem split
-is not needed (64-bit) or configured. In such cases the "lowmem"
-variables/parameters continue to observe the definition by referring
-to memory directly mapped by the kernel
+I found stack trace couldn't be saved sometimes. After some
+investigation, it seems that when function trace is enabled, 
 
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+void save_stack_trace(struct stack_trace *trace)
+{
+        unsigned long sp;
+
+        asm("mr %0,1" : "=r" (sp));
+
+        save_context_stack(trace, sp, current, 1);
+}
+
+is compiled into: 
+
+c0000000000432c0 <.save_stack_trace>:
+c0000000000432c0:       7c 08 02 a6     mflr    r0
+c0000000000432c4:       f8 01 00 10     std     r0,16(r1)
+c0000000000432c8:       f8 21 ff 81     stdu    r1,-128(r1)
+c0000000000432cc:       f8 61 00 70     std     r3,112(r1)
+c0000000000432d0:       4b fc 77 bd     bl      c00000000000aa8c
+<._mcount>
+c0000000000432d4:       60 00 00 00     nop
+c0000000000432d8:       7c 24 0b 78     mr      r4,r1
+
+c0000000000432dc:       e8 ad 02 78     ld      r5,632(r13)
+c0000000000432e0:       e8 61 00 70     ld      r3,112(r1)
+c0000000000432e4:       38 c0 00 01     li      r6,1
+c0000000000432e8:       38 21 00 80     addi    r1,r1,128
+c0000000000432ec:       e8 01 00 10     ld      r0,16(r1)
+c0000000000432f0:       7c 08 03 a6     mtlr    r0
+c0000000000432f4:       4b ff fe 5c     b       c000000000043150
+<.save_context_stack>
+c0000000000432f8:       60 00 00 00     nop
+c0000000000432fc:       60 42 00 00     ori     r2,r2,0
+
+new stack frame -128(r1) is created to call ._mcount, and this new r1 is
+copied into sp as the stack pointer, which then could be overwritten by
+save_context_stack's prolog. 
+
+I don't know how to specify in C that the embedded asm be compiled after
+r1 being added back to the original value. But as a workaround, maybe we
+could move this embedded asm into save_context_stack(). 
+
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
 ---
+ arch/powerpc/kernel/stacktrace.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-v2: Rebased, no changes
-
-v3: No changes
-
- arch/powerpc/mm/mem.c | 36 ++++++++++++++++--------------------
- 1 file changed, 16 insertions(+), 20 deletions(-)
-
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 32202c9..eaf5d1d8 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -188,27 +188,31 @@ EXPORT_SYMBOL_GPL(walk_system_ram_range);
- void __init do_init_bootmem(void)
+diff --git a/arch/powerpc/kernel/stacktrace.c b/arch/powerpc/kernel/stacktrace.c
+index 3d30ef1..5c0b461 100644
+--- a/arch/powerpc/kernel/stacktrace.c
++++ b/arch/powerpc/kernel/stacktrace.c
+@@ -22,6 +22,9 @@
+ static void save_context_stack(struct stack_trace *trace, unsigned long sp,
+ 			struct task_struct *tsk, int savesched)
  {
- 	unsigned long start, bootmap_pages;
--	unsigned long total_pages;
- 	struct memblock_region *reg;
- 	int boot_mapsize;
-+	phys_addr_t _total_lowmem;
-+	phys_addr_t _lowmem_end_addr;
- 
--	max_low_pfn = max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
--	total_pages = (memblock_end_of_DRAM() - memstart_addr) >> PAGE_SHIFT;
--#ifdef CONFIG_HIGHMEM
--	total_pages = total_lowmem >> PAGE_SHIFT;
--	max_low_pfn = lowmem_end_addr >> PAGE_SHIFT;
-+#ifndef CONFIG_HIGHMEM
-+	_lowmem_end_addr = memblock_end_of_DRAM();
-+#else
-+	_lowmem_end_addr = lowmem_end_addr;
- #endif
- 
-+	max_pfn = memblock_end_of_DRAM() >> PAGE_SHIFT;
-+	max_low_pfn = _lowmem_end_addr >> PAGE_SHIFT;
-+	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
++	if (tsk == current)
++		asm("mr %0,1" : "=r" (sp));
 +
- 	/*
- 	 * Find an area to use for the bootmem bitmap.  Calculate the size of
- 	 * bitmap required as (Total Memory) / PAGE_SIZE / BITS_PER_BYTE.
- 	 * Add 1 additional page in case the address isn't page-aligned.
- 	 */
--	bootmap_pages = bootmem_bootmap_pages(total_pages);
-+	_total_lowmem = _lowmem_end_addr - memstart_addr;
-+	bootmap_pages = bootmem_bootmap_pages(_total_lowmem >> PAGE_SHIFT);
+ 	for (;;) {
+ 		unsigned long *stack = (unsigned long *) sp;
+ 		unsigned long newsp, ip;
+@@ -48,11 +51,7 @@ static void save_context_stack(struct stack_trace *trace, unsigned long sp,
  
- 	start = memblock_alloc(bootmap_pages << PAGE_SHIFT, PAGE_SIZE);
+ void save_stack_trace(struct stack_trace *trace)
+ {
+-	unsigned long sp;
+-
+-	asm("mr %0,1" : "=r" (sp));
+-
+-	save_context_stack(trace, sp, current, 1);
++	save_context_stack(trace, 0, current, 1);
+ }
+ EXPORT_SYMBOL_GPL(save_stack_trace);
  
--	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
- 	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
- 
- 	/* Place all memblock_regions in the same node and merge contiguous
-@@ -219,26 +223,18 @@ void __init do_init_bootmem(void)
- 	/* Add all physical memory to the bootmem map, mark each area
- 	 * present.
- 	 */
--#ifdef CONFIG_HIGHMEM
--	free_bootmem_with_active_regions(0, lowmem_end_addr >> PAGE_SHIFT);
-+	free_bootmem_with_active_regions(0, max_low_pfn);
- 
- 	/* reserve the sections we're already using */
- 	for_each_memblock(reserved, reg) {
--		unsigned long top = reg->base + reg->size - 1;
--		if (top < lowmem_end_addr)
-+		if (reg->base + reg->size - 1 < _lowmem_end_addr)
- 			reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
--		else if (reg->base < lowmem_end_addr) {
--			unsigned long trunc_size = lowmem_end_addr - reg->base;
-+		else if (reg->base < _lowmem_end_addr) {
-+			unsigned long trunc_size = _lowmem_end_addr - reg->base;
- 			reserve_bootmem(reg->base, trunc_size, BOOTMEM_DEFAULT);
- 		}
- 	}
--#else
--	free_bootmem_with_active_regions(0, max_pfn);
- 
--	/* reserve the sections we're already using */
--	for_each_memblock(reserved, reg)
--		reserve_bootmem(reg->base, reg->size, BOOTMEM_DEFAULT);
--#endif
- 	/* XXX need to clip this if using highmem? */
- 	sparse_memory_present_with_active_regions(0);
- 
--- 
-1.9.2
