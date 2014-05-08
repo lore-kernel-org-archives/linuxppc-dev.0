@@ -1,17 +1,17 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0240.outbound.protection.outlook.com [207.46.163.240])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D86C014009B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 17:39:06 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A7ECF140102
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 17:40:37 +1000 (EST)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] powerpc: Enable NO_BOOTMEM
-Date: Thu, 8 May 2014 02:05:02 -0500
-Message-ID: <1399532702-1514-2-git-send-email-Emilian.Medve@Freescale.com>
-In-Reply-To: <1399532702-1514-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1399532702-1514-1-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH 2/2 v3] powerpc: Enable NO_BOOTMEM
+Date: Thu, 8 May 2014 02:06:39 -0500
+Message-ID: <1399532799-1557-2-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1399532799-1557-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1399532799-1557-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Emil Medve <Emilian.Medve@Freescale.com>
