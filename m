@@ -1,38 +1,29 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-wg0-f42.google.com (mail-wg0-f42.google.com [74.125.82.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BFBD014017A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 19:28:52 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 8 May 2014 14:58:47 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 01711E0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 14:59:11 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s489SUe917039502
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 May 2014 14:58:31 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s489SJ3s027904
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 8 May 2014 14:58:22 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
-Subject: [PATCH V4 1/2] mm: move FAULT_AROUND_ORDER to arch/
-Date: Thu,  8 May 2014 14:58:15 +0530
-Message-Id: <1399541296-18810-2-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
- rusty@rustcorp.com.au, dave.hansen@intel.com,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, paulus@samba.org,
- mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+ by ozlabs.org (Postfix) with ESMTPS id 42AA014007D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2014 19:49:25 +1000 (EST)
+Received: by mail-wg0-f42.google.com with SMTP id y10so2195068wgg.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 May 2014 02:49:21 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20140502170333.GJ32284@intel.com>
+References: <1398261209-5578-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1398261209-5578-4-git-send-email-a13xp0p0v88@gmail.com>
+ <20140502170333.GJ32284@intel.com>
+Date: Thu, 8 May 2014 13:49:20 +0400
+Message-ID: <CAF0T0X6XBe-xcgXJ3M0QhxeHuK7H+H_neAWn_ChFxU6pr-QqXQ@mail.gmail.com>
+Subject: Re: [PATCH RFC v12 3/7] dma: mpc512x: add support for peripheral
+ transfers
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Vinod Koul <vinod.koul@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Gerhard Sittig <gsi@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
+ Alexander Popov <a13xp0p0v88@gmail.com>, dmaengine@vger.kernel.org,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,110 +33,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kirill A. Shutemov with 8c6e50b029 commit introduced
-vm_ops->map_pages() for mapping easy accessible pages around
-fault address in hope to reduce number of minor page faults.
+Hello, Vinod.
+Thanks for your feedback.
 
-This patch creates infrastructure to modify the FAULT_AROUND_ORDER
-value using mm/Kconfig. This will enable architecture maintainers
-to decide on suitable FAULT_AROUND_ORDER value based on
-performance data for that architecture. Patch also defaults
-FAULT_AROUND_ORDER Kconfig element to 4.
+2014-05-02 21:03 GMT+04:00 Vinod Koul <vinod.koul@intel.com>:
+> On Wed, Apr 23, 2014 at 05:53:25PM +0400, Alexander Popov wrote:
+>> +static struct dma_async_tx_descriptor *
+>> +mpc_dma_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
+>> +             unsigned int sg_len, enum dma_transfer_direction direction,
+>> +             unsigned long flags, void *context)
+>> +{
+>> +     struct mpc_dma *mdma = dma_chan_to_mpc_dma(chan);
+>> +     struct mpc_dma_chan *mchan = dma_chan_to_mpc_dma_chan(chan);
+>> +     struct mpc_dma_desc *mdesc = NULL;
+>> +     dma_addr_t per_paddr;
+>> +     u32 tcd_nunits;
+>> +     struct mpc_dma_tcd *tcd;
+>> +     unsigned long iflags;
+>> +     struct scatterlist *sg;
+>> +     size_t len;
+>> +     int iter, i;
+>> +
+>> +     /* Currently there is no proper support for scatter/gather */
+> Why? Is this HW or SW limitation?
+This is the software limitation.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
----
- mm/Kconfig  |    8 ++++++++
- mm/memory.c |   25 ++++++-------------------
- 2 files changed, 14 insertions(+), 19 deletions(-)
+As Gerhard noticed, unfortunately the Linux DMA API combines
+peripheral access with scatter/gather function.
 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index ebe5880..c7fc4f1 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -176,6 +176,14 @@ config MOVABLE_NODE
- config HAVE_BOOTMEM_INFO_NODE
- 	def_bool n
- 
-+#
-+# Fault around order is a control knob to decide the fault around pages.
-+# Default value is set to 4 , but the arch can override it as desired.
-+#
-+config FAULT_AROUND_ORDER
-+	int
-+	default	4
-+
- # eventually, we can have this option just 'select SPARSEMEM'
- config MEMORY_HOTPLUG
- 	bool "Allow for memory hot-add"
-diff --git a/mm/memory.c b/mm/memory.c
-index 037b812..e3931ef 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3402,11 +3402,9 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
- 	update_mmu_cache(vma, address, pte);
- }
- 
--#define FAULT_AROUND_ORDER 4
-+unsigned int fault_around_order __read_mostly = CONFIG_FAULT_AROUND_ORDER;
- 
- #ifdef CONFIG_DEBUG_FS
--static unsigned int fault_around_order = FAULT_AROUND_ORDER;
--
- static int fault_around_order_get(void *data, u64 *val)
- {
- 	*val = fault_around_order;
-@@ -3415,7 +3413,6 @@ static int fault_around_order_get(void *data, u64 *val)
- 
- static int fault_around_order_set(void *data, u64 val)
- {
--	BUILD_BUG_ON((1UL << FAULT_AROUND_ORDER) > PTRS_PER_PTE);
- 	if (1UL << val > PTRS_PER_PTE)
- 		return -EINVAL;
- 	fault_around_order = val;
-@@ -3435,31 +3432,21 @@ static int __init fault_around_debugfs(void)
- 	return 0;
- }
- late_initcall(fault_around_debugfs);
-+#endif
- 
- static inline unsigned long fault_around_pages(void)
- {
--	return 1UL << fault_around_order;
--}
--
--static inline unsigned long fault_around_mask(void)
--{
--	return ~((1UL << (PAGE_SHIFT + fault_around_order)) - 1);
--}
--#else
--static inline unsigned long fault_around_pages(void)
--{
- 	unsigned long nr_pages;
- 
--	nr_pages = 1UL << FAULT_AROUND_ORDER;
--	BUILD_BUG_ON(nr_pages > PTRS_PER_PTE);
-+	nr_pages = 1UL << fault_around_order;
-+	VM_BUG_ON(nr_pages > PTRS_PER_PTE);
- 	return nr_pages;
- }
- 
- static inline unsigned long fault_around_mask(void)
- {
--	return ~((1UL << (PAGE_SHIFT + FAULT_AROUND_ORDER)) - 1);
-+	return ~((1UL << (PAGE_SHIFT + fault_around_order)) - 1);
- }
--#endif
- 
- static void do_fault_around(struct vm_area_struct *vma, unsigned long address,
- 		pte_t *pte, pgoff_t pgoff, unsigned int flags)
-@@ -3515,7 +3502,7 @@ static int do_read_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * if page by the offset is not ready to be mapped (cold cache or
- 	 * something).
- 	 */
--	if (vma->vm_ops->map_pages) {
-+	if ((vma->vm_ops->map_pages) && fault_around_order) {
- 		pte = pte_offset_map_lock(mm, pmd, address, &ptl);
- 		do_fault_around(vma, address, pte, pgoff, flags);
- 		if (!pte_same(*pte, orig_pte))
--- 
-1.7.10.4
+But the original MPC512x DMA driver already uses scatter/gather feature
+of the hardware for chaining together individual mpc_dma_desc's
+in mpc_dma_execute() while mpc_dma_desc itself cannot use
+scatter/gather feature, because each mpc_dma_desc is associated
+with exactly one mpc_dma_tcd.
+
+>> +             if (direction == DMA_DEV_TO_MEM) {
+>> +                     tcd->saddr = per_paddr;
+>> +                     tcd->daddr = sg_dma_address(sg);
+>> +                     tcd->soff = 0;
+>> +                     tcd->doff = 4;
+> what are these?
+SOFF is source address signed offset. It is applied to the current
+source address to form the next-state value as each source read is completed.
+DOFF is destination address signed offset.
+
+>> +     case DMA_TERMINATE_ALL:
+>> +             /* Disable channel requests */
+>> +             mdma = dma_chan_to_mpc_dma(chan);
+>> +
+>> +             spin_lock_irqsave(&mchan->lock, flags);
+>> +
+>> +             out_8(&mdma->regs->dmacerq, chan->chan_id);
+>> +             list_splice_tail_init(&mchan->prepared, &mchan->free);
+>> +             list_splice_tail_init(&mchan->queued, &mchan->free);
+>> +             list_splice_tail_init(&mchan->active, &mchan->free);
+>> +
+>> +             spin_unlock_irqrestore(&mchan->lock, flags);
+>> +
+>> +             return 0;
+> empty line after this pls
+ok
+
+>> +     case DMA_SLAVE_CONFIG:
+>> +             /*
+>> +              * Constraints:
+>> +              *  - only transfers between a peripheral device and
+>> +              *     memory are supported;
+>> +              *  - minimal transfer chunk is 4 bytes and consequently
+>> +              *     source and destination addresses must be 4-byte aligned
+>> +              *     and transfer size must be aligned on (4 * maxburst)
+>> +              *     boundary;
+>> +              *  - during the transfer RAM address is being incremented by
+>> +              *     the size of minimal transfer chunk;
+>> +              *  - peripheral port's address is constant during the transfer.
+>> +              */
+>> +
+>> +             cfg = (void *)arg;
+>> +
+>> +             if (cfg->src_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES ||
+>> +                 cfg->dst_addr_width != DMA_SLAVE_BUSWIDTH_4_BYTES ||
+> and why this limtation, doesnt seem covered above?
+I created this limitation because FIFO registers of LPC and SDHC
+support _only_ 4-byte access.
+
+I tried to cover this limitation in the statement "minimal transfer chunk
+is 4 bytes". Should I make it more explicit?
+
+>> +                 !IS_ALIGNED(cfg->src_addr, 4) ||
+>> +                 !IS_ALIGNED(cfg->dst_addr, 4)) {
+>> +                     return -EINVAL;
+>> +             }
+>> +
+>> +             spin_lock_irqsave(&mchan->lock, flags);
+>> +
+>> +             mchan->src_per_paddr = cfg->src_addr;
+>> +             mchan->src_tcd_nunits = cfg->src_maxburst;
+>> +             mchan->dst_per_paddr = cfg->dst_addr;
+>> +             mchan->dst_tcd_nunits = cfg->dst_maxburst;
+>> +
+>> +             /* Apply defaults */
+>> +             if (mchan->src_tcd_nunits == 0)
+>> +                     mchan->src_tcd_nunits = 1;
+>> +             if (mchan->dst_tcd_nunits == 0)
+>> +                     mchan->dst_tcd_nunits = 1;
+>> +
+>> +             spin_unlock_irqrestore(&mchan->lock, flags);
+>> +
+>> +             return 0;
+> empty line here too
+ok
+
+Best regards,
+Alexander
