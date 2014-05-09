@@ -1,23 +1,23 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-lb0-f169.google.com (mail-lb0-f169.google.com
- [209.85.217.169])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <harninder.rai@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0142.outbound.protection.outlook.com [207.46.163.142])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B2FFD14011D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 18:31:52 +1000 (EST)
-Received: by mail-lb0-f169.google.com with SMTP id s7so5285866lbd.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 May 2014 01:31:47 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id C972A14009B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 18:55:32 +1000 (EST)
+From: Harninder Rai <harninder.rai@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: powerpc/mpc85xx: Add BSC9132 QDS Support
+Date: Fri, 9 May 2014 08:55:25 +0000
+Message-ID: <163808b877f64f2689d8b678e2dc61df@BL2PR03MB177.namprd03.prod.outlook.com>
+References: <1395128102-12983-1-git-send-email-harninder.rai@freescale.com>
+ <20140503003113.GB20757@home.buserror.net>
+In-Reply-To: <20140503003113.GB20757@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
-Date: Fri, 9 May 2014 16:31:47 +0800
-Message-ID: <CADRPPNSPwiveWEH++ZqDXH5u=mQxAiuh+Ci=1hBH1g6qz4-2dw@mail.gmail.com>
-Subject: Re: [PATCH 1/1] booke/watchdog: refine and clean up the codes
-From: Leo Li <pku.leo@gmail.com>
-To: Yuantian.Tang@freescale.com
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, wim@iguana.be,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-watchdog@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "prabhakar@freescale.com" <prabhakar@freescale.com>, Ruchika
+ Gupta <ruchika.gupta@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 8, 2014 at 10:04 AM,  <Yuantian.Tang@freescale.com> wrote:
-> From: Tang Yuantian <yuantian.tang@freescale.com>
->
-> Basically, this patch does the following:
-> 1. Move the codes of parsing boot parameters from setup-common.c
->    to driver. In this way, code reader can know directly that
->    there are boot parameters that can change the timeout.
-> 2. Make boot parameter 'booke_wdt_period' effective.
->    currently, when driver is loaded, default timeout is always
->    being used in stead of booke_wdt_period.
-> 3. Wrap up the watchdog timeout in device struct and clean up
->    unnecessary codes.
->
-> Signed-off-by: Tang Yuantian <yuantian.tang@freescale.com>
-> Acked-by: Scott Wood <scottwood@freescale.com>
 
-Reviewed-by: Li Yang <leoli@freescale.com>
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Saturday, May 03, 2014 6:01 AM
+> To: Rai Harninder-B01044
+> Cc: linuxppc-dev@lists.ozlabs.org; Gupta Ruchika-R66431
+> Subject: Re: powerpc/mpc85xx: Add BSC9132 QDS Support
+>=20
+> On Tue, Mar 18, 2014 at 01:05:02PM +0530, harninder rai wrote:
+> > +&ifc {
+> > +	#address-cells =3D <2>;
+> > +	#size-cells =3D <1>;
+> > +	compatible =3D "fsl,ifc", "simple-bus";
+> > +	/* FIXME: Test whether interrupts are split */
+> > +	interrupts =3D <16 2 0 0 20 2 0 0>;
+> > +};
+>=20
+> Have you done this test yet?
+Checked with Prabhakar and he says that on 9132, the IFC interrupts are spl=
+it
+B4/T4 (and variants), C29x etc onwards are when the interrupts got merged i=
+nto single interrupt
+>=20
+> -Scott
