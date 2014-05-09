@@ -1,14 +1,33 @@
-Return-Path: <anton@samba.org>
-Date: Fri, 9 May 2014 17:47:12 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- paulmck@linux.vnet.ibm.com
-Subject: [PATCH] powerpc: irq work racing with timer interrupt can result in
- timer interrupt hang
-Message-ID: <20140509174712.55fe72d0@kryten>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5DDC71400CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:49 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 9 May 2014 17:49:47 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id DCECD3578047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:43 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s497SMuh65339428
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:28:22 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s497nhm1012517
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:49:43 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+Subject: [PATCH RFC v2 00/10] EEH Support for VFIO PCI devices on PowerKVM
+ guest
+Date: Fri,  9 May 2014 17:49:32 +1000
+Message-Id: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,62 +37,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I am seeing an issue where a CPU running perf eventually hangs.
-Traces show timer interrupts happening every 4 seconds even
-when a userspace task is running on the CPU. /proc/timer_list
-also shows pending hrtimers have not run in over an hour,
-including the scheduler.
+The series of patches intends to support EEH for PCI devices, which are
+passed through to PowerKVM based guest via VFIO. The implementation is
+straightforward based on the issues or problems we have to resolve to
+support EEH for PowerKVM based guest.
 
-Looking closer, decrementers_next_tb is getting set to
-0xffffffffffffffff, and at that point we will never take
-a timer interrupt again.
+- Emulation for EEH RTAS requests. All EEH RTAS requests goes to QEMU firstly.
+  If QEMU can't handle it, the request will be sent to host via newly introduced
+  VFIO container IOCTL command (VFIO_EEH_INFO) and gets handled in host kernel.
 
-In __timer_interrupt() we set decrementers_next_tb to
-0xffffffffffffffff and rely on ->event_handler to update it:
+- The error injection infrastructure need support request from the userland
+  utility "errinjct" and PowerKVM based guest. The userland utility "errinjct"
+  works on pSeries platform well with dedicated syscall, which helps invoking
+  RTAS service to fulfil error injection in kernel. From the perspective, it's
+  reasonable to extend the syscall to support PowerNV platform so that OPAL call
+  can be invoked in host kernel for injecting errors. The data transported
+  between userland and kerenl is still following "struct rtas_args" for both
+  cases of PowerNV (OPAL) and pSeries (RTAS).
 
-        *next_tb = ~(u64)0;
-        if (evt->event_handler)
-                evt->event_handler(evt);
+The series of patches requires corresponding firmware changes from Mike Qiu to
+support error injection and QEMU changes to support EEH for guest. QEMU patchset
+will be sent separately.
 
-In this case ->event_handler is hrtimer_interrupt. This will eventually
-call back through the clockevents code with the next event to be
-programmed:
+Change log
+==========
+v1 -> v2:
+	* EEH RTAS requests are routed to QEMU, and then possiblly to host kerenl.
+	  The mechanism KVM in-kernel handling is dropped.
+	* Error injection is reimplemented based syscall, instead of KVM in-kerenl
+	  handling. The logic for error injection token management is moved to
+	  QEMU. The error injection request is routed to QEMU and then possiblly
+	  to host kernel.
 
-static int decrementer_set_next_event(unsigned long evt,
-                                      struct clock_event_device *dev)
-{
-        /* Don't adjust the decrementer if some irq work is pending */
-        if (test_irq_work_pending())
-                return 0;
-        __get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
+Testing on P7
+=============
 
-If irq work came in between these two points, we will return
-before updating decrementers_next_tb and we never process a timer
-interrupt again.
+- Emulex adapter
 
-This looks to have been introduced by 0215f7d8c53f (powerpc: Fix races
-with irq_work). Fix it by removing the early exit and relying on
-code later on in the function to force an early decrementer:
+Testing on P8
+=============
 
-       /* We may have raced with new irq work */
-       if (test_irq_work_pending())
-               set_dec(1);
+- Need more testing after design is finalized.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Cc: stable@vger.kernel.org # 3.14+
----
+-----
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 122a580..4f0b676 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -813,9 +888,6 @@ static void __init clocksource_init(void)
- static int decrementer_set_next_event(unsigned long evt,
- 				      struct clock_event_device *dev)
- {
--	/* Don't adjust the decrementer if some irq work is pending */
--	if (test_irq_work_pending())
--		return 0;
- 	__get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
- 	set_dec(evt);
- 
+Gavin Shan (10):
+  drivers/vfio: Introduce CONFIG_VFIO_EEH
+  powerpc/eeh: Info to trace passed devices
+  powerpc/eeh: Search EEH device by guest address
+  powerpc/eeh: Search EEH PE by guest address
+  drivers/vfio: New IOCTL command VFIO_EEH_INFO
+  powerpc/eeh: Avoid event on passed PE
+  powerpc/powernv: Sync OPAL header file with firmware
+  powerpc: Extend syscall ppc_rtas()
+  powerpc/powernv: Implement ppc_call_opal()
+  powerpc/powernv: Error injection infrastructure
+
+arch/powerpc/include/asm/eeh.h                 |  52 +++++++++++++
+arch/powerpc/include/asm/opal.h                |  74 +++++++++++++++++-
+arch/powerpc/include/asm/rtas.h                |  10 ++-
+arch/powerpc/include/asm/syscalls.h            |   2 +-
+arch/powerpc/include/asm/systbl.h              |   2 +-
+arch/powerpc/include/uapi/asm/unistd.h         |   2 +-
+arch/powerpc/kernel/eeh.c                      |   8 ++
+arch/powerpc/kernel/eeh_pe.c                   |  80 +++++++++++++++++++
+arch/powerpc/kernel/rtas.c                     |  57 +++-----------
+arch/powerpc/kernel/syscalls.c                 |  50 ++++++++++++
+arch/powerpc/platforms/powernv/Makefile        |   3 +-
+arch/powerpc/platforms/powernv/eeh-ioda.c      |   3 +-
+arch/powerpc/platforms/powernv/eeh-vfio.c      | 584 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/platforms/powernv/errinject.c     | 222 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+arch/powerpc/platforms/powernv/opal.c          |  93 ++++++++++++++++++++++
+drivers/vfio/Kconfig                           |   6 ++
+drivers/vfio/vfio_iommu_spapr_tce.c            |  12 +++
+include/uapi/linux/vfio.h                      |  61 +++++++++++++++
+kernel/sys_ni.c                                |   2 +-
+20 files changed, 1271 insertions(+), 53 deletions(-)
+create mode 100644 arch/powerpc/platforms/powernv/eeh-vfio.c
+create mode 100644 arch/powerpc/platforms/powernv/errinject.c
+
+Thanks,
+Gavin
