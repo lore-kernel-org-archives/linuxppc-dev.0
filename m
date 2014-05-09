@@ -1,22 +1,33 @@
-Return-Path: <harninder.rai@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8DD011400A3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:59:36 +1000 (EST)
-From: Harninder Rai <harninder.rai@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: powerpc/mpc85xx: Add BSC9132 QDS Support
-Date: Fri, 9 May 2014 07:44:48 +0000
-Message-ID: <b054b6eafb074ed28673628a127c6cf0@BL2PR03MB177.namprd03.prod.outlook.com>
-References: <1395128102-12983-1-git-send-email-harninder.rai@freescale.com>
- <20140503002309.GA20757@home.buserror.net>
-In-Reply-To: <20140503002309.GA20757@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by ozlabs.org (Postfix) with ESMTP id 5DA811402BC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 18:06:50 +1000 (EST)
+Message-ID: <536C8C90.2050601@hitachi.com>
+Date: Fri, 09 May 2014 17:06:40 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Ruchika
- Gupta <ruchika.gupta@freescale.com>
+To: ananth@in.ibm.com
+Subject: Re: [RFT PATCH -next ] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+References: <536A16A6.5040709@hitachi.com>
+ <20140507115551.22259.70581.stgit@ltc230.yrl.intra.hitachi.co.jp>
+ <20140508044753.GA13413@in.ibm.com> <536B18B0.9060209@hitachi.com>
+ <20140508061658.GA2384@in.ibm.com>
+In-Reply-To: <20140508061658.GA2384@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +37,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > +	};
-> > +
-> > +	nand@1,0 {
-> > +		#address-cells =3D <1>;
-> > +		#size-cells =3D <1>;
-> > +		compatible =3D "fsl,ifc-nand";
-> > +		reg =3D <0x1 0x0 0x4000>;
-> > +
-> > +		partition@0 {
-> > +			/* This location must not be altered  */
-> > +			/* 3MB for u-boot Bootloader Image */
-> > +			reg =3D <0x0 0x00300000>;
-> > +			label =3D "NAND U-Boot Image";
-> > +			read-only;
-> > +		};
-> > +
-> > +		partition@300000 {
-> > +			/* 1MB for DTB Image */
-> > +			reg =3D <0x00300000 0x00100000>;
-> > +			label =3D "NAND DTB Image";
-> > +		};
-> > +
-> > +		partition@400000 {
-> > +			/* 8MB for Linux Kernel Image */
-> > +			reg =3D <0x00400000 0x00800000>;
-> > +			label =3D "NAND Linux Kernel Image";
-> > +		};
-> > +
-> > +		partition@c00000 {
-> > +			/* Rest space for Root file System Image */
-> > +			reg =3D <0x00c00000 0x07400000>;
-> > +			label =3D "NAND RFS Image";
-> > +		};
-> > +	};
-> > +};
->=20
-> Please keep partition definitions out of the dts file, as has been recent=
-ly
-> requested of other boards.  You can use U-Boot to create the partition no=
-des
-> based on the mtdparts variable, or you can use the Linux mtdparts command=
- line
-> option.
-Ok. Will remove these in V2 of patch
->=20
-> -Scott
+(2014/05/08 15:16), Ananth N Mavinakayanahalli wrote:
+> On Thu, May 08, 2014 at 02:40:00PM +0900, Masami Hiramatsu wrote:
+>> (2014/05/08 13:47), Ananth N Mavinakayanahalli wrote:
+>>> On Wed, May 07, 2014 at 08:55:51PM +0900, Masami Hiramatsu wrote:
+>>>
+>>> ...
+>>>
+>>>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
+>>>> +/*
+>>>> + * On PPC64 ABIv1 the function pointer actually points to the
+>>>> + * function's descriptor. The first entry in the descriptor is the
+>>>> + * address of the function text.
+>>>> + */
+>>>> +#define constant_function_entry(fn)	(((func_descr_t *)(fn))->entry)
+>>>> +#else
+>>>> +#define constant_function_entry(fn)	((unsigned long)(fn))
+>>>> +#endif
+>>>> +
+>>>>  #endif /* __ASSEMBLY__ */
+>>>
+>>> Hi Masami,
+>>>
+>>> You could just use ppc_function_entry() instead.
+>>
+>> No, I think ppc_function_entry() has two problems (on the latest -next kernel)
+>>
+>> At first, that is an inlined functions which is not applied in build time.
+>> Since the NOKPROBE_SYMBOL() is used outside of any functions as like as
+>> EXPORT_SYMBOL(), we can only use preprocessed macros.
+>> Next, on PPC64 ABI*v2*, ppc_function_entry() returns local function entry,
+>> which seems global function entry + 2 insns. I'm not sure about implementation
+>> of the kallsyms on PPC64 ABIv2, but I guess we need global function entry
+>> for kallsyms.
+> 
+> ABIv2 does away with function descriptors and Anton fixed up that
+> routine to handle the change (the +2 is an artefact of that).
+
+Hmm, do you mean that the address +2 is the actual entry point?
+I'd like to know which address is same as the address shown in /proc/kallsyms.
+
+>> BTW, could you test this patch on the latest -next tree on PPC64 if possible?
+> 
+> I'll test it, but it may take a bit.
+
+Thanks for your help!
+
+> 
+> Ananth
+> 
+> 
+
+
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
