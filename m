@@ -1,21 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1C17B140084
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 05:24:28 +1000 (EST)
-Date: Fri, 9 May 2014 14:24:15 -0500
+ by ozlabs.org (Postfix) with ESMTPS id C3FB814009B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 05:36:45 +1000 (EST)
+Date: Fri, 9 May 2014 14:36:14 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
-Subject: Re: [PATCHv2] powerpc/85xx: Add OCA4080 board support
-Message-ID: <20140509192415.GA28160@home.buserror.net>
-References: <1397584306-8706-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Subject: Re: [v6,3/5] powerpc/book3e: support kgdb for kernel space
+Message-ID: <20140509193614.GA28739@home.buserror.net>
+References: <1382520685-11609-4-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1397584306-8706-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
-Cc: stef.van.os@prodrive-technologies.com,
- Martijn de Gouw <martijn.de.gouw@prodrive.nl>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1382520685-11609-4-git-send-email-tiejun.chen@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 15, 2014 at 07:51:46PM +0200, Martijn de Gouw wrote:
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index fbd871e..f3685047 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -55,8 +55,6 @@ void __init corenet_gen_setup_arch(void)
->  	mpc85xx_smp_init();
+On Wed, Oct 23, 2013 at 05:31:23PM +0800, Tiejun Chen wrote:
+> Currently we need to skip this for supporting KGDB.
+> 
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> 
+> ---
+> arch/powerpc/kernel/exceptions-64e.S |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index a55cf62..0b750c6 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -597,11 +597,13 @@ kernel_dbg_exc:
+>  	rfdi
 >  
->  	swiotlb_detect_4g();
-> -
-> -	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
+>  	/* Normal debug exception */
+> +1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
+> +#ifndef CONFIG_KGDB
+>  	/* XXX We only handle coming from userspace for now since we can't
+>  	 *     quite save properly an interrupted kernel state yet
+>  	 */
+> -1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
+>  	beq	kernel_dbg_exc;		/* if from kernel mode */
+> +#endif
 
-Valentin's patch kept this line but removed "from Freescale
-Semiconductor"; I'll leave it like that when applying.
+Now that we have support for properly saving state on special level
+exceptions, that should be used here.  With the above patch, what happens
+if e.g. a debug exception fires during a TLB miss, and the kgdb handler
+takes its own TLB miss accessing the serial port?
 
 -Scott
