@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id ADC51140108
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:49 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 20AE61400CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:50 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 9 May 2014 17:49:48 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 919883578047
+ Fri, 9 May 2014 17:49:49 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 639383578054
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:46 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s497SYVQ2752768
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:28:34 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s497njJI031938
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s497SPuk64225298
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:28:25 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s497nita012608
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:49:45 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 02/10] powerpc/eeh: Info to trace passed devices
-Date: Fri,  9 May 2014 17:49:34 +1000
-Message-Id: <1399621782-23281-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 01/10] drivers/vfio: Introduce CONFIG_VFIO_EEH
+Date: Fri,  9 May 2014 17:49:33 +1000
+Message-Id: <1399621782-23281-2-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -38,115 +38,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The address of passed PCI devices (domain:bus:slot:func) might be
-quite different from the perspective of host and guest. We have to
-trace the address mapping so that we can emulate EEH RTAS requests
-from guest. The patch introduces additional fields to eeh_pe and
-eeh_dev for the purpose.
+The patch introduces CONFIG_VFIO_EEH for more IOCTL commands on
+tce_iommu_driver_ops to support EEH funtionality for PCI devices
+that are passed through from host to guest.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h | 46 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ drivers/vfio/Kconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 7782056..3268692 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -48,6 +48,14 @@ struct device_node;
- #define EEH_PE_RST_HOLD_TIME		250
- #define EEH_PE_RST_SETTLE_TIME		1800
+diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
+index af7b204..4f3293b 100644
+--- a/drivers/vfio/Kconfig
++++ b/drivers/vfio/Kconfig
+@@ -8,11 +8,17 @@ config VFIO_IOMMU_SPAPR_TCE
+ 	depends on VFIO && SPAPR_TCE_IOMMU
+ 	default n
  
-+#ifdef CONFIG_VFIO_EEH
-+struct eeh_vfio_pci_addr {
-+	uint64_t	buid;		/* PHB BUID			*/
-+	uint16_t	bdn;		/* Bus/Device/Function number	*/
-+	uint32_t	pe_addr;	/* PE configuration address	*/
-+};
-+#endif /* CONFIG_VFIO_EEH */
++config VFIO_EEH
++	tristate
++	depends on EEH && VFIO_IOMMU_SPAPR_TCE
++	default n
 +
- /*
-  * The struct is used to trace PE related EEH functionality.
-  * In theory, there will have one instance of the struct to
-@@ -72,6 +80,7 @@ struct device_node;
- #define EEH_PE_RESET		(1 << 2)	/* PE reset in progress	*/
- 
- #define EEH_PE_KEEP		(1 << 8)	/* Keep PE on hotplug	*/
-+#define EEH_PE_PASSTHROUGH	(1 << 9)	/* PE owned by guest	*/
- 
- struct eeh_pe {
- 	int type;			/* PE type: PHB/Bus/Device	*/
-@@ -85,6 +94,9 @@ struct eeh_pe {
- 	struct timeval tstamp;		/* Time on first-time freeze	*/
- 	int false_positives;		/* Times of reported #ff's	*/
- 	struct eeh_pe *parent;		/* Parent PE			*/
-+#ifdef CONFIG_VFIO_EEH
-+	struct eeh_vfio_pci_addr gaddr;	/* Address in guest		*/
-+#endif
- 	struct list_head child_list;	/* Link PE to the child list	*/
- 	struct list_head edevs;		/* Link list of EEH devices	*/
- 	struct list_head child;		/* Child PEs			*/
-@@ -93,6 +105,21 @@ struct eeh_pe {
- #define eeh_pe_for_each_dev(pe, edev, tmp) \
- 		list_for_each_entry_safe(edev, tmp, &pe->edevs, list)
- 
-+static inline bool eeh_pe_passed(struct eeh_pe *pe)
-+{
-+	return pe ? !!(pe->state & EEH_PE_PASSTHROUGH) : false;
-+}
-+
-+static inline void eeh_pe_set_passed(struct eeh_pe *pe, bool passed)
-+{
-+	if (pe) {
-+		if (passed)
-+			pe->state |= EEH_PE_PASSTHROUGH;
-+		else
-+			pe->state &= ~EEH_PE_PASSTHROUGH;
-+	}
-+}
-+
- /*
-  * The struct is used to trace EEH state for the associated
-  * PCI device node or PCI device. In future, it might
-@@ -110,6 +137,7 @@ struct eeh_pe {
- #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
- #define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
- #define EEH_DEV_FRESET		(1 << 11)	/* Fundamental reset	*/
-+#define EEH_DEV_PASSTHROUGH	(1 << 12)	/* Owned by guest	*/
- 
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
-@@ -126,6 +154,9 @@ struct eeh_dev {
- 	struct device_node *dn;		/* Associated device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
- 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
-+#ifdef CONFIG_VFIO_EEH
-+	struct eeh_vfio_pci_addr gaddr;	/* Address in guest		*/
-+#endif
- };
- 
- static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
-@@ -138,6 +169,21 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
- 	return edev ? edev->pdev : NULL;
- }
- 
-+static inline bool eeh_dev_passed(struct eeh_dev *dev)
-+{
-+	return dev ? !!(dev->mode & EEH_DEV_PASSTHROUGH) : false;
-+}
-+
-+static inline void eeh_dev_set_passed(struct eeh_dev *dev, bool passed)
-+{
-+	if (dev) {
-+		if (passed)
-+			dev->mode |= EEH_DEV_PASSTHROUGH;
-+		else
-+			dev->mode &= ~EEH_DEV_PASSTHROUGH;
-+	}
-+}
-+
- /* Return values from eeh_ops::next_error */
- enum {
- 	EEH_NEXT_ERR_NONE = 0,
+ menuconfig VFIO
+ 	tristate "VFIO Non-Privileged userspace driver framework"
+ 	depends on IOMMU_API
+ 	select VFIO_IOMMU_TYPE1 if X86
+ 	select VFIO_IOMMU_SPAPR_TCE if (PPC_POWERNV || PPC_PSERIES)
++	select VFIO_EEH if PPC_POWERNV
+ 	select ANON_INODES
+ 	help
+ 	  VFIO provides a framework for secure userspace device drivers.
 -- 
 1.8.3.2
