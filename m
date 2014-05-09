@@ -1,20 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0188.outbound.protection.outlook.com [207.46.163.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C3FB814009B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 05:36:45 +1000 (EST)
-Date: Fri, 9 May 2014 14:36:14 -0500
+ by ozlabs.org (Postfix) with ESMTPS id E6FCC1400A8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 07:15:47 +1000 (EST)
+Message-ID: <1399670133.15726.440.camel@snotra.buserror.net>
+Subject: linux-next: add scottwood/linux.git
 From: Scott Wood <scottwood@freescale.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Subject: Re: [v6,3/5] powerpc/book3e: support kgdb for kernel space
-Message-ID: <20140509193614.GA28739@home.buserror.net>
-References: <1382520685-11609-4-git-send-email-tiejun.chen@windriver.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 9 May 2014 16:15:33 -0500
+In-Reply-To: <1395709794.12479.411.camel@snotra.buserror.net>
+References: <20140320042527.GA23206@home.buserror.net>
+ <1395616617.3460.109.camel@pasglop> <1395617608.3460.113.camel@pasglop>
+ <1395709794.12479.411.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1382520685-11609-4-git-send-email-tiejun.chen@windriver.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Oct 23, 2013 at 05:31:23PM +0800, Tiejun Chen wrote:
-> Currently we need to skip this for supporting KGDB.
+On Mon, 2014-03-24 at 20:09 -0500, Scott Wood wrote:
+> On Mon, 2014-03-24 at 10:33 +1100, Benjamin Herrenschmidt wrote:
+> > On Mon, 2014-03-24 at 10:16 +1100, Benjamin Herrenschmidt wrote:
+> > > On Wed, 2014-03-19 at 23:25 -0500, Scott Wood wrote:
+> > > > The following changes since commit c7e64b9ce04aa2e3fad7396d92b5cb92056d16ac:
+> > > > 
+> > > >   powerpc/powernv Platform dump interface (2014-03-07 16:19:10 +1100)
+> > > > 
+> > > > are available in the git repository at:
+> > > > 
+> > > >   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+> > > > 
+> > > > for you to fetch changes up to 48b16180d0d91324e5d2423c6d53d97bbe3dcc14:
+> > > > 
+> > > >   fsl/pci: The new pci suspend/resume implementation (2014-03-19 22:37:44 -0500)
+> > > 
+> > > Stephen just informed me that your tree wasn't in -next ... Kumar's
+> > > still is.
+> > > 
+> > > Can you guys fix that up ? I somewhat rely on the FSL stuff to simmer
+> > > in -next on its own.
 > 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> 
-> ---
-> arch/powerpc/kernel/exceptions-64e.S |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-> index a55cf62..0b750c6 100644
-> --- a/arch/powerpc/kernel/exceptions-64e.S
-> +++ b/arch/powerpc/kernel/exceptions-64e.S
-> @@ -597,11 +597,13 @@ kernel_dbg_exc:
->  	rfdi
->  
->  	/* Normal debug exception */
-> +1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
-> +#ifndef CONFIG_KGDB
->  	/* XXX We only handle coming from userspace for now since we can't
->  	 *     quite save properly an interrupted kernel state yet
->  	 */
-> -1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
->  	beq	kernel_dbg_exc;		/* if from kernel mode */
-> +#endif
+> Stephen, what's the process for adding a tree?
 
-Now that we have support for properly saving state on special level
-exceptions, that should be used here.  With the above patch, what happens
-if e.g. a debug exception fires during a TLB miss, and the kgdb handler
-takes its own TLB miss accessing the serial port?
+ping
 
 -Scott
+
+
+> 
+> I suppose we should update MAINTAINERS while we're at it.
+> 
+> > Oh and where is my little summary to put in the merge commit ?
+> > 
+> > I made one up for this time around.
+> 
+> Oops, forgot again.  Now I've added something to the script I use to
+> generate pull requests, to give me a reminder.
+> 
+> -Scott
+> 
