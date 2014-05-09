@@ -2,29 +2,29 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A7A7D1400CB
+ by ozlabs.org (Postfix) with ESMTPS id ADC51140108
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:49 +1000 (EST)
 Received: from /spool/local
  by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 9 May 2014 17:49:49 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9E9CC3578047
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:47 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s497nW1q9634210
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:49:32 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s497nkAw021269
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:49:47 +1000
+ Fri, 9 May 2014 17:49:48 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 919883578047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:46 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s497SYVQ2752768
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:28:34 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s497njJI031938
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:49:45 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 06/10] powerpc/eeh: Avoid event on passed PE
-Date: Fri,  9 May 2014 17:49:38 +1000
-Message-Id: <1399621782-23281-7-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 02/10] powerpc/eeh: Info to trace passed devices
+Date: Fri,  9 May 2014 17:49:34 +1000
+Message-Id: <1399621782-23281-3-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -38,49 +38,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we detects frozen state on PE that has been passed to guest, we
-needn't handle it. Instead, we rely on the guest to detect and recover
-it. The patch avoid EEH event on the frozen passed PE so that the guest
-can have chance to handle that.
+The address of passed PCI devices (domain:bus:slot:func) might be
+quite different from the perspective of host and guest. We have to
+trace the address mapping so that we can emulate EEH RTAS requests
+from guest. The patch introduces additional fields to eeh_pe and
+eeh_dev for the purpose.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 | 8 ++++++++
- arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/eeh.h | 46 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 9c6b899..6543f05 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -400,6 +400,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	if (ret > 0)
- 		return ret;
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 7782056..3268692 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -48,6 +48,14 @@ struct device_node;
+ #define EEH_PE_RST_HOLD_TIME		250
+ #define EEH_PE_RST_SETTLE_TIME		1800
  
-+	/*
-+	 * If the PE has been passed to guest, we won't check the
-+	 * state. Instead, let the guest handle it if the PE has
-+	 * been frozen.
-+	 */
-+	if (eeh_pe_passed(pe))
-+		return 0;
++#ifdef CONFIG_VFIO_EEH
++struct eeh_vfio_pci_addr {
++	uint64_t	buid;		/* PHB BUID			*/
++	uint16_t	bdn;		/* Bus/Device/Function number	*/
++	uint32_t	pe_addr;	/* PE configuration address	*/
++};
++#endif /* CONFIG_VFIO_EEH */
 +
- 	/* If we already have a pending isolation event for this
- 	 * slot, we know it's bad already, we don't need to check.
- 	 * Do this checking under a lock; as multiple PCI devices
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 1b5982f..03a3ed2 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -890,7 +890,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
- 					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 				ret = EEH_NEXT_ERR_NONE;
--			} else if ((*pe)->state & EEH_PE_ISOLATED) {
-+			} else if ((*pe)->state & EEH_PE_ISOLATED ||
-+				   eeh_pe_passed(*pe)) {
- 				ret = EEH_NEXT_ERR_NONE;
- 			} else {
- 				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
+ /*
+  * The struct is used to trace PE related EEH functionality.
+  * In theory, there will have one instance of the struct to
+@@ -72,6 +80,7 @@ struct device_node;
+ #define EEH_PE_RESET		(1 << 2)	/* PE reset in progress	*/
+ 
+ #define EEH_PE_KEEP		(1 << 8)	/* Keep PE on hotplug	*/
++#define EEH_PE_PASSTHROUGH	(1 << 9)	/* PE owned by guest	*/
+ 
+ struct eeh_pe {
+ 	int type;			/* PE type: PHB/Bus/Device	*/
+@@ -85,6 +94,9 @@ struct eeh_pe {
+ 	struct timeval tstamp;		/* Time on first-time freeze	*/
+ 	int false_positives;		/* Times of reported #ff's	*/
+ 	struct eeh_pe *parent;		/* Parent PE			*/
++#ifdef CONFIG_VFIO_EEH
++	struct eeh_vfio_pci_addr gaddr;	/* Address in guest		*/
++#endif
+ 	struct list_head child_list;	/* Link PE to the child list	*/
+ 	struct list_head edevs;		/* Link list of EEH devices	*/
+ 	struct list_head child;		/* Child PEs			*/
+@@ -93,6 +105,21 @@ struct eeh_pe {
+ #define eeh_pe_for_each_dev(pe, edev, tmp) \
+ 		list_for_each_entry_safe(edev, tmp, &pe->edevs, list)
+ 
++static inline bool eeh_pe_passed(struct eeh_pe *pe)
++{
++	return pe ? !!(pe->state & EEH_PE_PASSTHROUGH) : false;
++}
++
++static inline void eeh_pe_set_passed(struct eeh_pe *pe, bool passed)
++{
++	if (pe) {
++		if (passed)
++			pe->state |= EEH_PE_PASSTHROUGH;
++		else
++			pe->state &= ~EEH_PE_PASSTHROUGH;
++	}
++}
++
+ /*
+  * The struct is used to trace EEH state for the associated
+  * PCI device node or PCI device. In future, it might
+@@ -110,6 +137,7 @@ struct eeh_pe {
+ #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
+ #define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
+ #define EEH_DEV_FRESET		(1 << 11)	/* Fundamental reset	*/
++#define EEH_DEV_PASSTHROUGH	(1 << 12)	/* Owned by guest	*/
+ 
+ struct eeh_dev {
+ 	int mode;			/* EEH mode			*/
+@@ -126,6 +154,9 @@ struct eeh_dev {
+ 	struct device_node *dn;		/* Associated device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
+ 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
++#ifdef CONFIG_VFIO_EEH
++	struct eeh_vfio_pci_addr gaddr;	/* Address in guest		*/
++#endif
+ };
+ 
+ static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
+@@ -138,6 +169,21 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+ 	return edev ? edev->pdev : NULL;
+ }
+ 
++static inline bool eeh_dev_passed(struct eeh_dev *dev)
++{
++	return dev ? !!(dev->mode & EEH_DEV_PASSTHROUGH) : false;
++}
++
++static inline void eeh_dev_set_passed(struct eeh_dev *dev, bool passed)
++{
++	if (dev) {
++		if (passed)
++			dev->mode |= EEH_DEV_PASSTHROUGH;
++		else
++			dev->mode &= ~EEH_DEV_PASSTHROUGH;
++	}
++}
++
+ /* Return values from eeh_ops::next_error */
+ enum {
+ 	EEH_NEXT_ERR_NONE = 0,
 -- 
 1.8.3.2
