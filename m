@@ -1,23 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 906DB1400B7
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 09:18:34 +1000 (EST)
-Message-ID: <1399591088.15726.402.camel@snotra.buserror.net>
-Subject: Re: [PATCH v2] powerpc/fsl: Added binding for Freescale CoreNet
- coherency fabric (CCF)
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Thu, 8 May 2014 18:18:08 -0500
-In-Reply-To: <6CE62BBF-BFF4-4F2C-8EFF-B6F87EE6EEE9@kernel.crashing.org>
-References: <1397833917-12611-1-git-send-email-diana.craciun@freescale.com>
- <6CE62BBF-BFF4-4F2C-8EFF-B6F87EE6EEE9@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <anton@samba.org>
+Date: Fri, 9 May 2014 17:47:12 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ paulmck@linux.vnet.ibm.com
+Subject: [PATCH] powerpc: irq work racing with timer interrupt can result in
+ timer interrupt hang
+Message-ID: <20140509174712.55fe72d0@kryten>
 MIME-Version: 1.0
-Cc: Diana Craciun <diana.craciun@freescale.com>, devicetree@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +18,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-05-08 at 07:00 -0700, Kumar Gala wrote:
-> On Apr 18, 2014, at 8:11 AM, Diana Craciun <diana.craciun@freescale.com> wrote:
-> 
-> > From: Diana Craciun <Diana.Craciun@freescale.com>
-> > 
-> > The CoreNet coherency fabric is a fabric-oriented, conectivity
-> > infrastructure that enables the implementation of coherent, multicore
-> > systems. The CCF acts as a central interconnect for cores,
-> > platform-level caches, memory subsystem, peripheral devices and I/O host
-> > bridges in the system.
-> > 
-> > Signed-off-by: Diana Craciun <Diana.Craciun@freescale.com>
-> > ---
-> > .../devicetree/bindings/powerpc/fsl/ccf.txt        | 36 ++++++++++++++++++++++
-> > 1 file changed, 36 insertions(+)
-> > create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
-> > new file mode 100644
-> > index 0000000..f0b7143
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
-> > @@ -0,0 +1,36 @@
-> > +Freescale CoreNet Coherency Fabric(CCF) Device Tree Binding
-> > +
-> > +DESCRIPTION
-> > +
-> > +The CoreNet coherency fabric is a fabric-oriented, connectivity infrastructure
-> > +that enables the implementation of coherent, multicore systems.
-> > +
-> > +Required properties:
-> > +
-> > +- compatible : <string>
-> > +		Must include "fsl,corenetX-cf", "fsl,corenet-cf" - CoreNet coherency 
-> > +		fabric version X
-> 
-> Can we make this ‘fsl,corenet-vX-cf’.
-> 
-> corenet-v1-cf/corenet-v2-cf looks nicer than corenet1-cf/corenet2-cf
+I am seeing an issue where a CPU running perf eventually hangs.
+Traces show timer interrupts happening every 4 seconds even
+when a userspace task is running on the CPU. /proc/timer_list
+also shows pending hrtimers have not run in over an hour,
+including the scheduler.
 
-How important is this?  We've already got corenet2-cf in SDK device
-trees -- and while I know that's not binding on upstream in any way,
-it's purely a cosmetic change.  Even if you disregard the SDK, is this
-really worth going back and amending several pending patches over
-(including a driver that I was waiting for this binding to settle before
-sending)?  
+Looking closer, decrementers_next_tb is getting set to
+0xffffffffffffffff, and at that point we will never take
+a timer interrupt again.
 
-FWIW, we have other instances of "deviceN", such as "fsl,etsec2",
-"fsl,cpm2-<foo>","fsl,usb2-<foo>", and "fsl,elo3-dma".  We also call it
-"corenet2" in U-Boot a lot.
+In __timer_interrupt() we set decrementers_next_tb to
+0xffffffffffffffff and rely on ->event_handler to update it:
 
-If we must change it, I'd prefer "fsl,corenet-cf-vX.0".
+        *next_tb = ~(u64)0;
+        if (evt->event_handler)
+                evt->event_handler(evt);
 
--Scott
+In this case ->event_handler is hrtimer_interrupt. This will eventually
+call back through the clockevents code with the next event to be
+programmed:
+
+static int decrementer_set_next_event(unsigned long evt,
+                                      struct clock_event_device *dev)
+{
+        /* Don't adjust the decrementer if some irq work is pending */
+        if (test_irq_work_pending())
+                return 0;
+        __get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
+
+If irq work came in between these two points, we will return
+before updating decrementers_next_tb and we never process a timer
+interrupt again.
+
+This looks to have been introduced by 0215f7d8c53f (powerpc: Fix races
+with irq_work). Fix it by removing the early exit and relying on
+code later on in the function to force an early decrementer:
+
+       /* We may have raced with new irq work */
+       if (test_irq_work_pending())
+               set_dec(1);
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: stable@vger.kernel.org # 3.14+
+---
+
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 122a580..4f0b676 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -813,9 +888,6 @@ static void __init clocksource_init(void)
+ static int decrementer_set_next_event(unsigned long evt,
+ 				      struct clock_event_device *dev)
+ {
+-	/* Don't adjust the decrementer if some irq work is pending */
+-	if (test_irq_work_pending())
+-		return 0;
+ 	__get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
+ 	set_dec(evt);
+ 
