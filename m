@@ -2,7 +2,7 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B281E140115
+ by ozlabs.org (Postfix) with ESMTPS id A8867140108
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:50 +1000 (EST)
 Received: from /spool/local
  by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -10,21 +10,21 @@ Received: from /spool/local
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Fri, 9 May 2014 17:49:49 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 956172BB0059
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:47 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EB0E93578057
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 17:49:46 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s497SZfX56361014
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:28:35 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s497nkRl032036
+ s497SYn632833636
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:28:34 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s497nj4U021225
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 17:49:46 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
-Subject: [PATCH 08/10] powerpc: Extend syscall ppc_rtas()
-Date: Fri,  9 May 2014 17:49:40 +1000
-Message-Id: <1399621782-23281-9-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 04/10] powerpc/eeh: Search EEH PE by guest address
+Date: Fri,  9 May 2014 17:49:36 +1000
+Message-Id: <1399621782-23281-5-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1399621782-23281-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
@@ -38,287 +38,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Originally, syscall ppc_rtas() can be used to invoke RTAS call from
-user space. Utility "errinjct" is using it to inject various errors
-to the system for testing purpose. The patch intends to extend the
-syscall to support both pSeries and PowerNV platform. With that,
-RTAS and OPAL call can be invoked from user space. In turn, utility
-"errinjct" can be supported on pSeries and PowerNV platform at same
-time.
+The patch introduces function eeh_vfio_pe_get() to search the EEH
+PE according to its guest address, which is made up of PHB ID and
+PE configuration address. The function will be useful in backends
+for EEH RTAS emulation.
 
-The original syscall handler ppc_rtas() is renamed to ppc_firmware(),
-which calls ppc_call_rtas() or ppc_call_opal() depending on the
-running platform. The data transported between userland and kerenl is
-by "struct rtas_args". It's platform specific on how to use the data.
-
-Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/rtas.h        | 10 +++++-
- arch/powerpc/include/asm/syscalls.h    |  2 +-
- arch/powerpc/include/asm/systbl.h      |  2 +-
- arch/powerpc/include/uapi/asm/unistd.h |  2 +-
- arch/powerpc/kernel/rtas.c             | 57 +++++++---------------------------
- arch/powerpc/kernel/syscalls.c         | 50 +++++++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal.c  |  7 +++++
- kernel/sys_ni.c                        |  2 +-
- 8 files changed, 82 insertions(+), 50 deletions(-)
+ arch/powerpc/include/asm/eeh.h |  1 +
+ arch/powerpc/kernel/eeh_pe.c   | 38 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index b390f55..3428524 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -20,7 +20,7 @@
- #define RTAS_UNKNOWN_SERVICE (-1)
- #define RTAS_INSTANTIATE_MAX (1ULL<<30) /* Don't instantiate rtas at/above this value */
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 8ffaf39..750e028 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -384,6 +384,7 @@ static inline void eeh_remove_device(struct pci_dev *dev) { }
  
--/* Buffer size for ppc_rtas system call. */
-+/* Buffer size for ppc_firmware system call. */
- #define RTAS_RMOBUF_MAX (64 * 1024)
+ #ifdef CONFIG_VFIO_EEH
+ struct eeh_dev *eeh_vfio_dev_get(struct eeh_vfio_pci_addr *addr);
++struct eeh_pe *eeh_vfio_pe_get(struct eeh_vfio_pci_addr *addr);
+ #endif /* CONFIG_VFIO_EEH */
  
- /* RTAS return status codes */
-@@ -427,9 +427,17 @@ static inline int page_is_rtas_user_buf(unsigned long pfn)
- /* Not the best place to put pSeries_coalesce_init, will be fixed when we
-  * move some of the rtas suspend-me stuff to pseries */
- extern void pSeries_coalesce_init(void);
-+extern int ppc_call_rtas(struct rtas_args *args);
- #else
- static inline int page_is_rtas_user_buf(unsigned long pfn) { return 0;}
- static inline void pSeries_coalesce_init(void) { }
-+static inline int ppc_call_rtas(struct rtas_args *args) { return -ENXIO; }
-+#endif
-+
-+#ifdef CONFIG_PPC_POWERNV
-+extern int ppc_call_opal(struct rtas_args *args);
-+#else
-+static inline int ppc_call_opal(struct rtas_arts *args) { return -ENXIO; }
- #endif
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index d09f055..8dc58ac 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -288,6 +288,44 @@ struct eeh_dev *eeh_vfio_dev_get(struct eeh_vfio_pci_addr *addr)
  
- extern int call_rtas(const char *, int, int, unsigned long *, ...);
-diff --git a/arch/powerpc/include/asm/syscalls.h b/arch/powerpc/include/asm/syscalls.h
-index 23be8f1..3383e50 100644
---- a/arch/powerpc/include/asm/syscalls.h
-+++ b/arch/powerpc/include/asm/syscalls.h
-@@ -15,7 +15,7 @@ asmlinkage unsigned long sys_mmap2(unsigned long addr, size_t len,
- 		unsigned long prot, unsigned long flags,
- 		unsigned long fd, unsigned long pgoff);
- asmlinkage long ppc64_personality(unsigned long personality);
--asmlinkage int ppc_rtas(struct rtas_args __user *uargs);
-+asmlinkage int ppc_firmware(struct rtas_args __user *uargs);
- 
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_SYSCALLS_H */
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 3ddf702..00f8bb2 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -259,7 +259,7 @@ COMPAT_SYS_SPU(utimes)
- COMPAT_SYS_SPU(statfs64)
- COMPAT_SYS_SPU(fstatfs64)
- SYSX(sys_ni_syscall, ppc_fadvise64_64, ppc_fadvise64_64)
--PPC_SYS_SPU(rtas)
-+PPC_SYS_SPU(firmware)
- OLDSYS(debug_setcontext)
- SYSCALL(ni_syscall)
- COMPAT_SYS(migrate_pages)
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 881bf2e..3aee765 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -273,7 +273,7 @@
- #ifndef __powerpc64__
- #define __NR_fadvise64_64	254
- #endif
--#define __NR_rtas		255
-+#define __NR_firmware		255
- #define __NR_sys_debug_setcontext 256
- /* Number 257 is reserved for vserver */
- #define __NR_migrate_pages	258
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 8cd5ed0..5d829a72 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -1017,59 +1017,32 @@ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+ 	return NULL;
  }
- 
- /* We assume to be passed big endian arguments */
--asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
-+int ppc_call_rtas(struct rtas_args *args)
- {
--	struct rtas_args args;
- 	unsigned long flags;
- 	char *buff_copy, *errbuf = NULL;
--	int nargs, nret, token;
- 	int rc;
- 
--	if (!capable(CAP_SYS_ADMIN))
--		return -EPERM;
--
--	if (copy_from_user(&args, uargs, 3 * sizeof(u32)) != 0)
--		return -EFAULT;
--
--	nargs = be32_to_cpu(args.nargs);
--	nret  = be32_to_cpu(args.nret);
--	token = be32_to_cpu(args.token);
--
--	if (nargs > ARRAY_SIZE(args.args)
--	    || nret > ARRAY_SIZE(args.args)
--	    || nargs + nret > ARRAY_SIZE(args.args))
--		return -EINVAL;
--
--	/* Copy in args. */
--	if (copy_from_user(args.args, uargs->args,
--			   nargs * sizeof(rtas_arg_t)) != 0)
--		return -EFAULT;
--
--	if (token == RTAS_UNKNOWN_SERVICE)
--		return -EINVAL;
--
--	args.rets = &args.args[nargs];
--	memset(args.rets, 0, nret * sizeof(rtas_arg_t));
--
- 	/* Need to handle ibm,suspend_me call specially */
--	if (token == ibm_suspend_me_token) {
--		rc = rtas_ibm_suspend_me(&args);
-+	if (args->token == ibm_suspend_me_token) {
-+		rc = rtas_ibm_suspend_me(args);
- 		if (rc)
- 			return rc;
--		goto copy_return;
-+		goto out;
- 	}
- 
- 	buff_copy = get_errorlog_buffer();
- 
- 	flags = lock_rtas();
--
--	rtas.args = args;
-+	rtas.args = *args;
- 	enter_rtas(__pa(&rtas.args));
--	args = rtas.args;
-+	*args = rtas.args;
- 
--	/* A -1 return code indicates that the last command couldn't
--	   be completed due to a hardware error. */
--	if (be32_to_cpu(args.rets[0]) == -1)
-+	/*
-+	 * A -1 return code indicates that the last command couldn't
-+	 * be completed due to a hardware error.
-+	 */
-+	if (be32_to_cpu(args->rets[0]) == -1)
- 		errbuf = __fetch_rtas_last_error(buff_copy);
- 
- 	unlock_rtas(flags);
-@@ -1080,13 +1053,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
- 		kfree(buff_copy);
- 	}
- 
-- copy_return:
--	/* Copy out args. */
--	if (copy_to_user(uargs->args + nargs,
--			 args.args + nargs,
--			 nret * sizeof(rtas_arg_t)) != 0)
--		return -EFAULT;
--
-+out:
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index cd9be9a..bcb7483 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -40,6 +40,56 @@
- #include <asm/syscalls.h>
- #include <asm/time.h>
- #include <asm/unistd.h>
-+#include <asm/machdep.h>
-+#include <asm/rtas.h>
 +
-+asmlinkage int ppc_firmware(struct rtas_args __user *uargs)
++static void *__eeh_vfio_pe_get(void *data, void *flag)
 +{
-+	int rc;
-+	int nargs, nret, token;
-+	struct rtas_args args;
++	struct eeh_pe *pe = (struct eeh_pe *)data;
++	struct eeh_vfio_pci_addr *addr = (struct eeh_vfio_pci_addr *)flag;
 +
-+	/* Copy over common header */
-+	if (copy_from_user(&args, uargs, 3 * sizeof(u32)))
-+		return -EFAULT;
-+	nargs = be32_to_cpu(args.nargs);
-+	nret  = be32_to_cpu(args.nret);
-+	token = be32_to_cpu(args.token);
++	if (!eeh_pe_passed(pe))
++		return NULL;
 +
-+	/* Parameter overflow ? */
-+	if (nargs > ARRAY_SIZE(args.args)
-+	    || nret > ARRAY_SIZE(args.args)
-+	    || nargs + nret > ARRAY_SIZE(args.args))
-+                return -EINVAL;
++	/* Comparing the address */
++	if (addr->buid    == pe->gaddr.buid &&
++	    addr->pe_addr == pe->gaddr.pe_addr)
++		return pe;
 +
-+	/* Copy over all arguments */
-+        if (copy_from_user(args.args, uargs->args,
-+			   nargs * sizeof(rtas_arg_t)))
-+		return -EFAULT;
-+
-+	/* Invalid token ? */
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -EINVAL;
-+
-+	/* Clean out return values */
-+        args.rets = &args.args[nargs];
-+        memset(args.rets, 0, nret * sizeof(rtas_arg_t));
-+
-+	/* Route to correct platform */
-+	if (machine_is(pseries))
-+		rc = ppc_call_rtas(&args);
-+	else if (machine_is(powernv))
-+		rc = ppc_call_opal(&args);
-+	else
-+		return -ENXIO;
-+
-+	/* Copy result to user space */
-+	if (copy_to_user(uargs->args + nargs, args.args + nargs,
-+                         nret * sizeof(rtas_arg_t)))
-+		return -EFAULT;
-+
-+	return rc;
++	return NULL;
 +}
- 
- static inline unsigned long do_mmap2(unsigned long addr, size_t len,
- 			unsigned long prot, unsigned long flags,
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 360ad80c..ad33c2b 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -25,6 +25,7 @@
- #include <asm/opal.h>
- #include <asm/firmware.h>
- #include <asm/mce.h>
-+#include <asm/rtas.h>
- 
- #include "powernv.h"
- 
-@@ -701,3 +702,9 @@ void opal_free_sg_list(struct opal_sg_list *sg)
- 			sg = NULL;
- 	}
- }
 +
-+/* Extend it later */
-+int ppc_call_opal(struct rtas_args *args)
++/**
++ * eeh_vfio_pe_get - Search EEH PE based on guest's address
++ * @addr: EEH PE guest address
++ *
++ * Search the EEH PE according to the guest address, which
++ * is made up of VM indicator, PHB BUID, and PE configuration
++ * address.
++ */
++struct eeh_pe *eeh_vfio_pe_get(struct eeh_vfio_pci_addr *addr)
 +{
-+	return 0;
++	struct eeh_pe *root;
++	struct eeh_pe *pe;
++
++	list_for_each_entry(root, &eeh_phb_pe, child) {
++		pe = eeh_pe_traverse(root, __eeh_vfio_pe_get, addr);
++		if (pe)
++			return pe;
++	}
++
++	return NULL;
 +}
-diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
-index bc8d1b7..2c5b3fa 100644
---- a/kernel/sys_ni.c
-+++ b/kernel/sys_ni.c
-@@ -159,7 +159,7 @@ cond_syscall(sys_pciconfig_read);
- cond_syscall(sys_pciconfig_write);
- cond_syscall(sys_pciconfig_iobase);
- cond_syscall(compat_sys_s390_ipc);
--cond_syscall(ppc_rtas);
-+cond_syscall(ppc_firmware);
- cond_syscall(sys_spu_run);
- cond_syscall(sys_spu_create);
- cond_syscall(sys_subpage_prot);
+ #endif /* CONFIG_VFIO_EEH */
+ 
+ /**
 -- 
 1.8.3.2
