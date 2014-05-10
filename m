@@ -1,22 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <schivers@csc.com>
+Received: from mail170.messagelabs.com (mail170.messagelabs.com
+ [216.82.253.227])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3C1031400AD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 14:26:48 +1000 (EST)
-Message-ID: <1399695993.4481.47.camel@pasglop>
-Subject: Re: [PATCH] powerpc: irq work racing with timer interrupt can
- result in timer interrupt hang
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Sat, 10 May 2014 14:26:33 +1000
-In-Reply-To: <536CA561.8010803@linux.vnet.ibm.com>
-References: <20140509174712.55fe72d0@kryten>
- <536CA561.8010803@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulmck@linux.vnet.ibm.com, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id C0CFE1400A6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 15:39:55 +1000 (EST)
+Date: Sat, 10 May 2014 15:37:34 +1000
+To: geert@linux-m68k.org, jslaby@suse.cz, gregkh@linuxfoundation.org
+Subject: [PATCH] printk/of_serial: fix serial console cessation part way
+ through boot.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-Id: <20140510053734.AF4E9E0692@canberra.localdomain>
+From: schivers@csc.com (Stephen Chivers)
+Cc: devicetree@vger.kernel.org, linux-serial@vger.kernel.org,
+ linux-kernel@vger.kernel.org, rob+dt@kernel.org, schivers@csc.com,
+ grant.likely@linaro.org, linuxppc-dev@lists.ozlabs.org, cproctor@csc.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,74 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-05-09 at 15:22 +0530, Preeti U Murthy wrote:
-> in __timer_interrupt() outside the _else_ loop? This will ensure that no
-> matter what, before exiting timer interrupt handler we check for pending
-> irq work.
+Commit 5f5c9ae56c38942623f69c3e6dc6ec78e4da2076
+"serial_core: Unregister console in uart_remove_one_port()"
+fixed a crash where a serial port was removed but
+not deregistered as a console.
 
-We still need to make sure that set_next_event() doesn't move the
-dec beyond the next tick if there is a pending timer... maybe we
-can fix it like this:
+There is a side effect of that commit for platforms having serial consoles
+and of_serial configured (CONFIG_SERIAL_OF_PLATFORM). The serial console
+is disabled midway through the boot process.
 
-static int decrementer_set_next_event(unsigned long evt,
-				      struct clock_event_device *dev)
-{
-	__get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
+This cessation of the serial console affects PowerPC computers
+such as the MVME5100 and SAM440EP.
 
-	/* Don't adjust the decrementer if some irq work is pending */
-	if (!test_irq_work_pending())
-		set_dec(evt);
+The sequence is:
 
-	return 0;
-}
+	bootconsole [udbg0] enabled
+	....
+	serial8250/16550 driver initialises and registers its UARTS,
+	one of these is the serial console.
+	console [ttyS0] enabled
+	....
+	of_serial probes "platform" devices, registering them as it goes.
+	One of these is the serial console.
+	console [ttyS0] disabled.
 
-Along with a single occurrence of:
+The disabling of the serial console is due to:
 
-	if (test_irq_work_pending())
-		set_dec(1);
+	a.  unregister_console in printk not clearing the
+	    CONS_ENABLED bit in the console flags,
+	    even though it has announced that the console is disabled; and
 
-At the end of __timer_interrupt(), outside if the current else {}
-case, this should work, don't you think ?
+	b.  of_platform_serial_probe in of_serial not setting the port type
+	    before it registers with serial8250_register_8250_port.
 
-What about this completely untested patch ?
+This patch ensures that the serial console is re-enabled when of_serial
+registers a serial port that corresponds to the designated console.
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 122a580..ba7e83b 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -503,12 +503,13 @@ void __timer_interrupt(void)
-                now = *next_tb - now;
-                if (now <= DECREMENTER_MAX)
-                        set_dec((int)now);
--               /* We may have raced with new irq work */
--               if (test_irq_work_pending())
--                       set_dec(1);
-                __get_cpu_var(irq_stat).timer_irqs_others++;
-        }
+Signed-off-by: Stephen Chivers <schivers@csc.com>
+Tested-by: Stephen Chivers <schivers@csc.com>
+
+===
+The above failure was identified in Linux-3.15-rc2.
+
+Tested using MVME5100 and SAM440EP PowerPC computers with
+kernels built from Linux-3.15-rc5 and tty-next.
+
+The continued operation of the serial console is vital for computers
+such as the MVME5100 as that Single Board Computer does not
+have any grapical/display hardware.
+
+---
+ drivers/tty/serial/of_serial.c |    1 +
+ kernel/printk/printk.c         |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/tty/serial/of_serial.c b/drivers/tty/serial/of_serial.c
+index 9924660..27981e2 100644
+--- a/drivers/tty/serial/of_serial.c
++++ b/drivers/tty/serial/of_serial.c
+@@ -173,6 +173,7 @@ static int of_platform_serial_probe(struct platform_device *ofdev)
+ 	{
+ 		struct uart_8250_port port8250;
+ 		memset(&port8250, 0, sizeof(port8250));
++		port.type = port_type;
+ 		port8250.port = port;
  
-+       /* We may have raced with new irq work */
-+       if (test_irq_work_pending())
-+               set_dec(1);
-+
- #ifdef CONFIG_PPC64
-        /* collect purr register values often, for accurate calculations */
-        if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-@@ -813,15 +814,11 @@ static void __init clocksource_init(void)
- static int decrementer_set_next_event(unsigned long evt,
-                                      struct clock_event_device *dev)
- {
--       /* Don't adjust the decrementer if some irq work is pending */
--       if (test_irq_work_pending())
--               return 0;
-        __get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
--       set_dec(evt);
+ 		if (port.fifosize)
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 7228258..221229c 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -2413,6 +2413,7 @@ int unregister_console(struct console *console)
+ 	if (console_drivers != NULL && console->flags & CON_CONSDEV)
+ 		console_drivers->flags |= CON_CONSDEV;
  
--       /* We may have raced with new irq work */
--       if (test_irq_work_pending())
--               set_dec(1);
-+       /* Don't adjust the decrementer if some irq work is pending */
-+       if (!test_irq_work_pending())
-+               set_dec(evt);
- 
-        return 0;
- }
++	console->flags &= ~CON_ENABLED;
+ 	console_unlock();
+ 	console_sysfs_notify();
+ 	return res;
