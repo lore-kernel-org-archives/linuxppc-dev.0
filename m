@@ -1,37 +1,22 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 07D4E14009B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 12:46:49 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 9 May 2014 22:46:46 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BC5B838C803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2014 22:46:42 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4A2kgx75177806
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 02:46:42 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4A2kgGA032052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 9 May 2014 22:46:42 -0400
-Date: Fri, 9 May 2014 19:46:38 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH 1/1] powerpc/perf: Adjust callchain based on DWARF debug info
-Message-ID: <20140510024638.GA27540@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Michael Ellerman <michaele@au1.ibm.com>,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Ulrich.Weigand@de.ibm.com, Maynard Johnson <mpjohn@us.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 3C1031400AD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 14:26:48 +1000 (EST)
+Message-ID: <1399695993.4481.47.camel@pasglop>
+Subject: Re: [PATCH] powerpc: irq work racing with timer interrupt can
+ result in timer interrupt hang
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Sat, 10 May 2014 14:26:33 +1000
+In-Reply-To: <536CA561.8010803@linux.vnet.ibm.com>
+References: <20140509174712.55fe72d0@kryten>
+ <536CA561.8010803@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulmck@linux.vnet.ibm.com, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,469 +26,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 1/1] powerpc/perf: Adjust callchain based on DWARF debug info
+On Fri, 2014-05-09 at 15:22 +0530, Preeti U Murthy wrote:
+> in __timer_interrupt() outside the _else_ loop? This will ensure that no
+> matter what, before exiting timer interrupt handler we check for pending
+> irq work.
 
-When saving the callchain on Power, the kernel conservatively saves excess
-entries in the callchain. A few of these entries are needed in some cases
-but not others.
+We still need to make sure that set_next_event() doesn't move the
+dec beyond the next tick if there is a pending timer... maybe we
+can fix it like this:
 
-Eg: the value in the link register (LR) is needed only when it holds the
-return address of a function. At other times it must be ignored.
+static int decrementer_set_next_event(unsigned long evt,
+				      struct clock_event_device *dev)
+{
+	__get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
 
-If the unnecessary entries are not ignored, we end up with duplicate arcs
-in the call-graphs.
+	/* Don't adjust the decrementer if some irq work is pending */
+	if (!test_irq_work_pending())
+		set_dec(evt);
 
-Use DWARF debug information to ignore the unnecessary entries.
+	return 0;
+}
 
-Callgraph before the patch:
+Along with a single occurrence of:
 
-    14.67%          2234  sprintft  libc-2.18.so       [.] __random
-            |
-            --- __random
-               |
-               |--61.12%-- __random
-               |          |
-               |          |--97.15%-- rand
-               |          |          do_my_sprintf
-               |          |          main
-               |          |          generic_start_main.isra.0
-               |          |          __libc_start_main
-               |          |          0x0
-               |          |
-               |           --2.85%-- do_my_sprintf
-               |                     main
-               |                     generic_start_main.isra.0
-               |                     __libc_start_main
-               |                     0x0
-               |
-                --38.88%-- rand
-                          |
-                          |--94.01%-- rand
-                          |          do_my_sprintf
-                          |          main
-                          |          generic_start_main.isra.0
-                          |          __libc_start_main
-                          |          0x0
-                          |
-                           --5.99%-- do_my_sprintf
-                                     main
-                                     generic_start_main.isra.0
-                                     __libc_start_main
-                                     0x0
+	if (test_irq_work_pending())
+		set_dec(1);
 
-Callgraph after the patch:
+At the end of __timer_interrupt(), outside if the current else {}
+case, this should work, don't you think ?
 
-    14.67%          2234  sprintft  libc-2.18.so       [.] __random
-            |
-            --- __random
-               |
-               |--95.93%-- rand
-               |          do_my_sprintf
-               |          main
-               |          generic_start_main.isra.0
-               |          __libc_start_main
-               |          0x0
-               |
-                --4.07%-- do_my_sprintf
-                          main
-                          generic_start_main.isra.0
-                          __libc_start_main
-                          0x0
+What about this completely untested patch ?
 
-TODO:	For split-debug info objects like glibc, we can only determine
-	the call-frame-address only when both .eh_frame and .debug_info
-	sections are available. We should be able to determin the CFA
-	even without the .eh_frame section.
-
-Thanks to Ulrich Weigand for help with DWARF debug information.
-
-Fix suggested by Anton Blanchard.
-
-Reported-by: Maynard Johnson <maynard@us.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- tools/perf/arch/powerpc/Makefile                |   1 +
- tools/perf/arch/powerpc/util/adjust-callchain.c | 278 ++++++++++++++++++++++++
- tools/perf/config/Makefile                      |   5 +
- tools/perf/util/callchain.h                     |  12 +
- tools/perf/util/machine.c                       |  16 +-
- 5 files changed, 310 insertions(+), 2 deletions(-)
- create mode 100644 tools/perf/arch/powerpc/util/adjust-callchain.c
-
-diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-index 744e629..512cc8d 100644
---- a/tools/perf/arch/powerpc/Makefile
-+++ b/tools/perf/arch/powerpc/Makefile
-@@ -3,3 +3,4 @@ PERF_HAVE_DWARF_REGS := 1
- LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
- endif
- LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/header.o
-+LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/adjust-callchain.o
-diff --git a/tools/perf/arch/powerpc/util/adjust-callchain.c b/tools/perf/arch/powerpc/util/adjust-callchain.c
-new file mode 100644
-index 0000000..31b1f95
---- /dev/null
-+++ b/tools/perf/arch/powerpc/util/adjust-callchain.c
-@@ -0,0 +1,278 @@
-+/*
-+ * Use DWARF Debug information to skip unnecessary callchain entries.
-+ *
-+ * Copyright (C) 2014 Sukadev Bhattiprolu, IBM Corporation.
-+ * Copyright (C) 2014 Ulrich Weigand, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include <inttypes.h>
-+#include <dwarf.h>
-+#include <elfutils/libdwfl.h>
-+
-+#include "util/thread.h"
-+#include "util/callchain.h"
-+
-+/*
-+ * When saving the callchain on Power, the kernel conservatively saves
-+ * excess entries in the callchain. A few of these entries are needed
-+ * in some cases but not others. If the unnecessary entries are not
-+ * ignored, we end up with duplicate arcs in the call-graphs. Use
-+ * DWARF debug information to skip over any unnecessary callchain
-+ * entries.
-+ * 
-+ * See function header for arch_adjust_callchain() below for more details.
-+ *
-+ * The libdwfl code in this file is based on code from elfutils
-+ * (libdwfl/argp-std.c, libdwfl/tests/addrcfi.c, etc).
-+ */
-+static char *debuginfo_path;
-+
-+static const Dwfl_Callbacks offline_callbacks = {
-+	.debuginfo_path = &debuginfo_path,
-+	.find_debuginfo = dwfl_standard_find_debuginfo,
-+	.section_address = dwfl_offline_section_address,
-+};
-+
-+
-+/*
-+ * Use the DWARF expression for the Call-frame-address and determine
-+ * if return address is in LR and if a new frame was allocated.
-+ */
-+static int check_return_reg(int ra_regno, Dwarf_Frame *frame)
-+{
-+	Dwarf_Op ops_mem[2];
-+	Dwarf_Op dummy;
-+	Dwarf_Op *ops = &dummy;
-+  	size_t nops;
-+	int result;
-+
-+	result = dwarf_frame_register(frame, ra_regno, ops_mem, &ops, &nops);
-+	if (result < 0) {
-+		pr_debug("dwarf_frame_register() %s\n", dwarf_errmsg(-1));
-+		return -1;
-+	}
-+
-+	/* 
-+	 * Check if return address is on the stack.
-+	 */
-+	if (nops != 0 || ops != NULL)
-+		return 0;
-+
-+	/*
-+	 * Return address is in LR. Check if a frame was allocated
-+	 * but not-yet used.
-+	 */
-+        result = dwarf_frame_cfa(frame, &ops, &nops);
-+        if (result < 0) {
-+                pr_debug("dwarf_frame_cfa() returns %d, %s\n", result,
-+					dwarf_errmsg(-1));
-+                return -1;
-+        }
-+
-+	/*
-+	 * If call frame address is in r1, no new frame was allocated.
-+	 */
-+        if (nops == 1 && ops[0].atom == DW_OP_bregx && ops[0].number == 1 &&
-+					ops[0].number2 == 0)
-+                return 1;      
-+
-+	/*
-+	 * A new frame was allocated but has not yet been used.
-+	 */
-+        return 2;
-+}
-+
-+/*
-+ * Get the DWARF frame from the .eh_frame section.
-+ */
-+static Dwarf_Frame *get_eh_frame(Dwfl_Module *mod, Dwarf_Addr pc) 
-+{
-+        int             result;
-+        Dwarf_Addr      bias;
-+        Dwarf_CFI       *cfi;
-+        Dwarf_Frame     *frame;
-+
-+        cfi = dwfl_module_eh_cfi(mod, &bias);   // CHECK
-+        if (!cfi) {
-+                pr_debug("%s(): no CFI - %s\n", __func__, dwfl_errmsg(-1));
-+                return NULL;
-+        }
-+
-+        result = dwarf_cfi_addrframe(cfi, pc, &frame);
-+        if (result) {
-+                pr_debug("%s(): %s\n", __func__, dwfl_errmsg(-1));
-+                return NULL;
-+        }
-+
-+        return frame;
-+}
-+
-+/*
-+ * Get the DWARF frame from the .debug_frame section.
-+ */
-+static Dwarf_Frame *get_dwarf_frame(Dwfl_Module *mod, Dwarf_Addr pc)
-+{
-+        Dwarf_CFI       *cfi;
-+        Dwarf_Addr      bias;
-+        Dwarf_Frame     *frame;
-+        int             result;
-+
-+        cfi = dwfl_module_dwarf_cfi(mod, &bias);
-+        if (!cfi) {
-+                pr_debug("%s(): no CFI - %s\n", __func__, dwfl_errmsg(-1));
-+                return NULL;
-+        }
-+
-+        result = dwarf_cfi_addrframe(cfi, pc, &frame);
-+        if (result) {
-+                pr_debug("%s(): %s\n", __func__, dwfl_errmsg(-1));
-+                return NULL;
-+        }
-+
-+        return frame;
-+}
-+
-+/*
-+ * Return:
-+ * 	0 if return address for the program counter @pc is on stack
-+ * 	1 if return address is in LR and no new stack frame was allocated
-+ * 	2 if return address is in LR and a new frame was allocated (but not
-+ * 	  yet used)
-+ * 	-1 in case of errors
-+ */
-+static int check_return_addr(const char *exec_file, Dwarf_Addr pc)
-+{
-+	Dwfl		*dwfl;
-+	Dwfl_Module	*mod;
-+	Dwarf_Frame	*frame;
-+	int		ra_regno;
-+	Dwarf_Addr 	start = pc;
-+	Dwarf_Addr 	end = pc;
-+	bool 		signalp;
-+
-+	pr_debug("Testing: %s, @0x%llx\n", exec_file, (unsigned long long)pc);
-+
-+	dwfl = dwfl_begin(&offline_callbacks);
-+	if (!dwfl) {
-+		pr_debug("dwfl_begin() failed: %s\n", dwarf_errmsg(-1));
-+		return -1;
-+	}
-+
-+	if (dwfl_report_offline(dwfl, "",  exec_file, -1) == NULL) {
-+		pr_debug("dwfl_report_offline() failed %s\n", dwarf_errmsg(-1));
-+		return -1;
-+	}
-+
-+	mod = dwfl_addrmodule(dwfl, pc);
-+	if (!mod) {
-+		pr_debug("dwfl_addrmodule() failed, %s\n", dwarf_errmsg(-1));
-+		return -1;
-+	}
-+
-+	/*
-+	 * To work with split debug info files (eg: glibc), check both
-+	 * .eh_frame and .debug_frame sections of the ELF header.
-+	 */
-+	frame = get_eh_frame(mod, pc);
-+	if (!frame) {
-+		frame = get_dwarf_frame(mod, pc);
-+		if (!frame)
-+			return -1;
-+	}
-+
-+	ra_regno = dwarf_frame_info (frame, &start, &end, &signalp);
-+	if (ra_regno < 0) {
-+		pr_debug("Return address register unavailable: %s\n",
-+				dwarf_errmsg(-1));
-+		return -1;
-+	}
-+
-+	return check_return_reg(ra_regno, frame);
-+}
-+
-+/*
-+ * The callchain saved by the kernel always includes the link register (LR).
-+ * 	
-+ * 	0:	PERF_CONTEXT_USER
-+ * 	1:	Program counter (Next instruction pointer)
-+ * 	2:	LR value
-+ * 	3:	Caller's caller
-+ * 	4:	...
-+ *
-+ * The value in LR is only needed when it holds a return address. If the
-+ * return address is on the stack, we should ignore the LR value.
-+ *
-+ * Further, when the return address is in the LR, if a new frame was just
-+ * allocated but the LR was not saved into it, then the LR contains the
-+ * caller, slot 4: contains the caller's caller and the contents of slot 3:
-+ * (chain->ips[3]) is undefined and must be ignored.
-+ *
-+ * Use DWARF debug information to determine if any entries need to be skipped.
-+ *
-+ * Return:
-+ * 	index:	of callchain entry that needs to be ignored (if any)
-+ * 	-1 	if no entry needs to be ignored or in case of errors
-+ *
-+ * TODO:
-+ * 	Rather than returning an index into the callchain and have the
-+ * 	caller skip that entry, we could modify the callchain in-place
-+ * 	by putting a PERF_CONTEXT_IGNORE marker in the affected entry.
-+ *
-+ * 	But @chain points to read-only mmap, so the caller needs to
-+ * 	duplicate the callchain to modify in-place - something like:
-+ *
-+ * 		new_callchain = arch_duplicate_callchain()
-+ * 		arch_adjust_callchain(new_callchain)
-+ * 		arch_free_callchain(new_callchain)
-+ *
-+ * 	Since we only expect to adjust <= 1 entry for now, just return
-+ * 	the index.
-+ */
-+int arch_adjust_callchain(struct machine *machine, struct thread *thread,
-+				struct ip_callchain *chain)
-+{
-+	struct addr_location al;
-+	struct dso *dso = NULL;
-+	int rc;
-+	u64 ip;
-+	u64 skip_slot = -1;
-+	
-+	if (chain->nr < 3)
-+		return skip_slot;
-+
-+	ip = chain->ips[2];
-+
-+	thread__find_addr_location(thread, machine, PERF_RECORD_MISC_USER,
-+			MAP__FUNCTION, ip, &al);
-+
-+	if (al.map)
-+		dso = al.map->dso;
-+
-+	if (!dso) {
-+		pr_debug("%" PRIx64 " dso is NULL\n", ip);
-+		return skip_slot;
-+	}
-+
-+	rc = check_return_addr(dso->long_name, ip);
-+
-+	pr_debug("DSO %s, nr %" PRIx64 ", ip 0x%" PRIx64 "rc %d\n",
-+				dso->long_name, chain->nr, ip, rc);
-+
-+	if (rc == 0) {
-+		/* 
-+		 * Return address on stack. Ignore LR value in callchain
-+		 */
-+		skip_slot = 2;
-+	} else if (rc == 2) {
-+		/* 
-+		 * New frame allocated but return address still in LR.
-+		 * Ignore the caller's caller entry in callchain.
-+		 */
-+		skip_slot = 3;
-+	}
-+	return skip_slot;
-+}
-diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
-index 5a3c452..7e93877 100644
---- a/tools/perf/config/Makefile
-+++ b/tools/perf/config/Makefile
-@@ -29,11 +29,16 @@ ifeq ($(ARCH),x86)
-   endif
-   NO_PERF_REGS := 0
- endif
-+
- ifeq ($(ARCH),arm)
-   NO_PERF_REGS := 0
-   LIBUNWIND_LIBS = -lunwind -lunwind-arm
- endif
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 122a580..ba7e83b 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -503,12 +503,13 @@ void __timer_interrupt(void)
+                now = *next_tb - now;
+                if (now <= DECREMENTER_MAX)
+                        set_dec((int)now);
+-               /* We may have raced with new irq work */
+-               if (test_irq_work_pending())
+-                       set_dec(1);
+                __get_cpu_var(irq_stat).timer_irqs_others++;
+        }
  
-+ifeq ($(ARCH),powerpc)
-+  CFLAGS += -DHAVE_ADJUST_CALLCHAIN
-+endif
++       /* We may have raced with new irq work */
++       if (test_irq_work_pending())
++               set_dec(1);
 +
- ifeq ($(LIBUNWIND_LIBS),)
-   NO_LIBUNWIND := 1
- else
-diff --git a/tools/perf/util/callchain.h b/tools/perf/util/callchain.h
-index 8ad97e9..81ecb90 100644
---- a/tools/perf/util/callchain.h
-+++ b/tools/perf/util/callchain.h
-@@ -157,4 +157,16 @@ int sample__resolve_callchain(struct perf_sample *sample, struct symbol **parent
- int hist_entry__append_callchain(struct hist_entry *he, struct perf_sample *sample);
+ #ifdef CONFIG_PPC64
+        /* collect purr register values often, for accurate calculations */
+        if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
+@@ -813,15 +814,11 @@ static void __init clocksource_init(void)
+ static int decrementer_set_next_event(unsigned long evt,
+                                      struct clock_event_device *dev)
+ {
+-       /* Don't adjust the decrementer if some irq work is pending */
+-       if (test_irq_work_pending())
+-               return 0;
+        __get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
+-       set_dec(evt);
  
- extern const char record_callchain_help[];
-+
-+#ifdef HAVE_ADJUST_CALLCHAIN
-+extern int arch_adjust_callchain(struct machine *machine,
-+			struct thread *thread, struct ip_callchain *chain);
-+#else
-+static inline int arch_adjust_callchain(struct machine *machine,
-+			struct thread *thread, struct ip_callchain *chain)
-+{
-+	return -1;
-+}
-+#endif
-+
- #endif	/* __PERF_CALLCHAIN_H */
-diff --git a/tools/perf/util/machine.c b/tools/perf/util/machine.c
-index a53cd0b..dce3bf0 100644
---- a/tools/perf/util/machine.c
-+++ b/tools/perf/util/machine.c
-@@ -1271,6 +1271,7 @@ static int machine__resolve_callchain_sample(struct machine *machine,
- 	int chain_nr = min(max_stack, (int)chain->nr);
- 	int i;
- 	int err;
-+	int skip_slot;
+-       /* We may have raced with new irq work */
+-       if (test_irq_work_pending())
+-               set_dec(1);
++       /* Don't adjust the decrementer if some irq work is pending */
++       if (!test_irq_work_pending())
++               set_dec(evt);
  
- 	callchain_cursor_reset(&callchain_cursor);
- 
-@@ -1279,14 +1280,25 @@ static int machine__resolve_callchain_sample(struct machine *machine,
- 		return 0;
- 	}
- 
-+	/*
-+	 * Based on DWARF debug information, some architectures skip
-+	 * some of the callchain entries saved by the kernel.
-+	 */
-+	skip_slot = arch_adjust_callchain(machine, thread, chain);
-+
- 	for (i = 0; i < chain_nr; i++) {
- 		u64 ip;
- 		struct addr_location al;
- 
--		if (callchain_param.order == ORDER_CALLEE)
-+		if (callchain_param.order == ORDER_CALLEE) {
-+			if (i == skip_slot)
-+				continue;
- 			ip = chain->ips[i];
--		else
-+		} else {
-+			if ((int)(chain->nr - i - 1) == skip_slot)
-+				continue;
- 			ip = chain->ips[chain->nr - i - 1];
-+		}
- 
- 		if (ip >= PERF_CONTEXT_MAX) {
- 			switch (ip) {
--- 
-1.8.4.2
+        return 0;
+ }
