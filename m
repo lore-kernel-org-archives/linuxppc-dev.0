@@ -1,39 +1,42 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
+Return-Path: <paulmck@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CCC7214008A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 May 2014 01:41:00 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2D713140084
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 May 2014 02:33:34 +1000 (EST)
 Received: from /spool/local
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Sat, 10 May 2014 09:40:57 -0600
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 125CFC9003E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 11:40:50 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4AFesk06029660
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 15:40:54 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4AFerKB022555
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 11:40:54 -0400
-Message-ID: <536E477F.2070009@linux.vnet.ibm.com>
-Date: Sat, 10 May 2014 21:06:31 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sat, 10 May 2014 10:33:32 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 379481FF003D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 10:33:31 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08027.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4AGWegT3080682
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 18:32:41 +0200
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s4AGbMWM020102
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 10:37:22 -0600
+Date: Sat, 10 May 2014 09:33:28 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [PATCH] powerpc: irq work racing with timer interrupt can result
  in timer interrupt hang
+Message-ID: <20140510163328.GA4827@linux.vnet.ibm.com>
 References: <20140509174712.55fe72d0@kryten>
- <536CA561.8010803@linux.vnet.ibm.com> <1399695993.4481.47.camel@pasglop>
-In-Reply-To: <1399695993.4481.47.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: paulmck@linux.vnet.ibm.com, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
+ <20140509134113.GP8754@linux.vnet.ibm.com>
+ <20140509215005.GA28239@visitor2.iram.es>
+ <20140509220845.GY8754@linux.vnet.ibm.com>
+ <20140510063337.GA13634@iris.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140510063337.GA13634@iris.ozlabs.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,94 +46,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/10/2014 09:56 AM, Benjamin Herrenschmidt wrote:
-> On Fri, 2014-05-09 at 15:22 +0530, Preeti U Murthy wrote:
->> in __timer_interrupt() outside the _else_ loop? This will ensure that no
->> matter what, before exiting timer interrupt handler we check for pending
->> irq work.
+On Sat, May 10, 2014 at 04:33:37PM +1000, Paul Mackerras wrote:
+> On Fri, May 09, 2014 at 03:08:45PM -0700, Paul E. McKenney wrote:
+> > On Fri, May 09, 2014 at 11:50:05PM +0200, Gabriel Paubert wrote:
+> > > On Fri, May 09, 2014 at 06:41:13AM -0700, Paul E. McKenney wrote:
+> > > > On Fri, May 09, 2014 at 05:47:12PM +1000, Anton Blanchard wrote:
+> > > > > I am seeing an issue where a CPU running perf eventually hangs.
+> > > > > Traces show timer interrupts happening every 4 seconds even
+> > > > > when a userspace task is running on the CPU.
+> > > > 
+> > > > Is this by chance every 4.2 seconds?  The reason I ask is that
+> > > > Paul Clarke and I are seeing an interrupt every 4.2 seconds when
+> > > > he runs NO_HZ_FULL, and are trying to get rid of it.  ;-)
+> > > 
+> > > Hmmm, it's close to 2^32 nanoseconds, isnt't it suspiscious?
+> > 
+> > Now that you mention it...  ;-)
+> > 
+> > So you are telling me that we are not succeeding in completely turning
+> > off the decrementer interrupt?
 > 
-> We still need to make sure that set_next_event() doesn't move the
-> dec beyond the next tick if there is a pending timer... maybe we
+> There is no way to turn off the decrementer interrupt without turning
+> off external (device) interrupts.
+> 
+> On IBM Power CPUs since POWER6, the decrementer runs at 512MHz.  If
+> you set the decrementer to 0x7fffffff it will interrupt in 4.194
+> seconds, so that would be what you're seeing.  The only way to avoid
+> the interrupt becoming pending is to keep on setting it to a large
+> value before it gets to -1.
+> 
+> If an interrupt every 4.2 seconds is a problem in some applications,
+> then we need to talk to the Power architects.
 
-Sorry, but didn't get this. s/if there is pending timer/if there is
-pending irq work ?
+Thank you for filling me in on this!  Might be worth doing just that.
 
-> can fix it like this:
-
-We can call set_next_event() from events like hrtimer_cancel() or
-hrtimer_forward() as well. In that case we don't come to
-decrementer_set_next_event() from __timer_interrupt(). Then, if we race
-with irq work, we *do not do* a set_dec(1) ( I am referring to the patch
-below ), we might never set the decrementer to fire immediately right?
-
-Or does this scenario never arise?
-
-Regards
-Preeti U Murthy
-> 
-> static int decrementer_set_next_event(unsigned long evt,
-> 				      struct clock_event_device *dev)
-> {
-> 	__get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
-> 
-> 	/* Don't adjust the decrementer if some irq work is pending */
-> 	if (!test_irq_work_pending())
-> 		set_dec(evt);
-> 
-> 	return 0;
-> }
-> 
-> Along with a single occurrence of:
-> 
-> 	if (test_irq_work_pending())
-> 		set_dec(1);
-> 
-> At the end of __timer_interrupt(), outside if the current else {}
-> case, this should work, don't you think ?
-> 
-> What about this completely untested patch ?
-> 
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 122a580..ba7e83b 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -503,12 +503,13 @@ void __timer_interrupt(void)
->                 now = *next_tb - now;
->                 if (now <= DECREMENTER_MAX)
->                         set_dec((int)now);
-> -               /* We may have raced with new irq work */
-> -               if (test_irq_work_pending())
-> -                       set_dec(1);
->                 __get_cpu_var(irq_stat).timer_irqs_others++;
->         }
-> 
-> +       /* We may have raced with new irq work */
-> +       if (test_irq_work_pending())
-> +               set_dec(1);
-> +
->  #ifdef CONFIG_PPC64
->         /* collect purr register values often, for accurate calculations */
->         if (firmware_has_feature(FW_FEATURE_SPLPAR)) {
-> @@ -813,15 +814,11 @@ static void __init clocksource_init(void)
->  static int decrementer_set_next_event(unsigned long evt,
->                                       struct clock_event_device *dev)
->  {
-> -       /* Don't adjust the decrementer if some irq work is pending */
-> -       if (test_irq_work_pending())
-> -               return 0;
->         __get_cpu_var(decrementers_next_tb) = get_tb_or_rtc() + evt;
-> -       set_dec(evt);
-> 
-> -       /* We may have raced with new irq work */
-> -       if (test_irq_work_pending())
-> -               set_dec(1);
-> +       /* Don't adjust the decrementer if some irq work is pending */
-> +       if (!test_irq_work_pending())
-> +               set_dec(evt);
-> 
->         return 0;
->  }
-> 
-> 
-> 
-> 
+							Thanx, Paul
