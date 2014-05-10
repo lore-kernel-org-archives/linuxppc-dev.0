@@ -1,22 +1,20 @@
-Return-Path: <paubert@iram.es>
-Received: from villa.puc.rediris.es (villa.puc.rediris.es [130.206.18.7])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
+ [209.85.192.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6BC511400A8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 08:31:13 +1000 (EST)
-Date: Fri, 9 May 2014 23:50:05 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: irq work racing with timer interrupt can result
- in timer interrupt hang
-Message-ID: <20140509215005.GA28239@visitor2.iram.es>
-References: <20140509174712.55fe72d0@kryten>
- <20140509134113.GP8754@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140509134113.GP8754@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id C92DB1400A0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 May 2014 10:08:12 +1000 (EST)
+Received: by mail-pd0-f180.google.com with SMTP id y10so4318748pdj.11
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 May 2014 17:08:09 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: Fix "attempt to move .org backwards" error (again)
+Date: Fri,  9 May 2014 17:07:58 -0700
+Message-Id: <1399680478-4970-1-git-send-email-linux@roeck-us.net>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +24,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 09, 2014 at 06:41:13AM -0700, Paul E. McKenney wrote:
-> On Fri, May 09, 2014 at 05:47:12PM +1000, Anton Blanchard wrote:
-> > I am seeing an issue where a CPU running perf eventually hangs.
-> > Traces show timer interrupts happening every 4 seconds even
-> > when a userspace task is running on the CPU.
-> 
-> Is this by chance every 4.2 seconds?  The reason I ask is that
-> Paul Clarke and I are seeing an interrupt every 4.2 seconds when
-> he runs NO_HZ_FULL, and are trying to get rid of it.  ;-)
+Commit 4e243b7 (powerpc: Fix "attempt to move .org backwards" error) fixes the
+allyesconfig build by moving machine_check_common to a different location.
+While this fixes most of the errors, both allmodconfig and allyesconfig still
+fail as follows.
 
-Hmmm, it's close to 2^32 nanoseconds, isnt't it suspiscious?
+arch/powerpc/kernel/exceptions-64s.S:1315: Error: attempt to move .org backwards
 
-	Gabriel
+Fix by moving machine_check_common after the offending address.
+
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+This fixes the build error, but unfortunately I don't have a system to test
+the resulting image.
+
+ arch/powerpc/kernel/exceptions-64s.S | 49 ++++++++++++++++++------------------
+ 1 file changed, 24 insertions(+), 25 deletions(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 3afd391..25398be 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1138,31 +1138,6 @@ unrecov_user_slb:
+ 
+ #endif /* __DISABLED__ */
+ 
+-
+-	/*
+-	 * Machine check is different because we use a different
+-	 * save area: PACA_EXMC instead of PACA_EXGEN.
+-	 */
+-	.align	7
+-	.globl machine_check_common
+-machine_check_common:
+-
+-	mfspr	r10,SPRN_DAR
+-	std	r10,PACA_EXGEN+EX_DAR(r13)
+-	mfspr	r10,SPRN_DSISR
+-	stw	r10,PACA_EXGEN+EX_DSISR(r13)
+-	EXCEPTION_PROLOG_COMMON(0x200, PACA_EXMC)
+-	FINISH_NAP
+-	DISABLE_INTS
+-	ld	r3,PACA_EXGEN+EX_DAR(r13)
+-	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
+-	std	r3,_DAR(r1)
+-	std	r4,_DSISR(r1)
+-	bl	.save_nvgprs
+-	addi	r3,r1,STACK_FRAME_OVERHEAD
+-	bl	.machine_check_exception
+-	b	.ret_from_except
+-
+ 	.align	7
+ 	.globl alignment_common
+ alignment_common:
+@@ -1328,6 +1303,30 @@ fwnmi_data_area:
+ initial_stab:
+ 	.space	4096
+ 
++	/*
++	 * Machine check is different because we use a different
++	 * save area: PACA_EXMC instead of PACA_EXGEN.
++	 */
++	.align	7
++	.globl machine_check_common
++machine_check_common:
++
++	mfspr	r10,SPRN_DAR
++	std	r10,PACA_EXGEN+EX_DAR(r13)
++	mfspr	r10,SPRN_DSISR
++	stw	r10,PACA_EXGEN+EX_DSISR(r13)
++	EXCEPTION_PROLOG_COMMON(0x200, PACA_EXMC)
++	FINISH_NAP
++	DISABLE_INTS
++	ld	r3,PACA_EXGEN+EX_DAR(r13)
++	lwz	r4,PACA_EXGEN+EX_DSISR(r13)
++	std	r3,_DAR(r1)
++	std	r4,_DSISR(r1)
++	bl	.save_nvgprs
++	addi	r3,r1,STACK_FRAME_OVERHEAD
++	bl	.machine_check_exception
++	b	.ret_from_except
++
+ #ifdef CONFIG_PPC_POWERNV
+ _GLOBAL(opal_mc_secondary_handler)
+ 	HMT_MEDIUM_PPR_DISCARD
+-- 
+1.9.1
