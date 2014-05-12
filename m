@@ -1,29 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
- [IPv6:2607:f8b0:4001:c05::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0BBAA140082
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 19:33:21 +1000 (EST)
-Received: by mail-ig0-f177.google.com with SMTP id l13so3602472iga.16
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 02:33:18 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id CD047140081
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 21:17:59 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH] powerpc/corenet64_smp_defconfig: enable CONFIG_I2C_MUX and
+ CONFIG_I2C_MUX_PCA954x
+Date: Mon, 12 May 2014 18:31:29 +0800
+Message-ID: <1399890689-4772-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20140510053734.AF4E9E0692@canberra.localdomain>
-References: <20140510053734.AF4E9E0692@canberra.localdomain>
-Date: Mon, 12 May 2014 11:33:17 +0200
-Message-ID: <CAMuHMdXQaOewxwe4UoiWj4KoT2Lybug2Spg4TzXd5g_Mfi-1Dg@mail.gmail.com>
-Subject: Re: [PATCH] printk/of_serial: fix serial console cessation part way
- through boot.
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Stephen Chivers <schivers@csc.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- linux-serial@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- rob+dt@kernel.org, Grant Likely <grant.likely@linaro.org>,
- Jiri Slaby <jslaby@suse.cz>, Chris Proctor <cproctor@csc.com>
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,62 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stephen,
+By default we enable CONFIG_I2C_MUX and CONFIG_I2C_MUX_PCA954x,
+which are needed on T2080QDS, T4240QDS, B4860QDS, etc.
 
-On Sat, May 10, 2014 at 7:37 AM, Stephen Chivers <schivers@csc.com> wrote:
-> Commit 5f5c9ae56c38942623f69c3e6dc6ec78e4da2076
-> "serial_core: Unregister console in uart_remove_one_port()"
-> fixed a crash where a serial port was removed but
-> not deregistered as a console.
->
-> There is a side effect of that commit for platforms having serial consoles
-> and of_serial configured (CONFIG_SERIAL_OF_PLATFORM). The serial console
-> is disabled midway through the boot process.
->
-> This cessation of the serial console affects PowerPC computers
-> such as the MVME5100 and SAM440EP.
->
-> The sequence is:
->
->         bootconsole [udbg0] enabled
->         ....
->         serial8250/16550 driver initialises and registers its UARTS,
->         one of these is the serial console.
->         console [ttyS0] enabled
->         ....
->         of_serial probes "platform" devices, registering them as it goes.
->         One of these is the serial console.
->         console [ttyS0] disabled.
->
-> The disabling of the serial console is due to:
->
->         a.  unregister_console in printk not clearing the
->             CONS_ENABLED bit in the console flags,
->             even though it has announced that the console is disabled; and
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ arch/powerpc/configs/corenet64_smp_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-This part re-attaches the serial console on unbind/bind with the sh-sci driver,
-too, which didn't work before. Cool, thanks!
-
->         b.  of_platform_serial_probe in of_serial not setting the port type
->             before it registers with serial8250_register_8250_port.
-
-This part I couldn't test.
-
-> This patch ensures that the serial console is re-enabled when of_serial
-> registers a serial port that corresponds to the designated console.
->
-> Signed-off-by: Stephen Chivers <schivers@csc.com>
-> Tested-by: Stephen Chivers <schivers@csc.com>
-
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> [unregister_console]
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 63508dd..bbd70bb 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -111,6 +111,8 @@ CONFIG_SERIAL_8250_RSA=y
+ CONFIG_I2C=y
+ CONFIG_I2C_CHARDEV=y
+ CONFIG_I2C_MPC=y
++CONFIG_I2C_MUX=y
++CONFIG_I2C_MUX_PCA954x=y
+ CONFIG_SPI=y
+ CONFIG_SPI_GPIO=y
+ CONFIG_SPI_FSL_SPI=y
+-- 
+1.8.0
