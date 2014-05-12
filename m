@@ -1,19 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0212.outbound.protection.outlook.com [207.46.163.212])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BC1B814007D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 01:31:55 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc: fix build of epapr_paravirt on 64-bit book3s
-Date: Mon, 12 May 2014 10:31:22 -0500
-Message-ID: <1399908682-28825-1-git-send-email-scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7D324140086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 01:54:03 +1000 (EST)
+Received: by mail-pa0-f52.google.com with SMTP id fa1so4781225pad.11
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 08:54:00 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Mon, 12 May 2014 08:53:49 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix "attempt to move .org backwards" error
+ (again)
+Message-ID: <20140512155349.GA29066@roeck-us.net>
+References: <1399680478-4970-1-git-send-email-linux@roeck-us.net>
+ <1399867920.17624.73.camel@pasglop> <5370537F.8020901@roeck-us.net>
+ <1399873724.17624.80.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Stuart Yoder <stuart.yoder@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1399873724.17624.80.camel@pasglop>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes an allyesconfig build break introduced by commit
-7762b1ed7aaee223230793fcee80672e2e3aa7a8 "powerpc: move epapr paravirt
-init of power_save to an initcall".
+On Mon, May 12, 2014 at 03:48:44PM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2014-05-11 at 21:52 -0700, Guenter Roeck wrote:
+> > Oh well, it was worth a try. Can you give me an example for a failing
+> > configuration ?
+> 
+> My g5 config which is close to g5_defconfig with PR KVM enabled.
+> 
+> In any case, see my other messages. I'm waiting for all my test builders
+> to come back and if it's clear I'll post a new patch.
+> 
+I'll be more than happy to wait. Let me know if I can test something.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Stuart Yoder <stuart.yoder@freescale.com>
----
- arch/powerpc/kernel/epapr_paravirt.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
-index 8a7a62c..eab2f2a 100644
---- a/arch/powerpc/kernel/epapr_paravirt.c
-+++ b/arch/powerpc/kernel/epapr_paravirt.c
-@@ -73,8 +73,10 @@ int __init epapr_paravirt_early_init(void)
- 
- static int __init epapr_idle_init(void)
- {
-+#if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
- 	if (epapr_has_idle)
- 		ppc_md.power_save = epapr_ev_idle;
-+#endif
- 
- 	return 0;
- }
--- 
-1.9.1
+Thanks,
+Guenter
