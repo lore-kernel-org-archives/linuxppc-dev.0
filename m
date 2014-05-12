@@ -1,46 +1,20 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5ED9614007E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 04:47:03 +1000 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 12 May 2014 12:46:59 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0FFDC19D8040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 12:46:52 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4CGhi2n5243324
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 18:43:44 +0200
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4CIkvH1029877
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2014 12:46:57 -0600
-Date: Mon, 12 May 2014 11:46:54 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: Bug in reclaim logic with exhausted nodes?
-Message-ID: <20140512184654.GC8941@linux.vnet.ibm.com>
-References: <20140324230550.GB18778@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403251116490.16557@nuc>
- <20140325162303.GA29977@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403251152250.16870@nuc>
- <20140325181010.GB29977@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403251323030.26744@nuc>
- <20140327203354.GA16651@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403290038200.24286@nuc>
- <20140401013346.GD5144@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1404031139090.21739@nuc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.10.1404031139090.21739@nuc>
-Cc: linux-mm@kvack.org, mgorman@suse.de, linuxppc-dev@lists.ozlabs.org,
- anton@samba.org, rientjes@google.com
+ by ozlabs.org (Postfix) with ESMTPS id D343614007F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 07:40:08 +1000 (EST)
+Message-ID: <1399930800.17624.132.camel@pasglop>
+Subject: Re: [PATCH] powerpc/powernv: Correctly set hypervisor interrupt
+ little endian bit on POWER8
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Date: Tue, 13 May 2014 07:40:00 +1000
+In-Reply-To: <20140508223138.4d600b60@kryten>
+References: <20140508223138.4d600b60@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,53 +24,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
-
-Sorry for the delay in my response!
-
-On 03.04.2014 [11:41:37 -0500], Christoph Lameter wrote:
-> On Mon, 31 Mar 2014, Nishanth Aravamudan wrote:
+On Thu, 2014-05-08 at 22:31 +1000, Anton Blanchard wrote:
+> HID0 IBM bit 19 is the HILE bit on POWER8. Set it to 0 to take
+> exceptions in big endian and to 1 to take them in little endian.
 > 
-> > Yep. The node exists, it's just fully exhausted at boot (due to the
-> > presence of 16GB pages reserved at boot-time).
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+
+Let's stick to the variant involving a FW call instead.
+
+Cheers,
+Ben.
+
 > 
-> Well if you want us to support that then I guess you need to propose
-> patches to address this issue.
-
-Yep, that's my plan, I was hoping to get input from developers/experts
-such as yourself first. Obviously, code speaks louder though...
-
-> > I'd appreciate a bit more guidance? I'm suggesting that in this case
-> > the node functionally has no memory. So the page allocator should
-> > not allow allocations from it -- except (I need to investigate this
-> > still) userspace accessing the 16GB pages on that node, but that, I
-> > believe, doesn't go through the page allocator at all, it's all from
-> > hugetlb interfaces. It seems to me there is a bug in SLUB that we
-> > are noting that we have a useless per-node structure for a given
-> > nid, but not actually preventing requests to that node or reclaim
-> > because of those allocations.
-> 
-> Well if you can address that without impacting the fastpath then we
-> could do this. Otherwise we would need a fake structure here to avoid
-> adding checks to the fastpath
-
-Ok, I'll keep thinking about what makes the most sense.
-
-> > I think there is a logical bug (even if it only occurs in this
-> > particular corner case) where if reclaim progresses for a THISNODE
-> > allocation, we don't check *where* the reclaim is progressing, and thus
-> > may falsely be indicating that we have done some progress when in fact
-> > the allocation that is causing reclaim will not possibly make any more
-> > progress.
-> 
-> Ok maybe we could address this corner case. How would you do this?
-
-This is where I started to get stumped. It seems like did_some_progress
-is only checking that any progress is made. It would be more expensive
-in the reclaim path to check what nodes we made progress on and verify
-it was on the intended one (if we are reclaiming due to THISNODE). I
-will try and look at this case specifically more, I apologize it's
-taking me quite a bit of time to get up-to-speed on the code and design.
-
-Thanks,
-Nish
+> Index: b/arch/powerpc/include/asm/reg.h
+> ===================================================================
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -397,6 +397,7 @@
+>  #define SPRN_HASH1	0x3D2		/* Primary Hash Address Register */
+>  #define SPRN_HASH2	0x3D3		/* Secondary Hash Address Resgister */
+>  #define SPRN_HID0	0x3F0		/* Hardware Implementation Register 0 */
+> +#define HID0_HILE_SH	(63 - 19)	/* Hypervisor interrupt little endian */
+>  #define HID0_HDICE_SH	(63 - 23)	/* 970 HDEC interrupt enable */
+>  #define HID0_EMCP	(1<<31)		/* Enable Machine Check pin */
+>  #define HID0_EBA	(1<<29)		/* Enable Bus Address Parity */
+> Index: b/arch/powerpc/kernel/cpu_setup_power.S
+> ===================================================================
+> --- a/arch/powerpc/kernel/cpu_setup_power.S
+> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> @@ -60,6 +60,7 @@ _GLOBAL(__setup_cpu_power8)
+>  	bl	__init_HFSCR
+>  	bl	__init_tlb_power8
+>  	bl	__init_PMU_HV
+> +	bl	__init_HILE
+>  	mtlr	r11
+>  	blr
+>  
+> @@ -78,6 +79,7 @@ _GLOBAL(__restore_cpu_power8)
+>  	bl	__init_HFSCR
+>  	bl	__init_tlb_power8
+>  	bl	__init_PMU_HV
+> +	bl	__init_HILE
+>  	mtlr	r11
+>  	blr
+>  
+> @@ -132,6 +134,26 @@ __init_HFSCR:
+>  	mtspr	SPRN_HFSCR,r3
+>  	blr
+>  
+> +__init_HILE:
+> +	mfspr	r3,SPRN_HID0
+> +	li	r4,1
+> +	sldi	r4,r4,HID0_HILE_SH
+> +#ifdef __LITTLE_ENDIAN__
+> +	or	r3,r3,r4
+> +#else
+> +	andc	r3,r3,r4
+> +#endif
+> +	sync
+> +	mtspr	SPRN_HID0,r3
+> +	mfspr	r3,SPRN_HID0
+> +	mfspr	r3,SPRN_HID0
+> +	mfspr	r3,SPRN_HID0
+> +	mfspr	r3,SPRN_HID0
+> +	mfspr	r3,SPRN_HID0
+> +	mfspr	r3,SPRN_HID0
+> +	isync
+> +	blr
+> +
+>  /*
+>   * Clear the TLB using the specified IS form of tlbiel instruction
+>   * (invalidate by congruence class). P7 has 128 CCs., P8 has 512.
