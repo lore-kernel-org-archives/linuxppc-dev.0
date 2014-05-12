@@ -1,19 +1,21 @@
 Return-Path: <sfr@canb.auug.org.au>
-Date: Mon, 12 May 2014 08:23:36 +1000
+Date: Mon, 12 May 2014 10:19:43 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Scott Wood <scottwood@freescale.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Subject: Re: linux-next: add scottwood/linux.git
-Message-ID: <20140512082336.501fa8a2@canb.auug.org.au>
-In-Reply-To: <1399670133.15726.440.camel@snotra.buserror.net>
+Message-ID: <20140512101943.40659bcc@canb.auug.org.au>
+In-Reply-To: <20140512082336.501fa8a2@canb.auug.org.au>
 References: <20140320042527.GA23206@home.buserror.net>
  <1395616617.3460.109.camel@pasglop>
  <1395617608.3460.113.camel@pasglop>
  <1395709794.12479.411.camel@snotra.buserror.net>
  <1399670133.15726.440.camel@snotra.buserror.net>
+ <20140512082336.501fa8a2@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/a45ejLIsKa/qDmEnMXuEy/8"; protocol="application/pgp-signature"
-Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ boundary="Sig_/7=jc7vLZP/fV.F1z=keletk"; protocol="application/pgp-signature"
+Cc: Scott Wood <scottwood@freescale.com>, linux-next@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,78 +25,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/a45ejLIsKa/qDmEnMXuEy/8
+--Sig_/7=jc7vLZP/fV.F1z=keletk
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 Hi Scott,
 
-On Fri, 9 May 2014 16:15:33 -0500 Scott Wood <scottwood@freescale.com> wrot=
-e:
+On Mon, 12 May 2014 08:23:36 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
 >
-> On Mon, 2014-03-24 at 20:09 -0500, Scott Wood wrote:
-> > On Mon, 2014-03-24 at 10:33 +1100, Benjamin Herrenschmidt wrote:
-> > > On Mon, 2014-03-24 at 10:16 +1100, Benjamin Herrenschmidt wrote:
-> > > > On Wed, 2014-03-19 at 23:25 -0500, Scott Wood wrote:
-> > > > > The following changes since commit c7e64b9ce04aa2e3fad7396d92b5cb=
-92056d16ac:
+> On Fri, 9 May 2014 16:15:33 -0500 Scott Wood <scottwood@freescale.com> wr=
+ote:
+> >
+> > On Mon, 2014-03-24 at 20:09 -0500, Scott Wood wrote:
+> > > On Mon, 2014-03-24 at 10:33 +1100, Benjamin Herrenschmidt wrote:
+> > > > On Mon, 2014-03-24 at 10:16 +1100, Benjamin Herrenschmidt wrote:
+> > > > > On Wed, 2014-03-19 at 23:25 -0500, Scott Wood wrote:
+> > > > > > The following changes since commit c7e64b9ce04aa2e3fad7396d92b5=
+cb92056d16ac:
+> > > > > >=20
+> > > > > >   powerpc/powernv Platform dump interface (2014-03-07 16:19:10 =
++1100)
+> > > > > >=20
+> > > > > > are available in the git repository at:
+> > > > > >=20
+> > > > > >   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux=
+.git next
+> > > > > >=20
+> > > > > > for you to fetch changes up to 48b16180d0d91324e5d2423c6d53d97b=
+be3dcc14:
+> > > > > >=20
+> > > > > >   fsl/pci: The new pci suspend/resume implementation (2014-03-1=
+9 22:37:44 -0500)
 > > > > >=20
-> > > > >   powerpc/powernv Platform dump interface (2014-03-07 16:19:10 +1=
-100)
+> > > > > Stephen just informed me that your tree wasn't in -next ... Kumar=
+'s
+> > > > > still is.
 > > > > >=20
-> > > > > are available in the git repository at:
-> > > > >=20
-> > > > >   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.g=
-it next
-> > > > >=20
-> > > > > for you to fetch changes up to 48b16180d0d91324e5d2423c6d53d97bbe=
-3dcc14:
-> > > > >=20
-> > > > >   fsl/pci: The new pci suspend/resume implementation (2014-03-19 =
-22:37:44 -0500)
-> > > >=20
-> > > > Stephen just informed me that your tree wasn't in -next ... Kumar's
-> > > > still is.
-> > > >=20
-> > > > Can you guys fix that up ? I somewhat rely on the FSL stuff to simm=
-er
-> > > > in -next on its own.
+> > > > > Can you guys fix that up ? I somewhat rely on the FSL stuff to si=
+mmer
+> > > > > in -next on its own.
+> > >=20
+> > > Stephen, what's the process for adding a tree?
 > >=20
-> > Stephen, what's the process for adding a tree?
+> > ping
 >=20
-> ping
+> Sorry, for the delay.
+>=20
+> Just send me a git URL for your tree, and a list of the people I should
+> contact in case of conflicts/build/fetch problems and cc the
+> appropriate people/lists.
+>=20
+> I also assume that this will actually replace Kumar's tree?
 
-Sorry, for the delay.
+[Preempting your reply :-)]
 
-Just send me a git URL for your tree, and a list of the people I should
-contact in case of conflicts/build/fetch problems and cc the
-appropriate people/lists.
+I have added the above tree from today (and called it "fsl") with you
+as the sole contact.  Let me know if you need anything different.  I
+have also removed the galak tree.
 
-I also assume that this will actually replace Kumar's tree?
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgment of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window.=20
+
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+        Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and=20
+     * destined for the current or next Linux merge window.
+
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
+
 --=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Stephen Rothwell=20
+sfr@canb.auug.org.au
 
---Sig_/a45ejLIsKa/qDmEnMXuEy/8
+--Sig_/7=jc7vLZP/fV.F1z=keletk
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2.0.22 (GNU/Linux)
 
-iQIcBAEBCAAGBQJTb/htAAoJEMDTa8Ir7ZwVMxwP/2QX1/RPmhwiZuNJkGYx1VEg
-3w+g6qrxc/PROspFszXn2/NIw912/xqcfG2hpVFKGRiJ80BRGXYbb6ucEHFn3e1T
-0iRdR9ioB8EDPJStDbilTw+jC3/VMUgoV5CMtz159ShxqhES5mg+pQk+rSIFuq4L
-k0sefbaCLVuZzZdSkh65ZQmGZgSxr90mMj48yIC5g7eDVWl1vkXXuI3thhkXWhci
-4Za5hR9H7iUWY3Mv9+7ZqjH6sbsztIfJBqM3L82QxQYEMMnnyrU/JjMCo0/w9+C/
-wklWunUhumDkCw3MoEnebrd2rz+wwJhH/II28R+AHM5eHptIPiwjnsMbr0C/xFFz
-XI8l39w9t0CWSy1lxlgeYFudweE3w6UevexL2o0QW0XSqt2HCqRSR2CI3lJdkusb
-U+TFdRX27reMHyfP5Ydsj/XoNgCm+42pL+pPqYsJbAl74aqcy/lDJsJEDcZ31Zf/
-6CXTa9X09W8mEvpwhlGs/6r8liuG1c1hvPXU3I5ClpZTLmIn1yfrBr4GjxjAvrL2
-n5bPhQo2A0jjKBQZyl8iPLdj/KkfTfXcdVMGl/5SsLpAwgVwJjnra6xOhHcOhofC
-tH2k75ZOIskCPABIHO7Le3lpEHdotyzF+NfGDyuyZBfLpn27kYTaK/oTac+nYRm5
-3CtwtydjN3u9G98rm4sp
-=VkPP
+iQIcBAEBCAAGBQJTcBOlAAoJEMDTa8Ir7ZwV3ZAP/3l96o28UBC7IGhhjMMjOZhx
+0VBLCQcAN69tjV1WbNAdKJqQHzNOilxxnTVizJTCFbwrFD6g6+Kopx7v7OraCpzj
+/md1vCyEUnrDgwKcpd4I26rM3Fj8mGBX5ejv4q4JRUy3/iJ4/fG/5Tpay7cgW2HA
+gPWqHsDgHmdgYtdWsqkG7cqqbtz6LSujJoBQSNM5IAf/4Hu5R6+9A62WVcDud4Y1
++ZqkQSrxXYgupl/0VJcw6KI1BHi99nFQCH1ATH8I9pLrwPrFpwiSnMZxMQcUkJS5
+LPCj/JuzEGMfhW2fv81/JJR3iIVHGVqSMqLSr0KxZnv0BuP/TeD56jJyUOKMOLEz
+HYBxJ7r2SlP07GHNKkhILIuxhWScuT2AjYQZZB/B9258Osd2fbTY/yoktksWSvJz
+QP/GnORFfnVVLME9aroAXTJD0b5xM7Yacspb+v8c7imxAk2bEPWFS9PeLYgSMuKx
+vWdR4XBdtynYkYMCzn1QZL3uSgUHiyigdpdRtk/iosaO3OBnUy6AIRCenh+/p9kp
+zVmaz94z7TjcvWpTC/9F+iv9Q6Bya+8JUamhBcNkfYk7z0PBfEHcD80uiNcg4YvB
+yiRtJDoUtfAoK4kvx4vpYLuF9/HX4xeljPTMz6bj2bC9Q20cV/yXmlTt98UHKsIE
+W579L0DNaTOyCEK1+tne
+=40oe
 -----END PGP SIGNATURE-----
 
---Sig_/a45ejLIsKa/qDmEnMXuEy/8--
+--Sig_/7=jc7vLZP/fV.F1z=keletk--
