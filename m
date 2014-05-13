@@ -1,25 +1,25 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E04FA140084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 05:41:49 +1000 (EST)
-Received: by mail-pa0-f41.google.com with SMTP id lj1so651526pab.14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 12:41:47 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Tue, 13 May 2014 12:41:36 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
-Message-ID: <20140513194136.GA15812@roeck-us.net>
-References: <1399874254.17624.85.camel@pasglop>
- <20140513002846.GA29753@roeck-us.net>
- <1399972601.17624.169.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1399972601.17624.169.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
+ by ozlabs.org (Postfix) with ESMTP id D7D54140096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 07:44:53 +1000 (EST)
+Date: Tue, 13 May 2014 17:43:45 -0400 (EDT)
+Message-Id: <20140513.174345.406760552060437774.davem@davemloft.net>
+To: w-lkml@lebenslange-mailadresse.de
+Subject: Re: [PATCH] [resend] net: get rid of SET_ETHTOOL_OPS
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20140511001231.GC7875@kaos.lebenslange-mailadresse.de>
+References: <20140511001231.GC7875@kaos.lebenslange-mailadresse.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org,
+ b.a.t.m.a.n@lists.open-mesh.org, trivial@kernel.org,
+ xen-devel@lists.xenproject.org, linux-rdma@vger.kernel.org,
+ netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, e1000-devel@lists.sourceforge.net,
+ bridge@lists.linux-foundation.org, devel@linuxdriverproject.org,
+ nios2-dev@lists.rocketboards.org, dev@openvswitch.org,
+ linuxppc-dev@lists.ozlabs.org, linux-acenic@sunsite.dk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 13, 2014 at 07:16:41PM +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2014-05-12 at 17:28 -0700, Guenter Roeck wrote:
-> 
-> > After applying this patch, I get
-> > 
-> > arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range
-> > (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> > arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
-> > (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
-> > 
-> > with powerpc:defconfig, powerpc:allmodconfig, powerpc:cell_defconfig, and
-> > powerpc:maple_defconfig.
-> > 
-> > This is on top of v3.15-rc5. Any idea what is going on ?
-> > 
-> > Compiler is powerpc64-poky-linux-gcc (GCC) 4.7.2 (from poky 1.4.0-1).
-> 
-> Interesting... works with all my test configs using 4.7.3...
-> 
-> I don't have my tree at hand right now, I'll check what that means
-> tomorrow see if I can find a workaround.
-> 
+From: Wilfried Klaebe <w-lkml@lebenslange-mailadresse.de>
+Date: Sun, 11 May 2014 00:12:32 +0000
 
-Drives me crazy. With gcc 4.8.2, powerpc:allmodconfig builds, but now I get
-failures with ppc64e_defconfig and chroma_defconfig:
+> net: get rid of SET_ETHTOOL_OPS
+> 
+> Dave Miller mentioned he'd like to see SET_ETHTOOL_OPS gone.
+> This does that.
+> 
+> Mostly done via coccinelle script:
+> @@
+> struct ethtool_ops *ops;
+> struct net_device *dev;
+> @@
+> -       SET_ETHTOOL_OPS(dev, ops);
+> +       dev->ethtool_ops = ops;
+> 
+> Compile tested only, but I'd seriously wonder if this broke anything.
+> 
+> Suggested-by: Dave Miller <davem@davemloft.net>
+> Signed-off-by: Wilfried Klaebe <w-lkml@lebenslange-mailadresse.de>
 
-arch/powerpc/kernel/built-in.o: In function `exc_debug_crit_book3e':
-(.text+0x165ee): relocation truncated to fit: R_PPC64_ADDR16_HI against symbol
-`interrupt_base_book3e' defined in .text section in
-arch/powerpc/kernel/built-in.o
-arch/powerpc/kernel/built-in.o: In function `exc_debug_crit_book3e':
-(.text+0x16602): relocation truncated to fit: R_PPC64_ADDR16_HI against symbol
-`interrupt_end_book3e' defined in .text section in
-arch/powerpc/kernel/built-in.o
-arch/powerpc/kernel/built-in.o: In function `exc_debug_debug_book3e':
-(.text+0x1679e): relocation truncated to fit: R_PPC64_ADDR16_HI against symbol
-`interrupt_base_book3e' defined in .text section in
-arch/powerpc/kernel/built-in.o
-arch/powerpc/kernel/built-in.o: In function `exc_debug_debug_book3e':
-(.text+0x167b2): relocation truncated to fit: R_PPC64_ADDR16_HI against symbol
-`interrupt_end_book3e' defined in .text section in
-arch/powerpc/kernel/built-in.o
-arch/powerpc/kernel/built-in.o: In function `skpinv':
-arch/powerpc/kernel/exceptions-64e.o:(.text+0x178c6): relocation truncated to
-fit: R_PPC64_ADDR16_HI against `.text'+178e0
-arch/powerpc/kernel/built-in.o: In function `a2_tlbinit_after_linear_map':
-(.text+0x17966): relocation truncated to fit: R_PPC64_ADDR16_HI against
-`.text'+17974
-arch/powerpc/kernel/built-in.o: In function `.init_core_book3e':
-arch/powerpc/kernel/exceptions-64e.o:(.text+0x17a7e): relocation truncated to
-fit: R_PPC64_ADDR16_HI against symbol `interrupt_base_book3e' defined in .text
-section in arch/powerpc/kernel/built-in.o
-
-Worse, that happens even without your patch applied, and the patch does not
-make a difference :-(.
-
-Guenter
+Applied to net-next, thanks.
