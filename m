@@ -1,43 +1,20 @@
-Return-Path: <cody@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 62B30140080
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 17:12:50 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
- Tue, 13 May 2014 01:12:44 -0600
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 967916E801C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 03:12:34 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4D7Cgl22687366
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 07:12:42 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4D7CfPp014114
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 03:12:41 -0400
-Message-ID: <5371C5E5.6070701@linux.vnet.ibm.com>
-Date: Tue, 13 May 2014 00:12:37 -0700
-From: Cody P Schafer <cody@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc/pseries: relocate "config DTL" so KConfig nests
- properly
-References: <1399950599-24826-1-git-send-email-cody@linux.vnet.ibm.com>
- <1399962216.7554.63.camel@ale.ozlabs.ibm.com>
-In-Reply-To: <1399962216.7554.63.camel@ale.ozlabs.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- Paul Bolle <pebolle@tiscali.nl>, Gavin Shan <shangw@linux.vnet.ibm.com>,
- Li Zhong <zhong@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 970131400D8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 19:16:50 +1000 (EST)
+Message-ID: <1399972601.17624.169.camel@pasglop>
+Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 13 May 2014 19:16:41 +1000
+In-Reply-To: <20140513002846.GA29753@roeck-us.net>
+References: <1399874254.17624.85.camel@pasglop>
+ <20140513002846.GA29753@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,72 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/12/2014 11:23 PM, Michael Neuling wrote:
->> powerpc/pseries: relocate "config DTL" so KConfig nests properly
->
-> I don't know what that means.  Can you describe it in more detail?
->
+On Mon, 2014-05-12 at 17:28 -0700, Guenter Roeck wrote:
 
-So the "config DTL" refers to the configuration entry.
+> After applying this patch, I get
+> 
+> arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range
+> (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+> arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
+> (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+> 
+> with powerpc:defconfig, powerpc:allmodconfig, powerpc:cell_defconfig, and
+> powerpc:maple_defconfig.
+> 
+> This is on top of v3.15-rc5. Any idea what is going on ?
+> 
+> Compiler is powerpc64-poky-linux-gcc (GCC) 4.7.2 (from poky 1.4.0-1).
 
-The "nests properly" refers to the indent that 'make menuconfig' shows 
-when a config-option that depends on the config-option proceeding it.
+Interesting... works with all my test configs using 4.7.3...
 
-In this case, moving config DTL up so it is below config PPC_SPLPAR 
-means that menuconfig will show config DTL nicely indented right below 
-config PPC_SPLPAR when PPC_SPLPAR is enabled.
+I don't have my tree at hand right now, I'll check what that means
+tomorrow see if I can find a workaround.
 
-To contrast that, right now if I enable PPC_SPLPAR in menuconfig, all I 
-can immediately tell is that "something showed up further down the list 
-where I wasn't looking", and I end up having to toggle the option a few 
-times to figure out what showed up, or look at the KConfig to find out 
-that config DTL depends on config PPC_SPLPAR.
-
-Essentially, this enables menuconfig to provide a visual hint about the 
-dependencies between options.
-
-> Mikey
->
->
-> On Mon, 2014-05-12 at 20:09 -0700, Cody P Schafer wrote:
->> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/platforms/pseries/Kconfig | 20 ++++++++++----------
->>   1 file changed, 10 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
->> index 2cb8b77..e00dd4d 100644
->> --- a/arch/powerpc/platforms/pseries/Kconfig
->> +++ b/arch/powerpc/platforms/pseries/Kconfig
->> @@ -33,6 +33,16 @@ config PPC_SPLPAR
->>   	  processors, that is, which share physical processors between
->>   	  two or more partitions.
->>
->> +config DTL
->> +	bool "Dispatch Trace Log"
->> +	depends on PPC_SPLPAR && DEBUG_FS
->> +	help
->> +	  SPLPAR machines can log hypervisor preempt & dispatch events to a
->> +	  kernel buffer. Saying Y here will enable logging these events,
->> +	  which are accessible through a debugfs file.
->> +
->> +	  Say N if you are unsure.
->> +
->>   config PSERIES_MSI
->>          bool
->>          depends on PCI_MSI && PPC_PSERIES && EEH
->> @@ -122,13 +132,3 @@ config HV_PERF_CTRS
->>   	  systems. 24x7 is available on Power 8 systems.
->>
->>             If unsure, select Y.
->> -
->> -config DTL
->> -	bool "Dispatch Trace Log"
->> -	depends on PPC_SPLPAR && DEBUG_FS
->> -	help
->> -	  SPLPAR machines can log hypervisor preempt & dispatch events to a
->> -	  kernel buffer. Saying Y here will enable logging these events,
->> -	  which are accessible through a debugfs file.
->> -
->> -	  Say N if you are unsure.
->
+Cheers,
+Ben.
