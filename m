@@ -1,21 +1,25 @@
-Return-Path: <palves@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id A570B140087
- for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2014 03:13:47 +1000 (EST)
-Message-ID: <537252C0.6090005@redhat.com>
-Date: Tue, 13 May 2014 18:13:36 +0100
-From: Pedro Alves <palves@redhat.com>
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id AB6DA140087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 03:18:04 +1000 (EST)
+Received: by mail-pa0-f44.google.com with SMTP id ld10so524830pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 10:18:01 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Tue, 13 May 2014 10:17:49 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
+Message-ID: <20140513171749.GA9440@roeck-us.net>
+References: <1399874254.17624.85.camel@pasglop>
+ <20140513002846.GA29753@roeck-us.net>
+ <1399972601.17624.169.camel@pasglop>
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
- memory register sets
-References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: michael@ellerman.id.au, mikey@neuling.org, avagin@openvz.org,
- oleg@redhat.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1399972601.17624.169.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/14 08:54, Anshuman Khandual wrote:
-> This patch enables get and set of transactional memory related register
-> sets through PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing
-> four new powerpc specific register sets i.e REGSET_TM_SPR, REGSET_TM_CGPR,
-> REGSET_TM_CFPR, REGSET_CVMX support corresponding to these following new
-> ELF core note types added previously in this regard.
+On Tue, May 13, 2014 at 07:16:41PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2014-05-12 at 17:28 -0700, Guenter Roeck wrote:
 > 
-> 	(1) NT_PPC_TM_SPR
-> 	(2) NT_PPC_TM_CGPR
-> 	(3) NT_PPC_TM_CFPR
-> 	(4) NT_PPC_TM_CVMX
+> > After applying this patch, I get
+> > 
+> > arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range
+> > (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+> > arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
+> > (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+> > 
+> > with powerpc:defconfig, powerpc:allmodconfig, powerpc:cell_defconfig, and
+> > powerpc:maple_defconfig.
+> > 
+> > This is on top of v3.15-rc5. Any idea what is going on ?
+> > 
+> > Compiler is powerpc64-poky-linux-gcc (GCC) 4.7.2 (from poky 1.4.0-1).
+> 
+> Interesting... works with all my test configs using 4.7.3...
+> 
+> I don't have my tree at hand right now, I'll check what that means
+> tomorrow see if I can find a workaround.
+> 
+It works for me with gcc 4.8.2 (build from yocto 1.6.0).
 
-Sorry that I couldn't tell this from the code, but, what does the
-kernel return when the ptracer requests these registers and the
-program is not in a transaction?  Specifically I'm wondering whether
-this follows the same semantics as the s390 port.
+Is asking people to use gcc 4.7.3 or later acceptable ?
 
--- 
-Pedro Alves
+Guenter
