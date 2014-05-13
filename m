@@ -1,19 +1,18 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::5])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A8E35140079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 22:30:18 +1000 (EST)
-Message-ID: <53720AAC.1000100@xenosoft.de>
-Date: Tue, 13 May 2014 14:06:04 +0200
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 23611140096
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2014 22:36:07 +1000 (EST)
+Message-ID: <537211AC.6050901@roeck-us.net>
+Date: Tue, 13 May 2014 05:35:56 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Boot problems with a PA6T board
-References: <5366649E.4030102@xenosoft.de> <1399268891.4600.3.camel@concordia>
-In-Reply-To: <1399268891.4600.3.camel@concordia>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
+References: <1399874254.17624.85.camel@pasglop>	
+ <20140513002846.GA29753@roeck-us.net> <1399972601.17624.169.camel@pasglop>
+In-Reply-To: <1399972601.17624.169.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05.05.2014 07:48, Michael Ellerman wrote:
-> On Sun, 2014-05-04 at 18:02 +0200, Christian Zigotzky wrote:
->> Hi All,
->>
->> The RC 1, 2, and 3 of the kernel 3.15 don't boot on my PA6T board with a
->> Radeon HD 6870 graphics card.
->>
->> Screenshot:
->> http://forum.hyperion-entertainment.biz/download/file.php?id=1060&mode=view
->>
->> The kernel 3.14 starts without any problems. Has anyone a tip for me,
->> please?
-> The line that says "starting cpu hw idx 0... failed" looks a little worrying.
-> Do you see that on 3.14 as well?
+On 05/13/2014 02:16 AM, Benjamin Herrenschmidt wrote:
+> On Mon, 2014-05-12 at 17:28 -0700, Guenter Roeck wrote:
 >
-> Otherwise bisection is probably your best bet.
+>> After applying this patch, I get
+>>
+>> arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range
+>> (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+>> arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
+>> (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+>>
+>> with powerpc:defconfig, powerpc:allmodconfig, powerpc:cell_defconfig, and
+>> powerpc:maple_defconfig.
+>>
+>> This is on top of v3.15-rc5. Any idea what is going on ?
+>>
+>> Compiler is powerpc64-poky-linux-gcc (GCC) 4.7.2 (from poky 1.4.0-1).
 >
-> cheers
-Hi All,
+> Interesting... works with all my test configs using 4.7.3...
+>
+> I don't have my tree at hand right now, I'll check what that means
+> tomorrow see if I can find a workaround.
+>
 
-I have found out which patch is responsible for the boot problems. It's 
-patch 9000c17dc0f9c910267d2661225c9d33a227b27e. Link: 
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=9000c17dc0f9c910267d2661225c9d33a227b27e
+Maybe something is wrong with my toolchain. I'll try to find a more recent one.
 
-Experimental protocol:
-
-git checkout -f 01d8885785a60ae8f4c37b0ed75bdc96d0fc6a44; git clean -fdx 
-(from 02/04/14) -> Kernel boots
-git checkout -f f1553174a207f68a4ec19d436003097e0a4dc405; git clean -fdx 
-(from 03/04/14) -> Kernel boots
-git checkout -f d40326f4b9f9617cdfd30f83a2db57d47e9c5bac; git clean -fdx 
-(from 04/04/14) -> Kernel boots
-git checkout -f 930b440cd8256f3861bdb0a59d26efaadac7941a; git clean -fdx 
-(from 05/04/14) -> doesn't boot (rtc error)
-git checkout -f 2b3a8fd735f86ebeb2b9d061054003000c36b654; git clean -fdx 
-(from 06/04/14) -> doesn't boot (rtc error)
-git checkout -f 26c12d93348f0bda0756aff83f4867d9ae58a5a6; git clean -fdx 
-(from 07/04/14) -> doesn't boot (rtc error)
-git checkout -f a6c8aff022d4d06e4b41455ae9b2a5d3d503bf76; git clean -fdx 
-(from 08/04/14) -> Kernel boots
-git checkout -f 035328c202d26a824b8632fd3b00635db5aee5a2; git clean -fdx 
-(from 08/04/14) -> Kernel boots
-git checkout -f 9000c17dc0f9c910267d2661225c9d33a227b27e; git clean -fdx 
-(from 08/04/14) powerpc/powernv: Fix endian issues with sensor code
-One OPAL call and one device tree property needed byte swapping. -> 
-doesn't boot (prom_init)
-git checkout -f d3d35d957a9d0733dc51f14b5abc0bff5d3c5f3a; git clean -fdx 
-(from 08/04/14) -> doesn't boot (prom_init)
-git checkout -f c4586256f0c440bc2bdb29d2cbb915f0ca785d26; git clean -fdx 
-(from 09/04/14) -> doesn't boot (prom_init)
-
-I'm not a programmer but what can I do to solve this boot problem?
-
-Cheers,
-
-Christian
+Guenter
