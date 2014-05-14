@@ -1,18 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Wed, 14 May 2014 13:34:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
-Message-ID: <20140514133434.13b66009@canb.auug.org.au>
-In-Reply-To: <20140513171749.GA9440@roeck-us.net>
-References: <1399874254.17624.85.camel@pasglop>
- <20140513002846.GA29753@roeck-us.net>
- <1399972601.17624.169.camel@pasglop>
- <20140513171749.GA9440@roeck-us.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/XaWgqHPQaBXu_Gr34HarfeB"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 99678140085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 14 May 2014 14:12:08 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7EC452BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:05 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4E3obFW63242266
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 13:50:38 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4E4C46w013818
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:04 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH RFC v3 0/8] EEH Support for VFIO PCI device
+Date: Wed, 14 May 2014 14:11:54 +1000
+Message-Id: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, agraf@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,96 +37,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/XaWgqHPQaBXu_Gr34HarfeB
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+The series of patches intends to support EEH for PCI devices, which are
+passed through to PowerKVM based guest via VFIO. The implementation is
+straightforward based on the issues or problems we have to resolve to
+support EEH for PowerKVM based guest.
 
-Hi Guenter,
+- Emulation for EEH RTAS requests. All EEH RTAS requests goes to QEMU firstly.
+  If QEMU can't handle it, the request will be sent to host via newly introduced
+  VFIO container IOCTL command (VFIO_EEH_INFO) and gets handled in host kernel.
 
-On Tue, 13 May 2014 10:17:49 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
->
-> On Tue, May 13, 2014 at 07:16:41PM +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2014-05-12 at 17:28 -0700, Guenter Roeck wrote:
-> >=20
-> > > After applying this patch, I get
-> > >=20
-> > > arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range
-> > > (0x000000000000814c is not between 0xffffffffffff8000 and 0x000000000=
-0007ffc)
-> > > arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
-> > > (0x000000000000814c is not between 0xffffffffffff8000 and 0x000000000=
-0007ffc)
-> > >=20
-> > > with powerpc:defconfig, powerpc:allmodconfig, powerpc:cell_defconfig,=
- and
-> > > powerpc:maple_defconfig.
-> > >=20
-> > > This is on top of v3.15-rc5. Any idea what is going on ?
-> > >=20
-> > > Compiler is powerpc64-poky-linux-gcc (GCC) 4.7.2 (from poky 1.4.0-1).
-> >=20
-> > Interesting... works with all my test configs using 4.7.3...
-> >=20
-> > I don't have my tree at hand right now, I'll check what that means
-> > tomorrow see if I can find a workaround.
-> >=20
-> It works for me with gcc 4.8.2 (build from yocto 1.6.0).
->=20
-> Is asking people to use gcc 4.7.3 or later acceptable ?
+- The error injection infrastructure need support request from the userland
+  utility "errinjct" and PowerKVM based guest. The userland utility "errinjct"
+  works on pSeries platform well with dedicated syscall, which helps invoking
+  RTAS service to fulfil error injection in kernel. From the perspective, it's
+  reasonable to extend the syscall to support PowerNV platform so that OPAL call
+  can be invoked in host kernel for injecting errors. The data transported
+  between userland and kerenl is still following "struct rtas_args" for both
+  cases of PowerNV (OPAL) and pSeries (RTAS).
 
-OK, this appears to be an assembler bug.
+The series of patches requires corresponding firmware changes from Mike Qiu to
+support error injection and QEMU changes to support EEH for guest. QEMU patchset
+will be sent separately.
 
-$ cat test.s
-	.text
-x:
-	.pushsection	b, "a"
-	beq y
-	.popsection
-	.=3D0x80000
-y:
-$ /opt/cross/gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-as --vers=
-ion
-GNU assembler (GNU Binutils) 2.22
-This assembler was configured for a target of `powerpc64-linux'.
-$ /opt/cross/gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-as -o tes=
-t.o test.s=20
-test.s: Assembler messages:
-test.s:4: Error: operand out of range (0x0000000000080000 is not between 0x=
-ffffffffffff8000 and 0x0000000000007ffc)
-$ /opt/cross/gcc-4.8.1-nolibc/powerpc64-linux/bin/powerpc64-linux-as --vers=
-ion
-GNU assembler (GNU Binutils) 2.23.52.20130512
-This assembler was configured for a target of `powerpc64-linux'.
-$ /opt/cross/gcc-4.8.1-nolibc/powerpc64-linux/bin/powerpc64-linux-as -o tes=
-t.o test.s=20
-(no error)
+Change log
+==========
+v1 -> v2:
+	* EEH RTAS requests are routed to QEMU, and then possiblly to host kerenl.
+	  The mechanism KVM in-kernel handling is dropped.
+	* Error injection is reimplemented based syscall, instead of KVM in-kerenl
+	  handling. The logic for error injection token management is moved to
+	  QEMU. The error injection request is routed to QEMU and then possiblly
+	  to host kernel.
+v2 -> v3:
+	* Make the fields in struct eeh_vfio_pci_addr, struct vfio_eeh_info based
+	  on the comments from Alexey.
+	* Define macros for EEH VFIO operations (Alexey).
+	* Clear frozen state after successful PE reset.
+	* Merge original [PATCH 1/2/3] to one.
 
-Alan, can you shed light on when it was fixed?
+Testing on P7
+=============
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+- Emulex adapter
 
---Sig_/XaWgqHPQaBXu_Gr34HarfeB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Testing on P8
+=============
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
+- Need more testing after design is finalized.
 
-iQIcBAEBCAAGBQJTcuRRAAoJEMDTa8Ir7ZwVH/gP/A4zQTexuIE4ctK+NCuZdj4G
-Ykn97oFP7VVUftexM+YbvQr23hAOkwLT5wkHAVKqifvcT7KBoxIlBZleCDkYx6vp
-vdPcp/lHlCHg34sZwOKsel+4CSqs0BrTosvRCdMNhSh/lo9roudLhXyTKmhJEloS
-Ey5AD+VrckiR2YXxxpqBZtOkq4dQM2f+2xnKZXGsDyj6F/WewhSdEn51VrVieoOA
-4x1OBRU0+pW42YUejt0NfNHxIIU4+W1eajBp+3ScJ5m7FQcgw7zpNqg+1aBnY/PW
-iWnzmvW8jFcgVQs9aBuqJJ/rDUffwo5OYOkDZx/w8/xAw6YqswOaNbDrCINnXG+X
-ww/3Vy7WK7yo1Jg5hvct68QGeotkygQgah1Rsi33RiujPOVFfXrO1zoVnGeypxOV
-NXX8EGaWKJQaSx6PLR5YR3YSN4BPZqssOeU008/WgkesQHfofNNYtV4cArZ8GHTL
-cbpd2glsLc84vwWyMj89oiLSlm+bR4ezScFjzt/yq/BfULOsJsl96OeVnr5BnivM
-YM7T4hF3FiWvYNiD6vgCROYeU6uqiSnb35+Lm/8HxdYIi9yAa7EZfbsYqNpJf3Z/
-zCfYmpLL/74miOaQJo7KUlWKNh3WB/XKHledGoGsncXMRJPiFttujiSfCOgzvZRx
-efgFsfb9WN8wdQhEJj6W
-=udnz
------END PGP SIGNATURE-----
+-----
 
---Sig_/XaWgqHPQaBXu_Gr34HarfeB--
+Gavin Shan (8):
+  drivers/vfio: Introduce CONFIG_VFIO_EEH
+  powerpc/eeh: Info to trace passed devices
+  drivers/vfio: New IOCTL command VFIO_EEH_INFO
+  powerpc/eeh: Avoid event on passed PE
+  powerpc/powernv: Sync OPAL header file with firmware
+  powerpc: Extend syscall ppc_rtas()
+  powerpc/powernv: Implement ppc_call_opal()
+  powerpc/powernv: Error injection infrastructure
+
+ arch/powerpc/include/asm/eeh.h                 |  52 +++
+ arch/powerpc/include/asm/opal.h                |  74 ++-
+ arch/powerpc/include/asm/rtas.h                |  10 +-
+ arch/powerpc/include/asm/syscalls.h            |   2 +-
+ arch/powerpc/include/asm/systbl.h              |   2 +-
+ arch/powerpc/include/uapi/asm/unistd.h         |   2 +-
+ arch/powerpc/kernel/eeh.c                      |   8 +
+ arch/powerpc/kernel/eeh_pe.c                   |  80 ++++
+ arch/powerpc/kernel/rtas.c                     |  57 +--
+ arch/powerpc/kernel/syscalls.c                 |  50 +++
+ arch/powerpc/platforms/powernv/Makefile        |   3 +-
+ arch/powerpc/platforms/powernv/eeh-ioda.c      |   3 +-
+ arch/powerpc/platforms/powernv/eeh-vfio.c      | 593 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/errinject.c     | 224 ++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/opal.c          |  93 ++++
+ drivers/vfio/Kconfig                           |   6 +
+ drivers/vfio/vfio_iommu_spapr_tce.c            |  12 +
+ include/uapi/linux/vfio.h                      |  57 +++
+ kernel/sys_ni.c                                |   2 +-
+ 20 files changed, 1278 insertions(+), 53 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/eeh-vfio.c
+ create mode 100644 arch/powerpc/platforms/powernv/errinject.c
+
+Thanks,
+Gavin
