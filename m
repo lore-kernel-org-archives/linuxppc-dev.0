@@ -1,35 +1,18 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EC2D1140105
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:16 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 14 May 2014 14:12:14 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 36F593578062
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:07 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4E4BqKY47841376
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:11:52 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4E4C6gJ022884
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:07 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 7/8] powerpc/powernv: Implement ppc_call_opal()
-Date: Wed, 14 May 2014 14:12:01 +1000
-Message-Id: <1400040722-29608-8-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, agraf@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 414BF140096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:17:01 +1000 (EST)
+Message-ID: <5372FC43.6010707@roeck-us.net>
+Date: Tue, 13 May 2014 22:16:51 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
+References: <1399874254.17624.85.camel@pasglop>	<20140513002846.GA29753@roeck-us.net>	<1399972601.17624.169.camel@pasglop>	<20140513171749.GA9440@roeck-us.net>
+ <20140514133434.13b66009@canb.auug.org.au>
+In-Reply-To: <20140514133434.13b66009@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Alan Modra <amodra@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,152 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we're running PowerNV platform, ppc_firmware() will be directed
-to ppc_call_opal() where we can call to OPAL API accordingly. In
-ppc_call_opal(), the input argument are parsed out and call to
-appropriate OPAL API to handle that. Each request passed to the
-function is identified with token. As we get to the function either
-from host owned application (e.g. errinjct) or VM, we always have
-the first parameter (so-called "virtual") to differentiate the
-cases.
+On 05/13/2014 08:34 PM, Stephen Rothwell wrote:
+> Hi Guenter,
+>
+> On Tue, 13 May 2014 10:17:49 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+>>
+>> On Tue, May 13, 2014 at 07:16:41PM +1000, Benjamin Herrenschmidt wrote:
+>>> On Mon, 2014-05-12 at 17:28 -0700, Guenter Roeck wrote:
+>>>
+>>>> After applying this patch, I get
+>>>>
+>>>> arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range
+>>>> (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+>>>> arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range
+>>>> (0x000000000000814c is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+>>>>
+>>>> with powerpc:defconfig, powerpc:allmodconfig, powerpc:cell_defconfig, and
+>>>> powerpc:maple_defconfig.
+>>>>
+>>>> This is on top of v3.15-rc5. Any idea what is going on ?
+>>>>
+>>>> Compiler is powerpc64-poky-linux-gcc (GCC) 4.7.2 (from poky 1.4.0-1).
+>>>
+>>> Interesting... works with all my test configs using 4.7.3...
+>>>
+>>> I don't have my tree at hand right now, I'll check what that means
+>>> tomorrow see if I can find a workaround.
+>>>
+>> It works for me with gcc 4.8.2 (build from yocto 1.6.0).
+>>
+>> Is asking people to use gcc 4.7.3 or later acceptable ?
+>
+> OK, this appears to be an assembler bug.
+>
+> $ cat test.s
+> 	.text
+> x:
+> 	.pushsection	b, "a"
+> 	beq y
+> 	.popsection
+> 	.=0x80000
+> y:
+> $ /opt/cross/gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-as --version
+> GNU assembler (GNU Binutils) 2.22
+> This assembler was configured for a target of `powerpc64-linux'.
+> $ /opt/cross/gcc-4.6.3-nolibc/powerpc64-linux/bin/powerpc64-linux-as -o test.o test.s
+> test.s: Assembler messages:
+> test.s:4: Error: operand out of range (0x0000000000080000 is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+> $ /opt/cross/gcc-4.8.1-nolibc/powerpc64-linux/bin/powerpc64-linux-as --version
+> GNU assembler (GNU Binutils) 2.23.52.20130512
+> This assembler was configured for a target of `powerpc64-linux'.
+> $ /opt/cross/gcc-4.8.1-nolibc/powerpc64-linux/bin/powerpc64-linux-as -o test.o test.s
+> (no error)
+>
+> Alan, can you shed light on when it was fixed?
+>
 
-The patch implements above logic and OPAL call handler dynamica
-registeration mechanism so that the handlers could be distributed.
+Hi Stephen,
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal.h       |  3 +-
- arch/powerpc/platforms/powernv/opal.c | 90 ++++++++++++++++++++++++++++++++++-
- 2 files changed, 90 insertions(+), 3 deletions(-)
+any idea what might cause this one, by any chance ?
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index ca55d9c..7c4ffd0 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -997,7 +997,8 @@ extern void opal_lpc_init(void);
- struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
- 					     unsigned long vmalloc_size);
- void opal_free_sg_list(struct opal_sg_list *sg);
--
-+int opal_call_handler_register(bool virt, int token,
-+			       int (*fn)(struct rtas_args *));
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __OPAL_H */
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index ad33c2b..c84823c 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -38,6 +38,13 @@ struct opal {
- 	u64 size;
- } opal;
- 
-+struct opal_call_handler {
-+	bool virt;
-+	int token;
-+	int (*fn)(struct rtas_args *args);
-+	struct list_head list;
-+};
-+
- struct mcheck_recoverable_range {
- 	u64 start_addr;
- 	u64 end_addr;
-@@ -47,6 +54,10 @@ struct mcheck_recoverable_range {
- static struct mcheck_recoverable_range *mc_recoverable_range;
- static int mc_recoverable_range_len;
- 
-+/* OPAL call handler */
-+static LIST_HEAD(opal_call_handler_list);
-+static DEFINE_SPINLOCK(opal_call_lock);
-+
- struct device_node *opal_node;
- static DEFINE_SPINLOCK(opal_write_lock);
- extern u64 opal_mc_secondary_handler[];
-@@ -703,8 +714,83 @@ void opal_free_sg_list(struct opal_sg_list *sg)
- 	}
- }
- 
--/* Extend it later */
--int ppc_call_opal(struct rtas_args *args)
-+int opal_call_handler_register(bool virt, int token,
-+			       int (*fn)(struct rtas_args *))
- {
-+	struct opal_call_handler *h, *handler;
-+
-+	if (!token || !fn) {
-+		pr_warn("%s: Invalid parameters\n",
-+			__func__);
-+		return -EINVAL;
-+	}
-+
-+	handler = kzalloc(sizeof(*handler), GFP_KERNEL);
-+	if (!handler) {
-+		pr_warn("%s: Out of memory\n",
-+			__func__);
-+		return -ENOMEM;
-+	}
-+	handler->token = token;
-+	handler->virt = virt;
-+	handler->fn = fn;
-+	INIT_LIST_HEAD(&handler->list);
-+
-+	spin_lock(&opal_call_lock);
-+	list_for_each_entry(h, &opal_call_handler_list, list) {
-+		if (h->token == token &&
-+		    h->virt  == virt) {
-+			spin_unlock(&opal_call_lock);
-+			pr_warn("%s: Handler existing (%s, %x)\n",
-+				__func__, virt ? "T" : "F", token);
-+			kfree(handler);
-+			return -EEXIST;
-+		}
-+	}
-+
-+	list_add_tail(&handler->list, &opal_call_handler_list);
-+	spin_unlock(&opal_call_lock);
-+
- 	return 0;
- }
-+
-+/*
-+ * It's usually invoked from syscall ppc_firmware() by host
-+ * owned application or VM. The information carried in the
-+ * input arguments is different. So we always have the first
-+ * argument to differentiate it.
-+ *
-+ * Also, we have to extend 32-bits address to 64-bits. So
-+ * for each address sensitive field, it will require 8
-+ * bytes.
-+ */
-+int ppc_call_opal(struct rtas_args *args)
-+{
-+	bool virt, found;
-+	int token;
-+	struct opal_call_handler *h;
-+
-+	/* We should have "virt" at least */
-+	if (args->nargs < 1)
-+		return -EINVAL;
-+	virt = !!args->args[0];
-+	token = args->token;
-+
-+	/* Do we have handler ? */
-+	found = false;
-+	spin_lock(&opal_call_lock);
-+	list_for_each_entry(h, &opal_call_handler_list, list) {
-+		if (h->token == token &&
-+		    h->virt == virt) {
-+			found = true;
-+			break;
-+		}
-+	}
-+	spin_unlock(&opal_call_lock);
-+
-+	/* Call to handler */
-+	if (!found)
-+		return -ERANGE;
-+
-+	return h->fn(args);
-+}
--- 
-1.8.3.2
+arch/powerpc/kernel/built-in.o: In function `exc_debug_crit_book3e':
+(.text+0x165ee): relocation truncated to fit: R_PPC64_ADDR16_HI against symbol `interrupt_base_book3e' defined in .text section in arch/powerpc/kernel/built-in.o
+arch/powerpc/kernel/built-in.o: In function `exc_debug_crit_book3e':
+(.text+0x16602): relocation truncated to fit: R_PPC64_ADDR16_HI against symbol `interrupt_end_book3e' defined in .text section in arch/powerpc/kernel/built-in.o
+arch/powerpc/kernel/built-in.o: In function `exc_debug_debug_book3e':
+
+I see this if I try to build powerpc:ppc64e_defconfig or powerpc:chroma_defconfig
+with gcc 4.8.2 and binutils 2.24.
+
+Thanks,
+Guenter
