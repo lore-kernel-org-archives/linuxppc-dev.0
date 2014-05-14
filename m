@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id EE2CD140100
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:11 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5A16C140100
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:12 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Wed, 14 May 2014 14:12:10 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3AE9A2CE805D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:08 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4B02B2BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:06 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4E3onGs66715810
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 13:50:50 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4E4C7qt013967
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:07 +1000
+ s4E3olR755705600
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 13:50:48 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4E4C5rO004838
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 14:12:05 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 8/8] powerpc/powernv: Error injection infrastructure
-Date: Wed, 14 May 2014 14:12:02 +1000
-Message-Id: <1400040722-29608-9-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 3/8] drivers/vfio: New IOCTL command VFIO_EEH_INFO
+Date: Wed, 14 May 2014 14:11:57 +1000
+Message-Id: <1400040722-29608-4-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, agraf@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>,
@@ -39,279 +39,733 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch intends to implement the error injection infrastructure
-for PowerNV platform. The predetermined handlers will be called
-according to the type of injected error (e.g. OpalErrinjctTypeIoaBusError).
-For now, we just support PCI error injection. We need support
-injecting other types of errors in future.
+The patch adds new IOCTL command VFIO_EEH_INFO to VFIO container
+to support EEH functionality for PCI devices, which have been
+passed from host to guest via VFIO.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h            |   6 +
- arch/powerpc/platforms/powernv/Makefile    |   2 +-
- arch/powerpc/platforms/powernv/errinject.c | 224 +++++++++++++++++++++++++++++
- 3 files changed, 231 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/platforms/powernv/errinject.c
+ arch/powerpc/platforms/powernv/Makefile   |   1 +
+ arch/powerpc/platforms/powernv/eeh-vfio.c | 593 ++++++++++++++++++++++++++++++
+ drivers/vfio/vfio_iommu_spapr_tce.c       |  12 +
+ include/uapi/linux/vfio.h                 |  57 +++
+ 4 files changed, 663 insertions(+)
+ create mode 100644 arch/powerpc/platforms/powernv/eeh-vfio.c
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 7c4ffd0..7bf86ba 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -794,6 +794,12 @@ typedef struct oppanel_line {
- 	uint64_t 	line_len;
- } oppanel_line_t;
- 
-+enum OpalCallToken{
-+	OPAL_CALL_TOKEN_MIN = 0,
-+	OPAL_CALL_TOKEN_ERRINJCT,
-+	OPAL_CALL_TOKEN_MAX
-+};
-+
- /* /sys/firmware/opal */
- extern struct kobject *opal_kobj;
- 
 diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 2b15a03..5ae8257 100644
+index 63cebb9..2b15a03 100644
 --- a/arch/powerpc/platforms/powernv/Makefile
 +++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -1,7 +1,7 @@
- obj-y			+= setup.o opal-takeover.o opal-wrappers.o opal.o opal-async.o
- obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
- obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
--obj-y			+= opal-msglog.o
-+obj-y			+= opal-msglog.o errinject.o
- 
+@@ -6,5 +6,6 @@ obj-y			+= opal-msglog.o
  obj-$(CONFIG_SMP)	+= smp.o
  obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
-diff --git a/arch/powerpc/platforms/powernv/errinject.c b/arch/powerpc/platforms/powernv/errinject.c
+ obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
++obj-$(CONFIG_VFIO_EEH)	+= eeh-vfio.o
+ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+diff --git a/arch/powerpc/platforms/powernv/eeh-vfio.c b/arch/powerpc/platforms/powernv/eeh-vfio.c
 new file mode 100644
-index 0000000..aa892d4
+index 0000000..69d5f2d
 --- /dev/null
-+++ b/arch/powerpc/platforms/powernv/errinject.c
-@@ -0,0 +1,224 @@
++++ b/arch/powerpc/platforms/powernv/eeh-vfio.c
+@@ -0,0 +1,593 @@
 +/*
-+ * The file intends to support error injection requests from host OS
-+ * owned utility (e.g. errinjct) or VM. We need parse the information
-+ * passed from user space and call to appropriate OPAL API accordingly.
-+ *
-+ * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2014.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
++  * The file intends to support EEH funtionality for those PCI devices,
++  * which have been passed through from host to guest via VFIO. So this
++  * file is naturally part of VFIO implementation on PowerNV platform.
++  *
++  * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2014.
++  *
++  * This program is free software; you can redistribute it and/or modify
++  * it under the terms of the GNU General Public License as published by
++  * the Free Software Foundation; either version 2 of the License, or
++  * (at your option) any later version.
++  */
 +
++#include <linux/init.h>
 +#include <linux/io.h>
 +#include <linux/irq.h>
 +#include <linux/kernel.h>
++#include <linux/kvm_host.h>
 +#include <linux/msi.h>
-+#include <linux/module.h>
 +#include <linux/pci.h>
++#include <linux/string.h>
++#include <linux/vfio.h>
 +
 +#include <asm/eeh.h>
 +#include <asm/eeh_event.h>
 +#include <asm/io.h>
 +#include <asm/iommu.h>
-+#include <asm/msi_bitmap.h>
 +#include <asm/opal.h>
++#include <asm/msi_bitmap.h>
 +#include <asm/pci-bridge.h>
 +#include <asm/ppc-pci.h>
-+#include <asm/rtas.h>
 +#include <asm/tce.h>
 +#include <asm/uaccess.h>
 +
 +#include "powernv.h"
 +#include "pci.h"
 +
-+static int powernv_errinjct_ioa(struct rtas_args *args)
++static int powernv_eeh_vfio_map(struct vfio_eeh_info *info)
 +{
-+	return -ENXIO;
-+}
-+
-+static int powernv_errinjct_ioa64(struct rtas_args *args)
-+{
-+	return -ENXIO;
-+}
-+
-+#ifdef CONFIG_VFIO_EEH
-+static int powernv_errinjct_ioa_virt(struct rtas_args *args)
-+{
-+	uint32_t addr, mask, cfg_addr;
-+	uint32_t buid_hi, buid_lo, op;
-+	uint64_t buf_addr = ((uint64_t)(args->args[3])) << 32 |
-+			    args->args[4];
-+	void __user *buf = (void __user *)buf_addr;
-+	struct eeh_vfio_pci_addr vfio_addr;
-+	struct pnv_phb *phb;
++	struct pci_bus *bus, *pe_bus;
++	struct pci_dev *pdev;
++	struct eeh_dev *edev;
 +	struct eeh_pe *pe;
-+	struct OpalErrinjct ej;
++	int domain, bus_no, devfn;
 +
-+	/* Extract parameters */
-+	if (get_user(addr, (uint32_t __user *)buf) ||
-+	    get_user(mask, (uint32_t __user *)(buf + 4)) ||
-+	    get_user(cfg_addr, (uint32_t __user *)(buf + 8)) ||
-+	    get_user(buid_hi, (uint32_t __user *)(buf + 12)) ||
-+	    get_user(buid_lo, (uint32_t __user *)(buf + 16)) ||
-+	    get_user(op, (uint32_t __user *)(buf + 20)))
-+		return -EFAULT;
++	/* Host address */
++	domain = info->map.host_domain;
++	bus_no = (info->map.host_cfg_addr >> 8) & 0xff;
++	devfn = info->map.host_cfg_addr & 0xff;
 +
-+	/* Check opcode */
-+	if (op < OpalEjtIoaLoadMemAddr ||
-+	    op > OpalEjtIoaDmaWriteMemTarget)
-+		return -EINVAL;
-+
-+	/* Find PE */
-+	vfio_addr.buid = ((((uint64_t)buid_hi) << 32) | buid_lo);
-+	vfio_addr.pe_addr = cfg_addr;
-+	pe = eeh_vfio_pe_get(&vfio_addr);
-+	if (!pe)
++	/* Find PCI bus */
++	bus = pci_find_bus(domain, bus_no);
++	if (!bus) {
++		pr_warn("%s: PCI bus %04x:%02x not found\n",
++			__func__, domain, bus_no);
 +		return -ENODEV;
-+	phb = pe->phb->private_data;
++	}
 +
-+	/* OPAL call */
-+	ej.type = OpalErrinjctTypeIoaBusError;
-+	ej.ioa.addr = addr;
-+	ej.ioa.mask = mask;
-+	ej.ioa.phb_id = phb->opal_id;
-+	ej.ioa.pe = pe->addr;
-+	ej.ioa.function = op;
-+	if (opal_err_injct(&ej) != OPAL_SUCCESS)
-+		return -EIO;
++	/* Find PCI device */
++	pdev = pci_get_slot(bus, devfn);
++	if (!pdev) {
++		pr_warn("%s: PCI device %04x:%02x:%02x.%01x not found\n",
++			__func__, domain, bus_no,
++			PCI_SLOT(devfn), PCI_FUNC(devfn));
++		return -ENODEV;
++	}
++
++	/* No EEH device - almost impossible */
++	edev = pci_dev_to_eeh_dev(pdev);
++	if (unlikely(!edev)) {
++		pci_dev_put(pdev);
++		pr_warn("%s: No EEH dev for PCI device %s\n",
++			__func__, pci_name(pdev));
++		return -ENODEV;
++	}
++
++	/* Doesn't support PE migration between different PHBs */
++	pe = edev->pe;
++	if (!eeh_pe_passed(pe)) {
++		pe_bus = eeh_pe_bus_get(pe);
++		BUG_ON(!pe_bus);
++
++		/* PE# has format 00BBSS00 */
++		pe->guest_addr.buid    = info->map.guest_buid;
++		pe->guest_addr.pe_addr = pe_bus->number << 16;
++		eeh_pe_set_passed(pe, true);
++	} else if (pe->guest_addr.buid != info->map.guest_buid) {
++		pci_dev_put(pdev);
++		pr_warn("%s: Mismatched PHB BUID (0x%llx, 0x%llx)\n",
++			__func__, pe->guest_addr.buid, info->map.guest_buid);
++		return -EINVAL;
++	}
++
++	edev->guest_addr.buid = info->map.guest_buid;
++	edev->guest_addr.config_addr = info->map.guest_cfg_addr;
++	eeh_dev_set_passed(edev, true);
++
++	pr_debug("EEH: Host PCI dev %s to %llx-%02x:%02x.%01x\n",
++		 pci_name(pdev), info->map.guest_buid,
++		 (info->map.guest_cfg_addr >> 8) & 0xFF,
++		 PCI_SLOT(info->map.guest_cfg_addr & 0xFF),
++		 PCI_FUNC(info->map.guest_cfg_addr & 0xFF));
++
++	pci_dev_put(pdev);
++	return 0;
++}
++
++static int powernv_eeh_vfio_unmap(struct vfio_eeh_info *info)
++{
++	struct eeh_vfio_pci_addr addr;
++	struct pci_dev *pdev;
++	struct eeh_dev *edev, *tmp;
++	struct eeh_pe *pe;
++	bool passed;
++
++	/* Get EEH device */
++	addr.buid = info->unmap.buid;
++	addr.config_addr = info->unmap.cfg_addr;
++	edev = eeh_vfio_dev_get(&addr);
++	if (!edev) {
++		pr_warn("%s: Cannot find %llx:%02x:%02x.%01x\n",
++			__func__, info->unmap.buid,
++			(info->unmap.cfg_addr >> 8) & 0xFF,
++			PCI_SLOT(info->unmap.cfg_addr & 0xFF),
++			PCI_FUNC(info->unmap.cfg_addr & 0xFF));
++		return -ENODEV;
++	}
++
++	/* Return EEH device */
++	memset(&edev->guest_addr, 0, sizeof(edev->guest_addr));
++	eeh_dev_set_passed(edev, false);
++	pdev = eeh_dev_to_pci_dev(edev);
++	pr_debug("EEH: Host PCI dev %s returned\n",
++		 pdev ? pci_name(pdev) : "NULL");
++
++	/* Return PE if no EEH device is owned by guest */
++	pe = edev->pe;
++	passed = false;
++	eeh_pe_for_each_dev(pe, edev, tmp) {
++		pdev = eeh_dev_to_pci_dev(edev);
++		if (pdev && pdev->subordinate)
++			continue;
++
++		if (eeh_dev_passed(edev)) {
++			passed = true;
++			break;
++		}
++	}
++
++	if (!passed) {
++		memset(&pe->guest_addr, 0, sizeof(pe->guest_addr));
++		eeh_pe_set_passed(pe, false);
++		pr_debug("EEH: PHB#%x-PE#%x returned to host\n",
++			 pe->phb->global_number, pe->addr);
++	}
 +
 +	return 0;
 +}
 +
-+static int powernv_errinjct_ioa64_virt(struct rtas_args *args)
++static int powernv_eeh_vfio_set_option(struct vfio_eeh_info *info)
 +{
-+	uint32_t addr_hi, addr_lo, mask_hi, mask_lo;
-+	uint32_t cfg_addr, buid_hi, buid_lo, op;
-+	uint64_t buf_addr = ((uint64_t)(args->args[3])) << 32 |
-+			    args->args[4];
-+	void __user *buf = (void __user *)buf_addr;
-+	struct eeh_vfio_pci_addr vfio_addr;
 +	struct pnv_phb *phb;
++	struct eeh_dev *edev;
 +	struct eeh_pe *pe;
-+	struct OpalErrinjct ej;
-+
-+	/* Extract parameters */
-+	if (get_user(addr_hi, (uint32_t __user *)buf) ||
-+	    get_user(addr_lo, (uint32_t __user *)(buf + 4)) ||
-+	    get_user(mask_hi, (uint32_t __user *)(buf + 8)) ||
-+	    get_user(mask_lo, (uint32_t __user *)(buf + 12)) ||
-+	    get_user(cfg_addr, (uint32_t __user *)(buf + 16)) ||
-+	    get_user(buid_hi, (uint32_t __user *)(buf + 20)) ||
-+	    get_user(buid_lo, (uint32_t __user *)(buf + 24)) ||
-+	    get_user(op, (uint32_t __user *)(buf + 28)))
-+		return -EFAULT;
++	struct eeh_vfio_pci_addr addr;
++	int opcode = info->option.option;
++	int ret = 0;
 +
 +	/* Check opcode */
-+	if (op < OpalEjtIoaLoadMemAddr ||
-+	    op > OpalEjtIoaDmaWriteMemTarget)
-+		return -EINVAL;
++	if (opcode < EEH_OPT_DISABLE || opcode > EEH_OPT_THAW_DMA) {
++		pr_warn("%s: opcode %d out of range (%d, %d)\n",
++			__func__, opcode, EEH_OPT_DISABLE, EEH_OPT_THAW_DMA);
++		ret = 3;
++		goto out;
++	}
 +
-+	/* Find PE */
-+	vfio_addr.buid = ((((uint64_t)buid_hi) << 32) | buid_lo);
-+	vfio_addr.pe_addr = (cfg_addr >> 8) & 0xffff;
-+	pe = eeh_vfio_pe_get(&vfio_addr);
-+	if (!pe)
-+		return -ENODEV;
++	/* Option "enable" uses PCI config address */
++	if (opcode == EEH_OPT_ENABLE) {
++		addr.buid = info->option.buid;
++		addr.config_addr = (info->option.addr >> 8) & 0xFFFF;
++		edev = eeh_vfio_dev_get(&addr);
++		if (!edev) {
++			pr_warn("%s: Cannot find %llx:%02x:%02x.%01x\n",
++				__func__, addr.buid,
++				(addr.config_addr >> 8) & 0xFF,
++				PCI_SLOT(addr.config_addr & 0xFF),
++				PCI_FUNC(addr.config_addr & 0xFF));
++			ret = 7;
++			goto out;
++		}
++		phb = edev->phb->private_data;
++	} else {
++		addr.buid    = info->option.buid;
++		addr.pe_addr = info->option.addr;
++		pe = eeh_vfio_pe_get(&addr);
++		if (!pe) {
++			pr_warn("%s: Cannot find PE %llx:%x\n",
++				__func__, addr.buid, addr.pe_addr);
++			ret = 7;
++			goto out;
++		}
++		phb = pe->phb->private_data;
++	}
++
++	/* Insure that the EEH stuff has been initialized */
++	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
++		pr_warn("%s: EEH disabled on PHB#%d\n",
++			__func__, phb->hose->global_number);
++		ret = 7;
++		goto out;
++	}
++
++	/*
++	 * The EEH functionality has been enabled on all PEs
++	 * by default. So just return success. The same situation
++	 * would be applied while we disable EEH functionality.
++	 * However, the guest isn't expected to disable that
++	 * at all.
++	 */
++	if (opcode == EEH_OPT_DISABLE ||
++	    opcode == EEH_OPT_ENABLE) {
++		ret = 0;
++		goto out;
++	}
++
++	/*
++	 * Call into the IODA dependent backend in order
++	 * to enable DMA or MMIO for the indicated PE.
++	 */
++	if (phb->eeh_ops && phb->eeh_ops->set_option) {
++		if (phb->eeh_ops->set_option(pe, opcode)) {
++			pr_warn("%s: Failure from backend\n",
++				__func__);
++			ret = 1;
++		}
++	} else {
++		pr_warn("%s: Unsupported request\n",
++			__func__);
++		ret = 7;
++	}
++
++out:
++	return ret;
++}
++
++static int powernv_eeh_vfio_get_addr(struct vfio_eeh_info *info)
++{
++	struct pnv_phb *phb;
++	struct eeh_dev *edev;
++	struct eeh_vfio_pci_addr addr;
++	int opcode = info->addr.option;
++	int ret = 0;
++
++	/* Check opcode */
++	if (opcode != 0 && opcode != 1) {
++		pr_warn("%s: opcode %d out of range (0, 1)\n",
++			__func__, opcode);
++		ret = 3;
++		goto out;
++	}
++
++	/* Find EEH device */
++	addr.buid = info->addr.buid;
++	addr.config_addr = (info->addr.cfg_addr >> 8 ) & 0xFFFF;
++	edev = eeh_vfio_dev_get(&addr);
++	if (!edev) {
++		pr_warn("%s: Cannot find %llx:%02x:%02x.%01x\n",
++			__func__, addr.buid,
++			(addr.config_addr >> 8) & 0xFF,
++			PCI_SLOT(addr.config_addr & 0xFF),
++			PCI_FUNC(addr.config_addr & 0xFF));
++		ret = 7;
++		goto out;
++	}
++	phb = edev->phb->private_data;
++
++	/* EEH enabled ? */
++	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
++		pr_warn("%s: EEH disabled on PHB#%d\n",
++			__func__, phb->hose->global_number);
++		ret = 3;
++		goto out;
++	}
++
++	/* EEH device passed ? */
++	if (!eeh_dev_passed(edev)) {
++		pr_warn("%s: EEH dev %llx:%02x:%02x.%01x owned by host\n",
++			__func__, addr.buid,
++			(addr.config_addr >> 8) & 0xFF,
++			PCI_SLOT(addr.config_addr & 0xFF),
++			PCI_FUNC(addr.config_addr & 0xFF));
++		ret = 3;
++		goto out;
++	}
++
++	/*
++	 * Fill result according to opcode. We don't differentiate
++	 * PCI bus and device sensitive PE here.
++	 */
++	if (opcode == 0)
++		info->addr.ret = edev->pe->guest_addr.pe_addr;
++	else
++		info->addr.ret = 1;
++out:
++	return ret;
++}
++
++static int powernv_eeh_vfio_get_state(struct vfio_eeh_info *info)
++{
++	struct pnv_phb *phb;
++	struct eeh_pe *pe;
++	struct eeh_vfio_pci_addr addr;
++	int result, ret = 0;
++
++	/* Locate the PE */
++	addr.buid    = info->state.buid;
++	addr.pe_addr = info->state.pe_addr;
++	pe = eeh_vfio_pe_get(&addr);
++	if (!pe) {
++		pr_warn("%s: Cannot locate %llx:%x\n",
++			__func__, addr.buid, addr.pe_addr);
++		ret = 3;
++		goto out;
++	}
 +	phb = pe->phb->private_data;
 +
-+	/* OPAL call */
-+	ej.type = OpalErrinjctTypeIoaBusError64;
-+	ej.ioa.addr = (((uint64_t)addr_hi) << 32) | addr_lo;
-+	ej.ioa.mask = (((uint64_t)mask_hi) << 32) | mask_lo;
-+	ej.ioa.phb_id = phb->opal_id;
-+	ej.ioa.pe = pe->addr;
-+	ej.ioa.function = op;
-+	if (opal_err_injct(&ej) != OPAL_SUCCESS)
-+		return -EIO;
++	/* EEH enabled ? */
++	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
++		pr_warn("%s: EEH disabled on PHB#%d\n",
++			__func__, phb->hose->global_number);
++		ret = 3;
++		goto out;
++	}
 +
-+	return 0;
++	/* Call to the IOC dependent function */
++	if (phb->eeh_ops && phb->eeh_ops->get_state) {
++		result = phb->eeh_ops->get_state(pe);
++
++		if (!(result & EEH_STATE_RESET_ACTIVE) &&
++		     (result & EEH_STATE_DMA_ENABLED) &&
++		     (result & EEH_STATE_MMIO_ENABLED))
++			info->state.state = 0;
++		else if (result & EEH_STATE_RESET_ACTIVE)
++			info->state.state = 1;
++		else if (!(result & EEH_STATE_RESET_ACTIVE) &&
++			 !(result & EEH_STATE_DMA_ENABLED) &&
++			 !(result & EEH_STATE_MMIO_ENABLED))
++			info->state.state = 2;
++		else if (!(result & EEH_STATE_RESET_ACTIVE) &&
++			 (result & EEH_STATE_DMA_ENABLED) &&
++			 !(result & EEH_STATE_MMIO_ENABLED))
++			info->state.state = 4;
++		else
++			info->state.state = 5;
++
++		ret = 0;
++	} else {
++		pr_warn("%s: Unsupported request\n", __func__);
++		ret = 3;
++	}
++
++out:
++	return ret;
 +}
-+#endif /* CONFIG_VFIO_EEH */
 +
-+struct errinjct_handler {
-+	bool virt;
-+	int token;
-+	int (*fn)(struct rtas_args *arg);
-+};
-+
-+static struct errinjct_handler handlers[] = {
-+#ifdef CONFIG_EEH
-+	{ false,
-+	  OpalErrinjctTypeIoaBusError,
-+	  powernv_errinjct_ioa
-+	},
-+	{ false,
-+	  OpalErrinjctTypeIoaBusError64,
-+          powernv_errinjct_ioa64
-+	},
-+#endif
-+#ifdef CONFIG_VFIO_EEH
-+	{ true,
-+	  OpalErrinjctTypeIoaBusError,
-+	  powernv_errinjct_ioa_virt
-+	},
-+	{ true,
-+	  OpalErrinjctTypeIoaBusError64,
-+	  powernv_errinjct_ioa64_virt
-+	},
-+#endif
-+};
-+
-+static int powernv_errinjct(struct rtas_args *args)
++static int powernv_eeh_vfio_pe_reset(struct vfio_eeh_info *info)
 +{
-+	struct errinjct_handler *h;
-+	int token, ej_token, i;
-+	bool virt;
++	struct pnv_phb *phb;
++	struct eeh_pe *pe;
++	struct eeh_vfio_pci_addr addr;
++	int opcode = info->reset.option;
++	int ret = 0;
++
++	/* Check opcode */
++	if (opcode != EEH_RESET_DEACTIVATE &&
++	    opcode != EEH_RESET_HOT &&
++	    opcode != EEH_RESET_FUNDAMENTAL) {
++		pr_warn("%s: Unsupported opcode %d\n",
++			__func__, opcode);
++		ret = 3;
++		goto out;
++	}
++
++	/* Locate the PE */
++	addr.buid    = info->reset.buid;
++	addr.pe_addr = info->reset.pe_addr;
++	pe = eeh_vfio_pe_get(&addr);
++	if (!pe) {
++		pr_warn("%s: Cannot locate %llx:%x\n",
++			__func__, addr.buid, addr.pe_addr);
++		ret = 3;
++		goto out;
++	}
++	phb = pe->phb->private_data;
++
++	/* EEH enabled ? */
++	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
++		pr_warn("%s: EEH disabled on PHB#%d\n",
++			__func__, phb->hose->global_number);
++		ret = 3;
++		goto out;
++	}
++
++	/* Call into the IODA dependent backend to do the reset */
++	if (!phb->eeh_ops ||
++	    !phb->eeh_ops->set_option ||
++	    !phb->eeh_ops->reset) {
++		pr_warn("%s: Unsupported request\n",
++			__func__);
++		ret = 7;
++	} else {
++		/*
++		 * The frozen PE might be caused by the mechanism called
++		 * PAPR error injection, which is supposed to be one-shot
++		 * without "sticky" bit as being stated by the spec. But
++		 * the reality isn't that, at least on P7IOC. So we have
++		 * to clear that to avoid recrusive error, which fails the
++		 * recovery eventually.
++		 */
++		if (opcode == EEH_RESET_DEACTIVATE)
++			opal_pci_reset(phb->opal_id,
++				       OPAL_PHB_ERROR,
++				       OPAL_ASSERT_RESET);
++
++		if (phb->eeh_ops->reset(pe, opcode)) {
++			pr_warn("%s: Failure from backend\n", __func__);
++			ret = 1;
++			goto out;
++		}
++
++		/*
++		 * The PE is still in frozen state and we need clear that.
++		 * It's good to clear frozen state after deassert to avoid
++		 * messy IO access during reset, which might cause recrusive
++		 * frozen PE.
++		 */
++		if (opcode == EEH_RESET_DEACTIVATE) {
++			if (phb->eeh_ops->set_option(pe, EEH_OPT_THAW_MMIO) ||
++			    phb->eeh_ops->set_option(pe, EEH_OPT_THAW_DMA)) {
++				pr_warn("%s: Cannot clear frozen state\n",
++					__func__);
++				ret = 1;
++			}
++
++			eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
++		}
++	}
++
++out:
++	return ret;
++}
++
++static int powernv_eeh_vfio_pe_config(struct vfio_eeh_info *info)
++{
++	struct pnv_phb *phb;
++	struct eeh_pe *pe;
++	struct eeh_vfio_pci_addr addr;
++	int ret = 0;
++
++	/* Locate the PE */
++	addr.buid    = info->config.buid;
++	addr.pe_addr = info->config.pe_addr;
++	pe = eeh_vfio_pe_get(&addr);
++	if (!pe) {
++		pr_warn("%s: Cannot locate %llx:%x\n",
++			__func__, addr.buid, addr.pe_addr);
++		ret = 3;
++		goto out;
++	}
++	phb = pe->phb->private_data;
++
++	/* EEH enabled ? */
++	if (!(phb->flags & PNV_PHB_FLAG_EEH)) {
++		pr_warn("%s: EEH disabled on PHB#%d\n",
++			__func__, phb->hose->global_number);
++		ret = 3;
++		goto out;
++        }
++
++	/*
++	 * The access to PCI config space on VFIO device has some
++	 * limitations. Part of PCI config space, including BAR
++	 * registers are not readable and writable. So the guest
++	 * should have stale values for those registers and we have
++	 * to restore them in host side.
++	 */
++	eeh_pe_restore_bars(pe);
++out:
++	return ret;
++}
++
++void eeh_vfio_release(struct iommu_table *tbl)
++{
++	struct pnv_ioda_pe *pnv_pe = container_of(tbl, struct pnv_ioda_pe,
++						  tce32_table);
++	struct pnv_phb *phb = pnv_pe->phb;
++	struct eeh_pe *phb_pe, *pe;
++	struct eeh_dev dev, *edev, *tmp;
++
++	/* Find PHB PE */
++	phb_pe = eeh_phb_pe_get(phb->hose);
++	if (unlikely(!phb_pe)) {
++		pr_warn("%s: Cannot find PHB#%d PE\n",
++			__func__, phb->hose->global_number);
++		return;
++	}
++
++	/* Find PE */
++	memset(&dev, 0, sizeof(struct eeh_dev));
++	dev.phb = phb->hose;
++	dev.pe_config_addr = pnv_pe->pe_number;
++	pe = eeh_pe_get(&dev);
++	if (unlikely(!pe)) {
++		pr_warn("%s: Cannot find PE instance for PHB#%d-PE#%d\n",
++			__func__, phb->hose->global_number,
++			pnv_pe->pe_number);
++		return;
++	}
++
++	/* Release it to host */
++	if (!eeh_pe_passed(pe))
++		return;
++
++	eeh_pe_for_each_dev(pe, edev, tmp) {
++		if (!eeh_dev_passed(edev))
++			continue;
++
++		memset(&edev->guest_addr, 0, sizeof(edev->guest_addr));
++		eeh_dev_set_passed(edev, false);
++	}
++
++	memset(&pe->guest_addr, 0, sizeof(pe->guest_addr));
++	eeh_pe_set_passed(pe, false);
++}
++EXPORT_SYMBOL(eeh_vfio_release);
++
++int eeh_vfio_ioctl(unsigned long arg)
++{
++	struct vfio_eeh_info info;
++	int ret = -EINVAL;
++
++	/* Copy over user argument */
++	if (copy_from_user(&info, (void __user *)arg, sizeof(info))) {
++		pr_warn("%s: Cannot copy user argument 0x%lx\n",
++			__func__, arg);
++		return -EFAULT;
++	}
 +
 +	/* Sanity check */
-+	if (args->nargs != 5 || args->nret != 1)
++	if (info.argsz != sizeof(info)) {
++		pr_warn("%s: Invalid argument size (%d, %ld)\n",
++			__func__, info.argsz, sizeof(info));
 +		return -EINVAL;
-+
-+	token = args->token;
-+	virt = !!args->args[0];
-+	if (!virt || token != OPAL_CALL_TOKEN_ERRINJCT)
-+		return -EINVAL;
-+
-+	/* Call into specific handler */
-+	ej_token = args->args[1];
-+	for (i = 0; i < ARRAY_SIZE(handlers); i++) {
-+		h = &handlers[i];
-+		if (h->virt == virt &&
-+		    h->token == ej_token &&
-+		    h->fn)
-+			return h->fn(args);
 +	}
 +
-+	return -ENXIO;
++	/* Route according to operation */
++	switch (info.op) {
++	case VFIO_EEH_OP_MAP:
++		ret = powernv_eeh_vfio_map(&info);
++		break;
++	case VFIO_EEH_OP_UNMAP:
++		ret = powernv_eeh_vfio_unmap(&info);
++		break;
++	case VFIO_EEH_OP_SET_OPTION:
++		ret = powernv_eeh_vfio_set_option(&info);
++		break;
++	case VFIO_EEH_OP_GET_ADDR:
++		ret = powernv_eeh_vfio_get_addr(&info);
++		break;
++	case VFIO_EEH_OP_GET_STATE:
++		ret = powernv_eeh_vfio_get_state(&info);
++		break;
++	case VFIO_EEH_OP_PE_RESET:
++		ret = powernv_eeh_vfio_pe_reset(&info);
++		break;
++	case VFIO_EEH_OP_PE_CONFIG:
++		ret = powernv_eeh_vfio_pe_config(&info);
++		break;
++	default:
++		pr_info("%s: Cannot handle op#%d\n",
++			__func__, info.op);
++	}
++
++	/* Copy data back */
++	if (!ret && copy_to_user((void __user *)arg, &info, sizeof(info))) {
++		pr_warn("%s: Cannot copy to user 0x%lx\n",
++			__func__, arg);
++		return -EFAULT;
++	}
++
++	return ret;
 +}
++EXPORT_SYMBOL_GPL(eeh_vfio_ioctl);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index a84788b..c45dece 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -26,6 +26,11 @@
+ #define DRIVER_AUTHOR   "aik@ozlabs.ru"
+ #define DRIVER_DESC     "VFIO IOMMU SPAPR TCE"
+ 
++#ifdef CONFIG_VFIO_EEH
++extern void eeh_vfio_release(struct iommu_table *tbl);
++extern int eeh_vfio_ioctl(unsigned long arg);
++#endif
 +
-+static int __init powernv_errinjct_init(void)
-+{
-+	int ret;
+ static void tce_iommu_detach_group(void *iommu_data,
+ 		struct iommu_group *iommu_group);
+ 
+@@ -283,6 +288,10 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		tce_iommu_disable(container);
+ 		mutex_unlock(&container->lock);
+ 		return 0;
++#ifdef CONFIG_VFIO_EEH
++	case VFIO_EEH_INFO:
++		return eeh_vfio_ioctl(arg);
++#endif
+ 	}
+ 
+ 	return -ENOTTY;
+@@ -342,6 +351,9 @@ static void tce_iommu_detach_group(void *iommu_data,
+ 		/* pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
+ 				iommu_group_id(iommu_group), iommu_group); */
+ 		container->tbl = NULL;
++#ifdef CONFIG_VFIO_EEH
++		eeh_vfio_release(tbl);
++#endif
+ 		iommu_release_ownership(tbl);
+ 	}
+ 	mutex_unlock(&container->lock);
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index cb9023d..1fd1bfb 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -455,6 +455,63 @@ struct vfio_iommu_spapr_tce_info {
+ 
+ #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
+ 
++/*
++ * The VFIO EEH info struct provides way to support EEH functionality
++ * for PCI device that is passed from host to guest via VFIO.
++ */
++#define VFIO_EEH_OP_MAP		0
++#define VFIO_EEH_OP_UNMAP	1
++#define VFIO_EEH_OP_SET_OPTION	2
++#define VFIO_EEH_OP_GET_ADDR	3
++#define VFIO_EEH_OP_GET_STATE	4
++#define VFIO_EEH_OP_PE_RESET	5
++#define VFIO_EEH_OP_PE_CONFIG	6
 +
-+	ret = opal_call_handler_register(false, OPAL_CALL_TOKEN_ERRINJCT,
-+					 powernv_errinjct);
-+	if (ret) {
-+		pr_warn("%s: Cannot register errinjct handler\n",
-+			__func__);
-+		return ret;
-+	}
++struct vfio_eeh_info {
++	__u32 argsz;
++	__u32 op;
 +
-+	ret = opal_call_handler_register(true, OPAL_CALL_TOKEN_ERRINJCT,
-+					 powernv_errinjct);
-+	if (ret) {
-+		pr_warn("%s: Cannot register errinjct virtual handler\n",
-+			__func__);
-+		return ret;
-+	}
++	union {
++		struct vfio_eeh_map {
++			__u32 host_domain;
++			__u16 host_cfg_addr;
++			__u64 guest_buid;
++			__u16 guest_cfg_addr;
++		} map;
++		struct vfio_eeh_unmap {
++			__u64 buid;
++			__u16 cfg_addr;
++		} unmap;
++		struct vfio_eeh_set_option {
++			__u64 buid;
++			__u32 addr;
++			__u32 option;
++		} option;
++		struct vfio_eeh_pe_addr {
++			__u64 buid;
++			__u32 cfg_addr;
++			__u32 option;
++			__u32 ret;
++		} addr;
++		struct vfio_eeh_state {
++			__u64 buid;
++			__u32 pe_addr;
++			__u32 state;
++                } state;
++		struct vfio_eeh_reset {
++			__u64 buid;
++			__u32 pe_addr;
++			__u32 option;
++		} reset;
++		struct vfio_eeh_config {
++			__u64 buid;
++			__u32 pe_addr;
++		} config;
++	};
++};
 +
-+	return 0;
-+}
++#define VFIO_EEH_INFO	_IO(VFIO_TYPE, VFIO_BASE + 21)
 +
-+module_init(powernv_errinjct_init);
+ /* ***************************************************************** */
+ 
+ #endif /* _UAPIVFIO_H */
 -- 
 1.8.3.2
