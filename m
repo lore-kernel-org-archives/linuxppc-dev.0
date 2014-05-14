@@ -1,36 +1,22 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A5078140077
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 19:52:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Wed, 14 May 2014 15:22:50 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4F4373940048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:22:46 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4E9qt2q10289532
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:22:55 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4E9qjS2001803
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:22:45 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] pci-scan: Fix setting the limit
-In-Reply-To: <1399978118-10298-1-git-send-email-aik@ozlabs.ru>
-References: <1399978118-10298-1-git-send-email-aik@ozlabs.ru>
-Date: Wed, 14 May 2014 15:22:44 +0530
-Message-ID: <87tx8soff7.fsf@abhimanyu.in.ibm.com>
+Return-Path: <palves@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 20AB5140080
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 May 2014 21:15:29 +1000 (EST)
+Message-ID: <53735044.5030008@redhat.com>
+Date: Wed, 14 May 2014 12:15:16 +0100
+From: Pedro Alves <palves@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- Thomas Huth <thuth@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Pedro Alves <palves@redhat.com>
+Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
+ memory register sets
+References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
+In-Reply-To: <53730326.6000400@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
+ linux-kernel@vger.kernel.org, michael@ellerman.id.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,69 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexey Kardashevskiy <aik@ozlabs.ru> writes:
+On 05/14/14 06:46, Anshuman Khandual wrote:
+> On 05/13/2014 10:43 PM, Pedro Alves wrote:
+>> On 05/05/14 08:54, Anshuman Khandual wrote:
+>>> This patch enables get and set of transactional memory related register
+>>> sets through PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing
+>>> four new powerpc specific register sets i.e REGSET_TM_SPR, REGSET_TM_CGPR,
+>>> REGSET_TM_CFPR, REGSET_CVMX support corresponding to these following new
+>>> ELF core note types added previously in this regard.
+>>>
+>>> 	(1) NT_PPC_TM_SPR
+>>> 	(2) NT_PPC_TM_CGPR
+>>> 	(3) NT_PPC_TM_CFPR
+>>> 	(4) NT_PPC_TM_CVMX
+>>
+>> Sorry that I couldn't tell this from the code, but, what does the
+>> kernel return when the ptracer requests these registers and the
+>> program is not in a transaction?  Specifically I'm wondering whether
+>> this follows the same semantics as the s390 port.
+>>
+> 
+> Right now, it still returns the saved state of the registers from thread
+> struct. I had assumed that the user must know the state of the transaction
+> before initiating the ptrace request. I guess its better to check for
+> the transaction status before processing the request. In case if TM is not
+> active on that thread, we should return -EINVAL.
 
-> PCI spec says that lower 20 bits are assumed 0xFFFFF. The existing code
-> seems to get it right in pci-bridge-set-mem-limit.
->
-> However pci-bridge-set-mem-base does not account 0xFFFFF and poison
-> the limit. Since the limit is not stored anywhere in SLOF and only
-> besides in the config space, it remains broken.
->
-> This fixes pci-bridge-set-mem-base.
->
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->
-> I have doubts this is the right fix as I tried to "fix"
-> pci-bridge-set-mmio-base (while I am here) and it broke the guest.
->
-> The problem I am fixing by this is that QEMU started as below is
-> unable to initialize virtio-net device because there are overlapping
-> virtio's BAR and bridge's "ranges" property. Note that virtio-net is
-> attached to the PHB, not that additional bridge.
->
-> /home/aik/qemu-system-ppc64 \
-> -enable-kvm \
-> -m 1024 \
-> -machine pseries \
-> -nographic \
-> -vga none \
-> -device pci-bridge,id=id0,bus=pci.0,addr=5.0,chassis_nr=7 \
-> -netdev tap,id=id1,ifname=tap1,script=ifup.sh,downscript=ifdown.sh \
-> -device virtio-net-pci,id=id2,netdev=id1 \
-> -initrd 1.cpio \
-> -kernel vml315rc3 \
+I think s390 returns ENODATA in that case.
 
-The problem that I saw here is the brigde device does not have a
-downstream pci device. Before probing, we are setting the ranges
-property to the max limit, and the probe is done. Once the probe is over
-we would update the ranges property. 
+ https://sourceware.org/ml/gdb-patches/2013-06/msg00273.html
 
-In this particular case, when we come to update the " ranges" property,
-we do not have any range and we skip updating it. Because of this the
-old max range property remains there, which is not correct.
+We'll want some way to tell whether the system actually
+supports this.  That could be ENODATA vs something-else (EINVAL
+or perhaps better EIO for "request is invalid").
 
-Something like the below solves this particular problem. But what would
-happen when someone tries to hotplug a pci device to this bridge, will
-the pci-hotplug code take care of updating the ranges property?
+s390 actually screwed that, though it got away because
+there's a bit in HWCAP to signal transactions support.  See:
 
+ https://sourceware.org/ml/gdb-patches/2013-11/msg00080.html
 
-diff --git a/slof/fs/pci-properties.fs b/slof/fs/pci-properties.fs
-index f88a571..f5e934d 100644
---- a/slof/fs/pci-properties.fs
-+++ b/slof/fs/pci-properties.fs
-@@ -410,6 +410,7 @@
-         dup IF                          \ IF any space present (propsize>0)
-                 s" ranges" property     \ | write it into the device tree
-         ELSE                            \ ELSE
-+               s" " s" ranges" property
-                 2drop                   \ | forget the properties
-         THEN                            \ FI
-         drop                            \ forget the address
+Are you adding something to HWCAP too?
 
-So I do not see the problem when there is a device allocated downstream
-to the pci-bridge.
+> 
+> I am not familiar with the s390 side of code. But if we look at the
+> s390_tdb_get function it checks for (regs->int_code & 0x200) before
+> processing the request. Not sure what 0x200 signifies though.
 
-Regards
-Nikunj
+-- 
+Pedro Alves
