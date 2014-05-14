@@ -1,32 +1,36 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
- by ozlabs.org (Postfix) with ESMTP id 0172F14009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 18:19:30 +1000 (EST)
-Message-ID: <53732709.1050208@hitachi.com>
-Date: Wed, 14 May 2014 17:19:21 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A5078140077
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 19:52:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Wed, 14 May 2014 15:22:50 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4F4373940048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:22:46 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4E9qt2q10289532
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:22:55 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4E9qjS2001803
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 15:22:45 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] pci-scan: Fix setting the limit
+In-Reply-To: <1399978118-10298-1-git-send-email-aik@ozlabs.ru>
+References: <1399978118-10298-1-git-send-email-aik@ozlabs.ru>
+Date: Wed, 14 May 2014 15:22:44 +0530
+Message-ID: <87tx8soff7.fsf@abhimanyu.in.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
-Subject: Re: Re: [RFT PATCH -next ] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-References: <536A16A6.5040709@hitachi.com>
- <20140507115551.22259.70581.stgit@ltc230.yrl.intra.hitachi.co.jp>
- <536A2013.8020609@hitachi.com>
-In-Reply-To: <536A2013.8020609@hitachi.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ Thomas Huth <thuth@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,153 +40,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2014/05/07 20:59), Masami Hiramatsu wrote:
-> Hi Tony, Benjamin and Paul,
-> 
-> I've tried to fix this bug, but since I don't have either ppc64 nor ia64,
-> this patch is not tested on those archs. Please review and test it on
-> those machines.
+Alexey Kardashevskiy <aik@ozlabs.ru> writes:
 
-Ping?
+> PCI spec says that lower 20 bits are assumed 0xFFFFF. The existing code
+> seems to get it right in pci-bridge-set-mem-limit.
+>
+> However pci-bridge-set-mem-base does not account 0xFFFFF and poison
+> the limit. Since the limit is not stored anywhere in SLOF and only
+> besides in the config space, it remains broken.
+>
+> This fixes pci-bridge-set-mem-base.
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>
+> I have doubts this is the right fix as I tried to "fix"
+> pci-bridge-set-mmio-base (while I am here) and it broke the guest.
+>
+> The problem I am fixing by this is that QEMU started as below is
+> unable to initialize virtio-net device because there are overlapping
+> virtio's BAR and bridge's "ranges" property. Note that virtio-net is
+> attached to the PHB, not that additional bridge.
+>
+> /home/aik/qemu-system-ppc64 \
+> -enable-kvm \
+> -m 1024 \
+> -machine pseries \
+> -nographic \
+> -vga none \
+> -device pci-bridge,id=id0,bus=pci.0,addr=5.0,chassis_nr=7 \
+> -netdev tap,id=id1,ifname=tap1,script=ifup.sh,downscript=ifdown.sh \
+> -device virtio-net-pci,id=id2,netdev=id1 \
+> -initrd 1.cpio \
+> -kernel vml315rc3 \
 
-I need your help since I don't have test environment.
+The problem that I saw here is the brigde device does not have a
+downstream pci device. Before probing, we are setting the ranges
+property to the max limit, and the probe is done. Once the probe is over
+we would update the ranges property. 
 
-Thank you,
+In this particular case, when we come to update the " ranges" property,
+we do not have any range and we skip updating it. Because of this the
+old max range property remains there, which is not correct.
 
-> 
-> Thank you,
-> 
-> (2014/05/07 20:55), Masami Hiramatsu wrote:
->> On ia64 and ppc64, the function pointer does not point the
->> entry address of the function, but the address of function
->> discriptor (which contains the entry address and misc
->> data.) Since the kprobes passes the function pointer stored
->> by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
->> initalizing its blacklist, it fails and reports many errors
->> as below.
->>
->>   Failed to find blacklist 0001013168300000
->>   Failed to find blacklist 0001013000f0a000
->>   Failed to find blacklist 000101315f70a000
->>   Failed to find blacklist 000101324c80a000
->>   Failed to find blacklist 0001013063f0a000
->>   Failed to find blacklist 000101327800a000
->>   Failed to find blacklist 0001013277f0a000
->>   Failed to find blacklist 000101315a70a000
->>   Failed to find blacklist 0001013277e0a000
->>   Failed to find blacklist 000101305a20a000
->>   Failed to find blacklist 0001013277d0a000
->>   Failed to find blacklist 00010130bdc0a000
->>   Failed to find blacklist 00010130dc20a000
->>   Failed to find blacklist 000101309a00a000
->>   Failed to find blacklist 0001013277c0a000
->>   Failed to find blacklist 0001013277b0a000
->>   Failed to find blacklist 0001013277a0a000
->>   Failed to find blacklist 000101327790a000
->>   Failed to find blacklist 000101303140a000
->>   Failed to find blacklist 0001013a3280a000
->>
->> To fix this bug, this introduces function_entry() macro to
->> retrieve the entry address from the given function pointer,
->> and uses it in NOKPROBE_SYMBOL().
->>
->>
->> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
->> Reported-by: Tony Luck <tony.luck@gmail.com>
->> Cc: Tony Luck <tony.luck@intel.com>
->> Cc: Fenghua Yu <fenghua.yu@intel.com>
->> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Cc: Paul Mackerras <paulus@samba.org>
->> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->> Cc: Kevin Hao <haokexin@gmail.com>
->> Cc: linux-ia64@vger.kernel.org
->> Cc: linux-kernel@vger.kernel.org
->> Cc: linuxppc-dev@lists.ozlabs.org
->> ---
->>  arch/ia64/include/asm/types.h    |    2 ++
->>  arch/powerpc/include/asm/types.h |   11 +++++++++++
->>  include/linux/kprobes.h          |    3 ++-
->>  include/linux/types.h            |    4 ++++
->>  4 files changed, 19 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
->> index 4c351b1..6ab7b6c 100644
->> --- a/arch/ia64/include/asm/types.h
->> +++ b/arch/ia64/include/asm/types.h
->> @@ -27,5 +27,7 @@ struct fnptr {
->>  	unsigned long gp;
->>  };
->>  
->> +#define constant_function_entry(fn) (((struct fnptr *)(fn))->ip)
->> +
->>  #endif /* !__ASSEMBLY__ */
->>  #endif /* _ASM_IA64_TYPES_H */
->> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
->> index bfb6ded..fd297b8 100644
->> --- a/arch/powerpc/include/asm/types.h
->> +++ b/arch/powerpc/include/asm/types.h
->> @@ -25,6 +25,17 @@ typedef struct {
->>  	unsigned long env;
->>  } func_descr_t;
->>  
->> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
->> +/*
->> + * On PPC64 ABIv1 the function pointer actually points to the
->> + * function's descriptor. The first entry in the descriptor is the
->> + * address of the function text.
->> + */
->> +#define constant_function_entry(fn)	(((func_descr_t *)(fn))->entry)
->> +#else
->> +#define constant_function_entry(fn)	((unsigned long)(fn))
->> +#endif
->> +
->>  #endif /* __ASSEMBLY__ */
->>  
->>  #endif /* _ASM_POWERPC_TYPES_H */
->> diff --git a/include/linux/kprobes.h b/include/linux/kprobes.h
->> index e059507..637eafe 100644
->> --- a/include/linux/kprobes.h
->> +++ b/include/linux/kprobes.h
->> @@ -40,6 +40,7 @@
->>  #include <linux/rcupdate.h>
->>  #include <linux/mutex.h>
->>  #include <linux/ftrace.h>
->> +#include <linux/types.h>
->>  
->>  #ifdef CONFIG_KPROBES
->>  #include <asm/kprobes.h>
->> @@ -485,7 +486,7 @@ static inline int enable_jprobe(struct jprobe *jp)
->>  #define __NOKPROBE_SYMBOL(fname)			\
->>  static unsigned long __used				\
->>  	__attribute__((section("_kprobe_blacklist")))	\
->> -	_kbl_addr_##fname = (unsigned long)fname;
->> +	_kbl_addr_##fname = constant_function_entry(fname);
->>  #define NOKPROBE_SYMBOL(fname)	__NOKPROBE_SYMBOL(fname)
->>  #else
->>  #define NOKPROBE_SYMBOL(fname)
->> diff --git a/include/linux/types.h b/include/linux/types.h
->> index 4d118ba..78e2d7d 100644
->> --- a/include/linux/types.h
->> +++ b/include/linux/types.h
->> @@ -212,5 +212,9 @@ struct callback_head {
->>  };
->>  #define rcu_head callback_head
->>  
->> +#ifndef constant_function_entry
->> +#define constant_function_entry(fn)	((unsigned long)(fn))
->> +#endif
->> +
->>  #endif /*  __ASSEMBLY__ */
->>  #endif /* _LINUX_TYPES_H */
->>
->>
->>
-> 
-> 
+Something like the below solves this particular problem. But what would
+happen when someone tries to hotplug a pci device to this bridge, will
+the pci-hotplug code take care of updating the ranges property?
 
 
--- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+diff --git a/slof/fs/pci-properties.fs b/slof/fs/pci-properties.fs
+index f88a571..f5e934d 100644
+--- a/slof/fs/pci-properties.fs
++++ b/slof/fs/pci-properties.fs
+@@ -410,6 +410,7 @@
+         dup IF                          \ IF any space present (propsize>0)
+                 s" ranges" property     \ | write it into the device tree
+         ELSE                            \ ELSE
++               s" " s" ranges" property
+                 2drop                   \ | forget the properties
+         THEN                            \ FI
+         drop                            \ forget the address
+
+So I do not see the problem when there is a device allocated downstream
+to the pci-bridge.
+
+Regards
+Nikunj
