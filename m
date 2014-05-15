@@ -1,18 +1,22 @@
-Return-Path: <richard@nod.at>
-Received: from mail.sigma-star.at (mail.sigma-star.at [95.130.255.111])
- by ozlabs.org (Postfix) with ESMTP id 0B2281400D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 05:13:06 +1000 (EST)
-From: Richard Weinberger <richard@nod.at>
-To: linux-arch@vger.kernel.org,
-	arnd@arndb.de,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH 20/27] powerpc: Use common bits from generic tlb.h
-Date: Wed, 14 May 2014 20:59:52 +0200
-Message-Id: <1400093999-18703-21-git-send-email-richard@nod.at>
-In-Reply-To: <1400093999-18703-1-git-send-email-richard@nod.at>
-References: <1400093999-18703-1-git-send-email-richard@nod.at>
-Cc: Richard Weinberger <richard@nod.at>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
+ [IPv6:2607:f8b0:400e:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id CE5D51400D8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 12:22:45 +1000 (EST)
+Received: by mail-pa0-f41.google.com with SMTP id lj1so403696pab.14
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 May 2014 19:22:42 -0700 (PDT)
+Date: Wed, 14 May 2014 19:22:38 -0700
+From: Brian Norris <computersforpeace@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: roundup_pow_of_two() may not handle 64-bit integers
+Message-ID: <20140515022238.GL28907@ld-irv-0074>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: David Howells <dhowells@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Brian Norris <computersforpeace@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,31 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is no longer needed to define them on our own.
+Hi,
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Richard Weinberger <richard@nod.at>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Richard Weinberger <richard@nod.at>
----
- arch/powerpc/include/asm/tlb.h | 3 ---
- 1 file changed, 3 deletions(-)
+I'm looking to use roundup_pow_of_two() (actually, order_base_2())
+from <linux/log2.h>, but it seems that it only supports 64-bit integers
+if your toolchain uses a 64-bit 'unsigned long' type. This is strange,
+considering that ilog2() is explicitly designed for 32-bit or 64-bit
+compatibility.
 
-diff --git a/arch/powerpc/include/asm/tlb.h b/arch/powerpc/include/asm/tlb.h
-index 392e5ef..bdea7f5 100644
---- a/arch/powerpc/include/asm/tlb.h
-+++ b/arch/powerpc/include/asm/tlb.h
-@@ -25,9 +25,6 @@
- 
- #include <linux/pagemap.h>
- 
--#define tlb_start_vma(tlb, vma)	do { } while (0)
--#define tlb_end_vma(tlb, vma)	do { } while (0)
--
- extern void tlb_flush(struct mmu_gather *tlb);
- 
- /* These defines are needed to override the defaults from asm-generic/tlb.h */
--- 
-1.8.4.2
+I also note that there is at least one location in which this limitation
+currently might be problematic: in pnv_pci_ioda2_set_bypass()
+(arch/powerpc/platforms/powernv/pci-ioda.c). It looks like this could be
+a problem if using large amounts of DRAM on a 32-bit PPC build, with
+64-bit physical addresses.
+
+(There may be other cases like this one, but I haven't closely studied
+all callers of roundup_pow_of_two().)
+
+I'm thinking of cooking a patch to improve roundup_pow_of_two() (and
+thus order_base_2()), but I'd like to solicit comments on the basic
+problem first.
+
+Regards,
+Brian
+
+P.S. And of course, rounddown_pow_of_two() has the same issue.
