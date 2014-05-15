@@ -1,27 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 37546140082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 22:23:04 +1000 (EST)
-Message-ID: <1400156571.397.42.camel@pasglop>
-Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Date: Thu, 15 May 2014 22:22:51 +1000
-In-Reply-To: <53749B0E.4050900@roeck-us.net>
-References: <1399874254.17624.85.camel@pasglop>
- <20140513002846.GA29753@roeck-us.net> <1399972601.17624.169.camel@pasglop>
- <20140513171749.GA9440@roeck-us.net>
- <20140514133434.13b66009@canb.auug.org.au> <5372FC43.6010707@roeck-us.net>
- <20140514055219.GL5162@bubble.grove.modra.org>
- <20140514153430.GA28553@roeck-us.net>
- <20140515094716.GQ5162@bubble.grove.modra.org>
- <53749B0E.4050900@roeck-us.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
- Alan Modra <amodra@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id A94D51400DF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 22:35:25 +1000 (EST)
+From: Alexander Graf <agraf@suse.de>
+To: kvm-ppc@vger.kernel.org
+Subject: [PATCH] PPC: ePAPR: Fix hypercall on LE guest
+Date: Thu, 15 May 2014 14:35:19 +0200
+Message-Id: <1400157319-52181-1-git-send-email-agraf@suse.de>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +19,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-05-15 at 03:46 -0700, Guenter Roeck wrote:
-> On 05/15/2014 02:47 AM, Alan Modra wrote:
-> > On Wed, May 14, 2014 at 08:34:30AM -0700, Guenter Roeck wrote:
-> >> Bummer. Confirmed, if I replace "@h" with "@high" in just one place,
-> >> the builds pass with binutils 2.24. Unfortunately the same builds then
-> >> fails with binutils 2.23.
-> >>
-> >> Any idea how to get it to compile with both old and new versions ?
-> >
-> > The standard way with GNU software would be to write a configure test,
-> > that checks for @high support in the assembler, and defines a macro
-> > if the assembler passes the check.  I'm not that familiar with the
-> > linux kernel these days, but a little grepping around says that
-> > something like
-> >
-> > ashigh := $(call as-instr,lis 9$(comma)foo@high,-DHAVE_AS_ATHIGH=1)
-> > KBUILD_AFLAGS += $(ashigh)
-> >
-> > might work.
-> >
-> 
-> Yes, it does.
+We get an array of instructions from the hypervisor via device tree that
+we write into a buffer that gets executed whenever we want to make an
+ePAPR compliant hypercall.
 
-Care to send a patch ? :-)
+However, the hypervisor passes us these instructions in BE order which
+we have to manually convert to LE when we want to run them in LE mode.
 
-Cheers,
-Ben.
+With this fixup in place, I can successfully run LE kernels with KVM
+PV enabled on PR KVM.
+
+Signed-off-by: Alexander Graf <agraf@suse.de>
+---
+ arch/powerpc/kernel/epapr_paravirt.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/epapr_paravirt.c b/arch/powerpc/kernel/epapr_paravirt.c
+index 7898be9..d9b7935 100644
+--- a/arch/powerpc/kernel/epapr_paravirt.c
++++ b/arch/powerpc/kernel/epapr_paravirt.c
+@@ -47,9 +47,10 @@ static int __init early_init_dt_scan_epapr(unsigned long node,
+ 		return -1;
+ 
+ 	for (i = 0; i < (len / 4); i++) {
+-		patch_instruction(epapr_hypercall_start + i, insts[i]);
++		u32 inst = be32_to_cpu(insts[i]);
++		patch_instruction(epapr_hypercall_start + i, inst);
+ #if !defined(CONFIG_64BIT) || defined(CONFIG_PPC_BOOK3E_64)
+-		patch_instruction(epapr_ev_idle_start + i, insts[i]);
++		patch_instruction(epapr_ev_idle_start + i, inst);
+ #endif
+ 	}
+ 
+-- 
+1.8.1.4
