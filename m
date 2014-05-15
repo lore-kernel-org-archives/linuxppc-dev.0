@@ -1,40 +1,40 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id F19D114007D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 18:25:20 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DC5CF1400E0
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2014 18:27:23 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Thu, 15 May 2014 13:55:17 +0530
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 15 May 2014 13:57:21 +0530
 Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8F4AEE0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 13:55:50 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 27C2BE0053
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2014 13:57:52 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4F8PNB655902306
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 13:55:23 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4F8PC27001766
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 13:55:14 +0530
-Message-ID: <537479E7.90806@linux.vnet.ibm.com>
-Date: Thu, 15 May 2014 13:55:11 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ s4F8RQ7C45875426
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2014 13:57:26 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4F8RGbg024605
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 May 2014 13:57:17 +0530
+Message-ID: <537479FD.2010200@linux.vnet.ibm.com>
+Date: Thu, 15 May 2014 13:55:33 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mm@kvack.org, linux-arch@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: riel@redhat.com, ak@linux.intel.com, peterz@infradead.org,
- rusty@rustcorp.com.au, dave.hansen@intel.com, paulus@samba.org,
- mgorman@suse.de, akpm@linux-foundation.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+To: Pedro Alves <palves@redhat.com>
+Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
+ memory register sets
+References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
+ <53735044.5030008@redhat.com>
+In-Reply-To: <53735044.5030008@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, avagin@openvz.org, linux-kernel@vger.kernel.org,
+ oleg@redhat.com, michael@ellerman.id.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,51 +44,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/14/2014 04:45 PM, Pedro Alves wrote:
+> On 05/14/14 06:46, Anshuman Khandual wrote:
+>> On 05/13/2014 10:43 PM, Pedro Alves wrote:
+>>> On 05/05/14 08:54, Anshuman Khandual wrote:
+>>>> This patch enables get and set of transactional memory related register
+>>>> sets through PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing
+>>>> four new powerpc specific register sets i.e REGSET_TM_SPR, REGSET_TM_CGPR,
+>>>> REGSET_TM_CFPR, REGSET_CVMX support corresponding to these following new
+>>>> ELF core note types added previously in this regard.
+>>>>
+>>>> 	(1) NT_PPC_TM_SPR
+>>>> 	(2) NT_PPC_TM_CGPR
+>>>> 	(3) NT_PPC_TM_CFPR
+>>>> 	(4) NT_PPC_TM_CVMX
+>>>
+>>> Sorry that I couldn't tell this from the code, but, what does the
+>>> kernel return when the ptracer requests these registers and the
+>>> program is not in a transaction?  Specifically I'm wondering whether
+>>> this follows the same semantics as the s390 port.
+>>>
+>>
+>> Right now, it still returns the saved state of the registers from thread
+>> struct. I had assumed that the user must know the state of the transaction
+>> before initiating the ptrace request. I guess its better to check for
+>> the transaction status before processing the request. In case if TM is not
+>> active on that thread, we should return -EINVAL.
+> 
+> I think s390 returns ENODATA in that case.
+> 
+>  https://sourceware.org/ml/gdb-patches/2013-06/msg00273.html
+> 
+> We'll want some way to tell whether the system actually
+> supports this.  That could be ENODATA vs something-else (EINVAL
+> or perhaps better EIO for "request is invalid").
 
-Hi Ingo,
-
-	Do you have any comments for the latest version of the patchset. If
-not, kindly can you pick it up as is.
-
-
-With regards
-Maddy
-
-> Kirill A. Shutemov with 8c6e50b029 commit introduced
-> vm_ops->map_pages() for mapping easy accessible pages around
-> fault address in hope to reduce number of minor page faults.
-> 
-> This patch creates infrastructure to modify the FAULT_AROUND_ORDER
-> value using mm/Kconfig. This will enable architecture maintainers
-> to decide on suitable FAULT_AROUND_ORDER value based on
-> performance data for that architecture. First patch also defaults
-> FAULT_AROUND_ORDER Kconfig element to 4. Second patch list
-> out the performance numbers for powerpc (platform pseries) and
-> initialize the fault around order variable for pseries platform of
-> powerpc.
-> 
-> V4 Changes:
->   Replaced the BUILD_BUG_ON with VM_BUG_ON.
->   Moved fault_around_pages() and fault_around_mask() functions outside of
->    #ifdef CONFIG_DEBUG_FS.
-> 
-> V3 Changes:
->   Replaced FAULT_AROUND_ORDER macro to a variable to support arch's that
->    supports sub platforms.
->   Made changes in commit messages.
-> 
-> V2 Changes:
->   Created Kconfig parameter for FAULT_AROUND_ORDER
->   Added check in do_read_fault to handle FAULT_AROUND_ORDER value of 0
->   Made changes in commit messages.
-> 
-> Madhavan Srinivasan (2):
->   mm: move FAULT_AROUND_ORDER to arch/
->   powerpc/pseries: init fault_around_order for pseries
-> 
->  arch/powerpc/platforms/pseries/pseries.h |    2 ++
->  arch/powerpc/platforms/pseries/setup.c   |    5 +++++
->  mm/Kconfig                               |    8 ++++++++
->  mm/memory.c                              |   25 ++++++-------------------
->  4 files changed, 21 insertions(+), 19 deletions(-)
-> 
+As Mickey has pointed out, the transaction memory support in the system can be
+checked from the HWCAP2 flags. So when the transaction is not active, we will
+return ENODATA instead for TM related ptrace regset requests.
