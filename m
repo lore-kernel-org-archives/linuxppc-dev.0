@@ -1,25 +1,23 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205]) by ozlabs.org (Postfix) with ESMTP id 6DCE81400D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 23:09:23 +1000 (EST)
-Message-ID: <5374BC78.4010505@roeck-us.net>
-Date: Thu, 15 May 2014 06:09:12 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
-References: <1399874254.17624.85.camel@pasglop>	
- <20140513002846.GA29753@roeck-us.net> <1399972601.17624.169.camel@pasglop>	
- <20140513171749.GA9440@roeck-us.net>	
- <20140514133434.13b66009@canb.auug.org.au> <5372FC43.6010707@roeck-us.net>	
- <20140514055219.GL5162@bubble.grove.modra.org>	
- <20140514153430.GA28553@roeck-us.net>	
- <20140515094716.GQ5162@bubble.grove.modra.org>	
- <53749B0E.4050900@roeck-us.net> <1400156571.397.42.camel@pasglop>
-In-Reply-To: <1400156571.397.42.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@lists.ozlabs.org,
- Alan Modra <amodra@gmail.com>
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 056B1140094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 00:16:16 +1000 (EST)
+Received: by mail-la0-f51.google.com with SMTP id gf5so848163lab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 07:16:11 -0700 (PDT)
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org
+Subject: [PATCH RFC v13 0/5] MPC512x DMA slave s/g support, OF DMA lookup
+Date: Thu, 15 May 2014 18:15:30 +0400
+Message-Id: <1400163335-29853-1-git-send-email-a13xp0p0v88@gmail.com>
+Cc: devicetree@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/15/2014 05:22 AM, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-05-15 at 03:46 -0700, Guenter Roeck wrote:
->> On 05/15/2014 02:47 AM, Alan Modra wrote:
->>> On Wed, May 14, 2014 at 08:34:30AM -0700, Guenter Roeck wrote:
->>>> Bummer. Confirmed, if I replace "@h" with "@high" in just one place,
->>>> the builds pass with binutils 2.24. Unfortunately the same builds then
->>>> fails with binutils 2.23.
->>>>
->>>> Any idea how to get it to compile with both old and new versions ?
->>>
->>> The standard way with GNU software would be to write a configure test,
->>> that checks for @high support in the assembler, and defines a macro
->>> if the assembler passes the check.  I'm not that familiar with the
->>> linux kernel these days, but a little grepping around says that
->>> something like
->>>
->>> ashigh := $(call as-instr,lis 9$(comma)foo@high,-DHAVE_AS_ATHIGH=1)
->>> KBUILD_AFLAGS += $(ashigh)
->>>
->>> might work.
->>>
->>
->> Yes, it does.
->
-> Care to send a patch ? :-)
->
+2013/7/14 Gerhard Sittig <gsi@denx.de>:
+> this series
+> - introduces slave s/g support (that's support for DMA transfers which
+>    involve peripherals in contrast to mem-to-mem transfers)
+> - adds device tree based lookup support for DMA channels
+> - combines floating patches and related feedback which already covered
+>    several aspects of what the suggested LPB driver needs, to demonstrate
+>    how integration might be done
 
-Yes, working on it.
+...
 
-Thanks,
-Guenter
+Changes in v12:
+ A new patch (part 2/7) is added to this series.
+ Part 6/7:
+ - change the description of 'compatible' property according part 2/7;
+ - improve the document according Gerhard's feedback;
+
+Parts 1/7, 2/7 and 4/7 have been applied by Vinod Koul and
+are excluded from v13.
+
+Changes in v13:
+ A new patch (part 1/5) is added to this series.
+ Part 2/5:
+ - fix style issue;
+ - improve comments;
+
+> known issues:
+> - it's yet to get confirmed whether MPC8308 can use slave support or
+>    whether the DMA controller's driver shall actively reject it, the
+>    information that's available so far suggests that peripheral transfers
+>    to IP bus attached I/O is useful and shall not get blocked right away
+
+
+Alexander Popov (5):
+  dmaengine: fix comment typo
+  dma: mpc512x: add support for peripheral transfers
+  dma: of: add common xlate function for matching by channel id
+  dma: mpc512x: add device tree binding document
+  dma: mpc512x: register for device tree channel lookup
+
+ .../devicetree/bindings/dma/mpc512x-dma.txt        |  40 ++++
+ arch/powerpc/boot/dts/mpc5121.dtsi                 |   1 +
+ drivers/dma/mpc512x_dma.c                          | 257 ++++++++++++++++++++-
+ drivers/dma/of-dma.c                               |  35 +++
+ include/linux/dmaengine.h                          |   2 +-
+ include/linux/of_dma.h                             |   4 +
+ 6 files changed, 332 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+
+-- 
+1.8.4.2
