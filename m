@@ -1,29 +1,24 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pb0-x231.google.com (mail-pb0-x231.google.com
- [IPv6:2607:f8b0:400e:c01::231])
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pb0-x22c.google.com (mail-pb0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c01::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 361311400DD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 03:29:38 +1000 (EST)
-Received: by mail-pb0-f49.google.com with SMTP id jt11so1364488pbb.22
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 10:29:34 -0700 (PDT)
-Date: Thu, 15 May 2014 10:28:17 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-In-Reply-To: <537479E7.90806@linux.vnet.ibm.com>
-Message-ID: <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id A627D1400A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 05:44:43 +1000 (EST)
+Received: by mail-pb0-f44.google.com with SMTP id rq2so1509678pbb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2014 12:44:40 -0700 (PDT)
+Date: Thu, 15 May 2014 12:44:37 -0700
+From: Brian Norris <computersforpeace@gmail.com>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: roundup_pow_of_two() may not handle 64-bit integers
+Message-ID: <20140515194437.GM28907@ld-irv-0074>
+References: <20140515022238.GL28907@ld-irv-0074>
+ <29314.1400166189@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
- dave.hansen@intel.com, peterz@infradead.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@linux.intel.com,
- paulus@samba.org, mgorman@suse.de, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- kirill.shutemov@linux.intel.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <29314.1400166189@warthog.procyon.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,40 +28,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 15 May 2014, Madhavan Srinivasan wrote:
+On Thu, May 15, 2014 at 04:03:09PM +0100, David Howells wrote:
+> Brian Norris <computersforpeace@gmail.com> wrote:
+> > I'm looking to use roundup_pow_of_two() (actually, order_base_2())
+> > from <linux/log2.h>, but it seems that it only supports 64-bit integers
+> > if your toolchain uses a 64-bit 'unsigned long' type. This is strange,
+> > considering that ilog2() is explicitly designed for 32-bit or 64-bit
+> > compatibility.
 > 
-> Hi Ingo,
-> 
-> 	Do you have any comments for the latest version of the patchset. If
-> not, kindly can you pick it up as is.
-> 
-> 
-> With regards
-> Maddy
-> 
-> > Kirill A. Shutemov with 8c6e50b029 commit introduced
-> > vm_ops->map_pages() for mapping easy accessible pages around
-> > fault address in hope to reduce number of minor page faults.
-> > 
-> > This patch creates infrastructure to modify the FAULT_AROUND_ORDER
-> > value using mm/Kconfig. This will enable architecture maintainers
-> > to decide on suitable FAULT_AROUND_ORDER value based on
-> > performance data for that architecture. First patch also defaults
-> > FAULT_AROUND_ORDER Kconfig element to 4. Second patch list
-> > out the performance numbers for powerpc (platform pseries) and
-> > initialize the fault around order variable for pseries platform of
-> > powerpc.
+> ilog2() was explicitly designed for use with 'unsigned long'.  See the commit
+> description (f0d1b0b30d250a07627ad8b9fbbb5c7cc08422e8).  It may work with
+> unsigned long long, however...
 
-Sorry for not commenting earlier - just reminded by this ping to Ingo.
+That's another confusing point; the commit description says 'unsigned
+long', but the code shows nothing of that sort, and the comments say
+nearly the reverse (mentioning '32-bit and 64-bit', not 'unsigned
+long'). The code only referenes ULL constants, and it selects a 32-bit
+or 64-bit runtime version based on the type. To me, this demonstrates an
+explicit design for "32-bit or 64-bit", regardless of the dimensions of
+your 'long'.
 
-I didn't study your numbers, but nowhere did I see what PAGE_SIZE you use.
+So this leaves me with 2 main issues:
 
-arch/powerpc/Kconfig suggests that Power supports base page size of
-4k, 16k, 64k or 256k.
+(1) Can we make <linux/ilog2.h> have some sense of consistency? If so,
+    how?
+     - Enforce the 'unsigned long' design (i.e., don't support
+       ilog2(u64) when sizeof(unsigned long) == 4)?
+     - Make all high-level macros automatically support 32-bit or 64-bit,
+       regardless of type?
+     - Split out 32-bit vs. 64-bit functions for everything?
 
-I would expect your optimal fault_around_order to depend very much on
-the base page size.
+    Obviously some of these options are sillier than others.
 
-Perhaps fault_around_size would provide a more useful default?
+(2) Powerpc (and maybe some of SH's PCI) code has a potential bug, due
+    to using roundup_pow_of_two() on type phys_addr_t, which could
+    overflow for LPAE systems with large physical memory ranges. Is this
+    a legitimate concern?
 
-Hugh
+Brian
