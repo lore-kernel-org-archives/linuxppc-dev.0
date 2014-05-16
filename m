@@ -1,18 +1,42 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 6EDFC140084
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2014 04:23:39 +1000 (EST)
-Date: Fri, 16 May 2014 11:26:57 -0700
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Himangi Saraogi <himangi774@gmail.com>
-Subject: Re: question about hvc_opal.c
-Message-ID: <20140516182657.GA15475@kroah.com>
-References: <CAB78YHynbQ=cR-jDTHpwwVGgDO24fjXETO1Zp88QD=Vkjf+6GQ@mail.gmail.com>
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D5BFA1400B2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2014 09:37:52 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 16 May 2014 19:37:48 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 66532C90026
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 19:37:39 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4GNbiFK5832994
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 23:37:44 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4GNbhoG007352
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 19:37:44 -0400
+Date: Fri, 16 May 2014 16:37:35 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [RFC PATCH 1/3] slub: search partial list on numa_mem_id(),
+ instead of numa_node_id()
+Message-ID: <20140516233735.GH8941@linux.vnet.ibm.com>
+References: <20140206020757.GC5433@linux.vnet.ibm.com>
+ <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <CAB78YHynbQ=cR-jDTHpwwVGgDO24fjXETO1Zp88QD=Vkjf+6GQ@mail.gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, jslaby@suse.cz, linux-kernel@vger.kernel.org,
- Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1391674026-20092-1-git-send-email-iamjoonsoo.kim@lge.com>
+Cc: Han Pingtian <hanpt@linux.vnet.ibm.com>, mpm@selenic.com,
+ penberg@kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, David Rientjes <rientjes@google.com>,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Wanpeng Li <liwanp@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,19 +46,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 16, 2014 at 11:34:13PM +0530, Himangi Saraogi wrote:
-> Hi,
->  
-> In function hvc_opal_probe I find :
+On 06.02.2014 [17:07:04 +0900], Joonsoo Kim wrote:
+> Currently, if allocation constraint to node is NUMA_NO_NODE, we search
+> a partial slab on numa_node_id() node. This doesn't work properly on the
+> system having memoryless node, since it can have no memory on that node and
+> there must be no partial slab on that node.
 > 
->         hp = hvc_alloc(termno, 0, ops, MAX_VIO_PUT_CHARS);
->         if (IS_ERR(hp))
->                 return PTR_ERR(hp);
+> On that node, page allocation always fallback to numa_mem_id() first. So
+> searching a partial slab on numa_node_id() in that case is proper solution
+> for memoryless node case.
 > 
-> Earlier, hpc_opal_privs[termno] is assigned pv which is allocated using
-> kzalloc. Shouldn't there be a kfree(pv) and the array element (which is global)
-> be made NULL before the return. Also, if array element is set to NULL on the
-> failure, then some cleanup must be done to undo the effect of hvc_instantiate
-> as well. Please let me know if the change is desirable.
+> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
-Sounds reasonable, please send a patch.
+Acked-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+
+Joonsoo, would you send this one on to Andrew?
+
+Thanks,
+Nish
