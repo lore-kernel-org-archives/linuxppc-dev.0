@@ -1,21 +1,14 @@
-Return-Path: <mikey@neuling.org>
-Message-ID: <1400200013.3797.89.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for
- transactional memory register sets
-From: Michael Neuling <mikey@neuling.org>
-To: Pedro Alves <palves@redhat.com>
-Date: Fri, 16 May 2014 10:26:53 +1000
-In-Reply-To: <5374AE24.1030302@redhat.com>
-References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
- <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
- <53735044.5030008@redhat.com> <537479FD.2010200@linux.vnet.ibm.com>
- <5374AE24.1030302@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: avagin@openvz.org, linux-kernel@vger.kernel.org, oleg@redhat.com,
- michael@ellerman.id.au, linuxppc-dev@ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <intermediadc@hotmail.com>
+Received: from blu0-omc3-s22.blu0.hotmail.com (blu0-omc3-s22.blu0.hotmail.com
+ [65.55.116.97]) by ozlabs.org (Postfix) with ESMTP id 3C6CB140087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 20:36:21 +1000 (EST)
+Message-ID: <BLU436-SMTP80159B93A5EE9CE9979A56C8310@phx.gbl>
+Date: Fri, 16 May 2014 12:31:04 +0200
+From: Luigi Burdo <intermediadc@hotmail.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org
+Subject: G5 Quad working with Linux PPC and RadeonHD
+Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,12 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> So in sum, it very much looks like the intention is for
-> PTRACE_GETREGSET/PTRACE_SETREGSET to return ENODEV in the
-> case the regset doesn't exist on the running machine, and then
-> it looks like at least x86 works that way.
+Hi all i start one week ago to write massage in ubuntu about
+my object i have  Radeon Hd working on my Quad G5 thanks to linuxPPC .
 
-Good point... agreed.  We should ENODEV when we don't have TM hardware
-(like POWER7).
+But there are some things to fix
+One RadeonHD mesa colors are wrong .
 
-Mikey
+On RadeonHD 4650 ddr3 512mb i have full video acceleration and hdmi 
+audio working
+On RadeonHD 6570 ddr3 2048mb i have video but no chars on windows and 
+icons .
+
+this is my thread on ubuntu forum Apple User in lubuntu
+there are all my experieces and the bugs found ...
+too much things to write on a single email
+
+
+http://ubuntuforums.org/showthread.php?t=2221421&page=6
+
+
+Thanks for all !
+Luigi
