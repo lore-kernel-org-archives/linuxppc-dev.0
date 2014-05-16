@@ -1,14 +1,18 @@
-Return-Path: <intermediadc@hotmail.com>
-Received: from blu0-omc3-s22.blu0.hotmail.com (blu0-omc3-s22.blu0.hotmail.com
- [65.55.116.97]) by ozlabs.org (Postfix) with ESMTP id 3C6CB140087
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 20:36:21 +1000 (EST)
-Message-ID: <BLU436-SMTP80159B93A5EE9CE9979A56C8310@phx.gbl>
-Date: Fri, 16 May 2014 12:31:04 +0200
-From: Luigi Burdo <intermediadc@hotmail.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 6EDFC140084
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2014 04:23:39 +1000 (EST)
+Date: Fri, 16 May 2014 11:26:57 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Himangi Saraogi <himangi774@gmail.com>
+Subject: Re: question about hvc_opal.c
+Message-ID: <20140516182657.GA15475@kroah.com>
+References: <CAB78YHynbQ=cR-jDTHpwwVGgDO24fjXETO1Zp88QD=Vkjf+6GQ@mail.gmail.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: G5 Quad working with Linux PPC and RadeonHD
-Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <CAB78YHynbQ=cR-jDTHpwwVGgDO24fjXETO1Zp88QD=Vkjf+6GQ@mail.gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, jslaby@suse.cz, linux-kernel@vger.kernel.org,
+ Julia Lawall <julia.lawall@lip6.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,24 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all i start one week ago to write massage in ubuntu about
-my object i have  Radeon Hd working on my Quad G5 thanks to linuxPPC .
+On Fri, May 16, 2014 at 11:34:13PM +0530, Himangi Saraogi wrote:
+> Hi,
+>  
+> In function hvc_opal_probe I find :
+> 
+>         hp = hvc_alloc(termno, 0, ops, MAX_VIO_PUT_CHARS);
+>         if (IS_ERR(hp))
+>                 return PTR_ERR(hp);
+> 
+> Earlier, hpc_opal_privs[termno] is assigned pv which is allocated using
+> kzalloc. Shouldn't there be a kfree(pv) and the array element (which is global)
+> be made NULL before the return. Also, if array element is set to NULL on the
+> failure, then some cleanup must be done to undo the effect of hvc_instantiate
+> as well. Please let me know if the change is desirable.
 
-But there are some things to fix
-One RadeonHD mesa colors are wrong .
-
-On RadeonHD 4650 ddr3 512mb i have full video acceleration and hdmi 
-audio working
-On RadeonHD 6570 ddr3 2048mb i have video but no chars on windows and 
-icons .
-
-this is my thread on ubuntu forum Apple User in lubuntu
-there are all my experieces and the bugs found ...
-too much things to write on a single email
-
-
-http://ubuntuforums.org/showthread.php?t=2221421&page=6
-
-
-Thanks for all !
-Luigi
+Sounds reasonable, please send a patch.
