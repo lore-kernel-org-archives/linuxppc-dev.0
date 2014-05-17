@@ -1,21 +1,17 @@
-Return-Path: <himangi774@gmail.com>
-Received: from mail-wg0-x22e.google.com (mail-wg0-x22e.google.com
- [IPv6:2a00:1450:400c:c00::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7E9F2140079
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2014 04:04:19 +1000 (EST)
-Received: by mail-wg0-f46.google.com with SMTP id n12so5364737wgh.29
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2014 11:04:14 -0700 (PDT)
+Return-Path: <michel@daenzer.net>
+Received: from mail.gna.ch (darkcity.gna.ch [195.226.6.51])
+ by ozlabs.org (Postfix) with ESMTP id 32AF514009F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2014 14:02:46 +1000 (EST)
+Message-ID: <5376DD44.4040402@daenzer.net>
+Date: Sat, 17 May 2014 12:53:40 +0900
+From: =?UTF-8?B?TWljaGVsIETDpG56ZXI=?= <michel@daenzer.net>
 MIME-Version: 1.0
-Date: Fri, 16 May 2014 23:34:13 +0530
-Message-ID: <CAB78YHynbQ=cR-jDTHpwwVGgDO24fjXETO1Zp88QD=Vkjf+6GQ@mail.gmail.com>
-Subject: question about hvc_opal.c
-From: Himangi Saraogi <himangi774@gmail.com>
-To: jslaby@suse.cz, Greg KH <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: multipart/alternative; boundary=f46d043c7ffec5672604f9883d14
-Cc: Julia Lawall <julia.lawall@lip6.fr>
+To: Luigi Burdo <intermediadc@hotmail.com>
+Subject: Re: G5 Quad working with Linux PPC and RadeonHD
+References: <BLU436-SMTP80159B93A5EE9CE9979A56C8310@phx.gbl>
+In-Reply-To: <BLU436-SMTP80159B93A5EE9CE9979A56C8310@phx.gbl>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,41 +21,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d043c7ffec5672604f9883d14
-Content-Type: text/plain; charset=UTF-8
+On 16.05.2014 19:31, Luigi Burdo wrote:
+> Hi all i start one week ago to write massage in ubuntu about
+> my object i have  Radeon Hd working on my Quad G5 thanks to linuxPPC .
+> 
+> But there are some things to fix
+> One RadeonHD mesa colors are wrong .
 
-Hi,
+See https://bugs.freedesktop.org/show_bug.cgi?id=72877 . No progress yet
+unfortunately.
 
-In function hvc_opal_probe I find :
 
-        hp = hvc_alloc(termno, 0, ops, MAX_VIO_PUT_CHARS);
-        if (IS_ERR(hp))
-                return PTR_ERR(hp);
+> On RadeonHD 4650 ddr3 512mb i have full video acceleration and hdmi
+> audio working
+> On RadeonHD 6570 ddr3 2048mb i have video but no chars on windows and
+> icons .
 
-Earlier, hpc_opal_privs[termno] is assigned pv which is allocated using
-kzalloc. Shouldn't there be a kfree(pv) and the array element (which is
-global) be made NULL before the return. Also, if array element is set to
-NULL on the failure, then some cleanup must be done to undo the effect of
-hvc_instantiate as well. Please let me know if the change is desirable.
+The latter sounds like
+https://bugs.freedesktop.org/show_bug.cgi?id=74939 , which is fixed in
+http://cgit.freedesktop.org/xorg/driver/xf86-video-ati/commit/?id=8da17f30c70f4494ce22ad781a1cee17041812f3
+.
 
-Thanks.
-Himangi
 
---f46d043c7ffec5672604f9883d14
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div><div><div><div>Hi,<br>=C2=A0<br></div>In function hvc=
-_opal_probe I find :<br><br>=C2=A0 =C2=A0 =C2=A0 =C2=A0 hp =3D hvc_alloc(te=
-rmno, 0, ops, MAX_VIO_PUT_CHARS);<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 if (IS_ERR(hp))<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return PTR_ERR(hp);=
-<br><br></div>Earlier, hpc_opal_privs[termno] is assigned pv which is alloc=
-ated using kzalloc. Shouldn&#39;t there be a kfree(pv) and the array elemen=
-t (which is global) be made NULL before the return. Also, if array element =
-is set to NULL on the failure, then some cleanup must be done to undo the e=
-ffect of hvc_instantiate as well. Please let me know if the change is desir=
-able.<br>
-<br></div>Thanks.<br></div>Himangi<br><div><div><br></div></div></div>
-
---f46d043c7ffec5672604f9883d14--
+-- 
+Earthling Michel Dänzer            |                  http://www.amd.com
+Libre software enthusiast          |                Mesa and X developer
