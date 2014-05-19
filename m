@@ -2,17 +2,17 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A50041A007E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 22:51:31 +1000 (EST)
-Message-ID: <5379FE4F.6070706@suse.de>
-Date: Mon, 19 May 2014 14:51:27 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0738B1A007E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 22:55:45 +1000 (EST)
+Message-ID: <5379FF4C.7080202@suse.de>
+Date: Mon, 19 May 2014 14:55:40 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 3/8] drivers/vfio: New IOCTL command VFIO_EEH_INFO
+Subject: Re: [PATCH 6/8] powerpc: Extend syscall ppc_rtas()
 References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400040722-29608-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1400040722-29608-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400040722-29608-7-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1400040722-29608-7-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
@@ -26,19 +26,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 14.05.14 06:11, Gavin Shan wrote:
-> The patch adds new IOCTL command VFIO_EEH_INFO to VFIO container
-> to support EEH functionality for PCI devices, which have been
-> passed from host to guest via VFIO.
+On 14.05.14 06:12, Gavin Shan wrote:
+> Originally, syscall ppc_rtas() can be used to invoke RTAS call from
+> user space. Utility "errinjct" is using it to inject various errors
+> to the system for testing purpose. The patch intends to extend the
+> syscall to support both pSeries and PowerNV platform. With that,
+> RTAS and OPAL call can be invoked from user space. In turn, utility
+> "errinjct" can be supported on pSeries and PowerNV platform at same
+> time.
 >
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/platforms/powernv/Makefile   |   1 +
->   arch/powerpc/platforms/powernv/eeh-vfio.c | 593 ++++++++++++++++++++++++++++++
->   drivers/vfio/vfio_iommu_spapr_tce.c       |  12 +
->   include/uapi/linux/vfio.h                 |  57 +++
+> The original syscall handler ppc_rtas() is renamed to ppc_firmware(),
+> which calls ppc_call_rtas() or ppc_call_opal() depending on the
+> running platform. The data transported between userland and kerenl is
 
-Documentation/...?
+Please fix your spelling of kernel.
+
+> by "struct rtas_args". It's platform specific on how to use the data.
+>
+> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+I think the basic idea to maintain the same interface between PAPR and 
+OPAL to user space is sound, but this is really Ben's call.
 
 
 Alex
