@@ -1,23 +1,25 @@
-Return-Path: <palves@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 56640140091
- for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2014 00:43:44 +1000 (EST)
-Message-ID: <537A1889.8030801@redhat.com>
-Date: Mon, 19 May 2014 15:43:21 +0100
-From: Pedro Alves <palves@redhat.com>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E49B914007F
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2014 03:48:05 +1000 (EST)
+Message-ID: <1400521677.18239.16.camel@snotra.buserror.net>
+Subject: Re: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT, and
+ DBCR0_ACTIVE_EVENTS
+From: Scott Wood <scottwood@freescale.com>
+To: shiva7 <sivasakthi7@outlook.com>
+Date: Mon, 19 May 2014 12:47:57 -0500
+In-Reply-To: <1400456291193-82408.post@n7.nabble.com>
+References: <5167457E.1050205@genband.com>
+ <1398170592855-81732.post@n7.nabble.com>
+ <1398205896.1694.252.camel@snotra.buserror.net>
+ <1398206224.1694.254.camel@snotra.buserror.net>
+ <1400456291193-82408.post@n7.nabble.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
- memory register sets
-References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
- <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
- <53735044.5030008@redhat.com> <537479FD.2010200@linux.vnet.ibm.com>
- <5374AE24.1030302@redhat.com> <5379EF0E.6090504@linux.vnet.ibm.com>
-In-Reply-To: <5379EF0E.6090504@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
- linux-kernel@vger.kernel.org, michael@ellerman.id.au, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/19/2014 12:46 PM, Anshuman Khandual wrote:
-
->> > I couldn't actually find any arch that currently returns -ENODEV in
->> > the "active" hook.  I see that binfmt_elf.c doesn't handle
->> > regset->active() returning < 0.  Guess that may be why.  Looks like
->> > something that could be cleaned up, to me.
->> >
-> Also it does not consider the return value of regset->active(t->task, regset)
-> (whose objective is to figure out whether we need to request regset->n number
-> of elements or less than that) in the subsequent call to regset->get function.
-
-Indeed.
-
-TBC, do you plan on fixing this?  Otherwise ...
-
-> Now coming to the installation of the .active hooks part for all the new regsets, it
-> should be pretty straight forward as well. Though its optional and used for elf_core_dump
-> purpose only, its worth adding them here. Example of an active function should be something
-> like this. The function is inexpensive as required.
+On Sun, 2014-05-18 at 16:38 -0700, shiva7 wrote:
+> Thanks Scott.
 > 
-> +static int tm_spr_active(struct task_struct *target,
-> +                               const struct user_regset *regset)
-> +{
-> +       if (!cpu_has_feature(CPU_FTR_TM))
-> +               return -ENODEV;
+> Apologize for not quoting the old email reference.
 
-... unfortunately this will do the wrong thing.
+You did it again. :-)
 
-Thanks,
--- 
-Pedro Alves
+> I assumed the old archive content always will be in the trail.
+
+It's in the archives (as I noted), but it's a pain to search for it
+versus having relevant bits quoted.
+
+> Any idea whether the DBCR0 BRT bit actually works(??),
+
+Do you have reason to believe that it might not?
+
+> if I add  DBCR0 under sys_debug context call? because this code seems
+> like direct porting and wondering why on first place not included under
+> debug_context call. 
+
+Again, it was probably an oversight, but the people who might know for
+sure are no longer reachable.
+
+> And also, anything special required for "server" family application code
+> porting here ?? as because in server family the trace exception used to viz
+> NORMAL exception proglog and uses SRR0 and SRR1 but in this ISA/embedded
+> case have dedicated DEBUG_DEBUG prolog and dedicated registers DSRR0 and
+> DSRR1.
+
+IIRC the branch taken mechanism does have different semantics than the
+equivalent mechanism on server.  You can find discussion of this in the
+archives. :-)
+
+-Scott
