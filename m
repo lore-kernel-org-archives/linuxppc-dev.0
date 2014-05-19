@@ -1,38 +1,38 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 231F81A0817
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:54:27 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7439A1A0818
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:57:14 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 20 May 2014 09:54:26 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 9C5CA2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:54:21 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4JNWuhT6619402
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:32:56 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4JNsKkA026673
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:54:21 +1000
-Date: Tue, 20 May 2014 09:54:20 +1000
+ Tue, 20 May 2014 09:57:11 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A69432BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:57:07 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4JNuqW164290942
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:56:52 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4JNv76b015710
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:57:07 +1000
+Date: Tue, 20 May 2014 09:57:06 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/8] powerpc/eeh: Info to trace passed devices
-Message-ID: <20140519235420.GA7042@shangw>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 3/8] drivers/vfio: New IOCTL command VFIO_EEH_INFO
+Message-ID: <20140519235706.GA10308@shangw>
 References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400040722-29608-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <5379FD19.2020100@suse.de> <1400539049.3986.71.camel@pasglop>
+ <1400040722-29608-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <5379FE4F.6070706@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1400539049.3986.71.camel@pasglop>
-Cc: aik@ozlabs.ru, Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, alex.williamson@redhat.com,
+In-Reply-To: <5379FE4F.6070706@suse.de>
+Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ kvm-ppc@vger.kernel.org, alex.williamson@redhat.com,
  qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,27 +44,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 20, 2014 at 08:37:29AM +1000, Benjamin Herrenschmidt wrote:
->On Mon, 2014-05-19 at 14:46 +0200, Alexander Graf wrote:
->> I don't see the point of VFIO knowing about guest addresses. They are 
->> not unique across a system and the whole idea that a VFIO device has to 
->> be owned by a guest is also pretty dubious.
->> 
->> I suppose what you really care about here is just a token for a specific 
->> device? But why do you need one where we don't have tokens yet?
+On Mon, May 19, 2014 at 02:51:27PM +0200, Alexander Graf wrote:
 >
->I think this is going to be needed when doing in-kernel acceleration
->of some of the RTAS calls, but yes, Gavin, why do we need that now ?
+>On 14.05.14 06:11, Gavin Shan wrote:
+>>The patch adds new IOCTL command VFIO_EEH_INFO to VFIO container
+>>to support EEH functionality for PCI devices, which have been
+>>passed from host to guest via VFIO.
+>>
+>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>---
+>>  arch/powerpc/platforms/powernv/Makefile   |   1 +
+>>  arch/powerpc/platforms/powernv/eeh-vfio.c | 593 ++++++++++++++++++++++++++++++
+>>  drivers/vfio/vfio_iommu_spapr_tce.c       |  12 +
+>>  include/uapi/linux/vfio.h                 |  57 +++
+>
+>Documentation/...?
 >
 
-Thanks for your comments :-)
-
-For now, the newly introduced IOCTL command (VFIO_EEH_INFO) is handled by
-VFIO-Container fd, which can't identify IOMMU group (PE) or VFIO-PCI-dev
-naturally because one VFIO-container can have multiple IOMMU groups docked
-there. I'm going to let VFIO-PCI-dev fd handle the IOCTL command because
-VFIO-PCI-dev fd can identify the device and the corresponding IOMMU group
-(PE). With that, the address mapping stuff isn't necessary.
+Will amend it in next revision. Thanks for reminder.
 
 Thanks,
-Gavin 
+Gavin
