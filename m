@@ -1,41 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E278F14008D
- for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2014 21:48:49 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 19 May 2014 17:18:47 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 00D74394005E
- for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2014 17:18:13 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4JBmYf458851566
- for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2014 17:18:34 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4JBmA4W019199
- for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2014 17:18:11 +0530
-Message-ID: <5379EF0E.6090504@linux.vnet.ibm.com>
-Date: Mon, 19 May 2014 17:16:22 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 377431A007E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 22:46:24 +1000 (EST)
+Message-ID: <5379FD19.2020100@suse.de>
+Date: Mon, 19 May 2014 14:46:17 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Pedro Alves <palves@redhat.com>
-Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
- memory register sets
-References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
- <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
- <53735044.5030008@redhat.com> <537479FD.2010200@linux.vnet.ibm.com>
- <5374AE24.1030302@redhat.com>
-In-Reply-To: <5374AE24.1030302@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
- linux-kernel@vger.kernel.org, michael@ellerman.id.au, linuxppc-dev@ozlabs.org
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 2/8] powerpc/eeh: Info to trace passed devices
+References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400040722-29608-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1400040722-29608-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,154 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/15/2014 05:38 PM, Pedro Alves wrote:
-> On 05/15/2014 09:25 AM, Anshuman Khandual wrote:
->> On 05/14/2014 04:45 PM, Pedro Alves wrote:
->>> On 05/14/14 06:46, Anshuman Khandual wrote:
->>>> On 05/13/2014 10:43 PM, Pedro Alves wrote:
->>>>> On 05/05/14 08:54, Anshuman Khandual wrote:
->>>>>> This patch enables get and set of transactional memory related register
->>>>>> sets through PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing
->>>>>> four new powerpc specific register sets i.e REGSET_TM_SPR, REGSET_TM_CGPR,
->>>>>> REGSET_TM_CFPR, REGSET_CVMX support corresponding to these following new
->>>>>> ELF core note types added previously in this regard.
->>>>>>
->>>>>> 	(1) NT_PPC_TM_SPR
->>>>>> 	(2) NT_PPC_TM_CGPR
->>>>>> 	(3) NT_PPC_TM_CFPR
->>>>>> 	(4) NT_PPC_TM_CVMX
->>>>>
->>>>> Sorry that I couldn't tell this from the code, but, what does the
->>>>> kernel return when the ptracer requests these registers and the
->>>>> program is not in a transaction?  Specifically I'm wondering whether
->>>>> this follows the same semantics as the s390 port.
->>>>>
->>>>
->>>> Right now, it still returns the saved state of the registers from thread
->>>> struct. I had assumed that the user must know the state of the transaction
->>>> before initiating the ptrace request. I guess its better to check for
->>>> the transaction status before processing the request. In case if TM is not
->>>> active on that thread, we should return -EINVAL.
->>>
->>> I think s390 returns ENODATA in that case.
->>>
->>>  https://sourceware.org/ml/gdb-patches/2013-06/msg00273.html
->>>
->>> We'll want some way to tell whether the system actually
->>> supports this.  That could be ENODATA vs something-else (EINVAL
->>> or perhaps better EIO for "request is invalid").
->>
->> As Mickey has pointed out, the transaction memory support in the system can be
->> checked from the HWCAP2 flags. So when the transaction is not active, we will
->> return ENODATA instead for TM related ptrace regset requests.
-> 
-> Returning ENODATA when the transaction is not active, like
-> s390 is great.  Thank you.
-> 
-> But I think it's worth it to consider what should the kernel
-> return when the machine doesn't have these registers at all.
-> 
-> Sure, for this case we happen to have the hwcap flag.  But in
-> general, I don't know whether we will always have a hwcap bit
-> for each register set that is added.  Maybe we will, so that
-> the info ends up in core dumps.
-> 
-> Still, I think it's worth to consider this case in the
-> general sense, irrespective of hwcap.
-> 
-> That is, what should PTRACE_GETREGSET/PTRACE_SETREGSET return
-> when the machine doesn't have the registers at all.  We shouldn't
-> need to consult something elsewhere (like hwcap) to determine
-> what ENODATA means.  The kernel knows it right there.  I think
-> s390 goofed here.
-> 
-> Taking a look at x86, for example, we see:
-> 
-> 	[REGSET_XSTATE] = {
-> 		.core_note_type = NT_X86_XSTATE,
-> 		.size = sizeof(u64), .align = sizeof(u64),
-> 		.active = xstateregs_active, .get = xstateregs_get,
-> 		.set = xstateregs_set
-> 	},
-> 
-> Note that it installs the ".active" hook.
-> 
->  24 /**
->  25  * user_regset_active_fn - type of @active function in &struct user_regset
->  26  * @target:     thread being examined
->  27  * @regset:     regset being examined
->  28  *
->  29  * Return -%ENODEV if not available on the hardware found.
->  30  * Return %0 if no interesting state in this thread.
->  31  * Return >%0 number of @size units of interesting state.
->  32  * Any get call fetching state beyond that number will
->  33  * see the default initialization state for this data,
->  34  * so a caller that knows what the default state is need
->  35  * not copy it all out.
->  36  * This call is optional; the pointer is %NULL if there
->  37  * is no inexpensive check to yield a value < @n.
->  38  */
->  39 typedef int user_regset_active_fn(struct task_struct *target,
->  40                                   const struct user_regset *regset);
->  41
-> 
-> Note the mention of ENODEV.
-> 
-> I couldn't actually find any arch that currently returns -ENODEV in
-> the "active" hook.  I see that binfmt_elf.c doesn't handle
-> regset->active() returning < 0.  Guess that may be why.  Looks like
-> something that could be cleaned up, to me.
+
+On 14.05.14 06:11, Gavin Shan wrote:
+> The address of passed PCI devices (domain:bus:slot:func) might be
+> quite different from the perspective of host and guest. We have to
+> trace the address mapping so that we can emulate EEH RTAS requests
+> from guest. The patch introduces additional fields to eeh_pe and
+> eeh_dev for the purpose.
 >
+> Also, the patch adds function eeh_vfio_pe_get() and eeh_vfio_dev_get()
+> to search EEH PE or device according to the given guest address. Both
+> of them will be used by subsequent patches.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Also it does not consider the return value of regset->active(t->task, regset)
-(whose objective is to figure out whether we need to request regset->n number
-of elements or less than that) in the subsequent call to regset->get function.
+I don't see the point of VFIO knowing about guest addresses. They are 
+not unique across a system and the whole idea that a VFIO device has to 
+be owned by a guest is also pretty dubious.
 
-> Anyway, notice x86's REGSET_XSTATE regset->get hook:
-> 
-> int xstateregs_get(struct task_struct *target, const struct user_regset *regset,
-> 		unsigned int pos, unsigned int count,
-> 		void *kbuf, void __user *ubuf)
-> {
-> 	int ret;
-> 
-> 	if (!cpu_has_xsave)
-> 		return -ENODEV;
->         ^^^^^^^^^^^^^^^^^^^^^^
-> 
-> And then we see that xfpregs_get has a similar ENODEV case.
-> 
-> So in sum, it very much looks like the intention is for
-> PTRACE_GETREGSET/PTRACE_SETREGSET to return ENODEV in the
-> case the regset doesn't exist on the running machine, and then
-> it looks like at least x86 works that way.
-
-Okay. Looks like for all the "get/set" hooks I have added for the brand new regsets,
-we need to implement ENODATA error condition as that of s390 when TM is not active
-on the thread in target and implement ENODEV error condition as that of x86 when
-TM supports is not at all available on the system. So the code snippet which should
-be added to all the new "get/set" functions will be something like this.
-
-+       if (!cpu_has_feature(CPU_FTR_TM))
-+               return -ENODEV;
-+
-+       if(!MSR_TM_ACTIVE(target->thread.regs->msr))
-+               return -ENODATA;
+I suppose what you really care about here is just a token for a specific 
+device? But why do you need one where we don't have tokens yet?
 
 
-Now coming to the installation of the .active hooks part for all the new regsets, it
-should be pretty straight forward as well. Though its optional and used for elf_core_dump
-purpose only, its worth adding them here. Example of an active function should be something
-like this. The function is inexpensive as required.
-
-+static int tm_spr_active(struct task_struct *target,
-+                               const struct user_regset *regset)
-+{
-+       if (!cpu_has_feature(CPU_FTR_TM))
-+               return -ENODEV;
-+
-+       if(!MSR_TM_ACTIVE(target->thread.regs->msr))
-+               return 0;
-+
-+       return regset->n;
-+}
+Alex
