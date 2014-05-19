@@ -2,17 +2,17 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0738B1A007E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 22:55:45 +1000 (EST)
-Message-ID: <5379FF4C.7080202@suse.de>
-Date: Mon, 19 May 2014 14:55:40 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1644D1A04BA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 22:59:52 +1000 (EST)
+Message-ID: <537A0043.4050906@suse.de>
+Date: Mon, 19 May 2014 14:59:47 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH 6/8] powerpc: Extend syscall ppc_rtas()
+Subject: Re: [PATCH 7/8] powerpc/powernv: Implement ppc_call_opal()
 References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400040722-29608-7-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1400040722-29608-7-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400040722-29608-8-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1400040722-29608-8-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
@@ -27,27 +27,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 On 14.05.14 06:12, Gavin Shan wrote:
-> Originally, syscall ppc_rtas() can be used to invoke RTAS call from
-> user space. Utility "errinjct" is using it to inject various errors
-> to the system for testing purpose. The patch intends to extend the
-> syscall to support both pSeries and PowerNV platform. With that,
-> RTAS and OPAL call can be invoked from user space. In turn, utility
-> "errinjct" can be supported on pSeries and PowerNV platform at same
-> time.
->
-> The original syscall handler ppc_rtas() is renamed to ppc_firmware(),
-> which calls ppc_call_rtas() or ppc_call_opal() depending on the
-> running platform. The data transported between userland and kerenl is
+> If we're running PowerNV platform, ppc_firmware() will be directed
+> to ppc_call_opal() where we can call to OPAL API accordingly. In
+> ppc_call_opal(), the input argument are parsed out and call to
+> appropriate OPAL API to handle that. Each request passed to the
+> function is identified with token. As we get to the function either
+> from host owned application (e.g. errinjct) or VM, we always have
+> the first parameter (so-called "virtual") to differentiate the
+> cases.
 
-Please fix your spelling of kernel.
+This sounds like nonsense. A virtual parameter? What is that supposed to be?
 
-> by "struct rtas_args". It's platform specific on how to use the data.
->
-> Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
-I think the basic idea to maintain the same interface between PAPR and 
-OPAL to user space is sound, but this is really Ben's call.
+I don't think you can use this interface for VM device management, as 
+the syscall interface is (hopefully!) limited to CAP_ADMIN which you 
+(hopefully!) don't have as VFIO user.
 
 
 Alex
