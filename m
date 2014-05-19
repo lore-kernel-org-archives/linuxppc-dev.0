@@ -1,39 +1,24 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <himangi774@gmail.com>
+Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
+ [IPv6:2607:f8b0:400e:c03::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A86DF1A007E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 04:24:18 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 19 May 2014 14:24:15 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id D1331C90041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 14:24:07 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4JIOCHR64422036
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 18:24:12 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4JIOBnu006641
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 14:24:12 -0400
-Date: Mon, 19 May 2014 11:24:00 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: Node 0 not necessary for powerpc?
-Message-ID: <20140519182400.GM8941@linux.vnet.ibm.com>
-References: <20140311195632.GA946@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403120839110.6865@nuc>
- <20140313164949.GC22247@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6892E1A007E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 03:36:02 +1000 (EST)
+Received: by mail-pa0-f53.google.com with SMTP id kp14so6055871pab.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 10:35:58 -0700 (PDT)
+Date: Mon, 19 May 2014 23:05:51 +0530
+From: Himangi Saraogi <himangi774@gmail.com>
+To: Olof Johansson <olof@lixom.net>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] dt/powerpc: Introduce the use of the managed version of
+ kzalloc
+Message-ID: <20140519173550.GA10502@himangi-Dell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140313164949.GC22247@linux.vnet.ibm.com>
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org,
- rientjes@google.com
+Cc: julia.lawall@lip6.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +28,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13.03.2014 [09:49:49 -0700], Nishanth Aravamudan wrote:
-> On 12.03.2014 [08:41:40 -0500], Christoph Lameter wrote:
-> > On Tue, 11 Mar 2014, Nishanth Aravamudan wrote:
-> > > I have a P7 system that has no node0, but a node0 shows up in numactl
-> > > --hardware, which has no cpus and no memory (and no PCI devices):
-> > 
-> > Well as you see from the code there has been so far the assumption that
-> > node 0 has memory. I have never run a machine that has no node 0 memory.
-> 
-> Do you mean beyond the initialization? I didn't see anything obvious so
-> far in the code itself that assumes a given node has memory (in the
-> sense of the nid). What are your thoughts about how best to support
-> this?
+This patch moves data allocated using kzalloc to managed data allocated
+using devm_kzalloc and cleans now unnecessary kfrees in probe and remove
+functions. Also, the now unnecessary labels out_free_priv and out are
+done away with.
 
-Ah, I found one path that is problematic on powerpc:
+The following Coccinelle semantic patch was used for making the change:
 
-I'm seeing a panic at boot with this change on an LPAR which actually
-has no Node 0. Here's what I think is happening:
+@platform@
+identifier p, probefn, removefn;
+@@
+struct platform_driver p = {
+  .probe = probefn,
+  .remove = removefn,
+};
 
-start_kernel
-    ...
-    -> setup_per_cpu_areas
-        -> pcpu_embed_first_chunk
-            -> pcpu_fc_alloc
-                -> ___alloc_bootmem_node(NODE_DATA(cpu_to_node(cpu), ...
-    -> smp_prepare_boot_cpu
-        -> set_numa_node(boot_cpuid)
+@prb@
+identifier platform.probefn, pdev;
+expression e, e1, e2;
+@@
+probefn(struct platform_device *pdev, ...) {
+  <+...
+- e = kzalloc(e1, e2)
++ e = devm_kzalloc(&pdev->dev, e1, e2)
+  ...
+?-kfree(e);
+  ...+>
+}
 
-So we panic on the NODE_DATA call. It seems that ia64, at least, uses
-pcpu_alloc_first_chunk rather than embed. x86 has some code to handle
-early calls of cpu_to_node (early_cpu_to_node) and sets the mapping for
-all CPUs in setup_per_cpu_areas().
+@rem depends on prb@
+identifier platform.removefn;
+expression e;
+@@
+removefn(...) {
+  <...
+- kfree(e);
+  ...>
+}
 
-Thoughts? Does that mean we need something similar to x86 for powerpc?
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+---
+Not compile tested due to incompatible architecture
 
-Thanks,
-Nish
+ arch/powerpc/platforms/pasemi/gpio_mdio.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pasemi/gpio_mdio.c b/arch/powerpc/platforms/pasemi/gpio_mdio.c
+index 15adee5..a722a4a 100644
+--- a/arch/powerpc/platforms/pasemi/gpio_mdio.c
++++ b/arch/powerpc/platforms/pasemi/gpio_mdio.c
+@@ -226,15 +226,14 @@ static int gpio_mdio_probe(struct platform_device *ofdev)
+ 	const unsigned int *prop;
+ 	int err;
+ 
+-	err = -ENOMEM;
+-	priv = kzalloc(sizeof(struct gpio_priv), GFP_KERNEL);
++	priv = devm_kzalloc(&ofdev->dev, sizeof(struct gpio_priv), GFP_KERNEL);
+ 	if (!priv)
+-		goto out;
++		return -ENOMEM;
+ 
+ 	new_bus = mdiobus_alloc();
+ 
+ 	if (!new_bus)
+-		goto out_free_priv;
++		return -ENOMEM;
+ 
+ 	new_bus->name = "pasemi gpio mdio bus";
+ 	new_bus->read = &gpio_mdio_read;
+@@ -268,9 +267,6 @@ static int gpio_mdio_probe(struct platform_device *ofdev)
+ 
+ out_free_irq:
+ 	kfree(new_bus);
+-out_free_priv:
+-	kfree(priv);
+-out:
+ 	return err;
+ }
+ 
+@@ -283,7 +279,6 @@ static int gpio_mdio_remove(struct platform_device *dev)
+ 
+ 	dev_set_drvdata(&dev->dev, NULL);
+ 
+-	kfree(bus->priv);
+ 	bus->priv = NULL;
+ 	mdiobus_free(bus);
+ 
+-- 
+1.9.1
