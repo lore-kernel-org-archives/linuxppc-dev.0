@@ -1,26 +1,22 @@
-Return-Path: <sivasakthi7@outlook.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 21AB81400AF
- for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2014 09:38:13 +1000 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <sivasakthi7@outlook.com>) id 1WmAeh-00071z-Ck
- for linuxppc-dev@ozlabs.org; Sun, 18 May 2014 16:38:11 -0700
-Date: Sun, 18 May 2014 16:38:11 -0700 (PDT)
-From: shiva7 <sivasakthi7@outlook.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1400456291193-82408.post@n7.nabble.com>
-In-Reply-To: <1398206224.1694.254.camel@snotra.buserror.net>
-References: <5167457E.1050205@genband.com>
- <1398170592855-81732.post@n7.nabble.com>
- <1398205896.1694.252.camel@snotra.buserror.net>
- <1398206224.1694.254.camel@snotra.buserror.net>
-Subject: Re: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT, and
- DBCR0_ACTIVE_EVENTS
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Hugh Dickins <hughd@google.com>,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
+ for powerpc
+In-Reply-To: <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
+References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <537479E7.90806@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
+Date: Mon, 19 May 2014 09:42:46 +0930
+Message-ID: <87wqdik4n5.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Cc: linux-arch@vger.kernel.org, riel@redhat.com, ak@linux.intel.com,
+ dave.hansen@intel.com, peterz@infradead.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ mgorman@suse.de, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org, kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks Scott.
+Hugh Dickins <hughd@google.com> writes:
+> On Thu, 15 May 2014, Madhavan Srinivasan wrote:
+>> 
+>> Hi Ingo,
+>> 
+>> 	Do you have any comments for the latest version of the patchset. If
+>> not, kindly can you pick it up as is.
+>> 
+>> 
+>> With regards
+>> Maddy
+>> 
+>> > Kirill A. Shutemov with 8c6e50b029 commit introduced
+>> > vm_ops->map_pages() for mapping easy accessible pages around
+>> > fault address in hope to reduce number of minor page faults.
+>> > 
+>> > This patch creates infrastructure to modify the FAULT_AROUND_ORDER
+>> > value using mm/Kconfig. This will enable architecture maintainers
+>> > to decide on suitable FAULT_AROUND_ORDER value based on
+>> > performance data for that architecture. First patch also defaults
+>> > FAULT_AROUND_ORDER Kconfig element to 4. Second patch list
+>> > out the performance numbers for powerpc (platform pseries) and
+>> > initialize the fault around order variable for pseries platform of
+>> > powerpc.
+>
+> Sorry for not commenting earlier - just reminded by this ping to Ingo.
+>
+> I didn't study your numbers, but nowhere did I see what PAGE_SIZE you use.
+>
+> arch/powerpc/Kconfig suggests that Power supports base page size of
+> 4k, 16k, 64k or 256k.
+>
+> I would expect your optimal fault_around_order to depend very much on
+> the base page size.
 
-Apologize for not quoting the old email reference. I assumed the old archive
-content always will be in the trail.
+It was 64k, which is what PPC64 uses on all the major distributions.
+You really only get a choice of 4k and 64k with 64 bit power.
 
-Any idea whether the DBCR0 BRT bit actually works(??), if I add  DBCR0 under
-sys_debug context call? because this code seems like direct porting and
-wondering why on first place not included under debug_context call. 
+> Perhaps fault_around_size would provide a more useful default?
 
-And also, anything special required for "server" family application code
-porting here ?? as because in server family the trace exception used to viz
-NORMAL exception proglog and uses SRR0 and SRR1 but in this ISA/embedded
-case have dedicated DEBUG_DEBUG prolog and dedicated registers DSRR0 and
-DSRR1.
+That seems to fit.  With 4k pages and order 4, you're asking for 64k.
+Maddy's result shows 64k is also reasonable for 64k pages.
 
-I can see the debug handler already have HACK to simulate the branch taken
-case and SIGTRAP to user space.
+Perhaps we try to generalize from two data points (a slight improvement
+over doing it from 1!), eg:
 
-Thanks in Advance.
+/* 4 seems good for 4k-page x86, 0 seems good for 64k page ppc64, so: */
+unsigned int fault_around_order __read_mostly =
+        (16 - PAGE_SHIFT < 0 ? 0 : 16 - PAGE_SHIFT);
 
-
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/questions-on-CONFIG-PPC-ADV-DEBUG-REGS-DBCR0-BRT-and-DBCR0-ACTIVE-EVENTS-tp70147p82408.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Cheers,
+Rusty.
