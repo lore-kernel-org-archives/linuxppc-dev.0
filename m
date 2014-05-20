@@ -1,23 +1,36 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <f.fainelli@gmail.com>
+Received: from mail-qg0-x236.google.com (mail-qg0-x236.google.com
+ [IPv6:2607:f8b0:400d:c04::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F06CA1A08C9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 23:50:04 +1000 (EST)
-Message-ID: <537B5D85.3010305@suse.de>
-Date: Tue, 20 May 2014 15:49:57 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A16AA1A089E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 02:14:23 +1000 (EST)
+Received: by mail-qg0-f54.google.com with SMTP id q108so1088804qgd.41
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 09:14:19 -0700 (PDT)
 MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/4] powerpc/eeh: Avoid event on passed PE
-References: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400574612-19411-5-git-send-email-gwshan@linux.vnet.ibm.com>
- <537B3B97.3020100@suse.de> <20140520115606.GB20397@shangw>
- <537B4740.6090806@suse.de> <20140520124504.GB28441@shangw>
-In-Reply-To: <20140520124504.GB28441@shangw>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: aik@ozlabs.ru, kvm-ppc@vger.kernel.org, alex.williamson@redhat.com,
- qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
+References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Tue, 20 May 2014 09:13:39 -0700
+Message-ID: <CAGVrzcZ98LbqzgpLxsyNvXiZ35oMq9xw76X7BUjHCwd3oEjAdA@mail.gmail.com>
+Subject: Re: [PATCH 0/9 net-next] net: of_phy_connect_fixed_link removal
+To: netdev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Florian Fainelli <f.fainelli@gmail.com>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Richard Cochran <richardcochran@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Aida Mynzhasova <aida.mynzhasova@skitlab.ru>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, Kumar Gala <galak@codeaurora.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,100 +40,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+2014-05-19 17:56 GMT-07:00 Florian Fainelli <f.fainelli@gmail.com>:
+> Hi all,
+>
+> This patch set removes of_phy_connect_fixed_link() from the tree now that
+> we have a better solution for dealing with fixed PHY (emulated PHY) devices
+> for drivers that require them.
+>
+> First two patches update the 'fixed-link' Device Tree binding and drivers to
+> refere to it.
+>
+> Patches 3 to 7 update the in-tree network drivers that use
+> of_phy_connect_fixed_link()
+>
+> Patch 8 removes of_phy_connect_fixed_link
+>
+> Patch 9 removes the PowerPC code that parsed the 'fixed-link' property.
+>
+> Patch 9 can be merged via the net-next tree if the PowerPC folks ack it,
+> but it really has to be merged after the first 8 patches in order to avoid
+> breakage.
 
-On 20.05.14 14:45, Gavin Shan wrote:
-> On Tue, May 20, 2014 at 02:14:56PM +0200, Alexander Graf wrote:
->> On 20.05.14 13:56, Gavin Shan wrote:
->>> On Tue, May 20, 2014 at 01:25:11PM +0200, Alexander Graf wrote:
->>>> On 20.05.14 10:30, Gavin Shan wrote:
->>>>> If we detects frozen state on PE that has been passed to guest, we
->>>>> needn't handle it. Instead, we rely on the guest to detect and recover
->>>>> it. The patch avoid EEH event on the frozen passed PE so that the guest
->>>>> can have chance to handle that.
->>>>>
->>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>> How does the guest learn about this failure? We'd need to inject an
->>>> error into it, no?
->>>>
->>> When error is existing in HW level, 0xFF's will be turned on reading
->>> PCI config space or memory BARs. Guest retrieves the failure state,
->>> which is captured by HW automatically, via RTAS call
->>> "ibm,read-slot-reset-state2" when seeing 0xFF's on reading PCI config
->>> space or memory BARs. If "ibm,read-slot-reset-state2" reports errors in HW,
->>> the guest kernel starts to recovery.
->>>
->>> It can be called as "passive" reporting. There possible has one case that
->>> the error can't be reported for ever: No device driver binding to the VFIO
->>> PCI device and no access to device's config space and memory BARs. However,
->>> it doesn't matter. As we don't use the device, we needn't detect and recover
->>> the error at all.
->> So if the guest is waiting for an interrupt to happen it will wait
->> forever? Not really nice.
->>
-> Nope, the error reporting in guest isn't interrupt-driven. It's always
-> "polling" :-)
-
-That sucks :).
+For some reason these patches did not make it to the netdev patchwork
+instance, altough netdev is in CC, I will probably resend then with a
+trimmed CC list and just keep devicetree@vger.kernel.org for instance.
 
 >
->>>> I think what you want is an irqfd that the in-kernel eeh code
->>>> notifies when it sees a failure. When such an fd exists, the kernel
->>>> skips its own error handling.
->>>>
->>> Yeah, it's a good idea and something for me to improve in phase II. We
->>> can discuss for more later.
->> I think it makes sense to at least walk into that direction
->> immediately. The reason I brought it up in the context of this patch
->> is that with an irqfd you wouldn't need the passed flag at all.
->>
-> I don't see how it can avoid the "passed" flag. Without the flag, any
-> PCI config and memory BAR access on host side could trigger EEH recovery
-> for those PCI devices passed to guest. That's unexpected behaviour.
-
-Instead of
-
-   if (passed_flag)
-     return;
-
-you would do
-
-   if (trigger_irqfd) {
-     trigger_irqfd();
-     return;
-   }
-
-which would be a much nicer, generic interface.
-
-> For host, we have 2 ways to report errors: interrupt driven and polling.
-> For the guest, we only have "polling" :-)
-
-And the interrupt path is powernv specific? Does sPAPR specify anything 
-here?
-
+> Florian Fainelli (9):
+>   Documentation: devicetree: add old and deprecated 'fixed-link'
+>   Documentation: devicetree: net: refer to fixed-link.txt
+>   net: bcmgenet: use the new fixed PHY helpers
+>   net: systemport: use the new fixed PHY helpers
+>   fs_enet: use the new fixed PHY helpers
+>   gianfar: use the new fixed PHY helpers
+>   ucc_geth: use the new fixed PHY helpers
+>   of: mdio: remove of_phy_connect_fixed_link
+>   powerpc/fsl: fsl_soc: remove 'fixed-link' parsing code
 >
->>>   For now, what I have in my head is something
->>> like this:
->>>
->>>        [ Host ] -> Error detected -> irqfd (or eventfd) -> QEMU
->>>                                                             |
->>>                                     -------------(A)---------
->>>                                     |
->>>                          Send one EEH event to guest kernel
->>>                                     |
->>>                          Guest kernel starts the recovery
->>>
->>> (A): I didn't figure out one convienent way to do the EEH event injection yet.
->> How does the guest learn about errors in pHyp?
->>
-> It relies on "polling".
-
-Sigh ;).
-
-So how about we just implement this whole thing properly as irqfd? 
-Whether QEMU can actually do anything with the interrupt is a different 
-question - we can leave it be for now. But we could model all the code 
-with the assumption that it should either handle the error itself or 
-trigger and irqfd write.
+>  .../devicetree/bindings/net/broadcom-bcmgenet.txt  |  2 +-
+>  .../bindings/net/broadcom-systemport.txt           |  2 +-
+>  .../devicetree/bindings/net/fixed-link.txt         | 12 +++++++
+>  .../devicetree/bindings/net/fsl-tsec-phy.txt       |  5 +--
+>  arch/powerpc/sysdev/fsl_soc.c                      | 32 ------------------
+>  drivers/net/ethernet/broadcom/bcmsysport.c         | 17 ++++++++--
+>  drivers/net/ethernet/broadcom/bcmsysport.h         |  1 +
+>  drivers/net/ethernet/broadcom/genet/bcmmii.c       | 21 +++++++-----
+>  .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 16 +++++----
+>  drivers/net/ethernet/freescale/gianfar.c           | 14 ++++++--
+>  drivers/net/ethernet/freescale/ucc_geth.c          | 14 ++++++--
+>  drivers/of/of_mdio.c                               | 38 ----------------------
+>  include/linux/of_mdio.h                            | 10 ------
+>  13 files changed, 75 insertions(+), 109 deletions(-)
+>
+> --
+> 1.9.1
+>
 
 
-Alex
+
+-- 
+Florian
