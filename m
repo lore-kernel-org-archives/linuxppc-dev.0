@@ -1,35 +1,24 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E640B1A0860
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:30:24 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 20 May 2014 18:30:23 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2EF502CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:30:20 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4K8U4xJ7405854
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:30:04 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4K8UJW4012090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:30:20 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH 1/4] drivers/vfio: Introduce CONFIG_VFIO_PCI_EEH
-Date: Tue, 20 May 2014 18:30:09 +1000
-Message-Id: <1400574612-19411-2-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, agraf@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F9C61A082B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:02:29 +1000 (EST)
+Message-ID: <537B282E.6040107@suse.de>
+Date: Tue, 20 May 2014 12:02:22 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH 3/8] drivers/vfio: New IOCTL command VFIO_EEH_INFO
+References: <1400040722-29608-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400040722-29608-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400538790.3289.305.camel@ul30vt.home> <20140520002208.GA11073@shangw>
+ <1400546244.3289.341.camel@ul30vt.home> <20140520082856.GA16050@shangw>
+In-Reply-To: <20140520082856.GA16050@shangw>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: aik@ozlabs.ru, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,35 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch introduces CONFIG_VFIO_PCI_EEH for more IOCTL commands
-on VFIO PCI device support EEH funtionality for PCI devices that
-are passed through from host to guest.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- drivers/vfio/pci/Kconfig | 6 ++++++
- 1 file changed, 6 insertions(+)
+On 20.05.14 10:28, Gavin Shan wrote:
+> On Mon, May 19, 2014 at 06:37:24PM -0600, Alex Williamson wrote:
+>> On Tue, 2014-05-20 at 10:22 +1000, Gavin Shan wrote:
+>>> On Mon, May 19, 2014 at 04:33:10PM -0600, Alex Williamson wrote:
+>>>> On Wed, 2014-05-14 at 14:11 +1000, Gavin Shan wrote:
+>>>>> The patch adds new IOCTL command VFIO_EEH_INFO to VFIO container
+>>>>> to support EEH functionality for PCI devices, which have been
+>>>>> passed from host to guest via VFIO.
 
-diff --git a/drivers/vfio/pci/Kconfig b/drivers/vfio/pci/Kconfig
-index c41b01e..dd0e0f0 100644
---- a/drivers/vfio/pci/Kconfig
-+++ b/drivers/vfio/pci/Kconfig
-@@ -1,6 +1,7 @@
- config VFIO_PCI
- 	tristate "VFIO support for PCI devices"
- 	depends on VFIO && PCI && EVENTFD
-+	select VFIO_PCI_EEH if PPC_POWERNV
- 	help
- 	  Support for the PCI VFIO bus driver.  This is required to make
- 	  use of PCI drivers using the VFIO framework.
-@@ -16,3 +17,8 @@ config VFIO_PCI_VGA
- 	  BIOS and generic video drivers.
- 
- 	  If you don't know what to do here, say N.
-+
-+config VFIO_PCI_EEH
-+	tristate
-+	depends on EEH && VFIO_IOMMU_SPAPR_TCE
-+	default n
--- 
-1.8.3.2
+[...]
+
+>>> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+>>> index cb9023d..1fd1bfb 100644
+>>> --- a/include/uapi/linux/vfio.h
+>>> +++ b/include/uapi/linux/vfio.h
+>>> @@ -455,6 +455,63 @@ struct vfio_iommu_spapr_tce_info {
+>>>   
+>>>   #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
+>>>   
+>>> +/*
+>>> + * The VFIO EEH info struct provides way to support EEH functionality
+>>> + * for PCI device that is passed from host to guest via VFIO.
+>>> + */
+>>> +#define VFIO_EEH_OP_MAP		0
+>>> +#define VFIO_EEH_OP_UNMAP	1
+>>> +#define VFIO_EEH_OP_SET_OPTION	2
+>>> +#define VFIO_EEH_OP_GET_ADDR	3
+>>> +#define VFIO_EEH_OP_GET_STATE	4
+>>> +#define VFIO_EEH_OP_PE_RESET	5
+>>> +#define VFIO_EEH_OP_PE_CONFIG	6
+>>>> Is this really an "info" ioctl?
+>>>>
+>>> Yeah, "VFIO_EEH_INFO" isn't a good name. How about to have "VFIO_EEH_HANDLER" ?
+>> VFIO_EEH_OP perhaps.  Thanks,
+>>
+> Ok. Will rename it to VFIO_EEH_OP in next revision.
+
+Is there any benefit of a multiplexing EEH ioctl over just 7 individual 
+ioctls?
+
+
+Alex
