@@ -1,34 +1,21 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 965D01A086B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:01:22 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Tue, 20 May 2014 20:01:13 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 128E2357804F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:01:10 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4K9dYhs5571062
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 19:39:35 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4KA18bN021488
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:01:08 +1000
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv: Fix build error when CONFIG_SMP=n
-Date: Tue, 20 May 2014 15:25:26 +0530
-Message-Id: <1400579726-26206-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 77CE11A087E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 21:21:18 +1000 (EST)
+Message-ID: <537B3AA7.7040106@suse.de>
+Date: Tue, 20 May 2014 13:21:11 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
- "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH 3/4] drivers/vfio: New IOCTL command VFIO_EEH_INFO
+References: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400574612-19411-4-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1400574612-19411-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix the following build error when compiled with CONFIG_SMP=n
-arch/powerpc/platforms/powernv/setup.c: In function ‘pnv_kexec_wait_secondaries_down’:
-arch/powerpc/platforms/powernv/setup.c:179:4: error: implicit declaration of function ‘get_hard_smp_processor_id’ [-Werror=implicit-function-declaration]
-    rc = opal_query_cpu_status(get_hard_smp_processor_id(i),
 
-The usage of get_hard_smp_processor_id() needs the declaration from <asm/smp.h>.
-The file setup.c includes <linux/sched.h>, which in-turn includes <linux/smp.h>.
-However, <linux/smp.h> includes <asm/smp.h> only on SMP configs and hence UP
-builds fail. Fix this by directly including <asm/smp.h> in setup.c
-unconditionally.
+On 20.05.14 10:30, Gavin Shan wrote:
+> The patch adds new IOCTL command VFIO_EEH_OP to VFIO PCI device
+> to support EEH functionality for PCI devices, which have been
+> passed from host to guest via VFIO.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/platforms/powernv/Makefile   |   1 +
+>   arch/powerpc/platforms/powernv/eeh-vfio.c | 445 ++++++++++++++++++++++++++++++
+>   drivers/vfio/pci/vfio_pci.c               |  24 +-
+>   drivers/vfio/pci/vfio_pci_private.h       |  16 ++
+>   include/uapi/linux/vfio.h                 |  43 +++
+>   5 files changed, 523 insertions(+), 6 deletions(-)
+>   create mode 100644 arch/powerpc/platforms/powernv/eeh-vfio.c
 
-Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/setup.c | 1 +
- 1 file changed, 1 insertion(+)
+Why doesn't this code live inside the vfio module? If I don't load the 
+vfio module, I don't need that code to waste memory in my kernel, no?
 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 8723d32..e6bde98 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -34,6 +34,7 @@
- #include <asm/rtas.h>
- #include <asm/opal.h>
- #include <asm/kexec.h>
-+#include <asm/smp.h>
- 
- #include "powernv.h"
- 
--- 
-1.9.0
+
+Alex
