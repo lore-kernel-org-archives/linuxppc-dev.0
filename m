@@ -1,17 +1,17 @@
 Return-Path: <f.fainelli@gmail.com>
-Received: from mail-yh0-x234.google.com (mail-yh0-x234.google.com
- [IPv6:2607:f8b0:4002:c01::234])
+Received: from mail-yh0-x232.google.com (mail-yh0-x232.google.com
+ [IPv6:2607:f8b0:4002:c01::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D58101A088F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:14 +1000 (EST)
-Received: by mail-yh0-f52.google.com with SMTP id z6so7477158yhz.39
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:11 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34A911A08D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:18 +1000 (EST)
+Received: by mail-yh0-f50.google.com with SMTP id 29so7639122yhl.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:15 -0700 (PDT)
 From: Florian Fainelli <f.fainelli@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 3/9] net: bcmgenet: use the new fixed PHY helpers
-Date: Mon, 19 May 2014 17:56:18 -0700
-Message-Id: <1400547384-11363-4-git-send-email-f.fainelli@gmail.com>
+Subject: [PATCH net-next 4/9] net: systemport: use the new fixed PHY helpers
+Date: Mon, 19 May 2014 17:56:19 -0700
+Message-Id: <1400547384-11363-5-git-send-email-f.fainelli@gmail.com>
 In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>,
@@ -47,48 +47,56 @@ scheme.
 
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- drivers/net/ethernet/broadcom/genet/bcmmii.c | 21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
+ drivers/net/ethernet/broadcom/bcmsysport.c | 17 +++++++++++++++--
+ drivers/net/ethernet/broadcom/bcmsysport.h |  1 +
+ 2 files changed, 16 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/ethernet/broadcom/genet/bcmmii.c b/drivers/net/ethernet/broadcom/genet/bcmmii.c
-index 4608673beaff..add8d8596084 100644
---- a/drivers/net/ethernet/broadcom/genet/bcmmii.c
-+++ b/drivers/net/ethernet/broadcom/genet/bcmmii.c
-@@ -298,6 +298,7 @@ int bcmgenet_mii_config(struct net_device *dev)
- static int bcmgenet_mii_probe(struct net_device *dev)
- {
- 	struct bcmgenet_priv *priv = netdev_priv(dev);
-+	struct device_node *dn = priv->pdev->dev.of_node;
- 	struct phy_device *phydev;
- 	unsigned int phy_flags;
- 	int ret;
-@@ -307,15 +308,19 @@ static int bcmgenet_mii_probe(struct net_device *dev)
- 		return 0;
- 	}
+diff --git a/drivers/net/ethernet/broadcom/bcmsysport.c b/drivers/net/ethernet/broadcom/bcmsysport.c
+index d40c5b969e9e..dc708a888f80 100644
+--- a/drivers/net/ethernet/broadcom/bcmsysport.c
++++ b/drivers/net/ethernet/broadcom/bcmsysport.c
+@@ -1327,8 +1327,8 @@ static int bcm_sysport_open(struct net_device *dev)
+ 	/* Read CRC forward */
+ 	priv->crc_fwd = !!(umac_readl(priv, UMAC_CMD) & CMD_CRC_FWD);
  
--	if (priv->phy_dn)
--		phydev = of_phy_connect(dev, priv->phy_dn,
--					bcmgenet_mii_setup, 0,
--					priv->phy_interface);
--	else
--		phydev = of_phy_connect_fixed_link(dev,
--					bcmgenet_mii_setup,
--					priv->phy_interface);
+-	priv->phydev = of_phy_connect_fixed_link(dev, bcm_sysport_adj_link,
+-							priv->phy_interface);
++	priv->phydev = of_phy_connect(dev, priv->phy_dn, bcm_sysport_adj_link,
++					0, priv->phy_interface);
+ 	if (!priv->phydev) {
+ 		netdev_err(dev, "could not attach to PHY\n");
+ 		return -ENODEV;
+@@ -1551,6 +1551,19 @@ static int bcm_sysport_probe(struct platform_device *pdev)
+ 	if (priv->phy_interface < 0)
+ 		priv->phy_interface = PHY_INTERFACE_MODE_GMII;
+ 
 +	/* In the case of a fixed PHY, the DT node associated
 +	 * to the PHY is the Ethernet MAC DT node.
 +	 */
 +	if (of_phy_is_fixed_link(dn)) {
 +		ret = of_phy_register_fixed_link(dn);
-+		if (ret)
-+			return ret;
++		if (ret) {
++			dev_err(&pdev->dev, "failed to register fixed PHY\n");
++			goto err;
++		}
 +
 +		priv->phy_dn = dn;
 +	}
++
+ 	/* Initialize netdevice members */
+ 	macaddr = of_get_mac_address(dn);
+ 	if (!macaddr || !is_valid_ether_addr(macaddr)) {
+diff --git a/drivers/net/ethernet/broadcom/bcmsysport.h b/drivers/net/ethernet/broadcom/bcmsysport.h
+index abdeb62616df..73fd04a94797 100644
+--- a/drivers/net/ethernet/broadcom/bcmsysport.h
++++ b/drivers/net/ethernet/broadcom/bcmsysport.h
+@@ -656,6 +656,7 @@ struct bcm_sysport_priv {
+ 	unsigned int		rx_c_index;
  
-+	phydev = of_phy_connect(dev, priv->phy_dn, bcmgenet_mii_setup, 0,
-+				priv->phy_interface);
- 	if (!phydev) {
- 		pr_err("could not attach to PHY\n");
- 		return -ENODEV;
+ 	/* PHY device */
++	struct device_node	*phy_dn;
+ 	struct phy_device	*phydev;
+ 	phy_interface_t		phy_interface;
+ 	int			old_pause;
 -- 
 1.9.1
