@@ -1,28 +1,33 @@
-Return-Path: <kirill.shutemov@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 7638F1A0824
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:44:38 +1000 (EST)
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
- <87wqdik4n5.fsf@rustcorp.com.au>
- <53797511.1050409@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
- <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-Message-Id: <20140520004429.E660AE009B@blue.fi.intel.com>
-Date: Tue, 20 May 2014 03:44:29 +0300 (EEST)
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, riel@redhat.com,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
- peterz@infradead.org, Rusty Russell <rusty@rustcorp.com.au>,
- Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Return-Path: <f.fainelli@gmail.com>
+Received: from mail-yh0-x22c.google.com (mail-yh0-x22c.google.com
+ [IPv6:2607:f8b0:4002:c01::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87B6A1A0829
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:02 +1000 (EST)
+Received: by mail-yh0-f44.google.com with SMTP id b6so7500690yha.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:56:57 -0700 (PDT)
+From: Florian Fainelli <f.fainelli@gmail.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH 0/9 net-next] net: of_phy_connect_fixed_link removal
+Date: Mon, 19 May 2014 17:56:15 -0700
+Message-Id: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Florian Fainelli <f.fainelli@gmail.com>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Grant Likely <grant.likely@linaro.org>,
+ "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
+ Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
+ Richard Cochran <richardcochran@gmail.com>, Rob Herring <robh+dt@kernel.org>,
+ Aida Mynzhasova <aida.mynzhasova@skitlab.ru>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
+ Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>,
+ davem@davemlof.net, Vitaly Bordug <vbordug@ru.mvista.com>,
+ Kumar Gala <galak@codeaurora.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,113 +37,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> On Mon, 19 May 2014 16:23:07 -0700 (PDT) Hugh Dickins <hughd@google.com> wrote:
-> 
-> > Shouldn't FAULT_AROUND_ORDER and fault_around_order be changed to be
-> > the order of the fault-around size in bytes, and fault_around_pages()
-> > use 1UL << (fault_around_order - PAGE_SHIFT)
-> 
-> Yes.  And shame on me for missing it (this time!) at review.
-> 
-> There's still time to fix this.  Patches, please.
+Hi all,
 
-Here it is. Made at 3.30 AM, build tested only.
+This patch set removes of_phy_connect_fixed_link() from the tree now that
+we have a better solution for dealing with fixed PHY (emulated PHY) devices
+for drivers that require them.
 
-I'll sign it off tomorrow after testing.
+First two patches update the 'fixed-link' Device Tree binding and drivers to
+refere to it.
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 037b812a9531..9d6941c9a9e4 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3402,62 +3402,62 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
- 	update_mmu_cache(vma, address, pte);
- }
- 
--#define FAULT_AROUND_ORDER 4
-+#define FAULT_AROUND_BYTES 65536
- 
- #ifdef CONFIG_DEBUG_FS
--static unsigned int fault_around_order = FAULT_AROUND_ORDER;
-+static unsigned int fault_around_bytes = FAULT_AROUND_BYTES;
- 
--static int fault_around_order_get(void *data, u64 *val)
-+static int fault_around_bytes_get(void *data, u64 *val)
- {
--	*val = fault_around_order;
-+	*val = fault_around_bytes;
- 	return 0;
- }
- 
--static int fault_around_order_set(void *data, u64 val)
-+static int fault_around_bytes_set(void *data, u64 val)
- {
--	BUILD_BUG_ON((1UL << FAULT_AROUND_ORDER) > PTRS_PER_PTE);
--	if (1UL << val > PTRS_PER_PTE)
-+	BUILD_BUG_ON(FAULT_AROUND_BYTES / PAGE_SIZE > PTRS_PER_PTE);
-+	if (val / PAGE_SIZE > PTRS_PER_PTE)
- 		return -EINVAL;
--	fault_around_order = val;
-+	fault_around_bytes = val;
- 	return 0;
- }
--DEFINE_SIMPLE_ATTRIBUTE(fault_around_order_fops,
--		fault_around_order_get, fault_around_order_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fault_around_bytes_fops,
-+		fault_around_bytes_get, fault_around_bytes_set, "%llu\n");
- 
- static int __init fault_around_debugfs(void)
- {
- 	void *ret;
- 
--	ret = debugfs_create_file("fault_around_order",	0644, NULL, NULL,
--			&fault_around_order_fops);
-+	ret = debugfs_create_file("fault_around_bytes", 0644, NULL, NULL,
-+			&fault_around_bytes_fops);
- 	if (!ret)
--		pr_warn("Failed to create fault_around_order in debugfs");
-+		pr_warn("Failed to create fault_around_bytes in debugfs");
- 	return 0;
- }
- late_initcall(fault_around_debugfs);
- 
- static inline unsigned long fault_around_pages(void)
- {
--	return 1UL << fault_around_order;
-+	return fault_around_bytes / PAGE_SIZE;
- }
- 
- static inline unsigned long fault_around_mask(void)
- {
--	return ~((1UL << (PAGE_SHIFT + fault_around_order)) - 1);
-+	return ~(round_down(fault_around_bytes, PAGE_SIZE) - 1);
- }
- #else
- static inline unsigned long fault_around_pages(void)
- {
- 	unsigned long nr_pages;
- 
--	nr_pages = 1UL << FAULT_AROUND_ORDER;
-+	nr_pages = FAULT_AROUND_BYTES / PAGE_SIZE;
- 	BUILD_BUG_ON(nr_pages > PTRS_PER_PTE);
- 	return nr_pages;
- }
- 
- static inline unsigned long fault_around_mask(void)
- {
--	return ~((1UL << (PAGE_SHIFT + FAULT_AROUND_ORDER)) - 1);
-+	return ~(round_down(FAULT_AROUND_BYTES, PAGE_SIZE) - 1);
- }
- #endif
- 
-@@ -3515,7 +3515,7 @@ static int do_read_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * if page by the offset is not ready to be mapped (cold cache or
- 	 * something).
- 	 */
--	if (vma->vm_ops->map_pages) {
-+	if (vma->vm_ops->map_pages && fault_around_pages() > 1) {
- 		pte = pte_offset_map_lock(mm, pmd, address, &ptl);
- 		do_fault_around(vma, address, pte, pgoff, flags);
- 		if (!pte_same(*pte, orig_pte))
+Patches 3 to 7 update the in-tree network drivers that use
+of_phy_connect_fixed_link()
+
+Patch 8 removes of_phy_connect_fixed_link
+
+Patch 9 removes the PowerPC code that parsed the 'fixed-link' property.
+
+Patch 9 can be merged via the net-next tree if the PowerPC folks ack it,
+but it really has to be merged after the first 8 patches in order to avoid
+breakage.
+
+Florian Fainelli (9):
+  Documentation: devicetree: add old and deprecated 'fixed-link'
+  Documentation: devicetree: net: refer to fixed-link.txt
+  net: bcmgenet: use the new fixed PHY helpers
+  net: systemport: use the new fixed PHY helpers
+  fs_enet: use the new fixed PHY helpers
+  gianfar: use the new fixed PHY helpers
+  ucc_geth: use the new fixed PHY helpers
+  of: mdio: remove of_phy_connect_fixed_link
+  powerpc/fsl: fsl_soc: remove 'fixed-link' parsing code
+
+ .../devicetree/bindings/net/broadcom-bcmgenet.txt  |  2 +-
+ .../bindings/net/broadcom-systemport.txt           |  2 +-
+ .../devicetree/bindings/net/fixed-link.txt         | 12 +++++++
+ .../devicetree/bindings/net/fsl-tsec-phy.txt       |  5 +--
+ arch/powerpc/sysdev/fsl_soc.c                      | 32 ------------------
+ drivers/net/ethernet/broadcom/bcmsysport.c         | 17 ++++++++--
+ drivers/net/ethernet/broadcom/bcmsysport.h         |  1 +
+ drivers/net/ethernet/broadcom/genet/bcmmii.c       | 21 +++++++-----
+ .../net/ethernet/freescale/fs_enet/fs_enet-main.c  | 16 +++++----
+ drivers/net/ethernet/freescale/gianfar.c           | 14 ++++++--
+ drivers/net/ethernet/freescale/ucc_geth.c          | 14 ++++++--
+ drivers/of/of_mdio.c                               | 38 ----------------------
+ include/linux/of_mdio.h                            | 10 ------
+ 13 files changed, 75 insertions(+), 109 deletions(-)
+
 -- 
- Kirill A. Shutemov
+1.9.1
