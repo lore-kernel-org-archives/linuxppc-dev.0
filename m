@@ -1,30 +1,36 @@
-Return-Path: <kirill.shutemov@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by lists.ozlabs.org (Postfix) with ESMTP id 173A41A086B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:27:47 +1000 (EST)
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <87oaythsvk.fsf@rustcorp.com.au>
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
- <87wqdik4n5.fsf@rustcorp.com.au>
- <53797511.1050409@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
- <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
- <20140520004429.E660AE009B@blue.fi.intel.com>
- <87oaythsvk.fsf@rustcorp.com.au>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-Message-Id: <20140520102738.7F096E009B@blue.fi.intel.com>
-Date: Tue, 20 May 2014 13:27:38 +0300 (EEST)
-Cc: linux-arch@vger.kernel.org, riel@redhat.com,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
- peterz@infradead.org, x86@kernel.org, Hugh Dickins <hughd@google.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@linux.intel.com,
- paulus@samba.org, mgorman@suse.de, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44DC11A086E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:08 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 20 May 2014 20:33:07 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0836B2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:07 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4KAWpfc10617206
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:32:51 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4KAX6aL013886
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:06 +1000
+Message-ID: <537B2F16.6030504@linux.vnet.ibm.com>
+Date: Tue, 20 May 2014 16:01:50 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: Fix build error when CONFIG_SMP=n
+References: <1400579726-26206-1-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <1400579726-26206-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,147 +40,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rusty Russell wrote:
-> "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> writes:
-> > Andrew Morton wrote:
-> >> On Mon, 19 May 2014 16:23:07 -0700 (PDT) Hugh Dickins <hughd@google.com> wrote:
-> >> 
-> >> > Shouldn't FAULT_AROUND_ORDER and fault_around_order be changed to be
-> >> > the order of the fault-around size in bytes, and fault_around_pages()
-> >> > use 1UL << (fault_around_order - PAGE_SHIFT)
-> >> 
-> >> Yes.  And shame on me for missing it (this time!) at review.
-> >> 
-> >> There's still time to fix this.  Patches, please.
-> >
-> > Here it is. Made at 3.30 AM, build tested only.
+On 05/20/2014 03:25 PM, Shreyas B. Prabhu wrote:
+> Fix the following build error when compiled with CONFIG_SMP=n
+> arch/powerpc/platforms/powernv/setup.c: In function ‘pnv_kexec_wait_secondaries_down’:
+> arch/powerpc/platforms/powernv/setup.c:179:4: error: implicit declaration of function ‘get_hard_smp_processor_id’ [-Werror=implicit-function-declaration]
+>     rc = opal_query_cpu_status(get_hard_smp_processor_id(i),
 > 
-> Prefer on top of Maddy's patch which makes it always a variable, rather
-> than CONFIG_DEBUG_FS.  It's got enough hair as it is.
+> The usage of get_hard_smp_processor_id() needs the declaration from <asm/smp.h>.
+> The file setup.c includes <linux/sched.h>, which in-turn includes <linux/smp.h>.
+> However, <linux/smp.h> includes <asm/smp.h> only on SMP configs and hence UP
+> builds fail. Fix this by directly including <asm/smp.h> in setup.c
+> unconditionally.
+> 
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 
-Something like this?
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Date: Tue, 20 May 2014 13:02:03 +0300
-Subject: [PATCH] mm: nominate faultaround area in bytes rather then page order
+Regards,
+Srivatsa S. Bhat
 
-There are evidences that faultaround feature is less relevant on
-architectures with page size bigger then 4k. Which makes sense since
-page fault overhead per byte of mapped area should be less there.
-
-Let's rework the feature to specify faultaround area in bytes instead of
-page order. It's 64 kilobytes for now.
-
-The patch effectively disables faultaround on architectures with
-page size >= 64k (like ppc64).
-
-It's possible that some other size of faultaround area is relevant for a
-platform. We can expose `fault_around_bytes' variable to arch-specific
-code once such platforms will be found.
-
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
----
- mm/memory.c | 62 +++++++++++++++++++++++--------------------------------------
- 1 file changed, 23 insertions(+), 39 deletions(-)
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 037b812a9531..252b319e8cdf 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3402,63 +3402,47 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
- 	update_mmu_cache(vma, address, pte);
- }
- 
--#define FAULT_AROUND_ORDER 4
-+static unsigned long fault_around_bytes = 65536;
-+
-+static inline unsigned long fault_around_pages(void)
-+{
-+	return rounddown_pow_of_two(fault_around_bytes) / PAGE_SIZE;
-+}
-+
-+static inline unsigned long fault_around_mask(void)
-+{
-+	return ~(rounddown_pow_of_two(fault_around_bytes) - 1) & PAGE_MASK;
-+}
- 
--#ifdef CONFIG_DEBUG_FS
--static unsigned int fault_around_order = FAULT_AROUND_ORDER;
- 
--static int fault_around_order_get(void *data, u64 *val)
-+#ifdef CONFIG_DEBUG_FS
-+static int fault_around_bytes_get(void *data, u64 *val)
- {
--	*val = fault_around_order;
-+	*val = fault_around_bytes;
- 	return 0;
- }
- 
--static int fault_around_order_set(void *data, u64 val)
-+static int fault_around_bytes_set(void *data, u64 val)
- {
--	BUILD_BUG_ON((1UL << FAULT_AROUND_ORDER) > PTRS_PER_PTE);
--	if (1UL << val > PTRS_PER_PTE)
-+	if (val / PAGE_SIZE > PTRS_PER_PTE)
- 		return -EINVAL;
--	fault_around_order = val;
-+	fault_around_bytes = val;
- 	return 0;
- }
--DEFINE_SIMPLE_ATTRIBUTE(fault_around_order_fops,
--		fault_around_order_get, fault_around_order_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fault_around_bytes_fops,
-+		fault_around_bytes_get, fault_around_bytes_set, "%llu\n");
- 
- static int __init fault_around_debugfs(void)
- {
- 	void *ret;
- 
--	ret = debugfs_create_file("fault_around_order",	0644, NULL, NULL,
--			&fault_around_order_fops);
-+	ret = debugfs_create_file("fault_around_bytes", 0644, NULL, NULL,
-+			&fault_around_bytes_fops);
- 	if (!ret)
--		pr_warn("Failed to create fault_around_order in debugfs");
-+		pr_warn("Failed to create fault_around_bytes in debugfs");
- 	return 0;
- }
- late_initcall(fault_around_debugfs);
--
--static inline unsigned long fault_around_pages(void)
--{
--	return 1UL << fault_around_order;
--}
--
--static inline unsigned long fault_around_mask(void)
--{
--	return ~((1UL << (PAGE_SHIFT + fault_around_order)) - 1);
--}
--#else
--static inline unsigned long fault_around_pages(void)
--{
--	unsigned long nr_pages;
--
--	nr_pages = 1UL << FAULT_AROUND_ORDER;
--	BUILD_BUG_ON(nr_pages > PTRS_PER_PTE);
--	return nr_pages;
--}
--
--static inline unsigned long fault_around_mask(void)
--{
--	return ~((1UL << (PAGE_SHIFT + FAULT_AROUND_ORDER)) - 1);
--}
- #endif
- 
- static void do_fault_around(struct vm_area_struct *vma, unsigned long address,
-@@ -3515,7 +3499,7 @@ static int do_read_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * if page by the offset is not ready to be mapped (cold cache or
- 	 * something).
- 	 */
--	if (vma->vm_ops->map_pages) {
-+	if (vma->vm_ops->map_pages && fault_around_pages() > 1) {
- 		pte = pte_offset_map_lock(mm, pmd, address, &ptl);
- 		do_fault_around(vma, address, pte, pgoff, flags);
- 		if (!pte_same(*pte, orig_pte))
--- 
- Kirill A. Shutemov
+> ---
+>  arch/powerpc/platforms/powernv/setup.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+> index 8723d32..e6bde98 100644
+> --- a/arch/powerpc/platforms/powernv/setup.c
+> +++ b/arch/powerpc/platforms/powernv/setup.c
+> @@ -34,6 +34,7 @@
+>  #include <asm/rtas.h>
+>  #include <asm/opal.h>
+>  #include <asm/kexec.h>
+> +#include <asm/smp.h>
+> 
+>  #include "powernv.h"
+> 
