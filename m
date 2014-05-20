@@ -1,18 +1,18 @@
 Return-Path: <f.fainelli@gmail.com>
-Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
- [IPv6:2607:f8b0:4002:c01::231])
+Received: from mail-yh0-x235.google.com (mail-yh0-x235.google.com
+ [IPv6:2607:f8b0:4002:c01::235])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96FA31A0829
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:04 +1000 (EST)
-Received: by mail-yh0-f49.google.com with SMTP id c41so7534052yho.36
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:01 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D665E1A0869
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:07 +1000 (EST)
+Received: by mail-yh0-f53.google.com with SMTP id i57so7508933yha.40
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:04 -0700 (PDT)
 From: Florian Fainelli <f.fainelli@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 1/9] Documentation: devicetree: add old and
- deprecated 'fixed-link'
-Date: Mon, 19 May 2014 17:56:16 -0700
-Message-Id: <1400547384-11363-2-git-send-email-f.fainelli@gmail.com>
+Subject: [PATCH net-next 2/9] Documentation: devicetree: net: refer to
+ fixed-link.txt
+Date: Mon, 19 May 2014 17:56:17 -0700
+Message-Id: <1400547384-11363-3-git-send-email-f.fainelli@gmail.com>
 In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>,
@@ -40,36 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the fixed-link Device Tree binding documentation to contain
-information about the old and deprecated 5-digit 'fixed-link' property.
+Update the Freescale TSEC PHY, Broadcom GENET & SYSTEMPORT Device Tree
+binding documentation to refer to the fixed-link Device Tree binding in
+fixed-link.txt.
 
+Reviewed-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- Documentation/devicetree/bindings/net/fixed-link.txt | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt   | 2 +-
+ Documentation/devicetree/bindings/net/broadcom-systemport.txt | 2 +-
+ Documentation/devicetree/bindings/net/fsl-tsec-phy.txt        | 5 +----
+ 3 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/fixed-link.txt b/Documentation/devicetree/bindings/net/fixed-link.txt
-index e956de1be935..34a991eb213f 100644
---- a/Documentation/devicetree/bindings/net/fixed-link.txt
-+++ b/Documentation/devicetree/bindings/net/fixed-link.txt
-@@ -18,6 +18,18 @@ properties:
- * 'asym-pause' (boolean, optional), to indicate that asym_pause should
-   be enabled.
+diff --git a/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt b/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt
+index f2febb94550e..451fef26b4df 100644
+--- a/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt
++++ b/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt
+@@ -24,7 +24,7 @@ Optional properties:
+ - fixed-link: When the GENET interface is connected to a MoCA hardware block or
+   when operating in a RGMII to RGMII type of connection, or when the MDIO bus is
+   voluntarily disabled, this property should be used to describe the "fixed link".
+-  See Documentation/devicetree/bindings/net/fsl-tsec-phy.txt for information on
++  See Documentation/devicetree/bindings/net/fixed-link.txt for information on
+   the property specifics
  
-+Old, deprecated 'fixed-link' binding:
-+
-+* A 'fixed-link' property in the Ethernet MAC node, with 5 cells, of the
-+  form <a b c d e> with the following accepted values:
-+  - a: emulated phy id, choose any but but unique to the all specified
-+    fixed-links, from 0 to 31
-+  - b: duplex configuration: 0 for half duplex, 1 for full duplex
-+  - c: link speed in Mbits/sec, accepted values are: 10, 100 and 1000
-+  - d: pause configuration: 0 for no pause, 1 for pause
-+  - e: asymetric pause configuration: 0 for no asymetric pause, 1 for asymetric
-+    pause
-+
- Example:
+ Required child nodes:
+diff --git a/Documentation/devicetree/bindings/net/broadcom-systemport.txt b/Documentation/devicetree/bindings/net/broadcom-systemport.txt
+index 1b7600e022dd..c183ea90d9bc 100644
+--- a/Documentation/devicetree/bindings/net/broadcom-systemport.txt
++++ b/Documentation/devicetree/bindings/net/broadcom-systemport.txt
+@@ -8,7 +8,7 @@ Required properties:
+ - local-mac-address: Ethernet MAC address (48 bits) of this adapter
+ - phy-mode: Should be a string describing the PHY interface to the
+   Ethernet switch/PHY, see Documentation/devicetree/bindings/net/ethernet.txt
+-- fixed-link: see Documentation/devicetree/bindings/net/fsl-tsec-phy.txt for
++- fixed-link: see Documentation/devicetree/bindings/net/fixed-link.txt for
+   the property specific details
  
- ethernet@0 {
+ Optional properties:
+diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+index 737cdef4f903..be6ea8960f20 100644
+--- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
++++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
+@@ -42,10 +42,7 @@ Properties:
+     interrupt.  For TSEC and eTSEC devices, the first interrupt is
+     transmit, the second is receive, and the third is error.
+   - phy-handle : See ethernet.txt file in the same directory.
+-  - fixed-link : <a b c d e> where a is emulated phy id - choose any,
+-    but unique to the all specified fixed-links, b is duplex - 0 half,
+-    1 full, c is link speed - d#10/d#100/d#1000, d is pause - 0 no
+-    pause, 1 pause, e is asym_pause - 0 no asym_pause, 1 asym_pause.
++  - fixed-link : See fixed-link.txt in the same directory.
+   - phy-connection-type : See ethernet.txt file in the same directory.
+     This property is only really needed if the connection is of type
+     "rgmii-id", as all other connection types are detected by hardware.
 -- 
 1.9.1
