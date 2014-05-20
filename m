@@ -1,17 +1,17 @@
 Return-Path: <f.fainelli@gmail.com>
-Received: from mail-yh0-x22f.google.com (mail-yh0-x22f.google.com
- [IPv6:2607:f8b0:4002:c01::22f])
+Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
+ [IPv6:2607:f8b0:4002:c07::234])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0E111A087D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:21 +1000 (EST)
-Received: by mail-yh0-f47.google.com with SMTP id z6so7503813yhz.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D29D01A08FD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:24 +1000 (EST)
+Received: by mail-yk0-f180.google.com with SMTP id q9so5149230ykb.39
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:21 -0700 (PDT)
 From: Florian Fainelli <f.fainelli@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 5/9] fs_enet: use the new fixed PHY helpers
-Date: Mon, 19 May 2014 17:56:20 -0700
-Message-Id: <1400547384-11363-6-git-send-email-f.fainelli@gmail.com>
+Subject: [PATCH net-next 6/9] gianfar: use the new fixed PHY helpers
+Date: Mon, 19 May 2014 17:56:21 -0700
+Message-Id: <1400547384-11363-7-git-send-email-f.fainelli@gmail.com>
 In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>,
@@ -47,42 +47,40 @@ scheme.
 
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/net/ethernet/freescale/gianfar.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-index dc80db41d6b3..d602711e00e9 100644
---- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
-@@ -792,10 +792,6 @@ static int fs_init_phy(struct net_device *dev)
- 	phydev = of_phy_connect(dev, fep->fpi->phy_node, &fs_adjust_link, 0,
- 				iface);
- 	if (!phydev) {
--		phydev = of_phy_connect_fixed_link(dev, &fs_adjust_link,
--						   iface);
--	}
--	if (!phydev) {
- 		dev_err(&dev->dev, "Could not attach to PHY\n");
- 		return -ENODEV;
- 	}
-@@ -1029,9 +1025,15 @@ static int fs_enet_probe(struct platform_device *ofdev)
- 	fpi->use_napi = 1;
- 	fpi->napi_weight = 17;
- 	fpi->phy_node = of_parse_phandle(ofdev->dev.of_node, "phy-handle", 0);
--	if ((!fpi->phy_node) && (!of_get_property(ofdev->dev.of_node, "fixed-link",
--						  NULL)))
--		goto out_free_fpi;
-+	if (!fpi->phy_node) {
-+		if (of_phy_is_fixed_link(ofdev->dev.of_node)) {
-+			err = of_phy_register_fixed_link(ofdev->dev.of_node);
-+			if (err)
-+				goto out_free_fpi;
-+
-+			fpi->phy_node = ofdev->dev.of_node;
-+		}
-+	}
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index e2d42475b006..282674027c92 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -889,6 +889,17 @@ static int gfar_of_init(struct platform_device *ofdev, struct net_device **pdev)
  
- 	if (of_device_is_compatible(ofdev->dev.of_node, "fsl,mpc5125-fec")) {
- 		phy_connection_type = of_get_property(ofdev->dev.of_node,
+ 	priv->phy_node = of_parse_phandle(np, "phy-handle", 0);
+ 
++	/* In the case of a fixed PHY, the DT node associated
++	 * to the PHY is the Ethernet MAC DT node.
++	 */
++	if (of_phy_is_fixed_link(np)) {
++		err = of_phy_register_fixed_link(np);
++		if (err)
++			goto err_grp_init;
++
++		priv->phy_node = np;
++	}
++
+ 	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+ 	priv->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
+ 
+@@ -1660,9 +1671,6 @@ static int init_phy(struct net_device *dev)
+ 
+ 	priv->phydev = of_phy_connect(dev, priv->phy_node, &adjust_link, 0,
+ 				      interface);
+-	if (!priv->phydev)
+-		priv->phydev = of_phy_connect_fixed_link(dev, &adjust_link,
+-							 interface);
+ 	if (!priv->phydev) {
+ 		dev_err(&dev->dev, "could not attach to PHY\n");
+ 		return -ENODEV;
 -- 
 1.9.1
