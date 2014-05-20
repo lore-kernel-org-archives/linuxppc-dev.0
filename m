@@ -1,36 +1,29 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <palves@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44DC11A086E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:08 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 20 May 2014 20:33:07 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0836B2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:07 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4KAWpfc10617206
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:32:51 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4KAX6aL013886
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:06 +1000
-Message-ID: <537B2F16.6030504@linux.vnet.ibm.com>
-Date: Tue, 20 May 2014 16:01:50 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C25441A088E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 20:33:16 +1000 (EST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3FF06140084
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2014 20:33:16 +1000 (EST)
+Message-ID: <537B2F5E.4040102@redhat.com>
+Date: Tue, 20 May 2014 11:33:02 +0100
+From: Pedro Alves <palves@redhat.com>
 MIME-Version: 1.0
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv: Fix build error when CONFIG_SMP=n
-References: <1400579726-26206-1-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1400579726-26206-1-git-send-email-shreyas@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
+ memory register sets
+References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
+ <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
+ <53735044.5030008@redhat.com> <537479FD.2010200@linux.vnet.ibm.com>
+ <5374AE24.1030302@redhat.com> <5379EF0E.6090504@linux.vnet.ibm.com>
+ <537A1889.8030801@redhat.com> <537B0EE0.4080406@linux.vnet.ibm.com>
+In-Reply-To: <537B0EE0.4080406@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: mikey@neuling.org, avagin@openvz.org, linux-kernel@vger.kernel.org,
+ oleg@redhat.com, michael@ellerman.id.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,39 +33,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/20/2014 03:25 PM, Shreyas B. Prabhu wrote:
-> Fix the following build error when compiled with CONFIG_SMP=n
-> arch/powerpc/platforms/powernv/setup.c: In function ‘pnv_kexec_wait_secondaries_down’:
-> arch/powerpc/platforms/powernv/setup.c:179:4: error: implicit declaration of function ‘get_hard_smp_processor_id’ [-Werror=implicit-function-declaration]
->     rc = opal_query_cpu_status(get_hard_smp_processor_id(i),
+On 05/20/2014 09:14 AM, Anshuman Khandual wrote:
+> On 05/19/2014 08:13 PM, Pedro Alves wrote:
+>> On 05/19/2014 12:46 PM, Anshuman Khandual wrote:
+>>
+>>>>> I couldn't actually find any arch that currently returns -ENODEV in
+>>>>> the "active" hook.  I see that binfmt_elf.c doesn't handle
+>>>>> regset->active() returning < 0.  Guess that may be why.  Looks like
+>>>>> something that could be cleaned up, to me.
+>>>>>
+>>> Also it does not consider the return value of regset->active(t->task, regset)
+>>> (whose objective is to figure out whether we need to request regset->n number
+>>> of elements or less than that) in the subsequent call to regset->get function.
+>>
+>> Indeed.
+>>
+>> TBC, do you plan on fixing this?  Otherwise ...
 > 
-> The usage of get_hard_smp_processor_id() needs the declaration from <asm/smp.h>.
-> The file setup.c includes <linux/sched.h>, which in-turn includes <linux/smp.h>.
-> However, <linux/smp.h> includes <asm/smp.h> only on SMP configs and hence UP
-> builds fail. Fix this by directly including <asm/smp.h> in setup.c
-> unconditionally.
-> 
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> Sure, thinking something like this as mentioned below. But still not sure how to use
+> the return type of -ENODEV from the function regset->active(). Right now if any
+> regset does have the active hook and it returns anything but positive value, it will
+> be ignored and the control moves to the next regset in view. This prevents the thread
+> core note type being written to the core dump.
 
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Looks to me that that's exactly what should happen for -ENODEV too.  The regset
+should be ignored.  If regset->active() returns -ENODEV, then the machine
+doesn't have the registers at all, so what makes sense to me is to not write the
+corresponding core note in the dump.  IOW, on such a machine, the kernel
+generates a core exactly like if the support for these registers that don't
+make sense for this machine wasn't compiled in at all.  And generates a core
+exactly like an older kernel that didn't know about that regset
+(which is fine for that same machine) yet.
 
-Regards,
-Srivatsa S. Bhat
+> 
+> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> index aa3cb62..80672fb 100644
+> --- a/fs/binfmt_elf.c
+> +++ b/fs/binfmt_elf.c
+> @@ -1553,7 +1553,15 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
+>                 if (regset->core_note_type && regset->get &&
+>                     (!regset->active || regset->active(t->task, regset))) {
+>                         int ret;
 
-> ---
->  arch/powerpc/platforms/powernv/setup.c | 1 +
->  1 file changed, 1 insertion(+)
+So, here, this ?
+
+                    (!regset->active || regset->active(t->task, regset) > 0)) {
+
+
+> -                       size_t size = regset->n * regset->size;
+> +                       size_t size;
+> +
+> +                       /* Request only the active elements in the regset */
+> +                       if (!regset->active)
+> +                               size = regset->n * regset->size;
+> +                       else
+> +                               size = regset->active(t->task, regset)
+> +                                                               * regset->size;
+> +
+
+
+I wonder if it wouldn't be cleaner to add a function like:
+
+int
+regset_active (tast *task, regseg *regset)
+{
+   if (!regset->active)
+        return regset->n * regset->size;
+   else
+        return regset->active(task, regset);
+}
+
+And then use it like
+
+               if (regset->core_note_type && regset->get) {
+                   int size = regset_active (t->task, regset);
+
+                   if (size > 0) {
+                          ...
+                   }
+
+Though at this point, we don't actually make use of
+the distinction between -ENODEV vs 0.  Guess that's what
+we should be thinking about.  Seems like there some details that
+need to be sorted out, and some verification that consumers aren't
+broken by outputting smaller notes -- e.g., ia64 makes me
+wonder that.
+
+Maybe we should leave this for another day, and have tm_spr_active
+return 0 instead of -ENODEV when the machine doesn't have the hardware,
+or not install that hook at all.  Seems like the effect will be the same,
+as the note isn't output if ->get fails.
+
+>                         void *data = kmalloc(size, GFP_KERNEL);
+>                         if (unlikely(!data))
+>                                 return 0;
 > 
-> diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-> index 8723d32..e6bde98 100644
-> --- a/arch/powerpc/platforms/powernv/setup.c
-> +++ b/arch/powerpc/platforms/powernv/setup.c
-> @@ -34,6 +34,7 @@
->  #include <asm/rtas.h>
->  #include <asm/opal.h>
->  #include <asm/kexec.h>
-> +#include <asm/smp.h>
+>>
+>>> Now coming to the installation of the .active hooks part for all the new regsets, it
+>>> should be pretty straight forward as well. Though its optional and used for elf_core_dump
+>>> purpose only, its worth adding them here. Example of an active function should be something
+>>> like this. The function is inexpensive as required.
+>>>
+>>> +static int tm_spr_active(struct task_struct *target,
+>>> +                               const struct user_regset *regset)
+>>> +{
+>>> +       if (!cpu_has_feature(CPU_FTR_TM))
+>>> +               return -ENODEV;
+>>
+>> ... unfortunately this will do the wrong thing.
 > 
->  #include "powernv.h"
-> 
+> I am not sure whether I understand this correctly. Are you saying that its wrong to return
+> -ENODEV in this case as above ?
+
+No, sorry for not being clear.  The (...)'s were connected:
+
+   "do you plan on fixing this?  Otherwise ... ... unfortunately
+    this will do the wrong thing."
+
+-- 
+Pedro Alves
