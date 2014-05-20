@@ -1,17 +1,18 @@
 Return-Path: <f.fainelli@gmail.com>
-Received: from mail-yh0-x229.google.com (mail-yh0-x229.google.com
- [IPv6:2607:f8b0:4002:c01::229])
+Received: from mail-yk0-x22c.google.com (mail-yk0-x22c.google.com
+ [IPv6:2607:f8b0:4002:c07::22c])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CFF541A0870
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:30 +1000 (EST)
-Received: by mail-yh0-f41.google.com with SMTP id f73so7648093yha.28
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95A311A092A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:34 +1000 (EST)
+Received: by mail-yk0-f172.google.com with SMTP id 79so5178040ykr.31
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:31 -0700 (PDT)
 From: Florian Fainelli <f.fainelli@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 8/9] of: mdio: remove of_phy_connect_fixed_link
-Date: Mon, 19 May 2014 17:56:23 -0700
-Message-Id: <1400547384-11363-9-git-send-email-f.fainelli@gmail.com>
+Subject: [PATCH net-next 9/9] powerpc/fsl: fsl_soc: remove 'fixed-link'
+ parsing code
+Date: Mon, 19 May 2014 17:56:24 -0700
+Message-Id: <1400547384-11363-10-git-send-email-f.fainelli@gmail.com>
 In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>,
@@ -39,92 +40,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All in-tree drivers have been converted to use the new pair of
-functions: of_is_fixed_phy_link() plus of_phy_register_fixed_link(), we
-can now safely remove of_phy_connect_fixed_link.
+Parsing and registration of fixed PHY devices was needed with the use of
+of_phy_connect_fixed_link() because this function was using the
+designated PHY address identifier (first cell of the property) as the
+address to bind the PHY on the emulated bus.
+
+Since commit 3be2a49e5c08d268f8af0dd4fe89a24ea8cdc339 ("of: provide a
+binding for fixed link PHYs") a new pair of functions has been
+introduced which allows for dynamic address allocation of these fixed
+PHY devices, but also parses the old 'fixed-link' 5-digit property.
+
+Registration of fixed PHY early in platform code was needed because we
+could not issue a fixed MDIO bus re-scan within network drivers. The
+fixed PHYs had to be registered before the network drivers would call
+of_phy_connect_fixed_link(). All of these caveats are solved now, such
+that we can safely remove of_add_fixed_phys() now.
 
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- drivers/of/of_mdio.c    | 38 --------------------------------------
- include/linux/of_mdio.h | 10 ----------
- 2 files changed, 48 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c | 32 --------------------------------
+ 1 file changed, 32 deletions(-)
 
-diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
-index 1def0bb5cb37..4c1e01ed16dc 100644
---- a/drivers/of/of_mdio.c
-+++ b/drivers/of/of_mdio.c
-@@ -246,44 +246,6 @@ struct phy_device *of_phy_connect(struct net_device *dev,
- EXPORT_SYMBOL(of_phy_connect);
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 228cf91b91c1..ffd1169ebaab 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -25,7 +25,6 @@
+ #include <linux/of.h>
+ #include <linux/of_platform.h>
+ #include <linux/phy.h>
+-#include <linux/phy_fixed.h>
+ #include <linux/spi/spi.h>
+ #include <linux/fsl_devices.h>
+ #include <linux/fs_enet_pd.h>
+@@ -178,37 +177,6 @@ u32 get_baudrate(void)
+ EXPORT_SYMBOL(get_baudrate);
+ #endif /* CONFIG_CPM2 */
  
- /**
-- * of_phy_connect_fixed_link - Parse fixed-link property and return a dummy phy
-- * @dev: pointer to net_device claiming the phy
-- * @hndlr: Link state callback for the network device
-- * @iface: PHY data interface type
-- *
-- * This function is a temporary stop-gap and will be removed soon.  It is
-- * only to support the fs_enet, ucc_geth and gianfar Ethernet drivers.  Do
-- * not call this function from new drivers.
-- */
--struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
--					     void (*hndlr)(struct net_device *),
--					     phy_interface_t iface)
+-#ifdef CONFIG_FIXED_PHY
+-static int __init of_add_fixed_phys(void)
 -{
--	struct device_node *net_np;
--	char bus_id[MII_BUS_ID_SIZE + 3];
--	struct phy_device *phy;
--	const __be32 *phy_id;
--	int sz;
+-	int ret;
+-	struct device_node *np;
+-	u32 *fixed_link;
+-	struct fixed_phy_status status = {};
 -
--	if (!dev->dev.parent)
--		return NULL;
+-	for_each_node_by_name(np, "ethernet") {
+-		fixed_link  = (u32 *)of_get_property(np, "fixed-link", NULL);
+-		if (!fixed_link)
+-			continue;
 -
--	net_np = dev->dev.parent->of_node;
--	if (!net_np)
--		return NULL;
+-		status.link = 1;
+-		status.duplex = fixed_link[1];
+-		status.speed = fixed_link[2];
+-		status.pause = fixed_link[3];
+-		status.asym_pause = fixed_link[4];
 -
--	phy_id = of_get_property(net_np, "fixed-link", &sz);
--	if (!phy_id || sz < sizeof(*phy_id))
--		return NULL;
+-		ret = fixed_phy_add(PHY_POLL, fixed_link[0], &status);
+-		if (ret) {
+-			of_node_put(np);
+-			return ret;
+-		}
+-	}
 -
--	sprintf(bus_id, PHY_ID_FMT, "fixed-0", be32_to_cpu(phy_id[0]));
--
--	phy = phy_connect(dev, bus_id, hndlr, iface);
--	return IS_ERR(phy) ? NULL : phy;
+-	return 0;
 -}
--EXPORT_SYMBOL(of_phy_connect_fixed_link);
+-arch_initcall(of_add_fixed_phys);
+-#endif /* CONFIG_FIXED_PHY */
 -
--/**
-  * of_phy_attach - Attach to a PHY without starting the state machine
-  * @dev: pointer to net_device claiming the phy
-  * @phy_np: Node pointer for the PHY
-diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
-index 0aa367e316cb..d449018d0726 100644
---- a/include/linux/of_mdio.h
-+++ b/include/linux/of_mdio.h
-@@ -22,9 +22,6 @@ extern struct phy_device *of_phy_connect(struct net_device *dev,
- struct phy_device *of_phy_attach(struct net_device *dev,
- 				 struct device_node *phy_np, u32 flags,
- 				 phy_interface_t iface);
--extern struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
--					 void (*hndlr)(struct net_device *),
--					 phy_interface_t iface);
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ static __be32 __iomem *rstcr;
  
- extern struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np);
- 
-@@ -59,13 +56,6 @@ static inline struct phy_device *of_phy_attach(struct net_device *dev,
- 	return NULL;
- }
- 
--static inline struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
--							   void (*hndlr)(struct net_device *),
--							   phy_interface_t iface)
--{
--	return NULL;
--}
--
- static inline struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np)
- {
- 	return NULL;
 -- 
 1.9.1
