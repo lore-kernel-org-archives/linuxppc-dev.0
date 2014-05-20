@@ -1,33 +1,32 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rusty@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A7FAB1A0848
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 16:36:23 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Tue, 20 May 2014 16:36:22 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 759642BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 16:36:17 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4K6a2GB10617112
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 16:36:02 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4K6aGtR009534
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 16:36:17 +1000
-Message-ID: <537AF7DF.1020209@linux.vnet.ibm.com>
-Date: Tue, 20 May 2014 14:36:15 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D0A51A084C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 17:17:07 +1000 (EST)
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
+ for powerpc
+In-Reply-To: <20140520004429.E660AE009B@blue.fi.intel.com>
+References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <537479E7.90806@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
+ <87wqdik4n5.fsf@rustcorp.com.au> <53797511.1050409@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
+ <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
+ <20140520004429.E660AE009B@blue.fi.intel.com>
+Date: Tue, 20 May 2014 15:52:07 +0930
+Message-ID: <87oaythsvk.fsf@rustcorp.com.au>
 MIME-Version: 1.0
-To: linuxppc <linuxppc-dev@lists.ozlabs.org>
-Subject: PowerPC Build error with patch: powerpc/ppc64: Allow allmodconfig
- to build (finally !)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain
+Cc: linux-arch@vger.kernel.org, riel@redhat.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
+ peterz@infradead.org, x86@kernel.org, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@linux.intel.com,
+ paulus@samba.org, mgorman@suse.de, linuxppc-dev@lists.ozlabs.org,
+ mingo@kernel.org, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,34 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
+"Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> writes:
+> Andrew Morton wrote:
+>> On Mon, 19 May 2014 16:23:07 -0700 (PDT) Hugh Dickins <hughd@google.com> wrote:
+>> 
+>> > Shouldn't FAULT_AROUND_ORDER and fault_around_order be changed to be
+>> > the order of the fault-around size in bytes, and fault_around_pages()
+>> > use 1UL << (fault_around_order - PAGE_SHIFT)
+>> 
+>> Yes.  And shame on me for missing it (this time!) at review.
+>> 
+>> There's still time to fix this.  Patches, please.
+>
+> Here it is. Made at 3.30 AM, build tested only.
 
-I face one build error in linux-next git tree, see below:
-The platform is IBM P7.
+Prefer on top of Maddy's patch which makes it always a variable, rather
+than CONFIG_DEBUG_FS.  It's got enough hair as it is.
 
-[root@cena01 linux-next]# make -j60
-   CHK     include/config/kernel.release
-   CHK     include/generated/uapi/linux/version.h
-   CHK     include/generated/utsrelease.h
-   CALL    scripts/checksyscalls.sh
-<stdin>:1232:2: warning: #warning syscall renameat2 not implemented [-Wcpp]
-   CHK     include/generated/compile.h
-   CALL    arch/powerpc/kernel/systbl_chk.sh
-   CALL    arch/powerpc/kernel/prom_init_check.sh
-   AS      arch/powerpc/kernel/head_64.o
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:269: Error: operand out of range 
-(0x000000000000814c is not between 0xffffffffffff8000 and 
-0x0000000000007ffc)
-arch/powerpc/kernel/exceptions-64s.S:729: Error: operand out of range 
-(0x000000000000814c is not between 0xffffffffffff8000 and 
-0x0000000000007ffc)
-make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
-make[1]: *** Waiting for unfinished jobs....
-make: *** [arch/powerpc/kernel] Error 2
-make: *** Waiting for unfinished jobs....
-
-
-Finally, I find out that it is the commit 
-"0be9d8b61c0c1f3c8f86292c6e237ff26acd392d  powerpc/ppc64: Allow 
-allmodconfig to build (finally !)" case this error.
+Cheers,
+Rusty.
