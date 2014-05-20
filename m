@@ -1,36 +1,24 @@
-Return-Path: <f.fainelli@gmail.com>
-Received: from mail-yk0-x22c.google.com (mail-yk0-x22c.google.com
- [IPv6:2607:f8b0:4002:c07::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95A311A092A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:34 +1000 (EST)
-Received: by mail-yk0-f172.google.com with SMTP id 79so5178040ykr.31
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:31 -0700 (PDT)
-From: Florian Fainelli <f.fainelli@gmail.com>
-To: netdev@vger.kernel.org
-Subject: [PATCH net-next 9/9] powerpc/fsl: fsl_soc: remove 'fixed-link'
- parsing code
-Date: Mon, 19 May 2014 17:56:24 -0700
-Message-Id: <1400547384-11363-10-git-send-email-f.fainelli@gmail.com>
-In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
-References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>,
- "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Florian Fainelli <f.fainelli@gmail.com>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Grant Likely <grant.likely@linaro.org>,
- "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Richard Cochran <richardcochran@gmail.com>, Rob Herring <robh+dt@kernel.org>,
- Aida Mynzhasova <aida.mynzhasova@skitlab.ru>,
- Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>,
- Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>,
- davem@davemlof.net, Vitaly Bordug <vbordug@ru.mvista.com>,
- Kumar Gala <galak@codeaurora.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A43C1A0A7F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 11:01:40 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8F31814008B
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2014 11:01:39 +1000 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s4K11Swp009345
+ for <linuxppc-dev@ozlabs.org>; Mon, 19 May 2014 20:01:30 -0500
+Message-ID: <1400547688.3986.96.camel@pasglop>
+Subject: powerpc/powernv: Add calls to support little endian host
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Tue, 20 May 2014 11:01:28 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,76 +28,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Parsing and registration of fixed PHY devices was needed with the use of
-of_phy_connect_fixed_link() because this function was using the
-designated PHY address identifier (first cell of the property) as the
-address to bind the PHY on the emulated bus.
+When running as a powernv "host" system on P8, we need to switch
+the endianness of interrupt handlers. This does it via the appropriate
+call to the OPAL firmware which may result in just switching HID0:HILE
+but depending on the processor version might need to do a few more
+things. This call must be done early before any other processor has
+been brought out of firmware.
 
-Since commit 3be2a49e5c08d268f8af0dd4fe89a24ea8cdc339 ("of: provide a
-binding for fixed link PHYs") a new pair of functions has been
-introduced which allows for dynamic address allocation of these fixed
-PHY devices, but also parses the old 'fixed-link' 5-digit property.
-
-Registration of fixed PHY early in platform code was needed because we
-could not issue a fixed MDIO bus re-scan within network drivers. The
-fixed PHYs had to be registered before the network drivers would call
-of_phy_connect_fixed_link(). All of these caveats are solved now, such
-that we can safely remove of_add_fixed_phys() now.
-
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
 ---
- arch/powerpc/sysdev/fsl_soc.c | 32 --------------------------------
- 1 file changed, 32 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 228cf91b91c1..ffd1169ebaab 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -25,7 +25,6 @@
- #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/phy.h>
--#include <linux/phy_fixed.h>
- #include <linux/spi/spi.h>
- #include <linux/fsl_devices.h>
- #include <linux/fs_enet_pd.h>
-@@ -178,37 +177,6 @@ u32 get_baudrate(void)
- EXPORT_SYMBOL(get_baudrate);
- #endif /* CONFIG_CPM2 */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 0394e91..a2a3d0d 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -129,6 +129,7 @@ extern int opal_enter_rtas(struct rtas_args *args,
+ #define OPAL_LPC_READ				67
+ #define OPAL_LPC_WRITE				68
+ #define OPAL_RETURN_CPU				69
++#define OPAL_REINIT_CPUS			70
+ #define OPAL_FLASH_VALIDATE			76
+ #define OPAL_FLASH_MANAGE			77
+ #define OPAL_FLASH_UPDATE			78
+@@ -599,6 +600,11 @@ struct OpalIoPhb3ErrorData {
+ 	uint64_t pestB[OPAL_PHB3_NUM_PEST_REGS];
+ };
  
--#ifdef CONFIG_FIXED_PHY
--static int __init of_add_fixed_phys(void)
--{
--	int ret;
--	struct device_node *np;
--	u32 *fixed_link;
--	struct fixed_phy_status status = {};
--
--	for_each_node_by_name(np, "ethernet") {
--		fixed_link  = (u32 *)of_get_property(np, "fixed-link", NULL);
--		if (!fixed_link)
--			continue;
--
--		status.link = 1;
--		status.duplex = fixed_link[1];
--		status.speed = fixed_link[2];
--		status.pause = fixed_link[3];
--		status.asym_pause = fixed_link[4];
--
--		ret = fixed_phy_add(PHY_POLL, fixed_link[0], &status);
--		if (ret) {
--			of_node_put(np);
--			return ret;
--		}
--	}
--
--	return 0;
--}
--arch_initcall(of_add_fixed_phys);
--#endif /* CONFIG_FIXED_PHY */
--
- #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
- static __be32 __iomem *rstcr;
++enum {
++	OPAL_REINIT_CPUS_HILE_BE	= (1 << 0),
++	OPAL_REINIT_CPUS_HILE_LE	= (1 << 1),
++};
++
+ typedef struct oppanel_line {
+ 	const char * 	line;
+ 	uint64_t 	line_len;
+@@ -719,6 +725,7 @@ int64_t opal_pci_next_error(uint64_t phb_id, uint64_t *first_frozen_pe,
+ 			    uint16_t *pci_error_type, uint16_t *severity);
+ int64_t opal_pci_poll(uint64_t phb_id);
+ int64_t opal_return_cpu(void);
++int64_t opal_reinit_cpus(uint64_t flags);
  
--- 
-1.9.1
+ int64_t opal_xscom_read(uint32_t gcid, uint64_t pcb_addr, __be64 *val);
+ int64_t opal_xscom_write(uint32_t gcid, uint64_t pcb_addr, uint64_t val);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index e780650..3abb518 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -123,6 +123,7 @@ OPAL_CALL(opal_xscom_write,			OPAL_XSCOM_WRITE);
+ OPAL_CALL(opal_lpc_read,			OPAL_LPC_READ);
+ OPAL_CALL(opal_lpc_write,			OPAL_LPC_WRITE);
+ OPAL_CALL(opal_return_cpu,			OPAL_RETURN_CPU);
++OPAL_CALL(opal_reinit_cpus,			OPAL_REINIT_CPUS);
+ OPAL_CALL(opal_validate_flash,			OPAL_FLASH_VALIDATE);
+ OPAL_CALL(opal_manage_flash,			OPAL_FLASH_MANAGE);
+ OPAL_CALL(opal_update_flash,			OPAL_FLASH_UPDATE);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 1c798cd..359f18a 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -42,6 +42,21 @@ static DEFINE_SPINLOCK(opal_notifier_lock);
+ static uint64_t last_notified_mask = 0x0ul;
+ static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
+ 
++static void opal_reinit_cores(void)
++{
++	/* Do the actual re-init, This will clobber all FPRs, VRs, etc...
++	 *
++	 * It will preserve non volatile GPRs and HSPRG0/1. It will
++	 * also restore HIDs and other SPRs to their original value
++	 * but it might clobber a bunch.
++	 */
++#ifdef __BIG_ENDIAN__
++	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_BE);
++#else
++	opal_reinit_cpus(OPAL_REINIT_CPUS_HILE_LE);
++#endif
++}	
++
+ int __init early_init_dt_scan_opal(unsigned long node,
+ 				   const char *uname, int depth, void *data)
+ {
+@@ -77,6 +92,13 @@ int __init early_init_dt_scan_opal(unsigned long node,
+ 		printk("OPAL V1 detected !\n");
+ 	}
+ 
++	/* Reinit all cores with the right endian */
++	opal_reinit_cores();
++
++	/* Restore some bits */
++	if (cur_cpu_spec->cpu_restore)
++		cur_cpu_spec->cpu_restore();
++
+ 	return 1;
+ }
+ 
