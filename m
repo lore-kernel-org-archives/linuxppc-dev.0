@@ -1,38 +1,37 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E4BF01A08B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 22:39:28 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1AFF51A08B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 22:45:09 +1000 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 20 May 2014 18:09:22 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 82060394005B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:09:19 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4KCdSmn60096716
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:09:28 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4KCdI18027781
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:09:18 +0530
-Date: Tue, 20 May 2014 22:39:14 +1000
+ Tue, 20 May 2014 22:45:08 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 47D1D2BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 22:45:06 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4KCNVjk7143870
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 22:23:31 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4KCj5hm014477
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 22:45:05 +1000
+Date: Tue, 20 May 2014 22:45:04 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 3/4] drivers/vfio: New IOCTL command VFIO_EEH_INFO
-Message-ID: <20140520123914.GA28441@shangw>
+Subject: Re: [PATCH 4/4] powerpc/eeh: Avoid event on passed PE
+Message-ID: <20140520124504.GB28441@shangw>
 References: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400574612-19411-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <537B3AA7.7040106@suse.de> <537B3C68.8080102@suse.de>
- <20140520114031.GA20397@shangw> <537B4015.7030404@suse.de>
- <20140520122147.GA26483@shangw> <537B49C9.4000302@suse.de>
+ <1400574612-19411-5-git-send-email-gwshan@linux.vnet.ibm.com>
+ <537B3B97.3020100@suse.de> <20140520115606.GB20397@shangw>
+ <537B4740.6090806@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <537B49C9.4000302@suse.de>
+In-Reply-To: <537B4740.6090806@suse.de>
 Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
  kvm-ppc@vger.kernel.org, alex.williamson@redhat.com,
  qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
@@ -46,82 +45,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 20, 2014 at 02:25:45PM +0200, Alexander Graf wrote:
+On Tue, May 20, 2014 at 02:14:56PM +0200, Alexander Graf wrote:
 >
->On 20.05.14 14:21, Gavin Shan wrote:
->>On Tue, May 20, 2014 at 01:44:21PM +0200, Alexander Graf wrote:
->>>On 20.05.14 13:40, Gavin Shan wrote:
->>>>On Tue, May 20, 2014 at 01:28:40PM +0200, Alexander Graf wrote:
->>>>>On 20.05.14 13:21, Alexander Graf wrote:
->>>>>>On 20.05.14 10:30, Gavin Shan wrote:
->>>>>>>The patch adds new IOCTL command VFIO_EEH_OP to VFIO PCI device
->>>>>>>to support EEH functionality for PCI devices, which have been
->>>>>>>passed from host to guest via VFIO.
->>>>>>>
->>>>>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>>>>---
->>>>>>>  arch/powerpc/platforms/powernv/Makefile   |   1 +
->>>>>>>  arch/powerpc/platforms/powernv/eeh-vfio.c | 445
->>>>>>>++++++++++++++++++++++++++++++
->>>>>>>  drivers/vfio/pci/vfio_pci.c               |  24 +-
->>>>>>>  drivers/vfio/pci/vfio_pci_private.h       |  16 ++
->>>>>>>  include/uapi/linux/vfio.h                 |  43 +++
->>>>>>>  5 files changed, 523 insertions(+), 6 deletions(-)
->>>>>>>  create mode 100644 arch/powerpc/platforms/powernv/eeh-vfio.c
->>>>>>Why doesn't this code live inside the vfio module? If I don't load
->>>>>>the vfio module, I don't need that code to waste memory in my
->>>>>>kernel, no?
->>>>Yes, It saves some memory.
+>On 20.05.14 13:56, Gavin Shan wrote:
+>>On Tue, May 20, 2014 at 01:25:11PM +0200, Alexander Graf wrote:
+>>>On 20.05.14 10:30, Gavin Shan wrote:
+>>>>If we detects frozen state on PE that has been passed to guest, we
+>>>>needn't handle it. Instead, we rely on the guest to detect and recover
+>>>>it. The patch avoid EEH event on the frozen passed PE so that the guest
+>>>>can have chance to handle that.
 >>>>
->>>>>So I think from a modeling point of view, you want VFIO code that
->>>>>calls reasonably generic helpers inside the kernel to deal with
->>>>>errors.
->>>>>
->>>>>The "generic helpers" don't have anything to do with VFIO. Everything
->>>>>that interfaces via ioctls with user space is 100% VFIO code.
->>>>>
->>>>>The latter should be tristate inside vfio.ko, the former can be =y.
->>>>>
->>>>The main reason I put eeh-vfio.c to arch/powerpc/platforms/powernv/ is
->>>>the source file needs access data structures (struct pnv_phb) defined
->>>>in "pci.h" under that directory.
->>>Then create a good in-kernel framework from that directory and make
->>>use of it from the VFIO code :). But please don't mesh together VFIO,
->>>powernv EEH handling and RTAS.
+>>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>How does the guest learn about this failure? We'd need to inject an
+>>>error into it, no?
 >>>
->>Yeah. How about this? :-)
+>>When error is existing in HW level, 0xFF's will be turned on reading
+>>PCI config space or memory BARs. Guest retrieves the failure state,
+>>which is captured by HW automatically, via RTAS call
+>>"ibm,read-slot-reset-state2" when seeing 0xFF's on reading PCI config
+>>space or memory BARs. If "ibm,read-slot-reset-state2" reports errors in HW,
+>>the guest kernel starts to recovery.
 >>
->>- Move eeh-vfio.c to drivers/vfio/pci/
->>- From eeh-vfio.c, dereference arch/powerpc/kernel/eeh.c::eeh_ops, which
->>   is arch/powerpc/plaforms/powernv/eeh-powernv.c::powernv_eeh_ops. Call
+>>It can be called as "passive" reporting. There possible has one case that
+>>the error can't be reported for ever: No device driver binding to the VFIO
+>>PCI device and no access to device's config space and memory BARs. However,
+>>it doesn't matter. As we don't use the device, we needn't detect and recover
+>>the error at all.
 >
->Hrm, I think it'd be nicer to just export individual functions that
->do thing you want to do from eeh.c.
+>So if the guest is waiting for an interrupt to happen it will wait
+>forever? Not really nice.
 >
 
-Ok. Got it. Thanks for your comments :)
+Nope, the error reporting in guest isn't interrupt-driven. It's always
+"polling" :-)
+
+>>>I think what you want is an irqfd that the in-kernel eeh code
+>>>notifies when it sees a failure. When such an fd exists, the kernel
+>>>skips its own error handling.
+>>>
+>>Yeah, it's a good idea and something for me to improve in phase II. We
+>>can discuss for more later.
+>
+>I think it makes sense to at least walk into that direction
+>immediately. The reason I brought it up in the context of this patch
+>is that with an irqfd you wouldn't need the passed flag at all.
+>
+
+I don't see how it can avoid the "passed" flag. Without the flag, any
+PCI config and memory BAR access on host side could trigger EEH recovery
+for those PCI devices passed to guest. That's unexpected behaviour. 
+
+For host, we have 2 ways to report errors: interrupt driven and polling.
+For the guest, we only have "polling" :-)
+
+>>  For now, what I have in my head is something
+>>like this:
+>>
+>>       [ Host ] -> Error detected -> irqfd (or eventfd) -> QEMU
+>>                                                            |
+>>                                    -------------(A)---------
+>>                                    |
+>>                         Send one EEH event to guest kernel
+>>                                    |
+>>                         Guest kernel starts the recovery
+>>
+>>(A): I didn't figure out one convienent way to do the EEH event injection yet.
+>
+>How does the guest learn about errors in pHyp?
+>
+
+It relies on "polling".
 
 Thanks,
 Gavin
-
->
->Alex
->
->>   to the corresponding callbacks in "eeh_ops" based on incoming RTAS request.
->>
->>   The file would be renamed to "vfio_eeh.c" as well after moving to VFIO
->>   driver directory.
->>
->>Thanks,
->>Gavin
->>
->>--
->>To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
->>the body of a message to majordomo@vger.kernel.org
->>More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->--
->To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
