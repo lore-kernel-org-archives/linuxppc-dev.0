@@ -1,18 +1,17 @@
 Return-Path: <f.fainelli@gmail.com>
-Received: from mail-yh0-x235.google.com (mail-yh0-x235.google.com
- [IPv6:2607:f8b0:4002:c01::235])
+Received: from mail-yh0-x234.google.com (mail-yh0-x234.google.com
+ [IPv6:2607:f8b0:4002:c01::234])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D665E1A0869
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:07 +1000 (EST)
-Received: by mail-yh0-f53.google.com with SMTP id i57so7508933yha.40
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D58101A088F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 10:57:14 +1000 (EST)
+Received: by mail-yh0-f52.google.com with SMTP id z6so7477158yhz.39
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 May 2014 17:57:11 -0700 (PDT)
 From: Florian Fainelli <f.fainelli@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH net-next 2/9] Documentation: devicetree: net: refer to
- fixed-link.txt
-Date: Mon, 19 May 2014 17:56:17 -0700
-Message-Id: <1400547384-11363-3-git-send-email-f.fainelli@gmail.com>
+Subject: [PATCH net-next 3/9] net: bcmgenet: use the new fixed PHY helpers
+Date: Mon, 19 May 2014 17:56:18 -0700
+Message-Id: <1400547384-11363-4-git-send-email-f.fainelli@gmail.com>
 In-Reply-To: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 References: <1400547384-11363-1-git-send-email-f.fainelli@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>,
@@ -40,59 +39,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update the Freescale TSEC PHY, Broadcom GENET & SYSTEMPORT Device Tree
-binding documentation to refer to the fixed-link Device Tree binding in
-fixed-link.txt.
+of_phy_connect_fixed_link() is becoming obsolete, and also required
+platform code to register the fixed PHYs at the specified addresses for
+those to be usable. Get rid of it and use the new of_phy_is_fixed_link()
+plus of_phy_register_fixed_link() helpers to transition over the new
+scheme.
 
-Reviewed-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt   | 2 +-
- Documentation/devicetree/bindings/net/broadcom-systemport.txt | 2 +-
- Documentation/devicetree/bindings/net/fsl-tsec-phy.txt        | 5 +----
- 3 files changed, 3 insertions(+), 6 deletions(-)
+ drivers/net/ethernet/broadcom/genet/bcmmii.c | 21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt b/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt
-index f2febb94550e..451fef26b4df 100644
---- a/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt
-+++ b/Documentation/devicetree/bindings/net/broadcom-bcmgenet.txt
-@@ -24,7 +24,7 @@ Optional properties:
- - fixed-link: When the GENET interface is connected to a MoCA hardware block or
-   when operating in a RGMII to RGMII type of connection, or when the MDIO bus is
-   voluntarily disabled, this property should be used to describe the "fixed link".
--  See Documentation/devicetree/bindings/net/fsl-tsec-phy.txt for information on
-+  See Documentation/devicetree/bindings/net/fixed-link.txt for information on
-   the property specifics
+diff --git a/drivers/net/ethernet/broadcom/genet/bcmmii.c b/drivers/net/ethernet/broadcom/genet/bcmmii.c
+index 4608673beaff..add8d8596084 100644
+--- a/drivers/net/ethernet/broadcom/genet/bcmmii.c
++++ b/drivers/net/ethernet/broadcom/genet/bcmmii.c
+@@ -298,6 +298,7 @@ int bcmgenet_mii_config(struct net_device *dev)
+ static int bcmgenet_mii_probe(struct net_device *dev)
+ {
+ 	struct bcmgenet_priv *priv = netdev_priv(dev);
++	struct device_node *dn = priv->pdev->dev.of_node;
+ 	struct phy_device *phydev;
+ 	unsigned int phy_flags;
+ 	int ret;
+@@ -307,15 +308,19 @@ static int bcmgenet_mii_probe(struct net_device *dev)
+ 		return 0;
+ 	}
  
- Required child nodes:
-diff --git a/Documentation/devicetree/bindings/net/broadcom-systemport.txt b/Documentation/devicetree/bindings/net/broadcom-systemport.txt
-index 1b7600e022dd..c183ea90d9bc 100644
---- a/Documentation/devicetree/bindings/net/broadcom-systemport.txt
-+++ b/Documentation/devicetree/bindings/net/broadcom-systemport.txt
-@@ -8,7 +8,7 @@ Required properties:
- - local-mac-address: Ethernet MAC address (48 bits) of this adapter
- - phy-mode: Should be a string describing the PHY interface to the
-   Ethernet switch/PHY, see Documentation/devicetree/bindings/net/ethernet.txt
--- fixed-link: see Documentation/devicetree/bindings/net/fsl-tsec-phy.txt for
-+- fixed-link: see Documentation/devicetree/bindings/net/fixed-link.txt for
-   the property specific details
+-	if (priv->phy_dn)
+-		phydev = of_phy_connect(dev, priv->phy_dn,
+-					bcmgenet_mii_setup, 0,
+-					priv->phy_interface);
+-	else
+-		phydev = of_phy_connect_fixed_link(dev,
+-					bcmgenet_mii_setup,
+-					priv->phy_interface);
++	/* In the case of a fixed PHY, the DT node associated
++	 * to the PHY is the Ethernet MAC DT node.
++	 */
++	if (of_phy_is_fixed_link(dn)) {
++		ret = of_phy_register_fixed_link(dn);
++		if (ret)
++			return ret;
++
++		priv->phy_dn = dn;
++	}
  
- Optional properties:
-diff --git a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-index 737cdef4f903..be6ea8960f20 100644
---- a/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-+++ b/Documentation/devicetree/bindings/net/fsl-tsec-phy.txt
-@@ -42,10 +42,7 @@ Properties:
-     interrupt.  For TSEC and eTSEC devices, the first interrupt is
-     transmit, the second is receive, and the third is error.
-   - phy-handle : See ethernet.txt file in the same directory.
--  - fixed-link : <a b c d e> where a is emulated phy id - choose any,
--    but unique to the all specified fixed-links, b is duplex - 0 half,
--    1 full, c is link speed - d#10/d#100/d#1000, d is pause - 0 no
--    pause, 1 pause, e is asym_pause - 0 no asym_pause, 1 asym_pause.
-+  - fixed-link : See fixed-link.txt in the same directory.
-   - phy-connection-type : See ethernet.txt file in the same directory.
-     This property is only really needed if the connection is of type
-     "rgmii-id", as all other connection types are detected by hardware.
++	phydev = of_phy_connect(dev, priv->phy_dn, bcmgenet_mii_setup, 0,
++				priv->phy_interface);
+ 	if (!phydev) {
+ 		pr_err("could not attach to PHY\n");
+ 		return -ENODEV;
 -- 
 1.9.1
