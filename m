@@ -1,42 +1,27 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peerlessdeepaks@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 078181A0852
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:04:06 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 20 May 2014 13:34:03 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id C192A125804D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 13:33:08 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4K84Cu1196912
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 13:34:12 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4K840nC023115
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 13:34:01 +0530
-Message-ID: <537B0C6E.4030501@linux.vnet.ibm.com>
-Date: Tue, 20 May 2014 13:33:58 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B9991A0852
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2014 18:10:17 +1000 (EST)
+Received: from mail-wg0-x231.google.com (mail-wg0-x231.google.com
+ [IPv6:2a00:1450:400c:c00::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 99BBF14007E
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2014 18:10:16 +1000 (EST)
+Received: by mail-wg0-f49.google.com with SMTP id m15so126738wgh.32
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 May 2014 01:10:12 -0700 (PDT)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH V4 2/2] powerpc/pseries: init fault_around_order for
- pseries
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1399541296-18810-3-git-send-email-maddy@linux.vnet.ibm.com>
- <20140520002834.aefb5a90.akpm@linux-foundation.org>
-In-Reply-To: <20140520002834.aefb5a90.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, rusty@rustcorp.com.au,
- dave.hansen@intel.com, peterz@infradead.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@linux.intel.com,
- paulus@samba.org, mgorman@suse.de, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org, kirill.shutemov@linux.intel.com
+In-Reply-To: <5167457E.1050205@genband.com>
+References: <5167457E.1050205@genband.com>
+From: Deepak Pandian <peerlessdeepaks@gmail.com>
+Date: Tue, 20 May 2014 13:39:52 +0530
+Message-ID: <CAAK7kEEHCBm5JLvYKOsqWcXpWK9pLD1tC82+jn7NYb2t_O19vQ@mail.gmail.com>
+Subject: Re: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT,
+ and DBCR0_ACTIVE_EVENTS
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,27 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 20 May 2014 12:58 PM, Andrew Morton wrote:
-> On Thu,  8 May 2014 14:58:16 +0530 Madhavan Srinivasan <maddy@linux.vnet.ibm.com> wrote:
-> 
->> --- a/arch/powerpc/platforms/pseries/pseries.h
->> +++ b/arch/powerpc/platforms/pseries/pseries.h
->> @@ -17,6 +17,8 @@ struct device_node;
->>  extern void request_event_sources_irqs(struct device_node *np,
->>  				       irq_handler_t handler, const char *name);
->>  
->> +extern unsigned int fault_around_order;
-> 
-> This isn't an appropriate header file for exporting something from core
-> mm - what happens if arch/mn10300 wants it?.
+unsubcribe linuxppc-dev
+
+On Fri, Apr 12, 2013 at 4:51 AM, Chris Friesen
+<chris.friesen@genband.com> wrote:
+> Hi all,
 >
-> I guess include/linux/mm.h is the place.
-> 
+> Sorry for the bunch of emails, I'm working on some new stuff and running
+> into issues.
+>
+> For CONFIG_BOOKE it appears that DBCR0_ACTIVE_EVENTS includes DBCR0_ICMP but
+> not DBCR0_BRT.  Is that just because none of the code paths currently using
+> DBCR0_ACTIVE_EVENTS need to check DBCR0_BT?
+>
+> Also, in sys_debug_setcontext() why does SIG_DBG_BRANCH_TRACING return
+> -EINVAL if CONFIG_PPC_ADV_DEBUG_REGS is set?  Would it not be possible to
+> use DBCR0_BRT?
+>
+> Thanks,
+> Chris
+>
+> --
+>
+> Chris Friesen
+> Software Designer
+>
+> 500 Palladium Drive, Suite 2100
+> Ottawa, Ontario K2N 1C2, Canada
+> www.genband.com
+> office:+1.343.883.2717
+> chris.friesen@genband.com
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-Rusty already suggested this. My bad.  Reason for adding it here was
-that, I did the performance test for this platform. Will change and send
-it out.
 
-Thanks for review
-Regards
-Maddy
+
+-- 
+With Regards,
+Deepak Pandian
+"Deconstructing world one piece at a time"
