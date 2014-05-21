@@ -1,22 +1,22 @@
 Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-la0-f42.google.com (mail-la0-f42.google.com
- [209.85.215.42])
+Received: from mail-la0-f49.google.com (mail-la0-f49.google.com
+ [209.85.215.49])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D68A1A0839
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 07:48:32 +1000 (EST)
-Received: by mail-la0-f42.google.com with SMTP id el20so2042790lab.29
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:48:27 -0700 (PDT)
-Message-ID: <537D1F2F.6050100@cogentembedded.com>
-Date: Thu, 22 May 2014 01:48:31 +0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id BEF391A0814
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 07:55:55 +1000 (EST)
+Received: by mail-la0-f49.google.com with SMTP id pv20so2046135lab.36
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:55:50 -0700 (PDT)
+Message-ID: <537D20EA.1000305@cogentembedded.com>
+Date: Thu, 22 May 2014 01:55:54 +0400
 From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
 To: Florian Fainelli <f.fainelli@gmail.com>, netdev@vger.kernel.org
-Subject: Re: [PATCH RESEND net-next 1/9] Documentation: devicetree: add old
- and deprecated 'fixed-link'
+Subject: Re: [PATCH RESEND net-next 4/9] net: systemport: use the new fixed
+ PHY helpers
 References: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
- <1400708331-18088-2-git-send-email-f.fainelli@gmail.com>
-In-Reply-To: <1400708331-18088-2-git-send-email-f.fainelli@gmail.com>
+ <1400708331-18088-5-git-send-email-f.fainelli@gmail.com>
+In-Reply-To: <1400708331-18088-5-git-send-email-f.fainelli@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
  "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
@@ -36,43 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
-
 On 05/22/2014 01:38 AM, Florian Fainelli wrote:
 
-> Update the fixed-link Device Tree binding documentation to contain
-> information about the old and deprecated 5-digit 'fixed-link' property.
+> of_phy_connect_fixed_link() is becoming obsolete, and also required
+> platform code to register the fixed PHYs at the specified addresses for
+> those to be usable. Get rid of it and use the new of_phy_is_fixed_link()
+> plus of_phy_register_fixed_link() helpers to transition over the new
+> scheme.
 
 > Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 > ---
->   Documentation/devicetree/bindings/net/fixed-link.txt | 12 ++++++++++++
->   1 file changed, 12 insertions(+)
+>   drivers/net/ethernet/broadcom/bcmsysport.c | 17 +++++++++++++++--
+>   drivers/net/ethernet/broadcom/bcmsysport.h |  1 +
+>   2 files changed, 16 insertions(+), 2 deletions(-)
 
-> diff --git a/Documentation/devicetree/bindings/net/fixed-link.txt b/Documentation/devicetree/bindings/net/fixed-link.txt
-> index e956de1be935..34a991eb213f 100644
-> --- a/Documentation/devicetree/bindings/net/fixed-link.txt
-> +++ b/Documentation/devicetree/bindings/net/fixed-link.txt
-> @@ -18,6 +18,18 @@ properties:
->   * 'asym-pause' (boolean, optional), to indicate that asym_pause should
->     be enabled.
+> diff --git a/drivers/net/ethernet/broadcom/bcmsysport.c b/drivers/net/ethernet/broadcom/bcmsysport.c
+> index d40c5b969e9e..dc708a888f80 100644
+> --- a/drivers/net/ethernet/broadcom/bcmsysport.c
+> +++ b/drivers/net/ethernet/broadcom/bcmsysport.c
+> @@ -1327,8 +1327,8 @@ static int bcm_sysport_open(struct net_device *dev)
+>   	/* Read CRC forward */
+>   	priv->crc_fwd = !!(umac_readl(priv, UMAC_CMD) & CMD_CRC_FWD);
 >
-> +Old, deprecated 'fixed-link' binding:
-> +
-> +* A 'fixed-link' property in the EThernet MAC node, with 5 cells, of the
+> -	priv->phydev = of_phy_connect_fixed_link(dev, bcm_sysport_adj_link,
+> -							priv->phy_interface);
+> +	priv->phydev = of_phy_connect(dev, priv->phy_dn, bcm_sysport_adj_link,
+> +					0, priv->phy_interface);
 
-    s/EThernet/Ethernet/
+    The continuation line should start on the next character after ( on the 
+above line, according to the networking coding style.
 
-> +  form <a b c d e> with the following accepted values:
-> +  - a: emulated phy id, choose any but but unique to the all specified
-
-    s/phy id/PHY ID/
-
-> +    fixed-links, from 0 to 31
-> +  - b: duplex configuration: 0 for half duplex, 1 for full duplex
-> +  - c: link speed in Mbits/sec, accepted values are: 10, 100 and 1000
-> +  - d: pause configuration: 0 for no pause, 1 for pause
-> +  - e: asymetric pause configuration: 0 for no asymetric pause, 1 for asymetric
-
-    Asymmetric.
+[...]
 
 WBR, Sergei
