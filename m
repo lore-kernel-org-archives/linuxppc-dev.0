@@ -1,21 +1,32 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C752C1A0814
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 23:32:44 +1000 (EST)
-Message-ID: <537CA667.2070906@suse.de>
-Date: Wed, 21 May 2014 15:13:11 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v5 4/4] powerpc/eeh: Avoid event on passed PE
-References: <1400648623-9127-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400648623-9127-5-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1400648623-9127-5-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <kirill.shutemov@linux.intel.com>
+Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
+ by lists.ozlabs.org (Postfix) with ESMTP id 065EC1A081F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 23:40:41 +1000 (EST)
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20140520125956.aa61a3bfd84d4d6190740ce2@linux-foundation.org>
+References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <537479E7.90806@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
+ <87wqdik4n5.fsf@rustcorp.com.au>
+ <53797511.1050409@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
+ <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
+ <20140520004429.E660AE009B@blue.fi.intel.com>
+ <87oaythsvk.fsf@rustcorp.com.au>
+ <20140520102738.7F096E009B@blue.fi.intel.com>
+ <20140520125956.aa61a3bfd84d4d6190740ce2@linux-foundation.org>
+Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
+ for powerpc
+Message-Id: <20140521134027.263DDE009B@blue.fi.intel.com>
+Date: Wed, 21 May 2014 16:40:27 +0300 (EEST)
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, riel@redhat.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
+ peterz@infradead.org, Rusty Russell <rusty@rustcorp.com.au>,
+ Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +36,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Andrew Morton wrote:
+> On Tue, 20 May 2014 13:27:38 +0300 (EEST) "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
+> 
+> > Rusty Russell wrote:
+> > > "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> writes:
+> > > > Andrew Morton wrote:
+> > > >> On Mon, 19 May 2014 16:23:07 -0700 (PDT) Hugh Dickins <hughd@google.com> wrote:
+> > > >> 
+> > > >> > Shouldn't FAULT_AROUND_ORDER and fault_around_order be changed to be
+> > > >> > the order of the fault-around size in bytes, and fault_around_pages()
+> > > >> > use 1UL << (fault_around_order - PAGE_SHIFT)
+> > > >> 
+> > > >> Yes.  And shame on me for missing it (this time!) at review.
+> > > >> 
+> > > >> There's still time to fix this.  Patches, please.
+> > > >
+> > > > Here it is. Made at 3.30 AM, build tested only.
+> > > 
+> > > Prefer on top of Maddy's patch which makes it always a variable, rather
+> > > than CONFIG_DEBUG_FS.  It's got enough hair as it is.
+> > 
+> > Something like this?
+> 
+> This appears to be against mainline, not against Madhavan's patch.  As
+> mentioned previously, I'd prefer it that way but confused.
+> 
+> 
+> > From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+> > Date: Tue, 20 May 2014 13:02:03 +0300
+> > Subject: [PATCH] mm: nominate faultaround area in bytes rather then page order
+> > 
+> > There are evidences that faultaround feature is less relevant on
+> > architectures with page size bigger then 4k. Which makes sense since
+> > page fault overhead per byte of mapped area should be less there.
+> > 
+> > Let's rework the feature to specify faultaround area in bytes instead of
+> > page order. It's 64 kilobytes for now.
+> > 
+> > The patch effectively disables faultaround on architectures with
+> > page size >= 64k (like ppc64).
+> > 
+> > It's possible that some other size of faultaround area is relevant for a
+> > platform. We can expose `fault_around_bytes' variable to arch-specific
+> > code once such platforms will be found.
+> > 
+> > Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+> > ---
+> >  mm/memory.c | 62 +++++++++++++++++++++++--------------------------------------
+> >  1 file changed, 23 insertions(+), 39 deletions(-)
+> > 
+> > diff --git a/mm/memory.c b/mm/memory.c
+> > index 037b812a9531..252b319e8cdf 100644
+> > --- a/mm/memory.c
+> > +++ b/mm/memory.c
+> > @@ -3402,63 +3402,47 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
+> >  	update_mmu_cache(vma, address, pte);
+> >  }
+> >  
+> > -#define FAULT_AROUND_ORDER 4
+> > +static unsigned long fault_around_bytes = 65536;
+> > +
+> > +static inline unsigned long fault_around_pages(void)
+> > +{
+> > +	return rounddown_pow_of_two(fault_around_bytes) / PAGE_SIZE;
+> > +}
+> 
+> I think we should round up, not down.  So if the user asks for 1kb,
+> they get one page.
+> 
+> So this becomes
+> 
+> 	return PAGE_ALIGN(fault_around_bytes) / PAGE_SIZE;
 
-On 21.05.14 07:03, Gavin Shan wrote:
-> If we detects frozen state on PE that has been passed to guest, we
-> needn't handle it. Instead, we rely on the guest to detect and recover
-> it. The patch avoid EEH event on the frozen passed PE so that the guest
-> can have chance to handle that.
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/kernel/eeh.c                 | 8 ++++++++
->   arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
->   2 files changed, 10 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index 2aaf90e..25fd12d 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -400,6 +400,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
->   	if (ret > 0)
->   		return ret;
->   
-> +	/*
-> +	 * If the PE has been passed to guest, we won't check the
-> +	 * state. Instead, let the guest handle it if the PE has
+See below.
 
-What guest? The kernel doesn't care whether we use VFIO for a guest or not.
+> > +static inline unsigned long fault_around_mask(void)
+> > +{
+> > +	return ~(rounddown_pow_of_two(fault_around_bytes) - 1) & PAGE_MASK;
+> > +}
+> 
+> And this has me a bit stumped.  It's not helpful that do_fault_around()
+> is undocumented.  Does it fault in N/2 pages ahead and N/2 pages
+> behind?  Or does it align the address down to the highest multiple of
+> fault_around_bytes?  It appears to be the latter, so the location of
+> the faultaround window around the fault address is basically random,
+> depending on what address userspace happened to pick.  I don't know why
+> we did this :(
 
+When we call ->map_pages() we need to make sure that we stay within VMA
+and the page table. We don't want to cross page table boundary, because
+page table is what ptlock covers in split ptlock case.
 
-Alex
+I've designed the feature with fault area nominated in page order in mind
+and I found it's easier to make sure we don't cross boundaries, if we
+would align virtual address of fault around area to PAGE_SIZE <<
+FAULT_AROUND_ORDER.
 
-> +	 * been frozen.
-> +	 */
-> +	if (eeh_pe_passed(pe))
-> +		return 0;
-> +
->   	/* If we already have a pending isolation event for this
->   	 * slot, we know it's bad already, we don't need to check.
->   	 * Do this checking under a lock; as multiple PCI devices
-> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> index 1b5982f..03a3ed2 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> @@ -890,7 +890,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
->   				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
->   					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
->   				ret = EEH_NEXT_ERR_NONE;
-> -			} else if ((*pe)->state & EEH_PE_ISOLATED) {
-> +			} else if ((*pe)->state & EEH_PE_ISOLATED ||
-> +				   eeh_pe_passed(*pe)) {
->   				ret = EEH_NEXT_ERR_NONE;
->   			} else {
->   				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
+And yes fault address may be anywhere within the area. You can think about
+this as a virtual page with size PAGE_SIZE << FAULT_AROUND_ORDER: no matter
+what is fault address, we handle area naturally aligned to page size which
+fault address belong to.
+
+I've used rounddown_pow_of_two() in the patch to align to nearest page
+order, not to page size, because that's what current do_fault_around()
+expect to see. And roundup is not an option: nobody expects fault around
+area to be 128k if fault_around_bytes set to 64k + 1 bytes.
+
+If you think we need this I can rework do_fault_around() to handle
+non-pow-of-two fault_around_pages(), but I don't think it's good idea to
+do this for v3.15. Anyway, patch I've proposed allows change
+fault_around_bytes only from DEBUG_FS and roundown should be good
+enough there.
+
+> Or something.  Can we please get some code commentary over
+> do_fault_around() describing this design decision and explaining the
+> reasoning behind it?
+
+I'll do this. But if do_fault_around() rework is needed, I want to do that
+first.
+
+> Also, "neast" is not a word.
+
+:facepalm:
+
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Date: Wed, 21 May 2014 16:36:42 +0300
+Subject: [PATCH] mm: fix typo in comment in do_fault_around()
+
+Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+---
+ mm/memory.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/memory.c b/mm/memory.c
+index 252b319e8cdf..f76663c31da6 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3460,7 +3460,7 @@ static void do_fault_around(struct vm_area_struct *vma, unsigned long address,
+ 
+ 	/*
+ 	 *  max_pgoff is either end of page table or end of vma
+-	 *  or fault_around_pages() from pgoff, depending what is neast.
++	 *  or fault_around_pages() from pgoff, depending what is nearest.
+ 	 */
+ 	max_pgoff = pgoff - ((start_addr >> PAGE_SHIFT) & (PTRS_PER_PTE - 1)) +
+ 		PTRS_PER_PTE - 1;
+-- 
+ Kirill A. Shutemov
