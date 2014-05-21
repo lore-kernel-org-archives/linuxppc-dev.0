@@ -1,17 +1,15 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C2941A0814
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 20:53:27 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD0181A0840
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 20:53:33 +1000 (EST)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 2/2] powerpc/corenet64_smp_defconfig:  enable RTC support
-Date: Wed, 21 May 2014 18:05:51 +0800
-Message-ID: <1400666751-11459-2-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1400666751-11459-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1400666751-11459-1-git-send-email-Shengzhou.Liu@freescale.com>
+Subject: [PATCH 1/2] mtd/spi: support en25s64 device
+Date: Wed, 21 May 2014 18:05:50 +0800
+Message-ID: <1400666751-11459-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
@@ -24,29 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable RTC support for DS1307, DS1374, DS3232, which is
-needed on some corenet boards.
+Add support for EON en25s64 spi device.
 
 Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
- arch/powerpc/configs/corenet64_smp_defconfig | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/mtd/devices/m25p80.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..e9c9f86 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -125,6 +125,11 @@ CONFIG_USB_EHCI_FSL=y
- CONFIG_USB_STORAGE=y
- CONFIG_MMC=y
- CONFIG_MMC_SDHCI=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_CMOS=y
-+CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
-+CONFIG_RTC_DRV_DS3232=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 7eda71d..6989311 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -745,6 +745,7 @@ static const struct spi_device_id m25p_ids[] = {
+ 	{ "en25q32b",   INFO(0x1c3016, 0, 64 * 1024,   64, 0) },
+ 	{ "en25p64",    INFO(0x1c2017, 0, 64 * 1024,  128, 0) },
+ 	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
++	{ "en25s64",    INFO(0x1c3817, 0, 64 * 1024,  128, 0) },
+ 	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
+ 
+ 	/* ESMT */
 -- 
 1.8.0
