@@ -1,35 +1,32 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hongbo.zhang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 484A51A081F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 16:32:45 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Wed, 21 May 2014 16:32:44 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 79C332BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 16:32:40 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4L6WOSk61079722
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 16:32:25 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4L6WdJe001011
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 16:32:39 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: benh@au1.ibm.com
-Subject: [PATCH 1/3] powerpc: Split __SYSFS_SPRSETUP macro
-Date: Wed, 21 May 2014 16:32:37 +1000
-Message-Id: <c0db1b210405db5ff579a2d7432dde2c73bd47bb.1400652868.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1400652868.git.sam.bobroff@au1.ibm.com>
-References: <cover.1400652868.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1400652868.git.sam.bobroff@au1.ibm.com>
-References: <cover.1400652868.git.sam.bobroff@au1.ibm.com>
-Cc: aik@ozlabs.ru, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32ECC1A0826
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 16:42:27 +1000 (EST)
+Message-ID: <537C4ABD.2070103@freescale.com>
+Date: Wed, 21 May 2014 14:42:05 +0800
+From: Hongbo Zhang <hongbo.zhang@freescale.com>
+MIME-Version: 1.0
+To: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v4 8/8] DMA: Freescale: add suspend resume functions for
+ DMA driver
+References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
+ <1397809071-5353-9-git-send-email-hongbo.zhang@freescale.com>
+ <20140502164604.GB32284@intel.com> <536614E7.9050301@freescale.com>
+ <1399451493.2677.11.camel@smile.fi.intel.com> <536B53E5.30506@freescale.com>
+ <20140521034513.GF21128@intel.com>
+In-Reply-To: <20140521034513.GF21128@intel.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>,
+ "leo.li@freescale.com" <leo.li@freescale.com>,
+ "vkoul@infradead.org" <vkoul@infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ "scottwood@freescale.com" <scottwood@freescale.com>, "Williams,
+ Dan J" <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,58 +36,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split the __SYSFS_SPRSETUP macro into two parts so that registers requiring
-custom read and write functions can use common code for their show and store
-functions.
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- arch/powerpc/kernel/sysfs.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
-index d90d4b7..e2a1d6f 100644
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -404,7 +404,7 @@ void ppc_enable_pmcs(void)
- }
- EXPORT_SYMBOL(ppc_enable_pmcs);
- 
--#define __SYSFS_SPRSETUP(NAME, ADDRESS, EXTRA) \
-+#define __SYSFS_SPRSETUP_READ_WRITE(NAME, ADDRESS, EXTRA) \
- static void read_##NAME(void *val) \
- { \
- 	*(unsigned long *)val = mfspr(ADDRESS);	\
-@@ -413,7 +413,9 @@ static void write_##NAME(void *val) \
- { \
- 	EXTRA; \
- 	mtspr(ADDRESS, *(unsigned long *)val);	\
--} \
-+}
-+
-+#define __SYSFS_SPRSETUP_SHOW_STORE(NAME) \
- static ssize_t show_##NAME(struct device *dev, \
- 			struct device_attribute *attr, \
- 			char *buf) \
-@@ -436,10 +438,15 @@ static ssize_t __used \
- 	return count; \
- }
- 
--#define SYSFS_PMCSETUP(NAME, ADDRESS)	\
--	__SYSFS_SPRSETUP(NAME, ADDRESS, ppc_enable_pmcs())
--#define SYSFS_SPRSETUP(NAME, ADDRESS)	\
--	__SYSFS_SPRSETUP(NAME, ADDRESS, )
-+#define SYSFS_PMCSETUP(NAME, ADDRESS) \
-+	__SYSFS_SPRSETUP_READ_WRITE(NAME, ADDRESS, ppc_enable_pmcs()) \
-+	__SYSFS_SPRSETUP_SHOW_STORE(NAME)
-+#define SYSFS_SPRSETUP(NAME, ADDRESS) \
-+	__SYSFS_SPRSETUP_READ_WRITE(NAME, ADDRESS, ) \
-+	__SYSFS_SPRSETUP_SHOW_STORE(NAME)
-+
-+#define SYSFS_SPRSETUP_SHOW_STORE(NAME) \
-+	__SYSFS_SPRSETUP_SHOW_STORE(NAME)
- 
- /* Let's define all possible registers, we'll only hook up the ones
-  * that are implemented on the current processor
--- 
-1.7.10.4
+On 05/21/2014 11:45 AM, Vinod Koul wrote:
+> On Thu, May 08, 2014 at 05:52:37PM +0800, Hongbo Zhang wrote:
+>> On 05/07/2014 04:31 PM, Shevchenko, Andriy wrote:
+>>> On Sun, 2014-05-04 at 18:22 +0800, Hongbo Zhang wrote:
+>>>> On 05/03/2014 12:46 AM, Vinod Koul wrote:
+>>>>> On Fri, Apr 18, 2014 at 04:17:51PM +0800, hongbo.zhang@freescale.com wrote:
+>>>>>> From: Hongbo Zhang <hongbo.zhang@freescale.com>
+>>>>>>
+>>>>>> This patch adds suspend resume functions for Freescale DMA driver.
+>>>>>> .prepare callback is used to stop further descriptors from being added into the
+>>>>>> pending queue, and also issue pending queues into execution if there is any.
+>>>>>> .suspend callback makes sure all the pending jobs are cleaned up and all the
+>>>>>> channels are idle, and save the mode registers.
+>>>>>> .resume callback re-initializes the channels by restore the mode registers.
+>>>>>>
+>>>>>> +
+>>>>>> +static const struct dev_pm_ops fsldma_pm_ops = {
+>>>>>> +	.prepare	= fsldma_prepare,
+>>>>>> +	.suspend	= fsldma_suspend,
+>>>>>> +	.resume		= fsldma_resume,
+>>>>>> +};
+>>>>> I think this is not correct. We discussed this sometime back on list. The
+>>>>> DMAengine drivers should use late resume and early suspend to ensure they get
+>>>>> suspended after clients (who should use normal ones) and resume before them
+>>>>>
+>>>> OK, will update it like this:
+>>>> use .suspend to take place of current .prepare
+>>> Could you remove this at all?
+>>>
+>>> Answering to your previous statements I could say that.
+>>> Device drivers (DMAc users) that don't implement .suspend callback are
+>>> on their own with troubles, you have not to care about them in the DMA
+>>> driver.
+>> Thanks for pointing out this issue.
+>> Then how to handle the descriptors in the pending list if there is any?
+>> a. let them finished.
+>>      but if the DMA user has already suspended prior DMA controller,
+>> it is meaningless somehow and may even ask for trouble.
+>> b. don't touch them.
+>>      after resume these pending descriptors could be executed, it is
+>> also meaningless because the resumed DMA user may in different state
+>> from before being suspended.
+>> c. delete them.
+>>      should we do this? is is a bit crude?
+>> d. return a non-success value
+>>      then the whole suspend process is reversed, e.g. suspend fails.
+>> I've looked through some dma drivers, most of them is in case b.
+> Yes and that makese sense.
+>
+> In calssic suspend case we maybe in middle so graceful behaviour would be to for
+> client to PAUSE or terminate and then suspend followed by DMA suspend.
+> You need to rely on client doing the right thing here
+>
+OK, will resend this 6/8, 7/8 and 8/8 for another iteration, and will 
+let the current 6/8 to be the last one for being reviewed and merged easier.
