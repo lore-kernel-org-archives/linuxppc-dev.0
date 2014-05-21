@@ -1,29 +1,44 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id 9450A1A081F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:00:48 +1000 (EST)
-Date: Wed, 21 May 2014 09:15:13 +0530
-From: Vinod Koul <vinod.koul@intel.com>
-To: Hongbo Zhang <hongbo.zhang@freescale.com>
-Subject: Re: [PATCH v4 8/8] DMA: Freescale: add suspend resume functions
- for DMA driver
-Message-ID: <20140521034513.GF21128@intel.com>
-References: <1397809071-5353-1-git-send-email-hongbo.zhang@freescale.com>
- <1397809071-5353-9-git-send-email-hongbo.zhang@freescale.com>
- <20140502164604.GB32284@intel.com> <536614E7.9050301@freescale.com>
- <1399451493.2677.11.camel@smile.fi.intel.com>
- <536B53E5.30506@freescale.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 29C461A081F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:39:14 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 21 May 2014 14:39:12 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5FBB62CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:39:09 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4L4HXwv64553170
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:17:34 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4L4d87L018528
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:39:08 +1000
+Date: Wed, 21 May 2014 14:39:07 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/4] drivers/vfio: New IOCTL command VFIO_EEH_INFO
+Message-ID: <20140521043907.GA1959@shangw>
+References: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400574612-19411-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <537B3AA7.7040106@suse.de> <537B3C68.8080102@suse.de>
+ <20140520114031.GA20397@shangw> <537B4015.7030404@suse.de>
+ <20140520122147.GA26483@shangw> <537B49C9.4000302@suse.de>
+ <20140520123914.GA28441@shangw> <1400631832.3986.154.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <536B53E5.30506@freescale.com>
-Cc: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>,
- "leo.li@freescale.com" <leo.li@freescale.com>,
- "vkoul@infradead.org" <vkoul@infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>, "Williams,
- Dan J" <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1400631832.3986.154.camel@pasglop>
+Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ kvm-ppc@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,59 +48,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 08, 2014 at 05:52:37PM +0800, Hongbo Zhang wrote:
-> 
-> On 05/07/2014 04:31 PM, Shevchenko, Andriy wrote:
-> >On Sun, 2014-05-04 at 18:22 +0800, Hongbo Zhang wrote:
-> >>On 05/03/2014 12:46 AM, Vinod Koul wrote:
-> >>>On Fri, Apr 18, 2014 at 04:17:51PM +0800, hongbo.zhang@freescale.com wrote:
-> >>>>From: Hongbo Zhang <hongbo.zhang@freescale.com>
-> >>>>
-> >>>>This patch adds suspend resume functions for Freescale DMA driver.
-> >>>>.prepare callback is used to stop further descriptors from being added into the
-> >>>>pending queue, and also issue pending queues into execution if there is any.
-> >>>>.suspend callback makes sure all the pending jobs are cleaned up and all the
-> >>>>channels are idle, and save the mode registers.
-> >>>>.resume callback re-initializes the channels by restore the mode registers.
-> >>>>
-> >>>>+
-> >>>>+static const struct dev_pm_ops fsldma_pm_ops = {
-> >>>>+	.prepare	= fsldma_prepare,
-> >>>>+	.suspend	= fsldma_suspend,
-> >>>>+	.resume		= fsldma_resume,
-> >>>>+};
-> >>>I think this is not correct. We discussed this sometime back on list. The
-> >>>DMAengine drivers should use late resume and early suspend to ensure they get
-> >>>suspended after clients (who should use normal ones) and resume before them
-> >>>
-> >>OK, will update it like this:
-> >>use .suspend to take place of current .prepare
-> >Could you remove this at all?
-> >
-> >Answering to your previous statements I could say that.
-> >Device drivers (DMAc users) that don't implement .suspend callback are
-> >on their own with troubles, you have not to care about them in the DMA
-> >driver.
-> 
-> Thanks for pointing out this issue.
-> Then how to handle the descriptors in the pending list if there is any?
-> a. let them finished.
->     but if the DMA user has already suspended prior DMA controller,
-> it is meaningless somehow and may even ask for trouble.
-> b. don't touch them.
->     after resume these pending descriptors could be executed, it is
-> also meaningless because the resumed DMA user may in different state
-> from before being suspended.
-> c. delete them.
->     should we do this? is is a bit crude?
-> d. return a non-success value
->     then the whole suspend process is reversed, e.g. suspend fails.
-> I've looked through some dma drivers, most of them is in case b.
-Yes and that makese sense.
+On Wed, May 21, 2014 at 10:23:52AM +1000, Benjamin Herrenschmidt wrote:
+>On Tue, 2014-05-20 at 22:39 +1000, Gavin Shan wrote:
+>> >>Yeah. How about this? :-)
+>> >>
+>> >>- Move eeh-vfio.c to drivers/vfio/pci/
+>> >>- From eeh-vfio.c, dereference arch/powerpc/kernel/eeh.c::eeh_ops, which
+>> >>   is arch/powerpc/plaforms/powernv/eeh-powernv.c::powernv_eeh_ops. Call
+>> >
+>> >Hrm, I think it'd be nicer to just export individual functions that
+>> >do thing you want to do from eeh.c.
+>> >
+>> 
+>> Ok. Got it. Thanks for your comments :)
+>
+>The interesting thing with this approach is that VFIO per-se can work
+>with EEH RTAS backend too in the host.
+>
 
-In calssic suspend case we maybe in middle so graceful behaviour would be to for
-client to PAUSE or terminate and then suspend followed by DMA suspend.
-You need to rely on client doing the right thing here
+Yeah, it's another benefit for the approach. I need think about it
+later. Thanks, Ben. It's really good point.
 
--- 
-~Vinod
+>IE, with PR KVM for example or with non-KVM uses of VFIO, it would be
+>possible to use a device in a user process and exploit EEH even when
+>running under a PAPR hypervisor.
+>
+>That is, vfio-eeh uses "generic" exported EEH APIs from the EEH core
+>that will work on both powernv and RTAS backends.
+>
+>Note to Alex: This definitely kills the notifier idea for now though,
+>at least as a first class citizen of the design. We can add it as an
+>optional optimization on top later.
+>
+
+Yeah, I'll address the notifier later.
+
+Thanks,
+Gavin
