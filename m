@@ -1,22 +1,21 @@
-Return-Path: <cl@linux.com>
-Received: from qmta07.emeryville.ca.mail.comcast.net
- (qmta07.emeryville.ca.mail.comcast.net [IPv6:2001:558:fe2d:43:76:96:30:64])
- by lists.ozlabs.org (Postfix) with ESMTP id 2600B1A0814
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 00:24:47 +1000 (EST)
-Date: Wed, 21 May 2014 09:16:27 -0500 (CDT)
-From: Christoph Lameter <cl@linux.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: Node 0 not necessary for powerpc?
-In-Reply-To: <20140519182400.GM8941@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.10.1405210915170.7859@gentwo.org>
-References: <20140311195632.GA946@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403120839110.6865@nuc>
- <20140313164949.GC22247@linux.vnet.ibm.com>
- <20140519182400.GM8941@linux.vnet.ibm.com>
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Tejun Heo <htejun@gmail.com>, linux-mm@kvack.org, tony.luck@intel.com,
- anton@samba.org, David Rientjes <rientjes@google.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C61851A0814
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 02:08:12 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH] powerpc: fix typo 'CONFIG_PMAC'
+References: <1400617498.4912.66.camel@x220>
+Date: Wed, 21 May 2014 18:08:04 +0200
+In-Reply-To: <1400617498.4912.66.camel@x220> (Paul Bolle's message of "Tue, 20
+ May 2014 22:24:58 +0200")
+Message-ID: <874n0j3yjf.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 19 May 2014, Nishanth Aravamudan wrote:
+Paul Bolle <pebolle@tiscali.nl> writes:
 
-> I'm seeing a panic at boot with this change on an LPAR which actually
-> has no Node 0. Here's what I think is happening:
+> Commit b0d278b7d3ae ("powerpc/perf_event: Reduce latency of calling
+> perf_event_do_pending") added a check for CONFIG_PMAC were a check for
+> CONFIG_PPC_PMAC was clearly intended.
 >
-> start_kernel
->     ...
->     -> setup_per_cpu_areas
->         -> pcpu_embed_first_chunk
->             -> pcpu_fc_alloc
->                 -> ___alloc_bootmem_node(NODE_DATA(cpu_to_node(cpu), ...
->     -> smp_prepare_boot_cpu
->         -> set_numa_node(boot_cpuid)
+> Fixes: b0d278b7d3ae ("powerpc/perf_event: Reduce latency of calling perf_event_do_pending")
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> ---
+> Untested. Needs testing on 32 bit powermac, I guess.
 >
-> So we panic on the NODE_DATA call. It seems that ia64, at least, uses
-> pcpu_alloc_first_chunk rather than embed. x86 has some code to handle
-> early calls of cpu_to_node (early_cpu_to_node) and sets the mapping for
-> all CPUs in setup_per_cpu_areas().
+> This typo was introduced in v2.6.36. No one noticed because very few
+> people still use 32 bit powermacs?
 
-Maybe we can switch ia64 too embed? Tejun: Why are there these
-dependencies?
+How does that bug manifest itself?
 
-> Thoughts? Does that mean we need something similar to x86 for powerpc?
+Andreas.
 
-Tejun is the expert in this area. CCing him.
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
