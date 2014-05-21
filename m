@@ -1,35 +1,20 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- by lists.ozlabs.org (Postfix) with ESMTP id 706FB1A0814
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 06:34:11 +1000 (EST)
-Date: Wed, 21 May 2014 13:34:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-Message-Id: <20140521133408.4d2f1a551e9652fb0e12265f@linux-foundation.org>
-In-Reply-To: <20140521134027.263DDE009B@blue.fi.intel.com>
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
- <87wqdik4n5.fsf@rustcorp.com.au>
- <53797511.1050409@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
- <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
- <20140520004429.E660AE009B@blue.fi.intel.com>
- <87oaythsvk.fsf@rustcorp.com.au>
- <20140520102738.7F096E009B@blue.fi.intel.com>
- <20140520125956.aa61a3bfd84d4d6190740ce2@linux-foundation.org>
- <20140521134027.263DDE009B@blue.fi.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, riel@redhat.com,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
- peterz@infradead.org, Rusty Russell <rusty@rustcorp.com.au>,
- Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0208.outbound.protection.outlook.com [207.46.163.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B17BD1A0814
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 06:50:27 +1000 (EST)
+Message-ID: <1400705405.18239.92.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/2] mtd/spi: support en25s64 device
+From: Scott Wood <scottwood@freescale.com>
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Date: Wed, 21 May 2014 15:50:05 -0500
+In-Reply-To: <1400666751-11459-1-git-send-email-Shengzhou.Liu@freescale.com>
+References: <1400666751-11459-1-git-send-email-Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,24 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 21 May 2014 16:40:27 +0300 (EEST) "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
-
-> > Or something.  Can we please get some code commentary over
-> > do_fault_around() describing this design decision and explaining the
-> > reasoning behind it?
+On Wed, 2014-05-21 at 18:05 +0800, Shengzhou Liu wrote:
+> Add support for EON en25s64 spi device.
 > 
-> I'll do this. But if do_fault_around() rework is needed, I want to do that
-> first.
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> ---
+>  drivers/mtd/devices/m25p80.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+> index 7eda71d..6989311 100644
+> --- a/drivers/mtd/devices/m25p80.c
+> +++ b/drivers/mtd/devices/m25p80.c
+> @@ -745,6 +745,7 @@ static const struct spi_device_id m25p_ids[] = {
+>  	{ "en25q32b",   INFO(0x1c3016, 0, 64 * 1024,   64, 0) },
+>  	{ "en25p64",    INFO(0x1c2017, 0, 64 * 1024,  128, 0) },
+>  	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
+> +	{ "en25s64",    INFO(0x1c3817, 0, 64 * 1024,  128, 0) },
+>  	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
+>  
+>  	/* ESMT */
 
-This sort of thing should be at least partially driven by observation
-and I don't have the data for that.  My seat of the pants feel is that
-after the first fault, accesses at higher addresses are more
-common/probable than accesses at lower addresses.  In which case we
-should see improvements by centering the window at some higher address
-than the fault.  Much instrumentation and downstream analysis is needed
-and the returns will be pretty small!
+This needs to be sent to the mtd and/or spi maintainers, not here.
 
-But we don't need to do all that right now.  Let's get the current
-implementation wrapped up for 3.15: get the interface finalized (bytes,
-not pages!) and get the current design decisions appropriately
-documented.
+What does this have to do with patch 2/2?  Don't put unrelated things in
+the same patchset, especially when they're destined for different
+maintainers.
+
+-Scott
