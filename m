@@ -1,34 +1,35 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D91CF1A0814
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 06:05:11 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Wed, 21 May 2014 14:05:08 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 742AF19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:05:00 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4LK4Dw66816094
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 22:04:13 +0200
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4LK56BJ026267
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:05:07 -0600
-Date: Wed, 21 May 2014 13:04:51 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: srivatsa.bhat@linux.vnet.ibm.com
-Subject: NUMA topology question wrt. d4edc5b6
-Message-ID: <20140521200451.GB5755@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ by lists.ozlabs.org (Postfix) with ESMTP id 706FB1A0814
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 06:34:11 +1000 (EST)
+Date: Wed, 21 May 2014 13:34:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
+ for powerpc
+Message-Id: <20140521133408.4d2f1a551e9652fb0e12265f@linux-foundation.org>
+In-Reply-To: <20140521134027.263DDE009B@blue.fi.intel.com>
+References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <537479E7.90806@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
+ <87wqdik4n5.fsf@rustcorp.com.au>
+ <53797511.1050409@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
+ <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
+ <20140520004429.E660AE009B@blue.fi.intel.com>
+ <87oaythsvk.fsf@rustcorp.com.au>
+ <20140520102738.7F096E009B@blue.fi.intel.com>
+ <20140520125956.aa61a3bfd84d4d6190740ce2@linux-foundation.org>
+ <20140521134027.263DDE009B@blue.fi.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, riel@redhat.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
+ peterz@infradead.org, Rusty Russell <rusty@rustcorp.com.au>,
+ Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,34 +39,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Srivatsa,
+On Wed, 21 May 2014 16:40:27 +0300 (EEST) "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
 
-After d4edc5b6 ("powerpc: Fix the setup of CPU-to-Node mappings during
-CPU online"), cpu_to_node() looks like:
+> > Or something.  Can we please get some code commentary over
+> > do_fault_around() describing this design decision and explaining the
+> > reasoning behind it?
+> 
+> I'll do this. But if do_fault_around() rework is needed, I want to do that
+> first.
 
-static inline int cpu_to_node(int cpu)
-{
-        int nid;
+This sort of thing should be at least partially driven by observation
+and I don't have the data for that.  My seat of the pants feel is that
+after the first fault, accesses at higher addresses are more
+common/probable than accesses at lower addresses.  In which case we
+should see improvements by centering the window at some higher address
+than the fault.  Much instrumentation and downstream analysis is needed
+and the returns will be pretty small!
 
-        nid = numa_cpu_lookup_table[cpu];
-
-        /*
-         * During early boot, the numa-cpu lookup table might not have been
-         * setup for all CPUs yet. In such cases, default to node 0.
-         */
-        return (nid < 0) ? 0 : nid;
-}
-
-However, I'm curious if this is correct in all cases. I have seen
-several LPARs that do not have any CPUs on node 0. In fact, because node
-0 is statically set online in the initialization of the N_ONLINE
-nodemask, 0 is always present to Linux, whether it is present on the
-system. I'm not sure what the best thing to do here is, but I'm curious
-if you have any ideas? I would like to remove the static initialization
-of node 0, as it's confusing to users to see an empty node (particularly
-when it's completely separate in the numbering from other nodes), but
-we trip a panic (refer to:
-http://www.spinics.net/lists/linux-mm/msg73321.html).
-
-Thanks,
-Nish
+But we don't need to do all that right now.  Let's get the current
+implementation wrapped up for 3.15: get the interface finalized (bytes,
+not pages!) and get the current design decisions appropriately
+documented.
