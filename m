@@ -1,17 +1,17 @@
 Return-Path: <f.fainelli@gmail.com>
-Received: from mail-pb0-x22f.google.com (mail-pb0-x22f.google.com
- [IPv6:2607:f8b0:400e:c01::22f])
+Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c03::22a])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD8521A0873
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 07:39:18 +1000 (EST)
-Received: by mail-pb0-f47.google.com with SMTP id rp16so1803074pbb.20
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:39:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 428551A082E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 07:39:20 +1000 (EST)
+Received: by mail-pa0-f42.google.com with SMTP id rd3so1806482pab.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2014 14:39:17 -0700 (PDT)
 From: Florian Fainelli <f.fainelli@gmail.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH RESEND net-next 7/9] ucc_geth: use the new fixed PHY helpers
-Date: Wed, 21 May 2014 14:38:49 -0700
-Message-Id: <1400708331-18088-8-git-send-email-f.fainelli@gmail.com>
+Subject: [PATCH RESEND net-next 8/9] of: mdio: remove of_phy_connect_fixed_link
+Date: Wed, 21 May 2014 14:38:50 -0700
+Message-Id: <1400708331-18088-9-git-send-email-f.fainelli@gmail.com>
 In-Reply-To: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
 References: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
@@ -34,48 +34,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_phy_connect_fixed_link() is becoming obsolete, and also required
-platform code to register the fixed PHYs at the specified addresses for
-those to be usable. Get rid of it and use the new of_phy_is_fixed_link()
-plus of_phy_register_fixed_link() helpers to transition over the new
-scheme.
+All in-tree drivers have been converted to use the new pair of
+functions: of_is_fixed_phy_link() plus of_phy_register_fixed_link(), we
+can now safely remove of_phy_connect_fixed_link.
 
 Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
 ---
- drivers/net/ethernet/freescale/ucc_geth.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+ drivers/of/of_mdio.c    | 38 --------------------------------------
+ include/linux/of_mdio.h | 10 ----------
+ 2 files changed, 48 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index c8299c31b21f..fab39e295441 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -1728,9 +1728,6 @@ static int init_phy(struct net_device *dev)
+diff --git a/drivers/of/of_mdio.c b/drivers/of/of_mdio.c
+index 1def0bb5cb37..4c1e01ed16dc 100644
+--- a/drivers/of/of_mdio.c
++++ b/drivers/of/of_mdio.c
+@@ -246,44 +246,6 @@ struct phy_device *of_phy_connect(struct net_device *dev,
+ EXPORT_SYMBOL(of_phy_connect);
  
- 	phydev = of_phy_connect(dev, ug_info->phy_node, &adjust_link, 0,
- 				priv->phy_interface);
--	if (!phydev)
--		phydev = of_phy_connect_fixed_link(dev, &adjust_link,
--						   priv->phy_interface);
- 	if (!phydev) {
- 		dev_err(&dev->dev, "Could not attach to PHY\n");
- 		return -ENODEV;
-@@ -3790,6 +3787,17 @@ static int ucc_geth_probe(struct platform_device* ofdev)
- 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
+ /**
+- * of_phy_connect_fixed_link - Parse fixed-link property and return a dummy phy
+- * @dev: pointer to net_device claiming the phy
+- * @hndlr: Link state callback for the network device
+- * @iface: PHY data interface type
+- *
+- * This function is a temporary stop-gap and will be removed soon.  It is
+- * only to support the fs_enet, ucc_geth and gianfar Ethernet drivers.  Do
+- * not call this function from new drivers.
+- */
+-struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
+-					     void (*hndlr)(struct net_device *),
+-					     phy_interface_t iface)
+-{
+-	struct device_node *net_np;
+-	char bus_id[MII_BUS_ID_SIZE + 3];
+-	struct phy_device *phy;
+-	const __be32 *phy_id;
+-	int sz;
+-
+-	if (!dev->dev.parent)
+-		return NULL;
+-
+-	net_np = dev->dev.parent->of_node;
+-	if (!net_np)
+-		return NULL;
+-
+-	phy_id = of_get_property(net_np, "fixed-link", &sz);
+-	if (!phy_id || sz < sizeof(*phy_id))
+-		return NULL;
+-
+-	sprintf(bus_id, PHY_ID_FMT, "fixed-0", be32_to_cpu(phy_id[0]));
+-
+-	phy = phy_connect(dev, bus_id, hndlr, iface);
+-	return IS_ERR(phy) ? NULL : phy;
+-}
+-EXPORT_SYMBOL(of_phy_connect_fixed_link);
+-
+-/**
+  * of_phy_attach - Attach to a PHY without starting the state machine
+  * @dev: pointer to net_device claiming the phy
+  * @phy_np: Node pointer for the PHY
+diff --git a/include/linux/of_mdio.h b/include/linux/of_mdio.h
+index 0aa367e316cb..d449018d0726 100644
+--- a/include/linux/of_mdio.h
++++ b/include/linux/of_mdio.h
+@@ -22,9 +22,6 @@ extern struct phy_device *of_phy_connect(struct net_device *dev,
+ struct phy_device *of_phy_attach(struct net_device *dev,
+ 				 struct device_node *phy_np, u32 flags,
+ 				 phy_interface_t iface);
+-extern struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
+-					 void (*hndlr)(struct net_device *),
+-					 phy_interface_t iface);
  
- 	ug_info->phy_node = of_parse_phandle(np, "phy-handle", 0);
-+	if (!ug_info->phy_node) {
-+		/* In the case of a fixed PHY, the DT node associated
-+		 * to the PHY is the Ethernet MAC DT node.
-+		 */
-+		if (of_phy_is_fixed_link(np)) {
-+			err = of_phy_register_fixed_link(np);
-+			if (err)
-+				return err;
-+		}
-+		ug_info->phy_node = np;
-+	}
+ extern struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np);
  
- 	/* Find the TBI PHY node.  If it's not there, we don't support SGMII */
- 	ug_info->tbi_node = of_parse_phandle(np, "tbi-handle", 0);
+@@ -59,13 +56,6 @@ static inline struct phy_device *of_phy_attach(struct net_device *dev,
+ 	return NULL;
+ }
+ 
+-static inline struct phy_device *of_phy_connect_fixed_link(struct net_device *dev,
+-							   void (*hndlr)(struct net_device *),
+-							   phy_interface_t iface)
+-{
+-	return NULL;
+-}
+-
+ static inline struct mii_bus *of_mdio_find_bus(struct device_node *mdio_np)
+ {
+ 	return NULL;
 -- 
 1.9.1
