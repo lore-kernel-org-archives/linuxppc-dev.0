@@ -1,45 +1,34 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-la0-f46.google.com (mail-la0-f46.google.com
+ [209.85.215.46])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4550F1A0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 03:10:17 +1000 (EST)
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6B1E0140081
- for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2014 03:10:16 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 22 May 2014 13:10:12 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A45F238C805E
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 13:10:09 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4MHA9BB3015042
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 17:10:09 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4MHA86i009522
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 13:10:09 -0400
-Date: Thu, 22 May 2014 10:09:55 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH 1/1] powerpc/perf: Adjust callchain based on DWARF debug
-Message-ID: <20140522170955.GB6318@us.ibm.com>
-References: <20140521012644.GA2890@us.ibm.com>
- <20140522100045.GA4789@krava.brq.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 939561A0083
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 03:21:30 +1000 (EST)
+Received: by mail-la0-f46.google.com with SMTP id ec20so1285201lab.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 10:21:24 -0700 (PDT)
+Message-ID: <537E3218.6030104@cogentembedded.com>
+Date: Thu, 22 May 2014 21:21:28 +0400
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140522100045.GA4789@krava.brq.redhat.com>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- michael@ellerman.id.au, Ulrich.Weigand@de.ibm.com,
- Maynard Johnson <mpjohn@us.ibm.com>
+To: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH RESEND net-next 4/9] net: systemport: use the new fixed
+ PHY helpers
+References: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
+ <1400708331-18088-5-git-send-email-f.fainelli@gmail.com>
+ <537D20EA.1000305@cogentembedded.com>
+ <CAGVrzcbBQFhw-dUh+tFm8H5m9-fmVgutChS8wUG-F6sTBoRq-g@mail.gmail.com>
+In-Reply-To: <CAGVrzcbBQFhw-dUh+tFm8H5m9-fmVgutChS8wUG-F6sTBoRq-g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
+ Aida Mynzhasova <aida.mynzhasova@skitlab.ru>, netdev <netdev@vger.kernel.org>,
+ Richard Cochran <richardcochran@gmail.com>,
+ open list <linux-kernel@vger.kernel.org>,
+ Claudiu Manoil <claudiu.manoil@freescale.com>,
+ Vitaly Bordug <vbordug@ru.mvista.com>, Grant Likely <grant.likely@linaro.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,23 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jiri Olsa [jolsa@redhat.com] wrote:
-| 
-| yep, that sounds more clear to me.. something like below?
-| 
-| calling callchain_dup from within arch_adjust_callchain in case
-| you want to change it and returning != 0 in this case, so
-| we could free the new callchain
+Hello.
 
-Agree.
+On 05/22/2014 02:02 AM, Florian Fainelli wrote:
 
-| 
-| but it might be to much overhead in case you have the support to skip
-| just one entry now right? is there a plan for more cleaning? ;)
+>>> of_phy_connect_fixed_link() is becoming obsolete, and also required
+>>> platform code to register the fixed PHYs at the specified addresses for
+>>> those to be usable. Get rid of it and use the new of_phy_is_fixed_link()
+>>> plus of_phy_register_fixed_link() helpers to transition over the new
+>>> scheme.
 
-Its only one entry AFACIT. No plans for other changes, so will rename
-the function as you mention in the other message and will resend.
+>>> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+>>> ---
+>>>    drivers/net/ethernet/broadcom/bcmsysport.c | 17 +++++++++++++++--
+>>>    drivers/net/ethernet/broadcom/bcmsysport.h |  1 +
+>>>    2 files changed, 16 insertions(+), 2 deletions(-)
 
-Thanks,
+>>> diff --git a/drivers/net/ethernet/broadcom/bcmsysport.c
+>>> b/drivers/net/ethernet/broadcom/bcmsysport.c
+>>> index d40c5b969e9e..dc708a888f80 100644
+>>> --- a/drivers/net/ethernet/broadcom/bcmsysport.c
+>>> +++ b/drivers/net/ethernet/broadcom/bcmsysport.c
+>>> @@ -1327,8 +1327,8 @@ static int bcm_sysport_open(struct net_device *dev)
+>>>          /* Read CRC forward */
+>>>          priv->crc_fwd = !!(umac_readl(priv, UMAC_CMD) & CMD_CRC_FWD);
+>>>
+>>> -       priv->phydev = of_phy_connect_fixed_link(dev,
+>>> bcm_sysport_adj_link,
+>>> -
+>>> priv->phy_interface);
+>>> +       priv->phydev = of_phy_connect(dev, priv->phy_dn,
+>>> bcm_sysport_adj_link,
+>>> +                                       0, priv->phy_interface);
 
-Sukadev
+>>     The continuation line should start on the next character after ( on the
+>> above line, according to the networking coding style.
+
+> Unless I am once again not following the coding style, the patch in
+> patchwork has this correctly, and so does my file locally:
+
+> http://patchwork.ozlabs.org/patch/351323/
+
+    Don't know about your local file but the patchwork still has the 
+indentation wrong. -- you've used only tabs while the last several characters 
+should have been spaces. However, if David himself finds it correct, I guess I 
+just need to shut up. :-)
+
+WBR, Sergei
