@@ -1,34 +1,22 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-la0-f46.google.com (mail-la0-f46.google.com
- [209.85.215.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 939561A0083
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 03:21:30 +1000 (EST)
-Received: by mail-la0-f46.google.com with SMTP id ec20so1285201lab.5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 10:21:24 -0700 (PDT)
-Message-ID: <537E3218.6030104@cogentembedded.com>
-Date: Thu, 22 May 2014 21:21:28 +0400
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-MIME-Version: 1.0
-To: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: [PATCH RESEND net-next 4/9] net: systemport: use the new fixed
- PHY helpers
-References: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
- <1400708331-18088-5-git-send-email-f.fainelli@gmail.com>
- <537D20EA.1000305@cogentembedded.com>
- <CAGVrzcbBQFhw-dUh+tFm8H5m9-fmVgutChS8wUG-F6sTBoRq-g@mail.gmail.com>
-In-Reply-To: <CAGVrzcbBQFhw-dUh+tFm8H5m9-fmVgutChS8wUG-F6sTBoRq-g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
- "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>,
- Aida Mynzhasova <aida.mynzhasova@skitlab.ru>, netdev <netdev@vger.kernel.org>,
- Richard Cochran <richardcochran@gmail.com>,
- open list <linux-kernel@vger.kernel.org>,
- Claudiu Manoil <claudiu.manoil@freescale.com>,
- Vitaly Bordug <vbordug@ru.mvista.com>, Grant Likely <grant.likely@linaro.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- David Miller <davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id BCB6E1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 05:18:22 +1000 (EST)
+Date: Thu, 22 May 2014 15:18:17 -0400 (EDT)
+Message-Id: <20140522.151817.763033809324051260.davem@davemloft.net>
+To: f.fainelli@gmail.com
+Subject: Re: [PATCH net-next v2 0/9] net: of_phy_connect_fixed_link removal
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1400777271-32199-1-git-send-email-f.fainelli@gmail.com>
+References: <1400777271-32199-1-git-send-email-f.fainelli@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org,
+ aida.mynzhasova@skitlab.ru, sergei.shtylyov@cogentembedded.com,
+ netdev@vger.kernel.org, richardcochran@gmail.com, linux-kernel@vger.kernel.org,
+ claudiu.manoil@freescale.com, vbordug@ru.mvista.com, grant.likely@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,50 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+From: Florian Fainelli <f.fainelli@gmail.com>
+Date: Thu, 22 May 2014 09:47:42 -0700
 
-On 05/22/2014 02:02 AM, Florian Fainelli wrote:
+> This patch set removes of_phy_connect_fixed_link() from the tree now that
+> we have a better solution for dealing with fixed PHY (emulated PHY) devices
+> for drivers that require them.
+> 
+> First two patches update the 'fixed-link' Device Tree binding and drivers to
+> refere to it.
+> 
+> Patches 3 to 7 update the in-tree network drivers that use
+> of_phy_connect_fixed_link()
+> 
+> Patch 8 removes of_phy_connect_fixed_link
+> 
+> Patch 9 removes the PowerPC code that parsed the 'fixed-link' property.
+> 
+> Patch 9 can be merged via the net-next tree if the PowerPC folks ack it,
+> but it really has to be merged after the first 8 patches in order to avoid
+> breakage.
 
->>> of_phy_connect_fixed_link() is becoming obsolete, and also required
->>> platform code to register the fixed PHYs at the specified addresses for
->>> those to be usable. Get rid of it and use the new of_phy_is_fixed_link()
->>> plus of_phy_register_fixed_link() helpers to transition over the new
->>> scheme.
-
->>> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
->>> ---
->>>    drivers/net/ethernet/broadcom/bcmsysport.c | 17 +++++++++++++++--
->>>    drivers/net/ethernet/broadcom/bcmsysport.h |  1 +
->>>    2 files changed, 16 insertions(+), 2 deletions(-)
-
->>> diff --git a/drivers/net/ethernet/broadcom/bcmsysport.c
->>> b/drivers/net/ethernet/broadcom/bcmsysport.c
->>> index d40c5b969e9e..dc708a888f80 100644
->>> --- a/drivers/net/ethernet/broadcom/bcmsysport.c
->>> +++ b/drivers/net/ethernet/broadcom/bcmsysport.c
->>> @@ -1327,8 +1327,8 @@ static int bcm_sysport_open(struct net_device *dev)
->>>          /* Read CRC forward */
->>>          priv->crc_fwd = !!(umac_readl(priv, UMAC_CMD) & CMD_CRC_FWD);
->>>
->>> -       priv->phydev = of_phy_connect_fixed_link(dev,
->>> bcm_sysport_adj_link,
->>> -
->>> priv->phy_interface);
->>> +       priv->phydev = of_phy_connect(dev, priv->phy_dn,
->>> bcm_sysport_adj_link,
->>> +                                       0, priv->phy_interface);
-
->>     The continuation line should start on the next character after ( on the
->> above line, according to the networking coding style.
-
-> Unless I am once again not following the coding style, the patch in
-> patchwork has this correctly, and so does my file locally:
-
-> http://patchwork.ozlabs.org/patch/351323/
-
-    Don't know about your local file but the patchwork still has the 
-indentation wrong. -- you've used only tabs while the last several characters 
-should have been spaces. However, if David himself finds it correct, I guess I 
-just need to shut up. :-)
-
-WBR, Sergei
+Series applied, if someone doesn't like patch #9 we can fix it up with a
+followup patch or revert.
