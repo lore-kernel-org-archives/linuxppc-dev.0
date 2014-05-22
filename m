@@ -1,21 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA9941A05FE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 19:56:00 +1000 (EST)
-Message-ID: <537DC9AD.3090202@suse.de>
-Date: Thu, 22 May 2014 11:55:57 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ACF8D1A0593
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 20:00:59 +1000 (EST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 3DBF314008A
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 20:00:59 +1000 (EST)
+Date: Thu, 22 May 2014 12:00:45 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/1] powerpc/perf: Adjust callchain based on DWARF debug
+Message-ID: <20140522100045.GA4789@krava.brq.redhat.com>
+References: <20140521012644.GA2890@us.ibm.com>
 MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH v6 3/3] powerpc/eeh: Avoid event on passed PE
-References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400747034-15045-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1400747034-15045-4-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140521012644.GA2890@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ michael@ellerman.id.au, Ulrich.Weigand@de.ibm.com,
+ Maynard Johnson <mpjohn@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +29,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, May 20, 2014 at 06:26:44PM -0700, Sukadev Bhattiprolu wrote:
 
-On 22.05.14 10:23, Gavin Shan wrote:
-> If we detects frozen state on PE that has been passed through to somebody
-> else. we needn't handle it. Instead, we rely on the device's owner to
-> detect and recover it. The patch avoid EEH event on the frozen passed PE so
-> that the device's owner can have chance to handle that.
->
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+SNIP
 
-I think you want to fold this with patch 1/3.
+> + *
+> + * The value in LR is only needed when it holds a return address. If the
+> + * return address is on the stack, we should ignore the LR value.
+> + *
+> + * Further, when the return address is in the LR, if a new frame was just
+> + * allocated but the LR was not saved into it, then the LR contains the
+> + * caller, slot 4: contains the caller's caller and the contents of slot 3:
+> + * (chain->ips[3]) is undefined and must be ignored.
+> + *
+> + * Use DWARF debug information to determine if any entries need to be skipped.
+> + *
+> + * Return:
+> + *	index:	of callchain entry that needs to be ignored (if any)
+> + *	-1	if no entry needs to be ignored or in case of errors
+> + *
+> + * TODO:
+> + *	Rather than returning an index into the callchain and have the
+> + *	caller skip that entry, we could modify the callchain in-place
+> + *	by putting a PERF_CONTEXT_IGNORE marker in the affected entry.
+> + *
+> + *	But @chain points to read-only mmap, so the caller needs to
+> + *	duplicate the callchain to modify in-place - something like:
+> + *
+> + *		new_callchain = arch_duplicate_callchain();
+> + *		arch_adjust_callchain(new_callchain);
+> + *		...
+> + *		arch_free_callchain(new_callchain);
+> + *
+> + *	Since we only expect to adjust <= 1 entry for now, just return
+> + *	the index.
+
+yep, that sounds more clear to me.. something like below?
+
+calling callchain_dup from within arch_adjust_callchain in case
+you want to change it and returning != 0 in this case, so
+we could free the new callchain
+
+but it might be to much overhead in case you have the support to skip
+just one entry now right? is there a plan for more cleaning? ;)
+
+thanks,
+jirka
 
 
-Alex
-
-> ---
->   arch/powerpc/kernel/eeh.c                 | 8 ++++++++
->   arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
->   2 files changed, 10 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index b90a474..aee6cc5 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -403,6 +403,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
->   	if (ret > 0)
->   		return ret;
->   
-> +	/*
-> +	 * If the PE isn't owned by us, we shouldn't check the
-> +	 * state. Instead, let the owner handle it if the PE has
-> +	 * been frozen.
-> +	 */
-> +	if (eeh_pe_passed(pe))
-> +		return 0;
-> +
->   	/* If we already have a pending isolation event for this
->   	 * slot, we know it's bad already, we don't need to check.
->   	 * Do this checking under a lock; as multiple PCI devices
-> diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> index 1b5982f..03a3ed2 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-> @@ -890,7 +890,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
->   				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
->   					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
->   				ret = EEH_NEXT_ERR_NONE;
-> -			} else if ((*pe)->state & EEH_PE_ISOLATED) {
-> +			} else if ((*pe)->state & EEH_PE_ISOLATED ||
-> +				   eeh_pe_passed(*pe)) {
->   				ret = EEH_NEXT_ERR_NONE;
->   			} else {
->   				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
+---
+diff --git a/tools/perf/util/machine.c b/tools/perf/util/machine.c
+index 7409ac8..ec18310 100644
+--- a/tools/perf/util/machine.c
++++ b/tools/perf/util/machine.c
+@@ -1279,6 +1279,11 @@ struct branch_info *sample__resolve_bstack(struct perf_sample *sample,
+ 	return bi;
+ }
+ 
++struct ip_callchain *callchain_dup(struct ip_callchain *chain)
++{
++	return memdup(chain, sizeof(*chain) + chain->nr * sizeof(u64));
++}
++
+ static int machine__resolve_callchain_sample(struct machine *machine,
+ 					     struct thread *thread,
+ 					     struct ip_callchain *chain,
+@@ -1298,6 +1303,8 @@ static int machine__resolve_callchain_sample(struct machine *machine,
+ 		return 0;
+ 	}
+ 
++	adjusted = arch_adjust_callchain(machine, thread, &chain);
++
+ 	for (i = 0; i < chain_nr; i++) {
+ 		u64 ip;
+ 		struct addr_location al;
+@@ -1326,7 +1333,7 @@ static int machine__resolve_callchain_sample(struct machine *machine,
+ 				 * Discard all.
+ 				 */
+ 				callchain_cursor_reset(&callchain_cursor);
+-				return 0;
++				goto out;
+ 			}
+ 			continue;
+ 		}
+@@ -1350,10 +1357,14 @@ static int machine__resolve_callchain_sample(struct machine *machine,
+ 		err = callchain_cursor_append(&callchain_cursor,
+ 					      ip, al.map, al.sym);
+ 		if (err)
+-			return err;
++			goto out;
+ 	}
+ 
+-	return 0;
++ out:
++	if (adjusted)
++		free(chain);
++
++	return err;
+ }
+ 
+ static int unwind_entry(struct unwind_entry *entry, void *arg)
