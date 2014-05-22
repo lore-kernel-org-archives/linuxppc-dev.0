@@ -1,21 +1,38 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 917EF1A058E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 09:49:35 +1000 (EST)
-Date: Fri, 23 May 2014 09:49:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/perf/hv-24x7: use kmem_cache instead of
- aligned stack allocations
-Message-ID: <20140523094929.15f4613c@canb.auug.org.au>
-In-Reply-To: <1400798673-27522-1-git-send-email-cody@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 58B751A058E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 09:54:19 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Thu, 22 May 2014 17:54:16 -0600
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9A2336E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 19:54:04 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4MNsCo165798160
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 23:54:12 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4MNsA6p010499
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 19:54:12 -0400
+Message-ID: <537E8E1F.9020303@linux.vnet.ibm.com>
+Date: Thu, 22 May 2014 16:54:07 -0700
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v2] powerpc/perf/hv-24x7: use kmem_cache instead of aligned
+ stack allocations
 References: <537E78AD.1040409@linux.vnet.ibm.com>
  <1400798673-27522-1-git-send-email-cody@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/mfBMgEwI/LHIUXFhiBDRx=Q"; protocol="application/pgp-signature"
+ <20140523094929.15f4613c@canb.auug.org.au>
+In-Reply-To: <20140523094929.15f4613c@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, michael@ellerman.id.au,
  mingo@redhat.com, paulus@samba.org, imunsie@au1.ibm.com,
  acme@ghostprotocols.net, scottwood@freescale.com,
@@ -29,74 +46,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/mfBMgEwI/LHIUXFhiBDRx=Q
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-Hi Cody,
-
-On Thu, 22 May 2014 15:44:25 -0700 Cody P Schafer <cody@linux.vnet.ibm.com>=
- wrote:
+On 05/22/2014 04:49 PM, Stephen Rothwell wrote:
+> Hi Cody,
 >
->  	if (ret) {
->  		if (success_expected)
->  			pr_err_ratelimited("hcall failed: %d %#x %#x %d =3D> 0x%lx (%ld) deta=
-il=3D0x%x failing ix=3D%x\n",
->  					domain, offset, ix, lpar,
->  					ret, ret,
-> -					result_buffer.buf.detailed_rc,
-> -					result_buffer.buf.failing_request_ix);
-> -		return ret;
-> +					result_buffer->buf.detailed_rc,
-> +					result_buffer->buf.failing_request_ix);
-> +		goto out_hcall;
->  	}
-> =20
-> -	*res =3D be64_to_cpu(result_buffer.result);
-> +	*res =3D be64_to_cpu(result_buffer->result);
+> On Thu, 22 May 2014 15:44:25 -0700 Cody P Schafer <cody@linux.vnet.ibm.com> wrote:
+>>
+>>   	if (ret) {
+>>   		if (success_expected)
+>>   			pr_err_ratelimited("hcall failed: %d %#x %#x %d => 0x%lx (%ld) detail=0x%x failing ix=%x\n",
+>>   					domain, offset, ix, lpar,
+>>   					ret, ret,
+>> -					result_buffer.buf.detailed_rc,
+>> -					result_buffer.buf.failing_request_ix);
+>> -		return ret;
+>> +					result_buffer->buf.detailed_rc,
+>> +					result_buffer->buf.failing_request_ix);
+>> +		goto out_hcall;
+>>   	}
+>>
+>> -	*res = be64_to_cpu(result_buffer.result);
+>> +	*res = be64_to_cpu(result_buffer->result);
+>
+> not a biggie, but this last bit could be (remove the goto out_hcall and
+> teh label and then)
+>
+> 	} else {
+> 		*res = be64_to_cpu(result_buffer->result);
+> 	}
+>
 
-not a biggie, but this last bit could be (remove the goto out_hcall and
-teh label and then)
+I've got a slight preference toward keeping it as is, which lets all of 
+the non-error path code stay outside of if/else blocks (and the error 
+handling is kept ever so slightly more consistent).
 
-	} else {
-		*res =3D be64_to_cpu(result_buffer->result);
-	}
-
-> +out_hcall:
-> +	kfree(result_buffer);
-> +out_resb:
-> +	kfree(request_buffer);
-> +out_reqb:
->  	return ret;
->  }
-> =20
-
-otherwise looks good to me.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/mfBMgEwI/LHIUXFhiBDRx=Q
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJTfo0OAAoJEMDTa8Ir7ZwVIEAP/0fagz+HvPvKBlqKjiHSr5/7
-Vjy0oApDJx0nyyu6Y0+oLDXTM23SwJulM8gkrrVu2F+PA3nHAQYNLKhZ+rkPVf0n
-QxlLBG0Tp1s5qQXB0N/PYZ2XTLzwzo8+Nv2u0RM2gH0GYlZPur3t6VlJfRiQnNTB
-sbR7HeCpBb3/mKwvXOcveP/H8Wi2VQ6Eq+6PdVaPUATvP0CuOg6VRr0EbifqnYFG
-iutgW3nwBULuMj2ytKl84KuOs9OXFUwRHv+7bQ/0BfHfOGiE3TaDjoOVCdyMFJfp
-exK3l1bRzDFDrDC1N0azJBUK2L6NU2erOhGHn6D/9jY2JOXRN9RXfp/Hft5Sq0FN
-8SloWb4g2wFfg3diZAnIRddJ6SG/8UrycFb+oZ8RO0kM/kIXiZQo0az2Uf18kuXd
-V7pnTm8By0TXKT+VAZ2UaMAaXZgmG+gT1MPFLj2eotsaowLfo5u/FAFsXMTArEJC
-ugEfasbPwOAzPqtVXDJUVpgjGqsUIbJ2wZxriQ4eaePLWag9vEP9Fhr7k9qqy/Nq
-BBkHOf09XNSerxcBYqYkOG2WwEXObbLTDP7PN8XsieRiK1W71JtBQxZOb76VDhih
-dginJw2L3NyZAagg9wxdvjUC9TdLzjgG1/Uw3LID5xaKjeHl7RKsuYreOUEg5p/I
-u5U6HkJd/AdoquLqyAZ1
-=nAI9
------END PGP SIGNATURE-----
-
---Sig_/mfBMgEwI/LHIUXFhiBDRx=Q--
+>> +out_hcall:
+>> +	kfree(result_buffer);
+>> +out_resb:
+>> +	kfree(request_buffer);
+>> +out_reqb:
+>>   	return ret;
+>>   }
+>>
+>
+> otherwise looks good to me.
+>
