@@ -1,48 +1,22 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3473C1A059E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 15:10:12 +1000 (EST)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0C5041400A9
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 15:10:11 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 22 May 2014 15:10:10 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1969D3578048
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 15:10:06 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4M4mTI39371918
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 14:48:29 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4M5A59X025410
- for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 15:10:05 +1000
-Message-ID: <537D8641.8090600@linux.vnet.ibm.com>
-Date: Thu, 22 May 2014 10:38:17 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <vinod.koul@intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9800A1A05A0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 15:23:33 +1000 (EST)
+Date: Thu, 22 May 2014 10:37:45 +0530
+From: Vinod Koul <vinod.koul@intel.com>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH RFC v13 1/5] dmaengine: fix comment typo
+Message-ID: <20140522050745.GT21128@intel.com>
+References: <1400163335-29853-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1400163335-29853-2-git-send-email-a13xp0p0v88@gmail.com>
 MIME-Version: 1.0
-To: Pedro Alves <palves@redhat.com>
-Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for transactional
- memory register sets
-References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
- <537252C0.6090005@redhat.com> <53730326.6000400@linux.vnet.ibm.com>
- <53735044.5030008@redhat.com> <537479FD.2010200@linux.vnet.ibm.com>
- <5374AE24.1030302@redhat.com> <5379EF0E.6090504@linux.vnet.ibm.com>
- <537A1889.8030801@redhat.com> <537B0EE0.4080406@linux.vnet.ibm.com>
- <537B2F5E.4040102@redhat.com>
-In-Reply-To: <537B2F5E.4040102@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, avagin@openvz.org, oleg@redhat.com,
- linux-kernel@vger.kernel.org, michael@ellerman.id.au, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1400163335-29853-2-git-send-email-a13xp0p0v88@gmail.com>
+Cc: Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Gerhard Sittig <gsi@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.jf.intel.com>,
+ dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,139 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/20/2014 04:03 PM, Pedro Alves wrote:
-> On 05/20/2014 09:14 AM, Anshuman Khandual wrote:
->> On 05/19/2014 08:13 PM, Pedro Alves wrote:
->>> On 05/19/2014 12:46 PM, Anshuman Khandual wrote:
->>>
->>>>>> I couldn't actually find any arch that currently returns -ENODEV in
->>>>>> the "active" hook.  I see that binfmt_elf.c doesn't handle
->>>>>> regset->active() returning < 0.  Guess that may be why.  Looks like
->>>>>> something that could be cleaned up, to me.
->>>>>>
->>>> Also it does not consider the return value of regset->active(t->task, regset)
->>>> (whose objective is to figure out whether we need to request regset->n number
->>>> of elements or less than that) in the subsequent call to regset->get function.
->>>
->>> Indeed.
->>>
->>> TBC, do you plan on fixing this?  Otherwise ...
->>
->> Sure, thinking something like this as mentioned below. But still not sure how to use
->> the return type of -ENODEV from the function regset->active(). Right now if any
->> regset does have the active hook and it returns anything but positive value, it will
->> be ignored and the control moves to the next regset in view. This prevents the thread
->> core note type being written to the core dump.
-> 
-> Looks to me that that's exactly what should happen for -ENODEV too.  The regset
-> should be ignored.  If regset->active() returns -ENODEV, then the machine
-> doesn't have the registers at all, so what makes sense to me is to not write the
-> corresponding core note in the dump.  IOW, on such a machine, the kernel
-> generates a core exactly like if the support for these registers that don't
-> make sense for this machine wasn't compiled in at all.  And generates a core
-> exactly like an older kernel that didn't know about that regset
-> (which is fine for that same machine) yet.
-> 
+On Thu, May 15, 2014 at 06:15:31PM +0400, Alexander Popov wrote:
+> Fix comment typo.
 
-All of this happen right now even without specifically checking for the return type
-of -ENODEV and just checking for a positive value. I guess thats the reason they had
-omitted -ENODEV in the first place. 
+Applied, thanks
 
- 
->>
->> diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
->> index aa3cb62..80672fb 100644
->> --- a/fs/binfmt_elf.c
->> +++ b/fs/binfmt_elf.c
->> @@ -1553,7 +1553,15 @@ static int fill_thread_core_info(struct elf_thread_core_info *t,
->>                 if (regset->core_note_type && regset->get &&
->>                     (!regset->active || regset->active(t->task, regset))) {
->>                         int ret;
-> 
-> So, here, this ?
-> 
->                     (!regset->active || regset->active(t->task, regset) > 0)) {
-> 
-> 
->> -                       size_t size = regset->n * regset->size;
->> +                       size_t size;
->> +
->> +                       /* Request only the active elements in the regset */
->> +                       if (!regset->active)
->> +                               size = regset->n * regset->size;
->> +                       else
->> +                               size = regset->active(t->task, regset)
->> +                                                               * regset->size;
->> +
-> 
-> 
-> I wonder if it wouldn't be cleaner to add a function like:
-> 
-> int
-> regset_active (tast *task, regseg *regset)
-> {
->    if (!regset->active)
->         return regset->n * regset->size;
->    else
->         return regset->active(task, regset);
-> }
-> 
-> And then use it like
-> 
->                if (regset->core_note_type && regset->get) {
->                    int size = regset_active (t->task, regset);
-> 
->                    if (size > 0) {
->                           ...
->                    }
-> 
-
-Yeah this makes sense.
-
-> Though at this point, we don't actually make use of
-> the distinction between -ENODEV vs 0.  Guess that's what
-> we should be thinking about.  Seems like there some details that
-> need to be sorted out, and some verification that consumers aren't
-> broken by outputting smaller notes -- e.g., ia64 makes me
-> wonder that.
-
-I agree.
-
-> 
-> Maybe we should leave this for another day, and have tm_spr_active
-> return 0 instead of -ENODEV when the machine doesn't have the hardware,
-> or not install that hook at all.  Seems like the effect will be the same,
-> as the note isn't output if ->get fails.
-
-Agree. Active hooks which return 0 in case of -ENODEV sounds good to me and shall
-incorporate this in the next version.
-
-> 
->>                         void *data = kmalloc(size, GFP_KERNEL);
->>                         if (unlikely(!data))
->>                                 return 0;
->>
->>>
->>>> Now coming to the installation of the .active hooks part for all the new regsets, it
->>>> should be pretty straight forward as well. Though its optional and used for elf_core_dump
->>>> purpose only, its worth adding them here. Example of an active function should be something
->>>> like this. The function is inexpensive as required.
->>>>
->>>> +static int tm_spr_active(struct task_struct *target,
->>>> +                               const struct user_regset *regset)
->>>> +{
->>>> +       if (!cpu_has_feature(CPU_FTR_TM))
->>>> +               return -ENODEV;
->>>
->>> ... unfortunately this will do the wrong thing.
->>
->> I am not sure whether I understand this correctly. Are you saying that its wrong to return
->> -ENODEV in this case as above ?
-> 
-> No, sorry for not being clear.  The (...)'s were connected:
-> 
->    "do you plan on fixing this?  Otherwise ... ... unfortunately
->     this will do the wrong thing."
-> 
-
-:)
+-- 
+~Vinod
