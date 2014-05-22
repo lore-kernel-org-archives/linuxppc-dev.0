@@ -1,24 +1,19 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A426F1A059E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 15:30:06 +1000 (EST)
-Message-ID: <1400736606.14864.11.camel@concordia>
-Subject: Re: [PATCH V2 2/3] powerpc, ptrace: Enable support for
- transactional memory register sets
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Pedro Alves <palves@redhat.com>
-Date: Thu, 22 May 2014 15:30:06 +1000
-In-Reply-To: <5372547D.8040209@redhat.com>
-References: <1399276469-13541-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1399276469-13541-3-git-send-email-khandual@linux.vnet.ibm.com>
- <5372547D.8040209@redhat.com>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews03.kpnxchange.com (cpsmtpb-ews03.kpnxchange.com
+ [213.75.39.6])
+ by lists.ozlabs.org (Postfix) with ESMTP id E65F21A058E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 17:10:25 +1000 (EST)
+Message-ID: <1400742620.21254.22.camel@x220>
+Subject: Re: [PATCH] powerpc: fix typo 'CONFIG_PMAC'
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Thu, 22 May 2014 09:10:20 +0200
+In-Reply-To: <874n0j3yjf.fsf@igel.home>
+References: <1400617498.4912.66.camel@x220> <874n0j3yjf.fsf@igel.home>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: mikey@neuling.org, avagin@openvz.org, Roland McGrath <roland@hack.frob.com>,
- oleg@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,22 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-05-13 at 18:21 +0100, Pedro Alves wrote:
-> I wonder whether people are getting Roland's address from?
+Andreas,
+
+On Wed, 2014-05-21 at 18:08 +0200, Andreas Schwab wrote:
+> Paul Bolle <pebolle@tiscali.nl> writes:
 > 
-> It's frequent that ptrace related patches end up CCed to
-> roland@redhat.com, but, he's not been at Red Hat for a few years
-> now.  Roland, do you still want to be CCed on ptrace-related
-> issues?  If so, there's probably a script somewhere in the
-> kernel that needs updating.  If not, well, it'd be good
-> if it were updated anyway.  :-)
+> > Commit b0d278b7d3ae ("powerpc/perf_event: Reduce latency of calling
+> > perf_event_do_pending") added a check for CONFIG_PMAC were a check for
+> > CONFIG_PPC_PMAC was clearly intended.
+> >
+> > Fixes: b0d278b7d3ae ("powerpc/perf_event: Reduce latency of calling perf_event_do_pending")
+> > Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> > ---
+> > Untested. Needs testing on 32 bit powermac, I guess.
+> >
+> > This typo was introduced in v2.6.36. No one noticed because very few
+> > people still use 32 bit powermacs?
+> 
+> How does that bug manifest itself?
 
-In MAINTAINERS I see:
+Do you want to know how to test this patch on a 32 bit powermac? Ie, see
+if it has any effect, and whether that effect improves things or make
+things worse.
 
-PTRACE SUPPORT
-M:	Roland McGrath <roland@redhat.com>
-M:	Oleg Nesterov <oleg@redhat.com>
-S:	Maintained
+I have no clue how to do that, sorry. Perhaps someone else has.
 
 
-cheers
+Paul Bolle
