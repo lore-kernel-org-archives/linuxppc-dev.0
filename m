@@ -1,19 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7512F1A0088
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 May 2014 23:17:23 +1000 (EST)
-Message-ID: <1400764635.29150.35.camel@pasglop>
-Subject: Re: powerpc: CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Bolle <pebolle@tiscali.nl>
-Date: Thu, 22 May 2014 23:17:15 +1000
-In-Reply-To: <1400749765.16832.18.camel@x220>
-References: <1400749765.16832.18.camel@x220>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
+ by lists.ozlabs.org (Postfix) with ESMTP id B168A1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 01:53:49 +1000 (EST)
+Date: Thu, 22 May 2014 11:53:42 -0400 (EDT)
+Message-Id: <20140522.115342.1563864579270515397.davem@davemloft.net>
+To: f.fainelli@gmail.com
+Subject: Re: [PATCH RESEND 0/9 net-next] net: of_phy_connect_fixed_link removal
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
+References: <1400708331-18088-1-git-send-email-f.fainelli@gmail.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org,
+ aida.mynzhasova@skitlab.ru, sergei.shtylyov@cogentembedded.com,
+ netdev@vger.kernel.org, richardcochran@gmail.com, linux-kernel@vger.kernel.org,
+ claudiu.manoil@freescale.com, vbordug@ru.mvista.com, grant.likely@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,21 +25,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-05-22 at 11:09 +0200, Paul Bolle wrote:
-> In v3.2 checks for CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS and
-> CONFIG_WSP_DD1_WORKAROUND_BAD_PCIE_CLASS were added to
-> arch/powerpc/platforms/wsp/wsp_pci.c. The check for
-> CONFIG_WSP_DD1_WORKAROUND_BAD_PCIE_CLASS was dropped again in v3.3.
-> 
-> Neither of these macros have ever had a matching Kconfig symbol. So they
-> have always evaluated to false.
-> 
-> Is it perhaps intended that one sets the macro still in the tree,
-> CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS, manually? And is that macro
-> still needed?
 
-To be honest we can kill all of the wsp code I think ... The project
-got canned and I don't think anybody still uses them.
-
-Cheers,
-Ben.
+Please address Sergei's feedback, except the indentation one which
+as you stated is correct.
