@@ -1,22 +1,45 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE6F41A0E1A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 02:53:18 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH] powerpc: fix typo 'CONFIG_PMAC'
-References: <1400617498.4912.66.camel@x220> <874n0j3yjf.fsf@igel.home>
- <1400742620.21254.22.camel@x220>
-Date: Thu, 22 May 2014 18:47:07 +0200
-In-Reply-To: <1400742620.21254.22.camel@x220> (Paul Bolle's message of "Thu,
- 22 May 2014 09:10:20 +0200")
-Message-ID: <87lhttzrp0.fsf@igel.home>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4550F1A0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 03:10:17 +1000 (EST)
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6B1E0140081
+ for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2014 03:10:16 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 22 May 2014 13:10:12 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A45F238C805E
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 13:10:09 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4MHA9BB3015042
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 17:10:09 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4MHA86i009522
+ for <linuxppc-dev@ozlabs.org>; Thu, 22 May 2014 13:10:09 -0400
+Date: Thu, 22 May 2014 10:09:55 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Jiri Olsa <jolsa@redhat.com>
+Subject: Re: [PATCH 1/1] powerpc/perf: Adjust callchain based on DWARF debug
+Message-ID: <20140522170955.GB6318@us.ibm.com>
+References: <20140521012644.GA2890@us.ibm.com>
+ <20140522100045.GA4789@krava.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140522100045.GA4789@krava.brq.redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ michael@ellerman.id.au, Ulrich.Weigand@de.ibm.com,
+ Maynard Johnson <mpjohn@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +49,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Bolle <pebolle@tiscali.nl> writes:
+Jiri Olsa [jolsa@redhat.com] wrote:
+| 
+| yep, that sounds more clear to me.. something like below?
+| 
+| calling callchain_dup from within arch_adjust_callchain in case
+| you want to change it and returning != 0 in this case, so
+| we could free the new callchain
 
-> Do you want to know how to test this patch on a 32 bit powermac? Ie, see
-> if it has any effect, and whether that effect improves things or make
-> things worse.
+Agree.
 
-Yes.
+| 
+| but it might be to much overhead in case you have the support to skip
+| just one entry now right? is there a plan for more cleaning? ;)
 
-Andreas.
+Its only one entry AFACIT. No plans for other changes, so will rename
+the function as you mention in the other message and will resend.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Thanks,
+
+Sukadev
