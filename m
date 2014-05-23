@@ -1,27 +1,34 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAB351A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:30:33 +1000 (EST)
-Message-ID: <537F3F64.8020807@suse.de>
-Date: Fri, 23 May 2014 14:30:28 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 2/3] drivers/vfio: EEH support for VFIO PCI device
-References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400747034-15045-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <537DC991.9010401@suse.de> <20140523001730.GA12584@shangw>
- <20140523003737.GA15136@shangw> <1400815400.3289.436.camel@ul30vt.home>
- <22ECE7F7-2C1F-4E54-AD6B-0D2405357C9A@suse.de> <20140523115809.GB4042@shangw>
-In-Reply-To: <20140523115809.GB4042@shangw>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Alex Williamson <alex.williamson@redhat.com>,
- "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <kirill.shutemov@linux.intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2927B1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:41:39 +1000 (EST)
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20140521133408.4d2f1a551e9652fb0e12265f@linux-foundation.org>
+References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
+ <537479E7.90806@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
+ <87wqdik4n5.fsf@rustcorp.com.au>
+ <53797511.1050409@linux.vnet.ibm.com>
+ <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
+ <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
+ <20140520004429.E660AE009B@blue.fi.intel.com>
+ <87oaythsvk.fsf@rustcorp.com.au>
+ <20140520102738.7F096E009B@blue.fi.intel.com>
+ <20140520125956.aa61a3bfd84d4d6190740ce2@linux-foundation.org>
+ <20140521134027.263DDE009B@blue.fi.intel.com>
+ <20140521133408.4d2f1a551e9652fb0e12265f@linux-foundation.org>
+Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
+ for powerpc
+Message-Id: <20140523122854.BDB36E009B@blue.fi.intel.com>
+Date: Fri, 23 May 2014 15:28:54 +0300 (EEST)
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, riel@redhat.com,
+ Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
+ peterz@infradead.org, Rusty Russell <rusty@rustcorp.com.au>,
+ Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,118 +38,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Andrew Morton wrote:
+> On Wed, 21 May 2014 16:40:27 +0300 (EEST) "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
+> 
+> > > Or something.  Can we please get some code commentary over
+> > > do_fault_around() describing this design decision and explaining the
+> > > reasoning behind it?
+> > 
+> > I'll do this. But if do_fault_around() rework is needed, I want to do that
+> > first.
+> 
+> This sort of thing should be at least partially driven by observation
+> and I don't have the data for that.  My seat of the pants feel is that
+> after the first fault, accesses at higher addresses are more
+> common/probable than accesses at lower addresses.
 
-On 23.05.14 13:58, Gavin Shan wrote:
-> On Fri, May 23, 2014 at 08:52:23AM +0200, Alexander Graf wrote:
->>
->>> Am 23.05.2014 um 05:23 schrieb Alex Williamson <alex.williamson@redhat.com>:
->>>
->>>> On Fri, 2014-05-23 at 10:37 +1000, Gavin Shan wrote:
->>>>> On Fri, May 23, 2014 at 10:17:30AM +1000, Gavin Shan wrote:
->>>>>> On Thu, May 22, 2014 at 11:55:29AM +0200, Alexander Graf wrote:
->>>>>> On 22.05.14 10:23, Gavin Shan wrote:
->>>> .../...
->>>>
->>>>>>> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
->>>>>>> index cb9023d..ef55682 100644
->>>>>>> --- a/include/uapi/linux/vfio.h
->>>>>>> +++ b/include/uapi/linux/vfio.h
->>>>>>> @@ -455,6 +455,59 @@ struct vfio_iommu_spapr_tce_info {
->>>>>>> #define VFIO_IOMMU_SPAPR_TCE_GET_INFO    _IO(VFIO_TYPE, VFIO_BASE + 12)
->>>>>>> +/*
->>>>>>> + * EEH functionality can be enabled or disabled on one specific device.
->>>>>>> + * Also, the DMA or IO frozen state can be removed from the frozen PE
->>>>>>> + * if required.
->>>>>>> + */
->>>>>>> +struct vfio_eeh_pe_set_option {
->>>>>>> +    __u32 argsz;
->>>>>> What is this argsz thing? Is this your way of maintaining backwards
->>>>>> compatibility when we introduce new fields? A new field will change
->>>>>> the ioctl number, so I don't think that makes a lot of sense :).
->>>>>>
->>>>>> Just make the ioctl have a u32 as incoming argument. No fancy
->>>>>> structs, no complicated code.
->>>>>>
->>>>>> The same applies for a number of structs below.
->>>>> ok. Will do in next revision.
->>>> Rechecked include/uapi/linux/vfio.h, the data struct for each ioctl command
->>>> always has "argsz". I guess it was used as checker by Alex.W. Do you really
->>>> want remove "argsz" ?
->>>
->>> IIRC, this was actually a suggestion incorporated from David Gibson, but
->>> using _IO with an argsz and flags field we can maintain compatibility
->>> without bumping the ioctl number.  It really only makes sense if we have
->>> a flags field so we can identify what additional information is being
->>> provided.  Flags can be used as a bitmap of trailing structures or as
->>> revision if we want a set of trailing structures that may change over
->>> time.  Unless you can come up with a good argument against it that would
->>> prevent us inventing a new ioctl as soon as we need a minor tweak, I'd
->>> prefer to keep it.  As I noted in a previous comment, the one ioctl we
->>> have for reset that doesn't take any options is likely going to be the
->>> first ioctl that we need to entirely replace.  If we don't keep argsz,
->>> it seems like we probably need a flags field and reserved structures.
->>>
->>>>>>> +    __u32 option;
->>>>>>> +};
->>>>>>> +
->>>>>>> +#define VFIO_EEH_PE_SET_OPTION        _IO(VFIO_TYPE, VFIO_BASE + 21)
->>>>>>> +
->>>>>>> +/*
->>>>>>> + * Each EEH PE should have unique address to be identified. The command
->>>>>>> + * helps to retrieve the address and the sharing mode of the PE.
->>>>>>> + */
->>>>>>> +struct vfio_eeh_pe_get_addr {
->>>>>>> +    __u32 argsz;
->>>>>>> +    __u32 option;
->>>>>>> +    __u32 info;
->>>>>> Any particular reason you need the info field? Can't the return value
->>>>>> of the ioctl hold this? Then you only have a single u32 argument left
->>>>>> to the ioctl again.
->>>>> ok. Will do in next revision.
->>>> If we eventually remove "argsz" and let ioctl() return value to hold
->>>> information (or negative number for errors), we don't need any data
->>>> struct because the 3rd parameter of ioctl() would be used as input
->>>> and I only need one input parameter. Do you want see this ?
->>>>
->>>> Hopefully, Alex.W saw this and hasn't objections :)
->>> I'm not sure why we're pushing for the minimal data set to pass to an
->>> ioctl.  Seems like a recipe for dead, useless ioctls.  Thanks,
->>>
->> The ioctl number includes sizeof(payload). So if a new parameter gets added, that would be a different ioctl number.
->>
->> If you want to maintain backwards compatibility ioctl number wise in the kernel, you'll have to have a "flags" field to indicate whether new data is available and a "pad" field, prefarably in a union, that ensures the size of the struct doesn't change.
->>
->> I'm not sure it's really necessary here to have identical ioctl numbers if we add parameters, since we can always just define a new ioctl with a bigger payload that can then become the default handler and a shim backwards compatible handler with the old number.
->>
->> But if you think it is important, let's do it for real, not just halfway.
->>
-> So I need add additional field "flags" ?
+It's probably true for data, but the feature is mostly targeted to code pages
+and situation is not that obvious to me with all jumps.
 
-This is Alex' call on how he prefers the interface to look like. The 
-struct size that you pass into an ioctl is part of the ioctl number, so 
-putting that into an argsz field only makes sense when you do ugly 
-things like
+> But we don't need to do all that right now.  Let's get the current
+> implementation wrapped up for 3.15: get the interface finalized (bytes,
+> not pages!)
 
-struct foo *x;
-uint32_t *y;
+The patch above by thread is okay for that, right?
 
-x = malloc(sizeof(*x) + sizeof(*y));
-y = (void*)&x[1];
+> and get the current design decisions appropriately documented.
 
-ioctl(..., x);
+Here it is. Based on patch to convert order->bytes.
 
-But I'd prefer not to have such nasty code really. It breaks assumptions 
-on *anything* that wraps ioctls, such as strace or qemu's linux-user 
-emulation.
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Date: Fri, 23 May 2014 15:16:47 +0300
+Subject: [PATCH] mm: document do_fault_around() feature
 
->   Also, I need keep the return value from
-> ioctl() less or equal to 0 ? :-)
+Some clarification on how faultaround works.
 
-Usually return values are
+Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+---
+ mm/memory.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-   < 0 means error
-   == 0 means success
-   > 0 means return payload
-
-
-Alex
+diff --git a/mm/memory.c b/mm/memory.c
+index 252b319e8cdf..8d723b8d3c86 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3404,6 +3404,10 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
+ 
+ static unsigned long fault_around_bytes = 65536;
+ 
++/*
++ * fault_around_pages() and fault_around_mask() round down fault_around_bytes
++ * to nearest page order. It's what do_fault_around() expects to see.
++ */
+ static inline unsigned long fault_around_pages(void)
+ {
+ 	return rounddown_pow_of_two(fault_around_bytes) / PAGE_SIZE;
+@@ -3445,6 +3449,29 @@ static int __init fault_around_debugfs(void)
+ late_initcall(fault_around_debugfs);
+ #endif
+ 
++/*
++ * do_fault_around() tries to map few pages around the fault address. The hope
++ * is that the pages will be needed soon and this would lower the number of
++ * faults to handle.
++ *
++ * It uses vm_ops->map_pages() to map the pages, which skips the page if it's
++ * not ready to be mapped: not up-to-date, locked, etc.
++ *
++ * This function is called with the page table lock taken. In the split ptlock
++ * case the page table lock only protects only those entries which belong to
++ * page table corresponding to the fault address.
++ *
++ * This function don't cross the VMA boundaries in order to call map_pages()
++ * only once.
++ *
++ * fault_around_pages() defines how many pages we'll try to map.
++ * do_fault_around() expects it to be power of two and less or equal to
++ * PTRS_PER_PTE.
++ *
++ * The virtual address of the area that we map is naturally aligned to the
++ * fault_around_pages() (and therefore to page order). This way it's easier to
++ * guarantee that we don't cross the page table boundaries.
++ */
+ static void do_fault_around(struct vm_area_struct *vma, unsigned long address,
+ 		pte_t *pte, pgoff_t pgoff, unsigned int flags)
+ {
+-- 
+ Kirill A. Shutemov
