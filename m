@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2BF21A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 19:41:17 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4553014007B
- for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2014 19:41:16 +1000 (EST)
-Message-ID: <1400838066.29150.69.camel@pasglop>
-Subject: [PATCH] tty/hvc/hvc_console: Fix wakeup of HVC thread on hvc_kick()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 23 May 2014 19:41:06 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jiri Slaby <jslaby@suse.cz>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55DBD1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 19:53:24 +1000 (EST)
+Message-ID: <537F1A8D.9000704@suse.de>
+Date: Fri, 23 May 2014 11:53:17 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 0/6] Implement split core for POWER8
+References: <1400832930-17050-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1400832930-17050-1-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some backends call hvc_kick() to wakeup the HVC thread from its
-slumber upon incoming characters. This however doesn't work
-properly because it uses msleep_interruptible() which is mostly
-immune to wake_up_process(). It will basically go back to sleep
-until the timeout is expired (only signals can really wake it).
 
-Replace it with a simple shedule_timeout_interruptible() instead,
-which may wakeup earlier every now and then but we really don't
-care in this case.
+On 23.05.14 10:15, Michael Neuling wrote:
+> This patch series implements split core mode on POWER8.  This enables up to 4
+> subcores per core which can each independently run guests (per guest SPRs like
+> SDR1, LPIDR etc are replicated per subcore).  Lots more documentation on this
+> feature in the code and commit messages.
+>
+> Most of this code is in the powernv platform but there's a couple of KVM
+> specific patches too.
+>
+> Patch series authored by mpe and me with a few bug fixes from others.
+>
+> v2:
+>    There are some minor updates based on comments and I've added the Acks by
+>    Paulus and Alex for the KVM code.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- drivers/tty/hvc/hvc_console.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+I don't see changelogs inside the individual patches. Please make sure 
+to always mention what changed from one version to the next in a 
+particular patch, so that I have the chance to check whether that change 
+was good :).
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 94f9e3a..1094265 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -760,10 +760,17 @@ static int khvcd(void *unused)
- 			if (poll_mask == 0)
- 				schedule();
- 			else {
-+				unsigned long j_timeout;
-+
- 				if (timeout < MAX_TIMEOUT)
- 					timeout += (timeout >> 6) + 1;
- 
--				msleep_interruptible(timeout);
-+				/*
-+				 * We don't use msleep_interruptible otherwise
-+				 * "kick" will fail to wake us up
-+				 */
-+				j_timeout = msecs_to_jiffies(timeout) + 1;
-+				schedule_timeout_interruptible(j_timeout);
- 			}
- 		}
- 		__set_current_state(TASK_RUNNING);
+Also, is there any performance penalty associated with split core mode? 
+If not, could we just always default to split-by-4 on POWER8 bare metal?
+
+
+Alex
