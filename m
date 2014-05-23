@@ -1,42 +1,22 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0145.outbound.protection.outlook.com [207.46.163.145])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5555D1A05E2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 01:17:43 +1000 (EST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A3CB1400A0
- for <linuxppc-dev@ozlabs.org>; Sat, 24 May 2014 01:17:42 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 23 May 2014 20:47:40 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7AB5BE004B
- for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2014 20:48:20 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4NFI5JT39387330
- for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2014 20:48:05 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4NFHaX7006484
- for <linuxppc-dev@ozlabs.org>; Fri, 23 May 2014 20:47:37 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- peterz@infradead.org, akpm@linux-foundation.org, tglx@linutronix.de
-Subject: [PATCH V3 3/3] powerpc,
- ptrace: Enable support for miscellaneous registers
-Date: Fri, 23 May 2014 20:45:38 +0530
-Message-Id: <1400858138-3939-4-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, palves@redhat.com, oleg@redhat.com,
- dhowells@redhat.com, davej@redhat.com, davem@davemloft.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 74E721A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 03:06:22 +1000 (EST)
+Message-ID: <1400864771.12823.51.camel@snotra.buserror.net>
+Subject: Re: [2/2] powerpc/corenet64_smp_defconfig: enable RTC support
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
+Date: Fri, 23 May 2014 12:06:11 -0500
+In-Reply-To: <474028133ffd49cebfeb951498923caa@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1400666751-11459-2-git-send-email-Shengzhou.Liu@freescale.com>
+ <20140522225144.GA1670@home.buserror.net>
+ <474028133ffd49cebfeb951498923caa@DM2PR03MB398.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,128 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables get and set of miscellaneous registers through ptrace
-PTRACE_GETREGSET/PTRACE_SETREGSET interface by implementing new powerpc
-specific register set REGSET_MISC support corresponding to the new ELF
-core note NT_PPC_MISC added previously in this regard.
+On Fri, 2014-05-23 at 03:03 -0500, Liu Shengzhou-B36685 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, May 23, 2014 6:52 AM
+> > To: Liu Shengzhou-B36685
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [2/2] powerpc/corenet64_smp_defconfig: enable RTC support
+> > 
+> > > +++ b/arch/powerpc/configs/corenet64_smp_defconfig
+> > > @@ -125,6 +125,11 @@ CONFIG_USB_EHCI_FSL=y  CONFIG_USB_STORAGE=y
+> > > CONFIG_MMC=y  CONFIG_MMC_SDHCI=y
+> > > +CONFIG_RTC_CLASS=y
+> > > +CONFIG_RTC_DRV_CMOS=y
+> > > +CONFIG_RTC_DRV_DS1307=y
+> > > +CONFIG_RTC_DRV_DS1374=y
+> > > +CONFIG_RTC_DRV_DS3232=y
+> > >  CONFIG_EDAC=y
+> > >  CONFIG_EDAC_MM_EDAC=y
+> > >  CONFIG_DMADEVICES=y
+> > 
+> > Why only corenet64 and not corenet32?
+> > 
+> > -Scott
+> [Shengzhou] There is already RTC support in corenet32, only missing in corenet64.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/ptrace.c | 81 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 81 insertions(+)
+Only DS3232, not DS1307 or DS1374.  Which boards use the latter two?
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 17642ef..63b883a 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1149,6 +1149,76 @@ static int tm_cvmx_set(struct task_struct *target, const struct user_regset *reg
- #endif	/* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- /*
-+ * Miscellaneous Registers
-+ *
-+ * struct {
-+ * 	unsigned long dscr;
-+ *	unsigned long ppr;
-+ * 	unsigned long tar;
-+ * };
-+ */
-+static int misc_get(struct task_struct *target, const struct user_regset *regset,
-+		   unsigned int pos, unsigned int count,
-+		   void *kbuf, void __user *ubuf)
-+{
-+	int ret;
-+
-+	/* DSCR register */
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+					&target->thread.dscr, 0,
-+					sizeof(unsigned long));
-+
-+	BUILD_BUG_ON(offsetof(struct thread_struct, dscr) + sizeof(unsigned long) +
-+				sizeof(unsigned long) != offsetof(struct thread_struct, ppr));
-+
-+	/* PPR register */
-+	if (!ret)
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+					  &target->thread.ppr, sizeof(unsigned long),
-+					  2 * sizeof(unsigned long));
-+
-+	BUILD_BUG_ON(offsetof(struct thread_struct, ppr) + sizeof(unsigned long)
-+						!= offsetof(struct thread_struct, tar));
-+	/* TAR register */
-+	if (!ret)
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+					  &target->thread.tar, 2 * sizeof(unsigned long),
-+					  3 * sizeof(unsigned long));
-+	return ret;
-+}
-+
-+static int misc_set(struct task_struct *target, const struct user_regset *regset,
-+		   unsigned int pos, unsigned int count,
-+		   const void *kbuf, const void __user *ubuf)
-+{
-+	int ret;
-+
-+	/* DSCR register */
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+					&target->thread.dscr, 0,
-+					sizeof(unsigned long));
-+
-+	BUILD_BUG_ON(offsetof(struct thread_struct, dscr) + sizeof(unsigned long) +
-+			sizeof(unsigned long) != offsetof(struct thread_struct, ppr));
-+
-+	/* PPR register */
-+	if (!ret)
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+						&target->thread.ppr, sizeof(unsigned long),
-+						2 * sizeof(unsigned long));
-+
-+	BUILD_BUG_ON(offsetof(struct thread_struct, ppr) + sizeof(unsigned long)
-+						!= offsetof(struct thread_struct, tar));
-+
-+	/* TAR register */
-+	if (!ret)
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+						&target->thread.tar, 2 * sizeof(unsigned long),
-+						3 * sizeof(unsigned long));
-+	return ret;
-+}
-+
-+/*
-  * These are our native regset flavors.
-  */
- enum powerpc_regset {
-@@ -1169,6 +1239,7 @@ enum powerpc_regset {
- 	REGSET_TM_CFPR,		/* TM checkpointed FPR */
- 	REGSET_TM_CVMX,		/* TM checkpointed VMX */
- #endif
-+	REGSET_MISC		/* Miscellaneous */
- };
- 
- static const struct user_regset native_regsets[] = {
-@@ -1225,6 +1296,11 @@ static const struct user_regset native_regsets[] = {
- 		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
- 	},
- #endif
-+	[REGSET_MISC] = {
-+		.core_note_type = NT_PPC_MISC, .n = 3,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.get = misc_get, .set = misc_set
-+	},
- };
- 
- static const struct user_regset_view user_ppc_native_view = {
-@@ -1566,6 +1642,11 @@ static const struct user_regset compat_regsets[] = {
- 		.active = tm_cvmx_active, .get = tm_cvmx_get, .set = tm_cvmx_set
- 	},
- #endif
-+	[REGSET_MISC] = {
-+		.core_note_type = NT_PPC_MISC, .n = 3,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.get = misc_get, .set = misc_set
-+	},
- };
- 
- static const struct user_regset_view user_ppc_compat_view = {
--- 
-1.7.11.7
+Why do we need CONFIG_RTC_DRV_CMOS?
+
+-Scott
