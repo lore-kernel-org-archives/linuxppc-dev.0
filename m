@@ -1,18 +1,33 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::5])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA7141A007D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 07:21:29 +1000 (EST)
-Date: Fri, 23 May 2014 16:21:16 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: Pull request: scottwood/linux.git
-Message-ID: <20140523212116.GA21705@home.buserror.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF05D1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 07:29:36 +1000 (EST)
+Received: from christians-pro.lan (ppp-93-104-65-236.dynamic.mnet-online.de
+ [93.104.65.236]) by smtp.strato.de (RZmta 34.2 DYNA|AUTH)
+ with ESMTPSA id R07940q4NLTT32C
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ for <linuxppc-dev@lists.ozlabs.org>;
+ Fri, 23 May 2014 23:29:29 +0200 (CEST)
+Message-ID: <537FBDB8.6050202@xenosoft.de>
+Date: Fri, 23 May 2014 23:29:28 +0200
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
+Subject: PASEMI: Kernel 3.15.0-rc6 doesn't boot with a PA6T cpu
+References: <1388264507-5100-1-git-send-email-olof@lixom.net>
+ <CAOesGMhHw-G-T7ZfNsVU92ftOucCNe9shNJtA7SWzqX=dQBQng@mail.gmail.com>
+ <CAOesGMgsY0R6KBXXH_ibTBYb1i_auWESwnoDkvi-esb58Pc+2A@mail.gmail.com>
+ <20140103081219.GA10233@quad.lixom.net> <1389154189.2076.5.camel@concordia>
+ <1389154706.4672.21.camel@pasglop> <20140108174828.GA16830@quad.lixom.net>
+ <52CDC12F.5030407@xenosoft.de> <52D6E829.1050504@xenosoft.de>
+ <52D6E89C.7010407@xenosoft.de> <52D6E928.7050307@xenosoft.de>
+ <52DF9AEF.30900@xenosoft.de>
+In-Reply-To: <52DF9AEF.30900@xenosoft.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,143 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Highlights include a few new boards, a device tree binding for CCF
-(including backwards-compatible device tree updates to distinguish
-incompatible versions), and some fixes.
+Hi All,
 
-The following changes since commit f6869e7fe657bd977e72954cd78c5871a6a4f71d:
+My PA6T system doesn't boot since patch 
+9000c17dc0f9c910267d2661225c9d33a227b27e from 08/04/14 (powerpc/powernv: 
+Fix endian issues with sensor code One OPAL call and one device tree 
+property needed byte swapping).
 
-  Merge remote-tracking branch 'anton/abiv2' into next (2014-05-05 20:57:12 +1000)
+Experimental protocol:
 
-are available in the git repository at:
+git checkout -f 01d8885785a60ae8f4c37b0ed75bdc96d0fc6a44; git clean -fdx
+(from 02/04/14) -> Kernel boots
+git checkout -f f1553174a207f68a4ec19d436003097e0a4dc405; git clean -fdx
+(from 03/04/14) -> Kernel boots
+git checkout -f d40326f4b9f9617cdfd30f83a2db57d47e9c5bac; git clean -fdx
+(from 04/04/14) -> Kernel boots
+git checkout -f 930b440cd8256f3861bdb0a59d26efaadac7941a; git clean -fdx
+(from 05/04/14) -> doesn't boot (rtc error)
+git checkout -f 2b3a8fd735f86ebeb2b9d061054003000c36b654; git clean -fdx
+(from 06/04/14) -> doesn't boot (rtc error)
+git checkout -f 26c12d93348f0bda0756aff83f4867d9ae58a5a6; git clean -fdx
+(from 07/04/14) -> doesn't boot (rtc error)
+git checkout -f a6c8aff022d4d06e4b41455ae9b2a5d3d503bf76; git clean -fdx
+(from 08/04/14) -> Kernel boots
+git checkout -f 035328c202d26a824b8632fd3b00635db5aee5a2; git clean -fdx
+(from 08/04/14) -> Kernel boots
+git checkout -f 9000c17dc0f9c910267d2661225c9d33a227b27e; git clean -fdx
+(from 08/04/14) powerpc/powernv: Fix endian issues with sensor code
+One OPAL call and one device tree property needed byte swapping. ->
+doesn't boot (prom_init)
+git checkout -f d3d35d957a9d0733dc51f14b5abc0bff5d3c5f3a; git clean -fdx
+(from 08/04/14) -> doesn't boot (prom_init)
+git checkout -f c4586256f0c440bc2bdb29d2cbb915f0ca785d26; git clean -fdx
+(from 09/04/14) -> doesn't boot (prom_init)
 
+And the RC 6 doesn't boot, either. Have you changed the ppc boot part of 
+the kernel? Kernel 3.14 and 3.13 boot without any problems.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+Rgds,
 
-for you to fetch changes up to e83eb028bb980cecc85b050aa626df384723aff2:
-
-  powerpc/fsl: Add fsl,portid-mapping to corenet1-cf chips (2014-05-22 18:10:42 -0500)
-
-----------------------------------------------------------------
-Alexander Graf (1):
-      PPC: ePAPR: Fix hypercall on LE guest
-
-Diana Craciun (3):
-      powerpc/fsl: Added binding for Freescale CoreNet coherency fabric (CCF)
-      powerpc/fsl: Updated device trees for platforms with corenet version 2
-      powerpc/fsl: Updated corenet-cf compatible string for corenet1-cf chips
-
-Lijun Pan (1):
-      powerpc/mpc85xx: Remove P1023 RDS support
-
-Liu Gang (1):
-      powerpc/rmu: Fix the error memory free parameters
-
-Martijn de Gouw (1):
-      powerpc/85xx: Add OCA4080 board support
-
-Prabhakar Kushwaha (2):
-      powerpc/mpc85xx:Add initial device tree support of T104x
-      powerpc/fsl-booke: Add initial T104x_QDS board support
-
-Scott Wood (6):
-      powerpc/fsl-rio: Fix fsl_rio_setup error paths and use-after-unmap
-      powerpc/fsl-booke64: Set vmemmap_psize to 4K
-      powerpc: fix build of epapr_paravirt on 64-bit book3s
-      powerpc: Fix unused variable warning for epapr_has_idle
-      powerpc/mpic: Don't init the fsl error int until after mpic init
-      powerpc/fsl: Add fsl,portid-mapping to corenet1-cf chips
-
-Stuart Yoder (1):
-      powerpc: move epapr paravirt init of power_save to an initcall
-
-Tang Yuantian (1):
-      clk: qoriq: Update the clock bindings
-
-Valentin Longchamp (3):
-      devicetree: bindings: add Zarlink to the vendor prefixes
-      devcietree: bindings: add some MFD Keymile FPGAs
-      powerpc/mpc85xx: add support for Keymile's kmcoge4 board
-
-Wang Dongsheng (1):
-      fsl/pci: fix RC cannot detect PME message coming
-
-harninder rai (1):
-      powerpc/mpc85xx: Add BSC9132 QDS Support
-
- .../clock/{corenet-clock.txt => qoriq-clock.txt}   |  10 +-
- Documentation/devicetree/bindings/mfd/bfticu.txt   |  25 ++
- Documentation/devicetree/bindings/mfd/qriox.txt    |  17 +
- .../devicetree/bindings/powerpc/fsl/board.txt      |  17 +
- .../devicetree/bindings/powerpc/fsl/ccf.txt        |  46 +++
- .../devicetree/bindings/powerpc/fsl/cpus.txt       |  11 +
- .../devicetree/bindings/powerpc/fsl/pamu.txt       |  10 +
- .../devicetree/bindings/vendor-prefixes.txt        |   1 +
- arch/powerpc/boot/dts/b4860emu.dts                 |   7 +-
- arch/powerpc/boot/dts/bsc9132qds.dts               |  35 ++
- arch/powerpc/boot/dts/bsc9132qds.dtsi              | 101 +++++
- arch/powerpc/boot/dts/fsl/b4420si-post.dtsi        |   4 -
- arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi         |   2 +
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        |   4 -
- arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi         |   4 +
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |   3 +-
- arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi      | 185 +++++++++
- arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi       |  66 ++++
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |   3 +-
- arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi         |   4 +
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |   3 +-
- arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi         |   4 +
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |   3 +-
- arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi         |   8 +
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |   3 +-
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |   2 +
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |   3 +-
- arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi         |   4 +
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        | 430 +++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t1042si-post.dtsi        |  37 ++
- arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         | 104 +++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |   3 +-
- arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi         |  12 +
- arch/powerpc/boot/dts/kmcoge4.dts                  | 152 ++++++++
- arch/powerpc/boot/dts/oca4080.dts                  | 118 ++++++
- arch/powerpc/boot/dts/p1023rds.dts                 | 219 -----------
- arch/powerpc/boot/dts/t1040qds.dts                 |  46 +++
- arch/powerpc/boot/dts/t1042qds.dts                 |  46 +++
- arch/powerpc/boot/dts/t104xqds.dtsi                | 166 ++++++++
- arch/powerpc/boot/dts/t4240emu.dts                 |  15 +-
- arch/powerpc/configs/85xx/kmp204x_defconfig        | 225 +++++++++++
- arch/powerpc/configs/corenet32_smp_defconfig       |   1 +
- arch/powerpc/configs/mpc85xx_defconfig             |   1 -
- arch/powerpc/configs/mpc85xx_smp_defconfig         |   1 -
- arch/powerpc/kernel/epapr_paravirt.c               |  19 +-
- arch/powerpc/mm/tlb_nohash.c                       |   7 +-
- arch/powerpc/platforms/85xx/Kconfig                |  19 +-
- arch/powerpc/platforms/85xx/Makefile               |   3 +-
- arch/powerpc/platforms/85xx/bsc913x_qds.c          |  74 ++++
- arch/powerpc/platforms/85xx/corenet_generic.c      |   9 +-
- .../platforms/85xx/{p1023_rds.c => p1023_rdb.c}    |  36 +-
- arch/powerpc/sysdev/fsl_pci.c                      |   3 +-
- arch/powerpc/sysdev/fsl_rio.c                      |  10 +-
- arch/powerpc/sysdev/fsl_rmu.c                      |   6 +-
- arch/powerpc/sysdev/mpic.c                         |   8 +-
- 55 files changed, 2065 insertions(+), 290 deletions(-)
- rename Documentation/devicetree/bindings/clock/{corenet-clock.txt => qoriq-clock.txt} (95%)
- create mode 100644 Documentation/devicetree/bindings/mfd/bfticu.txt
- create mode 100644 Documentation/devicetree/bindings/mfd/qriox.txt
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
- create mode 100644 arch/powerpc/boot/dts/bsc9132qds.dts
- create mode 100644 arch/powerpc/boot/dts/bsc9132qds.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t1042si-post.dtsi
- create mode 100644 arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
- create mode 100644 arch/powerpc/boot/dts/kmcoge4.dts
- create mode 100644 arch/powerpc/boot/dts/oca4080.dts
- delete mode 100644 arch/powerpc/boot/dts/p1023rds.dts
- create mode 100644 arch/powerpc/boot/dts/t1040qds.dts
- create mode 100644 arch/powerpc/boot/dts/t1042qds.dts
- create mode 100644 arch/powerpc/boot/dts/t104xqds.dtsi
- create mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
- create mode 100644 arch/powerpc/platforms/85xx/bsc913x_qds.c
- rename arch/powerpc/platforms/85xx/{p1023_rds.c => p1023_rdb.c} (75%)
+Christian
