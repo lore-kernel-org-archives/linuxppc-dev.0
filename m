@@ -2,20 +2,25 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55DBD1A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 19:53:24 +1000 (EST)
-Message-ID: <537F1A8D.9000704@suse.de>
-Date: Fri, 23 May 2014 11:53:17 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 812471A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 19:58:26 +1000 (EST)
+Message-ID: <537F1BBE.4030503@suse.de>
+Date: Fri, 23 May 2014 11:58:22 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 0/6] Implement split core for POWER8
-References: <1400832930-17050-1-git-send-email-mikey@neuling.org>
-In-Reply-To: <1400832930-17050-1-git-send-email-mikey@neuling.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v6 2/3] drivers/vfio: EEH support for VFIO PCI device
+References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400747034-15045-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400814653.3289.428.camel@ul30vt.home> <20140523043722.GA11572@shangw>
+ <76F750C7-EAA1-455F-A64F-BAB826F66281@suse.de> <20140523073720.GA5929@shangw>
+In-Reply-To: <20140523073720.GA5929@shangw>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +31,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 23.05.14 10:15, Michael Neuling wrote:
-> This patch series implements split core mode on POWER8.  This enables up to 4
-> subcores per core which can each independently run guests (per guest SPRs like
-> SDR1, LPIDR etc are replicated per subcore).  Lots more documentation on this
-> feature in the code and commit messages.
+On 23.05.14 09:37, Gavin Shan wrote:
+> On Fri, May 23, 2014 at 08:55:15AM +0200, Alexander Graf wrote:
+>>> Am 23.05.2014 um 06:37 schrieb Gavin Shan <gwshan@linux.vnet.ibm.com>:
+>>>> On Thu, May 22, 2014 at 09:10:53PM -0600, Alex Williamson wrote:
+>>>>> On Thu, 2014-05-22 at 18:23 +1000, Gavin Shan wrote:
+>>>>> The patch adds new IOCTL commands for VFIO PCI device to support
+>>>>> EEH functionality for PCI devices, which have been passed through
+>>>>> from host to somebody else via VFIO.
+> .../...
 >
-> Most of this code is in the powernv platform but there's a couple of KVM
-> specific patches too.
->
-> Patch series authored by mpe and me with a few bug fixes from others.
->
-> v2:
->    There are some minor updates based on comments and I've added the Acks by
->    Paulus and Alex for the KVM code.
+>>>>> +
+>>>>> +/*
+>>>>> + * Reset is the major step to recover problematic PE. The following
+>>>>> + * command helps on that.
+>>>>> + */
+>>>>> +struct vfio_eeh_pe_reset {
+>>>>> +    __u32 argsz;
+>>>>> +    __u32 option;
+>>>>> +};
+>>>>> +
+>>>>> +#define VFIO_EEH_PE_RESET        _IO(VFIO_TYPE, VFIO_BASE + 24)
+>>>>> +
+>>>>> +/*
+>>>>> + * One of the steps for recovery after PE reset is to configure the
+>>>>> + * PCI bridges affected by the PE reset.
+>>>>> + */
+>>>>> +#define VFIO_EEH_PE_CONFIGURE        _IO(VFIO_TYPE, VFIO_BASE + 25)
+>>>> What can the user do differently by making these separate ioctls?
+>>> hrm, I didn't understood as well. Alex.G could have the explaination.
+>> Alex raised the same concern as me: why separate reset and configure? When we want to recover a device, we need a reset call anyway, right?
+>>
+> Ok. With current ioctl commands, "reset+configure" is required to do
+> error recovery. Before the recovery, we also need call "configure"
+> in order to retrieve error log correctly.
 
-I don't see changelogs inside the individual patches. Please make sure 
-to always mention what changed from one version to the next in a 
-particular patch, so that I have the chance to check whether that change 
-was good :).
+Well, the "configure" ioctl (which is a really bad name for what it does 
+btw) currently only restores the BARs which doesn't sound like error log 
+retrieval to me.
 
-Also, is there any performance penalty associated with split core mode? 
-If not, could we just always default to split-by-4 on POWER8 bare metal?
+> Also, they corresponds to 2 separate RTAS services: "ibm,set-slot-reset"
+> and "ibm,configure-pe".
+
+Does a guest always issue both? What's the order it calls them in?
 
 
 Alex
