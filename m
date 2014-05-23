@@ -2,15 +2,14 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 56CEA1A060D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 18:15:43 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FFE91A05E2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 18:15:44 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Alexander Graf <agraf@suse.de>
-Subject: [PATCH v2 2/6] powerpc/powernv: Make it possible to skip the
- IRQHAPPENED check in power7_nap()
-Date: Fri, 23 May 2014 18:15:26 +1000
-Message-Id: <1400832930-17050-3-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 3/6] powerpc: Add threads_per_subcore
+Date: Fri, 23 May 2014 18:15:27 +1000
+Message-Id: <1400832930-17050-4-git-send-email-mikey@neuling.org>
 In-Reply-To: <1400832930-17050-1-git-send-email-mikey@neuling.org>
 References: <1400832930-17050-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, kvm@vger.kernel.org,
@@ -27,89 +26,74 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Michael Ellerman <mpe@ellerman.id.au>
 
-To support split core we need to be able to force all secondaries into
-nap, so the core can detect they are idle and do an unsplit.
+On POWER8 we have a new concept of a subcore. This is what happens when
+you take a regular core and split it. A subcore is a grouping of two or
+four SMT threads, as well as a handfull of SPRs which allows the subcore
+to appear as if it were a core from the point of view of a guest.
 
-Currently power7_nap() will return without napping if there is an irq
-pending. We want to ignore the pending irq and nap anyway, we will deal
-with the interrupt later.
+Unlike threads_per_core which is fixed at boot, threads_per_subcore can
+change while the system is running. Most code will not want to use
+threads_per_subcore.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/processor.h | 2 +-
- arch/powerpc/kernel/idle_power7.S    | 9 +++++++++
- arch/powerpc/platforms/powernv/smp.c | 2 +-
- 3 files changed, 11 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/cputhreads.h | 7 +++++++
+ arch/powerpc/kernel/setup-common.c    | 4 +++-
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index d660dc3..6d59072 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -449,7 +449,7 @@ extern unsigned long cpuidle_disable;
- enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
+diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
+index ac3eedb..2bf8e93 100644
+--- a/arch/powerpc/include/asm/cputhreads.h
++++ b/arch/powerpc/include/asm/cputhreads.h
+@@ -18,10 +18,12 @@
  
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
--extern void power7_nap(void);
-+extern void power7_nap(int check_irq);
- extern void power7_sleep(void);
- extern void flush_instruction_cache(void);
- extern void hard_reset_now(void);
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index dca6e16..2480256 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -39,6 +39,10 @@
-  * Pass requested state in r3:
-  * 	0 - nap
-  * 	1 - sleep
-+ *
-+ * To check IRQ_HAPPENED in r4
-+ * 	0 - don't check
-+ * 	1 - check
-  */
- _GLOBAL(power7_powersave_common)
- 	/* Use r3 to pass state nap/sleep/winkle */
-@@ -71,6 +75,8 @@ _GLOBAL(power7_powersave_common)
- 	lbz	r0,PACAIRQHAPPENED(r13)
- 	cmpwi	cr0,r0,0
- 	beq	1f
-+	cmpwi	cr0,r4,0
-+	beq	1f
- 	addi	r1,r1,INT_FRAME_SIZE
- 	ld	r0,16(r1)
- 	mtlr	r0
-@@ -114,15 +120,18 @@ _GLOBAL(power7_idle)
- 	lwz	r4,ADDROFF(powersave_nap)(r3)
- 	cmpwi	0,r4,0
- 	beqlr
-+	li	r3, 1
- 	/* fall through */
+ #ifdef CONFIG_SMP
+ extern int threads_per_core;
++extern int threads_per_subcore;
+ extern int threads_shift;
+ extern cpumask_t threads_core_mask;
+ #else
+ #define threads_per_core	1
++#define threads_per_subcore	1
+ #define threads_shift		0
+ #define threads_core_mask	(CPU_MASK_CPU0)
+ #endif
+@@ -74,6 +76,11 @@ static inline int cpu_thread_in_core(int cpu)
+ 	return cpu & (threads_per_core - 1);
+ }
  
- _GLOBAL(power7_nap)
-+	mr	r4,r3
- 	li	r3,0
- 	b	power7_powersave_common
- 	/* No return */
++static inline int cpu_thread_in_subcore(int cpu)
++{
++	return cpu & (threads_per_subcore - 1);
++}
++
+ static inline int cpu_first_thread_sibling(int cpu)
+ {
+ 	return cpu & ~(threads_per_core - 1);
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index 3cf25c8..aa0f5ed 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -390,9 +390,10 @@ void __init check_for_initrd(void)
  
- _GLOBAL(power7_sleep)
- 	li	r3,1
-+	li	r4,0
- 	b	power7_powersave_common
- 	/* No return */
+ #ifdef CONFIG_SMP
  
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 1601a1e..65faf99 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -159,7 +159,7 @@ static void pnv_smp_cpu_kill_self(void)
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
- 	while (!generic_check_cpu_restart(cpu)) {
- 		ppc64_runlatch_off();
--		power7_nap();
-+		power7_nap(1);
- 		ppc64_runlatch_on();
- 		if (!generic_check_cpu_restart(cpu)) {
- 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
+-int threads_per_core, threads_shift;
++int threads_per_core, threads_per_subcore, threads_shift;
+ cpumask_t threads_core_mask;
+ EXPORT_SYMBOL_GPL(threads_per_core);
++EXPORT_SYMBOL_GPL(threads_per_subcore);
+ EXPORT_SYMBOL_GPL(threads_shift);
+ EXPORT_SYMBOL_GPL(threads_core_mask);
+ 
+@@ -401,6 +402,7 @@ static void __init cpu_init_thread_core_maps(int tpc)
+ 	int i;
+ 
+ 	threads_per_core = tpc;
++	threads_per_subcore = tpc;
+ 	cpumask_clear(&threads_core_mask);
+ 
+ 	/* This implementation only supports power of 2 number of threads
 -- 
 1.9.1
