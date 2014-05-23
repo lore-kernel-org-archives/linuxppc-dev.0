@@ -1,34 +1,46 @@
-Return-Path: <kirill.shutemov@linux.intel.com>
-Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 2927B1A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:41:39 +1000 (EST)
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20140521133408.4d2f1a551e9652fb0e12265f@linux-foundation.org>
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
- <87wqdik4n5.fsf@rustcorp.com.au>
- <53797511.1050409@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
- <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
- <20140520004429.E660AE009B@blue.fi.intel.com>
- <87oaythsvk.fsf@rustcorp.com.au>
- <20140520102738.7F096E009B@blue.fi.intel.com>
- <20140520125956.aa61a3bfd84d4d6190740ce2@linux-foundation.org>
- <20140521134027.263DDE009B@blue.fi.intel.com>
- <20140521133408.4d2f1a551e9652fb0e12265f@linux-foundation.org>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-Message-Id: <20140523122854.BDB36E009B@blue.fi.intel.com>
-Date: Fri, 23 May 2014 15:28:54 +0300 (EEST)
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, riel@redhat.com,
- Madhavan Srinivasan <maddy@linux.vnet.ibm.com>, dave.hansen@intel.com,
- peterz@infradead.org, Rusty Russell <rusty@rustcorp.com.au>,
- Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, ak@linux.intel.com, paulus@samba.org, mgorman@suse.de,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DEE871A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:43:33 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 23 May 2014 22:43:32 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B82293578047
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:43:28 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4NCLxHv5767526
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:21:59 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4NChSpn029637
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:43:28 +1000
+Date: Fri, 23 May 2014 22:43:26 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH v6 2/3] drivers/vfio: EEH support for VFIO PCI device
+Message-ID: <20140523124326.GA4778@shangw>
+References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400747034-15045-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400814653.3289.428.camel@ul30vt.home>
+ <20140523043722.GA11572@shangw>
+ <76F750C7-EAA1-455F-A64F-BAB826F66281@suse.de>
+ <20140523073720.GA5929@shangw> <537F1BBE.4030503@suse.de>
+ <20140523115509.GA4042@shangw> <537F37FA.9090200@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <537F37FA.9090200@suse.de>
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,89 +50,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Andrew Morton wrote:
-> On Wed, 21 May 2014 16:40:27 +0300 (EEST) "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
-> 
-> > > Or something.  Can we please get some code commentary over
-> > > do_fault_around() describing this design decision and explaining the
-> > > reasoning behind it?
-> > 
-> > I'll do this. But if do_fault_around() rework is needed, I want to do that
-> > first.
-> 
-> This sort of thing should be at least partially driven by observation
-> and I don't have the data for that.  My seat of the pants feel is that
-> after the first fault, accesses at higher addresses are more
-> common/probable than accesses at lower addresses.
+On Fri, May 23, 2014 at 01:58:50PM +0200, Alexander Graf wrote:
+>
+>On 23.05.14 13:55, Gavin Shan wrote:
+>>On Fri, May 23, 2014 at 11:58:22AM +0200, Alexander Graf wrote:
+>>>On 23.05.14 09:37, Gavin Shan wrote:
+>>>>On Fri, May 23, 2014 at 08:55:15AM +0200, Alexander Graf wrote:
+>>>>>>Am 23.05.2014 um 06:37 schrieb Gavin Shan <gwshan@linux.vnet.ibm.com>:
+>>>>>>>On Thu, May 22, 2014 at 09:10:53PM -0600, Alex Williamson wrote:
+>>>>>>>>On Thu, 2014-05-22 at 18:23 +1000, Gavin Shan wrote:
+>>>>>>>>The patch adds new IOCTL commands for VFIO PCI device to support
+>>>>>>>>EEH functionality for PCI devices, which have been passed through
+>>>>>>>>from host to somebody else via VFIO.
+>>>>.../...
+>>>>
+>>>>>>>>+
+>>>>>>>>+/*
+>>>>>>>>+ * Reset is the major step to recover problematic PE. The following
+>>>>>>>>+ * command helps on that.
+>>>>>>>>+ */
+>>>>>>>>+struct vfio_eeh_pe_reset {
+>>>>>>>>+    __u32 argsz;
+>>>>>>>>+    __u32 option;
+>>>>>>>>+};
+>>>>>>>>+
+>>>>>>>>+#define VFIO_EEH_PE_RESET        _IO(VFIO_TYPE, VFIO_BASE + 24)
+>>>>>>>>+
+>>>>>>>>+/*
+>>>>>>>>+ * One of the steps for recovery after PE reset is to configure the
+>>>>>>>>+ * PCI bridges affected by the PE reset.
+>>>>>>>>+ */
+>>>>>>>>+#define VFIO_EEH_PE_CONFIGURE        _IO(VFIO_TYPE, VFIO_BASE + 25)
+>>>>>>>What can the user do differently by making these separate ioctls?
+>>>>>>hrm, I didn't understood as well. Alex.G could have the explaination.
+>>>>>Alex raised the same concern as me: why separate reset and configure? When we want to recover a device, we need a reset call anyway, right?
+>>>>>
+>>>>Ok. With current ioctl commands, "reset+configure" is required to do
+>>>>error recovery. Before the recovery, we also need call "configure"
+>>>>in order to retrieve error log correctly.
+>>>Well, the "configure" ioctl (which is a really bad name for what it
+>>>does btw) currently only restores the BARs which doesn't sound like
+>>>error log retrieval to me.
+>>>
+>>Could you please suggest a better name? I had VFIO_EEH_PE_CONFIGURE because
+>>it's for RTAS call "ibm,configure-pe".
+>
+>VFIO_RESTORE_BARS maybe?
+>
 
-It's probably true for data, but the feature is mostly targeted to code pages
-and situation is not that obvious to me with all jumps.
+hrm, It's not better than the original one. Could we just
+have VFIO_EEH_PE_CONFIGURE as all left ioctl command names
+are stick to RTAS call names.
 
-> But we don't need to do all that right now.  Let's get the current
-> implementation wrapped up for 3.15: get the interface finalized (bytes,
-> not pages!)
+Also, I might add more logic to this function to improve
+reliability. For example, if there're multiple PCI bridges
+included in the PE, I need reset them one by one and ensure
+their PCI link comes up. It's obviously not restoring BARs,
+but configuring PE :-)
 
-The patch above by thread is okay for that, right?
+>>>>Also, they corresponds to 2 separate RTAS services: "ibm,set-slot-reset"
+>>>>and "ibm,configure-pe".
+>>>Does a guest always issue both? What's the order it calls them in?
+>>>
+>>For one error, the following RTAS calls was called in general:
+>>
+>>< stop device drivers, no PCI traffic expected during recovery >
+>>ibm,set-eeh-option
+>>ibm,configure-pe
+>>< error log retrival >
+>
+>I see. So the guest retrieves the log via BARs from the device? I
+>guess I'm failing to see what "the log" is.
+>
 
-> and get the current design decisions appropriately documented.
+well. It seems that I didn't describe it clearly enough. The ioctl
+command was introduced to finish the function that should be done
+with RTAS call "ibm,configure-pe", which is to configure PCI bridges's
+config space correctly. Without that, it's possible that we can't
+access the config space of the subordinate PCI devices of the PCI
+bridges. So we should restore config space for PCI bridges. However,
+we also need restore config space for normal PCI devices because
+userland has some config space registers masked off and can't access
+them all, so it's not reliable to restore config space for normal
+PCI devices from userland.
 
-Here it is. Based on patch to convert order->bytes.
+So the restoring config space of PCI bridges is required, but restoring
+config space for normal devices are a trick here.
 
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Date: Fri, 23 May 2014 15:16:47 +0300
-Subject: [PATCH] mm: document do_fault_around() feature
+>>ibm,set-slot-reset
+>>ibm,read-slot-reset-state2
+>>ibm,configure-pe
+>>< resume device drivers >
+>>
 
-Some clarification on how faultaround works.
-
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
----
- mm/memory.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 252b319e8cdf..8d723b8d3c86 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3404,6 +3404,10 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
- 
- static unsigned long fault_around_bytes = 65536;
- 
-+/*
-+ * fault_around_pages() and fault_around_mask() round down fault_around_bytes
-+ * to nearest page order. It's what do_fault_around() expects to see.
-+ */
- static inline unsigned long fault_around_pages(void)
- {
- 	return rounddown_pow_of_two(fault_around_bytes) / PAGE_SIZE;
-@@ -3445,6 +3449,29 @@ static int __init fault_around_debugfs(void)
- late_initcall(fault_around_debugfs);
- #endif
- 
-+/*
-+ * do_fault_around() tries to map few pages around the fault address. The hope
-+ * is that the pages will be needed soon and this would lower the number of
-+ * faults to handle.
-+ *
-+ * It uses vm_ops->map_pages() to map the pages, which skips the page if it's
-+ * not ready to be mapped: not up-to-date, locked, etc.
-+ *
-+ * This function is called with the page table lock taken. In the split ptlock
-+ * case the page table lock only protects only those entries which belong to
-+ * page table corresponding to the fault address.
-+ *
-+ * This function don't cross the VMA boundaries in order to call map_pages()
-+ * only once.
-+ *
-+ * fault_around_pages() defines how many pages we'll try to map.
-+ * do_fault_around() expects it to be power of two and less or equal to
-+ * PTRS_PER_PTE.
-+ *
-+ * The virtual address of the area that we map is naturally aligned to the
-+ * fault_around_pages() (and therefore to page order). This way it's easier to
-+ * guarantee that we don't cross the page table boundaries.
-+ */
- static void do_fault_around(struct vm_area_struct *vma, unsigned long address,
- 		pte_t *pte, pgoff_t pgoff, unsigned int flags)
- {
--- 
- Kirill A. Shutemov
+Thanks,
+Gavin
