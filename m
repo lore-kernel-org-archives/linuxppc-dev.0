@@ -1,20 +1,22 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from cpsmtpb-ews05.kpnxchange.com (cpsmtpb-ews05.kpnxchange.com
- [213.75.39.8])
- by lists.ozlabs.org (Postfix) with ESMTP id 26A021A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 20:06:42 +1000 (EST)
-Message-ID: <1400839597.31526.21.camel@x220>
-Subject: Re: powerpc: remove checks for CONFIG_BOOK3E_MMU_TLB_STATS
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Scott Wood <scottwood@freescale.com>
-Date: Fri, 23 May 2014 12:06:37 +0200
-In-Reply-To: <1400830406.31526.6.camel@x220>
-References: <1400608550.4912.48.camel@x220>
- <20140522223758.GA20343@home.buserror.net> <1400830406.31526.6.camel@x220>
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E56541A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 20:11:58 +1000 (EST)
+Message-ID: <1400839918.28224.11.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH v2 0/6] Implement split core for POWER8
+From: Michael Neuling <mikey@neuling.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Fri, 23 May 2014 20:11:58 +1000
+In-Reply-To: <537F1D59.5090909@suse.de>
+References: <1400832930-17050-1-git-send-email-mikey@neuling.org>
+ <537F1A8D.9000704@suse.de> <1400839224.28224.5.camel@ale.ozlabs.ibm.com>
+ <537F1D59.5090909@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,37 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-05-23 at 09:33 +0200, Paul Bolle wrote:
-> Scott,
-> 
-> On Thu, 2014-05-22 at 17:37 -0500, Scott Wood wrote:
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S: Assembler messages:
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:89: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:238: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:269: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:281: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:441: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:510: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:881: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> > /home/scott/fsl/git/linux/upstream/arch/powerpc/mm/tlb_low_64e.S:918: Error: unrecognized opcode: `tlb_miss_prolog_stats'
-> 
-> Thanks for testing!
-> 
-> That's a bit surprising. The patch is intended to be a non event. Ie, it
-> only removes what the preprocessor would have removed anyway. Unless I
-> botched it, of course.
-> 
-> What exactly did you test there?
+> >> Also, is there any performance penalty associated with split core mode=
+?
+> >> If not, could we just always default to split-by-4 on POWER8 bare meta=
+l?
+> > Yeah, there is a performance hit .  When you are split (ie
+> > subcores_per_core =3D 2 or 4), the core is stuck in SMT8 mode.  So if y=
+ou
+> > only have 1 thread active (others napped), you won't get the benefit of
+> > ST mode in the core (more register renames per HW thread, more FXUs,
+> > more FPUs etc).
+>=20
+> Ok, imagine I have 1 core with SMT8. I have one process running at 100%=
+=20
+> occupying one thread, the other 7 threads are idle.
+>=20
+> Do I get performance benefits from having the other threads idle? Or do=
+=20
+> I have to configure the system into SMT1 mode to get my ST benefits?
 
-For what it's worth: I can't reproduce this error with the cross
-compiler now shipped with Fedora 20 (ie, powerpc64-linux-gnu-gcc (GCC)
-4.8.1 20130717 (Red Hat 4.8.1-5)). It shows a nice and clean
-     AS      arch/powerpc/mm/tlb_low_64e.o
+You automatically get the performance benefit when they are idle.  When
+threads enter nap, the core is able to reduce it's SMT mode
+automatically.=20
 
-in the output.
+> If it's the latter, we could just have ppc64_cpu --smt=3Dx also set the=
+=20
+> subcore amount in parallel to the thread count.
 
-That's v3.15-rc6, with just this patch, and using a .config generated,
-with "make oldconfig", from arch/powerpc/configs/ppc64e_defconfig.
+FWIW on powernv we just nap the threads on hotplug.
 
+> The reason I'm bringing this up is that I'm not quite sure who would be=
+=20
+> the instance doing these performance tweaks. So I'd guess the majority=
+=20
+> of users will simply miss out on them.
 
-Paul Bolle
+Everyone, it's automatic on idle... except for split core mode
+unfortunately.
+
+Mikey
