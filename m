@@ -1,22 +1,25 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by lists.ozlabs.org (Postfix) with ESMTP id 977EA1A007D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 00:37:05 +1000 (EST)
-Message-ID: <1400855815.3289.454.camel@ul30vt.home>
+ by lists.ozlabs.org (Postfix) with ESMTP id 10EC81A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 00:49:26 +1000 (EST)
+Message-ID: <1400856559.3289.460.camel@ul30vt.home>
 Subject: Re: [PATCH v6 2/3] drivers/vfio: EEH support for VFIO PCI device
 From: Alex Williamson <alex.williamson@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 23 May 2014 08:36:55 -0600
-In-Reply-To: <1400821255.29150.62.camel@pasglop>
+To: Alexander Graf <agraf@suse.de>
+Date: Fri, 23 May 2014 08:49:19 -0600
+In-Reply-To: <537F3F64.8020807@suse.de>
 References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1400747034-15045-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400814653.3289.428.camel@ul30vt.home> <20140523043722.GA11572@shangw>
- <1400821255.29150.62.camel@pasglop>
+ <537DC991.9010401@suse.de> <20140523001730.GA12584@shangw>
+ <20140523003737.GA15136@shangw> <1400815400.3289.436.camel@ul30vt.home>
+ <22ECE7F7-2C1F-4E54-AD6B-0D2405357C9A@suse.de>
+ <20140523115809.GB4042@shangw> <537F3F64.8020807@suse.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, agraf@suse.de, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +29,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-05-23 at 15:00 +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2014-05-23 at 14:37 +1000, Gavin Shan wrote:
-> > >There's no notification, the user needs to observe the return value an
-> > >poll?  Should we be enabling an eventfd to notify the user of the state
-> > >change?
-> > >
-> > 
-> > Yes. The user needs to monitor the return value. we should have one notification,
-> > but it's for later as we discussed :-)
+On Fri, 2014-05-23 at 14:30 +0200, Alexander Graf wrote:
+> On 23.05.14 13:58, Gavin Shan wrote:
+> > On Fri, May 23, 2014 at 08:52:23AM +0200, Alexander Graf wrote:
+> >>
+> >>> Am 23.05.2014 um 05:23 schrieb Alex Williamson <alex.williamson@redhat.com>:
+> >>>
+> >>>> On Fri, 2014-05-23 at 10:37 +1000, Gavin Shan wrote:
+> >>>>> On Fri, May 23, 2014 at 10:17:30AM +1000, Gavin Shan wrote:
+> >>>>>> On Thu, May 22, 2014 at 11:55:29AM +0200, Alexander Graf wrote:
+> >>>>>> On 22.05.14 10:23, Gavin Shan wrote:
+> >>>> .../...
+> >>>>
+> >>>>>>> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> >>>>>>> index cb9023d..ef55682 100644
+> >>>>>>> --- a/include/uapi/linux/vfio.h
+> >>>>>>> +++ b/include/uapi/linux/vfio.h
+> >>>>>>> @@ -455,6 +455,59 @@ struct vfio_iommu_spapr_tce_info {
+> >>>>>>> #define VFIO_IOMMU_SPAPR_TCE_GET_INFO    _IO(VFIO_TYPE, VFIO_BASE + 12)
+> >>>>>>> +/*
+> >>>>>>> + * EEH functionality can be enabled or disabled on one specific device.
+> >>>>>>> + * Also, the DMA or IO frozen state can be removed from the frozen PE
+> >>>>>>> + * if required.
+> >>>>>>> + */
+> >>>>>>> +struct vfio_eeh_pe_set_option {
+> >>>>>>> +    __u32 argsz;
+> >>>>>> What is this argsz thing? Is this your way of maintaining backwards
+> >>>>>> compatibility when we introduce new fields? A new field will change
+> >>>>>> the ioctl number, so I don't think that makes a lot of sense :).
+> >>>>>>
+> >>>>>> Just make the ioctl have a u32 as incoming argument. No fancy
+> >>>>>> structs, no complicated code.
+> >>>>>>
+> >>>>>> The same applies for a number of structs below.
+> >>>>> ok. Will do in next revision.
+> >>>> Rechecked include/uapi/linux/vfio.h, the data struct for each ioctl command
+> >>>> always has "argsz". I guess it was used as checker by Alex.W. Do you really
+> >>>> want remove "argsz" ?
+> >>>
+> >>> IIRC, this was actually a suggestion incorporated from David Gibson, but
+> >>> using _IO with an argsz and flags field we can maintain compatibility
+> >>> without bumping the ioctl number.  It really only makes sense if we have
+> >>> a flags field so we can identify what additional information is being
+> >>> provided.  Flags can be used as a bitmap of trailing structures or as
+> >>> revision if we want a set of trailing structures that may change over
+> >>> time.  Unless you can come up with a good argument against it that would
+> >>> prevent us inventing a new ioctl as soon as we need a minor tweak, I'd
+> >>> prefer to keep it.  As I noted in a previous comment, the one ioctl we
+> >>> have for reset that doesn't take any options is likely going to be the
+> >>> first ioctl that we need to entirely replace.  If we don't keep argsz,
+> >>> it seems like we probably need a flags field and reserved structures.
+> >>>
+> >>>>>>> +    __u32 option;
+> >>>>>>> +};
+> >>>>>>> +
+> >>>>>>> +#define VFIO_EEH_PE_SET_OPTION        _IO(VFIO_TYPE, VFIO_BASE + 21)
+> >>>>>>> +
+> >>>>>>> +/*
+> >>>>>>> + * Each EEH PE should have unique address to be identified. The command
+> >>>>>>> + * helps to retrieve the address and the sharing mode of the PE.
+> >>>>>>> + */
+> >>>>>>> +struct vfio_eeh_pe_get_addr {
+> >>>>>>> +    __u32 argsz;
+> >>>>>>> +    __u32 option;
+> >>>>>>> +    __u32 info;
+> >>>>>> Any particular reason you need the info field? Can't the return value
+> >>>>>> of the ioctl hold this? Then you only have a single u32 argument left
+> >>>>>> to the ioctl again.
+> >>>>> ok. Will do in next revision.
+> >>>> If we eventually remove "argsz" and let ioctl() return value to hold
+> >>>> information (or negative number for errors), we don't need any data
+> >>>> struct because the 3rd parameter of ioctl() would be used as input
+> >>>> and I only need one input parameter. Do you want see this ?
+> >>>>
+> >>>> Hopefully, Alex.W saw this and hasn't objections :)
+> >>> I'm not sure why we're pushing for the minimal data set to pass to an
+> >>> ioctl.  Seems like a recipe for dead, useless ioctls.  Thanks,
+> >>>
+> >> The ioctl number includes sizeof(payload). So if a new parameter gets added, that would be a different ioctl number.
+> >>
+> >> If you want to maintain backwards compatibility ioctl number wise in the kernel, you'll have to have a "flags" field to indicate whether new data is available and a "pad" field, prefarably in a union, that ensures the size of the struct doesn't change.
+> >>
+> >> I'm not sure it's really necessary here to have identical ioctl numbers if we add parameters, since we can always just define a new ioctl with a bigger payload that can then become the default handler and a shim backwards compatible handler with the old number.
+> >>
+> >> But if you think it is important, let's do it for real, not just halfway.
+> >>
+> > So I need add additional field "flags" ?
 > 
->  ../..
-> 
-> > >How does the guest learn about the error?  Does it need to?
-> > 
-> > When guest detects 0xFF's from reading PCI config space or IO, it's going
-> > check the device (PE) state. If the device (PE) has been put into frozen
-> > state, the recovery will be started.
-> 
-> Quick recap for Alex W (we discussed that with Alex G).
-> 
-> While a notification looks like a worthwhile addition in the long run, it
-> is not sufficient and not used today and I prefer that we keep that as something
-> to add later for those two main reasons:
-> 
->  - First, the kernel itself isn't always notified. For example, if we implement
-> on top of an RTAS backend (PR KVM under pHyp) or if we are on top of PowerNV but
-> the error is a PHB "fence" (the entire PCI Host bridge gets fenced out in hardware
-> due to an internal error), then we get no notification. Only polling of the
-> hardware or firmware will tell us. Since we don't want to have a polling timer
-> in the kernel, that means that the userspace client of VFIO (or alternatively
-> the KVM guest) is the one that polls.
-> 
->  - Second, this is how our primary user expects it: The primary (and only initial)
-> user of this will be qemu/KVM for PAPR guests and they don't have a notification
-> mechanism. Instead they query the EEH state after detecting an all 1's return from
-> MMIO or config space. This is how PAPR specifies it so we are just implementing the
-> spec here :-)
-> 
-> Because of these, I think we shouldn't worry too much about notification at
-> this stage.
+> This is Alex' call on how he prefers the interface to look like. The 
+> struct size that you pass into an ioctl is part of the ioctl number,
 
-Ok, I was asking more about an error log that indicates what error
-occurred to freeze the hardware so that the user can make a more
-educated guess whether recovery is an option.  Given that you have cases
-where there may be no notification and your guest/user already handles
-this, the plan to start with polling makes sense.  Thanks,
+Only when using _IOR/W/RW, the size is not part of the ioctl number for
+_IO, which is why VFIO uses _IO for interfaces with argsz + flags.
+
+>  so 
+> putting that into an argsz field only makes sense when you do ugly 
+> things like
+> 
+> struct foo *x;
+> uint32_t *y;
+> 
+> x = malloc(sizeof(*x) + sizeof(*y));
+> y = (void*)&x[1];
+> 
+> ioctl(..., x);
+> 
+> But I'd prefer not to have such nasty code really. It breaks assumptions 
+> on *anything* that wraps ioctls, such as strace or qemu's linux-user 
+> emulation.
+
+If there's a reason to use something other than _IO+argsz+flags, we can
+discuss it, but this is not it.
+
+> >   Also, I need keep the return value from
+> > ioctl() less or equal to 0 ? :-)
+> 
+> Usually return values are
+> 
+>    < 0 means error
+>    == 0 means success
+>    > 0 means return payload
+
+Agree, >0 only makes sense if the return value of the ioctl can be
+expressed as a positive int, ex. VFIO_EEH_ERROR_COUNT (if such a thing
+was needed).  Thanks,
 
 Alex
