@@ -1,21 +1,17 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0183.outbound.protection.outlook.com [207.46.163.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C4EF91A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 18:03:52 +1000 (EST)
-From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [2/2] powerpc/corenet64_smp_defconfig: enable RTC support
-Date: Fri, 23 May 2014 08:03:44 +0000
-Message-ID: <474028133ffd49cebfeb951498923caa@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1400666751-11459-2-git-send-email-Shengzhou.Liu@freescale.com>
- <20140522225144.GA1670@home.buserror.net>
-In-Reply-To: <20140522225144.GA1670@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 76FC31A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 18:15:31 +1000 (EST)
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Alexander Graf <agraf@suse.de>
+Subject: [PATCH v2 0/6] Implement split core for POWER8
+Date: Fri, 23 May 2014 18:15:24 +1000
+Message-Id: <1400832930-17050-1-git-send-email-mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Friday, May 23, 2014 6:52 AM
-> To: Liu Shengzhou-B36685
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [2/2] powerpc/corenet64_smp_defconfig: enable RTC support
->=20
-> > +++ b/arch/powerpc/configs/corenet64_smp_defconfig
-> > @@ -125,6 +125,11 @@ CONFIG_USB_EHCI_FSL=3Dy  CONFIG_USB_STORAGE=3Dy
-> > CONFIG_MMC=3Dy  CONFIG_MMC_SDHCI=3Dy
-> > +CONFIG_RTC_CLASS=3Dy
-> > +CONFIG_RTC_DRV_CMOS=3Dy
-> > +CONFIG_RTC_DRV_DS1307=3Dy
-> > +CONFIG_RTC_DRV_DS1374=3Dy
-> > +CONFIG_RTC_DRV_DS3232=3Dy
-> >  CONFIG_EDAC=3Dy
-> >  CONFIG_EDAC_MM_EDAC=3Dy
-> >  CONFIG_DMADEVICES=3Dy
->=20
-> Why only corenet64 and not corenet32?
->=20
-> -Scott
-[Shengzhou] There is already RTC support in corenet32, only missing in core=
-net64.
+This patch series implements split core mode on POWER8.  This enables up to 4
+subcores per core which can each independently run guests (per guest SPRs like
+SDR1, LPIDR etc are replicated per subcore).  Lots more documentation on this
+feature in the code and commit messages.
+
+Most of this code is in the powernv platform but there's a couple of KVM
+specific patches too.
+
+Patch series authored by mpe and me with a few bug fixes from others.
+
+v2:
+  There are some minor updates based on comments and I've added the Acks by
+  Paulus and Alex for the KVM code.
