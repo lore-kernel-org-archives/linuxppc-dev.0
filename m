@@ -1,23 +1,45 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 598EE1A007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 20:50:35 +1000 (EST)
-Message-ID: <1400842234.28224.28.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH v2 0/6] Implement split core for POWER8
-From: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F46D1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 21:55:23 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Fri, 23 May 2014 17:25:18 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3FF8D394005A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 17:25:15 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4NBtg1P45547698
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 17:25:42 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4NBtDx5014710
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 17:25:13 +0530
+Date: Fri, 23 May 2014 21:55:09 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexander Graf <agraf@suse.de>
-Date: Fri, 23 May 2014 20:50:34 +1000
-In-Reply-To: <537F228B.1030308@suse.de>
-References: <1400832930-17050-1-git-send-email-mikey@neuling.org>
- <537F1A8D.9000704@suse.de> <1400839224.28224.5.camel@ale.ozlabs.ibm.com>
- <537F1D59.5090909@suse.de> <1400839918.28224.11.camel@ale.ozlabs.ibm.com>
- <537F228B.1030308@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v6 2/3] drivers/vfio: EEH support for VFIO PCI device
+Message-ID: <20140523115509.GA4042@shangw>
+References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400747034-15045-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400814653.3289.428.camel@ul30vt.home>
+ <20140523043722.GA11572@shangw>
+ <76F750C7-EAA1-455F-A64F-BAB826F66281@suse.de>
+ <20140523073720.GA5929@shangw> <537F1BBE.4030503@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <537F1BBE.4030503@suse.de>
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +49,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alex,
+On Fri, May 23, 2014 at 11:58:22AM +0200, Alexander Graf wrote:
+>
+>On 23.05.14 09:37, Gavin Shan wrote:
+>>On Fri, May 23, 2014 at 08:55:15AM +0200, Alexander Graf wrote:
+>>>>Am 23.05.2014 um 06:37 schrieb Gavin Shan <gwshan@linux.vnet.ibm.com>:
+>>>>>On Thu, May 22, 2014 at 09:10:53PM -0600, Alex Williamson wrote:
+>>>>>>On Thu, 2014-05-22 at 18:23 +1000, Gavin Shan wrote:
+>>>>>>The patch adds new IOCTL commands for VFIO PCI device to support
+>>>>>>EEH functionality for PCI devices, which have been passed through
+>>>>>>from host to somebody else via VFIO.
+>>.../...
+>>
+>>>>>>+
+>>>>>>+/*
+>>>>>>+ * Reset is the major step to recover problematic PE. The following
+>>>>>>+ * command helps on that.
+>>>>>>+ */
+>>>>>>+struct vfio_eeh_pe_reset {
+>>>>>>+    __u32 argsz;
+>>>>>>+    __u32 option;
+>>>>>>+};
+>>>>>>+
+>>>>>>+#define VFIO_EEH_PE_RESET        _IO(VFIO_TYPE, VFIO_BASE + 24)
+>>>>>>+
+>>>>>>+/*
+>>>>>>+ * One of the steps for recovery after PE reset is to configure the
+>>>>>>+ * PCI bridges affected by the PE reset.
+>>>>>>+ */
+>>>>>>+#define VFIO_EEH_PE_CONFIGURE        _IO(VFIO_TYPE, VFIO_BASE + 25)
+>>>>>What can the user do differently by making these separate ioctls?
+>>>>hrm, I didn't understood as well. Alex.G could have the explaination.
+>>>Alex raised the same concern as me: why separate reset and configure? When we want to recover a device, we need a reset call anyway, right?
+>>>
+>>Ok. With current ioctl commands, "reset+configure" is required to do
+>>error recovery. Before the recovery, we also need call "configure"
+>>in order to retrieve error log correctly.
+>
+>Well, the "configure" ioctl (which is a really bad name for what it
+>does btw) currently only restores the BARs which doesn't sound like
+>error log retrieval to me.
+>
 
-> >> If it's the latter, we could just have ppc64_cpu --smt=3Dx also set th=
-e
-> >> subcore amount in parallel to the thread count.
-> > FWIW on powernv we just nap the threads on hotplug.
-> >
-> >> The reason I'm bringing this up is that I'm not quite sure who would b=
-e
-> >> the instance doing these performance tweaks. So I'd guess the majority
-> >> of users will simply miss out on them.
-> > Everyone, it's automatic on idle... except for split core mode
-> > unfortunately.
->=20
-> Oh I meant when you want to use a POWER system as VM host, you have to=
-=20
-> know about split core mode and configure it accordingly. That's=20
-> something someone needs to do. And it's different from x86 which means=
-=20
-> people may miss out on it for their performance benchmarks.
+Could you please suggest a better name? I had VFIO_EEH_PE_CONFIGURE because
+it's for RTAS call "ibm,configure-pe".
 
-It depends on what's running.  If you have 1 guest per core, then
-running unsplit is probably best as you can nap threads as needed and
-improve performance. =20
+>>Also, they corresponds to 2 separate RTAS services: "ibm,set-slot-reset"
+>>and "ibm,configure-pe".
+>
+>Does a guest always issue both? What's the order it calls them in?
+>
 
-If you have more than two guests per core, then running split core can
-hugely improve performance as they may be able to run at the same time
-without context switching.  4 guests with 2 threads per core can run at
-the same time on a single physical core.
+For one error, the following RTAS calls was called in general:
 
-One thing to note here is guest doorbell IRQs (new in POWER8).  They
-can't cross a core or subcore boundary and there is no way for the
-hypervisor to virtualise them.  Hence if you run split 4 on an SMT8
-POWER8, you can only run guests up to 2 threads per core (rather than 8
-threads per core).
+< stop device drivers, no PCI traffic expected during recovery >
+ibm,set-eeh-option
+ibm,configure-pe
+< error log retrival >
+ibm,set-slot-reset
+ibm,read-slot-reset-state2
+ibm,configure-pe
+< resume device drivers >
 
-> But if we impose a general performance penalty for everyone with it, I=
-=20
-> don't think split core mode should be enabled by default.
+We have other scenario. For example, PE reset failure and collect
+the permanent log. Prior to that, "ibm,configure-pe" should be called.
 
-FWIW we'd like to make this dynamic eventually, so that each core is run
-in whatever mode is currently best based on the running guests.
+Thanks,
+Gavin
 
-Mikey
+
+>
+>Alex
+>
