@@ -1,21 +1,20 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E31F11A0ABD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 18:20:51 +1000 (EST)
-From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 1/2] mtd/spi: support en25s64 device
-Date: Fri, 23 May 2014 08:20:36 +0000
-Message-ID: <fc3535e336a645d58be9c729f3e8db08@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1400666751-11459-1-git-send-email-Shengzhou.Liu@freescale.com>
- <1400705405.18239.92.camel@snotra.buserror.net>
-In-Reply-To: <1400705405.18239.92.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <geert@linux-m68k.org>
+Received: from winston.telenet-ops.be (winston.telenet-ops.be [195.130.137.75])
+ by lists.ozlabs.org (Postfix) with ESMTP id 28B7C1A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 19:07:07 +1000 (EST)
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [195.130.132.52])
+ by winston.telenet-ops.be (Postfix) with ESMTP id 996445908CF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 10:54:44 +0200 (CEST)
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 3/4] powerpc: Update comments for generic idle conversion
+Date: Fri, 23 May 2014 10:54:24 +0200
+Message-Id: <1400835265-21956-4-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
+References: <1400835265-21956-1-git-send-email-geert+renesas@glider.be>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gLS0tIGEvZHJpdmVycy9tdGQvZGV2
-aWNlcy9tMjVwODAuYw0KPiA+ICsrKyBiL2RyaXZlcnMvbXRkL2RldmljZXMvbTI1cDgwLmMNCj4g
-PiBAQCAtNzQ1LDYgKzc0NSw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgc3BpX2RldmljZV9pZCBt
-MjVwX2lkc1tdID0gew0KPiA+ICAJeyAiZW4yNXEzMmIiLCAgIElORk8oMHgxYzMwMTYsIDAsIDY0
-ICogMTAyNCwgICA2NCwgMCkgfSwNCj4gPiAgCXsgImVuMjVwNjQiLCAgICBJTkZPKDB4MWMyMDE3
-LCAwLCA2NCAqIDEwMjQsICAxMjgsIDApIH0sDQo+ID4gIAl7ICJlbjI1cTY0IiwgICAgSU5GTygw
-eDFjMzAxNywgMCwgNjQgKiAxMDI0LCAgMTI4LCBTRUNUXzRLKSB9LA0KPiA+ICsJeyAiZW4yNXM2
-NCIsICAgIElORk8oMHgxYzM4MTcsIDAsIDY0ICogMTAyNCwgIDEyOCwgMCkgfSwNCj4gPiAgCXsg
-ImVuMjVxaDI1NiIsICBJTkZPKDB4MWM3MDE5LCAwLCA2NCAqIDEwMjQsICA1MTIsIDApIH0sDQo+
-ID4NCj4gPiAgCS8qIEVTTVQgKi8NCj4gDQo+IFRoaXMgbmVlZHMgdG8gYmUgc2VudCB0byB0aGUg
-bXRkIGFuZC9vciBzcGkgbWFpbnRhaW5lcnMsIG5vdCBoZXJlLg0KPiANCj4gV2hhdCBkb2VzIHRo
-aXMgaGF2ZSB0byBkbyB3aXRoIHBhdGNoIDIvMj8gIERvbid0IHB1dCB1bnJlbGF0ZWQgdGhpbmdz
-IGluDQo+IHRoZSBzYW1lIHBhdGNoc2V0LCBlc3BlY2lhbGx5IHdoZW4gdGhleSdyZSBkZXN0aW5l
-ZCBmb3IgZGlmZmVyZW50DQo+IG1haW50YWluZXJzLg0KPiANCj4gLVNjb3R0DQo+IA0KW1NoZW5n
-emhvdV0gdGhhbmtzLCBzZW50IHRvIGxpbnV4LW10ZEBsaXN0cy5pbmZyYWRlYWQub3JnIGFscmVh
-ZHkuDQoNCg==
+As of commit 799fef06123f86ff69cf754f996219e6ad1678f8 ("powerpc: Use
+generic idle loop"), this applies to arch_cpu_idle() instead of cpu_idle().
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/irq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index ca1cd7459c4a..248ee7e5bebd 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -304,7 +304,7 @@ void notrace restore_interrupts(void)
+  * being re-enabled and generally sanitized the lazy irq state,
+  * and in the latter case it will leave with interrupts hard
+  * disabled and marked as such, so the local_irq_enable() call
+- * in cpu_idle() will properly re-enable everything.
++ * in arch_cpu_idle() will properly re-enable everything.
+  */
+ bool prep_irq_for_idle(void)
+ {
+-- 
+1.9.1
