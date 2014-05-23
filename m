@@ -1,19 +1,18 @@
-Return-Path: <john.d@servergy.com>
-Received: from mail-ob0-f171.google.com (mail-ob0-f171.google.com
- [209.85.214.171])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A7F671A007D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 05:22:45 +1000 (EST)
-Received: by mail-ob0-f171.google.com with SMTP id wn1so5882502obc.16
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 12:22:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA7141A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 07:21:29 +1000 (EST)
+Date: Fri, 23 May 2014 16:21:16 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: <benh@kernel.crashing.org>
+Subject: Pull request: scottwood/linux.git
+Message-ID: <20140523212116.GA21705@home.buserror.net>
 MIME-Version: 1.0
-Date: Fri, 23 May 2014 14:22:42 -0500
-Message-ID: <CAGtOQbS=GbQ5uC7_gtLB8pE5q6UpP1ORNXM9D9xk8pKLANCjqg@mail.gmail.com>
-Subject: panic: ttwu_activate() e500mc: 3.13.9.
-From: John Donnelly <john.d@servergy.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,63 +22,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The failing code snippet :
+Highlights include a few new boards, a device tree binding for CCF
+(including backwards-compatible device tree updates to distinguish
+incompatible versions), and some fixes.
 
-void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
-{
-c0088b90:       7c 08 02 a6     mflr    r0
-c0088b94:       90 01 00 04     stw     r0,4(r1)
-c0088b98:       4b f8 87 29     bl      c00112c0 <_mcount>
-c0088b9c:       94 21 ff f0     stwu    r1,-16(r1)
-c0088ba0:       7c 08 02 a6     mflr    r0
-c0088ba4:       90 01 00 14     stw     r0,20(r1)
-c0088ba8:       bf c1 00 08     stmw    r30,8(r1)
-c0088bac:       7c 9f 23 78     mr      r31,r4
-c0088bb0:       7c 7e 1b 78     mr      r30,r3
-        activate_task(rq, p, en_flags);
-c0088bb4:       4b ff f5 2d     bl      c00880e0 <activate_task>
-        p->on_rq = 1;
+The following changes since commit f6869e7fe657bd977e72954cd78c5871a6a4f71d:
 
-        /* if a worker is waking up, notify workqueue */
-        if (p->flags & PF_WQ_WORKER)
-c0088bb8:       81 3f 00 0c     lwz     r9,12(r31)
+  Merge remote-tracking branch 'anton/abiv2' into next (2014-05-05 20:57:12 +1000)
 
-r31- looks valid ( 0xc0b0b340)
+are available in the git repository at:
 
 
-Entering kdb (current=0xe62b8000, pid 74) on processor 1 Oops: (null)
-due to oops @ 0x0
-dCPU: 1 PID: 74 Comm: kworker/1:1 Tainted: G        W    3.13.9+ #3
-dWorkqueue: events linkwatch_event
-dtask: e62b8000 ti: e6338000 task.ti: e6338000
-NIP: 00000000 LR: c0088bb8 CTR: 00000000
-REGS: e6339c70 TRAP: 0400   Tainted: G        W     (3.13.9+)
-MSR: 00021002 <CE,ME>  CR: 22002028  XER: 00000000
+  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
 
-GPR00: c0088bb8 e6339d20 e62b8000 d1826900 c0b0b340 00000005 127fa664 00000004
-GPR08: 00000000 00000000 00000004 9fe99900 00000000 00000000 c0078250 e6311920
-GPR16: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 d1826680
-GPR24: c0b60000 00000001 00000000 d1829800 10d20000 00000000 d1826900 c0b0b340
-NIP [00000000]   (null)
-LR [c0088bb8] ttwu_activate+0x28/0x70
-Call Trace:
-[e6339d20] [c0088bb8] ttwu_activate+0x28/0x70 (unreliable)
-[e6339d30] [c0088e70] ttwu_do_activate+0x50/0x70
-[e6339d50] [c0088ff4] sched_ttwu_pending+0x84/0xb0
-[e6339d70] [c0089f10] scheduler_ipi+0x60/0x190
-[e6339d90] [c00126d0] smp_ipi_demux+0xa0/0xf0
-[e6339db0] [c0010250] doorbell_exception+0x70/0xa0
-[e6339dd0] [c0010bb0] ret_from_except_full+0x0/0x4c
---- Exception: 2070 at linkwatch_event+0x0/0x50
+for you to fetch changes up to e83eb028bb980cecc85b050aa626df384723aff2:
 
-Regards,
- John.
+  powerpc/fsl: Add fsl,portid-mapping to corenet1-cf chips (2014-05-22 18:10:42 -0500)
 
---
+----------------------------------------------------------------
+Alexander Graf (1):
+      PPC: ePAPR: Fix hypercall on LE guest
 
-o Energy-efficiency is #1 reason data centers look to expand.  --
-Digital Realty Trust
-o Green Data Centers spending to increase 300% worldwide by 2016.  --
-Pike Research
-o Data Centers have become as vital to the functioning of society as
-power stations.  -- The Economist
+Diana Craciun (3):
+      powerpc/fsl: Added binding for Freescale CoreNet coherency fabric (CCF)
+      powerpc/fsl: Updated device trees for platforms with corenet version 2
+      powerpc/fsl: Updated corenet-cf compatible string for corenet1-cf chips
+
+Lijun Pan (1):
+      powerpc/mpc85xx: Remove P1023 RDS support
+
+Liu Gang (1):
+      powerpc/rmu: Fix the error memory free parameters
+
+Martijn de Gouw (1):
+      powerpc/85xx: Add OCA4080 board support
+
+Prabhakar Kushwaha (2):
+      powerpc/mpc85xx:Add initial device tree support of T104x
+      powerpc/fsl-booke: Add initial T104x_QDS board support
+
+Scott Wood (6):
+      powerpc/fsl-rio: Fix fsl_rio_setup error paths and use-after-unmap
+      powerpc/fsl-booke64: Set vmemmap_psize to 4K
+      powerpc: fix build of epapr_paravirt on 64-bit book3s
+      powerpc: Fix unused variable warning for epapr_has_idle
+      powerpc/mpic: Don't init the fsl error int until after mpic init
+      powerpc/fsl: Add fsl,portid-mapping to corenet1-cf chips
+
+Stuart Yoder (1):
+      powerpc: move epapr paravirt init of power_save to an initcall
+
+Tang Yuantian (1):
+      clk: qoriq: Update the clock bindings
+
+Valentin Longchamp (3):
+      devicetree: bindings: add Zarlink to the vendor prefixes
+      devcietree: bindings: add some MFD Keymile FPGAs
+      powerpc/mpc85xx: add support for Keymile's kmcoge4 board
+
+Wang Dongsheng (1):
+      fsl/pci: fix RC cannot detect PME message coming
+
+harninder rai (1):
+      powerpc/mpc85xx: Add BSC9132 QDS Support
+
+ .../clock/{corenet-clock.txt => qoriq-clock.txt}   |  10 +-
+ Documentation/devicetree/bindings/mfd/bfticu.txt   |  25 ++
+ Documentation/devicetree/bindings/mfd/qriox.txt    |  17 +
+ .../devicetree/bindings/powerpc/fsl/board.txt      |  17 +
+ .../devicetree/bindings/powerpc/fsl/ccf.txt        |  46 +++
+ .../devicetree/bindings/powerpc/fsl/cpus.txt       |  11 +
+ .../devicetree/bindings/powerpc/fsl/pamu.txt       |  10 +
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ arch/powerpc/boot/dts/b4860emu.dts                 |   7 +-
+ arch/powerpc/boot/dts/bsc9132qds.dts               |  35 ++
+ arch/powerpc/boot/dts/bsc9132qds.dtsi              | 101 +++++
+ arch/powerpc/boot/dts/fsl/b4420si-post.dtsi        |   4 -
+ arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi         |   2 +
+ arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        |   4 -
+ arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi         |   4 +
+ arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |   3 +-
+ arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi      | 185 +++++++++
+ arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi       |  66 ++++
+ arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |   3 +-
+ arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi         |   4 +
+ arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |   3 +-
+ arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi         |   4 +
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |   3 +-
+ arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi         |   8 +
+ arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |   3 +-
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |   2 +
+ arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |   3 +-
+ arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi         |   4 +
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        | 430 +++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t1042si-post.dtsi        |  37 ++
+ arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         | 104 +++++
+ arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |   3 +-
+ arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi         |  12 +
+ arch/powerpc/boot/dts/kmcoge4.dts                  | 152 ++++++++
+ arch/powerpc/boot/dts/oca4080.dts                  | 118 ++++++
+ arch/powerpc/boot/dts/p1023rds.dts                 | 219 -----------
+ arch/powerpc/boot/dts/t1040qds.dts                 |  46 +++
+ arch/powerpc/boot/dts/t1042qds.dts                 |  46 +++
+ arch/powerpc/boot/dts/t104xqds.dtsi                | 166 ++++++++
+ arch/powerpc/boot/dts/t4240emu.dts                 |  15 +-
+ arch/powerpc/configs/85xx/kmp204x_defconfig        | 225 +++++++++++
+ arch/powerpc/configs/corenet32_smp_defconfig       |   1 +
+ arch/powerpc/configs/mpc85xx_defconfig             |   1 -
+ arch/powerpc/configs/mpc85xx_smp_defconfig         |   1 -
+ arch/powerpc/kernel/epapr_paravirt.c               |  19 +-
+ arch/powerpc/mm/tlb_nohash.c                       |   7 +-
+ arch/powerpc/platforms/85xx/Kconfig                |  19 +-
+ arch/powerpc/platforms/85xx/Makefile               |   3 +-
+ arch/powerpc/platforms/85xx/bsc913x_qds.c          |  74 ++++
+ arch/powerpc/platforms/85xx/corenet_generic.c      |   9 +-
+ .../platforms/85xx/{p1023_rds.c => p1023_rdb.c}    |  36 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |   3 +-
+ arch/powerpc/sysdev/fsl_rio.c                      |  10 +-
+ arch/powerpc/sysdev/fsl_rmu.c                      |   6 +-
+ arch/powerpc/sysdev/mpic.c                         |   8 +-
+ 55 files changed, 2065 insertions(+), 290 deletions(-)
+ rename Documentation/devicetree/bindings/clock/{corenet-clock.txt => qoriq-clock.txt} (95%)
+ create mode 100644 Documentation/devicetree/bindings/mfd/bfticu.txt
+ create mode 100644 Documentation/devicetree/bindings/mfd/qriox.txt
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/ccf.txt
+ create mode 100644 arch/powerpc/boot/dts/bsc9132qds.dts
+ create mode 100644 arch/powerpc/boot/dts/bsc9132qds.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/bsc9132si-pre.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t1042si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi
+ create mode 100644 arch/powerpc/boot/dts/kmcoge4.dts
+ create mode 100644 arch/powerpc/boot/dts/oca4080.dts
+ delete mode 100644 arch/powerpc/boot/dts/p1023rds.dts
+ create mode 100644 arch/powerpc/boot/dts/t1040qds.dts
+ create mode 100644 arch/powerpc/boot/dts/t1042qds.dts
+ create mode 100644 arch/powerpc/boot/dts/t104xqds.dtsi
+ create mode 100644 arch/powerpc/configs/85xx/kmp204x_defconfig
+ create mode 100644 arch/powerpc/platforms/85xx/bsc913x_qds.c
+ rename arch/powerpc/platforms/85xx/{p1023_rds.c => p1023_rdb.c} (75%)
