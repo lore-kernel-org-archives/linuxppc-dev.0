@@ -2,20 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44C251A061D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 21:58:59 +1000 (EST)
-Message-ID: <537F37FA.9090200@suse.de>
-Date: Fri, 23 May 2014 13:58:50 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id AAB351A007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2014 22:30:33 +1000 (EST)
+Message-ID: <537F3F64.8020807@suse.de>
+Date: Fri, 23 May 2014 14:30:28 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 Subject: Re: [PATCH v6 2/3] drivers/vfio: EEH support for VFIO PCI device
 References: <1400747034-15045-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1400747034-15045-3-git-send-email-gwshan@linux.vnet.ibm.com>
- <1400814653.3289.428.camel@ul30vt.home> <20140523043722.GA11572@shangw>
- <76F750C7-EAA1-455F-A64F-BAB826F66281@suse.de> <20140523073720.GA5929@shangw>
- <537F1BBE.4030503@suse.de> <20140523115509.GA4042@shangw>
-In-Reply-To: <20140523115509.GA4042@shangw>
+ <537DC991.9010401@suse.de> <20140523001730.GA12584@shangw>
+ <20140523003737.GA15136@shangw> <1400815400.3289.436.camel@ul30vt.home>
+ <22ECE7F7-2C1F-4E54-AD6B-0D2405357C9A@suse.de> <20140523115809.GB4042@shangw>
+In-Reply-To: <20140523115809.GB4042@shangw>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
  "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
@@ -32,79 +32,117 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 23.05.14 13:55, Gavin Shan wrote:
-> On Fri, May 23, 2014 at 11:58:22AM +0200, Alexander Graf wrote:
->> On 23.05.14 09:37, Gavin Shan wrote:
->>> On Fri, May 23, 2014 at 08:55:15AM +0200, Alexander Graf wrote:
->>>>> Am 23.05.2014 um 06:37 schrieb Gavin Shan <gwshan@linux.vnet.ibm.com>:
->>>>>> On Thu, May 22, 2014 at 09:10:53PM -0600, Alex Williamson wrote:
->>>>>>> On Thu, 2014-05-22 at 18:23 +1000, Gavin Shan wrote:
->>>>>>> The patch adds new IOCTL commands for VFIO PCI device to support
->>>>>>> EEH functionality for PCI devices, which have been passed through
->>>>>> >from host to somebody else via VFIO.
->>> .../...
+On 23.05.14 13:58, Gavin Shan wrote:
+> On Fri, May 23, 2014 at 08:52:23AM +0200, Alexander Graf wrote:
+>>
+>>> Am 23.05.2014 um 05:23 schrieb Alex Williamson <alex.williamson@redhat.com>:
 >>>
->>>>>>> +
+>>>> On Fri, 2014-05-23 at 10:37 +1000, Gavin Shan wrote:
+>>>>> On Fri, May 23, 2014 at 10:17:30AM +1000, Gavin Shan wrote:
+>>>>>> On Thu, May 22, 2014 at 11:55:29AM +0200, Alexander Graf wrote:
+>>>>>> On 22.05.14 10:23, Gavin Shan wrote:
+>>>> .../...
+>>>>
+>>>>>>> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+>>>>>>> index cb9023d..ef55682 100644
+>>>>>>> --- a/include/uapi/linux/vfio.h
+>>>>>>> +++ b/include/uapi/linux/vfio.h
+>>>>>>> @@ -455,6 +455,59 @@ struct vfio_iommu_spapr_tce_info {
+>>>>>>> #define VFIO_IOMMU_SPAPR_TCE_GET_INFO    _IO(VFIO_TYPE, VFIO_BASE + 12)
 >>>>>>> +/*
->>>>>>> + * Reset is the major step to recover problematic PE. The following
->>>>>>> + * command helps on that.
+>>>>>>> + * EEH functionality can be enabled or disabled on one specific device.
+>>>>>>> + * Also, the DMA or IO frozen state can be removed from the frozen PE
+>>>>>>> + * if required.
 >>>>>>> + */
->>>>>>> +struct vfio_eeh_pe_reset {
+>>>>>>> +struct vfio_eeh_pe_set_option {
 >>>>>>> +    __u32 argsz;
+>>>>>> What is this argsz thing? Is this your way of maintaining backwards
+>>>>>> compatibility when we introduce new fields? A new field will change
+>>>>>> the ioctl number, so I don't think that makes a lot of sense :).
+>>>>>>
+>>>>>> Just make the ioctl have a u32 as incoming argument. No fancy
+>>>>>> structs, no complicated code.
+>>>>>>
+>>>>>> The same applies for a number of structs below.
+>>>>> ok. Will do in next revision.
+>>>> Rechecked include/uapi/linux/vfio.h, the data struct for each ioctl command
+>>>> always has "argsz". I guess it was used as checker by Alex.W. Do you really
+>>>> want remove "argsz" ?
+>>>
+>>> IIRC, this was actually a suggestion incorporated from David Gibson, but
+>>> using _IO with an argsz and flags field we can maintain compatibility
+>>> without bumping the ioctl number.  It really only makes sense if we have
+>>> a flags field so we can identify what additional information is being
+>>> provided.  Flags can be used as a bitmap of trailing structures or as
+>>> revision if we want a set of trailing structures that may change over
+>>> time.  Unless you can come up with a good argument against it that would
+>>> prevent us inventing a new ioctl as soon as we need a minor tweak, I'd
+>>> prefer to keep it.  As I noted in a previous comment, the one ioctl we
+>>> have for reset that doesn't take any options is likely going to be the
+>>> first ioctl that we need to entirely replace.  If we don't keep argsz,
+>>> it seems like we probably need a flags field and reserved structures.
+>>>
 >>>>>>> +    __u32 option;
 >>>>>>> +};
 >>>>>>> +
->>>>>>> +#define VFIO_EEH_PE_RESET        _IO(VFIO_TYPE, VFIO_BASE + 24)
+>>>>>>> +#define VFIO_EEH_PE_SET_OPTION        _IO(VFIO_TYPE, VFIO_BASE + 21)
 >>>>>>> +
 >>>>>>> +/*
->>>>>>> + * One of the steps for recovery after PE reset is to configure the
->>>>>>> + * PCI bridges affected by the PE reset.
+>>>>>>> + * Each EEH PE should have unique address to be identified. The command
+>>>>>>> + * helps to retrieve the address and the sharing mode of the PE.
 >>>>>>> + */
->>>>>>> +#define VFIO_EEH_PE_CONFIGURE        _IO(VFIO_TYPE, VFIO_BASE + 25)
->>>>>> What can the user do differently by making these separate ioctls?
->>>>> hrm, I didn't understood as well. Alex.G could have the explaination.
->>>> Alex raised the same concern as me: why separate reset and configure? When we want to recover a device, we need a reset call anyway, right?
+>>>>>>> +struct vfio_eeh_pe_get_addr {
+>>>>>>> +    __u32 argsz;
+>>>>>>> +    __u32 option;
+>>>>>>> +    __u32 info;
+>>>>>> Any particular reason you need the info field? Can't the return value
+>>>>>> of the ioctl hold this? Then you only have a single u32 argument left
+>>>>>> to the ioctl again.
+>>>>> ok. Will do in next revision.
+>>>> If we eventually remove "argsz" and let ioctl() return value to hold
+>>>> information (or negative number for errors), we don't need any data
+>>>> struct because the 3rd parameter of ioctl() would be used as input
+>>>> and I only need one input parameter. Do you want see this ?
 >>>>
->>> Ok. With current ioctl commands, "reset+configure" is required to do
->>> error recovery. Before the recovery, we also need call "configure"
->>> in order to retrieve error log correctly.
->> Well, the "configure" ioctl (which is a really bad name for what it
->> does btw) currently only restores the BARs which doesn't sound like
->> error log retrieval to me.
+>>>> Hopefully, Alex.W saw this and hasn't objections :)
+>>> I'm not sure why we're pushing for the minimal data set to pass to an
+>>> ioctl.  Seems like a recipe for dead, useless ioctls.  Thanks,
+>>>
+>> The ioctl number includes sizeof(payload). So if a new parameter gets added, that would be a different ioctl number.
 >>
-> Could you please suggest a better name? I had VFIO_EEH_PE_CONFIGURE because
-> it's for RTAS call "ibm,configure-pe".
-
-VFIO_RESTORE_BARS maybe?
-
->>> Also, they corresponds to 2 separate RTAS services: "ibm,set-slot-reset"
->>> and "ibm,configure-pe".
->> Does a guest always issue both? What's the order it calls them in?
+>> If you want to maintain backwards compatibility ioctl number wise in the kernel, you'll have to have a "flags" field to indicate whether new data is available and a "pad" field, prefarably in a union, that ensures the size of the struct doesn't change.
 >>
-> For one error, the following RTAS calls was called in general:
->
-> < stop device drivers, no PCI traffic expected during recovery >
-> ibm,set-eeh-option
-> ibm,configure-pe
-> < error log retrival >
+>> I'm not sure it's really necessary here to have identical ioctl numbers if we add parameters, since we can always just define a new ioctl with a bigger payload that can then become the default handler and a shim backwards compatible handler with the old number.
+>>
+>> But if you think it is important, let's do it for real, not just halfway.
+>>
+> So I need add additional field "flags" ?
 
-I see. So the guest retrieves the log via BARs from the device? I guess 
-I'm failing to see what "the log" is.
+This is Alex' call on how he prefers the interface to look like. The 
+struct size that you pass into an ioctl is part of the ioctl number, so 
+putting that into an argsz field only makes sense when you do ugly 
+things like
+
+struct foo *x;
+uint32_t *y;
+
+x = malloc(sizeof(*x) + sizeof(*y));
+y = (void*)&x[1];
+
+ioctl(..., x);
+
+But I'd prefer not to have such nasty code really. It breaks assumptions 
+on *anything* that wraps ioctls, such as strace or qemu's linux-user 
+emulation.
+
+>   Also, I need keep the return value from
+> ioctl() less or equal to 0 ? :-)
+
+Usually return values are
+
+   < 0 means error
+   == 0 means success
+   > 0 means return payload
 
 
 Alex
-
-> ibm,set-slot-reset
-> ibm,read-slot-reset-state2
-> ibm,configure-pe
-> < resume device drivers >
->
-> We have other scenario. For example, PE reset failure and collect
-> the permanent log. Prior to that, "ibm,configure-pe" should be called.
->
-> Thanks,
-> Gavin
->
->
->> Alex
->>
