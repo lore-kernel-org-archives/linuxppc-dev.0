@@ -1,25 +1,16 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-x22f.google.com (mail-la0-x22f.google.com
- [IPv6:2a00:1450:4010:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DFD61A05A9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 19:33:44 +1000 (EST)
-Received: by mail-la0-f47.google.com with SMTP id pn19so4840030lab.34
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2014 02:33:40 -0700 (PDT)
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH 3/3] dmaengine: mpc512x: register for device tree channel
- lookup
-Date: Sat, 24 May 2014 13:33:29 +0400
-Message-Id: <1400924009-23992-4-git-send-email-a13xp0p0v88@gmail.com>
-In-Reply-To: <1400924009-23992-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1400924009-23992-1-git-send-email-a13xp0p0v88@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 884401A05A6
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 May 2014 10:42:34 +1000 (EST)
+Date: Sat, 24 May 2014 17:35:31 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@lists.ozlabs.org, geert@linux-m68k.org
+Subject: Section mismatch in reference from the variable via_pmu_driver
+Message-ID: <alpine.DEB.2.19.4.1405241720190.7552@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +20,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the controller for device tree based lookup of DMA channels
-(non-fatal for backwards compatibility with older device trees) and
-provide the '#dma-cells' property in the shared mpc5121.dtsi file
+Hi,
 
-Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
----
- arch/powerpc/boot/dts/mpc5121.dtsi |  1 +
- drivers/dma/mpc512x_dma.c          | 13 ++++++++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+while compiling 3.15-rc6 for powerpc (gcc-4.8.1 crosscompiler on x86_64), 
+a warning popped up:
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 2c0e155..7f9d14f 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -498,6 +498,7 @@
- 			compatible = "fsl,mpc5121-dma";
- 			reg = <0x14000 0x1800>;
- 			interrupts = <65 0x8>;
-+			#dma-cells = <1>;
- 		};
- 	};
- 
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 2ad4373..881db2b 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -53,6 +53,7 @@
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
-+#include <linux/of_dma.h>
- #include <linux/of_platform.h>
- 
- #include <linux/random.h>
-@@ -1036,7 +1037,15 @@ static int mpc_dma_probe(struct platform_device *op)
- 	if (retval)
- 		goto err_free2;
- 
--	return retval;
-+	/* Register with OF helpers for DMA lookups (nonfatal) */
-+	if (dev->of_node) {
-+		retval = of_dma_controller_register(dev->of_node,
-+						of_dma_xlate_by_chan_id, mdma);
-+		if (retval)
-+			dev_warn(dev, "Could not register for OF lookup\n");
-+	}
-+
-+	return 0;
- 
- err_free2:
- 	if (mdma->is_mpc8308)
-@@ -1057,6 +1066,8 @@ static int mpc_dma_remove(struct platform_device *op)
- 	struct device *dev = &op->dev;
- 	struct mpc_dma *mdma = dev_get_drvdata(dev);
- 
-+	if (dev->of_node)
-+		of_dma_controller_free(dev->of_node);
- 	dma_async_device_unregister(&mdma->dma);
- 	if (mdma->is_mpc8308) {
- 		free_irq(mdma->irq2, mdma);
+   WARNING: modpost: Found 1 section mismatch(es).
+
+Compiling with CONFIG_DEBUG_SECTION_MISMATCH=y gives:
+
+-----------------------------------
+  LD      drivers/macintosh/built-in.o
+  CC [M]  fs/hfsplus/inode.o
+WARNING: drivers/macintosh/built-in.o(.data+0x184): Section mismatch in 
+reference from the variable via_pmu_driver to the function 
+.init.text:pmu_init()
+The variable via_pmu_driver references
+the function __init pmu_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the 
+variable:
+*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+-----------------------------------
+
+...and, later on:
+
+-----------------------------------
+  LD      drivers/built-in.o
+WARNING: drivers/built-in.o(.data+0x488c): Section mismatch in reference 
+from the variable via_pmu_driver to the function .init.text:pmu_init()
+The variable via_pmu_driver references
+the function __init pmu_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the 
+variable:
+*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+
+  LINK    vmlinux
+  LD      vmlinux.o
+  MODPOST vmlinux.o
+WARNING: vmlinux.o(.data+0x1ff44): Section mismatch in reference from the 
+variable via_pmu_driver to the function .init.text:pmu_init()
+The variable via_pmu_driver references
+the function __init pmu_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the 
+variable:
+*_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console
+-----------------------------------
+
+This had been reported [0] by Geert for v3.3-rc1 back in 2012, and maybe 
+the warning was always there, but I didn't notice it until now.
+
+Oh, and after everything has been built, this happens:
+
+-----------------------------------
+INFO: Uncompressed kernel (size 0x6714a0) overlaps the address of the wrapper(0x400000)
+INFO: Fixing the link_address of wrapper to (0x700000)
+-----------------------------------
+
+...but I think this was always printed after compiling a kernel for 
+PowerPC, I just just I should mention it (again [1]).
+
+Thanks,
+Christian.
+
+[0] https://lkml.org/lkml/2012/1/22/17
+[1] https://lkml.org/lkml/2012/4/4/140
 -- 
-1.8.4.2
+BOFH excuse #30:
+
+positron router malfunction
