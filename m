@@ -1,22 +1,18 @@
 Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [IPv6:2a03:3680:0:3::67])
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FB261A05A6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 05:07:46 +1000 (EST)
-Date: Sun, 25 May 2014 12:07:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B2791A05A6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 07:31:15 +1000 (EST)
+Date: Sun, 25 May 2014 14:31:00 -0700 (PDT)
 From: Christian Kujau <lists@nerdbynature.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fs/hfsplus/xattr.c: comparison of distinct pointer types lacks
- a cast
-In-Reply-To: <CAMuHMdWSd=nLiG_QacqnePbvQ=QBv8dRakDGL6LQ+6tEGP1qEQ@mail.gmail.com>
-Message-ID: <alpine.DEB.2.19.4.1405251156110.7552@trent.utfs.org>
-References: <alpine.DEB.2.19.4.1405241829250.7552@trent.utfs.org>
- <CAMuHMdWSd=nLiG_QacqnePbvQ=QBv8dRakDGL6LQ+6tEGP1qEQ@mail.gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] hfsplus: fix compiler warning on PowerPC
+Message-ID: <alpine.DEB.2.19.4.1405251425270.7552@trent.utfs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: Linux FS Devel <linux-fsdevel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Sergei Antonov <saproj@gmail.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 25 May 2014 at 10:48, Geert Uytterhoeven wrote:
-> "tmp" is "loff_t" which is "__kernel_loff_t", which is "long long", i.e. signed,
-> while include/asm-generic/div64.h compares its type with "uint64_t".
+Hi Andrew,
 
-Thanks for the explanation!
+Sergei suggested to send this your way, so that it can be included into 
+linux-next:
 
-> As inode sizes are positive, it should be safe to change the type of "tmp"
-> to "u64". Does that make the warning go away?
-
-Yes, this helped! Compile-tested only:
-
- Signed-off-by: Christian Kujau <lists@nerdbynature.de>
-      Fixed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Commit a99b7069aab8fc3fb4f26d15795dc280b52e38b1 introduced do_div() to 
+Commit a99b7069aab8fc3fb4f26d15795dc280b52e38b1 ("hfsplus: Fix 
+undefined __divdi3 in hfsplus_init_header_node()") introduced do_div() to 
 xattr.c and the warning below too.
 
 As Geert remarked: "tmp" is "loff_t" which is "__kernel_loff_t", which
@@ -81,6 +69,10 @@ macro 'do_div'
   LD [M]  fs/hfsplus/hfsplus.o
 ==============================
 
+ Signed-off-by: Christian Kujau <lists@nerdbynature.de>
+      Fixed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+      Acked-by: Sergei Antonov <saproj@gmail.com>
+---
 
 diff --git a/fs/hfsplus/xattr.c b/fs/hfsplus/xattr.c
 index 4e27edc..cd9ed4c 100644
@@ -95,7 +87,6 @@ index 4e27edc..cd9ed4c 100644
  
  	hfs_dbg(ATTR_MOD, "init_hdr_attr_file: clump %u, node_size %u\n",
  				clump_size, node_size);
-
 
 
 Thanks,
