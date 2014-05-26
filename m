@@ -1,23 +1,21 @@
-Return-Path: <himangi774@gmail.com>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <wimvs@spo001.leaseweb.com>
+Received: from spo001.leaseweb.com (ns1.pc-advies.be [83.149.101.17])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C60281A0590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 06:21:41 +1000 (EST)
-Received: by mail-pa0-f48.google.com with SMTP id rd3so8012695pab.35
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 13:21:39 -0700 (PDT)
-Date: Tue, 27 May 2014 01:51:31 +0530
-From: Himangi Saraogi <himangi774@gmail.com>
-To: Anatolij Gustschin <agust@denx.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: Introduce the use of the managed version of kzalloc
-Message-ID: <20140526202130.GA16360@himangi-Dell>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 287841A0590
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 07:35:07 +1000 (EST)
+Date: Mon, 26 May 2014 23:05:40 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Yuantian.Tang@freescale.com
+Subject: Re: [PATCH 1/1] booke/watchdog: refine and clean up the codes
+Message-ID: <20140526210540.GA23641@spo001.leaseweb.com>
+References: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: julia.lawall@lip6.fr
+In-Reply-To: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
+Sender: <wimvs@spo001.leaseweb.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,63 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch moves data allocated using kzalloc to managed data allocated
-using devm_kzalloc and cleans now unnecessary kfree in probe function.
+Hi Tang,
 
-The following Coccinelle semantic patch was used for making the change:
+> From: Tang Yuantian <yuantian.tang@freescale.com>
+> 
+> Basically, this patch does the following:
+> 1. Move the codes of parsing boot parameters from setup-common.c
+>    to driver. In this way, code reader can know directly that
+>    there are boot parameters that can change the timeout.
+> 2. Make boot parameter 'booke_wdt_period' effective.
+>    currently, when driver is loaded, default timeout is always
+>    being used in stead of booke_wdt_period.
+> 3. Wrap up the watchdog timeout in device struct and clean up
+>    unnecessary codes.
+> 
+> Signed-off-by: Tang Yuantian <yuantian.tang@freescale.com>
+> Acked-by: Scott Wood <scottwood@freescale.com>
+> ---
+> resend to watchdog maintainer
+> 
+>  arch/powerpc/kernel/setup-common.c | 27 --------------------
+>  drivers/watchdog/booke_wdt.c       | 51 ++++++++++++++++++++++++--------------
+>  2 files changed, 33 insertions(+), 45 deletions(-)
 
-@platform@
-identifier p, probefn, removefn;
-@@
-struct platform_driver p = {
-  .probe = probefn,
-  .remove = removefn,
-};
+Patch has been added to linux-watchdog-next.
 
-@prb@
-identifier platform.probefn, pdev;
-expression e, e1, e2;
-@@
-probefn(struct platform_device *pdev, ...) {
-  <+...
-- e = kzalloc(e1, e2)
-+ e = devm_kzalloc(&pdev->dev, e1, e2)
-  ...
-?-kfree(e);
-  ...+>
-}
-
-Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
-Acked-by: Julia Lawall <julia.lawall@lip6.fr>
----
-Not compile tested
- arch/powerpc/platforms/52xx/mpc52xx_gpt.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-index 6929982..37343a6 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
-@@ -724,7 +724,7 @@ static int mpc52xx_gpt_probe(struct platform_device *ofdev)
- {
- 	struct mpc52xx_gpt_priv *gpt;
- 
--	gpt = kzalloc(sizeof *gpt, GFP_KERNEL);
-+	gpt = devm_kzalloc(&ofdev->dev, sizeof *gpt, GFP_KERNEL);
- 	if (!gpt)
- 		return -ENOMEM;
- 
-@@ -732,10 +732,8 @@ static int mpc52xx_gpt_probe(struct platform_device *ofdev)
- 	gpt->dev = &ofdev->dev;
- 	gpt->ipb_freq = mpc5xxx_get_bus_frequency(ofdev->dev.of_node);
- 	gpt->regs = of_iomap(ofdev->dev.of_node, 0);
--	if (!gpt->regs) {
--		kfree(gpt);
-+	if (!gpt->regs)
- 		return -ENOMEM;
--	}
- 
- 	dev_set_drvdata(&ofdev->dev, gpt);
- 
--- 
-1.9.1
+Kind regards,
+Wim.
