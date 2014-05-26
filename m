@@ -1,38 +1,14 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B1D41A05B7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 16:22:38 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Mon, 26 May 2014 11:52:31 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 18F481258053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 11:51:37 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4Q6MamJ4719040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 11:52:37 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4Q6MOPS029270
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 11:52:25 +0530
-Message-ID: <5382DD9B.2020406@linux.vnet.ibm.com>
-Date: Mon, 26 May 2014 11:52:19 +0530
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net, jdelvare@suse.de,
- lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v2] powerpc/powernv: hwmon driver for power values, fan
- rpm and temperature
-References: <20140519141931.9248.11356.stgit@neelegup-tp-t420.in.ibm.com>
-In-Reply-To: <20140519141931.9248.11356.stgit@neelegup-tp-t420.in.ibm.com>
-Content-Type: multipart/alternative;
- boundary="------------000200030503020103000403"
-Cc: sbhat@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id A38881A0590
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2014 21:02:19 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] xmon: Fix up xmon format strings
+Date: Mon, 26 May 2014 21:02:14 +1000
+Message-Id: <1401102134-3125-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,992 +18,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------000200030503020103000403
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+There are a couple of places where xmon is using %x to print values that
+are unsigned long.
 
-Any updates on the patch.
+I found this out the hard way recently:
 
-- Neelesh
+ 0:mon> p c000000000d0e7c8 c00000033dc90000 00000000a0000089 c000000000000000
+ return value is 0x96300500
 
-On 05/19/2014 07:56 PM, Neelesh Gupta wrote:
-> This patch adds basic kernel enablement for reading power values, fan
-> speed rpm and temperature values on powernv platforms which will
-> be exported to user space through sysfs interface.
->
-> Test results:
-> -------------
-> [root@tul163p1 ~]# sensors
-> ibmpowernv-isa-0000
-> Adapter: ISA adapter
-> fan1:        5487 RPM  (min =    0 RPM)
-> fan2:        5152 RPM  (min =    0 RPM)
-> fan3:        5590 RPM  (min =    0 RPM)
-> fan4:        4963 RPM  (min =    0 RPM)
-> fan5:           0 RPM  (min =    0 RPM)
-> fan6:           0 RPM  (min =    0 RPM)
-> fan7:        7488 RPM  (min =    0 RPM)
-> fan8:        7944 RPM  (min =    0 RPM)
-> temp1:        +39.0°C  (high =  +0.0°C)
-> power1:      192.00 W
->
-> [root@tul163p1 ~]# ls /sys/devices/platform/
-> alarmtimer  ibmpowernv.0  rtc-generic  serial8250  uevent
-> [root@tul163p1 ~]# ls /sys/devices/platform/ibmpowernv.0/
-> driver/    hwmon/     modalias   subsystem/ uevent
-> [root@tul163p1 ~]# ls /sys/devices/platform/ibmpowernv.0/hwmon/hwmon0/
-> device	    fan2_min	fan4_min    fan6_min	fan8_min   power1_input
-> fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  subsystem
-> fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  temp1_input
-> fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_max
-> fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  uevent
-> fan2_input  fan4_input	fan6_input  fan8_input	name
-> [root@tul163p1 ~]#
-> [root@tul163p1 ~]# ls /sys/class/hwmon/hwmon0/
-> device	    fan2_min	fan4_min    fan6_min	fan8_min   power1_input
-> fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  subsystem
-> fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  temp1_input
-> fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_max
-> fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  uevent
-> fan2_input  fan4_input	fan6_input  fan8_input	name
-> [root@tul163p1 ~]#
->
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> ---
->
-> Changes in v2
-> =============
-> - Generic use of devm_* functions in hwmon like using devm_kzalloc() for dynamic
->    memory request, avoiding the need to explicit free of memory.
->    Adding 'struct attribute_group' as member of platform data structure to be
->    populated and then passed to devm_hwmon_device_register_with_groups().
->
->    Note: Having an array of pointers of 'attribute_group' and each group
->    corresponds to 'enum sensors' type. Not completely sure, if it's ideal or
->    could have just one group populated with attributes of sensor types?
->
-> - 'ibmpowernv' is not hot-pluggable device so moving 'platform_driver' callback
->    function (probe) as part of __init code.
-> - Fixed issues related to coding style.
-> - Other general comments in v1.
->
->   drivers/hwmon/Kconfig      |    8 +
->   drivers/hwmon/Makefile     |    1
->   drivers/hwmon/ibmpowernv.c |  368 ++++++++++++++++++++++++++++++++++++++++++++
->   3 files changed, 377 insertions(+)
->   create mode 100644 drivers/hwmon/ibmpowernv.c
->
-> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-> index bc196f4..3e308fa 100644
-> --- a/drivers/hwmon/Kconfig
-> +++ b/drivers/hwmon/Kconfig
-> @@ -554,6 +554,14 @@ config SENSORS_IBMPEX
->   	  This driver can also be built as a module.  If so, the module
->   	  will be called ibmpex.
->   
-> +config SENSORS_IBMPOWERNV
-> +	tristate "IBM POWERNV platform sensors"
-> +	depends on PPC_POWERNV
-> +	default y
-> +	help
-> +	  If you say yes here you get support for the temperature/fan/power
-> +	  sensors on your platform.
-> +
->   config SENSORS_IIO_HWMON
->   	tristate "Hwmon driver that uses channels specified via iio maps"
->   	depends on IIO
-> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-> index c48f987..199c401 100644
-> --- a/drivers/hwmon/Makefile
-> +++ b/drivers/hwmon/Makefile
-> @@ -71,6 +71,7 @@ obj-$(CONFIG_SENSORS_ULTRA45)	+= ultra45_env.o
->   obj-$(CONFIG_SENSORS_I5K_AMB)	+= i5k_amb.o
->   obj-$(CONFIG_SENSORS_IBMAEM)	+= ibmaem.o
->   obj-$(CONFIG_SENSORS_IBMPEX)	+= ibmpex.o
-> +obj-$(CONFIG_SENSORS_IBMPOWERNV)+= ibmpowernv.o
->   obj-$(CONFIG_SENSORS_IIO_HWMON) += iio_hwmon.o
->   obj-$(CONFIG_SENSORS_INA209)	+= ina209.o
->   obj-$(CONFIG_SENSORS_INA2XX)	+= ina2xx.o
-> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-> new file mode 100644
-> index 0000000..afce620
-> --- /dev/null
-> +++ b/drivers/hwmon/ibmpowernv.c
-> @@ -0,0 +1,368 @@
-> +/*
-> + * IBM PowerNV platform sensors for temperature/fan/power
-> + * Copyright (C) 2014 IBM
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/hwmon.h>
-> +#include <linux/hwmon-sysfs.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +
-> +#include <linux/platform_device.h>
-> +#include <asm/opal.h>
-> +#include <linux/err.h>
-> +
-> +#define DRVNAME		"ibmpowernv"
-> +#define MAX_ATTR_LEN	32
-> +
-> +/* Sensor suffix name from DT */
-> +#define DT_FAULT_ATTR_SUFFIX		"faulted"
-> +#define DT_DATA_ATTR_SUFFIX		"data"
-> +#define DT_THRESHOLD_ATTR_SUFFIX	"thrs"
-> +
-> +/*
-> + * Enumerates all the types of sensors in the POWERNV platform and does index
-> + * into 'struct sensor_group'
-> + */
-> +enum sensors {
-> +	FAN,
-> +	AMBIENT_TEMP,
-> +	POWER_SUPPLY,
-> +	POWER_INPUT,
-> +	MAX_SENSOR_TYPE,
-> +};
-> +
-> +static struct sensor_group {
-> +	const char *name;
-> +	const char *compatible;
-> +	struct attribute_group group;
-> +	u32 attr_count;
-> +} sensor_groups[] = {
-> +	{"fan", "ibm,opal-sensor-cooling-fan", {0}, 0},
-> +	{"temp", "ibm,opal-sensor-amb-temp", {0}, 0},
-> +	{"in", "ibm,opal-sensor-power-supply", {0}, 0},
-> +	{"power", "ibm,opal-sensor-power", {0}, 0}
-> +};
-> +
-> +struct sensor_data {
-> +	u32 id; /* An opaque id of the firmware for each sensor */
-> +	enum sensors type;
-> +	char name[MAX_ATTR_LEN];
-> +	struct device_attribute dev_attr;
-> +};
-> +
-> +struct platform_data {
-> +	const struct attribute_group *attr_groups[MAX_SENSOR_TYPE + 1];
-> +	u32 sensors_count; /* Total count of sensors from each group */
-> +};
-> +
-> +/* Platform device representing all the ibmpowernv sensors */
-> +static struct platform_device *pdevice;
-> +
-> +static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
-> +			   char *buf)
-> +{
-> +	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-> +						 dev_attr);
-> +	ssize_t ret;
-> +	u32 x;
-> +
-> +	ret = opal_get_sensor_data(sdata->id, &x);
-> +	if (ret) {
-> +		pr_err("%s: Failed to get opal sensor data\n", __func__);
-> +		return ret;
-> +	}
-> +
-> +	/* Convert temperature to milli-degrees */
-> +	if (sdata->type == AMBIENT_TEMP)
-> +		x *= 1000;
-> +	/* Convert power to micro-watts */
-> +	else if (sdata->type == POWER_INPUT)
-> +		x *= 1000000;
-> +
-> +	return sprintf(buf, "%d\n", x);
-> +}
-> +
-> +static void __init get_sensor_index_attr(const char *name, u32 *index, char *attr)
-> +{
-> +	char *hash_pos = strchr(name, '#');
-> +	char *dash_pos;
-> +	u32 copy_len;
-> +	char buf[8];
-> +
-> +	memset(buf, 0, sizeof(buf));
-> +	*index = 0;
-> +	*attr = '\0';
-> +
-> +	if (hash_pos) {
-> +		dash_pos = strchr(hash_pos, '-');
-> +		if (dash_pos) {
-> +			copy_len = dash_pos - hash_pos - 1;
-> +			if (copy_len < sizeof(buf)) {
-> +				strncpy(buf, hash_pos + 1, copy_len);
-> +				sscanf(buf, "%d", index);
-> +			}
-> +
-> +			strncpy(attr, dash_pos + 1, MAX_ATTR_LEN);
-> +		}
-> +	}
-> +}
-> +
-> +/*
-> + * This function translates the DT node name into the 'hwmon' attribute name.
-> + * IBMPOWERNV device node appear like cooling-fan#2-data, amb-temp#1-thrs etc.
-> + * which need to be mapped as fan2_input, temp1_max respectively before
-> + * populating them inside hwmon device class..
-> + */
-> +static int __init create_hwmon_attr_name(enum sensors type, const char *node_name,
-> +				  char *hwmon_attr_name)
-> +{
-> +	char attr_suffix[MAX_ATTR_LEN];
-> +	char *attr_name;
-> +	u32 index;
-> +
-> +	get_sensor_index_attr(node_name, &index, attr_suffix);
-> +	if (!index || !strlen(attr_suffix)) {
-> +		pr_info("%s: Sensor device node name is invalid, name: %s\n",
-> +				__func__, node_name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (!strcmp(attr_suffix, DT_FAULT_ATTR_SUFFIX))
-> +		attr_name = "fault";
-> +	else if(!strcmp(attr_suffix, DT_DATA_ATTR_SUFFIX))
-> +		attr_name = "input";
-> +	else if (!strcmp(attr_suffix, DT_THRESHOLD_ATTR_SUFFIX)) {
-> +		if (type == AMBIENT_TEMP)
-> +			attr_name = "max";
-> +		else if (type == FAN)
-> +			attr_name = "min";
-> +		else
-> +			return -ENOENT;
-> +	} else
-> +		return -ENOENT;
-> +
-> +	snprintf(hwmon_attr_name, MAX_ATTR_LEN, "%s%d_%s",
-> +			sensor_groups[type].name, index, attr_name);
-> +	return 0;
-> +}
-> +
-> +static int __init populate_attr_groups(struct platform_device *pdev)
-> +{
-> +	struct platform_data *pdata = platform_get_drvdata(pdev);
-> +	const struct attribute_group **pgroups = pdata->attr_groups;
-> +	struct device_node *opal, *np;
-> +	enum sensors type;
-> +	int err = 0;
-> +
-> +	opal = of_find_node_by_path("/ibm,opal/sensors");
-> +        if (!opal) {
-> +		pr_err("%s: Opal 'sensors' node not found\n", __func__);
-> +		return -ENODEV;
-> +        }
-> +
-> +	for_each_child_of_node(opal, np) {
-> +		if (np->name == NULL)
-> +			continue;
-> +
-> +		for (type = 0; type < MAX_SENSOR_TYPE; type++)
-> +			if (of_device_is_compatible(np,
-> +				sensor_groups[type].compatible)) {
-> +				sensor_groups[type].attr_count++;
-> +				break;
-> +			}
-> +	}
-> +
-> +	for (type = 0; type < MAX_SENSOR_TYPE; type++) {
-> +		if (!sensor_groups[type].attr_count)
-> +			continue;
-> +
-> +		sensor_groups[type].group.attrs = devm_kzalloc(&pdev->dev,
-> +					sizeof(struct attribute*) *
-> +					(sensor_groups[type].attr_count + 1),
-> +					GFP_KERNEL);
-> +		if (!sensor_groups[type].group.attrs) {
-> +			pr_err("%s: Failed to allocate memory for attribute"
-> +					"array\n", __func__);
-> +			err = -ENOMEM;
-> +			goto exit_put_node;
-> +		}
-> +
-> +		pgroups[type] = &sensor_groups[type].group;
-> +		pdata->sensors_count += sensor_groups[type].attr_count;
-> +		sensor_groups[type].attr_count = 0;
-> +	}
-> +
-> +exit_put_node:
-> +	of_node_put(opal);
-> +	return err;
-> +}
-> +
-> +/*
-> + * Iterate through the device tree for each child of sensor node, create
-> + * a sysfs attribute file, the file is named by translating the DT node name
-> + * to the name required by the higher 'hwmon' driver like fan1_input, temp1_max
-> + * etc..
-> + */
-> +static int __init create_device_attrs(struct platform_device *pdev)
-> +{
-> +	struct platform_data *pdata = platform_get_drvdata(pdev);
-> +	const struct attribute_group **pgroups = pdata->attr_groups;
-> +	struct device_node *opal, *np;
-> +	struct sensor_data *sdata;
-> +	const u32 *sensor_id;
-> +	enum sensors type;
-> +	u32 count = 0;
-> +	int err = 0;
-> +
-> +	opal = of_find_node_by_path("/ibm,opal/sensors");
-> +        if (!opal) {
-> +		pr_err("%s: Opal 'sensors' node not found\n", __func__);
-> +		return -ENODEV;
-> +        }
-> +
-> +	sdata = devm_kzalloc(&pdev->dev, (pdata->sensors_count) *
-> +			     sizeof(*sdata), GFP_KERNEL);
-> +	if (!sdata) {
-> +		pr_err("%s: Failed to allocate memory for the sensor_data",
-> +				__func__);
-> +		err = -ENOMEM;
-> +		goto exit_put_node;
-> +	}
-> +
-> +	for_each_child_of_node(opal, np) {
-> +                if (np->name == NULL)
-> +                        continue;
-> +
-> +		for (type = 0; type < MAX_SENSOR_TYPE; type++)
-> +			if (of_device_is_compatible(np,
-> +					sensor_groups[type].compatible))
-> +				break;
-> +
-> +		if (type == MAX_SENSOR_TYPE)
-> +			continue;
-> +
-> +		sensor_id = of_get_property(np, "sensor-id", NULL);
-> +		if (!sensor_id) {
-> +			pr_info("%s: %s doesn't have sensor-id\n", __func__,
-> +				np->name);
-> +			continue;
-> +		}
-> +
-> +		sdata[count].id = *sensor_id;
-> +		sdata[count].type = type;
-> +		err = create_hwmon_attr_name(type, np->name, sdata[count].name);
-> +		if (err)
-> +			goto exit_put_node;
-> +
-> +		sysfs_attr_init(&sdata[count].dev_attr.attr);
-> +		sdata[count].dev_attr.attr.name = sdata[count].name;
-> +		sdata[count].dev_attr.attr.mode = S_IRUGO;
-> +		sdata[count].dev_attr.show = show_sensor;
-> +
-> +		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
-> +				&sdata[count++].dev_attr.attr;
-> +	}
-> +
-> +exit_put_node:
-> +	of_node_put(opal);
-> +	return err;
-> +}
-> +
-> +static int __init ibmpowernv_probe(struct platform_device *pdev)
-> +{
-> +	struct platform_data *pdata;
-> +	struct device *hwmon_dev;
-> +	int err;
-> +
-> +	pdata = devm_kzalloc(&pdev->dev, sizeof(*pdata), GFP_KERNEL);
-> +	if (!pdata)
-> +		return -ENOMEM;
-> +
-> +	platform_set_drvdata(pdev, pdata);
-> +	pdata->sensors_count = 0;
-> +	err = populate_attr_groups(pdev);
-> +	if (err)
-> +		return err;
-> +
-> +	/* Create sysfs attribute file for each sensor found in the DT */
-> +	err = create_device_attrs(pdev);
-> +	if (err)
-> +		return err;
-> +
-> +	/* Finally, register with hwmon */
-> +	hwmon_dev = devm_hwmon_device_register_with_groups(&pdev->dev, DRVNAME,
-> +							   pdata,
-> +							   pdata->attr_groups);
-> +
-> +	return PTR_ERR_OR_ZERO(hwmon_dev);
-> +}
-> +
-> +static struct platform_driver ibmpowernv_driver = {
-> +	.driver = {
-> +		.owner = THIS_MODULE,
-> +		.name = DRVNAME,
-> +	},
-> +};
-> +
-> +static int __init ibmpowernv_init(void)
-> +{
-> +	int err;
-> +
-> +	pdevice = platform_device_alloc(DRVNAME, 0);
-> +	if (!pdevice) {
-> +		pr_err("%s: Device allocation failed\n", __func__);
-> +		err = -ENOMEM;
-> +		goto exit;
-> +	}
-> +
-> +	err = platform_device_add(pdevice);
-> +	if (err) {
-> +		pr_err("%s: Device addition failed (%d)\n", __func__, err);
-> +		goto exit_device_put;
-> +	}
-> +
-> +	err = platform_driver_probe(&ibmpowernv_driver, ibmpowernv_probe);
-> +	if (err) {
-> +		pr_err("%s: Platfrom driver probe failed\n", __func__);
-> +		goto exit_device_del;
-> +	}
-> +
-> +	return 0;
-> +
-> +exit_device_del:
-> +	platform_device_del(pdevice);
-> +exit_device_put:
-> +	platform_device_put(pdevice);
-> +exit:
-> +	return err;
-> +}
-> +
-> +static void __exit ibmpowernv_exit(void)
-> +{
-> +	platform_driver_unregister(&ibmpowernv_driver);
-> +	platform_device_unregister(pdevice);
-> +}
-> +
-> +MODULE_AUTHOR("Neelesh Gupta <neelegup@linux.vnet.ibm.com>");
-> +MODULE_DESCRIPTION("IBM POWERNV platform sensors");
-> +MODULE_LICENSE("GPL");
-> +
-> +module_init(ibmpowernv_init);
-> +module_exit(ibmpowernv_exit);
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Which is calling find_linux_pte_or_hugepte(), the result should be a
+kernel pointer. After decoding the page tables by hand I discovered the
+correct value was c000000396300500.
 
+So fix up that case and a few others.
 
---------------000200030503020103000403
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+We also use a mix of 0x%x, %x and %u to print cpu numbers. So
+standardise on 0x%x.
 
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <small>Any updates on the patch.<br>
-      <br>
-      - Neelesh</small><br>
-    <br>
-    <div class="moz-cite-prefix">On 05/19/2014 07:56 PM, Neelesh Gupta
-      wrote:<br>
-    </div>
-    <blockquote
-      cite="mid:20140519141931.9248.11356.stgit@neelegup-tp-t420.in.ibm.com"
-      type="cite">
-      <pre wrap="">This patch adds basic kernel enablement for reading power values, fan
-speed rpm and temperature values on powernv platforms which will
-be exported to user space through sysfs interface.
-
-Test results:
--------------
-[root@tul163p1 ~]# sensors
-ibmpowernv-isa-0000
-Adapter: ISA adapter
-fan1:        5487 RPM  (min =    0 RPM)
-fan2:        5152 RPM  (min =    0 RPM)
-fan3:        5590 RPM  (min =    0 RPM)
-fan4:        4963 RPM  (min =    0 RPM)
-fan5:           0 RPM  (min =    0 RPM)
-fan6:           0 RPM  (min =    0 RPM)
-fan7:        7488 RPM  (min =    0 RPM)
-fan8:        7944 RPM  (min =    0 RPM)
-temp1:        +39.0°C  (high =  +0.0°C)
-power1:      192.00 W  
-
-[root@tul163p1 ~]# ls /sys/devices/platform/
-alarmtimer  ibmpowernv.0  rtc-generic  serial8250  uevent
-[root@tul163p1 ~]# ls /sys/devices/platform/ibmpowernv.0/
-driver/    hwmon/     modalias   subsystem/ uevent     
-[root@tul163p1 ~]# ls /sys/devices/platform/ibmpowernv.0/hwmon/hwmon0/
-device	    fan2_min	fan4_min    fan6_min	fan8_min   power1_input
-fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  subsystem
-fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  temp1_input
-fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_max
-fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  uevent
-fan2_input  fan4_input	fan6_input  fan8_input	name
-[root@tul163p1 ~]# 
-[root@tul163p1 ~]# ls /sys/class/hwmon/hwmon0/
-device	    fan2_min	fan4_min    fan6_min	fan8_min   power1_input
-fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  subsystem
-fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  temp1_input
-fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_max
-fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  uevent
-fan2_input  fan4_input	fan6_input  fan8_input	name
-[root@tul163p1 ~]#
-
-Signed-off-by: Neelesh Gupta <a class="moz-txt-link-rfc2396E" href="mailto:neelegup@linux.vnet.ibm.com">&lt;neelegup@linux.vnet.ibm.com&gt;</a>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
+ arch/powerpc/xmon/xmon.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-Changes in v2
-=============
-- Generic use of devm_* functions in hwmon like using devm_kzalloc() for dynamic
-  memory request, avoiding the need to explicit free of memory.
-  Adding 'struct attribute_group' as member of platform data structure to be
-  populated and then passed to devm_hwmon_device_register_with_groups().
-
-  Note: Having an array of pointers of 'attribute_group' and each group
-  corresponds to 'enum sensors' type. Not completely sure, if it's ideal or
-  could have just one group populated with attributes of sensor types?
-
-- 'ibmpowernv' is not hot-pluggable device so moving 'platform_driver' callback
-  function (probe) as part of __init code.
-- Fixed issues related to coding style.
-- Other general comments in v1.
-
- drivers/hwmon/Kconfig      |    8 +
- drivers/hwmon/Makefile     |    1 
- drivers/hwmon/ibmpowernv.c |  368 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 377 insertions(+)
- create mode 100644 drivers/hwmon/ibmpowernv.c
-
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index bc196f4..3e308fa 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -554,6 +554,14 @@ config SENSORS_IBMPEX
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called ibmpex.
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 08504e7..3fd1d9a 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -419,7 +419,7 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 		get_output_lock();
+ 		excprint(regs);
+ 		if (bp) {
+-			printf("cpu 0x%x stopped at breakpoint 0x%x (",
++			printf("cpu 0x%x stopped at breakpoint 0x%lx (",
+ 			       cpu, BP_NUM(bp));
+ 			xmon_print_symbol(regs->nip, " ", ")\n");
+ 		}
+@@ -513,7 +513,7 @@ static int xmon_core(struct pt_regs *regs, int fromipi)
+ 		excprint(regs);
+ 		bp = at_breakpoint(regs->nip);
+ 		if (bp) {
+-			printf("Stopped at breakpoint %x (", BP_NUM(bp));
++			printf("Stopped at breakpoint %lx (", BP_NUM(bp));
+ 			xmon_print_symbol(regs->nip, " ", ")\n");
+ 		}
+ 		if (unrecoverable_excp(regs))
+@@ -997,14 +997,14 @@ static int cpu_cmd(void)
+ 					last_cpu = cpu;
+ 				} else {
+ 					if (last_cpu != first_cpu)
+-						printf("-%lx", last_cpu);
++						printf("-0x%lx", last_cpu);
+ 					last_cpu = first_cpu = cpu;
+-					printf(" %lx", cpu);
++					printf(" 0x%lx", cpu);
+ 				}
+ 			}
+ 		}
+ 		if (last_cpu != first_cpu)
+-			printf("-%lx", last_cpu);
++			printf("-0x%lx", last_cpu);
+ 		printf("\n");
+ 		return 0;
+ 	}
+@@ -1024,7 +1024,7 @@ static int cpu_cmd(void)
+ 			/* take control back */
+ 			mb();
+ 			xmon_owner = smp_processor_id();
+-			printf("cpu %u didn't take control\n", cpu);
++			printf("cpu 0x%x didn't take control\n", cpu);
+ 			return 0;
+ 		}
+ 		barrier();
+@@ -1086,7 +1086,7 @@ csum(void)
+ 	fcs = 0xffff;
+ 	for (i = 0; i < ncsum; ++i) {
+ 		if (mread(adrs+i, &v, 1) == 0) {
+-			printf("csum stopped at %x\n", adrs+i);
++			printf("csum stopped at "REG"\n", adrs+i);
+ 			break;
+ 		}
+ 		fcs = FCS(fcs, v);
+@@ -1202,12 +1202,12 @@ bpt_cmds(void)
+ 			/* assume a breakpoint address */
+ 			bp = at_breakpoint(a);
+ 			if (bp == NULL) {
+-				printf("No breakpoint at %x\n", a);
++				printf("No breakpoint at %lx\n", a);
+ 				break;
+ 			}
+ 		}
  
-+config SENSORS_IBMPOWERNV
-+	tristate "IBM POWERNV platform sensors"
-+	depends on PPC_POWERNV
-+	default y
-+	help
-+	  If you say yes here you get support for the temperature/fan/power
-+	  sensors on your platform.
-+
- config SENSORS_IIO_HWMON
- 	tristate "Hwmon driver that uses channels specified via iio maps"
- 	depends on IIO
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index c48f987..199c401 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -71,6 +71,7 @@ obj-$(CONFIG_SENSORS_ULTRA45)	+= ultra45_env.o
- obj-$(CONFIG_SENSORS_I5K_AMB)	+= i5k_amb.o
- obj-$(CONFIG_SENSORS_IBMAEM)	+= ibmaem.o
- obj-$(CONFIG_SENSORS_IBMPEX)	+= ibmpex.o
-+obj-$(CONFIG_SENSORS_IBMPOWERNV)+= ibmpowernv.o
- obj-$(CONFIG_SENSORS_IIO_HWMON) += iio_hwmon.o
- obj-$(CONFIG_SENSORS_INA209)	+= ina209.o
- obj-$(CONFIG_SENSORS_INA2XX)	+= ina2xx.o
-diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-new file mode 100644
-index 0000000..afce620
---- /dev/null
-+++ b/drivers/hwmon/ibmpowernv.c
-@@ -0,0 +1,368 @@
-+/*
-+ * IBM PowerNV platform sensors for temperature/fan/power
-+ * Copyright (C) 2014 IBM
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.
-+ */
-+
-+#include &lt;linux/init.h&gt;
-+#include &lt;linux/module.h&gt;
-+#include &lt;linux/kernel.h&gt;
-+#include &lt;linux/hwmon.h&gt;
-+#include &lt;linux/hwmon-sysfs.h&gt;
-+#include &lt;linux/of.h&gt;
-+#include &lt;linux/slab.h&gt;
-+
-+#include &lt;linux/platform_device.h&gt;
-+#include &lt;asm/opal.h&gt;
-+#include &lt;linux/err.h&gt;
-+
-+#define DRVNAME		"ibmpowernv"
-+#define MAX_ATTR_LEN	32
-+
-+/* Sensor suffix name from DT */
-+#define DT_FAULT_ATTR_SUFFIX		"faulted"
-+#define DT_DATA_ATTR_SUFFIX		"data"
-+#define DT_THRESHOLD_ATTR_SUFFIX	"thrs"
-+
-+/*
-+ * Enumerates all the types of sensors in the POWERNV platform and does index
-+ * into 'struct sensor_group'
-+ */
-+enum sensors {
-+	FAN,
-+	AMBIENT_TEMP,
-+	POWER_SUPPLY,
-+	POWER_INPUT,
-+	MAX_SENSOR_TYPE,
-+};
-+
-+static struct sensor_group {
-+	const char *name;
-+	const char *compatible;
-+	struct attribute_group group;
-+	u32 attr_count;
-+} sensor_groups[] = {
-+	{"fan", "ibm,opal-sensor-cooling-fan", {0}, 0},
-+	{"temp", "ibm,opal-sensor-amb-temp", {0}, 0},
-+	{"in", "ibm,opal-sensor-power-supply", {0}, 0},
-+	{"power", "ibm,opal-sensor-power", {0}, 0}
-+};
-+
-+struct sensor_data {
-+	u32 id; /* An opaque id of the firmware for each sensor */
-+	enum sensors type;
-+	char name[MAX_ATTR_LEN];
-+	struct device_attribute dev_attr;
-+};
-+
-+struct platform_data {
-+	const struct attribute_group *attr_groups[MAX_SENSOR_TYPE + 1];
-+	u32 sensors_count; /* Total count of sensors from each group */
-+};
-+
-+/* Platform device representing all the ibmpowernv sensors */
-+static struct platform_device *pdevice;
-+
-+static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
-+			   char *buf)
-+{
-+	struct sensor_data *sdata = container_of(devattr, struct sensor_data,
-+						 dev_attr);
-+	ssize_t ret;
-+	u32 x;
-+
-+	ret = opal_get_sensor_data(sdata-&gt;id, &amp;x);
-+	if (ret) {
-+		pr_err("%s: Failed to get opal sensor data\n", __func__);
-+		return ret;
-+	}
-+
-+	/* Convert temperature to milli-degrees */
-+	if (sdata-&gt;type == AMBIENT_TEMP)
-+		x *= 1000;
-+	/* Convert power to micro-watts */
-+	else if (sdata-&gt;type == POWER_INPUT)
-+		x *= 1000000;
-+
-+	return sprintf(buf, "%d\n", x);
-+}
-+
-+static void __init get_sensor_index_attr(const char *name, u32 *index, char *attr)
-+{
-+	char *hash_pos = strchr(name, '#');
-+	char *dash_pos;
-+	u32 copy_len;
-+	char buf[8];
-+
-+	memset(buf, 0, sizeof(buf));
-+	*index = 0;
-+	*attr = '\0';
-+
-+	if (hash_pos) {
-+		dash_pos = strchr(hash_pos, '-');
-+		if (dash_pos) {
-+			copy_len = dash_pos - hash_pos - 1;
-+			if (copy_len &lt; sizeof(buf)) {
-+				strncpy(buf, hash_pos + 1, copy_len);
-+				sscanf(buf, "%d", index);
-+			}
-+
-+			strncpy(attr, dash_pos + 1, MAX_ATTR_LEN);
-+		}
-+	}
-+}
-+
-+/*
-+ * This function translates the DT node name into the 'hwmon' attribute name.
-+ * IBMPOWERNV device node appear like cooling-fan#2-data, amb-temp#1-thrs etc.
-+ * which need to be mapped as fan2_input, temp1_max respectively before
-+ * populating them inside hwmon device class..
-+ */
-+static int __init create_hwmon_attr_name(enum sensors type, const char *node_name,
-+				  char *hwmon_attr_name)
-+{
-+	char attr_suffix[MAX_ATTR_LEN];
-+	char *attr_name;
-+	u32 index;
-+
-+	get_sensor_index_attr(node_name, &amp;index, attr_suffix);
-+	if (!index || !strlen(attr_suffix)) {
-+		pr_info("%s: Sensor device node name is invalid, name: %s\n",
-+				__func__, node_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!strcmp(attr_suffix, DT_FAULT_ATTR_SUFFIX))
-+		attr_name = "fault";
-+	else if(!strcmp(attr_suffix, DT_DATA_ATTR_SUFFIX))
-+		attr_name = "input";
-+	else if (!strcmp(attr_suffix, DT_THRESHOLD_ATTR_SUFFIX)) {
-+		if (type == AMBIENT_TEMP)
-+			attr_name = "max";
-+		else if (type == FAN)
-+			attr_name = "min";
-+		else
-+			return -ENOENT;
-+	} else
-+		return -ENOENT;
-+
-+	snprintf(hwmon_attr_name, MAX_ATTR_LEN, "%s%d_%s",
-+			sensor_groups[type].name, index, attr_name);
-+	return 0;
-+}
-+
-+static int __init populate_attr_groups(struct platform_device *pdev)
-+{
-+	struct platform_data *pdata = platform_get_drvdata(pdev);
-+	const struct attribute_group **pgroups = pdata-&gt;attr_groups;
-+	struct device_node *opal, *np;
-+	enum sensors type;
-+	int err = 0;
-+
-+	opal = of_find_node_by_path("/ibm,opal/sensors");
-+        if (!opal) {
-+		pr_err("%s: Opal 'sensors' node not found\n", __func__);
-+		return -ENODEV;
-+        }
-+
-+	for_each_child_of_node(opal, np) {
-+		if (np-&gt;name == NULL)
-+			continue;
-+
-+		for (type = 0; type &lt; MAX_SENSOR_TYPE; type++)
-+			if (of_device_is_compatible(np,
-+				sensor_groups[type].compatible)) {
-+				sensor_groups[type].attr_count++;
-+				break;
-+			}
-+	}
-+
-+	for (type = 0; type &lt; MAX_SENSOR_TYPE; type++) {
-+		if (!sensor_groups[type].attr_count)
-+			continue;
-+
-+		sensor_groups[type].group.attrs = devm_kzalloc(&amp;pdev-&gt;dev,
-+					sizeof(struct attribute*) *
-+					(sensor_groups[type].attr_count + 1),
-+					GFP_KERNEL);
-+		if (!sensor_groups[type].group.attrs) {
-+			pr_err("%s: Failed to allocate memory for attribute"
-+					"array\n", __func__);
-+			err = -ENOMEM;
-+			goto exit_put_node;
-+		}
-+
-+		pgroups[type] = &amp;sensor_groups[type].group;
-+		pdata-&gt;sensors_count += sensor_groups[type].attr_count;
-+		sensor_groups[type].attr_count = 0;
-+	}
-+
-+exit_put_node:
-+	of_node_put(opal);
-+	return err;
-+}
-+
-+/*
-+ * Iterate through the device tree for each child of sensor node, create
-+ * a sysfs attribute file, the file is named by translating the DT node name
-+ * to the name required by the higher 'hwmon' driver like fan1_input, temp1_max
-+ * etc..
-+ */
-+static int __init create_device_attrs(struct platform_device *pdev)
-+{
-+	struct platform_data *pdata = platform_get_drvdata(pdev);
-+	const struct attribute_group **pgroups = pdata-&gt;attr_groups;
-+	struct device_node *opal, *np;
-+	struct sensor_data *sdata;
-+	const u32 *sensor_id;
-+	enum sensors type;
-+	u32 count = 0;
-+	int err = 0;
-+
-+	opal = of_find_node_by_path("/ibm,opal/sensors");
-+        if (!opal) {
-+		pr_err("%s: Opal 'sensors' node not found\n", __func__);
-+		return -ENODEV;
-+        }
-+
-+	sdata = devm_kzalloc(&amp;pdev-&gt;dev, (pdata-&gt;sensors_count) *
-+			     sizeof(*sdata), GFP_KERNEL);
-+	if (!sdata) {
-+		pr_err("%s: Failed to allocate memory for the sensor_data",
-+				__func__);
-+		err = -ENOMEM;
-+		goto exit_put_node;
-+	}
-+
-+	for_each_child_of_node(opal, np) {
-+                if (np-&gt;name == NULL)
-+                        continue;
-+
-+		for (type = 0; type &lt; MAX_SENSOR_TYPE; type++)
-+			if (of_device_is_compatible(np,
-+					sensor_groups[type].compatible))
-+				break;
-+
-+		if (type == MAX_SENSOR_TYPE)
-+			continue;
-+
-+		sensor_id = of_get_property(np, "sensor-id", NULL);
-+		if (!sensor_id) {
-+			pr_info("%s: %s doesn't have sensor-id\n", __func__,
-+				np-&gt;name);
-+			continue;
-+		}
-+
-+		sdata[count].id = *sensor_id;
-+		sdata[count].type = type;
-+		err = create_hwmon_attr_name(type, np-&gt;name, sdata[count].name);
-+		if (err)
-+			goto exit_put_node;
-+
-+		sysfs_attr_init(&amp;sdata[count].dev_attr.attr);
-+		sdata[count].dev_attr.attr.name = sdata[count].name;
-+		sdata[count].dev_attr.attr.mode = S_IRUGO;
-+		sdata[count].dev_attr.show = show_sensor;
-+
-+		pgroups[type]-&gt;attrs[sensor_groups[type].attr_count++] =
-+				&amp;sdata[count++].dev_attr.attr;
-+	}
-+
-+exit_put_node:
-+	of_node_put(opal);
-+	return err;
-+}
-+
-+static int __init ibmpowernv_probe(struct platform_device *pdev)
-+{
-+	struct platform_data *pdata;
-+	struct device *hwmon_dev;
-+	int err;
-+
-+	pdata = devm_kzalloc(&amp;pdev-&gt;dev, sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, pdata);
-+	pdata-&gt;sensors_count = 0;
-+	err = populate_attr_groups(pdev);
-+	if (err)
-+		return err;
-+
-+	/* Create sysfs attribute file for each sensor found in the DT */
-+	err = create_device_attrs(pdev);
-+	if (err)
-+		return err;
-+
-+	/* Finally, register with hwmon */
-+	hwmon_dev = devm_hwmon_device_register_with_groups(&amp;pdev-&gt;dev, DRVNAME,
-+							   pdata,
-+							   pdata-&gt;attr_groups);
-+
-+	return PTR_ERR_OR_ZERO(hwmon_dev);
-+}
-+
-+static struct platform_driver ibmpowernv_driver = {
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = DRVNAME,
-+	},
-+};
-+
-+static int __init ibmpowernv_init(void)
-+{
-+	int err;
-+
-+	pdevice = platform_device_alloc(DRVNAME, 0);
-+	if (!pdevice) {
-+		pr_err("%s: Device allocation failed\n", __func__);
-+		err = -ENOMEM;
-+		goto exit;
-+	}
-+
-+	err = platform_device_add(pdevice);
-+	if (err) {
-+		pr_err("%s: Device addition failed (%d)\n", __func__, err);
-+		goto exit_device_put;
-+	}
-+
-+	err = platform_driver_probe(&amp;ibmpowernv_driver, ibmpowernv_probe);
-+	if (err) {
-+		pr_err("%s: Platfrom driver probe failed\n", __func__);
-+		goto exit_device_del;
-+	}
-+
-+	return 0;
-+
-+exit_device_del:
-+	platform_device_del(pdevice);
-+exit_device_put:
-+	platform_device_put(pdevice);
-+exit:
-+	return err;
-+}
-+
-+static void __exit ibmpowernv_exit(void)
-+{
-+	platform_driver_unregister(&amp;ibmpowernv_driver);
-+	platform_device_unregister(pdevice);
-+}
-+
-+MODULE_AUTHOR("Neelesh Gupta <a class="moz-txt-link-rfc2396E" href="mailto:neelegup@linux.vnet.ibm.com">&lt;neelegup@linux.vnet.ibm.com&gt;</a>");
-+MODULE_DESCRIPTION("IBM POWERNV platform sensors");
-+MODULE_LICENSE("GPL");
-+
-+module_init(ibmpowernv_init);
-+module_exit(ibmpowernv_exit);
-
-_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------000200030503020103000403--
+-		printf("Cleared breakpoint %x (", BP_NUM(bp));
++		printf("Cleared breakpoint %lx (", BP_NUM(bp));
+ 		xmon_print_symbol(bp->address, " ", ")\n");
+ 		bp->enabled = 0;
+ 		break;
+@@ -1746,7 +1746,7 @@ mwrite(unsigned long adrs, void *buf, int size)
+ 		__delay(200);
+ 		n = size;
+ 	} else {
+-		printf("*** Error writing address %x\n", adrs + n);
++		printf("*** Error writing address "REG"\n", adrs + n);
+ 	}
+ 	catch_memory_errors = 0;
+ 	return n;
+@@ -2435,7 +2435,7 @@ static void proccall(void)
+ 		ret = func(args[0], args[1], args[2], args[3],
+ 			   args[4], args[5], args[6], args[7]);
+ 		sync();
+-		printf("return value is %x\n", ret);
++		printf("return value is 0x%lx\n", ret);
+ 	} else {
+ 		printf("*** %x exception occurred\n", fault_except);
+ 	}
+@@ -2700,7 +2700,7 @@ static void dump_slb(void)
+ 	unsigned long esid,vsid,valid;
+ 	unsigned long llp;
+ 
+-	printf("SLB contents of cpu %x\n", smp_processor_id());
++	printf("SLB contents of cpu 0x%x\n", smp_processor_id());
+ 
+ 	for (i = 0; i < mmu_slb_size; i++) {
+ 		asm volatile("slbmfee  %0,%1" : "=r" (esid) : "r" (i));
+@@ -2732,7 +2732,7 @@ static void dump_stab(void)
+ 	int i;
+ 	unsigned long *tmp = (unsigned long *)local_paca->stab_addr;
+ 
+-	printf("Segment table contents of cpu %x\n", smp_processor_id());
++	printf("Segment table contents of cpu 0x%x\n", smp_processor_id());
+ 
+ 	for (i = 0; i < PAGE_SIZE/16; i++) {
+ 		unsigned long a, b;
+-- 
+1.9.1
