@@ -1,21 +1,34 @@
-Return-Path: <wimvs@spo001.leaseweb.com>
-Received: from spo001.leaseweb.com (ns1.pc-advies.be [83.149.101.17])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sivasakthi7@outlook.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 287841A0590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 07:35:07 +1000 (EST)
-Date: Mon, 26 May 2014 23:05:40 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Yuantian.Tang@freescale.com
-Subject: Re: [PATCH 1/1] booke/watchdog: refine and clean up the codes
-Message-ID: <20140526210540.GA23641@spo001.leaseweb.com>
-References: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 161C31A0590
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 08:20:41 +1000 (EST)
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id BB8611400A3
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2014 08:20:40 +1000 (EST)
+Received: from tom.nabble.com ([192.168.236.105])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <sivasakthi7@outlook.com>) id 1Wp3G1-00060p-0l
+ for linuxppc-dev@ozlabs.org; Mon, 26 May 2014 15:20:37 -0700
+Date: Mon, 26 May 2014 15:20:37 -0700 (PDT)
+From: shiva7 <sivasakthi7@outlook.com>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1401142837010-82686.post@n7.nabble.com>
+In-Reply-To: <1400591218911-82485.post@n7.nabble.com>
+References: <5167457E.1050205@genband.com>
+ <1398170592855-81732.post@n7.nabble.com>
+ <1398205896.1694.252.camel@snotra.buserror.net>
+ <1398206224.1694.254.camel@snotra.buserror.net>
+ <1400456291193-82408.post@n7.nabble.com>
+ <1400521677.18239.16.camel@snotra.buserror.net>
+ <1400591218911-82485.post@n7.nabble.com>
+Subject: Re: questions on CONFIG_PPC_ADV_DEBUG_REGS, DBCR0_BRT, and
+ DBCR0_ACTIVE_EVENTS
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1399514666-2572-1-git-send-email-Yuantian.Tang@freescale.com>
-Sender: <wimvs@spo001.leaseweb.com>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +38,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
-
-> From: Tang Yuantian <yuantian.tang@freescale.com>
+shiva7 wrote
+> Thanks again Scott.
+/
+>> Any idea whether the DBCR0 BRT bit actually works(??), 
 > 
-> Basically, this patch does the following:
-> 1. Move the codes of parsing boot parameters from setup-common.c
->    to driver. In this way, code reader can know directly that
->    there are boot parameters that can change the timeout.
-> 2. Make boot parameter 'booke_wdt_period' effective.
->    currently, when driver is loaded, default timeout is always
->    being used in stead of booke_wdt_period.
-> 3. Wrap up the watchdog timeout in device struct and clean up
->    unnecessary codes.
+>> Do you have reason to believe that it might not? 
+/
 > 
-> Signed-off-by: Tang Yuantian <yuantian.tang@freescale.com>
-> Acked-by: Scott Wood <scottwood@freescale.com>
-> ---
-> resend to watchdog maintainer
+> I'm facing a strange problem which was not there on server processor. Let
+> me try to give brief flow.
 > 
->  arch/powerpc/kernel/setup-common.c | 27 --------------------
->  drivers/watchdog/booke_wdt.c       | 51 ++++++++++++++++++++++++--------------
->  2 files changed, 33 insertions(+), 45 deletions(-)
+> Server :
+> 
+> Set BE bit (thru system call or sigreturn) for specific thread -> for
+> every branch -> trace exception -> Normal exception prolog
+> (STD_EXCEPTION_COMMON) SRR0 and SRR1
+> 
+> Embedded/BOOKE:
+> 
+> Set DE & BRT bit (thru system call or sigreturn) for specific thread ->
+> for every branch taken -> Debug exception -> DEBUG_DEBUG prolog ->
+> return_dbg_except DSRR0 & DSRR1
+> 
+> In server case, able to capture the branches as expected, but wherein
+> BOOKE though branch taken exception are generated, at the certain stage
+> (mostly after turn on BRT & DE bit)  user process is deviated (not taking
+> the same flow as like server) and leading to different
+> corruption/unexpected behavior.
+/
+>> And also, anything special required for "server" family application code 
+>> porting here ?? as because in server family the trace exception used to
+>> viz 
+>> NORMAL exception proglog and uses SRR0 and SRR1 but in this ISA/embedded 
+>> case have dedicated DEBUG_DEBUG prolog and dedicated registers DSRR0 and 
+>> DSRR1. 
+> 
+>> IIRC the branch taken mechanism does have different semantics than the 
+>> equivalent mechanism on server.  You can find discussion of this in the 
+>> archives. :-) 
+/
+> 
+> Most of the discussions so far I have surfed are related to branch
+> taken/fall through(not taken) semantics related. But, in general, if I
+> have an application running on server where tracing was based on BE bit
+> and same can run on e500mc with DE & BRT combination?
+> 
+> 
+> Thanks In Advance.
 
-Patch has been added to linux-watchdog-next.
+Could someone help on this regard?
 
-Kind regards,
-Wim.
+
+
+
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/questions-on-CONFIG-PPC-ADV-DEBUG-REGS-DBCR0-BRT-and-DBCR0-ACTIVE-EVENTS-tp70147p82686.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
