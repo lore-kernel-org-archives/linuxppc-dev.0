@@ -1,32 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A4301A0641
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD2DF1A0643
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:41:12 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 27 May 2014 18:41:10 +1000
+ Tue, 27 May 2014 18:41:11 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 496A02BB0047
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AF7982BB005E
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:41:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4R8JThl11599954
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:19:33 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4R8erD0014781
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:40:54 +1000
+ s4R8JT1U29229066
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:19:32 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4R8erj3009913
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:40:53 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: kvm-ppc@vger.kernel.org
-Subject: [PATCH v7 1/3] powerpc/eeh: Avoid event on passed PE
-Date: Tue, 27 May 2014 18:40:50 +1000
-Message-Id: <1401180052-6060-2-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v7 0/3] EEH Support for VFIO PCI Device
+Date: Tue, 27 May 2014 18:40:49 +1000
+Message-Id: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, agraf@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>,
  alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
@@ -39,114 +37,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we detects frozen state on PE that has been passed through to somebody
-else. we needn't handle it. Instead, we rely on the device's owner to
-detect and recover it. The patch avoid EEH event on the frozen passed PE
-so that the device's owner can have chance to handle that.
+The series of patches intends to support EEH for PCI devices, which are
+passed through to PowerKVM based guest via VFIO. The implementation is
+straightforward based on the issues or problems we have to resolve to
+support EEH for PowerKVM based guest.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h            | 32 +++++++++++++++++++++++++++++++
- arch/powerpc/kernel/eeh.c                 |  8 ++++++++
- arch/powerpc/platforms/powernv/eeh-ioda.c |  3 ++-
- 3 files changed, 42 insertions(+), 1 deletion(-)
+- Emulation for EEH RTAS requests. All EEH RTAS requests goes to QEMU firstly.
+  If QEMU can't handle it, the request will be sent to host via newly introduced
+  VFIO container IOCTL command (VFIO_EEH_OP) and gets handled in host kernel.
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 7782056..34a2d83 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -72,6 +72,7 @@ struct device_node;
- #define EEH_PE_RESET		(1 << 2)	/* PE reset in progress	*/
- 
- #define EEH_PE_KEEP		(1 << 8)	/* Keep PE on hotplug	*/
-+#define EEH_PE_PASSTHROUGH	(1 << 9)	/* PE owned by guest	*/
- 
- struct eeh_pe {
- 	int type;			/* PE type: PHB/Bus/Device	*/
-@@ -93,6 +94,21 @@ struct eeh_pe {
- #define eeh_pe_for_each_dev(pe, edev, tmp) \
- 		list_for_each_entry_safe(edev, tmp, &pe->edevs, list)
- 
-+static inline bool eeh_pe_passed(struct eeh_pe *pe)
-+{
-+	return pe ? !!(pe->state & EEH_PE_PASSTHROUGH) : false;
-+}
-+
-+static inline void eeh_pe_set_passed(struct eeh_pe *pe, bool passed)
-+{
-+	if (pe) {
-+		if (passed)
-+			pe->state |= EEH_PE_PASSTHROUGH;
-+		else
-+			pe->state &= ~EEH_PE_PASSTHROUGH;
-+	}
-+}
-+
- /*
-  * The struct is used to trace EEH state for the associated
-  * PCI device node or PCI device. In future, it might
-@@ -110,6 +126,7 @@ struct eeh_pe {
- #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
- #define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
- #define EEH_DEV_FRESET		(1 << 11)	/* Fundamental reset	*/
-+#define EEH_DEV_PASSTHROUGH	(1 << 12)	/* Owned by guest	*/
- 
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
-@@ -138,6 +155,21 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
- 	return edev ? edev->pdev : NULL;
- }
- 
-+static inline bool eeh_dev_passed(struct eeh_dev *dev)
-+{
-+	return dev ? !!(dev->mode & EEH_DEV_PASSTHROUGH) : false;
-+}
-+
-+static inline void eeh_dev_set_passed(struct eeh_dev *dev, bool passed)
-+{
-+	if (dev) {
-+		if (passed)
-+			dev->mode |= EEH_DEV_PASSTHROUGH;
-+		else
-+			dev->mode &= ~EEH_DEV_PASSTHROUGH;
-+	}
-+}
-+
- /* Return values from eeh_ops::next_error */
- enum {
- 	EEH_NEXT_ERR_NONE = 0,
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 9c6b899..3bc8b12 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -400,6 +400,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
- 	if (ret > 0)
- 		return ret;
- 
-+	/*
-+	 * If the PE isn't owned by us, we shouldn't check the
-+	 * state. Instead, let the owner handle it if the PE has
-+	 * been frozen.
-+	 */
-+	if (eeh_pe_passed(pe))
-+		return 0;
-+
- 	/* If we already have a pending isolation event for this
- 	 * slot, we know it's bad already, we don't need to check.
- 	 * Do this checking under a lock; as multiple PCI devices
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index cab3e62..79193eb 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -892,7 +892,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
- 					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
- 				ret = EEH_NEXT_ERR_NONE;
--			} else if ((*pe)->state & EEH_PE_ISOLATED) {
-+			} else if ((*pe)->state & EEH_PE_ISOLATED ||
-+				   eeh_pe_passed(*pe)) {
- 				ret = EEH_NEXT_ERR_NONE;
- 			} else {
- 				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
+The series of patches requires corresponding QEMU changes.
+
+Change log
+==========
+v1 -> v2:
+        * EEH RTAS requests are routed to QEMU, and then possiblly to host kerenl.
+          The mechanism KVM in-kernel handling is dropped.
+        * Error injection is reimplemented based syscall, instead of KVM in-kerenl
+          handling. The logic for error injection token management is moved to
+          QEMU. The error injection request is routed to QEMU and then possiblly
+          to host kernel.
+v2 -> v3:
+        * Make the fields in struct eeh_vfio_pci_addr, struct vfio_eeh_info based
+          on the comments from Alexey.
+        * Define macros for EEH VFIO operations (Alexey).
+        * Clear frozen state after successful PE reset. 
+        * Merge original [PATCH 1/2/3] to one.
+v3 -> v4:
+        * Remove the error injection from the patchset. Mike or I will work on that
+          later.
+        * Rename CONFIG_VFIO_EEH to VFIO_PCI_EEH.
+        * Rename the IOCTL command to VFIO_EEH_OP and it's handled by VFIO-PCI device
+          instead of VFIO container.
+        * Rename the IOCTL argument structure to "vfio_eeh_op" accordingly. Also, more
+          fields added to hold return values for RTAS requests.
+        * The address mapping stuff is totally removed. When opening or releasing VFIO
+          PCI device, notification sent to EEH to update the flags indicates the device
+          is passed to guest or not.
+        * Change pr_warn() to pr_debug() to avoid DOS as pointed by Alex.W
+        * Argument size check issue pointed by Alex.W.
+v4 -> v5:
+        * Functions for VFIO PCI EEH support are moved to eeh.c and exported from there.
+          VFIO PCI driver just uses those functions to tackle IOCTL command VFIO_EEH_OP.
+          All of this is to make the code organized in a good way as suggested by Alex.G.
+          Another potential benefit is PowerNV/pSeries are sharing "eeh_ops" and same
+          infrastructure could possiblly work for KVM_PR and KVM_HV mode at the same time.
+        * Don't clear error injection registers after finishing PE reset as the patchset
+          is doing nothing related to error injection.
+        * Amending Documentation/vfio.txt, which was missed in last revision.
+        * No QEMU changes for this revision. "v4" works well. Also, remove "RFC" from the
+          subject as the design is basically recognized.
+v5 -> v6:
+        * CONFIG_VFIO_PCI_EEH removed. Instead to use CONFIG_EEH.
+        * Split one ioctl command to 5.
+        * In eeh.c, description has been added for those exported functions. Also, the
+          functions have negative return values for error and information with other values.
+          All digital numbers have been replaced by macros defined in eeh.h. The comments,
+          including the function names have been amended not to mention "guest" or "vfio".
+        * Add one mutex to protect flag in eeh_dev_open()/release().
+        * More information on how to use those ioctl commands to Documentation/vfio.txt.
+v6 -> v7:
+	* Remove ioctl command VFIO_EEH_PE_GET_ADDR, the PE address will be figured out
+	  in userland (e.g. QEMU) as Alex.G suggested.
+	* Let sPAPR VFIO container process the ioctl commands as VFIO container is naturally
+	  corresponds to IOMMU group (aka PE on sPAPR platform).
+	* All VFIO PCI EEH ioctl commands have "argsz+flags" for its companion data struct.
+	* For VFIO PCI EEH ioctl commands, ioctl() returns negative number to indicate error
+	  or zero for success. Additinal output information is transported by the companion
+	  data struct.
+	* Explaining PE in Documentation/vfio.txt, typo fixes, more comments suggested by
+	  Alex.G.
+	* Split/merge patches according to suggestions from Alex.G and Alex.W.
+	* To have EEH stub in drivers/vfio/pci/, which was suggested by Alex.W.
+	* Define various EEH options as macros in vfio.h for userland to use.
+
+Gavin Shan (3):
+  powerpc/eeh: Avoid event on passed PE
+  powerpc/eeh: EEH support for VFIO PCI device
+  drivers/vfio: EEH support for VFIO PCI device
+
+Documentation/vfio.txt                    |  92 +++++++++++++++++++++++++++++++++++++++++++-
+arch/powerpc/include/asm/eeh.h            |  47 +++++++++++++++++++++++
+arch/powerpc/kernel/eeh.c                 | 294 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+arch/powerpc/platforms/powernv/eeh-ioda.c |   3 +-
+drivers/vfio/pci/Makefile                 |   1 +
+drivers/vfio/pci/vfio_pci.c               |  20 +++++++---
+drivers/vfio/pci/vfio_pci_eeh.c           |  46 ++++++++++++++++++++++
+drivers/vfio/pci/vfio_pci_private.h       |   5 +++
+drivers/vfio/vfio_iommu_spapr_tce.c       |  85 +++++++++++++++++++++++++++++++++++++++++
+include/uapi/linux/vfio.h                 |  66 ++++++++++++++++++++++++++++++++
+10 files changed, 651 insertions(+), 8 deletions(-)
+
 -- 
 1.8.3.2
