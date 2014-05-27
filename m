@@ -1,50 +1,30 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C26161A0591
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:25:05 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 27 May 2014 11:54:58 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E07C3394004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 11:54:52 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4R6PPYC48890036
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 11:55:25 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4R6OoDH026443
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 11:54:51 +0530
-Message-ID: <53842FB1.7090909@linux.vnet.ibm.com>
-Date: Tue, 27 May 2014 11:54:49 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0AE2C1A0591
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:31:34 +1000 (EST)
+Subject: [RFT PATCH -next v2] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
+Date: Tue, 27 May 2014 15:31:21 +0900
+Message-ID: <20140527063121.4399.38014.stgit@ltc230.yrl.intra.hitachi.co.jp>
+In-Reply-To: <5383249A.6060407@in.ibm.com>
+References: <5383249A.6060407@in.ibm.com>
 MIME-Version: 1.0
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
- <87wqdik4n5.fsf@rustcorp.com.au> <53797511.1050409@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
- <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
- <20140520004429.E660AE009B@blue.fi.intel.com>
- <87oaythsvk.fsf@rustcorp.com.au>
- <20140520102738.7F096E009B@blue.fi.intel.com>
-In-Reply-To: <20140520102738.7F096E009B@blue.fi.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, ak@linux.intel.com,
- dave.hansen@intel.com, peterz@infradead.org, x86@kernel.org,
- Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, paulus@samba.org, mgorman@suse.de,
+Content-Type: text/plain; charset="utf-8"
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>, akataria@vmware.com,
+ linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
+ Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- mingo@kernel.org
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,155 +34,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 20 May 2014 03:57 PM, Kirill A. Shutemov wrote:
-> Rusty Russell wrote:
->> "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> writes:
->>> Andrew Morton wrote:
->>>> On Mon, 19 May 2014 16:23:07 -0700 (PDT) Hugh Dickins <hughd@google.com> wrote:
->>>>
->>>>> Shouldn't FAULT_AROUND_ORDER and fault_around_order be changed to be
->>>>> the order of the fault-around size in bytes, and fault_around_pages()
->>>>> use 1UL << (fault_around_order - PAGE_SHIFT)
->>>>
->>>> Yes.  And shame on me for missing it (this time!) at review.
->>>>
->>>> There's still time to fix this.  Patches, please.
->>>
->>> Here it is. Made at 3.30 AM, build tested only.
->>
->> Prefer on top of Maddy's patch which makes it always a variable, rather
->> than CONFIG_DEBUG_FS.  It's got enough hair as it is.
-> 
-> Something like this?
-> 
-> From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-> Date: Tue, 20 May 2014 13:02:03 +0300
-> Subject: [PATCH] mm: nominate faultaround area in bytes rather then page order
-> 
-> There are evidences that faultaround feature is less relevant on
-> architectures with page size bigger then 4k. Which makes sense since
-> page fault overhead per byte of mapped area should be less there.
-> 
-> Let's rework the feature to specify faultaround area in bytes instead of
-> page order. It's 64 kilobytes for now.
-> 
-> The patch effectively disables faultaround on architectures with
-> page size >= 64k (like ppc64).
-> 
-> It's possible that some other size of faultaround area is relevant for a
-> platform. We can expose `fault_around_bytes' variable to arch-specific
-> code once such platforms will be found.
-> 
-> Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> ---
->  mm/memory.c | 62 +++++++++++++++++++++++--------------------------------------
->  1 file changed, 23 insertions(+), 39 deletions(-)
-> 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 037b812a9531..252b319e8cdf 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -3402,63 +3402,47 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
->  	update_mmu_cache(vma, address, pte);
->  }
-> 
-> -#define FAULT_AROUND_ORDER 4
-> +static unsigned long fault_around_bytes = 65536;
-> +
-> +static inline unsigned long fault_around_pages(void)
-> +{
-> +	return rounddown_pow_of_two(fault_around_bytes) / PAGE_SIZE;
-> +}
-> +
-> +static inline unsigned long fault_around_mask(void)
-> +{
-> +	return ~(rounddown_pow_of_two(fault_around_bytes) - 1) & PAGE_MASK;
-> +}
-> 
-> -#ifdef CONFIG_DEBUG_FS
-> -static unsigned int fault_around_order = FAULT_AROUND_ORDER;
-> 
-> -static int fault_around_order_get(void *data, u64 *val)
-> +#ifdef CONFIG_DEBUG_FS
-> +static int fault_around_bytes_get(void *data, u64 *val)
->  {
-> -	*val = fault_around_order;
-> +	*val = fault_around_bytes;
->  	return 0;
->  }
-> 
-> -static int fault_around_order_set(void *data, u64 val)
-> +static int fault_around_bytes_set(void *data, u64 val)
->  {
+On ia64 and ppc64, the function pointer does not point the
+entry address of the function, but the address of function
+discriptor (which contains the entry address and misc
+data.) Since the kprobes passes the function pointer stored
+by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
+initalizing its blacklist, it fails and reports many errors
+as below.
 
-Kindly ignore the question if not relevant. Even though we need root
-access to alter the value, will we be fine with
-negative value?.
+  Failed to find blacklist 0001013168300000
+  Failed to find blacklist 0001013000f0a000
+  Failed to find blacklist 000101315f70a000
+  Failed to find blacklist 000101324c80a000
+  Failed to find blacklist 0001013063f0a000
+  Failed to find blacklist 000101327800a000
+  Failed to find blacklist 0001013277f0a000
+  Failed to find blacklist 000101315a70a000
+  Failed to find blacklist 0001013277e0a000
+  Failed to find blacklist 000101305a20a000
+  Failed to find blacklist 0001013277d0a000
+  Failed to find blacklist 00010130bdc0a000
+  Failed to find blacklist 00010130dc20a000
+  Failed to find blacklist 000101309a00a000
+  Failed to find blacklist 0001013277c0a000
+  Failed to find blacklist 0001013277b0a000
+  Failed to find blacklist 0001013277a0a000
+  Failed to find blacklist 000101327790a000
+  Failed to find blacklist 000101303140a000
+  Failed to find blacklist 0001013a3280a000
 
-Regards
-Maddy
+To fix this bug, this introduces function_entry() macro to
+retrieve the entry address from the given function pointer,
+and uses for kallsyms_lookup_size_offset() while initializing
+blacklist.
 
-> -	BUILD_BUG_ON((1UL << FAULT_AROUND_ORDER) > PTRS_PER_PTE);
-> -	if (1UL << val > PTRS_PER_PTE)
-> +	if (val / PAGE_SIZE > PTRS_PER_PTE)
->  		return -EINVAL;
-> -	fault_around_order = val;
-> +	fault_around_bytes = val;
->  	return 0;
->  }
-> -DEFINE_SIMPLE_ATTRIBUTE(fault_around_order_fops,
-> -		fault_around_order_get, fault_around_order_set, "%llu\n");
-> +DEFINE_SIMPLE_ATTRIBUTE(fault_around_bytes_fops,
-> +		fault_around_bytes_get, fault_around_bytes_set, "%llu\n");
-> 
->  static int __init fault_around_debugfs(void)
->  {
->  	void *ret;
-> 
-> -	ret = debugfs_create_file("fault_around_order",	0644, NULL, NULL,
-> -			&fault_around_order_fops);
-> +	ret = debugfs_create_file("fault_around_bytes", 0644, NULL, NULL,
-> +			&fault_around_bytes_fops);
->  	if (!ret)
-> -		pr_warn("Failed to create fault_around_order in debugfs");
-> +		pr_warn("Failed to create fault_around_bytes in debugfs");
->  	return 0;
->  }
->  late_initcall(fault_around_debugfs);
-> -
-> -static inline unsigned long fault_around_pages(void)
-> -{
-> -	return 1UL << fault_around_order;
-> -}
-> -
-> -static inline unsigned long fault_around_mask(void)
-> -{
-> -	return ~((1UL << (PAGE_SHIFT + fault_around_order)) - 1);
-> -}
-> -#else
-> -static inline unsigned long fault_around_pages(void)
-> -{
-> -	unsigned long nr_pages;
-> -
-> -	nr_pages = 1UL << FAULT_AROUND_ORDER;
-> -	BUILD_BUG_ON(nr_pages > PTRS_PER_PTE);
-> -	return nr_pages;
-> -}
-> -
-> -static inline unsigned long fault_around_mask(void)
-> -{
-> -	return ~((1UL << (PAGE_SHIFT + FAULT_AROUND_ORDER)) - 1);
-> -}
->  #endif
-> 
->  static void do_fault_around(struct vm_area_struct *vma, unsigned long address,
-> @@ -3515,7 +3499,7 @@ static int do_read_fault(struct mm_struct *mm, struct vm_area_struct *vma,
->  	 * if page by the offset is not ready to be mapped (cold cache or
->  	 * something).
->  	 */
-> -	if (vma->vm_ops->map_pages) {
-> +	if (vma->vm_ops->map_pages && fault_around_pages() > 1) {
->  		pte = pte_offset_map_lock(mm, pmd, address, &ptl);
->  		do_fault_around(vma, address, pte, pgoff, flags);
->  		if (!pte_same(*pte, orig_pte))
-> 
+Changes in V2:
+ - Use function_entry() macro when lookin up symbols instead
+   of storing it.
+ - Update for the latest -next.
+
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Reported-by: Tony Luck <tony.luck@gmail.com>
+Cc: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Kevin Hao <haokexin@gmail.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/ia64/include/asm/types.h    |    2 ++
+ arch/powerpc/include/asm/types.h |   11 +++++++++++
+ include/linux/types.h            |    4 ++++
+ kernel/kprobes.c                 |    4 +++-
+ 4 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
+index 4c351b1..95279dd 100644
+--- a/arch/ia64/include/asm/types.h
++++ b/arch/ia64/include/asm/types.h
+@@ -27,5 +27,7 @@ struct fnptr {
+ 	unsigned long gp;
+ };
+ 
++#define function_entry(fn) (((struct fnptr *)(fn))->ip)
++
+ #endif /* !__ASSEMBLY__ */
+ #endif /* _ASM_IA64_TYPES_H */
+diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+index bfb6ded..8b89d65 100644
+--- a/arch/powerpc/include/asm/types.h
++++ b/arch/powerpc/include/asm/types.h
+@@ -25,6 +25,17 @@ typedef struct {
+ 	unsigned long env;
+ } func_descr_t;
+ 
++#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
++/*
++ * On PPC64 ABIv1 the function pointer actually points to the
++ * function's descriptor. The first entry in the descriptor is the
++ * address of the function text.
++ */
++#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
++#else
++#define function_entry(fn)	((unsigned long)(fn))
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_TYPES_H */
+diff --git a/include/linux/types.h b/include/linux/types.h
+index a0bb704..3b95369 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -213,5 +213,9 @@ struct callback_head {
+ };
+ #define rcu_head callback_head
+ 
++#ifndef function_entry
++#define function_entry(fn)	((unsigned long)(fn))
++#endif
++
+ #endif /*  __ASSEMBLY__ */
+ #endif /* _LINUX_TYPES_H */
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 2ac9f13..3859c88 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -32,6 +32,7 @@
+  *		<prasanna@in.ibm.com> added function-return probes.
+  */
+ #include <linux/kprobes.h>
++#include <linux/types.h>
+ #include <linux/hash.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+@@ -2042,7 +2043,8 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
+ 	unsigned long offset = 0, size = 0;
+ 
+ 	for (iter = start; iter < end; iter++) {
+-		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
++		if (!kallsyms_lookup_size_offset(function_entry(*iter),
++						 &size, &offset)) {
+ 			pr_err("Failed to find blacklist %p\n", (void *)*iter);
+ 			continue;
+ 		}
