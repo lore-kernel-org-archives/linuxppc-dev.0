@@ -1,51 +1,38 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 05D9B1A05B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 20:44:20 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4DA1F1A05B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 20:56:54 +1000 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Tue, 27 May 2014 16:14:13 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id EF422394005E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:14:09 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4RAiLNP66322432
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:14:21 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4RAi6ot011179
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:14:09 +0530
-Message-ID: <53846C75.10507@linux.vnet.ibm.com>
-Date: Tue, 27 May 2014 16:14:05 +0530
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 27 May 2014 16:26:47 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8AC37E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:27:29 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4RAusN164028810
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:26:54 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4RAugLi004069
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:26:43 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] powerpc,
+ kexec: Fix "Processor X is stuck" issue during kexec from ST mode
+To: benh@kernel.crashing.org, paulus@samba.org, ebiederm@xmission.com,
+ vgoyal@redhat.com
+Date: Tue, 27 May 2014 16:25:34 +0530
+Message-ID: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH V4 0/2] mm: FAULT_AROUND_ORDER patchset performance data
- for powerpc
-References: <1399541296-18810-1-git-send-email-maddy@linux.vnet.ibm.com>
- <537479E7.90806@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405151026540.4664@eggly.anvils>
- <87wqdik4n5.fsf@rustcorp.com.au> <53797511.1050409@linux.vnet.ibm.com>
- <alpine.LSU.2.11.1405191531150.1317@eggly.anvils>
- <20140519164301.eafd3dd288ccb88361ddcfc7@linux-foundation.org>
- <20140520004429.E660AE009B@blue.fi.intel.com>
- <87oaythsvk.fsf@rustcorp.com.au>
- <20140520102738.7F096E009B@blue.fi.intel.com>
- <53842FB1.7090909@linux.vnet.ibm.com>
- <20140527102200.012BBE009B@blue.fi.intel.com>
-In-Reply-To: <20140527102200.012BBE009B@blue.fi.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-arch@vger.kernel.org, riel@redhat.com, x86@kernel.org,
- dave.hansen@intel.com, peterz@infradead.org,
- Rusty Russell <rusty@rustcorp.com.au>, Hugh Dickins <hughd@google.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@linux.intel.com,
- paulus@samba.org, mgorman@suse.de, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: ego@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,98 +42,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 27 May 2014 03:51 PM, Kirill A. Shutemov wrote:
-> Madhavan Srinivasan wrote:
->> On Tuesday 20 May 2014 03:57 PM, Kirill A. Shutemov wrote:
->>> Rusty Russell wrote:
->>>> "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> writes:
->>>>> Andrew Morton wrote:
->>>>>> On Mon, 19 May 2014 16:23:07 -0700 (PDT) Hugh Dickins <hughd@google.com> wrote:
->>>>>>
->>>>>>> Shouldn't FAULT_AROUND_ORDER and fault_around_order be changed to be
->>>>>>> the order of the fault-around size in bytes, and fault_around_pages()
->>>>>>> use 1UL << (fault_around_order - PAGE_SHIFT)
->>>>>>
->>>>>> Yes.  And shame on me for missing it (this time!) at review.
->>>>>>
->>>>>> There's still time to fix this.  Patches, please.
->>>>>
->>>>> Here it is. Made at 3.30 AM, build tested only.
->>>>
->>>> Prefer on top of Maddy's patch which makes it always a variable, rather
->>>> than CONFIG_DEBUG_FS.  It's got enough hair as it is.
->>>
->>> Something like this?
->>>
->>> From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
->>> Date: Tue, 20 May 2014 13:02:03 +0300
->>> Subject: [PATCH] mm: nominate faultaround area in bytes rather then page order
->>>
->>> There are evidences that faultaround feature is less relevant on
->>> architectures with page size bigger then 4k. Which makes sense since
->>> page fault overhead per byte of mapped area should be less there.
->>>
->>> Let's rework the feature to specify faultaround area in bytes instead of
->>> page order. It's 64 kilobytes for now.
->>>
->>> The patch effectively disables faultaround on architectures with
->>> page size >= 64k (like ppc64).
->>>
->>> It's possible that some other size of faultaround area is relevant for a
->>> platform. We can expose `fault_around_bytes' variable to arch-specific
->>> code once such platforms will be found.
->>>
->>> Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
->>> ---
->>>  mm/memory.c | 62 +++++++++++++++++++++++--------------------------------------
->>>  1 file changed, 23 insertions(+), 39 deletions(-)
->>>
->>> diff --git a/mm/memory.c b/mm/memory.c
->>> index 037b812a9531..252b319e8cdf 100644
->>> --- a/mm/memory.c
->>> +++ b/mm/memory.c
->>> @@ -3402,63 +3402,47 @@ void do_set_pte(struct vm_area_struct *vma, unsigned long address,
->>>  	update_mmu_cache(vma, address, pte);
->>>  }
->>>
->>> -#define FAULT_AROUND_ORDER 4
->>> +static unsigned long fault_around_bytes = 65536;
->>> +
->>> +static inline unsigned long fault_around_pages(void)
->>> +{
->>> +	return rounddown_pow_of_two(fault_around_bytes) / PAGE_SIZE;
->>> +}
->>> +
->>> +static inline unsigned long fault_around_mask(void)
->>> +{
->>> +	return ~(rounddown_pow_of_two(fault_around_bytes) - 1) & PAGE_MASK;
->>> +}
->>>
->>> -#ifdef CONFIG_DEBUG_FS
->>> -static unsigned int fault_around_order = FAULT_AROUND_ORDER;
->>>
->>> -static int fault_around_order_get(void *data, u64 *val)
->>> +#ifdef CONFIG_DEBUG_FS
->>> +static int fault_around_bytes_get(void *data, u64 *val)
->>>  {
->>> -	*val = fault_around_order;
->>> +	*val = fault_around_bytes;
->>>  	return 0;
->>>  }
->>>
->>> -static int fault_around_order_set(void *data, u64 val)
->>> +static int fault_around_bytes_set(void *data, u64 val)
->>>  {
->>
->> Kindly ignore the question if not relevant. Even though we need root
->> access to alter the value, will we be fine with
->> negative value?.
-> ppc
-> val is u64. or I miss something?
-> 
+If we try to perform a kexec when the machine is in ST (Single-Threaded) mode
+(ppc64_cpu --smt=off), the kexec operation doesn't succeed properly, and we
+get the following messages during boot:
 
-My Bad. What I wanted to check was for all 0xf input and guess we are
-fine. Sorry about that.
+[    0.089866] POWER8 performance monitor hardware support registered
+[    0.089985] power8-pmu: PMAO restore workaround active.
+[    5.095419] Processor 1 is stuck.
+[   10.097933] Processor 2 is stuck.
+[   15.100480] Processor 3 is stuck.
+[   20.102982] Processor 4 is stuck.
+[   25.105489] Processor 5 is stuck.
+[   30.108005] Processor 6 is stuck.
+[   35.110518] Processor 7 is stuck.
+[   40.113369] Processor 9 is stuck.
+[   45.115879] Processor 10 is stuck.
+[   50.118389] Processor 11 is stuck.
+[   55.120904] Processor 12 is stuck.
+[   60.123425] Processor 13 is stuck.
+[   65.125970] Processor 14 is stuck.
+[   70.128495] Processor 15 is stuck.
+[   75.131316] Processor 17 is stuck.
 
-Regards
-Maddy
+Note that only the sibling threads are stuck, while the primary threads (0, 8,
+16 etc) boot just fine. Looking closer at the previous step of kexec, we observe
+that kexec tries to wakeup (bring online) the sibling threads of all the cores,
+before performing kexec:
+
+[ 9464.131231] Starting new kernel
+[ 9464.148507] kexec: Waking offline cpu 1.
+[ 9464.148552] kexec: Waking offline cpu 2.
+[ 9464.148600] kexec: Waking offline cpu 3.
+[ 9464.148636] kexec: Waking offline cpu 4.
+[ 9464.148671] kexec: Waking offline cpu 5.
+[ 9464.148708] kexec: Waking offline cpu 6.
+[ 9464.148743] kexec: Waking offline cpu 7.
+[ 9464.148779] kexec: Waking offline cpu 9.
+[ 9464.148815] kexec: Waking offline cpu 10.
+[ 9464.148851] kexec: Waking offline cpu 11.
+[ 9464.148887] kexec: Waking offline cpu 12.
+[ 9464.148922] kexec: Waking offline cpu 13.
+[ 9464.148958] kexec: Waking offline cpu 14.
+[ 9464.148994] kexec: Waking offline cpu 15.
+[ 9464.149030] kexec: Waking offline cpu 17.
+
+Instrumenting this piece of code revealed that the cpu_up() operation actually
+fails with -EBUSY. Thus, only the primary threads of all the cores are online
+during kexec, and hence this is a sure-shot receipe for disaster, as explained
+in commit e8e5c2155b (powerpc/kexec: Fix orphaned offline CPUs across kexec),
+as well as in the comment above wake_offline_cpus().
+
+It turns out that cpu_up() was returning -EBUSY because the variable
+'cpu_hotplug_disabled' was set to 1; and this disabling of CPU hotplug was done
+by migrate_to_reboot_cpu() inside kernel_kexec().
+
+Now, migrate_to_reboot_cpu() was originally written with the assumption that
+any further code will not need to perform CPU hotplug, since we are anyway in
+the reboot path. However, kexec is clearly not such a case, since we depend on
+onlining CPUs, atleast on powerpc.
+
+So re-enable cpu-hotplug after returning from migrate_to_reboot_cpu() in the
+kexec path, to fix this regression in kexec on powerpc.
+
+Also, wrap the cpu_up() in powerpc kexec code within a WARN_ON(), so that we
+can catch such issues more easily in the future.
+
+Fixes: c97102ba963 (kexec: migrate to reboot cpu)
+Cc: stable@vger.kernel.org
+Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+---
+
+ arch/powerpc/kernel/machine_kexec_64.c |    2 +-
+ kernel/kexec.c                         |    8 ++++++++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 59d229a..879b3aa 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -237,7 +237,7 @@ static void wake_offline_cpus(void)
+ 		if (!cpu_online(cpu)) {
+ 			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
+ 			       cpu);
+-			cpu_up(cpu);
++			WARN_ON(cpu_up(cpu));
+ 		}
+ 	}
+ }
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index c8380ad..28c5706 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1683,6 +1683,14 @@ int kernel_kexec(void)
+ 		kexec_in_progress = true;
+ 		kernel_restart_prepare(NULL);
+ 		migrate_to_reboot_cpu();
++
++		/*
++		 * migrate_to_reboot_cpu() disables CPU hotplug assuming that
++		 * no further code needs to use CPU hotplug (which is true in
++		 * the reboot case). However, the kexec path depends on using
++		 * CPU hotplug again; so re-enable it here.
++		 */
++		cpu_hotplug_enable();
+ 		printk(KERN_EMERG "Starting new kernel\n");
+ 		machine_shutdown();
+ 	}
