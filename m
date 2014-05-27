@@ -1,21 +1,41 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::5])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B5E71A0547
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 09:15:10 +1000 (EST)
-Message-ID: <53851AFA.5040504@xenosoft.de>
-Date: Wed, 28 May 2014 01:08:42 +0200
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9846D1A0590
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 09:44:31 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 27 May 2014 17:44:27 -0600
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C9D4538C8027
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 19:44:24 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22035.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4RNiO477012686
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 23:44:24 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4RNiNHX015683
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 19:44:24 -0400
+Date: Tue, 27 May 2014 16:44:20 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH v2 1/2] powerpc: numa: enable USE_PERCPU_NUMA_NODE_ID
+Message-ID: <20140527234420.GE4104@linux.vnet.ibm.com>
+References: <20140516233945.GI8941@linux.vnet.ibm.com>
+ <20140519181423.GL8941@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Kernel 3.15: Boot problems with a PA6T board
-References: <5366649E.4030102@xenosoft.de>	
- <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>
- <1401107166.23096.1.camel@concordia>
-In-Reply-To: <1401107166.23096.1.camel@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140519181423.GL8941@linux.vnet.ibm.com>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
+ Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+ linux-mm@kvack.org, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +45,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On 19.05.2014 [11:14:23 -0700], Nishanth Aravamudan wrote:
+> Hi Andrew,
+> 
+> I found one issue with my patch, fixed below...
+> 
+> On 16.05.2014 [16:39:45 -0700], Nishanth Aravamudan wrote:
+> > Based off 3bccd996 for ia64, convert powerpc to use the generic per-CPU
+> > topology tracking, specifically:
+> >     
+> > 	initialize per cpu numa_node entry in start_secondary
+> >     	remove the powerpc cpu_to_node()
+> >     	define CONFIG_USE_PERCPU_NUMA_NODE_ID if NUMA
+> >     
+> > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> 
+> <snip>
+> 
+> > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> > index e2a4232..b95be24 100644
+> > --- a/arch/powerpc/kernel/smp.c
+> > +++ b/arch/powerpc/kernel/smp.c
+> > @@ -750,6 +750,11 @@ void start_secondary(void *unused)
+> >  	}
+> >  	traverse_core_siblings(cpu, true);
+> >  
+> > +	/*
+> > +	 * numa_node_id() works after this.
+> > +	 */
+> > +	set_numa_node(numa_cpu_lookup_table[cpu]);
+> > +
+> 
+> Similar change is needed for the boot CPU. Update patch:
+> 
+> 
+> powerpc: numa: enable USE_PERCPU_NUMA_NODE_ID
+>     
+> Based off 3bccd996 for ia64, convert powerpc to use the generic per-CPU
+> topology tracking, specifically:
+>     
+>     initialize per cpu numa_node entry in start_secondary
+>     remove the powerpc cpu_to_node()
+>     define CONFIG_USE_PERCPU_NUMA_NODE_ID if NUMA
+>     
+> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 
-Thanks a lot for your answer.
+Ping on this and patch 2/2. Ben, would you be willing to pull these into
+your -next branch so they'd get some testing?
 
-On 26.05.2014 14:26, Michael Ellerman wrote:
->
-> Hi Christian,
->
-> I'm almost certain that is not the commit which breaks your machine. Or if it
-> is, something *really* weird is going on.
->
-> The code changed in that commit should never run on a PA6T.
-You're right. I think this patch is for Power 8.
->> Experimental protocol:
->>
->> git checkout -f 01d8885785a60ae8f4c37b0ed75bdc96d0fc6a44; git clean -fdx
->> (from 02/04/14) -> Kernel boots
->> git checkout -f f1553174a207f68a4ec19d436003097e0a4dc405; git clean -fdx
->> (from 03/04/14) -> Kernel boots
->> git checkout -f d40326f4b9f9617cdfd30f83a2db57d47e9c5bac; git clean -fdx
->> (from 04/04/14) -> Kernel boots
->> git checkout -f 930b440cd8256f3861bdb0a59d26efaadac7941a; git clean -fdx
->> (from 05/04/14) -> doesn't boot (rtc error)
->> git checkout -f 2b3a8fd735f86ebeb2b9d061054003000c36b654; git clean -fdx
->> (from 06/04/14) -> doesn't boot (rtc error)
->> git checkout -f 26c12d93348f0bda0756aff83f4867d9ae58a5a6; git clean -fdx
->> (from 07/04/14) -> doesn't boot (rtc error)
->> git checkout -f a6c8aff022d4d06e4b41455ae9b2a5d3d503bf76; git clean -fdx
->> (from 08/04/14) -> Kernel boots
->> git checkout -f 035328c202d26a824b8632fd3b00635db5aee5a2; git clean -fdx
->> (from 08/04/14) -> Kernel boots
->> git checkout -f 9000c17dc0f9c910267d2661225c9d33a227b27e; git clean -fdx
->> (from 08/04/14) powerpc/powernv: Fix endian issues with sensor code
->> One OPAL call and one device tree property needed byte swapping. ->
->> doesn't boot (prom_init)
->> git checkout -f d3d35d957a9d0733dc51f14b5abc0bff5d3c5f3a; git clean -fdx
->> (from 08/04/14) -> doesn't boot (prom_init)
->> git checkout -f c4586256f0c440bc2bdb29d2cbb915f0ca785d26; git clean -fdx
->> (from 09/04/14) -> doesn't boot (prom_init)
-> So it looks like you manually picked commits based on the date?
-Yes, it is.
-> That's a good start, but if you want to find the actual problem commit you need
-> to do a proper bisect.
->
->> I'm not a programmer but what can I do to solve this boot problem?
-> To start with you can probably narrow it down a bit by testing the following
-> commits:
+http://patchwork.ozlabs.org/patch/350368/
+http://patchwork.ozlabs.org/patch/349838/
 
->
-> 18a1a7a1d862ae0794a0179473d08a414dd49234 <- It doesn't boot. Error messages: Oops: Machine check, sig: 7 [#1] CPU: 1 PID: 1 Comm: swapper/0 not tainted
+Without any further changes, these two help quite a bit with the slab
+consumption on CONFIG_SLUB kernels when memoryless nodes are present.
 
-> d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b <- It boots. :-)
-
-> 0f5a869600141a0d5575e3190af01a050c081b07 <- It boots. :-)
-
-> c7e64b9ce04aa2e3fad7396d92b5cb92056d16ac <- It boots. :-)
-
-> d3e144532703fe2454b56eddb56f30d2d620187b <- It boots. :-)
-
-I think the machine check is the problem.
-
-Cheers,
-
-Christian
+Thanks,
+Nish
