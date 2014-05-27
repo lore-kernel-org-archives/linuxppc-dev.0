@@ -1,38 +1,34 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <eranian@google.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DA1F1A05B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 20:56:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 27 May 2014 16:26:47 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 8AC37E0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:27:29 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4RAusN164028810
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:26:54 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4RAugLi004069
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 16:26:43 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] powerpc,
- kexec: Fix "Processor X is stuck" issue during kexec from ST mode
-To: benh@kernel.crashing.org, paulus@samba.org, ebiederm@xmission.com,
- vgoyal@redhat.com
-Date: Tue, 27 May 2014 16:25:34 +0530
-Message-ID: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3EB8E1A05B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 22:09:23 +1000 (EST)
+Received: from mail-oa0-x229.google.com (mail-oa0-x229.google.com
+ [IPv6:2607:f8b0:4003:c02::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 18F681400DE
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2014 22:09:21 +1000 (EST)
+Received: by mail-oa0-f41.google.com with SMTP id m1so9497788oag.0
+ for <linuxppc-dev@ozlabs.org>; Tue, 27 May 2014 05:09:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: ego@linux.vnet.ibm.com, mahesh@linux.vnet.ibm.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Tue, 27 May 2014 14:09:18 +0200
+Message-ID: <CABPqkBS+3N6PW0wJr3xnvpF4zinZM7+iwFWzwS7BDm-LTkam5Q@mail.gmail.com>
+Subject: Re: [V6 00/11] perf: New conditional branch filter
+From: Stephane Eranian <eranian@google.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Michael Neuling <mikey@neuling.org>,
+ "ak@linux.intel.com" <ak@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,109 +38,453 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we try to perform a kexec when the machine is in ST (Single-Threaded) mode
-(ppc64_cpu --smt=off), the kexec operation doesn't succeed properly, and we
-get the following messages during boot:
+Hi,
 
-[    0.089866] POWER8 performance monitor hardware support registered
-[    0.089985] power8-pmu: PMAO restore workaround active.
-[    5.095419] Processor 1 is stuck.
-[   10.097933] Processor 2 is stuck.
-[   15.100480] Processor 3 is stuck.
-[   20.102982] Processor 4 is stuck.
-[   25.105489] Processor 5 is stuck.
-[   30.108005] Processor 6 is stuck.
-[   35.110518] Processor 7 is stuck.
-[   40.113369] Processor 9 is stuck.
-[   45.115879] Processor 10 is stuck.
-[   50.118389] Processor 11 is stuck.
-[   55.120904] Processor 12 is stuck.
-[   60.123425] Processor 13 is stuck.
-[   65.125970] Processor 14 is stuck.
-[   70.128495] Processor 15 is stuck.
-[   75.131316] Processor 17 is stuck.
 
-Note that only the sibling threads are stuck, while the primary threads (0, 8,
-16 etc) boot just fine. Looking closer at the previous step of kexec, we observe
-that kexec tries to wakeup (bring online) the sibling threads of all the cores,
-before performing kexec:
+On Mon, May 5, 2014 at 11:09 AM, Anshuman Khandual
+<khandual@linux.vnet.ibm.com> wrote:
+>
+>                 This patchset is the re-spin of the original branch stack sampling
+> patchset which introduced new PERF_SAMPLE_BRANCH_COND branch filter. This patchset
+> also enables SW based branch filtering support for book3s powerpc platforms which
+> have PMU HW backed branch stack sampling support.
+>
+> Summary of code changes in this patchset:
+>
+> (1) Introduces a new PERF_SAMPLE_BRANCH_COND branch filter
+> (2) Add the "cond" branch filter options in the "perf record" tool
+> (3) Enable PERF_SAMPLE_BRANCH_COND in X86 platforms
+> (4) Enable PERF_SAMPLE_BRANCH_COND in POWER8 platform
+> (5) Update the documentation regarding "perf record" tool
+> (6) Add some new powerpc instruction analysis functions in code-patching library
+> (7) Enable SW based branch filter support for powerpc book3s
+> (8) Changed BHRB configuration in POWER8 to accommodate SW branch filters
+>
+I have been looking at those patches and ran some tests.
+And I found a few issues so far.
 
-[ 9464.131231] Starting new kernel
-[ 9464.148507] kexec: Waking offline cpu 1.
-[ 9464.148552] kexec: Waking offline cpu 2.
-[ 9464.148600] kexec: Waking offline cpu 3.
-[ 9464.148636] kexec: Waking offline cpu 4.
-[ 9464.148671] kexec: Waking offline cpu 5.
-[ 9464.148708] kexec: Waking offline cpu 6.
-[ 9464.148743] kexec: Waking offline cpu 7.
-[ 9464.148779] kexec: Waking offline cpu 9.
-[ 9464.148815] kexec: Waking offline cpu 10.
-[ 9464.148851] kexec: Waking offline cpu 11.
-[ 9464.148887] kexec: Waking offline cpu 12.
-[ 9464.148922] kexec: Waking offline cpu 13.
-[ 9464.148958] kexec: Waking offline cpu 14.
-[ 9464.148994] kexec: Waking offline cpu 15.
-[ 9464.149030] kexec: Waking offline cpu 17.
+I am running:
+$ perf record -j any_ret -e cycles:u test_program
+$ perf report -D
 
-Instrumenting this piece of code revealed that the cpu_up() operation actually
-fails with -EBUSY. Thus, only the primary threads of all the cores are online
-during kexec, and hence this is a sure-shot receipe for disaster, as explained
-in commit e8e5c2155b (powerpc/kexec: Fix orphaned offline CPUs across kexec),
-as well as in the comment above wake_offline_cpus().
+Most entries are okay and match the filter, however some do not make sense:
 
-It turns out that cpu_up() was returning -EBUSY because the variable
-'cpu_hotplug_disabled' was set to 1; and this disabling of CPU hotplug was done
-by migrate_to_reboot_cpu() inside kernel_kexec().
+3642586996762 0x15d0 [0x108]: PERF_RECORD_SAMPLE(IP, 2): 17921/17921:
+0x10001170 period: 613678 addr: 0
+.... branch stack: nr:9
+.....  0: 00000000100011cc -> 0000000010000e38
+.....  1: 0000000010001150 -> 00000000100011bc
+.....  2: 0000000010001208 -> 0000000010000e38
+.....  3: 0000000010001160 -> 00000000100011f8
+.....  4: 00000000100011cc -> 0000000010000e38
+.....  5: 0000000010001150 -> 00000000100011bc
+.....  6: 0000000010001208 -> 0000000010000e38
+.....  7: 0000000010001160 -> 00000000100011f8
+.....  8: 0000000000000000 -> 0000000010001160
+^^^^^^
+Entry 8 does not make sense, unless 0x0 is a valid return branch
+instruction address.
+If an address is invalid, the whole entry needs to be eliminated. It
+is okay to have
+less than the max number of entries supported by HW.
 
-Now, migrate_to_reboot_cpu() was originally written with the assumption that
-any further code will not need to perform CPU hotplug, since we are anyway in
-the reboot path. However, kexec is clearly not such a case, since we depend on
-onlining CPUs, atleast on powerpc.
+I also had cases where monitoring only at the user level, got me
+branch addresses in the
+0xc0000000...... range. My test program is linked statically.
 
-So re-enable cpu-hotplug after returning from migrate_to_reboot_cpu() in the
-kexec path, to fix this regression in kexec on powerpc.
+when eliminating the bogus entries, my tests yielded only return
+branch instruction addresses
+which is good. Will run more tests.
 
-Also, wrap the cpu_up() in powerpc kexec code within a WARN_ON(), so that we
-can catch such issues more easily in the future.
 
-Fixes: c97102ba963 (kexec: migrate to reboot cpu)
-Cc: stable@vger.kernel.org
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
----
-
- arch/powerpc/kernel/machine_kexec_64.c |    2 +-
- kernel/kexec.c                         |    8 ++++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 59d229a..879b3aa 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -237,7 +237,7 @@ static void wake_offline_cpus(void)
- 		if (!cpu_online(cpu)) {
- 			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
- 			       cpu);
--			cpu_up(cpu);
-+			WARN_ON(cpu_up(cpu));
- 		}
- 	}
- }
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index c8380ad..28c5706 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -1683,6 +1683,14 @@ int kernel_kexec(void)
- 		kexec_in_progress = true;
- 		kernel_restart_prepare(NULL);
- 		migrate_to_reboot_cpu();
-+
-+		/*
-+		 * migrate_to_reboot_cpu() disables CPU hotplug assuming that
-+		 * no further code needs to use CPU hotplug (which is true in
-+		 * the reboot case). However, the kexec path depends on using
-+		 * CPU hotplug again; so re-enable it here.
-+		 */
-+		cpu_hotplug_enable();
- 		printk(KERN_EMERG "Starting new kernel\n");
- 		machine_shutdown();
- 	}
+> With this new SW enablement, the branch filter support for book3s platforms have
+> been extended to include all these combinations discussed below with a sample test
+> application program (included here).
+>
+> Changes in V2
+> =============
+> (1) Enabled PPC64 SW branch filtering support
+> (2) Incorporated changes required for all previous comments
+>
+> Changes in V3
+> =============
+> (1) Split the SW branch filter enablement into multiple patches
+> (2) Added PMU neutral SW branch filtering code, PMU specific HW branch filtering code
+> (3) Added new instruction analysis functionality into powerpc code-patching library
+> (4) Changed name for some of the functions
+> (5) Fixed couple of spelling mistakes
+> (6) Changed code documentation in multiple places
+>
+> Changes in V4
+> =============
+> (1) Changed the commit message for patch (01/10)
+> (2) Changed the patch (02/10) to accommodate review comments from Michael Ellerman
+> (3) Rebased the patchset against latest Linus's tree
+>
+> Changes in V5
+> =============
+> (1) Added a precursor patch to cleanup the indentation problem in power_pmu_bhrb_read
+> (2) Added a precursor patch to re-arrange P8 PMU BHRB filter config which improved the clarity
+> (3) Merged the previous 10th patch into the 8th patch
+> (4) Moved SW based branch analysis code from core perf into code-patching library as suggested by Michael
+> (5) Simplified the logic in branch analysis library
+> (6) Fixed some ambiguities in documentation at various places
+> (7) Added some more in-code documentation blocks at various places
+> (8) Renamed some local variable and function names
+> (9) Fixed some indentation and white space errors in the code
+> (10) Implemented almost all the review comments and suggestions made by Michael Ellerman on V4 patchset
+> (11) Enabled privilege mode SW branch filter
+> (12) Simplified and generalized the SW implemented conditional branch filter
+> (13) PERF_SAMPLE_BRANCH_COND filter is now supported only through SW implementation
+> (14) Adjusted other patches to deal with the above changes
+>
+> Changes in V6
+> =============
+> (1) Rebased the patchset against the master
+> (2) Added "Reviewed-by: Andi Kleen" in the first four patches in the series which changes the
+>     generic or X86 perf code. [https://lkml.org/lkml/2014/4/7/130]
+>
+> HW implemented branch filters
+> =============================
+>
+> (1) perf record -j any_call -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object            Source Symbol  Target Shared Object         Target Symbol
+> # ........  .......  ....................  .......................  ....................  ....................
+> #
+>      7.85%    cprog  cprog                 [.] sw_3_1               cprog                 [.] success_3_1_2
+>      5.66%    cprog  cprog                 [.] sw_3_1               cprog                 [.] sw_3_1_2
+>      5.65%    cprog  cprog                 [.] hw_1_1               cprog                 [.] symbol1
+>      5.42%    cprog  cprog                 [.] sw_3_1               cprog                 [.] sw_3_1_3
+>      5.40%    cprog  cprog                 [.] callme               cprog                 [.] hw_1_1
+>      5.40%    cprog  cprog                 [.] sw_3_1               cprog                 [.] success_3_1_1
+>      5.40%    cprog  cprog                 [.] sw_3_1               cprog                 [.] sw_3_1_1
+>      5.39%    cprog  cprog                 [.] sw_4_2               cprog                 [.] lr_addr
+>      5.39%    cprog  cprog                 [.] callme               cprog                 [.] sw_4_2
+>      5.39%    cprog  [unknown]             [.] 00000000             cprog                 [.] ctr_addr
+>      5.38%    cprog  cprog                 [.] hw_1_2               cprog                 [.] symbol2
+>      5.38%    cprog  cprog                 [.] callme               cprog                 [.] hw_1_2
+>      5.16%    cprog  cprog                 [.] sw_3_1               cprog                 [.] success_3_1_3
+>      5.15%    cprog  cprog                 [.] callme               cprog                 [.] sw_3_2
+>      5.14%    cprog  cprog                 [.] callme               cprog                 [.] hw_2_2
+>      2.96%    cprog  cprog                 [.] callme               cprog                 [.] sw_3_1
+>      2.94%    cprog  cprog                 [.] callme               cprog                 [.] hw_2_1
+>      2.71%    cprog  cprog                 [.] main                 cprog                 [.] callme
+>      2.71%    cprog  [unknown]             [.] 00000000             cprog                 [.] lr_addr
+>      2.70%    cprog  cprog                 [.] sw_4_1               cprog                 [.] ctr_addr
+>      2.70%    cprog  cprog                 [.] callme               cprog                 [.] sw_4_1
+>      0.09%    cprog  [unknown]             [.] 0xf7ad76c4           [unknown]             [.] 0xf7ac22c0
+>      0.00%    cprog  libc-2.11.2.so        [.] vfprintf             libc-2.11.2.so        [.] __errno_location
+>      0.00%    cprog  libc-2.11.2.so        [.] printf               libc-2.11.2.so        [.] vfprintf
+>      0.00%    cprog  libc-2.11.2.so        [.] _IO_file_doallocate  libc-2.11.2.so        [.] isatty
+>      0.00%    cprog  libc-2.11.2.so        [.] _IO_file_doallocate  libc-2.11.2.so        [.] mmap
+>      0.00%    cprog  libc-2.11.2.so        [.] isatty               libc-2.11.2.so        [.] tcgetattr
+>      0.00%    cprog  cprog                 [.] main                 [unknown]             [.] 0x10000950
+>      0.00%    cprog  [unknown]             [.] 00000000             libc-2.11.2.so        [.] _IO_file_stat
+>      0.00%    cprog  [unknown]             [.] 0xf7acfca4           cprog                 [.] _fini
+>      0.00%    cprog  [unknown]             [k] 00000000             cprog                 [k] ctr_addr
+>      0.00%    cprog  [unknown]             [k] 00000000             cprog                 [k] lr_addr
+>
+> SW implemented branch filters
+> =============================
+>
+> (2) perf record -j cond -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object           Source Symbol  Target Shared Object           Target Symbol
+> # ........  .......  ....................  ......................  ....................  ......................
+> #
+>     25.82%    cprog  [unknown]             [.] 00000000            cprog                 [.] sw_3_1
+>     12.66%    cprog  cprog                 [.] sw_4_2              cprog                 [.] lr_addr
+>     12.63%    cprog  [unknown]             [.] 00000000            cprog                 [.] callme
+>      9.42%    cprog  cprog                 [.] hw_2_2              cprog                 [.] address2
+>      9.39%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_2
+>      4.91%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_1
+>      4.91%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_3
+>      3.35%    cprog  cprog                 [.] sw_3_1_3            cprog                 [.] sw_3_1
+>      3.34%    cprog  cprog                 [.] sw_3_1_1            cprog                 [.] sw_3_1
+>      3.31%    cprog  cprog                 [.] hw_1_2              cprog                 [.] symbol2
+>      3.31%    cprog  cprog                 [.] sw_4_1              cprog                 [.] ctr_addr
+>      3.29%    cprog  cprog                 [.] hw_2_1              cprog                 [.] address1
+>      3.27%    cprog  cprog                 [.] sw_3_1_2            cprog                 [.] sw_3_1
+>      0.32%    cprog  [unknown]             [.] 0xf7c62328          [unknown]             [.] 0xf7c62320
+>      0.01%    cprog  libc-2.11.2.so        [.] vfprintf            libc-2.11.2.so        [.] vfprintf
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_file_xsputn     libc-2.11.2.so        [.] _IO_file_xsputn
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_default_xsputn  libc-2.11.2.so        [.] _IO_default_xsputn
+>      0.01%    cprog  libc-2.11.2.so        [.] strchrnul           libc-2.11.2.so        [.] strchrnul
+>      0.01%    cprog  [unknown]             [.] 00000000            libc-2.11.2.so        [.] _IO_file_xsputn
+>      0.01%    cprog  [unknown]             [k] 00000000            cprog                 [k] callme
+>
+>
+> (3) perf record -j any_ret -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object          Source Symbol  Target Shared Object          Target Symbol
+> # ........  .......  ....................  .....................  ....................  .....................
+> #
+>     15.61%    cprog  [unknown]             [.] 00000000           cprog                 [.] sw_3_1
+>      6.28%    cprog  cprog                 [.] symbol2            cprog                 [.] hw_1_2
+>      6.28%    cprog  cprog                 [.] ctr_addr           cprog                 [.] sw_4_1
+>      6.26%    cprog  cprog                 [.] success_3_1_3      cprog                 [.] sw_3_1
+>      6.24%    cprog  cprog                 [.] symbol1            cprog                 [.] hw_1_1
+>      6.24%    cprog  cprog                 [.] sw_4_2             cprog                 [.] callme
+>      6.21%    cprog  [unknown]             [.] 00000000           cprog                 [.] callme
+>      6.19%    cprog  cprog                 [.] lr_addr            cprog                 [.] sw_4_2
+>      3.16%    cprog  cprog                 [.] hw_1_2             cprog                 [.] callme
+>      3.15%    cprog  cprog                 [.] success_3_1_1      cprog                 [.] sw_3_1
+>      3.15%    cprog  cprog                 [.] sw_4_1             cprog                 [.] callme
+>      3.14%    cprog  cprog                 [.] callme             cprog                 [.] main
+>      3.13%    cprog  cprog                 [.] hw_1_1             cprog                 [.] callme
+>      3.13%    cprog  cprog                 [.] sw_3_1_1           cprog                 [.] sw_3_1
+>      3.12%    cprog  cprog                 [.] back2              cprog                 [.] callme
+>      3.12%    cprog  cprog                 [.] sw_3_1             cprog                 [.] callme
+>      3.11%    cprog  cprog                 [.] back1              cprog                 [.] callme
+>      3.11%    cprog  cprog                 [.] sw_3_1_2           cprog                 [.] sw_3_1
+>      3.11%    cprog  cprog                 [.] sw_3_1_3           cprog                 [.] sw_3_1
+>      3.10%    cprog  cprog                 [.] sw_3_2             cprog                 [.] callme
+>      3.09%    cprog  cprog                 [.] success_3_1_2      cprog                 [.] sw_3_1
+>      0.03%    cprog  [unknown]             [.] 0x100009b0         [unknown]             [.] 0xf7d5581c
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_file_overflow  libc-2.11.2.so        [.] _IO_file_xsputn
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_file_setbuf    [unknown]             [.] 0x0fee1084
+>      0.01%    cprog  [unknown]             [.] 0xf7d5589c         libc-2.11.2.so        [.] printf
+>      0.01%    cprog  [unknown]             [.] 00000000           libc-2.11.2.so        [.] _IO_file_overflow
+>      0.01%    cprog  [unknown]             [.] 00000000           libc-2.11.2.so        [.] _IO_file_setbuf
+>      0.01%    cprog  [unknown]             [k] 00000000           cprog                 [k] callme
+>
+> (4) perf record -j ind_call  -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object   Source Symbol  Target Shared Object          Target Symbol
+> # ........  .......  ....................  ..............  ....................  .....................
+> #
+>     42.59%    cprog  [unknown]             [.] 00000000    cprog                 [.] sw_3_1
+>     25.88%    cprog  cprog                 [.] sw_4_2      cprog                 [.] lr_addr
+>     25.65%    cprog  [unknown]             [.] 00000000    cprog                 [.] callme
+>      5.58%    cprog  cprog                 [.] sw_4_1      cprog                 [.] ctr_addr
+>      0.23%    cprog  [unknown]             [k] 00000000    cprog                 [k] callme
+>      0.05%    cprog  [unknown]             [.] 00000000    [unknown]             [.] 0xf79fd740
+>      0.03%    cprog  [unknown]             [.] 00000000    libc-2.11.2.so        [.] _IO_file_overflow
+>
+>
+> (5) perf record -j any_call,any_ret -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object              Source Symbol  Target Shared Object          Target Symbol
+> # ........  .......  ....................  .........................  ....................  .....................
+> #
+>     10.00%    cprog  [unknown]             [.] 00000000               cprog                 [.] sw_3_1
+>      4.20%    cprog  cprog                 [.] sw_4_2                 cprog                 [.] lr_addr
+>      4.17%    cprog  cprog                 [.] lr_addr                cprog                 [.] sw_4_2
+>      4.16%    cprog  cprog                 [.] symbol1                cprog                 [.] hw_1_1
+>      4.12%    cprog  [unknown]             [.] 00000000               cprog                 [.] callme
+>      4.12%    cprog  cprog                 [.] symbol2                cprog                 [.] hw_1_2
+>      4.11%    cprog  cprog                 [.] success_3_1_3          cprog                 [.] sw_3_1
+>      4.11%    cprog  cprog                 [.] ctr_addr               cprog                 [.] sw_4_1
+>      4.10%    cprog  cprog                 [.] sw_4_2                 cprog                 [.] callme
+>      2.42%    cprog  cprog                 [.] callme                 cprog                 [.] sw_4_2
+>      2.40%    cprog  cprog                 [.] sw_3_1_3               cprog                 [.] sw_3_1
+>      2.40%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] sw_3_1_3
+>      2.39%    cprog  cprog                 [.] hw_1_2                 cprog                 [.] symbol2
+>      2.39%    cprog  cprog                 [.] back1                  cprog                 [.] callme
+>      2.39%    cprog  cprog                 [.] sw_3_1_1               cprog                 [.] sw_3_1
+>      2.39%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] sw_3_1_1
+>      2.39%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] callme
+>      2.39%    cprog  cprog                 [.] sw_4_1                 cprog                 [.] ctr_addr
+>      2.39%    cprog  cprog                 [.] callme                 cprog                 [.] hw_1_2
+>      2.39%    cprog  cprog                 [.] callme                 cprog                 [.] sw_3_1
+>      2.39%    cprog  cprog                 [.] sw_3_1_2               cprog                 [.] sw_3_1
+>      2.39%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] sw_3_1_2
+>      2.38%    cprog  cprog                 [.] hw_1_1                 cprog                 [.] symbol1
+>      2.38%    cprog  cprog                 [.] callme                 cprog                 [.] hw_1_1
+>      1.78%    cprog  cprog                 [.] back2                  cprog                 [.] callme
+>      1.78%    cprog  cprog                 [.] hw_1_1                 cprog                 [.] callme
+>      1.76%    cprog  cprog                 [.] success_3_1_2          cprog                 [.] sw_3_1
+>      1.76%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] success_3_1_2
+>      1.76%    cprog  cprog                 [.] sw_3_2                 cprog                 [.] callme
+>      1.76%    cprog  cprog                 [.] callme                 cprog                 [.] sw_3_2
+>      1.73%    cprog  cprog                 [.] success_3_1_1          cprog                 [.] sw_3_1
+>      1.73%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] success_3_1_1
+>      1.73%    cprog  cprog                 [.] hw_1_2                 cprog                 [.] callme
+>      1.71%    cprog  cprog                 [.] sw_3_1                 cprog                 [.] success_3_1_3
+>      1.71%    cprog  cprog                 [.] sw_4_1                 cprog                 [.] callme
+>      1.71%    cprog  cprog                 [.] callme                 cprog                 [.] main
+>      0.05%    cprog  [unknown]             [k] 00000000               cprog                 [k] callme
+>      0.03%    cprog  [unknown]             [.] 0xf7aa9d4c             [unknown]             [.] 0xf7aa5f80
+>      0.01%    cprog  libc-2.11.2.so        [.] __errno_location       libc-2.11.2.so        [.] vfprintf
+>      0.01%    cprog  libc-2.11.2.so        [.] vfprintf               libc-2.11.2.so        [.] __errno_location
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_doallocbuf         libc-2.11.2.so        [.] _IO_file_overflow
+>      0.01%    cprog  cprog                 [.] __do_global_dtors_aux  [unknown]             [.] 0xf7a9fc74
+>      0.01%    cprog  [unknown]             [.] 0xf7a9fca4             cprog                 [.] _fini
+>
+> (6) perf record -j any_call,ind_call -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object           Source Symbol  Target Shared Object           Target Symbol
+> # ........  .......  ....................  ......................  ....................  ......................
+> #
+>     17.38%    cprog  [unknown]             [.] 00000000            cprog                 [.] sw_3_1
+>      7.76%    cprog  cprog                 [.] sw_4_2              cprog                 [.] lr_addr
+>      7.64%    cprog  [unknown]             [.] 00000000            cprog                 [.] callme
+>      6.00%    cprog  cprog                 [.] sw_3_1              cprog                 [.] sw_3_1_1
+>      6.00%    cprog  cprog                 [.] callme              cprog                 [.] sw_3_1
+>      5.98%    cprog  cprog                 [.] sw_4_1              cprog                 [.] ctr_addr
+>      5.97%    cprog  cprog                 [.] hw_1_1              cprog                 [.] symbol1
+>      5.97%    cprog  cprog                 [.] hw_1_2              cprog                 [.] symbol2
+>      5.97%    cprog  cprog                 [.] sw_3_1              cprog                 [.] sw_3_1_3
+>      5.97%    cprog  cprog                 [.] callme              cprog                 [.] hw_1_1
+>      5.97%    cprog  cprog                 [.] callme              cprog                 [.] hw_1_2
+>      5.96%    cprog  cprog                 [.] callme              cprog                 [.] sw_4_2
+>      5.95%    cprog  cprog                 [.] sw_3_1              cprog                 [.] sw_3_1_2
+>      1.83%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_2
+>      1.82%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_1
+>      1.82%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_3
+>      1.82%    cprog  cprog                 [.] callme              cprog                 [.] sw_3_2
+>      0.14%    cprog  [unknown]             [k] 00000000            cprog                 [k] callme
+>      0.01%    cprog  libc-2.11.2.so        [.] vfprintf            libc-2.11.2.so        [.] strchrnul
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_file_xsputn     libc-2.11.2.so        [.] _IO_default_xsputn
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_default_xsputn  libc-2.11.2.so        [.] _IO_file_overflow
+>      0.01%    cprog  ld-2.11.2.so          [.] calloc              [unknown]             [.] 0xf795b390
+>      0.01%    cprog  [unknown]             [.] 0x0fee00fc          libc-2.11.2.so        [.] _IO_file_overflow
+>      0.01%    cprog  [unknown]             [.] 00000000            ld-2.11.2.so          [.] calloc
+>      0.01%    cprog  [unknown]             [.] 0xf794b41c          [unknown]             [.] 0xf794ab70
+>
+> (7) perf record -j cond,any_ret -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object           Source Symbol  Target Shared Object           Target Symbol
+> # ........  .......  ....................  ......................  ....................  ......................
+> #
+>     12.43%    cprog  [unknown]             [.] 00000000            cprog                 [.] sw_3_1
+>      4.91%    cprog  cprog                 [.] lr_addr             cprog                 [.] sw_4_2
+>      4.89%    cprog  [unknown]             [.] 00000000            cprog                 [.] callme
+>      4.87%    cprog  cprog                 [.] sw_4_2              cprog                 [.] lr_addr
+>      4.87%    cprog  cprog                 [.] symbol1             cprog                 [.] hw_1_1
+>      4.19%    cprog  cprog                 [.] hw_2_2              cprog                 [.] address2
+>      4.19%    cprog  cprog                 [.] back2               cprog                 [.] callme
+>      4.19%    cprog  cprog                 [.] sw_3_2              cprog                 [.] callme
+>      4.18%    cprog  cprog                 [.] hw_1_1              cprog                 [.] callme
+>      4.18%    cprog  cprog                 [.] success_3_1_2       cprog                 [.] sw_3_1
+>      4.18%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_2
+>      4.16%    cprog  cprog                 [.] sw_4_2              cprog                 [.] callme
+>      4.13%    cprog  cprog                 [.] ctr_addr            cprog                 [.] sw_4_1
+>      4.12%    cprog  cprog                 [.] symbol2             cprog                 [.] hw_1_2
+>      4.12%    cprog  cprog                 [.] success_3_1_3       cprog                 [.] sw_3_1
+>      3.43%    cprog  cprog                 [.] callme              cprog                 [.] main
+>      3.42%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_3
+>      3.41%    cprog  cprog                 [.] success_3_1_1       cprog                 [.] sw_3_1
+>      3.41%    cprog  cprog                 [.] sw_3_1              cprog                 [.] success_3_1_1
+>      3.41%    cprog  cprog                 [.] sw_4_1              cprog                 [.] callme
+>      3.40%    cprog  cprog                 [.] hw_1_2              cprog                 [.] callme
+>      0.73%    cprog  cprog                 [.] sw_3_1_3            cprog                 [.] sw_3_1
+>      0.73%    cprog  cprog                 [.] sw_4_1              cprog                 [.] ctr_addr
+>      0.72%    cprog  cprog                 [.] hw_1_2              cprog                 [.] symbol2
+>      0.72%    cprog  cprog                 [.] sw_3_1_1            cprog                 [.] sw_3_1
+>      0.70%    cprog  cprog                 [.] hw_2_1              cprog                 [.] address1
+>      0.70%    cprog  cprog                 [.] back1               cprog                 [.] callme
+>      0.70%    cprog  cprog                 [.] sw_3_1_2            cprog                 [.] sw_3_1
+>      0.70%    cprog  cprog                 [.] sw_3_1              cprog                 [.] callme
+>      0.19%    cprog  [unknown]             [.] 0xf7c12328          [unknown]             [.] 0xf7c12320
+>      0.01%    cprog  libc-2.11.2.so        [.] __errno_location    libc-2.11.2.so        [.] vfprintf
+>      0.01%    cprog  libc-2.11.2.so        [.] vfprintf            libc-2.11.2.so        [.] vfprintf
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_file_overflow   [unknown]             [.] 0x0fee0100
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_default_xsputn  libc-2.11.2.so        [.] _IO_default_xsputn
+>      0.01%    cprog  [unknown]             [.] 00000000            libc-2.11.2.so        [.] _IO_file_overflow
+>
+> (8) perf record -j cond,ind_call -e branch-misses:u ./cprog
+>
+> # Overhead  Command  Source Shared Object   Source Symbol  Target Shared Object      Target Symbol
+> # ........  .......  ....................  ..............  ....................  .................
+> #
+>     20.70%    cprog  [unknown]             [.] 00000000    cprog                 [.] sw_3_1
+>      9.99%    cprog  cprog                 [.] sw_4_2      cprog                 [.] lr_addr
+>      9.91%    cprog  [unknown]             [.] 00000000    cprog                 [.] callme
+>      9.45%    cprog  cprog                 [.] sw_3_1_3    cprog                 [.] sw_3_1
+>      9.44%    cprog  cprog                 [.] hw_2_1      cprog                 [.] address1
+>      9.43%    cprog  cprog                 [.] sw_3_1_1    cprog                 [.] sw_3_1
+>      9.42%    cprog  cprog                 [.] hw_1_2      cprog                 [.] symbol2
+>      9.42%    cprog  cprog                 [.] sw_3_1_2    cprog                 [.] sw_3_1
+>      9.42%    cprog  cprog                 [.] sw_4_1      cprog                 [.] ctr_addr
+>      0.65%    cprog  cprog                 [.] sw_3_1      cprog                 [.] success_3_1_1
+>      0.62%    cprog  cprog                 [.] sw_3_1      cprog                 [.] success_3_1_3
+>      0.56%    cprog  cprog                 [.] hw_2_2      cprog                 [.] address2
+>      0.55%    cprog  cprog                 [.] sw_3_1      cprog                 [.] success_3_1_2
+>      0.29%    cprog  [unknown]             [.] 0xf7f72328  [unknown]             [.] 0xf7f72320
+>      0.10%    cprog  [unknown]             [k] 00000000    cprog                 [k] callme
+>      0.02%    cprog  libc-2.11.2.so        [.] _IO_setb    libc-2.11.2.so        [.] _IO_setb
+>
+> (9) perf record -e branch-misses:u -j any_call,any_ret,ind_call,cond ./cprog
+>
+> # Overhead  Command  Source Shared Object       Source Symbol  Target Shared Object            Target Symbol
+> # ........  .......  ....................  ..................  ....................  .......................
+> #
+>      9.31%    cprog  [unknown]             [.] 00000000        cprog                 [.] sw_3_1
+>      4.04%    cprog  cprog                 [.] symbol1         cprog                 [.] hw_1_1
+>      4.03%    cprog  cprog                 [.] lr_addr         cprog                 [.] sw_4_2
+>      4.03%    cprog  cprog                 [.] sw_4_2          cprog                 [.] lr_addr
+>      4.00%    cprog  [unknown]             [.] 00000000        cprog                 [.] callme
+>      3.88%    cprog  cprog                 [.] ctr_addr        cprog                 [.] sw_4_1
+>      3.87%    cprog  cprog                 [.] sw_4_2          cprog                 [.] callme
+>      3.86%    cprog  cprog                 [.] symbol2         cprog                 [.] hw_1_2
+>      3.86%    cprog  cprog                 [.] success_3_1_3   cprog                 [.] sw_3_1
+>      2.49%    cprog  cprog                 [.] sw_4_1          cprog                 [.] ctr_addr
+>      2.47%    cprog  cprog                 [.] hw_1_1          cprog                 [.] symbol1
+>      2.47%    cprog  cprog                 [.] sw_3_1_1        cprog                 [.] sw_3_1
+>      2.47%    cprog  cprog                 [.] sw_3_1          cprog                 [.] sw_3_1_1
+>      2.47%    cprog  cprog                 [.] callme          cprog                 [.] hw_1_1
+>      2.47%    cprog  cprog                 [.] callme          cprog                 [.] sw_3_1
+>      2.47%    cprog  cprog                 [.] hw_1_2          cprog                 [.] symbol2
+>      2.47%    cprog  cprog                 [.] hw_2_1          cprog                 [.] address1
+>      2.47%    cprog  cprog                 [.] back1           cprog                 [.] callme
+>      2.47%    cprog  cprog                 [.] sw_3_1_3        cprog                 [.] sw_3_1
+>      2.47%    cprog  cprog                 [.] sw_3_1          cprog                 [.] sw_3_1_3
+>      2.47%    cprog  cprog                 [.] sw_3_1          cprog                 [.] callme
+>      2.47%    cprog  cprog                 [.] callme          cprog                 [.] hw_1_2
+>      2.47%    cprog  cprog                 [.] callme          cprog                 [.] sw_4_2
+>      2.46%    cprog  cprog                 [.] sw_3_1_2        cprog                 [.] sw_3_1
+>      2.46%    cprog  cprog                 [.] sw_3_1          cprog                 [.] sw_3_1_2
+>      1.57%    cprog  cprog                 [.] success_3_1_2   cprog                 [.] sw_3_1
+>      1.57%    cprog  cprog                 [.] sw_3_1          cprog                 [.] success_3_1_2
+>      1.57%    cprog  cprog                 [.] hw_1_1          cprog                 [.] callme
+>      1.56%    cprog  cprog                 [.] hw_2_2          cprog                 [.] address2
+>      1.56%    cprog  cprog                 [.] back2           cprog                 [.] callme
+>      1.56%    cprog  cprog                 [.] sw_3_2          cprog                 [.] callme
+>      1.56%    cprog  cprog                 [.] callme          cprog                 [.] sw_3_2
+>      1.41%    cprog  cprog                 [.] success_3_1_1   cprog                 [.] sw_3_1
+>      1.41%    cprog  cprog                 [.] sw_3_1          cprog                 [.] success_3_1_1
+>      1.40%    cprog  cprog                 [.] sw_4_1          cprog                 [.] callme
+>      1.39%    cprog  cprog                 [.] hw_1_2          cprog                 [.] callme
+>      1.39%    cprog  cprog                 [.] sw_3_1          cprog                 [.] success_3_1_3
+>      1.39%    cprog  cprog                 [.] callme          cprog                 [.] main
+>      0.14%    cprog  [unknown]             [.] 0xf7d72328      [unknown]             [.] 0xf7d72320
+>      0.03%    cprog  [unknown]             [k] 00000000        cprog                 [k] callme
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_doallocbuf  libc-2.11.2.so        [.] _IO_doallocbuf
+>      0.01%    cprog  libc-2.11.2.so        [.] printf          cprog                 [.] main
+>      0.01%    cprog  libc-2.11.2.so        [.] _IO_doallocbuf  libc-2.11.2.so        [.] _IO_file_doallocate
+>      0.01%    cprog  ld-2.11.2.so          [.] malloc          [unknown]             [.] 0xf7d8b380
+>      0.01%    cprog  cprog                 [.] main            [unknown]             [.] 0x0fe7f63c
+>      0.01%    cprog  [unknown]             [.] 0xf7d8b388      ld-2.11.2.so          [.] __libc_memalign
+>      0.01%    cprog  [unknown]             [.] 00000000        ld-2.11.2.so          [.] malloc
+>
+> Please refer to the V4 version of the patchset to learn about the sample test case and it's makefile.
+>
+> Anshuman Khandual (11):
+>   perf: Add PERF_SAMPLE_BRANCH_COND
+>   perf, tool: Conditional branch filter 'cond' added to perf record
+>   x86, perf: Add conditional branch filtering support
+>   perf, documentation: Description for conditional branch filter
+>   powerpc, perf: Re-arrange BHRB processing
+>   powerpc, perf: Re-arrange PMU based branch filter processing in POWER8
+>   powerpc, perf: Change the name of HW PMU branch filter tracking variable
+>   powerpc, lib: Add new branch analysis support functions
+>   powerpc, perf: Enable SW filtering in branch stack sampling framework
+>   power8, perf: Adapt BHRB PMU configuration to work with SW filters
+>   powerpc, perf: Enable privilege mode SW branch filters
+>
+>  arch/powerpc/include/asm/code-patching.h     |  16 ++
+>  arch/powerpc/include/asm/perf_event_server.h |   6 +-
+>  arch/powerpc/lib/code-patching.c             |  80 +++++++
+>  arch/powerpc/perf/core-book3s.c              | 323 ++++++++++++++++++++++-----
+>  arch/powerpc/perf/power8-pmu.c               |  70 ++++--
+>  arch/x86/kernel/cpu/perf_event_intel_lbr.c   |   5 +
+>  include/uapi/linux/perf_event.h              |   3 +-
+>  tools/perf/Documentation/perf-record.txt     |   3 +-
+>  tools/perf/builtin-record.c                  |   1 +
+>  9 files changed, 429 insertions(+), 78 deletions(-)
+>
+> --
+> 1.7.11.7
+>
