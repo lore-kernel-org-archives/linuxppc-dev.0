@@ -1,40 +1,18 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF3D31A073D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 14:44:12 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 27 May 2014 22:44:10 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CCF373E40040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 22:44:08 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.ahe.boulder.ibm.com
- [9.17.195.167])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4S4i85v6095228
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 06:44:08 +0200
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4S4i8md017150
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 22:44:08 -0600
-Subject: [PATCH 6/6] ppc,
- book3s: Go back to same idle state after handling machine check
- interrupt
-To: benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
- svaidyan@in.ibm.com, paulus@samba.org,
- srivatsa.bhat@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Wed, 28 May 2014 10:09:39 +0530
-Message-ID: <20140528043939.15676.57491.stgit@preeti.in.ibm.com>
-In-Reply-To: <20140528043703.15676.58580.stgit@preeti.in.ibm.com>
-References: <20140528043703.15676.58580.stgit@preeti.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 365EA1A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 16:44:18 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH v2] powerpc/defconfig: update RTC support
+Date: Wed, 28 May 2014 13:55:46 +0800
+Message-ID: <1401256546-14203-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,75 +22,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+- remove CONFIG_RTC_DRV_CMOS in corenet32_smp_defconfig(it's unused),
+  reserve CONFIG_RTC_DRV_CMOS in mpc85xx_defconfig(needed on some CDS boards)
 
-Now that the support for fast sleep is present, threads could have woken up
-from fast sleep on getting a machine check interrupt. Hence add code to allow
-threads to go back to the idle state they woke up from after handling the
-interrupt. Today they go back to nap by default.
+- enable CONFIG_RTC_DRV_DS1307, CONFIG_RTC_DRV_DS1374,
+  CONFIG_RTC_DRV_DS3232 in mpc85xx_defconfig, mpc85xx_smp_defconfig
 
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-[ Changelog added by <preeti@linux.vnet.ibm.com> ]
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+- enable RTC support in  corenet64_smp_defconfig
+
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
+v2: updated with comments.
 
- arch/powerpc/kernel/exceptions-64s.S |   21 +++++++++++++++------
- arch/powerpc/kernel/idle_power7.S    |    2 +-
- 2 files changed, 16 insertions(+), 7 deletions(-)
+ arch/powerpc/configs/corenet32_smp_defconfig | 3 ++-
+ arch/powerpc/configs/corenet64_smp_defconfig | 4 ++++
+ arch/powerpc/configs/mpc85xx_defconfig       | 3 +++
+ arch/powerpc/configs/mpc85xx_smp_defconfig   | 3 +++
+ 4 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index b4bf464..94cee3c 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1396,15 +1396,16 @@ machine_check_handle_early:
- 	 * of the following is true:
- 	 * a. thread wasn't in power saving mode
- 	 * b. thread was in power saving mode with no state loss or
--	 *    supervisor state loss
-+	 *    supervisor state loss or hypervisor state loss (fastsleep)
- 	 *
--	 * Go back to nap again if (b) is true.
-+	 * Go back to nap or fastsleep again if (b) is true.
- 	 */
- 	rlwinm.	r11,r12,47-31,30,31	/* Was it in power saving mode? */
- 	beq	4f			/* No, it wasn;t */
--	/* Thread was in power saving mode. Go back to nap again. */
--	cmpwi	r11,2
--	bne	3f
-+	/* Thread was in power saving mode. Go back to the same state again. */
-+	cmpwi	cr1,r11,2
-+	blt	cr1,3f
-+7:
- 	/* Supervisor state loss */
- 	li	r0,1
- 	stb	r0,PACA_NAPSTATELOST(r13)
-@@ -1412,7 +1413,15 @@ machine_check_handle_early:
- 	MACHINE_CHECK_HANDLER_WINDUP
- 	GET_PACA(r13)
- 	ld	r1,PACAR1(r13)
--	b	.power7_enter_nap_mode
-+	/* We need to pass the idle state in r3: 0 -> nap, 1 -> sleep */
-+	bgt	cr1,8f
-+	li	r3,0
-+	b	.power7_enter_idle
-+	/* No return */
-+
-+8:	li	r3,1 /* Pass 1 in r3 to request sleep in power7_enter_idle */
-+	b	.power7_enter_idle
-+	/* No return */
- 4:
- #endif
- 	/*
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index c3ab869..e13e21b 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -95,7 +95,7 @@ _GLOBAL(power7_powersave_common)
- 	std	r9,_MSR(r1)
- 	std	r1,PACAR1(r13)
- 
--_GLOBAL(power7_enter_nap_mode)
-+_GLOBAL(power7_enter_idle)
- #ifdef CONFIG_KVM_BOOK3S_HV_POSSIBLE
- 	/* Tell KVM we're napping */
- 	li	r4,KVM_HWTHREAD_IN_NAP
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index bbd794d..9866898 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -138,8 +138,9 @@ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_MPC85XX=y
+ CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_DS1307=y
++CONFIG_RTC_DRV_DS1374=y
+ CONFIG_RTC_DRV_DS3232=y
+-CONFIG_RTC_DRV_CMOS=y
+ CONFIG_UIO=y
+ CONFIG_STAGING=y
+ CONFIG_VIRT_DRIVERS=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 63508dd..bdae4d0 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -125,6 +125,10 @@ CONFIG_USB_EHCI_FSL=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_MMC=y
+ CONFIG_MMC_SDHCI=y
++CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_DS1307=y
++CONFIG_RTC_DRV_DS1374=y
++CONFIG_RTC_DRV_DS3232=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_DMADEVICES=y
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index d2e0fab..541a5b6 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -210,6 +210,9 @@ CONFIG_MMC_SDHCI_OF_ESDHC=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_DS1307=y
++CONFIG_RTC_DRV_DS1374=y
++CONFIG_RTC_DRV_DS3232=y
+ CONFIG_RTC_DRV_CMOS=y
+ CONFIG_DMADEVICES=y
+ CONFIG_FSL_DMA=y
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 4cb7b59..105991a 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -211,6 +211,9 @@ CONFIG_MMC_SDHCI_OF_ESDHC=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_DS1307=y
++CONFIG_RTC_DRV_DS1374=y
++CONFIG_RTC_DRV_DS3232=y
+ CONFIG_RTC_DRV_CMOS=y
+ CONFIG_DMADEVICES=y
+ CONFIG_FSL_DMA=y
+-- 
+1.8.0
