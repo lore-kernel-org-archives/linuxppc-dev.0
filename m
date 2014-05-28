@@ -1,18 +1,27 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 365EA1A024F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 16:44:18 +1000 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH v2] powerpc/defconfig: update RTC support
-Date: Wed, 28 May 2014 13:55:46 +0800
-Message-ID: <1401256546-14203-1-git-send-email-Shengzhou.Liu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D47D1A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 16:50:43 +1000 (EST)
+From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: [2/2] powerpc/corenet64_smp_defconfig: enable RTC support
+Date: Wed, 28 May 2014 06:50:34 +0000
+Message-ID: <0c0e1c5b8c30494aaab68ebc2d01ea2c@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1400666751-11459-2-git-send-email-Shengzhou.Liu@freescale.com>
+ <20140522225144.GA1670@home.buserror.net>
+ <474028133ffd49cebfeb951498923caa@DM2PR03MB398.namprd03.prod.outlook.com>
+ <1400864771.12823.51.camel@snotra.buserror.net>
+ <a1c1a49caf9f4f2b82b517c5c2d598d1@DM2PR03MB398.namprd03.prod.outlook.com>
+ <DA0A87E9-4152-4A7F-9399-20206E13ACFB@kernel.crashing.org>
+ <1401207688.6603.9.camel@snotra.buserror.net>
+In-Reply-To: <1401207688.6603.9.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,81 +31,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-- remove CONFIG_RTC_DRV_CMOS in corenet32_smp_defconfig(it's unused),
-  reserve CONFIG_RTC_DRV_CMOS in mpc85xx_defconfig(needed on some CDS boards)
-
-- enable CONFIG_RTC_DRV_DS1307, CONFIG_RTC_DRV_DS1374,
-  CONFIG_RTC_DRV_DS3232 in mpc85xx_defconfig, mpc85xx_smp_defconfig
-
-- enable RTC support in  corenet64_smp_defconfig
-
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-v2: updated with comments.
-
- arch/powerpc/configs/corenet32_smp_defconfig | 3 ++-
- arch/powerpc/configs/corenet64_smp_defconfig | 4 ++++
- arch/powerpc/configs/mpc85xx_defconfig       | 3 +++
- arch/powerpc/configs/mpc85xx_smp_defconfig   | 3 +++
- 4 files changed, 12 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index bbd794d..9866898 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -138,8 +138,9 @@ CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_EDAC_MPC85XX=y
- CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
- CONFIG_RTC_DRV_DS3232=y
--CONFIG_RTC_DRV_CMOS=y
- CONFIG_UIO=y
- CONFIG_STAGING=y
- CONFIG_VIRT_DRIVERS=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 63508dd..bdae4d0 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -125,6 +125,10 @@ CONFIG_USB_EHCI_FSL=y
- CONFIG_USB_STORAGE=y
- CONFIG_MMC=y
- CONFIG_MMC_SDHCI=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
-+CONFIG_RTC_DRV_DS3232=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_DMADEVICES=y
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index d2e0fab..541a5b6 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -210,6 +210,9 @@ CONFIG_MMC_SDHCI_OF_ESDHC=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
-+CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
-index 4cb7b59..105991a 100644
---- a/arch/powerpc/configs/mpc85xx_smp_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
-@@ -211,6 +211,9 @@ CONFIG_MMC_SDHCI_OF_ESDHC=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
- CONFIG_RTC_CLASS=y
-+CONFIG_RTC_DRV_DS1307=y
-+CONFIG_RTC_DRV_DS1374=y
-+CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
--- 
-1.8.0
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBNYXkgMjgsIDIwMTQgMTI6MjEgQU0NCj4gVG86IEt1bWFy
+IEdhbGENCj4gQ2M6IExpdSBTaGVuZ3pob3UtQjM2Njg1OyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZw0KPiBTdWJqZWN0OiBSZTogWzIvMl0gcG93ZXJwYy9jb3JlbmV0NjRfc21wX2RlZmNv
+bmZpZzogZW5hYmxlIFJUQyBzdXBwb3J0DQo+IA0KPiBPbiBUdWUsIDIwMTQtMDUtMjcgYXQgMTA6
+MzMgLTA1MDAsIEt1bWFyIEdhbGEgd3JvdGU6DQo+ID4gT24gTWF5IDI1LCAyMDE0LCBhdCAxMDow
+OCBQTSwgU2hlbmd6aG91LkxpdUBmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+DQo+ID4gPg0KPiA+
+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPj4gRnJvbTogV29vZCBTY290dC1C
+MDc0MjENCj4gPiA+PiBTZW50OiBTYXR1cmRheSwgTWF5IDI0LCAyMDE0IDE6MDYgQU0NCj4gPiA+
+PiBUbzogTGl1IFNoZW5nemhvdS1CMzY2ODUNCj4gPiA+PiBDYzogbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmcNCj4gPiA+PiBTdWJqZWN0OiBSZTogWzIvMl0gcG93ZXJwYy9jb3JlbmV0NjRf
+c21wX2RlZmNvbmZpZzogZW5hYmxlIFJUQw0KPiA+ID4+IHN1cHBvcnQNCj4gPiA+Pg0KPiA+ID4+
+IE9uIEZyaSwgMjAxNC0wNS0yMyBhdCAwMzowMyAtMDUwMCwgTGl1IFNoZW5nemhvdS1CMzY2ODUg
+d3JvdGU6DQo+ID4gPj4+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4+Pj4gRnJv
+bTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+Pj4+IFNlbnQ6IEZyaWRheSwgTWF5IDIzLCAyMDE0
+IDY6NTIgQU0NCj4gPiA+Pj4+IFRvOiBMaXUgU2hlbmd6aG91LUIzNjY4NQ0KPiA+ID4+Pj4gQ2M6
+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPj4+PiBTdWJqZWN0OiBSZTogWzIv
+Ml0gcG93ZXJwYy9jb3JlbmV0NjRfc21wX2RlZmNvbmZpZzogZW5hYmxlIFJUQw0KPiA+ID4+Pj4g
+c3VwcG9ydA0KPiA+ID4+Pj4NCj4gPiA+Pj4+PiArKysgYi9hcmNoL3Bvd2VycGMvY29uZmlncy9j
+b3JlbmV0NjRfc21wX2RlZmNvbmZpZw0KPiA+ID4+Pj4+IEBAIC0xMjUsNiArMTI1LDExIEBAIENP
+TkZJR19VU0JfRUhDSV9GU0w9eSAgQ09ORklHX1VTQl9TVE9SQUdFPXkNCj4gPiA+Pj4+PiBDT05G
+SUdfTU1DPXkgIENPTkZJR19NTUNfU0RIQ0k9eQ0KPiA+ID4+Pj4+ICtDT05GSUdfUlRDX0NMQVNT
+PXkNCj4gPiA+Pj4+PiArQ09ORklHX1JUQ19EUlZfQ01PUz15DQo+ID4gPj4+Pj4gK0NPTkZJR19S
+VENfRFJWX0RTMTMwNz15DQo+ID4gPj4+Pj4gK0NPTkZJR19SVENfRFJWX0RTMTM3ND15DQo+ID4g
+Pj4+Pj4gK0NPTkZJR19SVENfRFJWX0RTMzIzMj15DQo+ID4gPj4+Pj4gQ09ORklHX0VEQUM9eQ0K
+PiA+ID4+Pj4+IENPTkZJR19FREFDX01NX0VEQUM9eQ0KPiA+ID4+Pj4+IENPTkZJR19ETUFERVZJ
+Q0VTPXkNCj4gPiA+Pj4+DQo+ID4gPj4+PiBXaHkgb25seSBjb3JlbmV0NjQgYW5kIG5vdCBjb3Jl
+bmV0MzI/DQo+ID4gPj4+Pg0KPiA+ID4+Pj4gLVNjb3R0DQo+ID4gPj4+IFtTaGVuZ3pob3VdIFRo
+ZXJlIGlzIGFscmVhZHkgUlRDIHN1cHBvcnQgaW4gY29yZW5ldDMyLCBvbmx5DQo+ID4gPj4+IG1p
+c3NpbmcgaW4NCj4gPiA+PiBjb3JlbmV0NjQuDQo+ID4gPj4NCj4gPiA+PiBPbmx5IERTMzIzMiwg
+bm90IERTMTMwNyBvciBEUzEzNzQuICBXaGljaCBib2FyZHMgdXNlIHRoZSBsYXR0ZXIgdHdvPw0K
+PiA+ID4+DQo+ID4gPj4gV2h5IGRvIHdlIG5lZWQgQ09ORklHX1JUQ19EUlZfQ01PUz8NCj4gPiA+
+Pg0KPiA+ID4+IC1TY290dA0KPiA+ID4+DQo+ID4gPiBbU2hlbmd6aG91XSBzbyBmYXIgRFMxMzA3
+IGFuZCBEUzEzNzQgb2NjdXIgb25seSBvbiB0aG9zZSBib2FyZHMgd2l0aA0KPiBjb3JlbmV0NjQu
+DQo+IA0KPiBXaGljaCBib2FyZHM/ICBJIGRvbid0IHNlZSB0aGVtIGluIGFueSBjb3JlbmV0IGR0
+cyBmaWxlcy4gIA0KDQpbU2hlbmd6aG91XSBDT05GSUdfUlRDX0RSVl9EUzEzMDcgaXMgbmVlZGVk
+IGZvciBkczEzMzkgb24gdDIwODByZGIuDQoNCj4gSSBkbyBzZWUgc29tZSBpbnN0YW5jZXMgb2Yg
+ZHMxMzc0IGluIHRoZSBkdHMgZmlsZXMgb2YgYm9hcmRzIG5vbi1jb3JlbmV0IG1wYzg1eHggYm9h
+cmRzDQo+IChtcGM4NTY4bWRzLCBtcGM4NTY5bWRzLCBhbmQgcDEwMjFtZHMpLCB5ZXQgaXQncyBu
+b3QgaW4gdGhlDQo+IG1wYzg1eHhfZGVmY29uZmlnIG9yIG1wYzg1eHhfc21wX2RlZmNvbmZpZy4N
+Cj4gDQo+ID4gPiBDT05GSUdfUlRDX0RSVl9DTU9TIGlzIGVuYWJsZWQgaW4gbXBjODV4eF9kZWZj
+b25maWcsDQo+IG1wYzg1eHhfc21wX2RlZmNvbmZpZywgY29yZW5ldDMyX3NtcF9kZWZjb25maWcs
+IGV0YywgaGVyZSBrZWVwcw0KPiBjb25zaXN0ZW50IGluIGNvcmVuZXQ2NC4NCj4gPiA+IEl0IHNl
+ZW1zIENPTkZJR19SVENfRFJWX0NNT1MgaXMgbm90IG5lZWRlZCBvbiA4NXh4IHBsYXRmb3JtLCBk
+byB3ZQ0KPiBuZWVkIHRvIHJlbW92ZSBDT05GSUdfUlRDX0RSVl9DTU9TIGZyb20gYWxsIDg1eHgv
+Y29yZW5ldCBkZWZjb25maWc/IElmIHNvLA0KPiBJIHdpbGwgcG9zdCBhIG5ldyBwYXRjaCB0byBk
+byBpdC4NCj4gPg0KPiA+IFRoZSBDRFMgYm9hcmQgdXNlcyBhbiBSVEMgb3ZlciBJU0EgaWYgSSBy
+ZW1lbWJlciBjb3JyZWN0bHksIG5vdCBzdXJlDQo+IHdoYXQgZHJpdmVyIGRlYWxzIHdpdGggdGhh
+dCAoaWYgaXRzIENPTkZJR19SVENfRFJWX0NNT1MpIG9yIHNvbWV0aGluZw0KPiBlbHNlLg0KPiAN
+Cj4gSWYgaXQncyBqdXN0IENEUyB0aGVuIHdlIGRvbid0IG5lZWQgaXQgaW4gZWl0aGVyIGNvcmVu
+ZXQgY29uZmlnLg0KPiANCj4gLVNjb3R0DQo+IA0KW1NoZW5nemhvdV0geWVzLCBtcGM4NTQ4Y2Rz
+IGJvYXJkIHVzZXMgQ09ORklHX1JUQ19EUlZfQ01PUyB0byBkZWFsIHdpdGggcnRjLiANCkkgdXBk
+YXRlZCB0aGVzZSBjaGFuZ2VzIHdpdGggbmV3IHBhdGNoIHYyOiBodHRwOi8vcGF0Y2h3b3JrLm96
+bGFicy5vcmcvcGF0Y2gvMzUzMjQzLw0KDQoNCg==
