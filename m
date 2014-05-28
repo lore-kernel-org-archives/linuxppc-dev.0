@@ -1,42 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE2AA1A0678
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 19:27:31 +1000 (EST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7BC3F1400D4
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 19:27:30 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 28 May 2014 14:57:27 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D54B81258054
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 14:56:36 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4S9RYJ852297950
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 14:57:34 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4S9RNQx019490
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 14:57:23 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] selftests/powerpc: Test the THP bug we fixed in the
- previous commit
-In-Reply-To: <1401265278-29307-2-git-send-email-mpe@ellerman.id.au>
-References: <1401265278-29307-1-git-send-email-mpe@ellerman.id.au>
- <1401265278-29307-2-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 28 May 2014 14:57:23 +0530
-Message-ID: <8738fumex0.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3DF6C1A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 21:37:48 +1000 (EST)
+Message-ID: <5385CA86.3010700@suse.de>
+Date: Wed, 28 May 2014 13:37:42 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: aneesh.kumar@in.ibm.com, Paul Mackerras <paulus@samba.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
+References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>			
+ <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>		
+ <1401214527.3289.611.camel@ul30vt.home> <5385166A.5060404@suse.de>	
+ <1401237575.3289.676.camel@ul30vt.home> <53853155.60809@suse.de>
+ <1401238674.3289.679.camel@ul30vt.home>
+In-Reply-To: <1401238674.3289.679.camel@ul30vt.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ kvm-ppc@vger.kernel.org, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,139 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
 
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+On 28.05.14 02:57, Alex Williamson wrote:
+> On Wed, 2014-05-28 at 02:44 +0200, Alexander Graf wrote:
+>> On 28.05.14 02:39, Alex Williamson wrote:
+>>> On Wed, 2014-05-28 at 00:49 +0200, Alexander Graf wrote:
+>>>> On 27.05.14 20:15, Alex Williamson wrote:
+>>>>> On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
+>>>>>> The patch adds new IOCTL commands for sPAPR VFIO container device
+>>>>>> to support EEH functionality for PCI devices, which have been passed
+>>>>>> through from host to somebody else via VFIO.
+>>>>>>
+>>>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>>>> ---
+>>>>>>     Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
+>>>>>>     drivers/vfio/pci/Makefile           |  1 +
+>>>>>>     drivers/vfio/pci/vfio_pci.c         | 20 +++++---
+>>>>>>     drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
+>>>>>>     drivers/vfio/pci/vfio_pci_private.h |  5 ++
+>>>>>>     drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
+>>>>>>     include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
+>>>>>>     7 files changed, 308 insertions(+), 7 deletions(-)
+>>>>>>     create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
+>>>> [...]
+>>>>
+>>>>>> +
+>>>>>> +	return ret;
+>>>>>> +}
+>>>>>> +
+>>>>>>     static long tce_iommu_ioctl(void *iommu_data,
+>>>>>>     				 unsigned int cmd, unsigned long arg)
+>>>>>>     {
+>>>>>> @@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
+>>>>>>     		tce_iommu_disable(container);
+>>>>>>     		mutex_unlock(&container->lock);
+>>>>>>     		return 0;
+>>>>>> +	case VFIO_EEH_PE_SET_OPTION:
+>>>>>> +	case VFIO_EEH_PE_GET_STATE:
+>>>>>> +	case VFIO_EEH_PE_RESET:
+>>>>>> +	case VFIO_EEH_PE_CONFIGURE:
+>>>>>> +		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
+>>>>> This is where it would have really made sense to have a single
+>>>>> VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
+>>>>> AlexG, are you really attached to splitting these out into separate
+>>>>> ioctls?
+>>>> I don't see the problem. We need to forward 4 ioctls to a separate piece
+>>>> of code, so we forward 4 ioctls to a separate piece of code :). Putting
+>>>> them into one ioctl just moves the switch() into another function.
+>>> And uses an extra 3 ioctl numbers and gives us extra things to update if
+>>> we ever need to add more ioctls, etc.  ioctl numbers are an address
+>>> space, how much address space do we really want to give to EEH?  It's
+>>> not a big difference, but I don't think it's completely even either.
+>>> Thanks,
+>> Yes, that's the point. I by far prefer to have you push back on anyone
+>> who introduces useless ioctls rather than have a separate EEH number
+>> space that people can just throw anything in they like ;).
+> Well, I appreciate that, but having them as separate ioctls doesn't
+> really prevent that either.  Any one of these 4 could be set to take a
+> sub-option to extend and contort the EEH interface.  The only way to
+> prevent that would be to avoid the argsz+flags hack that make the ioctl
+> extendable.  Thanks,
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Sure, that's what patch review is about. I'm really more concerned about 
+whose court the number space is in - you or Gavin. If we're talking 
+about top level ioctls you will care a lot more.
 
-> ---
->  tools/testing/selftests/powerpc/Makefile           |  2 +-
->  tools/testing/selftests/powerpc/mm/Makefile        | 18 ++++++
->  .../selftests/powerpc/mm/hugetlb_vs_thp_test.c     | 72 ++++++++++++++++++++++
->  3 files changed, 91 insertions(+), 1 deletion(-)
->  create mode 100644 tools/testing/selftests/powerpc/mm/Makefile
->  create mode 100644 tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c
->
-> diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-> index 316194f..b3dbe9e 100644
-> --- a/tools/testing/selftests/powerpc/Makefile
-> +++ b/tools/testing/selftests/powerpc/Makefile
-> @@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
->  
->  export CC CFLAGS
->  
-> -TARGETS = pmu copyloops
-> +TARGETS = pmu copyloops mm
->  
->  endif
->  
-> diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
-> new file mode 100644
-> index 0000000..357ccbd
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/mm/Makefile
-> @@ -0,0 +1,18 @@
-> +noarg:
-> +	$(MAKE) -C ../
-> +
-> +PROGS := hugetlb_vs_thp_test
-> +
-> +all: $(PROGS)
-> +
-> +$(PROGS): ../harness.c
-> +
-> +run_tests: all
-> +	@-for PROG in $(PROGS); do \
-> +		./$$PROG; \
-> +	done;
-> +
-> +clean:
-> +	rm -f $(PROGS)
-> +
-> +.PHONY: all run_tests clean
-> diff --git a/tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c b/tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c
-> new file mode 100644
-> index 0000000..3d8e5b0
-> --- /dev/null
-> +++ b/tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c
-> @@ -0,0 +1,72 @@
-> +#include <stdio.h>
-> +#include <sys/mman.h>
-> +#include <unistd.h>
-> +
-> +#include "utils.h"
-> +
-> +/* This must match the huge page & THP size */
-> +#define SIZE	(16 * 1024 * 1024)
-> +
-> +static int test_body(void)
-> +{
-> +	void *addr;
-> +	char *p;
-> +
-> +	addr = (void *)0xa0000000;
-> +
-> +	p = mmap(addr, SIZE, PROT_READ | PROT_WRITE,
-> +		 MAP_HUGETLB | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-> +	if (p != MAP_FAILED) {
-> +		/*
-> +		 * Typically the mmap will fail because no huge pages are
-> +		 * allocated on the system. But if there are huge pages
-> +		 * allocated the mmap will succeed. That's fine too, we just
-> +		 * munmap here before continuing.
-> +		 */
-> +		munmap(addr, SIZE);
-> +	}
-> +
-> +	p = mmap(addr, SIZE, PROT_READ | PROT_WRITE,
-> +		 MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-> +	if (p == MAP_FAILED) {
-> +		printf("Mapping failed @ %p\n", addr);
-> +		perror("mmap");
-> +		return 1;
-> +	}
-> +
-> +	/*
-> +	 * Either a user or kernel access is sufficient to trigger the bug.
-> +	 * A kernel access is easier to spot & debug, as it will trigger the
-> +	 * softlockup or RCU stall detectors, and when the system is kicked
-> +	 * into xmon we get a backtrace in the kernel.
-> +	 *
-> +	 * A good option is:
-> +	 *  getcwd(p, SIZE);
-> +	 *
-> +	 * For the purposes of this testcase it's preferable to spin in
-> +	 * userspace, so the harness can kill us if we get stuck. That way we
-> +	 * see a test failure rather than a dead system.
-> +	 */
-> +	*p = 0xf;
-> +
-> +	munmap(addr, SIZE);
-> +
-> +	return 0;
-> +}
-> +
-> +static int test_main(void)
-> +{
-> +	int i;
-> +
-> +	/* 10,000 because it's a "bunch", and completes reasonably quickly */
-> +	for (i = 0; i < 10000; i++)
-> +		if (test_body())
-> +			return 1;
-> +
-> +	return 0;
-> +}
-> +
-> +int main(void)
-> +{
-> +	return test_harness(test_main, "hugetlb_vs_thp");
-> +}
-> -- 
-> 1.9.1
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+But I'm not religious about this. You're the VFIO maintainer, so it's 
+your call. I just personally cringe when I see an ioctl that gets an 
+"opcode" and a "parameter" argument where the "parameter" argument is a 
+union with one struct for each opcode.
+
+
+Alex
