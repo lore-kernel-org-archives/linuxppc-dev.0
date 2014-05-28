@@ -1,18 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B9FD21A060D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 13:29:11 +1000 (EST)
-Message-ID: <1401247741.8262.21.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 28 May 2014 13:29:01 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBA411A024E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 14:23:35 +1000 (EST)
+Message-ID: <1401251015.5468.5.camel@concordia>
+Subject: Re: Kernel 3.15: Boot problems with a PA6T board
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Wed, 28 May 2014 14:23:35 +1000
+In-Reply-To: <53851AFA.5040504@xenosoft.de>
+References: <5366649E.4030102@xenosoft.de>
+ <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>
+ <1401107166.23096.1.camel@concordia> <53851AFA.5040504@xenosoft.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,44 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Wed, 2014-05-28 at 01:08 +0200, Christian Zigotzky wrote:
+> Hi Michael,
+> 
+> Thanks a lot for your answer.
+> 
+> ...
+>
+> 18a1a7a1d862ae0794a0179473d08a414dd49234 <- It doesn't boot. Error messages: Oops: Machine check, sig: 7 [#1] CPU: 1 PID: 1 Comm: swapper/0 not tainted
+> d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b <- It boots. :-)
+> 0f5a869600141a0d5575e3190af01a050c081b07 <- It boots. :-)
+> c7e64b9ce04aa2e3fad7396d92b5cb92056d16ac <- It boots. :-)
+> d3e144532703fe2454b56eddb56f30d2d620187b <- It boots. :-)
+> 
+> I think the machine check is the problem.
 
-Here's a pair of powerpc fixes for 3.15 which are also going to stable.
+Yes I think it is. Do you get any more info, or just that one line?
 
-One's a fix for building with newer binutils (the problem currently only
-affects the BookE kernels but the affected macro might come back into
-use on BookS platforms at any time). Unfortunately, the binutils maintainer
-did a backward incompatible change to a construct that we use so we have
-to add Makefile check.
+So I think the latest working commit we have is d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b.
 
-The other one is a fix for CPUs getting stuck in kexec when running single
-threaded. Since we routinely use kexec on power (including in our newer
-bootloaders), I deemed that important enough.
+I'm going to guess that cd427485357c0c4b99f69719251baacf25946e11 is BAD. Can
+you please confirm or deny that?
 
-Cheers,
-Ben.
+Assuming cd42748 is bad, you should do a git bisect between it and 18a1a7a.
+That should be a fairly quick bisect. That would be:
 
-The following changes since commit 8050936caf125fbe54111ba5e696b68a360556ba:
+$ git bisect start
+$ git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
+$ git bisect bad  cd427485357c0c4b99f69719251baacf25946e11
 
-  powerpc: irq work racing with timer interrupt can result in timer interrupt hang (2014-05-12 14:29:28 +1000)
+If cd42748 is *good*, then you'll need to do a bigger bisect from d8ff9cd to
+18a1a7a.
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 011e4b02f1da156ac7fea28a9da878f3c23af739:
-
-  powerpc, kexec: Fix "Processor X is stuck" issue during kexec from ST mode (2014-05-28 13:24:26 +1000)
-
-----------------------------------------------------------------
-Guenter Roeck (1):
-      powerpc: Fix 64 bit builds with binutils 2.24
-
-Srivatsa S. Bhat (1):
-      powerpc, kexec: Fix "Processor X is stuck" issue during kexec from ST mode
-
- arch/powerpc/Makefile                  | 4 +++-
- arch/powerpc/include/asm/ppc_asm.h     | 7 ++++++-
- arch/powerpc/kernel/machine_kexec_64.c | 2 +-
- kernel/kexec.c                         | 8 ++++++++
- 4 files changed, 18 insertions(+), 3 deletions(-)
+cheers
