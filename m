@@ -1,24 +1,24 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E6141A0547
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:44:12 +1000 (EST)
-Message-ID: <53853155.60809@suse.de>
-Date: Wed, 28 May 2014 02:44:05 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>		
- <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>	
- <1401214527.3289.611.camel@ul30vt.home> <5385166A.5060404@suse.de>
- <1401237575.3289.676.camel@ul30vt.home>
-In-Reply-To: <1401237575.3289.676.camel@ul30vt.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0051.hostedemail.com
+ [216.40.44.51])
+ by lists.ozlabs.org (Postfix) with ESMTP id DEBA11A0590
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:49:47 +1000 (EST)
+Received: from smtprelay.hostedemail.com (ff-bigip1 [10.5.19.254])
+ by smtpgrave03.hostedemail.com (Postfix) with ESMTP id B2E8828F933
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 00:44:35 +0000 (UTC)
+Message-ID: <1401237869.20587.12.camel@joe-AO725>
+Subject: Re: [PATCH 11/16] byteorder: provide a linux/byteorder.h with
+ {be,le}_to_cpu() and cpu_to_{be,le}() macros
+From: Joe Perches <joe@perches.com>
+To: Cody P Schafer <dev@codyps.com>
+Date: Tue, 27 May 2014 17:44:29 -0700
+In-Reply-To: <1401236684-10579-12-git-send-email-dev@codyps.com>
+References: <1401236684-10579-1-git-send-email-dev@codyps.com>
+ <1401236684-10579-12-git-send-email-dev@codyps.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-05-27 at 17:22 -0700, Cody P Schafer wrote:
+> Rather manually specifying the size of the integer to be converted, key
+> off of the type size. Reduces duplicate size info and the occurance of
+> certain types of bugs (using the wrong sized conversion).
+[]
+> diff --git a/include/linux/byteorder.h b/include/linux/byteorder.h
+[]
+> @@ -0,0 +1,34 @@
+> +#ifndef LINUX_BYTEORDER_H_
+> +#define LINUX_BYTEORDER_H_
+> +
+> +#include <asm/byteorder.h>
+> +
+> +#define be_to_cpu(v) \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint8_t) , v,	\
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint16_t), be16_to_cpu(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint32_t), be32_to_cpu(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint64_t), be64_to_cpu(v), \
+> +		(void)0))))
 
-On 28.05.14 02:39, Alex Williamson wrote:
-> On Wed, 2014-05-28 at 00:49 +0200, Alexander Graf wrote:
->> On 27.05.14 20:15, Alex Williamson wrote:
->>> On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
->>>> The patch adds new IOCTL commands for sPAPR VFIO container device
->>>> to support EEH functionality for PCI devices, which have been passed
->>>> through from host to somebody else via VFIO.
->>>>
->>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>> ---
->>>>    Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
->>>>    drivers/vfio/pci/Makefile           |  1 +
->>>>    drivers/vfio/pci/vfio_pci.c         | 20 +++++---
->>>>    drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
->>>>    drivers/vfio/pci/vfio_pci_private.h |  5 ++
->>>>    drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
->>>>    include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
->>>>    7 files changed, 308 insertions(+), 7 deletions(-)
->>>>    create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
->> [...]
->>
->>>> +
->>>> +	return ret;
->>>> +}
->>>> +
->>>>    static long tce_iommu_ioctl(void *iommu_data,
->>>>    				 unsigned int cmd, unsigned long arg)
->>>>    {
->>>> @@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->>>>    		tce_iommu_disable(container);
->>>>    		mutex_unlock(&container->lock);
->>>>    		return 0;
->>>> +	case VFIO_EEH_PE_SET_OPTION:
->>>> +	case VFIO_EEH_PE_GET_STATE:
->>>> +	case VFIO_EEH_PE_RESET:
->>>> +	case VFIO_EEH_PE_CONFIGURE:
->>>> +		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
->>> This is where it would have really made sense to have a single
->>> VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
->>> AlexG, are you really attached to splitting these out into separate
->>> ioctls?
->> I don't see the problem. We need to forward 4 ioctls to a separate piece
->> of code, so we forward 4 ioctls to a separate piece of code :). Putting
->> them into one ioctl just moves the switch() into another function.
-> And uses an extra 3 ioctl numbers and gives us extra things to update if
-> we ever need to add more ioctls, etc.  ioctl numbers are an address
-> space, how much address space do we really want to give to EEH?  It's
-> not a big difference, but I don't think it's completely even either.
-> Thanks,
+probably better to use BUILD_BUG instead of these 0 returns
 
-Yes, that's the point. I by far prefer to have you push back on anyone 
-who introduces useless ioctls rather than have a separate EEH number 
-space that people can just throw anything in they like ;).
-
-
-Alex
+> +
+> +#define le_to_cpu(v) \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint8_t) , v,	\
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint16_t), le16_to_cpu(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint32_t), le32_to_cpu(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint64_t), le64_to_cpu(v), \
+> +		(void)0))))
+> +
+> +#define cpu_to_le(v) \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint8_t) , v,	\
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint16_t), cpu_to_le16(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint32_t), cpu_to_le32(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint64_t), cpu_to_le64(v), \
+> +		(void)0))))
+> +
+> +#define cpu_to_be(v) \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint8_t) , v,	\
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint16_t), cpu_to_be16(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint32_t), cpu_to_be32(v), \
+> +	__builtin_choose_expr(sizeof(v) == sizeof(uint64_t), cpu_to_be64(v), \
+> +		(void)0))))
+> +
+> +#endif
