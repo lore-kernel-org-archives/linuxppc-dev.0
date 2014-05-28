@@ -1,25 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::10])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3DF6C1A024F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 21:37:48 +1000 (EST)
-Message-ID: <5385CA86.3010700@suse.de>
-Date: Wed, 28 May 2014 13:37:42 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 78A371A06D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 21:38:30 +1000 (EST)
+Message-ID: <5385C7A3.1080508@xenosoft.de>
+Date: Wed, 28 May 2014 13:25:23 +0200
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>			
- <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>		
- <1401214527.3289.611.camel@ul30vt.home> <5385166A.5060404@suse.de>	
- <1401237575.3289.676.camel@ul30vt.home> <53853155.60809@suse.de>
- <1401238674.3289.679.camel@ul30vt.home>
-In-Reply-To: <1401238674.3289.679.camel@ul30vt.home>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Kernel 3.15: Boot problems with a PA6T board
+References: <5366649E.4030102@xenosoft.de>		
+ <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>	
+ <1401107166.23096.1.camel@concordia> <53851AFA.5040504@xenosoft.de>
+ <1401251015.5468.5.camel@concordia> <5385A3F4.8070004@xenosoft.de>
+In-Reply-To: <5385A3F4.8070004@xenosoft.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,75 +26,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 28.05.2014 10:53, Christian Zigotzky wrote:
+> Hi Michael,
+>
+> Thank you for your answer and thank you for your help. :-)
+>
+> On 28.05.2014 06:23, Michael Ellerman wrote:
+>> On Wed, 2014-05-28 at 01:08 +0200, Christian Zigotzky wrote:
+>>> Hi Michael,
+>>>
+>>> Thanks a lot for your answer.
+>>>
+>>> ...
+>>>
+>>> 18a1a7a1d862ae0794a0179473d08a414dd49234 <- It doesn't boot. Error 
+>>> messages: Oops: Machine check, sig: 7 [#1] CPU: 1 PID: 1 Comm: 
+>>> swapper/0 not tainted
+>>> d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b <- It boots. :-)
+>>> 0f5a869600141a0d5575e3190af01a050c081b07 <- It boots. :-)
+>>> c7e64b9ce04aa2e3fad7396d92b5cb92056d16ac <- It boots. :-)
+>>> d3e144532703fe2454b56eddb56f30d2d620187b <- It boots. :-)
+>>>
+>>> I think the machine check is the problem.
+>> Yes I think it is. Do you get any more info, or just that one line?
+>>
+>> So I think the latest working commit we have is 
+>> d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b.
+>>
+>> I'm going to guess that cd427485357c0c4b99f69719251baacf25946e11 is 
+>> BAD. Can
+>> you please confirm or deny that?
+> It's not BAD. It boots.
+>
+> Rgds,
+>
+> Christian
+>>
+>> Assuming cd42748 is bad, you should do a git bisect between it and 
+>> 18a1a7a.
+>> That should be a fairly quick bisect. That would be:
+>>
+>> $ git bisect start
+>> $ git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
+>> $ git bisect bad  cd427485357c0c4b99f69719251baacf25946e11
+>>
+>> If cd42748 is *good*, then you'll need to do a bigger bisect from 
+>> d8ff9cd to
+>> 18a1a7a.
+OK :-)
 
-On 28.05.14 02:57, Alex Williamson wrote:
-> On Wed, 2014-05-28 at 02:44 +0200, Alexander Graf wrote:
->> On 28.05.14 02:39, Alex Williamson wrote:
->>> On Wed, 2014-05-28 at 00:49 +0200, Alexander Graf wrote:
->>>> On 27.05.14 20:15, Alex Williamson wrote:
->>>>> On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
->>>>>> The patch adds new IOCTL commands for sPAPR VFIO container device
->>>>>> to support EEH functionality for PCI devices, which have been passed
->>>>>> through from host to somebody else via VFIO.
->>>>>>
->>>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>>> ---
->>>>>>     Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
->>>>>>     drivers/vfio/pci/Makefile           |  1 +
->>>>>>     drivers/vfio/pci/vfio_pci.c         | 20 +++++---
->>>>>>     drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
->>>>>>     drivers/vfio/pci/vfio_pci_private.h |  5 ++
->>>>>>     drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
->>>>>>     include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
->>>>>>     7 files changed, 308 insertions(+), 7 deletions(-)
->>>>>>     create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
->>>> [...]
->>>>
->>>>>> +
->>>>>> +	return ret;
->>>>>> +}
->>>>>> +
->>>>>>     static long tce_iommu_ioctl(void *iommu_data,
->>>>>>     				 unsigned int cmd, unsigned long arg)
->>>>>>     {
->>>>>> @@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->>>>>>     		tce_iommu_disable(container);
->>>>>>     		mutex_unlock(&container->lock);
->>>>>>     		return 0;
->>>>>> +	case VFIO_EEH_PE_SET_OPTION:
->>>>>> +	case VFIO_EEH_PE_GET_STATE:
->>>>>> +	case VFIO_EEH_PE_RESET:
->>>>>> +	case VFIO_EEH_PE_CONFIGURE:
->>>>>> +		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
->>>>> This is where it would have really made sense to have a single
->>>>> VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
->>>>> AlexG, are you really attached to splitting these out into separate
->>>>> ioctls?
->>>> I don't see the problem. We need to forward 4 ioctls to a separate piece
->>>> of code, so we forward 4 ioctls to a separate piece of code :). Putting
->>>> them into one ioctl just moves the switch() into another function.
->>> And uses an extra 3 ioctl numbers and gives us extra things to update if
->>> we ever need to add more ioctls, etc.  ioctl numbers are an address
->>> space, how much address space do we really want to give to EEH?  It's
->>> not a big difference, but I don't think it's completely even either.
->>> Thanks,
->> Yes, that's the point. I by far prefer to have you push back on anyone
->> who introduces useless ioctls rather than have a separate EEH number
->> space that people can just throw anything in they like ;).
-> Well, I appreciate that, but having them as separate ioctls doesn't
-> really prevent that either.  Any one of these 4 could be set to take a
-> sub-option to extend and contort the EEH interface.  The only way to
-> prevent that would be to avoid the argsz+flags hack that make the ioctl
-> extendable.  Thanks,
+-> git clone 
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux2-git
+-> git bisect start
+-> git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
+-> git bisect bad 18a1a7a1d862ae0794a0179473d08a414dd49234
 
-Sure, that's what patch review is about. I'm really more concerned about 
-whose court the number space is in - you or Gavin. If we're talking 
-about top level ioctls you will care a lot more.
+Output:
+Bisecting: 5900 revisions left to test after this (roughly 13 steps)
+[cb1595563880a81dab6eab9a5ecb4520d2e76077] Merge tag 'tty-3.15-rc1' of 
+git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
 
-But I'm not religious about this. You're the VFIO maintainer, so it's 
-your call. I just personally cringe when I see an ioctl that gets an 
-"opcode" and a "parameter" argument where the "parameter" argument is a 
-union with one struct for each opcode.
-
-
-Alex
+Unfortunately it doesn't boot. :-(
+>>
+>>
+>> cheers
+>>
+>>
+>>
+>
