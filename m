@@ -1,22 +1,31 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by lists.ozlabs.org (Postfix) with ESMTP id 337431A058F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:58:03 +1000 (EST)
-Message-ID: <1401238674.3289.679.camel@ul30vt.home>
-Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexander Graf <agraf@suse.de>
-Date: Tue, 27 May 2014 18:57:54 -0600
-In-Reply-To: <53853155.60809@suse.de>
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401214527.3289.611.camel@ul30vt.home> <5385166A.5060404@suse.de>
- <1401237575.3289.676.camel@ul30vt.home> <53853155.60809@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <dev@codyps.com>
+Received: from mail-yk0-x22f.google.com (mail-yk0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c07::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E37DF1A0590
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:26:14 +1000 (EST)
+Received: by mail-yk0-f175.google.com with SMTP id 131so7734849ykp.20
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 17:26:11 -0700 (PDT)
+From: Cody P Schafer <dev@codyps.com>
+To: LKML <linux-kernel@vger.kernel.org>,
+ Linux PPC <linuxppc-dev@lists.ozlabs.org>,
+ Adrian Hunter <adrian.hunter@intel.com>, Andi Kleen <ak@linux.intel.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Borislav Petkov <bp@suse.de>, Cody P Schafer <dev@codyps.com>,
+ David Ahern <dsahern@gmail.com>, Ingo Molnar <mingo@kernel.org>,
+ Jiri Olsa <jolsa@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Namhyung Kim <namhyung@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 00/16] perf: add support for parameterized events from sysfs
+ (powerpc 24x7)
+Date: Tue, 27 May 2014 17:21:55 -0700
+Message-Id: <1401236684-10579-1-git-send-email-dev@codyps.com>
+Cc: linux-doc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,65 +35,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-05-28 at 02:44 +0200, Alexander Graf wrote:
-> On 28.05.14 02:39, Alex Williamson wrote:
-> > On Wed, 2014-05-28 at 00:49 +0200, Alexander Graf wrote:
-> >> On 27.05.14 20:15, Alex Williamson wrote:
-> >>> On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
-> >>>> The patch adds new IOCTL commands for sPAPR VFIO container device
-> >>>> to support EEH functionality for PCI devices, which have been passed
-> >>>> through from host to somebody else via VFIO.
-> >>>>
-> >>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> >>>> ---
-> >>>>    Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
-> >>>>    drivers/vfio/pci/Makefile           |  1 +
-> >>>>    drivers/vfio/pci/vfio_pci.c         | 20 +++++---
-> >>>>    drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
-> >>>>    drivers/vfio/pci/vfio_pci_private.h |  5 ++
-> >>>>    drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
-> >>>>    include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
-> >>>>    7 files changed, 308 insertions(+), 7 deletions(-)
-> >>>>    create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
-> >> [...]
-> >>
-> >>>> +
-> >>>> +	return ret;
-> >>>> +}
-> >>>> +
-> >>>>    static long tce_iommu_ioctl(void *iommu_data,
-> >>>>    				 unsigned int cmd, unsigned long arg)
-> >>>>    {
-> >>>> @@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
-> >>>>    		tce_iommu_disable(container);
-> >>>>    		mutex_unlock(&container->lock);
-> >>>>    		return 0;
-> >>>> +	case VFIO_EEH_PE_SET_OPTION:
-> >>>> +	case VFIO_EEH_PE_GET_STATE:
-> >>>> +	case VFIO_EEH_PE_RESET:
-> >>>> +	case VFIO_EEH_PE_CONFIGURE:
-> >>>> +		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
-> >>> This is where it would have really made sense to have a single
-> >>> VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
-> >>> AlexG, are you really attached to splitting these out into separate
-> >>> ioctls?
-> >> I don't see the problem. We need to forward 4 ioctls to a separate piece
-> >> of code, so we forward 4 ioctls to a separate piece of code :). Putting
-> >> them into one ioctl just moves the switch() into another function.
-> > And uses an extra 3 ioctl numbers and gives us extra things to update if
-> > we ever need to add more ioctls, etc.  ioctl numbers are an address
-> > space, how much address space do we really want to give to EEH?  It's
-> > not a big difference, but I don't think it's completely even either.
-> > Thanks,
-> 
-> Yes, that's the point. I by far prefer to have you push back on anyone 
-> who introduces useless ioctls rather than have a separate EEH number 
-> space that people can just throw anything in they like ;).
+What this patchset does:
 
-Well, I appreciate that, but having them as separate ioctls doesn't
-really prevent that either.  Any one of these 4 could be set to take a
-sub-option to extend and contort the EEH interface.  The only way to
-prevent that would be to avoid the argsz+flags hack that make the ioctl
-extendable.  Thanks,
+ - the first patch (override sysfs in tools/perf via SYSFS_PATH) was sent out
+   previously, but needed a resend anyhow. Having it is useful for testing the
+   later changes to tools/perf.
+ - the second patch is a bugfix to the powerpc hv-24x7 code which was
+   previously sent out, which is a good idea to have when testing these patches
+   on POWER8 hardware.
 
-Alex
+ - document perf sysfs and the changes to add parameterized events
+   - semi-notably: removes the growing list of specific POWER cpu events and
+     begins documenting them generically, much like the docs for
+     /sys/modules/MODULENAME do for modules.
+ - tools/perf changes to support parameterized events
+ - export some parameterized events from the powerpc pmus hv_24x7 and hv_gpci
+
+Description of "event parameters" from the documentation patch:
+
+    Event parameters are a basic way for partial events to be specified in
+    sysfs with per-event names given to the fields that need to be filled in
+    when using a particular event.
+
+    It is intended for supporting cases where the single 'cpu' parameter is
+    insufficient. For example, POWER 8 has events for physical
+    sockets/cores/cpus that are accessible from with virtual machines. To
+    keep using the single 'cpu' parameter we'd need to perform a mapping
+    between Linux's cpus and the physical machine's cpus (in this case
+    Linux is running under a hypervisor). This isn't possible because
+    bindings between our cpus and physical cpus may not be fixed, and we
+    probably won't have a "cpu" on each physical cpu.
+
+Description of the sysfs contents when events are parameterized (copied from an
+included patch):
+
+	Examples:
+
+		domain=0x1,offset=0x8,starting_index=phys_cpu
+
+	In the case of the last example, a value replacing "phys_cpu"
+	would need to be provided by the user selecting the particular
+	event. This is refered to as "event parameterization". All
+	non-numerical values indicate an event parameter.
+
+Notes on how perf-list displays parameterized events (and how to use them,
+again culled from an included patch):
+
+	PARAMETERIZED EVENTS
+	--------------------
+
+	Some pmu events listed by 'perf-list' will be displayed with '?' in them. For
+	example:
+
+	  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
+
+	This means that when provided as an event, a value for phys_processor_idx must
+	also be supplied. For example:
+
+	  perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
+
+
+Cody P Schafer (16):
+  tools/perf: allow overriding sysfs and proc finding with env var
+  powerpc/perf/hv-24x7: use kmem_cache instead of aligned stack
+    allocations
+  perf Documentation: sysfs events/ interfaces
+  perf Documentation: remove duplicated docs for powerpc cpu specific
+    events
+  perf Documentation: add event parameters
+  tools/perf: annotate list_head with type info
+  tools/perf: support parsing parameterized events
+  tools/perf: extend format_alias() to include event parameters
+  tools/perf: document parameterized events and note symbolically formed
+    events
+  perf: provide sysfs_show for struct perf_pmu_events_attr
+  byteorder: provide a linux/byteorder.h with {be,le}_to_cpu() and
+    cpu_to_{be,le}() macros
+  powerpc/perf/hv-24x7: parse catalog and populate sysfs with events
+  powerpc/perf/hv-24x7: Documentaion for new sysfs entries which expose
+    descriptions
+  perf: add PMU_EVENT_ATTR_STRING() helper
+  powerpc/perf/{hv-gpci,hv-common}: generate requests with counters
+    annotated
+  powerpc/perf/hv-gpci: add the remaining gpci requests
+
+ .../testing/sysfs-bus-event_source-devices-events  | 617 ++--------------
+ .../testing/sysfs-bus-event_source-devices-hv_24x7 |  22 +
+ arch/powerpc/perf/hv-24x7-catalog.h                |  25 +
+ arch/powerpc/perf/hv-24x7-domains.h                |  19 +
+ arch/powerpc/perf/hv-24x7.c                        | 812 ++++++++++++++++++++-
+ arch/powerpc/perf/hv-24x7.h                        |  12 +-
+ arch/powerpc/perf/hv-common.c                      |  10 +-
+ arch/powerpc/perf/hv-gpci-requests.h               | 258 +++++++
+ arch/powerpc/perf/hv-gpci.c                        |   8 +
+ arch/powerpc/perf/hv-gpci.h                        |  37 +-
+ arch/powerpc/perf/req-gen/_begin.h                 |  13 +
+ arch/powerpc/perf/req-gen/_clear.h                 |   5 +
+ arch/powerpc/perf/req-gen/_end.h                   |   4 +
+ arch/powerpc/perf/req-gen/_request-begin.h         |  15 +
+ arch/powerpc/perf/req-gen/_request-end.h           |   8 +
+ arch/powerpc/perf/req-gen/perf.h                   | 155 ++++
+ include/linux/byteorder.h                          |  34 +
+ include/linux/perf_event.h                         |  10 +
+ kernel/events/core.c                               |   8 +
+ tools/lib/api/fs/fs.c                              |  43 +-
+ tools/perf/Documentation/perf-list.txt             |  13 +
+ tools/perf/Documentation/perf-record.txt           |   5 +
+ tools/perf/util/parse-events.h                     |   1 +
+ tools/perf/util/pmu.c                              |  85 ++-
+ tools/perf/util/pmu.h                              |   6 +-
+ 25 files changed, 1589 insertions(+), 636 deletions(-)
+ create mode 100644 arch/powerpc/perf/hv-24x7-domains.h
+ create mode 100644 arch/powerpc/perf/hv-gpci-requests.h
+ create mode 100644 arch/powerpc/perf/req-gen/_begin.h
+ create mode 100644 arch/powerpc/perf/req-gen/_clear.h
+ create mode 100644 arch/powerpc/perf/req-gen/_end.h
+ create mode 100644 arch/powerpc/perf/req-gen/_request-begin.h
+ create mode 100644 arch/powerpc/perf/req-gen/_request-end.h
+ create mode 100644 arch/powerpc/perf/req-gen/perf.h
+ create mode 100644 include/linux/byteorder.h
+
+-- 
+1.9.3
