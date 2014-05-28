@@ -1,22 +1,23 @@
-Return-Path: <chzigotzky@xenosoft.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 78A371A06D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 21:38:30 +1000 (EST)
-Message-ID: <5385C7A3.1080508@xenosoft.de>
-Date: Wed, 28 May 2014 13:25:23 +0200
-From: Christian Zigotzky <chzigotzky@xenosoft.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 092051A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 21:41:39 +1000 (EST)
+Message-ID: <5385CB6F.50300@suse.de>
+Date: Wed, 28 May 2014 13:41:35 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Kernel 3.15: Boot problems with a PA6T board
-References: <5366649E.4030102@xenosoft.de>		
- <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>	
- <1401107166.23096.1.camel@concordia> <53851AFA.5040504@xenosoft.de>
- <1401251015.5468.5.camel@concordia> <5385A3F4.8070004@xenosoft.de>
-In-Reply-To: <5385A3F4.8070004@xenosoft.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
+References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1401214527.3289.611.camel@ul30vt.home> <20140528005532.GA5528@shangw>
+In-Reply-To: <20140528005532.GA5528@shangw>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: aik@ozlabs.ru, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,71 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28.05.2014 10:53, Christian Zigotzky wrote:
-> Hi Michael,
->
-> Thank you for your answer and thank you for your help. :-)
->
-> On 28.05.2014 06:23, Michael Ellerman wrote:
->> On Wed, 2014-05-28 at 01:08 +0200, Christian Zigotzky wrote:
->>> Hi Michael,
->>>
->>> Thanks a lot for your answer.
->>>
->>> ...
->>>
->>> 18a1a7a1d862ae0794a0179473d08a414dd49234 <- It doesn't boot. Error 
->>> messages: Oops: Machine check, sig: 7 [#1] CPU: 1 PID: 1 Comm: 
->>> swapper/0 not tainted
->>> d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b <- It boots. :-)
->>> 0f5a869600141a0d5575e3190af01a050c081b07 <- It boots. :-)
->>> c7e64b9ce04aa2e3fad7396d92b5cb92056d16ac <- It boots. :-)
->>> d3e144532703fe2454b56eddb56f30d2d620187b <- It boots. :-)
->>>
->>> I think the machine check is the problem.
->> Yes I think it is. Do you get any more info, or just that one line?
->>
->> So I think the latest working commit we have is 
->> d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b.
->>
->> I'm going to guess that cd427485357c0c4b99f69719251baacf25946e11 is 
->> BAD. Can
->> you please confirm or deny that?
-> It's not BAD. It boots.
->
-> Rgds,
->
-> Christian
->>
->> Assuming cd42748 is bad, you should do a git bisect between it and 
->> 18a1a7a.
->> That should be a fairly quick bisect. That would be:
->>
->> $ git bisect start
->> $ git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
->> $ git bisect bad  cd427485357c0c4b99f69719251baacf25946e11
->>
->> If cd42748 is *good*, then you'll need to do a bigger bisect from 
->> d8ff9cd to
->> 18a1a7a.
-OK :-)
 
--> git clone 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux2-git
--> git bisect start
--> git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
--> git bisect bad 18a1a7a1d862ae0794a0179473d08a414dd49234
+On 28.05.14 02:55, Gavin Shan wrote:
+> On Tue, May 27, 2014 at 12:15:27PM -0600, Alex Williamson wrote:
+>> On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
+>>> The patch adds new IOCTL commands for sPAPR VFIO container device
+>>> to support EEH functionality for PCI devices, which have been passed
+>>> through from host to somebody else via VFIO.
+>>>
+>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>> ---
+>>>   Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
+>>>   drivers/vfio/pci/Makefile           |  1 +
+>>>   drivers/vfio/pci/vfio_pci.c         | 20 +++++---
+>>>   drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
+>>>   drivers/vfio/pci/vfio_pci_private.h |  5 ++
+>>>   drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
+>>>   include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
+>>>   7 files changed, 308 insertions(+), 7 deletions(-)
+>>>   create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
 
-Output:
-Bisecting: 5900 revisions left to test after this (roughly 13 steps)
-[cb1595563880a81dab6eab9a5ecb4520d2e76077] Merge tag 'tty-3.15-rc1' of 
-git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
+[...]
 
-Unfortunately it doesn't boot. :-(
+>>> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+>>> index cb9023d..c5fac36 100644
+>>> --- a/include/uapi/linux/vfio.h
+>>> +++ b/include/uapi/linux/vfio.h
+>>> @@ -455,6 +455,72 @@ struct vfio_iommu_spapr_tce_info {
+>>>   
+>>>   #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
+>>>   
+>>> +/*
+>>> + * EEH functionality can be enabled or disabled on one specific device.
+>>> + * Also, the DMA or IO frozen state can be removed from the frozen PE
+>>> + * if required.
+>>> + */
+>>> +struct vfio_eeh_pe_set_option {
+>>> +	__u32 argsz;
+>>> +	__u32 flags;
+>>> +	__u32 option;
+>>> +#define VFIO_EEH_PE_SET_OPT_DISABLE	0	/* Disable EEH	*/
+>>> +#define VFIO_EEH_PE_SET_OPT_ENABLE	1	/* Enable EEH	*/
+>>> +#define VFIO_EEH_PE_SET_OPT_IO		2	/* Enable IO	*/
+>>> +#define VFIO_EEH_PE_SET_OPT_DMA		3	/* Enable DMA	*/
+>> This is more of a "command" than an "option" isn't it?  Each of these
+>> probably needs a more significant description.
 >>
->>
->> cheers
->>
->>
->>
+> Yeah, it would be regarded as "opcode" and I'll add more description about
+> them in next revision.
+
+Please just call them commands.
+
 >
+>>> +};
+>>> +
+>>> +#define VFIO_EEH_PE_SET_OPTION		_IO(VFIO_TYPE, VFIO_BASE + 21)
+>>> +
+>>> +/*
+>>> + * Each EEH PE should have unique address to be identified. PE's
+>>> + * sharing mode is also useful information as well.
+>>> + */
+>>> +#define VFIO_EEH_PE_GET_ADDRESS		0	/* Get address	*/
+>>> +#define VFIO_EEH_PE_GET_MODE		1	/* Query mode	*/
+>>> +#define VFIO_EEH_PE_MODE_NONE		0	/* Not a PE	*/
+>>> +#define VFIO_EEH_PE_MODE_NOT_SHARED	1	/* Exclusive	*/
+>>> +#define VFIO_EEH_PE_MODE_SHARED		2	/* Shared mode	*/
+>>> +
+>>> +/*
+>>> + * EEH PE might have been frozen because of PCI errors. Also, it might
+>>> + * be experiencing reset for error revoery. The following command helps
+>>> + * to get the state.
+>>> + */
+>>> +struct vfio_eeh_pe_get_state {
+>>> +	__u32 argsz;
+>>> +	__u32 flags;
+>>> +	__u32 state;
+>>> +};
+>> Should state be a union to better describe the value returned?  What
+>> exactly is the address and why does the user need to know it?  Does this
+>> need user input or could we just return the address and mode regardless?
+>>
+> Ok. I think you want enum (not union) for state. I'll have macros for the
+> state in next revision as I did that for other cases.
+>
+> Those macros defined for "address" just for ABI stuff as Alex.G mentioned.
+> There isn't corresponding ioctl command for host to get address any more
+> because QEMU (user) will have to figure it out by himself. The "address"
+> here means PE address and user has to figure it out according to PE
+> segmentation.
+
+Why would the user ever need the address?
+
+
+Alex
