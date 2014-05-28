@@ -1,22 +1,18 @@
-Return-Path: <dev@codyps.com>
-Received: from mail-yh0-x22e.google.com (mail-yh0-x22e.google.com
- [IPv6:2607:f8b0:4002:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37BB91A0590
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:29:27 +1000 (EST)
-Received: by mail-yh0-f46.google.com with SMTP id 29so8188106yhl.33
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 17:29:24 -0700 (PDT)
-From: Cody P Schafer <dev@codyps.com>
-To: LKML <linux-kernel@vger.kernel.org>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>, Cody P Schafer <dev@codyps.com>
-Subject: [PATCH 16/16] powerpc/perf/hv-gpci: add the remaining gpci requests
-Date: Tue, 27 May 2014 17:22:11 -0700
-Message-Id: <1401236684-10579-17-git-send-email-dev@codyps.com>
-In-Reply-To: <1401236684-10579-1-git-send-email-dev@codyps.com>
-References: <1401236684-10579-1-git-send-email-dev@codyps.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B9FD21A060D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 13:29:11 +1000 (EST)
+Message-ID: <1401247741.8262.21.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 28 May 2014 13:29:01 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,211 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the remaining gpci requests that contain counters suitable for use
-by perf. Omit those that don't contain any counters (but note their
-ommision).
+Hi Linus !
 
-CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Signed-off-by: Cody P Schafer <dev@codyps.com>
----
- arch/powerpc/perf/hv-gpci-requests.h | 179 +++++++++++++++++++++++++++++++++++
- 1 file changed, 179 insertions(+)
+Here's a pair of powerpc fixes for 3.15 which are also going to stable.
 
-diff --git a/arch/powerpc/perf/hv-gpci-requests.h b/arch/powerpc/perf/hv-gpci-requests.h
-index 0dfc4d9..af3b73c 100644
---- a/arch/powerpc/perf/hv-gpci-requests.h
-+++ b/arch/powerpc/perf/hv-gpci-requests.h
-@@ -65,6 +65,33 @@ REQUEST(__count(0,	8,	processor_time_in_timebase_cycles)
- )
- #include I(REQUEST_END)
- 
-+#define REQUEST_NAME entitled_capped_uncapped_donated_idle_timebase_by_partition
-+#define REQUEST_NUM 0x20
-+#define REQUEST_IDX_KIND sibling_part_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	8,	partition_id)
-+	__count(0x8,	8,	entitled_cycles)
-+	__count(0x10,	8,	consumed_capped_cycles)
-+	__count(0x18,	8,	consumed_uncapped_cycles)
-+	__count(0x20,	8,	cycles_donated)
-+	__count(0x28,	8,	purr_idle_cycles)
-+)
-+#include I(REQUEST_END)
-+
-+/*
-+ * Not avaliable for counter_info_version >= 0x8, use
-+ * run_instruction_cycles_by_partition(0x100) instead.
-+ */
-+#define REQUEST_NAME run_instructions_run_cycles_by_partition
-+#define REQUEST_NUM 0x30
-+#define REQUEST_IDX_KIND sibling_part_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	8,	partition_id)
-+	__count(0x8,	8,	instructions_completed)
-+	__count(0x10,	8,	cycles)
-+)
-+#include I(REQUEST_END)
-+
- #define REQUEST_NAME system_performance_capabilities
- #define REQUEST_NUM 0x40
- #define REQUEST_IDX_KIND M1
-@@ -75,5 +102,157 @@ REQUEST(__field(0,	1,	perf_collect_privileged)
- )
- #include I(REQUEST_END)
- 
-+#define REQUEST_NAME processor_bus_utilization_abc_links
-+#define REQUEST_NUM 0x50
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	total_link_cycles)
-+	__count(0x18,	8,	idle_cycles_for_a_link)
-+	__count(0x20,	8,	idle_cycles_for_b_link)
-+	__count(0x28,	8,	idle_cycles_for_c_link)
-+	__array(0x30,	0x20,	reserved2)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME processor_bus_utilization_wxyz_links
-+#define REQUEST_NUM 0x60
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	total_link_cycles)
-+	__count(0x18,	8,	idle_cycles_for_w_link)
-+	__count(0x20,	8,	idle_cycles_for_x_link)
-+	__count(0x28,	8,	idle_cycles_for_y_link)
-+	__count(0x30,	8,	idle_cycles_for_z_link)
-+	__array(0x38,	0x28,	reserved2)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME processor_bus_utilization_gx_links
-+#define REQUEST_NUM 0x70
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	gx0_in_address_cycles)
-+	__count(0x18,	8,	gx0_in_data_cycles)
-+	__count(0x20,	8,	gx0_in_retries)
-+	__count(0x28,	8,	gx0_in_bus_cycles)
-+	__count(0x30,	8,	gx0_in_cycles_total)
-+	__count(0x38,	8,	gx0_out_address_cycles)
-+	__count(0x40,	8,	gx0_out_data_cycles)
-+	__count(0x48,	8,	gx0_out_retries)
-+	__count(0x50,	8,	gx0_out_bus_cycles)
-+	__count(0x58,	8,	gx0_out_cycles_total)
-+	__count(0x60,	8,	gx1_in_address_cycles)
-+	__count(0x68,	8,	gx1_in_data_cycles)
-+	__count(0x70,	8,	gx1_in_retries)
-+	__count(0x78,	8,	gx1_in_bus_cycles)
-+	__count(0x80,	8,	gx1_in_cycles_total)
-+	__count(0x88,	8,	gx1_out_address_cycles)
-+	__count(0x90,	8,	gx1_out_data_cycles)
-+	__count(0x98,	8,	gx1_out_retries)
-+	__count(0xA0,	8,	gx1_out_bus_cycles)
-+	__count(0xA8,	8,	gx1_out_cycles_total)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME processor_bus_utilization_mc_links
-+#define REQUEST_NUM 0x80
-+#define REQUEST_IDX_KIND hw_chip_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	hw_chip_id)
-+	__array(0x4,	0xC,	reserved1)
-+	__count(0x10,	8,	mc0_frames)
-+	__count(0x18,	8,	mc0_reads)
-+	__count(0x20,	8,	mc0_write)
-+	__count(0x28,	8,	mc0_total_cycles)
-+	__count(0x30,	8,	mc1_frames)
-+	__count(0x38,	8,	mc1_reads)
-+	__count(0x40,	8,	mc1_writes)
-+	__count(0x48,	8,	mc1_total_cycles)
-+)
-+#include I(REQUEST_END)
-+
-+/* Processor_config (0x90) skipped, no counters */
-+/* Current_processor_frequency (0x91) skipped, no counters */
-+
-+#define REQUEST_NAME processor_core_utilization
-+#define REQUEST_NUM 0x94
-+#define REQUEST_IDX_KIND phys_processor_idx
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	4,	phys_processor_idx)
-+	__field(0x4,	4,	hw_processor_id)
-+	__count(0x8,	8,	cycles_across_any_thread)
-+	__count(0x10,	8,	timebase_at_collection)
-+	__count(0x18,	8,	purr_cycles)
-+	__count(0x20,	8,	sum_of_cycles_across_all_threads)
-+	__count(0x28,	8,	instructions_completed)
-+)
-+#include I(REQUEST_END)
-+
-+/* Processor_core_power_mode (0x95) skipped, no counters */
-+/* Affinity_domain_information_by_virtual_processor (0xA0) skipped, no counters */
-+/* Affinity_domain_information_by_domain (0xB0) skipped, no counters */
-+/* Affinity_domain_information_by_partition (0xB1) skipped, no counters */
-+/* Physical_memory_info (0xC0) skipped, no counters */
-+/* Processor_bus_topology (0xD0) skipped, no counters */
-+
-+#define REQUEST_NAME partition_hypervisor_queuing_times
-+#define REQUEST_NUM 0xE0
-+#define REQUEST_IDX_KIND partition_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	2,	partition_id)
-+	__array(0x2,	0x6,	reserved1)
-+	__count(0x8,	8,	time_waiting_for_entitlement)
-+	__count(0x10,	8,	times_waited_for_entitlement)
-+	__count(0x18,	8,	time_waiting_for_phys_processor)
-+	__count(0x20,	8,	times_waited_for_phys_processor)
-+	__count(0x28,	8,	dispatches_on_home_core)
-+	__count(0x30,	8,	dispatches_on_home_primary_affinity_domain)
-+	__count(0x38,	8,	dispatches_on_home_secondary_affinity_domain)
-+	__count(0x40,	8,	dispatches_off_home_secondary_affinity_domain)
-+	__count(0x48,	8,	dispatches_on_dedicated_processor_donating_cycles)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME system_hypervisor_times
-+#define REQUEST_NUM 0xF0
-+#define REQUEST_IDX_KIND M1
-+#include I(REQUEST_BEGIN)
-+REQUEST(__count(0,	8,	time_spent_to_dispatch_virtual_processors)
-+	__count(0x8,	8,	time_spent_processing_virtual_processor_timers)
-+	__count(0x10,	8,	time_spent_managing_partitions_over_entitlement)
-+	__count(0x18,	8,	time_spent_on_system_managment)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME system_tlbie_count_and_time
-+#define REQUEST_NUM 0xF4
-+#define REQUEST_IDX_KIND M1
-+#include I(REQUEST_BEGIN)
-+REQUEST(__count(0,	8,	tlbie_instructions_issued)
-+	/* FIXME: The spec says the offset here is 0x10, which I suspect is wrong. */
-+	__count(0x8,	8,	time_spent_issuing_tlbies)
-+)
-+#include I(REQUEST_END)
-+
-+#define REQUEST_NAME partition_instruction_count_and_time
-+#define REQUEST_NUM 0x100
-+#define REQUEST_IDX_KIND partition_id
-+#include I(REQUEST_BEGIN)
-+REQUEST(__field(0,	2,	partition_id)
-+	__array(0x2,	0x6,	reserved1)
-+	__count(0x8,	8,	instructions_performed)
-+	__count(0x10,	8,	time_collected)
-+)
-+#include I(REQUEST_END)
-+
-+/* set_mmcrh (0x80001000) skipped, no counters */
-+/* retrieve_hpmcx (0x80002000) skipped, no counters */
-+
- #undef M1
- #include "req-gen/_end.h"
--- 
-1.9.3
+One's a fix for building with newer binutils (the problem currently only
+affects the BookE kernels but the affected macro might come back into
+use on BookS platforms at any time). Unfortunately, the binutils maintainer
+did a backward incompatible change to a construct that we use so we have
+to add Makefile check.
+
+The other one is a fix for CPUs getting stuck in kexec when running single
+threaded. Since we routinely use kexec on power (including in our newer
+bootloaders), I deemed that important enough.
+
+Cheers,
+Ben.
+
+The following changes since commit 8050936caf125fbe54111ba5e696b68a360556ba:
+
+  powerpc: irq work racing with timer interrupt can result in timer interrupt hang (2014-05-12 14:29:28 +1000)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 011e4b02f1da156ac7fea28a9da878f3c23af739:
+
+  powerpc, kexec: Fix "Processor X is stuck" issue during kexec from ST mode (2014-05-28 13:24:26 +1000)
+
+----------------------------------------------------------------
+Guenter Roeck (1):
+      powerpc: Fix 64 bit builds with binutils 2.24
+
+Srivatsa S. Bhat (1):
+      powerpc, kexec: Fix "Processor X is stuck" issue during kexec from ST mode
+
+ arch/powerpc/Makefile                  | 4 +++-
+ arch/powerpc/include/asm/ppc_asm.h     | 7 ++++++-
+ arch/powerpc/kernel/machine_kexec_64.c | 2 +-
+ kernel/kexec.c                         | 8 ++++++++
+ 4 files changed, 18 insertions(+), 3 deletions(-)
