@@ -1,15 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D22F1A058F
+ by lists.ozlabs.org (Postfix) with ESMTPS id D0C2D1A058F
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 18:21:25 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/2] powerpc/mm: Check paca psize is up to date for huge
- mappings
-Date: Wed, 28 May 2014 18:21:17 +1000
-Message-Id: <1401265278-29307-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/2] selftests/powerpc: Test the THP bug we fixed in the
+ previous commit
+Date: Wed, 28 May 2014 18:21:18 +1000
+Message-Id: <1401265278-29307-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1401265278-29307-1-git-send-email-mpe@ellerman.id.au>
+References: <1401265278-29307-1-git-send-email-mpe@ellerman.id.au>
 Cc: aneesh.kumar@in.ibm.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,123 +22,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a bug in our hugepage handling which exhibits as an infinite
-loop of hash faults. If the fault is being taken in the kernel it will
-typically trigger the softlockup detector, or the RCU stall detector.
-
-The bug is as follows:
-
- 1. mmap(0xa0000000, ..., MAP_FIXED | MAP_HUGE_TLB | MAP_ANONYMOUS ..)
- 2. Slice code converts the slice psize to 16M.
- 3. The code on lines 539-540 of slice.c in slice_get_unmapped_area()
-    synchronises the mm->context with the paca->context. So the paca slice
-    mask is updated to include the 16M slice.
- 3. Either:
-    * mmap() fails because there are no huge pages available.
-    * mmap() succeeds and the mapping is then munmapped.
-    In both cases the slice psize remains at 16M in both the paca & mm.
- 4. mmap(0xa0000000, ..., MAP_FIXED | MAP_ANONYMOUS ..)
- 5. The slice psize is converted back to 64K. Because of the check on line 539
-    of slice.c we DO NOT update the paca->context. The paca slice mask is now
-    out of sync with the mm slice mask.
- 6. User/kernel accesses 0xa0000000.
- 7. The SLB miss handler slb_allocate_realmode() **uses the paca slice mask**
-    to create an SLB entry and inserts it in the SLB.
-18. With the 16M SLB entry in place the hardware does a hash lookup, no entry
-    is found so a data access exception is generated.
-19. The data access handler calls do_page_fault() -> handle_mm_fault().
-10. __handle_mm_fault() creates a THP mapping with do_huge_pmd_anonymous_page().
-11. The hardware retries the access, there is still nothing in the hash table
-    so once again a data access exception is generated.
-12. hash_page() calls into __hash_page_thp() and inserts a mapping in the
-    hash. Although the THP mapping maps 16M the hashing is done using 64K
-    as the segment page size.
-13. hash_page() returns immediately after calling __hash_page_thp(), skipping
-    over the code at line 1125. Resulting in the mismatch between the
-    paca->context and mm->context not being detected.
-14. The hardware retries the access, the hash it generates using the 16M
-    SLB entry does NOT match the hash we inserted.
-15. We take another data access and go into __hash_page_thp().
-16. We see a valid entry in the hpte_slot_array and so we call updatepp()
-    which succeeds.
-17. Goto 14.
-
-We could fix this in two ways. The first would be to remove or modify
-the check on line 539 of slice.c.
-
-The second option is to cause the check of paca psize in hash_page() on
-line 1125 to also be done for THP pages.
-
-We prefer the latter, because the check & update of the paca psize is
-not done until we know it's necessary. It's also done only on the
-current cpu, so we don't need to IPI all other cpus.
-
-Without further rearranging the code, the simplest fix is to pull out
-the code that checks paca psize and call it in two places. Firstly for
-THP/hugetlb, and secondly for other mappings as before.
-
-Thanks to Dave Jones for trinity, which originally found this bug.
-
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/mm/hash_utils_64.c | 31 ++++++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 11 deletions(-)
+ tools/testing/selftests/powerpc/Makefile           |  2 +-
+ tools/testing/selftests/powerpc/mm/Makefile        | 18 ++++++
+ .../selftests/powerpc/mm/hugetlb_vs_thp_test.c     | 72 ++++++++++++++++++++++
+ 3 files changed, 91 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/mm/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index d766d6e..6650699 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -960,6 +960,22 @@ void hash_failure_debug(unsigned long ea, unsigned long access,
- 		trap, vsid, ssize, psize, lpsize, pte);
- }
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index 316194f..b3dbe9e 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
  
-+static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
-+			     int psize, bool user_region)
+ export CC CFLAGS
+ 
+-TARGETS = pmu copyloops
++TARGETS = pmu copyloops mm
+ 
+ endif
+ 
+diff --git a/tools/testing/selftests/powerpc/mm/Makefile b/tools/testing/selftests/powerpc/mm/Makefile
+new file mode 100644
+index 0000000..357ccbd
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/Makefile
+@@ -0,0 +1,18 @@
++noarg:
++	$(MAKE) -C ../
++
++PROGS := hugetlb_vs_thp_test
++
++all: $(PROGS)
++
++$(PROGS): ../harness.c
++
++run_tests: all
++	@-for PROG in $(PROGS); do \
++		./$$PROG; \
++	done;
++
++clean:
++	rm -f $(PROGS)
++
++.PHONY: all run_tests clean
+diff --git a/tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c b/tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c
+new file mode 100644
+index 0000000..3d8e5b0
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/mm/hugetlb_vs_thp_test.c
+@@ -0,0 +1,72 @@
++#include <stdio.h>
++#include <sys/mman.h>
++#include <unistd.h>
++
++#include "utils.h"
++
++/* This must match the huge page & THP size */
++#define SIZE	(16 * 1024 * 1024)
++
++static int test_body(void)
 +{
-+	if (user_region) {
-+		if (psize != get_paca_psize(ea)) {
-+			get_paca()->context = mm->context;
-+			slb_flush_and_rebolt();
-+		}
-+	} else if (get_paca()->vmalloc_sllp !=
-+		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
-+		get_paca()->vmalloc_sllp =
-+			mmu_psize_defs[mmu_vmalloc_psize].sllp;
-+		slb_vmalloc_update();
++	void *addr;
++	char *p;
++
++	addr = (void *)0xa0000000;
++
++	p = mmap(addr, SIZE, PROT_READ | PROT_WRITE,
++		 MAP_HUGETLB | MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
++	if (p != MAP_FAILED) {
++		/*
++		 * Typically the mmap will fail because no huge pages are
++		 * allocated on the system. But if there are huge pages
++		 * allocated the mmap will succeed. That's fine too, we just
++		 * munmap here before continuing.
++		 */
++		munmap(addr, SIZE);
 +	}
++
++	p = mmap(addr, SIZE, PROT_READ | PROT_WRITE,
++		 MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
++	if (p == MAP_FAILED) {
++		printf("Mapping failed @ %p\n", addr);
++		perror("mmap");
++		return 1;
++	}
++
++	/*
++	 * Either a user or kernel access is sufficient to trigger the bug.
++	 * A kernel access is easier to spot & debug, as it will trigger the
++	 * softlockup or RCU stall detectors, and when the system is kicked
++	 * into xmon we get a backtrace in the kernel.
++	 *
++	 * A good option is:
++	 *  getcwd(p, SIZE);
++	 *
++	 * For the purposes of this testcase it's preferable to spin in
++	 * userspace, so the harness can kill us if we get stuck. That way we
++	 * see a test failure rather than a dead system.
++	 */
++	*p = 0xf;
++
++	munmap(addr, SIZE);
++
++	return 0;
 +}
 +
- /* Result code is:
-  *  0 - handled
-  *  1 - normal page fault
-@@ -1081,6 +1097,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
- 			WARN_ON(1);
- 		}
- #endif
-+		check_paca_psize(ea, mm, psize, user_region);
++static int test_main(void)
++{
++	int i;
 +
- 		goto bail;
- 	}
- 
-@@ -1121,17 +1139,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
- #endif
- 		}
- 	}
--	if (user_region) {
--		if (psize != get_paca_psize(ea)) {
--			get_paca()->context = mm->context;
--			slb_flush_and_rebolt();
--		}
--	} else if (get_paca()->vmalloc_sllp !=
--		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
--		get_paca()->vmalloc_sllp =
--			mmu_psize_defs[mmu_vmalloc_psize].sllp;
--		slb_vmalloc_update();
--	}
++	/* 10,000 because it's a "bunch", and completes reasonably quickly */
++	for (i = 0; i < 10000; i++)
++		if (test_body())
++			return 1;
 +
-+	check_paca_psize(ea, mm, psize, user_region);
- #endif /* CONFIG_PPC_64K_PAGES */
- 
- #ifdef CONFIG_PPC_HAS_HASH_64K
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(test_main, "hugetlb_vs_thp");
++}
 -- 
 1.9.1
