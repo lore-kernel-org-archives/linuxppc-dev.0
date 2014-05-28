@@ -2,25 +2,25 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C0DA1A024F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 08:40:33 +1000 (EST)
-Message-ID: <538665DA.8090000@suse.de>
-Date: Thu, 29 May 2014 00:40:26 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20E061A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 08:46:35 +1000 (EST)
+Message-ID: <53866747.50703@suse.de>
+Date: Thu, 29 May 2014 00:46:31 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>				
- <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>			
- <1401214527.3289.611.camel@ul30vt.home> <5385166A.5060404@suse.de>		
- <1401237575.3289.676.camel@ul30vt.home> <53853155.60809@suse.de>	
- <1401238674.3289.679.camel@ul30vt.home> <5385CA86.3010700@suse.de>
- <1401293853.2412.36.camel@ul30vt.home>
-In-Reply-To: <1401293853.2412.36.camel@ul30vt.home>
+References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>	
+ <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>	
+ <1401214527.3289.611.camel@ul30vt.home> <20140528005532.GA5528@shangw>	
+ <5385CB6F.50300@suse.de> <20140528124947.GA19346@shangw>
+ <1401314311.8262.26.camel@pasglop>
+In-Reply-To: <1401314311.8262.26.camel@pasglop>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: aik@ozlabs.ru, qiudayu@linux.vnet.ibm.com,
+ Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,99 +31,41 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 28.05.14 18:17, Alex Williamson wrote:
-> On Wed, 2014-05-28 at 13:37 +0200, Alexander Graf wrote:
->> On 28.05.14 02:57, Alex Williamson wrote:
->>> On Wed, 2014-05-28 at 02:44 +0200, Alexander Graf wrote:
->>>> On 28.05.14 02:39, Alex Williamson wrote:
->>>>> On Wed, 2014-05-28 at 00:49 +0200, Alexander Graf wrote:
->>>>>> On 27.05.14 20:15, Alex Williamson wrote:
->>>>>>> On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
->>>>>>>> The patch adds new IOCTL commands for sPAPR VFIO container device
->>>>>>>> to support EEH functionality for PCI devices, which have been passed
->>>>>>>> through from host to somebody else via VFIO.
->>>>>>>>
->>>>>>>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>>>>> ---
->>>>>>>>      Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
->>>>>>>>      drivers/vfio/pci/Makefile           |  1 +
->>>>>>>>      drivers/vfio/pci/vfio_pci.c         | 20 +++++---
->>>>>>>>      drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
->>>>>>>>      drivers/vfio/pci/vfio_pci_private.h |  5 ++
->>>>>>>>      drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
->>>>>>>>      include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
->>>>>>>>      7 files changed, 308 insertions(+), 7 deletions(-)
->>>>>>>>      create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
->>>>>> [...]
->>>>>>
->>>>>>>> +
->>>>>>>> +	return ret;
->>>>>>>> +}
->>>>>>>> +
->>>>>>>>      static long tce_iommu_ioctl(void *iommu_data,
->>>>>>>>      				 unsigned int cmd, unsigned long arg)
->>>>>>>>      {
->>>>>>>> @@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->>>>>>>>      		tce_iommu_disable(container);
->>>>>>>>      		mutex_unlock(&container->lock);
->>>>>>>>      		return 0;
->>>>>>>> +	case VFIO_EEH_PE_SET_OPTION:
->>>>>>>> +	case VFIO_EEH_PE_GET_STATE:
->>>>>>>> +	case VFIO_EEH_PE_RESET:
->>>>>>>> +	case VFIO_EEH_PE_CONFIGURE:
->>>>>>>> +		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
->>>>>>> This is where it would have really made sense to have a single
->>>>>>> VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
->>>>>>> AlexG, are you really attached to splitting these out into separate
->>>>>>> ioctls?
->>>>>> I don't see the problem. We need to forward 4 ioctls to a separate piece
->>>>>> of code, so we forward 4 ioctls to a separate piece of code :). Putting
->>>>>> them into one ioctl just moves the switch() into another function.
->>>>> And uses an extra 3 ioctl numbers and gives us extra things to update if
->>>>> we ever need to add more ioctls, etc.  ioctl numbers are an address
->>>>> space, how much address space do we really want to give to EEH?  It's
->>>>> not a big difference, but I don't think it's completely even either.
->>>>> Thanks,
->>>> Yes, that's the point. I by far prefer to have you push back on anyone
->>>> who introduces useless ioctls rather than have a separate EEH number
->>>> space that people can just throw anything in they like ;).
->>> Well, I appreciate that, but having them as separate ioctls doesn't
->>> really prevent that either.  Any one of these 4 could be set to take a
->>> sub-option to extend and contort the EEH interface.  The only way to
->>> prevent that would be to avoid the argsz+flags hack that make the ioctl
->>> extendable.  Thanks,
->> Sure, that's what patch review is about. I'm really more concerned about
->> whose court the number space is in - you or Gavin. If we're talking
->> about top level ioctls you will care a lot more.
+On 28.05.14 23:58, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-05-28 at 22:49 +1000, Gavin Shan wrote:
+>> I will remove those "address" related macros in next revision because it's
+>> user-level bussiness, not related to host kernel any more.
 >>
->> But I'm not religious about this. You're the VFIO maintainer, so it's
->> your call. I just personally cringe when I see an ioctl that gets an
->> "opcode" and a "parameter" argument where the "parameter" argument is a
->> union with one struct for each opcode.
-> Well, what would it look like...
+>> If the user is QEMU + guest, we need the address to identify the PE though PHB
+>> BUID could be used as same purpose to get PHB, which is one-to-one mapping with
+>> IOMMU group on sPAPR platform. However, once the PE address is built and returned
+>> to guest, guest will use the PE address as input parameter in subsequent RTAS
+>> calls.
+>>
+>> If the user is some kind of application who just uses the ioctl() without supporting
+>> RTAS calls. We don't need care about PE address.
+> I am a bit reluctant with that PE==PHB equation we seem to be introducing.
 >
-> struct vfio_eeh_pe_op {
-> 	__u32 argsz;
-> 	__u32 flags;
-> 	__u32 op;
-> };
->
-> Couldn't every single one of these be a separate "op"?  Are there any
-> cases where we can't use the ioctl return value?
->
-> VFIO_EEH_PE_DISABLE
-> VFIO_EEH_PE_ENABLE
-> VFIO_EEH_PE_UNFREEZE_IO
-> VFIO_EEH_PE_UNFREEZE_DMA
-> VFIO_EEH_PE_GET_MODE
-> VFIO_EEH_PE_RESET_DEACTIVATE
-> VFIO_EEH_PE_RESET_HOT
-> VFIO_EEH_PE_RESET_FUNDAMENTAL
-> VFIO_EEH_PE_CONFIGURE
->
-> It doesn't look that bad to me, what am I missing?  Thanks,
+> This isn't the case in HW. It's possible that this is how we handle VFIO *today*
+> in qemu but it doesn't have to be does it ?
 
-Yup, that looks well to me as well :)
+Right, but that's pure QEMU internals. From the VFIO kernel interface's 
+point of view, a VFIO group is a PE context, as that's what gets IOMMU 
+controlled together too.
+
+> It also paints us into a corner if we want to start implementing some kind of
+> emulated EEH for selected emulated devices and/or virtio.
+
+I don't think so :). In QEMU the PHB emulation would have to notify the 
+"container" (IOMMU emulation layer -> PE) that a PE operation happened. 
+It's that emulation code's responsibility to broadcast operations across 
+its own emulated operations (recover config space access, reconfigure 
+BARs, etc) and the VFIO PE operations.
+
+So from a kernel interface point of view, I think leaving out any 
+address information is the right way to go. Whether we managed to get 
+all QEMU internal interfaces modeled correctly yet has to be seen on the 
+next patch set revision :).
 
 
 Alex
