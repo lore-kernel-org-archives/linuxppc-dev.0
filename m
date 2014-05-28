@@ -1,30 +1,26 @@
-Return-Path: <dev@codyps.com>
-Received: from mail-lb0-x232.google.com (mail-lb0-x232.google.com
- [IPv6:2a00:1450:4010:c04::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 587851A024F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:27:03 +1000 (EST)
-Received: by mail-lb0-f178.google.com with SMTP id w7so6214980lbi.37
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 16:26:58 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1401318025.19335.15.camel@joe-AO725>
-References: <1401236684-10579-1-git-send-email-dev@codyps.com>
- <1401236684-10579-12-git-send-email-dev@codyps.com>
- <063D6719AE5E284EB5DD2968C1650D6D1724EEAF@AcuExch.aculab.com>
- <CAPoQQ-17OHotfbczJvEoq=vAzu_+6-sV3M1ZAhDaQ45wB3NB4A@mail.gmail.com>
- <CAPoQQ-11vW3Q0=LcS-myNZ6hXeYBeu==_prwHJXHvLfkUSmZHQ@mail.gmail.com>
- <1401318025.19335.15.camel@joe-AO725>
-Date: Wed, 28 May 2014 18:26:57 -0500
-Message-ID: <CAPoQQ-2Mjx7kHC8FSDBnLT2Y+m9W9cB_Q5ohWoYsKmxyhBp_DQ@mail.gmail.com>
-Subject: Re: [PATCH 11/16] byteorder: provide a linux/byteorder.h with {be,
- le}_to_cpu() and cpu_to_{be, le}() macros
-From: Cody P Schafer <dev@codyps.com>
-To: Joe Perches <joe@perches.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- David Laight <David.Laight@aculab.com>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9D6631A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:36:10 +1000 (EST)
+Date: Wed, 28 May 2014 16:36:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 1/2] powerpc: numa: enable USE_PERCPU_NUMA_NODE_ID
+Message-Id: <20140528163607.e1f0ced83a5b736cca7fa530@linux-foundation.org>
+In-Reply-To: <20140528000958.GF4104@linux.vnet.ibm.com>
+References: <20140516233945.GI8941@linux.vnet.ibm.com>
+ <20140519181423.GL8941@linux.vnet.ibm.com>
+ <20140527234420.GE4104@linux.vnet.ibm.com>
+ <1401234974.8262.8.camel@pasglop>
+ <20140528000958.GF4104@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
+ Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+ linux-mm@kvack.org, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,47 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 28, 2014 at 6:00 PM, Joe Perches <joe@perches.com> wrote:
-> On Wed, 2014-05-28 at 17:11 -0500, Cody P Schafer wrote:
->> On Wed, May 28, 2014 at 5:05 PM, Cody P Schafer <dev@codyps.com> wrote:
->> > On Wed, May 28, 2014 at 3:45 AM, David Laight <David.Laight@aculab.com> wrote:
->> >> From: Cody P Schafer
->> >>> Rather manually specifying the size of the integer to be converted, key
->> >>> off of the type size. Reduces duplicate size info and the occurance of
->> >>> certain types of bugs (using the wrong sized conversion).
->> >> ...
->> >>> +#define be_to_cpu(v) \
->> >>> +     __builtin_choose_expr(sizeof(v) == sizeof(uint8_t) , v, \
->> >>> +     __builtin_choose_expr(sizeof(v) == sizeof(uint16_t), be16_to_cpu(v), \
->> >>> +     __builtin_choose_expr(sizeof(v) == sizeof(uint32_t), be32_to_cpu(v), \
->> >>> +     __builtin_choose_expr(sizeof(v) == sizeof(uint64_t), be64_to_cpu(v), \
->> >>> +             (void)0))))
->> >> ...
->> >>
->> >> I'm not at all sure that using the 'size' of the constant will reduce
->> >> the number of bugs - it just introduces a whole new category of bugs.
->> >
->> > Certainly, if you mis-size the argument (and thus have missized one of
->> > the variables containing the be value, probably a bug anyhow), there
->> > will be problems.
->> >
->> > I put this interface together because of an actual bug I wrote into
->> > the initial code of the hv_24x7 driver (resized a struct member
->> > without adjusting the be*_to_cpu() sizing).
->> > Having this "auto sizing" macro means I can avoid encoding the size of
->> > a struct field in multiple places.
->>
->> To clarify, the point I'm making here is that this simply cuts out 1
->> more place we can screw up endianness conversion sizing.
->
-> It does screw up other types when you do things like:
->
->         u8 foo = some_function();
->
->         cpu_to_be(foo + 1);
->
-> the return value is sizeof(int) not u8
+On Tue, 27 May 2014 17:09:58 -0700 Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
 
-Yep, that is a very good argument against the cpu_to_{be,le}()
-variants. It might make sense to remove them and just have the
-{be,le}_to_cpu() ones.
+> On 28.05.2014 [09:56:14 +1000], Benjamin Herrenschmidt wrote:
+> > On Tue, 2014-05-27 at 16:44 -0700, Nishanth Aravamudan wrote:
+> > > > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> > > 
+> > > Ping on this and patch 2/2. Ben, would you be willing to pull these
+> > > into
+> > > your -next branch so they'd get some testing?
+> > > 
+> > > http://patchwork.ozlabs.org/patch/350368/
+> > > http://patchwork.ozlabs.org/patch/349838/
+> > > 
+> > > Without any further changes, these two help quite a bit with the slab
+> > > consumption on CONFIG_SLUB kernels when memoryless nodes are present.
+> > 
+> > I don't mind at all :-) I haven't really been following that story
+> > so I was waiting for the dust to settle and maybe acks from MM people
+> > but if you tell me they are good I'm prepared to trust you.
+> 
+> The patches themselves are pretty minimal and similar to the ia64
+> changes (and the affected code seems like it hasn't changed in some
+> time, beyond in the common code). I'd mostly like to get some
+> broad-range build & boot testing.
+> 
+> Also, is NUMA a sufficient symbol to depend, you think? I figure most of
+> the PPC NUMA systems are the pSeries/IBM variety, which is where I've
+> run into memoryless nodes in the first place.
+
+It's a powerpc-only patchset so I didn't do anything.
+
+Nits:
+
+- When referring to git commits, use 12 digits of hash and include
+  the name of the patch as well (because patches can have different
+  hashes in different trees).  So
+
+       Based on 3bccd996276b ("numa: ia64: use generic percpu
+       var numa_node_id() implementation") for ia64.
+
+- It's nice to include a diffstat.  If there's a [0/n] patch then
+  that's a great place for it, so people can see the overall impact at
+  a glance.
