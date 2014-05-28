@@ -1,48 +1,16 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3D911A024F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 18:06:04 +1000 (EST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8420714007E
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 18:06:02 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 28 May 2014 13:35:58 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3C8FE3940058
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 13:35:54 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4S86SBo45875400
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 13:36:28 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4S85qWK025197
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 13:35:53 +0530
-Message-ID: <53859873.9070603@linux.vnet.ibm.com>
-Date: Wed, 28 May 2014 13:34:03 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Stephane Eranian <eranian@google.com>
-Subject: Re: [V6 00/11] perf: New conditional branch filter
-References: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
- <CABPqkBS+3N6PW0wJr3xnvpF4zinZM7+iwFWzwS7BDm-LTkam5Q@mail.gmail.com>
-In-Reply-To: <CABPqkBS+3N6PW0wJr3xnvpF4zinZM7+iwFWzwS7BDm-LTkam5Q@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>,
- "ak@linux.intel.com" <ak@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Michael Ellerman <michael@ellerman.id.au>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D22F1A058F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 18:21:25 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/2] powerpc/mm: Check paca psize is up to date for huge
+ mappings
+Date: Wed, 28 May 2014 18:21:17 +1000
+Message-Id: <1401265278-29307-1-git-send-email-mpe@ellerman.id.au>
+Cc: aneesh.kumar@in.ibm.com, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,84 +20,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/27/2014 05:39 PM, Stephane Eranian wrote:
-> I have been looking at those patches and ran some tests.
-> And I found a few issues so far.
-> 
-> I am running:
-> $ perf record -j any_ret -e cycles:u test_program
-> $ perf report -D
-> 
-> Most entries are okay and match the filter, however some do not make sense:
-> 
-> 3642586996762 0x15d0 [0x108]: PERF_RECORD_SAMPLE(IP, 2): 17921/17921:
-> 0x10001170 period: 613678 addr: 0
-> .... branch stack: nr:9
-> .....  0: 00000000100011cc -> 0000000010000e38
-> .....  1: 0000000010001150 -> 00000000100011bc
-> .....  2: 0000000010001208 -> 0000000010000e38
-> .....  3: 0000000010001160 -> 00000000100011f8
-> .....  4: 00000000100011cc -> 0000000010000e38
-> .....  5: 0000000010001150 -> 00000000100011bc
-> .....  6: 0000000010001208 -> 0000000010000e38
-> .....  7: 0000000010001160 -> 00000000100011f8
-> .....  8: 0000000000000000 -> 0000000010001160
-> ^^^^^^
-> Entry 8 does not make sense, unless 0x0 is a valid return branch
-> instruction address.
-> If an address is invalid, the whole entry needs to be eliminated. It
-> is okay to have
-> less than the max number of entries supported by HW.
+We have a bug in our hugepage handling which exhibits as an infinite
+loop of hash faults. If the fault is being taken in the kernel it will
+typically trigger the softlockup detector, or the RCU stall detector.
 
-Hey Stephane,
+The bug is as follows:
 
-Okay. The same behaviour is also reflected in the test results what I have
-shared in the patchset. Here is that section.
+ 1. mmap(0xa0000000, ..., MAP_FIXED | MAP_HUGE_TLB | MAP_ANONYMOUS ..)
+ 2. Slice code converts the slice psize to 16M.
+ 3. The code on lines 539-540 of slice.c in slice_get_unmapped_area()
+    synchronises the mm->context with the paca->context. So the paca slice
+    mask is updated to include the 16M slice.
+ 3. Either:
+    * mmap() fails because there are no huge pages available.
+    * mmap() succeeds and the mapping is then munmapped.
+    In both cases the slice psize remains at 16M in both the paca & mm.
+ 4. mmap(0xa0000000, ..., MAP_FIXED | MAP_ANONYMOUS ..)
+ 5. The slice psize is converted back to 64K. Because of the check on line 539
+    of slice.c we DO NOT update the paca->context. The paca slice mask is now
+    out of sync with the mm slice mask.
+ 6. User/kernel accesses 0xa0000000.
+ 7. The SLB miss handler slb_allocate_realmode() **uses the paca slice mask**
+    to create an SLB entry and inserts it in the SLB.
+18. With the 16M SLB entry in place the hardware does a hash lookup, no entry
+    is found so a data access exception is generated.
+19. The data access handler calls do_page_fault() -> handle_mm_fault().
+10. __handle_mm_fault() creates a THP mapping with do_huge_pmd_anonymous_page().
+11. The hardware retries the access, there is still nothing in the hash table
+    so once again a data access exception is generated.
+12. hash_page() calls into __hash_page_thp() and inserts a mapping in the
+    hash. Although the THP mapping maps 16M the hashing is done using 64K
+    as the segment page size.
+13. hash_page() returns immediately after calling __hash_page_thp(), skipping
+    over the code at line 1125. Resulting in the mismatch between the
+    paca->context and mm->context not being detected.
+14. The hardware retries the access, the hash it generates using the 16M
+    SLB entry does NOT match the hash we inserted.
+15. We take another data access and go into __hash_page_thp().
+16. We see a valid entry in the hpte_slot_array and so we call updatepp()
+    which succeeds.
+17. Goto 14.
 
-(3) perf record -j any_ret -e branch-misses:u ./cprog
+We could fix this in two ways. The first would be to remove or modify
+the check on line 539 of slice.c.
 
-# Overhead  Command  Source Shared Object          Source Symbol  Target Shared Object          Target Symbol
-# ........  .......  ....................  .....................  ....................  .....................
-#
-    15.61%    cprog  [unknown]             [.] 00000000           cprog                 [.] sw_3_1           
-     6.28%    cprog  cprog                 [.] symbol2            cprog                 [.] hw_1_2           
-     6.28%    cprog  cprog                 [.] ctr_addr           cprog                 [.] sw_4_1           
-     6.26%    cprog  cprog                 [.] success_3_1_3      cprog                 [.] sw_3_1           
-     6.24%    cprog  cprog                 [.] symbol1            cprog                 [.] hw_1_1           
-     6.24%    cprog  cprog                 [.] sw_4_2             cprog                 [.] callme           
-     6.21%    cprog  [unknown]             [.] 00000000           cprog                 [.] callme           
-     6.19%    cprog  cprog                 [.] lr_addr            cprog                 [.] sw_4_2           
-     3.16%    cprog  cprog                 [.] hw_1_2             cprog                 [.] callme           
-     3.15%    cprog  cprog                 [.] success_3_1_1      cprog                 [.] sw_3_1           
-     3.15%    cprog  cprog                 [.] sw_4_1             cprog                 [.] callme           
-     3.14%    cprog  cprog                 [.] callme             cprog                 [.] main             
-     3.13%    cprog  cprog                 [.] hw_1_1             cprog                 [.] callme
+The second option is to cause the check of paca psize in hash_page() on
+line 1125 to also be done for THP pages.
 
-So a lot of samples above have 0x0 as the "from" address. This originates from the code
-section here inside the function "power_pmu_bhrb_read", where we hit two back to back
-target addresses. So we zero out the from address for the first target address and re-read
-the second address over again. So thats how we get zero as the from address. This is how the
-HW capture the samples. I was reluctant to drop these samples but I agree that these kind of
-samples can be dropped if we need to.
+We prefer the latter, because the check & update of the paca psize is
+not done until we know it's necessary. It's also done only on the
+current cpu, so we don't need to IPI all other cpus.
 
-if (val & BHRB_TARGET) {
-	/* Shouldn't have two targets in a
-	   row.. Reset index and try again */
-	r_index--;
-	addr = 0;
-}
+Without further rearranging the code, the simplest fix is to pull out
+the code that checks paca psize and call it in two places. Firstly for
+THP/hugetlb, and secondly for other mappings as before.
 
-> I also had cases where monitoring only at the user level, got me
-> branch addresses in the
-> 0xc0000000...... range. My test program is linked statically.
-> 
+Thanks to Dave Jones for trinity, which originally found this bug.
 
-Thats weird. I would need more information and details on this. BTW
-what is the system you are running on ? Could you please share the
-/proc/cpuinfo details of the same ?
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/mm/hash_utils_64.c | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
 
-> when eliminating the bogus entries, my tests yielded only return
-> branch instruction addresses
-> which is good. Will run more tests.
-
-Sure. Thanks for the tests and comments.
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index d766d6e..6650699 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -960,6 +960,22 @@ void hash_failure_debug(unsigned long ea, unsigned long access,
+ 		trap, vsid, ssize, psize, lpsize, pte);
+ }
+ 
++static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
++			     int psize, bool user_region)
++{
++	if (user_region) {
++		if (psize != get_paca_psize(ea)) {
++			get_paca()->context = mm->context;
++			slb_flush_and_rebolt();
++		}
++	} else if (get_paca()->vmalloc_sllp !=
++		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
++		get_paca()->vmalloc_sllp =
++			mmu_psize_defs[mmu_vmalloc_psize].sllp;
++		slb_vmalloc_update();
++	}
++}
++
+ /* Result code is:
+  *  0 - handled
+  *  1 - normal page fault
+@@ -1081,6 +1097,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ 			WARN_ON(1);
+ 		}
+ #endif
++		check_paca_psize(ea, mm, psize, user_region);
++
+ 		goto bail;
+ 	}
+ 
+@@ -1121,17 +1139,8 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ #endif
+ 		}
+ 	}
+-	if (user_region) {
+-		if (psize != get_paca_psize(ea)) {
+-			get_paca()->context = mm->context;
+-			slb_flush_and_rebolt();
+-		}
+-	} else if (get_paca()->vmalloc_sllp !=
+-		   mmu_psize_defs[mmu_vmalloc_psize].sllp) {
+-		get_paca()->vmalloc_sllp =
+-			mmu_psize_defs[mmu_vmalloc_psize].sllp;
+-		slb_vmalloc_update();
+-	}
++
++	check_paca_psize(ea, mm, psize, user_region);
+ #endif /* CONFIG_PPC_64K_PAGES */
+ 
+ #ifdef CONFIG_PPC_HAS_HASH_64K
+-- 
+1.9.1
