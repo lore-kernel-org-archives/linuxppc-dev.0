@@ -3,21 +3,22 @@ Received: from mail-yk0-x22d.google.com (mail-yk0-x22d.google.com
  [IPv6:2607:f8b0:4002:c07::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 038C51A0590
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:27:27 +1000 (EST)
-Received: by mail-yk0-f173.google.com with SMTP id 142so7744455ykq.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 17:27:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E27AF1A0591
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:27:37 +1000 (EST)
+Received: by mail-yk0-f173.google.com with SMTP id 142so7772266ykq.32
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 17:27:34 -0700 (PDT)
 From: Cody P Schafer <dev@codyps.com>
 To: LKML <linux-kernel@vger.kernel.org>,
  Linux PPC <linuxppc-dev@lists.ozlabs.org>,
  Adrian Hunter <adrian.hunter@intel.com>, Andi Kleen <ak@linux.intel.com>,
  Arnaldo Carvalho de Melo <acme@redhat.com>,
- Cody P Schafer <dev@codyps.com>, Peter Zijlstra <peterz@infradead.org>,
- Stephane Eranian <eranian@google.com>
-Subject: [PATCH 08/16] tools/perf: extend format_alias() to include event
- parameters
-Date: Tue, 27 May 2014 17:22:03 -0700
-Message-Id: <1401236684-10579-9-git-send-email-dev@codyps.com>
+ Cody P Schafer <dev@codyps.com>, Ingo Molnar <mingo@kernel.org>,
+ Jiri Olsa <jolsa@redhat.com>, Michael Ellerman <michael@ellerman.id.au>,
+ Namhyung Kim <namhyung@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 09/16] tools/perf: document parameterized events and note
+ symbolically formed events
+Date: Tue, 27 May 2014 17:22:04 -0700
+Message-Id: <1401236684-10579-10-git-send-email-dev@codyps.com>
 In-Reply-To: <1401236684-10579-1-git-send-email-dev@codyps.com>
 References: <1401236684-10579-1-git-send-email-dev@codyps.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
@@ -33,67 +34,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This causes `perf list pmu` to show parameters for parameterized events
-like follows:
-
-  pmu/event_name,param1=?,param2=?/ [Kernel PMU event]
-
-An example:
-
-  hv_gpci/dispatch_timebase_by_processor_processor_time_in_timebase_cycles,phys_processor_idx=?/ [Kernel PMU event]
-
 CC: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Signed-off-by: Cody P Schafer <dev@codyps.com>
 ---
- tools/perf/util/pmu.c | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+ tools/perf/Documentation/perf-list.txt   | 13 +++++++++++++
+ tools/perf/Documentation/perf-record.txt |  5 +++++
+ 2 files changed, 18 insertions(+)
 
-diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index db53fac..7b8d067 100644
---- a/tools/perf/util/pmu.c
-+++ b/tools/perf/util/pmu.c
-@@ -741,10 +741,33 @@ void perf_pmu__set_format(unsigned long *bits, long from, long to)
- 		set_bit(b, bits);
- }
+diff --git a/tools/perf/Documentation/perf-list.txt b/tools/perf/Documentation/perf-list.txt
+index 6fce6a6..626818b 100644
+--- a/tools/perf/Documentation/perf-list.txt
++++ b/tools/perf/Documentation/perf-list.txt
+@@ -89,6 +89,19 @@ raw encoding of 0x1A8 can be used:
+ You should refer to the processor specific documentation for getting these
+ details. Some of them are referenced in the SEE ALSO section below.
  
-+static int sub_non_neg(int a, int b)
-+{
-+	if (b > a)
-+		return 0;
-+	return a - b;
-+}
++PARAMETERIZED EVENTS
++--------------------
 +
- static char *format_alias(char *buf, int len, struct perf_pmu *pmu,
- 			  struct perf_pmu_alias *alias)
- {
--	snprintf(buf, len, "%s/%s/", pmu->name, alias->name);
-+	struct parse_events_term *term;
-+	int used = snprintf(buf, len, "%s/%s", pmu->name, alias->name);
++Some pmu events listed by 'perf-list' will be displayed with '?' in them. For
++example:
 +
-+	list_for_each_entry(term, &alias->terms, list)
-+		if (term->type_val == PARSE_EVENTS__TERM_TYPE_STR)
-+			used += snprintf(buf + used, sub_non_neg(len, used),
-+					",%s=?", term->val.str);
++  hv_gpci/dtbp_ptitc,phys_processor_idx=?/
 +
-+	if (sub_non_neg(len, used) > 0) {
-+		buf[used] = '/';
-+		used++;
-+	}
-+	if (sub_non_neg(len, used) > 0) {
-+		buf[used] = '\0';
-+		used++;
-+	} else
-+		buf[len - 1] = '\0';
- 	return buf;
- }
++This means that when provided as an event, a value for phys_processor_idx must
++also be supplied. For example:
++
++  perf stat -e 'hv_gpci/dtbp_ptitc,phys_processor_idx=0x2/' ...
++
+ OPTIONS
+ -------
  
-@@ -795,6 +818,7 @@ void print_pmu_events(const char *event_glob, bool name_only)
- 			if (is_cpu && !name_only)
- 				aliases[j] = format_alias_or(buf, sizeof(buf),
- 							      pmu, alias);
+diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
+index c71b0f3..c005180 100644
+--- a/tools/perf/Documentation/perf-record.txt
++++ b/tools/perf/Documentation/perf-record.txt
+@@ -33,6 +33,11 @@ OPTIONS
+         - a raw PMU event (eventsel+umask) in the form of rNNN where NNN is a
+ 	  hexadecimal event descriptor.
+ 
++	- a symbolicly formed PMU event like 'pmu/value1=0x3,value2/' where
++	  'value1' and 'value2' are defined as formats in
++	  /sys/bus/event_sources/devices/pmu/format/* OR are one of 'config',
++	  'config1', 'config2'.
 +
- 			aliases[j] = strdup(aliases[j]);
- 			j++;
- 		}
+         - a hardware breakpoint event in the form of '\mem:addr[:access]'
+           where addr is the address in memory you want to break in.
+           Access is the memory access type (read, write, execute) it can
 -- 
 1.9.3
