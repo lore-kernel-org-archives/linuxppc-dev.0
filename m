@@ -1,42 +1,45 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 688E31A024F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:41:45 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3B8C1A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:43:23 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 29 May 2014 09:41:43 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 597DC3578048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:41:41 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4SNfPIh1311098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:41:26 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4SNfere008910
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:41:41 +1000
-Date: Thu, 29 May 2014 09:41:40 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-Message-ID: <20140528234140.GA9108@shangw>
-References: <1401214527.3289.611.camel@ul30vt.home> <5385166A.5060404@suse.de>
- <1401237575.3289.676.camel@ul30vt.home> <53853155.60809@suse.de>
- <1401238674.3289.679.camel@ul30vt.home> <5385CA86.3010700@suse.de>
- <1401293853.2412.36.camel@ul30vt.home> <538665DA.8090000@suse.de>
- <20140528233753.GA8150@shangw> <53867386.9060403@suse.de>
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Wed, 28 May 2014 19:43:21 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id CAFAA6E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 19:43:09 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4SNhHX065142860
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 23:43:17 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4SNhGwD012227
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 19:43:17 -0400
+Date: Wed, 28 May 2014 16:43:12 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH v2 1/2] powerpc: numa: enable USE_PERCPU_NUMA_NODE_ID
+Message-ID: <20140528234312.GA9251@linux.vnet.ibm.com>
+References: <20140516233945.GI8941@linux.vnet.ibm.com>
+ <20140519181423.GL8941@linux.vnet.ibm.com>
+ <20140527234420.GE4104@linux.vnet.ibm.com>
+ <1401234974.8262.8.camel@pasglop>
+ <20140528000958.GF4104@linux.vnet.ibm.com>
+ <20140528163607.e1f0ced83a5b736cca7fa530@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <53867386.9060403@suse.de>
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
- qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+In-Reply-To: <20140528163607.e1f0ced83a5b736cca7fa530@linux-foundation.org>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
+ Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+ linux-mm@kvack.org, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,110 +49,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 29, 2014 at 01:38:46AM +0200, Alexander Graf wrote:
->On 29.05.14 01:37, Gavin Shan wrote:
->>On Thu, May 29, 2014 at 12:40:26AM +0200, Alexander Graf wrote:
->>>On 28.05.14 18:17, Alex Williamson wrote:
->>>>On Wed, 2014-05-28 at 13:37 +0200, Alexander Graf wrote:
->>>>>On 28.05.14 02:57, Alex Williamson wrote:
->>>>>>On Wed, 2014-05-28 at 02:44 +0200, Alexander Graf wrote:
->>>>>>>On 28.05.14 02:39, Alex Williamson wrote:
->>>>>>>>On Wed, 2014-05-28 at 00:49 +0200, Alexander Graf wrote:
->>>>>>>>>On 27.05.14 20:15, Alex Williamson wrote:
->>>>>>>>>>On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
->>>>>>>>>>>The patch adds new IOCTL commands for sPAPR VFIO container device
->>>>>>>>>>>to support EEH functionality for PCI devices, which have been passed
->>>>>>>>>>>through from host to somebody else via VFIO.
->>>>>>>>>>>
->>>>>>>>>>>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>>>>>>>>---
->>>>>>>>>>>     Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
->>>>>>>>>>>     drivers/vfio/pci/Makefile           |  1 +
->>>>>>>>>>>     drivers/vfio/pci/vfio_pci.c         | 20 +++++---
->>>>>>>>>>>     drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
->>>>>>>>>>>     drivers/vfio/pci/vfio_pci_private.h |  5 ++
->>>>>>>>>>>     drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
->>>>>>>>>>>     include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
->>>>>>>>>>>     7 files changed, 308 insertions(+), 7 deletions(-)
->>>>>>>>>>>     create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
->>>>>>>>>[...]
->>>>>>>>>
->>>>>>>>>>>+
->>>>>>>>>>>+	return ret;
->>>>>>>>>>>+}
->>>>>>>>>>>+
->>>>>>>>>>>     static long tce_iommu_ioctl(void *iommu_data,
->>>>>>>>>>>     				 unsigned int cmd, unsigned long arg)
->>>>>>>>>>>     {
->>>>>>>>>>>@@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->>>>>>>>>>>     		tce_iommu_disable(container);
->>>>>>>>>>>     		mutex_unlock(&container->lock);
->>>>>>>>>>>     		return 0;
->>>>>>>>>>>+	case VFIO_EEH_PE_SET_OPTION:
->>>>>>>>>>>+	case VFIO_EEH_PE_GET_STATE:
->>>>>>>>>>>+	case VFIO_EEH_PE_RESET:
->>>>>>>>>>>+	case VFIO_EEH_PE_CONFIGURE:
->>>>>>>>>>>+		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
->>>>>>>>>>This is where it would have really made sense to have a single
->>>>>>>>>>VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
->>>>>>>>>>AlexG, are you really attached to splitting these out into separate
->>>>>>>>>>ioctls?
->>>>>>>>>I don't see the problem. We need to forward 4 ioctls to a separate piece
->>>>>>>>>of code, so we forward 4 ioctls to a separate piece of code :). Putting
->>>>>>>>>them into one ioctl just moves the switch() into another function.
->>>>>>>>And uses an extra 3 ioctl numbers and gives us extra things to update if
->>>>>>>>we ever need to add more ioctls, etc.  ioctl numbers are an address
->>>>>>>>space, how much address space do we really want to give to EEH?  It's
->>>>>>>>not a big difference, but I don't think it's completely even either.
->>>>>>>>Thanks,
->>>>>>>Yes, that's the point. I by far prefer to have you push back on anyone
->>>>>>>who introduces useless ioctls rather than have a separate EEH number
->>>>>>>space that people can just throw anything in they like ;).
->>>>>>Well, I appreciate that, but having them as separate ioctls doesn't
->>>>>>really prevent that either.  Any one of these 4 could be set to take a
->>>>>>sub-option to extend and contort the EEH interface.  The only way to
->>>>>>prevent that would be to avoid the argsz+flags hack that make the ioctl
->>>>>>extendable.  Thanks,
->>>>>Sure, that's what patch review is about. I'm really more concerned about
->>>>>whose court the number space is in - you or Gavin. If we're talking
->>>>>about top level ioctls you will care a lot more.
->>>>>
->>>>>But I'm not religious about this. You're the VFIO maintainer, so it's
->>>>>your call. I just personally cringe when I see an ioctl that gets an
->>>>>"opcode" and a "parameter" argument where the "parameter" argument is a
->>>>>union with one struct for each opcode.
->>>>Well, what would it look like...
->>>>
->>>>struct vfio_eeh_pe_op {
->>>>	__u32 argsz;
->>>>	__u32 flags;
->>>>	__u32 op;
->>>>};
->>>>
->>>>Couldn't every single one of these be a separate "op"?  Are there any
->>>>cases where we can't use the ioctl return value?
->>>>
->>>>VFIO_EEH_PE_DISABLE
->>>>VFIO_EEH_PE_ENABLE
->>>>VFIO_EEH_PE_UNFREEZE_IO
->>>>VFIO_EEH_PE_UNFREEZE_DMA
->>>>VFIO_EEH_PE_GET_MODE
->>>>VFIO_EEH_PE_RESET_DEACTIVATE
->>>>VFIO_EEH_PE_RESET_HOT
->>>>VFIO_EEH_PE_RESET_FUNDAMENTAL
->>>>VFIO_EEH_PE_CONFIGURE
->>>>
->>>>It doesn't look that bad to me, what am I missing?  Thanks,
->>>Yup, that looks well to me as well :)
->>>
->>s/VFIO_EEH_PE_GET_MODE/VFIO_EEH_PE_GET_STATE.
->>
->>I'll include this in next revision. Thanks, Alex.
->
->Yup, no need for CMD anymore then either :)
->
+On 28.05.2014 [16:36:07 -0700], Andrew Morton wrote:
+> On Tue, 27 May 2014 17:09:58 -0700 Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
+> 
+> > On 28.05.2014 [09:56:14 +1000], Benjamin Herrenschmidt wrote:
+> > > On Tue, 2014-05-27 at 16:44 -0700, Nishanth Aravamudan wrote:
+> > > > > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> > > > 
+> > > > Ping on this and patch 2/2. Ben, would you be willing to pull these
+> > > > into
+> > > > your -next branch so they'd get some testing?
+> > > > 
+> > > > http://patchwork.ozlabs.org/patch/350368/
+> > > > http://patchwork.ozlabs.org/patch/349838/
+> > > > 
+> > > > Without any further changes, these two help quite a bit with the slab
+> > > > consumption on CONFIG_SLUB kernels when memoryless nodes are present.
+> > > 
+> > > I don't mind at all :-) I haven't really been following that story
+> > > so I was waiting for the dust to settle and maybe acks from MM people
+> > > but if you tell me they are good I'm prepared to trust you.
+> > 
+> > The patches themselves are pretty minimal and similar to the ia64
+> > changes (and the affected code seems like it hasn't changed in some
+> > time, beyond in the common code). I'd mostly like to get some
+> > broad-range build & boot testing.
+> > 
+> > Also, is NUMA a sufficient symbol to depend, you think? I figure most of
+> > the PPC NUMA systems are the pSeries/IBM variety, which is where I've
+> > run into memoryless nodes in the first place.
+> 
+> It's a powerpc-only patchset so I didn't do anything.
+> 
+> Nits:
+> 
+> - When referring to git commits, use 12 digits of hash and include
+>   the name of the patch as well (because patches can have different
+>   hashes in different trees).  So
+> 
+>        Based on 3bccd996276b ("numa: ia64: use generic percpu
+>        var numa_node_id() implementation") for ia64.
+> 
+> - It's nice to include a diffstat.  If there's a [0/n] patch then
+>   that's a great place for it, so people can see the overall impact at
+>   a glance.
 
-Yep. Thanks, Guys :)
+Thanks for the notes, I'll include those in any updated patches.
 
-Thanks,
-Gavin
+-Nish
