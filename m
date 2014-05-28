@@ -1,26 +1,45 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 59FEB1A0590
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:01:40 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A92F31400DA
- for <linuxppc-dev@ozlabs.org>; Wed, 28 May 2014 10:01:39 +1000 (EST)
-Message-ID: <1401235290.8262.9.camel@pasglop>
-Subject: Re: [PATCH] tty/hvc/hvc_console: Fix wakeup of HVC thread on
- hvc_kick()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 28 May 2014 10:01:30 +1000
-In-Reply-To: <1400838066.29150.69.camel@pasglop>
-References: <1400838066.29150.69.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jiri Slaby <jslaby@suse.cz>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BE2D1A0591
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 10:10:07 +1000 (EST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 27 May 2014 18:10:05 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 9E6F5C40003
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:10:03 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.ahe.boulder.ibm.com
+ [9.17.195.167])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s4S098ej11600226
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 May 2014 02:09:08 +0200
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s4S0A2ta020026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2014 18:10:03 -0600
+Date: Tue, 27 May 2014 17:09:58 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH v2 1/2] powerpc: numa: enable USE_PERCPU_NUMA_NODE_ID
+Message-ID: <20140528000958.GF4104@linux.vnet.ibm.com>
+References: <20140516233945.GI8941@linux.vnet.ibm.com>
+ <20140519181423.GL8941@linux.vnet.ibm.com>
+ <20140527234420.GE4104@linux.vnet.ibm.com>
+ <1401234974.8262.8.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1401234974.8262.8.camel@pasglop>
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
+ Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+ linux-mm@kvack.org, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +49,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-05-23 at 19:41 +1000, Benjamin Herrenschmidt wrote:
-> Some backends call hvc_kick() to wakeup the HVC thread from its
-> slumber upon incoming characters. This however doesn't work
-> properly because it uses msleep_interruptible() which is mostly
-> immune to wake_up_process(). It will basically go back to sleep
-> until the timeout is expired (only signals can really wake it).
->
-> Replace it with a simple shedule_timeout_interruptible() instead,
-> which may wakeup earlier every now and then but we really don't
-> care in this case.
-
-Nobody commented ? :-)
-
-Greg, do you want to take this in the tty tree or can I stick it in
-powerpc ?
-
-Cheers,
-Ben 
-
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  drivers/tty/hvc/hvc_console.c |    9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+On 28.05.2014 [09:56:14 +1000], Benjamin Herrenschmidt wrote:
+> On Tue, 2014-05-27 at 16:44 -0700, Nishanth Aravamudan wrote:
+> > > Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> > 
+> > Ping on this and patch 2/2. Ben, would you be willing to pull these
+> > into
+> > your -next branch so they'd get some testing?
+> > 
+> > http://patchwork.ozlabs.org/patch/350368/
+> > http://patchwork.ozlabs.org/patch/349838/
+> > 
+> > Without any further changes, these two help quite a bit with the slab
+> > consumption on CONFIG_SLUB kernels when memoryless nodes are present.
 > 
-> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-> index 94f9e3a..1094265 100644
-> --- a/drivers/tty/hvc/hvc_console.c
-> +++ b/drivers/tty/hvc/hvc_console.c
-> @@ -760,10 +760,17 @@ static int khvcd(void *unused)
->  			if (poll_mask == 0)
->  				schedule();
->  			else {
-> +				unsigned long j_timeout;
-> +
->  				if (timeout < MAX_TIMEOUT)
->  					timeout += (timeout >> 6) + 1;
->  
-> -				msleep_interruptible(timeout);
-> +				/*
-> +				 * We don't use msleep_interruptible otherwise
-> +				 * "kick" will fail to wake us up
-> +				 */
-> +				j_timeout = msecs_to_jiffies(timeout) + 1;
-> +				schedule_timeout_interruptible(j_timeout);
->  			}
->  		}
->  		__set_current_state(TASK_RUNNING);
-> 
+> I don't mind at all :-) I haven't really been following that story
+> so I was waiting for the dust to settle and maybe acks from MM people
+> but if you tell me they are good I'm prepared to trust you.
+
+The patches themselves are pretty minimal and similar to the ia64
+changes (and the affected code seems like it hasn't changed in some
+time, beyond in the common code). I'd mostly like to get some
+broad-range build & boot testing.
+
+Also, is NUMA a sufficient symbol to depend, you think? I figure most of
+the PPC NUMA systems are the pSeries/IBM variety, which is where I've
+run into memoryless nodes in the first place.
+
+Thanks,
+Nish
