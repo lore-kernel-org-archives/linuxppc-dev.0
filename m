@@ -1,30 +1,20 @@
-Return-Path: <ddaney.cavm@gmail.com>
-Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
- [IPv6:2607:f8b0:4001:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0208.outbound.protection.outlook.com [207.46.163.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4CC451A024E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 08:14:40 +1000 (EST)
-Received: by mail-ie0-f175.google.com with SMTP id y20so934981ier.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 15:14:36 -0700 (PDT)
-Message-ID: <5387B149.20408@gmail.com>
-Date: Thu, 29 May 2014 15:14:33 -0700
-From: David Daney <ddaney.cavm@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22A3E1A024E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 08:22:32 +1000 (EST)
+Message-ID: <1401402135.6603.191.camel@snotra.buserror.net>
+Subject: Re: panic: ttwu_activate() e500mc: 3.13.9.
+From: Scott Wood <scottwood@freescale.com>
+To: John Donnelly <john.d@servergy.com>
+Date: Thu, 29 May 2014 17:22:15 -0500
+In-Reply-To: <CAGtOQbS=GbQ5uC7_gtLB8pE5q6UpP1ORNXM9D9xk8pKLANCjqg@mail.gmail.com>
+References: <CAGtOQbS=GbQ5uC7_gtLB8pE5q6UpP1ORNXM9D9xk8pKLANCjqg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: abdoulaye berthe <berthe.ab@gmail.com>
-Subject: Re: [PATCH] gpio: removes all usage of gpiochip_remove retval
-References: <1401400492-26175-1-git-send-email-berthe.ab@gmail.com>
-In-Reply-To: <1401400492-26175-1-git-send-email-berthe.ab@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: devel@driverdev.osuosl.org, gnurou@gmail.com,
- patches@opensource.wolfsonmicro.com, linux-mips@linux-mips.org,
- netdev@vger.kernel.org, linus.walleij@linaro.org, linux-sh@vger.kernel.org,
- linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
- spear-devel@list.st.com, linux-samsungsoc@vger.kernel.org,
- linux-gpio@vger.kernel.org, linux-leds@vger.kernel.org, m@bues.ch,
- linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-media@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,116 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/29/2014 02:54 PM, abdoulaye berthe wrote:
+On Fri, 2014-05-23 at 14:22 -0500, John Donnelly wrote:
+> The failing code snippet :
+> 
+> void ttwu_activate(struct rq *rq, struct task_struct *p, int en_flags)
+> {
+> c0088b90:       7c 08 02 a6     mflr    r0
+> c0088b94:       90 01 00 04     stw     r0,4(r1)
+> c0088b98:       4b f8 87 29     bl      c00112c0 <_mcount>
+> c0088b9c:       94 21 ff f0     stwu    r1,-16(r1)
+> c0088ba0:       7c 08 02 a6     mflr    r0
+> c0088ba4:       90 01 00 14     stw     r0,20(r1)
+> c0088ba8:       bf c1 00 08     stmw    r30,8(r1)
+> c0088bac:       7c 9f 23 78     mr      r31,r4
+> c0088bb0:       7c 7e 1b 78     mr      r30,r3
+>         activate_task(rq, p, en_flags);
+> c0088bb4:       4b ff f5 2d     bl      c00880e0 <activate_task>
+>         p->on_rq = 1;
+> 
+>         /* if a worker is waking up, notify workqueue */
+>         if (p->flags & PF_WQ_WORKER)
+> c0088bb8:       81 3f 00 0c     lwz     r9,12(r31)
+> 
+> r31- looks valid ( 0xc0b0b340)
 
-Did you forget a changelog explaining why this is either needed, or even 
-a good idea?  I joined the conversation late and don't know why you are 
-doing this.
+r31 isn't relevant -- it didn't fault on that lwz, but rather on a
+branch to NULL, via CTR.  The branch to NULL could have been either
+inside activate_task or after returning from activate_task.  Since LR
+doesn't point to the instruction after a bctrl, that means it was a
+non-linking bctr.  I believe it's the one at the end of enqueue_task()
+that is responsible.
 
-Thanks,
-David Daney
+https://lkml.org/lkml/2011/9/19/331 suggests that a NULL enqueue_task
+may be the result of the idle thread attempting to block.  Did you have
+CONFIG_DEBUG_ATOMIC_SLEEP enabled?
 
+> Entering kdb (current=0xe62b8000, pid 74) on processor 1 Oops: (null)
+> due to oops @ 0x0
+> dCPU: 1 PID: 74 Comm: kworker/1:1 Tainted: G        W    3.13.9+ #3
 
+The taint shows that there's previously been a WARN() -- what was it?
 
-> Signed-off-by: abdoulaye berthe <berthe.ab@gmail.com>
-> ---
->   arch/arm/common/scoop.c                        | 10 ++--------
->   arch/mips/txx9/generic/setup.c                 |  4 ++--
->   arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |  3 ++-
->   arch/sh/boards/mach-x3proto/gpio.c             |  6 ++----
->   drivers/bcma/driver_gpio.c                     |  3 ++-
->   drivers/gpio/gpio-74x164.c                     |  8 +++-----
->   drivers/gpio/gpio-adnp.c                       |  9 +--------
->   drivers/gpio/gpio-adp5520.c                    |  8 +-------
->   drivers/gpio/gpio-adp5588.c                    |  6 +-----
->   drivers/gpio/gpio-amd8111.c                    |  3 +--
->   drivers/gpio/gpio-arizona.c                    |  3 ++-
->   drivers/gpio/gpio-cs5535.c                     |  8 +-------
->   drivers/gpio/gpio-da9052.c                     |  3 ++-
->   drivers/gpio/gpio-da9055.c                     |  3 ++-
->   drivers/gpio/gpio-dwapb.c                      |  2 +-
->   drivers/gpio/gpio-em.c                         |  5 +----
->   drivers/gpio/gpio-f7188x.c                     | 18 ++----------------
->   drivers/gpio/gpio-generic.c                    |  3 ++-
->   drivers/gpio/gpio-grgpio.c                     |  4 +---
->   drivers/gpio/gpio-ich.c                        |  9 +--------
->   drivers/gpio/gpio-it8761e.c                    |  6 +-----
->   drivers/gpio/gpio-janz-ttl.c                   |  8 +-------
->   drivers/gpio/gpio-kempld.c                     |  3 ++-
->   drivers/gpio/gpio-lp3943.c                     |  3 ++-
->   drivers/gpio/gpio-lynxpoint.c                  |  5 +----
->   drivers/gpio/gpio-max730x.c                    | 12 ++++--------
->   drivers/gpio/gpio-max732x.c                    |  7 +------
->   drivers/gpio/gpio-mc33880.c                    | 11 +++--------
->   drivers/gpio/gpio-mc9s08dz60.c                 |  3 ++-
->   drivers/gpio/gpio-mcp23s08.c                   | 26 +++++++-------------------
->   drivers/gpio/gpio-ml-ioh.c                     |  8 ++------
->   drivers/gpio/gpio-msm-v2.c                     |  5 +----
->   drivers/gpio/gpio-mxc.c                        |  2 +-
->   drivers/gpio/gpio-octeon.c                     |  3 ++-
->   drivers/gpio/gpio-palmas.c                     |  3 ++-
->   drivers/gpio/gpio-pca953x.c                    |  7 +------
->   drivers/gpio/gpio-pcf857x.c                    |  4 +---
->   drivers/gpio/gpio-pch.c                        | 10 ++--------
->   drivers/gpio/gpio-rc5t583.c                    |  3 ++-
->   drivers/gpio/gpio-rcar.c                       |  5 +----
->   drivers/gpio/gpio-rdc321x.c                    |  7 ++-----
->   drivers/gpio/gpio-sch.c                        | 16 +++-------------
->   drivers/gpio/gpio-sch311x.c                    |  6 ++----
->   drivers/gpio/gpio-sodaville.c                  |  4 +---
->   drivers/gpio/gpio-stmpe.c                      |  8 +-------
->   drivers/gpio/gpio-sx150x.c                     |  7 ++-----
->   drivers/gpio/gpio-syscon.c                     |  3 ++-
->   drivers/gpio/gpio-tb10x.c                      |  5 +----
->   drivers/gpio/gpio-tc3589x.c                    |  8 +-------
->   drivers/gpio/gpio-timberdale.c                 |  5 +----
->   drivers/gpio/gpio-tps6586x.c                   |  3 ++-
->   drivers/gpio/gpio-tps65910.c                   |  3 ++-
->   drivers/gpio/gpio-tps65912.c                   |  3 ++-
->   drivers/gpio/gpio-ts5500.c                     |  6 +++---
->   drivers/gpio/gpio-twl4030.c                    |  4 +---
->   drivers/gpio/gpio-twl6040.c                    |  3 ++-
->   drivers/gpio/gpio-ucb1400.c                    |  2 +-
->   drivers/gpio/gpio-viperboard.c                 | 10 +++-------
->   drivers/gpio/gpio-vx855.c                      |  3 +--
->   drivers/gpio/gpio-wm831x.c                     |  3 ++-
->   drivers/gpio/gpio-wm8350.c                     |  3 ++-
->   drivers/gpio/gpio-wm8994.c                     |  3 ++-
->   drivers/hid/hid-cp2112.c                       |  6 ++----
->   drivers/input/keyboard/adp5588-keys.c          |  4 +---
->   drivers/input/keyboard/adp5589-keys.c          |  4 +---
->   drivers/input/touchscreen/ad7879.c             | 10 +++-------
->   drivers/leds/leds-pca9532.c                    | 10 ++--------
->   drivers/leds/leds-tca6507.c                    |  7 ++-----
->   drivers/media/dvb-frontends/cxd2820r_core.c    | 10 +++-------
->   drivers/mfd/asic3.c                            |  3 ++-
->   drivers/mfd/htc-i2cpld.c                       |  8 +-------
->   drivers/mfd/sm501.c                            | 17 +++--------------
->   drivers/mfd/tc6393xb.c                         | 13 ++++---------
->   drivers/mfd/ucb1x00-core.c                     |  8 ++------
->   drivers/pinctrl/pinctrl-abx500.c               | 15 +++------------
->   drivers/pinctrl/pinctrl-adi2.c                 |  9 ++++-----
->   drivers/pinctrl/pinctrl-as3722.c               | 11 ++---------
->   drivers/pinctrl/pinctrl-baytrail.c             |  5 +----
->   drivers/pinctrl/pinctrl-coh901.c               | 10 ++--------
->   drivers/pinctrl/pinctrl-exynos5440.c           |  6 +-----
->   drivers/pinctrl/pinctrl-msm.c                  | 11 ++---------
->   drivers/pinctrl/pinctrl-nomadik.c              |  2 +-
->   drivers/pinctrl/pinctrl-rockchip.c             | 16 ++++------------
->   drivers/pinctrl/pinctrl-samsung.c              | 14 ++++----------
->   drivers/pinctrl/pinctrl-sunxi.c                |  3 +--
->   drivers/pinctrl/sh-pfc/gpio.c                  |  9 +++------
->   drivers/pinctrl/spear/pinctrl-plgpio.c         |  3 +--
->   drivers/pinctrl/vt8500/pinctrl-wmt.c           |  9 ++-------
->   drivers/platform/x86/intel_pmic_gpio.c         |  3 +--
->   drivers/ssb/driver_gpio.c                      |  3 ++-
->   drivers/staging/vme/devices/vme_pio2_gpio.c    |  4 +---
->   drivers/tty/serial/max310x.c                   | 10 ++++------
->   drivers/video/fbdev/via/via-gpio.c             | 10 +++-------
->   sound/soc/codecs/wm5100.c                      |  5 +----
->   sound/soc/codecs/wm8903.c                      |  6 +-----
->   sound/soc/codecs/wm8962.c                      |  5 +----
->   sound/soc/codecs/wm8996.c                      |  6 +-----
->   97 files changed, 182 insertions(+), 460 deletions(-)
->
-[...]
+Could you describe more about the circumstances of this?  Is it
+reproducable?  Any special config?  What exact SHA?  Any local changes?
+
+-Scott
