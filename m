@@ -1,21 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DA251A024E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 19:39:55 +1000 (EST)
-Date: Thu, 29 May 2014 19:39:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Remove platforms/wsp and associated pieces
-Message-ID: <20140529193950.2d6f788d@canb.auug.org.au>
-In-Reply-To: <20140529193252.05902952@canb.auug.org.au>
-References: <1401353429-29036-1-git-send-email-mpe@ellerman.id.au>
- <20140529193252.05902952@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A3B0D1A024E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 04:20:42 +1000 (EST)
+Message-ID: <1401387624.6603.161.camel@snotra.buserror.net>
+Subject: Re: [PATCH] pcmcia: m8xx: remove checks for four macros
+From: Scott Wood <scottwood@freescale.com>
+To: Paul Bolle <pebolle@tiscali.nl>
+Date: Thu, 29 May 2014 13:20:24 -0500
+In-Reply-To: <1400916970.31526.78.camel@x220>
+References: <1400916970.31526.78.camel@x220>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/sVkWHnsBTgpCYtJoHhMdHmt"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@ozlabs.org, pebolle@tiscali.nl
+Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-pcmcia@lists.infradead.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/sVkWHnsBTgpCYtJoHhMdHmt
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2014-05-24 at 09:36 +0200, Paul Bolle wrote:
+> This driver contains checks for four Kconfig macros. But the related
+> Kconfig symbols have never been part of the tree. Remove these checks
+> and the code they hide.
+> 
+> Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
+> ---
+> Untested.
+> 
+> This has been an issue ever since this driver was added in v2.6.15. Note
+> that there is no header named "*/cpld.h", so setting PRxK can't possibly
+> work.
+> 
+>  drivers/pcmcia/m8xx_pcmcia.c | 75 --------------------------------------------
+>  1 file changed, 75 deletions(-)
 
-Hi Michael,
+Does anything in this driver still work?  It looks like bitrot from the
+arch/ppc days, that sort of got updated to use the device tree -- but
+even after this patch there are lots of instances of CONFIG symbols
+being used to assert the exact hardware being used, rather than what
+hardware is supported.
 
-On Thu, 29 May 2014 19:32:52 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> On Thu, 29 May 2014 18:50:29 +1000 Michael Ellerman <mpe@ellerman.id.au> =
-wrote:
-> >
-> > __attribute__ ((unused))
-> >=20
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
->=20
-> So this was the only use of CONFIG_PPC_A2 ... so more cleanup
-> possible :-)
+Is anyone actively maintaining/testing this code?
 
-And also seems to be the only thing that selects CONFIG_PPC_ICSWX.
-However, this is user selectable ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/sVkWHnsBTgpCYtJoHhMdHmt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJThwBqAAoJEMDTa8Ir7ZwVTzQP/3A+Oh4bR+/XyvRLKR6ez7h8
-XH/1zCaE2pyz4zgUHTEX16JG18GHGz3ycyGjHQMY+VyJzZFZ4+LIf1pxGyi6w9uk
-ZKvVHaUW1EqzphT2+o5u4gy1z7DTFK2wcVbFgVzQt93PDQux68Xkp6tjy7KT3l6a
-tabJikKe1qmTOxc15O2LF9oNwP7I7xxpwXIl62OfAdYLvuuLsXvlleNSGEF8ivsV
-R/T08HN9pS1EYhxac8vHsKQTPocba90zdaiZNZuDH8JvHWe7oJvn6WW0HYqaOu6R
-pIXELKTIhjx9/j4fgkiW1sgsbBYbXIomFeTpLC0K4x5b2zaevB8ZsL93jFH+X/X8
-u3Mvm1gTnu/g1mYucByFWt6ocCbuHEi5DzS73PeBrVXa2n3NZgJHVwcmx2Bt+UDM
-WbZsTBoiRd7YKOeqm1lDc0An3ktnfnMIwmIgVyJkeItEr0N3RVD/Ss9CqjX9pj5J
-0QJgsgBRfB/c/Ong2do3heDXDpYbLuum+JBObBu7QtOFjY3YXIg1Sz3NDq3xqwdK
-IU27CGK4QB0KSZy01mRZr0GlGy6kmACf0LDXHJbBi00kIbcTHqx6QUlTpHRRG3Ek
-ySHsLn8E0J9hGTQVN7NzwODTlTqwVoODBIq91m5+UWUn0ofN6MGApUWtt2k0R2TO
-i/ngXiKjTgvDYxwUhvq5
-=vNbG
------END PGP SIGNATURE-----
-
---Sig_/sVkWHnsBTgpCYtJoHhMdHmt--
+-Sott
