@@ -1,24 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B339D1A024F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 10:45:07 +1000 (EST)
-Message-ID: <1401324295.8262.42.camel@pasglop>
-Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Thu, 29 May 2014 10:44:55 +1000
-In-Reply-To: <20140529000543.GA9645@shangw>
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401214527.3289.611.camel@ul30vt.home> <20140528005532.GA5528@shangw>
- <1401294731.2412.42.camel@ul30vt.home> <20140529000543.GA9645@shangw>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, agraf@suse.de, kvm-ppc@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 056981A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 12:04:57 +1000 (EST)
+Date: Thu, 29 May 2014 12:04:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>, Alexander Graf <agraf@suse.de>
+Subject: linux-next: manual merge of the powerpc tree with Linus' tree
+Message-ID: <20140529120448.1a90dd4a@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/_a/MzqsLpGCnGLvuqYeSMEw"; protocol="application/pgp-signature"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +24,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-05-29 at 10:05 +1000, Gavin Shan wrote:
-> The log stuff is TBD and I'll figure it out later.
-> 
-> About to what are the errors, there are a lot. Most of them are related
-> to hardware level, for example unstable PCI link. Usually, those error
-> bits defined in AER fatal error state register contribute to EEH errors.
-> It could be software related, e.g. violating IOMMU protection (read/write
-> permission etc), or even one PCI device isn't capable of DMAing. Hopefully,
-> it's the explaination you're looking for? :-)
+--Sig_/_a/MzqsLpGCnGLvuqYeSMEw
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Note to Alex('s) ...
+Hi all,
 
-The log we get from FW at the moment in the host is:
+Today's linux-next merge of the powerpc tree got a conflict in
+arch/powerpc/include/asm/sections.h between commit b18db0b80867 ("KVM
+guest: Make pv trampoline code executable") from the  tree and commit
+07de8377f748 ("powerpc: Fix ABIv2 issue with
+dereference_function_descriptor") from the powerpc tree.
 
-  - In the case of pHyp / RTAS host, opaque. Basically it's a blob that we store
-and that can be sent to IBM service people :-) Not terribly practical.
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
 
-  - On PowerNV, it's a IODA specific data structure (basically a dump of a 
-bunch of register state and tables). IODA is our IO architecture (sadly the
-document itself isn't public at this point) and we have two versions, IODA1
-and IODA2. You can consider the structure as chipset specific basically.
-
-What I want to do in the long run is:
-
-  - In the case of pHyp/RTAS host, there's not much we can do, so basically
-forward that log as-is.
-
-  - In the case of PowerNV, forward the log *and* add a well-defined blob to
-it that does some basic interpretation of it. In fact I want to do the latter
-more generally in the host kernel for host kernel errors as well, but we
-can forward it to the guest via VFIO too. What I mean by interpretation is
-something along the lines of an error type "DMA IOMMU fault, MMIO error,
-Link loss, PCIe UE, ..." among a list of well known error types that
-represent the most common ones, with a little bit of added info when
-available (for most DMA errors we can provide the DMA address that faulted
-for example).
-
-So Gavin and I need to work a bit on that, both in the context of the host
-kernel to improve the reporting there, and in the context of what we pass to
-user space.
-
-However, no driver today cares about that information. The PCIe error recovery
-system doesn't carry it and it has no impact on the EEH recovery procedures,
-so EEH in that sense is useful without that reporting. It's useful for the
-programmer (or user/admin) to identify what went wrong but it's not used by
-the automated recovery process.
-
-One last thing to look at is in the case of a VFIO device, we might want to
-silence the host kernel printf's once we support guest EEH since otherwise
-the guest has a path to flood the host kernel log by triggering a lot of
-EEH errors purposefully.
-
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/include/asm/sections.h
+index 521790330672,d1bb96d5a298..000000000000
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@@ -39,17 -39,7 +39,18 @@@ static inline int overlaps_kernel_text(
+  		(unsigned long)_stext < end;
+  }
+ =20
+ +static inline int overlaps_kvm_tmp(unsigned long start, unsigned long end)
+ +{
+ +#ifdef CONFIG_KVM_GUEST
+ +	extern char kvm_tmp[];
+ +	return start < (unsigned long)kvm_tmp &&
+ +		(unsigned long)&kvm_tmp[1024 * 1024] < end;
+ +#else
+ +	return 0;
+ +#endif
+ +}
+ +
++ #if !defined(_CALL_ELF) || _CALL_ELF !=3D 2
+  #undef dereference_function_descriptor
+  static inline void *dereference_function_descriptor(void *ptr)
+  {
+
+--Sig_/_a/MzqsLpGCnGLvuqYeSMEw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBCAAGBQJThpXEAAoJEMDTa8Ir7ZwVN5EP/1a/1IkrYVfT47a2v1PZGbNA
+2pBoYeuuXU4Cq7qYlQ6sdhhudWyyNSYXJzdyM/Vz2sX5eu7gqEIzAXj5V/BBud7a
+LOGL6mfZ+7MKG15IXAr84ZuwFyVDew/AvSrsIo3pdiQtkw/zLZvXiIDd/eYXJcTH
+ottaAn1Grk++xl+6sQa8G+/kVYhWA/jveaABPAFFuevZsPVvLRW52m20F6Zkddem
+1YzqC5nN4ScpjPgghB6lwXKOlJG8VxcyBEoj8i8lQYRJq037c4MjsVaTF1rZUPSV
+qRZhkQDfSXwOMzW2xTOgl8SSt5iWn/BqfpWEutgi6maB+gBqBmWH8VQIvi63Nkqd
+EQkJ3++C7To8Keh3GfJ+OFy71eFg7vp6e1D+kmKu5IqXdS35d/Mkpu47QWXgojF4
+0sqDgiqmeqadAiskss9T3AgYvz7wvbb7nryJiV5jcAw4fnOwsV/XmoFl81uPhfFx
+l3ILsyBDrFJtR/3Di45PCEoh28GodnqCWYw9ahPGd2tYSrrpOwoLj5nXnv4/Z8Bm
+V26W0XAHS9s931mFGomuhAMXE0DS7SPJZKIUej+JMJl9qhZ5naTIk0yc9sqaJGBs
+ttVLoIuI07SgzMhqNJKQEk7h8NuGmxnR6e+j8AInH27hcBcB94BqNWpEjSD7CKiR
+CK9Ta9lsRVvUGdkQsgUC
+=6Ln7
+-----END PGP SIGNATURE-----
+
+--Sig_/_a/MzqsLpGCnGLvuqYeSMEw--
