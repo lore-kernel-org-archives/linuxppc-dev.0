@@ -1,21 +1,27 @@
-Return-Path: <mtosatti@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by lists.ozlabs.org (Postfix) with ESMTP id 42B791A03F1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 07:29:10 +1000 (EST)
-Date: Thu, 29 May 2014 18:28:12 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Paul Bolle <pebolle@tiscali.nl>
-Subject: [PATCH] PPC: 8xx: update MAINTAINERS entry
-Message-ID: <20140529212812.GA9000@amt.cnet>
-References: <1400916970.31526.78.camel@x220>
- <1401387624.6603.161.camel@snotra.buserror.net>
- <1401388744.25908.16.camel@x220> <1401390275.25908.24.camel@x220>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1401390275.25908.24.camel@x220>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0053D1A024E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 07:52:50 +1000 (EST)
+Message-ID: <1401400361.14938.16.camel@pasglop>
+Subject: Re: powerpc/pseries: Use new defines when calling h_set_mode
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Fri, 30 May 2014 07:52:41 +1000
+In-Reply-To: <5387A63B.4000503@suse.de>
+References: <1401106626-13130-1-git-send-email-paulus@samba.org>
+ <1401106626-13130-4-git-send-email-paulus@samba.org>
+ <5385E620.5090703@suse.de> <1401342462.4116.4.camel@ale.ozlabs.ibm.com>
+ <1401344549.4116.8.camel@ale.ozlabs.ibm.com>
+ <BD1CF085-FEBC-4208-AD3F-C55DB002097F@suse.de>
+ <1401349547.4116.19.camel@ale.ozlabs.ibm.com> <5387A63B.4000503@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +31,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2014-05-29 at 23:27 +0200, Alexander Graf wrote:
+> On 29.05.14 09:45, Michael Neuling wrote:
+> >>> +/* Values for 2nd argument to H_SET_MODE */
+> >>> +#define H_SET_MODE_RESOURCE_SET_CIABR        1
+> >>> +#define H_SET_MODE_RESOURCE_SET_DAWR        2
+> >>> +#define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE    3
+> >>> +#define H_SET_MODE_RESOURCE_LE            4
+> >>
+> >> Much better, but I think you want to make use of these in non-kvm code too,
+> >> no? At least the LE one is definitely already implemented as call :)
+> > Sure but that's a different patch.... below.
+> 
+> Ben, how would you like to handle these 2 patches? If you give me an ack 
+> I can just put this patch into my kvm queue. Alternatively we could both 
+> carry a patch that adds the H_SET_MODE header bits only and whoever hits 
+> Linus' tree first wins ;).
 
-Not involved in 8xx activities for years, update MAINTAINERS
-to reflect it.
+No biggie. Worst case it's a trivial conflict.
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Cheers,
+Ben.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c47d268..ed7b606 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5349,7 +5349,6 @@ F:	arch/powerpc/*/*/*virtex*
- 
- LINUX FOR POWERPC EMBEDDED PPC8XX
- M:	Vitaly Bordug <vitb@kernel.crashing.org>
--M:	Marcelo Tosatti <marcelo@kvack.org>
- W:	http://www.penguinppc.org/
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Maintained
+> 
+> Alex
+> 
+> >
+> > Mikey
+> >
+> >
+> > powerpc/pseries: Use new defines when calling h_set_mode
+> >
+> > Now that we define these in the KVM code, use these defines when we call
+> > h_set_mode.  No functional change.
+> >
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > --
+> > This depends on the KVM h_set_mode patches.
+> >
+> > diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+> > index 12c32c5..67859ed 100644
+> > --- a/arch/powerpc/include/asm/plpar_wrappers.h
+> > +++ b/arch/powerpc/include/asm/plpar_wrappers.h
+> > @@ -273,7 +273,7 @@ static inline long plpar_set_mode(unsigned long mflags, unsigned long resource,
+> >   static inline long enable_reloc_on_exceptions(void)
+> >   {
+> >   	/* mflags = 3: Exceptions at 0xC000000000004000 */
+> > -	return plpar_set_mode(3, 3, 0, 0);
+> > +	return plpar_set_mode(3, H_SET_MODE_RESOURCE_ADDR_TRANS_MODE, 0, 0);
+> >   }
+> >   
+> >   /*
+> > @@ -284,7 +284,7 @@ static inline long enable_reloc_on_exceptions(void)
+> >    * returns H_SUCCESS.
+> >    */
+> >   static inline long disable_reloc_on_exceptions(void) {
+> > -	return plpar_set_mode(0, 3, 0, 0);
+> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_ADDR_TRANS_MODE, 0, 0);
+> >   }
+> >   
+> >   /*
+> > @@ -297,7 +297,7 @@ static inline long disable_reloc_on_exceptions(void) {
+> >   static inline long enable_big_endian_exceptions(void)
+> >   {
+> >   	/* mflags = 0: big endian exceptions */
+> > -	return plpar_set_mode(0, 4, 0, 0);
+> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_LE, 0, 0);
+> >   }
+> >   
+> >   /*
+> > @@ -310,17 +310,17 @@ static inline long enable_big_endian_exceptions(void)
+> >   static inline long enable_little_endian_exceptions(void)
+> >   {
+> >   	/* mflags = 1: little endian exceptions */
+> > -	return plpar_set_mode(1, 4, 0, 0);
+> > +	return plpar_set_mode(1, H_SET_MODE_RESOURCE_LE, 0, 0);
+> >   }
+> >   
+> >   static inline long plapr_set_ciabr(unsigned long ciabr)
+> >   {
+> > -	return plpar_set_mode(0, 1, ciabr, 0);
+> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_CIABR, ciabr, 0);
+> >   }
+> >   
+> >   static inline long plapr_set_watchpoint0(unsigned long dawr0, unsigned long dawrx0)
+> >   {
+> > -	return plpar_set_mode(0, 2, dawr0, dawrx0);
+> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
+> >   }
+> >   
+> >   #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
+> >
