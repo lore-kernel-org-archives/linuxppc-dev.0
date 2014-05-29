@@ -1,27 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ddaney.cavm@gmail.com>
+Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0053D1A024E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 07:52:50 +1000 (EST)
-Message-ID: <1401400361.14938.16.camel@pasglop>
-Subject: Re: powerpc/pseries: Use new defines when calling h_set_mode
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Fri, 30 May 2014 07:52:41 +1000
-In-Reply-To: <5387A63B.4000503@suse.de>
-References: <1401106626-13130-1-git-send-email-paulus@samba.org>
- <1401106626-13130-4-git-send-email-paulus@samba.org>
- <5385E620.5090703@suse.de> <1401342462.4116.4.camel@ale.ozlabs.ibm.com>
- <1401344549.4116.8.camel@ale.ozlabs.ibm.com>
- <BD1CF085-FEBC-4208-AD3F-C55DB002097F@suse.de>
- <1401349547.4116.19.camel@ale.ozlabs.ibm.com> <5387A63B.4000503@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4CC451A024E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 08:14:40 +1000 (EST)
+Received: by mail-ie0-f175.google.com with SMTP id y20so934981ier.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 15:14:36 -0700 (PDT)
+Message-ID: <5387B149.20408@gmail.com>
+Date: Thu, 29 May 2014 15:14:33 -0700
+From: David Daney <ddaney.cavm@gmail.com>
+MIME-Version: 1.0
+To: abdoulaye berthe <berthe.ab@gmail.com>
+Subject: Re: [PATCH] gpio: removes all usage of gpiochip_remove retval
+References: <1401400492-26175-1-git-send-email-berthe.ab@gmail.com>
+In-Reply-To: <1401400492-26175-1-git-send-email-berthe.ab@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: devel@driverdev.osuosl.org, gnurou@gmail.com,
+ patches@opensource.wolfsonmicro.com, linux-mips@linux-mips.org,
+ netdev@vger.kernel.org, linus.walleij@linaro.org, linux-sh@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ spear-devel@list.st.com, linux-samsungsoc@vger.kernel.org,
+ linux-gpio@vger.kernel.org, linux-leds@vger.kernel.org, m@bues.ch,
+ linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,94 +34,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-05-29 at 23:27 +0200, Alexander Graf wrote:
-> On 29.05.14 09:45, Michael Neuling wrote:
-> >>> +/* Values for 2nd argument to H_SET_MODE */
-> >>> +#define H_SET_MODE_RESOURCE_SET_CIABR        1
-> >>> +#define H_SET_MODE_RESOURCE_SET_DAWR        2
-> >>> +#define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE    3
-> >>> +#define H_SET_MODE_RESOURCE_LE            4
-> >>
-> >> Much better, but I think you want to make use of these in non-kvm code too,
-> >> no? At least the LE one is definitely already implemented as call :)
-> > Sure but that's a different patch.... below.
-> 
-> Ben, how would you like to handle these 2 patches? If you give me an ack 
-> I can just put this patch into my kvm queue. Alternatively we could both 
-> carry a patch that adds the H_SET_MODE header bits only and whoever hits 
-> Linus' tree first wins ;).
+On 05/29/2014 02:54 PM, abdoulaye berthe wrote:
 
-No biggie. Worst case it's a trivial conflict.
+Did you forget a changelog explaining why this is either needed, or even 
+a good idea?  I joined the conversation late and don't know why you are 
+doing this.
 
-Cheers,
-Ben.
+Thanks,
+David Daney
 
-> 
-> Alex
-> 
-> >
-> > Mikey
-> >
-> >
-> > powerpc/pseries: Use new defines when calling h_set_mode
-> >
-> > Now that we define these in the KVM code, use these defines when we call
-> > h_set_mode.  No functional change.
-> >
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > --
-> > This depends on the KVM h_set_mode patches.
-> >
-> > diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
-> > index 12c32c5..67859ed 100644
-> > --- a/arch/powerpc/include/asm/plpar_wrappers.h
-> > +++ b/arch/powerpc/include/asm/plpar_wrappers.h
-> > @@ -273,7 +273,7 @@ static inline long plpar_set_mode(unsigned long mflags, unsigned long resource,
-> >   static inline long enable_reloc_on_exceptions(void)
-> >   {
-> >   	/* mflags = 3: Exceptions at 0xC000000000004000 */
-> > -	return plpar_set_mode(3, 3, 0, 0);
-> > +	return plpar_set_mode(3, H_SET_MODE_RESOURCE_ADDR_TRANS_MODE, 0, 0);
-> >   }
-> >   
-> >   /*
-> > @@ -284,7 +284,7 @@ static inline long enable_reloc_on_exceptions(void)
-> >    * returns H_SUCCESS.
-> >    */
-> >   static inline long disable_reloc_on_exceptions(void) {
-> > -	return plpar_set_mode(0, 3, 0, 0);
-> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_ADDR_TRANS_MODE, 0, 0);
-> >   }
-> >   
-> >   /*
-> > @@ -297,7 +297,7 @@ static inline long disable_reloc_on_exceptions(void) {
-> >   static inline long enable_big_endian_exceptions(void)
-> >   {
-> >   	/* mflags = 0: big endian exceptions */
-> > -	return plpar_set_mode(0, 4, 0, 0);
-> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_LE, 0, 0);
-> >   }
-> >   
-> >   /*
-> > @@ -310,17 +310,17 @@ static inline long enable_big_endian_exceptions(void)
-> >   static inline long enable_little_endian_exceptions(void)
-> >   {
-> >   	/* mflags = 1: little endian exceptions */
-> > -	return plpar_set_mode(1, 4, 0, 0);
-> > +	return plpar_set_mode(1, H_SET_MODE_RESOURCE_LE, 0, 0);
-> >   }
-> >   
-> >   static inline long plapr_set_ciabr(unsigned long ciabr)
-> >   {
-> > -	return plpar_set_mode(0, 1, ciabr, 0);
-> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_CIABR, ciabr, 0);
-> >   }
-> >   
-> >   static inline long plapr_set_watchpoint0(unsigned long dawr0, unsigned long dawrx0)
-> >   {
-> > -	return plpar_set_mode(0, 2, dawr0, dawrx0);
-> > +	return plpar_set_mode(0, H_SET_MODE_RESOURCE_SET_DAWR, dawr0, dawrx0);
-> >   }
-> >   
-> >   #endif /* _ASM_POWERPC_PLPAR_WRAPPERS_H */
-> >
+
+
+> Signed-off-by: abdoulaye berthe <berthe.ab@gmail.com>
+> ---
+>   arch/arm/common/scoop.c                        | 10 ++--------
+>   arch/mips/txx9/generic/setup.c                 |  4 ++--
+>   arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |  3 ++-
+>   arch/sh/boards/mach-x3proto/gpio.c             |  6 ++----
+>   drivers/bcma/driver_gpio.c                     |  3 ++-
+>   drivers/gpio/gpio-74x164.c                     |  8 +++-----
+>   drivers/gpio/gpio-adnp.c                       |  9 +--------
+>   drivers/gpio/gpio-adp5520.c                    |  8 +-------
+>   drivers/gpio/gpio-adp5588.c                    |  6 +-----
+>   drivers/gpio/gpio-amd8111.c                    |  3 +--
+>   drivers/gpio/gpio-arizona.c                    |  3 ++-
+>   drivers/gpio/gpio-cs5535.c                     |  8 +-------
+>   drivers/gpio/gpio-da9052.c                     |  3 ++-
+>   drivers/gpio/gpio-da9055.c                     |  3 ++-
+>   drivers/gpio/gpio-dwapb.c                      |  2 +-
+>   drivers/gpio/gpio-em.c                         |  5 +----
+>   drivers/gpio/gpio-f7188x.c                     | 18 ++----------------
+>   drivers/gpio/gpio-generic.c                    |  3 ++-
+>   drivers/gpio/gpio-grgpio.c                     |  4 +---
+>   drivers/gpio/gpio-ich.c                        |  9 +--------
+>   drivers/gpio/gpio-it8761e.c                    |  6 +-----
+>   drivers/gpio/gpio-janz-ttl.c                   |  8 +-------
+>   drivers/gpio/gpio-kempld.c                     |  3 ++-
+>   drivers/gpio/gpio-lp3943.c                     |  3 ++-
+>   drivers/gpio/gpio-lynxpoint.c                  |  5 +----
+>   drivers/gpio/gpio-max730x.c                    | 12 ++++--------
+>   drivers/gpio/gpio-max732x.c                    |  7 +------
+>   drivers/gpio/gpio-mc33880.c                    | 11 +++--------
+>   drivers/gpio/gpio-mc9s08dz60.c                 |  3 ++-
+>   drivers/gpio/gpio-mcp23s08.c                   | 26 +++++++-------------------
+>   drivers/gpio/gpio-ml-ioh.c                     |  8 ++------
+>   drivers/gpio/gpio-msm-v2.c                     |  5 +----
+>   drivers/gpio/gpio-mxc.c                        |  2 +-
+>   drivers/gpio/gpio-octeon.c                     |  3 ++-
+>   drivers/gpio/gpio-palmas.c                     |  3 ++-
+>   drivers/gpio/gpio-pca953x.c                    |  7 +------
+>   drivers/gpio/gpio-pcf857x.c                    |  4 +---
+>   drivers/gpio/gpio-pch.c                        | 10 ++--------
+>   drivers/gpio/gpio-rc5t583.c                    |  3 ++-
+>   drivers/gpio/gpio-rcar.c                       |  5 +----
+>   drivers/gpio/gpio-rdc321x.c                    |  7 ++-----
+>   drivers/gpio/gpio-sch.c                        | 16 +++-------------
+>   drivers/gpio/gpio-sch311x.c                    |  6 ++----
+>   drivers/gpio/gpio-sodaville.c                  |  4 +---
+>   drivers/gpio/gpio-stmpe.c                      |  8 +-------
+>   drivers/gpio/gpio-sx150x.c                     |  7 ++-----
+>   drivers/gpio/gpio-syscon.c                     |  3 ++-
+>   drivers/gpio/gpio-tb10x.c                      |  5 +----
+>   drivers/gpio/gpio-tc3589x.c                    |  8 +-------
+>   drivers/gpio/gpio-timberdale.c                 |  5 +----
+>   drivers/gpio/gpio-tps6586x.c                   |  3 ++-
+>   drivers/gpio/gpio-tps65910.c                   |  3 ++-
+>   drivers/gpio/gpio-tps65912.c                   |  3 ++-
+>   drivers/gpio/gpio-ts5500.c                     |  6 +++---
+>   drivers/gpio/gpio-twl4030.c                    |  4 +---
+>   drivers/gpio/gpio-twl6040.c                    |  3 ++-
+>   drivers/gpio/gpio-ucb1400.c                    |  2 +-
+>   drivers/gpio/gpio-viperboard.c                 | 10 +++-------
+>   drivers/gpio/gpio-vx855.c                      |  3 +--
+>   drivers/gpio/gpio-wm831x.c                     |  3 ++-
+>   drivers/gpio/gpio-wm8350.c                     |  3 ++-
+>   drivers/gpio/gpio-wm8994.c                     |  3 ++-
+>   drivers/hid/hid-cp2112.c                       |  6 ++----
+>   drivers/input/keyboard/adp5588-keys.c          |  4 +---
+>   drivers/input/keyboard/adp5589-keys.c          |  4 +---
+>   drivers/input/touchscreen/ad7879.c             | 10 +++-------
+>   drivers/leds/leds-pca9532.c                    | 10 ++--------
+>   drivers/leds/leds-tca6507.c                    |  7 ++-----
+>   drivers/media/dvb-frontends/cxd2820r_core.c    | 10 +++-------
+>   drivers/mfd/asic3.c                            |  3 ++-
+>   drivers/mfd/htc-i2cpld.c                       |  8 +-------
+>   drivers/mfd/sm501.c                            | 17 +++--------------
+>   drivers/mfd/tc6393xb.c                         | 13 ++++---------
+>   drivers/mfd/ucb1x00-core.c                     |  8 ++------
+>   drivers/pinctrl/pinctrl-abx500.c               | 15 +++------------
+>   drivers/pinctrl/pinctrl-adi2.c                 |  9 ++++-----
+>   drivers/pinctrl/pinctrl-as3722.c               | 11 ++---------
+>   drivers/pinctrl/pinctrl-baytrail.c             |  5 +----
+>   drivers/pinctrl/pinctrl-coh901.c               | 10 ++--------
+>   drivers/pinctrl/pinctrl-exynos5440.c           |  6 +-----
+>   drivers/pinctrl/pinctrl-msm.c                  | 11 ++---------
+>   drivers/pinctrl/pinctrl-nomadik.c              |  2 +-
+>   drivers/pinctrl/pinctrl-rockchip.c             | 16 ++++------------
+>   drivers/pinctrl/pinctrl-samsung.c              | 14 ++++----------
+>   drivers/pinctrl/pinctrl-sunxi.c                |  3 +--
+>   drivers/pinctrl/sh-pfc/gpio.c                  |  9 +++------
+>   drivers/pinctrl/spear/pinctrl-plgpio.c         |  3 +--
+>   drivers/pinctrl/vt8500/pinctrl-wmt.c           |  9 ++-------
+>   drivers/platform/x86/intel_pmic_gpio.c         |  3 +--
+>   drivers/ssb/driver_gpio.c                      |  3 ++-
+>   drivers/staging/vme/devices/vme_pio2_gpio.c    |  4 +---
+>   drivers/tty/serial/max310x.c                   | 10 ++++------
+>   drivers/video/fbdev/via/via-gpio.c             | 10 +++-------
+>   sound/soc/codecs/wm5100.c                      |  5 +----
+>   sound/soc/codecs/wm8903.c                      |  6 +-----
+>   sound/soc/codecs/wm8962.c                      |  5 +----
+>   sound/soc/codecs/wm8996.c                      |  6 +-----
+>   97 files changed, 182 insertions(+), 460 deletions(-)
+>
+[...]
