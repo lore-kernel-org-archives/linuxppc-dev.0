@@ -1,20 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 056981A024F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 12:04:57 +1000 (EST)
-Date: Thu, 29 May 2014 12:04:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>, Alexander Graf <agraf@suse.de>
-Subject: linux-next: manual merge of the powerpc tree with Linus' tree
-Message-ID: <20140529120448.1a90dd4a@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/_a/MzqsLpGCnGLvuqYeSMEw"; protocol="application/pgp-signature"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E88F11A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 12:48:31 +1000 (EST)
+Message-ID: <1401331711.4930.7.camel@concordia>
+Subject: Re: Kernel 3.15: Boot problems with a PA6T board
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Christian Zigotzky <chzigotzky@xenosoft.de>
+Date: Thu, 29 May 2014 12:48:31 +1000
+In-Reply-To: <5385C7A3.1080508@xenosoft.de>
+References: <5366649E.4030102@xenosoft.de>
+ <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>
+ <1401107166.23096.1.camel@concordia> <53851AFA.5040504@xenosoft.de>
+ <1401251015.5468.5.camel@concordia> <5385A3F4.8070004@xenosoft.de>
+ <5385C7A3.1080508@xenosoft.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,69 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/_a/MzqsLpGCnGLvuqYeSMEw
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2014-05-28 at 13:25 +0200, Christian Zigotzky wrote:
+> On 28.05.2014 10:53, Christian Zigotzky wrote:
+> > Hi Michael,
+> >
+> > Thank you for your answer and thank you for your help. :-)
+> >
+> > On 28.05.2014 06:23, Michael Ellerman wrote:
+> >> On Wed, 2014-05-28 at 01:08 +0200, Christian Zigotzky wrote:
+> >>
+> >> I'm going to guess that cd427485357c0c4b99f69719251baacf25946e11 is 
+> >> BAD. Can
+> >> you please confirm or deny that?
+>
+> > It's not BAD. It boots.
 
-Hi all,
+Hmm, interesting.
 
-Today's linux-next merge of the powerpc tree got a conflict in
-arch/powerpc/include/asm/sections.h between commit b18db0b80867 ("KVM
-guest: Make pv trampoline code executable") from the  tree and commit
-07de8377f748 ("powerpc: Fix ABIv2 issue with
-dereference_function_descriptor") from the powerpc tree.
+> >> If cd42748 is *good*, then you'll need to do a bigger bisect from 
+> >> d8ff9cd to
+> >> 18a1a7a.
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
+> OK :-)
+> 
+> -> git clone 
+> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux2-git
+> -> git bisect start
+> -> git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
+> -> git bisect bad 18a1a7a1d862ae0794a0179473d08a414dd49234
+> 
+> Output:
+> Bisecting: 5900 revisions left to test after this (roughly 13 steps)
+> [cb1595563880a81dab6eab9a5ecb4520d2e76077] Merge tag 'tty-3.15-rc1' of 
+> git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
+> 
+> Unfortunately it doesn't boot. :-(
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+OK. So you do:
 
-diff --cc arch/powerpc/include/asm/sections.h
-index 521790330672,d1bb96d5a298..000000000000
---- a/arch/powerpc/include/asm/sections.h
-+++ b/arch/powerpc/include/asm/sections.h
-@@@ -39,17 -39,7 +39,18 @@@ static inline int overlaps_kernel_text(
-  		(unsigned long)_stext < end;
-  }
- =20
- +static inline int overlaps_kvm_tmp(unsigned long start, unsigned long end)
- +{
- +#ifdef CONFIG_KVM_GUEST
- +	extern char kvm_tmp[];
- +	return start < (unsigned long)kvm_tmp &&
- +		(unsigned long)&kvm_tmp[1024 * 1024] < end;
- +#else
- +	return 0;
- +#endif
- +}
- +
-+ #if !defined(_CALL_ELF) || _CALL_ELF !=3D 2
-  #undef dereference_function_descriptor
-  static inline void *dereference_function_descriptor(void *ptr)
-  {
+$ git bisect bad
 
---Sig_/_a/MzqsLpGCnGLvuqYeSMEw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+And it will pick a new commit for you to test. Repeat that ~13 times and you
+should have identified the bad commit.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBCAAGBQJThpXEAAoJEMDTa8Ir7ZwVN5EP/1a/1IkrYVfT47a2v1PZGbNA
-2pBoYeuuXU4Cq7qYlQ6sdhhudWyyNSYXJzdyM/Vz2sX5eu7gqEIzAXj5V/BBud7a
-LOGL6mfZ+7MKG15IXAr84ZuwFyVDew/AvSrsIo3pdiQtkw/zLZvXiIDd/eYXJcTH
-ottaAn1Grk++xl+6sQa8G+/kVYhWA/jveaABPAFFuevZsPVvLRW52m20F6Zkddem
-1YzqC5nN4ScpjPgghB6lwXKOlJG8VxcyBEoj8i8lQYRJq037c4MjsVaTF1rZUPSV
-qRZhkQDfSXwOMzW2xTOgl8SSt5iWn/BqfpWEutgi6maB+gBqBmWH8VQIvi63Nkqd
-EQkJ3++C7To8Keh3GfJ+OFy71eFg7vp6e1D+kmKu5IqXdS35d/Mkpu47QWXgojF4
-0sqDgiqmeqadAiskss9T3AgYvz7wvbb7nryJiV5jcAw4fnOwsV/XmoFl81uPhfFx
-l3ILsyBDrFJtR/3Di45PCEoh28GodnqCWYw9ahPGd2tYSrrpOwoLj5nXnv4/Z8Bm
-V26W0XAHS9s931mFGomuhAMXE0DS7SPJZKIUej+JMJl9qhZ5naTIk0yc9sqaJGBs
-ttVLoIuI07SgzMhqNJKQEk7h8NuGmxnR6e+j8AInH27hcBcB94BqNWpEjSD7CKiR
-CK9Ta9lsRVvUGdkQsgUC
-=6Ln7
------END PGP SIGNATURE-----
-
---Sig_/_a/MzqsLpGCnGLvuqYeSMEw--
+cheers
