@@ -1,23 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 168191A024E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 04:43:09 +1000 (EST)
-Message-ID: <1401388979.6603.165.camel@snotra.buserror.net>
+Return-Path: <pebolle@tiscali.nl>
+Received: from cpsmtpb-ews08.kpnxchange.com (cpsmtpb-ews08.kpnxchange.com
+ [213.75.39.13])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6E0AE1A024E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 05:04:39 +1000 (EST)
+Message-ID: <1401390275.25908.24.camel@x220>
 Subject: Re: [PATCH] pcmcia: m8xx: remove checks for four macros
-From: Scott Wood <scottwood@freescale.com>
-To: Paul Bolle <pebolle@tiscali.nl>
-Date: Thu, 29 May 2014 13:42:59 -0500
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Marcelo Tosatti <mtosatti@redhat.com>
+Date: Thu, 29 May 2014 21:04:35 +0200
 In-Reply-To: <1401388744.25908.16.camel@x220>
 References: <1400916970.31526.78.camel@x220>
  <1401387624.6603.161.camel@snotra.buserror.net>
  <1401388744.25908.16.camel@x220>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-pcmcia@lists.infradead.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+Mime-Version: 1.0
+Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,32 +27,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2014-05-29 at 20:39 +0200, Paul Bolle wrote:
-> On Thu, 2014-05-29 at 13:20 -0500, Scott Wood wrote:
-> > On Sat, 2014-05-24 at 09:36 +0200, Paul Bolle wrote:
-> > > This driver contains checks for four Kconfig macros. But the related
-> > > Kconfig symbols have never been part of the tree. Remove these checks
-> > > and the code they hide.
-> > > 
-> > > Signed-off-by: Paul Bolle <pebolle@tiscali.nl>
-> > > ---
-> > > Untested.
-> > > 
-> > > This has been an issue ever since this driver was added in v2.6.15. Note
-> > > that there is no header named "*/cpld.h", so setting PRxK can't possibly
-> > > work.
-> > > 
-> > >  drivers/pcmcia/m8xx_pcmcia.c | 75 --------------------------------------------
-> > >  1 file changed, 75 deletions(-)
-> > 
-> > Does anything in this driver still work?  It looks like bitrot from the
-> > arch/ppc days, that sort of got updated to use the device tree -- but
-> > even after this patch there are lots of instances of CONFIG symbols
-> > being used to assert the exact hardware being used, rather than what
-> > hardware is supported.
-> 
-> I'm not sure I get what you're pointing at. Can you give one example?
+> That's why I included the people (and lists) maintaining PPC8XX and
+> PPC.
 
-All the various stuff enabled by CONFIG_FADS, CONFIG_MPC885ADS, etc.
-such as the voltage_set() implementation.
+And of those people Marcelo might consider replacing the bouncing
+knack.org address with a redhat.com address. Provided Marcelo still
+cares about PPC8XX, that is. But perhaps there are two Marcelo Tosatti's
+working on the kernel.
 
--Scott
+
+Paul Bolle
