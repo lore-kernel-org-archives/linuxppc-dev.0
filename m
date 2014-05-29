@@ -1,28 +1,15 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by lists.ozlabs.org (Postfix) with SMTP id 1E93B1A0041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 18:37:17 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 17414-04 for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 29 May 2014 09:37:07 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Joe Perches' <joe@perches.com>, Cody P Schafer <dev@codyps.com>
-Subject: RE: [PATCH 11/16] byteorder: provide a linux/byteorder.h with {be,
- le}_to_cpu() and cpu_to_{be, le}() macros
-Date: Thu, 29 May 2014 08:36:11 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1724FA5C@AcuExch.aculab.com>
-References: <1401236684-10579-1-git-send-email-dev@codyps.com>
- <1401236684-10579-12-git-send-email-dev@codyps.com>
- <063D6719AE5E284EB5DD2968C1650D6D1724EEAF@AcuExch.aculab.com>
- <CAPoQQ-17OHotfbczJvEoq=vAzu_+6-sV3M1ZAhDaQ45wB3NB4A@mail.gmail.com>
- <CAPoQQ-11vW3Q0=LcS-myNZ6hXeYBeu==_prwHJXHvLfkUSmZHQ@mail.gmail.com>
- <1401318025.19335.15.camel@joe-AO725>
-In-Reply-To: <1401318025.19335.15.camel@joe-AO725>
-Content-Type: text/plain; charset="Windows-1252"
-MIME-Version: 1.0
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Linux PPC <linuxppc-dev@lists.ozlabs.org>, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F07701A0041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 18:50:37 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Remove platforms/wsp and associated pieces
+Date: Thu, 29 May 2014 18:50:29 +1000
+Message-Id: <1401353429-29036-1-git-send-email-mpe@ellerman.id.au>
+Cc: pebolle@tiscali.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,60 +19,4015 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joe Perches
-> On Wed, 2014-05-28 at 17:11 -0500, Cody P Schafer wrote:
-> > On Wed, May 28, 2014 at 5:05 PM, Cody P Schafer <dev@codyps.com> wrote:
-> > > On Wed, May 28, 2014 at 3:45 AM, David Laight <David.Laight@aculab.co=
-m> wrote:
-> > >> From: Cody P Schafer
-> > >>> Rather manually specifying the size of the integer to be converted,=
- key
-> > >>> off of the type size. Reduces duplicate size info and the occurance=
- of
-> > >>> certain types of bugs (using the wrong sized conversion).
-> > >> ...
-> > >>> +#define be_to_cpu(v) \
-> > >>> +     __builtin_choose_expr(sizeof(v) =3D=3D sizeof(uint8_t) , v, \
-> > >>> +     __builtin_choose_expr(sizeof(v) =3D=3D sizeof(uint16_t), be16=
-_to_cpu(v), \
-> > >>> +     __builtin_choose_expr(sizeof(v) =3D=3D sizeof(uint32_t), be32=
-_to_cpu(v), \
-> > >>> +     __builtin_choose_expr(sizeof(v) =3D=3D sizeof(uint64_t), be64=
-_to_cpu(v), \
-> > >>> +             (void)0))))
-> > >> ...
-> > >>
-> > >> I'm not at all sure that using the 'size' of the constant will reduc=
-e
-> > >> the number of bugs - it just introduces a whole new category of bugs=
-.
-> > >
-> > > Certainly, if you mis-size the argument (and thus have missized one o=
-f
-> > > the variables containing the be value, probably a bug anyhow), there
-> > > will be problems.
-> > >
-> > > I put this interface together because of an actual bug I wrote into
-> > > the initial code of the hv_24x7 driver (resized a struct member
-> > > without adjusting the be*_to_cpu() sizing).
-> > > Having this "auto sizing" macro means I can avoid encoding the size o=
-f
-> > > a struct field in multiple places.
-> >
-> > To clarify, the point I'm making here is that this simply cuts out 1
-> > more place we can screw up endianness conversion sizing.
->=20
-> It does screw up other types when you do things like:
->=20
-> 	u8 foo =3D some_function();
->=20
-> 	cpu_to_be(foo + 1);
->=20
-> the return value is sizeof(int) not u8
+__attribute__ ((unused))
 
-And you'd have to be very, very careful with constants:
-#define SOME_CONST xxxxx
-	cp_to_be(SOME_CONST)
-isn't likely to be the right size.
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Kconfig.debug            |    5 -
+ arch/powerpc/include/asm/reg_a2.h     |    9 -
+ arch/powerpc/include/asm/wsp.h        |   14 -
+ arch/powerpc/kernel/exceptions-64e.S  |   16 -
+ arch/powerpc/kernel/udbg.c            |    2 -
+ arch/powerpc/kernel/udbg_16550.c      |   11 -
+ arch/powerpc/platforms/Kconfig        |    1 -
+ arch/powerpc/platforms/Makefile       |    1 -
+ arch/powerpc/platforms/wsp/Kconfig    |   30 -
+ arch/powerpc/platforms/wsp/Makefile   |   10 -
+ arch/powerpc/platforms/wsp/chroma.c   |   56 --
+ arch/powerpc/platforms/wsp/h8.c       |  135 ----
+ arch/powerpc/platforms/wsp/ics.c      |  762 ----------------------
+ arch/powerpc/platforms/wsp/ics.h      |   25 -
+ arch/powerpc/platforms/wsp/msi.c      |  102 ---
+ arch/powerpc/platforms/wsp/msi.h      |   19 -
+ arch/powerpc/platforms/wsp/opb_pic.c  |  321 ----------
+ arch/powerpc/platforms/wsp/psr2.c     |   67 --
+ arch/powerpc/platforms/wsp/scom_smp.c |  434 -------------
+ arch/powerpc/platforms/wsp/scom_wsp.c |   82 ---
+ arch/powerpc/platforms/wsp/setup.c    |   36 --
+ arch/powerpc/platforms/wsp/smp.c      |   88 ---
+ arch/powerpc/platforms/wsp/wsp.c      |  117 ----
+ arch/powerpc/platforms/wsp/wsp.h      |   29 -
+ arch/powerpc/platforms/wsp/wsp_pci.c  | 1134 ---------------------------------
+ arch/powerpc/platforms/wsp/wsp_pci.h  |  268 --------
+ 26 files changed, 3774 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/wsp.h
+ delete mode 100644 arch/powerpc/platforms/wsp/Kconfig
+ delete mode 100644 arch/powerpc/platforms/wsp/Makefile
+ delete mode 100644 arch/powerpc/platforms/wsp/chroma.c
+ delete mode 100644 arch/powerpc/platforms/wsp/h8.c
+ delete mode 100644 arch/powerpc/platforms/wsp/ics.c
+ delete mode 100644 arch/powerpc/platforms/wsp/ics.h
+ delete mode 100644 arch/powerpc/platforms/wsp/msi.c
+ delete mode 100644 arch/powerpc/platforms/wsp/msi.h
+ delete mode 100644 arch/powerpc/platforms/wsp/opb_pic.c
+ delete mode 100644 arch/powerpc/platforms/wsp/psr2.c
+ delete mode 100644 arch/powerpc/platforms/wsp/scom_smp.c
+ delete mode 100644 arch/powerpc/platforms/wsp/scom_wsp.c
+ delete mode 100644 arch/powerpc/platforms/wsp/setup.c
+ delete mode 100644 arch/powerpc/platforms/wsp/smp.c
+ delete mode 100644 arch/powerpc/platforms/wsp/wsp.c
+ delete mode 100644 arch/powerpc/platforms/wsp/wsp.h
+ delete mode 100644 arch/powerpc/platforms/wsp/wsp_pci.c
+ delete mode 100644 arch/powerpc/platforms/wsp/wsp_pci.h
 
-	David
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index 21c9f30..790352f 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -235,11 +235,6 @@ config PPC_EARLY_DEBUG_USBGECKO
+ 	  Select this to enable early debugging for Nintendo GameCube/Wii
+ 	  consoles via an external USB Gecko adapter.
+ 
+-config PPC_EARLY_DEBUG_WSP
+-	bool "Early debugging via WSP's internal UART"
+-	depends on PPC_WSP
+-	select PPC_UDBG_16550
+-
+ config PPC_EARLY_DEBUG_PS3GELIC
+ 	bool "Early debugging through the PS3 Ethernet port"
+ 	depends on PPC_PS3
+diff --git a/arch/powerpc/include/asm/reg_a2.h b/arch/powerpc/include/asm/reg_a2.h
+index 3d52a11..3ba9c6f 100644
+--- a/arch/powerpc/include/asm/reg_a2.h
++++ b/arch/powerpc/include/asm/reg_a2.h
+@@ -110,15 +110,6 @@
+ #define TLB1_UR			ASM_CONST(0x0000000000000002)
+ #define TLB1_SR			ASM_CONST(0x0000000000000001)
+ 
+-#ifdef CONFIG_PPC_EARLY_DEBUG_WSP
+-#define WSP_UART_PHYS	0xffc000c000
+-/* This needs to be careful chosen to hit a !0 congruence class
+- * in the TLB since we bolt it in way 3, which is already occupied
+- * by our linear mapping primary bolted entry in CC 0.
+- */
+-#define WSP_UART_VIRT	0xf000000000001000
+-#endif
+-
+ /* A2 erativax attributes definitions */
+ #define ERATIVAX_RS_IS_ALL		0x000
+ #define ERATIVAX_RS_IS_TID		0x040
+diff --git a/arch/powerpc/include/asm/wsp.h b/arch/powerpc/include/asm/wsp.h
+deleted file mode 100644
+index c7dc830..0000000
+--- a/arch/powerpc/include/asm/wsp.h
++++ /dev/null
+@@ -1,14 +0,0 @@
+-/*
+- *  Copyright 2011 Michael Ellerman, IBM Corp.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-#ifndef __ASM_POWERPC_WSP_H
+-#define __ASM_POWERPC_WSP_H
+-
+-extern int wsp_get_chip_id(struct device_node *dn);
+-
+-#endif /* __ASM_POWERPC_WSP_H */
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index c1bee3c..720cfd9 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1467,22 +1467,6 @@ a2_tlbinit_after_linear_map:
+ 	.globl  a2_tlbinit_after_iprot_flush
+ a2_tlbinit_after_iprot_flush:
+ 
+-#ifdef CONFIG_PPC_EARLY_DEBUG_WSP
+-	/* Now establish early debug mappings if applicable */
+-	/* Restore the MAS0 we used for linear mapping load */
+-	mtspr	SPRN_MAS0,r11
+-
+-	lis	r3,(MAS1_VALID | MAS1_IPROT)@h
+-	ori	r3,r3,(BOOK3E_PAGESZ_4K << MAS1_TSIZE_SHIFT)
+-	mtspr	SPRN_MAS1,r3
+-	LOAD_REG_IMMEDIATE(r3, WSP_UART_VIRT | MAS2_I | MAS2_G)
+-	mtspr	SPRN_MAS2,r3
+-	LOAD_REG_IMMEDIATE(r3, WSP_UART_PHYS | MAS3_SR | MAS3_SW)
+-	mtspr	SPRN_MAS7_MAS3,r3
+-	/* re-use the MAS8 value from the linear mapping */
+-	tlbwe
+-#endif /* CONFIG_PPC_EARLY_DEBUG_WSP */
+-
+ 	PPC_TLBILX(0,0,R0)
+ 	sync
+ 	isync
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index a158375..b7aa072 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -62,8 +62,6 @@ void __init udbg_early_init(void)
+ 	udbg_init_cpm();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_USBGECKO)
+ 	udbg_init_usbgecko();
+-#elif defined(CONFIG_PPC_EARLY_DEBUG_WSP)
+-	udbg_init_wsp();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_MEMCONS)
+ 	/* In memory console */
+ 	udbg_init_memcons();
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index 75702e2..6e7c492 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -296,14 +296,3 @@ void __init udbg_init_40x_realmode(void)
+ }
+ 
+ #endif /* CONFIG_PPC_EARLY_DEBUG_40x */
+-
+-
+-#ifdef CONFIG_PPC_EARLY_DEBUG_WSP
+-
+-void __init udbg_init_wsp(void)
+-{
+-	udbg_uart_init_mmio((void *)WSP_UART_VIRT, 1);
+-	udbg_uart_setup(57600, 50000000);
+-}
+-
+-#endif /* CONFIG_PPC_EARLY_DEBUG_WSP */
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index bf9c6d4..391b3f6 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -19,7 +19,6 @@ source "arch/powerpc/platforms/embedded6xx/Kconfig"
+ source "arch/powerpc/platforms/44x/Kconfig"
+ source "arch/powerpc/platforms/40x/Kconfig"
+ source "arch/powerpc/platforms/amigaone/Kconfig"
+-source "arch/powerpc/platforms/wsp/Kconfig"
+ 
+ config KVM_GUEST
+ 	bool "KVM Guest support"
+diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
+index 879b4a4..469ef17 100644
+--- a/arch/powerpc/platforms/Makefile
++++ b/arch/powerpc/platforms/Makefile
+@@ -22,4 +22,3 @@ obj-$(CONFIG_PPC_CELL)		+= cell/
+ obj-$(CONFIG_PPC_PS3)		+= ps3/
+ obj-$(CONFIG_EMBEDDED6xx)	+= embedded6xx/
+ obj-$(CONFIG_AMIGAONE)		+= amigaone/
+-obj-$(CONFIG_PPC_WSP)		+= wsp/
+diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
+deleted file mode 100644
+index 422a175..0000000
+--- a/arch/powerpc/platforms/wsp/Kconfig
++++ /dev/null
+@@ -1,30 +0,0 @@
+-config PPC_WSP
+-	bool
+-	select PPC_A2
+-	select GENERIC_TBSYNC
+-	select PPC_ICSWX
+-	select PPC_SCOM
+-	select PPC_XICS
+-	select PPC_ICP_NATIVE
+-	select PCI
+-	select PPC_IO_WORKAROUNDS if PCI
+-	select PPC_INDIRECT_PIO if PCI
+-	default n
+-
+-menu "WSP platform selection"
+-	depends on PPC_BOOK3E_64
+-
+-config PPC_PSR2
+-	bool "PowerEN System Reference Platform 2"
+-	select EPAPR_BOOT
+-	select PPC_WSP
+-	default y
+-
+-config PPC_CHROMA
+-	bool "PowerEN PCIe Chroma Card"
+-	select EPAPR_BOOT
+-	select PPC_WSP
+-	select OF_DYNAMIC
+-	default y
+-
+-endmenu
+diff --git a/arch/powerpc/platforms/wsp/Makefile b/arch/powerpc/platforms/wsp/Makefile
+deleted file mode 100644
+index 162fc60..0000000
+--- a/arch/powerpc/platforms/wsp/Makefile
++++ /dev/null
+@@ -1,10 +0,0 @@
+-ccflags-y			+= $(NO_MINIMAL_TOC)
+-
+-obj-y				+= setup.o ics.o wsp.o
+-obj-$(CONFIG_PPC_PSR2)		+= psr2.o
+-obj-$(CONFIG_PPC_CHROMA)	+= chroma.o h8.o
+-obj-$(CONFIG_PPC_WSP)		+= opb_pic.o
+-obj-$(CONFIG_PPC_WSP)		+= scom_wsp.o
+-obj-$(CONFIG_SMP)		+= smp.o scom_smp.o
+-obj-$(CONFIG_PCI)		+= wsp_pci.o
+-obj-$(CONFIG_PCI_MSI)		+= msi.o
+diff --git a/arch/powerpc/platforms/wsp/chroma.c b/arch/powerpc/platforms/wsp/chroma.c
+deleted file mode 100644
+index aaa46b3..0000000
+--- a/arch/powerpc/platforms/wsp/chroma.c
++++ /dev/null
+@@ -1,56 +0,0 @@
+-/*
+- * Copyright 2008-2011, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/delay.h>
+-#include <linux/init.h>
+-#include <linux/irq.h>
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/of.h>
+-#include <linux/smp.h>
+-#include <linux/time.h>
+-#include <linux/of_fdt.h>
+-
+-#include <asm/machdep.h>
+-#include <asm/udbg.h>
+-
+-#include "ics.h"
+-#include "wsp.h"
+-
+-void __init chroma_setup_arch(void)
+-{
+-	wsp_setup_arch();
+-	wsp_setup_h8();
+-
+-}
+-
+-static int __init chroma_probe(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (!of_flat_dt_is_compatible(root, "ibm,wsp-chroma"))
+-		return 0;
+-
+-	return 1;
+-}
+-
+-define_machine(chroma_md) {
+-	.name			= "Chroma PCIe",
+-	.probe			= chroma_probe,
+-	.setup_arch		= chroma_setup_arch,
+-	.restart		= wsp_h8_restart,
+-	.power_off		= wsp_h8_power_off,
+-	.halt			= wsp_halt,
+-	.calibrate_decr		= generic_calibrate_decr,
+-	.init_IRQ		= wsp_setup_irq,
+-	.progress		= udbg_progress,
+-	.power_save		= book3e_idle,
+-};
+-
+-machine_arch_initcall(chroma_md, wsp_probe_devices);
+diff --git a/arch/powerpc/platforms/wsp/h8.c b/arch/powerpc/platforms/wsp/h8.c
+deleted file mode 100644
+index a3c87f3..0000000
+--- a/arch/powerpc/platforms/wsp/h8.c
++++ /dev/null
+@@ -1,135 +0,0 @@
+-/*
+- * Copyright 2008-2011, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/of.h>
+-#include <linux/io.h>
+-#include <linux/of_address.h>
+-
+-#include "wsp.h"
+-
+-/*
+- * The UART connection to the H8 is over ttyS1 which is just a 16550.
+- * We assume that FW has it setup right and no one messes with it.
+- */
+-
+-
+-static u8 __iomem *h8;
+-
+-#define RBR 0		/* Receiver Buffer Register */
+-#define THR 0		/* Transmitter Holding Register */
+-#define LSR 5		/* Line Status Register */
+-#define LSR_DR 0x01	/* LSR value for Data-Ready */
+-#define LSR_THRE 0x20	/* LSR value for Transmitter-Holding-Register-Empty */
+-static void wsp_h8_putc(int c)
+-{
+-	u8 lsr;
+-
+-	do {
+-		lsr = readb(h8 + LSR);
+-	} while ((lsr & LSR_THRE) != LSR_THRE);
+-	writeb(c, h8 + THR);
+-}
+-
+-static int wsp_h8_getc(void)
+-{
+-	u8 lsr;
+-
+-	do {
+-		lsr = readb(h8 + LSR);
+-	} while ((lsr & LSR_DR) != LSR_DR);
+-
+-	return readb(h8 + RBR);
+-}
+-
+-static void wsp_h8_puts(const char *s, int sz)
+-{
+-	int i;
+-
+-	for (i = 0; i < sz; i++) {
+-		wsp_h8_putc(s[i]);
+-
+-		/* no flow control so wait for echo */
+-		wsp_h8_getc();
+-	}
+-	wsp_h8_putc('\r');
+-	wsp_h8_putc('\n');
+-}
+-
+-static void wsp_h8_terminal_cmd(const char *cmd, int sz)
+-{
+-	hard_irq_disable();
+-	wsp_h8_puts(cmd, sz);
+-	/* should never return, but just in case */
+-	for (;;)
+-		continue;
+-}
+-
+-
+-void wsp_h8_restart(char *cmd)
+-{
+-	static const char restart[] = "warm-reset";
+-
+-	(void)cmd;
+-	wsp_h8_terminal_cmd(restart, sizeof(restart) - 1);
+-}
+-
+-void wsp_h8_power_off(void)
+-{
+-	static const char off[] = "power-off";
+-
+-	wsp_h8_terminal_cmd(off, sizeof(off) - 1);
+-}
+-
+-static void __iomem *wsp_h8_getaddr(void)
+-{
+-	struct device_node *aliases;
+-	struct device_node *uart;
+-	struct property *path;
+-	void __iomem *va = NULL;
+-
+-	/*
+-	 * there is nothing in the devtree to tell us which is mapped
+-	 * to the H8, but se know it is the second serial port.
+-	 */
+-
+-	aliases = of_find_node_by_path("/aliases");
+-	if (aliases == NULL)
+-		return NULL;
+-
+-	path = of_find_property(aliases, "serial1", NULL);
+-	if (path == NULL)
+-		goto out;
+-
+-	uart = of_find_node_by_path(path->value);
+-	if (uart == NULL)
+-		goto out;
+-
+-	va = of_iomap(uart, 0);
+-
+-	/* remove it so no one messes with it */
+-	of_detach_node(uart);
+-	of_node_put(uart);
+-
+-out:
+-	of_node_put(aliases);
+-
+-	return va;
+-}
+-
+-void __init wsp_setup_h8(void)
+-{
+-	h8 = wsp_h8_getaddr();
+-
+-	/* Devtree change? lets hard map it anyway */
+-	if (h8 == NULL) {
+-		pr_warn("UART to H8 could not be found");
+-		h8 = ioremap(0xffc0008000ULL, 0x100);
+-	}
+-}
+diff --git a/arch/powerpc/platforms/wsp/ics.c b/arch/powerpc/platforms/wsp/ics.c
+deleted file mode 100644
+index 9cd92e6..0000000
+--- a/arch/powerpc/platforms/wsp/ics.c
++++ /dev/null
+@@ -1,762 +0,0 @@
+-/*
+- * Copyright 2008-2011 IBM Corporation.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/cpu.h>
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/kernel.h>
+-#include <linux/msi.h>
+-#include <linux/of.h>
+-#include <linux/slab.h>
+-#include <linux/smp.h>
+-#include <linux/spinlock.h>
+-#include <linux/types.h>
+-#include <linux/of_address.h>
+-#include <linux/of_irq.h>
+-
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/xics.h>
+-
+-#include "wsp.h"
+-#include "ics.h"
+-
+-
+-/* WSP ICS */
+-
+-struct wsp_ics {
+-	struct ics ics;
+-	struct device_node *dn;
+-	void __iomem *regs;
+-	spinlock_t lock;
+-	unsigned long *bitmap;
+-	u32 chip_id;
+-	u32 lsi_base;
+-	u32 lsi_count;
+-	u64 hwirq_start;
+-	u64 count;
+-#ifdef CONFIG_SMP
+-	int *hwirq_cpu_map;
+-#endif
+-};
+-
+-#define to_wsp_ics(ics)	container_of(ics, struct wsp_ics, ics)
+-
+-#define INT_SRC_LAYER_BUID_REG(base)	((base) + 0x00)
+-#define IODA_TBL_ADDR_REG(base)		((base) + 0x18)
+-#define IODA_TBL_DATA_REG(base)		((base) + 0x20)
+-#define XIVE_UPDATE_REG(base)		((base) + 0x28)
+-#define ICS_INT_CAPS_REG(base)		((base) + 0x30)
+-
+-#define TBL_AUTO_INCREMENT	((1UL << 63) | (1UL << 15))
+-#define TBL_SELECT_XIST		(1UL << 48)
+-#define TBL_SELECT_XIVT		(1UL << 49)
+-
+-#define IODA_IRQ(irq)		((irq) & (0x7FFULL))	/* HRM 5.1.3.4 */
+-
+-#define XIST_REQUIRED		0x8
+-#define XIST_REJECTED		0x4
+-#define XIST_PRESENTED		0x2
+-#define XIST_PENDING		0x1
+-
+-#define XIVE_SERVER_SHIFT	42
+-#define XIVE_SERVER_MASK	0xFFFFULL
+-#define XIVE_PRIORITY_MASK	0xFFULL
+-#define XIVE_PRIORITY_SHIFT	32
+-#define XIVE_WRITE_ENABLE	(1ULL << 63)
+-
+-/*
+- * The docs refer to a 6 bit field called ChipID, which consists of a
+- * 3 bit NodeID and a 3 bit ChipID. On WSP the ChipID is always zero
+- * so we ignore it, and every where we use "chip id" in this code we
+- * mean the NodeID.
+- */
+-#define WSP_ICS_CHIP_SHIFT		17
+-
+-
+-static struct wsp_ics *ics_list;
+-static int num_ics;
+-
+-/* ICS Source controller accessors */
+-
+-static u64 wsp_ics_get_xive(struct wsp_ics *ics, unsigned int irq)
+-{
+-	unsigned long flags;
+-	u64 xive;
+-
+-	spin_lock_irqsave(&ics->lock, flags);
+-	out_be64(IODA_TBL_ADDR_REG(ics->regs), TBL_SELECT_XIVT | IODA_IRQ(irq));
+-	xive = in_be64(IODA_TBL_DATA_REG(ics->regs));
+-	spin_unlock_irqrestore(&ics->lock, flags);
+-
+-	return xive;
+-}
+-
+-static void wsp_ics_set_xive(struct wsp_ics *ics, unsigned int irq, u64 xive)
+-{
+-	xive &= ~XIVE_ADDR_MASK;
+-	xive |= (irq & XIVE_ADDR_MASK);
+-	xive |= XIVE_WRITE_ENABLE;
+-
+-	out_be64(XIVE_UPDATE_REG(ics->regs), xive);
+-}
+-
+-static u64 xive_set_server(u64 xive, unsigned int server)
+-{
+-	u64 mask = ~(XIVE_SERVER_MASK << XIVE_SERVER_SHIFT);
+-
+-	xive &= mask;
+-	xive |= (server & XIVE_SERVER_MASK) << XIVE_SERVER_SHIFT;
+-
+-	return xive;
+-}
+-
+-static u64 xive_set_priority(u64 xive, unsigned int priority)
+-{
+-	u64 mask = ~(XIVE_PRIORITY_MASK << XIVE_PRIORITY_SHIFT);
+-
+-	xive &= mask;
+-	xive |= (priority & XIVE_PRIORITY_MASK) << XIVE_PRIORITY_SHIFT;
+-
+-	return xive;
+-}
+-
+-
+-#ifdef CONFIG_SMP
+-/* Find logical CPUs within mask on a given chip and store result in ret */
+-void cpus_on_chip(int chip_id, cpumask_t *mask, cpumask_t *ret)
+-{
+-	int cpu, chip;
+-	struct device_node *cpu_dn, *dn;
+-	const u32 *prop;
+-
+-	cpumask_clear(ret);
+-	for_each_cpu(cpu, mask) {
+-		cpu_dn = of_get_cpu_node(cpu, NULL);
+-		if (!cpu_dn)
+-			continue;
+-
+-		prop = of_get_property(cpu_dn, "at-node", NULL);
+-		if (!prop) {
+-			of_node_put(cpu_dn);
+-			continue;
+-		}
+-
+-		dn = of_find_node_by_phandle(*prop);
+-		of_node_put(cpu_dn);
+-
+-		chip = wsp_get_chip_id(dn);
+-		if (chip == chip_id)
+-			cpumask_set_cpu(cpu, ret);
+-
+-		of_node_put(dn);
+-	}
+-}
+-
+-/* Store a suitable CPU to handle a hwirq in the ics->hwirq_cpu_map cache */
+-static int cache_hwirq_map(struct wsp_ics *ics, unsigned int hwirq,
+-			   const cpumask_t *affinity)
+-{
+-	cpumask_var_t avail, newmask;
+-	int ret = -ENOMEM, cpu, cpu_rover = 0, target;
+-	int index = hwirq - ics->hwirq_start;
+-	unsigned int nodeid;
+-
+-	BUG_ON(index < 0 || index >= ics->count);
+-
+-	if (!ics->hwirq_cpu_map)
+-		return -ENOMEM;
+-
+-	if (!distribute_irqs) {
+-		ics->hwirq_cpu_map[hwirq - ics->hwirq_start] = xics_default_server;
+-		return 0;
+-	}
+-
+-	/* Allocate needed CPU masks */
+-	if (!alloc_cpumask_var(&avail, GFP_KERNEL))
+-		goto ret;
+-	if (!alloc_cpumask_var(&newmask, GFP_KERNEL))
+-		goto freeavail;
+-
+-	/* Find PBus attached to the source of this IRQ */
+-	nodeid = (hwirq >> WSP_ICS_CHIP_SHIFT) & 0x3; /* 12:14 */
+-
+-	/* Find CPUs that could handle this IRQ */
+-	if (affinity)
+-		cpumask_and(avail, cpu_online_mask, affinity);
+-	else
+-		cpumask_copy(avail, cpu_online_mask);
+-
+-	/* Narrow selection down to logical CPUs on the same chip */
+-	cpus_on_chip(nodeid, avail, newmask);
+-
+-	/* Ensure we haven't narrowed it down to 0 */
+-	if (unlikely(cpumask_empty(newmask))) {
+-		if (unlikely(cpumask_empty(avail))) {
+-			ret = -1;
+-			goto out;
+-		}
+-		cpumask_copy(newmask, avail);
+-	}
+-
+-	/* Choose a CPU out of those we narrowed it down to in round robin */
+-	target = hwirq % cpumask_weight(newmask);
+-	for_each_cpu(cpu, newmask) {
+-		if (cpu_rover++ >= target) {
+-			ics->hwirq_cpu_map[index] = get_hard_smp_processor_id(cpu);
+-			ret = 0;
+-			goto out;
+-		}
+-	}
+-
+-	/* Shouldn't happen */
+-	WARN_ON(1);
+-
+-out:
+-	free_cpumask_var(newmask);
+-freeavail:
+-	free_cpumask_var(avail);
+-ret:
+-	if (ret < 0) {
+-		ics->hwirq_cpu_map[index] = cpumask_first(cpu_online_mask);
+-		pr_warning("Error, falling hwirq 0x%x routing back to CPU %i\n",
+-			   hwirq, ics->hwirq_cpu_map[index]);
+-	}
+-	return ret;
+-}
+-
+-static void alloc_irq_map(struct wsp_ics *ics)
+-{
+-	int i;
+-
+-	ics->hwirq_cpu_map = kmalloc(sizeof(int) * ics->count, GFP_KERNEL);
+-	if (!ics->hwirq_cpu_map) {
+-		pr_warning("Allocate hwirq_cpu_map failed, "
+-			   "IRQ balancing disabled\n");
+-		return;
+-	}
+-
+-	for (i=0; i < ics->count; i++)
+-		ics->hwirq_cpu_map[i] = xics_default_server;
+-}
+-
+-static int get_irq_server(struct wsp_ics *ics, unsigned int hwirq)
+-{
+-	int index = hwirq - ics->hwirq_start;
+-
+-	BUG_ON(index < 0 || index >= ics->count);
+-
+-	if (!ics->hwirq_cpu_map)
+-		return xics_default_server;
+-
+-	return ics->hwirq_cpu_map[index];
+-}
+-#else /* !CONFIG_SMP */
+-static int cache_hwirq_map(struct wsp_ics *ics, unsigned int hwirq,
+-			   const cpumask_t *affinity)
+-{
+-	return 0;
+-}
+-
+-static int get_irq_server(struct wsp_ics *ics, unsigned int hwirq)
+-{
+-	return xics_default_server;
+-}
+-
+-static void alloc_irq_map(struct wsp_ics *ics) { }
+-#endif
+-
+-static void wsp_chip_unmask_irq(struct irq_data *d)
+-{
+-	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+-	struct wsp_ics *ics;
+-	int server;
+-	u64 xive;
+-
+-	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+-		return;
+-
+-	ics = d->chip_data;
+-	if (WARN_ON(!ics))
+-		return;
+-
+-	server = get_irq_server(ics, hw_irq);
+-
+-	xive = wsp_ics_get_xive(ics, hw_irq);
+-	xive = xive_set_server(xive, server);
+-	xive = xive_set_priority(xive, DEFAULT_PRIORITY);
+-	wsp_ics_set_xive(ics, hw_irq, xive);
+-}
+-
+-static unsigned int wsp_chip_startup(struct irq_data *d)
+-{
+-	/* unmask it */
+-	wsp_chip_unmask_irq(d);
+-	return 0;
+-}
+-
+-static void wsp_mask_real_irq(unsigned int hw_irq, struct wsp_ics *ics)
+-{
+-	u64 xive;
+-
+-	if (hw_irq == XICS_IPI)
+-		return;
+-
+-	if (WARN_ON(!ics))
+-		return;
+-	xive = wsp_ics_get_xive(ics, hw_irq);
+-	xive = xive_set_server(xive, xics_default_server);
+-	xive = xive_set_priority(xive, LOWEST_PRIORITY);
+-	wsp_ics_set_xive(ics, hw_irq, xive);
+-}
+-
+-static void wsp_chip_mask_irq(struct irq_data *d)
+-{
+-	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+-	struct wsp_ics *ics = d->chip_data;
+-
+-	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+-		return;
+-
+-	wsp_mask_real_irq(hw_irq, ics);
+-}
+-
+-static int wsp_chip_set_affinity(struct irq_data *d,
+-				 const struct cpumask *cpumask, bool force)
+-{
+-	unsigned int hw_irq = (unsigned int)irqd_to_hwirq(d);
+-	struct wsp_ics *ics;
+-	int ret;
+-	u64 xive;
+-
+-	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+-		return -1;
+-
+-	ics = d->chip_data;
+-	if (WARN_ON(!ics))
+-		return -1;
+-	xive = wsp_ics_get_xive(ics, hw_irq);
+-
+-	/*
+-	 * For the moment only implement delivery to all cpus or one cpu.
+-	 * Get current irq_server for the given irq
+-	 */
+-	ret = cache_hwirq_map(ics, hw_irq, cpumask);
+-	if (ret == -1) {
+-		char cpulist[128];
+-		cpumask_scnprintf(cpulist, sizeof(cpulist), cpumask);
+-		pr_warning("%s: No online cpus in the mask %s for irq %d\n",
+-			   __func__, cpulist, d->irq);
+-		return -1;
+-	} else if (ret == -ENOMEM) {
+-		pr_warning("%s: Out of memory\n", __func__);
+-		return -1;
+-	}
+-
+-	xive = xive_set_server(xive, get_irq_server(ics, hw_irq));
+-	wsp_ics_set_xive(ics, hw_irq, xive);
+-
+-	return IRQ_SET_MASK_OK;
+-}
+-
+-static struct irq_chip wsp_irq_chip = {
+-	.name = "WSP ICS",
+-	.irq_startup		= wsp_chip_startup,
+-	.irq_mask		= wsp_chip_mask_irq,
+-	.irq_unmask		= wsp_chip_unmask_irq,
+-	.irq_set_affinity	= wsp_chip_set_affinity
+-};
+-
+-static int wsp_ics_host_match(struct ics *ics, struct device_node *dn)
+-{
+-	/* All ICSs in the system implement a global irq number space,
+-	 * so match against them all. */
+-	return of_device_is_compatible(dn, "ibm,ppc-xics");
+-}
+-
+-static int wsp_ics_match_hwirq(struct wsp_ics *wsp_ics, unsigned int hwirq)
+-{
+-	if (hwirq >= wsp_ics->hwirq_start &&
+-	    hwirq <  wsp_ics->hwirq_start + wsp_ics->count)
+-		return 1;
+-
+-	return 0;
+-}
+-
+-static int wsp_ics_map(struct ics *ics, unsigned int virq)
+-{
+-	struct wsp_ics *wsp_ics = to_wsp_ics(ics);
+-	unsigned int hw_irq = virq_to_hw(virq);
+-	unsigned long flags;
+-
+-	if (!wsp_ics_match_hwirq(wsp_ics, hw_irq))
+-		return -ENOENT;
+-
+-	irq_set_chip_and_handler(virq, &wsp_irq_chip, handle_fasteoi_irq);
+-
+-	irq_set_chip_data(virq, wsp_ics);
+-
+-	spin_lock_irqsave(&wsp_ics->lock, flags);
+-	bitmap_allocate_region(wsp_ics->bitmap, hw_irq - wsp_ics->hwirq_start, 0);
+-	spin_unlock_irqrestore(&wsp_ics->lock, flags);
+-
+-	return 0;
+-}
+-
+-static void wsp_ics_mask_unknown(struct ics *ics, unsigned long hw_irq)
+-{
+-	struct wsp_ics *wsp_ics = to_wsp_ics(ics);
+-
+-	if (!wsp_ics_match_hwirq(wsp_ics, hw_irq))
+-		return;
+-
+-	pr_err("%s: IRQ %lu (real) is invalid, disabling it.\n", __func__, hw_irq);
+-	wsp_mask_real_irq(hw_irq, wsp_ics);
+-}
+-
+-static long wsp_ics_get_server(struct ics *ics, unsigned long hw_irq)
+-{
+-	struct wsp_ics *wsp_ics = to_wsp_ics(ics);
+-
+-	if (!wsp_ics_match_hwirq(wsp_ics, hw_irq))
+-		return -ENOENT;
+-
+-	return get_irq_server(wsp_ics, hw_irq);
+-}
+-
+-/* HW Number allocation API */
+-
+-static struct wsp_ics *wsp_ics_find_dn_ics(struct device_node *dn)
+-{
+-	struct device_node *iparent;
+-	int i;
+-
+-	iparent = of_irq_find_parent(dn);
+-	if (!iparent) {
+-		pr_err("wsp_ics: Failed to find interrupt parent!\n");
+-		return NULL;
+-	}
+-
+-	for(i = 0; i < num_ics; i++) {
+-		if(ics_list[i].dn == iparent)
+-			break;
+-	}
+-
+-	if (i >= num_ics) {
+-		pr_err("wsp_ics: Unable to find parent bitmap!\n");
+-		return NULL;
+-	}
+-
+-	return &ics_list[i];
+-}
+-
+-int wsp_ics_alloc_irq(struct device_node *dn, int num)
+-{
+-	struct wsp_ics *ics;
+-	int order, offset;
+-
+-	ics = wsp_ics_find_dn_ics(dn);
+-	if (!ics)
+-		return -ENODEV;
+-
+-	/* Fast, but overly strict if num isn't a power of two */
+-	order = get_count_order(num);
+-
+-	spin_lock_irq(&ics->lock);
+-	offset = bitmap_find_free_region(ics->bitmap, ics->count, order);
+-	spin_unlock_irq(&ics->lock);
+-
+-	if (offset < 0)
+-		return offset;
+-
+-	return offset + ics->hwirq_start;
+-}
+-
+-void wsp_ics_free_irq(struct device_node *dn, unsigned int irq)
+-{
+-	struct wsp_ics *ics;
+-
+-	ics = wsp_ics_find_dn_ics(dn);
+-	if (WARN_ON(!ics))
+-		return;
+-
+-	spin_lock_irq(&ics->lock);
+-	bitmap_release_region(ics->bitmap, irq, 0);
+-	spin_unlock_irq(&ics->lock);
+-}
+-
+-/* Initialisation */
+-
+-static int __init wsp_ics_bitmap_setup(struct wsp_ics *ics,
+-				      struct device_node *dn)
+-{
+-	int len, i, j, size;
+-	u32 start, count;
+-	const u32 *p;
+-
+-	size = BITS_TO_LONGS(ics->count) * sizeof(long);
+-	ics->bitmap = kzalloc(size, GFP_KERNEL);
+-	if (!ics->bitmap) {
+-		pr_err("wsp_ics: ENOMEM allocating IRQ bitmap!\n");
+-		return -ENOMEM;
+-	}
+-
+-	spin_lock_init(&ics->lock);
+-
+-	p = of_get_property(dn, "available-ranges", &len);
+-	if (!p || !len) {
+-		/* FIXME this should be a WARN() once mambo is updated */
+-		pr_err("wsp_ics: No available-ranges defined for %s\n",
+-			dn->full_name);
+-		return 0;
+-	}
+-
+-	if (len % (2 * sizeof(u32)) != 0) {
+-		/* FIXME this should be a WARN() once mambo is updated */
+-		pr_err("wsp_ics: Invalid available-ranges for %s\n",
+-			dn->full_name);
+-		return 0;
+-	}
+-
+-	bitmap_fill(ics->bitmap, ics->count);
+-
+-	for (i = 0; i < len / sizeof(u32); i += 2) {
+-		start = of_read_number(p + i, 1);
+-		count = of_read_number(p + i + 1, 1);
+-
+-		pr_devel("%s: start: %d count: %d\n", __func__, start, count);
+-
+-		if ((start + count) > (ics->hwirq_start + ics->count) ||
+-		     start < ics->hwirq_start) {
+-			pr_err("wsp_ics: Invalid range! -> %d to %d\n",
+-					start, start + count);
+-			break;
+-		}
+-
+-		for (j = 0; j < count; j++)
+-			bitmap_release_region(ics->bitmap,
+-				(start + j) - ics->hwirq_start, 0);
+-	}
+-
+-	/* Ensure LSIs are not available for allocation */
+-	bitmap_allocate_region(ics->bitmap, ics->lsi_base,
+-			       get_count_order(ics->lsi_count));
+-
+-	return 0;
+-}
+-
+-static int __init wsp_ics_setup(struct wsp_ics *ics, struct device_node *dn)
+-{
+-	u32 lsi_buid, msi_buid, msi_base, msi_count;
+-	void __iomem *regs;
+-	const u32 *p;
+-	int rc, len, i;
+-	u64 caps, buid;
+-
+-	p = of_get_property(dn, "interrupt-ranges", &len);
+-	if (!p || len < (2 * sizeof(u32))) {
+-		pr_err("wsp_ics: No/bad interrupt-ranges found on %s\n",
+-			dn->full_name);
+-		return -ENOENT;
+-	}
+-
+-	if (len > (2 * sizeof(u32))) {
+-		pr_err("wsp_ics: Multiple ics ranges not supported.\n");
+-		return -EINVAL;
+-	}
+-
+-	regs = of_iomap(dn, 0);
+-	if (!regs) {
+-		pr_err("wsp_ics: of_iomap(%s) failed\n", dn->full_name);
+-		return -ENXIO;
+-	}
+-
+-	ics->hwirq_start = of_read_number(p, 1);
+-	ics->count = of_read_number(p + 1, 1);
+-	ics->regs = regs;
+-
+-	ics->chip_id = wsp_get_chip_id(dn);
+-	if (WARN_ON(ics->chip_id < 0))
+-		ics->chip_id = 0;
+-
+-	/* Get some informations about the critter */
+-	caps = in_be64(ICS_INT_CAPS_REG(ics->regs));
+-	buid = in_be64(INT_SRC_LAYER_BUID_REG(ics->regs));
+-	ics->lsi_count = caps >> 56;
+-	msi_count = (caps >> 44) & 0x7ff;
+-
+-	/* Note: LSI BUID is 9 bits, but really only 3 are BUID and the
+-	 * rest is mixed in the interrupt number. We store the whole
+-	 * thing though
+-	 */
+-	lsi_buid = (buid >> 48) & 0x1ff;
+-	ics->lsi_base = (ics->chip_id << WSP_ICS_CHIP_SHIFT) | lsi_buid << 5;
+-	msi_buid = (buid >> 37) & 0x7;
+-	msi_base = (ics->chip_id << WSP_ICS_CHIP_SHIFT) | msi_buid << 11;
+-
+-	pr_info("wsp_ics: Found %s\n", dn->full_name);
+-	pr_info("wsp_ics:    irq range : 0x%06llx..0x%06llx\n",
+-		ics->hwirq_start, ics->hwirq_start + ics->count - 1);
+-	pr_info("wsp_ics:    %4d LSIs : 0x%06x..0x%06x\n",
+-		ics->lsi_count, ics->lsi_base,
+-		ics->lsi_base + ics->lsi_count - 1);
+-	pr_info("wsp_ics:    %4d MSIs : 0x%06x..0x%06x\n",
+-		msi_count, msi_base,
+-		msi_base + msi_count - 1);
+-
+-	/* Let's check the HW config is sane */
+-	if (ics->lsi_base < ics->hwirq_start ||
+-	    (ics->lsi_base + ics->lsi_count) > (ics->hwirq_start + ics->count))
+-		pr_warning("wsp_ics: WARNING ! LSIs out of interrupt-ranges !\n");
+-	if (msi_base < ics->hwirq_start ||
+-	    (msi_base + msi_count) > (ics->hwirq_start + ics->count))
+-		pr_warning("wsp_ics: WARNING ! MSIs out of interrupt-ranges !\n");
+-
+-	/* We don't check for overlap between LSI and MSI, which will happen
+-	 * if we use the same BUID, I'm not sure yet how legit that is.
+-	 */
+-
+-	rc = wsp_ics_bitmap_setup(ics, dn);
+-	if (rc) {
+-		iounmap(regs);
+-		return rc;
+-	}
+-
+-	ics->dn = of_node_get(dn);
+-	alloc_irq_map(ics);
+-
+-	for(i = 0; i < ics->count; i++)
+-		wsp_mask_real_irq(ics->hwirq_start + i, ics);
+-
+-	ics->ics.map = wsp_ics_map;
+-	ics->ics.mask_unknown = wsp_ics_mask_unknown;
+-	ics->ics.get_server = wsp_ics_get_server;
+-	ics->ics.host_match = wsp_ics_host_match;
+-
+-	xics_register_ics(&ics->ics);
+-
+-	return 0;
+-}
+-
+-static void __init wsp_ics_set_default_server(void)
+-{
+-	struct device_node *np;
+-	u32 hwid;
+-
+-	/* Find the server number for the boot cpu. */
+-	np = of_get_cpu_node(boot_cpuid, NULL);
+-	BUG_ON(!np);
+-
+-	hwid = get_hard_smp_processor_id(boot_cpuid);
+-
+-	pr_info("wsp_ics: default server is %#x, CPU %s\n", hwid, np->full_name);
+-	xics_default_server = hwid;
+-
+-	of_node_put(np);
+-}
+-
+-static int __init wsp_ics_init(void)
+-{
+-	struct device_node *dn;
+-	struct wsp_ics *ics;
+-	int rc, found;
+-
+-	wsp_ics_set_default_server();
+-
+-	found = 0;
+-	for_each_compatible_node(dn, NULL, "ibm,ppc-xics")
+-		found++;
+-
+-	if (found == 0) {
+-		pr_err("wsp_ics: No ICS's found!\n");
+-		return -ENODEV;
+-	}
+-
+-	ics_list = kmalloc(sizeof(*ics) * found, GFP_KERNEL);
+-	if (!ics_list) {
+-		pr_err("wsp_ics: No memory for structs.\n");
+-		return -ENOMEM;
+-	}
+-
+-	num_ics = 0;
+-	ics = ics_list;
+-	for_each_compatible_node(dn, NULL, "ibm,wsp-xics") {
+-		rc = wsp_ics_setup(ics, dn);
+-		if (rc == 0) {
+-			ics++;
+-			num_ics++;
+-		}
+-	}
+-
+-	if (found != num_ics) {
+-		pr_err("wsp_ics: Failed setting up %d ICS's\n",
+-			found - num_ics);
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+-
+-void __init wsp_init_irq(void)
+-{
+-	wsp_ics_init();
+-	xics_init();
+-
+-	/* We need to patch our irq chip's EOI to point to the right ICP */
+-	wsp_irq_chip.irq_eoi = icp_ops->eoi;
+-}
+-
+-#ifdef CONFIG_PCI_MSI
+-static void wsp_ics_msi_unmask_irq(struct irq_data *d)
+-{
+-	wsp_chip_unmask_irq(d);
+-	unmask_msi_irq(d);
+-}
+-
+-static unsigned int wsp_ics_msi_startup(struct irq_data *d)
+-{
+-	wsp_ics_msi_unmask_irq(d);
+-	return 0;
+-}
+-
+-static void wsp_ics_msi_mask_irq(struct irq_data *d)
+-{
+-	mask_msi_irq(d);
+-	wsp_chip_mask_irq(d);
+-}
+-
+-/*
+- * we do it this way because we reassinge default EOI handling in
+- * irq_init() above
+- */
+-static void wsp_ics_eoi(struct irq_data *data)
+-{
+-	wsp_irq_chip.irq_eoi(data);
+-}
+-
+-static struct irq_chip wsp_ics_msi = {
+-	.name = "WSP ICS MSI",
+-	.irq_startup = wsp_ics_msi_startup,
+-	.irq_mask = wsp_ics_msi_mask_irq,
+-	.irq_unmask = wsp_ics_msi_unmask_irq,
+-	.irq_eoi = wsp_ics_eoi,
+-	.irq_set_affinity = wsp_chip_set_affinity
+-};
+-
+-void wsp_ics_set_msi_chip(unsigned int irq)
+-{
+-	irq_set_chip(irq, &wsp_ics_msi);
+-}
+-
+-void wsp_ics_set_std_chip(unsigned int irq)
+-{
+-	irq_set_chip(irq, &wsp_irq_chip);
+-}
+-#endif /* CONFIG_PCI_MSI */
+diff --git a/arch/powerpc/platforms/wsp/ics.h b/arch/powerpc/platforms/wsp/ics.h
+deleted file mode 100644
+index 07b644e..0000000
+--- a/arch/powerpc/platforms/wsp/ics.h
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/*
+- * Copyright 2009 IBM Corporation.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#ifndef __ICS_H
+-#define __ICS_H
+-
+-#define XIVE_ADDR_MASK		0x7FFULL
+-
+-extern void wsp_init_irq(void);
+-
+-extern int wsp_ics_alloc_irq(struct device_node *dn, int num);
+-extern void wsp_ics_free_irq(struct device_node *dn, unsigned int irq);
+-
+-#ifdef CONFIG_PCI_MSI
+-extern void wsp_ics_set_msi_chip(unsigned int irq);
+-extern void wsp_ics_set_std_chip(unsigned int irq);
+-#endif /* CONFIG_PCI_MSI */
+-
+-#endif /* __ICS_H */
+diff --git a/arch/powerpc/platforms/wsp/msi.c b/arch/powerpc/platforms/wsp/msi.c
+deleted file mode 100644
+index 380882f..0000000
+--- a/arch/powerpc/platforms/wsp/msi.c
++++ /dev/null
+@@ -1,102 +0,0 @@
+-/*
+- * Copyright 2011 Michael Ellerman, IBM Corp.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/pci.h>
+-#include <linux/msi.h>
+-#include <linux/irq.h>
+-#include <linux/interrupt.h>
+-
+-#include "msi.h"
+-#include "ics.h"
+-#include "wsp_pci.h"
+-
+-/* Magic addresses for 32 & 64-bit MSIs with hardcoded MVE 0 */
+-#define MSI_ADDR_32		0xFFFF0000ul
+-#define MSI_ADDR_64		0x1000000000000000ul
+-
+-int wsp_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+-{
+-	struct pci_controller *phb;
+-	struct msi_desc *entry;
+-	struct msi_msg msg;
+-	unsigned int virq;
+-	int hwirq;
+-
+-	phb = pci_bus_to_host(dev->bus);
+-	if (!phb)
+-		return -ENOENT;
+-
+-	entry = list_first_entry(&dev->msi_list, struct msi_desc, list);
+-	if (entry->msi_attrib.is_64) {
+-		msg.address_lo = 0;
+-		msg.address_hi = MSI_ADDR_64 >> 32;
+-	} else {
+-		msg.address_lo = MSI_ADDR_32;
+-		msg.address_hi = 0;
+-	}
+-
+-	list_for_each_entry(entry, &dev->msi_list, list) {
+-		hwirq = wsp_ics_alloc_irq(phb->dn, 1);
+-		if (hwirq < 0) {
+-			dev_warn(&dev->dev, "wsp_msi: hwirq alloc failed!\n");
+-			return hwirq;
+-		}
+-
+-		virq = irq_create_mapping(NULL, hwirq);
+-		if (virq == NO_IRQ) {
+-			dev_warn(&dev->dev, "wsp_msi: virq alloc failed!\n");
+-			return -1;
+-		}
+-
+-		dev_dbg(&dev->dev, "wsp_msi: allocated irq %#x/%#x\n",
+-			hwirq, virq);
+-
+-		wsp_ics_set_msi_chip(virq);
+-		irq_set_msi_desc(virq, entry);
+-		msg.data = hwirq & XIVE_ADDR_MASK;
+-		write_msi_msg(virq, &msg);
+-	}
+-
+-	return 0;
+-}
+-
+-void wsp_teardown_msi_irqs(struct pci_dev *dev)
+-{
+-	struct pci_controller *phb;
+-	struct msi_desc *entry;
+-	int hwirq;
+-
+-	phb = pci_bus_to_host(dev->bus);
+-
+-	dev_dbg(&dev->dev, "wsp_msi: tearing down msi irqs\n");
+-
+-	list_for_each_entry(entry, &dev->msi_list, list) {
+-		if (entry->irq == NO_IRQ)
+-			continue;
+-
+-		irq_set_msi_desc(entry->irq, NULL);
+-		wsp_ics_set_std_chip(entry->irq);
+-
+-		hwirq = virq_to_hw(entry->irq);
+-		/* In this order to avoid racing with irq_create_mapping() */
+-		irq_dispose_mapping(entry->irq);
+-		wsp_ics_free_irq(phb->dn, hwirq);
+-	}
+-}
+-
+-void wsp_setup_phb_msi(struct pci_controller *phb)
+-{
+-	/* Create a single MVE at offset 0 that matches everything */
+-	out_be64(phb->cfg_data + PCIE_REG_IODA_ADDR, PCIE_REG_IODA_AD_TBL_MVT);
+-	out_be64(phb->cfg_data + PCIE_REG_IODA_DATA0, 1ull << 63);
+-
+-	ppc_md.setup_msi_irqs = wsp_setup_msi_irqs;
+-	ppc_md.teardown_msi_irqs = wsp_teardown_msi_irqs;
+-}
+diff --git a/arch/powerpc/platforms/wsp/msi.h b/arch/powerpc/platforms/wsp/msi.h
+deleted file mode 100644
+index 0ab27b7..0000000
+--- a/arch/powerpc/platforms/wsp/msi.h
++++ /dev/null
+@@ -1,19 +0,0 @@
+-/*
+- * Copyright 2011 Michael Ellerman, IBM Corp.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#ifndef __WSP_MSI_H
+-#define __WSP_MSI_H
+-
+-#ifdef CONFIG_PCI_MSI
+-extern void wsp_setup_phb_msi(struct pci_controller *phb);
+-#else
+-static inline void wsp_setup_phb_msi(struct pci_controller *phb) { }
+-#endif
+-
+-#endif /* __WSP_MSI_H */
+diff --git a/arch/powerpc/platforms/wsp/opb_pic.c b/arch/powerpc/platforms/wsp/opb_pic.c
+deleted file mode 100644
+index 3f67298..0000000
+--- a/arch/powerpc/platforms/wsp/opb_pic.c
++++ /dev/null
+@@ -1,321 +0,0 @@
+-/*
+- * IBM Onboard Peripheral Bus Interrupt Controller
+- *
+- * Copyright 2010 Jack Miller, IBM Corporation.
+- *
+- * This program is free software; you can redistribute  it and/or modify it
+- * under  the terms of  the GNU General  Public License as published by the
+- * Free Software Foundation;  either version 2 of the  License, or (at your
+- * option) any later version.
+- */
+-
+-#include <linux/interrupt.h>
+-#include <linux/io.h>
+-#include <linux/irq.h>
+-#include <linux/of.h>
+-#include <linux/slab.h>
+-#include <linux/time.h>
+-#include <linux/of_address.h>
+-#include <linux/of_irq.h>
+-
+-#include <asm/reg_a2.h>
+-#include <asm/irq.h>
+-
+-#define OPB_NR_IRQS 32
+-
+-#define OPB_MLSASIER	0x04    /* MLS Accumulated Status IER */
+-#define OPB_MLSIR	0x50	/* MLS Interrupt Register */
+-#define OPB_MLSIER	0x54	/* MLS Interrupt Enable Register */
+-#define OPB_MLSIPR	0x58	/* MLS Interrupt Polarity Register */
+-#define OPB_MLSIIR	0x5c	/* MLS Interrupt Inputs Register */
+-
+-static int opb_index = 0;
+-
+-struct opb_pic {
+-	struct irq_domain *host;
+-	void *regs;
+-	int index;
+-	spinlock_t lock;
+-};
+-
+-static u32 opb_in(struct opb_pic *opb, int offset)
+-{
+-	return in_be32(opb->regs + offset);
+-}
+-
+-static void opb_out(struct opb_pic *opb, int offset, u32 val)
+-{
+-	out_be32(opb->regs + offset, val);
+-}
+-
+-static void opb_unmask_irq(struct irq_data *d)
+-{
+-	struct opb_pic *opb;
+-	unsigned long flags;
+-	u32 ier, bitset;
+-
+-	opb = d->chip_data;
+-	bitset = (1 << (31 - irqd_to_hwirq(d)));
+-
+-	spin_lock_irqsave(&opb->lock, flags);
+-
+-	ier = opb_in(opb, OPB_MLSIER);
+-	opb_out(opb, OPB_MLSIER, ier | bitset);
+-	ier = opb_in(opb, OPB_MLSIER);
+-
+-	spin_unlock_irqrestore(&opb->lock, flags);
+-}
+-
+-static void opb_mask_irq(struct irq_data *d)
+-{
+-	struct opb_pic *opb;
+-	unsigned long flags;
+-	u32 ier, mask;
+-
+-	opb = d->chip_data;
+-	mask = ~(1 << (31 - irqd_to_hwirq(d)));
+-
+-	spin_lock_irqsave(&opb->lock, flags);
+-
+-	ier = opb_in(opb, OPB_MLSIER);
+-	opb_out(opb, OPB_MLSIER, ier & mask);
+-	ier = opb_in(opb, OPB_MLSIER); // Flush posted writes
+-
+-	spin_unlock_irqrestore(&opb->lock, flags);
+-}
+-
+-static void opb_ack_irq(struct irq_data *d)
+-{
+-	struct opb_pic *opb;
+-	unsigned long flags;
+-	u32 bitset;
+-
+-	opb = d->chip_data;
+-	bitset = (1 << (31 - irqd_to_hwirq(d)));
+-
+-	spin_lock_irqsave(&opb->lock, flags);
+-
+-	opb_out(opb, OPB_MLSIR, bitset);
+-	opb_in(opb, OPB_MLSIR); // Flush posted writes
+-
+-	spin_unlock_irqrestore(&opb->lock, flags);
+-}
+-
+-static void opb_mask_ack_irq(struct irq_data *d)
+-{
+-	struct opb_pic *opb;
+-	unsigned long flags;
+-	u32 bitset;
+-	u32 ier, ir;
+-
+-	opb = d->chip_data;
+-	bitset = (1 << (31 - irqd_to_hwirq(d)));
+-
+-	spin_lock_irqsave(&opb->lock, flags);
+-
+-	ier = opb_in(opb, OPB_MLSIER);
+-	opb_out(opb, OPB_MLSIER, ier & ~bitset);
+-	ier = opb_in(opb, OPB_MLSIER); // Flush posted writes
+-
+-	opb_out(opb, OPB_MLSIR, bitset);
+-	ir = opb_in(opb, OPB_MLSIR); // Flush posted writes
+-
+-	spin_unlock_irqrestore(&opb->lock, flags);
+-}
+-
+-static int opb_set_irq_type(struct irq_data *d, unsigned int flow)
+-{
+-	struct opb_pic *opb;
+-	unsigned long flags;
+-	int invert, ipr, mask, bit;
+-
+-	opb = d->chip_data;
+-
+-	/* The only information we're interested in in the type is whether it's
+-	 * a high or low trigger. For high triggered interrupts, the polarity
+-	 * set for it in the MLS Interrupt Polarity Register is 0, for low
+-	 * interrupts it's 1 so that the proper input in the MLS Interrupt Input
+-	 * Register is interrupted as asserting the interrupt. */
+-
+-	switch (flow) {
+-		case IRQ_TYPE_NONE:
+-			opb_mask_irq(d);
+-			return 0;
+-
+-		case IRQ_TYPE_LEVEL_HIGH:
+-			invert = 0;
+-			break;
+-
+-		case IRQ_TYPE_LEVEL_LOW:
+-			invert = 1;
+-			break;
+-
+-		default:
+-			return -EINVAL;
+-	}
+-
+-	bit = (1 << (31 - irqd_to_hwirq(d)));
+-	mask = ~bit;
+-
+-	spin_lock_irqsave(&opb->lock, flags);
+-
+-	ipr = opb_in(opb, OPB_MLSIPR);
+-	ipr = (ipr & mask) | (invert ? bit : 0);
+-	opb_out(opb, OPB_MLSIPR, ipr);
+-	ipr = opb_in(opb, OPB_MLSIPR);  // Flush posted writes
+-
+-	spin_unlock_irqrestore(&opb->lock, flags);
+-
+-	/* Record the type in the interrupt descriptor */
+-	irqd_set_trigger_type(d, flow);
+-
+-	return 0;
+-}
+-
+-static struct irq_chip opb_irq_chip = {
+-	.name		= "OPB",
+-	.irq_mask	= opb_mask_irq,
+-	.irq_unmask	= opb_unmask_irq,
+-	.irq_mask_ack	= opb_mask_ack_irq,
+-	.irq_ack	= opb_ack_irq,
+-	.irq_set_type	= opb_set_irq_type
+-};
+-
+-static int opb_host_map(struct irq_domain *host, unsigned int virq,
+-		irq_hw_number_t hwirq)
+-{
+-	struct opb_pic *opb;
+-
+-	opb = host->host_data;
+-
+-	/* Most of the important stuff is handled by the generic host code, like
+-	 * the lookup, so just attach some info to the virtual irq */
+-
+-	irq_set_chip_data(virq, opb);
+-	irq_set_chip_and_handler(virq, &opb_irq_chip, handle_level_irq);
+-	irq_set_irq_type(virq, IRQ_TYPE_NONE);
+-
+-	return 0;
+-}
+-
+-static const struct irq_domain_ops opb_host_ops = {
+-	.map = opb_host_map,
+-	.xlate = irq_domain_xlate_twocell,
+-};
+-
+-irqreturn_t opb_irq_handler(int irq, void *private)
+-{
+-	struct opb_pic *opb;
+-	u32 ir, src, subvirq;
+-
+-	opb = (struct opb_pic *) private;
+-
+-	/* Read the OPB MLS Interrupt Register for
+-	 * asserted interrupts */
+-	ir = opb_in(opb, OPB_MLSIR);
+-	if (!ir)
+-		return IRQ_NONE;
+-
+-	do {
+-		/* Get 1 - 32 source, *NOT* bit */
+-		src = 32 - ffs(ir);
+-
+-		/* Translate from the OPB's conception of interrupt number to
+-		 * Linux's virtual IRQ */
+-
+-		subvirq = irq_linear_revmap(opb->host, src);
+-
+-		generic_handle_irq(subvirq);
+-	} while ((ir = opb_in(opb, OPB_MLSIR)));
+-
+-	return IRQ_HANDLED;
+-}
+-
+-struct opb_pic *opb_pic_init_one(struct device_node *dn)
+-{
+-	struct opb_pic *opb;
+-	struct resource res;
+-
+-	if (of_address_to_resource(dn, 0, &res)) {
+-		printk(KERN_ERR "opb: Couldn't translate resource\n");
+-		return  NULL;
+-	}
+-
+-	opb = kzalloc(sizeof(struct opb_pic), GFP_KERNEL);
+-	if (!opb) {
+-		printk(KERN_ERR "opb: Failed to allocate opb struct!\n");
+-		return NULL;
+-	}
+-
+-	/* Get access to the OPB MMIO registers */
+-	opb->regs = ioremap(res.start + 0x10000, 0x1000);
+-	if (!opb->regs) {
+-		printk(KERN_ERR "opb: Failed to allocate register space!\n");
+-		goto free_opb;
+-	}
+-
+-	/* Allocate an irq domain so that Linux knows that despite only
+-	 * having one interrupt to issue, we're the controller for multiple
+-	 * hardware IRQs, so later we can lookup their virtual IRQs. */
+-
+-	opb->host = irq_domain_add_linear(dn, OPB_NR_IRQS, &opb_host_ops, opb);
+-	if (!opb->host) {
+-		printk(KERN_ERR "opb: Failed to allocate IRQ host!\n");
+-		goto free_regs;
+-	}
+-
+-	opb->index = opb_index++;
+-	spin_lock_init(&opb->lock);
+-
+-	/* Disable all interrupts by default */
+-	opb_out(opb, OPB_MLSASIER, 0);
+-	opb_out(opb, OPB_MLSIER, 0);
+-
+-	/* ACK any interrupts left by FW */
+-	opb_out(opb, OPB_MLSIR, 0xFFFFFFFF);
+-
+-	return opb;
+-
+-free_regs:
+-	iounmap(opb->regs);
+-free_opb:
+-	kfree(opb);
+-	return NULL;
+-}
+-
+-void __init opb_pic_init(void)
+-{
+-	struct device_node *dn;
+-	struct opb_pic *opb;
+-	int virq;
+-	int rc;
+-
+-	/* Call init_one for each OPB device */
+-	for_each_compatible_node(dn, NULL, "ibm,opb") {
+-
+-		/* Fill in an OPB struct */
+-		opb = opb_pic_init_one(dn);
+-		if (!opb) {
+-			printk(KERN_WARNING "opb: Failed to init node, skipped!\n");
+-			continue;
+-		}
+-
+-		/* Map / get opb's hardware virtual irq */
+-		virq = irq_of_parse_and_map(dn, 0);
+-		if (virq <= 0) {
+-			printk("opb: irq_op_parse_and_map failed!\n");
+-			continue;
+-		}
+-
+-		/* Attach opb interrupt handler to new virtual IRQ */
+-		rc = request_irq(virq, opb_irq_handler, IRQF_NO_THREAD,
+-				 "OPB LS Cascade", opb);
+-		if (rc) {
+-			printk("opb: request_irq failed: %d\n", rc);
+-			continue;
+-		}
+-
+-		printk("OPB%d init with %d IRQs at %p\n", opb->index,
+-				OPB_NR_IRQS, opb->regs);
+-	}
+-}
+diff --git a/arch/powerpc/platforms/wsp/psr2.c b/arch/powerpc/platforms/wsp/psr2.c
+deleted file mode 100644
+index a87b414..0000000
+--- a/arch/powerpc/platforms/wsp/psr2.c
++++ /dev/null
+@@ -1,67 +0,0 @@
+-/*
+- * Copyright 2008-2011, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/delay.h>
+-#include <linux/init.h>
+-#include <linux/irq.h>
+-#include <linux/kernel.h>
+-#include <linux/mm.h>
+-#include <linux/of.h>
+-#include <linux/smp.h>
+-#include <linux/time.h>
+-#include <linux/of_fdt.h>
+-
+-#include <asm/machdep.h>
+-#include <asm/udbg.h>
+-
+-#include "ics.h"
+-#include "wsp.h"
+-
+-
+-static void psr2_spin(void)
+-{
+-	hard_irq_disable();
+-	for (;;)
+-		continue;
+-}
+-
+-static void psr2_restart(char *cmd)
+-{
+-	psr2_spin();
+-}
+-
+-static int __init psr2_probe(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (of_flat_dt_is_compatible(root, "ibm,wsp-chroma")) {
+-		/* chroma systems also claim they are psr2s */
+-		return 0;
+-	}
+-
+-	if (!of_flat_dt_is_compatible(root, "ibm,psr2"))
+-		return 0;
+-
+-	return 1;
+-}
+-
+-define_machine(psr2_md) {
+-	.name			= "PSR2 A2",
+-	.probe			= psr2_probe,
+-	.setup_arch		= wsp_setup_arch,
+-	.restart		= psr2_restart,
+-	.power_off		= psr2_spin,
+-	.halt			= psr2_spin,
+-	.calibrate_decr		= generic_calibrate_decr,
+-	.init_IRQ		= wsp_setup_irq,
+-	.progress		= udbg_progress,
+-	.power_save		= book3e_idle,
+-};
+-
+-machine_arch_initcall(psr2_md, wsp_probe_devices);
+diff --git a/arch/powerpc/platforms/wsp/scom_smp.c b/arch/powerpc/platforms/wsp/scom_smp.c
+deleted file mode 100644
+index 268bc89..0000000
+--- a/arch/powerpc/platforms/wsp/scom_smp.c
++++ /dev/null
+@@ -1,434 +0,0 @@
+-/*
+- * SCOM support for A2 platforms
+- *
+- * Copyright 2007-2011 Benjamin Herrenschmidt, David Gibson,
+- *		       Michael Ellerman, IBM Corp.
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/cpumask.h>
+-#include <linux/io.h>
+-#include <linux/of.h>
+-#include <linux/spinlock.h>
+-#include <linux/types.h>
+-
+-#include <asm/cputhreads.h>
+-#include <asm/reg_a2.h>
+-#include <asm/scom.h>
+-#include <asm/udbg.h>
+-
+-#include "wsp.h"
+-
+-#define SCOM_RAMC		0x2a		/* Ram Command */
+-#define SCOM_RAMC_TGT1_EXT	0x80000000
+-#define SCOM_RAMC_SRC1_EXT	0x40000000
+-#define SCOM_RAMC_SRC2_EXT	0x20000000
+-#define SCOM_RAMC_SRC3_EXT	0x10000000
+-#define SCOM_RAMC_ENABLE	0x00080000
+-#define SCOM_RAMC_THREADSEL	0x00060000
+-#define SCOM_RAMC_EXECUTE	0x00010000
+-#define SCOM_RAMC_MSR_OVERRIDE	0x00008000
+-#define SCOM_RAMC_MSR_PR	0x00004000
+-#define SCOM_RAMC_MSR_GS	0x00002000
+-#define SCOM_RAMC_FORCE		0x00001000
+-#define SCOM_RAMC_FLUSH		0x00000800
+-#define SCOM_RAMC_INTERRUPT	0x00000004
+-#define SCOM_RAMC_ERROR		0x00000002
+-#define SCOM_RAMC_DONE		0x00000001
+-#define SCOM_RAMI		0x29		/* Ram Instruction */
+-#define SCOM_RAMIC		0x28		/* Ram Instruction and Command */
+-#define SCOM_RAMIC_INSN		0xffffffff00000000
+-#define SCOM_RAMD		0x2d		/* Ram Data */
+-#define SCOM_RAMDH		0x2e		/* Ram Data High */
+-#define SCOM_RAMDL		0x2f		/* Ram Data Low */
+-#define SCOM_PCCR0		0x33		/* PC Configuration Register 0 */
+-#define SCOM_PCCR0_ENABLE_DEBUG	0x80000000
+-#define SCOM_PCCR0_ENABLE_RAM	0x40000000
+-#define SCOM_THRCTL		0x30		/* Thread Control and Status */
+-#define SCOM_THRCTL_T0_STOP	0x80000000
+-#define SCOM_THRCTL_T1_STOP	0x40000000
+-#define SCOM_THRCTL_T2_STOP	0x20000000
+-#define SCOM_THRCTL_T3_STOP	0x10000000
+-#define SCOM_THRCTL_T0_STEP	0x08000000
+-#define SCOM_THRCTL_T1_STEP	0x04000000
+-#define SCOM_THRCTL_T2_STEP	0x02000000
+-#define SCOM_THRCTL_T3_STEP	0x01000000
+-#define SCOM_THRCTL_T0_RUN	0x00800000
+-#define SCOM_THRCTL_T1_RUN	0x00400000
+-#define SCOM_THRCTL_T2_RUN	0x00200000
+-#define SCOM_THRCTL_T3_RUN	0x00100000
+-#define SCOM_THRCTL_T0_PM	0x00080000
+-#define SCOM_THRCTL_T1_PM	0x00040000
+-#define SCOM_THRCTL_T2_PM	0x00020000
+-#define SCOM_THRCTL_T3_PM	0x00010000
+-#define SCOM_THRCTL_T0_UDE	0x00008000
+-#define SCOM_THRCTL_T1_UDE	0x00004000
+-#define SCOM_THRCTL_T2_UDE	0x00002000
+-#define SCOM_THRCTL_T3_UDE	0x00001000
+-#define SCOM_THRCTL_ASYNC_DIS	0x00000800
+-#define SCOM_THRCTL_TB_DIS	0x00000400
+-#define SCOM_THRCTL_DEC_DIS	0x00000200
+-#define SCOM_THRCTL_AND		0x31		/* Thread Control and Status */
+-#define SCOM_THRCTL_OR		0x32		/* Thread Control and Status */
+-
+-
+-static DEFINE_PER_CPU(scom_map_t, scom_ptrs);
+-
+-static scom_map_t get_scom(int cpu, struct device_node *np, int *first_thread)
+-{
+-	scom_map_t scom = per_cpu(scom_ptrs, cpu);
+-	int tcpu;
+-
+-	if (scom_map_ok(scom)) {
+-		*first_thread = 0;
+-		return scom;
+-	}
+-
+-	*first_thread = 1;
+-
+-	scom = scom_map_device(np, 0);
+-
+-	for (tcpu = cpu_first_thread_sibling(cpu);
+-	     tcpu <= cpu_last_thread_sibling(cpu); tcpu++)
+-		per_cpu(scom_ptrs, tcpu) = scom;
+-
+-	/* Hack: for the boot core, this will actually get called on
+-	 * the second thread up, not the first so our test above will
+-	 * set first_thread incorrectly. */
+-	if (cpu_first_thread_sibling(cpu) == 0)
+-		*first_thread = 0;
+-
+-	return scom;
+-}
+-
+-static int a2_scom_ram(scom_map_t scom, int thread, u32 insn, int extmask)
+-{
+-	u64 cmd, mask, val;
+-	int n = 0;
+-
+-	cmd = ((u64)insn << 32) | (((u64)extmask & 0xf) << 28)
+-		| ((u64)thread << 17) | SCOM_RAMC_ENABLE | SCOM_RAMC_EXECUTE;
+-	mask = SCOM_RAMC_DONE | SCOM_RAMC_INTERRUPT | SCOM_RAMC_ERROR;
+-
+-	scom_write(scom, SCOM_RAMIC, cmd);
+-
+-	for (;;) {
+-		if (scom_read(scom, SCOM_RAMC, &val) != 0) {
+-			pr_err("SCOM error on instruction 0x%08x, thread %d\n",
+-			       insn, thread);
+-			return -1;
+-		}
+-		if (val & mask)
+-			break;
+-		pr_devel("Waiting on RAMC = 0x%llx\n", val);
+-		if (++n == 3) {
+-			pr_err("RAMC timeout on instruction 0x%08x, thread %d\n",
+-			       insn, thread);
+-			return -1;
+-		}
+-	}
+-
+-	if (val & SCOM_RAMC_INTERRUPT) {
+-		pr_err("RAMC interrupt on instruction 0x%08x, thread %d\n",
+-		       insn, thread);
+-		return -SCOM_RAMC_INTERRUPT;
+-	}
+-
+-	if (val & SCOM_RAMC_ERROR) {
+-		pr_err("RAMC error on instruction 0x%08x, thread %d\n",
+-		       insn, thread);
+-		return -SCOM_RAMC_ERROR;
+-	}
+-
+-	return 0;
+-}
+-
+-static int a2_scom_getgpr(scom_map_t scom, int thread, int gpr, int alt,
+-			  u64 *out_gpr)
+-{
+-	int rc;
+-
+-	/* or rN, rN, rN */
+-	u32 insn = 0x7c000378 | (gpr << 21) | (gpr << 16) | (gpr << 11);
+-	rc = a2_scom_ram(scom, thread, insn, alt ? 0xf : 0x0);
+-	if (rc)
+-		return rc;
+-
+-	return scom_read(scom, SCOM_RAMD, out_gpr);
+-}
+-
+-static int a2_scom_getspr(scom_map_t scom, int thread, int spr, u64 *out_spr)
+-{
+-	int rc, sprhi, sprlo;
+-	u32 insn;
+-
+-	sprhi = spr >> 5;
+-	sprlo = spr & 0x1f;
+-	insn = 0x7c2002a6 | (sprlo << 16) | (sprhi << 11); /* mfspr r1,spr */
+-
+-	if (spr == 0x0ff0)
+-		insn = 0x7c2000a6; /* mfmsr r1 */
+-
+-	rc = a2_scom_ram(scom, thread, insn, 0xf);
+-	if (rc)
+-		return rc;
+-	return a2_scom_getgpr(scom, thread, 1, 1, out_spr);
+-}
+-
+-static int a2_scom_setgpr(scom_map_t scom, int thread, int gpr,
+-			  int alt, u64 val)
+-{
+-	u32 lis = 0x3c000000 | (gpr << 21);
+-	u32 li = 0x38000000 | (gpr << 21);
+-	u32 oris = 0x64000000 | (gpr << 21) | (gpr << 16);
+-	u32 ori = 0x60000000 | (gpr << 21) | (gpr << 16);
+-	u32 rldicr32 = 0x780007c6 | (gpr << 21) | (gpr << 16);
+-	u32 highest = val >> 48;
+-	u32 higher = (val >> 32) & 0xffff;
+-	u32 high = (val >> 16) & 0xffff;
+-	u32 low = val & 0xffff;
+-	int lext = alt ? 0x8 : 0x0;
+-	int oext = alt ? 0xf : 0x0;
+-	int rc = 0;
+-
+-	if (highest)
+-		rc |= a2_scom_ram(scom, thread, lis | highest, lext);
+-
+-	if (higher) {
+-		if (highest)
+-			rc |= a2_scom_ram(scom, thread, oris | higher, oext);
+-		else
+-			rc |= a2_scom_ram(scom, thread, li | higher, lext);
+-	}
+-
+-	if (highest || higher)
+-		rc |= a2_scom_ram(scom, thread, rldicr32, oext);
+-
+-	if (high) {
+-		if (highest || higher)
+-			rc |= a2_scom_ram(scom, thread, oris | high, oext);
+-		else
+-			rc |= a2_scom_ram(scom, thread, lis | high, lext);
+-	}
+-
+-	if (highest || higher || high)
+-		rc |= a2_scom_ram(scom, thread, ori | low, oext);
+-	else
+-		rc |= a2_scom_ram(scom, thread, li | low, lext);
+-
+-	return rc;
+-}
+-
+-static int a2_scom_setspr(scom_map_t scom, int thread, int spr, u64 val)
+-{
+-	int sprhi = spr >> 5;
+-	int sprlo = spr & 0x1f;
+-	/* mtspr spr, r1 */
+-	u32 insn = 0x7c2003a6 | (sprlo << 16) | (sprhi << 11);
+-
+-	if (spr == 0x0ff0)
+-		insn = 0x7c200124; /* mtmsr r1 */
+-
+-	if (a2_scom_setgpr(scom, thread, 1, 1, val))
+-		return -1;
+-
+-	return a2_scom_ram(scom, thread, insn, 0xf);
+-}
+-
+-static int a2_scom_initial_tlb(scom_map_t scom, int thread)
+-{
+-	extern u32 a2_tlbinit_code_start[], a2_tlbinit_code_end[];
+-	extern u32 a2_tlbinit_after_iprot_flush[];
+-	extern u32 a2_tlbinit_after_linear_map[];
+-	u32 assoc, entries, i;
+-	u64 epn, tlbcfg;
+-	u32 *p;
+-	int rc;
+-
+-	/* Invalidate all entries (including iprot) */
+-
+-	rc = a2_scom_getspr(scom, thread, SPRN_TLB0CFG, &tlbcfg);
+-	if (rc)
+-		goto scom_fail;
+-	entries = tlbcfg & TLBnCFG_N_ENTRY;
+-	assoc = (tlbcfg & TLBnCFG_ASSOC) >> 24;
+-	epn = 0;
+-
+-	/* Set MMUCR2 to enable 4K, 64K, 1M, 16M and 1G pages */
+-	a2_scom_setspr(scom, thread, SPRN_MMUCR2, 0x000a7531);
+-	/* Set MMUCR3 to write all thids bit to the TLB */
+-	a2_scom_setspr(scom, thread, SPRN_MMUCR3, 0x0000000f);
+-
+-	/* Set MAS1 for 1G page size, and MAS2 to our initial EPN */
+-	a2_scom_setspr(scom, thread, SPRN_MAS1, MAS1_TSIZE(BOOK3E_PAGESZ_1GB));
+-	a2_scom_setspr(scom, thread, SPRN_MAS2, epn);
+-	for (i = 0; i < entries; i++) {
+-
+-		a2_scom_setspr(scom, thread, SPRN_MAS0, MAS0_ESEL(i % assoc));
+-
+-		/* tlbwe */
+-		rc = a2_scom_ram(scom, thread, 0x7c0007a4, 0);
+-		if (rc)
+-			goto scom_fail;
+-
+-		/* Next entry is new address? */
+-		if((i + 1) % assoc == 0) {
+-			epn += (1 << 30);
+-			a2_scom_setspr(scom, thread, SPRN_MAS2, epn);
+-		}
+-	}
+-
+-	/* Setup args for linear mapping */
+-	rc = a2_scom_setgpr(scom, thread, 3, 0, MAS0_TLBSEL(0));
+-	if (rc)
+-		goto scom_fail;
+-
+-	/* Linear mapping */
+-	for (p = a2_tlbinit_code_start; p < a2_tlbinit_after_linear_map; p++) {
+-		rc = a2_scom_ram(scom, thread, *p, 0);
+-		if (rc)
+-			goto scom_fail;
+-	}
+-
+-	/*
+-	 * For the boot thread, between the linear mapping and the debug
+-	 * mappings there is a loop to flush iprot mappings. Ramming doesn't do
+-	 * branches, but the secondary threads don't need to be nearly as smart
+-	 * (i.e. we don't need to worry about invalidating the mapping we're
+-	 * standing on).
+-	 */
+-
+-	/* Debug mappings. Expects r11 = MAS0 from linear map (set above) */
+-	for (p = a2_tlbinit_after_iprot_flush; p < a2_tlbinit_code_end; p++) {
+-		rc = a2_scom_ram(scom, thread, *p, 0);
+-		if (rc)
+-			goto scom_fail;
+-	}
+-
+-scom_fail:
+-	if (rc)
+-		pr_err("Setting up initial TLB failed, err %d\n", rc);
+-
+-	if (rc == -SCOM_RAMC_INTERRUPT) {
+-		/* Interrupt, dump some status */
+-		int rc[10];
+-		u64 iar, srr0, srr1, esr, mas0, mas1, mas2, mas7_3, mas8, ccr2;
+-		rc[0] = a2_scom_getspr(scom, thread, SPRN_IAR, &iar);
+-		rc[1] = a2_scom_getspr(scom, thread, SPRN_SRR0, &srr0);
+-		rc[2] = a2_scom_getspr(scom, thread, SPRN_SRR1, &srr1);
+-		rc[3] = a2_scom_getspr(scom, thread, SPRN_ESR, &esr);
+-		rc[4] = a2_scom_getspr(scom, thread, SPRN_MAS0, &mas0);
+-		rc[5] = a2_scom_getspr(scom, thread, SPRN_MAS1, &mas1);
+-		rc[6] = a2_scom_getspr(scom, thread, SPRN_MAS2, &mas2);
+-		rc[7] = a2_scom_getspr(scom, thread, SPRN_MAS7_MAS3, &mas7_3);
+-		rc[8] = a2_scom_getspr(scom, thread, SPRN_MAS8, &mas8);
+-		rc[9] = a2_scom_getspr(scom, thread, SPRN_A2_CCR2, &ccr2);
+-		pr_err(" -> retreived IAR =0x%llx (err %d)\n", iar, rc[0]);
+-		pr_err("    retreived SRR0=0x%llx (err %d)\n", srr0, rc[1]);
+-		pr_err("    retreived SRR1=0x%llx (err %d)\n", srr1, rc[2]);
+-		pr_err("    retreived ESR =0x%llx (err %d)\n", esr, rc[3]);
+-		pr_err("    retreived MAS0=0x%llx (err %d)\n", mas0, rc[4]);
+-		pr_err("    retreived MAS1=0x%llx (err %d)\n", mas1, rc[5]);
+-		pr_err("    retreived MAS2=0x%llx (err %d)\n", mas2, rc[6]);
+-		pr_err("    retreived MS73=0x%llx (err %d)\n", mas7_3, rc[7]);
+-		pr_err("    retreived MAS8=0x%llx (err %d)\n", mas8, rc[8]);
+-		pr_err("    retreived CCR2=0x%llx (err %d)\n", ccr2, rc[9]);
+-	}
+-
+-	return rc;
+-}
+-
+-int a2_scom_startup_cpu(unsigned int lcpu, int thr_idx, struct device_node *np)
+-{
+-	u64 init_iar, init_msr, init_ccr2;
+-	unsigned long start_here;
+-	int rc, core_setup;
+-	scom_map_t scom;
+-	u64 pccr0;
+-
+-	scom = get_scom(lcpu, np, &core_setup);
+-	if (!scom) {
+-		printk(KERN_ERR "Couldn't map SCOM for CPU%d\n", lcpu);
+-		return -1;
+-	}
+-
+-	pr_devel("Bringing up CPU%d using SCOM...\n", lcpu);
+-
+-	if (scom_read(scom, SCOM_PCCR0, &pccr0) != 0) {
+-		printk(KERN_ERR "XSCOM failure readng PCCR0 on CPU%d\n", lcpu);
+-		return -1;
+-	}
+-	scom_write(scom, SCOM_PCCR0, pccr0 | SCOM_PCCR0_ENABLE_DEBUG |
+-				     SCOM_PCCR0_ENABLE_RAM);
+-
+-	/* Stop the thead with THRCTL. If we are setting up the TLB we stop all
+-	 * threads. We also disable asynchronous interrupts while RAMing.
+-	 */
+-	if (core_setup)
+-		scom_write(scom, SCOM_THRCTL_OR,
+-			      SCOM_THRCTL_T0_STOP |
+-			      SCOM_THRCTL_T1_STOP |
+-			      SCOM_THRCTL_T2_STOP |
+-			      SCOM_THRCTL_T3_STOP |
+-			      SCOM_THRCTL_ASYNC_DIS);
+-	else
+-		scom_write(scom, SCOM_THRCTL_OR, SCOM_THRCTL_T0_STOP >> thr_idx);
+-
+-	/* Flush its pipeline just in case */
+-	scom_write(scom, SCOM_RAMC, ((u64)thr_idx << 17) |
+-		      SCOM_RAMC_FLUSH | SCOM_RAMC_ENABLE);
+-
+-	a2_scom_getspr(scom, thr_idx, SPRN_IAR, &init_iar);
+-	a2_scom_getspr(scom, thr_idx, 0x0ff0, &init_msr);
+-	a2_scom_getspr(scom, thr_idx, SPRN_A2_CCR2, &init_ccr2);
+-
+-	/* Set MSR to MSR_CM (0x0ff0 is magic value for MSR_CM) */
+-	rc = a2_scom_setspr(scom, thr_idx, 0x0ff0, MSR_CM);
+-	if (rc) {
+-		pr_err("Failed to set MSR ! err %d\n", rc);
+-		return rc;
+-	}
+-
+-	/* RAM in an sync/isync for the sake of it */
+-	a2_scom_ram(scom, thr_idx, 0x7c0004ac, 0);
+-	a2_scom_ram(scom, thr_idx, 0x4c00012c, 0);
+-
+-	if (core_setup) {
+-		pr_devel("CPU%d is first thread in core, initializing TLB...\n",
+-			 lcpu);
+-		rc = a2_scom_initial_tlb(scom, thr_idx);
+-		if (rc)
+-			goto fail;
+-	}
+-
+-	start_here = *(unsigned long *)(core_setup ? generic_secondary_smp_init
+-					: generic_secondary_thread_init);
+-	pr_devel("CPU%d entry point at 0x%lx...\n", lcpu, start_here);
+-
+-	rc |= a2_scom_setspr(scom, thr_idx, SPRN_IAR, start_here);
+-	rc |= a2_scom_setgpr(scom, thr_idx, 3, 0,
+-			     get_hard_smp_processor_id(lcpu));
+-	/*
+-	 * Tell book3e_secondary_core_init not to set up the TLB, we've
+-	 * already done that.
+-	 */
+-	rc |= a2_scom_setgpr(scom, thr_idx, 4, 0, 1);
+-
+-	rc |= a2_scom_setspr(scom, thr_idx, SPRN_TENS, 0x1 << thr_idx);
+-
+-	scom_write(scom, SCOM_RAMC, 0);
+-	scom_write(scom, SCOM_THRCTL_AND, ~(SCOM_THRCTL_T0_STOP >> thr_idx));
+-	scom_write(scom, SCOM_PCCR0, pccr0);
+-fail:
+-	pr_devel("  SCOM initialization %s\n", rc ? "failed" : "succeeded");
+-	if (rc) {
+-		pr_err("Old IAR=0x%08llx MSR=0x%08llx CCR2=0x%08llx\n",
+-		       init_iar, init_msr, init_ccr2);
+-	}
+-
+-	return rc;
+-}
+diff --git a/arch/powerpc/platforms/wsp/scom_wsp.c b/arch/powerpc/platforms/wsp/scom_wsp.c
+deleted file mode 100644
+index 6538b4d..0000000
+--- a/arch/powerpc/platforms/wsp/scom_wsp.c
++++ /dev/null
+@@ -1,82 +0,0 @@
+-/*
+- *  SCOM backend for WSP
+- *
+- *  Copyright 2010 Benjamin Herrenschmidt, IBM Corp.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/cpumask.h>
+-#include <linux/io.h>
+-#include <linux/of.h>
+-#include <linux/spinlock.h>
+-#include <linux/types.h>
+-#include <linux/of_address.h>
+-
+-#include <asm/cputhreads.h>
+-#include <asm/reg_a2.h>
+-#include <asm/scom.h>
+-#include <asm/udbg.h>
+-
+-#include "wsp.h"
+-
+-
+-static scom_map_t wsp_scom_map(struct device_node *dev, u64 reg, u64 count)
+-{
+-	struct resource r;
+-	u64 xscom_addr;
+-
+-	if (!of_get_property(dev, "scom-controller", NULL)) {
+-		pr_err("%s: device %s is not a SCOM controller\n",
+-			__func__, dev->full_name);
+-		return SCOM_MAP_INVALID;
+-	}
+-
+-	if (of_address_to_resource(dev, 0, &r)) {
+-		pr_debug("Failed to find SCOM controller address\n");
+-		return 0;
+-	}
+-
+-	/* Transform the SCOM address into an XSCOM offset */
+-	xscom_addr = ((reg & 0x7f000000) >> 1) | ((reg & 0xfffff) << 3);
+-
+-	return (scom_map_t)ioremap(r.start + xscom_addr, count << 3);
+-}
+-
+-static void wsp_scom_unmap(scom_map_t map)
+-{
+-	iounmap((void *)map);
+-}
+-
+-static int wsp_scom_read(scom_map_t map, u64 reg, u64 *value)
+-{
+-	u64 __iomem *addr = (u64 __iomem *)map;
+-
+-	*value = in_be64(addr + reg);
+-
+-	return 0;
+-}
+-
+-static int wsp_scom_write(scom_map_t map, u64 reg, u64 value)
+-{
+-	u64 __iomem *addr = (u64 __iomem *)map;
+-
+-	out_be64(addr + reg, value);
+-
+-	return 0;
+-}
+-
+-static const struct scom_controller wsp_scom_controller = {
+-	.map	= wsp_scom_map,
+-	.unmap	= wsp_scom_unmap,
+-	.read	= wsp_scom_read,
+-	.write	= wsp_scom_write
+-};
+-
+-void scom_init_wsp(void)
+-{
+-	scom_init(&wsp_scom_controller);
+-}
+diff --git a/arch/powerpc/platforms/wsp/setup.c b/arch/powerpc/platforms/wsp/setup.c
+deleted file mode 100644
+index 11ac2f0..0000000
+--- a/arch/powerpc/platforms/wsp/setup.c
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/*
+- * Copyright 2010 Michael Ellerman, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/of_platform.h>
+-
+-#include "wsp.h"
+-
+-/*
+- * Find chip-id by walking up device tree looking for ibm,wsp-chip-id property.
+- * Won't work for nodes that are not a descendant of a wsp node.
+- */
+-int wsp_get_chip_id(struct device_node *dn)
+-{
+-	const u32 *p;
+-	int rc;
+-
+-	/* Start looking at the specified node, not its parent */
+-	dn = of_node_get(dn);
+-	while (dn && !(p = of_get_property(dn, "ibm,wsp-chip-id", NULL)))
+-		dn = of_get_next_parent(dn);
+-
+-	if (!dn)
+-		return -1;
+-
+-	rc = *p;
+-	of_node_put(dn);
+-
+-	return rc;
+-}
+diff --git a/arch/powerpc/platforms/wsp/smp.c b/arch/powerpc/platforms/wsp/smp.c
+deleted file mode 100644
+index 332a18b..0000000
+--- a/arch/powerpc/platforms/wsp/smp.c
++++ /dev/null
+@@ -1,88 +0,0 @@
+-/*
+- *  SMP Support for A2 platforms
+- *
+- *  Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- *
+- */
+-
+-#include <linux/cpumask.h>
+-#include <linux/init.h>
+-#include <linux/kernel.h>
+-#include <linux/of.h>
+-#include <linux/smp.h>
+-
+-#include <asm/dbell.h>
+-#include <asm/machdep.h>
+-#include <asm/xics.h>
+-
+-#include "ics.h"
+-#include "wsp.h"
+-
+-static void smp_a2_setup_cpu(int cpu)
+-{
+-	doorbell_setup_this_cpu();
+-
+-	if (cpu != boot_cpuid)
+-		xics_setup_cpu();
+-}
+-
+-int smp_a2_kick_cpu(int nr)
+-{
+-	const char *enable_method;
+-	struct device_node *np;
+-	int thr_idx;
+-
+-	if (nr < 0 || nr >= NR_CPUS)
+-		return -ENOENT;
+-
+-	np = of_get_cpu_node(nr, &thr_idx);
+-	if (!np)
+-		return -ENODEV;
+-
+-	enable_method = of_get_property(np, "enable-method", NULL);
+-	pr_devel("CPU%d has enable-method: \"%s\"\n", nr, enable_method);
+-
+-	if (!enable_method) {
+-                printk(KERN_ERR "CPU%d has no enable-method\n", nr);
+-		return -ENOENT;
+-	} else if (strcmp(enable_method, "ibm,a2-scom") == 0) {
+-		if (a2_scom_startup_cpu(nr, thr_idx, np))
+-			return -1;
+-	} else {
+-		printk(KERN_ERR "CPU%d: Don't understand enable-method \"%s\"\n",
+-                       nr, enable_method);
+-		return -EINVAL;
+-	}
+-
+-	/*
+-	 * The processor is currently spinning, waiting for the
+-	 * cpu_start field to become non-zero After we set cpu_start,
+-	 * the processor will continue on to secondary_start
+-	 */
+-	paca[nr].cpu_start = 1;
+-
+-	return 0;
+-}
+-
+-static int __init smp_a2_probe(void)
+-{
+-	return num_possible_cpus();
+-}
+-
+-static struct smp_ops_t a2_smp_ops = {
+-	.message_pass	= NULL,	/* Use smp_muxed_ipi_message_pass */
+-	.cause_ipi	= doorbell_cause_ipi,
+-	.probe		= smp_a2_probe,
+-	.kick_cpu	= smp_a2_kick_cpu,
+-	.setup_cpu	= smp_a2_setup_cpu,
+-};
+-
+-void __init a2_setup_smp(void)
+-{
+-	smp_ops = &a2_smp_ops;
+-}
+diff --git a/arch/powerpc/platforms/wsp/wsp.c b/arch/powerpc/platforms/wsp/wsp.c
+deleted file mode 100644
+index 58cd1f0..0000000
+--- a/arch/powerpc/platforms/wsp/wsp.c
++++ /dev/null
+@@ -1,117 +0,0 @@
+-/*
+- * Copyright 2008-2011, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/of.h>
+-#include <linux/of_device.h>
+-#include <linux/smp.h>
+-#include <linux/delay.h>
+-#include <linux/time.h>
+-#include <linux/of_address.h>
+-
+-#include <asm/scom.h>
+-
+-#include "wsp.h"
+-#include "ics.h"
+-
+-#define WSP_SOC_COMPATIBLE	"ibm,wsp-soc"
+-#define PBIC_COMPATIBLE		"ibm,wsp-pbic"
+-#define COPRO_COMPATIBLE	"ibm,wsp-coprocessor"
+-
+-static int __init wsp_probe_buses(void)
+-{
+-	static __initdata struct of_device_id bus_ids[] = {
+-		/*
+-		 * every node in between needs to be here or you won't
+-		 * find it
+-		 */
+-		{ .compatible = WSP_SOC_COMPATIBLE, },
+-		{ .compatible = PBIC_COMPATIBLE, },
+-		{ .compatible = COPRO_COMPATIBLE, },
+-		{},
+-	};
+-	of_platform_bus_probe(NULL, bus_ids, NULL);
+-
+-	return 0;
+-}
+-
+-void __init wsp_setup_arch(void)
+-{
+-	/* init to some ~sane value until calibrate_delay() runs */
+-	loops_per_jiffy = 50000000;
+-
+-	scom_init_wsp();
+-
+-	/* Setup SMP callback */
+-#ifdef CONFIG_SMP
+-	a2_setup_smp();
+-#endif
+-#ifdef CONFIG_PCI
+-	wsp_setup_pci();
+-#endif
+-}
+-
+-void __init wsp_setup_irq(void)
+-{
+-	wsp_init_irq();
+-	opb_pic_init();
+-}
+-
+-
+-int __init wsp_probe_devices(void)
+-{
+-	struct device_node *np;
+-
+-	/* Our RTC is a ds1500. It seems to be programatically compatible
+-	 * with the ds1511 for which we have a driver so let's use that
+-	 */
+-	np = of_find_compatible_node(NULL, NULL, "dallas,ds1500");
+-	if (np != NULL) {
+-		struct resource res;
+-		if (of_address_to_resource(np, 0, &res) == 0)
+-			platform_device_register_simple("ds1511", 0, &res, 1);
+-	}
+-
+-	wsp_probe_buses();
+-
+-	return 0;
+-}
+-
+-void wsp_halt(void)
+-{
+-	u64 val;
+-	scom_map_t m;
+-	struct device_node *dn;
+-	struct device_node *mine;
+-	struct device_node *me;
+-	int rc;
+-
+-	me = of_get_cpu_node(smp_processor_id(), NULL);
+-	mine = scom_find_parent(me);
+-
+-	/* This will halt all the A2s but not power off the chip */
+-	for_each_node_with_property(dn, "scom-controller") {
+-		if (dn == mine)
+-			continue;
+-		m = scom_map(dn, 0, 1);
+-
+-		/* read-modify-write it so the HW probe does not get
+-		 * confused */
+-		rc = scom_read(m, 0, &val);
+-		if (rc == 0)
+-			scom_write(m, 0, val | 1);
+-		scom_unmap(m);
+-	}
+-	m = scom_map(mine, 0, 1);
+-	rc = scom_read(m, 0, &val);
+-	if (rc == 0)
+-		scom_write(m, 0, val | 1);
+-	/* should never return */
+-	scom_unmap(m);
+-}
+diff --git a/arch/powerpc/platforms/wsp/wsp.h b/arch/powerpc/platforms/wsp/wsp.h
+deleted file mode 100644
+index a563a8a..0000000
+--- a/arch/powerpc/platforms/wsp/wsp.h
++++ /dev/null
+@@ -1,29 +0,0 @@
+-#ifndef __WSP_H
+-#define __WSP_H
+-
+-#include <asm/wsp.h>
+-
+-/* Devtree compatible strings for major devices */
+-#define PCIE_COMPATIBLE     "ibm,wsp-pciex"
+-
+-extern void wsp_setup_arch(void);
+-extern void wsp_setup_irq(void);
+-extern int wsp_probe_devices(void);
+-extern void wsp_halt(void);
+-
+-extern void wsp_setup_pci(void);
+-extern void scom_init_wsp(void);
+-
+-extern void a2_setup_smp(void);
+-extern int a2_scom_startup_cpu(unsigned int lcpu, int thr_idx,
+-			       struct device_node *np);
+-extern int smp_a2_kick_cpu(int nr);
+-
+-extern void opb_pic_init(void);
+-
+-/* chroma specific managment */
+-extern void wsp_h8_restart(char *cmd);
+-extern void wsp_h8_power_off(void);
+-extern void __init wsp_setup_h8(void);
+-
+-#endif /*  __WSP_H */
+diff --git a/arch/powerpc/platforms/wsp/wsp_pci.c b/arch/powerpc/platforms/wsp/wsp_pci.c
+deleted file mode 100644
+index 9a15e5b..0000000
+--- a/arch/powerpc/platforms/wsp/wsp_pci.c
++++ /dev/null
+@@ -1,1134 +0,0 @@
+-/*
+- * Copyright 2010 Ben Herrenschmidt, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#define DEBUG
+-
+-#include <linux/kernel.h>
+-#include <linux/pci.h>
+-#include <linux/delay.h>
+-#include <linux/string.h>
+-#include <linux/init.h>
+-#include <linux/bootmem.h>
+-#include <linux/irq.h>
+-#include <linux/interrupt.h>
+-#include <linux/debugfs.h>
+-
+-#include <asm/sections.h>
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/machdep.h>
+-#include <asm/ppc-pci.h>
+-#include <asm/iommu.h>
+-#include <asm/io-workarounds.h>
+-#include <asm/debug.h>
+-
+-#include "wsp.h"
+-#include "wsp_pci.h"
+-#include "msi.h"
+-
+-
+-/* Max number of TVTs for one table. Only 32-bit tables can use
+- * multiple TVTs and so the max currently supported is thus 8
+- * since only 2G of DMA space is supported
+- */
+-#define MAX_TABLE_TVT_COUNT		8
+-
+-struct wsp_dma_table {
+-	struct list_head	link;
+-	struct iommu_table	table;
+-	struct wsp_phb	*phb;
+-	struct page		*tces[MAX_TABLE_TVT_COUNT];
+-};
+-
+-/* We support DMA regions from 0...2G in 32bit space (no support for
+- * 64-bit DMA just yet). Each device gets a separate TCE table (TVT
+- * entry) with validation enabled (though not supported by SimiCS
+- * just yet).
+- *
+- * To simplify things, we divide this 2G space into N regions based
+- * on the constant below which could be turned into a tunable eventually
+- *
+- * We then assign dynamically those regions to devices as they show up.
+- *
+- * We use a bitmap as an allocator for these.
+- *
+- * Tables are allocated/created dynamically as devices are discovered,
+- * multiple TVT entries are used if needed
+- *
+- * When 64-bit DMA support is added we should simply use a separate set
+- * of larger regions (the HW supports 64 TVT entries). We can
+- * additionally create a bypass region in 64-bit space for performances
+- * though that would have a cost in term of security.
+- *
+- * If you set NUM_DMA32_REGIONS to 1, then a single table is shared
+- * for all devices and bus/dev/fn validation is disabled
+- *
+- * Note that a DMA32 region cannot be smaller than 256M so the max
+- * supported here for now is 8. We don't yet support sharing regions
+- * between multiple devices so the max number of devices supported
+- * is MAX_TABLE_TVT_COUNT.
+- */
+-#define NUM_DMA32_REGIONS	1
+-
+-struct wsp_phb {
+-	struct pci_controller	*hose;
+-
+-	/* Lock controlling access to the list of dma tables.
+-	 * It does -not- protect against dma_* operations on
+-	 * those tables, those should be stopped before an entry
+-	 * is removed from the list.
+-	 *
+-	 * The lock is also used for error handling operations
+-	 */
+-	spinlock_t		lock;
+-	struct list_head	dma_tables;
+-	unsigned long		dma32_map;
+-	unsigned long		dma32_base;
+-	unsigned int		dma32_num_regions;
+-	unsigned long		dma32_region_size;
+-
+-	/* Debugfs stuff */
+-	struct dentry		*ddir;
+-
+-	struct list_head	all;
+-};
+-static LIST_HEAD(wsp_phbs);
+-
+-//#define cfg_debug(fmt...)	pr_debug(fmt)
+-#define cfg_debug(fmt...)
+-
+-
+-static int wsp_pcie_read_config(struct pci_bus *bus, unsigned int devfn,
+-				  int offset, int len, u32 *val)
+-{
+-	struct pci_controller *hose;
+-	int suboff;
+-	u64 addr;
+-
+-	hose = pci_bus_to_host(bus);
+-	if (hose == NULL)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	if (offset >= 0x1000)
+-		return  PCIBIOS_BAD_REGISTER_NUMBER;
+-	addr = PCIE_REG_CA_ENABLE |
+-		((u64)bus->number) << PCIE_REG_CA_BUS_SHIFT |
+-		((u64)devfn) << PCIE_REG_CA_FUNC_SHIFT |
+-		((u64)offset & ~3) << PCIE_REG_CA_REG_SHIFT;
+-	suboff = offset & 3;
+-
+-	/*
+-	 * Note: the caller has already checked that offset is
+-	 * suitably aligned and that len is 1, 2 or 4.
+-	 */
+-
+-	switch (len) {
+-	case 1:
+-		addr |= (0x8ul >> suboff) << PCIE_REG_CA_BE_SHIFT;
+-		out_be64(hose->cfg_data + PCIE_REG_CONFIG_ADDRESS, addr);
+-		*val = (in_le32(hose->cfg_data + PCIE_REG_CONFIG_DATA)
+-			>> (suboff << 3)) & 0xff;
+-		cfg_debug("read 1 %02x:%02x:%02x + %02x/%x addr=0x%llx val=%02x\n",
+-			  bus->number, devfn >> 3, devfn & 7,
+-			  offset, suboff, addr, *val);
+-		break;
+-	case 2:
+-		addr |= (0xcul >> suboff) << PCIE_REG_CA_BE_SHIFT;
+-		out_be64(hose->cfg_data + PCIE_REG_CONFIG_ADDRESS, addr);
+-		*val = (in_le32(hose->cfg_data + PCIE_REG_CONFIG_DATA)
+-			>> (suboff << 3)) & 0xffff;
+-		cfg_debug("read 2 %02x:%02x:%02x + %02x/%x addr=0x%llx val=%04x\n",
+-			  bus->number, devfn >> 3, devfn & 7,
+-			  offset, suboff, addr, *val);
+-		break;
+-	default:
+-		addr |= 0xful << PCIE_REG_CA_BE_SHIFT;
+-		out_be64(hose->cfg_data + PCIE_REG_CONFIG_ADDRESS, addr);
+-		*val = in_le32(hose->cfg_data + PCIE_REG_CONFIG_DATA);
+-		cfg_debug("read 4 %02x:%02x:%02x + %02x/%x addr=0x%llx val=%08x\n",
+-			  bus->number, devfn >> 3, devfn & 7,
+-			  offset, suboff, addr, *val);
+-		break;
+-	}
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-static int wsp_pcie_write_config(struct pci_bus *bus, unsigned int devfn,
+-				   int offset, int len, u32 val)
+-{
+-	struct pci_controller *hose;
+-	int suboff;
+-	u64 addr;
+-
+-	hose = pci_bus_to_host(bus);
+-	if (hose == NULL)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	if (offset >= 0x1000)
+-		return  PCIBIOS_BAD_REGISTER_NUMBER;
+-	addr = PCIE_REG_CA_ENABLE |
+-		((u64)bus->number) << PCIE_REG_CA_BUS_SHIFT |
+-		((u64)devfn) << PCIE_REG_CA_FUNC_SHIFT |
+-		((u64)offset & ~3) << PCIE_REG_CA_REG_SHIFT;
+-	suboff = offset & 3;
+-
+-	/*
+-	 * Note: the caller has already checked that offset is
+-	 * suitably aligned and that len is 1, 2 or 4.
+-	 */
+-	switch (len) {
+-	case 1:
+-		addr |= (0x8ul >> suboff) << PCIE_REG_CA_BE_SHIFT;
+-		val <<= suboff << 3;
+-		out_be64(hose->cfg_data + PCIE_REG_CONFIG_ADDRESS, addr);
+-		out_le32(hose->cfg_data + PCIE_REG_CONFIG_DATA, val);
+-		cfg_debug("write 1 %02x:%02x:%02x + %02x/%x addr=0x%llx val=%02x\n",
+-			  bus->number, devfn >> 3, devfn & 7,
+-			  offset, suboff, addr, val);
+-		break;
+-	case 2:
+-		addr |= (0xcul >> suboff) << PCIE_REG_CA_BE_SHIFT;
+-		val <<= suboff << 3;
+-		out_be64(hose->cfg_data + PCIE_REG_CONFIG_ADDRESS, addr);
+-		out_le32(hose->cfg_data + PCIE_REG_CONFIG_DATA, val);
+-		cfg_debug("write 2 %02x:%02x:%02x + %02x/%x addr=0x%llx val=%04x\n",
+-			  bus->number, devfn >> 3, devfn & 7,
+-			  offset, suboff, addr, val);
+-		break;
+-	default:
+-		addr |= 0xful << PCIE_REG_CA_BE_SHIFT;
+-		out_be64(hose->cfg_data + PCIE_REG_CONFIG_ADDRESS, addr);
+-		out_le32(hose->cfg_data + PCIE_REG_CONFIG_DATA, val);
+-		cfg_debug("write 4 %02x:%02x:%02x + %02x/%x addr=0x%llx val=%08x\n",
+-			  bus->number, devfn >> 3, devfn & 7,
+-			  offset, suboff, addr, val);
+-		break;
+-	}
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-static struct pci_ops wsp_pcie_pci_ops =
+-{
+-	.read = wsp_pcie_read_config,
+-	.write = wsp_pcie_write_config,
+-};
+-
+-#define TCE_SHIFT		12
+-#define TCE_PAGE_SIZE		(1 << TCE_SHIFT)
+-#define TCE_PCI_WRITE		0x2		 /* write from PCI allowed */
+-#define TCE_PCI_READ		0x1	 	 /* read from PCI allowed */
+-#define TCE_RPN_MASK		0x3fffffffffful  /* 42-bit RPN (4K pages) */
+-#define TCE_RPN_SHIFT		12
+-
+-//#define dma_debug(fmt...)	pr_debug(fmt)
+-#define dma_debug(fmt...)
+-
+-static int tce_build_wsp(struct iommu_table *tbl, long index, long npages,
+-			   unsigned long uaddr, enum dma_data_direction direction,
+-			   struct dma_attrs *attrs)
+-{
+-	struct wsp_dma_table *ptbl = container_of(tbl,
+-						    struct wsp_dma_table,
+-						    table);
+-	u64 proto_tce;
+-	u64 *tcep;
+-	u64 rpn;
+-
+-	proto_tce = TCE_PCI_READ;
+-#ifdef CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS
+-	proto_tce |= TCE_PCI_WRITE;
+-#else
+-	if (direction != DMA_TO_DEVICE)
+-		proto_tce |= TCE_PCI_WRITE;
+-#endif
+-
+-	/* XXX Make this faster by factoring out the page address for
+-	 * within a TCE table
+-	 */
+-	while (npages--) {
+-		/* We don't use it->base as the table can be scattered */
+-		tcep = (u64 *)page_address(ptbl->tces[index >> 16]);
+-		tcep += (index & 0xffff);
+-
+-		/* can't move this out since we might cross LMB boundary */
+-		rpn = __pa(uaddr) >> TCE_SHIFT;
+-		*tcep = proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT;
+-
+-		dma_debug("[DMA] TCE %p set to 0x%016llx (dma addr: 0x%lx)\n",
+-			  tcep, *tcep, (tbl->it_offset + index) << IOMMU_PAGE_SHIFT_4K);
+-
+-		uaddr += TCE_PAGE_SIZE;
+-		index++;
+-	}
+-	return 0;
+-}
+-
+-static void tce_free_wsp(struct iommu_table *tbl, long index, long npages)
+-{
+-	struct wsp_dma_table *ptbl = container_of(tbl,
+-						    struct wsp_dma_table,
+-						    table);
+-#ifndef CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS
+-	struct pci_controller *hose = ptbl->phb->hose;
+-#endif
+-	u64 *tcep;
+-
+-	/* XXX Make this faster by factoring out the page address for
+-	 * within a TCE table. Also use line-kill option to kill multiple
+-	 * TCEs at once
+-	 */
+-	while (npages--) {
+-		/* We don't use it->base as the table can be scattered */
+-		tcep = (u64 *)page_address(ptbl->tces[index >> 16]);
+-		tcep += (index & 0xffff);
+-		dma_debug("[DMA] TCE %p cleared\n", tcep);
+-		*tcep = 0;
+-#ifndef CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS
+-		/* Don't write there since it would pollute other MMIO accesses */
+-		out_be64(hose->cfg_data + PCIE_REG_TCE_KILL,
+-			 PCIE_REG_TCEKILL_SINGLE | PCIE_REG_TCEKILL_PS_4K |
+-			 (__pa(tcep) & PCIE_REG_TCEKILL_ADDR_MASK));
+-#endif
+-		index++;
+-	}
+-}
+-
+-static struct wsp_dma_table *wsp_pci_create_dma32_table(struct wsp_phb *phb,
+-							    unsigned int region,
+-							    struct pci_dev *validate)
+-{
+-	struct pci_controller *hose = phb->hose;
+-	unsigned long size = phb->dma32_region_size;
+-	unsigned long addr = phb->dma32_region_size * region + phb->dma32_base;
+-	struct wsp_dma_table *tbl;
+-	int tvts_per_table, i, tvt, nid;
+-	unsigned long flags;
+-
+-	nid = of_node_to_nid(phb->hose->dn);
+-
+-	/* Calculate how many TVTs are needed */
+-	tvts_per_table = size / 0x10000000;
+-	if (tvts_per_table == 0)
+-		tvts_per_table = 1;
+-
+-	/* Calculate the base TVT index. We know all tables have the same
+-	 * size so we just do a simple multiply here
+-	 */
+-	tvt = region * tvts_per_table;
+-
+-	pr_debug("         Region : %d\n", region);
+-	pr_debug("      DMA range : 0x%08lx..0x%08lx\n", addr, addr + size - 1);
+-	pr_debug(" Number of TVTs : %d\n", tvts_per_table);
+-	pr_debug("       Base TVT : %d\n", tvt);
+-	pr_debug("         Node   : %d\n", nid);
+-
+-	tbl = kzalloc_node(sizeof(struct wsp_dma_table), GFP_KERNEL, nid);
+-	if (!tbl)
+-		return ERR_PTR(-ENOMEM);
+-	tbl->phb = phb;
+-
+-	/* Create as many TVTs as needed, each represents 256M at most */
+-	for (i = 0; i < tvts_per_table; i++) {
+-		u64 tvt_data1, tvt_data0;
+-
+-		/* Allocate table. We use a 4K TCE size for now always so
+-		 * one table is always 8 * (258M / 4K) == 512K
+-		 */
+-		tbl->tces[i] = alloc_pages_node(nid, GFP_KERNEL, get_order(0x80000));
+-		if (tbl->tces[i] == NULL)
+-			goto fail;
+-		memset(page_address(tbl->tces[i]), 0, 0x80000);
+-
+-		pr_debug(" TCE table %d at : %p\n", i, page_address(tbl->tces[i]));
+-
+-		/* Table size. We currently set it to be the whole 256M region */
+-		tvt_data0 = 2ull << IODA_TVT0_TCE_TABLE_SIZE_SHIFT;
+-		/* IO page size set to 4K */
+-		tvt_data1 = 1ull << IODA_TVT1_IO_PAGE_SIZE_SHIFT;
+-		/* Shift in the address */
+-		tvt_data0 |= __pa(page_address(tbl->tces[i])) << IODA_TVT0_TTA_SHIFT;
+-
+-		/* Validation stuff. We only validate fully bus/dev/fn for now
+-		 * one day maybe we can group devices but that isn't the case
+-		 * at the moment
+-		 */
+-		if (validate) {
+-			tvt_data0 |= IODA_TVT0_BUSNUM_VALID_MASK;
+-			tvt_data0 |= validate->bus->number;
+-			tvt_data1 |= IODA_TVT1_DEVNUM_VALID;
+-			tvt_data1 |= ((u64)PCI_SLOT(validate->devfn))
+-				<< IODA_TVT1_DEVNUM_VALUE_SHIFT;
+-			tvt_data1 |= IODA_TVT1_FUNCNUM_VALID;
+-			tvt_data1 |= ((u64)PCI_FUNC(validate->devfn))
+-				<< IODA_TVT1_FUNCNUM_VALUE_SHIFT;
+-		}
+-
+-		/* XX PE number is always 0 for now */
+-
+-		/* Program the values using the PHB lock */
+-		spin_lock_irqsave(&phb->lock, flags);
+-		out_be64(hose->cfg_data + PCIE_REG_IODA_ADDR,
+-			 (tvt + i) | PCIE_REG_IODA_AD_TBL_TVT);
+-		out_be64(hose->cfg_data + PCIE_REG_IODA_DATA1, tvt_data1);
+-		out_be64(hose->cfg_data + PCIE_REG_IODA_DATA0, tvt_data0);
+-		spin_unlock_irqrestore(&phb->lock, flags);
+-	}
+-
+-	/* Init bits and pieces */
+-	tbl->table.it_blocksize = 16;
+-	tbl->table.it_page_shift = IOMMU_PAGE_SHIFT_4K;
+-	tbl->table.it_offset = addr >> tbl->table.it_page_shift;
+-	tbl->table.it_size = size >> tbl->table.it_page_shift;
+-
+-	/*
+-	 * It's already blank but we clear it anyway.
+-	 * Consider an aditiona interface that makes cleaing optional
+-	 */
+-	iommu_init_table(&tbl->table, nid);
+-
+-	list_add(&tbl->link, &phb->dma_tables);
+-	return tbl;
+-
+- fail:
+-	pr_debug("  Failed to allocate a 256M TCE table !\n");
+-	for (i = 0; i < tvts_per_table; i++)
+-		if (tbl->tces[i])
+-			__free_pages(tbl->tces[i], get_order(0x80000));
+-	kfree(tbl);
+-	return ERR_PTR(-ENOMEM);
+-}
+-
+-static void wsp_pci_dma_dev_setup(struct pci_dev *pdev)
+-{
+-	struct dev_archdata *archdata = &pdev->dev.archdata;
+-	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+-	struct wsp_phb *phb = hose->private_data;
+-	struct wsp_dma_table *table = NULL;
+-	unsigned long flags;
+-	int i;
+-
+-	/* Don't assign an iommu table to a bridge */
+-	if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
+-		return;
+-
+-	pr_debug("%s: Setting up DMA...\n", pci_name(pdev));
+-
+-	spin_lock_irqsave(&phb->lock, flags);
+-
+-	/* If only one region, check if it already exist */
+-	if (phb->dma32_num_regions == 1) {
+-		spin_unlock_irqrestore(&phb->lock, flags);
+-		if (list_empty(&phb->dma_tables))
+-			table = wsp_pci_create_dma32_table(phb, 0, NULL);
+-		else
+-			table = list_first_entry(&phb->dma_tables,
+-						 struct wsp_dma_table,
+-						 link);
+-	} else {
+-		/* else find a free region */
+-		for (i = 0; i < phb->dma32_num_regions && !table; i++) {
+-			if (__test_and_set_bit(i, &phb->dma32_map))
+-				continue;
+-			spin_unlock_irqrestore(&phb->lock, flags);
+-			table = wsp_pci_create_dma32_table(phb, i, pdev);
+-		}
+-	}
+-
+-	/* Check if we got an error */
+-	if (IS_ERR(table)) {
+-		pr_err("%s: Failed to create DMA table, err %ld !\n",
+-		       pci_name(pdev), PTR_ERR(table));
+-		return;
+-	}
+-
+-	/* Or a valid table */
+-	if (table) {
+-		pr_info("%s: Setup iommu: 32-bit DMA region 0x%08lx..0x%08lx\n",
+-			pci_name(pdev),
+-			table->table.it_offset << IOMMU_PAGE_SHIFT_4K,
+-			(table->table.it_offset << IOMMU_PAGE_SHIFT_4K)
+-			+ phb->dma32_region_size - 1);
+-		archdata->dma_data.iommu_table_base = &table->table;
+-		return;
+-	}
+-
+-	/* Or no room */
+-	spin_unlock_irqrestore(&phb->lock, flags);
+-	pr_err("%s: Out of DMA space !\n", pci_name(pdev));
+-}
+-
+-static void __init wsp_pcie_configure_hw(struct pci_controller *hose)
+-{
+-	u64 val;
+-	int i;
+-
+-#define DUMP_REG(x) \
+-	pr_debug("%-30s : 0x%016llx\n", #x, in_be64(hose->cfg_data + x))
+-
+-	/*
+-	 * Some WSP variants  has a bogus class code by default in the PCI-E
+-	 * root complex's built-in P2P bridge
+-	 */
+-	val = in_be64(hose->cfg_data + PCIE_REG_SYS_CFG1);
+-	pr_debug("PCI-E SYS_CFG1 : 0x%llx\n", val);
+-	out_be64(hose->cfg_data + PCIE_REG_SYS_CFG1,
+-		 (val & ~PCIE_REG_SYS_CFG1_CLASS_CODE) | (PCI_CLASS_BRIDGE_PCI << 8));
+-	pr_debug("PCI-E SYS_CFG1 : 0x%llx\n", in_be64(hose->cfg_data + PCIE_REG_SYS_CFG1));
+-
+-#ifdef CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS
+-	/* XXX Disable TCE caching, it doesn't work on DD1 */
+-	out_be64(hose->cfg_data + 0xe50,
+-		 in_be64(hose->cfg_data + 0xe50) | (3ull << 62));
+-	printk("PCI-E DEBUG CONTROL 5 = 0x%llx\n", in_be64(hose->cfg_data + 0xe50));
+-#endif
+-
+-	/* Configure M32A and IO. IO is hard wired to be 1M for now */
+-	out_be64(hose->cfg_data + PCIE_REG_IO_BASE_ADDR, hose->io_base_phys);
+-	out_be64(hose->cfg_data + PCIE_REG_IO_BASE_MASK,
+-		 (~(hose->io_resource.end - hose->io_resource.start)) &
+-		 0x3fffffff000ul);
+-	out_be64(hose->cfg_data + PCIE_REG_IO_START_ADDR, 0 | 1);
+-
+-	out_be64(hose->cfg_data + PCIE_REG_M32A_BASE_ADDR,
+-		 hose->mem_resources[0].start);
+-	printk("Want to write to M32A_BASE_MASK : 0x%llx\n",
+-		 (~(hose->mem_resources[0].end -
+-		    hose->mem_resources[0].start)) & 0x3ffffff0000ul);
+-	out_be64(hose->cfg_data + PCIE_REG_M32A_BASE_MASK,
+-		 (~(hose->mem_resources[0].end -
+-		    hose->mem_resources[0].start)) & 0x3ffffff0000ul);
+-	out_be64(hose->cfg_data + PCIE_REG_M32A_START_ADDR,
+-		 (hose->mem_resources[0].start - hose->mem_offset[0]) | 1);
+-
+-	/* Clear all TVT entries
+-	 *
+-	 * XX Might get TVT count from device-tree
+-	 */
+-	for (i = 0; i < IODA_TVT_COUNT; i++) {
+-		out_be64(hose->cfg_data + PCIE_REG_IODA_ADDR,
+-			 PCIE_REG_IODA_AD_TBL_TVT | i);
+-		out_be64(hose->cfg_data + PCIE_REG_IODA_DATA1, 0);
+-		out_be64(hose->cfg_data + PCIE_REG_IODA_DATA0, 0);
+-	}
+-
+-	/* Kill the TCE cache */
+-	out_be64(hose->cfg_data + PCIE_REG_PHB_CONFIG,
+-		 in_be64(hose->cfg_data + PCIE_REG_PHB_CONFIG) |
+-		 PCIE_REG_PHBC_64B_TCE_EN);
+-
+-	/* Enable 32 & 64-bit MSIs, IO space and M32A */
+-	val = PCIE_REG_PHBC_32BIT_MSI_EN |
+-	      PCIE_REG_PHBC_IO_EN |
+-	      PCIE_REG_PHBC_64BIT_MSI_EN |
+-	      PCIE_REG_PHBC_M32A_EN;
+-	if (iommu_is_off)
+-		val |= PCIE_REG_PHBC_DMA_XLATE_BYPASS;
+-	pr_debug("Will write config: 0x%llx\n", val);
+-	out_be64(hose->cfg_data + PCIE_REG_PHB_CONFIG, val);
+-
+-	/* Enable error reporting */
+-	out_be64(hose->cfg_data + 0xe00,
+-		 in_be64(hose->cfg_data + 0xe00) | 0x0008000000000000ull);
+-
+-	/* Mask an error that's generated when doing config space probe
+-	 *
+-	 * XXX Maybe we should only mask it around config space cycles... that or
+-	 * ignore it when we know we had a config space cycle recently ?
+-	 */
+-	out_be64(hose->cfg_data + PCIE_REG_DMA_ERR_STATUS_MASK, 0x8000000000000000ull);
+-	out_be64(hose->cfg_data + PCIE_REG_DMA_ERR1_STATUS_MASK, 0x8000000000000000ull);
+-
+-	/* Enable UTL errors, for now, all of them got to UTL irq 1
+-	 *
+-	 * We similarily mask one UTL error caused apparently during normal
+-	 * probing. We also mask the link up error
+-	 */
+-	out_be64(hose->cfg_data + PCIE_UTL_SYS_BUS_AGENT_ERR_SEV, 0);
+-	out_be64(hose->cfg_data + PCIE_UTL_RC_ERR_SEVERITY, 0);
+-	out_be64(hose->cfg_data + PCIE_UTL_PCIE_PORT_ERROR_SEV, 0);
+-	out_be64(hose->cfg_data + PCIE_UTL_SYS_BUS_AGENT_IRQ_EN, 0xffffffff00000000ull);
+-	out_be64(hose->cfg_data + PCIE_UTL_PCIE_PORT_IRQ_EN, 0xff5fffff00000000ull);
+-	out_be64(hose->cfg_data + PCIE_UTL_EP_ERR_IRQ_EN, 0xffffffff00000000ull);
+-
+-	DUMP_REG(PCIE_REG_IO_BASE_ADDR);
+-	DUMP_REG(PCIE_REG_IO_BASE_MASK);
+-	DUMP_REG(PCIE_REG_IO_START_ADDR);
+-	DUMP_REG(PCIE_REG_M32A_BASE_ADDR);
+-	DUMP_REG(PCIE_REG_M32A_BASE_MASK);
+-	DUMP_REG(PCIE_REG_M32A_START_ADDR);
+-	DUMP_REG(PCIE_REG_M32B_BASE_ADDR);
+-	DUMP_REG(PCIE_REG_M32B_BASE_MASK);
+-	DUMP_REG(PCIE_REG_M32B_START_ADDR);
+-	DUMP_REG(PCIE_REG_M64_BASE_ADDR);
+-	DUMP_REG(PCIE_REG_M64_BASE_MASK);
+-	DUMP_REG(PCIE_REG_M64_START_ADDR);
+-	DUMP_REG(PCIE_REG_PHB_CONFIG);
+-}
+-
+-static void wsp_pci_wait_io_idle(struct wsp_phb *phb, unsigned long port)
+-{
+-	u64 val;
+-	int i;
+-
+-	for (i = 0; i < 10000; i++) {
+-		val = in_be64(phb->hose->cfg_data + 0xe08);
+-		if ((val & 0x1900000000000000ull) == 0x0100000000000000ull)
+-			return;
+-		udelay(1);
+-	}
+-	pr_warning("PCI IO timeout on domain %d port 0x%lx\n",
+-		   phb->hose->global_number, port);
+-}
+-
+-#define DEF_PCI_AC_RET_pio(name, ret, at, al, aa)		\
+-static ret wsp_pci_##name at					\
+-{								\
+-	struct iowa_bus *bus;					\
+-	struct wsp_phb *phb;					\
+-	unsigned long flags;					\
+-	ret rval;						\
+-	bus = iowa_pio_find_bus(aa);				\
+-	WARN_ON(!bus);						\
+-	phb = bus->private;					\
+-	spin_lock_irqsave(&phb->lock, flags);			\
+-	wsp_pci_wait_io_idle(phb, aa);				\
+-	rval = __do_##name al;					\
+-	spin_unlock_irqrestore(&phb->lock, flags);		\
+-	return rval;						\
+-}
+-
+-#define DEF_PCI_AC_NORET_pio(name, at, al, aa)			\
+-static void wsp_pci_##name at					\
+-{								\
+-	struct iowa_bus *bus;					\
+-	struct wsp_phb *phb;					\
+-	unsigned long flags;					\
+-	bus = iowa_pio_find_bus(aa);				\
+-	WARN_ON(!bus);						\
+-	phb = bus->private;					\
+-	spin_lock_irqsave(&phb->lock, flags);			\
+-	wsp_pci_wait_io_idle(phb, aa);				\
+-	__do_##name al;						\
+-	spin_unlock_irqrestore(&phb->lock, flags);		\
+-}
+-
+-#define DEF_PCI_AC_RET_mem(name, ret, at, al, aa)
+-#define DEF_PCI_AC_NORET_mem(name, at, al, aa)
+-
+-#define DEF_PCI_AC_RET(name, ret, at, al, space, aa)		\
+-	DEF_PCI_AC_RET_##space(name, ret, at, al, aa)
+-
+-#define DEF_PCI_AC_NORET(name, at, al, space, aa)		\
+-	DEF_PCI_AC_NORET_##space(name, at, al, aa)		\
+-
+-
+-#include <asm/io-defs.h>
+-
+-#undef DEF_PCI_AC_RET
+-#undef DEF_PCI_AC_NORET
+-
+-static struct ppc_pci_io wsp_pci_iops = {
+-	.inb = wsp_pci_inb,
+-	.inw = wsp_pci_inw,
+-	.inl = wsp_pci_inl,
+-	.outb = wsp_pci_outb,
+-	.outw = wsp_pci_outw,
+-	.outl = wsp_pci_outl,
+-	.insb = wsp_pci_insb,
+-	.insw = wsp_pci_insw,
+-	.insl = wsp_pci_insl,
+-	.outsb = wsp_pci_outsb,
+-	.outsw = wsp_pci_outsw,
+-	.outsl = wsp_pci_outsl,
+-};
+-
+-static int __init wsp_setup_one_phb(struct device_node *np)
+-{
+-	struct pci_controller *hose;
+-	struct wsp_phb *phb;
+-
+-	pr_info("PCI: Setting up PCIe host bridge 0x%s\n", np->full_name);
+-
+-	phb = zalloc_maybe_bootmem(sizeof(struct wsp_phb), GFP_KERNEL);
+-	if (!phb)
+-		return -ENOMEM;
+-	hose = pcibios_alloc_controller(np);
+-	if (!hose) {
+-		/* Can't really free the phb */
+-		return -ENOMEM;
+-	}
+-	hose->private_data = phb;
+-	phb->hose = hose;
+-
+-	INIT_LIST_HEAD(&phb->dma_tables);
+-	spin_lock_init(&phb->lock);
+-
+-	/* XXX Use bus-range property ? */
+-	hose->first_busno = 0;
+-	hose->last_busno = 0xff;
+-
+-	/* We use cfg_data as the address for the whole bridge MMIO space
+-	 */
+-	hose->cfg_data = of_iomap(hose->dn, 0);
+-
+-	pr_debug("PCIe registers mapped at 0x%p\n", hose->cfg_data);
+-
+-	/* Get the ranges of the device-tree */
+-	pci_process_bridge_OF_ranges(hose, np, 0);
+-
+-	/* XXX Force re-assigning of everything for now */
+-	pci_add_flags(PCI_REASSIGN_ALL_BUS | PCI_REASSIGN_ALL_RSRC |
+-		      PCI_ENABLE_PROC_DOMAINS);
+-
+-	/* Calculate how the TCE space is divided */
+-	phb->dma32_base		= 0;
+-	phb->dma32_num_regions	= NUM_DMA32_REGIONS;
+-	if (phb->dma32_num_regions > MAX_TABLE_TVT_COUNT) {
+-		pr_warning("IOMMU: Clamped to %d DMA32 regions\n",
+-			   MAX_TABLE_TVT_COUNT);
+-		phb->dma32_num_regions = MAX_TABLE_TVT_COUNT;
+-	}
+-	phb->dma32_region_size	= 0x80000000 / phb->dma32_num_regions;
+-
+-	BUG_ON(!is_power_of_2(phb->dma32_region_size));
+-
+-	/* Setup config ops */
+-	hose->ops = &wsp_pcie_pci_ops;
+-
+-	/* Configure the HW */
+-	wsp_pcie_configure_hw(hose);
+-
+-	/* Instanciate IO workarounds */
+-	iowa_register_bus(hose, &wsp_pci_iops, NULL, phb);
+-#ifdef CONFIG_PCI_MSI
+-	wsp_setup_phb_msi(hose);
+-#endif
+-
+-	/* Add to global list */
+-	list_add(&phb->all, &wsp_phbs);
+-
+-	return 0;
+-}
+-
+-void __init wsp_setup_pci(void)
+-{
+-	struct device_node *np;
+-	int rc;
+-
+-	/* Find host bridges */
+-	for_each_compatible_node(np, "pciex", PCIE_COMPATIBLE) {
+-		rc = wsp_setup_one_phb(np);
+-		if (rc)
+-			pr_err("Failed to setup PCIe bridge %s, rc=%d\n",
+-			       np->full_name, rc);
+-	}
+-
+-	/* Establish device-tree linkage */
+-	pci_devs_phb_init();
+-
+-	/* Set DMA ops to use TCEs */
+-	if (iommu_is_off) {
+-		pr_info("PCI-E: Disabled TCEs, using direct DMA\n");
+-		set_pci_dma_ops(&dma_direct_ops);
+-	} else {
+-		ppc_md.pci_dma_dev_setup = wsp_pci_dma_dev_setup;
+-		ppc_md.tce_build = tce_build_wsp;
+-		ppc_md.tce_free = tce_free_wsp;
+-		set_pci_dma_ops(&dma_iommu_ops);
+-	}
+-}
+-
+-#define err_debug(fmt...)	pr_debug(fmt)
+-//#define err_debug(fmt...)
+-
+-static int __init wsp_pci_get_err_irq_no_dt(struct device_node *np)
+-{
+-	const u32 *prop;
+-	int hw_irq;
+-
+-	/* Ok, no interrupts property, let's try to find our child P2P */
+-	np = of_get_next_child(np, NULL);
+-	if (np == NULL)
+-		return 0;
+-
+-	/* Grab it's interrupt map */
+-	prop = of_get_property(np, "interrupt-map", NULL);
+-	if (prop == NULL)
+-		return 0;
+-
+-	/* Grab one of the interrupts in there, keep the low 4 bits */
+-	hw_irq = prop[5] & 0xf;
+-
+-	/* 0..4 for PHB 0 and 5..9 for PHB 1 */
+-	if (hw_irq < 5)
+-		hw_irq = 4;
+-	else
+-		hw_irq = 9;
+-	hw_irq |= prop[5] & ~0xf;
+-
+-	err_debug("PCI: Using 0x%x as error IRQ for %s\n",
+-		  hw_irq, np->parent->full_name);
+-	return irq_create_mapping(NULL, hw_irq);
+-}
+-
+-static const struct {
+-	u32 offset;
+-	const char *name;
+-} wsp_pci_regs[] = {
+-#define DREG(x) { PCIE_REG_##x, #x }
+-#define DUTL(x) { PCIE_UTL_##x, "UTL_" #x }
+-	/* Architected registers except CONFIG_ and IODA
+-         * to avoid side effects
+-	 */
+-	DREG(DMA_CHAN_STATUS),
+-	DREG(CPU_LOADSTORE_STATUS),
+-	DREG(LOCK0),
+-	DREG(LOCK1),
+-	DREG(PHB_CONFIG),
+-	DREG(IO_BASE_ADDR),
+-	DREG(IO_BASE_MASK),
+-	DREG(IO_START_ADDR),
+-	DREG(M32A_BASE_ADDR),
+-	DREG(M32A_BASE_MASK),
+-	DREG(M32A_START_ADDR),
+-	DREG(M32B_BASE_ADDR),
+-	DREG(M32B_BASE_MASK),
+-	DREG(M32B_START_ADDR),
+-	DREG(M64_BASE_ADDR),
+-	DREG(M64_BASE_MASK),
+-	DREG(M64_START_ADDR),
+-	DREG(TCE_KILL),
+-	DREG(LOCK2),
+-	DREG(PHB_GEN_CAP),
+-	DREG(PHB_TCE_CAP),
+-	DREG(PHB_IRQ_CAP),
+-	DREG(PHB_EEH_CAP),
+-	DREG(PAPR_ERR_INJ_CONTROL),
+-	DREG(PAPR_ERR_INJ_ADDR),
+-	DREG(PAPR_ERR_INJ_MASK),
+-
+-	/* UTL core regs */
+-	DUTL(SYS_BUS_CONTROL),
+-	DUTL(STATUS),
+-	DUTL(SYS_BUS_AGENT_STATUS),
+-	DUTL(SYS_BUS_AGENT_ERR_SEV),
+-	DUTL(SYS_BUS_AGENT_IRQ_EN),
+-	DUTL(SYS_BUS_BURST_SZ_CONF),
+-	DUTL(REVISION_ID),
+-	DUTL(OUT_POST_HDR_BUF_ALLOC),
+-	DUTL(OUT_POST_DAT_BUF_ALLOC),
+-	DUTL(IN_POST_HDR_BUF_ALLOC),
+-	DUTL(IN_POST_DAT_BUF_ALLOC),
+-	DUTL(OUT_NP_BUF_ALLOC),
+-	DUTL(IN_NP_BUF_ALLOC),
+-	DUTL(PCIE_TAGS_ALLOC),
+-	DUTL(GBIF_READ_TAGS_ALLOC),
+-
+-	DUTL(PCIE_PORT_CONTROL),
+-	DUTL(PCIE_PORT_STATUS),
+-	DUTL(PCIE_PORT_ERROR_SEV),
+-	DUTL(PCIE_PORT_IRQ_EN),
+-	DUTL(RC_STATUS),
+-	DUTL(RC_ERR_SEVERITY),
+-	DUTL(RC_IRQ_EN),
+-	DUTL(EP_STATUS),
+-	DUTL(EP_ERR_SEVERITY),
+-	DUTL(EP_ERR_IRQ_EN),
+-	DUTL(PCI_PM_CTRL1),
+-	DUTL(PCI_PM_CTRL2),
+-
+-	/* PCIe stack regs */
+-	DREG(SYSTEM_CONFIG1),
+-	DREG(SYSTEM_CONFIG2),
+-	DREG(EP_SYSTEM_CONFIG),
+-	DREG(EP_FLR),
+-	DREG(EP_BAR_CONFIG),
+-	DREG(LINK_CONFIG),
+-	DREG(PM_CONFIG),
+-	DREG(DLP_CONTROL),
+-	DREG(DLP_STATUS),
+-	DREG(ERR_REPORT_CONTROL),
+-	DREG(SLOT_CONTROL1),
+-	DREG(SLOT_CONTROL2),
+-	DREG(UTL_CONFIG),
+-	DREG(BUFFERS_CONFIG),
+-	DREG(ERROR_INJECT),
+-	DREG(SRIOV_CONFIG),
+-	DREG(PF0_SRIOV_STATUS),
+-	DREG(PF1_SRIOV_STATUS),
+-	DREG(PORT_NUMBER),
+-	DREG(POR_SYSTEM_CONFIG),
+-
+-	/* Internal logic regs */
+-	DREG(PHB_VERSION),
+-	DREG(RESET),
+-	DREG(PHB_CONTROL),
+-	DREG(PHB_TIMEOUT_CONTROL1),
+-	DREG(PHB_QUIESCE_DMA),
+-	DREG(PHB_DMA_READ_TAG_ACTV),
+-	DREG(PHB_TCE_READ_TAG_ACTV),
+-
+-	/* FIR registers */
+-	DREG(LEM_FIR_ACCUM),
+-	DREG(LEM_FIR_AND_MASK),
+-	DREG(LEM_FIR_OR_MASK),
+-	DREG(LEM_ACTION0),
+-	DREG(LEM_ACTION1),
+-	DREG(LEM_ERROR_MASK),
+-	DREG(LEM_ERROR_AND_MASK),
+-	DREG(LEM_ERROR_OR_MASK),
+-
+-	/* Error traps registers */
+-	DREG(PHB_ERR_STATUS),
+-	DREG(PHB_ERR_STATUS),
+-	DREG(PHB_ERR1_STATUS),
+-	DREG(PHB_ERR_INJECT),
+-	DREG(PHB_ERR_LEM_ENABLE),
+-	DREG(PHB_ERR_IRQ_ENABLE),
+-	DREG(PHB_ERR_FREEZE_ENABLE),
+-	DREG(PHB_ERR_SIDE_ENABLE),
+-	DREG(PHB_ERR_LOG_0),
+-	DREG(PHB_ERR_LOG_1),
+-	DREG(PHB_ERR_STATUS_MASK),
+-	DREG(PHB_ERR1_STATUS_MASK),
+-	DREG(MMIO_ERR_STATUS),
+-	DREG(MMIO_ERR1_STATUS),
+-	DREG(MMIO_ERR_INJECT),
+-	DREG(MMIO_ERR_LEM_ENABLE),
+-	DREG(MMIO_ERR_IRQ_ENABLE),
+-	DREG(MMIO_ERR_FREEZE_ENABLE),
+-	DREG(MMIO_ERR_SIDE_ENABLE),
+-	DREG(MMIO_ERR_LOG_0),
+-	DREG(MMIO_ERR_LOG_1),
+-	DREG(MMIO_ERR_STATUS_MASK),
+-	DREG(MMIO_ERR1_STATUS_MASK),
+-	DREG(DMA_ERR_STATUS),
+-	DREG(DMA_ERR1_STATUS),
+-	DREG(DMA_ERR_INJECT),
+-	DREG(DMA_ERR_LEM_ENABLE),
+-	DREG(DMA_ERR_IRQ_ENABLE),
+-	DREG(DMA_ERR_FREEZE_ENABLE),
+-	DREG(DMA_ERR_SIDE_ENABLE),
+-	DREG(DMA_ERR_LOG_0),
+-	DREG(DMA_ERR_LOG_1),
+-	DREG(DMA_ERR_STATUS_MASK),
+-	DREG(DMA_ERR1_STATUS_MASK),
+-
+-	/* Debug and Trace registers */
+-	DREG(PHB_DEBUG_CONTROL0),
+-	DREG(PHB_DEBUG_STATUS0),
+-	DREG(PHB_DEBUG_CONTROL1),
+-	DREG(PHB_DEBUG_STATUS1),
+-	DREG(PHB_DEBUG_CONTROL2),
+-	DREG(PHB_DEBUG_STATUS2),
+-	DREG(PHB_DEBUG_CONTROL3),
+-	DREG(PHB_DEBUG_STATUS3),
+-	DREG(PHB_DEBUG_CONTROL4),
+-	DREG(PHB_DEBUG_STATUS4),
+-	DREG(PHB_DEBUG_CONTROL5),
+-	DREG(PHB_DEBUG_STATUS5),
+-
+-	/* Don't seem to exist ...
+-	DREG(PHB_DEBUG_CONTROL6),
+-	DREG(PHB_DEBUG_STATUS6),
+-	*/
+-};
+-
+-static int wsp_pci_regs_show(struct seq_file *m, void *private)
+-{
+-	struct wsp_phb *phb = m->private;
+-	struct pci_controller *hose = phb->hose;
+-	int i;
+-
+-	for (i = 0; i < ARRAY_SIZE(wsp_pci_regs); i++) {
+-		/* Skip write-only regs */
+-		if (wsp_pci_regs[i].offset == 0xc08 ||
+-		    wsp_pci_regs[i].offset == 0xc10 ||
+-		    wsp_pci_regs[i].offset == 0xc38 ||
+-		    wsp_pci_regs[i].offset == 0xc40)
+-			continue;
+-		seq_printf(m, "0x%03x: 0x%016llx %s\n",
+-			   wsp_pci_regs[i].offset,
+-			   in_be64(hose->cfg_data + wsp_pci_regs[i].offset),
+-			   wsp_pci_regs[i].name);
+-	}
+-	return 0;
+-}
+-
+-static int wsp_pci_regs_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, wsp_pci_regs_show, inode->i_private);
+-}
+-
+-static const struct file_operations wsp_pci_regs_fops = {
+-	.open = wsp_pci_regs_open,
+-	.read = seq_read,
+-	.llseek = seq_lseek,
+-	.release = single_release,
+-};
+-
+-static int wsp_pci_reg_set(void *data, u64 val)
+-{
+-	out_be64((void __iomem *)data, val);
+-	return 0;
+-}
+-
+-static int wsp_pci_reg_get(void *data, u64 *val)
+-{
+-	*val = in_be64((void __iomem *)data);
+-	return 0;
+-}
+-
+-DEFINE_SIMPLE_ATTRIBUTE(wsp_pci_reg_fops, wsp_pci_reg_get, wsp_pci_reg_set, "0x%llx\n");
+-
+-static irqreturn_t wsp_pci_err_irq(int irq, void *dev_id)
+-{
+-	struct wsp_phb *phb = dev_id;
+-	struct pci_controller *hose = phb->hose;
+-	irqreturn_t handled = IRQ_NONE;
+-	struct wsp_pcie_err_log_data ed;
+-
+-	pr_err("PCI: Error interrupt on %s (PHB %d)\n",
+-	       hose->dn->full_name, hose->global_number);
+- again:
+-	memset(&ed, 0, sizeof(ed));
+-
+-	/* Read and clear UTL errors */
+-	ed.utl_sys_err = in_be64(hose->cfg_data + PCIE_UTL_SYS_BUS_AGENT_STATUS);
+-	if (ed.utl_sys_err)
+-		out_be64(hose->cfg_data + PCIE_UTL_SYS_BUS_AGENT_STATUS, ed.utl_sys_err);
+-	ed.utl_port_err = in_be64(hose->cfg_data + PCIE_UTL_PCIE_PORT_STATUS);
+-	if (ed.utl_port_err)
+-		out_be64(hose->cfg_data + PCIE_UTL_PCIE_PORT_STATUS, ed.utl_port_err);
+-	ed.utl_rc_err = in_be64(hose->cfg_data + PCIE_UTL_RC_STATUS);
+-	if (ed.utl_rc_err)
+-		out_be64(hose->cfg_data + PCIE_UTL_RC_STATUS, ed.utl_rc_err);
+-
+-	/* Read and clear main trap errors */
+-	ed.phb_err = in_be64(hose->cfg_data + PCIE_REG_PHB_ERR_STATUS);
+-	if (ed.phb_err) {
+-		ed.phb_err1 = in_be64(hose->cfg_data + PCIE_REG_PHB_ERR1_STATUS);
+-		ed.phb_log0 = in_be64(hose->cfg_data + PCIE_REG_PHB_ERR_LOG_0);
+-		ed.phb_log1 = in_be64(hose->cfg_data + PCIE_REG_PHB_ERR_LOG_1);
+-		out_be64(hose->cfg_data + PCIE_REG_PHB_ERR1_STATUS, 0);
+-		out_be64(hose->cfg_data + PCIE_REG_PHB_ERR_STATUS, 0);
+-	}
+-	ed.mmio_err = in_be64(hose->cfg_data + PCIE_REG_MMIO_ERR_STATUS);
+-	if (ed.mmio_err) {
+-		ed.mmio_err1 = in_be64(hose->cfg_data + PCIE_REG_MMIO_ERR1_STATUS);
+-		ed.mmio_log0 = in_be64(hose->cfg_data + PCIE_REG_MMIO_ERR_LOG_0);
+-		ed.mmio_log1 = in_be64(hose->cfg_data + PCIE_REG_MMIO_ERR_LOG_1);
+-		out_be64(hose->cfg_data + PCIE_REG_MMIO_ERR1_STATUS, 0);
+-		out_be64(hose->cfg_data + PCIE_REG_MMIO_ERR_STATUS, 0);
+-	}
+-	ed.dma_err = in_be64(hose->cfg_data + PCIE_REG_DMA_ERR_STATUS);
+-	if (ed.dma_err) {
+-		ed.dma_err1 = in_be64(hose->cfg_data + PCIE_REG_DMA_ERR1_STATUS);
+-		ed.dma_log0 = in_be64(hose->cfg_data + PCIE_REG_DMA_ERR_LOG_0);
+-		ed.dma_log1 = in_be64(hose->cfg_data + PCIE_REG_DMA_ERR_LOG_1);
+-		out_be64(hose->cfg_data + PCIE_REG_DMA_ERR1_STATUS, 0);
+-		out_be64(hose->cfg_data + PCIE_REG_DMA_ERR_STATUS, 0);
+-	}
+-
+-	/* Now print things out */
+-	if (ed.phb_err) {
+-		pr_err("   PHB Error Status      : 0x%016llx\n", ed.phb_err);
+-		pr_err("   PHB First Error Status: 0x%016llx\n", ed.phb_err1);
+-		pr_err("   PHB Error Log 0       : 0x%016llx\n", ed.phb_log0);
+-		pr_err("   PHB Error Log 1       : 0x%016llx\n", ed.phb_log1);
+-	}
+-	if (ed.mmio_err) {
+-		pr_err("  MMIO Error Status      : 0x%016llx\n", ed.mmio_err);
+-		pr_err("  MMIO First Error Status: 0x%016llx\n", ed.mmio_err1);
+-		pr_err("  MMIO Error Log 0       : 0x%016llx\n", ed.mmio_log0);
+-		pr_err("  MMIO Error Log 1       : 0x%016llx\n", ed.mmio_log1);
+-	}
+-	if (ed.dma_err) {
+-		pr_err("   DMA Error Status      : 0x%016llx\n", ed.dma_err);
+-		pr_err("   DMA First Error Status: 0x%016llx\n", ed.dma_err1);
+-		pr_err("   DMA Error Log 0       : 0x%016llx\n", ed.dma_log0);
+-		pr_err("   DMA Error Log 1       : 0x%016llx\n", ed.dma_log1);
+-	}
+-	if (ed.utl_sys_err)
+-		pr_err("   UTL Sys Error Status  : 0x%016llx\n", ed.utl_sys_err);
+-	if (ed.utl_port_err)
+-		pr_err("   UTL Port Error Status : 0x%016llx\n", ed.utl_port_err);
+-	if (ed.utl_rc_err)
+-		pr_err("   UTL RC Error Status   : 0x%016llx\n", ed.utl_rc_err);
+-
+-	/* Interrupts are caused by the error traps. If we had any error there
+-	 * we loop again in case the UTL buffered some new stuff between
+-	 * going there and going to the traps
+-	 */
+-	if (ed.dma_err || ed.mmio_err || ed.phb_err) {
+-		handled = IRQ_HANDLED;
+-		goto again;
+-	}
+-	return handled;
+-}
+-
+-static void __init wsp_setup_pci_err_reporting(struct wsp_phb *phb)
+-{
+-	struct pci_controller *hose = phb->hose;
+-	int err_irq, i, rc;
+-	char fname[16];
+-
+-	/* Create a debugfs file for that PHB */
+-	sprintf(fname, "phb%d", phb->hose->global_number);
+-	phb->ddir = debugfs_create_dir(fname, powerpc_debugfs_root);
+-
+-	/* Some useful debug output */
+-	if (phb->ddir) {
+-		struct dentry *d = debugfs_create_dir("regs", phb->ddir);
+-		char tmp[64];
+-
+-		for (i = 0; i < ARRAY_SIZE(wsp_pci_regs); i++) {
+-			sprintf(tmp, "%03x_%s", wsp_pci_regs[i].offset,
+-				wsp_pci_regs[i].name);
+-			debugfs_create_file(tmp, 0600, d,
+-					    hose->cfg_data + wsp_pci_regs[i].offset,
+-					    &wsp_pci_reg_fops);
+-		}
+-		debugfs_create_file("all_regs", 0600, phb->ddir, phb, &wsp_pci_regs_fops);
+-	}
+-
+-	/* Find the IRQ number for that PHB */
+-	err_irq = irq_of_parse_and_map(hose->dn, 0);
+-	if (err_irq == 0)
+-		/* XXX Error IRQ lacking from device-tree */
+-		err_irq = wsp_pci_get_err_irq_no_dt(hose->dn);
+-	if (err_irq == 0) {
+-		pr_err("PCI: Failed to fetch error interrupt for %s\n",
+-		       hose->dn->full_name);
+-		return;
+-	}
+-	/* Request it */
+-	rc = request_irq(err_irq, wsp_pci_err_irq, 0, "wsp_pci error", phb);
+-	if (rc) {
+-		pr_err("PCI: Failed to request interrupt for %s\n",
+-		       hose->dn->full_name);
+-	}
+-	/* Enable interrupts for all errors for now */
+-	out_be64(hose->cfg_data + PCIE_REG_PHB_ERR_IRQ_ENABLE, 0xffffffffffffffffull);
+-	out_be64(hose->cfg_data + PCIE_REG_MMIO_ERR_IRQ_ENABLE, 0xffffffffffffffffull);
+-	out_be64(hose->cfg_data + PCIE_REG_DMA_ERR_IRQ_ENABLE, 0xffffffffffffffffull);
+-}
+-
+-/*
+- * This is called later to hookup with the error interrupt
+- */
+-static int __init wsp_setup_pci_late(void)
+-{
+-	struct wsp_phb *phb;
+-
+-	list_for_each_entry(phb, &wsp_phbs, all)
+-		wsp_setup_pci_err_reporting(phb);
+-
+-	return 0;
+-}
+-arch_initcall(wsp_setup_pci_late);
+diff --git a/arch/powerpc/platforms/wsp/wsp_pci.h b/arch/powerpc/platforms/wsp/wsp_pci.h
+deleted file mode 100644
+index 52e9bd9..0000000
+--- a/arch/powerpc/platforms/wsp/wsp_pci.h
++++ /dev/null
+@@ -1,268 +0,0 @@
+-/*
+- * Copyright 2010 Ben Herrenschmidt, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
+-
+-#ifndef __WSP_PCI_H
+-#define __WSP_PCI_H
+-
+-/* Architected registers */
+-#define PCIE_REG_DMA_CHAN_STATUS	0x110
+-#define PCIE_REG_CPU_LOADSTORE_STATUS	0x120
+-
+-#define PCIE_REG_CONFIG_DATA		0x130
+-#define PCIE_REG_LOCK0			0x138
+-#define PCIE_REG_CONFIG_ADDRESS		0x140
+-#define   PCIE_REG_CA_ENABLE			0x8000000000000000ull
+-#define	  PCIE_REG_CA_BUS_MASK			0x0ff0000000000000ull
+-#define   PCIE_REG_CA_BUS_SHIFT			(20+32)
+-#define   PCIE_REG_CA_DEV_MASK			0x000f800000000000ull
+-#define   PCIE_REG_CA_DEV_SHIFT			(15+32)
+-#define   PCIE_REG_CA_FUNC_MASK			0x0000700000000000ull
+-#define   PCIE_REG_CA_FUNC_SHIFT		(12+32)
+-#define   PCIE_REG_CA_REG_MASK			0x00000fff00000000ull
+-#define   PCIE_REG_CA_REG_SHIFT			( 0+32)
+-#define   PCIE_REG_CA_BE_MASK			0x00000000f0000000ull
+-#define   PCIE_REG_CA_BE_SHIFT			(   28)
+-#define PCIE_REG_LOCK1			0x148
+-
+-#define PCIE_REG_PHB_CONFIG		0x160
+-#define   PCIE_REG_PHBC_64B_TCE_EN		0x2000000000000000ull
+-#define   PCIE_REG_PHBC_MMIO_DMA_FREEZE_EN	0x1000000000000000ull
+-#define   PCIE_REG_PHBC_32BIT_MSI_EN		0x0080000000000000ull
+-#define   PCIE_REG_PHBC_M64_EN			0x0040000000000000ull
+-#define   PCIE_REG_PHBC_IO_EN			0x0008000000000000ull
+-#define   PCIE_REG_PHBC_64BIT_MSI_EN		0x0002000000000000ull
+-#define   PCIE_REG_PHBC_M32A_EN			0x0000800000000000ull
+-#define   PCIE_REG_PHBC_M32B_EN			0x0000400000000000ull
+-#define   PCIE_REG_PHBC_MSI_PE_VALIDATE		0x0000200000000000ull
+-#define   PCIE_REG_PHBC_DMA_XLATE_BYPASS	0x0000100000000000ull
+-
+-#define PCIE_REG_IO_BASE_ADDR		0x170
+-#define PCIE_REG_IO_BASE_MASK		0x178
+-#define PCIE_REG_IO_START_ADDR		0x180
+-
+-#define PCIE_REG_M32A_BASE_ADDR		0x190
+-#define PCIE_REG_M32A_BASE_MASK		0x198
+-#define PCIE_REG_M32A_START_ADDR	0x1a0
+-
+-#define PCIE_REG_M32B_BASE_ADDR		0x1b0
+-#define PCIE_REG_M32B_BASE_MASK		0x1b8
+-#define PCIE_REG_M32B_START_ADDR	0x1c0
+-
+-#define PCIE_REG_M64_BASE_ADDR		0x1e0
+-#define PCIE_REG_M64_BASE_MASK		0x1e8
+-#define PCIE_REG_M64_START_ADDR		0x1f0
+-
+-#define PCIE_REG_TCE_KILL		0x210
+-#define   PCIE_REG_TCEKILL_SINGLE	0x8000000000000000ull
+-#define   PCIE_REG_TCEKILL_ADDR_MASK	0x000003fffffffff8ull
+-#define   PCIE_REG_TCEKILL_PS_4K	0
+-#define   PCIE_REG_TCEKILL_PS_64K	1
+-#define   PCIE_REG_TCEKILL_PS_16M	2
+-#define   PCIE_REG_TCEKILL_PS_16G	3
+-
+-#define PCIE_REG_IODA_ADDR		0x220
+-#define   PCIE_REG_IODA_AD_AUTOINC	0x8000000000000000ull
+-#define   PCIE_REG_IODA_AD_TBL_MVT	0x0005000000000000ull
+-#define   PCIE_REG_IODA_AD_TBL_PELT	0x0006000000000000ull
+-#define   PCIE_REG_IODA_AD_TBL_PESTA	0x0007000000000000ull
+-#define   PCIE_REG_IODA_AD_TBL_PESTB	0x0008000000000000ull
+-#define   PCIE_REG_IODA_AD_TBL_TVT	0x0009000000000000ull
+-#define   PCIE_REG_IODA_AD_TBL_TCE	0x000a000000000000ull
+-#define PCIE_REG_IODA_DATA0		0x228
+-#define PCIE_REG_IODA_DATA1		0x230
+-
+-#define PCIE_REG_LOCK2			0x240
+-
+-#define PCIE_REG_PHB_GEN_CAP		0x250
+-#define PCIE_REG_PHB_TCE_CAP		0x258
+-#define PCIE_REG_PHB_IRQ_CAP		0x260
+-#define PCIE_REG_PHB_EEH_CAP		0x268
+-
+-#define PCIE_REG_PAPR_ERR_INJ_CONTROL	0x2b0
+-#define PCIE_REG_PAPR_ERR_INJ_ADDR	0x2b8
+-#define PCIE_REG_PAPR_ERR_INJ_MASK	0x2c0
+-
+-
+-#define PCIE_REG_SYS_CFG1		0x600
+-#define   PCIE_REG_SYS_CFG1_CLASS_CODE	0x0000000000ffffffull
+-
+-#define IODA_TVT0_TTA_MASK		0x000fffffffff0000ull
+-#define IODA_TVT0_TTA_SHIFT		4
+-#define IODA_TVT0_BUSNUM_VALID_MASK	0x000000000000e000ull
+-#define IODA_TVT0_TCE_TABLE_SIZE_MASK	0x0000000000001f00ull
+-#define IODA_TVT0_TCE_TABLE_SIZE_SHIFT	8
+-#define IODA_TVT0_BUSNUM_VALUE_MASK	0x00000000000000ffull
+-#define IODA_TVT0_BUSNUM_VALID_SHIFT	0
+-#define IODA_TVT1_DEVNUM_VALID		0x2000000000000000ull
+-#define IODA_TVT1_DEVNUM_VALUE_MASK	0x1f00000000000000ull
+-#define IODA_TVT1_DEVNUM_VALUE_SHIFT	56
+-#define IODA_TVT1_FUNCNUM_VALID		0x0008000000000000ull
+-#define IODA_TVT1_FUNCNUM_VALUE_MASK	0x0007000000000000ull
+-#define IODA_TVT1_FUNCNUM_VALUE_SHIFT	48
+-#define IODA_TVT1_IO_PAGE_SIZE_MASK	0x00001f0000000000ull
+-#define IODA_TVT1_IO_PAGE_SIZE_SHIFT	40
+-#define IODA_TVT1_PE_NUMBER_MASK	0x000000000000003full
+-#define IODA_TVT1_PE_NUMBER_SHIFT	0
+-
+-#define IODA_TVT_COUNT			64
+-
+-/* UTL Core registers */
+-#define PCIE_UTL_SYS_BUS_CONTROL	0x400
+-#define PCIE_UTL_STATUS			0x408
+-#define PCIE_UTL_SYS_BUS_AGENT_STATUS	0x410
+-#define PCIE_UTL_SYS_BUS_AGENT_ERR_SEV	0x418
+-#define PCIE_UTL_SYS_BUS_AGENT_IRQ_EN	0x420
+-#define PCIE_UTL_SYS_BUS_BURST_SZ_CONF	0x440
+-#define PCIE_UTL_REVISION_ID		0x448
+-
+-#define PCIE_UTL_OUT_POST_HDR_BUF_ALLOC	0x4c0
+-#define PCIE_UTL_OUT_POST_DAT_BUF_ALLOC	0x4d0
+-#define PCIE_UTL_IN_POST_HDR_BUF_ALLOC	0x4e0
+-#define PCIE_UTL_IN_POST_DAT_BUF_ALLOC	0x4f0
+-#define PCIE_UTL_OUT_NP_BUF_ALLOC	0x500
+-#define PCIE_UTL_IN_NP_BUF_ALLOC	0x510
+-#define PCIE_UTL_PCIE_TAGS_ALLOC	0x520
+-#define PCIE_UTL_GBIF_READ_TAGS_ALLOC	0x530
+-
+-#define PCIE_UTL_PCIE_PORT_CONTROL	0x540
+-#define PCIE_UTL_PCIE_PORT_STATUS	0x548
+-#define PCIE_UTL_PCIE_PORT_ERROR_SEV	0x550
+-#define PCIE_UTL_PCIE_PORT_IRQ_EN	0x558
+-#define PCIE_UTL_RC_STATUS		0x560
+-#define PCIE_UTL_RC_ERR_SEVERITY	0x568
+-#define PCIE_UTL_RC_IRQ_EN		0x570
+-#define PCIE_UTL_EP_STATUS		0x578
+-#define PCIE_UTL_EP_ERR_SEVERITY	0x580
+-#define PCIE_UTL_EP_ERR_IRQ_EN		0x588
+-
+-#define PCIE_UTL_PCI_PM_CTRL1		0x590
+-#define PCIE_UTL_PCI_PM_CTRL2		0x598
+-
+-/* PCIe stack registers */
+-#define PCIE_REG_SYSTEM_CONFIG1		0x600
+-#define PCIE_REG_SYSTEM_CONFIG2		0x608
+-#define PCIE_REG_EP_SYSTEM_CONFIG	0x618
+-#define PCIE_REG_EP_FLR			0x620
+-#define PCIE_REG_EP_BAR_CONFIG		0x628
+-#define PCIE_REG_LINK_CONFIG		0x630
+-#define PCIE_REG_PM_CONFIG		0x640
+-#define PCIE_REG_DLP_CONTROL		0x650
+-#define PCIE_REG_DLP_STATUS		0x658
+-#define PCIE_REG_ERR_REPORT_CONTROL	0x660
+-#define PCIE_REG_SLOT_CONTROL1		0x670
+-#define PCIE_REG_SLOT_CONTROL2		0x678
+-#define PCIE_REG_UTL_CONFIG		0x680
+-#define PCIE_REG_BUFFERS_CONFIG		0x690
+-#define PCIE_REG_ERROR_INJECT		0x698
+-#define PCIE_REG_SRIOV_CONFIG		0x6a0
+-#define PCIE_REG_PF0_SRIOV_STATUS	0x6a8
+-#define PCIE_REG_PF1_SRIOV_STATUS	0x6b0
+-#define PCIE_REG_PORT_NUMBER		0x700
+-#define PCIE_REG_POR_SYSTEM_CONFIG	0x708
+-
+-/* PHB internal logic registers */
+-#define PCIE_REG_PHB_VERSION		0x800
+-#define PCIE_REG_RESET			0x808
+-#define PCIE_REG_PHB_CONTROL		0x810
+-#define PCIE_REG_PHB_TIMEOUT_CONTROL1	0x878
+-#define PCIE_REG_PHB_QUIESCE_DMA	0x888
+-#define PCIE_REG_PHB_DMA_READ_TAG_ACTV	0x900
+-#define PCIE_REG_PHB_TCE_READ_TAG_ACTV	0x908
+-
+-/* FIR registers */
+-#define PCIE_REG_LEM_FIR_ACCUM		0xc00
+-#define PCIE_REG_LEM_FIR_AND_MASK	0xc08
+-#define PCIE_REG_LEM_FIR_OR_MASK	0xc10
+-#define PCIE_REG_LEM_ACTION0		0xc18
+-#define PCIE_REG_LEM_ACTION1		0xc20
+-#define PCIE_REG_LEM_ERROR_MASK		0xc30
+-#define PCIE_REG_LEM_ERROR_AND_MASK	0xc38
+-#define PCIE_REG_LEM_ERROR_OR_MASK	0xc40
+-
+-/* PHB Error registers */
+-#define PCIE_REG_PHB_ERR_STATUS		0xc80
+-#define PCIE_REG_PHB_ERR1_STATUS	0xc88
+-#define PCIE_REG_PHB_ERR_INJECT		0xc90
+-#define PCIE_REG_PHB_ERR_LEM_ENABLE	0xc98
+-#define PCIE_REG_PHB_ERR_IRQ_ENABLE	0xca0
+-#define PCIE_REG_PHB_ERR_FREEZE_ENABLE	0xca8
+-#define PCIE_REG_PHB_ERR_SIDE_ENABLE	0xcb8
+-#define PCIE_REG_PHB_ERR_LOG_0		0xcc0
+-#define PCIE_REG_PHB_ERR_LOG_1		0xcc8
+-#define PCIE_REG_PHB_ERR_STATUS_MASK	0xcd0
+-#define PCIE_REG_PHB_ERR1_STATUS_MASK	0xcd8
+-
+-#define PCIE_REG_MMIO_ERR_STATUS	0xd00
+-#define PCIE_REG_MMIO_ERR1_STATUS	0xd08
+-#define PCIE_REG_MMIO_ERR_INJECT	0xd10
+-#define PCIE_REG_MMIO_ERR_LEM_ENABLE	0xd18
+-#define PCIE_REG_MMIO_ERR_IRQ_ENABLE	0xd20
+-#define PCIE_REG_MMIO_ERR_FREEZE_ENABLE	0xd28
+-#define PCIE_REG_MMIO_ERR_SIDE_ENABLE	0xd38
+-#define PCIE_REG_MMIO_ERR_LOG_0		0xd40
+-#define PCIE_REG_MMIO_ERR_LOG_1		0xd48
+-#define PCIE_REG_MMIO_ERR_STATUS_MASK	0xd50
+-#define PCIE_REG_MMIO_ERR1_STATUS_MASK	0xd58
+-
+-#define PCIE_REG_DMA_ERR_STATUS		0xd80
+-#define PCIE_REG_DMA_ERR1_STATUS	0xd88
+-#define PCIE_REG_DMA_ERR_INJECT		0xd90
+-#define PCIE_REG_DMA_ERR_LEM_ENABLE	0xd98
+-#define PCIE_REG_DMA_ERR_IRQ_ENABLE	0xda0
+-#define PCIE_REG_DMA_ERR_FREEZE_ENABLE	0xda8
+-#define PCIE_REG_DMA_ERR_SIDE_ENABLE	0xdb8
+-#define PCIE_REG_DMA_ERR_LOG_0		0xdc0
+-#define PCIE_REG_DMA_ERR_LOG_1		0xdc8
+-#define PCIE_REG_DMA_ERR_STATUS_MASK	0xdd0
+-#define PCIE_REG_DMA_ERR1_STATUS_MASK	0xdd8
+-
+-/* Shortcuts for access to the above using the PHB definitions
+- * with an offset
+- */
+-#define PCIE_REG_ERR_PHB_OFFSET		0x0
+-#define PCIE_REG_ERR_MMIO_OFFSET	0x80
+-#define PCIE_REG_ERR_DMA_OFFSET		0x100
+-
+-/* Debug and Trace registers */
+-#define PCIE_REG_PHB_DEBUG_CONTROL0	0xe00
+-#define PCIE_REG_PHB_DEBUG_STATUS0	0xe08
+-#define PCIE_REG_PHB_DEBUG_CONTROL1	0xe10
+-#define PCIE_REG_PHB_DEBUG_STATUS1	0xe18
+-#define PCIE_REG_PHB_DEBUG_CONTROL2	0xe20
+-#define PCIE_REG_PHB_DEBUG_STATUS2	0xe28
+-#define PCIE_REG_PHB_DEBUG_CONTROL3	0xe30
+-#define PCIE_REG_PHB_DEBUG_STATUS3	0xe38
+-#define PCIE_REG_PHB_DEBUG_CONTROL4	0xe40
+-#define PCIE_REG_PHB_DEBUG_STATUS4	0xe48
+-#define PCIE_REG_PHB_DEBUG_CONTROL5	0xe50
+-#define PCIE_REG_PHB_DEBUG_STATUS5	0xe58
+-#define PCIE_REG_PHB_DEBUG_CONTROL6	0xe60
+-#define PCIE_REG_PHB_DEBUG_STATUS6	0xe68
+-
+-/* Definition for PCIe errors */
+-struct wsp_pcie_err_log_data {
+-	__u64	phb_err;
+-	__u64	phb_err1;
+-	__u64	phb_log0;
+-	__u64	phb_log1;
+-	__u64	mmio_err;
+-	__u64	mmio_err1;
+-	__u64	mmio_log0;
+-	__u64	mmio_log1;
+-	__u64	dma_err;
+-	__u64	dma_err1;
+-	__u64	dma_log0;
+-	__u64	dma_log1;
+-	__u64	utl_sys_err;
+-	__u64	utl_port_err;
+-	__u64	utl_rc_err;
+-	__u64	unused;
+-};
+-
+-#endif /* __WSP_PCI_H */
+-- 
+1.9.1
