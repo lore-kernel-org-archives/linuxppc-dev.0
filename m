@@ -1,42 +1,24 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B6C81A024F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 10:05:48 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 29 May 2014 10:05:47 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 96B4D3578055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 10:05:44 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4SNi8rS6488572
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 09:44:08 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4T05hEN024777
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 10:05:43 +1000
-Date: Thu, 29 May 2014 10:05:43 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alex Williamson <alex.williamson@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B339D1A024F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 10:45:07 +1000 (EST)
+Message-ID: <1401324295.8262.42.camel@pasglop>
 Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-Message-ID: <20140529000543.GA9645@shangw>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Thu, 29 May 2014 10:44:55 +1000
+In-Reply-To: <20140529000543.GA9645@shangw>
 References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401214527.3289.611.camel@ul30vt.home>
- <20140528005532.GA5528@shangw>
- <1401294731.2412.42.camel@ul30vt.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1401294731.2412.42.camel@ul30vt.home>
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, agraf@suse.de, qiudayu@linux.vnet.ibm.com,
+ <1401214527.3289.611.camel@ul30vt.home> <20140528005532.GA5528@shangw>
+ <1401294731.2412.42.camel@ul30vt.home> <20140529000543.GA9645@shangw>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@ozlabs.ru, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, qiudayu@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,632 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 28, 2014 at 10:32:11AM -0600, Alex Williamson wrote:
->On Wed, 2014-05-28 at 10:55 +1000, Gavin Shan wrote:
->> On Tue, May 27, 2014 at 12:15:27PM -0600, Alex Williamson wrote:
->> >On Tue, 2014-05-27 at 18:40 +1000, Gavin Shan wrote:
->> >> The patch adds new IOCTL commands for sPAPR VFIO container device
->> >> to support EEH functionality for PCI devices, which have been passed
->> >> through from host to somebody else via VFIO.
->> >> 
->> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> >> ---
->> >>  Documentation/vfio.txt              | 92 ++++++++++++++++++++++++++++++++++++-
->> >>  drivers/vfio/pci/Makefile           |  1 +
->> >>  drivers/vfio/pci/vfio_pci.c         | 20 +++++---
->> >>  drivers/vfio/pci/vfio_pci_eeh.c     | 46 +++++++++++++++++++
->> >>  drivers/vfio/pci/vfio_pci_private.h |  5 ++
->> >>  drivers/vfio/vfio_iommu_spapr_tce.c | 85 ++++++++++++++++++++++++++++++++++
->> >>  include/uapi/linux/vfio.h           | 66 ++++++++++++++++++++++++++
->> >>  7 files changed, 308 insertions(+), 7 deletions(-)
->> >>  create mode 100644 drivers/vfio/pci/vfio_pci_eeh.c
->> >> 
->> >> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->> >> index b9ca023..d890fed 100644
->> >> --- a/Documentation/vfio.txt
->> >> +++ b/Documentation/vfio.txt
->> >> @@ -305,7 +305,15 @@ faster, the map/unmap handling has been implemented in real mode which provides
->> >>  an excellent performance which has limitations such as inability to do
->> >>  locked pages accounting in real time.
->> >>  
->> >> -So 3 additional ioctls have been added:
->> >> +4) According to sPAPR specification, A Partitionable Endpoint (PE) is an I/O
->> >> +subtree that can be treated as a unit for the purposes of partitioning and
->> >> +error recovery. A PE may be a single or multi-function IOA (IO Adapter), a
->> >> +function of a multi-function IOA, or multiple IOAs (possibly including switch
->> >> +and bridge structures above the multiple IOAs). PPC64 guests detect PCI errors
->> >> +and recover from them via EEH RTAS services, which works on the basis of
->> >> +additional ioctl commands.
->> >> +
->> >> +So 7 additional ioctls have been added:
->> >>  
->> >>  	VFIO_IOMMU_SPAPR_TCE_GET_INFO - returns the size and the start
->> >>  		of the DMA window on the PCI bus.
->> >> @@ -316,6 +324,17 @@ So 3 additional ioctls have been added:
->> >>  
->> >>  	VFIO_IOMMU_DISABLE - disables the container.
->> >>  
->> >> +	VFIO_EEH_PE_SET_OPTION - enables or disables EEH functionality on the
->> >> +		specified device. Also, it can be used to remove IO or DMA
->> >> +		stopped state on the frozen PE.
->> >> +
->> >> +	VFIO_EEH_PE_GET_STATE - retrieve PE's state: frozen or normal state.
->> >> +
->> >> +	VFIO_EEH_PE_RESET - do PE reset, which is one of the major steps for
->> >> +		error recovering.
->> >> +
->> >> +	VFIO_EEH_PE_CONFIGURE - configure the PCI bridges after PE reset. It's
->> >> +		one of the major steps for error recoverying.
->> >>  
->> >>  The code flow from the example above should be slightly changed:
->> >>  
->> >> @@ -346,6 +365,77 @@ The code flow from the example above should be slightly changed:
->> >>  	ioctl(container, VFIO_IOMMU_MAP_DMA, &dma_map);
->> >>  	.....
->> >>  
->> >> +Based on the initial example we have, the following piece of code could be
->> >> +reference for EEH setup and error handling:
->> >> +
->> >> +	struct vfio_eeh_pe_set_option option = { .argsz = sizeof(option) };
->> >> +	struct vfio_eeh_pe_get_state state = { .argsz = sizeof(state) };
->> >> +	struct vfio_eeh_pe_reset reset = { .argsz = sizeof(reset) };
->> >> +	struct vfio_eeh_pe_configure configure = { .argsz = sizeof(configure) };
->> >> +
->> >> +	....
->> >> +
->> >> +	/* Get a file descriptor for the device */
->> >> +	device = ioctl(group, VFIO_GROUP_GET_DEVICE_FD, "0000:06:0d.0");
->> >> +
->> >> +	/* Enable the EEH functionality on the device */
->> >> +	option.option = VFIO_EEH_PE_SET_OPT_ENABLE;
->> >> +	ioctl(container, VFIO_EEH_PE_SET_OPTION, &option);
->> >> +
->> >> +	/* You're suggested to create additional data struct to represent
->> >> +	 * PE, and put child devices belonging to same IOMMU group to the
->> >> +	 * PE instance for later reference.
->> >> +	 */
->> >> +
->> >> +	/* Check the PE's state and make sure it's in functional state */
->> >> +	ioctl(container, VFIO_EEH_PE_GET_STATE, &state);
->> >> +
->> >> +	/* Save device's state. pci_save_state() would be good enough
->> >> +	 * as an example.
->> >> +	 */
->> >> +
->> >> +	/* Test and setup the device */
->> >> +	ioctl(device, VFIO_DEVICE_GET_INFO, &device_info);
->> >> +
->> >> +	....
->> >> +
->> >> +	/* When 0xFF's returned from reading PCI config space or IO BARs
->> >> +	 * of the PCI device. Check the PE state to see if that has been
->> >> +	 * frozen.
->> >> +	 */
->> >> +	ioctl(container, VFIO_EEH_PE_GET_STATE, &state);
->> >> +
->> >> +	/* Waiting for pending PCI transactions to be completed and don't
->> >> +	 * produce any more PCI traffic from/to the affected PE until
->> >> +	 * recovery is finished.
->> >> +	 */
->> >> +
->> >> +	/* Enable IO for the affected PE and collect logs. Usually, the
->> >> +	 * standard part of PCI config space, AER registers are dumped
->> >> +	 * as logs for further analysis.
->> >> +	 */
->> >> +	option.option = VFIO_EEH_PE_SET_OPT_IO;
->> >> +	ioctl(container, VFIO_EEH_PE_SET_OPTION, &option);
->> >> +
->> >> +	/* Issue PE reset */
->> >> +	reset.option = VFIO_EEH_PE_RESET_HOT;
->> >> +	ioctl(container, VFIO_EEH_PE_RESET, &reset);
->> >> +	reset.option = VFIO_EEH_PE_RESET_DEACTIVATE;
->> >> +	ioctl(container, VFIO_EEH_PE_RESET, &reset);
->> >> +
->> >> +	/* Configure the PCI bridges for the affected PE */
->> >> +	ioctl(container, VFIO_EEH_PE_CONFIGURE, &configure);
->> >> +
->> >> +	/* Restored state we saved at initialization time. pci_restore_state()
->> >> +	 * is good enough as an example.
->> >> +	 */
->> >> +
->> >> +	/* Hopefully, error is recovered successfully. Now, you can resume to
->> >> +	 * start PCI traffic to/from the affected PE.
->> >> +	 */
->> >> +
->> >> +	....
->> >> +
->> >>  -------------------------------------------------------------------------------
->> >>  
->> >>  [1] VFIO was originally an acronym for "Virtual Function I/O" in its
->> >> diff --git a/drivers/vfio/pci/Makefile b/drivers/vfio/pci/Makefile
->> >> index 1310792..faad885 100644
->> >> --- a/drivers/vfio/pci/Makefile
->> >> +++ b/drivers/vfio/pci/Makefile
->> >> @@ -1,4 +1,5 @@
->> >>  
->> >>  vfio-pci-y := vfio_pci.o vfio_pci_intrs.o vfio_pci_rdwr.o vfio_pci_config.o
->> >> +vfio-pci-y += vfio_pci_eeh.o
->> >
->> >Why do we build this w/o CONFIG_EEH?  Can't we define the functions as
->> >static inline in the header in that case?
->> >
->> 
->> Ok. Will do in next revision.
->> 
->> >>  obj-$(CONFIG_VFIO_PCI) += vfio-pci.o
->> >> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
->> >> index 7ba0424..7c8d26a 100644
->> >> --- a/drivers/vfio/pci/vfio_pci.c
->> >> +++ b/drivers/vfio/pci/vfio_pci.c
->> >> @@ -156,8 +156,10 @@ static void vfio_pci_release(void *device_data)
->> >>  {
->> >>  	struct vfio_pci_device *vdev = device_data;
->> >>  
->> >> -	if (atomic_dec_and_test(&vdev->refcnt))
->> >> +	if (atomic_dec_and_test(&vdev->refcnt)) {
->> >> +		vfio_pci_eeh_release(vdev->pdev);
->> >>  		vfio_pci_disable(vdev);
->> >> +	}
->> >>  
->> >>  	module_put(THIS_MODULE);
->> >>  }
->> >> @@ -165,19 +167,25 @@ static void vfio_pci_release(void *device_data)
->> >>  static int vfio_pci_open(void *device_data)
->> >>  {
->> >>  	struct vfio_pci_device *vdev = device_data;
->> >> +	int ret;
->> >>  
->> >>  	if (!try_module_get(THIS_MODULE))
->> >>  		return -ENODEV;
->> >>  
->> >>  	if (atomic_inc_return(&vdev->refcnt) == 1) {
->> >> -		int ret = vfio_pci_enable(vdev);
->> >> -		if (ret) {
->> >> -			module_put(THIS_MODULE);
->> >> -			return ret;
->> >> -		}
->> >> +		ret = vfio_pci_enable(vdev);
->> >> +		if (ret)
->> >> +			goto error;
->> >> +
->> >> +		ret = vfio_pci_eeh_open(vdev->pdev);
->> >> +		if (ret)
->> >> +			goto error;
->> >>  	}
->> >>  
->> >>  	return 0;
->> >> +error:
->> >> +	module_put(THIS_MODULE);
->> >> +	return ret;
->> >>  }
->> >>  
->> >>  static int vfio_pci_get_irq_count(struct vfio_pci_device *vdev, int irq_type)
->> >> diff --git a/drivers/vfio/pci/vfio_pci_eeh.c b/drivers/vfio/pci/vfio_pci_eeh.c
->> >> new file mode 100644
->> >> index 0000000..9c25207
->> >> --- /dev/null
->> >> +++ b/drivers/vfio/pci/vfio_pci_eeh.c
->> >> @@ -0,0 +1,46 @@
->> >> +/*
->> >> + * EEH functionality support for VFIO PCI devices.
->> >> + *
->> >> + * Copyright Gavin Shan, IBM Corporation 2014.
->> >> + *
->> >> + * This program is free software; you can redistribute it and/or modify
->> >> + * it under the terms of the GNU General Public License version 2 as
->> >> + * published by the Free Software Foundation.
->> >> + */
->> >> +
->> >> +#include <linux/device.h>
->> >> +#include <linux/eventfd.h>
->> >> +#include <linux/file.h>
->> >> +#include <linux/interrupt.h>
->> >> +#include <linux/iommu.h>
->> >> +#include <linux/module.h>
->> >> +#include <linux/mutex.h>
->> >> +#include <linux/notifier.h>
->> >> +#include <linux/pci.h>
->> >> +#include <linux/pm_runtime.h>
->> >> +#include <linux/slab.h>
->> >> +#include <linux/types.h>
->> >> +#include <linux/uaccess.h>
->> >> +#include <linux/vfio.h>
->> >
->> >Cleanup the includes
->> >
->> 
->> Ok. Will do in next revision.
->> 
->> >> +#ifdef CONFIG_EEH
->> >> +#include <asm/eeh.h>
->> >> +#endif
->> >
->> >This shouldn't even be compiles w/o CONFIG_EEH
->> >
->> 
->> Yeah. Will fix in next revision as you suggested.
->> 
->> >> +
->> >> +#include "vfio_pci_private.h"
->> >> +
->> >> +int vfio_pci_eeh_open(struct pci_dev *pdev)
->> >> +{
->> >> +	int ret = 0;
->> >> +
->> >> +#ifdef CONFIG_EEH
->> >> +	ret = eeh_dev_open(pdev);
->> >> +#endif
->> >> +	return ret;
->> >> +}
->> >> +
->> >> +void vfio_pci_eeh_release(struct pci_dev *pdev)
->> >> +{
->> >> +#ifdef CONFIG_EEH
->> >> +	eeh_dev_release(pdev);
->> >> +#endif
->> >> +}
->> >> diff --git a/drivers/vfio/pci/vfio_pci_private.h b/drivers/vfio/pci/vfio_pci_private.h
->> >> index 9c6d5d0..c3cbe40 100644
->> >> --- a/drivers/vfio/pci/vfio_pci_private.h
->> >> +++ b/drivers/vfio/pci/vfio_pci_private.h
->> >> @@ -90,4 +90,9 @@ extern void vfio_pci_virqfd_exit(void);
->> >>  
->> >>  extern int vfio_config_init(struct vfio_pci_device *vdev);
->> >>  extern void vfio_config_free(struct vfio_pci_device *vdev);
->> >> +
->> >> +/* EEH stub */
->> >> +extern int vfio_pci_eeh_open(struct pci_dev *pdev);
->> >> +extern void vfio_pci_eeh_release(struct pci_dev *pdev);
->> >
->> >The #ifdef with static inlines should be here.
->> >
->> 
->> thanks for the detailed comments.
->> 
->> >> +
->> >>  #endif /* VFIO_PCI_PRIVATE_H */
->> >> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> >> index a84788b..666691b 100644
->> >> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> >> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> >> @@ -21,6 +21,9 @@
->> >>  #include <linux/vfio.h>
->> >>  #include <asm/iommu.h>
->> >>  #include <asm/tce.h>
->> >> +#ifdef CONFIG_EEH
->> >> +#include <asm/eeh.h>
->> >> +#endif
->> >
->> >Now we're infecting another file with EEH, can't we put it in a central
->> >location for vfio?
->> 
->> How about something like this:
->> 
->> - Create drivers/vfio/vfio_eeh.c and it will be built when having CONFIG_EEH
->> - Declare all EEH functions in include/linux/vfio.h (it's the only central
->>   header file I can find except you have a better one).
->> 
->> #ifdef CONFIG_EEH
->> extern int vfio_pci_eeh_open(struct pci_dev *pdev);
->> extern void vfio_pci_eeh_release(struct pci_dev *pdev);
->> extern long vfio_iommu_spapr_eeh_ioctl(struct iommu_table *tbl,
->> 				       unsigned int cmd, unsigned long arg); 
->> #else
->> static int vfio_pci_eeh_open(struct pci_dev *pdev)
->> {
->> 	return 0;
->> }
->> 
->> static void vfio_pci_eeh_release(struct pci_dev *pdev)
->> {
->> }
->> 
->> static inline vfio_iommu_spapr_eeh_ioctl(struct iommu_table *tbl,
->> 					 unsigned int cmd, unsigned long arg);
->> {
->> 	return -ENOTTY;
->> }
->> #endif
->
->Seems like an improvement
->
+On Thu, 2014-05-29 at 10:05 +1000, Gavin Shan wrote:
+> The log stuff is TBD and I'll figure it out later.
+> 
+> About to what are the errors, there are a lot. Most of them are related
+> to hardware level, for example unstable PCI link. Usually, those error
+> bits defined in AER fatal error state register contribute to EEH errors.
+> It could be software related, e.g. violating IOMMU protection (read/write
+> permission etc), or even one PCI device isn't capable of DMAing. Hopefully,
+> it's the explaination you're looking for? :-)
 
-So I'll include the change in next revision.
+Note to Alex('s) ...
 
->> >>  
->> >>  #define DRIVER_VERSION  "0.1"
->> >>  #define DRIVER_AUTHOR   "aik@ozlabs.ru"
->> >> @@ -147,6 +150,83 @@ static void tce_iommu_release(void *iommu_data)
->> >>  	kfree(container);
->> >>  }
->> >>  
->> >> +static long tce_iommu_eeh_ioctl(void *iommu_data,
->> >> +				unsigned int cmd, unsigned long arg)
->> >> +{
->> >> +	struct tce_container *container = iommu_data;
->> >> +	unsigned long minsz;
->> >> +	int ret = 0;
->> >> +
->> >> +#ifdef CONFIG_EEH
->> >> +	switch (cmd) {
->> >> +	case VFIO_EEH_PE_SET_OPTION: {
->> >> +		struct vfio_eeh_pe_set_option option;
->> >> +
->> >> +		minsz = offsetofend(struct vfio_eeh_pe_set_option, option);
->> >> +		if (copy_from_user(&option, (void __user *)arg, minsz))
->> >> +			return -EFAULT;
->> >> +		if (option.argsz < minsz)
->> >> +			return -EINVAL;
->> >> +
->> >> +		ret = eeh_pe_set_option(eeh_iommu_table_to_pe(container->tbl),
->> >> +					option.option);
->> >> +		break;
->> >> +	}
->> >> +	case VFIO_EEH_PE_GET_STATE: {
->> >> +		struct vfio_eeh_pe_get_state state;
->> >> +
->> >> +		minsz = offsetofend(struct vfio_eeh_pe_get_state, state);
->> >> +		if (copy_from_user(&state, (void __user *)arg, minsz))
->> >> +			return -EFAULT;
->> >> +		if (state.argsz < minsz)
->> >> +			return -EINVAL;
->> >> +
->> >> +		ret = eeh_pe_get_state(eeh_iommu_table_to_pe(container->tbl));
->> >> +		if (ret >= 0) {
->> >> +			state.state = ret;
->> >> +			if (copy_to_user((void __user *)arg, &state, minsz))
->> >> +				return -EFAULT;
->> >> +			ret = 0;
->> >> +		}
->> >
->> >This looks like one of those cases where you should just use the ioctl
->> >return value.
->> >
->> 
->> Ok. I'll use ioctl return value to carry output information. Note it might
->> have "0" as the output information.
->
->I think that's fine.
->
->
+The log we get from FW at the moment in the host is:
 
-Ok. Thanks. I'll going to have "combined" ioctl command as you just suggested.
-Also to use the return value from ioctl() for informtion carriage.
+  - In the case of pHyp / RTAS host, opaque. Basically it's a blob that we store
+and that can be sent to IBM service people :-) Not terribly practical.
 
->> >> +		break;
->> >> +	}
->> >> +	case VFIO_EEH_PE_RESET: {
->> >> +		struct vfio_eeh_pe_reset reset;
->> >> +
->> >> +		minsz = offsetofend(struct vfio_eeh_pe_reset, option);
->> >> +		if (copy_from_user(&reset, (void __user *)arg, minsz))
->> >> +			return -EFAULT;
->> >> +		if (reset.argsz < minsz)
->> >> +			return -EINVAL;
->> >> +
->> >> +		ret = eeh_pe_reset(eeh_iommu_table_to_pe(container->tbl),
->> >> +				   reset.option);
->> >> +		break;
->> >> +	}
->> >> +	case VFIO_EEH_PE_CONFIGURE: {
->> >> +		struct vfio_eeh_pe_configure configure;
->> >> +
->> >> +		minsz = offsetofend(struct vfio_eeh_pe_configure, flags);
->> >> +		if (copy_from_user(&configure, (void __user *)arg, minsz))
->> >> +			return -EFAULT;
->> >> +		if (configure.argsz < minsz)
->> >> +			return -EINVAL;
->> >> +
->> >> +		ret = eeh_pe_configure(eeh_iommu_table_to_pe(container->tbl));
->> >> +		break;
->> >> +	}
->> >> +	default:
->> >> +		ret = -EINVAL;
->> >> +		pr_debug("%s: Cannot handle command %d\n",
->> >> +			__func__, cmd);
->> >> +	}
->> >> +#else
->> >> +	ret = -ENOENT;
->> >> +#endif
->> >
->> >Hmm, more like a BUG in the default case the way it's coded here (not
->> >even sure it's worth the default entry).  The #else case should probably
->> >be -ENOTTY like other unimplemented ioctls.
->> >
->> 
->> Yeah, we don't need default case here and I'll remove it in next revision.
->> Also, "-ENOTTY" will be used in future for unimplemented functions.
->> 
->> >> +
->> >> +	return ret;
->> >> +}
->> >> +
->> >>  static long tce_iommu_ioctl(void *iommu_data,
->> >>  				 unsigned int cmd, unsigned long arg)
->> >>  {
->> >> @@ -283,6 +363,11 @@ static long tce_iommu_ioctl(void *iommu_data,
->> >>  		tce_iommu_disable(container);
->> >>  		mutex_unlock(&container->lock);
->> >>  		return 0;
->> >> +	case VFIO_EEH_PE_SET_OPTION:
->> >> +	case VFIO_EEH_PE_GET_STATE:
->> >> +	case VFIO_EEH_PE_RESET:
->> >> +	case VFIO_EEH_PE_CONFIGURE:
->> >> +		return tce_iommu_eeh_ioctl(iommu_data, cmd, arg);
->> >
->> >This is where it would have really made sense to have a single
->> >VFIO_EEH_OP ioctl with a data structure passed to indicate the sub-op.
->> >AlexG, are you really attached to splitting these out into separate
->> >ioctls?
->> >
->> 
->> I really don't know. Alex.G want separate ioctl commands, but you
->> suggested to combine them. Could you guys please just tell me which
->> one (separate vs combined) I need to have in next revision? :-)
->> 
->> >>  	}
->> >>  
->> >>  	return -ENOTTY;
->> >> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
->> >> index cb9023d..c5fac36 100644
->> >> --- a/include/uapi/linux/vfio.h
->> >> +++ b/include/uapi/linux/vfio.h
->> >> @@ -455,6 +455,72 @@ struct vfio_iommu_spapr_tce_info {
->> >>  
->> >>  #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
->> >>  
->> >> +/*
->> >> + * EEH functionality can be enabled or disabled on one specific device.
->> >> + * Also, the DMA or IO frozen state can be removed from the frozen PE
->> >> + * if required.
->> >> + */
->> >> +struct vfio_eeh_pe_set_option {
->> >> +	__u32 argsz;
->> >> +	__u32 flags;
->> >> +	__u32 option;
->> >> +#define VFIO_EEH_PE_SET_OPT_DISABLE	0	/* Disable EEH	*/
->> >> +#define VFIO_EEH_PE_SET_OPT_ENABLE	1	/* Enable EEH	*/
->> >> +#define VFIO_EEH_PE_SET_OPT_IO		2	/* Enable IO	*/
->> >> +#define VFIO_EEH_PE_SET_OPT_DMA		3	/* Enable DMA	*/
->> >
->> >This is more of a "command" than an "option" isn't it?  Each of these
->> >probably needs a more significant description.
->> >
->> 
->> Yeah, it would be regarded as "opcode" and I'll add more description about
->> them in next revision.
->> 
->> >> +};
->> >> +
->> >> +#define VFIO_EEH_PE_SET_OPTION		_IO(VFIO_TYPE, VFIO_BASE + 21)
->> >> +
->> >> +/*
->> >> + * Each EEH PE should have unique address to be identified. PE's
->> >> + * sharing mode is also useful information as well.
->> >> + */
->> >> +#define VFIO_EEH_PE_GET_ADDRESS		0	/* Get address	*/
->> >> +#define VFIO_EEH_PE_GET_MODE		1	/* Query mode	*/
->> >> +#define VFIO_EEH_PE_MODE_NONE		0	/* Not a PE	*/
->> >> +#define VFIO_EEH_PE_MODE_NOT_SHARED	1	/* Exclusive	*/
->> >> +#define VFIO_EEH_PE_MODE_SHARED		2	/* Shared mode	*/
->> >> +
->> >> +/*
->> >> + * EEH PE might have been frozen because of PCI errors. Also, it might
->> >> + * be experiencing reset for error revoery. The following command helps
->> >> + * to get the state.
->> >> + */
->> >> +struct vfio_eeh_pe_get_state {
->> >> +	__u32 argsz;
->> >> +	__u32 flags;
->> >> +	__u32 state;
->> >> +};
->> >
->> >Should state be a union to better describe the value returned?  What
->> >exactly is the address and why does the user need to know it?  Does this
->> >need user input or could we just return the address and mode regardless?
->> >
->> 
->> Ok. I think you want enum (not union) for state. I'll have macros for the
->> state in next revision as I did that for other cases.
->> 
->> Those macros defined for "address" just for ABI stuff as Alex.G mentioned.
->> There isn't corresponding ioctl command for host to get address any more
->> because QEMU (user) will have to figure it out by himself. The "address"
->> here means PE address and user has to figure it out according to PE
->> segmentation.
->> 
->> >> +
->> >> +#define VFIO_EEH_PE_GET_STATE		_IO(VFIO_TYPE, VFIO_BASE + 22)
->> >> +
->> >> +/*
->> >> + * Reset is the major step to recover problematic PE. The following
->> >> + * command helps on that.
->> >> + */
->> >> +struct vfio_eeh_pe_reset {
->> >> +	__u32 argsz;
->> >> +	__u32 flags;
->> >> +	__u32 option;
->> >> +#define VFIO_EEH_PE_RESET_DEACTIVATE	0	/* Deactivate reset	*/
->> >> +#define VFIO_EEH_PE_RESET_HOT		1	/* Hot reset		*/
->> >> +#define VFIO_EEH_PE_RESET_FUNDAMENTAL	3	/* Fundamental reset	*/
->> >
->> >How does a user know which of these to use?
->> >
->> 
->> I think Ben already helped explaining it for a lot in the subsequent
->> replies. Thanks to Ben :-)
->> 
->> >> +};
->> >> +
->> >> +#define VFIO_EEH_PE_RESET		_IO(VFIO_TYPE, VFIO_BASE + 23)
->> >> +
->> >> +/*
->> >> + * One of the steps for recovery after PE reset is to configure the
->> >> + * PCI bridges affected by the PE reset.
->> >> + */
->> >> +struct vfio_eeh_pe_configure {
->> >> +	__u32 argsz;
->> >> +	__u32 flags;
->> >> +};
->> >
->> >Parameters are probably not necessary here.
->> >
->> 
->> Yep. I'll remove it in next revision. Thanks for your comments, Alex.
->> 
->> >> +
->> >> +#define VFIO_EEH_PE_CONFIGURE		_IO(VFIO_TYPE, VFIO_BASE + 24)
->> >> +
->> >>  /* ***************************************************************** */
->> >>  
->> >>  #endif /* _UAPIVFIO_H */
->> >
->> >How does a user learn that a device supports EEH?  Do they just start
->> >making ioctl calls and getting a failure?  Shouldn't we make use of one
->> >of the flag bits on the device or add a capability on the container for
->> >the user to query?
->> >
->> 
->> User needs to make some ioctl calls to make sure EEH can be supported on
->> one specific device:
->> 
->> 	struct vfio_eeh_pe_set_option set_option;
->> 
->> 	/* User have to make sure the device isn't a bridge and there
->> 	 * has one PE for it, which means that case of VFIO_EEH_PE_MODE_NONE.
->> 	 */
->> 
->> 	set_option.argsz = sizeof(set_option);
->> 	set_option.option = VFIO_EEH_PE_SET_OPT_ENABLE;
->> 	ret = ioctl(container, VFIO_EEH_PE_SET_OPTION, &set_option);
->> 	if (ret < 0) {
->> 		/* EEH can't supported */
->> 	}
->
->No, the user should be able to query whether it's available with
->VFIO_CHECK_EXTENSION.
->
+  - On PowerNV, it's a IODA specific data structure (basically a dump of a 
+bunch of register state and tables). IODA is our IO architecture (sadly the
+document itself isn't public at this point) and we have two versions, IODA1
+and IODA2. You can consider the structure as chipset specific basically.
 
-Sounds like a good idea. If you agree, I'll have one more extention option
-and use it in tce_iommu_ioctl():
+What I want to do in the long run is:
 
-#define VFIO_EEH_SUPPORT	5
+  - In the case of pHyp/RTAS host, there's not much we can do, so basically
+forward that log as-is.
 
->I think I'm also still looking for an explanation of how the user learns
->about the error that occurred, not just that it occurred, but what it
->was.  The description of the recovery process indicates a lot retrieval
->step, but there's no interface here for the user to get logs.  Is that a
->TBD?  Thanks,
->
+  - In the case of PowerNV, forward the log *and* add a well-defined blob to
+it that does some basic interpretation of it. In fact I want to do the latter
+more generally in the host kernel for host kernel errors as well, but we
+can forward it to the guest via VFIO too. What I mean by interpretation is
+something along the lines of an error type "DMA IOMMU fault, MMIO error,
+Link loss, PCIe UE, ..." among a list of well known error types that
+represent the most common ones, with a little bit of added info when
+available (for most DMA errors we can provide the DMA address that faulted
+for example).
 
-The log stuff is TBD and I'll figure it out later.
+So Gavin and I need to work a bit on that, both in the context of the host
+kernel to improve the reporting there, and in the context of what we pass to
+user space.
 
-About to what are the errors, there are a lot. Most of them are related
-to hardware level, for example unstable PCI link. Usually, those error
-bits defined in AER fatal error state register contribute to EEH errors.
-It could be software related, e.g. violating IOMMU protection (read/write
-permission etc), or even one PCI device isn't capable of DMAing. Hopefully,
-it's the explaination you're looking for? :-)
+However, no driver today cares about that information. The PCIe error recovery
+system doesn't carry it and it has no impact on the EEH recovery procedures,
+so EEH in that sense is useful without that reporting. It's useful for the
+programmer (or user/admin) to identify what went wrong but it's not used by
+the automated recovery process.
 
-Thanks,
-Gavin
+One last thing to look at is in the case of a VFIO device, we might want to
+silence the host kernel printf's once we support guest EEH since otherwise
+the guest has a path to flood the host kernel log by triggering a lot of
+EEH errors purposefully.
+
+Cheers,
+Ben.
