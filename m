@@ -1,18 +1,23 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by lists.ozlabs.org (Postfix) with ESMTP id 6E3761A06D2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 01:54:48 +1000 (EST)
-Message-ID: <5388A851.2010508@tabi.org>
-Date: Fri, 30 May 2014 10:48:33 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B86821A06EA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 03:01:53 +1000 (EST)
+Message-ID: <1401469300.6603.199.camel@snotra.buserror.net>
+Subject: Re: [PATCH 2/2] powerpc/e6500: hw tablewalk: fix recursive tlb lock
+ on cpu 0
+From: Scott Wood <scottwood@freescale.com>
+To: Caraman Mihai Claudiu-B02008 <mihai.caraman@freescale.com>
+Date: Fri, 30 May 2014 12:01:40 -0500
+In-Reply-To: <65f51156027a4c8a90c670d0ba72df3c@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1400795101-8737-1-git-send-email-scottwood@freescale.com>
+ <1400795101-8737-2-git-send-email-scottwood@freescale.com>
+ <65f51156027a4c8a90c670d0ba72df3c@BY2PR03MB508.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: eshe168 <eshe168@gmail.com>
-Subject: Re: P1022 audio driver help!
-References: <2014053014034907812079@gmail.com>
-In-Reply-To: <2014053014034907812079@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- zhphsearch <zhphsearch@163.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,34 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/30/2014 01:03 AM, eshe168 wrote:
-> @timur
-> hi,
-> Audio card (wm8776) cannot work in full duplex, CPU is FSL P1022.
-> The PCB design about audio card reference FSL P1022 development board,
-> and palying or recording is OK separately.
-> My question is whether P1022 audio driver cannot support full duplex?
+On Fri, 2014-05-30 at 02:59 -0500, Caraman Mihai Claudiu-B02008 wrote:
+> > -----Original Message-----
+> > From: Linuxppc-dev [mailto:linuxppc-dev-
+> > bounces+mihai.caraman=freescale.com@lists.ozlabs.org] On Behalf Of Scott
+> > Wood
+> > Sent: Friday, May 23, 2014 12:45 AM
+> > To: linuxppc-dev@lists.ozlabs.org
+> > Cc: Wood Scott-B07421
+> > Subject: [PATCH 2/2] powerpc/e6500: hw tablewalk: fix recursive tlb lock
+> > on cpu 0
+> > 
+> > Commit 82d86de25b9c99db546e17c6f7ebf9a691da557e "TLB lock recursive"
+> > introduced a bug whereby cpu 0 uses the same value for "lock held" as
+> > is used to indicate that the lock is free.
+> 
+> Isn't his what spin lock implementation solves by combines paca_index
+> with lock_token? Can't we have a common approach?
 
-I was never able to get the P1022ds audio to work in full duplex.  After 
-trying for a few weeks, I just gave up.
+That would require expanding the lock to 32 bits, is a more intrusive
+fix than needed, and invites breakage in the TLB code if the lock_token
+mechanism were to change.
 
-If you look inside fsl_ssi.c (the main driver) you'll see this comment I 
-wrote:
+> > Add one to the CPU value to ensure we do not use zero as a "lock held"
+> > value.
+> 
+> The CPU value is loaded in r10 from tlb_miss_common_e6500. "TLB lock recursive"
+> commit also introduced this misleading comment:
+> 
+>     We are entered with:
+>     r10 = cpu number
 
-/*
-  * FIXME: The documentation says that SxCCR[WL] should not be
-  * modified while the SSI is enabled.  The only time this can
-  * happen is if we're trying to do simultaneous playback and
-  * capture in asynchronous mode.  Unfortunately, I have been enable
-  * to get that to work at all on the P1022DS.  Therefore, we don't
-  * bother to disable/enable the SSI when setting SxCCR[WL], because
-  * the SSI will stop anyway.  Maybe one day, this will get fixed.
-  */
+I addressed this in v2 that I posted yesterday.
 
-(it should say "I have been unable" instead of "I have been enable")
-
-Full duplex works fine on the MPC8610, which has the same audio 
-controller as the P1022, so I know the controller is physically capable 
-of it.  I just don't know why it doesn't work on the P1022DS.  I also 
-don't know if it's a problem with the P1022DS board or with the P1022 
-SOC itself.
+-Scott
