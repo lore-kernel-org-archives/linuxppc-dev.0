@@ -1,34 +1,41 @@
-Return-Path: <michael.neuling@gmail.com>
-Received: from mail-lb0-x22d.google.com (mail-lb0-x22d.google.com
- [IPv6:2a00:1450:4010:c04::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <a.hajda@samsung.com>
+Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
+ [210.118.77.13]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 052BB1A06D7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 19:44:14 +1000 (EST)
-Received: by mail-lb0-f173.google.com with SMTP id 10so874093lbg.32
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 02:44:08 -0700 (PDT)
-MIME-Version: 1.0
-Sender: michael.neuling@gmail.com
-In-Reply-To: <53884BC6.8030904@suse.de>
-References: <1401106626-13130-1-git-send-email-paulus@samba.org>
- <1401106626-13130-4-git-send-email-paulus@samba.org>
- <5385E620.5090703@suse.de>
- <1401342462.4116.4.camel@ale.ozlabs.ibm.com>
- <1401344549.4116.8.camel@ale.ozlabs.ibm.com>
- <BD1CF085-FEBC-4208-AD3F-C55DB002097F@suse.de>
- <1401349547.4116.19.camel@ale.ozlabs.ibm.com>
- <1401440207.29324.10.camel@concordia>
- <1401441046.13479.2.camel@ale.ozlabs.ibm.com>
- <53884BC6.8030904@suse.de>
-Date: Fri, 30 May 2014 19:44:08 +1000
-Message-ID: <CAEjGV6ym8pX6eOzcPb+CY7U-wDUSp5wKBOBuW3m1ZmKzSdhyfg@mail.gmail.com>
-Subject: Re: powerpc/pseries: Use new defines when calling h_set_mode
-From: Michael Neuling <mikey@neuling.org>
-To: Alexander Graf <agraf@suse.de>
-Content-Type: multipart/alternative; boundary=089e01537baa19116304fa9ae300
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D4E6D1A06D9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 20:21:29 +1000 (EST)
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout3.w1.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0N6D00LDMTMT7W60@mailout3.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Fri, 30 May 2014 11:11:17 +0100 (BST)
+From: Andrzej Hajda <a.hajda@samsung.com>
+To: Lee Jones <lee.jones@linaro.org>, Jingoo Han <jg1.han@samsung.com>,
+ Bryan Wu <cooloney@gmail.com>
+Subject: [PATCH 0/2] backlight: remove trivial get_brightness implementations
+Date: Fri, 30 May 2014 12:10:48 +0200
+Message-id: <1401444650-12267-1-git-send-email-a.hajda@samsung.com>
+Cc: Milo Kim <milo.kim@ti.com>,
+ "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>,
+ "open list:X86 PLATFORM DRIVERS" <platform-driver-x86@vger.kernel.org>,
+ Andrzej Hajda <a.hajda@samsung.com>, Thierry Reding <thierry.reding@gmail.com>,
+ Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+ Yijing Wang <wangyijing@huawei.com>,
+ Matthew Garrett <matthew.garrett@nebula.com>,
+ Kukjin Kim <kgene.kim@samsung.com>, Sachin Kamat <sachin.kamat@linaro.org>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Daniel Vetter <daniel.vetter@ffwll.ch>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Dan Carpenter <dan.carpenter@oracle.com>,
+ "open list:PWM SUBSYSTEM" <linux-pwm@vger.kernel.org>,
+ "moderated list:ARM/S5P EXYNOS AR..." <linux-samsung-soc@vger.kernel.org>,
+ Mikulas Patocka <mpatocka@redhat.com>,
+ "moderated list:ARM/S5P EXYNOS AR..." <linux-arm-kernel@lists.infradead.org>,
+ Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>,
+ Rob Clark <robdclark@gmail.com>, Jon Mason <jdmason@kudzu.us>,
+ Joe Perches <joe@perches.com>,
+ "open list:LINUX FOR POWER M..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,53 +45,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---089e01537baa19116304fa9ae300
-Content-Type: text/plain; charset=UTF-8
+This patchset makes get_brightness callback optional
+and removes trivial implementations.
+Driver changes are quite obvious so I have put them into single
+patch.
 
->>>
->>> Which header are these coming from, and why aren't we including it? And
-is it
->>> going to still build with CONFIG_KVM=n?
->>
->>  From include/asm/hvcall.h in the h_set_mode patch set I sent before.
->>
->> And yes it compiles with CONFIG_KVM=n fine.
->
->
-> Please split that patch into one that adds the definitions and one that
-changes the KVM code to use those definitions. Both Ben and me can then
-apply the definition patch and our respective tree patch.
->
+The patchset is based on the current linux-next branch.
 
-Why don't you just take the original h_set_mode patch and I'll repost this
-cleanup later to ben when yours is upstream.  This cleanup patch is not
-critical to anything and it avoid more churn.
+Regards
+Andrzej
 
-Mikey
+Andrzej Hajda (2):
+  backlight: show brightness even if get_brightness is not implemented
+  backlight: remove trivial get_brightness implementations
 
---089e01537baa19116304fa9ae300
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+ drivers/macintosh/via-pmu-backlight.c      | 6 ------
+ drivers/platform/x86/samsung-q10.c         | 6 ------
+ drivers/video/backlight/aat2870_bl.c       | 6 ------
+ drivers/video/backlight/ams369fg06.c       | 6 ------
+ drivers/video/backlight/backlight.c        | 2 ++
+ drivers/video/backlight/bd6107.c           | 6 ------
+ drivers/video/backlight/gpio_backlight.c   | 6 ------
+ drivers/video/backlight/ld9040.c           | 6 ------
+ drivers/video/backlight/lp855x_bl.c        | 6 ------
+ drivers/video/backlight/lp8788_bl.c        | 6 ------
+ drivers/video/backlight/lv5207lp.c         | 6 ------
+ drivers/video/backlight/pandora_bl.c       | 6 ------
+ drivers/video/backlight/pwm_bl.c           | 6 ------
+ drivers/video/backlight/s6e63m0.c          | 6 ------
+ drivers/video/backlight/tps65217_bl.c      | 6 ------
+ drivers/video/fbdev/aty/aty128fb.c         | 6 ------
+ drivers/video/fbdev/aty/atyfb_base.c       | 6 ------
+ drivers/video/fbdev/aty/radeon_backlight.c | 6 ------
+ drivers/video/fbdev/exynos/s6e8ax0.c       | 6 ------
+ drivers/video/fbdev/nvidia/nv_backlight.c  | 6 ------
+ drivers/video/fbdev/riva/fbdev.c           | 6 ------
+ 21 files changed, 2 insertions(+), 120 deletions(-)
 
-<p dir=3D"ltr"><br>
-&gt;&gt;&gt;<br>
-&gt;&gt;&gt; Which header are these coming from, and why aren&#39;t we incl=
-uding it? And is it<br>
-&gt;&gt;&gt; going to still build with CONFIG_KVM=3Dn?<br>
-&gt;&gt;<br>
-&gt;&gt; =C2=A0From include/asm/hvcall.h in the h_set_mode patch set I sent=
- before.<br>
-&gt;&gt;<br>
-&gt;&gt; And yes it compiles with CONFIG_KVM=3Dn fine.<br>
-&gt;<br>
-&gt;<br>
-&gt; Please split that patch into one that adds the definitions and one tha=
-t changes the KVM code to use those definitions. Both Ben and me can then a=
-pply the definition patch and our respective tree patch.<br>
-&gt;</p>
-<p dir=3D"ltr">Why don&#39;t you just take the original h_set_mode patch an=
-d I&#39;ll repost this cleanup later to ben when yours is upstream.=C2=A0 T=
-his cleanup patch is not critical to anything and it avoid more churn.</p>
-<p dir=3D"ltr">Mikey</p>
-
---089e01537baa19116304fa9ae300--
+-- 
+1.9.1
