@@ -1,39 +1,41 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B8D31A0705
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 00:05:48 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Fri, 30 May 2014 19:35:45 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id B37BA394003E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 19:35:42 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s4UE5qY854001834
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 19:35:53 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s4UE5fiJ025005
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 19:35:41 +0530
-Message-ID: <5388902A.6050301@linux.vnet.ibm.com>
-Date: Fri, 30 May 2014 19:35:30 +0530
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Return-Path: <ralf@linux-mips.org>
+Received: from git.linux-mips.org (marvin.linux-mips.org [78.24.191.183])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5E0461A06CD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 01:49:24 +1000 (EST)
+Received: from localhost.localdomain ([127.0.0.1]:33465 "EHLO linux-mips.org"
+ rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+ id S6825887AbaE3PtT13Thq (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Fri, 30 May 2014 17:49:19 +0200
+Date: Fri, 30 May 2014 17:48:59 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/2] gpio: gpiolib: set gpiochip_remove retval to void
+Message-ID: <20140530154859.GK17197@linux-mips.org>
+References: <20140530094025.3b78301e@canb.auug.org.au>
+ <1401449454-30895-1-git-send-email-berthe.ab@gmail.com>
+ <1401449454-30895-2-git-send-email-berthe.ab@gmail.com>
+ <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2] powerpc/powernv: hwmon driver for power values, fan
- rpm and temperature
-References: <20140519141931.9248.11356.stgit@neelegup-tp-t420.in.ibm.com>
- <53858F02.2020808@roeck-us.net> <1401262871.8262.22.camel@pasglop>
-In-Reply-To: <1401262871.8262.22.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sbhat@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, jdelvare@suse.de,
- lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
+Cc: platform-driver-x86@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>,
+ patches@opensource.wolfsonmicro.com,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ spear-devel@list.st.com, linux-samsungsoc@vger.kernel.org,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+ "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, m@bues.ch,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ driverdevel <devel@driverdev.osuosl.org>,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ abdoulaye berthe <berthe.ab@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,20 +45,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, May 30, 2014 at 01:39:15PM +0200, Geert Uytterhoeven wrote:
 
-On 05/28/2014 01:11 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2014-05-28 at 00:23 -0700, Guenter Roeck wrote:
->> Consider using of_property_read_u32().
->>
->>> +             sdata[count].id = *sensor_id;
->>> +             sdata[count].type = type;
-> Especially since this is broken for Little Endian !
->
-> Neelesh, please make sure you test your patch on LE.
->
-> Cheers,
-> Ben.
+> > +               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags))
+> > +                       panic("gpio: removing gpiochip with gpios still requested\n");
+> 
+> panic?
+> 
+> Is this likely to happen?
 
-Fixing it and will surely test on LE as well before posting.
+And while we're at it - panic() is going to add a \n itself so don't pass a
+string ending in \n to panic().
 
-- Neelesh
+  Ralf
