@@ -1,41 +1,18 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from git.linux-mips.org (marvin.linux-mips.org [78.24.191.183])
- by lists.ozlabs.org (Postfix) with ESMTP id 5E0461A06CD
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 01:49:24 +1000 (EST)
-Received: from localhost.localdomain ([127.0.0.1]:33465 "EHLO linux-mips.org"
- rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
- id S6825887AbaE3PtT13Thq (ORCPT
- <rfc822;linuxppc-dev@lists.ozlabs.org>);
- Fri, 30 May 2014 17:49:19 +0200
-Date: Fri, 30 May 2014 17:48:59 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2/2] gpio: gpiolib: set gpiochip_remove retval to void
-Message-ID: <20140530154859.GK17197@linux-mips.org>
-References: <20140530094025.3b78301e@canb.auug.org.au>
- <1401449454-30895-1-git-send-email-berthe.ab@gmail.com>
- <1401449454-30895-2-git-send-email-berthe.ab@gmail.com>
- <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6E3761A06D2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 01:54:48 +1000 (EST)
+Message-ID: <5388A851.2010508@tabi.org>
+Date: Fri, 30 May 2014 10:48:33 -0500
+From: Timur Tabi <timur@tabi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
-Cc: platform-driver-x86@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>,
- patches@opensource.wolfsonmicro.com,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Linus Walleij <linus.walleij@linaro.org>,
- Linux-sh list <linux-sh@vger.kernel.org>,
- linux-wireless <linux-wireless@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- spear-devel@list.st.com, linux-samsungsoc@vger.kernel.org,
- "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
- "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, m@bues.ch,
- "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
- driverdevel <devel@driverdev.osuosl.org>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- abdoulaye berthe <berthe.ab@gmail.com>
+To: eshe168 <eshe168@gmail.com>
+Subject: Re: P1022 audio driver help!
+References: <2014053014034907812079@gmail.com>
+In-Reply-To: <2014053014034907812079@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ zhphsearch <zhphsearch@163.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,16 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2014 at 01:39:15PM +0200, Geert Uytterhoeven wrote:
+On 05/30/2014 01:03 AM, eshe168 wrote:
+> @timur
+> hi,
+> Audio card (wm8776) cannot work in full duplex, CPU is FSL P1022.
+> The PCB design about audio card reference FSL P1022 development board,
+> and palying or recording is OK separately.
+> My question is whether P1022 audio driver cannot support full duplex?
 
-> > +               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags))
-> > +                       panic("gpio: removing gpiochip with gpios still requested\n");
-> 
-> panic?
-> 
-> Is this likely to happen?
+I was never able to get the P1022ds audio to work in full duplex.  After 
+trying for a few weeks, I just gave up.
 
-And while we're at it - panic() is going to add a \n itself so don't pass a
-string ending in \n to panic().
+If you look inside fsl_ssi.c (the main driver) you'll see this comment I 
+wrote:
 
-  Ralf
+/*
+  * FIXME: The documentation says that SxCCR[WL] should not be
+  * modified while the SSI is enabled.  The only time this can
+  * happen is if we're trying to do simultaneous playback and
+  * capture in asynchronous mode.  Unfortunately, I have been enable
+  * to get that to work at all on the P1022DS.  Therefore, we don't
+  * bother to disable/enable the SSI when setting SxCCR[WL], because
+  * the SSI will stop anyway.  Maybe one day, this will get fixed.
+  */
+
+(it should say "I have been unable" instead of "I have been enable")
+
+Full duplex works fine on the MPC8610, which has the same audio 
+controller as the P1022, so I know the controller is physically capable 
+of it.  I just don't know why it doesn't work on the P1022DS.  I also 
+don't know if it's a problem with the P1022DS board or with the P1022 
+SOC itself.
