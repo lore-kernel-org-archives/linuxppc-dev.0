@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 890531A06C5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 13:49:34 +1000 (EST)
-Message-ID: <1401421763.14938.23.camel@pasglop>
-Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Fri, 30 May 2014 13:49:23 +1000
-In-Reply-To: <5387FE84.5060502@ozlabs.ru>
-References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401214527.3289.611.camel@ul30vt.home> <20140528005532.GA5528@shangw>
- <5385CB6F.50300@suse.de> <20140528124947.GA19346@shangw>
- <1401314311.8262.26.camel@pasglop> <5387FE84.5060502@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 66C511A06C7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 16:06:34 +1000 (EST)
+Message-ID: <1401429993.29324.5.camel@concordia>
+Subject: Re: [PATCH] powerpc: Remove platforms/wsp and associated pieces
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 30 May 2014 16:06:33 +1000
+In-Reply-To: <20140529193252.05902952@canb.auug.org.au>
+References: <1401353429-29036-1-git-send-email-mpe@ellerman.id.au>
+ <20140529193252.05902952@canb.auug.org.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
- Alexander Graf <agraf@suse.de>, Alex Williamson <alex.williamson@redhat.com>,
- qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, pebolle@tiscali.nl
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +24,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-05-30 at 13:44 +1000, Alexey Kardashevskiy wrote:
+On Thu, 2014-05-29 at 19:32 +1000, Stephen Rothwell wrote:
+> Hi Michael,
 > 
-> It is pseries, not real HW. Does phyp allow multiple real host PEs on
-> the same virtual PHB?
+> On Thu, 29 May 2014 18:50:29 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
+> >
+> > __attribute__ ((unused))
+> > 
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> 
+> So this was the only use of CONFIG_PPC_A2 ... so more cleanup
+> possible :-)
+> 
+> I always appreciate negative work :-)
 
-I don't know how recent pHyp versions do it. I think they pretty much
-have a PE == 1 virtual PHB so you might be right there.
+Hmm, yeah, well spotted.
 
-On older HW they definitely used P2P bridges as PEs.
+I'll send another patch.
 
-Cheers,
-Ben.
+cheers
