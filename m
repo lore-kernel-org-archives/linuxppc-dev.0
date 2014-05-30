@@ -1,31 +1,29 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
- by lists.ozlabs.org (Postfix) with ESMTP id B4C8C1A06C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 13:18:48 +1000 (EST)
-Subject: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- Tony Luck <tony.luck@gmail.com>, Paul Mackerras <paulus@samba.org>
-Date: Fri, 30 May 2014 12:18:38 +0900
-Message-ID: <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
-In-Reply-To: <5387F150.5000307@hitachi.com>
-References: <5387F150.5000307@hitachi.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f176.google.com (mail-pd0-f176.google.com
+ [209.85.192.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5A161A06C5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 13:44:12 +1000 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id p10so469586pdj.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2014 20:44:09 -0700 (PDT)
+Message-ID: <5387FE84.5060502@ozlabs.ru>
+Date: Fri, 30 May 2014 13:44:04 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v7 3/3] drivers/vfio: EEH support for VFIO PCI device
+References: <1401180052-6060-1-git-send-email-gwshan@linux.vnet.ibm.com>	
+ <1401180052-6060-4-git-send-email-gwshan@linux.vnet.ibm.com>	
+ <1401214527.3289.611.camel@ul30vt.home> <20140528005532.GA5528@shangw>	
+ <5385CB6F.50300@suse.de> <20140528124947.GA19346@shangw>
+ <1401314311.8262.26.camel@pasglop>
+In-Reply-To: <1401314311.8262.26.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: qiudayu@linux.vnet.ibm.com, Alex Williamson <alex.williamson@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,149 +33,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On ia64 and ppc64, the function pointer does not point the
-entry address of the function, but the address of function
-discriptor (which contains the entry address and misc
-data.) Since the kprobes passes the function pointer stored
-by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
-initalizing its blacklist, it fails and reports many errors
-as below.
+On 05/29/2014 07:58 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-05-28 at 22:49 +1000, Gavin Shan wrote:
+>>
+>> I will remove those "address" related macros in next revision because it's
+>> user-level bussiness, not related to host kernel any more.
+>>
+>> If the user is QEMU + guest, we need the address to identify the PE though PHB
+>> BUID could be used as same purpose to get PHB, which is one-to-one mapping with
+>> IOMMU group on sPAPR platform. However, once the PE address is built and returned
+>> to guest, guest will use the PE address as input parameter in subsequent RTAS
+>> calls.
+>>
+>> If the user is some kind of application who just uses the ioctl() without supporting
+>> RTAS calls. We don't need care about PE address. 
+> 
+> I am a bit reluctant with that PE==PHB equation we seem to be introducing.
+>
+> This isn't the case in HW.
 
-  Failed to find blacklist 0001013168300000
-  Failed to find blacklist 0001013000f0a000
-  Failed to find blacklist 000101315f70a000
-  Failed to find blacklist 000101324c80a000
-  Failed to find blacklist 0001013063f0a000
-  Failed to find blacklist 000101327800a000
-  Failed to find blacklist 0001013277f0a000
-  Failed to find blacklist 000101315a70a000
-  Failed to find blacklist 0001013277e0a000
-  Failed to find blacklist 000101305a20a000
-  Failed to find blacklist 0001013277d0a000
-  Failed to find blacklist 00010130bdc0a000
-  Failed to find blacklist 00010130dc20a000
-  Failed to find blacklist 000101309a00a000
-  Failed to find blacklist 0001013277c0a000
-  Failed to find blacklist 0001013277b0a000
-  Failed to find blacklist 0001013277a0a000
-  Failed to find blacklist 000101327790a000
-  Failed to find blacklist 000101303140a000
-  Failed to find blacklist 0001013a3280a000
+It is pseries, not real HW. Does phyp allow multiple real host PEs on the
+same virtual PHB?
 
-To fix this bug, this introduces function_entry() macro to
-retrieve the entry address from the given function pointer,
-and uses for kallsyms_lookup_size_offset() while initializing
-blacklist.
 
-Changes in v3:
- - Fix a bug to get blacklist address based on function entry
-   instead of function descriptor. (Suzuki's work, Thanks!)
+> It's possible that this is how we handle VFIO *today*
+> in qemu but it doesn't have to be does it ?
+> 
+> It also paints us into a corner if we want to start implementing some kind of
+> emulated EEH for selected emulated devices and/or virtio.
 
-Changes in V2:
- - Use function_entry() macro when lookin up symbols instead
-   of storing it.
- - Update for the latest -next.
 
-Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Reported-by: Tony Luck <tony.luck@gmail.com>
-Cc: Suzuki K. Poulose <suzuki@in.ibm.com>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Kevin Hao <haokexin@gmail.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/ia64/include/asm/types.h    |    2 ++
- arch/powerpc/include/asm/types.h |   11 +++++++++++
- include/linux/types.h            |    4 ++++
- kernel/kprobes.c                 |   11 +++++++----
- 4 files changed, 24 insertions(+), 4 deletions(-)
 
-diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
-index 4c351b1..95279dd 100644
---- a/arch/ia64/include/asm/types.h
-+++ b/arch/ia64/include/asm/types.h
-@@ -27,5 +27,7 @@ struct fnptr {
- 	unsigned long gp;
- };
- 
-+#define function_entry(fn) (((struct fnptr *)(fn))->ip)
-+
- #endif /* !__ASSEMBLY__ */
- #endif /* _ASM_IA64_TYPES_H */
-diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
-index bfb6ded..8b89d65 100644
---- a/arch/powerpc/include/asm/types.h
-+++ b/arch/powerpc/include/asm/types.h
-@@ -25,6 +25,17 @@ typedef struct {
- 	unsigned long env;
- } func_descr_t;
- 
-+#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
-+/*
-+ * On PPC64 ABIv1 the function pointer actually points to the
-+ * function's descriptor. The first entry in the descriptor is the
-+ * address of the function text.
-+ */
-+#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
-+#else
-+#define function_entry(fn)	((unsigned long)(fn))
-+#endif
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* _ASM_POWERPC_TYPES_H */
-diff --git a/include/linux/types.h b/include/linux/types.h
-index a0bb704..3b95369 100644
---- a/include/linux/types.h
-+++ b/include/linux/types.h
-@@ -213,5 +213,9 @@ struct callback_head {
- };
- #define rcu_head callback_head
- 
-+#ifndef function_entry
-+#define function_entry(fn)	((unsigned long)(fn))
-+#endif
-+
- #endif /*  __ASSEMBLY__ */
- #endif /* _LINUX_TYPES_H */
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 2ac9f13..3f2d6d4 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -32,6 +32,7 @@
-  *		<prasanna@in.ibm.com> added function-return probes.
-  */
- #include <linux/kprobes.h>
-+#include <linux/types.h>
- #include <linux/hash.h>
- #include <linux/init.h>
- #include <linux/slab.h>
-@@ -2042,16 +2043,18 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
- 	unsigned long offset = 0, size = 0;
- 
- 	for (iter = start; iter < end; iter++) {
--		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
--			pr_err("Failed to find blacklist %p\n", (void *)*iter);
-+		unsigned long entry = function_entry(*iter);
-+		if (!kallsyms_lookup_size_offset(entry, &size, &offset)) {
-+			pr_err("Failed to find blacklist at %p\n",
-+			       (void *)entry);
- 			continue;
- 		}
- 
- 		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
- 		if (!ent)
- 			return -ENOMEM;
--		ent->start_addr = *iter;
--		ent->end_addr = *iter + size;
-+		ent->start_addr = entry;
-+		ent->end_addr = entry + size;
- 		INIT_LIST_HEAD(&ent->list);
- 		list_add_tail(&ent->list, &kprobe_blacklist);
- 	}
+
+-- 
+Alexey
