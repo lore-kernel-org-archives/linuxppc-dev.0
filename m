@@ -1,28 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B415E1A06CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 17:44:41 +1000 (EST)
-Message-ID: <538836E3.1060600@suse.de>
-Date: Fri, 30 May 2014 09:44:35 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A4DA1A06CD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 17:59:39 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 2/2] powerpc/e6500: hw tablewalk: fix recursive tlb lock
+ on cpu 0
+Date: Fri, 30 May 2014 07:59:31 +0000
+Message-ID: <65f51156027a4c8a90c670d0ba72df3c@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1400795101-8737-1-git-send-email-scottwood@freescale.com>
+ <1400795101-8737-2-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1400795101-8737-2-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: powerpc/pseries: Use new defines when calling h_set_mode
-References: <1401106626-13130-1-git-send-email-paulus@samba.org>	
- <1401106626-13130-4-git-send-email-paulus@samba.org>	
- <5385E620.5090703@suse.de> <1401342462.4116.4.camel@ale.ozlabs.ibm.com>	
- <1401344549.4116.8.camel@ale.ozlabs.ibm.com>	
- <BD1CF085-FEBC-4208-AD3F-C55DB002097F@suse.de>	
- <1401349547.4116.19.camel@ale.ozlabs.ibm.com> <5387A63B.4000503@suse.de>
- <1401400361.14938.16.camel@pasglop>
-In-Reply-To: <1401400361.14938.16.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Neuling <mikey@neuling.org>, Paul Mackerras <paulus@samba.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 29.05.14 23:52, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-05-29 at 23:27 +0200, Alexander Graf wrote:
->> On 29.05.14 09:45, Michael Neuling wrote:
->>>>> +/* Values for 2nd argument to H_SET_MODE */
->>>>> +#define H_SET_MODE_RESOURCE_SET_CIABR        1
->>>>> +#define H_SET_MODE_RESOURCE_SET_DAWR        2
->>>>> +#define H_SET_MODE_RESOURCE_ADDR_TRANS_MODE    3
->>>>> +#define H_SET_MODE_RESOURCE_LE            4
->>>> Much better, but I think you want to make use of these in non-kvm code too,
->>>> no? At least the LE one is definitely already implemented as call :)
->>> Sure but that's a different patch.... below.
->> Ben, how would you like to handle these 2 patches? If you give me an ack
->> I can just put this patch into my kvm queue. Alternatively we could both
->> carry a patch that adds the H_SET_MODE header bits only and whoever hits
->> Linus' tree first wins ;).
-> No biggie. Worst case it's a trivial conflict.
-
-Well, the way the patches are split right now it won't be a conflict, 
-but a build failure on either side.
-
-
-Alex
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBMaW51eHBwYy1kZXYgW21haWx0
+bzpsaW51eHBwYy1kZXYtDQo+IGJvdW5jZXMrbWloYWkuY2FyYW1hbj1mcmVlc2NhbGUuY29tQGxp
+c3RzLm96bGFicy5vcmddIE9uIEJlaGFsZiBPZiBTY290dA0KPiBXb29kDQo+IFNlbnQ6IEZyaWRh
+eSwgTWF5IDIzLCAyMDE0IDEyOjQ1IEFNDQo+IFRvOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
+Lm9yZw0KPiBDYzogV29vZCBTY290dC1CMDc0MjENCj4gU3ViamVjdDogW1BBVENIIDIvMl0gcG93
+ZXJwYy9lNjUwMDogaHcgdGFibGV3YWxrOiBmaXggcmVjdXJzaXZlIHRsYiBsb2NrDQo+IG9uIGNw
+dSAwDQo+IA0KPiBDb21taXQgODJkODZkZTI1YjljOTlkYjU0NmUxN2M2ZjdlYmY5YTY5MWRhNTU3
+ZSAiVExCIGxvY2sgcmVjdXJzaXZlIg0KPiBpbnRyb2R1Y2VkIGEgYnVnIHdoZXJlYnkgY3B1IDAg
+dXNlcyB0aGUgc2FtZSB2YWx1ZSBmb3IgImxvY2sgaGVsZCIgYXMNCj4gaXMgdXNlZCB0byBpbmRp
+Y2F0ZSB0aGF0IHRoZSBsb2NrIGlzIGZyZWUuDQoNCklzbid0IGhpcyB3aGF0IHNwaW4gbG9jayBp
+bXBsZW1lbnRhdGlvbiBzb2x2ZXMgYnkgY29tYmluZXMgcGFjYV9pbmRleA0Kd2l0aCBsb2NrX3Rv
+a2VuPyBDYW4ndCB3ZSBoYXZlIGEgY29tbW9uIGFwcHJvYWNoPw0KDQo+IEFkZCBvbmUgdG8gdGhl
+IENQVSB2YWx1ZSB0byBlbnN1cmUgd2UgZG8gbm90IHVzZSB6ZXJvIGFzIGEgImxvY2sgaGVsZCIN
+Cj4gdmFsdWUuDQoNClRoZSBDUFUgdmFsdWUgaXMgbG9hZGVkIGluIHIxMCBmcm9tIHRsYl9taXNz
+X2NvbW1vbl9lNjUwMC4gIlRMQiBsb2NrIHJlY3Vyc2l2ZSINCmNvbW1pdCBhbHNvIGludHJvZHVj
+ZWQgdGhpcyBtaXNsZWFkaW5nIGNvbW1lbnQ6DQoNCiAgICBXZSBhcmUgZW50ZXJlZCB3aXRoOg0K
+ICAgIHIxMCA9IGNwdSBudW1iZXINCg0KLU1pa2UNCg==
