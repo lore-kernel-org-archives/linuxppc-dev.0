@@ -1,18 +1,42 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <greg@kroah.com>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A644C1A0703
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 09:00:33 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] MAINTAINERS: Update Linux for Freescale PowerPC
-Date: Fri, 30 May 2014 18:00:11 -0500
-Message-ID: <1401490811-14057-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C876D1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 11:09:00 +1000 (EST)
+Received: from compute1.internal (compute1.nyi.mail.srv.osa [10.202.2.41])
+ by gateway1.nyi.mail.srv.osa (Postfix) with ESMTP id A4A9D20A02
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 21:08:56 -0400 (EDT)
+Date: Fri, 30 May 2014 16:29:22 -0700
+From: Greg KH <greg@kroah.com>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH 2/2] gpio: gpiolib: set gpiochip_remove retval to void
+Message-ID: <20140530232922.GD25854@kroah.com>
+References: <20140530094025.3b78301e@canb.auug.org.au>
+ <1401449454-30895-1-git-send-email-berthe.ab@gmail.com>
+ <1401449454-30895-2-git-send-email-berthe.ab@gmail.com>
+ <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
+ <5388C0F1.90503@gmail.com> <5388CB1B.3090802@metafoo.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5388CB1B.3090802@metafoo.de>
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ David Daney <ddaney.cavm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>, platform-driver-x86@vger.kernel.org,
+ "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+ driverdevel <devel@driverdev.osuosl.org>, Alexandre Courbot <gnurou@gmail.com>,
+ patches@opensource.wolfsonmicro.com, linux-samsungsoc@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ abdoulaye berthe <berthe.ab@gmail.com>, spear-devel@list.st.com,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, m@bues.ch,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +46,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-About a year ago I began taking patches, technically as Kumar's
-assistant -- but since then all of the pull requests for this area have
-come from me, and I've been doing most of the reviews.  Update
-MAINTAINERS to reflect this.
+On Fri, May 30, 2014 at 08:16:59PM +0200, Lars-Peter Clausen wrote:
+> On 05/30/2014 07:33 PM, David Daney wrote:
+> >On 05/30/2014 04:39 AM, Geert Uytterhoeven wrote:
+> >>On Fri, May 30, 2014 at 1:30 PM, abdoulaye berthe <berthe.ab@gmail.com>
+> >>wrote:
+> >>>--- a/drivers/gpio/gpiolib.c
+> >>>+++ b/drivers/gpio/gpiolib.c
+> >>>@@ -1263,10 +1263,9 @@ static void gpiochip_irqchip_remove(struct
+> >>>gpio_chip *gpiochip);
+> >>>   *
+> >>>   * A gpio_chip with any GPIOs still requested may not be removed.
+> >>>   */
+> >>>-int gpiochip_remove(struct gpio_chip *chip)
+> >>>+void gpiochip_remove(struct gpio_chip *chip)
+> >>>  {
+> >>>         unsigned long   flags;
+> >>>-       int             status = 0;
+> >>>         unsigned        id;
+> >>>
+> >>>         acpi_gpiochip_remove(chip);
+> >>>@@ -1278,24 +1277,15 @@ int gpiochip_remove(struct gpio_chip *chip)
+> >>>         of_gpiochip_remove(chip);
+> >>>
+> >>>         for (id = 0; id < chip->ngpio; id++) {
+> >>>-               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags)) {
+> >>>-                       status = -EBUSY;
+> >>>-                       break;
+> >>>-               }
+> >>>-       }
+> >>>-       if (status == 0) {
+> >>>-               for (id = 0; id < chip->ngpio; id++)
+> >>>-                       chip->desc[id].chip = NULL;
+> >>>-
+> >>>-               list_del(&chip->list);
+> >>>+               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags))
+> >>>+                       panic("gpio: removing gpiochip with gpios still
+> >>>requested\n");
+> >>
+> >>panic?
+> >
+> >NACK to the patch for this reason.  The strongest thing you should do here
+> >is WARN.
+> >
+> >That said, I am not sure why we need this whole patch set in the first place.
+> 
+> Well, what currently happens when you remove a device that is a provider of
+> a gpio_chip which is still in use, is that the kernel crashes. Probably with
+> a rather cryptic error message. So this patch doesn't really change the
+> behavior, but makes it more explicit what is actually wrong. And even if you
+> replace the panic() by a WARN() it will again just crash slightly later.
+> 
+> This is a design flaw in the GPIO subsystem that needs to be fixed.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- MAINTAINERS | 2 ++
- 1 file changed, 2 insertions(+)
+Then fix the GPIO code properly, don't add a new panic() to the kernel.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 049214e..5509f3f 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5341,9 +5341,11 @@ S:	Maintained
- F:	arch/powerpc/platforms/8xx/
- 
- LINUX FOR POWERPC EMBEDDED PPC83XX AND PPC85XX
-+M:	Scott Wood <scottwood@freescale.com>
- M:	Kumar Gala <galak@kernel.crashing.org>
- W:	http://www.penguinppc.org/
- L:	linuxppc-dev@lists.ozlabs.org
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
- S:	Maintained
- F:	arch/powerpc/platforms/83xx/
- F:	arch/powerpc/platforms/85xx/
--- 
-1.9.1
+greg k-h
