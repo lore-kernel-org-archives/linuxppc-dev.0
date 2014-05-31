@@ -1,26 +1,22 @@
-Return-Path: <greg@kroah.com>
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C876D1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 11:09:00 +1000 (EST)
-Received: from compute1.internal (compute1.nyi.mail.srv.osa [10.202.2.41])
- by gateway1.nyi.mail.srv.osa (Postfix) with ESMTP id A4A9D20A02
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2014 21:08:56 -0400 (EDT)
-Date: Fri, 30 May 2014 16:29:22 -0700
-From: Greg KH <greg@kroah.com>
-To: Lars-Peter Clausen <lars@metafoo.de>
+Return-Path: <lars@metafoo.de>
+Received: from smtp-out-212.synserver.de (smtp-out-212.synserver.de
+ [212.40.185.212])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6F1D21A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2014 17:35:52 +1000 (EST)
+Message-ID: <5389864B.4000107@metafoo.de>
+Date: Sat, 31 May 2014 09:35:39 +0200
+From: Lars-Peter Clausen <lars@metafoo.de>
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
 Subject: Re: [PATCH 2/2] gpio: gpiolib: set gpiochip_remove retval to void
-Message-ID: <20140530232922.GD25854@kroah.com>
 References: <20140530094025.3b78301e@canb.auug.org.au>
  <1401449454-30895-1-git-send-email-berthe.ab@gmail.com>
  <1401449454-30895-2-git-send-email-berthe.ab@gmail.com>
  <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
  <5388C0F1.90503@gmail.com> <5388CB1B.3090802@metafoo.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5388CB1B.3090802@metafoo.de>
+ <20140530232922.GD25854@kroah.com>
+In-Reply-To: <20140530232922.GD25854@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
  David Daney <ddaney.cavm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>,
  Linus Walleij <linus.walleij@linaro.org>, platform-driver-x86@vger.kernel.org,
@@ -46,59 +42,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 30, 2014 at 08:16:59PM +0200, Lars-Peter Clausen wrote:
-> On 05/30/2014 07:33 PM, David Daney wrote:
-> >On 05/30/2014 04:39 AM, Geert Uytterhoeven wrote:
-> >>On Fri, May 30, 2014 at 1:30 PM, abdoulaye berthe <berthe.ab@gmail.com>
-> >>wrote:
-> >>>--- a/drivers/gpio/gpiolib.c
-> >>>+++ b/drivers/gpio/gpiolib.c
-> >>>@@ -1263,10 +1263,9 @@ static void gpiochip_irqchip_remove(struct
-> >>>gpio_chip *gpiochip);
-> >>>   *
-> >>>   * A gpio_chip with any GPIOs still requested may not be removed.
-> >>>   */
-> >>>-int gpiochip_remove(struct gpio_chip *chip)
-> >>>+void gpiochip_remove(struct gpio_chip *chip)
-> >>>  {
-> >>>         unsigned long   flags;
-> >>>-       int             status = 0;
-> >>>         unsigned        id;
-> >>>
-> >>>         acpi_gpiochip_remove(chip);
-> >>>@@ -1278,24 +1277,15 @@ int gpiochip_remove(struct gpio_chip *chip)
-> >>>         of_gpiochip_remove(chip);
-> >>>
-> >>>         for (id = 0; id < chip->ngpio; id++) {
-> >>>-               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags)) {
-> >>>-                       status = -EBUSY;
-> >>>-                       break;
-> >>>-               }
-> >>>-       }
-> >>>-       if (status == 0) {
-> >>>-               for (id = 0; id < chip->ngpio; id++)
-> >>>-                       chip->desc[id].chip = NULL;
-> >>>-
-> >>>-               list_del(&chip->list);
-> >>>+               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags))
-> >>>+                       panic("gpio: removing gpiochip with gpios still
-> >>>requested\n");
-> >>
-> >>panic?
-> >
-> >NACK to the patch for this reason.  The strongest thing you should do here
-> >is WARN.
-> >
-> >That said, I am not sure why we need this whole patch set in the first place.
-> 
-> Well, what currently happens when you remove a device that is a provider of
-> a gpio_chip which is still in use, is that the kernel crashes. Probably with
-> a rather cryptic error message. So this patch doesn't really change the
-> behavior, but makes it more explicit what is actually wrong. And even if you
-> replace the panic() by a WARN() it will again just crash slightly later.
-> 
-> This is a design flaw in the GPIO subsystem that needs to be fixed.
+On 05/31/2014 01:29 AM, Greg KH wrote:
+> On Fri, May 30, 2014 at 08:16:59PM +0200, Lars-Peter Clausen wrote:
+>> On 05/30/2014 07:33 PM, David Daney wrote:
+>>> On 05/30/2014 04:39 AM, Geert Uytterhoeven wrote:
+>>>> On Fri, May 30, 2014 at 1:30 PM, abdoulaye berthe <berthe.ab@gmail.com>
+>>>> wrote:
+>>>>> --- a/drivers/gpio/gpiolib.c
+>>>>> +++ b/drivers/gpio/gpiolib.c
+>>>>> @@ -1263,10 +1263,9 @@ static void gpiochip_irqchip_remove(struct
+>>>>> gpio_chip *gpiochip);
+>>>>>    *
+>>>>>    * A gpio_chip with any GPIOs still requested may not be removed.
+>>>>>    */
+>>>>> -int gpiochip_remove(struct gpio_chip *chip)
+>>>>> +void gpiochip_remove(struct gpio_chip *chip)
+>>>>>   {
+>>>>>          unsigned long   flags;
+>>>>> -       int             status = 0;
+>>>>>          unsigned        id;
+>>>>>
+>>>>>          acpi_gpiochip_remove(chip);
+>>>>> @@ -1278,24 +1277,15 @@ int gpiochip_remove(struct gpio_chip *chip)
+>>>>>          of_gpiochip_remove(chip);
+>>>>>
+>>>>>          for (id = 0; id < chip->ngpio; id++) {
+>>>>> -               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags)) {
+>>>>> -                       status = -EBUSY;
+>>>>> -                       break;
+>>>>> -               }
+>>>>> -       }
+>>>>> -       if (status == 0) {
+>>>>> -               for (id = 0; id < chip->ngpio; id++)
+>>>>> -                       chip->desc[id].chip = NULL;
+>>>>> -
+>>>>> -               list_del(&chip->list);
+>>>>> +               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags))
+>>>>> +                       panic("gpio: removing gpiochip with gpios still
+>>>>> requested\n");
+>>>>
+>>>> panic?
+>>>
+>>> NACK to the patch for this reason.  The strongest thing you should do here
+>>> is WARN.
+>>>
+>>> That said, I am not sure why we need this whole patch set in the first place.
+>>
+>> Well, what currently happens when you remove a device that is a provider of
+>> a gpio_chip which is still in use, is that the kernel crashes. Probably with
+>> a rather cryptic error message. So this patch doesn't really change the
+>> behavior, but makes it more explicit what is actually wrong. And even if you
+>> replace the panic() by a WARN() it will again just crash slightly later.
+>>
+>> This is a design flaw in the GPIO subsystem that needs to be fixed.
+>
+> Then fix the GPIO code properly, don't add a new panic() to the kernel.
 
-Then fix the GPIO code properly, don't add a new panic() to the kernel.
+Until somebody comes up with a patch that fixes this for good I think that 
+patch is still an improvement over the current situation. Rather than 
+keeping the kernel running in a inconsistent state, which might cause all 
+kinds of undefined behavior and which will lead to a crash eventually, we 
+might as well just crash the kernel at the cause of the inconsistent state. 
+This will make it obvious why it crashed (compared to a random stacktrace) 
+and will also prevent the kernel from running in a undefined state.
 
-greg k-h
+- Lars
