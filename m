@@ -1,42 +1,39 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9168F1A0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 18:50:06 +1000 (EST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 75F261400AB
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2014 18:50:06 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D2E01A05A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 19:09:52 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 2 Jun 2014 18:50:05 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AAEA72BB004A
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2014 18:50:03 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s528SLpL62783572
- for <linuxppc-dev@ozlabs.org>; Mon, 2 Jun 2014 18:28:22 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s528o2mP024627
- for <linuxppc-dev@ozlabs.org>; Mon, 2 Jun 2014 18:50:02 +1000
-Message-ID: <538C3A49.8030601@linux.vnet.ibm.com>
-Date: Mon, 02 Jun 2014 14:18:09 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Mon, 2 Jun 2014 14:39:48 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 69163394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 14:39:45 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s529AQri57540856
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jun 2014 14:40:26 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5299is0011995
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jun 2014 14:39:44 +0530
+Received: from [9.124.94.161] ([9.124.94.161])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ s5299i33011985
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jun 2014 14:39:44 +0530
+Message-ID: <538C3F57.2080300@linux.vnet.ibm.com>
+Date: Mon, 02 Jun 2014 14:39:43 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] powerpc, xmon: Enable hardware instruction breakpoint
- support on POWER8
-References: <1401451823-25547-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1401603491.13479.11.camel@ale.ozlabs.ibm.com>
-In-Reply-To: <1401603491.13479.11.camel@ale.ozlabs.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/3] powerpc: Split __SYSFS_SPRSETUP macro
+References: <cover.1400652868.git.sam.bobroff@au1.ibm.com>
+ <c0db1b210405db5ff579a2d7432dde2c73bd47bb.1400652868.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <c0db1b210405db5ff579a2d7432dde2c73bd47bb.1400652868.git.sam.bobroff@au1.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,47 +43,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/01/2014 11:48 AM, Michael Neuling wrote:
-> On Fri, 2014-05-30 at 17:40 +0530, Anshuman Khandual wrote:
->> This patch enables support for hardware instruction breakpoints on POWER8 with
->> the help of a new register called CIABR (Completed Instruction Address Breakpoint
->> Register). With this patch, single hardware instruction breakpoint can be added
->> and cleared during any active xmon debug session. This hardware based instruction
->> breakpoint mechanism works correctly along with the existing TRAP based instruction
->> breakpoints available on xmon. Example usage as follows.
+On Wednesday 21 May 2014 12:02 PM, Sam Bobroff wrote:
+> Split the __SYSFS_SPRSETUP macro into two parts so that registers requiring
+> custom read and write functions can use common code for their show and store
+> functions.
 > 
-> Have you actually tried this on a guest?
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> ---
+>  arch/powerpc/kernel/sysfs.c |   19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+> index d90d4b7..e2a1d6f 100644
+> --- a/arch/powerpc/kernel/sysfs.c
+> +++ b/arch/powerpc/kernel/sysfs.c
+> @@ -404,7 +404,7 @@ void ppc_enable_pmcs(void)
+>  }
+>  EXPORT_SYMBOL(ppc_enable_pmcs);
+>  
+> -#define __SYSFS_SPRSETUP(NAME, ADDRESS, EXTRA) \
+> +#define __SYSFS_SPRSETUP_READ_WRITE(NAME, ADDRESS, EXTRA) \
+>  static void read_##NAME(void *val) \
+>  { \
+>  	*(unsigned long *)val = mfspr(ADDRESS);	\
+> @@ -413,7 +413,9 @@ static void write_##NAME(void *val) \
+>  { \
+>  	EXTRA; \
+>  	mtspr(ADDRESS, *(unsigned long *)val);	\
+> -} \
+> +}
+> +
+> +#define __SYSFS_SPRSETUP_SHOW_STORE(NAME) \
+>  static ssize_t show_##NAME(struct device *dev, \
+>  			struct device_attribute *attr, \
+>  			char *buf) \
+> @@ -436,10 +438,15 @@ static ssize_t __used \
+>  	return count; \
+>  }
+>  
+> -#define SYSFS_PMCSETUP(NAME, ADDRESS)	\
+> -	__SYSFS_SPRSETUP(NAME, ADDRESS, ppc_enable_pmcs())
+> -#define SYSFS_SPRSETUP(NAME, ADDRESS)	\
+> -	__SYSFS_SPRSETUP(NAME, ADDRESS, )
+> +#define SYSFS_PMCSETUP(NAME, ADDRESS) \
+> +	__SYSFS_SPRSETUP_READ_WRITE(NAME, ADDRESS, ppc_enable_pmcs()) \
+> +	__SYSFS_SPRSETUP_SHOW_STORE(NAME)
+> +#define SYSFS_SPRSETUP(NAME, ADDRESS) \
+> +	__SYSFS_SPRSETUP_READ_WRITE(NAME, ADDRESS, ) \
+> +	__SYSFS_SPRSETUP_SHOW_STORE(NAME)
+> +
+> +#define SYSFS_SPRSETUP_SHOW_STORE(NAME) \
+> +	__SYSFS_SPRSETUP_SHOW_STORE(NAME)
+>  
+>  /* Let's define all possible registers, we'll only hook up the ones
+>   * that are implemented on the current processor
 > 
 
-Yeah on a guest which runs on PVM.
-
-> Please also compile with a range of configs.  It doesn't compile with
-> ppc64e_defconfig.
-
-Yeah. Need to change the way we get the "plapr_set_ciabr" function from plpar_wrappers.h
-header file. Will add this hunk of code in "xmon.h" header and remove the CONFIG_PPC64 ifdef
-code from the function write_ciabr.
-
-+#ifdef CONFIG_PPC_BOOK3S_64
-+#include <asm/plpar_wrappers.h>
-+#else
-+static inline long plapr_set_ciabr(unsigned long ciabr) {return 0;};
-+#endif
-
-> 
-> In file included from /scratch/mikey/src/linux-ozlabs/arch/powerpc/xmon/xmon.c:51:0:
-> /scratch/mikey/src/linux-ozlabs/arch/powerpc/include/asm/plpar_wrappers.h: In function 'get_cede_latency_hint':
-> /scratch/mikey/src/linux-ozlabs/arch/powerpc/include/asm/plpar_wrappers.h:26:9: error: 'struct paca_struct' has no member named 'lppaca_ptr'
-> /scratch/mikey/src/linux-ozlabs/arch/powerpc/include/asm/plpar_wrappers.h: In function 'set_cede_latency_hint':
-> /scratch/mikey/src/linux-ozlabs/arch/powerpc/include/asm/plpar_wrappers.h:31:2: error: 'struct paca_struct' has no member named 'lppaca_ptr'
-> /scratch/mikey/src/linux-ozlabs/arch/powerpc/include/asm/plpar_wrappers.h: In function 'plpar_page_set_loaned':
-> /scratch/mikey/src/linux-ozlabs/arch/powerpc/include/asm/plpar_wrappers.h:98:2: error: implicit declaration of function 'cmo_get_page_size' [-Werror=implicit-function-declaration]
-> cc1: all warnings being treated as errors
-> 
->> -				    (bp->enabled & BP_IABR)? "inst": "trap");
->> +					(bp->enabled & (BP_IABR | BP_CIABR))?
->> +				       				"inst": "trap");
-> 
-> Git complains about whitespace issues here.  Spaces before tabs.
-
-Will take care of this next version.
+Acked-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
