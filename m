@@ -1,36 +1,21 @@
-Return-Path: <eranian@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EC9D1A0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 22:59:10 +1000 (EST)
-Received: from mail-ob0-x22a.google.com (mail-ob0-x22a.google.com
- [IPv6:2607:f8b0:4003:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 32FC11400AB
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2014 22:59:08 +1000 (EST)
-Received: by mail-ob0-f170.google.com with SMTP id uy5so4442525obc.15
- for <linuxppc-dev@ozlabs.org>; Mon, 02 Jun 2014 05:59:05 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D62421A05A9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 01:50:37 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH 1/4 v3] KVM: PPC: e500mc: Revert "add load inst fixup"
+Date: Mon, 2 Jun 2014 18:50:13 +0300
+Message-ID: <1401724216-26486-2-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1401724216-26486-1-git-send-email-mihai.caraman@freescale.com>
+References: <1401724216-26486-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <53859873.9070603@linux.vnet.ibm.com>
-References: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
- <CABPqkBS+3N6PW0wJr3xnvpF4zinZM7+iwFWzwS7BDm-LTkam5Q@mail.gmail.com>
- <53859873.9070603@linux.vnet.ibm.com>
-Date: Mon, 2 Jun 2014 14:59:04 +0200
-Message-ID: <CABPqkBSmuMth4KmdLw7Nigf5uQREQJ+xL=42xV9c8FjR2VPO5g@mail.gmail.com>
-Subject: Re: [V6 00/11] perf: New conditional branch filter
-From: Stephane Eranian <eranian@google.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>,
- "ak@linux.intel.com" <ak@linux.intel.com>,
- Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
- Michael Ellerman <michael@ellerman.id.au>,
- Linux PPC dev <linuxppc-dev@ozlabs.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,94 +25,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 28, 2014 at 10:04 AM, Anshuman Khandual
-<khandual@linux.vnet.ibm.com> wrote:
-> On 05/27/2014 05:39 PM, Stephane Eranian wrote:
->> I have been looking at those patches and ran some tests.
->> And I found a few issues so far.
->>
->> I am running:
->> $ perf record -j any_ret -e cycles:u test_program
->> $ perf report -D
->>
->> Most entries are okay and match the filter, however some do not make sense:
->>
->> 3642586996762 0x15d0 [0x108]: PERF_RECORD_SAMPLE(IP, 2): 17921/17921:
->> 0x10001170 period: 613678 addr: 0
->> .... branch stack: nr:9
->> .....  0: 00000000100011cc -> 0000000010000e38
->> .....  1: 0000000010001150 -> 00000000100011bc
->> .....  2: 0000000010001208 -> 0000000010000e38
->> .....  3: 0000000010001160 -> 00000000100011f8
->> .....  4: 00000000100011cc -> 0000000010000e38
->> .....  5: 0000000010001150 -> 00000000100011bc
->> .....  6: 0000000010001208 -> 0000000010000e38
->> .....  7: 0000000010001160 -> 00000000100011f8
->> .....  8: 0000000000000000 -> 0000000010001160
->> ^^^^^^
->> Entry 8 does not make sense, unless 0x0 is a valid return branch
->> instruction address.
->> If an address is invalid, the whole entry needs to be eliminated. It
->> is okay to have
->> less than the max number of entries supported by HW.
->
-> Hey Stephane,
->
-> Okay. The same behaviour is also reflected in the test results what I have
-> shared in the patchset. Here is that section.
->
-> (3) perf record -j any_ret -e branch-misses:u ./cprog
->
-> # Overhead  Command  Source Shared Object          Source Symbol  Target Shared Object          Target Symbol
-> # ........  .......  ....................  .....................  ....................  .....................
-> #
->     15.61%    cprog  [unknown]             [.] 00000000           cprog                 [.] sw_3_1
->      6.28%    cprog  cprog                 [.] symbol2            cprog                 [.] hw_1_2
->      6.28%    cprog  cprog                 [.] ctr_addr           cprog                 [.] sw_4_1
->      6.26%    cprog  cprog                 [.] success_3_1_3      cprog                 [.] sw_3_1
->      6.24%    cprog  cprog                 [.] symbol1            cprog                 [.] hw_1_1
->      6.24%    cprog  cprog                 [.] sw_4_2             cprog                 [.] callme
->      6.21%    cprog  [unknown]             [.] 00000000           cprog                 [.] callme
->      6.19%    cprog  cprog                 [.] lr_addr            cprog                 [.] sw_4_2
->      3.16%    cprog  cprog                 [.] hw_1_2             cprog                 [.] callme
->      3.15%    cprog  cprog                 [.] success_3_1_1      cprog                 [.] sw_3_1
->      3.15%    cprog  cprog                 [.] sw_4_1             cprog                 [.] callme
->      3.14%    cprog  cprog                 [.] callme             cprog                 [.] main
->      3.13%    cprog  cprog                 [.] hw_1_1             cprog                 [.] callme
->
-> So a lot of samples above have 0x0 as the "from" address. This originates from the code
-> section here inside the function "power_pmu_bhrb_read", where we hit two back to back
+The commit 1d628af7 "add load inst fixup" made an attempt to handle
+failures generated by reading the guest current instruction. The fixup
+code that was added works by chance hiding the real issue.
 
-Could you explain the back-to-back case a bit more here?
-Back-to-back returns to me means something like:
+Load external pid (lwepx) instruction, used by KVM to read guest
+instructions, is executed in a substituted guest translation context
+(EPLC[EGS] = 1). In consequence lwepx's TLB error and data storage
+interrupts need to be handled by KVM, even though these interrupts
+are generated from host context (MSR[GS] = 0) where lwepx is executed.
 
-int foo()
-{
-  ...
-   return bar();
-}
+Currently, KVM hooks only interrupts generated from guest context
+(MSR[GS] = 1), doing minimal checks on the fast path to avoid host
+performance degradation. As a result, the host kernel handles lwepx
+faults searching the faulting guest data address (loaded in DEAR) in
+its own Logical Partition ID (LPID) 0 context. In case a host translation
+is found the execution returns to the lwepx instruction instead of the
+fixup, the host ending up in an infinite loop.
 
-int bar()
-{
-  return 0;
-}
+Revert the commit "add load inst fixup". lwepx issue will be addressed
+in a subsequent patch without needing fixup code.
 
-Not counting the leaf optimization here, bar return to foo which
-immediately returns: 2 back-2-back returns.
-Is that the case you're talking about here?
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+v3:
+ - no change
 
-> target addresses. So we zero out the from address for the first target address and re-read
-> the second address over again. So thats how we get zero as the from address. This is how the
-> HW capture the samples. I was reluctant to drop these samples but I agree that these kind of
-> samples can be dropped if we need to.
->
-I think we need to make it as simple as possible for tools, i.e.,
-avoid having to decode the
-disassembly to figure out what happened. Here address 0 is not exploitable.
+v2:
+ - reworked patch description
 
-> if (val & BHRB_TARGET) {
->         /* Shouldn't have two targets in a
->            row.. Reset index and try again */
->         r_index--;
->         addr = 0;
-> }
+
+ arch/powerpc/kvm/bookehv_interrupts.S | 26 +-------------------------
+ 1 file changed, 1 insertion(+), 25 deletions(-)
+
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index a1712b8..6ff4480 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -29,7 +29,6 @@
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/bitsperlong.h>
+-#include <asm/thread_info.h>
+ 
+ #ifdef CONFIG_64BIT
+ #include <asm/exception-64e.h>
+@@ -164,32 +163,9 @@
+ 	PPC_STL	r30, VCPU_GPR(R30)(r4)
+ 	PPC_STL	r31, VCPU_GPR(R31)(r4)
+ 	mtspr	SPRN_EPLC, r8
+-
+-	/* disable preemption, so we are sure we hit the fixup handler */
+-	CURRENT_THREAD_INFO(r8, r1)
+-	li	r7, 1
+-	stw	r7, TI_PREEMPT(r8)
+-
+ 	isync
+-
+-	/*
+-	 * In case the read goes wrong, we catch it and write an invalid value
+-	 * in LAST_INST instead.
+-	 */
+-1:	lwepx	r9, 0, r5
+-2:
+-.section .fixup, "ax"
+-3:	li	r9, KVM_INST_FETCH_FAILED
+-	b	2b
+-.previous
+-.section __ex_table,"a"
+-	PPC_LONG_ALIGN
+-	PPC_LONG 1b,3b
+-.previous
+-
++	lwepx   r9, 0, r5
+ 	mtspr	SPRN_EPLC, r3
+-	li	r7, 0
+-	stw	r7, TI_PREEMPT(r8)
+ 	stw	r9, VCPU_LAST_INST(r4)
+ 	.endif
+ 
+-- 
+1.7.11.7
