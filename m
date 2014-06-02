@@ -1,18 +1,23 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <pebolle@tiscali.nl>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 616E71A0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 16:57:06 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/powernv: Enable POWER8 doorbell IPIs
-Date: Mon,  2 Jun 2014 16:57:03 +1000
-Message-Id: <1401692223-28337-2-git-send-email-mikey@neuling.org>
-In-Reply-To: <1401692223-28337-1-git-send-email-mikey@neuling.org>
-References: <1401692223-28337-1-git-send-email-mikey@neuling.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65C271A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 18:17:17 +1000 (EST)
+Received: from cpsmtpb-ews06.kpnxchange.com (cpsmtpb-ews06.kpnxchange.com
+ [213.75.39.9]) by ozlabs.org (Postfix) with ESMTP id 570E71400A3
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2014 18:17:16 +1000 (EST)
+Message-ID: <1401696244.14959.6.camel@x220>
+Subject: Re: [PATCH] powerpc: Remove platforms/wsp and associated pieces
+From: Paul Bolle <pebolle@tiscali.nl>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 02 Jun 2014 10:04:04 +0200
+In-Reply-To: <1401672046-17607-1-git-send-email-mpe@ellerman.id.au>
+References: <1401672046-17607-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Jimi Xenidis <jimix@pobox.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,92 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables POWER8 doorbell IPIs on powernv.
+On Mon, 2014-06-02 at 11:20 +1000, Michael Ellerman wrote:
+> __attribute__ ((unused))
+> 
+> WSP is the last user of CONFIG_PPC_A2, so we remove that as well.
+> 
+> Although CONFIG_PPC_ICSWX still exists, it's no longer selectable for
+> any Book3E platform, so we can remove the code in mmu-book3e.h that
+> depended on it.
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/Kconfig.debug             |    5 -
+>  arch/powerpc/configs/chroma_defconfig  |  307 ---------
+>  arch/powerpc/include/asm/mmu-book3e.h  |    4 -
+>  arch/powerpc/include/asm/reg_a2.h      |    9 -
+>  arch/powerpc/include/asm/wsp.h         |   14 -
+>  arch/powerpc/kernel/Makefile           |    1 -
+>  arch/powerpc/kernel/cpu_setup_a2.S     |  120 ----
+>  arch/powerpc/kernel/cputable.c         |   38 --
+>  arch/powerpc/kernel/exceptions-64e.S   |   16 -
+>  arch/powerpc/kernel/udbg.c             |    2 -
+>  arch/powerpc/kernel/udbg_16550.c       |   11 -
+>  arch/powerpc/platforms/Kconfig         |    1 -
+>  arch/powerpc/platforms/Kconfig.cputype |    6 +-
+>  arch/powerpc/platforms/Makefile        |    1 -
+>  arch/powerpc/platforms/wsp/Kconfig     |   30 -
+>  arch/powerpc/platforms/wsp/Makefile    |   10 -
+>  arch/powerpc/platforms/wsp/chroma.c    |   56 --
+>  arch/powerpc/platforms/wsp/h8.c        |  135 ----
+>  arch/powerpc/platforms/wsp/ics.c       |  762 ---------------------
+>  arch/powerpc/platforms/wsp/ics.h       |   25 -
+>  arch/powerpc/platforms/wsp/msi.c       |  102 ---
+>  arch/powerpc/platforms/wsp/msi.h       |   19 -
+>  arch/powerpc/platforms/wsp/opb_pic.c   |  321 ---------
+>  arch/powerpc/platforms/wsp/psr2.c      |   67 --
+>  arch/powerpc/platforms/wsp/scom_smp.c  |  434 ------------
 
-Since doorbells can only IPI within a core, we test to see when we can use
-doorbells and if not we fall back to XICS.  This also enables hypervisor
-doorbells to wakeup us up from nap/sleep via the LPCR PECEDH bit.
+This (trivially) conflicts with commit 2751b628c97e ("powerpc: Fix SMP
+issues with ppc64le ABIv2") in next-20140530.
 
-Based on tests by Anton, the best case IPI latency between two threads dropped
-from 894ns to 512ns.
+>  arch/powerpc/platforms/wsp/scom_wsp.c  |   82 ---
+>  arch/powerpc/platforms/wsp/setup.c     |   36 -
+>  arch/powerpc/platforms/wsp/smp.c       |   88 ---
+>  arch/powerpc/platforms/wsp/wsp.c       |  117 ----
+>  arch/powerpc/platforms/wsp/wsp.h       |   29 -
+>  arch/powerpc/platforms/wsp/wsp_pci.c   | 1134 --------------------------------
+>  arch/powerpc/platforms/wsp/wsp_pci.h   |  268 --------
+>  32 files changed, 1 insertion(+), 4249 deletions(-)
+>  delete mode 100644 arch/powerpc/configs/chroma_defconfig
+>  delete mode 100644 arch/powerpc/include/asm/wsp.h
+>  delete mode 100644 arch/powerpc/kernel/cpu_setup_a2.S
+>  delete mode 100644 arch/powerpc/platforms/wsp/Kconfig
+>  delete mode 100644 arch/powerpc/platforms/wsp/Makefile
+>  delete mode 100644 arch/powerpc/platforms/wsp/chroma.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/h8.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/ics.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/ics.h
+>  delete mode 100644 arch/powerpc/platforms/wsp/msi.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/msi.h
+>  delete mode 100644 arch/powerpc/platforms/wsp/opb_pic.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/psr2.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/scom_smp.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/scom_wsp.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/setup.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/smp.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/wsp.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/wsp.h
+>  delete mode 100644 arch/powerpc/platforms/wsp/wsp_pci.c
+>  delete mode 100644 arch/powerpc/platforms/wsp/wsp_pci.h
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/cpu_setup_power.S | 2 ++
- arch/powerpc/platforms/powernv/smp.c  | 6 ++++++
- arch/powerpc/sysdev/xics/icp-native.c | 9 ++++++++-
- 3 files changed, 16 insertions(+), 1 deletion(-)
+For what it's worth, according to my scripts this doesn't introduce
+Kconfig related regressions (eg, you've removed all references to the
+Kconfig symbols that were removed). And, of course, that puzzling check
+for CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS is now gone.
 
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 1557e7c..4673353 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -56,6 +56,7 @@ _GLOBAL(__setup_cpu_power8)
- 	li	r0,0
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
-@@ -74,6 +75,7 @@ _GLOBAL(__restore_cpu_power8)
- 	li	r0,0
- 	mtspr	SPRN_LPID,r0
- 	mfspr   r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 0062a43..5fcfcf4 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -32,6 +32,7 @@
- #include <asm/opal.h>
- #include <asm/runlatch.h>
- #include <asm/code-patching.h>
-+#include <asm/dbell.h>
- 
- #include "powernv.h"
- 
-@@ -46,6 +47,11 @@ static void pnv_smp_setup_cpu(int cpu)
- {
- 	if (cpu != boot_cpuid)
- 		xics_setup_cpu();
-+
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL))
-+		doorbell_setup_this_cpu();
-+#endif
- }
- 
- int pnv_smp_kick_cpu(int nr)
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-index 9dee470..de8d948 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -26,6 +26,7 @@
- #include <asm/errno.h>
- #include <asm/xics.h>
- #include <asm/kvm_ppc.h>
-+#include <asm/dbell.h>
- 
- struct icp_ipl {
- 	union {
-@@ -145,7 +146,13 @@ static unsigned int icp_native_get_irq(void)
- static void icp_native_cause_ipi(int cpu, unsigned long data)
- {
- 	kvmppc_set_host_ipi(cpu, 1);
--	icp_native_set_qirr(cpu, IPI_PRIORITY);
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL) &&
-+	    (cpumask_test_cpu(cpu, cpu_sibling_mask(smp_processor_id()))))
-+		doorbell_cause_ipi(cpu, data);
-+	else
-+#endif
-+		icp_native_set_qirr(cpu, IPI_PRIORITY);
- }
- 
- void xics_wake_cpu(int cpu)
--- 
-1.9.1
+Thanks,
+
+
+Paul Bolle
