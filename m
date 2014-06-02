@@ -1,20 +1,18 @@
-Return-Path: <ydroneaud@opteya.com>
-From: Yann Droneaud <ydroneaud@opteya.com>
-To: Jeremy Kerr <jk@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCHv7 2/6] ppc/cell: use get_unused_fd_flags(0) instead of
- get_unused_fd()
-Date: Sun,  1 Jun 2014 15:58:43 +0200
-Message-Id: <51969ab721c420716f994c416184284f903822a5.1401630396.git.ydroneaud@opteya.com>
-In-Reply-To: <cover.1401630396.git.ydroneaud@opteya.com>
-References: <cover.1401630396.git.ydroneaud@opteya.com>
-In-Reply-To: <cover.1401630396.git.ydroneaud@opteya.com>
-References: <cover.1401630396.git.ydroneaud@opteya.com>
-Cc: Yann Droneaud <ydroneaud@opteya.com>, cbe-oss-dev@lists.ozlabs.org,
- trivial@kernel.org, linux-kernel@vger.kernel.org,
- Al Viro <viro@zeniv.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50BCD1A0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 10:27:51 +1000 (EST)
+Message-ID: <1401668861.14938.125.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 02 Jun 2014 10:27:41 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Macro get_unused_fd() is used to allocate a file descriptor with
-default flags. Those default flags (0) can be "unsafe":
-O_CLOEXEC must be used by default to not leak file descriptor
-across exec().
+Hi Linus !
 
-Instead of macro get_unused_fd(), function get_unused_fd_flags()
-(or anon_inode_getfd()) should be used with flags given by userspace.
-If not possible, flags should be set to O_CLOEXEC to provide userspace
-with a default safe behavor.
+Here's just one trivial patch to wire up sys_renameat2 which I
+seem to have completely missed so far. (My test build scripts fwd me
+warnings but miss the ones generated for missing syscalls).
 
-In a further patch, get_unused_fd() will be removed so that new code
-start using get_unused_fd_flags() (or anon_inode_getfd()) with correct
-flags.
+Cheers,
+Ben.
 
-This patch replaces calls to get_unused_fd() with equivalent call to
-get_unused_fd_flags(0) to preserve current behavor for existing code.
+The following changes since commit 011e4b02f1da156ac7fea28a9da878f3c23af739:
 
-The hard coded flag value (0) should be reviewed on a per-subsystem
-basis, and, if possible, set to O_CLOEXEC.
+  powerpc, kexec: Fix "Processor X is stuck" issue during kexec from ST mode (2014-05-28 13:24:26 +1000)
 
-Link: http://lkml.kernel.org/r/cover.1401630396.git.ydroneaud@opteya.com
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Yann Droneaud <ydroneaud@opteya.com>
----
- arch/powerpc/platforms/cell/spufs/inode.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+are available in the git repository at:
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 87ba7cf99cd7..51effcec30d8 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -301,7 +301,7 @@ static int spufs_context_open(struct path *path)
- 	int ret;
- 	struct file *filp;
- 
--	ret = get_unused_fd();
-+	ret = get_unused_fd_flags(0);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -518,7 +518,7 @@ static int spufs_gang_open(struct path *path)
- 	int ret;
- 	struct file *filp;
- 
--	ret = get_unused_fd();
-+	ret = get_unused_fd_flags(0);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-1.9.3
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 8212f58a9b151d842fa60a70f354e43c61fad839:
+
+  powerpc: Wire renameat2() syscall (2014-06-02 09:24:27 +1000)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc: Wire renameat2() syscall
+
+ arch/powerpc/include/asm/systbl.h      | 1 +
+ arch/powerpc/include/asm/unistd.h      | 2 +-
+ arch/powerpc/include/uapi/asm/unistd.h | 1 +
+ 3 files changed, 3 insertions(+), 1 deletion(-)
