@@ -2,14 +2,15 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E2E11A0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 16:57:05 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 616E71A0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 16:57:06 +1000 (EST)
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc/cpuidle: Only clear LPCR decrementer wakeup bit
- on fast sleep entry
-Date: Mon,  2 Jun 2014 16:57:02 +1000
-Message-Id: <1401692223-28337-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/2] powerpc/powernv: Enable POWER8 doorbell IPIs
+Date: Mon,  2 Jun 2014 16:57:03 +1000
+Message-Id: <1401692223-28337-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1401692223-28337-1-git-send-email-mikey@neuling.org>
+References: <1401692223-28337-1-git-send-email-mikey@neuling.org>
 Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,30 +22,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently when entering fastsleep we clear all LPCR PECE bits.
+This patch enables POWER8 doorbell IPIs on powernv.
 
-This patch changes it to only clear the decrementer bit (ie. PECE1), which is
-the only bit we really need to clear here.  This is needed if we want to set
-other wakeup causes like the PECEDH bit so we can use hypervisor doorbells on
-powernv.
+Since doorbells can only IPI within a core, we test to see when we can use
+doorbells and if not we fall back to XICS.  This also enables hypervisor
+doorbells to wakeup us up from nap/sleep via the LPCR PECEDH bit.
+
+Based on tests by Anton, the best case IPI latency between two threads dropped
+from 894ns to 512ns.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/kernel/cpu_setup_power.S | 2 ++
+ arch/powerpc/platforms/powernv/smp.c  | 6 ++++++
+ arch/powerpc/sysdev/xics/icp-native.c | 9 ++++++++-
+ 3 files changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 719f6fb..7f7798e 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -73,7 +73,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
- 		return index;
+diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
+index 1557e7c..4673353 100644
+--- a/arch/powerpc/kernel/cpu_setup_power.S
++++ b/arch/powerpc/kernel/cpu_setup_power.S
+@@ -56,6 +56,7 @@ _GLOBAL(__setup_cpu_power8)
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
+ 	mfspr	r3,SPRN_LPCR
++	ori	r3, r3, LPCR_PECEDH
+ 	bl	__init_LPCR
+ 	bl	__init_HFSCR
+ 	bl	__init_tlb_power8
+@@ -74,6 +75,7 @@ _GLOBAL(__restore_cpu_power8)
+ 	li	r0,0
+ 	mtspr	SPRN_LPID,r0
+ 	mfspr   r3,SPRN_LPCR
++	ori	r3, r3, LPCR_PECEDH
+ 	bl	__init_LPCR
+ 	bl	__init_HFSCR
+ 	bl	__init_tlb_power8
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 0062a43..5fcfcf4 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -32,6 +32,7 @@
+ #include <asm/opal.h>
+ #include <asm/runlatch.h>
+ #include <asm/code-patching.h>
++#include <asm/dbell.h>
  
- 	new_lpcr = old_lpcr;
--	new_lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
-+	new_lpcr &= ~(LPCR_MER | LPCR_PECE1); /* lpcr[mer] must be 0 */
+ #include "powernv.h"
  
- 	/* exit powersave upon external interrupt, but not decrementer
- 	 * interrupt.
+@@ -46,6 +47,11 @@ static void pnv_smp_setup_cpu(int cpu)
+ {
+ 	if (cpu != boot_cpuid)
+ 		xics_setup_cpu();
++
++#ifdef CONFIG_PPC_DOORBELL
++	if (cpu_has_feature(CPU_FTR_DBELL))
++		doorbell_setup_this_cpu();
++#endif
+ }
+ 
+ int pnv_smp_kick_cpu(int nr)
+diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
+index 9dee470..de8d948 100644
+--- a/arch/powerpc/sysdev/xics/icp-native.c
++++ b/arch/powerpc/sysdev/xics/icp-native.c
+@@ -26,6 +26,7 @@
+ #include <asm/errno.h>
+ #include <asm/xics.h>
+ #include <asm/kvm_ppc.h>
++#include <asm/dbell.h>
+ 
+ struct icp_ipl {
+ 	union {
+@@ -145,7 +146,13 @@ static unsigned int icp_native_get_irq(void)
+ static void icp_native_cause_ipi(int cpu, unsigned long data)
+ {
+ 	kvmppc_set_host_ipi(cpu, 1);
+-	icp_native_set_qirr(cpu, IPI_PRIORITY);
++#ifdef CONFIG_PPC_DOORBELL
++	if (cpu_has_feature(CPU_FTR_DBELL) &&
++	    (cpumask_test_cpu(cpu, cpu_sibling_mask(smp_processor_id()))))
++		doorbell_cause_ipi(cpu, data);
++	else
++#endif
++		icp_native_set_qirr(cpu, IPI_PRIORITY);
+ }
+ 
+ void xics_wake_cpu(int cpu)
 -- 
 1.9.1
