@@ -1,19 +1,50 @@
-Return-Path: <timur@tabi.org>
-Received: from muin.pair.com (muin.pair.com [209.68.1.55])
- by lists.ozlabs.org (Postfix) with ESMTP id 44B6D1A0BFD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 01:52:29 +1000 (EST)
-Message-ID: <538C9DB9.80007@tabi.org>
-Date: Mon, 02 Jun 2014 10:52:25 -0500
-From: Timur Tabi <timur@tabi.org>
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 890711A06CD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 02:06:42 +1000 (EST)
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 904B71400AB
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2014 02:06:41 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 2 Jun 2014 21:36:36 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 27F8F3940049
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2014 21:36:34 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s52G7FDG59310264
+ for <linuxppc-dev@ozlabs.org>; Mon, 2 Jun 2014 21:37:15 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s52G6VcZ018764
+ for <linuxppc-dev@ozlabs.org>; Mon, 2 Jun 2014 21:36:33 +0530
+Message-ID: <538CA096.20709@linux.vnet.ibm.com>
+Date: Mon, 02 Jun 2014 21:34:38 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "eshe168@gmail.com" <eshe168@gmail.com>
-Subject: Re: P1022 audio driver help!
-References: <2014053014034907812079@gmail.com>,
- <5388A851.2010508@tabi.org> <201406022205351271662@gmail.com>
-In-Reply-To: <201406022205351271662@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- zhphsearch <zhphsearch@163.com>
+To: Stephane Eranian <eranian@google.com>
+Subject: Re: [V6 00/11] perf: New conditional branch filter
+References: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <CABPqkBS+3N6PW0wJr3xnvpF4zinZM7+iwFWzwS7BDm-LTkam5Q@mail.gmail.com>
+ <53859873.9070603@linux.vnet.ibm.com>
+ <CABPqkBSmuMth4KmdLw7Nigf5uQREQJ+xL=42xV9c8FjR2VPO5g@mail.gmail.com>
+In-Reply-To: <CABPqkBSmuMth4KmdLw7Nigf5uQREQJ+xL=42xV9c8FjR2VPO5g@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Michael Neuling <mikey@neuling.org>,
+ "ak@linux.intel.com" <ak@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,12 +54,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-eshe168@gmail.com wrote:
->
-> I have another question. Did you test full duplex in P1022 RDK board?
-> Our design is same with P1022 RDK.
+On 06/02/2014 06:29 PM, Stephane Eranian wrote:
+> On Wed, May 28, 2014 at 10:04 AM, Anshuman Khandual
+> <khandual@linux.vnet.ibm.com> wrote:
+>> On 05/27/2014 05:39 PM, Stephane Eranian wrote:
+>>> I have been looking at those patches and ran some tests.
+>>> And I found a few issues so far.
+>>>
+>>> I am running:
+>>> $ perf record -j any_ret -e cycles:u test_program
+>>> $ perf report -D
+>>>
+>>> Most entries are okay and match the filter, however some do not make sense:
+>>>
+>>> 3642586996762 0x15d0 [0x108]: PERF_RECORD_SAMPLE(IP, 2): 17921/17921:
+>>> 0x10001170 period: 613678 addr: 0
+>>> .... branch stack: nr:9
+>>> .....  0: 00000000100011cc -> 0000000010000e38
+>>> .....  1: 0000000010001150 -> 00000000100011bc
+>>> .....  2: 0000000010001208 -> 0000000010000e38
+>>> .....  3: 0000000010001160 -> 00000000100011f8
+>>> .....  4: 00000000100011cc -> 0000000010000e38
+>>> .....  5: 0000000010001150 -> 00000000100011bc
+>>> .....  6: 0000000010001208 -> 0000000010000e38
+>>> .....  7: 0000000010001160 -> 00000000100011f8
+>>> .....  8: 0000000000000000 -> 0000000010001160
+>>> ^^^^^^
+>>> Entry 8 does not make sense, unless 0x0 is a valid return branch
+>>> instruction address.
+>>> If an address is invalid, the whole entry needs to be eliminated. It
+>>> is okay to have
+>>> less than the max number of entries supported by HW.
+>>
+>> Hey Stephane,
+>>
+>> Okay. The same behaviour is also reflected in the test results what I have
+>> shared in the patchset. Here is that section.
+>>
+>> (3) perf record -j any_ret -e branch-misses:u ./cprog
+>>
+>> # Overhead  Command  Source Shared Object          Source Symbol  Target Shared Object          Target Symbol
+>> # ........  .......  ....................  .....................  ....................  .....................
+>> #
+>>     15.61%    cprog  [unknown]             [.] 00000000           cprog                 [.] sw_3_1
+>>      6.28%    cprog  cprog                 [.] symbol2            cprog                 [.] hw_1_2
+>>      6.28%    cprog  cprog                 [.] ctr_addr           cprog                 [.] sw_4_1
+>>      6.26%    cprog  cprog                 [.] success_3_1_3      cprog                 [.] sw_3_1
+>>      6.24%    cprog  cprog                 [.] symbol1            cprog                 [.] hw_1_1
+>>      6.24%    cprog  cprog                 [.] sw_4_2             cprog                 [.] callme
+>>      6.21%    cprog  [unknown]             [.] 00000000           cprog                 [.] callme
+>>      6.19%    cprog  cprog                 [.] lr_addr            cprog                 [.] sw_4_2
+>>      3.16%    cprog  cprog                 [.] hw_1_2             cprog                 [.] callme
+>>      3.15%    cprog  cprog                 [.] success_3_1_1      cprog                 [.] sw_3_1
+>>      3.15%    cprog  cprog                 [.] sw_4_1             cprog                 [.] callme
+>>      3.14%    cprog  cprog                 [.] callme             cprog                 [.] main
+>>      3.13%    cprog  cprog                 [.] hw_1_1             cprog                 [.] callme
+>>
+>> So a lot of samples above have 0x0 as the "from" address. This originates from the code
+>> section here inside the function "power_pmu_bhrb_read", where we hit two back to back
+> 
+> Could you explain the back-to-back case a bit more here?
+> Back-to-back returns to me means something like:
+> 
+> int foo()
+> {
+>   ...
+>    return bar();
+> }
+> 
+> int bar()
+> {
+>   return 0;
+> }
+> 
+> Not counting the leaf optimization here, bar return to foo which
+> immediately returns: 2 back-2-back returns.
+> Is that the case you're talking about here?
+> 
 
-No, I don't think I did.  The P1022RDK was not a board that my team was 
-responsible for, so I only did minimal work on it.  I added support for 
-it in the upstream kernel.  It was so long ago that I don't really 
-remember much about it.  I still have the board, though.
+No. Filtering of return branches has been implemented in SW only. So PMU as such does not capture
+return only branches. It captures all the branches what it encounters. During the capture process
+PMU might *record* two back to back "target addresses" (without capturing the from address for the
+first one) for which we are unable to figure out the "from address". This leaves us with one branch
+record where we have the target address not from address and so we make it zero. With the current
+logic all branch records with "from address" as zero get filtered through and become the part of the
+final set. I was not too sure how to deal with these cases.
+
+>> target addresses. So we zero out the from address for the first target address and re-read
+>> the second address over again. So thats how we get zero as the from address. This is how the
+>> HW capture the samples. I was reluctant to drop these samples but I agree that these kind of
+>> samples can be dropped if we need to.
+>>
+> I think we need to make it as simple as possible for tools, i.e.,
+> avoid having to decode the
+> disassembly to figure out what happened. Here address 0 is not exploitable.
+
+Thats right. Dropping the branch record where we have only the target address not the from address
+might just solve this problem.
