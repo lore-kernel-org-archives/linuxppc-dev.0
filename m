@@ -1,22 +1,36 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0207.outbound.protection.outlook.com [207.46.163.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <eranian@google.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33E201A0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 22:48:43 +1000 (EST)
-Message-ID: <538C7297.4040307@freescale.com>
-Date: Mon, 2 Jun 2014 15:48:23 +0300
-From: Tudor Laurentiu <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1EC9D1A0055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jun 2014 22:59:10 +1000 (EST)
+Received: from mail-ob0-x22a.google.com (mail-ob0-x22a.google.com
+ [IPv6:2607:f8b0:4003:c01::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 32FC11400AB
+ for <linuxppc-dev@ozlabs.org>; Mon,  2 Jun 2014 22:59:08 +1000 (EST)
+Received: by mail-ob0-f170.google.com with SMTP id uy5so4442525obc.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 02 Jun 2014 05:59:05 -0700 (PDT)
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc/booke64: wrap tlb lock and search in htw miss
- with FTR_SMT
-References: <1401489946-12935-1-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1401489946-12935-1-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <53859873.9070603@linux.vnet.ibm.com>
+References: <1399280953-31442-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <CABPqkBS+3N6PW0wJr3xnvpF4zinZM7+iwFWzwS7BDm-LTkam5Q@mail.gmail.com>
+ <53859873.9070603@linux.vnet.ibm.com>
+Date: Mon, 2 Jun 2014 14:59:04 +0200
+Message-ID: <CABPqkBSmuMth4KmdLw7Nigf5uQREQJ+xL=42xV9c8FjR2VPO5g@mail.gmail.com>
+Subject: Re: [V6 00/11] perf: New conditional branch filter
+From: Stephane Eranian <eranian@google.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Michael Neuling <mikey@neuling.org>,
+ "ak@linux.intel.com" <ak@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +40,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2014 01:45 AM, Scott Wood wrote:
-> From: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
+On Wed, May 28, 2014 at 10:04 AM, Anshuman Khandual
+<khandual@linux.vnet.ibm.com> wrote:
+> On 05/27/2014 05:39 PM, Stephane Eranian wrote:
+>> I have been looking at those patches and ran some tests.
+>> And I found a few issues so far.
+>>
+>> I am running:
+>> $ perf record -j any_ret -e cycles:u test_program
+>> $ perf report -D
+>>
+>> Most entries are okay and match the filter, however some do not make sense:
+>>
+>> 3642586996762 0x15d0 [0x108]: PERF_RECORD_SAMPLE(IP, 2): 17921/17921:
+>> 0x10001170 period: 613678 addr: 0
+>> .... branch stack: nr:9
+>> .....  0: 00000000100011cc -> 0000000010000e38
+>> .....  1: 0000000010001150 -> 00000000100011bc
+>> .....  2: 0000000010001208 -> 0000000010000e38
+>> .....  3: 0000000010001160 -> 00000000100011f8
+>> .....  4: 00000000100011cc -> 0000000010000e38
+>> .....  5: 0000000010001150 -> 00000000100011bc
+>> .....  6: 0000000010001208 -> 0000000010000e38
+>> .....  7: 0000000010001160 -> 00000000100011f8
+>> .....  8: 0000000000000000 -> 0000000010001160
+>> ^^^^^^
+>> Entry 8 does not make sense, unless 0x0 is a valid return branch
+>> instruction address.
+>> If an address is invalid, the whole entry needs to be eliminated. It
+>> is okay to have
+>> less than the max number of entries supported by HW.
 >
-> Virtualized environments may expose a e6500 dual-threaded core
-> as two single-threaded e6500 cores. Take advantage of this
-> and get rid of the tlb lock and the trap-causing tlbsx in
-> the htw miss handler by guarding with CPU_FTR_SMT, as it's
-> already being done in the bolted tlb1 miss handler.
+> Hey Stephane,
 >
-> As seen in the results below, measurements done with lmbench
-> random memory access latency test running under Freescale's
-> Embedded Hypervisor, there is a ~34% improvement.
+> Okay. The same behaviour is also reflected in the test results what I have
+> shared in the patchset. Here is that section.
 >
-> Memory latencies in nanoseconds - smaller is better
->      (WARNING - may not be correct, check graphs)
-> ----------------------------------------------------
-> Host       Mhz   L1 $   L2 $    Main mem    Rand mem
-> ---------  ---   ----   ----    --------    --------
-> smt       1665 1.8020   13.2    83.0         1149.7
-> nosmt     1665 1.8020   13.2    83.0          758.1
+> (3) perf record -j any_ret -e branch-misses:u ./cprog
 >
-> Signed-off-by: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
-> Cc: Scott Wood <scottwood@freescale.com>
-> [scottwood@freescale.com: commit message tweak]
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> v2:
->   - s/expose/may expose/ in commit message
->   - rebased onto my patch queue to resolve conflict
+> # Overhead  Command  Source Shared Object          Source Symbol  Target Shared Object          Target Symbol
+> # ........  .......  ....................  .....................  ....................  .....................
+> #
+>     15.61%    cprog  [unknown]             [.] 00000000           cprog                 [.] sw_3_1
+>      6.28%    cprog  cprog                 [.] symbol2            cprog                 [.] hw_1_2
+>      6.28%    cprog  cprog                 [.] ctr_addr           cprog                 [.] sw_4_1
+>      6.26%    cprog  cprog                 [.] success_3_1_3      cprog                 [.] sw_3_1
+>      6.24%    cprog  cprog                 [.] symbol1            cprog                 [.] hw_1_1
+>      6.24%    cprog  cprog                 [.] sw_4_2             cprog                 [.] callme
+>      6.21%    cprog  [unknown]             [.] 00000000           cprog                 [.] callme
+>      6.19%    cprog  cprog                 [.] lr_addr            cprog                 [.] sw_4_2
+>      3.16%    cprog  cprog                 [.] hw_1_2             cprog                 [.] callme
+>      3.15%    cprog  cprog                 [.] success_3_1_1      cprog                 [.] sw_3_1
+>      3.15%    cprog  cprog                 [.] sw_4_1             cprog                 [.] callme
+>      3.14%    cprog  cprog                 [.] callme             cprog                 [.] main
+>      3.13%    cprog  cprog                 [.] hw_1_1             cprog                 [.] callme
+>
+> So a lot of samples above have 0x0 as the "from" address. This originates from the code
+> section here inside the function "power_pmu_bhrb_read", where we hit two back to back
 
-Thanks!
+Could you explain the back-to-back case a bit more here?
+Back-to-back returns to me means something like:
 
->   - resent since the original didn't make it to the list archives
->     or patchwork.
+int foo()
+{
+  ...
+   return bar();
+}
 
-The only thing i can think of is that maybe i've misspelled the mailing 
-list address ...
+int bar()
+{
+  return 0;
+}
 
----
-Best Regards, Laurentiu
+Not counting the leaf optimization here, bar return to foo which
+immediately returns: 2 back-2-back returns.
+Is that the case you're talking about here?
+
+> target addresses. So we zero out the from address for the first target address and re-read
+> the second address over again. So thats how we get zero as the from address. This is how the
+> HW capture the samples. I was reluctant to drop these samples but I agree that these kind of
+> samples can be dropped if we need to.
+>
+I think we need to make it as simple as possible for tools, i.e.,
+avoid having to decode the
+disassembly to figure out what happened. Here address 0 is not exploitable.
+
+> if (val & BHRB_TARGET) {
+>         /* Shouldn't have two targets in a
+>            row.. Reset index and try again */
+>         r_index--;
+>         addr = 0;
+> }
