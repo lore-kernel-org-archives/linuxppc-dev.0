@@ -1,25 +1,25 @@
 Return-Path: <mpn@google.com>
-Received: from mail-wi0-x232.google.com (mail-wi0-x232.google.com
- [IPv6:2a00:1450:400c:c05::232])
+Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
+ [IPv6:2a00:1450:400c:c00::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F0F51A0837
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 17:01:00 +1000 (EST)
-Received: by mail-wi0-f178.google.com with SMTP id cc10so5862060wib.11
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jun 2014 00:00:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA1571A0837
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 17:02:27 +1000 (EST)
+Received: by mail-wg0-f48.google.com with SMTP id k14so6258695wgh.7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jun 2014 00:02:23 -0700 (PDT)
 Sender: Michal Nazarewicz <mpn@google.com>
 From: Michal Nazarewicz <mina86@mina86.com>
 To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [RFC PATCH 2/3] DMA,
+Subject: Re: [RFC PATCH 3/3] PPC, KVM,
  CMA: use general CMA reserved area management framework
-In-Reply-To: <1401757919-30018-3-git-send-email-iamjoonsoo.kim@lge.com>
+In-Reply-To: <1401757919-30018-4-git-send-email-iamjoonsoo.kim@lge.com>
 References: <1401757919-30018-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1401757919-30018-3-git-send-email-iamjoonsoo.kim@lge.com>
-Date: Tue, 03 Jun 2014 09:00:48 +0200
-Message-ID: <xa1twqcyjx3z.fsf@mina86.com>
+ <1401757919-30018-4-git-send-email-iamjoonsoo.kim@lge.com>
+Date: Tue, 03 Jun 2014 09:02:17 +0200
+Message-ID: <xa1ttx82jx1i.fsf@mina86.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
@@ -46,26 +46,6 @@ On Tue, Jun 03 2014, Joonsoo Kim wrote:
 > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
 Acked-by: Michal Nazarewicz <mina86@mina86.com>
-
-> diff --git a/include/linux/dma-contiguous.h b/include/linux/dma-contiguou=
-s.h
-> index dfb1dc9..ecb85ac 100644
-> --- a/include/linux/dma-contiguous.h
-> +++ b/include/linux/dma-contiguous.h
-> @@ -53,9 +53,10 @@
->=20=20
->  #ifdef __KERNEL__
->=20=20
-> +#include <linux/device.h>
-> +
-
-Why is this suddenly required?
-
->  struct cma;
->  struct page;
-> -struct device;
->=20=20
->  #ifdef CONFIG_DMA_CMA
 
 --=20
 Best regards,                                         _     _
