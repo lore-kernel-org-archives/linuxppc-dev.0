@@ -1,24 +1,22 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
+ (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C43F1A0041
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 00:49:17 +1000 (EST)
-Message-ID: <538DE062.7020309@freescale.com>
-Date: Tue, 3 Jun 2014 17:49:06 +0300
-From: Tudor Laurentiu <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E98A01A0041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 02:12:52 +1000 (EST)
+Message-ID: <1401811959.6603.287.camel@snotra.buserror.net>
+Subject: Re: [PATCH] powerpc/85xx: Add T4240RDB board support
+From: Scott Wood <scottwood@freescale.com>
+To: Chunhe Lan <b25806@freescale.com>
+Date: Tue, 3 Jun 2014 11:12:39 -0500
+In-Reply-To: <538D8E15.5070506@freescale.com>
+References: <1401264681-30058-1-git-send-email-Chunhe.Lan@freescale.com>
+ <1401485104.6603.221.camel@snotra.buserror.net>
+ <538D8E15.5070506@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v2] powerpc/booke64: wrap tlb lock and search in htw miss
- with FTR_SMT
-References: <1401489946-12935-1-git-send-email-scottwood@freescale.com>
- <538C7297.4040307@freescale.com>
- <1401727559.6603.227.camel@snotra.buserror.net>
-In-Reply-To: <1401727559.6603.227.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/02/2014 07:45 PM, Scott Wood wrote:
-> On Mon, 2014-06-02 at 15:48 +0300, Tudor Laurentiu wrote:
->> On 05/31/2014 01:45 AM, Scott Wood wrote:
->>> From: Laurentiu Tudor <Laurentiu.Tudor@freescale.com>
->>>    - resent since the original didn't make it to the list archives
->>>      or patchwork.
->>
->> The only thing i can think of is that maybe i've misspelled the mailing
->> list address ...
->
-> It looks right to me.  Did you get a bounce?
->
+On Tue, 2014-06-03 at 16:57 +0800, Chunhe Lan wrote:
+> On 05/31/2014 05:25 AM, Scott Wood wrote:
+> > On Wed, 2014-05-28 at 16:11 +0800, Chunhe Lan wrote:
+> >> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+> >> index 8e4b1e1..2f50526 100644
+> >> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
+> >> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+> >> @@ -119,6 +119,7 @@ static const char * const boards[] __initconst = {
+> >>   	"fsl,P5020DS",
+> >>   	"fsl,P5040DS",
+> >>   	"fsl,T4240QDS",
+> >> +	"fsl,T4240RDB",
+> >>   	"fsl,B4860QDS",
+> >>   	"fsl,B4420QDS",
+> >>   	"fsl,B4220QDS",
+> > What about hv_boards?
+>      Does not have hv boards. So does not support hv.
 
-Strangely, no. I'm out of ideas.
+This isn't about a physical "hv board".  Topaz appends -hv to the board
+compatible.  I wish we had just made a single "Topaz e500 platform" like
+we did for qemu e500, but oh well.
 
----
-Best Regards, Laurentiu
+-Scott
