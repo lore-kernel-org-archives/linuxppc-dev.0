@@ -1,20 +1,23 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0238.outbound.protection.outlook.com [207.46.163.238])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20EC21A0839
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 19:59:31 +1000 (EST)
-Message-ID: <538D9C79.20903@freescale.com>
-Date: Tue, 3 Jun 2014 12:59:21 +0300
-From: Tudor Laurentiu <b10716@freescale.com>
-MIME-Version: 1.0
-To: Chunhe Lan <Chunhe.Lan@freescale.com>
-Subject: Re: [PATCH v2] powerpc/85xx: Add T4240RDB board support
-References: <1401786611-30378-1-git-send-email-Chunhe.Lan@freescale.com>
-In-Reply-To: <1401786611-30378-1-git-send-email-Chunhe.Lan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2999C1A0840
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 20:07:52 +1000 (EST)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8089C14009F
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Jun 2014 20:07:51 +1000 (EST)
+Message-ID: <1401790059.3247.16.camel@pasglop>
+Subject: [PATCH] powerpc/powernv: Provide debugfs access to the LPC bus via
+ OPAL
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Date: Tue, 03 Jun 2014 20:07:39 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Rob Lippert <rlippert@google.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,50 +27,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Chunhe
+This provides debugfs files to access the LPC bus on Power8
+non-virtualized using the appropriate OPAL firmware calls.
 
-Comment inline ...
+The usage is simple: one file per space (IO, MEM and FW),
+lseek to the address and read/write the data. IO and MEM always
+generate series of byte accesses. FW can generate word and dword
+accesses if aligned properly.
 
-On 06/03/2014 12:10 PM, Chunhe Lan wrote:
-> T4240RDB board Specification
-> ----------------------------
-> Memory subsystem:
->       6GB DDR3
->       128MB NOR flash
->       2GB NAND flash
-> Ethernet:
->       Eight 1G SGMII ports
->       Four 10Gbps SFP+ ports
-> PCIe:
->       Two PCIe slots
-> USB:
->       Two USB2.0 Type A ports
-> SDHC:
->       One SD-card port
-> SATA:
->       One SATA port
-> UART:
->       Dual RJ45 ports
->
-> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> Cc: Scott Wood <scottwood@freescale.com>
-> ---
+Based on an original patch from Rob Lippert and reworked.
 
-[snip]
-
->
-> diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-> index 8e4b1e1..2f50526 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_generic.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-> @@ -119,6 +119,7 @@ static const char * const boards[] __initconst = {
->   	"fsl,P5020DS",
->   	"fsl,P5040DS",
->   	"fsl,T4240QDS",
-> +	"fsl,T4240RDB",
-
-T4240RDB is supported & tested under hypervisor so please also add the 
-hypervisor compatible in the "hv_boards" array below.
-
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-Thanks & Best Regards, Laurentiu
+ arch/powerpc/platforms/powernv/opal-lpc.c |  150 +++++++++++++++++++++++++++++
+ 1 file changed, 150 insertions(+)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-lpc.c b/arch/powerpc/platforms/powernv/opal-lpc.c
+index 79d83ca..70eff22 100644
+--- a/arch/powerpc/platforms/powernv/opal-lpc.c
++++ b/arch/powerpc/platforms/powernv/opal-lpc.c
+@@ -12,12 +12,16 @@
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+ #include <linux/bug.h>
++#include <linux/debugfs.h>
++#include <linux/io.h>
++#include <linux/slab.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+ #include <asm/xics.h>
+ #include <asm/opal.h>
+ #include <asm/prom.h>
++#include <asm/uaccess.h>
+ 
+ static int opal_lpc_chip_id = -1;
+ 
+@@ -176,6 +180,152 @@ static const struct ppc_pci_io opal_lpc_io = {
+ 	.outsl	= opal_lpc_outsl,
+ };
+ 
++#ifdef CONFIG_DEBUG_FS
++struct lpc_debugfs_entry {
++	enum OpalLPCAddressType lpc_type;
++};
++
++static ssize_t lpc_debug_read(struct file *filp, char __user *ubuf,
++			      size_t count, loff_t *ppos)
++{
++	struct lpc_debugfs_entry *lpc = filp->private_data;
++	u32 data, pos, len, todo;
++	int rc;
++
++	if (!access_ok(VERIFY_WRITE, ubuf, count))
++		return -EFAULT;
++
++	todo = count;
++	while (todo) {
++		pos = *ppos;
++
++		/*
++		 * Select access size based on count and alignment and
++		 * access type. IO and MEM only support byte acceses,
++		 * FW supports all 3.
++		 */
++		len = 1;
++		if (lpc->lpc_type == OPAL_LPC_FW) {
++			if (todo > 3 && (pos & 3) == 0)
++				len = 4;
++			else if (todo > 1 && (pos & 1) == 0)
++				len = 2;
++		}
++		rc = opal_lpc_read(opal_lpc_chip_id, lpc->lpc_type, pos,
++				   &data, len);
++		if (rc)
++			return -ENXIO;
++		switch(len) {
++		case 4:
++			rc = __put_user((u32)data, (u32 __user *)ubuf);
++			break;
++		case 2:
++			rc = __put_user((u16)data, (u16 __user *)ubuf);
++			break;
++		default:
++			rc = __put_user((u8)data, (u8 __user *)ubuf);
++			break;
++		}
++		if (rc)
++			return -EFAULT;
++		*ppos += len;
++		ubuf += len;
++		todo -= len;
++	}
++
++	return count;
++}
++
++static ssize_t lpc_debug_write(struct file *filp, const char __user *ubuf,
++			       size_t count, loff_t *ppos)
++{
++	struct lpc_debugfs_entry *lpc = filp->private_data;
++	u32 data, pos, len, todo;
++	int rc;
++
++	if (!access_ok(VERIFY_READ, ubuf, count))
++		return -EFAULT;
++
++	todo = count;
++	while (todo) {
++		pos = *ppos;
++
++		/*
++		 * Select access size based on count and alignment and
++		 * access type. IO and MEM only support byte acceses,
++		 * FW supports all 3.
++		 */
++		len = 1;
++		if (lpc->lpc_type == OPAL_LPC_FW) {
++			if (todo > 3 && (pos & 3) == 0)
++				len = 4;
++			else if (todo > 1 && (pos & 1) == 0)
++				len = 2;
++		}
++		switch(len) {
++		case 4:
++			rc = __get_user(data, (u32 __user *)ubuf);
++			break;
++		case 2:
++			rc = __get_user(data, (u16 __user *)ubuf);
++			break;
++		default:
++			rc = __get_user(data, (u8 __user *)ubuf);
++			break;
++		}
++		if (rc)
++			return -EFAULT;
++
++		rc = opal_lpc_write(opal_lpc_chip_id, lpc->lpc_type, pos,
++				    data, len);
++		if (rc)
++			return -ENXIO;
++		*ppos += len;
++		ubuf += len;
++		todo -= len;
++	}
++
++	return count;
++}
++
++static const struct file_operations lpc_fops = {
++	.read =		lpc_debug_read,
++	.write =	lpc_debug_write,
++	.open =		simple_open,
++	.llseek =	default_llseek,
++};
++
++static int opal_lpc_debugfs_create_type(struct dentry *folder,
++					const char *fname,
++					enum OpalLPCAddressType type)
++{
++	struct lpc_debugfs_entry *entry;
++	entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++	if (!entry)
++		return -ENOMEM;
++	entry->lpc_type = type;
++	debugfs_create_file(fname, 0600, folder, entry, &lpc_fops);
++	return 0;
++}
++
++static int opal_lpc_init_debugfs(void)
++{
++	struct dentry *root;
++	int rc = 0;
++
++	if (opal_lpc_chip_id < 0)
++		return -ENODEV;
++
++	root = debugfs_create_dir("lpc", powerpc_debugfs_root);
++
++	rc |= opal_lpc_debugfs_create_type(root, "io", OPAL_LPC_IO);
++	rc |= opal_lpc_debugfs_create_type(root, "mem", OPAL_LPC_MEM);
++	rc |= opal_lpc_debugfs_create_type(root, "fw", OPAL_LPC_FW);
++	return rc;
++}
++device_initcall(opal_lpc_init_debugfs);
++#endif  /* CONFIG_DEBUG_FS */
++
+ void opal_lpc_init(void)
+ {
+ 	struct device_node *np;
