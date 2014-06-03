@@ -1,19 +1,27 @@
-Return-Path: <blacklites@gmail.com>
-Received: from mail-yh0-x22a.google.com (mail-yh0-x22a.google.com
- [IPv6:2607:f8b0:4002:c01::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 490BD1A0837
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 16:43:09 +1000 (EST)
-Received: by mail-yh0-f42.google.com with SMTP id t59so4694992yho.15
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jun 2014 23:43:04 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 3 Jun 2014 12:13:04 +0530
-Message-ID: <CAE1uq6sUdG3fFYSdagSdROUpdNeRi8Prg5mfr088jxg5SWM3LQ@mail.gmail.com>
-Subject: FMD15 and t104x
-From: Tony <blacklites@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001a11c1ee3ae4213104fae8d29b
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADA281A0845
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2014 17:52:41 +1000 (EST)
+Message-ID: <1401781939.3247.11.camel@pasglop>
+Subject: Re: [PATCH 4/4] powerpc/eeh: Avoid event on passed PE
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 03 Jun 2014 17:52:19 +1000
+In-Reply-To: <5C4E374F-0BE1-4BE3-991C-E6BD64E90E6A@suse.de>
+References: <1400574612-19411-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1400574612-19411-5-git-send-email-gwshan@linux.vnet.ibm.com>
+ <537B3B97.3020100@suse.de> <20140603055415.GA24370@iris.ozlabs.ibm.com>
+ <5C4E374F-0BE1-4BE3-991C-E6BD64E90E6A@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "alex.williamson@redhat.com" <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +31,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c1ee3ae4213104fae8d29b
-Content-Type: text/plain; charset=UTF-8
+On Tue, 2014-06-03 at 09:45 +0200, Alexander Graf wrote:
+> For EEH it could as well be a dumb eventfd - really just a side
+> channel that can tell user space that something happened
+> asynchronously :).
 
-Hi,
+Which the host kernel may have no way to detect without actively poking
+at the device (fences in powernv or anything in PAPR host) and the only
+user of this for now has no use for.
 
-I am working with 3.0.x kernel with fmd15. I could bringup the t1040qsd but
-the ethernet is not getting detected. Is t104x devices required backporting
-of FMD19 ? OR modifying the dts file is enough ?
+I insist don't bother.
 
-Thanks
-Alan
-
---001a11c1ee3ae4213104fae8d29b
-Content-Type: text/html; charset=UTF-8
-
-<div dir="ltr"><div><div>Hi,<br><br>I am working with 3.0.x kernel with fmd15. I could bringup the t1040qsd but the ethernet is not getting detected. Is t104x devices required backporting of FMD19 ? OR modifying the dts file is enough ?<br>
-<br></div>Thanks<br></div>Alan<br></div>
-
---001a11c1ee3ae4213104fae8d29b--
+Cheers,
+Ben.
