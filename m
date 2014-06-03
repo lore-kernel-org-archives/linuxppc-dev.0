@@ -1,20 +1,39 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0190.outbound.protection.outlook.com [207.46.163.190])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C87161A0041
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 04:29:40 +1000 (EST)
-Message-ID: <1401820168.6603.306.camel@snotra.buserror.net>
-Subject: Re: FMD15 and t104x
-From: Scott Wood <scottwood@freescale.com>
-To: Tony <blacklites@gmail.com>
-Date: Tue, 3 Jun 2014 13:29:28 -0500
-In-Reply-To: <CAE1uq6sUdG3fFYSdagSdROUpdNeRi8Prg5mfr088jxg5SWM3LQ@mail.gmail.com>
-References: <CAE1uq6sUdG3fFYSdagSdROUpdNeRi8Prg5mfr088jxg5SWM3LQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E9B341A0041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 06:30:07 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Wed, 4 Jun 2014 02:00:02 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id EB8E31258048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 01:59:15 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s53KUfI647185966
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jun 2014 02:00:41 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s53KTvOB003139
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jun 2014 01:59:58 +0530
+Message-ID: <538E2FF8.8060707@linux.vnet.ibm.com>
+Date: Wed, 04 Jun 2014 01:58:40 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
+ kexec from ST mode
+References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
+ <20140528133143.GK14863@redhat.com>
+In-Reply-To: <20140528133143.GK14863@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, suzuki@in.ibm.com, ebiederm@xmission.com,
+ mahesh@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +43,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-06-03 at 12:13 +0530, Tony wrote:
-> Hi,
+On 05/28/2014 07:01 PM, Vivek Goyal wrote:
+> On Tue, May 27, 2014 at 04:25:34PM +0530, Srivatsa S. Bhat wrote:
+>> If we try to perform a kexec when the machine is in ST (Single-Threaded) mode
+>> (ppc64_cpu --smt=off), the kexec operation doesn't succeed properly, and we
+>> get the following messages during boot:
+>>
+>> [    0.089866] POWER8 performance monitor hardware support registered
+>> [    0.089985] power8-pmu: PMAO restore workaround active.
+>> [    5.095419] Processor 1 is stuck.
+>> [   10.097933] Processor 2 is stuck.
+>> [   15.100480] Processor 3 is stuck.
+>> [   20.102982] Processor 4 is stuck.
+>> [   25.105489] Processor 5 is stuck.
+>> [   30.108005] Processor 6 is stuck.
+>> [   35.110518] Processor 7 is stuck.
+>> [   40.113369] Processor 9 is stuck.
+>> [   45.115879] Processor 10 is stuck.
+>> [   50.118389] Processor 11 is stuck.
+>> [   55.120904] Processor 12 is stuck.
+>> [   60.123425] Processor 13 is stuck.
+>> [   65.125970] Processor 14 is stuck.
+>> [   70.128495] Processor 15 is stuck.
+>> [   75.131316] Processor 17 is stuck.
+>>
+>> Note that only the sibling threads are stuck, while the primary threads (0, 8,
+>> 16 etc) boot just fine. Looking closer at the previous step of kexec, we observe
+>> that kexec tries to wakeup (bring online) the sibling threads of all the cores,
+>> before performing kexec:
+>>
+>> [ 9464.131231] Starting new kernel
+>> [ 9464.148507] kexec: Waking offline cpu 1.
+>> [ 9464.148552] kexec: Waking offline cpu 2.
+>> [ 9464.148600] kexec: Waking offline cpu 3.
+>> [ 9464.148636] kexec: Waking offline cpu 4.
+>> [ 9464.148671] kexec: Waking offline cpu 5.
+>> [ 9464.148708] kexec: Waking offline cpu 6.
+>> [ 9464.148743] kexec: Waking offline cpu 7.
+>> [ 9464.148779] kexec: Waking offline cpu 9.
+>> [ 9464.148815] kexec: Waking offline cpu 10.
+>> [ 9464.148851] kexec: Waking offline cpu 11.
+>> [ 9464.148887] kexec: Waking offline cpu 12.
+>> [ 9464.148922] kexec: Waking offline cpu 13.
+>> [ 9464.148958] kexec: Waking offline cpu 14.
+>> [ 9464.148994] kexec: Waking offline cpu 15.
+>> [ 9464.149030] kexec: Waking offline cpu 17.
+>>
+>> Instrumenting this piece of code revealed that the cpu_up() operation actually
+>> fails with -EBUSY. Thus, only the primary threads of all the cores are online
+>> during kexec, and hence this is a sure-shot receipe for disaster, as explained
+>> in commit e8e5c2155b (powerpc/kexec: Fix orphaned offline CPUs across kexec),
+>> as well as in the comment above wake_offline_cpus().
+>>
+>> It turns out that cpu_up() was returning -EBUSY because the variable
+>> 'cpu_hotplug_disabled' was set to 1; and this disabling of CPU hotplug was done
+>> by migrate_to_reboot_cpu() inside kernel_kexec().
+>>
+>> Now, migrate_to_reboot_cpu() was originally written with the assumption that
+>> any further code will not need to perform CPU hotplug, since we are anyway in
+>> the reboot path. However, kexec is clearly not such a case, since we depend on
+>> onlining CPUs, atleast on powerpc.
+>>
+>> So re-enable cpu-hotplug after returning from migrate_to_reboot_cpu() in the
+>> kexec path, to fix this regression in kexec on powerpc.
+>>
+>> Also, wrap the cpu_up() in powerpc kexec code within a WARN_ON(), so that we
+>> can catch such issues more easily in the future.
+>>
+>> Fixes: c97102ba963 (kexec: migrate to reboot cpu)
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+>> ---
+>>
+>>  arch/powerpc/kernel/machine_kexec_64.c |    2 +-
+>>  kernel/kexec.c                         |    8 ++++++++
+>>  2 files changed, 9 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+>> index 59d229a..879b3aa 100644
+>> --- a/arch/powerpc/kernel/machine_kexec_64.c
+>> +++ b/arch/powerpc/kernel/machine_kexec_64.c
+>> @@ -237,7 +237,7 @@ static void wake_offline_cpus(void)
+>>  		if (!cpu_online(cpu)) {
+>>  			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
+>>  			       cpu);
+>> -			cpu_up(cpu);
+>> +			WARN_ON(cpu_up(cpu));
+>>  		}
+>>  	}
+>>  }
+>> diff --git a/kernel/kexec.c b/kernel/kexec.c
+>> index c8380ad..28c5706 100644
+>> --- a/kernel/kexec.c
+>> +++ b/kernel/kexec.c
+>> @@ -1683,6 +1683,14 @@ int kernel_kexec(void)
+>>  		kexec_in_progress = true;
+>>  		kernel_restart_prepare(NULL);
+>>  		migrate_to_reboot_cpu();
+>> +
+>> +		/*
+>> +		 * migrate_to_reboot_cpu() disables CPU hotplug assuming that
+>> +		 * no further code needs to use CPU hotplug (which is true in
+>> +		 * the reboot case). However, the kexec path depends on using
+>> +		 * CPU hotplug again; so re-enable it here.
+>> +		 */
+>> +		cpu_hotplug_enable();
+>>  		printk(KERN_EMERG "Starting new kernel\n");
+>>  		machine_shutdown();
 > 
-> I am working with 3.0.x kernel with fmd15. I could bringup the
-> t1040qsd but the ethernet is not getting detected. Is t104x devices
-> required backporting of FMD19 ? OR modifying the dts file is enough ?
+> After migrate_to_reboot_cpu(), we are calling machine_shutdown() which
+> calls disable_nonboot_cpus() and which in turn calls _cpu_down().
+> 
 
-Please use support@freescale.com or https://community.freescale.com/ for
-support of the QorIQ SDK.
+Hmm? I see only 'arm' calling disable_nonboot_cpus() from machine_shutdown().
+None of the other architectures call it. Is that a leftover in arm?
 
-That said, I'm pretty sure the FMan code from any 3.0-based SDK will not
-work with t1040.
+> So it is kind of odd that we first migrate to boot cpu, and then disable
+> all non-boot cpus and after that powerpc goes ahead and onlines all
+> cpus.
+> 
+> I think this is not a good idea. For whatever reason if powerpc has to
+> online all cpus, then it should happne earlier and not in machine_kexec().
+> 
+> In fact I think generic code expects that all non-boot cpus are disabled
+> so that generic code can use all the RAM as it wants to. Now if powerpc
+> breaks that assumption, it will lead to various kind of issues.
+> 
+> So I think we need to go back and see if we can find a way where we
+> don't have to online all cpus in first kernel. And second kernel needs
+> to have a way to detect it and online things.
+> 
 
--Scott
+Yep, that makes sense. But unfortunately I don't have enough insight into
+why exactly powerpc has to online the CPUs before doing a kexec. I just
+know from the commit log and the comment mentioned above (and from my own
+experiments) that the CPUs will get stuck if they were offline. Perhaps
+somebody more knowledgeable can explain this in detail and suggest a proper
+long-term solution.
+
+Matt, Ben, any thoughts on this?
+
+Regards,
+Srivatsa S. Bhat
