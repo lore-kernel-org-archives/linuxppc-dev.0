@@ -1,20 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43BCA1A06FA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 14:15:53 +1000 (EST)
-Date: Wed, 4 Jun 2014 14:15:47 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] KVM: PPC: BOOK3S: PR: Fix PURR and SPURR emulation
-Message-ID: <20140604041547.GA32223@drongo>
-References: <1401797771-25606-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 017541A06FA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 14:48:49 +1000 (EST)
+Date: Wed, 4 Jun 2014 14:48:48 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mahesh@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/powernv: Fix endian issues in memory error handling
+ code
+Message-ID: <20140604144848.459a15e5@kryten>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1401797771-25606-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 03, 2014 at 05:46:11PM +0530, Aneesh Kumar K.V wrote:
-> We use time base for PURR and SPURR emulation with PR KVM since we
-> are emulating a single threaded core. When using time base
-> we need to make sure that we don't accumulate time spent in the host
-> in PURR and SPURR value.
+struct OpalMemoryErrorData is passed to us from firmware, so we
+have to byteswap it.
 
-Mostly looks good except for this...
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-> @@ -170,6 +175,11 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
->  
->  out:
->  	preempt_enable();
-> +	/*
-> +	 * Update purr and spurr using time base
-> +	 */
-> +	vcpu->arch.purr += get_tb() - vcpu->arch.entry_tb;
-> +	vcpu->arch.spurr += get_tb() - vcpu->arch.entry_tb;
+Having enums in a firmware interface concerns me, but that cleanup
+can be in a subsequent patch.
 
-You need to do those updates before the "out:" label.  Otherwise if
-this function gets called with !svcpu->in_use (which can happen if
-CONFIG_PREEMPT is enabled) we would do these updates a second time for
-one guest exit.  The thing is that kvmppc_copy_from_svcpu() can get
-called from kvmppc_core_vcpu_put_pr() if the vcpu task gets preempted
-on the way out from the guest before we get to the regular call of
-kvmppc_copy_from_svcpu().  It would then get called again when the
-task gets to run, but this time it does nothing because svcpu->in_use
-is false.
+Mahesh, could you give this a test to see if it works?
 
-Paul.
+Index: b/arch/powerpc/include/asm/opal.h
+===================================================================
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -482,7 +482,7 @@ enum OpalMemErr_DynErrType {
+ struct OpalMemoryErrorData {
+ 	enum OpalMemErr_Version	version:8;	/* 0x00 */
+ 	enum OpalMemErrType	type:8;		/* 0x01 */
+-	uint16_t		flags;		/* 0x02 */
++	__be16			flags;		/* 0x02 */
+ 	uint8_t			reserved_1[4];	/* 0x04 */
+ 
+ 	union {
+@@ -490,15 +490,15 @@ struct OpalMemoryErrorData {
+ 		struct {
+ 			enum OpalMemErr_ResilErrType resil_err_type:8;
+ 			uint8_t		reserved_1[7];
+-			uint64_t	physical_address_start;
+-			uint64_t	physical_address_end;
++			__be64		physical_address_start;
++			__be64		physical_address_end;
+ 		} resilience;
+ 		/* Dynamic memory deallocation error info */
+ 		struct {
+ 			enum OpalMemErr_DynErrType dyn_err_type:8;
+ 			uint8_t		reserved_1[7];
+-			uint64_t	physical_address_start;
+-			uint64_t	physical_address_end;
++			__be64		physical_address_start;
++			__be64		physical_address_end;
+ 		} dyn_dealloc;
+ 	} u;
+ };
+Index: b/arch/powerpc/platforms/powernv/opal-memory-errors.c
+===================================================================
+--- a/arch/powerpc/platforms/powernv/opal-memory-errors.c
++++ b/arch/powerpc/platforms/powernv/opal-memory-errors.c
+@@ -47,12 +47,12 @@ static void handle_memory_error_event(st
+ 		  __func__, merr_evt->type);
+ 	switch (merr_evt->type) {
+ 	case OPAL_MEM_ERR_TYPE_RESILIENCE:
+-		paddr_start = merr_evt->u.resilience.physical_address_start;
+-		paddr_end = merr_evt->u.resilience.physical_address_end;
++		paddr_start = be64_to_cpu(merr_evt->u.resilience.physical_address_start);
++		paddr_end = be64_to_cpu(merr_evt->u.resilience.physical_address_end);
+ 		break;
+ 	case OPAL_MEM_ERR_TYPE_DYN_DALLOC:
+-		paddr_start = merr_evt->u.dyn_dealloc.physical_address_start;
+-		paddr_end = merr_evt->u.dyn_dealloc.physical_address_end;
++		paddr_start = be64_to_cpu(merr_evt->u.dyn_dealloc.physical_address_start);
++		paddr_end = be64_to_cpu(merr_evt->u.dyn_dealloc.physical_address_end);
+ 		break;
+ 	default:
+ 		return;
