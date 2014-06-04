@@ -1,23 +1,32 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E3061A0835
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 21:05:20 +1000 (EST)
-Message-ID: <1401879919.400.11.camel@ale.ozlabs.ibm.com>
-Subject: [PATCH v2 2/2] powerpc/powernv: Enable POWER8 doorbell IPIs
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 04 Jun 2014 21:05:19 +1000
-In-Reply-To: <1401868995.9903.4.camel@concordia>
-References: <1401692223-28337-1-git-send-email-mikey@neuling.org>
- <1401692223-28337-2-git-send-email-mikey@neuling.org>
- <1401868995.9903.4.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1CF941A0836
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 21:18:06 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 4 Jun 2014 16:48:02 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id F1713E0059
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 16:48:52 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s54BICc962455942
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jun 2014 16:48:12 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s54BHwpk020809
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jun 2014 16:47:58 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH V2] KVM: PPC: BOOK3S: PR: Fix PURR and SPURR emulation
+Date: Wed,  4 Jun 2014 16:47:55 +0530
+Message-Id: <1401880675-31090-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,118 +36,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables POWER8 doorbell IPIs on powernv.
+We use time base for PURR and SPURR emulation with PR KVM since we
+are emulating a single threaded core. When using time base
+we need to make sure that we don't accumulate time spent in the host
+in PURR and SPURR value.
 
-Since doorbells can only IPI within a core, we test to see when we can use
-doorbells and if not we fall back to XICS.  This also enables hypervisor
-doorbells to wakeup us up from nap/sleep via the LPCR PECEDH bit.
+Also we don't need to emulate mtspr because both the registers are
+hypervisor resource.
 
-Based on tests by Anton, the best case IPI latency between two threads drop=
-ped
-from 894ns to 512ns.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
-v2:
-  Adds select of PPC_DOORBELL for PSERIES and POWERNV as suggested by mpe.
 
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cp=
-u_setup_power.S
-index 1557e7c..4673353 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -56,6 +56,7 @@ _GLOBAL(__setup_cpu_power8)
- 	li	r0,0
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
-@@ -74,6 +75,7 @@ _GLOBAL(__restore_cpu_power8)
- 	li	r0,0
- 	mtspr	SPRN_LPID,r0
- 	mfspr   r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platform=
-s/powernv/Kconfig
-index c252ee9..45a8ed0 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -17,6 +17,7 @@ config PPC_POWERNV
- 	select CPU_FREQ_GOV_USERSPACE
- 	select CPU_FREQ_GOV_ONDEMAND
- 	select CPU_FREQ_GOV_CONSERVATIVE
-+	select PPC_DOORBELL
- 	default y
-=20
- config PPC_POWERNV_RTAS
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/=
-powernv/smp.c
-index 0062a43..5fcfcf4 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -32,6 +32,7 @@
- #include <asm/opal.h>
- #include <asm/runlatch.h>
- #include <asm/code-patching.h>
-+#include <asm/dbell.h>
-=20
- #include "powernv.h"
-=20
-@@ -46,6 +47,11 @@ static void pnv_smp_setup_cpu(int cpu)
- {
- 	if (cpu !=3D boot_cpuid)
- 		xics_setup_cpu();
+Changes from V1:
+Move the purr/spurr update to happen only once in case of exit with preemption enabled.
+
+
+ arch/powerpc/include/asm/kvm_book3s.h |  2 --
+ arch/powerpc/include/asm/kvm_host.h   |  4 ++--
+ arch/powerpc/kvm/book3s_emulate.c     | 16 ++++++++--------
+ arch/powerpc/kvm/book3s_pr.c          | 11 +++++++++++
+ 4 files changed, 21 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+index f52f65694527..a20cc0bbd048 100644
+--- a/arch/powerpc/include/asm/kvm_book3s.h
++++ b/arch/powerpc/include/asm/kvm_book3s.h
+@@ -83,8 +83,6 @@ struct kvmppc_vcpu_book3s {
+ 	u64 sdr1;
+ 	u64 hior;
+ 	u64 msr_mask;
+-	u64 purr_offset;
+-	u64 spurr_offset;
+ #ifdef CONFIG_PPC_BOOK3S_32
+ 	u32 vsid_pool[VSID_POOL_SIZE];
+ 	u32 vsid_next;
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index bb66d8b8efdf..4a58731a0a72 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -503,8 +503,8 @@ struct kvm_vcpu_arch {
+ #ifdef CONFIG_BOOKE
+ 	u32 decar;
+ #endif
+-	u32 tbl;
+-	u32 tbu;
++	/* Time base value when we entered the guest */
++	u64 entry_tb;
+ 	u32 tcr;
+ 	ulong tsr; /* we need to perform set/clr_bits() which requires ulong */
+ 	u32 ivor[64];
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index 3f295269af37..3565e775b61b 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -439,12 +439,6 @@ int kvmppc_core_emulate_mtspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+ 		    (mfmsr() & MSR_HV))
+ 			vcpu->arch.hflags |= BOOK3S_HFLAG_DCBZ32;
+ 		break;
+-	case SPRN_PURR:
+-		to_book3s(vcpu)->purr_offset = spr_val - get_tb();
+-		break;
+-	case SPRN_SPURR:
+-		to_book3s(vcpu)->spurr_offset = spr_val - get_tb();
+-		break;
+ 	case SPRN_GQR0:
+ 	case SPRN_GQR1:
+ 	case SPRN_GQR2:
+@@ -572,10 +566,16 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
+ 		*spr_val = 0;
+ 		break;
+ 	case SPRN_PURR:
+-		*spr_val = get_tb() + to_book3s(vcpu)->purr_offset;
++		/*
++		 * On exit we would have updated purr
++		 */
++		*spr_val = vcpu->arch.purr;
+ 		break;
+ 	case SPRN_SPURR:
+-		*spr_val = get_tb() + to_book3s(vcpu)->purr_offset;
++		/*
++		 * On exit we would have updated spurr
++		 */
++		*spr_val = vcpu->arch.spurr;
+ 		break;
+ 	case SPRN_GQR0:
+ 	case SPRN_GQR1:
+diff --git a/arch/powerpc/kvm/book3s_pr.c b/arch/powerpc/kvm/book3s_pr.c
+index 23367a7e44c3..ff15f8e31a27 100644
+--- a/arch/powerpc/kvm/book3s_pr.c
++++ b/arch/powerpc/kvm/book3s_pr.c
+@@ -120,6 +120,11 @@ void kvmppc_copy_to_svcpu(struct kvmppc_book3s_shadow_vcpu *svcpu,
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	svcpu->shadow_fscr = vcpu->arch.shadow_fscr;
+ #endif
++	/*
++	 * Now also save the current time base value. We use this
++	 * to find the guest purr and spurr value.
++	 */
++	vcpu->arch.entry_tb = get_tb();
+ 	svcpu->in_use = true;
+ }
+ 
+@@ -166,6 +171,12 @@ void kvmppc_copy_from_svcpu(struct kvm_vcpu *vcpu,
+ #ifdef CONFIG_PPC_BOOK3S_64
+ 	vcpu->arch.shadow_fscr = svcpu->shadow_fscr;
+ #endif
++	/*
++	 * Update purr and spurr using time base on exit.
++	 */
++	vcpu->arch.purr += get_tb() - vcpu->arch.entry_tb;
++	vcpu->arch.spurr += get_tb() - vcpu->arch.entry_tb;
 +
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL))
-+		doorbell_setup_this_cpu();
-+#endif
- }
-=20
- int pnv_smp_kick_cpu(int nr)
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platform=
-s/pseries/Kconfig
-index 2cb8b77..756b482 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -21,6 +21,7 @@ config PPC_PSERIES
- 	select HAVE_CONTEXT_TRACKING
- 	select HOTPLUG_CPU if SMP
- 	select ARCH_RANDOM
-+	select PPC_DOORBELL
- 	default y
-=20
- config PPC_SPLPAR
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xi=
-cs/icp-native.c
-index 9dee470..de8d948 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -26,6 +26,7 @@
- #include <asm/errno.h>
- #include <asm/xics.h>
- #include <asm/kvm_ppc.h>
-+#include <asm/dbell.h>
-=20
- struct icp_ipl {
- 	union {
-@@ -145,7 +146,13 @@ static unsigned int icp_native_get_irq(void)
- static void icp_native_cause_ipi(int cpu, unsigned long data)
- {
- 	kvmppc_set_host_ipi(cpu, 1);
--	icp_native_set_qirr(cpu, IPI_PRIORITY);
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL) &&
-+	    (cpumask_test_cpu(cpu, cpu_sibling_mask(smp_processor_id()))))
-+		doorbell_cause_ipi(cpu, data);
-+	else
-+#endif
-+		icp_native_set_qirr(cpu, IPI_PRIORITY);
- }
-=20
- void xics_wake_cpu(int cpu)
+ 	svcpu->in_use = false;
+ 
+ out:
+-- 
+1.9.1
