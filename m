@@ -1,21 +1,22 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0187.outbound.protection.outlook.com [207.46.163.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D389A1A0041
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 03:04:59 +1000 (EST)
-From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
+ by lists.ozlabs.org (Postfix) with ESMTPS id 583FB1A0041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 03:07:48 +1000 (EST)
+Message-ID: <1401901656.6603.327.camel@snotra.buserror.net>
+Subject: Re: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
  reporting driver
-Date: Wed, 4 Jun 2014 17:04:50 +0000
-Message-ID: <35f1762b80694ba4835cd7902a2faa0a@BLUPR03MB566.namprd03.prod.outlook.com>
+From: Scott Wood <scottwood@freescale.com>
+To: Bhushan Bharat-R65777 <Bharat.Bhushan@freescale.com>
+Date: Wed, 4 Jun 2014 12:07:36 -0500
+In-Reply-To: <35f1762b80694ba4835cd7902a2faa0a@BLUPR03MB566.namprd03.prod.outlook.com>
 References: <20140530222743.GA6918@home.buserror.net>
  <967d9a5e0f7e4d0a8f5e7ec6b8e88ff2@BLUPR03MB566.namprd03.prod.outlook.com>
  <1401900111.6603.325.camel@snotra.buserror.net>
-In-Reply-To: <1401900111.6603.325.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ <35f1762b80694ba4835cd7902a2faa0a@BLUPR03MB566.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -29,55 +30,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBKdW5lIDA0LCAyMDE0IDEwOjEyIFBNDQo+IFRvOiBCaHVz
-aGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEdyZWcgS3JvYWgtSGFydG1hbjsgbGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1
-YmplY3Q6IFJlOiBbUkVTRU5EIFBBVENIXSBtZW1vcnk6IEZyZWVzY2FsZSBDb3JlTmV0IENvaGVy
-ZW5jeSBGYWJyaWMgZXJyb3INCj4gcmVwb3J0aW5nIGRyaXZlcg0KPiANCj4gT24gV2VkLCAyMDE0
-LTA2LTA0IGF0IDAzOjE3IC0wNTAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4g
-PiArc3RydWN0IGNjZl9lcnJfcmVncyB7DQo+ID4gPiArCXUzMiBlcnJkZXQ7CQkvKiAweDAwIEVy
-cm9yIERldGVjdCBSZWdpc3RlciAqLw0KPiA+ID4gKwkvKiAweDA0IEVycm9yIEVuYWJsZSAoY2Nm
-MSkvRGlzYWJsZSAoY2NmMikgUmVnaXN0ZXIgKi8NCj4gPiA+ICsJdTMyIGVycmRpczsNCj4gPiA+
-ICsJLyogMHgwOCBFcnJvciBJbnRlcnJ1cHQgRW5hYmxlIFJlZ2lzdGVyIChjY2YyIG9ubHkpICov
-DQo+ID4gPiArCXUzMiBlcnJpbnRlbjsNCj4gPiA+ICsJdTMyIGNlY2FyOwkJLyogMHgwYyBFcnJv
-ciBDYXB0dXJlIEF0dHJpYnV0ZSBSZWdpc3RlciAqLw0KPiA+ID4gKwl1MzIgY2VjYWRyaDsJCS8q
-IDB4MTAgRXJyb3IgQ2FwdHVyZSBBZGRyZXNzIEhpZ2ggKi8NCj4gPg0KPiA+IHMvY2VjYWRyaC9j
-ZWNhZGRyaC9nDQo+ID4gVGhpcyB3YXkgd2Ugd2lsbCBiZSBjb25zaXN0ZW50IHdpdGggUmVmZXJl
-bmNlIG1hbnVhbC4NCj4gDQo+IEl0J3MgImNlY2FkcmgiIGluIGNjZjEgYW5kICJjZWNhZGRyaCIg
-aW4gY2NmMi4gIEkgc3VwcG9zZSBJIHNob3VsZCB1c2UgdGhlDQo+IGxhdHRlciBzaW5jZSAiZXJy
-ZGV0L2VycmRpcy9lcnJpbnRlbiIgYXJlIHRoZSBjY2YyIG5hbWVzLg0KPiANCj4gPiA+ICsJdTMy
-IGNlY2Fkcmw7CQkvKiAweDE0IEVycm9yIENhcHR1cmUgQWRkcmVzcyBMb3cgKi8NCj4gPg0KPiA+
-IHMvY2VjYWRybC9jZWNhZGRybC9nDQo+ID4NCj4gPiA+ICsJdTMyIGNlY2FyMjsJCS8qIDB4MTgg
-RXJyb3IgQ2FwdHVyZSBBdHRyaWJ1dGUgUmVnaXN0ZXIgMiAqLw0KPiA+ID4gK307DQo+ID4gPiAr
-DQo+ID4gPiArLyogTEFFL0NWIGFsc28gdmFsaWQgZm9yIGVycmRpcyBhbmQgZXJyaW50ZW4gKi8N
-Cj4gPiA+ICsjZGVmaW5lIEVSUkRFVF9MQUUJCSgxIDw8IDApICAvKiBMb2NhbCBBY2Nlc3MgRXJy
-b3IgKi8NCj4gPiA+ICsjZGVmaW5lIEVSUkRFVF9DVgkJKDEgPDwgMSkgIC8qIENvaGVyZW5jeSBW
-aW9sYXRpb24gKi8NCj4gPiA+ICsjZGVmaW5lIEVSUkRFVF9DVFlQRV9TSElGVAkyNgkgIC8qIENh
-cHR1cmUgVHlwZSAoY2NmMiBvbmx5KSAqLw0KPiA+ID4gKyNkZWZpbmUgRVJSREVUX0NUWVBFX01B
-U0sJKDB4M2YgPDwgRVJSREVUX0NUWVBFX1NISUZUKQ0KPiA+DQo+ID4gU2hvdWxkIG5vdCB0aGlz
-IGJlICgweDFmIDw8IEVSUkRFVF9DVFlQRV9TSElGVCkNCj4gDQo+IFllcywgdGhhbmtzIGZvciBj
-YXRjaGluZyB0aGF0Lg0KPiANCj4gPiA+ICsjZGVmaW5lIEVSUkRFVF9DQVAJCSgxIDw8IDMxKSAv
-KiBDYXB0dXJlIFZhbGlkIChjY2YyIG9ubHkpICovDQo+ID4gPiArDQo+ID4gPiArI2RlZmluZSBD
-RUNBUl9WQUwJCSgxIDw8IDApICAvKiBWYWxpZCAoY2NmMSBvbmx5KSAqLw0KPiA+ID4gKyNkZWZp
-bmUgQ0VDQVJfVVZUCQkoMSA8PCAxNSkgLyogVW5hdmFpbGFibGUgdGFyZ2V0IElEIChjY2YxKSAq
-Lw0KPiA+ID4gKyNkZWZpbmUgQ0VDQVJfU1JDSURfU0hJRlRfQ0NGMQkyNA0KPiA+ID4gKyNkZWZp
-bmUgQ0VDQVJfU1JDSURfTUFTS19DQ0YxCSgweGZmIDw8IENFQ0FSX1NSQ0lEX1NISUZUX0NDRjEp
-DQo+ID4gPiArI2RlZmluZSBDRUNBUl9TUkNJRF9TSElGVF9DQ0YyCTE4DQo+ID4gPiArI2RlZmlu
-ZSBDRUNBUl9TUkNJRF9NQVNLX0NDRjIJKDB4ZmYgPDwgQ0VDQVJfU1JDSURfU0hJRlRfQ0NGMikN
-Cj4gPiA+ICsNCj4gPiA+ICsjZGVmaW5lIENFQ0FEUkhfQUREUkgJCTB4Zg0KPiA+DQo+ID4gT24g
-Y2NmMiB0aGlzIGlkIDB4ZmYuDQo+IA0KPiBPSy4gIEkgdGhpbmsgd2UgY2FuIGdldCBhd2F5IHdp
-dGggdXNpbmcgMHhmZiBvbiBib3RoLg0KPiANCj4gPiA+ICtzdGF0aWMgaW50IGNjZl9yZW1vdmUo
-c3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikgew0KPiA+ID4gKwlzdHJ1Y3QgY2NmX3ByaXZh
-dGUgKmNjZiA9IGRldl9nZXRfZHJ2ZGF0YSgmcGRldi0+ZGV2KTsNCj4gPiA+ICsNCj4gPiA+ICsJ
-c3dpdGNoIChjY2YtPmluZm8tPnZlcnNpb24pIHsNCj4gPiA+ICsJY2FzZSBDQ0YxOg0KPiA+ID4g
-KwkJaW93cml0ZTMyYmUoMCwgJmNjZi0+ZXJyX3JlZ3MtPmVycmRpcyk7DQo+ID4gPiArCQlicmVh
-azsNCj4gPiA+ICsNCj4gPiA+ICsJY2FzZSBDQ0YyOg0KPiA+ID4gKwkJaW93cml0ZTMyYmUoMCwg
-JmNjZi0+ZXJyX3JlZ3MtPmVycmludGVuKTsNCj4gPg0KPiA+IERvIHlvdSB0aGluayBpdCBpcyBz
-YW1lIHRvIGRpc2FibGUgZGV0ZWN0aW9uIGJpdHMgaW4gY2NmLT5lcnJfcmVncy0+ZXJyZGlzPw0K
-PiANCj4gRGlzYWJsaW5nIHRoZSBpbnRlcnJ1cHQgaXMgd2hhdCB3ZSdyZSBhaW1pbmcgZm9yIGhl
-cmUsIGJ1dCBjY2YxIGRvZXNuJ3QgcHJvdmlkZQ0KPiBhIHdheSB0byBkbyB0aGF0IHNlcGFyYXRl
-IGZyb20gZGlzYWJsaW5nIGRldGVjdGlvbi4NCg0KV2hhdCBJIHdhbnRlZCB0byBzYXkgdGhhdCBk
-byB3ZSBhbHNvIG5lZWQgdG8gZGlzYWJsZSBkZXRlY3Rpb24gKHNldCBFUlJERVRfTEFFIHwgRVJS
-REVUX0NWIGJpdHMgaW4gZXJyZGlzKSBhcGFydCBmcm9tIGNsZWFyaW5nIGVycmludGVuIG9uIGNj
-ZjIgPw0KDQpUaGFua3MNCi1CaGFyYXQNCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+On Wed, 2014-06-04 at 12:04 -0500, Bhushan Bharat-R65777 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, June 04, 2014 10:12 PM
+> > To: Bhushan Bharat-R65777
+> > Cc: Greg Kroah-Hartman; linuxppc-dev@lists.ozlabs.org; linux-
+> > kernel@vger.kernel.org
+> > Subject: Re: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
+> > reporting driver
+> > 
+> > On Wed, 2014-06-04 at 03:17 -0500, Bhushan Bharat-R65777 wrote:
+> > > > +static int ccf_remove(struct platform_device *pdev) {
+> > > > +	struct ccf_private *ccf = dev_get_drvdata(&pdev->dev);
+> > > > +
+> > > > +	switch (ccf->info->version) {
+> > > > +	case CCF1:
+> > > > +		iowrite32be(0, &ccf->err_regs->errdis);
+> > > > +		break;
+> > > > +
+> > > > +	case CCF2:
+> > > > +		iowrite32be(0, &ccf->err_regs->errinten);
+> > >
+> > > Do you think it is same to disable detection bits in ccf->err_regs->errdis?
+> > 
+> > Disabling the interrupt is what we're aiming for here, but ccf1 doesn't provide
+> > a way to do that separate from disabling detection.
+> 
+> What I wanted to say that do we also need to disable detection (set
+> ERRDET_LAE | ERRDET_CV bits in errdis) apart from clearing errinten on
+> ccf2 ?
+
+I don't think we "need" to.  You could argue that we should for
+consistency, though I think there's value in errors continuing to be
+detected even without the driver (e.g. can dump the registers in a
+debugger).
+
+-Scott
