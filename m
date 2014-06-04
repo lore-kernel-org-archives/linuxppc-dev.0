@@ -1,24 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 047831A06FA
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 08:52:41 +1000 (EST)
-Message-ID: <1401833365.3247.36.camel@pasglop>
-Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
- kexec from ST mode
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Date: Wed, 04 Jun 2014 08:09:25 +1000
-In-Reply-To: <538E2FF8.8060707@linux.vnet.ibm.com>
-References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
- <20140528133143.GK14863@redhat.com> <538E2FF8.8060707@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org, mahesh@linux.vnet.ibm.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
- ebiederm@xmission.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Vivek Goyal <vgoyal@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C2651A0835
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 10:48:50 +1000 (EST)
+Date: Wed, 4 Jun 2014 10:48:48 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, catalin.marinas@arm.com,
+ azanella@linux.vnet.ibm.com, arnd@arndb.de, viro@zeniv.linux.org.uk,
+ akpm@linux-foundation.org
+Subject: [PATCH] powerpc: 64bit sendfile is capped at 2GB
+Message-ID: <20140604104848.33275ace@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,24 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2014-06-04 at 01:58 +0530, Srivatsa S. Bhat wrote:
-> Yep, that makes sense. But unfortunately I don't have enough insight into
-> why exactly powerpc has to online the CPUs before doing a kexec. I just
-> know from the commit log and the comment mentioned above (and from my own
-> experiments) that the CPUs will get stuck if they were offline. Perhaps
-> somebody more knowledgeable can explain this in detail and suggest a proper
-> long-term solution.
-> 
-> Matt, Ben, any thoughts on this?
+commit 8f9c0119d7ba (compat: fs: Generic compat_sys_sendfile
+implementation) changed the PowerPC 64bit sendfile call from
+sys_sendile64 to sys_sendfile.
 
-The problem is with our "soft offline" which we do on some platforms. When we
-offline we don't actually send the CPUs back to firmware or anything like that.
+Unfortunately this broke sendfile of lengths greater than 2G because
+sys_sendfile caps at MAX_NON_LFS. Restore what we had previously which
+fixes the bug.
 
-We put them into a very low low power loop inside Linux.
+Cc: stable@vger.kernel.org
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-The new kernel has no way to extract them from that loop. So we must re-"online"
-them before we kexec so they can be passed to the new kernel normally (or returned
-to firmware like we do on powernv).
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+index ac062f5..35f8f2f 100644
+--- a/arch/powerpc/include/asm/systbl.h
++++ b/arch/powerpc/include/asm/systbl.h
+@@ -190,7 +190,7 @@ SYSCALL_SPU(getcwd)
+ SYSCALL_SPU(capget)
+ SYSCALL_SPU(capset)
+ COMPAT_SYS(sigaltstack)
+-COMPAT_SYS_SPU(sendfile)
++SYSX_SPU(sys_sendfile64,compat_sys_sendfile,sys_sendfile)
+ SYSCALL(ni_syscall)
+ SYSCALL(ni_syscall)
+ PPC_SYS(vfork)
