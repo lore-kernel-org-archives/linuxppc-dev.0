@@ -1,20 +1,20 @@
-Return-Path: <ed.swarthout@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 346081A0041
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 07:07:35 +1000 (EST)
-From: Ed Swarthout <Ed.Swarthout@freescale.com>
-To: <tim.gardner@canonical.com>, <scottwood@freescale.com>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpufreq: ppc-corenet-cpu-freq: do_div use quotient
-Date: Wed, 4 Jun 2014 15:32:53 -0500
-Message-ID: <1401913973-22536-1-git-send-email-Ed.Swarthout@freescale.com>
-In-Reply-To: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
-References: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA6781A0041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 07:58:42 +1000 (EST)
+Message-ID: <538F968D.4040706@suse.de>
+Date: Wed, 04 Jun 2014 23:58:37 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH V2] KVM: PPC: BOOK3S: PR: Fix PURR and SPURR emulation
+References: <1401880675-31090-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1401880675-31090-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-6712d2931933ada259b82f06c03a855b19937074 (cpufreq:
-ppc-corenet-cpufreq: Fix __udivdi3 modpost error) used the remainder
-from do_div instead of the quotient. Fix that and add one to ensure
-minimum is met.
 
-Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
----
- drivers/cpufreq/ppc-corenet-cpufreq.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+On 04.06.14 13:17, Aneesh Kumar K.V wrote:
+> We use time base for PURR and SPURR emulation with PR KVM since we
+> are emulating a single threaded core. When using time base
+> we need to make sure that we don't accumulate time spent in the host
+> in PURR and SPURR value.
+>
+> Also we don't need to emulate mtspr because both the registers are
+> hypervisor resource.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-index 0af618a..3607070 100644
---- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-+++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-@@ -138,7 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
- 	unsigned int cpu = policy->cpu;
--	u64 transition_latency_hz;
-+	u64 u64temp;
- 
- 	np = of_get_cpu_node(cpu, NULL);
- 	if (!np)
-@@ -206,9 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	for_each_cpu(i, per_cpu(cpu_mask, cpu))
- 		per_cpu(cpu_data, i) = data;
- 
--	transition_latency_hz = 12ULL * NSEC_PER_SEC;
--	policy->cpuinfo.transition_latency =
--		do_div(transition_latency_hz, fsl_get_sys_freq());
-+	/* Minimum transition latency is 12 platform clocks */
-+	u64temp = 12ULL * NSEC_PER_SEC;
-+	do_div(u64temp, fsl_get_sys_freq());
-+	policy->cpuinfo.transition_latency = u64temp + 1;
- 
- 	of_node_put(np);
- 
--- 
-1.9.1
+Thanks, applied to kvm-ppc-queue.
+
+
+Alex
