@@ -1,43 +1,22 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37DBD1A0835
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 18:50:33 +1000 (EST)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D3CA61400AF
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2014 18:50:32 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Wed, 4 Jun 2014 18:50:31 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DCCBD2BB0040
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Jun 2014 18:50:28 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s548YVb215925274
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2014 18:34:32 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s548oRlN005195
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Jun 2014 18:50:27 +1000
-Message-ID: <538EDD61.60801@linux.vnet.ibm.com>
-Date: Wed, 04 Jun 2014 14:18:33 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc, xmon: Enable hardware instruction breakpoint
- support on POWER8
-References: <1401451823-25547-1-git-send-email-khandual@linux.vnet.ibm.com>
- <8761knl6x5.fsf@linux.vnet.ibm.com> <538D654E.8040205@linux.vnet.ibm.com>
-In-Reply-To: <538D654E.8040205@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- mikey@neuling.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55D8B1A0835
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 19:38:26 +1000 (EST)
+Message-ID: <1401874705.32587.38.camel@ale.ozlabs.ibm.com>
+Subject: Re: [PATCH 2/2] powerpc/powernv: Enable POWER8 doorbell IPIs
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Wed, 04 Jun 2014 19:38:25 +1000
+In-Reply-To: <1401868995.9903.4.camel@concordia>
+References: <1401692223-28337-1-git-send-email-mikey@neuling.org>
+ <1401692223-28337-2-git-send-email-mikey@neuling.org>
+ <1401868995.9903.4.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,207 +26,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/03/2014 11:33 AM, Anshuman Khandual wrote:
-> On 05/30/2014 07:12 PM, Aneesh Kumar K.V wrote:
->> > Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
->> > 
->>> >> This patch enables support for hardware instruction breakpoints on POWER8 with
->>> >> the help of a new register called CIABR (Completed Instruction Address Breakpoint
->>> >> Register). With this patch, single hardware instruction breakpoint can be added
->>> >> and cleared during any active xmon debug session. This hardware based instruction
->>> >> breakpoint mechanism works correctly along with the existing TRAP based instruction
->>> >> breakpoints available on xmon. Example usage as follows.
->>> >>
->>> >> (A) Start xmon:
->>> >> $echo x > /proc/sysrq-trigger
->>> >> SysRq : Entering xmon
->>> >> cpu 0x0: Vector: 0  at [c000001f6c67f960]
->>> >>     pc: c000000000072078: .sysrq_handle_xmon+0x58/0x60
->>> >>     lr: c000000000072078: .sysrq_handle_xmon+0x58/0x60
->>> >>     sp: c000001f6c67fac0
->>> >>    msr: 9000000000009032
->>> >>   current = 0xc000001f6e709ac0
->>> >>   paca    = 0xc00000000fffa000   softe: 0        irq_happened: 0x00
->>> >>     pid   = 3250, comm = bash
->>> >> enter ? for help
->>> >> 0:mon> b
->>> >>    type            address
->>> >>
->>> >> (B) Set the breakpoint:
->>> >> 0:mon> ls .power_pmu_add
->>> >> .power_pmu_add: c000000000078f50
->>> >> 0:mon> bi c000000000078f50
->>> >> 0:mon> b
->>> >>    type            address
->>> >>  1 inst   c000000000078f50  .power_pmu_add+0x0/0x2e0
->>> >> 0:mon> ls .perf_event_interrupt
->>> >> .perf_event_interrupt: c00000000007aee0
->>> >> 0:mon> bi c00000000007aee0
->>> >> One instruction breakpoint possible with CIABR
->>> >> 0:mon> x
->>> >>
->>> >> (C) Run the workload (with the breakpoint):
->>> >> $./perf record ls
->>> >> cpu 0x2: Vector: d00 (Single Step) at [c000001f718133a0]
->>> >>     pc: c000000000078f54: .power_pmu_add+0x4/0x2e0
->>> >>     lr: c000000000155be0: .event_sched_in+0x90/0x1d0
->>> >>     sp: c000001f71813620
->>> >>    msr: 9000000040109032
->>> >>   current = 0xc000001f6ce30000
->>> >>   paca    = 0xc00000000fffa600   softe: 0        irq_happened: 0x01
->>> >>     pid   = 3270, comm = ls
->>> >>         std     r22,-80(r1)
->>> >> enter ? for help
->>> >>
->>> >> (D) Clear the breakpoint:
->>> >> 2:mon> bc
->>> >> All breakpoints cleared
->>> >> 2:mon> x
->>> >> [ perf record: Woken up 1 times to write data ]
->>> >> [ perf record: Captured and wrote 0.002 MB perf.data (~66 samples) ]
->>> >>
->>> >> (E) Run the workload again (without any breakpoints):
->>> >> $./perf record ls
->>> >> [ perf record: Woken up 1 times to write data ]
->>> >> [ perf record: Captured and wrote 0.001 MB perf.data (~61 samples) ]
->>> >>
->>> >> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>> >> ---
->>> >>  arch/powerpc/xmon/xmon.c | 62 ++++++++++++++++++++++++++++++++++++++++++++----
->>> >>  1 file changed, 58 insertions(+), 4 deletions(-)
->>> >>
->>> >> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->>> >> index 3fd1d9a..f74ec83 100644
->>> >> --- a/arch/powerpc/xmon/xmon.c
->>> >> +++ b/arch/powerpc/xmon/xmon.c
->>> >> @@ -48,6 +48,7 @@
->>> >>  #ifdef CONFIG_PPC64
->>> >>  #include <asm/hvcall.h>
->>> >>  #include <asm/paca.h>
->>> >> +#include <asm/plpar_wrappers.h>
->>> >>  #endif
->>> >>  
->>> >>  #include "nonstdio.h"
->>> >> @@ -89,6 +90,7 @@ struct bpt {
->>> >>  /* Bits in bpt.enabled */
->>> >>  #define BP_IABR_TE	1		/* IABR translation enabled */
->>> >>  #define BP_IABR		2
->>> >> +#define BP_CIABR	4
->>> >>  #define BP_TRAP		8
->>> >>  #define BP_DABR		0x10
->>> >>  
->>> >> @@ -97,6 +99,7 @@ static struct bpt bpts[NBPTS];
->>> >>  static struct bpt dabr;
->>> >>  static struct bpt *iabr;
->>> >>  static unsigned bpinstr = 0x7fe00008;	/* trap */
->>> >> +static bool ciabr_used = false;		/* CIABR instruction breakpoint */
->>> >>  
->>> >>  #define BP_NUM(bp)	((bp) - bpts + 1)
->>> >>  
->>> >> @@ -269,6 +272,34 @@ static inline void cinval(void *p)
->>> >>  	asm volatile ("dcbi 0,%0; icbi 0,%0" : : "r" (p));
->>> >>  }
->>> >>  
->>> >> +static void write_ciabr(unsigned long ciabr)
->>> >> +{
->>> >> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
->>> >> +		mtspr(SPRN_CIABR, ciabr);
->>> >> +		return;
->>> >> +	}
->>> >> +
->>> >> +#ifdef CONFIG_PPC64
->>> >> +	plapr_set_ciabr(ciabr);
->>> >> +#endif
->>> >> +}
->>> >> +
->>> >> +static void set_ciabr(unsigned long addr)
->>> >> +{
->>> >> +	addr &= ~CIABR_PRIV;
->>> >> +	if (cpu_has_feature(CPU_FTR_HVMODE))
->>> >> +		addr |= CIABR_PRIV_HYPER;
->>> >> +	else
->>> >> +		addr |= CIABR_PRIV_SUPER;
->>> >> +	write_ciabr(addr);
->>> >> +}
->>> >> +
->>> >> +static void clear_ciabr(void)
->>> >> +{
->>> >> +	if (cpu_has_feature(CPU_FTR_ARCH_207S))
->>> >> +		write_ciabr(0);
->>> >> +}
->>> >> +
->>> >>  /*
->>> >>   * Disable surveillance (the service processor watchdog function)
->>> >>   * while we are in xmon.
->>> >> @@ -764,6 +795,9 @@ static void insert_cpu_bpts(void)
->>> >>  	if (iabr && cpu_has_feature(CPU_FTR_IABR))
->>> >>  		mtspr(SPRN_IABR, iabr->address
->>> >>  			 | (iabr->enabled & (BP_IABR|BP_IABR_TE)));
->>> >> +
->>> >> +	if (iabr && cpu_has_feature(CPU_FTR_ARCH_207S))
->>> >> +		set_ciabr(iabr->address);
->>> >>  }
->>> >>  
->>> >>  static void remove_bpts(void)
->>> >> @@ -791,6 +825,7 @@ static void remove_cpu_bpts(void)
->>> >>  	hw_breakpoint_disable();
->>> >>  	if (cpu_has_feature(CPU_FTR_IABR))
->>> >>  		mtspr(SPRN_IABR, 0);
->>> >> +	clear_ciabr();
->>> >>  }
->>> >>  
->>> >>  /* Command interpreting routine */
->>> >> @@ -1124,7 +1159,7 @@ static char *breakpoint_help_string =
->>> >>      "b <addr> [cnt]   set breakpoint at given instr addr\n"
->>> >>      "bc               clear all breakpoints\n"
->>> >>      "bc <n/addr>      clear breakpoint number n or at addr\n"
->>> >> -    "bi <addr> [cnt]  set hardware instr breakpoint (POWER3/RS64 only)\n"
->>> >> +    "bi <addr> [cnt]  set hardware instr breakpoint (POWER3/RS64/POWER8 only)\n"
->>> >>      "bd <addr> [cnt]  set hardware data breakpoint\n"
->>> >>      "";
->>> >>  
->>> >> @@ -1163,11 +1198,20 @@ bpt_cmds(void)
->>> >>  		break;
->>> >>  
->>> >>  	case 'i':	/* bi - hardware instr breakpoint */
->>> >> -		if (!cpu_has_feature(CPU_FTR_IABR)) {
->>> >> +		if (!cpu_has_feature(CPU_FTR_IABR) && !cpu_has_feature(CPU_FTR_ARCH_207S)) {
->>> >>  			printf("Hardware instruction breakpoint "
->>> >>  			       "not supported on this cpu\n");
->>> >>  			break;
->>> >>  		}
->>> >> +
->>> >> +		if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
->>> >> +			if (ciabr_used) {
->>> >> +				printf("One instruction breakpoint "
->>> >> +					"possible with CIABR\n");
->>> >> +				break;
->>> >> +			}
->> > 
->> > We don't seem to do that with iabr ? Why keep ciabr different 
+On Wed, 2014-06-04 at 18:03 +1000, Michael Ellerman wrote:
+> On Mon, 2014-06-02 at 16:57 +1000, Michael Neuling wrote:
+> > This patch enables POWER8 doorbell IPIs on powernv.
+> >=20
+> > Since doorbells can only IPI within a core, we test to see when we can =
+use
+> > doorbells and if not we fall back to XICS.  This also enables hyperviso=
+r
+> > doorbells to wakeup us up from nap/sleep via the LPCR PECEDH bit.
+> >=20
+> > Based on tests by Anton, the best case IPI latency between two threads =
+dropped
+> > from 894ns to 512ns.
+> >=20
+> > Signed-off-by: Michael Neuling <mikey@neuling.org>
+> > ---
+> >  arch/powerpc/kernel/cpu_setup_power.S | 2 ++
+> >  arch/powerpc/platforms/powernv/smp.c  | 6 ++++++
+> >  arch/powerpc/sysdev/xics/icp-native.c | 9 ++++++++-
+> >  3 files changed, 16 insertions(+), 1 deletion(-)
+> >=20
+> > diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kerne=
+l/cpu_setup_power.S
+> > index 1557e7c..4673353 100644
+> > --- a/arch/powerpc/kernel/cpu_setup_power.S
+> > +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> > @@ -56,6 +56,7 @@ _GLOBAL(__setup_cpu_power8)
+> >  	li	r0,0
+> >  	mtspr	SPRN_LPID,r0
+> >  	mfspr	r3,SPRN_LPCR
+> > +	ori	r3, r3, LPCR_PECEDH
+> >  	bl	__init_LPCR
+> >  	bl	__init_HFSCR
+> >  	bl	__init_tlb_power8
+> > @@ -74,6 +75,7 @@ _GLOBAL(__restore_cpu_power8)
+> >  	li	r0,0
+> >  	mtspr	SPRN_LPID,r0
+> >  	mfspr   r3,SPRN_LPCR
+> > +	ori	r3, r3, LPCR_PECEDH
+> >  	bl	__init_LPCR
+> >  	bl	__init_HFSCR
+> >  	bl	__init_tlb_power8
+> > diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platfo=
+rms/powernv/smp.c
+> > index 0062a43..5fcfcf4 100644
+> > --- a/arch/powerpc/platforms/powernv/smp.c
+> > +++ b/arch/powerpc/platforms/powernv/smp.c
+> > @@ -32,6 +32,7 @@
+> >  #include <asm/opal.h>
+> >  #include <asm/runlatch.h>
+> >  #include <asm/code-patching.h>
+> > +#include <asm/dbell.h>
+> > =20
+> >  #include "powernv.h"
+> > =20
+> > @@ -46,6 +47,11 @@ static void pnv_smp_setup_cpu(int cpu)
+> >  {
+> >  	if (cpu !=3D boot_cpuid)
+> >  		xics_setup_cpu();
+> > +
+> > +#ifdef CONFIG_PPC_DOORBELL
+> > +	if (cpu_has_feature(CPU_FTR_DBELL))
+> > +		doorbell_setup_this_cpu();
+> > +#endif
+> >  }
+>=20
+> Where does CONFIG_PPC_DOORBELL get set?
 
-> Right now with the IABR implementation if we try to set hardware instruction
-> breakpoint while one is already there, it just get overridden with the new
-> address without complaining. I thought with this at least for CIABR cases,
-> it will complain about it and require the user to clear the breakpoint
-> explicitly before allowing a new breakpoint. Okay will remove this.
->  
+No where.
 
-I tried removing the "ciabr_used" variable and all related checks/assignments on it.
-Then I was able to add all these three address as hardware instruction breakpoint
-and xmon never complained that it might override the existing actual checkpoint
-implemented with CIABR. It accepted all the three addresses which can later be
-listed as below.
+> It looks like the only place you can be getting it is from CONFIG_PPC_PSE=
+RIES.
+> If you build a POWERNV only kernel it will get disabled, which I don't th=
+ink is
+> what we want.
+>=20
+> I think we should select it for POWERNV as well as PSERIES. That would me=
+an
+> it's always enabled for any build of the files you touch, so you shouldn'=
+t need
+> the #ifdefs.
 
-0:mon> b
-   type            address
- 1 inst   c0000000000830d0  .power_pmu_add+0x0/0x2e0                                                
- 2 inst   c000000000084690  .power_pmu_del+0x0/0x3a0                                   
- 3 inst   c000000000085060  .perf_event_interrupt+0x0/0x480
+Ok, I'll add and resend.
 
-But in reality, only perf_event_interrupt function's address got written into CIABR
-register and got triggered with the workload. I dont have a system which has IABR
-support to test it's behaviour for this situation. But this does not sound okay,
-we should explicitly inform the user that the hardware instruction breakpoint has
-been overridden with the latest command or reject the attempt. Looking for some
-suggestions in this regard. Thank you.
+Mikey
