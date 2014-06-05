@@ -1,20 +1,30 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D7EF1A023F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 22:54:52 +1000 (EST)
-Message-ID: <53906897.4080209@suse.de>
-Date: Thu, 05 Jun 2014 14:54:47 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBF541A0251
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 23:04:10 +1000 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id ma3so1092857pbc.24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jun 2014 06:04:08 -0700 (PDT)
+Message-ID: <53906AC1.6000404@ozlabs.ru>
+Date: Thu, 05 Jun 2014 23:04:01 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org,
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 3/3] PPC: KVM: Add support for 64bit TCE windows
+References: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>	
+ <1401953144-19186-4-git-send-email-aik@ozlabs.ru>	
+ <1401953908.3247.121.camel@pasglop> <539037DB.5080706@ozlabs.ru>	
+ <1401964037.3247.129.camel@pasglop> <53905ADB.8000100@suse.de>
+ <1401971411.3247.132.camel@pasglop>
+In-Reply-To: <1401971411.3247.132.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v8 0/3] EEH Support for VFIO PCI Device
-References: <1401950169-30206-1-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1401950169-30206-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: aik@ozlabs.ru, alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,20 +34,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/05/2014 10:30 PM, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-06-05 at 13:56 +0200, Alexander Graf wrote:
+>> What if we ask user space to give us a pointer to user space allocated 
+>> memory along with the TCE registration? We would still ask user space to 
+>> only use the returned fd for TCE modifications, but would have some 
+>> nicely swappable memory we can store the TCE entries in.
+> 
+> That isn't going to work terribly well for VFIO :-) But yes, for
+> emulated devices, we could improve things a bit, including for
+> the 32-bit TCE tables.
+> 
+> For emulated, the real mode path could walk the page tables and fallback
+> to virtual mode & get_user if the page isn't present, thus operating
+> directly on qemu memory TCE tables instead of the current pinned stuff.
+> 
+> However that has a cost in performance, but since that's really only
+> used for emulated devices and PAPR VIOs, it might not be a huge issue.
+> 
+> But for VFIO we don't have much choice, we need to create something the
+> HW can access.
 
-On 05.06.14 08:36, Gavin Shan wrote:
-> The series of patches adds support EEH for PCI devices, which are passed
-> through to PowerKVM based guest via VFIO. The implementation is straightforward
-> based on the issues or problems we have to resolve to support EEH for PowerKVM
-> based guest.
->
-> - Emulation for EEH RTAS requests. All EEH RTAS requests goes to QEMU firstly.
->    If QEMU can't handle it, the request will be sent to host via newly introduced
->    VFIO container IOCTL command (VFIO_EEH_OP) and gets handled in host kernel.
->
-> The series of patches requires corresponding QEMU changes.
+You are confusing things here.
 
-Acked-by: Alexander Graf <agraf@suse.de>
+There are 2 tables:
+1. guest-visible TCE table, this is what is allocated for VIO or emulated PCI;
+2. real HW DMA window, one exists already for DMA32 and one I will
+allocated for a huge window.
+
+I have just #2 for VFIO now but we will need both in order to implement
+H_GET_TCE correctly, and this is the table I will allocate by this new ioctl.
 
 
-Alex
+>> In fact, the code as is today can allocate an arbitrary amount of pinned 
+>> kernel memory from within user space without any checks.
+> 
+> Right. We should at least account it in the locked limit.
+
+Yup. And (probably) this thing will keep a counter of how many windows were
+created per KVM instance to avoid having multiple copies of the same table.
+
+
+-- 
+Alexey
