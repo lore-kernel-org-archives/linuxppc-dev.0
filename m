@@ -1,22 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F05EB1A02A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 16:50:17 +1000 (EST)
-Message-ID: <1401951004.3247.114.camel@pasglop>
-Subject: Re: [PATCH v8 2/3] powerpc/eeh: EEH support for VFIO PCI device
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Thu, 05 Jun 2014 16:50:04 +1000
-In-Reply-To: <1401950169-30206-3-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1401950169-30206-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1401950169-30206-3-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, agraf@suse.de, kvm-ppc@vger.kernel.org,
- alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64CAD1A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 17:25:51 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Thu, 5 Jun 2014 17:25:50 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 329173578054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 17:25:48 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s557PWjE10813736
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 17:25:32 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s557PlN0014606
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 17:25:47 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 2/3] PPC: KVM: Reserve KVM_CAP_SPAPR_TCE_64 capability number
+Date: Thu,  5 Jun 2014 17:25:43 +1000
+Message-Id: <1401953144-19186-3-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>
+References: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-06-05 at 16:36 +1000, Gavin Shan wrote:
-> +#define EEH_OPT_GET_PE_ADDR    0       /* Get PE addr  */
-> +#define EEH_OPT_GET_PE_MODE    1       /* Get PE mode  */
+This adds a capability number for 64-bit TCE tables support.
 
-I assume that's just some leftover from the previous patches :-)
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ include/uapi/linux/kvm.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-Don't respin just yet, let's see what other comments come in.
-
-Cheers,
-Ben.
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 944cd21..e6972bf 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -744,6 +744,7 @@ struct kvm_ppc_smmu_info {
+ #define KVM_CAP_ENABLE_CAP_VM 98
+ #define KVM_CAP_S390_IRQCHIP 99
+ #define KVM_CAP_SPAPR_TCE_VFIO 100
++#define KVM_CAP_SPAPR_TCE_64 101
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+-- 
+2.0.0
