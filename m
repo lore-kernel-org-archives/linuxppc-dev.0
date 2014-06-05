@@ -1,21 +1,31 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 772E21A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 21:57:12 +1000 (EST)
-Message-ID: <53905B14.5020204@suse.de>
-Date: Thu, 05 Jun 2014 13:57:08 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 0/3] Prepare for in-kernel VFIO DMA operations acceleration
-References: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3AB01A00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 22:08:37 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 5 Jun 2014 22:08:24 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8A5A62CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 22:08:22 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s55C86H66095356
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 22:08:06 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s55C8Lc8010835
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 22:08:21 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
+Subject: KVM: PPC: BOOK3S: PR: P8 Support
+Date: Thu,  5 Jun 2014 17:38:01 +0530
+Message-Id: <1401970085-14493-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +35,8 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 05.06.14 09:25, Alexey Kardashevskiy wrote:
-> This reserves 2 capability numbers.
->
-> This implements an extended version of KVM_CREATE_SPAPR_TCE_64 ioctl.
->
-> Please advise how to proceed with these patches as I suspect that
-> first two should go via Paolo's tree while the last one via Alex Graf's tree
-> (correct?).
-
-They would just go via my tree, but only be actually allocated (read: 
-mergable to qemu) when they hit Paolo's tree.
-
-In fact, I don't think it makes sense to split them off at all.
+This patchset adds support for emulating VTB, IC and Doorbell features in P8.
+Doorbell support is dummy since we don't support SMT cores with PR-KVM.
 
 
-Alex
+-aneesh
