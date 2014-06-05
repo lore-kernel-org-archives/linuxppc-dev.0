@@ -1,30 +1,35 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CBF541A0251
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 23:04:10 +1000 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id ma3so1092857pbc.24
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jun 2014 06:04:08 -0700 (PDT)
-Message-ID: <53906AC1.6000404@ozlabs.ru>
-Date: Thu, 05 Jun 2014 23:04:01 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 83B3B1A0039
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 01:24:08 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Thu, 5 Jun 2014 20:54:03 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 1E6221258056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 20:53:18 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s55FOj6O61669378
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 20:54:45 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s55FNw7P017274
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 20:53:59 +0530
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH 3/3] PPC: KVM: Add support for 64bit TCE windows
-References: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>	
- <1401953144-19186-4-git-send-email-aik@ozlabs.ru>	
- <1401953908.3247.121.camel@pasglop> <539037DB.5080706@ozlabs.ru>	
- <1401964037.3247.129.camel@pasglop> <53905ADB.8000100@suse.de>
- <1401971411.3247.132.camel@pasglop>
-In-Reply-To: <1401971411.3247.132.camel@pasglop>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/2] powerpc/powernv: include asm/smp.h to handle UP config
+Date: Thu,  5 Jun 2014 20:51:35 +0530
+Message-Id: <1401981695-3682-1-git-send-email-shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,46 +39,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/05/2014 10:30 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-06-05 at 13:56 +0200, Alexander Graf wrote:
->> What if we ask user space to give us a pointer to user space allocated 
->> memory along with the TCE registration? We would still ask user space to 
->> only use the returned fd for TCE modifications, but would have some 
->> nicely swappable memory we can store the TCE entries in.
-> 
-> That isn't going to work terribly well for VFIO :-) But yes, for
-> emulated devices, we could improve things a bit, including for
-> the 32-bit TCE tables.
-> 
-> For emulated, the real mode path could walk the page tables and fallback
-> to virtual mode & get_user if the page isn't present, thus operating
-> directly on qemu memory TCE tables instead of the current pinned stuff.
-> 
-> However that has a cost in performance, but since that's really only
-> used for emulated devices and PAPR VIOs, it might not be a huge issue.
-> 
-> But for VFIO we don't have much choice, we need to create something the
-> HW can access.
+Build throws following errors when CONFIG_SMP=n
+arch/powerpc/platforms/powernv/setup.c: In function ‘pnv_kexec_wait_secondaries_down’:
+arch/powerpc/platforms/powernv/setup.c:179:4: error: implicit declaration of function ‘get_hard_smp_processor_id’
+    rc = opal_query_cpu_status(get_hard_smp_processor_id(i),
 
-You are confusing things here.
+The usage of get_hard_smp_processor_id() needs the declaration from
+<asm/smp.h>. The file setup.c includes <linux/sched.h>, which in-turn
+includes <linux/smp.h>. However, <linux/smp.h> includes <asm/smp.h>
+only on SMP configs and hence UP builds fail.
 
-There are 2 tables:
-1. guest-visible TCE table, this is what is allocated for VIO or emulated PCI;
-2. real HW DMA window, one exists already for DMA32 and one I will
-allocated for a huge window.
+Fix this by directly including <asm/smp.h> in setup.c unconditionally.
 
-I have just #2 for VFIO now but we will need both in order to implement
-H_GET_TCE correctly, and this is the table I will allocate by this new ioctl.
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/setup.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-
->> In fact, the code as is today can allocate an arbitrary amount of pinned 
->> kernel memory from within user space without any checks.
-> 
-> Right. We should at least account it in the locked limit.
-
-Yup. And (probably) this thing will keep a counter of how many windows were
-created per KVM instance to avoid having multiple copies of the same table.
-
-
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 8c16a5f..678573c 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -35,6 +35,7 @@
+ #include <asm/rtas.h>
+ #include <asm/opal.h>
+ #include <asm/kexec.h>
++#include <asm/smp.h>
+ 
+ #include "powernv.h"
+ 
 -- 
-Alexey
+1.9.0
