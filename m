@@ -1,39 +1,47 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D54501A0008
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 03:33:23 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 28A671A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 03:39:11 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Jun 2014 23:03:19 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2D453E0045
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 23:04:11 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s55HY2JN58195986
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 23:04:02 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s55HXGdd000570
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 23:03:16 +0530
+ Thu, 5 Jun 2014 23:09:10 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C344B1258048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 23:08:26 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s55HdKVS39977000
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 23:09:20 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s55Hd682030346
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 23:09:08 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH 1/4] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
- register
-In-Reply-To: <5390A071.9040006@suse.de>
-References: <1401970085-14493-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1401970085-14493-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <5390604C.4050704@suse.de> <87wqcvmk3f.fsf@linux.vnet.ibm.com>
- <5390A071.9040006@suse.de>
-Date: Thu, 05 Jun 2014 23:03:15 +0530
-Message-ID: <87sinjqn1g.fsf@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Marek Szyprowski <m.szyprowski@samsung.com>,
+ Michal Nazarewicz <mina86@mina86.com>
+Subject: Re: [RFC PATCH 1/3] CMA: generalize CMA reserved area management
+ functionality
+In-Reply-To: <1401757919-30018-2-git-send-email-iamjoonsoo.kim@lge.com>
+References: <1401757919-30018-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1401757919-30018-2-git-send-email-iamjoonsoo.kim@lge.com>
+Date: Thu, 05 Jun 2014 23:09:05 +0530
+Message-ID: <87zjhrtfwm.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
+ linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,42 +51,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> writes:
+Joonsoo Kim <iamjoonsoo.kim@lge.com> writes:
 
-> On 05.06.14 17:50, Aneesh Kumar K.V wrote:
->> Alexander Graf <agraf@suse.de> writes:
->>
->>> On 05.06.14 14:08, Aneesh Kumar K.V wrote:
->>>> virtual time base register is a per VM, per cpu register that needs
->>>> to be saved and restored on vm exit and entry. Writing to VTB is not
->>>> allowed in the privileged mode.
->>>>
->>>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-.......
-
->>>>    			break;
->>>> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
->>>> index 3565e775b61b..1bb16a59dcbc 100644
->>>> --- a/arch/powerpc/kvm/book3s_emulate.c
->>>> +++ b/arch/powerpc/kvm/book3s_emulate.c
->>>> @@ -577,6 +577,9 @@ int kvmppc_core_emulate_mfspr_pr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val
->>>>    		 */
->>>>    		*spr_val = vcpu->arch.spurr;
->>>>    		break;
->>>> +	case SPRN_VTB:
->>>> +		*spr_val = vcpu->arch.vtb;
->>> Doesn't this mean that vtb can be the same 2 when the guest reads it 2
->>> times in a row without getting preempted?
->>
->> But a mfspr will result in VM exit and that would make sure we
->> update vcpu->arch.vtb with the correct value.
+> Currently, there are two users on CMA functionality, one is the DMA
+> subsystem and the other is the kvm on powerpc. They have their own code
+> to manage CMA reserved area even if they looks really similar.
+> From my guess, it is caused by some needs on bitmap management. Kvm side
+> wants to maintain bitmap not for 1 page, but for more size. Eventually it
+> use bitmap where one bit represents 64 pages.
 >
-> We only call kvmppc_core_vcpu_put_pr() when we context switch away from 
-> KVM, so it won't be updated, no?
+> When I implement CMA related patches, I should change those two places
+> to apply my change and it seem to be painful to me. I want to change
+> this situation and reduce future code management overhead through
+> this patch.
 >
+> This change could also help developer who want to use CMA in their
+> new feature development, since they can use CMA easily without
+> copying & pasting this reserved area management code.
 >
+> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
-kvmppc_copy_from_svcpu is also called from VM exit path (book3s_interrupt.S)
+
+The way patches are split makes it difficult to review. Will it be
+possible to make changes against one implementation and them move that
+to generic code. That helps in finding out what exactly changed.
+
+>
+> diff --git a/drivers/base/Kconfig b/drivers/base/Kconfig
+> index 00e13ce..b3fe1cc 100644
+> --- a/drivers/base/Kconfig
+> +++ b/drivers/base/Kconfig
+> @@ -283,7 +283,7 @@ config CMA_ALIGNMENT
+>
+>  	  If unsure, leave the default value "8".
+>
+> -config CMA_AREAS
+> +config DMA_CMA_AREAS
+>  	int "Maximum count of the CMA device-private areas"
+>  	default 7
+>  	help
+
+for ex: The above can be a seperate patch along with further DMA related
+cleanups . 
+
+
+> diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
+> index 83969f8..48cdac8 100644
+> --- a/drivers/base/dma-contiguous.c
+> +++ b/drivers/base/dma-contiguous.c
+> @@ -186,7 +186,7 @@ static int __init cma_activate_area(struct cma *cma)
+>  	return 0;
+>  }
+>
+> -static struct cma cma_areas[MAX_CMA_AREAS];
+> +static struct cma cma_areas[MAX_DMA_CMA_AREAS];
+>  static unsigned cma_area_count;
+>
+>  static int __init cma_init_reserved_areas(void)
+> diff --git a/include/linux/cma.h b/include/linux/cma.h
+> new file mode 100644
+> index 0000000..60ba06f
+> --- /dev/null
+> +++ b/include/linux/cma.h
+> @@ -0,0 +1,28 @@
+> +/*
+> + * Contiguous Memory Allocator
+> + *
+> + * Copyright LG Electronics Inc., 2014
+> + * Written by:
+> + *	Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation; either version 2 of the
+> + * License or (at your optional) any later version of the license.
+> + *
+> + */
+> +
+> +#ifndef __CMA_H__
+> +#define __CMA_H__
+> +
+> +struct cma;
+> +
+> +extern struct page *cma_alloc(struct cma *cma, unsigned long count,
+> +				unsigned long align);
+> +extern bool cma_release(struct cma *cma, struct page *pages,
+> +				unsigned long count);
+> +extern int __init cma_declare_contiguous(phys_addr_t size, phys_addr_t base,
+> +				phys_addr_t limit, phys_addr_t alignment,
+> +				unsigned long bitmap_shift, bool fixed,
+> +				struct cma **res_cma);
+> +#endif
+> diff --git a/include/linux/dma-contiguous.h b/include/linux/dma-contiguous.h
+> index 772eab5..dfb1dc9 100644
+> --- a/include/linux/dma-contiguous.h
+> +++ b/include/linux/dma-contiguous.h
+> @@ -63,7 +63,7 @@ struct device;
+>   * There is always at least global CMA area and a few optional device
+>   * private areas configured in kernel .config.
+>   */
+> -#define MAX_CMA_AREAS	(1 + CONFIG_CMA_AREAS)
+> +#define MAX_DMA_CMA_AREAS  (1 + CONFIG_DMA_CMA_AREAS)
+>
+>  extern struct cma *dma_contiguous_default_area;
+>
+> @@ -123,7 +123,7 @@ bool dma_release_from_contiguous(struct device *dev, struct page *pages,
+>
+>  #else
+>
+> -#define MAX_CMA_AREAS	(0)
+> +#define MAX_DMA_CMA_AREAS	(0)
+>
+>  static inline struct cma *dev_get_cma_area(struct device *dev)
+>  {
+> diff --git a/mm/Kconfig b/mm/Kconfig
+> index 7511b4a..0877ddc 100644
+> --- a/mm/Kconfig
+> +++ b/mm/Kconfig
+> @@ -515,6 +515,17 @@ config CMA_DEBUG
+>  	  processing calls such as dma_alloc_from_contiguous().
+>  	  This option does not affect warning and error messages.
+>
+> +config CMA_AREAS
+> +	int "Maximum count of the CMA areas"
+> +	depends on CMA
+> +	default 7
+> +	help
+> +	  CMA allows to create CMA areas for particular purpose, mainly,
+> +	  used as device private area. This parameter sets the maximum
+> +	  number of CMA area in the system.
+> +
+> +	  If unsure, leave the default value "7".
+> +
+
+If we have 7 declare continugous request, a kvm cma allocation request will fail ?
+
+>  config ZBUD
+>  	tristate
+>  	default n
+> diff --git a/mm/Makefile b/mm/Makefile
+> index 1eaa70b..bc0422b 100644
+> --- a/mm/Makefile
+> +++ b/mm/Makefile
+> @@ -62,3 +62,4 @@ obj-$(CONFIG_MEMORY_ISOLATION) += page_isolation.o
+>  obj-$(CONFIG_ZBUD)	+= zbud.o
+>  obj-$(CONFIG_ZSMALLOC)	+= zsmalloc.o
+>  obj-$(CONFIG_GENERIC_EARLY_IOREMAP) += early_ioremap.o
+> +obj-$(CONFIG_CMA)	+= cma.o
+> diff --git a/mm/cma.c b/mm/cma.c
+> new file mode 100644
+> index 0000000..0dae88d
+> --- /dev/null
+> +++ b/mm/cma.c
+> @@ -0,0 +1,329 @@
+> +/*
+> + * Contiguous Memory Allocator
+> + *
+> + * Copyright (c) 2010-2011 by Samsung Electronics.
+> + * Copyright IBM Corporation, 2013
+> + * Copyright LG Electronics Inc., 2014
+> + * Written by:
+> + *	Marek Szyprowski <m.szyprowski@samsung.com>
+> + *	Michal Nazarewicz <mina86@mina86.com>
+> + *	Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> + *	Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation; either version 2 of the
+> + * License or (at your optional) any later version of the license.
+> + */
+> +
+> +#define pr_fmt(fmt) "cma: " fmt
+> +
+> +#ifdef CONFIG_CMA_DEBUG
+> +#ifndef DEBUG
+> +#  define DEBUG
+> +#endif
+> +#endif
+> +
+> +#include <linux/memblock.h>
+> +#include <linux/err.h>
+> +#include <linux/mm.h>
+> +#include <linux/mutex.h>
+> +#include <linux/sizes.h>
+> +#include <linux/slab.h>
+> +
+> +struct cma {
+> +	unsigned long	base_pfn;
+> +	unsigned long	count;
+> +	unsigned long	*bitmap;
+> +	unsigned long	bitmap_shift;
+
+I guess this is added to accommodate the kvm specific alloc chunks. May
+be you should do this as a patch against kvm implementation and then
+move the code to generic ?
+
+> +	struct mutex	lock;
+> +};
+> +
 
 -aneesh
