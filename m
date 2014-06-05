@@ -1,34 +1,34 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A9611A0041
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 16:19:28 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1CC291A005B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 16:36:15 +1000 (EST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Thu, 5 Jun 2014 16:19:28 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id EDED53578047
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 16:19:24 +1000 (EST)
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 5 Jun 2014 16:36:14 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8AA0B3578054
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 16:36:11 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5563QtY19988682
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 16:03:27 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s556ZtVi3604900
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 16:35:55 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s556JNSP032709
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 16:19:24 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH 1/1 v2] powerpc: Correct DSCR during TM context switch
-Date: Thu,  5 Jun 2014 16:19:22 +1000
-Message-Id: <9d0d6564e63b234dfea33e5d3d8be9b20d13f493.1401947560.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <f1ddc3bc4b970a480367a45cdca51e879cb14df0.1401852531.git.sam.bobroff@au1.ibm.com>
-References: <f1ddc3bc4b970a480367a45cdca51e879cb14df0.1401852531.git.sam.bobroff@au1.ibm.com>
-Cc: aik@ozlabs.ru, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- khandual@linux.vnet.ibm.com
+ s556aAPJ030128
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 16:36:11 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v8 1/3] powerpc/eeh: Avoid event on passed PE
+Date: Thu,  5 Jun 2014 16:36:07 +1000
+Message-Id: <1401950169-30206-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1401950169-30206-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1401950169-30206-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, agraf@suse.de, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ alex.williamson@redhat.com, qiudayu@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,243 +38,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Correct the DSCR SPR becoming temporarily corrupted if a task is
-context switched during a transaction.
+We must not handle EEH error on devices which are passed to somebody
+else. Instead, we expect that the frozen device owner detects an EEH
+error and recovers from it.
 
-The problem occurs while suspending the task and is caused by saving
-the DSCR to thread.dscr after it has already been set to the CPU's
-default value:
+This avoids EEH error handling on passed through devices so the device
+owner gets a chance to handle them.
 
-__switch_to() calls __switch_to_tm()
-	which calls tm_reclaim_task()
-	which calls tm_reclaim_thread()
-	which calls tm_reclaim()
-		where the DSCR is set to the CPU's default
-__switch_to() calls _switch()
-		where thread.dscr is set to the DSCR
-
-When the task is resumed, it's transaction will be doomed (as usual)
-and the DSCR SPR will be corrupted, although the checkpointed value
-will be correct. Therefore the DSCR will be immediately corrected by
-the transaction aborting, unless it has been suspended. In that case
-the incorrect value can be seen by the task until it resumes the
-transaction.
-
-The fix is to treat the DSCR similarly to the TAR and save it early
-in __switch_to().
-
-A program exposing the problem is added to the kernel self tests as:
-tools/testing/selftests/powerpc/tm/tm-resched-dscr.
-
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-Changes:
-v2:
-* Reworked commit message.
-* Adjusted test code and added it to kernel self tests.
----
- arch/powerpc/include/asm/switch_to.h               |    6 +-
- arch/powerpc/kernel/entry_64.S                     |    6 --
- arch/powerpc/kernel/process.c                      |    8 +-
- tools/testing/selftests/powerpc/Makefile           |    2 +-
- tools/testing/selftests/powerpc/tm/Makefile        |   15 ++++
- .../testing/selftests/powerpc/tm/tm-resched-dscr.c |   90 ++++++++++++++++++++
- 6 files changed, 114 insertions(+), 13 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/tm/Makefile
- create mode 100644 tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+ arch/powerpc/include/asm/eeh.h            | 7 +++++++
+ arch/powerpc/kernel/eeh.c                 | 8 ++++++++
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 3 ++-
+ 3 files changed, 17 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 2737f46..3efd0e5 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -16,13 +16,15 @@ struct thread_struct;
- extern struct task_struct *_switch(struct thread_struct *prev,
- 				   struct thread_struct *next);
- #ifdef CONFIG_PPC_BOOK3S_64
--static inline void save_tar(struct thread_struct *prev)
-+static inline void save_early_sprs(struct thread_struct *prev)
- {
- 	if (cpu_has_feature(CPU_FTR_ARCH_207S))
- 		prev->tar = mfspr(SPRN_TAR);
-+	if (cpu_has_feature(CPU_FTR_DSCR))
-+		prev->dscr = mfspr(SPRN_DSCR);
- }
- #else
--static inline void save_tar(struct thread_struct *prev) {}
-+static inline void save_early_sprs(struct thread_struct *prev) {}
- #endif
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 7782056..653d981 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -25,6 +25,7 @@
+ #include <linux/list.h>
+ #include <linux/string.h>
+ #include <linux/time.h>
++#include <linux/atomic.h>
  
- extern void enable_kernel_fp(void);
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 662c6dd..a107f4a 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -432,12 +432,6 @@ BEGIN_FTR_SECTION
- 	std	r24,THREAD_VRSAVE(r3)
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif /* CONFIG_ALTIVEC */
--#ifdef CONFIG_PPC64
--BEGIN_FTR_SECTION
--	mfspr	r25,SPRN_DSCR
--	std	r25,THREAD_DSCR(r3)
--END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
--#endif
- 	and.	r0,r0,r22
- 	beq+	1f
- 	andc	r22,r22,r0
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e247898..8d2065e 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -771,15 +771,15 @@ struct task_struct *__switch_to(struct task_struct *prev,
+ struct pci_dev;
+ struct pci_bus;
+@@ -84,6 +85,7 @@ struct eeh_pe {
+ 	int freeze_count;		/* Times of froze up		*/
+ 	struct timeval tstamp;		/* Time on first-time freeze	*/
+ 	int false_positives;		/* Times of reported #ff's	*/
++	atomic_t pass_dev_cnt;		/* Count of passed through devs	*/
+ 	struct eeh_pe *parent;		/* Parent PE			*/
+ 	struct list_head child_list;	/* Link PE to the child list	*/
+ 	struct list_head edevs;		/* Link list of EEH devices	*/
+@@ -93,6 +95,11 @@ struct eeh_pe {
+ #define eeh_pe_for_each_dev(pe, edev, tmp) \
+ 		list_for_each_entry_safe(edev, tmp, &pe->edevs, list)
  
- 	WARN_ON(!irqs_disabled());
- 
--	/* Back up the TAR across context switches.
-+	/* Back up the TAR and DSCR across context switches.
- 	 * Note that the TAR is not available for use in the kernel.  (To
- 	 * provide this, the TAR should be backed up/restored on exception
- 	 * entry/exit instead, and be in pt_regs.  FIXME, this should be in
- 	 * pt_regs anyway (for debug).)
--	 * Save the TAR here before we do treclaim/trecheckpoint as these
--	 * will change the TAR.
-+	 * Save the TAR and DSCR here before we do treclaim/trecheckpoint as
-+	 * these will change them.
- 	 */
--	save_tar(&prev->thread);
-+	save_early_sprs(&prev->thread);
- 
- 	__switch_to_tm(prev);
- 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 316194f..e1544e8 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
- 
- export CC CFLAGS
- 
--TARGETS = pmu copyloops
-+TARGETS = pmu copyloops tm
- 
- endif
- 
-diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
-new file mode 100644
-index 0000000..51267f4
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/Makefile
-@@ -0,0 +1,15 @@
-+PROGS := tm-resched-dscr
-+
-+all: $(PROGS)
-+
-+$(PROGS):
-+
-+run_tests: all
-+	@-for PROG in $(PROGS); do \
-+		./$$PROG; \
-+	done;
-+
-+clean:
-+	rm -f $(PROGS) *.o
-+
-+.PHONY: all run_tests clean
-diff --git a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-new file mode 100644
-index 0000000..ee98e38
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-@@ -0,0 +1,90 @@
-+/* Test context switching to see if the DSCR SPR is correctly preserved
-+ * when within a transaction.
-+ *
-+ * Note: We assume that the DSCR has been left at the default value (0)
-+ * for all CPUs.
-+ *
-+ * Method:
-+ *
-+ * Set a value into the DSCR.
-+ *
-+ * Start a transaction, and suspend it (*).
-+ *
-+ * Hard loop checking to see if the transaction has become doomed.
-+ *
-+ * Now that we *may* have been preempted, record the DSCR and TEXASR SPRS.
-+ *
-+ * If the abort was because of a context switch, check the DSCR value.
-+ * Otherwise, try again.
-+ *
-+ * (*) If the transaction is not suspended we can't see the problem because
-+ * the transaction abort handler will restore the DSCR to it's checkpointed
-+ * value before we regain control.
-+ */
-+
-+#include <inttypes.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <assert.h>
-+#include <asm/tm.h>
-+
-+#define TBEGIN          ".long 0x7C00051D ;"
-+#define TEND            ".long 0x7C00055D ;"
-+#define TCHECK          ".long 0x7C00059C ;"
-+#define TSUSPEND        ".long 0x7C0005DD ;"
-+#define TRESUME         ".long 0x7C2005DD ;"
-+#define SPRN_TEXASR     0x82
-+#define SPRN_DSCR       0x03
-+
-+int main(void) {
-+	uint64_t rv, dscr1 = 1, dscr2, texasr;
-+
-+	printf("Check DSCR TM context switch: ");
-+	fflush(stdout);
-+	for (;;) {
-+		rv = 1;
-+		asm __volatile__ (
-+			/* set a known value into the DSCR */
-+			"ld      3, %[dscr1];"
-+			"mtspr   %[sprn_dscr], 3;"
-+
-+			/* start and suspend a transaction */
-+			TBEGIN
-+			"beq     1f;"
-+			TSUSPEND
-+
-+			/* hard loop until the transaction becomes doomed */
-+			"2: ;"
-+			TCHECK
-+			"bc      4, 0, 2b;"
-+
-+			/* record DSCR and TEXASR */
-+			"mfspr   3, %[sprn_dscr];"
-+			"std     3, %[dscr2];"
-+			"mfspr   3, %[sprn_texasr];"
-+			"std     3, %[texasr];"
-+
-+			TRESUME
-+			TEND
-+			"li      %[rv], 0;"
-+			"1: ;"
-+			: [rv]"=r"(rv), [dscr2]"=m"(dscr2), [texasr]"=m"(texasr)
-+			: [dscr1]"m"(dscr1)
-+			, [sprn_dscr]"i"(SPRN_DSCR), [sprn_texasr]"i"(SPRN_TEXASR)
-+			: "memory", "r3"
-+		);
-+		assert(rv); /* make sure the transaction aborted */
-+		if ((texasr >> 56) != TM_CAUSE_RESCHED) {
-+			putchar('.');
-+			fflush(stdout);
-+			continue;
-+		}
-+		if (dscr2 != dscr1) {
-+			printf(" FAIL\n");
-+			exit(EXIT_FAILURE);
-+		} else {
-+			printf(" OK\n");
-+			exit(EXIT_SUCCESS);
-+		}
-+	}
++static inline bool eeh_pe_passed(struct eeh_pe *pe)
++{
++	return pe ? !!atomic_read(&pe->pass_dev_cnt) : false;
 +}
++
+ /*
+  * The struct is used to trace EEH state for the associated
+  * PCI device node or PCI device. In future, it might
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 9c6b899..3bc8b12 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -400,6 +400,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 	if (ret > 0)
+ 		return ret;
+ 
++	/*
++	 * If the PE isn't owned by us, we shouldn't check the
++	 * state. Instead, let the owner handle it if the PE has
++	 * been frozen.
++	 */
++	if (eeh_pe_passed(pe))
++		return 0;
++
+ 	/* If we already have a pending isolation event for this
+ 	 * slot, we know it's bad already, we don't need to check.
+ 	 * Do this checking under a lock; as multiple PCI devices
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index cab3e62..79193eb 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -892,7 +892,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
+ 					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
+ 				ret = EEH_NEXT_ERR_NONE;
+-			} else if ((*pe)->state & EEH_PE_ISOLATED) {
++			} else if ((*pe)->state & EEH_PE_ISOLATED ||
++				   eeh_pe_passed(*pe)) {
+ 				ret = EEH_NEXT_ERR_NONE;
+ 			} else {
+ 				pr_err("EEH: Frozen PHB#%x-PE#%x (%s) detected\n",
 -- 
-1.7.10.4
+1.8.3.2
