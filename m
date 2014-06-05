@@ -1,22 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03B531A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 22:23:55 +1000 (EST)
-Message-ID: <53906156.4090403@suse.de>
-Date: Thu, 05 Jun 2014 14:23:50 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH 2/4] KVM: PPC: BOOK3S: PR: Doorbell support
-References: <1401970085-14493-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1401970085-14493-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <539060B5.9040808@suse.de>
-In-Reply-To: <539060B5.9040808@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E2BAB1A0239
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 22:30:25 +1000 (EST)
+Message-ID: <1401971411.3247.132.camel@pasglop>
+Subject: Re: [PATCH 3/3] PPC: KVM: Add support for 64bit TCE windows
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Thu, 05 Jun 2014 22:30:11 +1000
+In-Reply-To: <53905ADB.8000100@suse.de>
+References: <1401953144-19186-1-git-send-email-aik@ozlabs.ru>
+ <1401953144-19186-4-git-send-email-aik@ozlabs.ru>
+ <1401953908.3247.121.camel@pasglop> <539037DB.5080706@ozlabs.ru>
+ <1401964037.3247.129.camel@pasglop> <53905ADB.8000100@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Gleb Natapov <gleb@kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2014-06-05 at 13:56 +0200, Alexander Graf wrote:
+> What if we ask user space to give us a pointer to user space allocated 
+> memory along with the TCE registration? We would still ask user space to 
+> only use the returned fd for TCE modifications, but would have some 
+> nicely swappable memory we can store the TCE entries in.
 
-On 05.06.14 14:21, Alexander Graf wrote:
->
-> On 05.06.14 14:08, Aneesh Kumar K.V wrote:
->> We don't have SMT support yet, hence we should not find a doorbell
->> message generated
->>
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>   arch/powerpc/kvm/book3s_emulate.c | 18 ++++++++++++++++++
->>   1 file changed, 18 insertions(+)
->>
->> diff --git a/arch/powerpc/kvm/book3s_emulate.c 
->> b/arch/powerpc/kvm/book3s_emulate.c
->> index 1bb16a59dcbc..d6c87d085182 100644
->> --- a/arch/powerpc/kvm/book3s_emulate.c
->> +++ b/arch/powerpc/kvm/book3s_emulate.c
->> @@ -28,7 +28,9 @@
->>   #define OP_19_XOP_RFI        50
->>     #define OP_31_XOP_MFMSR        83
->> +#define OP_31_XOP_MSGSNDP    142
->>   #define OP_31_XOP_MTMSR        146
->> +#define OP_31_XOP_MSGCLRP    174
->>   #define OP_31_XOP_MTMSRD    178
->>   #define OP_31_XOP_MTSR        210
->>   #define OP_31_XOP_MTSRIN    242
->> @@ -303,6 +305,22 @@ int kvmppc_core_emulate_op_pr(struct kvm_run 
->> *run, struct kvm_vcpu *vcpu,
->>                 break;
->>           }
->> +        case OP_31_XOP_MSGSNDP:
->> +        {
->> +            /*
->> +             * PR KVM still don't support SMT mode. So we should
->
-> still?
->
->> +             * not see a MSGSNDP/MSGCLRP used with PR KVM
->> +             */
->> +            pr_info("KVM: MSGSNDP used in non SMT case\n");
->> +            emulated = EMULATE_FAIL;
->
-> What would happen on an HV guest with only 1 thread that MSGSNDs to 
-> thread 0? Would the guest get an illegal instruction trap, a 
-> self-interrupt or would this be a simple nop?
+That isn't going to work terribly well for VFIO :-) But yes, for
+emulated devices, we could improve things a bit, including for
+the 32-bit TCE tables.
 
-What I'm trying to say here is that it's ok to treat it as illegal 
-instructions, but then we don't need this patch :).
+For emulated, the real mode path could walk the page tables and fallback
+to virtual mode & get_user if the page isn't present, thus operating
+directly on qemu memory TCE tables instead of the current pinned stuff.
 
+However that has a cost in performance, but since that's really only
+used for emulated devices and PAPR VIOs, it might not be a huge issue.
 
-Alex
+But for VFIO we don't have much choice, we need to create something the
+HW can access.
+
+> In fact, the code as is today can allocate an arbitrary amount of pinned 
+> kernel memory from within user space without any checks.
+
+Right. We should at least account it in the locked limit.
+
+Cheers,
+Ben.
