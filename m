@@ -1,21 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 701881A0041
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 13:04:23 +1000 (EST)
-Message-ID: <1401937462.17669.8.camel@concordia>
-Subject: Re: [PATCH] powerpc: Remove platforms/wsp and associated pieces
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Paul Bolle <pebolle@tiscali.nl>
-Date: Thu, 05 Jun 2014 13:04:22 +1000
-In-Reply-To: <1401696244.14959.6.camel@x220>
-References: <1401672046-17607-1-git-send-email-mpe@ellerman.id.au>
- <1401696244.14959.6.camel@x220>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jimi Xenidis <jimix@pobox.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9B5811A0041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2014 13:10:16 +1000 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 4 Jun 2014 23:10:13 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A65C46E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jun 2014 23:10:02 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s553AApT1245538
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jun 2014 03:10:10 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s553AAcM006746
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jun 2014 23:10:10 -0400
+Message-ID: <538FDE82.2020105@linux.vnet.ibm.com>
+Date: Thu, 05 Jun 2014 08:35:38 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 1/2] powerpc/cpuidle: Only clear LPCR decrementer wakeup
+ bit on fast sleep entry
+References: <1401692223-28337-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1401692223-28337-1-git-send-email-mikey@neuling.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +42,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-06-02 at 10:04 +0200, Paul Bolle wrote:
-> On Mon, 2014-06-02 at 11:20 +1000, Michael Ellerman wrote:
-> > __attribute__ ((unused))
-> > 
-> > WSP is the last user of CONFIG_PPC_A2, so we remove that as well.
-> > 
-> > Although CONFIG_PPC_ICSWX still exists, it's no longer selectable for
-> > any Book3E platform, so we can remove the code in mmu-book3e.h that
-> > depended on it.
-> > 
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> > ---
-> >  arch/powerpc/Kconfig.debug             |    5 -
-> >  arch/powerpc/configs/chroma_defconfig  |  307 ---------
-> >  arch/powerpc/include/asm/mmu-book3e.h  |    4 -
-> >  arch/powerpc/include/asm/reg_a2.h      |    9 -
-> >  arch/powerpc/include/asm/wsp.h         |   14 -
-> >  arch/powerpc/kernel/Makefile           |    1 -
-> >  arch/powerpc/kernel/cpu_setup_a2.S     |  120 ----
-> >  arch/powerpc/kernel/cputable.c         |   38 --
-> >  arch/powerpc/kernel/exceptions-64e.S   |   16 -
-> >  arch/powerpc/kernel/udbg.c             |    2 -
-> >  arch/powerpc/kernel/udbg_16550.c       |   11 -
-> >  arch/powerpc/platforms/Kconfig         |    1 -
-> >  arch/powerpc/platforms/Kconfig.cputype |    6 +-
-> >  arch/powerpc/platforms/Makefile        |    1 -
-> >  arch/powerpc/platforms/wsp/Kconfig     |   30 -
-> >  arch/powerpc/platforms/wsp/Makefile    |   10 -
-> >  arch/powerpc/platforms/wsp/chroma.c    |   56 --
-> >  arch/powerpc/platforms/wsp/h8.c        |  135 ----
-> >  arch/powerpc/platforms/wsp/ics.c       |  762 ---------------------
-> >  arch/powerpc/platforms/wsp/ics.h       |   25 -
-> >  arch/powerpc/platforms/wsp/msi.c       |  102 ---
-> >  arch/powerpc/platforms/wsp/msi.h       |   19 -
-> >  arch/powerpc/platforms/wsp/opb_pic.c   |  321 ---------
-> >  arch/powerpc/platforms/wsp/psr2.c      |   67 --
-> >  arch/powerpc/platforms/wsp/scom_smp.c  |  434 ------------
+On 06/02/2014 12:27 PM, Michael Neuling wrote:
+> Currently when entering fastsleep we clear all LPCR PECE bits.
 > 
-> This (trivially) conflicts with commit 2751b628c97e ("powerpc: Fix SMP
-> issues with ppc64le ABIv2") in next-20140530.
+> This patch changes it to only clear the decrementer bit (ie. PECE1), which is
+> the only bit we really need to clear here.  This is needed if we want to set
+> other wakeup causes like the PECEDH bit so we can use hypervisor doorbells on
+> powernv.
+> 
+> Signed-off-by: Michael Neuling <mikey@neuling.org>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 719f6fb..7f7798e 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -73,7 +73,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+>  		return index;
+>  
+>  	new_lpcr = old_lpcr;
+> -	new_lpcr &= ~(LPCR_MER | LPCR_PECE); /* lpcr[mer] must be 0 */
+> +	new_lpcr &= ~(LPCR_MER | LPCR_PECE1); /* lpcr[mer] must be 0 */
+>  
+>  	/* exit powersave upon external interrupt, but not decrementer
+>  	 * interrupt.
+You might want to remove this comment and instead simply add
+/* Do not exit powersave upon decrementer interrupt */
 
-Ah thanks. I'll assume Ben can handle it unless he yells at me.
+Besides this, the following line which clears the wakeup from external
+interrupt bit can be removed as well, since we are not clearing it anyway ?
 
-> For what it's worth, according to my scripts this doesn't introduce
-> Kconfig related regressions (eg, you've removed all references to the
-> Kconfig symbols that were removed). And, of course, that puzzling check
-> for CONFIG_WSP_DD1_WORKAROUND_DD1_TCE_BUGS is now gone.
+ new_lpcr |= LPCR_PECE0
+ ^^^
 
-Thanks for checking.
+Regards
+Preeti U Murthy
 
-cheers
+> 
