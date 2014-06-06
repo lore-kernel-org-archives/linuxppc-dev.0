@@ -1,20 +1,41 @@
-Return-Path: <Diana.Craciun@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 052981A0008
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 22:04:23 +1000 (EST)
-Message-ID: <5391AE38.4020901@freescale.com>
-Date: Fri, 6 Jun 2014 15:04:08 +0300
-From: Diana Craciun <diana.craciun@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 92E621A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 22:30:43 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Fri, 6 Jun 2014 18:00:40 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id CA95EE0058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 18:01:32 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s56CUoI455836832
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 18:00:50 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s56CUZ9t013669
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 18:00:36 +0530
+Message-ID: <5391B413.100@linux.vnet.ibm.com>
+Date: Fri, 06 Jun 2014 17:59:07 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: Re: [PATCH 1/3 v3] powerpc/fsl-booke: Add support for T2080/T2081 SoC
-References: <1402039105-22590-1-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1402039105-22590-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
+ kexec from ST mode
+References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
+ <20140528133143.GK14863@redhat.com> <538E2FF8.8060707@linux.vnet.ibm.com>
+ <1401833365.3247.36.camel@pasglop>
+In-Reply-To: <1401833365.3247.36.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org, mahesh@linux.vnet.ibm.com,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
+ ebiederm@xmission.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,691 +45,324 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2014 10:18 AM, Shengzhou Liu wrote:
-> The T2080 QorIQ multicore processor combines four dual-threaded e6500 Power
-> Architecture processor cores with high-performance datapath acceleration
-> logic and network and peripheral bus interfaces required for networking,
-> telecom/datacom, wireless infrastructure, and mil/aerospace applications.
->
-> The T2080 SoC includes the following function and features:
-> - Four dual-threaded 64-bit Power architecture e6500 cores, up to 1.8GHz
-> - 2MB L2 cache and 512KB CoreNet platform cache (CPC)
-> - Hierarchical interconnect fabric
-> - One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
-> - Data Path Acceleration Architecture (DPAA) incorporating acceleration
-> - 16 SerDes lanes up to 10.3125 GHz
-> - 8 Ethernet interfaces (multiple 1G/2.5G/10G MACs)
-> - High-speed peripheral interfaces
->    - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0)
->    - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
-> - Additional peripheral interfaces
->    - Two serial ATA (SATA 2.0) controllers
->    - Two high-speed USB 2.0 controllers with integrated PHY
->    - Enhanced secure digital host controller (SD/SDXC/eMMC)
->    - Enhanced serial peripheral interface (eSPI)
->    - Four I2C controllers
->    - Four 2-pin UARTs or two 4-pin UARTs
->    - Integrated Flash Controller supporting NAND and NOR flash
-> - Three eight-channel DMA engines
-> - Support for hardware virtualization and partitioning enforcement
-> - QorIQ Platform's Trust Architecture 2.0
->
-> T2081 is a reduced personality of T2080 with following difference:
-> Feature               T2080 T2081
-> 1G Ethernet numbers:  8     6
-> 10G Ethernet numbers: 4     2
-> SerDes lanes:         16    8
-> Serial RapidIO,RMan:  2     no
-> SATA Controller:      2     no
-> Aurora:               yes   no
-> SoC Package:          896-pins 780-pins
->
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
-> v3: added pamu node and updated clockgen.
-> v2: updated with some comments.
->
->   arch/powerpc/boot/dts/fsl/t2080si-post.dtsi |  69 +++++
->   arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 434 ++++++++++++++++++++++++++++
->   arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi  |  91 ++++++
->   arch/powerpc/include/asm/mpc85xx.h          |   2 +
->   4 files changed, 596 insertions(+)
->   create mode 100644 arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
->   create mode 100644 arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
->   create mode 100644 arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
->
-> diff --git a/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
-> new file mode 100644
-> index 0000000..082ec20
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
-> @@ -0,0 +1,69 @@
-> +/*
-> + * T2080 Silicon/SoC Device Tree Source (post include)
-> + *
-> + * Copyright 2013 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *       notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *       notice, this list of conditions and the following disclaimer in the
-> + *       documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *       names of its contributors may be used to endorse or promote products
-> + *       derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +/include/ "t2081si-post.dtsi"
-> +
-> +&soc {
-> +/include/ "qoriq-sata2-0.dtsi"
-> +	sata@220000 {
-> +		fsl,iommu-parent = <&pamu1>;
-> +		fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
-> +	};
-> +
-> +/include/ "qoriq-sata2-1.dtsi"
-> +	sata@221000 {
-> +		fsl,iommu-parent = <&pamu1>;
-> +		fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
-> +	};
-> +};
-> +
-> +&rio {
-> +	compatible = "fsl,srio";
-> +	interrupts = <16 2 1 11>;
-> +	#address-cells = <2>;
-> +	#size-cells = <2>;
-> +	ranges;
-> +
-> +	port1 {
-> +		#address-cells = <2>;
-> +		#size-cells = <2>;
-> +		cell-index = <1>;
-> +	};
-> +
-> +	port2 {
-> +		#address-cells = <2>;
-> +		#size-cells = <2>;
-> +		cell-index = <2>;
-> +	};
-> +};
-> diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-> new file mode 100644
-> index 0000000..c4fb88a
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-> @@ -0,0 +1,434 @@
-> +/*
-> + * T2081 Silicon/SoC Device Tree Source (post include)
-> + *
-> + * Copyright 2013 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *	 notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *	 notice, this list of conditions and the following disclaimer in the
-> + *	 documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *	 names of its contributors may be used to endorse or promote products
-> + *	 derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +&ifc {
-> +	#address-cells = <2>;
-> +	#size-cells = <1>;
-> +	compatible = "fsl,ifc", "simple-bus";
-> +	interrupts = <25 2 0 0>;
-> +};
-> +
-> +/* controller at 0x240000 */
-> +&pci0 {
-> +	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
-> +	device_type = "pci";
-> +	#size-cells = <2>;
-> +	#address-cells = <3>;
-> +	bus-range = <0x0 0xff>;
-> +	interrupts = <20 2 0 0>;
-> +	fsl,iommu-parent = <&pamu0>;
-> +	pcie@0 {
-> +		reg = <0 0 0 0 0>;
-> +		#interrupt-cells = <1>;
-> +		#size-cells = <2>;
-> +		#address-cells = <3>;
-> +		device_type = "pci";
-> +		interrupts = <20 2 0 0>;
-> +		interrupt-map-mask = <0xf800 0 0 7>;
-> +		interrupt-map = <
-> +			/* IDSEL 0x0 */
-> +			0000 0 0 1 &mpic 40 1 0 0
-> +			0000 0 0 2 &mpic 1 1 0 0
-> +			0000 0 0 3 &mpic 2 1 0 0
-> +			0000 0 0 4 &mpic 3 1 0 0
-> +		>;
-> +	};
-> +};
-> +
-> +/* controller at 0x250000 */
-> +&pci1 {
-> +	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
-> +	device_type = "pci";
-> +	#size-cells = <2>;
-> +	#address-cells = <3>;
-> +	bus-range = <0 0xff>;
-> +	interrupts = <21 2 0 0>;
-> +	fsl,iommu-parent = <&pamu0>;
-> +	pcie@0 {
-> +		reg = <0 0 0 0 0>;
-> +		#interrupt-cells = <1>;
-> +		#size-cells = <2>;
-> +		#address-cells = <3>;
-> +		device_type = "pci";
-> +		interrupts = <21 2 0 0>;
-> +		interrupt-map-mask = <0xf800 0 0 7>;
-> +		interrupt-map = <
-> +			/* IDSEL 0x0 */
-> +			0000 0 0 1 &mpic 41 1 0 0
-> +			0000 0 0 2 &mpic 5 1 0 0
-> +			0000 0 0 3 &mpic 6 1 0 0
-> +			0000 0 0 4 &mpic 7 1 0 0
-> +		>;
-> +	};
-> +};
-> +
-> +/* controller at 0x260000 */
-> +&pci2 {
-> +	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
-> +	device_type = "pci";
-> +	#size-cells = <2>;
-> +	#address-cells = <3>;
-> +	bus-range = <0x0 0xff>;
-> +	interrupts = <22 2 0 0>;
-> +	fsl,iommu-parent = <&pamu0>;
-> +	pcie@0 {
-> +		reg = <0 0 0 0 0>;
-> +		#interrupt-cells = <1>;
-> +		#size-cells = <2>;
-> +		#address-cells = <3>;
-> +		device_type = "pci";
-> +		interrupts = <22 2 0 0>;
-> +		interrupt-map-mask = <0xf800 0 0 7>;
-> +		interrupt-map = <
-> +			/* IDSEL 0x0 */
-> +			0000 0 0 1 &mpic 42 1 0 0
-> +			0000 0 0 2 &mpic 9 1 0 0
-> +			0000 0 0 3 &mpic 10 1 0 0
-> +			0000 0 0 4 &mpic 11 1 0 0
-> +		>;
-> +	};
-> +};
-> +
-> +/* controller at 0x270000 */
-> +&pci3 {
-> +	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
-> +	device_type = "pci";
-> +	#size-cells = <2>;
-> +	#address-cells = <3>;
-> +	bus-range = <0x0 0xff>;
-> +	interrupts = <23 2 0 0>;
-> +	fsl,iommu-parent = <&pamu0>;
-> +	pcie@0 {
-> +		reg = <0 0 0 0 0>;
-> +		#interrupt-cells = <1>;
-> +		#size-cells = <2>;
-> +		#address-cells = <3>;
-> +		device_type = "pci";
-> +		interrupts = <23 2 0 0>;
-> +		interrupt-map-mask = <0xf800 0 0 7>;
-> +		interrupt-map = <
-> +			/* IDSEL 0x0 */
-> +			0000 0 0 1 &mpic 43 1 0 0
-> +			0000 0 0 2 &mpic 0 1 0 0
-> +			0000 0 0 3 &mpic 4 1 0 0
-> +			0000 0 0 4 &mpic 8 1 0 0
-> +		>;
-> +	};
-> +};
-> +
-> +&dcsr {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	compatible = "fsl,dcsr", "simple-bus";
-> +
-> +	dcsr-epu@0 {
-> +		compatible = "fsl,t2080-dcsr-epu", "fsl,dcsr-epu";
-> +		interrupts = <52 2 0 0
-> +			      84 2 0 0
-> +			      85 2 0 0
-> +			      94 2 0 0
-> +			      95 2 0 0>;
-> +		reg = <0x0 0x1000>;
-> +	};
-> +	dcsr-npc {
-> +		compatible = "fsl,t2080-dcsr-cnpc", "fsl,dcsr-cnpc";
-> +		reg = <0x1000 0x1000 0x1002000 0x10000>;
-> +	};
-> +	dcsr-nxc@2000 {
-> +		compatible = "fsl,dcsr-nxc";
-> +		reg = <0x2000 0x1000>;
-> +	};
-> +	dcsr-corenet {
-> +		compatible = "fsl,dcsr-corenet";
-> +		reg = <0x8000 0x1000 0x1A000 0x1000>;
-> +	};
-> +	dcsr-ocn@11000 {
-> +		compatible = "fsl,t2080-dcsr-ocn", "fsl,dcsr-ocn";
-> +		reg = <0x11000 0x1000>;
-> +	};
-> +	dcsr-ddr@12000 {
-> +		compatible = "fsl,dcsr-ddr";
-> +		dev-handle = <&ddr1>;
-> +		reg = <0x12000 0x1000>;
-> +	};
-> +	dcsr-nal@18000 {
-> +		compatible = "fsl,t2080-dcsr-nal", "fsl,dcsr-nal";
-> +		reg = <0x18000 0x1000>;
-> +	};
-> +	dcsr-rcpm@22000 {
-> +		compatible = "fsl,t2080-dcsr-rcpm", "fsl,dcsr-rcpm";
-> +		reg = <0x22000 0x1000>;
-> +	};
-> +	dcsr-snpc@30000 {
-> +		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
-> +		reg = <0x30000 0x1000 0x1022000 0x10000>;
-> +	};
-> +	dcsr-snpc@31000 {
-> +		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
-> +		reg = <0x31000 0x1000 0x1042000 0x10000>;
-> +	};
-> +	dcsr-snpc@32000 {
-> +		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
-> +		reg = <0x32000 0x1000 0x1062000 0x10000>;
-> +	};
-> +	dcsr-cpu-sb-proxy@100000 {
-> +		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-> +		cpu-handle = <&cpu0>;
-> +		reg = <0x100000 0x1000 0x101000 0x1000>;
-> +	};
-> +	dcsr-cpu-sb-proxy@108000 {
-> +		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-> +		cpu-handle = <&cpu1>;
-> +		reg = <0x108000 0x1000 0x109000 0x1000>;
-> +	};
-> +	dcsr-cpu-sb-proxy@110000 {
-> +		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-> +		cpu-handle = <&cpu2>;
-> +		reg = <0x110000 0x1000 0x111000 0x1000>;
-> +	};
-> +	dcsr-cpu-sb-proxy@118000 {
-> +		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
-> +		cpu-handle = <&cpu3>;
-> +		reg = <0x118000 0x1000 0x119000 0x1000>;
-> +	};
-> +};
-> +
-> +&soc {
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	device_type = "soc";
-> +	compatible = "simple-bus";
-> +
-> +	soc-sram-error {
-> +		compatible = "fsl,soc-sram-error";
-> +		interrupts = <16 2 1 29>;
-> +	};
-> +
-> +	corenet-law@0 {
-> +		compatible = "fsl,corenet-law";
-> +		reg = <0x0 0x1000>;
-> +		fsl,num-laws = <32>;
-> +	};
-> +
-> +	ddr1: memory-controller@8000 {
-> +		compatible = "fsl,qoriq-memory-controller-v4.7",
-> +				"fsl,qoriq-memory-controller";
-> +		reg = <0x8000 0x1000>;
-> +		interrupts = <16 2 1 23>;
-> +	};
-> +
-> +	cpc: l3-cache-controller@10000 {
-> +		compatible = "fsl,t2080-l3-cache-controller", "cache";
-> +		reg = <0x10000 0x1000
-> +		       0x11000 0x1000
-> +		       0x12000 0x1000>;
-> +		interrupts = <16 2 1 27
-> +			      16 2 1 26
-> +			      16 2 1 25>;
-> +	};
-> +
-> +	corenet-cf@18000 {
-> +		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
-> +		reg = <0x18000 0x1000>;
-> +		interrupts = <16 2 1 31>;
-> +		fsl,ccf-num-csdids = <32>;
-> +		fsl,ccf-num-snoopids = <32>;
-> +	};
-> +
-> +	iommu@20000 {
-> +		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-> +		reg = <0x20000 0x3000>;
-> +		ranges = <0 0x20000 0x3000>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +		interrupts = <
-> +			24 2 0 0
-> +			16 2 1 30>;
-> +
-> +		pamu0: pamu@0 {
-> +			reg = <0 0x1000>;
-> +			fsl,primary-cache-geometry = <32 1>;
-> +			fsl,secondary-cache-geometry = <128 2>;
-> +		};
-> +
-> +		pamu1: pamu@1000 {
-> +			reg = <0x1000 0x1000>;
-> +			fsl,primary-cache-geometry = <32 1>;
-> +			fsl,secondary-cache-geometry = <128 2>;
-> +		};
-> +
-> +		pamu2: pamu@2000 {
-> +			reg = <0x2000 0x1000>;
-> +			fsl,primary-cache-geometry = <32 1>;
-> +			fsl,secondary-cache-geometry = <128 2>;
-> +		};
-> +	};
+On 06/04/2014 03:39 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-06-04 at 01:58 +0530, Srivatsa S. Bhat wrote:
+>> Yep, that makes sense. But unfortunately I don't have enough insight into
+>> why exactly powerpc has to online the CPUs before doing a kexec. I just
+>> know from the commit log and the comment mentioned above (and from my own
+>> experiments) that the CPUs will get stuck if they were offline. Perhaps
+>> somebody more knowledgeable can explain this in detail and suggest a proper
+>> long-term solution.
+>>
+>> Matt, Ben, any thoughts on this?
+> 
+> The problem is with our "soft offline" which we do on some platforms. When we
+> offline we don't actually send the CPUs back to firmware or anything like that.
+> 
+> We put them into a very low low power loop inside Linux.
+> 
+> The new kernel has no way to extract them from that loop. So we must re-"online"
+> them before we kexec so they can be passed to the new kernel normally (or returned
+> to firmware like we do on powernv).
+> 
 
-Add also the fsl,portid-mapping to the pamu node. See 
-http://patchwork.ozlabs.org/patch/345991/.
+Thanks a lot for the explanation Ben!
 
-> +
-> +/include/ "qoriq-mpic4.3.dtsi"
-> +
-> +	guts: global-utilities@e0000 {
-> +		compatible = "fsl,t2080-device-config", "fsl,qoriq-device-config-2.0";
-> +		reg = <0xe0000 0xe00>;
-> +		fsl,has-rstcr;
-> +		fsl,liodn-bits = <12>;
-> +	};
-> +
-> +	clockgen: global-utilities@e1000 {
-> +		compatible = "fsl,t2080-clockgen", "fsl,qoriq-clockgen-2.0";
-> +		ranges = <0x0 0xe1000 0x1000>;
-> +		reg = <0xe1000 0x1000>;
-> +		#address-cells = <1>;
-> +		#size-cells = <1>;
-> +
-> +		sysclk: sysclk {
-> +			#clock-cells = <0>;
-> +			compatible = "fsl,qoriq-sysclk-2.0";
-> +			clock-output-names = "sysclk", "fixed-clock";
-> +		};
-> +
-> +		pll0: pll0@800 {
-> +			#clock-cells = <1>;
-> +			reg = <0x800 4>;
-> +			compatible = "fsl,qoriq-core-pll-2.0";
-> +			clocks = <&sysclk>;
-> +			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
-> +		};
-> +
-> +		pll1: pll1@820 {
-> +			#clock-cells = <1>;
-> +			reg = <0x820 4>;
-> +			compatible = "fsl,qoriq-core-pll-2.0";
-> +			clocks = <&sysclk>;
-> +			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
-> +		};
-> +
-> +		mux0: mux0@0 {
-> +			#clock-cells = <0>;
-> +			reg = <0x0 4>;
-> +			compatible = "fsl,qoriq-core-mux-2.0";
-> +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-> +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-> +			clock-names = "pll0", "pll0-div2", "pll1-div4",
-> +				"pll1", "pll1-div2", "pll1-div4";
-> +			clock-output-names = "cmux0";
-> +		};
-> +
-> +		mux1: mux1@20 {
-> +			#clock-cells = <0>;
-> +			reg = <0x20 4>;
-> +			compatible = "fsl,qoriq-core-mux-2.0";
-> +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-> +				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
-> +			clock-names = "pll0", "pll0-div2", "pll1-div4",
-> +				"pll1", "pll1-div2", "pll1-div4";
-> +			clock-output-names = "cmux1";
-> +		};
-> +	};
-> +
-> +	rcpm: global-utilities@e2000 {
-> +		compatible = "fsl,t2080-rcpm", "fsl,qoriq-rcpm-2.0";
-> +		reg = <0xe2000 0x1000>;
-> +	};
-> +
-> +	sfp: sfp@e8000 {
-> +		compatible = "fsl,t2080-sfp";
-> +		reg = <0xe8000 0x1000>;
-> +	};
-> +
-> +	serdes: serdes@ea000 {
-> +		compatible = "fsl,t2080-serdes";
-> +		reg = <0xea000 0x4000>;
-> +	};
-> +
-> +/include/ "elo3-dma-0.dtsi"
-> +	dma@100300 {
-> +		fsl,iommu-parent = <&pamu0>;
-> +		fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
-> +	};
-> +/include/ "elo3-dma-1.dtsi"
-> +	dma@101300 {
-> +		fsl,iommu-parent = <&pamu0>;
-> +		fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
-> +	};
-> +/include/ "elo3-dma-2.dtsi"
-> +	dma@102300 {
-> +		fsl,iommu-parent = <&pamu0>;
-> +		fsl,liodn-reg = <&guts 0x588>; /* DMA3LIODNR */
-> +	};
-> +
-> +/include/ "qoriq-espi-0.dtsi"
-> +	spi@110000 {
-> +		fsl,espi-num-chipselects = <4>;
-> +	};
-> +
-> +/include/ "qoriq-esdhc-0.dtsi"
-> +	sdhc@114000 {
-> +		compatible = "fsl,t2080-esdhc", "fsl,esdhc";
-> +		fsl,iommu-parent = <&pamu1>;
-> +		fsl,liodn-reg = <&guts 0x530>; /* SDMMCLIODNR */
-> +		sdhci,auto-cmd12;
-> +	};
-> +/include/ "qoriq-i2c-0.dtsi"
-> +/include/ "qoriq-i2c-1.dtsi"
-> +/include/ "qoriq-duart-0.dtsi"
-> +/include/ "qoriq-duart-1.dtsi"
-> +/include/ "qoriq-gpio-0.dtsi"
-> +/include/ "qoriq-gpio-1.dtsi"
-> +/include/ "qoriq-gpio-2.dtsi"
-> +/include/ "qoriq-gpio-3.dtsi"
-> +/include/ "qoriq-usb2-mph-0.dtsi"
-> +	usb0: usb@210000 {
-> +		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
-> +		fsl,iommu-parent = <&pamu1>;
-> +		fsl,liodn-reg = <&guts 0x520>; /* USB1LIODNR */
-> +		phy_type = "utmi";
-> +		port0;
-> +	};
-> +/include/ "qoriq-usb2-dr-0.dtsi"
-> +	usb1: usb@211000 {
-> +		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
-> +		fsl,iommu-parent = <&pamu1>;
-> +		fsl,liodn-reg = <&guts 0x524>; /* USB1LIODNR */
-> +		dr_mode = "host";
-> +		phy_type = "utmi";
-> +	};
-> +/include/ "qoriq-sec5.2-0.dtsi"
-> +
-> +	L2_1: l2-cache-controller@c20000 {
-> +		/* Cluster 0 L2 cache */
-> +		compatible = "fsl,t2080-l2-cache-controller";
-> +		reg = <0xc20000 0x40000>;
-> +		next-level-cache = <&cpc>;
-> +	};
-> +};
-> diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-> new file mode 100644
-> index 0000000..d21b100
-> --- /dev/null
-> +++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
-> @@ -0,0 +1,91 @@
-> +/*
-> + * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
-> + *
-> + * Copyright 2013 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions are met:
-> + *     * Redistributions of source code must retain the above copyright
-> + *	 notice, this list of conditions and the following disclaimer.
-> + *     * Redistributions in binary form must reproduce the above copyright
-> + *	 notice, this list of conditions and the following disclaimer in the
-> + *	 documentation and/or other materials provided with the distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *	 names of its contributors may be used to endorse or promote products
-> + *	 derived from this software without specific prior written permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of the
-> + * GNU General Public License ("GPL") as published by the Free Software
-> + * Foundation, either version 2 of that License or (at your option) any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +/dts-v1/;
-> +
-> +/include/ "e6500_power_isa.dtsi"
-> +
-> +/ {
-> +	#address-cells = <2>;
-> +	#size-cells = <2>;
-> +	interrupt-parent = <&mpic>;
-> +
-> +	aliases {
-> +		ccsr = &soc;
-> +		dcsr = &dcsr;
-> +
-> +		serial0 = &serial0;
-> +		serial1 = &serial1;
-> +		serial2 = &serial2;
-> +		serial3 = &serial3;
-> +
-> +		crypto = &crypto;
-> +		pci0 = &pci0;
-> +		pci1 = &pci1;
-> +		pci2 = &pci2;
-> +		pci3 = &pci3;
-> +		usb0 = &usb0;
-> +		usb1 = &usb1;
-> +		dma0 = &dma0;
-> +		dma1 = &dma1;
-> +		dma2 = &dma2;
-> +		sdhc = &sdhc;
-> +	};
-> +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		cpu0: PowerPC,e6500@0 {
-> +			device_type = "cpu";
-> +			reg = <0 1>;
-> +			next-level-cache = <&L2_1>;
-> +		};
-> +		cpu1: PowerPC,e6500@2 {
-> +			device_type = "cpu";
-> +			reg = <2 3>;
-> +			next-level-cache = <&L2_1>;
-> +		};
-> +		cpu2: PowerPC,e6500@4 {
-> +			device_type = "cpu";
-> +			reg = <4 5>;
-> +			next-level-cache = <&L2_1>;
-> +		};
-> +		cpu3: PowerPC,e6500@6 {
-> +			device_type = "cpu";
-> +			reg = <6 7>;
-> +			next-level-cache = <&L2_1>;
-> +		};
+I thought about this and this is what I think: whether the CPU is in the kernel
+or in the firmware is a hard-boundary. But once we know it is still in the
+kernel, whether it is online or offline is a soft-boundary, something that
+ideally shouldn't make any difference to kexec.
 
-Add also the fsl,portid-mapping to the cpu nodes. See 
-http://patchwork.ozlabs.org/patch/345991/.
+Then I looked at what is that special state that kexec expects the online CPUs
+to be in, before performing kexec, and I found that that state is entered via
+kexec_smp_down().
 
-> +	};
-> +};
-> diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-> index 736d4ac..3bef74a 100644
-> --- a/arch/powerpc/include/asm/mpc85xx.h
-> +++ b/arch/powerpc/include/asm/mpc85xx.h
-> @@ -77,6 +77,8 @@
->   #define SVR_T1020	0x852100
->   #define SVR_T1021	0x852101
->   #define SVR_T1022	0x852102
-> +#define SVR_T2080	0x853000
-> +#define SVR_T2081	0x853100
->   
->   #define SVR_8610	0x80A000
->   #define SVR_8641	0x809000
+Which means, if we poke the soft-offline CPUs and make them execute
+kexec_smp_down(), we should be able to do a successful kexec without having to
+actually online them. After all, the core kexec code doesn't mandate that they
+should be online. So if we satisfy powerpc's requirement that all the CPUs are
+in a sane state, that should be good enough. (This would be similar to how the
+subcore code wakes up offline CPUs to perform the split-core procedure).
 
-Diana
+I know, this is all theory for now since I haven't tested it yet, but I think
+we can make this work.
+
+Below are the 4 preliminary patches I'm have so far, to implement this.
+
+
+===============================================================================
+				Patch 1
+===============================================================================
+
+diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
+index 16d7e33..2a31b52 100644
+--- a/arch/powerpc/include/asm/kexec.h
++++ b/arch/powerpc/include/asm/kexec.h
+@@ -68,6 +68,7 @@ static inline void crash_setup_regs(struct pt_regs *newregs,
+ 		ppc_save_regs(newregs);
+ }
+ 
++extern bool kexec_cpu_wake(void);
+ extern void kexec_smp_wait(void);	/* get and clear naca physid, wait for
+ 					  master to copy new code to 0 */
+ extern int crashing_cpu;
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index f92b0b5..39f721d 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -255,6 +255,16 @@ struct machdep_calls {
+ 	void (*machine_shutdown)(void);
+ 
+ #ifdef CONFIG_KEXEC
++#if (defined CONFIG_PPC64) && (defined CONFIG_PPC_BOOK3S)
++
++	/*
++	 * The pseries and powernv book3s platforms have a special requirement
++	 * that soft-offline CPUs have to be woken up before kexec, to avoid
++	 * CPUs getting stuck. This callback prepares the system for the
++	 * impending wakeup of the offline CPUs.
++	 */
++	void (*kexec_wake_prepare)(void);
++#endif
+ 	void (*kexec_cpu_down)(int crash_shutdown, int secondary);
+ 
+ 	/* Called to do what every setup is needed on image and the
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 879b3aa..2ef6c58 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -182,6 +182,14 @@ static void kexec_smp_down(void *arg)
+ 	/* NOTREACHED */
+ }
+ 
++bool kexec_cpu_wake(void)
++{
++	kexec_smp_down(NULL);
++
++	/* NOTREACHED */
++	return true;
++}
++
+ static void kexec_prepare_cpus_wait(int wait_state)
+ {
+ 	int my_cpu, i, notified=-1;
+@@ -202,7 +210,7 @@ static void kexec_prepare_cpus_wait(int wait_state)
+ 	 * these possible-but-not-online-but-should-be CPUs and chaperone them
+ 	 * into kexec_smp_wait().
+ 	 */
+-	for_each_online_cpu(i) {
++	for_each_present_cpu(i) {
+ 		if (i == my_cpu)
+ 			continue;
+ 
+@@ -228,6 +236,8 @@ static void kexec_prepare_cpus_wait(int wait_state)
+  * threads as offline -- and again, these CPUs will be stuck.
+  *
+  * So, we online all CPUs that should be running, including secondary threads.
++ *
++ * TODO: Update this comment
+  */
+ static void wake_offline_cpus(void)
+ {
+@@ -237,7 +247,8 @@ static void wake_offline_cpus(void)
+ 		if (!cpu_online(cpu)) {
+ 			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
+ 			       cpu);
+-			WARN_ON(cpu_up(cpu));
++			/* This should work even though the cpu is offline */
++			smp_send_reschedule(cpu);
+ 		}
+ 	}
+ }
+
+
+
+===============================================================================
+				Patch 2
+===============================================================================
+
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 75501bf..910081c 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -27,4 +27,8 @@ extern void pnv_lpc_init(void);
+ 
+ bool cpu_core_split_required(void);
+ 
++#ifdef CONFIG_KEXEC
++extern void pnv_kexec_wake_prepare(void);
++#endif
++
+ #endif /* _POWERNV_H */
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 8c16a5f..8dbccb7 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -331,6 +331,7 @@ define_machine(powernv) {
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.dma_set_mask		= pnv_dma_set_mask,
+ #ifdef CONFIG_KEXEC
++	.kexec_wake_prepare	= pnv_kexec_wake_prepare,
+ 	.kexec_cpu_down		= pnv_kexec_cpu_down,
+ #endif
+ #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 0062a43..0b017b0 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -32,6 +32,7 @@
+ #include <asm/opal.h>
+ #include <asm/runlatch.h>
+ #include <asm/code-patching.h>
++#include <asm/kexec.h>
+ 
+ #include "powernv.h"
+ 
+@@ -140,6 +141,15 @@ static int pnv_smp_cpu_disable(void)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_KEXEC
++static bool kexec_wake_offline_cpus;
++
++void pnv_kexec_wake_prepare(void)
++{
++	kexec_wake_offline_cpus = true;
++}
++#endif
++
+ static void pnv_smp_cpu_kill_self(void)
+ {
+ 	unsigned int cpu;
+@@ -170,6 +180,11 @@ static void pnv_smp_cpu_kill_self(void)
+ 		if (cpu_core_split_required())
+ 			continue;
+ 
++#ifdef CONFIG_KEXEC
++		if (kexec_wake_offline_cpus)
++			kexec_cpu_wake(); /* This function won't return! */
++#endif
++
+ 		if (!generic_check_cpu_restart(cpu))
+ 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
+ 	}
+
+
+
+
+===============================================================================
+				Patch 3
+===============================================================================
+
+diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+index 20d6297..d026028 100644
+--- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
++++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+@@ -31,6 +31,7 @@
+ #include <asm/vdso_datapage.h>
+ #include <asm/xics.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/kexec.h>
+ 
+ #include "offline_states.h"
+ 
+@@ -143,6 +144,13 @@ static void pseries_mach_cpu_die(void)
+ 			get_lppaca()->donate_dedicated_cpu = 0;
+ 		get_lppaca()->idle = 0;
+ 
++#if CONFIG_KEXEC
++		if (get_preferred_offline_state(cpu) == CPU_STATE_KEXEC_WAKE) {
++			/* This function won't return! */
++			kexec_cpu_wake();
++		}
++#endif
++
+ 		if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
+ 			unregister_slb_shadow(hwcpu);
+ 
+diff --git a/arch/powerpc/platforms/pseries/kexec.c b/arch/powerpc/platforms/pseries/kexec.c
+index 13fa95b3..fc135e6 100644
+--- a/arch/powerpc/platforms/pseries/kexec.c
++++ b/arch/powerpc/platforms/pseries/kexec.c
+@@ -20,6 +20,17 @@
+ #include <asm/plpar_wrappers.h>
+ 
+ #include "pseries.h"
++#include "offline_states.h"
++
++void pseries_kexec_wake_prepare(void)
++{
++	unsigned int cpu;
++
++	for_each_present_cpu(cpu) {
++		if (!cpu_online(cpu))
++			set_preferred_offline_state(cpu, CPU_STATE_KEXEC_WAKE);
++	}
++}
+ 
+ static void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
+ {
+diff --git a/arch/powerpc/platforms/pseries/offline_states.h b/arch/powerpc/platforms/pseries/offline_states.h
+index 08672d9..32fe5e8 100644
+--- a/arch/powerpc/platforms/pseries/offline_states.h
++++ b/arch/powerpc/platforms/pseries/offline_states.h
+@@ -5,6 +5,9 @@
+ enum cpu_state_vals {
+ 	CPU_STATE_OFFLINE,
+ 	CPU_STATE_INACTIVE,
++#ifdef CONFIG_KEXEC
++	CPU_STATE_KEXEC_WAKE,
++#endif
+ 	CPU_STATE_ONLINE,
+ 	CPU_MAX_OFFLINE_STATES
+ };
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 361add6..35ecb99 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -38,6 +38,8 @@ static inline void smp_init_pseries_xics(void) { };
+ #endif
+ 
+ #ifdef CONFIG_KEXEC
++extern void pseries_kexec_wake_prepare(void);
++
+ extern void setup_kexec_cpu_down_xics(void);
+ extern void setup_kexec_cpu_down_mpic(void);
+ #else
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index adc21a0..c1a0722 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -808,6 +808,7 @@ define_machine(pseries) {
+ 	.system_reset_exception = pSeries_system_reset_exception,
+ 	.machine_check_exception = pSeries_machine_check_exception,
+ #ifdef CONFIG_KEXEC
++	.kexec_wake_prepare	= pseries_kexec_wake_prepare,
+ 	.machine_kexec          = pSeries_machine_kexec,
+ #endif
+ #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+
+
+
+===============================================================================
+				Patch 4
+===============================================================================
+
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index 28c5706..55a6350 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -1684,13 +1684,6 @@ int kernel_kexec(void)
+ 		kernel_restart_prepare(NULL);
+ 		migrate_to_reboot_cpu();
+ 
+-		/*
+-		 * migrate_to_reboot_cpu() disables CPU hotplug assuming that
+-		 * no further code needs to use CPU hotplug (which is true in
+-		 * the reboot case). However, the kexec path depends on using
+-		 * CPU hotplug again; so re-enable it here.
+-		 */
+-		cpu_hotplug_enable();
+ 		printk(KERN_EMERG "Starting new kernel\n");
+ 		machine_shutdown();
+ 	}
