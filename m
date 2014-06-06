@@ -1,20 +1,34 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E93991A0239
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 18:02:18 +1000 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 3/3 v3] powerpc/t2080rdb: Add T2080RDB board support
-Date: Fri, 6 Jun 2014 15:18:25 +0800
-Message-ID: <1402039105-22590-3-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1402039105-22590-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1402039105-22590-1-git-send-email-Shengzhou.Liu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0961A1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 18:44:18 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 6 Jun 2014 18:44:15 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 24CA72BB0058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 18:44:14 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s568SE3v16449686
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 18:28:15 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s568iDhN015460
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 18:44:13 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 4/6] powerpc/powernv: Add @it_owner to iommu_table struct
+Date: Fri,  6 Jun 2014 18:44:04 +1000
+Message-Id: <1402044246-13650-5-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1402044246-13650-1-git-send-email-aik@ozlabs.ru>
+References: <1402044246-13650-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,358 +38,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T2080PCIe-RDB is a Freescale Reference Design Board that hosts T2080 SoC.
-The board feature overview:
-Processor:
- - T2080 SoC integrating four 64-bit dual-threads e6500 cores up to 1.8GHz
-DDR Memory:
- - Single memory controller capable of supporting DDR3 and DDR3-LP devices
- - 72bit 4GB DDR3-LP SODIMM in slot
-Ethernet interfaces:
- - Two 1Gbps RGMII ports on-board
- - Two 10Gbps SFP+ ports on-board
- - Two 10Gbps Base-T ports on-board
-Accelerator:
- - DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
-SerDes 16 lanes configuration:
- - SerDes-1 Lane A-B: to two 10G SFP+ (MAC9 & MAC10)
- - SerDes-1 Lane C-D: to two 10G Base-T (MAC1 & MAC2)
- - SerDes-1 Lane E-H: to PCIe slot (PEX4 Gen3 x4)
- - SerDes-2 Lane A-D: to PCIe finger (PEX1 x4)
- - SerDes-2 Lane E-F: to C293 secure co-processor (PEX2 x2)
- - SerDes-2 Lane G-H: to SATA1 & SATA2
-IFC/Local Bus
- - NOR:  128MB 16-bit NOR flash
- - NAND: 1GB 8-bit NAND flash
- - CPLD: for system controlling with programable header on-board
-eSPI:
- - 64MB N25Q512 SPI flash
-USB:
- - Two USB2.0 ports with internal PHY (both Type-A)
-PCIe:
- - One PCIe x4 goldfinger
- - One PCIe x4 slot
- - One PCIe x2 end-point device (C293 crypto co-processor)
-SATA:
- - Two SATA 2.0 ports on-board
-SDHC:
- - support a MicroSD/TF card on-board
-I2C:
- - Four I2C controllers.
-UART:
- - Dual 4-pins UART serial ports
+Modern IBM POWERPC systems support multiple IOMMU tables per PHB
+so we need a more reliable way (compared to container_of()) to get
+a PE pointer from the iommu_table struct pointer used in IOMMU functions.
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+This also provides better way of getting a PE handle from iommu_table
+pointer.
+
+This defines an empty iommu_owner struct. This adds it to pnv_ioda_pe
+struct and replaces container_of(tbl) with container_of(tbl->it_owner).
+
+This adds an @owner parameter to pnv_pci_setup_iommu_table().
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-v3: no change.
-v2: updated with some comments.
+ arch/powerpc/include/asm/iommu.h            |  6 ++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c   | 18 +++++++++++-------
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |  2 +-
+ arch/powerpc/platforms/powernv/pci.c        |  7 +++++--
+ arch/powerpc/platforms/powernv/pci.h        |  4 +++-
+ 5 files changed, 26 insertions(+), 11 deletions(-)
 
- arch/powerpc/boot/dts/t2080rdb.dts            |  57 ++++++++
- arch/powerpc/boot/dts/t208xrdb.dtsi           | 197 ++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/Kconfig           |   2 +-
- arch/powerpc/platforms/85xx/corenet_generic.c |   2 +
- 4 files changed, 257 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/boot/dts/t2080rdb.dts
- create mode 100644 arch/powerpc/boot/dts/t208xrdb.dtsi
-
-diff --git a/arch/powerpc/boot/dts/t2080rdb.dts b/arch/powerpc/boot/dts/t2080rdb.dts
-new file mode 100644
-index 0000000..e889104
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t2080rdb.dts
-@@ -0,0 +1,57 @@
-+/*
-+ * T2080PCIe-RDB Board Device Tree Source
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t208xsi-pre.dtsi"
-+/include/ "t208xrdb.dtsi"
-+
-+/ {
-+	model = "fsl,T2080RDB";
-+	compatible = "fsl,T2080RDB";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	rio: rapidio@ffe0c0000 {
-+		reg = <0xf 0xfe0c0000 0 0x11000>;
-+
-+		port1 {
-+			ranges = <0 0 0xc 0x20000000 0 0x10000000>;
-+		};
-+		port2 {
-+			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t2080si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t208xrdb.dtsi b/arch/powerpc/boot/dts/t208xrdb.dtsi
-new file mode 100644
-index 0000000..3b85985
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t208xrdb.dtsi
-@@ -0,0 +1,197 @@
-+/*
-+ * T2080PCIe-RDB Board Device Tree Source
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/ {
-+	model = "fsl,T2080RDB";
-+	compatible = "fsl,T2080RDB";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
-+
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x2 0x0 0x10000>;
-+		};
-+
-+		boardctrl: board-control@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,t2080-cpld";
-+			reg = <3 0 0x300>;
-+			ranges = <0 3 0 0x300>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "micron,n25q512a";
-+				reg = <0>;
-+				spi-max-frequency = <10000000>; /* input clock */
-+			};
-+		};
-+
-+		i2c@118000 {
-+			adt7481@4c {
-+				compatible = "adi,adt7481";
-+				reg = <0x4c>;
-+			};
-+
-+			rtc@68 {
-+				compatible = "dallas,ds1339";
-+				reg = <0x68>;
-+				interrupts = <0x1 0x1 0 0>;
-+			};
-+
-+			eeprom@50 {
-+				compatible = "at24,24c256";
-+				reg = <0x50>;
-+			};
-+		};
-+
-+		i2c@118100 {
-+			pca9546@77 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0x0>;
-+
-+					sfp@50 {
-+						compatible = "optics,sfp";
-+						reg = <0x50>;
-+					};
-+				};
-+			};
-+		};
-+
-+		sdhc@114000 {
-+			voltage-ranges = <1800 1800 3300 3300>;
-+		};
-+	};
-+
-+	pci0: pcie@ffe240000 {
-+		reg = <0xf 0xfe240000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x20000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		reg = <0xf 0xfe250000 0 0x10000>;
-+		ranges = <0x02000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x10000000
-+			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		reg = <0xf 0xfe260000 0 0x1000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci3: pcie@ffe270000 {
-+		reg = <0xf 0xfe270000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x40000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x20000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index e3578b7..a8a0f2f 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -259,7 +259,7 @@ config CORENET_GENERIC
- 	  For 32bit kernel, the following boards are supported:
- 	    P2041 RDB, P3041 DS and P4080 DS
- 	  For 64bit kernel, the following boards are supported:
--	    T208x QDS, T4240 QDS and B4 QDS
-+	    T208x QDS/RDB, T4240 QDS and B4 QDS
- 	  The following boards are supported for both 32bit and 64bit kernel:
- 	    P5020 DS and P5040 DS
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 42632c7..f503a5c 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -60,6 +60,11 @@ struct iommu_pool {
+ 	spinlock_t lock;
+ } ____cacheline_aligned_in_smp;
  
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index d824454..a4fdb7e 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -103,6 +103,7 @@ static const char * const boards[] __initconst = {
- 	"fsl,P5020DS",
- 	"fsl,P5040DS",
- 	"fsl,T2080QDS",
-+	"fsl,T2080RDB",
- 	"fsl,T2081QDS",
- 	"fsl,T4240QDS",
- 	"fsl,B4860QDS",
-@@ -118,6 +119,7 @@ static const char * const hv_boards[] __initconst = {
- 	"fsl,P5020DS-hv",
- 	"fsl,P5040DS-hv",
- 	"fsl,T2080QDS-hv",
-+	"fsl,T2080RDB-hv",
- 	"fsl,T2081QDS-hv",
- 	"fsl,T4240QDS-hv",
- 	"fsl,B4860QDS-hv",
++/* This is to use with container_of() */
++struct iommu_owner {
++	unsigned char __unused[0];
++};
++
+ struct iommu_table {
+ 	unsigned long  it_busno;     /* Bus number this table belongs to */
+ 	unsigned long  it_size;      /* Size of iommu table in entries */
+@@ -78,6 +83,7 @@ struct iommu_table {
+ 	struct iommu_group *it_group;
+ #endif
+ 	void (*set_bypass)(struct iommu_table *tbl, bool enable);
++	struct iommu_owner *it_owner;
+ };
+ 
+ /* Pure 2^n version of get_order */
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 29294b1..1f307ef 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -586,8 +586,8 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 				 __be64 *startp, __be64 *endp, bool rm)
+ {
+-	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
++	struct pnv_ioda_pe *pe = container_of(tbl->it_owner, struct pnv_ioda_pe,
++					      owner);
+ 	struct pnv_phb *phb = pe->phb;
+ 
+ 	if (phb->type == PNV_PHB_IODA1)
+@@ -655,7 +655,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	/* Setup linux iommu table */
+ 	tbl = &pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+-				  base << 28, IOMMU_PAGE_SHIFT_4K);
++				  base << 28, IOMMU_PAGE_SHIFT_4K,
++				  &pe->owner);
+ 
+ 	/* OPAL variant of P7IOC SW invalidated TCEs */
+ 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+@@ -691,11 +692,14 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 
+ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+ {
+-	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
+-	uint16_t window_id = (pe->pe_number << 1 ) + 1;
++	struct pnv_ioda_pe *pe;
++	uint16_t window_id;
+ 	int64_t rc;
+ 
++	BUG_ON(!tbl->it_owner);
++	pe = container_of(tbl->it_owner, struct pnv_ioda_pe, owner);
++	window_id = (pe->pe_number << 1) + 1;
++
+ 	pe_info(pe, "%sabling 64-bit DMA bypass\n", enable ? "En" : "Dis");
+ 	if (enable) {
+ 		phys_addr_t top = memblock_end_of_DRAM();
+@@ -786,7 +790,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	/* Setup linux iommu table */
+ 	tbl = &pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+-			IOMMU_PAGE_SHIFT_4K);
++			IOMMU_PAGE_SHIFT_4K, &pe->owner);
+ 
+ 	/* OPAL variant of PHB3 invalidated TCEs */
+ 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index 94ce348..cf02c14 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -173,7 +173,7 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
+ 	phb->dma_dev_setup = pnv_pci_p5ioc2_dma_dev_setup;
+ 	pnv_pci_setup_iommu_table(&phb->p5ioc2.iommu_table,
+ 				  tce_mem, tce_size, 0,
+-				  IOMMU_PAGE_SHIFT_4K);
++				  IOMMU_PAGE_SHIFT_4K, NULL);
+ }
+ 
+ void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 92d6f5b..aa88c94 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -591,7 +591,8 @@ static void pnv_tce_free_rm(struct iommu_table *tbl, long index, long npages)
+ 
+ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 			       void *tce_mem, u64 tce_size,
+-			       u64 dma_offset, unsigned page_shift)
++			       u64 dma_offset, unsigned page_shift,
++			       struct iommu_owner *owner)
+ {
+ 	tbl->it_blocksize = 16;
+ 	tbl->it_base = (unsigned long)tce_mem;
+@@ -601,6 +602,7 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 	tbl->it_size = tce_size >> 3;
+ 	tbl->it_busno = 0;
+ 	tbl->it_type = TCE_PCI;
++	tbl->it_owner = owner;
+ }
+ 
+ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
+@@ -620,7 +622,8 @@ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
+ 	if (WARN_ON(!tbl))
+ 		return NULL;
+ 	pnv_pci_setup_iommu_table(tbl, __va(be64_to_cpup(basep)),
+-				  be32_to_cpup(sizep), 0, IOMMU_PAGE_SHIFT_4K);
++				  be32_to_cpup(sizep), 0, IOMMU_PAGE_SHIFT_4K,
++				  NULL);
+ 	iommu_init_table(tbl, hose->node);
+ 	iommu_register_group(tbl, pci_domain_nr(hose->bus), 0);
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index ca62444..d05eae3 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -49,6 +49,7 @@ struct pnv_ioda_pe {
+ 	unsigned int		dma_weight;
+ 
+ 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
++	struct iommu_owner	owner;
+ 	int			tce32_seg;
+ 	int			tce32_segcount;
+ 	struct iommu_table	tce32_table;
+@@ -199,7 +200,8 @@ int pnv_pci_cfg_write(struct device_node *dn,
+ 		      int where, int size, u32 val);
+ extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+ 				      void *tce_mem, u64 tce_size,
+-				      u64 dma_offset, unsigned page_shift);
++				      u64 dma_offset, unsigned page_shift,
++				      struct iommu_owner *owner);
+ extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda_hub(struct device_node *np);
+ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
 -- 
-1.8.0
+2.0.0
