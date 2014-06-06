@@ -1,41 +1,18 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <kenhelias@web.de>
+Received: from mout.web.de (mout.web.de [212.227.15.4])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 479571A0008
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 07:18:11 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sat, 7 Jun 2014 07:18:09 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id EE3713578048
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 07:18:04 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s56Ku8kP11010414
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 06:56:09 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s56LI3DH026394
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 07:18:03 +1000
-Message-ID: <53922FB8.6070408@linux.vnet.ibm.com>
-Date: Sat, 07 Jun 2014 02:46:40 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
- kexec from ST mode
-References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
- <20140528133143.GK14863@redhat.com> <538E2FF8.8060707@linux.vnet.ibm.com>
- <1401833365.3247.36.camel@pasglop> <5391B413.100@linux.vnet.ibm.com>
-In-Reply-To: <5391B413.100@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org, mahesh@linux.vnet.ibm.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
- ebiederm@xmission.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Vivek Goyal <vgoyal@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA39C1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 03:47:54 +1000 (EST)
+From: Ken Helias <kenhelias@web.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 05/13] powerpc: Use list_add_(before|after) macros
+Date: Fri,  6 Jun 2014 19:34:24 +0200
+Message-Id: <1402076072-4044-5-git-send-email-kenhelias@web.de>
+In-Reply-To: <1402076072-4044-1-git-send-email-kenhelias@web.de>
+References: <1402076072-4044-1-git-send-email-kenhelias@web.de>
+Cc: Ken Helias <kenhelias@firemail.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,77 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2014 05:59 PM, Srivatsa S. Bhat wrote:
-> On 06/04/2014 03:39 AM, Benjamin Herrenschmidt wrote:
->> On Wed, 2014-06-04 at 01:58 +0530, Srivatsa S. Bhat wrote:
->>> Yep, that makes sense. But unfortunately I don't have enough insight into
->>> why exactly powerpc has to online the CPUs before doing a kexec. I just
->>> know from the commit log and the comment mentioned above (and from my own
->>> experiments) that the CPUs will get stuck if they were offline. Perhaps
->>> somebody more knowledgeable can explain this in detail and suggest a proper
->>> long-term solution.
->>>
->>> Matt, Ben, any thoughts on this?
->>
->> The problem is with our "soft offline" which we do on some platforms. When we
->> offline we don't actually send the CPUs back to firmware or anything like that.
->>
->> We put them into a very low low power loop inside Linux.
->>
->> The new kernel has no way to extract them from that loop. So we must re-"online"
->> them before we kexec so they can be passed to the new kernel normally (or returned
->> to firmware like we do on powernv).
->>
-> 
-> Thanks a lot for the explanation Ben!
-> 
-> I thought about this and this is what I think: whether the CPU is in the kernel
-> or in the firmware is a hard-boundary. But once we know it is still in the
-> kernel, whether it is online or offline is a soft-boundary, something that
-> ideally shouldn't make any difference to kexec.
-> 
-> Then I looked at what is that special state that kexec expects the online CPUs
-> to be in, before performing kexec, and I found that that state is entered via
-> kexec_smp_down().
-> 
-> Which means, if we poke the soft-offline CPUs and make them execute
-> kexec_smp_down(), we should be able to do a successful kexec without having to
-> actually online them. After all, the core kexec code doesn't mandate that they
-> should be online. So if we satisfy powerpc's requirement that all the CPUs are
-> in a sane state, that should be good enough. (This would be similar to how the
-> subcore code wakes up offline CPUs to perform the split-core procedure).
-> 
-> I know, this is all theory for now since I haven't tested it yet, but I think
-> we can make this work.
-> 
-> Below are the 4 preliminary patches I'm have so far, to implement this.
-> 
+From: Ken Helias <kenhelias@firemail.de>
 
-And with the following hunk added (which I had forgotten earlier), it worked just
-fine on powernv :-)
+Many places in the code uses list_add_tail/list_add to insert an entry
+before/after another entry. This confuses the reader because these are usually
+used to add an item to a list_head and not an entry. Better use the self
+explaining function name.
 
+Signed-off-by: Ken Helias <kenhelias@firemail.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/lib/rheap.c          | 2 +-
+ arch/powerpc/mm/dma-noncoherent.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 2ef6c58..84e91293 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -243,6 +243,9 @@ static void wake_offline_cpus(void)
- {
- 	int cpu = 0;
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index a1060a8..d8c5f16 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -486,7 +486,7 @@ unsigned long rh_alloc_align(rh_info_t * info, int size, int alignment, const ch
+ 			spblk->start = blk->start;
+ 			spblk->size = sp_size;
+ 			/* add before the blk */
+-			list_add(&spblk->list, blk->list.prev);
++			list_add_before(&spblk->list, &blk->list);
+ 		}
+ 		newblk = get_slot(info);
+ 		newblk->start = start;
+diff --git a/arch/powerpc/mm/dma-noncoherent.c b/arch/powerpc/mm/dma-noncoherent.c
+index d85e86a..222ae97 100644
+--- a/arch/powerpc/mm/dma-noncoherent.c
++++ b/arch/powerpc/mm/dma-noncoherent.c
+@@ -120,7 +120,7 @@ ppc_vm_region_alloc(struct ppc_vm_region *head, size_t size, gfp_t gfp)
+ 	/*
+ 	 * Insert this entry _before_ the one we found.
+ 	 */
+-	list_add_tail(&new->vm_list, &c->vm_list);
++	list_add_before(&new->vm_list, &c->vm_list);
+ 	new->vm_start = addr;
+ 	new->vm_end = addr + size;
  
-+	if (ppc_md.kexec_wake_prepare)
-+		ppc_md.kexec_wake_prepare();
-+
- 	for_each_present_cpu(cpu) {
- 		if (!cpu_online(cpu)) {
- 			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
-
-I tried putting the machine into ST mode, and in a separate experiment, I kept
-just CPU 0 online in the first kernel, and then issued a kexec. The second kernel
-booted successfully with all the CPUs in both the cases.
-
-I haven't explored the crashed-kernel case though, it might need some auditing
-to check if the code handles that as well.
-
-Regards,
-Srivatsa S. Bhat
+-- 
+2.0.0
