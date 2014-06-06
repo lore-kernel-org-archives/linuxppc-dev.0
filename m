@@ -1,41 +1,25 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C4851A0008
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 05:01:37 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Sat, 7 Jun 2014 00:31:33 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 80C361258053
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 00:30:51 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s56J2GwG52101282
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 00:32:18 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s56J1ScB023892
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 00:31:29 +0530
-Message-ID: <53920FB8.4090308@linux.vnet.ibm.com>
-Date: Sat, 07 Jun 2014 00:30:08 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 750DF1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 06:47:52 +1000 (EST)
+Message-ID: <1402087652.6603.450.camel@snotra.buserror.net>
+Subject: Re: [linuxppc-release] [PATCH][v10] powerpc/mpc85xx:Add initial
+ device	tree support of T104x
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
+Date: Fri, 6 Jun 2014 15:47:32 -0500
+In-Reply-To: <c0213fde8dd24026af31ccce2fec21bf@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1398080069-3807-1-git-send-email-prabhakar@freescale.com>
+ <c0213fde8dd24026af31ccce2fec21bf@DM2PR03MB398.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
- kexec from ST mode
-References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
- <20140528133143.GK14863@redhat.com> <538E2FF8.8060707@linux.vnet.ibm.com>
- <1401833365.3247.36.camel@pasglop> <20140604134649.GB27557@redhat.com>
- <5391B473.2050809@linux.vnet.ibm.com> <20140606182720.GL1526@redhat.com>
-In-Reply-To: <20140606182720.GL1526@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org, mahesh@linux.vnet.ibm.com,
- kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
- ebiederm@xmission.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>, Jain
+ Priyanka-B32167 <Priyanka.Jain@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,82 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2014 11:57 PM, Vivek Goyal wrote:
-> On Fri, Jun 06, 2014 at 06:00:43PM +0530, Srivatsa S. Bhat wrote:
->> On 06/04/2014 07:16 PM, Vivek Goyal wrote:
->>> On Wed, Jun 04, 2014 at 08:09:25AM +1000, Benjamin Herrenschmidt wrote:
->>>> On Wed, 2014-06-04 at 01:58 +0530, Srivatsa S. Bhat wrote:
->>>>> Yep, that makes sense. But unfortunately I don't have enough insight into
->>>>> why exactly powerpc has to online the CPUs before doing a kexec. I just
->>>>> know from the commit log and the comment mentioned above (and from my own
->>>>> experiments) that the CPUs will get stuck if they were offline. Perhaps
->>>>> somebody more knowledgeable can explain this in detail and suggest a proper
->>>>> long-term solution.
->>>>>
->>>>> Matt, Ben, any thoughts on this?
->>>>
->>>> The problem is with our "soft offline" which we do on some platforms. When we
->>>> offline we don't actually send the CPUs back to firmware or anything like that.
->>>>
->>>> We put them into a very low low power loop inside Linux.
->>>>
->>>> The new kernel has no way to extract them from that loop. So we must re-"online"
->>>> them before we kexec so they can be passed to the new kernel normally (or returned
->>>> to firmware like we do on powernv).
->>>
->>> Srivatsa,
->>>
->>> Looks like your patch has been merged.
->>>
->>> I don't like the following change in arch independent code.
->>>
->>> /*
->>>  * migrate_to_reboot_cpu() disables CPU hotplug assuming  that
->>>  * no further code needs to use CPU hotplug (which is true in
->>>  * the reboot case). However, the kexec path depends on  using
->>>  * CPU hotplug again; so re-enable it here. 
->>>  */
->>>                cpu_hotplug_enable();
->>>
->>> As it is very powerpc specific requirement, can you enable hotplug in powerpc
->>> arch dependent code as a short term solution.
->>>
->>
->> I didn't do that because that would mean that the _disable() would be
->> performed inside kernel/kexec.c and the corresponding _enable() would
->> be performed in arch/powerpc/kernel/machine_kexec_64.c -- with no apparent
->> connection between them, which would have made them hard to relate.
+On Fri, 2014-06-06 at 00:04 -0500, Liu Shengzhou-B36685 wrote:
 > 
-> Which we are doing anyway. The difference is that now we are doing it
-> for all arches.
+> > -----Original Message-----
+> > From: linuxppc-release-bounces@linux.freescale.net [mailto:linuxppc-
+> > release-bounces@linux.freescale.net] On Behalf Of Prabhakar Kushwaha
+> > Sent: Monday, April 21, 2014 7:34 PM
+> > To: linuxppc-dev@lists.ozlabs.org
+> > Cc: Wood Scott-B07421; Jain Priyanka-B32167; Aggrwal Poonam-B10812;
+> > Kushwaha Prabhakar-B32579
+> > Subject: [linuxppc-release] [PATCH][v10] powerpc/mpc85xx:Add initial
+> > device tree support of T104x
+> > 
+> > The QorIQ T1040/T1042 processor support four integrated 64-bit e5500 PA
+> > processor cores with high-performance data path acceleration architecture
+> > and network peripheral interfaces required for networking &
+> > telecommunications.
+> > 
+> > +
+> > +	iommu@20000 {
+> > +		compatible = "fsl,pamu-v1.0", "fsl,pamu";
+> > +		reg = <0x20000 0x1000>;
+> > +		ranges = <0 0x20000 0x1000>;
+> > +		#address-cells = <1>;
+> > +		#size-cells = <1>;
+> > +		interrupts = <
+> > +			24 2 0 0
+> > +			16 2 1 30>;
+> > +		pamu0: pamu@0 {
+> > +			reg = <0 0x1000>;
+> > +			fsl,primary-cache-geometry = <128 1>;
+> > +			fsl,secondary-cache-geometry = <16 2>;
+> > +		};
 > 
-> If this is powerpc specific requirement, then we should limit this to
-> powerpc only and not let spill over in generic code.
 > 
-> And putting a big fat comment should take care of being able to figure
-> out why arch code is overwriting the generic code's decision. By putting
-> it in generic code and enforcing this on all arches does not buy us
-> anything, IMHO.
+> [Shengzhou]  T1040 RM says:
+> Hardware coherent PAMU Look-aside caches to improve performance
+> * A 32-entry, direct-mapped primary PAACT cache
+> * A 128-entry, 2-way, set-associative secondary PAACT cache
+> It appears it should be: 
+>        fsl,primary-cache-geometry = <32 1>;
+>        fsl,secondary-cache-geometry = <128 2>;
 > 
+> is there any reason that it was "<128 1>,  <16 2>" ?
 
-Yep, I see your point. Sorry about that!
+The B4 device trees are also suspicous.
 
-Actually, I originally thought of fixing cpu_hotplug_disable/enable itself:
-their true intent is to prevent *userspace* (i.e., from sysfs) from performing
-CPU hotplug after a certain quiescent point in the kernel, and not to prevent
-the kernel's own cpu hotplug attempts. But currently it prevents _all_ hotplug,
-including those that are initiated from within the kernel, which is the reason
-why kexec was effectively locking itself out on powerpc. I explored options to
-fix that (which would in turn fix the powerpc problem automatically, without
-having to add any code to kernel/kexec.c or even arch/powerpc code). But it
-turned out to be too difficult and ugly given the current CPU hotplug locking
-scheme. I'll revisit that once CPU hotplug locking is cleaned up.
-
-But anyway, the powerpc kexec fix that I'm working on right now is not only a
-much better solution, but it will also restore the original kexec code in
-kernel/kexec.c, by removing the _enable() call.
-
-Thank you!
-
-Regards,
-Srivatsa S. Bhat
+-Scott
