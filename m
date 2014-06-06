@@ -1,34 +1,37 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9AB321A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 18:44:23 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F4491A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 19:29:01 +1000 (EST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 6 Jun 2014 18:44:18 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 238253578055
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 18:44:14 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s568hwh09306416
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 18:43:58 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s568iDTx001024
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 18:44:13 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/6] powerpc/powernv: Make set_bypass() callback a type
-Date: Fri,  6 Jun 2014 18:44:05 +1000
-Message-Id: <1402044246-13650-6-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1402044246-13650-1-git-send-email-aik@ozlabs.ru>
-References: <1402044246-13650-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 6 Jun 2014 14:58:54 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A31FE1258053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2014 14:58:09 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s569T3j356688740
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 14:59:03 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s569Sokj026632
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jun 2014 14:58:50 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH 2/4] KVM: PPC: BOOK3S: PR: Doorbell support
+In-Reply-To: <539060B5.9040808@suse.de>
+References: <1401970085-14493-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1401970085-14493-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <539060B5.9040808@suse.de>
+Date: Fri, 06 Jun 2014 14:58:49 +0530
+Message-ID: <87tx7ye69a.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +41,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are going to be other callbacks which are going to be used as
-function parameters so change the existing set_bypass() callback to be
-a type.
+Alexander Graf <agraf@suse.de> writes:
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
- arch/powerpc/include/asm/iommu.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> On 05.06.14 14:08, Aneesh Kumar K.V wrote:
+>> We don't have SMT support yet, hence we should not find a doorbell
+>> message generated
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>   arch/powerpc/kvm/book3s_emulate.c | 18 ++++++++++++++++++
+>>   1 file changed, 18 insertions(+)
+>>
+>> diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+>> index 1bb16a59dcbc..d6c87d085182 100644
+>> --- a/arch/powerpc/kvm/book3s_emulate.c
+>> +++ b/arch/powerpc/kvm/book3s_emulate.c
+>> @@ -28,7 +28,9 @@
+>>   #define OP_19_XOP_RFI		50
+>>   
+>>   #define OP_31_XOP_MFMSR		83
+>> +#define OP_31_XOP_MSGSNDP	142
+>>   #define OP_31_XOP_MTMSR		146
+>> +#define OP_31_XOP_MSGCLRP	174
+>>   #define OP_31_XOP_MTMSRD	178
+>>   #define OP_31_XOP_MTSR		210
+>>   #define OP_31_XOP_MTSRIN	242
+>> @@ -303,6 +305,22 @@ int kvmppc_core_emulate_op_pr(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>   
+>>   			break;
+>>   		}
+>> +		case OP_31_XOP_MSGSNDP:
+>> +		{
+>> +			/*
+>> +			 * PR KVM still don't support SMT mode. So we should
+>
+> still?
+>
+>> +			 * not see a MSGSNDP/MSGCLRP used with PR KVM
+>> +			 */
+>> +			pr_info("KVM: MSGSNDP used in non SMT case\n");
+>> +			emulated = EMULATE_FAIL;
+>
+> What would happen on an HV guest with only 1 thread that MSGSNDs to 
+> thread 0? Would the guest get an illegal instruction trap, a 
+> self-interrupt or would this be a simple nop?
+>
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index f503a5c..2bc8f8c 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -65,6 +65,7 @@ struct iommu_owner {
- 	unsigned char __unused[0];
- };
- 
-+typedef void (*iommu_set_bypass_fn)(struct iommu_table *tbl, bool enable);
- struct iommu_table {
- 	unsigned long  it_busno;     /* Bus number this table belongs to */
- 	unsigned long  it_size;      /* Size of iommu table in entries */
-@@ -82,7 +83,7 @@ struct iommu_table {
- #ifdef CONFIG_IOMMU_API
- 	struct iommu_group *it_group;
- #endif
--	void (*set_bypass)(struct iommu_table *tbl, bool enable);
-+	iommu_set_bypass_fn set_bypass;
- 	struct iommu_owner *it_owner;
- };
- 
--- 
-2.0.0
+We do get a self-interrupt. I tried the below
+
+tag = mfspr(SPRN_TIR) & 0x7f;
+ppc_msgsnd(5, 0, tag);
+
+And that results in doorbell exception. That implies we will have to
+have full implementation of doorbell. You can drop patch 2 and 3 from
+this series. I will rework them.
+
+NOTE: This is not an issue for Linux guest, because we don't send ipi
+to self. But to complete the emulation of msgsndp we will need to
+emulate it properly.
+
+-aneesh
