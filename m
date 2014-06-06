@@ -1,20 +1,38 @@
-Return-Path: <tim.gardner@canonical.com>
-Received: from mail.tpi.com (mail.tpi.com [74.45.170.26])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C0A8D1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 00:36:23 +1000 (EST)
-Message-ID: <5391CA3C.9060907@canonical.com>
-Date: Fri, 06 Jun 2014 08:03:40 -0600
-From: Tim Gardner <tim.gardner@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 576A11A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 02:27:50 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sat, 7 Jun 2014 02:27:47 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B187B2CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 02:27:42 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s56G5kES57213124
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 02:05:47 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s56GRfd4012836
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 02:27:41 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH 1/4] KVM: PPC: BOOK3S: PR: Emulate virtual timebase
+ register
+In-Reply-To: <53919B83.4070308@suse.de>
+References: <1401970085-14493-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1401970085-14493-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <53919B83.4070308@suse.de>
+Date: Fri, 06 Jun 2014 21:57:37 +0530
+Message-ID: <874mzyxati.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Ed Swarthout <Ed.Swarthout@freescale.com>, scottwood@freescale.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: ppc-corenet-cpu-freq: do_div use quotient
-References: <1398701898-68201-1-git-send-email-tim.gardner@canonical.com>
- <1401913973-22536-1-git-send-email-Ed.Swarthout@freescale.com>
-In-Reply-To: <1401913973-22536-1-git-send-email-Ed.Swarthout@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +42,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/04/2014 02:32 PM, Ed Swarthout wrote:
-> 6712d2931933ada259b82f06c03a855b19937074 (cpufreq:
-> ppc-corenet-cpufreq: Fix __udivdi3 modpost error) used the remainder
-> from do_div instead of the quotient. Fix that and add one to ensure
-> minimum is met.
-> 
-> Signed-off-by: Ed Swarthout <Ed.Swarthout@freescale.com>
-> ---
->  drivers/cpufreq/ppc-corenet-cpufreq.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> index 0af618a..3607070 100644
-> --- a/drivers/cpufreq/ppc-corenet-cpufreq.c
-> +++ b/drivers/cpufreq/ppc-corenet-cpufreq.c
-> @@ -138,7 +138,7 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	struct cpufreq_frequency_table *table;
->  	struct cpu_data *data;
->  	unsigned int cpu = policy->cpu;
-> -	u64 transition_latency_hz;
-> +	u64 u64temp;
->  
->  	np = of_get_cpu_node(cpu, NULL);
->  	if (!np)
-> @@ -206,9 +206,10 @@ static int corenet_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	for_each_cpu(i, per_cpu(cpu_mask, cpu))
->  		per_cpu(cpu_data, i) = data;
->  
-> -	transition_latency_hz = 12ULL * NSEC_PER_SEC;
-> -	policy->cpuinfo.transition_latency =
-> -		do_div(transition_latency_hz, fsl_get_sys_freq());
-> +	/* Minimum transition latency is 12 platform clocks */
-> +	u64temp = 12ULL * NSEC_PER_SEC;
-> +	do_div(u64temp, fsl_get_sys_freq());
-> +	policy->cpuinfo.transition_latency = u64temp + 1;
->  
->  	of_node_put(np);
->  
-> 
+Alexander Graf <agraf@suse.de> writes:
 
-Whoops, what was I thinking ? You should also add "Cc:
-stable@vger.kernel.org # 3.15+" since this patch will likely miss 3.15
-final.
+> On 05.06.14 14:08, Aneesh Kumar K.V wrote:
+>> virtual time base register is a per VM, per cpu register that needs
+>> to be saved and restored on vm exit and entry. Writing to VTB is not
+>> allowed in the privileged mode.
+>>
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> For some reason BUG() doesn't always trigger the "execution stops here" 
+> logic in gcc. So I've squashed this patch into yours.
+>
+>
+> Alex
+>
+>
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index 3e7085d..99de6ad 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -1206,6 +1206,7 @@ static inline unsigned long mfvtb (void)
+>        * capture that.
+>        */
+>       BUG();
+> +    return 0;
+>   }
+>
+>   #ifdef __powerpc64__
 
-Acked-by: Tim Gardner <tim.gardner@canonical.com>
+you can then drop the include header change. ie, 
 
--- 
-Tim Gardner tim.gardner@canonical.com
+#include <asm/bug.h>
+
+-aneesh
