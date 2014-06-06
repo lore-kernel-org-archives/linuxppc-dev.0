@@ -1,25 +1,41 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 750DF1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 06:47:52 +1000 (EST)
-Message-ID: <1402087652.6603.450.camel@snotra.buserror.net>
-Subject: Re: [linuxppc-release] [PATCH][v10] powerpc/mpc85xx:Add initial
- device	tree support of T104x
-From: Scott Wood <scottwood@freescale.com>
-To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
-Date: Fri, 6 Jun 2014 15:47:32 -0500
-In-Reply-To: <c0213fde8dd24026af31ccce2fec21bf@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1398080069-3807-1-git-send-email-prabhakar@freescale.com>
- <c0213fde8dd24026af31ccce2fec21bf@DM2PR03MB398.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 479571A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 07:18:11 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Sat, 7 Jun 2014 07:18:09 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EE3713578048
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 07:18:04 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s56Ku8kP11010414
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 06:56:09 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s56LI3DH026394
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 7 Jun 2014 07:18:03 +1000
+Message-ID: <53922FB8.6070408@linux.vnet.ibm.com>
+Date: Sat, 07 Jun 2014 02:46:40 +0530
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <Poonam.Aggrwal@freescale.com>, Jain
- Priyanka-B32167 <Priyanka.Jain@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Kushwaha Prabhakar-B32579 <prabhakar@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
+ kexec from ST mode
+References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
+ <20140528133143.GK14863@redhat.com> <538E2FF8.8060707@linux.vnet.ibm.com>
+ <1401833365.3247.36.camel@pasglop> <5391B413.100@linux.vnet.ibm.com>
+In-Reply-To: <5391B413.100@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org, mahesh@linux.vnet.ibm.com,
+ kexec@lists.infradead.org, linux-kernel@vger.kernel.org, suzuki@in.ibm.com,
+ ebiederm@xmission.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,50 +45,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-06-06 at 00:04 -0500, Liu Shengzhou-B36685 wrote:
+On 06/06/2014 05:59 PM, Srivatsa S. Bhat wrote:
+> On 06/04/2014 03:39 AM, Benjamin Herrenschmidt wrote:
+>> On Wed, 2014-06-04 at 01:58 +0530, Srivatsa S. Bhat wrote:
+>>> Yep, that makes sense. But unfortunately I don't have enough insight into
+>>> why exactly powerpc has to online the CPUs before doing a kexec. I just
+>>> know from the commit log and the comment mentioned above (and from my own
+>>> experiments) that the CPUs will get stuck if they were offline. Perhaps
+>>> somebody more knowledgeable can explain this in detail and suggest a proper
+>>> long-term solution.
+>>>
+>>> Matt, Ben, any thoughts on this?
+>>
+>> The problem is with our "soft offline" which we do on some platforms. When we
+>> offline we don't actually send the CPUs back to firmware or anything like that.
+>>
+>> We put them into a very low low power loop inside Linux.
+>>
+>> The new kernel has no way to extract them from that loop. So we must re-"online"
+>> them before we kexec so they can be passed to the new kernel normally (or returned
+>> to firmware like we do on powernv).
+>>
 > 
-> > -----Original Message-----
-> > From: linuxppc-release-bounces@linux.freescale.net [mailto:linuxppc-
-> > release-bounces@linux.freescale.net] On Behalf Of Prabhakar Kushwaha
-> > Sent: Monday, April 21, 2014 7:34 PM
-> > To: linuxppc-dev@lists.ozlabs.org
-> > Cc: Wood Scott-B07421; Jain Priyanka-B32167; Aggrwal Poonam-B10812;
-> > Kushwaha Prabhakar-B32579
-> > Subject: [linuxppc-release] [PATCH][v10] powerpc/mpc85xx:Add initial
-> > device tree support of T104x
-> > 
-> > The QorIQ T1040/T1042 processor support four integrated 64-bit e5500 PA
-> > processor cores with high-performance data path acceleration architecture
-> > and network peripheral interfaces required for networking &
-> > telecommunications.
-> > 
-> > +
-> > +	iommu@20000 {
-> > +		compatible = "fsl,pamu-v1.0", "fsl,pamu";
-> > +		reg = <0x20000 0x1000>;
-> > +		ranges = <0 0x20000 0x1000>;
-> > +		#address-cells = <1>;
-> > +		#size-cells = <1>;
-> > +		interrupts = <
-> > +			24 2 0 0
-> > +			16 2 1 30>;
-> > +		pamu0: pamu@0 {
-> > +			reg = <0 0x1000>;
-> > +			fsl,primary-cache-geometry = <128 1>;
-> > +			fsl,secondary-cache-geometry = <16 2>;
-> > +		};
+> Thanks a lot for the explanation Ben!
 > 
+> I thought about this and this is what I think: whether the CPU is in the kernel
+> or in the firmware is a hard-boundary. But once we know it is still in the
+> kernel, whether it is online or offline is a soft-boundary, something that
+> ideally shouldn't make any difference to kexec.
 > 
-> [Shengzhou]  T1040 RM says:
-> Hardware coherent PAMU Look-aside caches to improve performance
-> * A 32-entry, direct-mapped primary PAACT cache
-> * A 128-entry, 2-way, set-associative secondary PAACT cache
-> It appears it should be: 
->        fsl,primary-cache-geometry = <32 1>;
->        fsl,secondary-cache-geometry = <128 2>;
+> Then I looked at what is that special state that kexec expects the online CPUs
+> to be in, before performing kexec, and I found that that state is entered via
+> kexec_smp_down().
 > 
-> is there any reason that it was "<128 1>,  <16 2>" ?
+> Which means, if we poke the soft-offline CPUs and make them execute
+> kexec_smp_down(), we should be able to do a successful kexec without having to
+> actually online them. After all, the core kexec code doesn't mandate that they
+> should be online. So if we satisfy powerpc's requirement that all the CPUs are
+> in a sane state, that should be good enough. (This would be similar to how the
+> subcore code wakes up offline CPUs to perform the split-core procedure).
+> 
+> I know, this is all theory for now since I haven't tested it yet, but I think
+> we can make this work.
+> 
+> Below are the 4 preliminary patches I'm have so far, to implement this.
+> 
 
-The B4 device trees are also suspicous.
+And with the following hunk added (which I had forgotten earlier), it worked just
+fine on powernv :-)
 
--Scott
+
+diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
+index 2ef6c58..84e91293 100644
+--- a/arch/powerpc/kernel/machine_kexec_64.c
++++ b/arch/powerpc/kernel/machine_kexec_64.c
+@@ -243,6 +243,9 @@ static void wake_offline_cpus(void)
+ {
+ 	int cpu = 0;
+ 
++	if (ppc_md.kexec_wake_prepare)
++		ppc_md.kexec_wake_prepare();
++
+ 	for_each_present_cpu(cpu) {
+ 		if (!cpu_online(cpu)) {
+ 			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
+
+I tried putting the machine into ST mode, and in a separate experiment, I kept
+just CPU 0 online in the first kernel, and then issued a kexec. The second kernel
+booted successfully with all the CPUs in both the cases.
+
+I haven't explored the crashed-kernel case though, it might need some auditing
+to check if the code handles that as well.
+
+Regards,
+Srivatsa S. Bhat
