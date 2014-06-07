@@ -1,18 +1,19 @@
 Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C59EF1A0039
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 11:29:02 +1000 (EST)
-Date: Sat, 7 Jun 2014 11:29:01 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id C86C71A0039
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jun 2014 11:33:35 +1000 (EST)
+Date: Sat, 7 Jun 2014 11:33:34 +1000
 From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, joel@jms.id.au,
- neelegup@linux.vnet.ibm.com
-Subject: [PATCH] powernv: Fix permissions on sysparam sysfs entries
-Message-ID: <20140607112901.37bd551f@kryten>
+To: benh@kernel.crashing.org, paulus@samba.org, nfont@linux.vnet.ibm.com,
+ mhcerri@linux.vnet.ibm.com, herbert@gondor.apana.org.au,
+ davem@davemloft.net
+Subject: [PATCH] crypto/nx: disable NX on little endian builds
+Message-ID: <20140607113334.474343b8@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,26 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Everyone can write to these files, which is not what we want.
+The NX driver has endian issues so disable it for now.
 
-Cc: stable@vger.kernel.org # 3.15
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-diff --git a/arch/powerpc/platforms/powernv/opal-sysparam.c b/arch/powerpc/platforms/powernv/opal-sysparam.c
-index d202f9b..9d1acf2 100644
---- a/arch/powerpc/platforms/powernv/opal-sysparam.c
-+++ b/arch/powerpc/platforms/powernv/opal-sysparam.c
-@@ -260,10 +260,10 @@ void __init opal_sys_param_init(void)
- 			attr[i].kobj_attr.attr.mode = S_IRUGO;
- 			break;
- 		case OPAL_SYSPARAM_WRITE:
--			attr[i].kobj_attr.attr.mode = S_IWUGO;
-+			attr[i].kobj_attr.attr.mode = S_IWUSR;
- 			break;
- 		case OPAL_SYSPARAM_RW:
--			attr[i].kobj_attr.attr.mode = S_IRUGO | S_IWUGO;
-+			attr[i].kobj_attr.attr.mode = S_IRUGO | S_IWUSR;
- 			break;
- 		default:
- 			break;
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 03ccdb0..8280a7a3 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -313,7 +313,7 @@ config CRYPTO_DEV_S5P
+ 
+ config CRYPTO_DEV_NX
+ 	bool "Support for IBM Power7+ in-Nest cryptographic acceleration"
+-	depends on PPC64 && IBMVIO
++	depends on PPC64 && IBMVIO && !CPU_LITTLE_ENDIAN
+ 	default n
+ 	help
+ 	  Support for Power7+ in-Nest cryptographic acceleration.
