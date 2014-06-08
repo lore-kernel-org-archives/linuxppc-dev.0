@@ -1,17 +1,27 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-we0-x229.google.com (mail-we0-x229.google.com
+ [IPv6:2a00:1450:400c:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ADB1B1A00CF
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2014 15:06:27 +1000 (EST)
-Date: Sun, 8 Jun 2014 15:06:25 +1000
-From: Anton Blanchard <anton@samba.org>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] KVM: PPC: Book3S PR: ppc64 ABIv2 build fixes
-Message-ID: <20140608150625.5b3463ae@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D6431A00CF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jun 2014 04:49:02 +1000 (EST)
+Received: by mail-we0-f169.google.com with SMTP id w61so2176065wes.28
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jun 2014 11:48:58 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <1400924009-23992-1-git-send-email-a13xp0p0v88@gmail.com>
+References: <1400924009-23992-1-git-send-email-a13xp0p0v88@gmail.com>
+Date: Sun, 8 Jun 2014 22:48:58 +0400
+Message-ID: <CAF0T0X5OQH8SED5a0JreZw8wNs2R-2c2v5=7F4v4up5viK3aYw@mail.gmail.com>
+Subject: Re: [PATCH 0/3] dmaengine: mpc512x: add device tree binding document
+ and DMA channel lookup
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
+ Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
+ Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ dmaengine@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-binutils knows that a branch to a function descriptor is actually
-a branch to the function text. By removing the explicit branch to
-dot symbols, we maintain both ABIv1 and ABIv2 compatibility.
+2014-05-24 13:33 GMT+04:00 Alexander Popov <a13xp0p0v88@gmail.com>:
+> This patch series introduces a device tree binding document for
+> the MPC512x DMA controller and adds device tree based DMA channel lookup
+> for it.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Hello, excuse me, could I have a feedback?
+Should I fix anything?
 
-Index: b/arch/powerpc/kvm/book3s_interrupts.S
-===================================================================
---- a/arch/powerpc/kvm/book3s_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_interrupts.S
-@@ -25,11 +25,9 @@
- #include <asm/exception-64s.h>
- 
- #if defined(CONFIG_PPC_BOOK3S_64)
--#define FUNC(name) 		GLUE(.,name)
- #define GET_SHADOW_VCPU(reg)    addi	reg, r13, PACA_SVCPU
- 
- #elif defined(CONFIG_PPC_BOOK3S_32)
--#define FUNC(name)		name
- #define GET_SHADOW_VCPU(reg)	lwz     reg, (THREAD + THREAD_KVM_SVCPU)(r2)
- 
- #endif /* CONFIG_PPC_BOOK3S_XX */
-@@ -93,7 +91,7 @@ kvm_start_entry:
- kvm_start_lightweight:
- 	/* Copy registers into shadow vcpu so we can access them in real mode */
- 	GET_SHADOW_VCPU(r3)
--	bl	FUNC(kvmppc_copy_to_svcpu)
-+	bl	kvmppc_copy_to_svcpu
- 	nop
- 	REST_GPR(4, r1)
- 
-@@ -131,7 +129,7 @@ after_sprg3_load:
- 	PPC_LL	r4, VCPU_SHADOW_MSR(r4)	/* get shadow_msr */
- 
- 	/* Jump to segment patching handler and into our guest */
--	bl	FUNC(kvmppc_entry_trampoline)
-+	bl	kvmppc_entry_trampoline
- 	nop
- 
- /*
-@@ -164,7 +162,7 @@ after_sprg3_load:
- 	/* On 64-bit, interrupts are still off at this point */
- 
- 	GET_SHADOW_VCPU(r4)
--	bl	FUNC(kvmppc_copy_from_svcpu)
-+	bl	kvmppc_copy_from_svcpu
- 	nop
- 
- #ifdef CONFIG_PPC_BOOK3S_64
-@@ -203,7 +201,7 @@ after_sprg3_load:
- 
- 	/* Restore r3 (kvm_run) and r4 (vcpu) */
- 	REST_2GPRS(3, r1)
--	bl	FUNC(kvmppc_handle_exit_pr)
-+	bl	kvmppc_handle_exit_pr
- 
- 	/* If RESUME_GUEST, get back in the loop */
- 	cmpwi	r3, RESUME_GUEST
-Index: b/arch/powerpc/kvm/book3s_rmhandlers.S
-===================================================================
---- a/arch/powerpc/kvm/book3s_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_rmhandlers.S
-@@ -34,13 +34,7 @@
-  *                                                                           *
-  ****************************************************************************/
- 
--#if defined(CONFIG_PPC_BOOK3S_64)
--
--#define FUNC(name) 		GLUE(.,name)
--
--#elif defined(CONFIG_PPC_BOOK3S_32)
--
--#define FUNC(name)		name
-+#ifdef CONFIG_PPC_BOOK3S_32
- 
- .macro INTERRUPT_TRAMPOLINE intno
- 
+Thanks a lot!
+Alexander
+
+> Alexander Popov (3):
+>   dmaengine: mpc512x: add device tree binding document
+>   dmaengine: of: add common xlate function for matching by channel id
+>   dmaengine: mpc512x: register for device tree channel lookup
+>
+>  .../devicetree/bindings/dma/mpc512x-dma.txt        | 40 ++++++++++++++++++++++
+>  arch/powerpc/boot/dts/mpc5121.dtsi                 |  1 +
+>  drivers/dma/mpc512x_dma.c                          | 13 ++++++-
+>  drivers/dma/of-dma.c                               | 35 +++++++++++++++++++
+>  include/linux/of_dma.h                             |  4 +++
+>  5 files changed, 92 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+>
+> --
+> 1.8.4.2
+>
