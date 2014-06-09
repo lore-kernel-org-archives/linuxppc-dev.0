@@ -1,31 +1,40 @@
-Return-Path: <yan@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D064D1A0039
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jun 2014 18:59:11 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <yan@linux.vnet.ibm.com>;
- Mon, 9 Jun 2014 14:29:06 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 2BCDA1258056
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jun 2014 14:28:24 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s598xGUU10027350
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jun 2014 14:29:16 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s598x2cK023995
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jun 2014 14:29:02 +0530
-From: Guo Chao <yan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/powernv: fix endianness problems in EEH
-Date: Mon,  9 Jun 2014 16:58:51 +0800
-Message-Id: <1402304331-24167-1-git-send-email-yan@linux.vnet.ibm.com>
-Cc: Guo Chao <yan@linux.vnet.ibm.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Return-Path: <lars@metafoo.de>
+Received: from smtp-out-136.synserver.de (smtp-out-136.synserver.de
+ [212.40.185.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2F3FC1A0039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jun 2014 21:29:30 +1000 (EST)
+Message-ID: <53959A93.7080308@metafoo.de>
+Date: Mon, 09 Jun 2014 13:29:23 +0200
+From: Lars-Peter Clausen <lars@metafoo.de>
+MIME-Version: 1.0
+To: Ben Dooks <ben@trinity.fluff.org>
+Subject: Re: [PATCH 2/2] gpio: gpiolib: set gpiochip_remove retval to void
+References: <20140530094025.3b78301e@canb.auug.org.au>
+ <1401449454-30895-1-git-send-email-berthe.ab@gmail.com>
+ <1401449454-30895-2-git-send-email-berthe.ab@gmail.com>
+ <CAMuHMdV6AtjD2aqO3buzj8Eo7A7xc_+ROYnxEi2sdjMaqFiAuA@mail.gmail.com>
+ <5388C0F1.90503@gmail.com> <5388CB1B.3090802@metafoo.de>
+ <20140608231823.GB10112@trinity.fluff.org>
+In-Reply-To: <20140608231823.GB10112@trinity.fluff.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>, m@bues.ch,
+ Linux-sh list <linux-sh@vger.kernel.org>,
+ Linus Walleij <linus.walleij@linaro.org>, platform-driver-x86@vger.kernel.org,
+ "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>,
+ driverdevel <devel@driverdev.osuosl.org>, Alexandre Courbot <gnurou@gmail.com>,
+ patches@opensource.wolfsonmicro.com, linux-samsungsoc@vger.kernel.org,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ spear-devel@list.st.com,
+ "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+ David Daney <ddaney.cavm@gmail.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ linux-wireless <linux-wireless@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ abdoulaye berthe <berthe.ab@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,411 +44,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-EEH information fetched from OPAL need fix before using in LE environment.
-To be included in sparse's endian check, declare them as __beXX and
-access them by accessors.
+On 06/09/2014 01:18 AM, Ben Dooks wrote:
+> On Fri, May 30, 2014 at 08:16:59PM +0200, Lars-Peter Clausen wrote:
+>> On 05/30/2014 07:33 PM, David Daney wrote:
+>>> On 05/30/2014 04:39 AM, Geert Uytterhoeven wrote:
+>>>> On Fri, May 30, 2014 at 1:30 PM, abdoulaye berthe <berthe.ab@gmail.com>
+>>>> wrote:
+>>>>> --- a/drivers/gpio/gpiolib.c
+>>>>> +++ b/drivers/gpio/gpiolib.c
+>>>>> @@ -1263,10 +1263,9 @@ static void gpiochip_irqchip_remove(struct
+>>>>> gpio_chip *gpiochip);
+>>>>>    *
+>>>>>    * A gpio_chip with any GPIOs still requested may not be removed.
+>>>>>    */
+>>>>> -int gpiochip_remove(struct gpio_chip *chip)
+>>>>> +void gpiochip_remove(struct gpio_chip *chip)
+>>>>>   {
+>>>>>          unsigned long   flags;
+>>>>> -       int             status = 0;
+>>>>>          unsigned        id;
+>>>>>
+>>>>>          acpi_gpiochip_remove(chip);
+>>>>> @@ -1278,24 +1277,15 @@ int gpiochip_remove(struct gpio_chip *chip)
+>>>>>          of_gpiochip_remove(chip);
+>>>>>
+>>>>>          for (id = 0; id < chip->ngpio; id++) {
+>>>>> -               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags)) {
+>>>>> -                       status = -EBUSY;
+>>>>> -                       break;
+>>>>> -               }
+>>>>> -       }
+>>>>> -       if (status == 0) {
+>>>>> -               for (id = 0; id < chip->ngpio; id++)
+>>>>> -                       chip->desc[id].chip = NULL;
+>>>>> -
+>>>>> -               list_del(&chip->list);
+>>>>> +               if (test_bit(FLAG_REQUESTED, &chip->desc[id].flags))
+>>>>> +                       panic("gpio: removing gpiochip with gpios still
+>>>>> requested\n");
+>>>>
+>>>> panic?
+>>>
+>>> NACK to the patch for this reason.  The strongest thing you should do here
+>>> is WARN.
+>>>
+>>> That said, I am not sure why we need this whole patch set in the first place.
+>>
+>> Well, what currently happens when you remove a device that is a
+>> provider of a gpio_chip which is still in use, is that the kernel
+>> crashes. Probably with a rather cryptic error message. So this patch
+>> doesn't really change the behavior, but makes it more explicit what
+>> is actually wrong. And even if you replace the panic() by a WARN()
+>> it will again just crash slightly later.
+>>
+>> This is a design flaw in the GPIO subsystem that needs to be fixed.
+>
+> Surely then the best way is to error out to the module unload and
+> stop the driver being unloaded?
+>
 
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+You can't error out on module unload, although that's not really relevant 
+here. gpiochip_remove() is typically called when the device that registered 
+the GPIO chip is unbound. And despite some remove() callbacks having a 
+return type of int you can not abort the removal of a device.
 
-Signed-off-by: Guo Chao <yan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal.h           | 102 +++++++++++++++---------------
- arch/powerpc/platforms/powernv/eeh-ioda.c |  36 ++++++-----
- arch/powerpc/platforms/powernv/pci.c      |  81 +++++++++++++++---------
- 3 files changed, 120 insertions(+), 99 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 4ccd1d4..a4c0acc 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -599,9 +599,9 @@ enum {
- };
- 
- struct OpalIoPhbErrorCommon {
--	uint32_t version;
--	uint32_t ioType;
--	uint32_t len;
-+	__be32 version;
-+	__be32 ioType;
-+	__be32 len;
- };
- 
- struct OpalIoP7IOCPhbErrorData {
-@@ -671,64 +671,64 @@ enum {
- struct OpalIoPhb3ErrorData {
- 	struct OpalIoPhbErrorCommon common;
- 
--	uint32_t brdgCtl;
-+	__be32 brdgCtl;
- 
- 	/* PHB3 UTL regs */
--	uint32_t portStatusReg;
--	uint32_t rootCmplxStatus;
--	uint32_t busAgentStatus;
-+	__be32 portStatusReg;
-+	__be32 rootCmplxStatus;
-+	__be32 busAgentStatus;
- 
- 	/* PHB3 cfg regs */
--	uint32_t deviceStatus;
--	uint32_t slotStatus;
--	uint32_t linkStatus;
--	uint32_t devCmdStatus;
--	uint32_t devSecStatus;
-+	__be32 deviceStatus;
-+	__be32 slotStatus;
-+	__be32 linkStatus;
-+	__be32 devCmdStatus;
-+	__be32 devSecStatus;
- 
- 	/* cfg AER regs */
--	uint32_t rootErrorStatus;
--	uint32_t uncorrErrorStatus;
--	uint32_t corrErrorStatus;
--	uint32_t tlpHdr1;
--	uint32_t tlpHdr2;
--	uint32_t tlpHdr3;
--	uint32_t tlpHdr4;
--	uint32_t sourceId;
-+	__be32 rootErrorStatus;
-+	__be32 uncorrErrorStatus;
-+	__be32 corrErrorStatus;
-+	__be32 tlpHdr1;
-+	__be32 tlpHdr2;
-+	__be32 tlpHdr3;
-+	__be32 tlpHdr4;
-+	__be32 sourceId;
- 
--	uint32_t rsv3;
-+	__be32 rsv3;
- 
- 	/* Record data about the call to allocate a buffer */
--	uint64_t errorClass;
--	uint64_t correlator;
-+	__be64 errorClass;
-+	__be64 correlator;
- 
--	uint64_t nFir;			/* 000 */
--	uint64_t nFirMask;		/* 003 */
--	uint64_t nFirWOF;		/* 008 */
-+	__be64 nFir;			/* 000 */
-+	__be64 nFirMask;		/* 003 */
-+	__be64 nFirWOF;		/* 008 */
- 
- 	/* PHB3 MMIO Error Regs */
--	uint64_t phbPlssr;		/* 120 */
--	uint64_t phbCsr;		/* 110 */
--	uint64_t lemFir;		/* C00 */
--	uint64_t lemErrorMask;		/* C18 */
--	uint64_t lemWOF;		/* C40 */
--	uint64_t phbErrorStatus;	/* C80 */
--	uint64_t phbFirstErrorStatus;	/* C88 */
--	uint64_t phbErrorLog0;		/* CC0 */
--	uint64_t phbErrorLog1;		/* CC8 */
--	uint64_t mmioErrorStatus;	/* D00 */
--	uint64_t mmioFirstErrorStatus;	/* D08 */
--	uint64_t mmioErrorLog0;		/* D40 */
--	uint64_t mmioErrorLog1;		/* D48 */
--	uint64_t dma0ErrorStatus;	/* D80 */
--	uint64_t dma0FirstErrorStatus;	/* D88 */
--	uint64_t dma0ErrorLog0;		/* DC0 */
--	uint64_t dma0ErrorLog1;		/* DC8 */
--	uint64_t dma1ErrorStatus;	/* E00 */
--	uint64_t dma1FirstErrorStatus;	/* E08 */
--	uint64_t dma1ErrorLog0;		/* E40 */
--	uint64_t dma1ErrorLog1;		/* E48 */
--	uint64_t pestA[OPAL_PHB3_NUM_PEST_REGS];
--	uint64_t pestB[OPAL_PHB3_NUM_PEST_REGS];
-+	__be64 phbPlssr;		/* 120 */
-+	__be64 phbCsr;		/* 110 */
-+	__be64 lemFir;		/* C00 */
-+	__be64 lemErrorMask;		/* C18 */
-+	__be64 lemWOF;		/* C40 */
-+	__be64 phbErrorStatus;	/* C80 */
-+	__be64 phbFirstErrorStatus;	/* C88 */
-+	__be64 phbErrorLog0;		/* CC0 */
-+	__be64 phbErrorLog1;		/* CC8 */
-+	__be64 mmioErrorStatus;	/* D00 */
-+	__be64 mmioFirstErrorStatus;	/* D08 */
-+	__be64 mmioErrorLog0;		/* D40 */
-+	__be64 mmioErrorLog1;		/* D48 */
-+	__be64 dma0ErrorStatus;	/* D80 */
-+	__be64 dma0FirstErrorStatus;	/* D88 */
-+	__be64 dma0ErrorLog0;		/* DC0 */
-+	__be64 dma0ErrorLog1;		/* DC8 */
-+	__be64 dma1ErrorStatus;	/* E00 */
-+	__be64 dma1FirstErrorStatus;	/* E08 */
-+	__be64 dma1ErrorLog0;		/* E40 */
-+	__be64 dma1ErrorLog1;		/* E48 */
-+	__be64 pestA[OPAL_PHB3_NUM_PEST_REGS];
-+	__be64 pestB[OPAL_PHB3_NUM_PEST_REGS];
- };
- 
- typedef struct oppanel_line {
-@@ -851,8 +851,8 @@ int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t erro
- int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
- int64_t opal_get_epow_status(__be64 *status);
- int64_t opal_set_system_attention_led(uint8_t led_action);
--int64_t opal_pci_next_error(uint64_t phb_id, uint64_t *first_frozen_pe,
--			    uint16_t *pci_error_type, uint16_t *severity);
-+int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
-+			    __be16 *pci_error_type, __be16 *severity);
- int64_t opal_pci_poll(uint64_t phb_id);
- int64_t opal_return_cpu(void);
- int64_t opal_reinit_cpus(uint64_t flags);
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 753f08e..e0d6a3a 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -267,7 +267,7 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- {
- 	s64 ret = 0;
- 	u8 fstate;
--	u16 pcierr;
-+	__be16 pcierr;
- 	u32 pe_no;
- 	int result;
- 	struct pci_controller *hose = pe->phb;
-@@ -316,7 +316,7 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
- 		result = 0;
- 		result &= ~EEH_STATE_RESET_ACTIVE;
- 
--		if (pcierr != OPAL_EEH_PHB_ERROR) {
-+		if (be16_to_cpu(pcierr) != OPAL_EEH_PHB_ERROR) {
- 			result |= EEH_STATE_MMIO_ACTIVE;
- 			result |= EEH_STATE_DMA_ACTIVE;
- 			result |= EEH_STATE_MMIO_ENABLED;
-@@ -706,8 +706,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 	struct pci_controller *hose;
- 	struct pnv_phb *phb;
- 	struct eeh_pe *phb_pe;
--	u64 frozen_pe_no;
--	u16 err_type, severity;
-+	__be64 frozen_pe_no;
-+	__be16 err_type, severity;
- 	long rc;
- 	int ret = EEH_NEXT_ERR_NONE;
- 
-@@ -742,8 +742,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		}
- 
- 		/* If the PHB doesn't have error, stop processing */
--		if (err_type == OPAL_EEH_NO_ERROR ||
--		    severity == OPAL_EEH_SEV_NO_ERROR) {
-+		if (be16_to_cpu(err_type) == OPAL_EEH_NO_ERROR ||
-+		    be16_to_cpu(severity) == OPAL_EEH_SEV_NO_ERROR) {
- 			pr_devel("%s: No error found on PHB#%x\n",
- 				 __func__, hose->global_number);
- 			continue;
-@@ -755,14 +755,14 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 		 * specific PHB.
- 		 */
- 		pr_devel("%s: Error (%d, %d, %llu) on PHB#%x\n",
--			 __func__, err_type, severity,
--			 frozen_pe_no, hose->global_number);
--		switch (err_type) {
-+			 __func__, be16_to_cpu(err_type), be16_to_cpu(severity),
-+			 be64_to_cpu(frozen_pe_no), hose->global_number);
-+		switch (be16_to_cpu(err_type)) {
- 		case OPAL_EEH_IOC_ERROR:
--			if (severity == OPAL_EEH_SEV_IOC_DEAD) {
-+			if (be16_to_cpu(severity) == OPAL_EEH_SEV_IOC_DEAD) {
- 				pr_err("EEH: dead IOC detected\n");
- 				ret = EEH_NEXT_ERR_DEAD_IOC;
--			} else if (severity == OPAL_EEH_SEV_INF) {
-+			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
- 				pr_info("EEH: IOC informative error "
- 					"detected\n");
- 				ioda_eeh_hub_diag(hose);
-@@ -771,17 +771,18 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 
- 			break;
- 		case OPAL_EEH_PHB_ERROR:
--			if (severity == OPAL_EEH_SEV_PHB_DEAD) {
-+			if (be16_to_cpu(severity) == OPAL_EEH_SEV_PHB_DEAD) {
- 				*pe = phb_pe;
- 				pr_err("EEH: dead PHB#%x detected\n",
- 					hose->global_number);
- 				ret = EEH_NEXT_ERR_DEAD_PHB;
--			} else if (severity == OPAL_EEH_SEV_PHB_FENCED) {
-+			} else if (be16_to_cpu(severity) ==
-+						OPAL_EEH_SEV_PHB_FENCED) {
- 				*pe = phb_pe;
- 				pr_err("EEH: fenced PHB#%x detected\n",
- 					hose->global_number);
- 				ret = EEH_NEXT_ERR_FENCED_PHB;
--			} else if (severity == OPAL_EEH_SEV_INF) {
-+			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
- 				pr_info("EEH: PHB#%x informative error "
- 					"detected\n",
- 					hose->global_number);
-@@ -801,12 +802,13 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 			 * progress with recovery. We needn't report
- 			 * it again.
- 			 */
--			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe)) {
-+			if (ioda_eeh_get_pe(hose,
-+					be64_to_cpu(frozen_pe_no), pe)) {
- 				*pe = phb_pe;
- 				pr_err("EEH: Escalated fenced PHB#%x "
- 				       "detected for PE#%llx\n",
- 					hose->global_number,
--					frozen_pe_no);
-+					be64_to_cpu(frozen_pe_no));
- 				ret = EEH_NEXT_ERR_FENCED_PHB;
- 			} else if ((*pe)->state & EEH_PE_ISOLATED) {
- 				ret = EEH_NEXT_ERR_NONE;
-@@ -819,7 +821,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 			break;
- 		default:
- 			pr_warn("%s: Unexpected error type %d\n",
--				__func__, err_type);
-+				__func__, be16_to_cpu(err_type));
- 		}
- 
- 		/*
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index eefbfcc..f91a4e5 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -206,72 +206,91 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
- 
- 	data = (struct OpalIoPhb3ErrorData*)common;
- 	pr_info("PHB3 PHB#%d Diag-data (Version: %d)\n",
--		hose->global_number, common->version);
-+		hose->global_number, be32_to_cpu(common->version));
- 	if (data->brdgCtl)
- 		pr_info("brdgCtl:     %08x\n",
--			data->brdgCtl);
-+			be32_to_cpu(data->brdgCtl));
- 	if (data->portStatusReg || data->rootCmplxStatus ||
- 	    data->busAgentStatus)
- 		pr_info("UtlSts:      %08x %08x %08x\n",
--			data->portStatusReg, data->rootCmplxStatus,
--			data->busAgentStatus);
-+			be32_to_cpu(data->portStatusReg),
-+			be32_to_cpu(data->rootCmplxStatus),
-+			be32_to_cpu(data->busAgentStatus));
- 	if (data->deviceStatus || data->slotStatus   ||
- 	    data->linkStatus   || data->devCmdStatus ||
- 	    data->devSecStatus)
- 		pr_info("RootSts:     %08x %08x %08x %08x %08x\n",
--			data->deviceStatus, data->slotStatus,
--			data->linkStatus, data->devCmdStatus,
--			data->devSecStatus);
-+			be32_to_cpu(data->deviceStatus),
-+			be32_to_cpu(data->slotStatus),
-+			be32_to_cpu(data->linkStatus),
-+			be32_to_cpu(data->devCmdStatus),
-+			be32_to_cpu(data->devSecStatus));
- 	if (data->rootErrorStatus || data->uncorrErrorStatus ||
- 	    data->corrErrorStatus)
- 		pr_info("RootErrSts:  %08x %08x %08x\n",
--			data->rootErrorStatus, data->uncorrErrorStatus,
--			data->corrErrorStatus);
-+			be32_to_cpu(data->rootErrorStatus),
-+			be32_to_cpu(data->uncorrErrorStatus),
-+			be32_to_cpu(data->corrErrorStatus));
- 	if (data->tlpHdr1 || data->tlpHdr2 ||
- 	    data->tlpHdr3 || data->tlpHdr4)
- 		pr_info("RootErrLog:  %08x %08x %08x %08x\n",
--			data->tlpHdr1, data->tlpHdr2,
--			data->tlpHdr3, data->tlpHdr4);
-+			be32_to_cpu(data->tlpHdr1),
-+			be32_to_cpu(data->tlpHdr2),
-+			be32_to_cpu(data->tlpHdr3),
-+			be32_to_cpu(data->tlpHdr4));
- 	if (data->sourceId || data->errorClass ||
- 	    data->correlator)
- 		pr_info("RootErrLog1: %08x %016llx %016llx\n",
--			data->sourceId, data->errorClass,
--			data->correlator);
-+			be32_to_cpu(data->sourceId),
-+			be64_to_cpu(data->errorClass),
-+			be64_to_cpu(data->correlator));
- 	if (data->nFir)
- 		pr_info("nFir:        %016llx %016llx %016llx\n",
--			data->nFir, data->nFirMask,
--			data->nFirWOF);
-+			be64_to_cpu(data->nFir),
-+			be64_to_cpu(data->nFirMask),
-+			be64_to_cpu(data->nFirWOF));
- 	if (data->phbPlssr || data->phbCsr)
- 		pr_info("PhbSts:      %016llx %016llx\n",
--			data->phbPlssr, data->phbCsr);
-+			be64_to_cpu(data->phbPlssr),
-+			be64_to_cpu(data->phbCsr));
- 	if (data->lemFir)
- 		pr_info("Lem:         %016llx %016llx %016llx\n",
--			data->lemFir, data->lemErrorMask,
--			data->lemWOF);
-+			be64_to_cpu(data->lemFir),
-+			be64_to_cpu(data->lemErrorMask),
-+			be64_to_cpu(data->lemWOF));
- 	if (data->phbErrorStatus)
- 		pr_info("PhbErr:      %016llx %016llx %016llx %016llx\n",
--			data->phbErrorStatus, data->phbFirstErrorStatus,
--			data->phbErrorLog0, data->phbErrorLog1);
-+			be64_to_cpu(data->phbErrorStatus),
-+			be64_to_cpu(data->phbFirstErrorStatus),
-+			be64_to_cpu(data->phbErrorLog0),
-+			be64_to_cpu(data->phbErrorLog1));
- 	if (data->mmioErrorStatus)
- 		pr_info("OutErr:      %016llx %016llx %016llx %016llx\n",
--			data->mmioErrorStatus, data->mmioFirstErrorStatus,
--			data->mmioErrorLog0, data->mmioErrorLog1);
-+			be64_to_cpu(data->mmioErrorStatus),
-+			be64_to_cpu(data->mmioFirstErrorStatus),
-+			be64_to_cpu(data->mmioErrorLog0),
-+			be64_to_cpu(data->mmioErrorLog1));
- 	if (data->dma0ErrorStatus)
- 		pr_info("InAErr:      %016llx %016llx %016llx %016llx\n",
--			data->dma0ErrorStatus, data->dma0FirstErrorStatus,
--			data->dma0ErrorLog0, data->dma0ErrorLog1);
-+			be64_to_cpu(data->dma0ErrorStatus),
-+			be64_to_cpu(data->dma0FirstErrorStatus),
-+			be64_to_cpu(data->dma0ErrorLog0),
-+			be64_to_cpu(data->dma0ErrorLog1));
- 	if (data->dma1ErrorStatus)
- 		pr_info("InBErr:      %016llx %016llx %016llx %016llx\n",
--			data->dma1ErrorStatus, data->dma1FirstErrorStatus,
--			data->dma1ErrorLog0, data->dma1ErrorLog1);
-+			be64_to_cpu(data->dma1ErrorStatus),
-+			be64_to_cpu(data->dma1FirstErrorStatus),
-+			be64_to_cpu(data->dma1ErrorLog0),
-+			be64_to_cpu(data->dma1ErrorLog1));
- 
- 	for (i = 0; i < OPAL_PHB3_NUM_PEST_REGS; i++) {
--		if ((data->pestA[i] >> 63) == 0 &&
--		    (data->pestB[i] >> 63) == 0)
-+		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
-+		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
- 			continue;
- 
- 		pr_info("PE[%3d] A/B: %016llx %016llx\n",
--			i, data->pestA[i], data->pestB[i]);
-+				i, be64_to_cpu(data->pestA[i]),
-+				be64_to_cpu(data->pestB[i]));
- 	}
- }
- 
-@@ -284,7 +303,7 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 		return;
- 
- 	common = (struct OpalIoPhbErrorCommon *)log_buff;
--	switch (common->ioType) {
-+	switch (be32_to_cpu(common->ioType)) {
- 	case OPAL_PHB_ERROR_DATA_TYPE_P7IOC:
- 		pnv_pci_dump_p7ioc_diag_data(hose, common);
- 		break;
-@@ -293,7 +312,7 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 		break;
- 	default:
- 		pr_warn("%s: Unrecognized ioType %d\n",
--			__func__, common->ioType);
-+			__func__, be32_to_cpu(common->ioType));
- 	}
- }
- 
--- 
-1.9.1
+- Lars
