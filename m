@@ -1,23 +1,28 @@
-Return-Path: <blacklites@gmail.com>
-Received: from mail-yk0-x231.google.com (mail-yk0-x231.google.com
- [IPv6:2607:f8b0:4002:c07::231])
+Return-Path: <rientjes@google.com>
+Received: from mail-ig0-x230.google.com (mail-ig0-x230.google.com
+ [IPv6:2607:f8b0:4001:c05::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 304D71A0039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 01:28:24 +1000 (EST)
-Received: by mail-yk0-f177.google.com with SMTP id 10so1970103ykt.22
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jun 2014 08:28:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 96B1C1A0039
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:38:31 +1000 (EST)
+Received: by mail-ig0-f176.google.com with SMTP id a13so4376616igq.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Jun 2014 14:38:28 -0700 (PDT)
+Date: Mon, 9 Jun 2014 14:38:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: NUMA topology question wrt. d4edc5b6
+In-Reply-To: <537E6285.3050000@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.02.1406091436090.5271@chino.kir.corp.google.com>
+References: <20140521200451.GB5755@linux.vnet.ibm.com>
+ <537E6285.3050000@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <5395CC7C.4040608@Freescale.com>
-References: <CAE1uq6vw0VSDUymckX51FyoJ8NH4Gsj3npfiYeZNff1Vq0cKsQ@mail.gmail.com>
- <5395CC7C.4040608@Freescale.com>
-Date: Mon, 9 Jun 2014 20:58:21 +0530
-Message-ID: <CAE1uq6uSEd+NZW+Q+9V8QqxcEDaiQQmcQTJ1GCrgQGL7N98t_g@mail.gmail.com>
-Subject: Re: <fsl,qman-channel-id> in dts file
-From: Tony <blacklites@gmail.com>
-To: Emil Medve <Emilian.Medve@freescale.com>
-Content-Type: multipart/alternative; boundary=14dae9d679f483b39904fb68dc52
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Dave Hansen <dave@sr71.net>, Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Linux MM <linux-mm@kvack.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>, nfont@linux.vnet.ibm.com,
+ Cody P Schafer <cody@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,77 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---14dae9d679f483b39904fb68dc52
-Content-Type: text/plain; charset=UTF-8
+On Fri, 23 May 2014, Srivatsa S. Bhat wrote:
 
-Thank Emil.
+> diff --git a/arch/powerpc/include/asm/topology.h b/arch/powerpc/include/asm/topology.h
+> index c920215..58e6469 100644
+> --- a/arch/powerpc/include/asm/topology.h
+> +++ b/arch/powerpc/include/asm/topology.h
+> @@ -18,6 +18,7 @@ struct device_node;
+>   */
+>  #define RECLAIM_DISTANCE 10
+>  
+> +#include <linux/nodemask.h>
+>  #include <asm/mmzone.h>
+>  
+>  static inline int cpu_to_node(int cpu)
+> @@ -30,7 +31,7 @@ static inline int cpu_to_node(int cpu)
+>  	 * During early boot, the numa-cpu lookup table might not have been
+>  	 * setup for all CPUs yet. In such cases, default to node 0.
+>  	 */
+> -	return (nid < 0) ? 0 : nid;
+> +	return (nid < 0) ? first_online_node : nid;
+>  }
+>  
+>  #define parent_node(node)	(node)
 
-Where can i find the details about a 'diff' of qman revisions ? The code i
-ported doesnt support latest qman revision (REV3). Can i still work on qman
-REV1.1 for all the latest targets ? (read t-series)
+I wonder what would happen on ppc if we just returned NUMA_NO_NODE here 
+for cpus that have not been mapped (they shouldn't even be possible).  
+This would at least allow callers that do
+kmalloc_node(..., cpu_to_node(cpu)) to be allocated on the local cpu 
+rather than on a perhaps offline or remote node 0.
 
-Regards
-
-
-On Mon, Jun 9, 2014 at 8:32 PM, Emil Medve <Emilian.Medve@freescale.com>
-wrote:
-
-> Hello Tony,
->
->
-> On 06/09/2014 06:43 AM, Tony wrote:
-> > How's the fsl,qman-channel-id value different for different targets ?
->
-> Channel ids are assigned in hardware
->
-> > Is there any document on how this value is achieved ?
->
-> They are described in the RM of each SoC and in the DPAA RM
->
-> > Or can it be any value ???
->
-> Nope. It must be the right value or frames will end up in the wrong
-> portal or worse
->
->
-> Cheers,
->
-
---14dae9d679f483b39904fb68dc52
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><div><div><div>Thank Emil.<br><br></div>Where can i find t=
-he details about a=20
-&#39;diff&#39; of qman revisions ? The code i ported doesnt support latest =
-qman=20
-revision (REV3). Can i still work on qman REV1.1 for all the latest targets=
- ? (read t-series)<br></div><br></div>Regards<br></div><div class=3D"gmail_=
-extra"><br><br><div class=3D"gmail_quote">On Mon, Jun 9, 2014 at 8:32 PM, E=
-mil Medve <span dir=3D"ltr">&lt;<a href=3D"mailto:Emilian.Medve@freescale.c=
-om" target=3D"_blank">Emilian.Medve@freescale.com</a>&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">Hello Tony,<br>
-<div class=3D""><br>
-<br>
-On 06/09/2014 06:43 AM, Tony wrote:<br>
-&gt; How&#39;s the fsl,qman-channel-id value different for different target=
-s ?<br>
-<br>
-</div>Channel ids are assigned in hardware<br>
-<div class=3D""><br>
-&gt; Is there any document on how this value is achieved ?<br>
-<br>
-</div>They are described in the RM of each SoC and in the DPAA RM<br>
-<div class=3D""><br>
-&gt; Or can it be any value ???<br>
-<br>
-</div>Nope. It must be the right value or frames will end up in the wrong<b=
-r>
-portal or worse<br>
-<br>
-<br>
-Cheers,<br>
-</blockquote></div><br></div>
-
---14dae9d679f483b39904fb68dc52--
+It would seem better to catch callers that do 
+cpu_to_node(<not-possible-cpu>) rather than blindly return an online node.
