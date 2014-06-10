@@ -1,21 +1,16 @@
-Return-Path: <zhouzhouyi@gmail.com>
-Received: from mail-pb0-x22b.google.com (mail-pb0-x22b.google.com
- [IPv6:2607:f8b0:400e:c01::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AA0F1A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 17:32:47 +1000 (EST)
-Received: by mail-pb0-f43.google.com with SMTP id up15so5934681pbc.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 00:32:44 -0700 (PDT)
-From: Zhouyi Zhou <zhouzhouyi@gmail.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <aik@ozlabs.ru>,
- <anton@samba.org>, <nacc@linux.vnet.ibm.com>, <alistair@popple.id.au>,
- <deepthi@linux.vnet.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] powerpc/iommu: Handling null return of kzalloc_node
-Date: Tue, 10 Jun 2014 15:32:10 +0800
-Message-Id: <1402385530-23091-1-git-send-email-zhouzhouyi@gmail.com>
-Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>, Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [patch] powerpc/spufs: remove duplicate SPUFS_CNTL_MAP_SIZE define
+Date: Tue, 10 Jun 2014 09:55:06 +0200
+Message-ID: <4266625.8yXnFnBjUA@wuerfel>
+In-Reply-To: <20140609151917.GM9600@mwanda>
+References: <20140609151917.GM9600@mwanda>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: cbe-oss-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kernel-janitors@vger.kernel.org, Jeremy Kerr <jk@ozlabs.org>,
+ Dan Carpenter <dan.carpenter@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +20,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NULL return of kzalloc_node should be handled 
+On Monday 09 June 2014 18:19:17 Dan Carpenter wrote:
+> The SPUFS_CNTL_MAP_SIZE define is cut and pasted twice so we can delete
+> the second instance.
+> 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
----
- arch/powerpc/platforms/pseries/iommu.c |   22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 33b552f..593cd3d 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -613,7 +613,11 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 
- 	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
- 			   pci->phb->node);
--
-+	if (!tbl) {
-+		pr_debug(" out of memory, can't create iommu_table !\n");
-+		return;
-+	}
-+
- 	iommu_table_setparms(pci->phb, dn, tbl);
- 	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
- 	iommu_register_group(tbl, pci_domain_nr(bus), 0);
-@@ -659,6 +663,10 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
- 	if (!ppci->iommu_table) {
- 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
- 				   ppci->phb->node);
-+		if (!tbl) {
-+			pr_debug(" out of memory, can't create iommu_table !\n");
-+			return;
-+		}
- 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
- 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
- 		iommu_register_group(tbl, pci_domain_nr(bus), 0);
-@@ -686,6 +694,11 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
- 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
- 				   phb->node);
-+		if (!tbl) {
-+			pr_debug(" out of memory, can't create iommu_table !\n");
-+			return;
-+		}
-+
- 		iommu_table_setparms(phb, dn, tbl);
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
- 		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
-@@ -1102,6 +1116,10 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 	if (!pci->iommu_table) {
- 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
- 				   pci->phb->node);
-+		if (!tbl) {
-+			pr_debug(" out of memory, can't create iommu_table !\n");
-+			return;
-+		}
- 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
- 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
- 		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
--- 
-1.7.10.4
+Acked-by: Arnd Bergmann <arnd@arndb.de>
