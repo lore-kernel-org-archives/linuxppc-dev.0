@@ -1,35 +1,29 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401EA1A02B3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:25 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Jun 2014 07:27:23 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id CF1F43940048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:20 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5A1vYuA8716776
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:34 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5A1vKgP009642
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:20 +0530
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: benh@au1.ibm.com
-Subject: [RFC PATCH V3 17/17] ppc/pnv: Group VF PE when IOV BAR is big on PHB3
-Date: Tue, 10 Jun 2014 09:56:39 +0800
-Message-Id: <1402365399-5121-18-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- gwshan@linux.vnet.ibm.com, qiudayu@linux.vnet.ibm.com, bhelgaas@google.com,
- yan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from lgeamrelo02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
+ by lists.ozlabs.org (Postfix) with ESMTP id EFB7D1A023D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 12:38:11 +1000 (EST)
+Date: Tue, 10 Jun 2014 11:41:57 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Michal Nazarewicz <mina86@mina86.com>
+Subject: Re: [RFC PATCH 1/3] CMA: generalize CMA reserved area management
+ functionality
+Message-ID: <20140610024157.GA19036@js1304-P5Q-DELUXE>
+References: <1401757919-30018-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1401757919-30018-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <xa1tzjhujxbz.fsf@mina86.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <xa1tzjhujxbz.fsf@mina86.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
+ linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,320 +33,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When IOV BAR is big, each of it is covered by 4 M64 window. This leads to
-several VF PE sits in one PE in terms of M64.
+On Tue, Jun 03, 2014 at 08:56:00AM +0200, Michal Nazarewicz wrote:
+> On Tue, Jun 03 2014, Joonsoo Kim wrote:
+> > Currently, there are two users on CMA functionality, one is the DMA
+> > subsystem and the other is the kvm on powerpc. They have their own code
+> > to manage CMA reserved area even if they looks really similar.
+> > From my guess, it is caused by some needs on bitmap management. Kvm side
+> > wants to maintain bitmap not for 1 page, but for more size. Eventually it
+> > use bitmap where one bit represents 64 pages.
+> >
+> > When I implement CMA related patches, I should change those two places
+> > to apply my change and it seem to be painful to me. I want to change
+> > this situation and reduce future code management overhead through
+> > this patch.
+> >
+> > This change could also help developer who want to use CMA in their
+> > new feature development, since they can use CMA easily without
+> > copying & pasting this reserved area management code.
+> >
+> > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> 
+> Some small comments below, but in general
+> 
+> Acked-by: Michal Nazarewicz <mina86@mina86.com>
 
-This patch group VF PEs according to the M64 allocation.
+Hello, Michal.
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pci-bridge.h     |    2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c |  183 +++++++++++++++++++++++------
- 2 files changed, 145 insertions(+), 40 deletions(-)
+Thanks!
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 36b88e4..f0a21f5 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -173,7 +173,7 @@ struct pci_dn {
- 	int     offset;
- #define M64_PER_IOV 4
- 	int     m64_per_iov;
--	int     m64_wins[PCI_SRIOV_NUM_BARS];
-+	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
- #endif /* CONFIG_PCI_IOV */
- #endif
- };
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 98fc163..86688cd 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -804,26 +804,27 @@ static int pnv_pci_vf_release_m64(struct pci_dev *pdev)
- 	struct pci_controller *hose;
- 	struct pnv_phb        *phb;
- 	struct pci_dn         *pdn;
--	int                    i;
-+	int                    i, j;
- 
- 	bus = pdev->bus;
- 	hose = pci_bus_to_host(bus);
- 	phb = hose->private_data;
- 	pdn = pci_get_pdn(pdev);
- 
--	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
--		if (pdn->m64_wins[i] == -1)
--			continue;
--		opal_pci_phb_mmio_enable(phb->opal_id,
--				OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i], 0);
--		clear_bit(pdn->m64_wins[i], &phb->ioda.m64win_alloc);
--		pdn->m64_wins[i] = -1;
--	}
-+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
-+		for (j = 0; j < M64_PER_IOV; j++) {
-+			if (pdn->m64_wins[i][j] == -1)
-+				continue;
-+			opal_pci_phb_mmio_enable(phb->opal_id,
-+				OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 0);
-+			clear_bit(pdn->m64_wins[i][j], &phb->ioda.m64win_alloc);
-+			pdn->m64_wins[i][j] = -1;
-+		}
- 
- 	return 0;
- }
- 
--static int pnv_pci_vf_assign_m64(struct pci_dev *pdev)
-+static int pnv_pci_vf_assign_m64(struct pci_dev *pdev, u16 vf_num)
- {
- 	struct pci_bus        *bus;
- 	struct pci_controller *hose;
-@@ -831,17 +832,33 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev)
- 	struct pci_dn         *pdn;
- 	unsigned int           win;
- 	struct resource       *res;
--	int                    i;
-+	int                    i, j;
- 	int64_t                rc;
-+	int                    total_vfs;
-+	resource_size_t        size, start;
-+	int                    pe_num;
-+	int                    vf_groups;
-+	int                    vf_per_group;
- 
- 	bus = pdev->bus;
- 	hose = pci_bus_to_host(bus);
- 	phb = hose->private_data;
- 	pdn = pci_get_pdn(pdev);
-+	total_vfs = pci_sriov_get_totalvfs(pdev);
- 
- 	/* Initialize the m64_wins to -1 */
- 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
--		pdn->m64_wins[i] = -1;
-+		for (j = 0; j < 4; j++)
-+			pdn->m64_wins[i][j] = -1;
-+
-+	if (pdn->m64_per_iov == M64_PER_IOV) {
-+		vf_groups = (vf_num <= M64_PER_IOV) ? vf_num: M64_PER_IOV;
-+		vf_per_group = (vf_num <= M64_PER_IOV)? 1:
-+			__roundup_pow_of_two(vf_num) / pdn->m64_per_iov;
-+	} else {
-+		vf_groups = 1;
-+		vf_per_group = 1;
-+	}
- 
- 	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
- 		res = pdev->resource + PCI_IOV_RESOURCES + i;
-@@ -851,33 +868,61 @@ static int pnv_pci_vf_assign_m64(struct pci_dev *pdev)
- 		if (!is_mem_pref_64_type(res->flags))
- 			continue;
- 
--		do {
--			win = find_next_zero_bit(&phb->ioda.m64win_alloc,
--					phb->ioda.m64_bars, 0);
--
--			if (win >= phb->ioda.m64_bars)
--				goto m64_failed;
--		} while (test_and_set_bit(win, &phb->ioda.m64win_alloc));
-+		for (j = 0; j < vf_groups; j++) {
-+			do {
-+				win = find_next_zero_bit(&phb->ioda.m64win_alloc,
-+						phb->ioda.m64_bars, 0);
-+
-+				if (win >= phb->ioda.m64_bars)
-+					goto m64_failed;
-+			} while (test_and_set_bit(win, &phb->ioda.m64win_alloc));
-+
-+			pdn->m64_wins[i][j] = win;
-+
-+			if (pdn->m64_per_iov == M64_PER_IOV) {
-+				size = pci_sriov_resource_size(pdev,
-+						PCI_IOV_RESOURCES + i);
-+				size = size * vf_per_group;
-+				start = res->start + size * j;
-+			} else {
-+				size = resource_size(res);
-+				start = res->start;
-+			}
- 
--		pdn->m64_wins[i] = win;
-+			/* Map the M64 here */
-+			if (pdn->m64_per_iov == M64_PER_IOV) {
-+				pe_num = pdn->offset + j;
-+				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-+						pe_num, OPAL_M64_WINDOW_TYPE,
-+						pdn->m64_wins[i][j], 0);
-+			}
- 
--		/* Map the M64 here */
--		rc = opal_pci_set_phb_mem_window(phb->opal_id,
-+			rc = opal_pci_set_phb_mem_window(phb->opal_id,
- 						 OPAL_M64_WINDOW_TYPE,
--						 pdn->m64_wins[i],
--						 res->start,
-+						 pdn->m64_wins[i][j],
-+						 start,
- 						 0, /* unused */
--						 resource_size(res));
--		if (rc != OPAL_SUCCESS) {
--			pr_err("Failed to map M64 BAR #%d: %lld\n", win, rc);
--			goto m64_failed;
--		}
-+						 size);
- 
--		rc = opal_pci_phb_mmio_enable(phb->opal_id,
--				OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i], 1);
--		if (rc != OPAL_SUCCESS) {
--			pr_err("Failed to enable M64 BAR #%d: %llx\n", win, rc);
--			goto m64_failed;
-+
-+			if (rc != OPAL_SUCCESS) {
-+				pr_err("Failed to set M64 BAR #%d: %lld\n",
-+						win, rc);
-+				goto m64_failed;
-+			}
-+
-+			if (pdn->m64_per_iov == M64_PER_IOV)
-+				rc = opal_pci_phb_mmio_enable(phb->opal_id,
-+				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 2);
-+			else
-+				rc = opal_pci_phb_mmio_enable(phb->opal_id,
-+				     OPAL_M64_WINDOW_TYPE, pdn->m64_wins[i][j], 1);
-+
-+			if (rc != OPAL_SUCCESS) {
-+				pr_err("Failed to enable M64 BAR #%d: %llx\n",
-+						win, rc);
-+				goto m64_failed;
-+			}
- 		}
- 	}
- 	return 0;
-@@ -987,21 +1032,51 @@ static void pnv_pci_release_vf_node(struct pci_dev *dev, u16 vf_num)
- 	}
- }
- 
--static void pnv_ioda_release_vf_PE(struct pci_dev *pdev)
-+static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 vf_num)
- {
- 	struct pci_bus        *bus;
- 	struct pci_controller *hose;
- 	struct pnv_phb        *phb;
- 	struct pnv_ioda_pe    *pe, *pe_n;
- 	struct pci_dn         *pdn;
-+	u16                    vf_index;
-+	int64_t                rc;
- 
- 	bus = pdev->bus;
- 	hose = pci_bus_to_host(bus);
- 	phb = hose->private_data;
-+	pdn = pci_get_pdn(pdev);
- 
- 	if (!pdev->is_physfn)
- 		return;
- 
-+	if (pdn->m64_per_iov == M64_PER_IOV && vf_num > M64_PER_IOV) {
-+		int   vf_group;
-+		int   vf_per_group;
-+		int   vf_index1;
-+
-+		vf_per_group = __roundup_pow_of_two(vf_num) / pdn->m64_per_iov;
-+
-+		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
-+			for (vf_index = vf_group * vf_per_group;
-+				vf_index < (vf_group + 1) * vf_per_group;
-+				vf_index++)
-+				for (vf_index1 = vf_group * vf_per_group;
-+					vf_index1 < (vf_group + 1) * vf_per_group;
-+					vf_index1++){
-+
-+					rc = opal_pci_set_peltv(phb->opal_id,
-+						pdn->offset + vf_index,
-+						pdn->offset + vf_index1,
-+						OPAL_REMOVE_PE_FROM_DOMAIN);
-+
-+					if (rc)
-+					    pr_warn("%s: Failed to unlink same"
-+						" group PE#%d(%lld)\n", __func__,
-+						pdn->offset + vf_index1, rc);
-+				}
-+	}
-+
- 	pdn = pci_get_pdn(pdev);
- 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
- 		if (pe->parent_dev != pdev)
-@@ -1037,11 +1112,12 @@ int pcibios_sriov_disable(struct pci_dev *pdev)
- 	vf_num = iov->num_VFs;
- 
- 	/* Release VF PEs */
--	pnv_ioda_release_vf_PE(pdev);
-+	pnv_ioda_release_vf_PE(pdev, vf_num);
- 	pnv_pci_release_vf_node(pdev, vf_num);
- 
- 	if (phb->type == PNV_PHB_IODA2) {
--		pnv_pci_vf_resource_shift(pdev, -pdn->offset);
-+		if (pdn->m64_per_iov == 1)
-+			pnv_pci_vf_resource_shift(pdev, -pdn->offset);
- 
- 		/* Release M64 BARs */
- 		pnv_pci_vf_release_m64(pdev);
-@@ -1065,6 +1141,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 vf_num)
- 	int                    pe_num;
- 	u16                    vf_index;
- 	struct pci_dn         *pdn;
-+	int64_t                rc;
- 
- 	bus = pdev->bus;
- 	hose = pci_bus_to_host(bus);
-@@ -1112,7 +1189,34 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 vf_num)
- 		mutex_unlock(&phb->ioda.pe_list_mutex);
- 
- 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
-+	}
- 
-+	if (pdn->m64_per_iov == M64_PER_IOV && vf_num > M64_PER_IOV) {
-+		int   vf_group;
-+		int   vf_per_group;
-+		int   vf_index1;
-+
-+		vf_per_group = __roundup_pow_of_two(vf_num) / pdn->m64_per_iov;
-+
-+		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++)
-+			for (vf_index = vf_group * vf_per_group;
-+				vf_index < (vf_group + 1) * vf_per_group;
-+				vf_index++)
-+				for (vf_index1 = vf_group * vf_per_group;
-+					vf_index1 < (vf_group + 1) * vf_per_group;
-+					vf_index1++) {
-+
-+					rc = opal_pci_set_peltv(phb->opal_id,
-+						pdn->offset + vf_index,
-+						pdn->offset + vf_index1,
-+						OPAL_ADD_PE_TO_DOMAIN);
-+
-+					if (rc)
-+					    pr_warn("%s: Failed to link same "
-+						"group PE#%d(%lld)\n",
-+						__func__,
-+						pdn->offset + vf_index1, rc);
-+			}
- 	}
- }
- 
-@@ -1146,14 +1250,15 @@ int pcibios_sriov_enable(struct pci_dev *pdev, u16 vf_num)
- 		mutex_unlock(&phb->ioda.pe_alloc_mutex);
- 
- 		/* Assign M64 BAR accordingly */
--		ret = pnv_pci_vf_assign_m64(pdev);
-+		ret = pnv_pci_vf_assign_m64(pdev, vf_num);
- 		if (ret) {
- 			pr_info("No enough M64 resource\n");
- 			goto m64_failed;
- 		}
- 
- 		/* Do some magic shift */
--		pnv_pci_vf_resource_shift(pdev, pdn->offset);
-+		if (pdn->m64_per_iov == 1)
-+			pnv_pci_vf_resource_shift(pdev, pdn->offset);
- 	}
- 
- 	/* Setup VF PEs */
--- 
-1.7.9.5
+> 
+> >
+> > diff --git a/include/linux/cma.h b/include/linux/cma.h
+> > new file mode 100644
+> > index 0000000..60ba06f
+> > --- /dev/null
+> > +++ b/include/linux/cma.h
+> > @@ -0,0 +1,28 @@
+> > +/*
+> > + * Contiguous Memory Allocator
+> > + *
+> > + * Copyright LG Electronics Inc., 2014
+> > + * Written by:
+> > + *	Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License as
+> > + * published by the Free Software Foundation; either version 2 of the
+> > + * License or (at your optional) any later version of the license.
+> > + *
+> 
+> Superfluous empty comment line.
+> 
+> Also, I'm not certain whether this copyright notice is appropriate here,
+> but that's another story.
+
+Yeah, I will remove copyright notice in .h file.
+
+> 
+> > + */
+> > +
+> > +#ifndef __CMA_H__
+> > +#define __CMA_H__
+> > +
+> > +struct cma;
+> > +
+> > +extern struct page *cma_alloc(struct cma *cma, unsigned long count,
+> > +				unsigned long align);
+> > +extern bool cma_release(struct cma *cma, struct page *pages,
+> > +				unsigned long count);
+> > +extern int __init cma_declare_contiguous(phys_addr_t size, phys_addr_t base,
+> > +				phys_addr_t limit, phys_addr_t alignment,
+> > +				unsigned long bitmap_shift, bool fixed,
+> > +				struct cma **res_cma);
+> > +#endif
+> 
+> > diff --git a/mm/cma.c b/mm/cma.c
+> > new file mode 100644
+> > index 0000000..0dae88d
+> > --- /dev/null
+> > +++ b/mm/cma.c
+> > @@ -0,0 +1,329 @@
+> 
+> > +static int __init cma_activate_area(struct cma *cma)
+> > +{
+> > +	int max_bitmapno = cma_bitmap_max_no(cma);
+> > +	int bitmap_size = BITS_TO_LONGS(max_bitmapno) * sizeof(long);
+> > +	unsigned long base_pfn = cma->base_pfn, pfn = base_pfn;
+> > +	unsigned i = cma->count >> pageblock_order;
+> > +	struct zone *zone;
+> > +
+> > +	pr_debug("%s()\n", __func__);
+> > +	if (!cma->count)
+> > +		return 0;
+> 
+> Alternatively:
+> 
+> +	if (!i)
+> +		return 0;
+
+I prefer cma->count than i, since it represents what it does itself.
+
+> > +
+> > +	cma->bitmap = kzalloc(bitmap_size, GFP_KERNEL);
+> > +	if (!cma->bitmap)
+> > +		return -ENOMEM;
+> > +
+> > +	WARN_ON_ONCE(!pfn_valid(pfn));
+> > +	zone = page_zone(pfn_to_page(pfn));
+> > +
+> > +	do {
+> > +		unsigned j;
+> > +
+> > +		base_pfn = pfn;
+> > +		for (j = pageblock_nr_pages; j; --j, pfn++) {
+> > +			WARN_ON_ONCE(!pfn_valid(pfn));
+> > +			/*
+> > +			 * alloc_contig_range requires the pfn range
+> > +			 * specified to be in the same zone. Make this
+> > +			 * simple by forcing the entire CMA resv range
+> > +			 * to be in the same zone.
+> > +			 */
+> > +			if (page_zone(pfn_to_page(pfn)) != zone)
+> > +				goto err;
+> > +		}
+> > +		init_cma_reserved_pageblock(pfn_to_page(base_pfn));
+> > +	} while (--i);
+> > +
+> > +	mutex_init(&cma->lock);
+> > +	return 0;
+> > +
+> > +err:
+> > +	kfree(cma->bitmap);
+> > +	return -EINVAL;
+> > +}
+> 
+> > +static int __init cma_init_reserved_areas(void)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < cma_area_count; i++) {
+> > +		int ret = cma_activate_area(&cma_areas[i]);
+> > +
+> > +		if (ret)
+> > +			return ret;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> 
+> Or even:
+> 
+> static int __init cma_init_reserved_areas(void)
+> {
+> 	int i, ret = 0;
+> 	for (i = 0; !ret && i < cma_area_count; ++i)
+> 		ret = cma_activate_area(&cma_areas[i]);
+> 	return ret;
+> }
+
+I think that originial implementation is better, since it seems
+more readable to me.
+
+> > +int __init cma_declare_contiguous(phys_addr_t size, phys_addr_t base,
+> > +				phys_addr_t limit, phys_addr_t alignment,
+> > +				unsigned long bitmap_shift, bool fixed,
+> > +				struct cma **res_cma)
+> > +{
+> > +	struct cma *cma = &cma_areas[cma_area_count];
+> 
+> Perhaps it would make sense to move this initialisation to the far end
+> of this function?
+
+Yes, I will move it down.
+
+> > +	int ret = 0;
+> > +
+> > +	pr_debug("%s(size %lx, base %08lx, limit %08lx, alignment %08lx)\n",
+> > +			__func__, (unsigned long)size, (unsigned long)base,
+> > +			(unsigned long)limit, (unsigned long)alignment);
+> > +
+> > +	/* Sanity checks */
+> > +	if (cma_area_count == ARRAY_SIZE(cma_areas)) {
+> > +		pr_err("Not enough slots for CMA reserved regions!\n");
+> > +		return -ENOSPC;
+> > +	}
+> > +
+> > +	if (!size)
+> > +		return -EINVAL;
+> > +
+> > +	/*
+> > +	 * Sanitise input arguments.
+> > +	 * CMA area should be at least MAX_ORDER - 1 aligned. Otherwise,
+> > +	 * CMA area could be merged into other MIGRATE_TYPE by buddy mechanism
+> > +	 * and CMA property will be broken.
+> > +	 */
+> > +	alignment >>= PAGE_SHIFT;
+> > +	alignment = PAGE_SIZE << max3(MAX_ORDER - 1, pageblock_order,
+> > +						(int)alignment);
+> > +	base = ALIGN(base, alignment);
+> > +	size = ALIGN(size, alignment);
+> > +	limit &= ~(alignment - 1);
+> > +	/* size should be aligned with bitmap_shift */
+> > +	BUG_ON(!IS_ALIGNED(size >> PAGE_SHIFT, 1 << cma->bitmap_shift));
+> 
+> cma->bitmap_shift is not yet initialised thus the above line should be:
+> 
+> 	BUG_ON(!IS_ALIGNED(size >> PAGE_SHIFT, 1 << bitmap_shift));
+
+Yes, I will fix it.
+
+> > +
+> > +	/* Reserve memory */
+> > +	if (base && fixed) {
+> > +		if (memblock_is_region_reserved(base, size) ||
+> > +		    memblock_reserve(base, size) < 0) {
+> > +			ret = -EBUSY;
+> > +			goto err;
+> > +		}
+> > +	} else {
+> > +		phys_addr_t addr = memblock_alloc_range(size, alignment, base,
+> > +							limit);
+> > +		if (!addr) {
+> > +			ret = -ENOMEM;
+> > +			goto err;
+> > +		} else {
+> > +			base = addr;
+> > +		}
+> > +	}
+> > +
+> > +	/*
+> > +	 * Each reserved area must be initialised later, when more kernel
+> > +	 * subsystems (like slab allocator) are available.
+> > +	 */
+> > +	cma->base_pfn = PFN_DOWN(base);
+> > +	cma->count = size >> PAGE_SHIFT;
+> > +	cma->bitmap_shift = bitmap_shift;
+> > +	*res_cma = cma;
+> > +	cma_area_count++;
+> > +
+> > +	pr_info("CMA: reserved %ld MiB at %08lx\n", (unsigned long)size / SZ_1M,
+> > +		(unsigned long)base);
+> 
+> Doesn't this message end up being: “cma: CMA: reserved …”? pr_fmt adds
+> “cma:” at the beginning, doesn't it?  So we should probably drop “CMA:”
+> here.
+
+Okay. Will do.
+
+Thanks.
