@@ -2,30 +2,30 @@ Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 56B1F1A0294
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:11 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F62A1A0298
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:12 +1000 (EST)
 Received: from /spool/local
  by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Jun 2014 07:27:09 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 18F193940049
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:07 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5A1vJ6l46792840
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:19 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5A1v6CK013243
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:06 +0530
+ Tue, 10 Jun 2014 07:27:10 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1DA78394003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:08 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5A1vxBf58589344
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:59 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5A1v7KS030277
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:07 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: benh@au1.ibm.com
-Subject: [RFC PATCH V3 08/17] PCI: Add weak pcibios_sriov_resource_size()
+Subject: [RFC PATCH V3 09/17] PCI: Add weak pcibios_sriov_resource_alignment()
  interface
-Date: Tue, 10 Jun 2014 09:56:30 +0800
-Message-Id: <1402365399-5121-9-git-send-email-weiyang@linux.vnet.ibm.com>
+Date: Tue, 10 Jun 2014 09:56:31 +0800
+Message-Id: <1402365399-5121-10-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
@@ -40,89 +40,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When retrieving sriov resource size in pci_sriov_resource_size(), it will
-divide the total IOV resource size with the totalVF number. This is true for
-most cases, while may not be correct on some specific platform.
+The sriov resource alignment is designed to be the individual size of a sriov
+resource. This works fine for many platforms, but on powernv platform it needs
+some change.
 
-For example on powernv platform, in order to fix the IOV BAR into a hardware
-alignment, the IOV resource size would be expended. This means the original
-method couldn't work.
+The original alignment works, since at sizing and assigning stage the
+requirement is from an individual VF's resource size instead of the big IOV
+BAR. This is the reason for the original code to just retrieve the individual
+sriov size as the alignment.
 
-This patch introduces a weak pcibios_sriov_resource_size() interface, which
+On powernv platform, it is required to align the whole IOV BAR to a hardware
+aperture. Based on this fact, the alignment of sriov resource should be the
+total size of the IOV BAR.
+
+This patch introduces a weak pcibios_sriov_resource_alignment() interface, which
 gives platform a chance to implement specific method to calculate the sriov
-resource size.
+resource alignment.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- drivers/pci/iov.c   |   27 +++++++++++++++++++++++++--
- include/linux/pci.h |    3 +++
- 2 files changed, 28 insertions(+), 2 deletions(-)
+ drivers/pci/iov.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index cc87773..9fd4648 100644
+index 9fd4648..dd7fc42 100644
 --- a/drivers/pci/iov.c
 +++ b/drivers/pci/iov.c
-@@ -45,6 +45,30 @@ static void virtfn_remove_bus(struct pci_bus *physbus, struct pci_bus *virtbus)
- 		pci_remove_bus(virtbus);
+@@ -628,6 +628,12 @@ int pci_iov_resource_bar(struct pci_dev *dev, int resno,
+ 		4 * (resno - PCI_IOV_RESOURCES);
  }
  
-+resource_size_t __weak pcibios_sriov_resource_size(struct pci_dev *dev, int resno)
++resource_size_t __weak pcibios_sriov_resource_alignment(struct pci_dev *dev,
++		int resno, resource_size_t align)
 +{
-+	return 0;
++	return align;
 +}
 +
-+resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno)
-+{
-+	u64 size;
-+	struct pci_sriov *iov;
-+
-+	if (!dev->is_physfn)
-+		return 0;
-+
-+	size = pcibios_sriov_resource_size(dev, resno);
-+	if (size != 0)
-+		return size;
-+
-+	iov = dev->sriov;
-+	size = resource_size(dev->resource + resno);
-+	do_div(size, iov->total_VFs);
-+
-+	return size;
-+}
-+
- static int virtfn_add(struct pci_dev *dev, int id, int reset)
+ /**
+  * pci_sriov_resource_alignment - get resource alignment for VF BAR
+  * @dev: the PCI device
+@@ -642,13 +648,16 @@ resource_size_t pci_sriov_resource_alignment(struct pci_dev *dev, int resno)
  {
- 	int i;
-@@ -81,8 +105,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
- 			continue;
- 		virtfn->resource[i].name = pci_name(virtfn);
- 		virtfn->resource[i].flags = res->flags;
--		size = resource_size(res);
--		do_div(size, iov->total_VFs);
-+		size = pci_sriov_resource_size(dev, i + PCI_IOV_RESOURCES);
- 		virtfn->resource[i].start = res->start + size * id;
- 		virtfn->resource[i].end = virtfn->resource[i].start + size - 1;
- 		rc = request_resource(res, &virtfn->resource[i]);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index ddb1ca0..315c150 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1637,6 +1637,7 @@ int pci_num_vf(struct pci_dev *dev);
- int pci_vfs_assigned(struct pci_dev *dev);
- int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
- int pci_sriov_get_totalvfs(struct pci_dev *dev);
-+resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno);
- #else
- static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
- {
-@@ -1658,6 +1659,8 @@ static inline int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs)
- { return 0; }
- static inline int pci_sriov_get_totalvfs(struct pci_dev *dev)
- { return 0; }
-+static inline resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno)
-+{ return -1; }
- #endif
+ 	struct resource tmp;
+ 	enum pci_bar_type type;
++	resource_size_t align;
+ 	int reg = pci_iov_resource_bar(dev, resno, &type);
  
- #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
+ 	if (!reg)
+ 		return 0;
+ 
+ 	__pci_read_base(dev, type, &tmp, reg);
+-	return resource_alignment(&tmp);
++	align = resource_alignment(&tmp);
++
++	return pcibios_sriov_resource_alignment(dev, resno, align);
+ }
+ 
+ /**
 -- 
 1.7.9.5
