@@ -1,30 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DE531A0237
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:03 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 608161A02B0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:05 +1000 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Jun 2014 07:27:01 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 0264A394003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:26:59 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5A1vC0o8716718
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:12 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5A1uwfc029077
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:26:58 +0530
+ Tue, 10 Jun 2014 11:57:02 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8BB632CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:01 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5A1Z1fT12386656
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:35:01 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5A1uxWL031755
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:00 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: benh@au1.ibm.com
-Subject: [RFC PATCH V3 05/17] ppc/pnv: user macro to define the TCE size
-Date: Tue, 10 Jun 2014 09:56:27 +0800
-Message-Id: <1402365399-5121-6-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
+Date: Tue, 10 Jun 2014 09:56:28 +0800
+Message-Id: <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
@@ -39,156 +39,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During the initialization of the TVT/TCE, it uses digits to specify the TCE IO
-Page Size, TCE Table Size, TCE Entry Size, etc.
+Current iommu_table of a PE is a static field. This will have a problem when
+iommu_free_table is called.
 
-This patch replaces those digits with macros, which will be more meaningful and
-easy to read.
+This patch allocate iommu_table dynamically.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/tce.h            |    3 ++-
- arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++++--------------
- arch/powerpc/platforms/powernv/pci.c      |    2 +-
- arch/powerpc/platforms/powernv/pci.h      |    5 +++++
- 4 files changed, 19 insertions(+), 16 deletions(-)
+ arch/powerpc/include/asm/iommu.h          |    3 +++
+ arch/powerpc/platforms/powernv/pci-ioda.c |   24 +++++++++++++-----------
+ arch/powerpc/platforms/powernv/pci.h      |    2 +-
+ 3 files changed, 17 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
-index 743f36b..28a1d06 100644
---- a/arch/powerpc/include/asm/tce.h
-+++ b/arch/powerpc/include/asm/tce.h
-@@ -40,7 +40,8 @@
- #define TCE_SHIFT	12
- #define TCE_PAGE_SIZE	(1 << TCE_SHIFT)
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 42632c7..0fedacb 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -78,6 +78,9 @@ struct iommu_table {
+ 	struct iommu_group *it_group;
+ #endif
+ 	void (*set_bypass)(struct iommu_table *tbl, bool enable);
++#ifdef CONFIG_PPC_POWERNV
++	void           *data;
++#endif
+ };
  
--#define TCE_ENTRY_SIZE		8		/* each TCE is 64 bits */
-+#define TCE_ENTRY_SHIFT		3
-+#define TCE_ENTRY_SIZE		(1 << TCE_ENTRY_SHIFT)	/* each TCE is 64 bits */
- 
- #define TCE_RPN_MASK		0xfffffffffful  /* 40-bit RPN (4K pages) */
- #define TCE_RPN_SHIFT		12
+ /* Pure 2^n version of get_order */
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 8ae09cf..9715351 100644
+index 9715351..8ca3926 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -820,9 +820,6 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	int64_t rc;
- 	void *addr;
- 
--	/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
--#define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
--
- 	/* XXX FIXME: Handle 64-bit only DMA devices */
- 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
- 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
-@@ -834,7 +831,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	/* Grab a 32-bit TCE table */
- 	pe->tce32_seg = base;
- 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
--		(base << 28), ((base + segs) << 28) - 1);
-+		(base << PNV_TCE32_SEG_SHIFT), ((base + segs) << PNV_TCE32_SEG_SHIFT) - 1);
- 
- 	/* XXX Currently, we allocate one big contiguous table for the
- 	 * TCEs. We only really need one chunk per 256M of TCE space
-@@ -842,21 +839,21 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	 * requires some added smarts with our get/put_tce implementation
- 	 */
- 	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
--				   get_order(TCE32_TABLE_SIZE * segs));
-+				   get_order(PNV_TCE32_TAB_SIZE * segs));
- 	if (!tce_mem) {
- 		pe_err(pe, " Failed to allocate a 32-bit TCE memory\n");
- 		goto fail;
+@@ -608,6 +608,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 		return;
  	}
- 	addr = page_address(tce_mem);
--	memset(addr, 0, TCE32_TABLE_SIZE * segs);
-+	memset(addr, 0, PNV_TCE32_TAB_SIZE * segs);
  
- 	/* Configure HW */
- 	for (i = 0; i < segs; i++) {
- 		rc = opal_pci_map_pe_dma_window(phb->opal_id,
- 					      pe->pe_number,
- 					      base + i, 1,
--					      __pa(addr) + TCE32_TABLE_SIZE * i,
--					      TCE32_TABLE_SIZE, 0x1000);
-+					      __pa(addr) + PNV_TCE32_TAB_SIZE * i,
-+					      PNV_TCE32_TAB_SIZE, TCE_PAGE_SIZE);
- 		if (rc) {
- 			pe_err(pe, " Failed to configure 32-bit TCE table,"
- 			       " err %ld\n", rc);
-@@ -866,8 +863,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
++	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
++			GFP_KERNEL, hose->node);
++	pe->tce32_table->data = pe;
++
+ 	/* Associate it with all child devices */
+ 	pnv_ioda_setup_same_PE(bus, pe);
+ 
+@@ -675,7 +679,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+ 
+ 	pe = &phb->ioda.pe_array[pdn->pe_number];
+ 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+-	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
++	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
+ }
+ 
+ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+@@ -702,7 +706,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+ 	} else {
+ 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+ 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+-		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
++		set_iommu_table_base(&pdev->dev, pe->tce32_table);
+ 	}
+ 	return 0;
+ }
+@@ -712,7 +716,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
+ 	struct pci_dev *dev;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		set_iommu_table_base_and_group(&dev->dev, &pe->tce32_table);
++		set_iommu_table_base_and_group(&dev->dev, pe->tce32_table);
+ 		if (dev->subordinate)
+ 			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
+ 	}
+@@ -798,8 +802,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 				 __be64 *startp, __be64 *endp, bool rm)
+ {
+-	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
++	struct pnv_ioda_pe *pe = tbl->data;
+ 	struct pnv_phb *phb = pe->phb;
+ 
+ 	if (phb->type == PNV_PHB_IODA1)
+@@ -862,7 +865,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	}
  
  	/* Setup linux iommu table */
- 	tbl = &pe->tce32_table;
--	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
--				  base << 28);
-+	pnv_pci_setup_iommu_table(tbl, addr, PNV_TCE32_TAB_SIZE * segs,
-+				  base << PNV_TCE32_SEG_SHIFT);
+-	tbl = &pe->tce32_table;
++	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, PNV_TCE32_TAB_SIZE * segs,
+ 				  base << PNV_TCE32_SEG_SHIFT);
  
- 	/* OPAL variant of P7IOC SW invalidated TCEs */
- 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
-@@ -898,7 +895,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	if (pe->tce32_seg >= 0)
- 		pe->tce32_seg = -1;
- 	if (tce_mem)
--		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
-+		__free_pages(tce_mem, get_order(PNV_TCE32_TAB_SIZE * segs));
- }
+@@ -900,8 +903,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
  
  static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
-@@ -968,7 +965,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	/* The PE will reserve all possible 32-bits space */
- 	pe->tce32_seg = 0;
- 	end = (1 << ilog2(phb->ioda.m32_pci_base));
--	tce_table_size = (end / 0x1000) * 8;
-+	tce_table_size = (end / TCE_PAGE_SIZE) * TCE_ENTRY_SIZE;
- 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
- 		end);
+ {
+-	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+-					      tce32_table);
++	struct pnv_ioda_pe *pe = tbl->data;
+ 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+ 	int64_t rc;
  
-@@ -988,7 +985,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	 */
- 	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
- 					pe->pe_number << 1, 1, __pa(addr),
--					tce_table_size, 0x1000);
-+					tce_table_size, TCE_PAGE_SIZE);
- 	if (rc) {
- 		pe_err(pe, "Failed to configure 32-bit TCE table,"
- 		       " err %ld\n", rc);
-@@ -1573,7 +1570,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	INIT_LIST_HEAD(&phb->ioda.pe_list);
+@@ -942,10 +944,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+ 	pe->tce_bypass_base = 1ull << 59;
  
- 	/* Calculate how many 32-bit TCE segments we have */
--	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
-+	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> PNV_TCE32_SEG_SHIFT;
+ 	/* Install set_bypass callback for VFIO */
+-	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
++	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
  
- #if 0 /* We should really do that ... */
- 	rc = opal_pci_set_phb_mem_window(opal->phb_id,
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 8518817..687a068 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -597,7 +597,7 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 	tbl->it_page_shift = IOMMU_PAGE_SHIFT_4K;
- 	tbl->it_offset = dma_offset >> tbl->it_page_shift;
- 	tbl->it_index = 0;
--	tbl->it_size = tce_size >> 3;
-+	tbl->it_size = tce_size >> TCE_ENTRY_SHIFT;
- 	tbl->it_busno = 0;
- 	tbl->it_type = TCE_PCI;
+ 	/* Enable bypass by default */
+-	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
++	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
  }
+ 
+ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+@@ -993,7 +995,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	}
+ 
+ 	/* Setup linux iommu table */
+-	tbl = &pe->tce32_table;
++	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0);
+ 
+ 	/* OPAL variant of PHB3 invalidated TCEs */
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 3e5f5a1..90f6da4 100644
+index 90f6da4..9fbf7c0 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -227,4 +227,9 @@ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
- extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
- 					__be64 *startp, __be64 *endp, bool rm);
+@@ -60,7 +60,7 @@ struct pnv_ioda_pe {
+ 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+ 	int			tce32_seg;
+ 	int			tce32_segcount;
+-	struct iommu_table	tce32_table;
++	struct iommu_table	*tce32_table;
+ 	phys_addr_t		tce_inval_reg_phys;
  
-+#define PNV_TCE32_SEG_SHIFT     28
-+#define PNV_TCE32_SEG_SIZE      (1UL << PNV_TCE32_SEG_SHIFT)
-+/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
-+#define PNV_TCE32_TAB_SIZE	((PNV_TCE32_SEG_SIZE / TCE_PAGE_SIZE) * TCE_ENTRY_SIZE)
-+
- #endif /* __POWERNV_PCI_H */
+ 	/* 64-bit TCE bypass region */
 -- 
 1.7.9.5
