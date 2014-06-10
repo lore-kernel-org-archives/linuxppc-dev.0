@@ -1,31 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D58D1A0257
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FCBC1A029B
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:01 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Jun 2014 07:26:57 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id A9061E0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:53 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5A1vjqm5374302
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:45 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5A1usVo012948
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:26:54 +0530
+ Tue, 10 Jun 2014 07:26:59 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 05E50E0044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:56 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5A1vB0e10944832
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:11 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5A1uu6n021033
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:26:57 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: benh@au1.ibm.com
-Subject: [RFC PATCH V3 02/17] pci/of: Match PCI VFs to dev-tree nodes
- dynamically
-Date: Tue, 10 Jun 2014 09:56:24 +0800
-Message-Id: <1402365399-5121-3-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [RFC PATCH V3 04/17] PCI: SRIOV: add VF enable/disable hook
+Date: Tue, 10 Jun 2014 09:56:26 +0800
+Message-Id: <1402365399-5121-5-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
@@ -40,28 +39,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As introduced by commit 98d9f30c82 ("pci/of: Match PCI devices to dev-tree nodes
-dynamically"), we need to match PCI devices to their corresponding dev-tree
-nodes. While for VFs, this step was missed.
+VFs are dynamically created/released when driver enable them. On some
+platforms, like PowerNV, special resources are necessary to enable VFs.
 
-This patch matches VFs' PCI devices to dev-tree nodes dynamically.
+This patch adds two hooks for platform initialization before creating the VFs.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- drivers/pci/iov.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/pci/iov.c |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
 diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 589ef7d..1d21f43 100644
+index 1d21f43..cc87773 100644
 --- a/drivers/pci/iov.c
 +++ b/drivers/pci/iov.c
-@@ -67,6 +67,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+@@ -250,6 +250,11 @@ static void sriov_disable_migration(struct pci_dev *dev)
+ 	iounmap(iov->mstate);
+ }
  
- 	virtfn->devfn = pci_iov_virtfn_devfn(dev, id);
- 	virtfn->vendor = dev->vendor;
-+	pci_set_of_node(virtfn);
- 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_DID, &virtfn->device);
- 	pci_setup_device(virtfn);
- 	virtfn->dev.parent = dev->dev.parent;
++int __weak pcibios_sriov_enable(struct pci_dev *pdev, u16 vf_num)
++{
++       return 0;
++}
++
+ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ {
+ 	int rc;
+@@ -260,6 +265,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	struct pci_dev *pdev;
+ 	struct pci_sriov *iov = dev->sriov;
+ 	int bars = 0;
++	int retval;
+ 
+ 	if (!nr_virtfn)
+ 		return 0;
+@@ -334,6 +340,12 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	if (nr_virtfn < initial)
+ 		initial = nr_virtfn;
+ 
++	if ((retval = pcibios_sriov_enable(dev, initial))) {
++		dev_err(&dev->dev, "Failure %d from pcibios_sriov_setup()\n",
++				retval);
++		return retval;
++	}
++
+ 	for (i = 0; i < initial; i++) {
+ 		rc = virtfn_add(dev, i, 0);
+ 		if (rc)
+@@ -368,6 +380,11 @@ failed:
+ 	return rc;
+ }
+ 
++int __weak pcibios_sriov_disable(struct pci_dev *pdev)
++{
++       return 0;
++}
++
+ static void sriov_disable(struct pci_dev *dev)
+ {
+ 	int i;
+@@ -382,6 +399,8 @@ static void sriov_disable(struct pci_dev *dev)
+ 	for (i = 0; i < iov->num_VFs; i++)
+ 		virtfn_remove(dev, i, 0);
+ 
++	pcibios_sriov_disable(dev);
++
+ 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+ 	pci_cfg_access_lock(dev);
+ 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
 -- 
 1.7.9.5
