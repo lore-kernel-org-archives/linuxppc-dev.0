@@ -1,19 +1,25 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by lists.ozlabs.org (Postfix) with ESMTP id 6D8581A00DA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 23:09:34 +1000 (EST)
-From: Alexander Gordeev <agordeev@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-Date: Tue, 10 Jun 2014 15:10:30 +0200
-Message-Id: <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
-In-Reply-To: <cover.1402405331.git.agordeev@redhat.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
-Cc: linux-mips@linux-mips.org, linux-s390@vger.kernel.org,
- linux-pci@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org,
- linux-ide@vger.kernel.org, iommu@lists.linux-foundation.org,
- Alexander Gordeev <agordeev@redhat.com>, xen-devel@lists.xenproject.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::4])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E7001A00DB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 23:20:21 +1000 (EST)
+Message-ID: <5397060F.9010308@xenosoft.de>
+Date: Tue, 10 Jun 2014 15:20:15 +0200
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Kernel 3.15: Boot problems with a PA6T board
+References: <5366649E.4030102@xenosoft.de>			
+ <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>		
+ <1401107166.23096.1.camel@concordia> <53851AFA.5040504@xenosoft.de>	
+ <1401251015.5468.5.camel@concordia> <5385A3F4.8070004@xenosoft.de>	
+ <5385C7A3.1080508@xenosoft.de> <1401331711.4930.7.camel@concordia>
+ <5389AEB6.4030500@xenosoft.de> <5389B686.7070305@xenosoft.de>
+ <538A58D4.5090602@xenosoft.de> <5396E4D6.60306@xenosoft.de>
+In-Reply-To: <5396E4D6.60306@xenosoft.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,381 +29,202 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are PCI devices that require a particular value written
-to the Multiple Message Enable (MME) register while aligned on
-power of 2 boundary value of actually used MSI vectors 'nvec'
-is a lesser of that MME value:
+Hi All,
 
-	roundup_pow_of_two(nvec) < 'Multiple Message Enable'
+Could you help me to remove the changes of the PCI code, please? Or 
+which patches shall I remove to get the old PCI code?
 
-However the existing pci_enable_msi_block() interface is not
-able to configure such devices, since the value written to the
-MME register is calculated from the number of requested MSIs
-'nvec':
+Cheers,
 
-	'Multiple Message Enable' = roundup_pow_of_two(nvec)
+Christian
 
-In this case the result written to the MME register may not
-satisfy the aforementioned PCI devices requirement and therefore
-the PCI functions will not operate in a desired mode.
-
-This update introduces pci_enable_msi_partial() extension to
-pci_enable_msi_block() interface that accepts extra 'nvec_mme'
-argument which is then written to MME register while the value
-of 'nvec' is still used to setup as many interrupts as requested.
-
-As result of this change, architecture-specific callbacks
-arch_msi_check_device() and arch_setup_msi_irqs() get an extra
-'nvec_mme' parameter as well, but it is ignored for now.
-Therefore, this update is a placeholder for architectures that
-wish to support pci_enable_msi_partial() function in the future.
-
-Cc: linux-doc@vger.kernel.org
-Cc: linux-mips@linux-mips.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-s390@vger.kernel.org
-Cc: x86@kernel.org
-Cc: xen-devel@lists.xenproject.org
-Cc: iommu@lists.linux-foundation.org
-Cc: linux-ide@vger.kernel.org
-Cc: linux-pci@vger.kernel.org
-Signed-off-by: Alexander Gordeev <agordeev@redhat.com>
----
- Documentation/PCI/MSI-HOWTO.txt |   36 ++++++++++++++--
- arch/mips/pci/msi-octeon.c      |    2 +-
- arch/powerpc/kernel/msi.c       |    4 +-
- arch/s390/pci/pci.c             |    2 +-
- arch/x86/kernel/x86_init.c      |    2 +-
- drivers/pci/msi.c               |   83 ++++++++++++++++++++++++++++++++++-----
- include/linux/msi.h             |    5 +-
- include/linux/pci.h             |    3 +
- 8 files changed, 115 insertions(+), 22 deletions(-)
-
-diff --git a/Documentation/PCI/MSI-HOWTO.txt b/Documentation/PCI/MSI-HOWTO.txt
-index 10a9369..c8a8503 100644
---- a/Documentation/PCI/MSI-HOWTO.txt
-+++ b/Documentation/PCI/MSI-HOWTO.txt
-@@ -195,14 +195,40 @@ By contrast with pci_enable_msi_range() function, pci_enable_msi_exact()
- returns zero in case of success, which indicates MSI interrupts have been
- successfully allocated.
- 
--4.2.4 pci_disable_msi
-+4.2.4 pci_enable_msi_partial
-+
-+int pci_enable_msi_partial(struct pci_dev *dev, int nvec, int nvec_mme)
-+
-+This variation on pci_enable_msi_exact() call allows a device driver to
-+setup 'nvec_mme' number of multiple MSIs with the PCI function, while
-+setup only 'nvec' (which could be a lesser of 'nvec_mme') number of MSIs
-+in operating system. The MSI specification only allows 'nvec_mme' to be
-+allocated in powers of two, up to a maximum of 2^5 (32).
-+
-+This function could be used when a PCI function is known to send 'nvec'
-+MSIs, but still requires a particular number of MSIs 'nvec_mme' to be
-+initialized with. As result, 'nvec_mme' - 'nvec' number of unused MSIs
-+do not waste system resources.
-+
-+If this function returns 0, it has succeeded in allocating 'nvec_mme'
-+interrupts and setting up 'nvec' interrupts. In this case, the function
-+enables MSI on this device and updates dev->irq to be the lowest of the
-+new interrupts assigned to it.  The other interrupts assigned to the
-+device are in the range dev->irq to dev->irq + nvec - 1.
-+
-+If this function returns a negative number, it indicates an error and
-+the driver should not attempt to request any more MSI interrupts for
-+this device.
-+
-+4.2.5 pci_disable_msi
- 
- void pci_disable_msi(struct pci_dev *dev)
- 
--This function should be used to undo the effect of pci_enable_msi_range().
--Calling it restores dev->irq to the pin-based interrupt number and frees
--the previously allocated MSIs.  The interrupts may subsequently be assigned
--to another device, so drivers should not cache the value of dev->irq.
-+This function should be used to undo the effect of pci_enable_msi_range()
-+or pci_enable_msi_partial(). Calling it restores dev->irq to the pin-based
-+interrupt number and frees the previously allocated MSIs.  The interrupts
-+may subsequently be assigned to another device, so drivers should not cache
-+the value of dev->irq.
- 
- Before calling this function, a device driver must always call free_irq()
- on any interrupt for which it previously called request_irq().
-diff --git a/arch/mips/pci/msi-octeon.c b/arch/mips/pci/msi-octeon.c
-index 2b91b0e..2be7979 100644
---- a/arch/mips/pci/msi-octeon.c
-+++ b/arch/mips/pci/msi-octeon.c
-@@ -178,7 +178,7 @@ msi_irq_allocated:
- 	return 0;
- }
- 
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int nvec_mme, int type)
- {
- 	struct msi_desc *entry;
- 	int ret;
-diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
-index 8bbc12d..c60aee3 100644
---- a/arch/powerpc/kernel/msi.c
-+++ b/arch/powerpc/kernel/msi.c
-@@ -13,7 +13,7 @@
- 
- #include <asm/machdep.h>
- 
--int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
-+int arch_msi_check_device(struct pci_dev *dev, int nvec, int nvec_mme, int type)
- {
- 	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
- 		pr_debug("msi: Platform doesn't provide MSI callbacks.\n");
-@@ -32,7 +32,7 @@ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
-         return 0;
- }
- 
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int nvec_mme, int type)
- {
- 	return ppc_md.setup_msi_irqs(dev, nvec, type);
- }
-diff --git a/arch/s390/pci/pci.c b/arch/s390/pci/pci.c
-index 9ddc51e..3cf38a8 100644
---- a/arch/s390/pci/pci.c
-+++ b/arch/s390/pci/pci.c
-@@ -398,7 +398,7 @@ static void zpci_irq_handler(struct airq_struct *airq)
- 	}
- }
- 
--int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-+int arch_setup_msi_irqs(struct pci_dev *pdev, int nvec, int nvec_mme, int type)
- {
- 	struct zpci_dev *zdev = get_zdev(pdev);
- 	unsigned int hwirq, msi_vecs;
-diff --git a/arch/x86/kernel/x86_init.c b/arch/x86/kernel/x86_init.c
-index e48b674..b65bf95 100644
---- a/arch/x86/kernel/x86_init.c
-+++ b/arch/x86/kernel/x86_init.c
-@@ -121,7 +121,7 @@ struct x86_msi_ops x86_msi = {
- };
- 
- /* MSI arch specific hooks */
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int nvec_mme, int type)
- {
- 	return x86_msi.setup_msi_irqs(dev, nvec, type);
- }
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 27a7e67..0410d9b 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -56,7 +56,8 @@ void __weak arch_teardown_msi_irq(unsigned int irq)
- 	chip->teardown_irq(chip, irq);
- }
- 
--int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
-+int __weak arch_msi_check_device(struct pci_dev *dev,
-+				 int nvec, int nvec_mme, int type)
- {
- 	struct msi_chip *chip = dev->bus->msi;
- 
-@@ -66,7 +67,8 @@ int __weak arch_msi_check_device(struct pci_dev *dev, int nvec, int type)
- 	return chip->check_device(chip, dev, nvec, type);
- }
- 
--int __weak arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-+int __weak arch_setup_msi_irqs(struct pci_dev *dev,
-+			       int nvec, int nvec_mme, int type)
- {
- 	struct msi_desc *entry;
- 	int ret;
-@@ -598,6 +600,7 @@ error_attrs:
-  * msi_capability_init - configure device's MSI capability structure
-  * @dev: pointer to the pci_dev data structure of MSI device function
-  * @nvec: number of interrupts to allocate
-+ * @nvec_mme: number of interrupts to write to Multiple Message Enable register
-  *
-  * Setup the MSI capability structure of the device with the requested
-  * number of interrupts.  A return value of zero indicates the successful
-@@ -605,7 +608,7 @@ error_attrs:
-  * an error, and a positive return value indicates the number of interrupts
-  * which could have been allocated.
-  */
--static int msi_capability_init(struct pci_dev *dev, int nvec)
-+static int msi_capability_init(struct pci_dev *dev, int nvec, int nvec_mme)
- {
- 	struct msi_desc *entry;
- 	int ret;
-@@ -640,7 +643,7 @@ static int msi_capability_init(struct pci_dev *dev, int nvec)
- 	list_add_tail(&entry->list, &dev->msi_list);
- 
- 	/* Configure MSI capability structure */
--	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
-+	ret = arch_setup_msi_irqs(dev, nvec, nvec_mme, PCI_CAP_ID_MSI);
- 	if (ret) {
- 		msi_mask_irq(entry, mask, ~mask);
- 		free_msi_irqs(dev);
-@@ -758,7 +761,8 @@ static int msix_capability_init(struct pci_dev *dev,
- 	if (ret)
- 		return ret;
- 
--	ret = arch_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
-+	/* Parameter 'nvec_mme' does not make sense in case of MSI-X */
-+	ret = arch_setup_msi_irqs(dev, nvec, 0, PCI_CAP_ID_MSIX);
- 	if (ret)
- 		goto out_avail;
- 
-@@ -812,13 +816,15 @@ out_free:
-  * pci_msi_check_device - check whether MSI may be enabled on a device
-  * @dev: pointer to the pci_dev data structure of MSI device function
-  * @nvec: how many MSIs have been requested ?
-+ * @nvec_mme: how many MSIs write to Multiple Message Enable register ?
-  * @type: are we checking for MSI or MSI-X ?
-  *
-  * Look at global flags, the device itself, and its parent buses
-  * to determine if MSI/-X are supported for the device. If MSI/-X is
-  * supported return 0, else return an error code.
-  **/
--static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
-+static int pci_msi_check_device(struct pci_dev *dev,
-+				int nvec, int nvec_mme, int type)
- {
- 	struct pci_bus *bus;
- 	int ret;
-@@ -846,7 +852,7 @@ static int pci_msi_check_device(struct pci_dev *dev, int nvec, int type)
- 		if (bus->bus_flags & PCI_BUS_FLAGS_NO_MSI)
- 			return -EINVAL;
- 
--	ret = arch_msi_check_device(dev, nvec, type);
-+	ret = arch_msi_check_device(dev, nvec, nvec_mme, type);
- 	if (ret)
- 		return ret;
- 
-@@ -878,6 +884,62 @@ int pci_msi_vec_count(struct pci_dev *dev)
- }
- EXPORT_SYMBOL(pci_msi_vec_count);
- 
-+/**
-+ * pci_enable_msi_partial - configure device's MSI capability structure
-+ * @dev: device to configure
-+ * @nvec: number of interrupts to configure
-+ * @nvec_mme: number of interrupts to write to Multiple Message Enable register
-+ *
-+ * This function tries to allocate @nvec number of interrupts while setup
-+ * device's Multiple Message Enable register with @nvec_mme interrupts.
-+ * It returns a negative errno if an error occurs. If it succeeds, it returns
-+ * zero and updates the @dev's irq member to the lowest new interrupt number;
-+ * the other interrupt numbers allocated to this device are consecutive.
-+ */
-+int pci_enable_msi_partial(struct pci_dev *dev, int nvec, int nvec_mme)
-+{
-+	int maxvec;
-+	int rc;
-+
-+	if (dev->current_state != PCI_D0)
-+		return -EINVAL;
-+
-+	WARN_ON(!!dev->msi_enabled);
-+
-+	/* Check whether driver already requested MSI-X irqs */
-+	if (dev->msix_enabled) {
-+		dev_info(&dev->dev, "can't enable MSI "
-+			 "(MSI-X already enabled)\n");
-+		return -EINVAL;
-+	}
-+
-+	if (!is_power_of_2(nvec_mme))
-+		return -EINVAL;
-+	if (nvec > nvec_mme)
-+		return -EINVAL;
-+
-+	maxvec = pci_msi_vec_count(dev);
-+	if (maxvec < 0)
-+		return maxvec;
-+	else if (nvec_mme > maxvec)
-+		return -EINVAL;
-+
-+	rc = pci_msi_check_device(dev, nvec, nvec_mme, PCI_CAP_ID_MSI);
-+	if (rc < 0)
-+		return rc;
-+	else if (rc > 0)
-+		return -ENOSPC;
-+
-+	rc = msi_capability_init(dev, nvec, nvec_mme);
-+	if (rc < 0)
-+		return rc;
-+	else if (rc > 0)
-+		return -ENOSPC;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(pci_enable_msi_partial);
-+
- void pci_msi_shutdown(struct pci_dev *dev)
- {
- 	struct msi_desc *desc;
-@@ -957,7 +1019,7 @@ int pci_enable_msix(struct pci_dev *dev, struct msix_entry *entries, int nvec)
- 	if (!entries || !dev->msix_cap || dev->current_state != PCI_D0)
- 		return -EINVAL;
- 
--	status = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSIX);
-+	status = pci_msi_check_device(dev, nvec, 0, PCI_CAP_ID_MSIX);
- 	if (status)
- 		return status;
- 
-@@ -1110,7 +1172,8 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- 		nvec = maxvec;
- 
- 	do {
--		rc = pci_msi_check_device(dev, nvec, PCI_CAP_ID_MSI);
-+		rc = pci_msi_check_device(dev, nvec, roundup_pow_of_two(nvec),
-+					  PCI_CAP_ID_MSI);
- 		if (rc < 0) {
- 			return rc;
- 		} else if (rc > 0) {
-@@ -1121,7 +1184,7 @@ int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec)
- 	} while (rc);
- 
- 	do {
--		rc = msi_capability_init(dev, nvec);
-+		rc = msi_capability_init(dev, nvec, roundup_pow_of_two(nvec));
- 		if (rc < 0) {
- 			return rc;
- 		} else if (rc > 0) {
-diff --git a/include/linux/msi.h b/include/linux/msi.h
-index 92a2f99..b9f89ee 100644
---- a/include/linux/msi.h
-+++ b/include/linux/msi.h
-@@ -57,9 +57,10 @@ struct msi_desc {
-  */
- int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
- void arch_teardown_msi_irq(unsigned int irq);
--int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type);
-+int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int nvec_mme, int type);
- void arch_teardown_msi_irqs(struct pci_dev *dev);
--int arch_msi_check_device(struct pci_dev* dev, int nvec, int type);
-+int arch_msi_check_device(struct pci_dev *dev,
-+			  int nvec, int nvec_mme, int type);
- void arch_restore_msi_irqs(struct pci_dev *dev);
- 
- void default_teardown_msi_irqs(struct pci_dev *dev);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 71d9673..7360bd2 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1184,6 +1184,7 @@ void pci_disable_msix(struct pci_dev *dev);
- void msi_remove_pci_irq_vectors(struct pci_dev *dev);
- void pci_restore_msi_state(struct pci_dev *dev);
- int pci_msi_enabled(void);
-+int pci_enable_msi_partial(struct pci_dev *dev, int nvec, int nvec_mme);
- int pci_enable_msi_range(struct pci_dev *dev, int minvec, int maxvec);
- static inline int pci_enable_msi_exact(struct pci_dev *dev, int nvec)
- {
-@@ -1215,6 +1216,8 @@ static inline void pci_disable_msix(struct pci_dev *dev) { }
- static inline void msi_remove_pci_irq_vectors(struct pci_dev *dev) { }
- static inline void pci_restore_msi_state(struct pci_dev *dev) { }
- static inline int pci_msi_enabled(void) { return 0; }
-+static int pci_enable_msi_partial(struct pci_dev *dev, int nvec, int nvec_mme)
-+{ return -ENOSYS; }
- static inline int pci_enable_msi_range(struct pci_dev *dev, int minvec,
- 				       int maxvec)
- { return -ENOSYS; }
--- 
-1.7.7.6
+Am 10.06.14 12:58, schrieb Christian Zigotzky:
+> Hi Michael,
+>
+> I have two times bisected with git. It seems the commit "PCI: Remove 
+> pci_find_parent_resource() use for allocation" is the problem. I have 
+> removed this patch from the kernel source code but unfortunately the 
+> kernel doesn't boot. Have you another tip for me, please?
+>
+> Cheers,
+>
+> Christian
+>
+> Am 01.06.14 00:33, schrieb Christian Zigotzky:
+>> On 31.05.2014 13:01, Christian Zigotzky wrote:
+>>> On 31.05.2014 12:28, Christian Zigotzky wrote:
+>>>> On 29.05.2014 04:48, Michael Ellerman wrote:
+>>>>> On Wed, 2014-05-28 at 13:25 +0200, Christian Zigotzky wrote:
+>>>>>> On 28.05.2014 10:53, Christian Zigotzky wrote:
+>>>>>>> Hi Michael,
+>>>>>>>
+>>>>>>> Thank you for your answer and thank you for your help. :-)
+>>>>>>>
+>>>>>>> On 28.05.2014 06:23, Michael Ellerman wrote:
+>>>>>>>> On Wed, 2014-05-28 at 01:08 +0200, Christian Zigotzky wrote:
+>>>>>>>>
+>>>>>>>> I'm going to guess that 
+>>>>>>>> cd427485357c0c4b99f69719251baacf25946e11 is
+>>>>>>>> BAD. Can
+>>>>>>>> you please confirm or deny that?
+>>>>>>> It's not BAD. It boots.
+>>>>> Hmm, interesting.
+>>>>>
+>>>>>>>> If cd42748 is *good*, then you'll need to do a bigger bisect from
+>>>>>>>> d8ff9cd to
+>>>>>>>> 18a1a7a.
+>>>>>> OK :-)
+>>>>>>
+>>>>>> -> git clone
+>>>>>> git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git 
+>>>>>> linux2-git
+>>>>>> -> git bisect start
+>>>>>> -> git bisect good d8ff9cdf68fd119d491f3de90e1a612afc2f3b2b
+>>>>>> -> git bisect bad 18a1a7a1d862ae0794a0179473d08a414dd49234
+>>>>>>
+>>>>>> Output:
+>>>>>> Bisecting: 5900 revisions left to test after this (roughly 13 steps)
+>>>>>> [cb1595563880a81dab6eab9a5ecb4520d2e76077] Merge tag 
+>>>>>> 'tty-3.15-rc1' of
+>>>>>> git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
+>>>>>>
+>>>>>> Unfortunately it doesn't boot. :-(
+>>>>> OK. So you do:
+>>>>>
+>>>>> $ git bisect bad
+>>>>>
+>>>>> And it will pick a new commit for you to test. Repeat that ~13 
+>>>>> times and you
+>>>>> should have identified the bad commit.
+>>>> OK :-)
+>>>>
+>>>> git bisect bad
+>>>> Bisecting: 2902 revisions left to test after this (roughly 12 steps)
+>>>> [b22f136071b1a797e96b3ee6fb0dc32625bd152e] staging: rtl8821ae: Fix 
+>>>> quoted string split across lines <- Kernel boots :-)
+>>>>
+>>>> What shall I do next?
+>>> OK, I know it: git bisect good
+>>>
+>>> -- Christian
+>>>
+>> git bisect good
+>> Bisecting: 1494 revisions left to test after this (roughly 11 steps)
+>> [3786075b5ebc8c4eaefd9e3ebf72883934fb64b3] Merge tag 
+>> 'regulator-v3.15' of 
+>> git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator <- 
+>> Kernel boots
+>>
+>> git bisect good
+>> Bisecting: 797 revisions left to test after this (roughly 10 steps)
+>> [69dd89fd2b9406603d218cab8996cfb232d5b8b9] Merge tag 'asoc-v3.15-4' 
+>> of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound into 
+>> for-linus <- Kernel boots
+>>
+>> git bisect good
+>> Bisecting: 372 revisions left to test after this (roughly 9 steps)
+>> [4b1779c2cf030c68aefe939d946475e4136c1895] Merge tag 
+>> 'pci-v3.15-changes' of 
+>> git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci <- Doesn't 
+>> boot
+>>
+>> git bisect bad
+>> Bisecting: 212 revisions left to test after this (roughly 8 steps)
+>> [45b15d98a96ffdb3c608bdad952f51930c151420] Merge remote-tracking 
+>> branches 'spi/topic/xilinx' and 'spi/topic/xtfpga' into spi-next <- 
+>> Kernel boots
+>>
+>> git bisect good
+>> Bisecting: 118 revisions left to test after this (roughly 7 steps)
+>> [91b4adc983d8e9975bc677c2b8395631edf7b92d] Merge branch 'pci/misc' 
+>> into next <- Kernel boots
+>>
+>> git bisect good
+>> Bisecting: 41 revisions left to test after this (roughly 6 steps)
+>> [26f31fb936042459d481557a83bda7a3f4d61906] Merge tag 
+>> 'hwmon-for-linus' of 
+>> git://git.kernel.org/pub/scm/linux/kernel/git/groeck/linux-staging <- 
+>> Kernel boots
+>>
+>> git bisect good
+>> Bisecting: 20 revisions left to test after this (roughly 4 steps)
+>> [e20fa6609a0076def469aeb799b1c25558e70042] PCI: Don't check 
+>> resource_size() in pci_bus_alloc_resource() <- Doesn't boot
+>>
+>> git bisect bad
+>> Bisecting: 10 revisions left to test after this (roughly 3 steps)
+>> [cd8a4d3657c3f2cf9ce3780707be1debb8fea6e2] PCI: Check 
+>> IORESOURCE_UNSET before updating BAR <- Doesn't boot
+>>
+>> git bisect bad
+>> Bisecting: 4 revisions left to test after this (roughly 2 steps)
+>> [5edb93b89f6cc3089ee283656555e7a9ad36a8a0] resource: Add 
+>> resource_contains() <- Kernel boots
+>>
+>> git bisect good
+>> Bisecting: 2 revisions left to test after this (roughly 1 step)
+>> [f44116ae881868ab72274df1eff48fdbde9898af] PCI: Remove 
+>> pci_find_parent_resource() use for allocation <- Doesn't boot
+>>
+>> git bisect bad
+>> Bisecting: 0 revisions left to test after this (roughly 0 steps)
+>> [d19cb803a2ff85d1b64b9628e1aec2aa76a9260b] vsprintf: Add support for 
+>> IORESOURCE_UNSET in %pR <- Kernel boots
+>>
+>> git bisect good
+>> f44116ae881868ab72274df1eff48fdbde9898af is the first bad commit
+>> commit f44116ae881868ab72274df1eff48fdbde9898af
+>> Author: Bjorn Helgaas <bhelgaas@google.com>
+>> Date:   Wed Feb 26 11:25:58 2014 -0700
+>>
+>>     PCI: Remove pci_find_parent_resource() use for allocation
+>>
+>>     If the resource hasn't been allocated yet, 
+>> pci_find_parent_resource() is
+>>     documented as returning the region "where it should be allocated 
+>> from."
+>>     This is impossible in general because there may be several 
+>> candidates: a
+>>     prefetchable BAR can be put in either a prefetchable or 
+>> non-prefetchable
+>>     window, a transparent bridge may have overlapping positively- and
+>>     subtractively-decoded windows, and a root bus may have several 
+>> windows of
+>>     the same type.
+>>
+>>     Allocation should be done by pci_bus_alloc_resource(), which 
+>> iterates
+>>     through all bus resources and looks for the best match, e.g., one 
+>> with the
+>>     desired prefetchability attributes, and falls back to less-desired
+>>     possibilities.
+>>
+>>     The only valid use of pci_find_parent_resource() is to find the 
+>> parent of
+>>     an already-allocated resource so we can claim it via 
+>> request_resource(),
+>>     and all we need for that is a bus region of the correct type that 
+>> contains
+>>     the resource.
+>>
+>>     Note that like 8c8def26bfaa ("PCI: allow matching of prefetchable 
+>> resources
+>>     to non-prefetchable windows"), this depends on 
+>> pci_bus_for_each_resource()
+>>     iterating through positively-decoded regions before 
+>> subtractively-decoded
+>>     ones.  We prefer not to return a subtractively-decoded region 
+>> because
+>>     requesting from it will likely conflict with the overlapping 
+>> positively-
+>>     decoded window (see Launchpad report below).
+>>
+>>     Link: https://bugs.launchpad.net/ubuntu/+source/linux/+bug/424142
+>>     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+>>     CC: Linus Torvalds <torvalds@linux-foundation.org>
+>>
+>> :040000 040000 d9f2e04d3a635126a3c42406400b156aea3d2e30 
+>> 43278454117307fa7e155fb241b16b1863ea45d0 M    drivers
+>>
+>>
+>
