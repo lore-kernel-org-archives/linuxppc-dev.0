@@ -1,25 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <joel@jms.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 58B3E1A00D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 15:05:01 +1000 (EST)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BED11A00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 16:05:46 +1000 (EST)
+Received: from mail-pb0-x22d.google.com (mail-pb0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c01::22d])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9E2A6140078
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2014 15:04:59 +1000 (EST)
-Message-ID: <1402376680.14780.12.camel@pasglop>
-Subject: [PATCH] powerpc: Add AT_HWCAP2 to indicate V.CRYPTO category support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 10 Jun 2014 15:04:40 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Diane Brent <drbrent@us.ibm.com>,
- Adhemerval Zanella <azanella@linux.vnet.ibm.com>,
- Jeffrey Scheel <scheel@us.ibm.com>, Steve Munroe <sjmunroe@us.ibm.com>,
- Hanns-Joachim Uhl <hannsj_uhl@de.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 9AF701400A8
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Jun 2014 16:05:44 +1000 (EST)
+Received: by mail-pb0-f45.google.com with SMTP id um1so5917900pbc.32
+ for <linuxppc-dev@ozlabs.org>; Mon, 09 Jun 2014 23:05:42 -0700 (PDT)
+From: Joel Stanley <joel@jms.id.au>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc/powernv: Fix reading of OPAL msglog
+Date: Tue, 10 Jun 2014 16:03:59 +1000
+Message-Id: <1402380239-14583-1-git-send-email-joel@jms.id.au>
+Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The Vector Crypto category instructions are supported by current POWER8
-chips, advertise them to userspace using a specific bit to properly
-differentiate with chips of the same architecture level that might not
-have them.
+memory_return_from_buffer returns a signed value, so ret should be
+ssize_t.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: <stable@vger.kernel.org> [v3.10+]
---
+Fixes the following issue reported by David Binderman:
 
-diff --git a/arch/powerpc/include/uapi/asm/cputable.h b/arch/powerpc/include/uapi/asm/cputable.h
-index 5b76579..de2c0e4 100644
---- a/arch/powerpc/include/uapi/asm/cputable.h
-+++ b/arch/powerpc/include/uapi/asm/cputable.h
-@@ -41,5 +41,6 @@
- #define PPC_FEATURE2_EBB		0x10000000
- #define PPC_FEATURE2_ISEL		0x08000000
- #define PPC_FEATURE2_TAR		0x04000000
-+#define PPC_FEATURE2_VEC_CRYPTO		0x02000000
+  [linux-3.15/arch/powerpc/platforms/powernv/opal-msglog.c:65]: (style)
+  Checking if unsigned variable 'ret' is less than zero.
+  [linux-3.15/arch/powerpc/platforms/powernv/opal-msglog.c:82]: (style)
+  Checking if unsigned variable 'ret' is less than zero.
+
+  Local variable "ret" is of type size_t. This is always unsigned,
+  so it is pointless to check if it is less than zero.
+
+  https://bugzilla.kernel.org/show_bug.cgi?id=77551
+
+Fixing this exposes a real bug for the case where the entire count
+bytes is successfully read from the POS_WRAP case. The second
+memory_read_from_buffer will return EINVAL, causing the entire read to
+return EINVAL to userspace, despite the data being copied correctly. The
+fix is to test for the case where the data has been read and return
+early.
+
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/platforms/powernv/opal-msglog.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/powernv/opal-msglog.c b/arch/powerpc/platforms/powernv/opal-msglog.c
+index 1bb25b9..44ed78a 100644
+--- a/arch/powerpc/platforms/powernv/opal-msglog.c
++++ b/arch/powerpc/platforms/powernv/opal-msglog.c
+@@ -37,7 +37,8 @@ static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
+ {
+ 	struct memcons *mc = bin_attr->private;
+ 	const char *conbuf;
+-	size_t ret, first_read = 0;
++	ssize_t ret;
++	size_t first_read = 0;
+ 	uint32_t out_pos, avail;
  
- #endif /* _UAPI__ASM_POWERPC_CPUTABLE_H */
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index c1faade..11da04a 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -109,7 +109,8 @@ extern void __restore_cpu_e6500(void);
- 				 PPC_FEATURE_PSERIES_PERFMON_COMPAT)
- #define COMMON_USER2_POWER8	(PPC_FEATURE2_ARCH_2_07 | \
- 				 PPC_FEATURE2_HTM_COMP | PPC_FEATURE2_DSCR | \
--				 PPC_FEATURE2_ISEL | PPC_FEATURE2_TAR)
-+				 PPC_FEATURE2_ISEL | PPC_FEATURE2_TAR | \
-+				 PPC_FEATURE2_VEC_CRYPTO)
- #define COMMON_USER_PA6T	(COMMON_USER_PPC64 | PPC_FEATURE_PA6T |\
- 				 PPC_FEATURE_TRUE_LE | \
- 				 PPC_FEATURE_HAS_ALTIVEC_COMP)
+ 	if (!mc)
+@@ -69,6 +70,9 @@ static ssize_t opal_msglog_read(struct file *file, struct kobject *kobj,
+ 		to += first_read;
+ 		count -= first_read;
+ 		pos -= avail;
++
++		if (count <= 0)
++			goto out;
+ 	}
+ 
+ 	/* Sanity check. The firmware should not do this to us. */
+-- 
+2.0.0
