@@ -1,14 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22E571A00D9
+ by lists.ozlabs.org (Postfix) with ESMTPS id 750581A00D9
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 22:23:17 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/4] selftests/powerpc: Fix instruction loop for ABIv2 (LE)
-Date: Tue, 10 Jun 2014 22:23:07 +1000
-Message-Id: <1402402990-31925-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/4] selftests/powerpc: Put the test in a separate process
+ group
+Date: Tue, 10 Jun 2014 22:23:08 +1000
+Message-Id: <1402402990-31925-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1402402990-31925-1-git-send-email-mpe@ellerman.id.au>
+References: <1402402990-31925-1-git-send-email-mpe@ellerman.id.au>
 Cc: sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,94 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Allows us to kill the test and any children it has spawned.
+
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- tools/testing/selftests/powerpc/pmu/loop.S | 73 ++++++++++++++----------------
- 1 file changed, 35 insertions(+), 38 deletions(-)
+ tools/testing/selftests/powerpc/harness.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/pmu/loop.S b/tools/testing/selftests/powerpc/pmu/loop.S
-index 8820e3d..20c1f08 100644
---- a/tools/testing/selftests/powerpc/pmu/loop.S
-+++ b/tools/testing/selftests/powerpc/pmu/loop.S
-@@ -3,44 +3,41 @@
-  * Licensed under GPLv2.
-  */
+diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
+index e80c42a..532ddff 100644
+--- a/tools/testing/selftests/powerpc/harness.c
++++ b/tools/testing/selftests/powerpc/harness.c
+@@ -30,12 +30,15 @@ int run_test(int (test_function)(void), char *name)
  
-+#include <ppc-asm.h>
+ 	pid = fork();
+ 	if (pid == 0) {
++		setpgid(0, 0);
+ 		exit(test_function());
+ 	} else if (pid == -1) {
+ 		perror("fork");
+ 		return 1;
+ 	}
+ 
++	setpgid(pid, pid);
 +
- 	.text
+ 	/* Wake us up in timeout seconds */
+ 	alarm(TIMEOUT);
+ 	terminated = false;
+@@ -50,17 +53,20 @@ wait:
  
--	.global thirty_two_instruction_loop
--	.type .thirty_two_instruction_loop,@function
--	.section ".opd","aw",@progbits
--thirty_two_instruction_loop:
--	.quad .thirty_two_instruction_loop, .TOC.@tocbase, 0
--	.previous
--.thirty_two_instruction_loop:
--	cmpwi	%r3,0
-+FUNC_START(thirty_two_instruction_loop)
-+	cmpdi	r3,0
- 	beqlr
--	addi	%r4,%r3,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1
--	addi	%r4,%r4,1	# 28 addi's
--	subi	%r3,%r3,1
--	b	.thirty_two_instruction_loop
-+	addi	r4,r3,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1
-+	addi	r4,r4,1	# 28 addi's
-+	subi	r3,r3,1
-+	b	FUNC_NAME(thirty_two_instruction_loop)
-+FUNC_END(thirty_two_instruction_loop)
+ 		if (terminated) {
+ 			printf("!! force killing %s\n", name);
+-			kill(pid, SIGKILL);
++			kill(-pid, SIGKILL);
+ 			return 1;
+ 		} else {
+ 			printf("!! killing %s\n", name);
+-			kill(pid, SIGTERM);
++			kill(-pid, SIGTERM);
+ 			terminated = true;
+ 			alarm(KILL_TIMEOUT);
+ 			goto wait;
+ 		}
+ 	}
+ 
++	/* Kill anything else in the process group that is still running */
++	kill(-pid, SIGTERM);
++
+ 	if (WIFEXITED(status))
+ 		status = WEXITSTATUS(status);
+ 	else {
 -- 
 1.9.1
