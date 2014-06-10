@@ -1,30 +1,31 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 29A9D1A00D9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:08 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 56B1F1A0294
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:11 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Jun 2014 11:57:06 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A65003578047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:02 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5A1uk8Z7274900
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:56:47 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5A1v1DX023939
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 11:57:02 +1000
+ Tue, 10 Jun 2014 07:27:09 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 18F193940049
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:07 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5A1vJ6l46792840
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:19 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5A1v6CK013243
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 07:27:06 +0530
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: benh@au1.ibm.com
-Subject: [RFC PATCH V3 07/17] ppc/pnv: Add function to deconfig a PE
-Date: Tue, 10 Jun 2014 09:56:29 +0800
-Message-Id: <1402365399-5121-8-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [RFC PATCH V3 08/17] PCI: Add weak pcibios_sriov_resource_size()
+ interface
+Date: Tue, 10 Jun 2014 09:56:30 +0800
+Message-Id: <1402365399-5121-9-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
@@ -39,102 +40,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PowerNV platform, it will support dynamic PE allocation and deallocation.
+When retrieving sriov resource size in pci_sriov_resource_size(), it will
+divide the total IOV resource size with the totalVF number. This is true for
+most cases, while may not be correct on some specific platform.
 
-This patch adds a function to release those resources related to a PE.
+For example on powernv platform, in order to fix the IOV BAR into a hardware
+alignment, the IOV resource size would be expended. This means the original
+method couldn't work.
+
+This patch introduces a weak pcibios_sriov_resource_size() interface, which
+gives platform a chance to implement specific method to calculate the sriov
+resource size.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |   77 +++++++++++++++++++++++++++++
- 1 file changed, 77 insertions(+)
+ drivers/pci/iov.c   |   27 +++++++++++++++++++++++++--
+ include/linux/pci.h |    3 +++
+ 2 files changed, 28 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 8ca3926..87cb3089 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -330,6 +330,83 @@ static struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev)
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index cc87773..9fd4648 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -45,6 +45,30 @@ static void virtfn_remove_bus(struct pci_bus *physbus, struct pci_bus *virtbus)
+ 		pci_remove_bus(virtbus);
  }
- #endif /* CONFIG_PCI_MSI */
  
-+static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
++resource_size_t __weak pcibios_sriov_resource_size(struct pci_dev *dev, int resno)
 +{
-+	struct pci_dev *parent;
-+	uint8_t bcomp, dcomp, fcomp;
-+	int64_t rc;
-+	long rid_end, rid;
-+	if (pe->pbus) {
-+		int count;
-+
-+		dcomp = OPAL_IGNORE_RID_DEVICE_NUMBER;
-+		fcomp = OPAL_IGNORE_RID_FUNCTION_NUMBER;
-+		parent = pe->pbus->self;
-+		if (pe->flags & PNV_IODA_PE_BUS_ALL)
-+			count = pe->pbus->busn_res.end - pe->pbus->busn_res.start + 1;
-+		else
-+			count = 1;
-+
-+		switch(count) {
-+		case  1: bcomp = OpalPciBusAll;         break;
-+		case  2: bcomp = OpalPciBus7Bits;       break;
-+		case  4: bcomp = OpalPciBus6Bits;       break;
-+		case  8: bcomp = OpalPciBus5Bits;       break;
-+		case 16: bcomp = OpalPciBus4Bits;       break;
-+		case 32: bcomp = OpalPciBus3Bits;       break;
-+		default:
-+			pr_err("%s: Number of subordinate busses %d"
-+			       " unsupported\n",
-+			       pci_name(pe->pbus->self), count);
-+			/* Do an exact match only */
-+			bcomp = OpalPciBusAll;
-+		}
-+		rid_end = pe->rid + (count << 8);
-+	}else {
-+		parent = pe->pdev->bus->self;
-+		bcomp = OpalPciBusAll;
-+		dcomp = OPAL_COMPARE_RID_DEVICE_NUMBER;
-+		fcomp = OPAL_COMPARE_RID_FUNCTION_NUMBER;
-+		rid_end = pe->rid + 1;
-+	}
-+
-+	/* Disable MVT on IODA1 */
-+	if (phb->type == PNV_PHB_IODA1) {
-+		rc = opal_pci_set_mve_enable(phb->opal_id,
-+					     pe->mve_number, OPAL_DISABLE_MVE);
-+		if (rc) {
-+			pe_err(pe, "OPAL error %ld enabling MVE %d\n",
-+			       rc, pe->mve_number);
-+			pe->mve_number = -1;
-+		}
-+	}
-+	/* Clear the reverse map */
-+	for (rid = pe->rid; rid < rid_end; rid++)
-+		phb->ioda.pe_rmap[rid] = 0;
-+
-+	/* Release from all parents PELT-V */
-+	while (parent) {
-+		struct pci_dn *pdn = pci_get_pdn(parent);
-+		if (pdn && pdn->pe_number != IODA_INVALID_PE) {
-+			rc = opal_pci_set_peltv(phb->opal_id, pdn->pe_number,
-+						pe->pe_number, OPAL_REMOVE_PE_FROM_DOMAIN);
-+			/* XXX What to do in case of error ? */
-+		}
-+		parent = parent->bus->self;
-+	}
-+
-+	/* Dissociate PE in PELT */
-+	rc = opal_pci_set_pe(phb->opal_id, pe->pe_number, pe->rid,
-+			     bcomp, dcomp, fcomp, OPAL_UNMAP_PE);
-+	if (rc)
-+		pe_err(pe, "OPAL error %ld trying to setup PELT table\n", rc);
-+
-+	pe->pbus = NULL;
-+	pe->pdev = NULL;
-+
 +	return 0;
 +}
 +
- static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
++resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno)
++{
++	u64 size;
++	struct pci_sriov *iov;
++
++	if (!dev->is_physfn)
++		return 0;
++
++	size = pcibios_sriov_resource_size(dev, resno);
++	if (size != 0)
++		return size;
++
++	iov = dev->sriov;
++	size = resource_size(dev->resource + resno);
++	do_div(size, iov->total_VFs);
++
++	return size;
++}
++
+ static int virtfn_add(struct pci_dev *dev, int id, int reset)
  {
- 	struct pci_dev *parent;
+ 	int i;
+@@ -81,8 +105,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+ 			continue;
+ 		virtfn->resource[i].name = pci_name(virtfn);
+ 		virtfn->resource[i].flags = res->flags;
+-		size = resource_size(res);
+-		do_div(size, iov->total_VFs);
++		size = pci_sriov_resource_size(dev, i + PCI_IOV_RESOURCES);
+ 		virtfn->resource[i].start = res->start + size * id;
+ 		virtfn->resource[i].end = virtfn->resource[i].start + size - 1;
+ 		rc = request_resource(res, &virtfn->resource[i]);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index ddb1ca0..315c150 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1637,6 +1637,7 @@ int pci_num_vf(struct pci_dev *dev);
+ int pci_vfs_assigned(struct pci_dev *dev);
+ int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
+ int pci_sriov_get_totalvfs(struct pci_dev *dev);
++resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno);
+ #else
+ static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
+ {
+@@ -1658,6 +1659,8 @@ static inline int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs)
+ { return 0; }
+ static inline int pci_sriov_get_totalvfs(struct pci_dev *dev)
+ { return 0; }
++static inline resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno)
++{ return -1; }
+ #endif
+ 
+ #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
 -- 
 1.7.9.5
