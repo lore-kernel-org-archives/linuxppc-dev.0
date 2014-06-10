@@ -1,15 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <zhouzhouyi@gmail.com>
+Received: from mail-pb0-x22b.google.com (mail-pb0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A29E91A00CE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 16:46:28 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/perf: Ensure all EBB register state is cleared on
- fork()
-Date: Tue, 10 Jun 2014 16:46:21 +1000
-Message-Id: <1402382781-17618-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5AA0F1A00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 17:32:47 +1000 (EST)
+Received: by mail-pb0-f43.google.com with SMTP id up15so5934681pbc.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 00:32:44 -0700 (PDT)
+From: Zhouyi Zhou <zhouzhouyi@gmail.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>, <aik@ozlabs.ru>,
+ <anton@samba.org>, <nacc@linux.vnet.ibm.com>, <alistair@popple.id.au>,
+ <deepthi@linux.vnet.ibm.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] powerpc/iommu: Handling null return of kzalloc_node
+Date: Tue, 10 Jun 2014 15:32:10 +0800
+Message-Id: <1402385530-23091-1-git-send-email-zhouzhouyi@gmail.com>
+Cc: Zhouyi Zhou <zhouzhouyi@gmail.com>, Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,33 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 330a1eb "Core EBB support for 64-bit book3s" I messed up
-clear_task_ebb(). It clears some but not all of the task's Event Based
-Branch (EBB) registers when we duplicate a task struct.
+NULL return of kzalloc_node should be handled 
 
-That allows a child task to observe the EBBHR & EBBRR of its parent,
-which it should not be able to do.
-
-Fix it by clearing EBBHR & EBBRR.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Cc: stable@vger.kernel.org
+Signed-off-by: Zhouyi Zhou <yizhouzhou@ict.ac.cn>
 ---
- arch/powerpc/include/asm/switch_to.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/pseries/iommu.c |   22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 0e83e7d..b5fad8a 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -84,6 +84,8 @@ static inline void clear_task_ebb(struct task_struct *t)
- {
- #ifdef CONFIG_PPC_BOOK3S_64
-     /* EBB perf events are not inherited, so clear all EBB state. */
-+    t->thread.ebbrr = 0;
-+    t->thread.ebbhr = 0;
-     t->thread.bescr = 0;
-     t->thread.mmcr2 = 0;
-     t->thread.mmcr0 = 0;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 33b552f..593cd3d 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -613,7 +613,11 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 
+ 	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 			   pci->phb->node);
+-
++	if (!tbl) {
++		pr_debug(" out of memory, can't create iommu_table !\n");
++		return;
++	}
++
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ 	iommu_register_group(tbl, pci_domain_nr(bus), 0);
+@@ -659,6 +663,10 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 	if (!ppci->iommu_table) {
+ 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   ppci->phb->node);
++		if (!tbl) {
++			pr_debug(" out of memory, can't create iommu_table !\n");
++			return;
++		}
+ 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
+ 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
+ 		iommu_register_group(tbl, pci_domain_nr(bus), 0);
+@@ -686,6 +694,11 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
+ 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   phb->node);
++		if (!tbl) {
++			pr_debug(" out of memory, can't create iommu_table !\n");
++			return;
++		}
++
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
+ 		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
+@@ -1102,6 +1116,10 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 	if (!pci->iommu_table) {
+ 		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   pci->phb->node);
++		if (!tbl) {
++			pr_debug(" out of memory, can't create iommu_table !\n");
++			return;
++		}
+ 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+ 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ 		iommu_register_group(tbl, pci_domain_nr(pci->phb->bus), 0);
 -- 
-1.9.1
+1.7.10.4
