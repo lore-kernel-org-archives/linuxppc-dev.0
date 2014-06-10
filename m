@@ -1,39 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26EDA1A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 09:49:45 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CAEC1A00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 10:28:21 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 10 Jun 2014 09:49:42 +1000
+ Tue, 10 Jun 2014 10:28:19 +1000
 Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8522B2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 09:49:38 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E32BB3578047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 10:28:15 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s59NRcBN3932604
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 09:27:39 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s59Nnb1k018886
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 09:49:37 +1000
-Date: Tue, 10 Jun 2014 09:49:38 +1000
+ s5A06GTQ7209326
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 10:06:16 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5A0SFii020594
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2014 10:28:15 +1000
+Date: Tue, 10 Jun 2014 10:28:16 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH v9 3/3] drivers/vfio: EEH support for VFIO PCI device
-Message-ID: <20140609234938.GA8899@shangw>
-References: <1402030856-11106-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1402030856-11106-4-git-send-email-gwshan@linux.vnet.ibm.com>
- <1402078804.14174.24.camel@ul30vt.home>
+To: Guo Chao <yan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/powernv: fix endianness problems in EEH
+Message-ID: <20140610002816.GA12989@shangw>
+References: <1402304331-24167-1-git-send-email-yan@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1402078804.14174.24.camel@ul30vt.home>
-Cc: aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- kvm-ppc@vger.kernel.org, agraf@suse.de, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1402304331-24167-1-git-send-email-yan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -44,434 +40,422 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 06, 2014 at 12:20:04PM -0600, Alex Williamson wrote:
->On Fri, 2014-06-06 at 15:00 +1000, Gavin Shan wrote:
->> The patch adds new IOCTL commands for sPAPR VFIO container device
->> to support EEH functionality for PCI devices, which have been passed
->> through from host to somebody else via VFIO.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> Acked-by: Alexander Graf <agraf@suse.de>
->> ---
->>  Documentation/vfio.txt              | 87 +++++++++++++++++++++++++++++++++++--
->>  drivers/vfio/Makefile               |  1 +
->>  drivers/vfio/pci/vfio_pci.c         | 18 ++++++--
->>  drivers/vfio/vfio_iommu_spapr_tce.c | 17 +++++++-
->>  drivers/vfio/vfio_spapr_eeh.c       | 87 +++++++++++++++++++++++++++++++++++++
->>  include/linux/vfio.h                | 23 ++++++++++
->>  include/uapi/linux/vfio.h           | 34 +++++++++++++++
->>  7 files changed, 259 insertions(+), 8 deletions(-)
->>  create mode 100644 drivers/vfio/vfio_spapr_eeh.c
->> 
->> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->> index b9ca023..3fa4538 100644
->> --- a/Documentation/vfio.txt
->> +++ b/Documentation/vfio.txt
->> @@ -305,7 +305,15 @@ faster, the map/unmap handling has been implemented in real mode which provides
->>  an excellent performance which has limitations such as inability to do
->>  locked pages accounting in real time.
->>  
->> -So 3 additional ioctls have been added:
->> +4) According to sPAPR specification, A Partitionable Endpoint (PE) is an I/O
->> +subtree that can be treated as a unit for the purposes of partitioning and
->> +error recovery. A PE may be a single or multi-function IOA (IO Adapter), a
->> +function of a multi-function IOA, or multiple IOAs (possibly including switch
->> +and bridge structures above the multiple IOAs). PPC64 guests detect PCI errors
->> +and recover from them via EEH RTAS services, which works on the basis of
->> +additional ioctl commands.
->> +
->> +So 4 additional ioctls have been added:
->>  
->>  	VFIO_IOMMU_SPAPR_TCE_GET_INFO - returns the size and the start
->>  		of the DMA window on the PCI bus.
->> @@ -316,9 +324,12 @@ So 3 additional ioctls have been added:
->>  
->>  	VFIO_IOMMU_DISABLE - disables the container.
->>  
->> +	VFIO_EEH_PE_OP - provides an API for EEH setup, error detection and recovery.
->>  
->>  The code flow from the example above should be slightly changed:
->>  
->> +	struct vfio_eeh_pe_op pe_op = { .argsz = sizeof(pe_op) };
->> +
->>  	.....
->>  	/* Add the group to the container */
->>  	ioctl(group, VFIO_GROUP_SET_CONTAINER, &container);
->> @@ -342,9 +353,79 @@ The code flow from the example above should be slightly changed:
->>  	dma_map.flags = VFIO_DMA_MAP_FLAG_READ | VFIO_DMA_MAP_FLAG_WRITE;
->>  
->>  	/* Check here is .iova/.size are within DMA window from spapr_iommu_info */
->> -
->>  	ioctl(container, VFIO_IOMMU_MAP_DMA, &dma_map);
->> -	.....
->> +
->> +	/* Get a file descriptor for the device */
->> +	device = ioctl(group, VFIO_GROUP_GET_DEVICE_FD, "0000:06:0d.0");
->> +
->> +	....
->> +
->> +	/* Gratuitous device reset and go... */
->> +	ioctl(device, VFIO_DEVICE_RESET);
->> +
->> +	/* Make sure EEH is supported */
->> +	ioctl(container, VFIO_CHECK_EXTENSION, VFIO_EEH);
->> +
->> +	/* Enable the EEH functionality on the device */
->> +	pe_op.op = VFIO_EEH_PE_ENABLE;
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +
->> +	/* You're suggested to create additional data struct to represent
->> +	 * PE, and put child devices belonging to same IOMMU group to the
->> +	 * PE instance for later reference.
->> +	 */
->> +
->> +	/* Check the PE's state and make sure it's in functional state */
->> +	pe_op.op = VFIO_EEH_PE_GET_STATE;
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +
->> +	/* Save device state using pci_save_state().
->> +	 * EEH should be enabled on the specified device.
->> +	 */
->> +
->> +	....
->> +
->> +	/* When 0xFF's returned from reading PCI config space or IO BARs
->> +	 * of the PCI device. Check the PE's state to see if that has been
->> +	 * frozen.
->> +	 */
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +
->> +	/* Waiting for pending PCI transactions to be completed and don't
->> +	 * produce any more PCI traffic from/to the affected PE until
->> +	 * recovery is finished.
->> +	 */
->> +
->> +	/* Enable IO for the affected PE and collect logs. Usually, the
->> +	 * standard part of PCI config space, AER registers are dumped
->> +	 * as logs for further analysis.
->> +	 */
->> +	pe_op.op = VFIO_EEH_PE_UNFREEZE_IO;
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +
->> +	/*
->> +	 * Issue PE reset: hot or fundamental reset. Usually, hot reset
->> +	 * is enough. However, the firmware of some PCI adapters would
->> +	 * require fundamental reset.
->> +	 */
->> +	pe_op.op = VFIO_EEH_PE_RESET_HOT;
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +	pe_op.op = VFIO_EEH_PE_RESET_DEACTIVATE;
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +
->> +	/* Configure the PCI bridges for the affected PE */
->> +	pe_op.op = VFIO_EEH_PE_CONFIGURE;
->> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
->> +
->> +	/* Restored state we saved at initialization time. pci_restore_state()
->> +	 * is good enough as an example.
->> +	 */
->> +
->> +	/* Hopefully, error is recovered successfully. Now, you can resume to
->> +	 * start PCI traffic to/from the affected PE.
->> +	 */
->> +
->> +	....
->>  
->>  -------------------------------------------------------------------------------
->>  
->> diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
->> index 72bfabc..50e30bc 100644
->> --- a/drivers/vfio/Makefile
->> +++ b/drivers/vfio/Makefile
->> @@ -1,4 +1,5 @@
->>  obj-$(CONFIG_VFIO) += vfio.o
->>  obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
->>  obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
->> +obj-$(CONFIG_EEH) += vfio_spapr_eeh.o
->>  obj-$(CONFIG_VFIO_PCI) += pci/
->> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
->> index 7ba0424..0122665 100644
->> --- a/drivers/vfio/pci/vfio_pci.c
->> +++ b/drivers/vfio/pci/vfio_pci.c
->> @@ -156,8 +156,10 @@ static void vfio_pci_release(void *device_data)
->>  {
->>  	struct vfio_pci_device *vdev = device_data;
->>  
->> -	if (atomic_dec_and_test(&vdev->refcnt))
->> +	if (atomic_dec_and_test(&vdev->refcnt)) {
->> +		vfio_spapr_pci_eeh_release(vdev->pdev);
->>  		vfio_pci_disable(vdev);
->> +	}
->>  
->>  	module_put(THIS_MODULE);
->>  }
->> @@ -165,19 +167,27 @@ static void vfio_pci_release(void *device_data)
->>  static int vfio_pci_open(void *device_data)
->>  {
->>  	struct vfio_pci_device *vdev = device_data;
->> +	int ret;
->>  
->>  	if (!try_module_get(THIS_MODULE))
->>  		return -ENODEV;
->>  
->>  	if (atomic_inc_return(&vdev->refcnt) == 1) {
->> -		int ret = vfio_pci_enable(vdev);
->> +		ret = vfio_pci_enable(vdev);
->> +		if (ret)
->> +			goto error;
->> +
->> +		ret = vfio_spapr_pci_eeh_open(vdev->pdev);
->>  		if (ret) {
->> -			module_put(THIS_MODULE);
->> -			return ret;
->> +			vfio_pci_disable(vdev);
->> +			goto error;
->>  		}
->>  	}
->>  
->>  	return 0;
->> +error:
->> +	module_put(THIS_MODULE);
->> +	return ret;
->>  }
->>  
->>  static int vfio_pci_get_irq_count(struct vfio_pci_device *vdev, int irq_type)
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index a84788b..730b4ef 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -156,7 +156,16 @@ static long tce_iommu_ioctl(void *iommu_data,
->>  
->>  	switch (cmd) {
->>  	case VFIO_CHECK_EXTENSION:
->> -		return (arg == VFIO_SPAPR_TCE_IOMMU) ? 1 : 0;
->> +		switch (arg) {
->> +		case VFIO_SPAPR_TCE_IOMMU:
->> +			ret = 1;
->> +			break;
->> +		default:
->> +			ret = vfio_spapr_iommu_eeh_ioctl(NULL, cmd, arg);
->> +			break;
->> +		}
->> +
->> +		return (ret < 0) ? 0 : ret;
->>  
->>  	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
->>  		struct vfio_iommu_spapr_tce_info info;
->> @@ -283,6 +292,12 @@ static long tce_iommu_ioctl(void *iommu_data,
->>  		tce_iommu_disable(container);
->>  		mutex_unlock(&container->lock);
->>  		return 0;
->> +	case VFIO_EEH_PE_OP:
->> +		if (!container->tbl || !container->tbl->it_group)
->> +			return -ENODEV;
->> +
->> +		return vfio_spapr_iommu_eeh_ioctl(container->tbl->it_group,
->> +						  cmd, arg);
->>  	}
->>  
->>  	return -ENOTTY;
->> diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
->> new file mode 100644
->> index 0000000..d438394
->> --- /dev/null
->> +++ b/drivers/vfio/vfio_spapr_eeh.c
->> @@ -0,0 +1,87 @@
->> +/*
->> + * EEH functionality support for VFIO devices. The feature is only
->> + * available on sPAPR compatible platforms.
->> + *
->> + * Copyright Gavin Shan, IBM Corporation 2014.
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/uaccess.h>
->> +#include <linux/vfio.h>
->> +#include <asm/eeh.h>
->> +
->> +/* We might build address mapping here for "fast" path later */
->> +int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
->> +{
->> +	return eeh_dev_open(pdev);
->> +}
->> +
->> +void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
->> +{
->> +	eeh_dev_release(pdev);
->> +}
->> +
->> +long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
->> +				unsigned int cmd, unsigned long arg)
->> +{
->> +	struct eeh_pe *pe;
->> +	struct vfio_eeh_pe_op op;
->> +	unsigned long minsz;
->> +	long ret = -EINVAL;
->> +
->> +	switch (cmd) {
->> +	case VFIO_CHECK_EXTENSION:
->> +		if (arg == VFIO_EEH)
->> +			ret = eeh_enabled() ? 1 : 0;
->> +		else
->> +			ret = 0;
->> +		break;
->> +	case VFIO_EEH_PE_OP:
->> +		pe = eeh_iommu_group_to_pe(group);
->> +		if (!pe)
->> +			return -ENODEV;
->> +
->> +		minsz = offsetofend(struct vfio_eeh_pe_op, op);
->> +		if (copy_from_user(&op, (void __user *)arg, minsz))
->> +			return -EFAULT;
->> +		if (op.argsz < minsz)
->> +			return -EINVAL;
+On Mon, Jun 09, 2014 at 04:58:51PM +0800, Guo Chao wrote:
+>EEH information fetched from OPAL need fix before using in LE environment.
+>To be included in sparse's endian check, declare them as __beXX and
+>access them by accessors.
 >
->I'm running low on comments, but I found one more.  flags should be
->tested as zero here or else we'll run into problems with adding new
->functionality later.  The caller could leave it uninitialized and pass
->junk which would then break if we start using those flags.  New
->userspace on an old kernel could also intentionally pass flag bits that
->we ignore and let through here.
+>Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >
+>Signed-off-by: Guo Chao <yan@linux.vnet.ibm.com>
 
-Thanks, Alex. I'll fix in next revision. The QEMU part needs corresponding
-changes (set flags to zero), which will be updated and sent separately.
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
->
->How are you expecting this to go in, an ack from me then pushed through
->AlexG's tree?  Thanks,
->
-
-I don't think it can catch 3.16 merge window. Perhaps, Patch[1/3] and
-Patch[2/3] goes to Ben's tree and Patch[3/3] could be picked by AlexG
-or you, but I'm not sure.
+It looks good to me., but there are more diag-data needed to be
+coverted: P7IOC diag-data and P7IOC PHB diag-data.
 
 Thanks,
 Gavin
 
->> +
->> +		switch (op.op) {
->> +		case VFIO_EEH_PE_DISABLE:
->> +			ret = eeh_pe_set_option(pe, EEH_OPT_DISABLE);
->> +			break;
->> +		case VFIO_EEH_PE_ENABLE:
->> +			ret = eeh_pe_set_option(pe, EEH_OPT_ENABLE);
->> +			break;
->> +		case VFIO_EEH_PE_UNFREEZE_IO:
->> +			ret = eeh_pe_set_option(pe, EEH_OPT_THAW_MMIO);
->> +			break;
->> +		case VFIO_EEH_PE_UNFREEZE_DMA:
->> +			ret = eeh_pe_set_option(pe, EEH_OPT_THAW_DMA);
->> +			break;
->> +		case VFIO_EEH_PE_GET_STATE:
->> +			ret = eeh_pe_get_state(pe);
->> +			break;
->> +		case VFIO_EEH_PE_RESET_DEACTIVATE:
->> +			ret = eeh_pe_reset(pe, EEH_RESET_DEACTIVATE);
->> +			break;
->> +		case VFIO_EEH_PE_RESET_HOT:
->> +			ret = eeh_pe_reset(pe, EEH_RESET_HOT);
->> +			break;
->> +		case VFIO_EEH_PE_RESET_FUNDAMENTAL:
->> +			ret = eeh_pe_reset(pe, EEH_RESET_FUNDAMENTAL);
->> +			break;
->> +		case VFIO_EEH_PE_CONFIGURE:
->> +			ret = eeh_pe_configure(pe);
->> +			break;
->> +		default:
->> +			ret = -EINVAL;
->> +		}
->> +	}
->> +
->> +	return ret;
->> +}
->> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
->> index 81022a52..0d3bb8f 100644
->> --- a/include/linux/vfio.h
->> +++ b/include/linux/vfio.h
->> @@ -99,4 +99,27 @@ extern int vfio_external_user_iommu_id(struct vfio_group *group);
->>  extern long vfio_external_check_extension(struct vfio_group *group,
->>  					  unsigned long arg);
->>  
->> +#ifdef CONFIG_EEH
->> +extern int vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
->> +extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
->> +extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
->> +				       unsigned int cmd,
->> +				       unsigned long arg);
->> +#else
->> +static inline int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
->> +{
->> +	return 0;
->> +}
->> +
->> +static inline void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
->> +{
->> +}
->> +
->> +static inline long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
->> +					      unsigned int cmd,
->> +					      unsigned long arg)
->> +{
->> +	return -ENOTTY;
->> +}
->> +#endif /* CONFIG_EEH */
->>  #endif /* VFIO_H */
->> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
->> index cb9023d..6612974 100644
->> --- a/include/uapi/linux/vfio.h
->> +++ b/include/uapi/linux/vfio.h
->> @@ -30,6 +30,9 @@
->>   */
->>  #define VFIO_DMA_CC_IOMMU		4
->>  
->> +/* Check if EEH is supported */
->> +#define VFIO_EEH			5
->> +
->>  /*
->>   * The IOCTL interface is designed for extensibility by embedding the
->>   * structure length (argsz) and flags into structures passed between
->> @@ -455,6 +458,37 @@ struct vfio_iommu_spapr_tce_info {
->>  
->>  #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
->>  
->> +/*
->> + * EEH PE operation struct provides ways to:
->> + * - enable/disable EEH functionality;
->> + * - unfreeze IO/DMA for frozen PE;
->> + * - read PE state;
->> + * - reset PE;
->> + * - configure PE.
->> + */
->> +struct vfio_eeh_pe_op {
->> +	__u32 argsz;
->> +	__u32 flags;
->> +	__u32 op;
->> +};
->> +
->> +#define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
->> +#define VFIO_EEH_PE_ENABLE		1	/* Enable EEH functionality  */
->> +#define VFIO_EEH_PE_UNFREEZE_IO		2	/* Enable IO for frozen PE   */
->> +#define VFIO_EEH_PE_UNFREEZE_DMA	3	/* Enable DMA for frozen PE  */
->> +#define VFIO_EEH_PE_GET_STATE		4	/* PE state retrieval        */
->> +#define  VFIO_EEH_PE_STATE_NORMAL	0	/* PE in functional state    */
->> +#define  VFIO_EEH_PE_STATE_RESET	1	/* PE reset in progress      */
->> +#define  VFIO_EEH_PE_STATE_STOPPED	2	/* Stopped DMA and IO        */
->> +#define  VFIO_EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only          */
->> +#define  VFIO_EEH_PE_STATE_UNAVAIL	5	/* State unavailable         */
->> +#define VFIO_EEH_PE_RESET_DEACTIVATE	5	/* Deassert PE reset         */
->> +#define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
->> +#define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
->> +#define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
->> +
->> +#define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
->> +
->>  /* ***************************************************************** */
->>  
->>  #endif /* _UAPIVFIO_H */
+>---
+> arch/powerpc/include/asm/opal.h           | 102 +++++++++++++++---------------
+> arch/powerpc/platforms/powernv/eeh-ioda.c |  36 ++++++-----
+> arch/powerpc/platforms/powernv/pci.c      |  81 +++++++++++++++---------
+> 3 files changed, 120 insertions(+), 99 deletions(-)
 >
+>diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+>index 4ccd1d4..a4c0acc 100644
+>--- a/arch/powerpc/include/asm/opal.h
+>+++ b/arch/powerpc/include/asm/opal.h
+>@@ -599,9 +599,9 @@ enum {
+> };
 >
+> struct OpalIoPhbErrorCommon {
+>-	uint32_t version;
+>-	uint32_t ioType;
+>-	uint32_t len;
+>+	__be32 version;
+>+	__be32 ioType;
+>+	__be32 len;
+> };
+>
+> struct OpalIoP7IOCPhbErrorData {
+>@@ -671,64 +671,64 @@ enum {
+> struct OpalIoPhb3ErrorData {
+> 	struct OpalIoPhbErrorCommon common;
+>
+>-	uint32_t brdgCtl;
+>+	__be32 brdgCtl;
+>
+> 	/* PHB3 UTL regs */
+>-	uint32_t portStatusReg;
+>-	uint32_t rootCmplxStatus;
+>-	uint32_t busAgentStatus;
+>+	__be32 portStatusReg;
+>+	__be32 rootCmplxStatus;
+>+	__be32 busAgentStatus;
+>
+> 	/* PHB3 cfg regs */
+>-	uint32_t deviceStatus;
+>-	uint32_t slotStatus;
+>-	uint32_t linkStatus;
+>-	uint32_t devCmdStatus;
+>-	uint32_t devSecStatus;
+>+	__be32 deviceStatus;
+>+	__be32 slotStatus;
+>+	__be32 linkStatus;
+>+	__be32 devCmdStatus;
+>+	__be32 devSecStatus;
+>
+> 	/* cfg AER regs */
+>-	uint32_t rootErrorStatus;
+>-	uint32_t uncorrErrorStatus;
+>-	uint32_t corrErrorStatus;
+>-	uint32_t tlpHdr1;
+>-	uint32_t tlpHdr2;
+>-	uint32_t tlpHdr3;
+>-	uint32_t tlpHdr4;
+>-	uint32_t sourceId;
+>+	__be32 rootErrorStatus;
+>+	__be32 uncorrErrorStatus;
+>+	__be32 corrErrorStatus;
+>+	__be32 tlpHdr1;
+>+	__be32 tlpHdr2;
+>+	__be32 tlpHdr3;
+>+	__be32 tlpHdr4;
+>+	__be32 sourceId;
+>
+>-	uint32_t rsv3;
+>+	__be32 rsv3;
+>
+> 	/* Record data about the call to allocate a buffer */
+>-	uint64_t errorClass;
+>-	uint64_t correlator;
+>+	__be64 errorClass;
+>+	__be64 correlator;
+>
+>-	uint64_t nFir;			/* 000 */
+>-	uint64_t nFirMask;		/* 003 */
+>-	uint64_t nFirWOF;		/* 008 */
+>+	__be64 nFir;			/* 000 */
+>+	__be64 nFirMask;		/* 003 */
+>+	__be64 nFirWOF;		/* 008 */
+>
+> 	/* PHB3 MMIO Error Regs */
+>-	uint64_t phbPlssr;		/* 120 */
+>-	uint64_t phbCsr;		/* 110 */
+>-	uint64_t lemFir;		/* C00 */
+>-	uint64_t lemErrorMask;		/* C18 */
+>-	uint64_t lemWOF;		/* C40 */
+>-	uint64_t phbErrorStatus;	/* C80 */
+>-	uint64_t phbFirstErrorStatus;	/* C88 */
+>-	uint64_t phbErrorLog0;		/* CC0 */
+>-	uint64_t phbErrorLog1;		/* CC8 */
+>-	uint64_t mmioErrorStatus;	/* D00 */
+>-	uint64_t mmioFirstErrorStatus;	/* D08 */
+>-	uint64_t mmioErrorLog0;		/* D40 */
+>-	uint64_t mmioErrorLog1;		/* D48 */
+>-	uint64_t dma0ErrorStatus;	/* D80 */
+>-	uint64_t dma0FirstErrorStatus;	/* D88 */
+>-	uint64_t dma0ErrorLog0;		/* DC0 */
+>-	uint64_t dma0ErrorLog1;		/* DC8 */
+>-	uint64_t dma1ErrorStatus;	/* E00 */
+>-	uint64_t dma1FirstErrorStatus;	/* E08 */
+>-	uint64_t dma1ErrorLog0;		/* E40 */
+>-	uint64_t dma1ErrorLog1;		/* E48 */
+>-	uint64_t pestA[OPAL_PHB3_NUM_PEST_REGS];
+>-	uint64_t pestB[OPAL_PHB3_NUM_PEST_REGS];
+>+	__be64 phbPlssr;		/* 120 */
+>+	__be64 phbCsr;		/* 110 */
+>+	__be64 lemFir;		/* C00 */
+>+	__be64 lemErrorMask;		/* C18 */
+>+	__be64 lemWOF;		/* C40 */
+>+	__be64 phbErrorStatus;	/* C80 */
+>+	__be64 phbFirstErrorStatus;	/* C88 */
+>+	__be64 phbErrorLog0;		/* CC0 */
+>+	__be64 phbErrorLog1;		/* CC8 */
+>+	__be64 mmioErrorStatus;	/* D00 */
+>+	__be64 mmioFirstErrorStatus;	/* D08 */
+>+	__be64 mmioErrorLog0;		/* D40 */
+>+	__be64 mmioErrorLog1;		/* D48 */
+>+	__be64 dma0ErrorStatus;	/* D80 */
+>+	__be64 dma0FirstErrorStatus;	/* D88 */
+>+	__be64 dma0ErrorLog0;		/* DC0 */
+>+	__be64 dma0ErrorLog1;		/* DC8 */
+>+	__be64 dma1ErrorStatus;	/* E00 */
+>+	__be64 dma1FirstErrorStatus;	/* E08 */
+>+	__be64 dma1ErrorLog0;		/* E40 */
+>+	__be64 dma1ErrorLog1;		/* E48 */
+>+	__be64 pestA[OPAL_PHB3_NUM_PEST_REGS];
+>+	__be64 pestB[OPAL_PHB3_NUM_PEST_REGS];
+> };
+>
+> typedef struct oppanel_line {
+>@@ -851,8 +851,8 @@ int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t erro
+> int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
+> int64_t opal_get_epow_status(__be64 *status);
+> int64_t opal_set_system_attention_led(uint8_t led_action);
+>-int64_t opal_pci_next_error(uint64_t phb_id, uint64_t *first_frozen_pe,
+>-			    uint16_t *pci_error_type, uint16_t *severity);
+>+int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+>+			    __be16 *pci_error_type, __be16 *severity);
+> int64_t opal_pci_poll(uint64_t phb_id);
+> int64_t opal_return_cpu(void);
+> int64_t opal_reinit_cpus(uint64_t flags);
+>diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>index 753f08e..e0d6a3a 100644
+>--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>@@ -267,7 +267,7 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
+> {
+> 	s64 ret = 0;
+> 	u8 fstate;
+>-	u16 pcierr;
+>+	__be16 pcierr;
+> 	u32 pe_no;
+> 	int result;
+> 	struct pci_controller *hose = pe->phb;
+>@@ -316,7 +316,7 @@ static int ioda_eeh_get_state(struct eeh_pe *pe)
+> 		result = 0;
+> 		result &= ~EEH_STATE_RESET_ACTIVE;
+>
+>-		if (pcierr != OPAL_EEH_PHB_ERROR) {
+>+		if (be16_to_cpu(pcierr) != OPAL_EEH_PHB_ERROR) {
+> 			result |= EEH_STATE_MMIO_ACTIVE;
+> 			result |= EEH_STATE_DMA_ACTIVE;
+> 			result |= EEH_STATE_MMIO_ENABLED;
+>@@ -706,8 +706,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+> 	struct pci_controller *hose;
+> 	struct pnv_phb *phb;
+> 	struct eeh_pe *phb_pe;
+>-	u64 frozen_pe_no;
+>-	u16 err_type, severity;
+>+	__be64 frozen_pe_no;
+>+	__be16 err_type, severity;
+> 	long rc;
+> 	int ret = EEH_NEXT_ERR_NONE;
+>
+>@@ -742,8 +742,8 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+> 		}
+>
+> 		/* If the PHB doesn't have error, stop processing */
+>-		if (err_type == OPAL_EEH_NO_ERROR ||
+>-		    severity == OPAL_EEH_SEV_NO_ERROR) {
+>+		if (be16_to_cpu(err_type) == OPAL_EEH_NO_ERROR ||
+>+		    be16_to_cpu(severity) == OPAL_EEH_SEV_NO_ERROR) {
+> 			pr_devel("%s: No error found on PHB#%x\n",
+> 				 __func__, hose->global_number);
+> 			continue;
+>@@ -755,14 +755,14 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+> 		 * specific PHB.
+> 		 */
+> 		pr_devel("%s: Error (%d, %d, %llu) on PHB#%x\n",
+>-			 __func__, err_type, severity,
+>-			 frozen_pe_no, hose->global_number);
+>-		switch (err_type) {
+>+			 __func__, be16_to_cpu(err_type), be16_to_cpu(severity),
+>+			 be64_to_cpu(frozen_pe_no), hose->global_number);
+>+		switch (be16_to_cpu(err_type)) {
+> 		case OPAL_EEH_IOC_ERROR:
+>-			if (severity == OPAL_EEH_SEV_IOC_DEAD) {
+>+			if (be16_to_cpu(severity) == OPAL_EEH_SEV_IOC_DEAD) {
+> 				pr_err("EEH: dead IOC detected\n");
+> 				ret = EEH_NEXT_ERR_DEAD_IOC;
+>-			} else if (severity == OPAL_EEH_SEV_INF) {
+>+			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
+> 				pr_info("EEH: IOC informative error "
+> 					"detected\n");
+> 				ioda_eeh_hub_diag(hose);
+>@@ -771,17 +771,18 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+>
+> 			break;
+> 		case OPAL_EEH_PHB_ERROR:
+>-			if (severity == OPAL_EEH_SEV_PHB_DEAD) {
+>+			if (be16_to_cpu(severity) == OPAL_EEH_SEV_PHB_DEAD) {
+> 				*pe = phb_pe;
+> 				pr_err("EEH: dead PHB#%x detected\n",
+> 					hose->global_number);
+> 				ret = EEH_NEXT_ERR_DEAD_PHB;
+>-			} else if (severity == OPAL_EEH_SEV_PHB_FENCED) {
+>+			} else if (be16_to_cpu(severity) ==
+>+						OPAL_EEH_SEV_PHB_FENCED) {
+> 				*pe = phb_pe;
+> 				pr_err("EEH: fenced PHB#%x detected\n",
+> 					hose->global_number);
+> 				ret = EEH_NEXT_ERR_FENCED_PHB;
+>-			} else if (severity == OPAL_EEH_SEV_INF) {
+>+			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
+> 				pr_info("EEH: PHB#%x informative error "
+> 					"detected\n",
+> 					hose->global_number);
+>@@ -801,12 +802,13 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+> 			 * progress with recovery. We needn't report
+> 			 * it again.
+> 			 */
+>-			if (ioda_eeh_get_pe(hose, frozen_pe_no, pe)) {
+>+			if (ioda_eeh_get_pe(hose,
+>+					be64_to_cpu(frozen_pe_no), pe)) {
+> 				*pe = phb_pe;
+> 				pr_err("EEH: Escalated fenced PHB#%x "
+> 				       "detected for PE#%llx\n",
+> 					hose->global_number,
+>-					frozen_pe_no);
+>+					be64_to_cpu(frozen_pe_no));
+> 				ret = EEH_NEXT_ERR_FENCED_PHB;
+> 			} else if ((*pe)->state & EEH_PE_ISOLATED) {
+> 				ret = EEH_NEXT_ERR_NONE;
+>@@ -819,7 +821,7 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+> 			break;
+> 		default:
+> 			pr_warn("%s: Unexpected error type %d\n",
+>-				__func__, err_type);
+>+				__func__, be16_to_cpu(err_type));
+> 		}
+>
+> 		/*
+>diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>index eefbfcc..f91a4e5 100644
+>--- a/arch/powerpc/platforms/powernv/pci.c
+>+++ b/arch/powerpc/platforms/powernv/pci.c
+>@@ -206,72 +206,91 @@ static void pnv_pci_dump_phb3_diag_data(struct pci_controller *hose,
+>
+> 	data = (struct OpalIoPhb3ErrorData*)common;
+> 	pr_info("PHB3 PHB#%d Diag-data (Version: %d)\n",
+>-		hose->global_number, common->version);
+>+		hose->global_number, be32_to_cpu(common->version));
+> 	if (data->brdgCtl)
+> 		pr_info("brdgCtl:     %08x\n",
+>-			data->brdgCtl);
+>+			be32_to_cpu(data->brdgCtl));
+> 	if (data->portStatusReg || data->rootCmplxStatus ||
+> 	    data->busAgentStatus)
+> 		pr_info("UtlSts:      %08x %08x %08x\n",
+>-			data->portStatusReg, data->rootCmplxStatus,
+>-			data->busAgentStatus);
+>+			be32_to_cpu(data->portStatusReg),
+>+			be32_to_cpu(data->rootCmplxStatus),
+>+			be32_to_cpu(data->busAgentStatus));
+> 	if (data->deviceStatus || data->slotStatus   ||
+> 	    data->linkStatus   || data->devCmdStatus ||
+> 	    data->devSecStatus)
+> 		pr_info("RootSts:     %08x %08x %08x %08x %08x\n",
+>-			data->deviceStatus, data->slotStatus,
+>-			data->linkStatus, data->devCmdStatus,
+>-			data->devSecStatus);
+>+			be32_to_cpu(data->deviceStatus),
+>+			be32_to_cpu(data->slotStatus),
+>+			be32_to_cpu(data->linkStatus),
+>+			be32_to_cpu(data->devCmdStatus),
+>+			be32_to_cpu(data->devSecStatus));
+> 	if (data->rootErrorStatus || data->uncorrErrorStatus ||
+> 	    data->corrErrorStatus)
+> 		pr_info("RootErrSts:  %08x %08x %08x\n",
+>-			data->rootErrorStatus, data->uncorrErrorStatus,
+>-			data->corrErrorStatus);
+>+			be32_to_cpu(data->rootErrorStatus),
+>+			be32_to_cpu(data->uncorrErrorStatus),
+>+			be32_to_cpu(data->corrErrorStatus));
+> 	if (data->tlpHdr1 || data->tlpHdr2 ||
+> 	    data->tlpHdr3 || data->tlpHdr4)
+> 		pr_info("RootErrLog:  %08x %08x %08x %08x\n",
+>-			data->tlpHdr1, data->tlpHdr2,
+>-			data->tlpHdr3, data->tlpHdr4);
+>+			be32_to_cpu(data->tlpHdr1),
+>+			be32_to_cpu(data->tlpHdr2),
+>+			be32_to_cpu(data->tlpHdr3),
+>+			be32_to_cpu(data->tlpHdr4));
+> 	if (data->sourceId || data->errorClass ||
+> 	    data->correlator)
+> 		pr_info("RootErrLog1: %08x %016llx %016llx\n",
+>-			data->sourceId, data->errorClass,
+>-			data->correlator);
+>+			be32_to_cpu(data->sourceId),
+>+			be64_to_cpu(data->errorClass),
+>+			be64_to_cpu(data->correlator));
+> 	if (data->nFir)
+> 		pr_info("nFir:        %016llx %016llx %016llx\n",
+>-			data->nFir, data->nFirMask,
+>-			data->nFirWOF);
+>+			be64_to_cpu(data->nFir),
+>+			be64_to_cpu(data->nFirMask),
+>+			be64_to_cpu(data->nFirWOF));
+> 	if (data->phbPlssr || data->phbCsr)
+> 		pr_info("PhbSts:      %016llx %016llx\n",
+>-			data->phbPlssr, data->phbCsr);
+>+			be64_to_cpu(data->phbPlssr),
+>+			be64_to_cpu(data->phbCsr));
+> 	if (data->lemFir)
+> 		pr_info("Lem:         %016llx %016llx %016llx\n",
+>-			data->lemFir, data->lemErrorMask,
+>-			data->lemWOF);
+>+			be64_to_cpu(data->lemFir),
+>+			be64_to_cpu(data->lemErrorMask),
+>+			be64_to_cpu(data->lemWOF));
+> 	if (data->phbErrorStatus)
+> 		pr_info("PhbErr:      %016llx %016llx %016llx %016llx\n",
+>-			data->phbErrorStatus, data->phbFirstErrorStatus,
+>-			data->phbErrorLog0, data->phbErrorLog1);
+>+			be64_to_cpu(data->phbErrorStatus),
+>+			be64_to_cpu(data->phbFirstErrorStatus),
+>+			be64_to_cpu(data->phbErrorLog0),
+>+			be64_to_cpu(data->phbErrorLog1));
+> 	if (data->mmioErrorStatus)
+> 		pr_info("OutErr:      %016llx %016llx %016llx %016llx\n",
+>-			data->mmioErrorStatus, data->mmioFirstErrorStatus,
+>-			data->mmioErrorLog0, data->mmioErrorLog1);
+>+			be64_to_cpu(data->mmioErrorStatus),
+>+			be64_to_cpu(data->mmioFirstErrorStatus),
+>+			be64_to_cpu(data->mmioErrorLog0),
+>+			be64_to_cpu(data->mmioErrorLog1));
+> 	if (data->dma0ErrorStatus)
+> 		pr_info("InAErr:      %016llx %016llx %016llx %016llx\n",
+>-			data->dma0ErrorStatus, data->dma0FirstErrorStatus,
+>-			data->dma0ErrorLog0, data->dma0ErrorLog1);
+>+			be64_to_cpu(data->dma0ErrorStatus),
+>+			be64_to_cpu(data->dma0FirstErrorStatus),
+>+			be64_to_cpu(data->dma0ErrorLog0),
+>+			be64_to_cpu(data->dma0ErrorLog1));
+> 	if (data->dma1ErrorStatus)
+> 		pr_info("InBErr:      %016llx %016llx %016llx %016llx\n",
+>-			data->dma1ErrorStatus, data->dma1FirstErrorStatus,
+>-			data->dma1ErrorLog0, data->dma1ErrorLog1);
+>+			be64_to_cpu(data->dma1ErrorStatus),
+>+			be64_to_cpu(data->dma1FirstErrorStatus),
+>+			be64_to_cpu(data->dma1ErrorLog0),
+>+			be64_to_cpu(data->dma1ErrorLog1));
+>
+> 	for (i = 0; i < OPAL_PHB3_NUM_PEST_REGS; i++) {
+>-		if ((data->pestA[i] >> 63) == 0 &&
+>-		    (data->pestB[i] >> 63) == 0)
+>+		if ((be64_to_cpu(data->pestA[i]) >> 63) == 0 &&
+>+		    (be64_to_cpu(data->pestB[i]) >> 63) == 0)
+> 			continue;
+>
+> 		pr_info("PE[%3d] A/B: %016llx %016llx\n",
+>-			i, data->pestA[i], data->pestB[i]);
+>+				i, be64_to_cpu(data->pestA[i]),
+>+				be64_to_cpu(data->pestB[i]));
+> 	}
+> }
+>
+>@@ -284,7 +303,7 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
+> 		return;
+>
+> 	common = (struct OpalIoPhbErrorCommon *)log_buff;
+>-	switch (common->ioType) {
+>+	switch (be32_to_cpu(common->ioType)) {
+> 	case OPAL_PHB_ERROR_DATA_TYPE_P7IOC:
+> 		pnv_pci_dump_p7ioc_diag_data(hose, common);
+> 		break;
+>@@ -293,7 +312,7 @@ void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
+> 		break;
+> 	default:
+> 		pr_warn("%s: Unrecognized ioType %d\n",
+>-			__func__, common->ioType);
+>+			__func__, be32_to_cpu(common->ioType));
+> 	}
+> }
+>
+>-- 
+>1.9.1
 >
