@@ -1,42 +1,18 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0182.outbound.protection.outlook.com [207.46.163.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DDAB1A08A8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 19:00:32 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 11 Jun 2014 19:00:29 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A9C063578054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 19:00:26 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5B8iLe833226924
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 18:44:21 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5B90PXa017777
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 19:00:26 +1000
-Date: Wed, 11 Jun 2014 17:00:23 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: reduce multi-hit of pcibios_setup_device() in
- hotplug
-Message-ID: <20140611090023.GA13419@richard>
-References: <1399530602-4231-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1399863559.17624.66.camel@pasglop>
- <20140611071241.GA10729@richard>
- <1402471784.14780.45.camel@pasglop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59E1F1A0082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 20:54:34 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH 1/3 v4] powerpc/fsl-booke: Add support for T2080/T2081 SoC
+Date: Wed, 11 Jun 2014 18:10:04 +0800
+Message-ID: <1402481406-10830-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1402471784.14780.45.camel@pasglop>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, aik@au1.ibm.com,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,108 +22,692 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 11, 2014 at 05:29:44PM +1000, Benjamin Herrenschmidt wrote:
->On Wed, 2014-06-11 at 15:12 +0800, Wei Yang wrote:
->
->> Sorry for the long delay. It took me some time to investigate and test the code.
->> Currently, the hotplug by qemu monitor command line has been verified. Two pci
->> device on the same bus have been hotpluged one by one successfully.
->> 
->> Another case in my mind is the EEH hotplug, which requires code in
->> Qemu/Sapphire/Kernel. I will did further test later.
->> 
->> Below is the patch which is verified in guest with monitor command line. If my
->> understanding is not correct, please let me know :-)
->
->Please verify under pHyp, the code path are a bit different.
+The T2080 QorIQ multicore processor combines four dual-threaded e6500 Power
+Architecture processor cores with high-performance datapath acceleration
+logic and network and peripheral bus interfaces required for networking,
+telecom/datacom, wireless infrastructure, and mil/aerospace applications.
 
-Yep, I will test it.
+The T2080 SoC includes the following function and features:
+- Four dual-threaded 64-bit Power architecture e6500 cores, up to 1.8GHz
+- 2MB L2 cache and 512KB CoreNet platform cache (CPC)
+- Hierarchical interconnect fabric
+- One 32-/64-bit DDR3/3L SDRAM memory controllers with ECC and interleaving
+- Data Path Acceleration Architecture (DPAA) incorporating acceleration
+- 16 SerDes lanes up to 10.3125 GHz
+- 8 Ethernet interfaces (multiple 1G/2.5G/10G MACs)
+- High-speed peripheral interfaces
+  - Four PCI Express controllers (two PCIe 2.0 and two PCIe 3.0)
+  - Two Serial RapidIO 2.0 controllers/ports running at up to 5 GHz
+- Additional peripheral interfaces
+  - Two serial ATA (SATA 2.0) controllers
+  - Two high-speed USB 2.0 controllers with integrated PHY
+  - Enhanced secure digital host controller (SD/SDXC/eMMC)
+  - Enhanced serial peripheral interface (eSPI)
+  - Four I2C controllers
+  - Four 2-pin UARTs or two 4-pin UARTs
+  - Integrated Flash Controller supporting NAND and NOR flash
+- Three eight-channel DMA engines
+- Support for hardware virtualization and partitioning enforcement
+- QorIQ Platform's Trust Architecture 2.0
 
->
->Cheers,
->Ben.
->
->> >From 69c5f014836b24897356731c39cbaf18f4563573 Mon Sep 17 00:00:00 2001
->> From: Wei Yang <weiyang@linux.vnet.ibm.com>
->> Date: Tue, 10 Jun 2014 15:28:53 +0800
->> Subject: [PATCH] powerpc/pci: Use bus->is_added in of_scan_bus() as in
->>  general platform
->> 
->> When scan the pci bus on general platform, it use bus->is_added to mark the
->> bus has been added successfully. While this flag is not used when the bus scan
->> relies on device node. Instead, it uses a particular parameter
->> "rescan_existing" to play the same role.
->> 
->> This patch enables the bus->is_added when device node is used, drops the
->> "rescan_existing" parameter. Also it skip the pcibios_setup_bus_devices()
->> procedure when bus has already been added, since the pcibios_setup_device()
->> step is done in pci_device_add() when the bus is already added.
->> 
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kernel/pci_of_scan.c |   14 +++++++-------
->>  1 file changed, 7 insertions(+), 7 deletions(-)
->> 
->> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
->> index 83c26d8..3e943ab 100644
->> --- a/arch/powerpc/kernel/pci_of_scan.c
->> +++ b/arch/powerpc/kernel/pci_of_scan.c
->> @@ -334,10 +334,8 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
->>   * __of_scan_bus - given a PCI bus node, setup bus and scan for child devices
->>   * @node: device tree node for the PCI bus
->>   * @bus: pci_bus structure for the PCI bus
->> - * @rescan_existing: Flag indicating bus has already been set up
->>   */
->> -static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
->> -			  int rescan_existing)
->> +static void __of_scan_bus(struct device_node *node, struct pci_bus *bus)
->>  {
->>  	struct device_node *child;
->>  	struct pci_dev *dev;
->> @@ -356,9 +354,11 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
->>  	/* Apply all fixups necessary. We don't fixup the bus "self"
->>  	 * for an existing bridge that is being rescanned
->>  	 */
->> -	if (!rescan_existing)
->> +	if (!bus->is_added) {
->>  		pcibios_setup_bus_self(bus);
->> -	pcibios_setup_bus_devices(bus);
->> +		pcibios_setup_bus_devices(bus);
->> +		bus->is_added = 1;
->> +	}
->>  
->>  	/* Now scan child busses */
->>  	list_for_each_entry(dev, &bus->devices, bus_list) {
->> @@ -376,7 +376,7 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
->>   */
->>  void of_scan_bus(struct device_node *node, struct pci_bus *bus)
->>  {
->> -	__of_scan_bus(node, bus, 0);
->> +	__of_scan_bus(node, bus);
->>  }
->>  EXPORT_SYMBOL_GPL(of_scan_bus);
->>  
->> @@ -390,7 +390,7 @@ EXPORT_SYMBOL_GPL(of_scan_bus);
->>   */
->>  void of_rescan_bus(struct device_node *node, struct pci_bus *bus)
->>  {
->> -	__of_scan_bus(node, bus, 1);
->> +	__of_scan_bus(node, bus);
->>  }
->>  EXPORT_SYMBOL_GPL(of_rescan_bus);
->>  
->> -- 
->> 1.7.9.5
->> 
->> >
->> >
->> >_______________________________________________
->> >Linuxppc-dev mailing list
->> >Linuxppc-dev@lists.ozlabs.org
->> >https://lists.ozlabs.org/listinfo/linuxppc-dev
->> 
->
+T2081 is a reduced personality of T2080 with following difference:
+Feature               T2080 T2081
+1G Ethernet numbers:  8     6
+10G Ethernet numbers: 4     2
+SerDes lanes:         16    8
+Serial RapidIO,RMan:  2     no
+SATA Controller:      2     no
+Aurora:               yes   no
+SoC Package:          896-pins 780-pins
 
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+v4: add fsl,portid-mapping.
+v3: added pamu node and updated clockgen.
+v2: updated with some comments.
+
+ arch/powerpc/boot/dts/fsl/t2080si-post.dtsi |  69 +++++
+ arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 435 ++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi  |  99 +++++++
+ arch/powerpc/include/asm/mpc85xx.h          |   2 +
+ 4 files changed, 605 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+
+diff --git a/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
+new file mode 100644
+index 0000000..082ec20
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/t2080si-post.dtsi
+@@ -0,0 +1,69 @@
++/*
++ * T2080 Silicon/SoC Device Tree Source (post include)
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "t2081si-post.dtsi"
++
++&soc {
++/include/ "qoriq-sata2-0.dtsi"
++	sata@220000 {
++		fsl,iommu-parent = <&pamu1>;
++		fsl,liodn-reg = <&guts 0x550>; /* SATA1LIODNR */
++	};
++
++/include/ "qoriq-sata2-1.dtsi"
++	sata@221000 {
++		fsl,iommu-parent = <&pamu1>;
++		fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
++	};
++};
++
++&rio {
++	compatible = "fsl,srio";
++	interrupts = <16 2 1 11>;
++	#address-cells = <2>;
++	#size-cells = <2>;
++	ranges;
++
++	port1 {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		cell-index = <1>;
++	};
++
++	port2 {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		cell-index = <2>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+new file mode 100644
+index 0000000..6aa12cd
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
+@@ -0,0 +1,435 @@
++/*
++ * T2081 Silicon/SoC Device Tree Source (post include)
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&ifc {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	compatible = "fsl,ifc", "simple-bus";
++	interrupts = <25 2 0 0>;
++};
++
++/* controller at 0x240000 */
++&pci0 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <20 2 0 0>;
++	fsl,iommu-parent = <&pamu0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <20 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 40 1 0 0
++			0000 0 0 2 &mpic 1 1 0 0
++			0000 0 0 3 &mpic 2 1 0 0
++			0000 0 0 4 &mpic 3 1 0 0
++		>;
++	};
++};
++
++/* controller at 0x250000 */
++&pci1 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0 0xff>;
++	interrupts = <21 2 0 0>;
++	fsl,iommu-parent = <&pamu0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <21 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 41 1 0 0
++			0000 0 0 2 &mpic 5 1 0 0
++			0000 0 0 3 &mpic 6 1 0 0
++			0000 0 0 4 &mpic 7 1 0 0
++		>;
++	};
++};
++
++/* controller at 0x260000 */
++&pci2 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <22 2 0 0>;
++	fsl,iommu-parent = <&pamu0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <22 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 42 1 0 0
++			0000 0 0 2 &mpic 9 1 0 0
++			0000 0 0 3 &mpic 10 1 0 0
++			0000 0 0 4 &mpic 11 1 0 0
++		>;
++	};
++};
++
++/* controller at 0x270000 */
++&pci3 {
++	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
++	device_type = "pci";
++	#size-cells = <2>;
++	#address-cells = <3>;
++	bus-range = <0x0 0xff>;
++	interrupts = <23 2 0 0>;
++	fsl,iommu-parent = <&pamu0>;
++	pcie@0 {
++		reg = <0 0 0 0 0>;
++		#interrupt-cells = <1>;
++		#size-cells = <2>;
++		#address-cells = <3>;
++		device_type = "pci";
++		interrupts = <23 2 0 0>;
++		interrupt-map-mask = <0xf800 0 0 7>;
++		interrupt-map = <
++			/* IDSEL 0x0 */
++			0000 0 0 1 &mpic 43 1 0 0
++			0000 0 0 2 &mpic 0 1 0 0
++			0000 0 0 3 &mpic 4 1 0 0
++			0000 0 0 4 &mpic 8 1 0 0
++		>;
++	};
++};
++
++&dcsr {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	compatible = "fsl,dcsr", "simple-bus";
++
++	dcsr-epu@0 {
++		compatible = "fsl,t2080-dcsr-epu", "fsl,dcsr-epu";
++		interrupts = <52 2 0 0
++			      84 2 0 0
++			      85 2 0 0
++			      94 2 0 0
++			      95 2 0 0>;
++		reg = <0x0 0x1000>;
++	};
++	dcsr-npc {
++		compatible = "fsl,t2080-dcsr-cnpc", "fsl,dcsr-cnpc";
++		reg = <0x1000 0x1000 0x1002000 0x10000>;
++	};
++	dcsr-nxc@2000 {
++		compatible = "fsl,dcsr-nxc";
++		reg = <0x2000 0x1000>;
++	};
++	dcsr-corenet {
++		compatible = "fsl,dcsr-corenet";
++		reg = <0x8000 0x1000 0x1A000 0x1000>;
++	};
++	dcsr-ocn@11000 {
++		compatible = "fsl,t2080-dcsr-ocn", "fsl,dcsr-ocn";
++		reg = <0x11000 0x1000>;
++	};
++	dcsr-ddr@12000 {
++		compatible = "fsl,dcsr-ddr";
++		dev-handle = <&ddr1>;
++		reg = <0x12000 0x1000>;
++	};
++	dcsr-nal@18000 {
++		compatible = "fsl,t2080-dcsr-nal", "fsl,dcsr-nal";
++		reg = <0x18000 0x1000>;
++	};
++	dcsr-rcpm@22000 {
++		compatible = "fsl,t2080-dcsr-rcpm", "fsl,dcsr-rcpm";
++		reg = <0x22000 0x1000>;
++	};
++	dcsr-snpc@30000 {
++		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x30000 0x1000 0x1022000 0x10000>;
++	};
++	dcsr-snpc@31000 {
++		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x31000 0x1000 0x1042000 0x10000>;
++	};
++	dcsr-snpc@32000 {
++		compatible = "fsl,t2080-dcsr-snpc", "fsl,dcsr-snpc";
++		reg = <0x32000 0x1000 0x1062000 0x10000>;
++	};
++	dcsr-cpu-sb-proxy@100000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu0>;
++		reg = <0x100000 0x1000 0x101000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@108000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu1>;
++		reg = <0x108000 0x1000 0x109000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@110000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu2>;
++		reg = <0x110000 0x1000 0x111000 0x1000>;
++	};
++	dcsr-cpu-sb-proxy@118000 {
++		compatible = "fsl,dcsr-e6500-sb-proxy", "fsl,dcsr-cpu-sb-proxy";
++		cpu-handle = <&cpu3>;
++		reg = <0x118000 0x1000 0x119000 0x1000>;
++	};
++};
++
++&soc {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	device_type = "soc";
++	compatible = "simple-bus";
++
++	soc-sram-error {
++		compatible = "fsl,soc-sram-error";
++		interrupts = <16 2 1 29>;
++	};
++
++	corenet-law@0 {
++		compatible = "fsl,corenet-law";
++		reg = <0x0 0x1000>;
++		fsl,num-laws = <32>;
++	};
++
++	ddr1: memory-controller@8000 {
++		compatible = "fsl,qoriq-memory-controller-v4.7",
++				"fsl,qoriq-memory-controller";
++		reg = <0x8000 0x1000>;
++		interrupts = <16 2 1 23>;
++	};
++
++	cpc: l3-cache-controller@10000 {
++		compatible = "fsl,t2080-l3-cache-controller", "cache";
++		reg = <0x10000 0x1000
++		       0x11000 0x1000
++		       0x12000 0x1000>;
++		interrupts = <16 2 1 27
++			      16 2 1 26
++			      16 2 1 25>;
++	};
++
++	corenet-cf@18000 {
++		compatible = "fsl,corenet2-cf", "fsl,corenet-cf";
++		reg = <0x18000 0x1000>;
++		interrupts = <16 2 1 31>;
++		fsl,ccf-num-csdids = <32>;
++		fsl,ccf-num-snoopids = <32>;
++	};
++
++	iommu@20000 {
++		compatible = "fsl,pamu-v1.0", "fsl,pamu";
++		reg = <0x20000 0x3000>;
++		fsl,portid-mapping = <0x8000>;
++		ranges = <0 0x20000 0x3000>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++		interrupts = <
++			24 2 0 0
++			16 2 1 30>;
++
++		pamu0: pamu@0 {
++			reg = <0 0x1000>;
++			fsl,primary-cache-geometry = <32 1>;
++			fsl,secondary-cache-geometry = <128 2>;
++		};
++
++		pamu1: pamu@1000 {
++			reg = <0x1000 0x1000>;
++			fsl,primary-cache-geometry = <32 1>;
++			fsl,secondary-cache-geometry = <128 2>;
++		};
++
++		pamu2: pamu@2000 {
++			reg = <0x2000 0x1000>;
++			fsl,primary-cache-geometry = <32 1>;
++			fsl,secondary-cache-geometry = <128 2>;
++		};
++	};
++
++/include/ "qoriq-mpic4.3.dtsi"
++
++	guts: global-utilities@e0000 {
++		compatible = "fsl,t2080-device-config", "fsl,qoriq-device-config-2.0";
++		reg = <0xe0000 0xe00>;
++		fsl,has-rstcr;
++		fsl,liodn-bits = <12>;
++	};
++
++	clockgen: global-utilities@e1000 {
++		compatible = "fsl,t2080-clockgen", "fsl,qoriq-clockgen-2.0";
++		ranges = <0x0 0xe1000 0x1000>;
++		reg = <0xe1000 0x1000>;
++		#address-cells = <1>;
++		#size-cells = <1>;
++
++		sysclk: sysclk {
++			#clock-cells = <0>;
++			compatible = "fsl,qoriq-sysclk-2.0";
++			clock-output-names = "sysclk", "fixed-clock";
++		};
++
++		pll0: pll0@800 {
++			#clock-cells = <1>;
++			reg = <0x800 4>;
++			compatible = "fsl,qoriq-core-pll-2.0";
++			clocks = <&sysclk>;
++			clock-output-names = "pll0", "pll0-div2", "pll0-div4";
++		};
++
++		pll1: pll1@820 {
++			#clock-cells = <1>;
++			reg = <0x820 4>;
++			compatible = "fsl,qoriq-core-pll-2.0";
++			clocks = <&sysclk>;
++			clock-output-names = "pll1", "pll1-div2", "pll1-div4";
++		};
++
++		mux0: mux0@0 {
++			#clock-cells = <0>;
++			reg = <0x0 4>;
++			compatible = "fsl,qoriq-core-mux-2.0";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0", "pll0-div2", "pll1-div4",
++				"pll1", "pll1-div2", "pll1-div4";
++			clock-output-names = "cmux0";
++		};
++
++		mux1: mux1@20 {
++			#clock-cells = <0>;
++			reg = <0x20 4>;
++			compatible = "fsl,qoriq-core-mux-2.0";
++			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
++				 <&pll1 0>, <&pll1 1>, <&pll1 2>;
++			clock-names = "pll0", "pll0-div2", "pll1-div4",
++				"pll1", "pll1-div2", "pll1-div4";
++			clock-output-names = "cmux1";
++		};
++	};
++
++	rcpm: global-utilities@e2000 {
++		compatible = "fsl,t2080-rcpm", "fsl,qoriq-rcpm-2.0";
++		reg = <0xe2000 0x1000>;
++	};
++
++	sfp: sfp@e8000 {
++		compatible = "fsl,t2080-sfp";
++		reg = <0xe8000 0x1000>;
++	};
++
++	serdes: serdes@ea000 {
++		compatible = "fsl,t2080-serdes";
++		reg = <0xea000 0x4000>;
++	};
++
++/include/ "elo3-dma-0.dtsi"
++	dma@100300 {
++		fsl,iommu-parent = <&pamu0>;
++		fsl,liodn-reg = <&guts 0x580>; /* DMA1LIODNR */
++	};
++/include/ "elo3-dma-1.dtsi"
++	dma@101300 {
++		fsl,iommu-parent = <&pamu0>;
++		fsl,liodn-reg = <&guts 0x584>; /* DMA2LIODNR */
++	};
++/include/ "elo3-dma-2.dtsi"
++	dma@102300 {
++		fsl,iommu-parent = <&pamu0>;
++		fsl,liodn-reg = <&guts 0x588>; /* DMA3LIODNR */
++	};
++
++/include/ "qoriq-espi-0.dtsi"
++	spi@110000 {
++		fsl,espi-num-chipselects = <4>;
++	};
++
++/include/ "qoriq-esdhc-0.dtsi"
++	sdhc@114000 {
++		compatible = "fsl,t2080-esdhc", "fsl,esdhc";
++		fsl,iommu-parent = <&pamu1>;
++		fsl,liodn-reg = <&guts 0x530>; /* SDMMCLIODNR */
++		sdhci,auto-cmd12;
++	};
++/include/ "qoriq-i2c-0.dtsi"
++/include/ "qoriq-i2c-1.dtsi"
++/include/ "qoriq-duart-0.dtsi"
++/include/ "qoriq-duart-1.dtsi"
++/include/ "qoriq-gpio-0.dtsi"
++/include/ "qoriq-gpio-1.dtsi"
++/include/ "qoriq-gpio-2.dtsi"
++/include/ "qoriq-gpio-3.dtsi"
++/include/ "qoriq-usb2-mph-0.dtsi"
++	usb0: usb@210000 {
++		compatible = "fsl-usb2-mph-v2.4", "fsl-usb2-mph";
++		fsl,iommu-parent = <&pamu1>;
++		fsl,liodn-reg = <&guts 0x520>; /* USB1LIODNR */
++		phy_type = "utmi";
++		port0;
++	};
++/include/ "qoriq-usb2-dr-0.dtsi"
++	usb1: usb@211000 {
++		compatible = "fsl-usb2-dr-v2.4", "fsl-usb2-dr";
++		fsl,iommu-parent = <&pamu1>;
++		fsl,liodn-reg = <&guts 0x524>; /* USB1LIODNR */
++		dr_mode = "host";
++		phy_type = "utmi";
++	};
++/include/ "qoriq-sec5.2-0.dtsi"
++
++	L2_1: l2-cache-controller@c20000 {
++		/* Cluster 0 L2 cache */
++		compatible = "fsl,t2080-l2-cache-controller";
++		reg = <0xc20000 0x40000>;
++		next-level-cache = <&cpc>;
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+new file mode 100644
+index 0000000..e71ceb0
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi
+@@ -0,0 +1,99 @@
++/*
++ * T2080/T2081 Silicon/SoC Device Tree Source (pre include)
++ *
++ * Copyright 2013 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/dts-v1/;
++
++/include/ "e6500_power_isa.dtsi"
++
++/ {
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	aliases {
++		ccsr = &soc;
++		dcsr = &dcsr;
++
++		serial0 = &serial0;
++		serial1 = &serial1;
++		serial2 = &serial2;
++		serial3 = &serial3;
++
++		crypto = &crypto;
++		pci0 = &pci0;
++		pci1 = &pci1;
++		pci2 = &pci2;
++		pci3 = &pci3;
++		usb0 = &usb0;
++		usb1 = &usb1;
++		dma0 = &dma0;
++		dma1 = &dma1;
++		dma2 = &dma2;
++		sdhc = &sdhc;
++	};
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu0: PowerPC,e6500@0 {
++			device_type = "cpu";
++			reg = <0 1>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x80000000>;
++		};
++		cpu1: PowerPC,e6500@2 {
++			device_type = "cpu";
++			reg = <2 3>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x80000000>;
++		};
++		cpu2: PowerPC,e6500@4 {
++			device_type = "cpu";
++			reg = <4 5>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x80000000>;
++		};
++		cpu3: PowerPC,e6500@6 {
++			device_type = "cpu";
++			reg = <6 7>;
++			clocks = <&mux0>;
++			next-level-cache = <&L2_1>;
++			fsl,portid-mapping = <0x80000000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
+index 736d4ac..3bef74a 100644
+--- a/arch/powerpc/include/asm/mpc85xx.h
++++ b/arch/powerpc/include/asm/mpc85xx.h
+@@ -77,6 +77,8 @@
+ #define SVR_T1020	0x852100
+ #define SVR_T1021	0x852101
+ #define SVR_T1022	0x852102
++#define SVR_T2080	0x853000
++#define SVR_T2081	0x853100
+ 
+ #define SVR_8610	0x80A000
+ #define SVR_8641	0x809000
 -- 
-Richard Yang
-Help you, Help me
+1.8.0
