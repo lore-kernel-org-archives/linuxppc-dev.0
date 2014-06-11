@@ -1,42 +1,42 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E9C511A08FA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 18:48:30 +1000 (EST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6FF051400EE
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2014 18:48:30 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DDAB1A08A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 19:00:32 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Wed, 11 Jun 2014 18:48:27 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C3BDB3578048
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2014 18:48:24 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5B8m9Fr6684966
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2014 18:48:09 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5B8mNhx021615
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Jun 2014 18:48:24 +1000
-Subject: [PATCH 4/4] powerpc/book3s: Fix guest MC delivery mechanism to
- avoid soft lockups in guest.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 11 Jun 2014 14:18:21 +0530
-Message-ID: <20140611084821.9634.7119.stgit@mars.in.ibm.com>
-In-Reply-To: <20140611084756.9634.82266.stgit@mars.in.ibm.com>
-References: <20140611084756.9634.82266.stgit@mars.in.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 11 Jun 2014 19:00:29 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A9C063578054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 19:00:26 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5B8iLe833226924
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 18:44:21 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5B90PXa017777
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 19:00:26 +1000
+Date: Wed, 11 Jun 2014 17:00:23 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: reduce multi-hit of pcibios_setup_device() in
+ hotplug
+Message-ID: <20140611090023.GA13419@richard>
+References: <1399530602-4231-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1399863559.17624.66.camel@pasglop>
+ <20140611071241.GA10729@richard>
+ <1402471784.14780.45.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Michael Neuling <mikey@neuling.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1402471784.14780.45.camel@pasglop>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, aik@au1.ibm.com,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,94 +46,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Wed, Jun 11, 2014 at 05:29:44PM +1000, Benjamin Herrenschmidt wrote:
+>On Wed, 2014-06-11 at 15:12 +0800, Wei Yang wrote:
+>
+>> Sorry for the long delay. It took me some time to investigate and test the code.
+>> Currently, the hotplug by qemu monitor command line has been verified. Two pci
+>> device on the same bus have been hotpluged one by one successfully.
+>> 
+>> Another case in my mind is the EEH hotplug, which requires code in
+>> Qemu/Sapphire/Kernel. I will did further test later.
+>> 
+>> Below is the patch which is verified in guest with monitor command line. If my
+>> understanding is not correct, please let me know :-)
+>
+>Please verify under pHyp, the code path are a bit different.
 
-Currently we forward MCEs to guest which have been recovered by guest.
-And for unhandled errors we do not deliver the MCE to guest. It looks like
-with no support of FWNMI in qemu, guest just panics whenever we deliver the
-recovered MCEs to guest. Also, the existig code used to return to host for
-unhandled errors which was casuing guest to hang with soft lockups inside
-guest and makes it difficult to recover guest instance.
+Yep, I will test it.
 
-This patch now forwards all fatal MCEs to guest causing guest to crash/panic.
-And, for recovered errors we just go back to normal functioning of guest
-instead of returning to host. This fixes soft lockup issues in guest.
-This patch also fixes an issue where guest MCE events were not logged to
-host console.
+>
+>Cheers,
+>Ben.
+>
+>> >From 69c5f014836b24897356731c39cbaf18f4563573 Mon Sep 17 00:00:00 2001
+>> From: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> Date: Tue, 10 Jun 2014 15:28:53 +0800
+>> Subject: [PATCH] powerpc/pci: Use bus->is_added in of_scan_bus() as in
+>>  general platform
+>> 
+>> When scan the pci bus on general platform, it use bus->is_added to mark the
+>> bus has been added successfully. While this flag is not used when the bus scan
+>> relies on device node. Instead, it uses a particular parameter
+>> "rescan_existing" to play the same role.
+>> 
+>> This patch enables the bus->is_added when device node is used, drops the
+>> "rescan_existing" parameter. Also it skip the pcibios_setup_bus_devices()
+>> procedure when bus has already been added, since the pcibios_setup_device()
+>> step is done in pci_device_add() when the bus is already added.
+>> 
+>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/kernel/pci_of_scan.c |   14 +++++++-------
+>>  1 file changed, 7 insertions(+), 7 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+>> index 83c26d8..3e943ab 100644
+>> --- a/arch/powerpc/kernel/pci_of_scan.c
+>> +++ b/arch/powerpc/kernel/pci_of_scan.c
+>> @@ -334,10 +334,8 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
+>>   * __of_scan_bus - given a PCI bus node, setup bus and scan for child devices
+>>   * @node: device tree node for the PCI bus
+>>   * @bus: pci_bus structure for the PCI bus
+>> - * @rescan_existing: Flag indicating bus has already been set up
+>>   */
+>> -static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
+>> -			  int rescan_existing)
+>> +static void __of_scan_bus(struct device_node *node, struct pci_bus *bus)
+>>  {
+>>  	struct device_node *child;
+>>  	struct pci_dev *dev;
+>> @@ -356,9 +354,11 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
+>>  	/* Apply all fixups necessary. We don't fixup the bus "self"
+>>  	 * for an existing bridge that is being rescanned
+>>  	 */
+>> -	if (!rescan_existing)
+>> +	if (!bus->is_added) {
+>>  		pcibios_setup_bus_self(bus);
+>> -	pcibios_setup_bus_devices(bus);
+>> +		pcibios_setup_bus_devices(bus);
+>> +		bus->is_added = 1;
+>> +	}
+>>  
+>>  	/* Now scan child busses */
+>>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>> @@ -376,7 +376,7 @@ static void __of_scan_bus(struct device_node *node, struct pci_bus *bus,
+>>   */
+>>  void of_scan_bus(struct device_node *node, struct pci_bus *bus)
+>>  {
+>> -	__of_scan_bus(node, bus, 0);
+>> +	__of_scan_bus(node, bus);
+>>  }
+>>  EXPORT_SYMBOL_GPL(of_scan_bus);
+>>  
+>> @@ -390,7 +390,7 @@ EXPORT_SYMBOL_GPL(of_scan_bus);
+>>   */
+>>  void of_rescan_bus(struct device_node *node, struct pci_bus *bus)
+>>  {
+>> -	__of_scan_bus(node, bus, 1);
+>> +	__of_scan_bus(node, bus);
+>>  }
+>>  EXPORT_SYMBOL_GPL(of_rescan_bus);
+>>  
+>> -- 
+>> 1.7.9.5
+>> 
+>> >
+>> >
+>> >_______________________________________________
+>> >Linuxppc-dev mailing list
+>> >Linuxppc-dev@lists.ozlabs.org
+>> >https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> 
+>
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_ras.c        |   15 +++++++--------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |   19 ++++++++++++++++---
- 2 files changed, 23 insertions(+), 11 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_ras.c b/arch/powerpc/kvm/book3s_hv_ras.c
-index 768a9f9..3a5c568 100644
---- a/arch/powerpc/kvm/book3s_hv_ras.c
-+++ b/arch/powerpc/kvm/book3s_hv_ras.c
-@@ -113,10 +113,8 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
- 	 * We assume that if the condition is recovered then linux host
- 	 * will have generated an error log event that we will pick
- 	 * up and log later.
--	 * Don't release mce event now. In case if condition is not
--	 * recovered we do guest exit and go back to linux host machine
--	 * check handler. Hence we need make sure that current mce event
--	 * is available for linux host to consume.
-+	 * Don't release mce event now. We will queue up the event so that
-+	 * we can log the MCE event info on host console.
- 	 */
- 	if (!get_mce_event(&mce_evt, MCE_EVENT_DONTRELEASE))
- 		goto out;
-@@ -128,11 +126,12 @@ static long kvmppc_realmode_mc_power7(struct kvm_vcpu *vcpu)
- 
- out:
- 	/*
--	 * If we have handled the error, then release the mce event because
--	 * we will be delivering machine check to guest.
-+	 * We are now going enter guest either through machine check
-+	 * interrupt (for unhandled errors) or will continue from
-+	 * current HSRR0 (for handled errors) in guest. Hence
-+	 * queue up the event so that we can log it from host console later.
- 	 */
--	if (handled)
--		release_mce_event();
-+	machine_check_queue_event();
- 
- 	return handled;
- }
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 77356fd..868347e 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2257,15 +2257,28 @@ machine_check_realmode:
- 	mr	r3, r9		/* get vcpu pointer */
- 	bl	kvmppc_realmode_machine_check
- 	nop
--	cmpdi	r3, 0		/* continue exiting from guest? */
-+	cmpdi	r3, 0		/* Did we handle MCE ? */
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
--	beq	mc_cont
-+	/*
-+	 * Deliver unhandled/fatal (e.g. UE) MCE errors to guest through
-+	 * machine check interrupt (set HSRR0 to 0x200). And for handled
-+	 * errors (no-fatal), just go back to guest execution with current
-+	 * HSRR0 instead of exiting guest. This new approach will inject
-+	 * machine check to guest for fatal error causing guest to crash.
-+	 *
-+	 * The old code used to return to host for unhandled errors which
-+	 * was causing guest to hang with soft lockups inside guest and
-+	 * makes it difficult to recover guest instance.
-+	 */
-+	ld	r10, VCPU_PC(r9)
-+	ld	r11, VCPU_MSR(r9)
-+	bne	2f	/* Continue guest execution. */
- 	/* If not, deliver a machine check.  SRR0/1 are already set */
- 	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
- 	ld	r11, VCPU_MSR(r9)
- 	bl	kvmppc_msr_interrupt
--	b	fast_interrupt_c_return
-+2:	b	fast_interrupt_c_return
- 
- /*
-  * Check the reason we woke from nap, and take appropriate action.
+-- 
+Richard Yang
+Help you, Help me
