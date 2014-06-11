@@ -1,19 +1,22 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by lists.ozlabs.org (Postfix) with ESMTP id D5E211A03D7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 06:59:32 +1000 (EST)
-Message-ID: <1402520359.14174.177.camel@ul30vt.home>
-Subject: Re: [PATCH v10 3/3] drivers/vfio: EEH support for VFIO PCI device
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Wed, 11 Jun 2014 14:59:19 -0600
-In-Reply-To: <1402364517-28561-4-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1402364517-28561-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1402364517-28561-4-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, agraf@suse.de, kvm-ppc@vger.kernel.org,
- qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <paubert@iram.es>
+Received: from marchena.puc.rediris.es (marchena.puc.rediris.es
+ [130.206.18.21])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6583E1A0335
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 07:04:10 +1000 (EST)
+Date: Wed, 11 Jun 2014 23:03:51 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: power and percpu: Could we move the paca into the percpu area?
+Message-ID: <20140611210351.GA7155@visitor2.iram.es>
+References: <alpine.DEB.2.10.1406111426480.10600@gentwo.org>
+ <1402518131.14780.60.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1402518131.14780.60.camel@pasglop>
+Cc: Tejun Heo <htejun@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Lameter <cl@gentwo.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,409 +26,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-06-10 at 11:41 +1000, Gavin Shan wrote:
-> The patch adds new IOCTL commands for sPAPR VFIO container device
-> to support EEH functionality for PCI devices, which have been passed
-> through from host to somebody else via VFIO.
+On Thu, Jun 12, 2014 at 06:22:11AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-06-11 at 14:37 -0500, Christoph Lameter wrote:
+> > Looking at arch/powerpc/include/asm/percpu.h I see that the per cpu offset
+> > comes from a local_paca field and local_paca is in r13. That means that
+> > for all percpu operations we first have to determine the address through a
+> > memory access.
+> > 
+> > Would it be possible to put the paca at the beginning of the percpu data
+> > area and then have r31 point to the percpu area?
+> > 
+> > power has these nice instructions that fetch from an offset relative to a
+> > base register which could be used throughout for percpu operations in the
+> > kernel (similar to x86 segment registers).
+> > 
+> > With that we may also be able to use the atomic ops for fast percpu access
+> > so that we can avoid the irq enable/disable sequence that is now required
+> > for percpu atomics. Would result in fast and reliable percpu
+> > counters for powerpc.
 > 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> Acked-by: Alexander Graf <agraf@suse.de>
-
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
-
-> ---
->  Documentation/vfio.txt              | 87 +++++++++++++++++++++++++++++++++++--
->  drivers/vfio/Makefile               |  1 +
->  drivers/vfio/pci/vfio_pci.c         | 18 ++++++--
->  drivers/vfio/vfio_iommu_spapr_tce.c | 17 +++++++-
->  drivers/vfio/vfio_spapr_eeh.c       | 87 +++++++++++++++++++++++++++++++++++++
->  include/linux/vfio.h                | 23 ++++++++++
->  include/uapi/linux/vfio.h           | 34 +++++++++++++++
->  7 files changed, 259 insertions(+), 8 deletions(-)
->  create mode 100644 drivers/vfio/vfio_spapr_eeh.c
+> So.... this is complicated :) And it's something I did want to tackle
+> for a while but haven't had a chance.
 > 
-> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
-> index b9ca023..96978ec 100644
-> --- a/Documentation/vfio.txt
-> +++ b/Documentation/vfio.txt
-> @@ -305,7 +305,15 @@ faster, the map/unmap handling has been implemented in real mode which provides
->  an excellent performance which has limitations such as inability to do
->  locked pages accounting in real time.
->  
-> -So 3 additional ioctls have been added:
-> +4) According to sPAPR specification, A Partitionable Endpoint (PE) is an I/O
-> +subtree that can be treated as a unit for the purposes of partitioning and
-> +error recovery. A PE may be a single or multi-function IOA (IO Adapter), a
-> +function of a multi-function IOA, or multiple IOAs (possibly including switch
-> +and bridge structures above the multiple IOAs). PPC64 guests detect PCI errors
-> +and recover from them via EEH RTAS services, which works on the basis of
-> +additional ioctl commands.
-> +
-> +So 4 additional ioctls have been added:
->  
->  	VFIO_IOMMU_SPAPR_TCE_GET_INFO - returns the size and the start
->  		of the DMA window on the PCI bus.
-> @@ -316,9 +324,12 @@ So 3 additional ioctls have been added:
->  
->  	VFIO_IOMMU_DISABLE - disables the container.
->  
-> +	VFIO_EEH_PE_OP - provides an API for EEH setup, error detection and recovery.
->  
->  The code flow from the example above should be slightly changed:
->  
-> +	struct vfio_eeh_pe_op pe_op = { .argsz = sizeof(pe_op), .flags = 0 };
-> +
->  	.....
->  	/* Add the group to the container */
->  	ioctl(group, VFIO_GROUP_SET_CONTAINER, &container);
-> @@ -342,9 +353,79 @@ The code flow from the example above should be slightly changed:
->  	dma_map.flags = VFIO_DMA_MAP_FLAG_READ | VFIO_DMA_MAP_FLAG_WRITE;
->  
->  	/* Check here is .iova/.size are within DMA window from spapr_iommu_info */
-> -
->  	ioctl(container, VFIO_IOMMU_MAP_DMA, &dma_map);
-> -	.....
-> +
-> +	/* Get a file descriptor for the device */
-> +	device = ioctl(group, VFIO_GROUP_GET_DEVICE_FD, "0000:06:0d.0");
-> +
-> +	....
-> +
-> +	/* Gratuitous device reset and go... */
-> +	ioctl(device, VFIO_DEVICE_RESET);
-> +
-> +	/* Make sure EEH is supported */
-> +	ioctl(container, VFIO_CHECK_EXTENSION, VFIO_EEH);
-> +
-> +	/* Enable the EEH functionality on the device */
-> +	pe_op.op = VFIO_EEH_PE_ENABLE;
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +
-> +	/* You're suggested to create additional data struct to represent
-> +	 * PE, and put child devices belonging to same IOMMU group to the
-> +	 * PE instance for later reference.
-> +	 */
-> +
-> +	/* Check the PE's state and make sure it's in functional state */
-> +	pe_op.op = VFIO_EEH_PE_GET_STATE;
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +
-> +	/* Save device state using pci_save_state().
-> +	 * EEH should be enabled on the specified device.
-> +	 */
-> +
-> +	....
-> +
-> +	/* When 0xFF's returned from reading PCI config space or IO BARs
-> +	 * of the PCI device. Check the PE's state to see if that has been
-> +	 * frozen.
-> +	 */
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +
-> +	/* Waiting for pending PCI transactions to be completed and don't
-> +	 * produce any more PCI traffic from/to the affected PE until
-> +	 * recovery is finished.
-> +	 */
-> +
-> +	/* Enable IO for the affected PE and collect logs. Usually, the
-> +	 * standard part of PCI config space, AER registers are dumped
-> +	 * as logs for further analysis.
-> +	 */
-> +	pe_op.op = VFIO_EEH_PE_UNFREEZE_IO;
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +
-> +	/*
-> +	 * Issue PE reset: hot or fundamental reset. Usually, hot reset
-> +	 * is enough. However, the firmware of some PCI adapters would
-> +	 * require fundamental reset.
-> +	 */
-> +	pe_op.op = VFIO_EEH_PE_RESET_HOT;
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +	pe_op.op = VFIO_EEH_PE_RESET_DEACTIVATE;
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +
-> +	/* Configure the PCI bridges for the affected PE */
-> +	pe_op.op = VFIO_EEH_PE_CONFIGURE;
-> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-> +
-> +	/* Restored state we saved at initialization time. pci_restore_state()
-> +	 * is good enough as an example.
-> +	 */
-> +
-> +	/* Hopefully, error is recovered successfully. Now, you can resume to
-> +	 * start PCI traffic to/from the affected PE.
-> +	 */
-> +
-> +	....
->  
->  -------------------------------------------------------------------------------
->  
-> diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
-> index 72bfabc..50e30bc 100644
-> --- a/drivers/vfio/Makefile
-> +++ b/drivers/vfio/Makefile
-> @@ -1,4 +1,5 @@
->  obj-$(CONFIG_VFIO) += vfio.o
->  obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
->  obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
-> +obj-$(CONFIG_EEH) += vfio_spapr_eeh.o
->  obj-$(CONFIG_VFIO_PCI) += pci/
-> diff --git a/drivers/vfio/pci/vfio_pci.c b/drivers/vfio/pci/vfio_pci.c
-> index 7ba0424..0122665 100644
-> --- a/drivers/vfio/pci/vfio_pci.c
-> +++ b/drivers/vfio/pci/vfio_pci.c
-> @@ -156,8 +156,10 @@ static void vfio_pci_release(void *device_data)
->  {
->  	struct vfio_pci_device *vdev = device_data;
->  
-> -	if (atomic_dec_and_test(&vdev->refcnt))
-> +	if (atomic_dec_and_test(&vdev->refcnt)) {
-> +		vfio_spapr_pci_eeh_release(vdev->pdev);
->  		vfio_pci_disable(vdev);
-> +	}
->  
->  	module_put(THIS_MODULE);
->  }
-> @@ -165,19 +167,27 @@ static void vfio_pci_release(void *device_data)
->  static int vfio_pci_open(void *device_data)
->  {
->  	struct vfio_pci_device *vdev = device_data;
-> +	int ret;
->  
->  	if (!try_module_get(THIS_MODULE))
->  		return -ENODEV;
->  
->  	if (atomic_inc_return(&vdev->refcnt) == 1) {
-> -		int ret = vfio_pci_enable(vdev);
-> +		ret = vfio_pci_enable(vdev);
-> +		if (ret)
-> +			goto error;
-> +
-> +		ret = vfio_spapr_pci_eeh_open(vdev->pdev);
->  		if (ret) {
-> -			module_put(THIS_MODULE);
-> -			return ret;
-> +			vfio_pci_disable(vdev);
-> +			goto error;
->  		}
->  	}
->  
->  	return 0;
-> +error:
-> +	module_put(THIS_MODULE);
-> +	return ret;
->  }
->  
->  static int vfio_pci_get_irq_count(struct vfio_pci_device *vdev, int irq_type)
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index a84788b..730b4ef 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -156,7 +156,16 @@ static long tce_iommu_ioctl(void *iommu_data,
->  
->  	switch (cmd) {
->  	case VFIO_CHECK_EXTENSION:
-> -		return (arg == VFIO_SPAPR_TCE_IOMMU) ? 1 : 0;
-> +		switch (arg) {
-> +		case VFIO_SPAPR_TCE_IOMMU:
-> +			ret = 1;
-> +			break;
-> +		default:
-> +			ret = vfio_spapr_iommu_eeh_ioctl(NULL, cmd, arg);
-> +			break;
-> +		}
-> +
-> +		return (ret < 0) ? 0 : ret;
->  
->  	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
->  		struct vfio_iommu_spapr_tce_info info;
-> @@ -283,6 +292,12 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		tce_iommu_disable(container);
->  		mutex_unlock(&container->lock);
->  		return 0;
-> +	case VFIO_EEH_PE_OP:
-> +		if (!container->tbl || !container->tbl->it_group)
-> +			return -ENODEV;
-> +
-> +		return vfio_spapr_iommu_eeh_ioctl(container->tbl->it_group,
-> +						  cmd, arg);
->  	}
->  
->  	return -ENOTTY;
-> diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
-> new file mode 100644
-> index 0000000..f834b4c
-> --- /dev/null
-> +++ b/drivers/vfio/vfio_spapr_eeh.c
-> @@ -0,0 +1,87 @@
-> +/*
-> + * EEH functionality support for VFIO devices. The feature is only
-> + * available on sPAPR compatible platforms.
-> + *
-> + * Copyright Gavin Shan, IBM Corporation 2014.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/uaccess.h>
-> +#include <linux/vfio.h>
-> +#include <asm/eeh.h>
-> +
-> +/* We might build address mapping here for "fast" path later */
-> +int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
-> +{
-> +	return eeh_dev_open(pdev);
-> +}
-> +
-> +void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
-> +{
-> +	eeh_dev_release(pdev);
-> +}
-> +
-> +long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
-> +				unsigned int cmd, unsigned long arg)
-> +{
-> +	struct eeh_pe *pe;
-> +	struct vfio_eeh_pe_op op;
-> +	unsigned long minsz;
-> +	long ret = -EINVAL;
-> +
-> +	switch (cmd) {
-> +	case VFIO_CHECK_EXTENSION:
-> +		if (arg == VFIO_EEH)
-> +			ret = eeh_enabled() ? 1 : 0;
-> +		else
-> +			ret = 0;
-> +		break;
-> +	case VFIO_EEH_PE_OP:
-> +		pe = eeh_iommu_group_to_pe(group);
-> +		if (!pe)
-> +			return -ENODEV;
-> +
-> +		minsz = offsetofend(struct vfio_eeh_pe_op, op);
-> +		if (copy_from_user(&op, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +		if (op.argsz < minsz || op.flags)
-> +			return -EINVAL;
-> +
-> +		switch (op.op) {
-> +		case VFIO_EEH_PE_DISABLE:
-> +			ret = eeh_pe_set_option(pe, EEH_OPT_DISABLE);
-> +			break;
-> +		case VFIO_EEH_PE_ENABLE:
-> +			ret = eeh_pe_set_option(pe, EEH_OPT_ENABLE);
-> +			break;
-> +		case VFIO_EEH_PE_UNFREEZE_IO:
-> +			ret = eeh_pe_set_option(pe, EEH_OPT_THAW_MMIO);
-> +			break;
-> +		case VFIO_EEH_PE_UNFREEZE_DMA:
-> +			ret = eeh_pe_set_option(pe, EEH_OPT_THAW_DMA);
-> +			break;
-> +		case VFIO_EEH_PE_GET_STATE:
-> +			ret = eeh_pe_get_state(pe);
-> +			break;
-> +		case VFIO_EEH_PE_RESET_DEACTIVATE:
-> +			ret = eeh_pe_reset(pe, EEH_RESET_DEACTIVATE);
-> +			break;
-> +		case VFIO_EEH_PE_RESET_HOT:
-> +			ret = eeh_pe_reset(pe, EEH_RESET_HOT);
-> +			break;
-> +		case VFIO_EEH_PE_RESET_FUNDAMENTAL:
-> +			ret = eeh_pe_reset(pe, EEH_RESET_FUNDAMENTAL);
-> +			break;
-> +		case VFIO_EEH_PE_CONFIGURE:
-> +			ret = eeh_pe_configure(pe);
-> +			break;
-> +		default:
-> +			ret = -EINVAL;
-> +		}
-> +	}
-> +
-> +	return ret;
-> +}
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 81022a52..0d3bb8f 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -99,4 +99,27 @@ extern int vfio_external_user_iommu_id(struct vfio_group *group);
->  extern long vfio_external_check_extension(struct vfio_group *group,
->  					  unsigned long arg);
->  
-> +#ifdef CONFIG_EEH
-> +extern int vfio_spapr_pci_eeh_open(struct pci_dev *pdev);
-> +extern void vfio_spapr_pci_eeh_release(struct pci_dev *pdev);
-> +extern long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
-> +				       unsigned int cmd,
-> +				       unsigned long arg);
-> +#else
-> +static inline int vfio_spapr_pci_eeh_open(struct pci_dev *pdev)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline void vfio_spapr_pci_eeh_release(struct pci_dev *pdev)
-> +{
-> +}
-> +
-> +static inline long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
-> +					      unsigned int cmd,
-> +					      unsigned long arg)
-> +{
-> +	return -ENOTTY;
-> +}
-> +#endif /* CONFIG_EEH */
->  #endif /* VFIO_H */
-> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-> index cb9023d..6612974 100644
-> --- a/include/uapi/linux/vfio.h
-> +++ b/include/uapi/linux/vfio.h
-> @@ -30,6 +30,9 @@
->   */
->  #define VFIO_DMA_CC_IOMMU		4
->  
-> +/* Check if EEH is supported */
-> +#define VFIO_EEH			5
-> +
->  /*
->   * The IOCTL interface is designed for extensibility by embedding the
->   * structure length (argsz) and flags into structures passed between
-> @@ -455,6 +458,37 @@ struct vfio_iommu_spapr_tce_info {
->  
->  #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
->  
-> +/*
-> + * EEH PE operation struct provides ways to:
-> + * - enable/disable EEH functionality;
-> + * - unfreeze IO/DMA for frozen PE;
-> + * - read PE state;
-> + * - reset PE;
-> + * - configure PE.
-> + */
-> +struct vfio_eeh_pe_op {
-> +	__u32 argsz;
-> +	__u32 flags;
-> +	__u32 op;
-> +};
-> +
-> +#define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
-> +#define VFIO_EEH_PE_ENABLE		1	/* Enable EEH functionality  */
-> +#define VFIO_EEH_PE_UNFREEZE_IO		2	/* Enable IO for frozen PE   */
-> +#define VFIO_EEH_PE_UNFREEZE_DMA	3	/* Enable DMA for frozen PE  */
-> +#define VFIO_EEH_PE_GET_STATE		4	/* PE state retrieval        */
-> +#define  VFIO_EEH_PE_STATE_NORMAL	0	/* PE in functional state    */
-> +#define  VFIO_EEH_PE_STATE_RESET	1	/* PE reset in progress      */
-> +#define  VFIO_EEH_PE_STATE_STOPPED	2	/* Stopped DMA and IO        */
-> +#define  VFIO_EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only          */
-> +#define  VFIO_EEH_PE_STATE_UNAVAIL	5	/* State unavailable         */
-> +#define VFIO_EEH_PE_RESET_DEACTIVATE	5	/* Deassert PE reset         */
-> +#define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
-> +#define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
-> +#define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
-> +
-> +#define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
-> +
->  /* ***************************************************************** */
->  
->  #endif /* _UAPIVFIO_H */
+> The issues off the top of my head are:
+> 
+>  - The PACA must be accessible in real mode, which means that when
+> running under a hypervisor, it must be allocated in the "RMA" which is
+> the low part of memory up to a limit that depends on the hypervisor, but
+> can be as low as 128M on some older machines.
+> 
+>  - However, we use percpu more than paca in normal kernel C code, the
+> PACA is mostly used during exception entry/exit, KVM, and for interrupt
+> soft-enable/disable. So it might make sense to change things so that r13
+> contains the per-cpu offset instead. However, doing that change and
+> updating the asm to cope isn't a trivial undertaking.
+> 
+>  - Direct offset from r13 in asm ... works as long as the offset is
+> within the signed 32k range. Otherwise we need at least one more addis
+> instruction. Anton mentioned the linker may have some smarts however for
+> removing that addis if the high part of the offset happens to be 0.
+> 
+>  - For atomics, the jury is still out as to whether it would be faster
+> or not. The atomic ops (lwarx/stwcx.) are expensive. They flush the
+> value out of the L1 (to L2) among others. On the other hand we have
+> interrupts soft-disable so masking interrupts isn't very expensive.
+> Unmasking, while cheap, is currently out of line however. I have been
+> wondering if we could move some of the soft-irq state instead to a CR
+> field and mark that -ffixed with gcc so we can make irq
+> soft-disable/enable even faster and more in-line.
+
+Actually, from gcc/config/rs6000.h:
+
+/* 1 for registers that have pervasive standard uses
+   and are not available for the register allocator.
+
+   On RS/6000, r1 is used for the stack.  On Darwin, r2 is available
+   as a local register; for all other OS's r2 is the TOC pointer.
+
+   cr5 is not supposed to be used.
+
+   On System V implementations, r13 is fixed and not available for use.  */
+
+#define FIXED_REGISTERS  \
+  {0, 1, FIXED_R2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, FIXED_R13, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1,          \
+   /* AltiVec registers.  */                       \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+   1, 1                                            \
+   , 1, 1, 1, 1, 1, 1                              \
+}
+
+So cr5, which is number 73, is never used by gcc. 
+Disassembling a few kernels seems to confirm this.
+This gives you 4 booleans to play with...
+
+	Gabriel
