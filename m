@@ -1,18 +1,33 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E2881A00CE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 15:59:36 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc/powernv: Enable POWER8 doorbell IPIs
-Date: Wed, 11 Jun 2014 15:59:28 +1000
-Message-Id: <1402466368-22583-6-git-send-email-mikey@neuling.org>
-In-Reply-To: <1402466368-22583-1-git-send-email-mikey@neuling.org>
-References: <1402466368-22583-1-git-send-email-mikey@neuling.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 316921A0D2D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 16:02:31 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 11 Jun 2014 11:32:25 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0F322E0044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 11:33:23 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5B63CX039518268
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 11:33:13 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5B62JKN029282
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 11:32:19 +0530
+Message-ID: <5397F0E9.8060305@linux.vnet.ibm.com>
+Date: Wed, 11 Jun 2014 14:02:17 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc <linuxppc-dev@lists.ozlabs.org>
+Subject: Kernel build fail with "Circular xxxx <- xxxx dependency dropped"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Michal Marek <mmarek@suse.cz>, Sam Ravnborg <sam@ravnborg.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,118 +37,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables POWER8 doorbell IPIs on powernv.
+Hi all,
 
-Since doorbells can only IPI within a core, we test to see when we can use
-doorbells and if not we fall back to XICS.  This also enables hypervisor
-doorbells to wakeup us up from nap/sleep via the LPCR PECEDH bit.
+I recently build linux next kernel in IBM Power7 platform, use default 
+config file copy from /boot/config-3.6.10-4.fc18.ppc64p7
 
-Based on tests by Anton, the best case IPI latency between two threads dropped
-from 894ns to 512ns.
+[root@cena01 linux-next]# uname -a
+Linux cena01.austin.ibm.com 3.15.0-rc1+ #47 SMP Thu Apr 24 20:59:46 CDT 
+2014 ppc64 ppc64 ppc64 GNU/Linux
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/kernel/cpu_setup_power.S  | 2 ++
- arch/powerpc/platforms/powernv/Kconfig | 1 +
- arch/powerpc/platforms/powernv/smp.c   | 6 ++++++
- arch/powerpc/platforms/pseries/Kconfig | 1 +
- arch/powerpc/sysdev/xics/icp-native.c  | 9 ++++++++-
- 5 files changed, 18 insertions(+), 1 deletion(-)
+[root@cena01 linux-next]# cat /etc/issue
+Fedora release 18 (Spherical Cow)
+Kernel \r on an \m (\l)
 
-diff --git a/arch/powerpc/kernel/cpu_setup_power.S b/arch/powerpc/kernel/cpu_setup_power.S
-index 1557e7c..4673353 100644
---- a/arch/powerpc/kernel/cpu_setup_power.S
-+++ b/arch/powerpc/kernel/cpu_setup_power.S
-@@ -56,6 +56,7 @@ _GLOBAL(__setup_cpu_power8)
- 	li	r0,0
- 	mtspr	SPRN_LPID,r0
- 	mfspr	r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
-@@ -74,6 +75,7 @@ _GLOBAL(__restore_cpu_power8)
- 	li	r0,0
- 	mtspr	SPRN_LPID,r0
- 	mfspr   r3,SPRN_LPCR
-+	ori	r3, r3, LPCR_PECEDH
- 	bl	__init_LPCR
- 	bl	__init_HFSCR
- 	bl	__init_tlb_power8
-diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
-index c252ee9..45a8ed0 100644
---- a/arch/powerpc/platforms/powernv/Kconfig
-+++ b/arch/powerpc/platforms/powernv/Kconfig
-@@ -17,6 +17,7 @@ config PPC_POWERNV
- 	select CPU_FREQ_GOV_USERSPACE
- 	select CPU_FREQ_GOV_ONDEMAND
- 	select CPU_FREQ_GOV_CONSERVATIVE
-+	select PPC_DOORBELL
- 	default y
- 
- config PPC_POWERNV_RTAS
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 0062a43..5fcfcf4 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -32,6 +32,7 @@
- #include <asm/opal.h>
- #include <asm/runlatch.h>
- #include <asm/code-patching.h>
-+#include <asm/dbell.h>
- 
- #include "powernv.h"
- 
-@@ -46,6 +47,11 @@ static void pnv_smp_setup_cpu(int cpu)
- {
- 	if (cpu != boot_cpuid)
- 		xics_setup_cpu();
-+
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL))
-+		doorbell_setup_this_cpu();
-+#endif
- }
- 
- int pnv_smp_kick_cpu(int nr)
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 2cb8b77..756b482 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -21,6 +21,7 @@ config PPC_PSERIES
- 	select HAVE_CONTEXT_TRACKING
- 	select HOTPLUG_CPU if SMP
- 	select ARCH_RANDOM
-+	select PPC_DOORBELL
- 	default y
- 
- config PPC_SPLPAR
-diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
-index 9dee470..de8d948 100644
---- a/arch/powerpc/sysdev/xics/icp-native.c
-+++ b/arch/powerpc/sysdev/xics/icp-native.c
-@@ -26,6 +26,7 @@
- #include <asm/errno.h>
- #include <asm/xics.h>
- #include <asm/kvm_ppc.h>
-+#include <asm/dbell.h>
- 
- struct icp_ipl {
- 	union {
-@@ -145,7 +146,13 @@ static unsigned int icp_native_get_irq(void)
- static void icp_native_cause_ipi(int cpu, unsigned long data)
- {
- 	kvmppc_set_host_ipi(cpu, 1);
--	icp_native_set_qirr(cpu, IPI_PRIORITY);
-+#ifdef CONFIG_PPC_DOORBELL
-+	if (cpu_has_feature(CPU_FTR_DBELL) &&
-+	    (cpumask_test_cpu(cpu, cpu_sibling_mask(smp_processor_id()))))
-+		doorbell_cause_ipi(cpu, data);
-+	else
-+#endif
-+		icp_native_set_qirr(cpu, IPI_PRIORITY);
- }
- 
- void xics_wake_cpu(int cpu)
--- 
-1.9.1
+and build error log below:
+
+[root@cena01 linux-next]# make -j60
+   CHK     include/config/kernel.release
+   CHK     include/generated/uapi/linux/version.h
+   CHK     include/generated/utsrelease.h
+   CALL    scripts/checksyscalls.sh
+   CHK     include/generated/compile.h
+   CALL    arch/powerpc/kernel/systbl_chk.sh
+   CALL    arch/powerpc/kernel/prom_init_check.sh
+   CHK     include/generated/uapi/linux/version.h
+   CALL    arch/powerpc/relocs_check.pl
+   Building modules, stage 2.
+WARNING: 1 bad relocations
+c000000001455040 R_PPC64_ADDR64    uprobes_fetch_type_table
+make[1]: Circular arch/powerpc/boot/zImage.lds.S <- 
+arch/powerpc/boot/zImage.lds dependency dropped.
+make[1]: Circular arch/powerpc/boot/zImage.coff.lds.S <- 
+arch/powerpc/boot/zImage.lds dependency dropped.
+make[1]: Circular arch/powerpc/boot/zImage.coff.lds.S <- 
+arch/powerpc/boot/zImage.coff.lds dependency dropped.
+make[1]: Circular arch/powerpc/boot/zImage.ps3.lds.S <- 
+arch/powerpc/boot/zImage.lds dependency dropped.
+make[1]: Circular arch/powerpc/boot/zImage.ps3.lds.S <- 
+arch/powerpc/boot/zImage.coff.lds dependency dropped.
+make[1]: Circular arch/powerpc/boot/zImage.ps3.lds.S <- 
+arch/powerpc/boot/zImage.ps3.lds dependency dropped.
+   WRAP    arch/powerpc/boot/zImage.ps3.lds.S
+INFO: Uncompressed kernel (size 0x14d0db8) overlaps the address of the 
+wrapper(0x400000)
+INFO: Fixing the link_address of wrapper to (0x1500000)
+ld: cannot open linker script file arch/powerpc/boot/zImage.lds: No such 
+file or directory
+make[1]: *** [arch/powerpc/boot/zImage.ps3.lds.S] Error 1
+make: *** [zImage] Error 2
+make: *** Waiting for unfinished jobs....
+   MODPOST 1853 modules
+
+I use git bisect to find out the possible commits to lead this problem:
+7e1c04779efd51154baf652e653ceb24ce68939b kbuild: Use relative path for 
+$(objtree)
+890676c65d699db3ad82e7dddd0cf8fb449031af kbuild: Use relative path when 
+building in the source tree
+9da0763bdd82572be243fcf5161734f11568960f kbuild: Use relative path when 
+building in a subdir of the source tree
+
+
+Thanks
+Mike
