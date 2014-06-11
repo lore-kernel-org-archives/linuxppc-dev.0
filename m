@@ -1,35 +1,20 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mmarek@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B22B1A08DD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 18:24:11 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 11 Jun 2014 13:54:09 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 53EF9125805F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 13:53:28 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5B8OwKI49545448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 13:54:58 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5B8O4xx018406
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 13:54:04 +0530
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/4] powerpc: start loop at section start of start in
- vmemmap_populated()
-Date: Wed, 11 Jun 2014 16:23:39 +0800
-Message-Id: <1402475019-19699-4-git-send-email-zhong@linux.vnet.ibm.com>
-In-Reply-To: <1402475019-19699-1-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1402475019-19699-1-git-send-email-zhong@linux.vnet.ibm.com>
-Cc: paulus@samba.org, Li Zhong <zhong@linux.vnet.ibm.com>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BD451A08C8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 18:24:30 +1000 (EST)
+Message-ID: <53981238.8010007@suse.cz>
+Date: Wed, 11 Jun 2014 10:24:24 +0200
+From: Michal Marek <mmarek@suse.cz>
+MIME-Version: 1.0
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Subject: Re: Kernel build fail with "Circular xxxx <- xxxx dependency dropped"
+References: <5397F0E9.8060305@linux.vnet.ibm.com>
+In-Reply-To: <5397F0E9.8060305@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Sam Ravnborg <sam@ravnborg.org>, linuxppc <linuxppc-dev@lists.ozlabs.org>,
+ linux-kbuild <linux-kbuild@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,43 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-vmemmap_populated() checks whether the [start, start + page_size) has valid
-pfn numbers, to know whether a vmemmap mapping has been created that includes
-this range.
+Dne 11.6.2014 08:02, Mike Qiu napsal(a):
+> Hi all,
+> 
+> I recently build linux next kernel in IBM Power7 platform, use default
+> config file copy from /boot/config-3.6.10-4.fc18.ppc64p7
+> 
+> [root@cena01 linux-next]# uname -a
+> Linux cena01.austin.ibm.com 3.15.0-rc1+ #47 SMP Thu Apr 24 20:59:46 CDT
+> 2014 ppc64 ppc64 ppc64 GNU/Linux
+> 
+> [root@cena01 linux-next]# cat /etc/issue
+> Fedora release 18 (Spherical Cow)
+> Kernel \r on an \m (\l)
+> 
+> and build error log below:
+> 
+> [root@cena01 linux-next]# make -j60
+>   CHK     include/config/kernel.release
+>   CHK     include/generated/uapi/linux/version.h
+>   CHK     include/generated/utsrelease.h
+>   CALL    scripts/checksyscalls.sh
+>   CHK     include/generated/compile.h
+>   CALL    arch/powerpc/kernel/systbl_chk.sh
+>   CALL    arch/powerpc/kernel/prom_init_check.sh
+>   CHK     include/generated/uapi/linux/version.h
+>   CALL    arch/powerpc/relocs_check.pl
+>   Building modules, stage 2.
+> WARNING: 1 bad relocations
+> c000000001455040 R_PPC64_ADDR64    uprobes_fetch_type_table
+> make[1]: Circular arch/powerpc/boot/zImage.lds.S <-
+> arch/powerpc/boot/zImage.lds dependency dropped.
+> make[1]: Circular arch/powerpc/boot/zImage.coff.lds.S <-
+> arch/powerpc/boot/zImage.lds dependency dropped.
+> make[1]: Circular arch/powerpc/boot/zImage.coff.lds.S <-
+> arch/powerpc/boot/zImage.coff.lds dependency dropped.
+> make[1]: Circular arch/powerpc/boot/zImage.ps3.lds.S <-
+> arch/powerpc/boot/zImage.lds dependency dropped.
+> make[1]: Circular arch/powerpc/boot/zImage.ps3.lds.S <-
+> arch/powerpc/boot/zImage.coff.lds dependency dropped.
+> make[1]: Circular arch/powerpc/boot/zImage.ps3.lds.S <-
+> arch/powerpc/boot/zImage.ps3.lds dependency dropped.
+>   WRAP    arch/powerpc/boot/zImage.ps3.lds.S
+> INFO: Uncompressed kernel (size 0x14d0db8) overlaps the address of the
+> wrapper(0x400000)
+> INFO: Fixing the link_address of wrapper to (0x1500000)
+> ld: cannot open linker script file arch/powerpc/boot/zImage.lds: No such
+> file or directory
+> make[1]: *** [arch/powerpc/boot/zImage.ps3.lds.S] Error 1
+> make: *** [zImage] Error 2
+> make: *** Waiting for unfinished jobs....
+>   MODPOST 1853 modules
+> 
+> I use git bisect to find out the possible commits to lead this problem:
+> 7e1c04779efd51154baf652e653ceb24ce68939b kbuild: Use relative path for
+> $(objtree)
+> 890676c65d699db3ad82e7dddd0cf8fb449031af kbuild: Use relative path when
+> building in the source tree
+> 9da0763bdd82572be243fcf5161734f11568960f kbuild: Use relative path when
+> building in a subdir of the source tree
 
-Some range before end might not be checked by this loop:
-  sec11start......start11..sec11end/sec12start..end....start12..sec12end
-as the above, for start11(section 11), it checks [sec11start, sec11end), and
-loop ends as the next start(start12) is bigger than end. However,
-[sec11end/sec12start, end) is not checked here.
+Thanks for the report, I'll have a look. If I do not come up with a
+solution soon, I'll revert the series.
 
-So before the loop, adjust the start to be the start of the section, so we don't miss ranges like the above.
-
-After we adjust start to be the start of the section, it also means it's
-aligned with vmemmap as of the sizeof struct page, so we could use
-page_to_pfn directly in the loop.
-
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/mm/init_64.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 4963790..253b4b9 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -175,9 +175,10 @@ static unsigned long __meminit vmemmap_section_start(unsigned long page)
- static int __meminit vmemmap_populated(unsigned long start, int page_size)
- {
- 	unsigned long end = start + page_size;
-+	start = (unsigned long)(pfn_to_page(vmemmap_section_start(start)));
- 
- 	for (; start < end; start += (PAGES_PER_SECTION * sizeof(struct page)))
--		if (pfn_valid(vmemmap_section_start(start)))
-+		if (pfn_valid(page_to_pfn((struct page *)start)))
- 			return 1;
- 
- 	return 0;
--- 
-1.7.9.5
+Michal
