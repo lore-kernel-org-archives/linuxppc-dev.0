@@ -1,28 +1,31 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from lgeamrelo02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
- by lists.ozlabs.org (Postfix) with ESMTP id D5C621A02B9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 16:39:58 +1000 (EST)
-Date: Thu, 12 Jun 2014 15:43:55 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Minchan Kim <minchan@kernel.org>
-Subject: Re: [PATCH v2 05/10] DMA, CMA: support arbitrary bitmap granularity
-Message-ID: <20140612064355.GC19918@js1304-P5Q-DELUXE>
-References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-6-git-send-email-iamjoonsoo.kim@lge.com>
- <20140612060610.GH12415@bbox>
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-ve0-x22a.google.com (mail-ve0-x22a.google.com
+ [IPv6:2607:f8b0:400c:c01::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B860F1A02BA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 16:40:03 +1000 (EST)
+Received: by mail-ve0-f170.google.com with SMTP id oz11so1326246veb.29
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2014 23:39:59 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140612060610.GH12415@bbox>
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Sender: joel.stan@gmail.com
+In-Reply-To: <53922FB8.6070408@linux.vnet.ibm.com>
+References: <20140527105511.24309.74320.stgit@srivatsabhat.in.ibm.com>
+ <20140528133143.GK14863@redhat.com> <538E2FF8.8060707@linux.vnet.ibm.com>
+ <1401833365.3247.36.camel@pasglop> <5391B413.100@linux.vnet.ibm.com>
+ <53922FB8.6070408@linux.vnet.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Thu, 12 Jun 2014 16:39:39 +1000
+Message-ID: <CACPK8Xea+7rPHSCp51fVkX=GTmEwbV0T=JHDZ-XYt6RU96uyyg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc, kexec: Fix "Processor X is stuck" issue during
+ kexec from ST mode
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: ego@linux.vnet.ibm.com, matt@ozlabs.org,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>, kexec@lists.infradead.org,
+ linux-kernel@vger.kernel.org, suzuki@in.ibm.com, ebiederm@xmission.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Vivek Goyal <vgoyal@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2014 at 03:06:10PM +0900, Minchan Kim wrote:
-> On Thu, Jun 12, 2014 at 12:21:42PM +0900, Joonsoo Kim wrote:
-> > ppc kvm's cma region management requires arbitrary bitmap granularity,
-> > since they want to reserve very large memory and manage this region
-> > with bitmap that one bit for several pages to reduce management overheads.
-> > So support arbitrary bitmap granularity for following generalization.
-> > 
-> > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> > 
-> > diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> > index bc4c171..9bc9340 100644
-> > --- a/drivers/base/dma-contiguous.c
-> > +++ b/drivers/base/dma-contiguous.c
-> > @@ -38,6 +38,7 @@ struct cma {
-> >  	unsigned long	base_pfn;
-> >  	unsigned long	count;
-> >  	unsigned long	*bitmap;
-> > +	int order_per_bit; /* Order of pages represented by one bit */
-> 
-> Hmm, I'm not sure it's good as *general* interface even though it covers
-> existing usecases.
-> 
-> It forces a cma area should be handled by same size unit. Right?
-> It's really important point for this patchset's motivation so I will stop
-> review and wait other opinions.
+Hi Srivatsa,
 
-If you pass 0 to order_per_bit, you can manage cma area in every
-size(page unit) you want. If you pass certain number to order_per_bit,
-you can allocate and release cma area in multiple of such page order.
+On Sat, Jun 7, 2014 at 7:16 AM, Srivatsa S. Bhat
+<srivatsa.bhat@linux.vnet.ibm.com> wrote:
+> And with the following hunk added (which I had forgotten earlier), it worked just
+> fine on powernv :-)
 
-I think that this is more general implementation than previous versions.
+How are the patches coming along?
 
-Thanks.
+I just hung a machine here while attempting to kexec. It appears to
+have onlined all of the secondary threads, and then hung here:
+
+kexec: Waking offline cpu 1.
+kvm: enabling virtualization on CPU1
+kexec: Waking offline cpu 2.
+kvm: enabling virtualization on CPU2
+kexec: Waking offline cpu 3.
+kvm: enabling virtualization on CPU3
+kexec: Waking offline cpu 5.
+kvm: enabling virtualization on CPU5
+[...]
+kvm: enabling virtualization on CPU63
+kexec: waiting for cpu 1 (physical 1) to enter OPAL
+kexec: waiting for cpu 2 (physical 2) to enter OPAL
+kexec: waiting for cpu 3 (physical 3) to enter OPAL
+
+I'm running benh's next branch as of thismorning, and SMT was off.
+
+Could you please post your latest patches a series? I will test them here.
+
+Cheers,
+
+Joel
