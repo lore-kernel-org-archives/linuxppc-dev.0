@@ -1,45 +1,34 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mpn@google.com>
+Received: from mail-we0-x230.google.com (mail-we0-x230.google.com
+ [IPv6:2a00:1450:400c:c03::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E8301A02E4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 19:11:32 +1000 (EST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 423391400A6
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 19:11:32 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 12 Jun 2014 19:11:29 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 26F782CE8040
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 19:11:24 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5C8tHNX33357872
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 18:55:17 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5C9BMxh030641
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 19:11:23 +1000
-Message-ID: <53996E41.4070309@linux.vnet.ibm.com>
-Date: Thu, 12 Jun 2014 14:39:21 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B5731A0339
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 19:47:24 +1000 (EST)
+Received: by mail-we0-f176.google.com with SMTP id u56so966468wes.7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 02:47:19 -0700 (PDT)
+Sender: Michal Nazarewicz <mpn@google.com>
+From: Michal Nazarewicz <mina86@mina86.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v2 02/10] DMA, CMA: fix possible memory leak
+In-Reply-To: <1402543307-29800-3-git-send-email-iamjoonsoo.kim@lge.com>
+References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1402543307-29800-3-git-send-email-iamjoonsoo.kim@lge.com>
+Date: Thu, 12 Jun 2014 11:47:16 +0200
+Message-ID: <xa1tha3qjw7v.fsf@mina86.com>
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
-References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>, james.hogan@imgtec.com,
- avagin@openvz.org, Paul.Clothier@imgtec.com, davem@davemloft.net,
- peterz@infradead.org, palves@redhat.com, linux-kernel@vger.kernel.org,
- oleg@redhat.com, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
- davej@redhat.com, akpm@linux-foundation.org, tglx@linutronix.de
+Content-Type: text/plain; charset=utf-8
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
+ linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,41 +38,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/23/2014 08:45 PM, Anshuman Khandual wrote:
-> 	This patch series adds five new ELF core note sections which can be
-> used with existing ptrace request PTRACE_GETREGSET/SETREGSET for accessing
-> various transactional memory and miscellaneous register sets on PowerPC
-> platform. Please find a test program exploiting these new ELF core note
-> types on a POWER8 system.
-> 
-> RFC: https://lkml.org/lkml/2014/4/1/292
-> V1:  https://lkml.org/lkml/2014/4/2/43
-> V2:  https://lkml.org/lkml/2014/5/5/88
-> 
-> Changes in V3
-> =============
-> (1) Added two new error paths in every TM related get/set functions when regset
->     support is not present on the system (ENODEV) or when the process does not
->     have any transaction active (ENODATA) in the context
-> 
-> (2) Installed the active hooks for all the newly added regset core note types
-> 
-> Changes in V2
-> =============
-> (1) Removed all the power specific ptrace requests corresponding to new NT_PPC_*
->     elf core note types. Now all the register sets can be accessed from ptrace
->     through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual NT_PPC* core
->     note type instead
-> (2) Fixed couple of attribute values for REGSET_TM_CGPR register set
-> (3) Renamed flush_tmreg_to_thread as flush_tmregs_to_thread
-> (4) Fixed 32 bit checkpointed GPR support
-> (5) Changed commit messages accordingly
-> 
-> Outstanding Issues
-> ==================
-> (1) Running DSCR register value inside a transaction does not seem to be saved
->     at thread.dscr when the process stops for ptrace examination.
+On Thu, Jun 12 2014, Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
+> We should free memory for bitmap when we find zone mis-match,
+> otherwise this memory will leak.
+>
+> Additionally, I copy code comment from ppc kvm's cma code to notify
+> why we need to check zone mis-match.
+>
+> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
-Hey Ben,
+Reviewed-by: Michal Nazarewicz <mina86@mina86.com>
 
-Any updates on this patch series ?
+> diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
+> index bd0bb81..fb0cdce 100644
+> --- a/drivers/base/dma-contiguous.c
+> +++ b/drivers/base/dma-contiguous.c
+> @@ -177,14 +177,24 @@ static int __init cma_activate_area(struct cma *cma)
+>  		base_pfn =3D pfn;
+>  		for (j =3D pageblock_nr_pages; j; --j, pfn++) {
+>  			WARN_ON_ONCE(!pfn_valid(pfn));
+> +			/*
+> +			 * alloc_contig_range requires the pfn range
+> +			 * specified to be in the same zone. Make this
+> +			 * simple by forcing the entire CMA resv range
+> +			 * to be in the same zone.
+> +			 */
+>  			if (page_zone(pfn_to_page(pfn)) !=3D zone)
+> -				return -EINVAL;
+> +				goto err;
+>  		}
+>  		init_cma_reserved_pageblock(pfn_to_page(base_pfn));
+>  	} while (--i);
+>=20=20
+>  	mutex_init(&cma->lock);
+>  	return 0;
+> +
+> +err:
+> +	kfree(cma->bitmap);
+> +	return -EINVAL;
+>  }
+
+--=20
+Best regards,                                         _     _
+.o. | Liege of Serenely Enlightened Majesty of      o' \,=3D./ `o
+..o | Computer Science,  Micha=C5=82 =E2=80=9Cmina86=E2=80=9D Nazarewicz   =
+ (o o)
+ooo +--<mpn@google.com>--<xmpp:mina86@jabber.org>--ooO--(_)--Ooo--
