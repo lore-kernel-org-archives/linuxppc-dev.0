@@ -1,19 +1,23 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 168791A0338
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 22:09:15 +1000 (EST)
-Date: Thu, 12 Jun 2014 22:09:12 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Christoph Lameter <cl@gentwo.org>
-Subject: Re: Kernel build issues after yesterdays merge by Linus
-Message-ID: <20140612220912.3447677f@kryten>
-In-Reply-To: <alpine.DEB.2.10.1406111013580.8422@gentwo.org>
-References: <alpine.DEB.2.10.1406111013580.8422@gentwo.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 683C71A0338
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 22:26:57 +1000 (EST)
+Received: by mail-pa0-f47.google.com with SMTP id fa1so961380pad.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 05:26:54 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+Date: Thu, 12 Jun 2014 05:26:44 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: powerpc/ppc64: Allow allmodconfig to build (finally !)
+Message-ID: <20140612122644.GA17249@roeck-us.net>
+References: <1399874254.17624.85.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1399874254.17624.85.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
-
-> This is under Ubuntu Utopic Unicorn on a Power 8 system while simply
-> trying to build with the Ubuntu standard kernel config. It could be
-> that these issues come about because we do not have an rc1 yet but I
-> wanted to give some early notice. Also this is a new arch to me so I
-> may not be aware of how things work.
+On Mon, May 12, 2014 at 03:57:34PM +1000, Benjamin Herrenschmidt wrote:
+> This shuffles code around in exceptions-64s.S in order to
+> allow an allmodconfig build to succeed.
 > 
-> 1. Bad relocation while building:
+> The main problems were:
 > 
-> root@rd-power8:/rdhome/clameter/linux# make
->   CHK     include/config/kernel.release
->   CHK     include/generated/uapi/linux/version.h
->   CHK     include/generated/utsrelease.h
->   CALL    scripts/checksyscalls.sh
->   CHK     include/generated/compile.h
->   SKIPPED include/generated/compile.h
->   CALL    arch/powerpc/kernel/systbl_chk.sh
->   CALL    arch/powerpc/kernel/prom_init_check.sh
->   CHK     kernel/config_data.h
->   CALL    arch/powerpc/relocs_check.pl
-> WARNING: 1 bad relocations
-> c000000000cc7df0 R_PPC64_ADDR64    __crc_TOC.
-
-The TOC symbol export is special and I think we might need to get our
-script to ignore it.
-
-> 2. "make install" fails
+>  - We have a fixed hole from 0x7000 to 0x8000 for use by FW,
+> under some circumstances the code before that would grow too
+> big and hit the . = 0x7000
 > 
-> root@rd-power8:/rdhome/clameter/linux# make install
-> sh -x /rdhome/clameter/linux/arch/powerpc/boot/install.sh "3.15.0+"
-> vmlinux System.map "/boot" arch/powerpc/boot/zImage.pseries
-> arch/powerpc/boot/zImage.epapr
-> + set -e
-> + [ -x /home/clameter/bin/installkernel ]
-> + [ -x /sbin/installkernel ]
-> + exec /sbin/installkernel 3.15.0+ vmlinux System.map /boot
-> arch/powerpc/boot/zImage.pseries arch/powerpc/boot/zImage.epapr
-> Usage: installkernel <version> <image> <System.map> <directory>
-> /rdhome/clameter/linux/arch/powerpc/boot/Makefile:393: recipe for target
-> 'install' failed
-> make[1]: *** [install] Error 1
-> /rdhome/clameter/linux/arch/powerpc/Makefile:294: recipe for target
-> 'install' failed
-> make: *** [install] Error 2
+>  - The various attempts at making space in there would trigger
+> cases where short conditional branches from assembly would no
+> longer be able to reach their target. This is especially nasty
+> when these branches reside in alternate feature sections which
+> are appended at the end of each .o file
+> 
+> This fixes it by essentially moving all the "second level"
+> exception handlers to after the hole and moving a couple of
+> functions near the hole itself so they sit at reachable distance
+> of both the first level handlers (before the hole) and the alternate
+> feature sections (end of file).
+> 
+> In the long run, if we start hitting this again, we'll probably
+> have to split the file in two, probably at the hole location,
+> to keep the alt sections used by the first level handlers close
+> to them, and move everything else further away.
+> 
+> But for now, this will do.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+Hi Ben,
 
-Shows how much we use make install :) Below is a quick hack to get you going
-but we should look at either fixing the Ubuntu installkernel to handle
-extra optional args, or stop passing them from the ppc64 kernel
-install.sh script.
+what happened with this patch ?
 
-Anton
---
-
-diff --git a/arch/powerpc/boot/install.sh b/arch/powerpc/boot/install.sh
-index b6a256b..e096e5a 100644
---- a/arch/powerpc/boot/install.sh
-+++ b/arch/powerpc/boot/install.sh
-@@ -23,8 +23,8 @@ set -e
- 
- # User may have a custom install script
- 
--if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} "$@"; fi
--if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} "$@"; fi
-+if [ -x ~/bin/${INSTALLKERNEL} ]; then exec ~/bin/${INSTALLKERNEL} $1 $2 $3 $4; fi
-+if [ -x /sbin/${INSTALLKERNEL} ]; then exec /sbin/${INSTALLKERNEL} $1 $2 $3 $4; fi
- 
- # Default install
- 
+Thanks,
+Guenter
