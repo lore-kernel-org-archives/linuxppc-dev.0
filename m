@@ -1,29 +1,16 @@
-Return-Path: <minchan@kernel.org>
-Received: from lgemrelse7q.lge.com (LGEMRELSE7Q.lge.com [156.147.1.151])
- by lists.ozlabs.org (Postfix) with ESMTP id 6631F1A02BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 16:42:45 +1000 (EST)
-Date: Thu, 12 Jun 2014 15:42:55 +0900
-From: Minchan Kim <minchan@kernel.org>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH v2 05/10] DMA, CMA: support arbitrary bitmap granularity
-Message-ID: <20140612064255.GA12663@bbox>
-References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-6-git-send-email-iamjoonsoo.kim@lge.com>
- <20140612060610.GH12415@bbox>
- <20140612064355.GC19918@js1304-P5Q-DELUXE>
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADDD91A02C2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 16:53:14 +1000 (EST)
+Date: Thu, 12 Jun 2014 16:53:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Reduce scariness of interrupt frames in stack traces
+Message-ID: <20140612065308.GB16578@drongo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140612064355.GC19918@js1304-P5Q-DELUXE>
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2014 at 03:43:55PM +0900, Joonsoo Kim wrote:
-> On Thu, Jun 12, 2014 at 03:06:10PM +0900, Minchan Kim wrote:
-> > On Thu, Jun 12, 2014 at 12:21:42PM +0900, Joonsoo Kim wrote:
-> > > ppc kvm's cma region management requires arbitrary bitmap granularity,
-> > > since they want to reserve very large memory and manage this region
-> > > with bitmap that one bit for several pages to reduce management overheads.
-> > > So support arbitrary bitmap granularity for following generalization.
-> > > 
-> > > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-> > > 
-> > > diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> > > index bc4c171..9bc9340 100644
-> > > --- a/drivers/base/dma-contiguous.c
-> > > +++ b/drivers/base/dma-contiguous.c
-> > > @@ -38,6 +38,7 @@ struct cma {
-> > >  	unsigned long	base_pfn;
-> > >  	unsigned long	count;
-> > >  	unsigned long	*bitmap;
-> > > +	int order_per_bit; /* Order of pages represented by one bit */
-> > 
-> > Hmm, I'm not sure it's good as *general* interface even though it covers
-> > existing usecases.
-> > 
-> > It forces a cma area should be handled by same size unit. Right?
-> > It's really important point for this patchset's motivation so I will stop
-> > review and wait other opinions.
-> 
-> If you pass 0 to order_per_bit, you can manage cma area in every
-> size(page unit) you want. If you pass certain number to order_per_bit,
-> you can allocate and release cma area in multiple of such page order.
-> 
-> I think that this is more general implementation than previous versions.
+Some people see things like "Exception: 501" in stack traces in dmesg
+and assume that means that something has gone badly wrong, when in
+fact "Exception: 501" just means a device interrupt was taken.
+This changes "Exception" to "interrupt" to make it clearer that we
+are just recording the fact of a change in control flow rather than
+some error condition.
 
-Fair enough.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/process.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 31d0215..aa103dc 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -1577,7 +1577,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+ 			struct pt_regs *regs = (struct pt_regs *)
+ 				(sp + STACK_FRAME_OVERHEAD);
+ 			lr = regs->link;
+-			printk("--- Exception: %lx at %pS\n    LR = %pS\n",
++			printk("--- interrupt: %lx at %pS\n    LR = %pS\n",
+ 			       regs->trap, (void *)regs->nip, (void *)lr);
+ 			firstframe = 1;
+ 		}
 -- 
-Kind regards,
-Minchan Kim
+2.0.0.rc4
