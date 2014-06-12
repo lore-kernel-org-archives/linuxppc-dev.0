@@ -1,15 +1,15 @@
 Return-Path: <iamjoonsoo.kim@lge.com>
 Received: from lgeamrelo01.lge.com (lgeamrelo01.lge.com [156.147.1.125])
- by lists.ozlabs.org (Postfix) with ESMTP id 315AF1A0614
+ by lists.ozlabs.org (Postfix) with ESMTP id 22F961A0609
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 13:17:52 +1000 (EST)
 From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Marek Szyprowski <m.szyprowski@samsung.com>,
  Michal Nazarewicz <mina86@mina86.com>
-Subject: [PATCH v2 10/10] mm, cma: use spinlock instead of mutex
-Date: Thu, 12 Jun 2014 12:21:47 +0900
-Message-Id: <1402543307-29800-11-git-send-email-iamjoonsoo.kim@lge.com>
+Subject: [PATCH v2 02/10] DMA, CMA: fix possible memory leak
+Date: Thu, 12 Jun 2014 12:21:39 +0900
+Message-Id: <1402543307-29800-3-git-send-email-iamjoonsoo.kim@lge.com>
 In-Reply-To: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
 References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
@@ -29,76 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, we should take the mutex for manipulating bitmap.
-This job may be really simple and short so we don't need to sleep
-if contended. So I change it to spinlock.
+We should free memory for bitmap when we find zone mis-match,
+otherwise this memory will leak.
+
+Additionally, I copy code comment from ppc kvm's cma code to notify
+why we need to check zone mis-match.
 
 Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
-diff --git a/mm/cma.c b/mm/cma.c
-index 22a5b23..3085e8c 100644
---- a/mm/cma.c
-+++ b/mm/cma.c
-@@ -27,6 +27,7 @@
- #include <linux/memblock.h>
- #include <linux/err.h>
- #include <linux/mm.h>
-+#include <linux/spinlock.h>
- #include <linux/mutex.h>
- #include <linux/sizes.h>
- #include <linux/slab.h>
-@@ -36,7 +37,7 @@ struct cma {
- 	unsigned long	count;
- 	unsigned long	*bitmap;
- 	int order_per_bit; /* Order of pages represented by one bit */
--	struct mutex	lock;
-+	spinlock_t	lock;
- };
- 
- /*
-@@ -72,9 +73,9 @@ static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int count)
- 	bitmapno = (pfn - cma->base_pfn) >> cma->order_per_bit;
- 	nr_bits = cma_bitmap_pages_to_bits(cma, count);
- 
--	mutex_lock(&cma->lock);
-+	spin_lock(&cma->lock);
- 	bitmap_clear(cma->bitmap, bitmapno, nr_bits);
--	mutex_unlock(&cma->lock);
-+	spin_unlock(&cma->lock);
- }
- 
- static int __init cma_activate_area(struct cma *cma)
-@@ -112,7 +113,7 @@ static int __init cma_activate_area(struct cma *cma)
+diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
+index bd0bb81..fb0cdce 100644
+--- a/drivers/base/dma-contiguous.c
++++ b/drivers/base/dma-contiguous.c
+@@ -177,14 +177,24 @@ static int __init cma_activate_area(struct cma *cma)
+ 		base_pfn = pfn;
+ 		for (j = pageblock_nr_pages; j; --j, pfn++) {
+ 			WARN_ON_ONCE(!pfn_valid(pfn));
++			/*
++			 * alloc_contig_range requires the pfn range
++			 * specified to be in the same zone. Make this
++			 * simple by forcing the entire CMA resv range
++			 * to be in the same zone.
++			 */
+ 			if (page_zone(pfn_to_page(pfn)) != zone)
+-				return -EINVAL;
++				goto err;
+ 		}
  		init_cma_reserved_pageblock(pfn_to_page(base_pfn));
  	} while (--i);
  
--	mutex_init(&cma->lock);
-+	spin_lock_init(&cma->lock);
+ 	mutex_init(&cma->lock);
  	return 0;
++
++err:
++	kfree(cma->bitmap);
++	return -EINVAL;
+ }
  
- err:
-@@ -261,11 +262,11 @@ struct page *cma_alloc(struct cma *cma, int count, unsigned int align)
- 	nr_bits = cma_bitmap_pages_to_bits(cma, count);
- 
- 	for (;;) {
--		mutex_lock(&cma->lock);
-+		spin_lock(&cma->lock);
- 		bitmapno = bitmap_find_next_zero_area(cma->bitmap,
- 					bitmap_maxno, start, nr_bits, mask);
- 		if (bitmapno >= bitmap_maxno) {
--			mutex_unlock(&cma->lock);
-+			spin_unlock(&cma->lock);
- 			break;
- 		}
- 		bitmap_set(cma->bitmap, bitmapno, nr_bits);
-@@ -274,7 +275,7 @@ struct page *cma_alloc(struct cma *cma, int count, unsigned int align)
- 		 * our exclusive use. If the migration fails we will take the
- 		 * lock again and unmark it.
- 		 */
--		mutex_unlock(&cma->lock);
-+		spin_unlock(&cma->lock);
- 
- 		pfn = cma->base_pfn + (bitmapno << cma->order_per_bit);
- 		mutex_lock(&cma_mutex);
+ static struct cma cma_areas[MAX_CMA_AREAS];
 -- 
 1.7.9.5
