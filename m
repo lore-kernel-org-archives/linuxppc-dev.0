@@ -1,21 +1,23 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4504B1A084F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 22:27:16 +1000 (EST)
-Date: Thu, 12 Jun 2014 07:26:39 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: power and percpu: Could we move the paca into the percpu area?
-Message-ID: <20140612122639.GA17838@gate.crashing.org>
-References: <alpine.DEB.2.10.1406111426480.10600@gentwo.org>
- <1402518131.14780.60.camel@pasglop> <20140611210351.GA7155@visitor2.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140611210351.GA7155@visitor2.iram.es>
-Cc: Tejun Heo <htejun@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Lameter <cl@gentwo.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id 874441A03CB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 22:37:06 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 06085-06 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu, 12 Jun 2014 13:36:54 +0100 (BST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Anton Blanchard' <anton@samba.org>, Christoph Lameter <cl@gentwo.org>
+Subject: RE: Kernel build issues after yesterdays merge by Linus
+Date: Thu, 12 Jun 2014 12:36:10 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1725BABB@AcuExch.aculab.com>
+References: <alpine.DEB.2.10.1406111013580.8422@gentwo.org>
+ <20140612220912.3447677f@kryten>
+In-Reply-To: <20140612220912.3447677f@kryten>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Actually, from gcc/config/rs6000.h:
-> 
-> /* 1 for registers that have pervasive standard uses
->    and are not available for the register allocator.
-
-[snip]
-
-> So cr5, which is number 73, is never used by gcc. 
-
-Not available for RA is not the same thing at all as not used by GCC.
-For example, GPR1 and XER[CA] are also fixed regs.
-
-But, indeed, it does look like GCC doesn't use it.  It seems to me that
-some ABI forbade userland (or non-libraries or whatever) from using it.
-I'll see what I can find out.
-
-
-Segher
+RnJvbTogQW50b24gQmxhbmNoYXJkDQouLi4NCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9i
+b290L2luc3RhbGwuc2ggYi9hcmNoL3Bvd2VycGMvYm9vdC9pbnN0YWxsLnNoDQo+IGluZGV4IGI2
+YTI1NmIuLmUwOTZlNWEgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2luc3RhbGwu
+c2gNCj4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvaW5zdGFsbC5zaA0KPiBAQCAtMjMsOCArMjMs
+OCBAQCBzZXQgLWUNCj4gDQo+ICAjIFVzZXIgbWF5IGhhdmUgYSBjdXN0b20gaW5zdGFsbCBzY3Jp
+cHQNCj4gDQo+IC1pZiBbIC14IH4vYmluLyR7SU5TVEFMTEtFUk5FTH0gXTsgdGhlbiBleGVjIH4v
+YmluLyR7SU5TVEFMTEtFUk5FTH0gIiRAIjsgZmkNCj4gLWlmIFsgLXggL3NiaW4vJHtJTlNUQUxM
+S0VSTkVMfSBdOyB0aGVuIGV4ZWMgL3NiaW4vJHtJTlNUQUxMS0VSTkVMfSAiJEAiOyBmaQ0KPiAr
+aWYgWyAteCB+L2Jpbi8ke0lOU1RBTExLRVJORUx9IF07IHRoZW4gZXhlYyB+L2Jpbi8ke0lOU1RB
+TExLRVJORUx9ICQxICQyICQzICQ0OyBmaQ0KPiAraWYgWyAteCAvc2Jpbi8ke0lOU1RBTExLRVJO
+RUx9IF07IHRoZW4gZXhlYyAvc2Jpbi8ke0lOU1RBTExLRVJORUx9ICQxICQyICQzICQ0OyBmaQ0K
+DQpZb3UgcHJvYmFibHkgd2FudCB0byBlbmNsb3NlIHRoZSAkMSBpbiAiIGFzOg0KDQo+ICtpZiBb
+IC14IC9zYmluLyR7SU5TVEFMTEtFUk5FTH0gXTsgdGhlbiBleGVjIC9zYmluLyR7SU5TVEFMTEtF
+Uk5FTH0gIiQxIiAiJDIiICIkMyIgIiQ0IjsgZmkNCg0KCURhdmlkDQoNCg==
