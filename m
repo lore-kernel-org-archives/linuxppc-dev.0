@@ -1,44 +1,27 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E170A1A0329
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 18:21:26 +1000 (EST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9CA611400B6
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 18:21:25 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 12 Jun 2014 13:51:21 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id EC0FA3940048
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 13:51:16 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5C8LUHM11338020
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 13:51:30 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5C8LFEP024653
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 13:51:16 +0530
-Message-ID: <53996288.6000407@linux.vnet.ibm.com>
-Date: Thu, 12 Jun 2014 13:49:20 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <zhangyanfei@cn.fujitsu.com>
+Received: from heian.cn.fujitsu.com (unknown [59.151.112.132])
+ by lists.ozlabs.org (Postfix) with ESMTP id 831921A007A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 18:28:29 +1000 (EST)
+Message-ID: <539964B3.70708@cn.fujitsu.com>
+Date: Thu, 12 Jun 2014 16:28:35 +0800
+From: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc, xmon: Enable hardware instruction breakpoint
- support on POWER8
-References: <1401451823-25547-1-git-send-email-khandual@linux.vnet.ibm.com>
- <8761knl6x5.fsf@linux.vnet.ibm.com> <538D654E.8040205@linux.vnet.ibm.com>
- <538EDD61.60801@linux.vnet.ibm.com>
-In-Reply-To: <538EDD61.60801@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
- mikey@neuling.org, "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH v2 05/10] DMA, CMA: support arbitrary bitmap granularity
+References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1402543307-29800-6-git-send-email-iamjoonsoo.kim@lge.com>
+In-Reply-To: <1402543307-29800-6-git-send-email-iamjoonsoo.kim@lge.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,212 +31,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/04/2014 02:18 PM, Anshuman Khandual wrote:
-> On 06/03/2014 11:33 AM, Anshuman Khandual wrote:
->> On 05/30/2014 07:12 PM, Aneesh Kumar K.V wrote:
->>>> Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
->>>>
->>>>>> This patch enables support for hardware instruction breakpoints on POWER8 with
->>>>>> the help of a new register called CIABR (Completed Instruction Address Breakpoint
->>>>>> Register). With this patch, single hardware instruction breakpoint can be added
->>>>>> and cleared during any active xmon debug session. This hardware based instruction
->>>>>> breakpoint mechanism works correctly along with the existing TRAP based instruction
->>>>>> breakpoints available on xmon. Example usage as follows.
->>>>>>
->>>>>> (A) Start xmon:
->>>>>> $echo x > /proc/sysrq-trigger
->>>>>> SysRq : Entering xmon
->>>>>> cpu 0x0: Vector: 0  at [c000001f6c67f960]
->>>>>>     pc: c000000000072078: .sysrq_handle_xmon+0x58/0x60
->>>>>>     lr: c000000000072078: .sysrq_handle_xmon+0x58/0x60
->>>>>>     sp: c000001f6c67fac0
->>>>>>    msr: 9000000000009032
->>>>>>   current = 0xc000001f6e709ac0
->>>>>>   paca    = 0xc00000000fffa000   softe: 0        irq_happened: 0x00
->>>>>>     pid   = 3250, comm = bash
->>>>>> enter ? for help
->>>>>> 0:mon> b
->>>>>>    type            address
->>>>>>
->>>>>> (B) Set the breakpoint:
->>>>>> 0:mon> ls .power_pmu_add
->>>>>> .power_pmu_add: c000000000078f50
->>>>>> 0:mon> bi c000000000078f50
->>>>>> 0:mon> b
->>>>>>    type            address
->>>>>>  1 inst   c000000000078f50  .power_pmu_add+0x0/0x2e0
->>>>>> 0:mon> ls .perf_event_interrupt
->>>>>> .perf_event_interrupt: c00000000007aee0
->>>>>> 0:mon> bi c00000000007aee0
->>>>>> One instruction breakpoint possible with CIABR
->>>>>> 0:mon> x
->>>>>>
->>>>>> (C) Run the workload (with the breakpoint):
->>>>>> $./perf record ls
->>>>>> cpu 0x2: Vector: d00 (Single Step) at [c000001f718133a0]
->>>>>>     pc: c000000000078f54: .power_pmu_add+0x4/0x2e0
->>>>>>     lr: c000000000155be0: .event_sched_in+0x90/0x1d0
->>>>>>     sp: c000001f71813620
->>>>>>    msr: 9000000040109032
->>>>>>   current = 0xc000001f6ce30000
->>>>>>   paca    = 0xc00000000fffa600   softe: 0        irq_happened: 0x01
->>>>>>     pid   = 3270, comm = ls
->>>>>>         std     r22,-80(r1)
->>>>>> enter ? for help
->>>>>>
->>>>>> (D) Clear the breakpoint:
->>>>>> 2:mon> bc
->>>>>> All breakpoints cleared
->>>>>> 2:mon> x
->>>>>> [ perf record: Woken up 1 times to write data ]
->>>>>> [ perf record: Captured and wrote 0.002 MB perf.data (~66 samples) ]
->>>>>>
->>>>>> (E) Run the workload again (without any breakpoints):
->>>>>> $./perf record ls
->>>>>> [ perf record: Woken up 1 times to write data ]
->>>>>> [ perf record: Captured and wrote 0.001 MB perf.data (~61 samples) ]
->>>>>>
->>>>>> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->>>>>> ---
->>>>>>  arch/powerpc/xmon/xmon.c | 62 ++++++++++++++++++++++++++++++++++++++++++++----
->>>>>>  1 file changed, 58 insertions(+), 4 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
->>>>>> index 3fd1d9a..f74ec83 100644
->>>>>> --- a/arch/powerpc/xmon/xmon.c
->>>>>> +++ b/arch/powerpc/xmon/xmon.c
->>>>>> @@ -48,6 +48,7 @@
->>>>>>  #ifdef CONFIG_PPC64
->>>>>>  #include <asm/hvcall.h>
->>>>>>  #include <asm/paca.h>
->>>>>> +#include <asm/plpar_wrappers.h>
->>>>>>  #endif
->>>>>>  
->>>>>>  #include "nonstdio.h"
->>>>>> @@ -89,6 +90,7 @@ struct bpt {
->>>>>>  /* Bits in bpt.enabled */
->>>>>>  #define BP_IABR_TE	1		/* IABR translation enabled */
->>>>>>  #define BP_IABR		2
->>>>>> +#define BP_CIABR	4
->>>>>>  #define BP_TRAP		8
->>>>>>  #define BP_DABR		0x10
->>>>>>  
->>>>>> @@ -97,6 +99,7 @@ static struct bpt bpts[NBPTS];
->>>>>>  static struct bpt dabr;
->>>>>>  static struct bpt *iabr;
->>>>>>  static unsigned bpinstr = 0x7fe00008;	/* trap */
->>>>>> +static bool ciabr_used = false;		/* CIABR instruction breakpoint */
->>>>>>  
->>>>>>  #define BP_NUM(bp)	((bp) - bpts + 1)
->>>>>>  
->>>>>> @@ -269,6 +272,34 @@ static inline void cinval(void *p)
->>>>>>  	asm volatile ("dcbi 0,%0; icbi 0,%0" : : "r" (p));
->>>>>>  }
->>>>>>  
->>>>>> +static void write_ciabr(unsigned long ciabr)
->>>>>> +{
->>>>>> +	if (cpu_has_feature(CPU_FTR_HVMODE)) {
->>>>>> +		mtspr(SPRN_CIABR, ciabr);
->>>>>> +		return;
->>>>>> +	}
->>>>>> +
->>>>>> +#ifdef CONFIG_PPC64
->>>>>> +	plapr_set_ciabr(ciabr);
->>>>>> +#endif
->>>>>> +}
->>>>>> +
->>>>>> +static void set_ciabr(unsigned long addr)
->>>>>> +{
->>>>>> +	addr &= ~CIABR_PRIV;
->>>>>> +	if (cpu_has_feature(CPU_FTR_HVMODE))
->>>>>> +		addr |= CIABR_PRIV_HYPER;
->>>>>> +	else
->>>>>> +		addr |= CIABR_PRIV_SUPER;
->>>>>> +	write_ciabr(addr);
->>>>>> +}
->>>>>> +
->>>>>> +static void clear_ciabr(void)
->>>>>> +{
->>>>>> +	if (cpu_has_feature(CPU_FTR_ARCH_207S))
->>>>>> +		write_ciabr(0);
->>>>>> +}
->>>>>> +
->>>>>>  /*
->>>>>>   * Disable surveillance (the service processor watchdog function)
->>>>>>   * while we are in xmon.
->>>>>> @@ -764,6 +795,9 @@ static void insert_cpu_bpts(void)
->>>>>>  	if (iabr && cpu_has_feature(CPU_FTR_IABR))
->>>>>>  		mtspr(SPRN_IABR, iabr->address
->>>>>>  			 | (iabr->enabled & (BP_IABR|BP_IABR_TE)));
->>>>>> +
->>>>>> +	if (iabr && cpu_has_feature(CPU_FTR_ARCH_207S))
->>>>>> +		set_ciabr(iabr->address);
->>>>>>  }
->>>>>>  
->>>>>>  static void remove_bpts(void)
->>>>>> @@ -791,6 +825,7 @@ static void remove_cpu_bpts(void)
->>>>>>  	hw_breakpoint_disable();
->>>>>>  	if (cpu_has_feature(CPU_FTR_IABR))
->>>>>>  		mtspr(SPRN_IABR, 0);
->>>>>> +	clear_ciabr();
->>>>>>  }
->>>>>>  
->>>>>>  /* Command interpreting routine */
->>>>>> @@ -1124,7 +1159,7 @@ static char *breakpoint_help_string =
->>>>>>      "b <addr> [cnt]   set breakpoint at given instr addr\n"
->>>>>>      "bc               clear all breakpoints\n"
->>>>>>      "bc <n/addr>      clear breakpoint number n or at addr\n"
->>>>>> -    "bi <addr> [cnt]  set hardware instr breakpoint (POWER3/RS64 only)\n"
->>>>>> +    "bi <addr> [cnt]  set hardware instr breakpoint (POWER3/RS64/POWER8 only)\n"
->>>>>>      "bd <addr> [cnt]  set hardware data breakpoint\n"
->>>>>>      "";
->>>>>>  
->>>>>> @@ -1163,11 +1198,20 @@ bpt_cmds(void)
->>>>>>  		break;
->>>>>>  
->>>>>>  	case 'i':	/* bi - hardware instr breakpoint */
->>>>>> -		if (!cpu_has_feature(CPU_FTR_IABR)) {
->>>>>> +		if (!cpu_has_feature(CPU_FTR_IABR) && !cpu_has_feature(CPU_FTR_ARCH_207S)) {
->>>>>>  			printf("Hardware instruction breakpoint "
->>>>>>  			       "not supported on this cpu\n");
->>>>>>  			break;
->>>>>>  		}
->>>>>> +
->>>>>> +		if (cpu_has_feature(CPU_FTR_ARCH_207S)) {
->>>>>> +			if (ciabr_used) {
->>>>>> +				printf("One instruction breakpoint "
->>>>>> +					"possible with CIABR\n");
->>>>>> +				break;
->>>>>> +			}
->>>>
->>>> We don't seem to do that with iabr ? Why keep ciabr different 
+On 06/12/2014 11:21 AM, Joonsoo Kim wrote:
+> ppc kvm's cma region management requires arbitrary bitmap granularity,
+> since they want to reserve very large memory and manage this region
+> with bitmap that one bit for several pages to reduce management overheads.
+> So support arbitrary bitmap granularity for following generalization.
 > 
->> Right now with the IABR implementation if we try to set hardware instruction
->> breakpoint while one is already there, it just get overridden with the new
->> address without complaining. I thought with this at least for CIABR cases,
->> it will complain about it and require the user to clear the breakpoint
->> explicitly before allowing a new breakpoint. Okay will remove this.
->>  
-> 
-> I tried removing the "ciabr_used" variable and all related checks/assignments on it.
-> Then I was able to add all these three address as hardware instruction breakpoint
-> and xmon never complained that it might override the existing actual checkpoint
-> implemented with CIABR. It accepted all the three addresses which can later be
-> listed as below.
-> 
-> 0:mon> b
->    type            address
->  1 inst   c0000000000830d0  .power_pmu_add+0x0/0x2e0                                                
->  2 inst   c000000000084690  .power_pmu_del+0x0/0x3a0                                   
->  3 inst   c000000000085060  .perf_event_interrupt+0x0/0x480
-> 
-> But in reality, only perf_event_interrupt function's address got written into CIABR
-> register and got triggered with the workload. I dont have a system which has IABR
-> support to test it's behaviour for this situation. But this does not sound okay,
-> we should explicitly inform the user that the hardware instruction breakpoint has
-> been overridden with the latest command or reject the attempt. Looking for some
-> suggestions in this regard. Thank you.
+> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
-Hey Ben/MPE,
+Acked-by: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
 
-Any suggestions on this ^^^^^^^^^^^^ ?
+> 
+> diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
+> index bc4c171..9bc9340 100644
+> --- a/drivers/base/dma-contiguous.c
+> +++ b/drivers/base/dma-contiguous.c
+> @@ -38,6 +38,7 @@ struct cma {
+>  	unsigned long	base_pfn;
+>  	unsigned long	count;
+>  	unsigned long	*bitmap;
+> +	int order_per_bit; /* Order of pages represented by one bit */
+>  	struct mutex	lock;
+>  };
+>  
+> @@ -157,9 +158,38 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
+>  
+>  static DEFINE_MUTEX(cma_mutex);
+>  
+> +static unsigned long cma_bitmap_aligned_mask(struct cma *cma, int align_order)
+> +{
+> +	return (1 << (align_order >> cma->order_per_bit)) - 1;
+> +}
+> +
+> +static unsigned long cma_bitmap_maxno(struct cma *cma)
+> +{
+> +	return cma->count >> cma->order_per_bit;
+> +}
+> +
+> +static unsigned long cma_bitmap_pages_to_bits(struct cma *cma,
+> +						unsigned long pages)
+> +{
+> +	return ALIGN(pages, 1 << cma->order_per_bit) >> cma->order_per_bit;
+> +}
+> +
+> +static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int count)
+> +{
+> +	unsigned long bitmapno, nr_bits;
+> +
+> +	bitmapno = (pfn - cma->base_pfn) >> cma->order_per_bit;
+> +	nr_bits = cma_bitmap_pages_to_bits(cma, count);
+> +
+> +	mutex_lock(&cma->lock);
+> +	bitmap_clear(cma->bitmap, bitmapno, nr_bits);
+> +	mutex_unlock(&cma->lock);
+> +}
+> +
+>  static int __init cma_activate_area(struct cma *cma)
+>  {
+> -	int bitmap_size = BITS_TO_LONGS(cma->count) * sizeof(long);
+> +	int bitmap_maxno = cma_bitmap_maxno(cma);
+> +	int bitmap_size = BITS_TO_LONGS(bitmap_maxno) * sizeof(long);
+>  	unsigned long base_pfn = cma->base_pfn, pfn = base_pfn;
+>  	unsigned i = cma->count >> pageblock_order;
+>  	struct zone *zone;
+> @@ -221,6 +251,7 @@ core_initcall(cma_init_reserved_areas);
+>   * @base: Base address of the reserved area optional, use 0 for any
+>   * @limit: End address of the reserved memory (optional, 0 for any).
+>   * @alignment: Alignment for the contiguous memory area, should be power of 2
+> + * @order_per_bit: Order of pages represented by one bit on bitmap.
+>   * @res_cma: Pointer to store the created cma region.
+>   * @fixed: hint about where to place the reserved area
+>   *
+> @@ -235,7 +266,7 @@ core_initcall(cma_init_reserved_areas);
+>   */
+>  static int __init __dma_contiguous_reserve_area(phys_addr_t size,
+>  				phys_addr_t base, phys_addr_t limit,
+> -				phys_addr_t alignment,
+> +				phys_addr_t alignment, int order_per_bit,
+>  				struct cma **res_cma, bool fixed)
+>  {
+>  	struct cma *cma = &cma_areas[cma_area_count];
+> @@ -269,6 +300,8 @@ static int __init __dma_contiguous_reserve_area(phys_addr_t size,
+>  	base = ALIGN(base, alignment);
+>  	size = ALIGN(size, alignment);
+>  	limit &= ~(alignment - 1);
+> +	/* size should be aligned with order_per_bit */
+> +	BUG_ON(!IS_ALIGNED(size >> PAGE_SHIFT, 1 << order_per_bit));
+>  
+>  	/* Reserve memory */
+>  	if (base && fixed) {
+> @@ -294,6 +327,7 @@ static int __init __dma_contiguous_reserve_area(phys_addr_t size,
+>  	 */
+>  	cma->base_pfn = PFN_DOWN(base);
+>  	cma->count = size >> PAGE_SHIFT;
+> +	cma->order_per_bit = order_per_bit;
+>  	*res_cma = cma;
+>  	cma_area_count++;
+>  
+> @@ -313,7 +347,7 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
+>  {
+>  	int ret;
+>  
+> -	ret = __dma_contiguous_reserve_area(size, base, limit, 0,
+> +	ret = __dma_contiguous_reserve_area(size, base, limit, 0, 0,
+>  						res_cma, fixed);
+>  	if (ret)
+>  		return ret;
+> @@ -324,13 +358,6 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
+>  	return 0;
+>  }
+>  
+> -static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int count)
+> -{
+> -	mutex_lock(&cma->lock);
+> -	bitmap_clear(cma->bitmap, pfn - cma->base_pfn, count);
+> -	mutex_unlock(&cma->lock);
+> -}
+> -
+>  /**
+>   * dma_alloc_from_contiguous() - allocate pages from contiguous area
+>   * @dev:   Pointer to device for which the allocation is performed.
+> @@ -345,7 +372,8 @@ static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int count)
+>  static struct page *__dma_alloc_from_contiguous(struct cma *cma, int count,
+>  				       unsigned int align)
+>  {
+> -	unsigned long mask, pfn, pageno, start = 0;
+> +	unsigned long mask, pfn, start = 0;
+> +	unsigned long bitmap_maxno, bitmapno, nr_bits;
+>  	struct page *page = NULL;
+>  	int ret;
+>  
+> @@ -358,18 +386,19 @@ static struct page *__dma_alloc_from_contiguous(struct cma *cma, int count,
+>  	if (!count)
+>  		return NULL;
+>  
+> -	mask = (1 << align) - 1;
+> -
+> +	mask = cma_bitmap_aligned_mask(cma, align);
+> +	bitmap_maxno = cma_bitmap_maxno(cma);
+> +	nr_bits = cma_bitmap_pages_to_bits(cma, count);
+>  
+>  	for (;;) {
+>  		mutex_lock(&cma->lock);
+> -		pageno = bitmap_find_next_zero_area(cma->bitmap, cma->count,
+> -						    start, count, mask);
+> -		if (pageno >= cma->count) {
+> +		bitmapno = bitmap_find_next_zero_area(cma->bitmap,
+> +					bitmap_maxno, start, nr_bits, mask);
+> +		if (bitmapno >= bitmap_maxno) {
+>  			mutex_unlock(&cma->lock);
+>  			break;
+>  		}
+> -		bitmap_set(cma->bitmap, pageno, count);
+> +		bitmap_set(cma->bitmap, bitmapno, nr_bits);
+>  		/*
+>  		 * It's safe to drop the lock here. We've marked this region for
+>  		 * our exclusive use. If the migration fails we will take the
+> @@ -377,7 +406,7 @@ static struct page *__dma_alloc_from_contiguous(struct cma *cma, int count,
+>  		 */
+>  		mutex_unlock(&cma->lock);
+>  
+> -		pfn = cma->base_pfn + pageno;
+> +		pfn = cma->base_pfn + (bitmapno << cma->order_per_bit);
+>  		mutex_lock(&cma_mutex);
+>  		ret = alloc_contig_range(pfn, pfn + count, MIGRATE_CMA);
+>  		mutex_unlock(&cma_mutex);
+> @@ -392,7 +421,7 @@ static struct page *__dma_alloc_from_contiguous(struct cma *cma, int count,
+>  		pr_debug("%s(): memory range at %p is busy, retrying\n",
+>  			 __func__, pfn_to_page(pfn));
+>  		/* try again with a bit different memory target */
+> -		start = pageno + mask + 1;
+> +		start = bitmapno + mask + 1;
+>  	}
+>  
+>  	pr_debug("%s(): returned %p\n", __func__, page);
+> 
+
+
+-- 
+Thanks.
+Zhang Yanfei
