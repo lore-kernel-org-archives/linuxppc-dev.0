@@ -1,23 +1,20 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by lists.ozlabs.org (Postfix) with SMTP id 874441A03CB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 22:37:06 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 06085-06 for <linuxppc-dev@lists.ozlabs.org>;
- Thu, 12 Jun 2014 13:36:54 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Anton Blanchard' <anton@samba.org>, Christoph Lameter <cl@gentwo.org>
-Subject: RE: Kernel build issues after yesterdays merge by Linus
-Date: Thu, 12 Jun 2014 12:36:10 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1725BABB@AcuExch.aculab.com>
-References: <alpine.DEB.2.10.1406111013580.8422@gentwo.org>
- <20140612220912.3447677f@kryten>
-In-Reply-To: <20140612220912.3447677f@kryten>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7EAAB1A0409
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 00:00:31 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition on vcpu
+ schedule
+Date: Thu, 12 Jun 2014 17:00:10 +0300
+Message-ID: <1402581610-16585-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,17 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQW50b24gQmxhbmNoYXJkDQouLi4NCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9i
-b290L2luc3RhbGwuc2ggYi9hcmNoL3Bvd2VycGMvYm9vdC9pbnN0YWxsLnNoDQo+IGluZGV4IGI2
-YTI1NmIuLmUwOTZlNWEgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2luc3RhbGwu
-c2gNCj4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvaW5zdGFsbC5zaA0KPiBAQCAtMjMsOCArMjMs
-OCBAQCBzZXQgLWUNCj4gDQo+ICAjIFVzZXIgbWF5IGhhdmUgYSBjdXN0b20gaW5zdGFsbCBzY3Jp
-cHQNCj4gDQo+IC1pZiBbIC14IH4vYmluLyR7SU5TVEFMTEtFUk5FTH0gXTsgdGhlbiBleGVjIH4v
-YmluLyR7SU5TVEFMTEtFUk5FTH0gIiRAIjsgZmkNCj4gLWlmIFsgLXggL3NiaW4vJHtJTlNUQUxM
-S0VSTkVMfSBdOyB0aGVuIGV4ZWMgL3NiaW4vJHtJTlNUQUxMS0VSTkVMfSAiJEAiOyBmaQ0KPiAr
-aWYgWyAteCB+L2Jpbi8ke0lOU1RBTExLRVJORUx9IF07IHRoZW4gZXhlYyB+L2Jpbi8ke0lOU1RB
-TExLRVJORUx9ICQxICQyICQzICQ0OyBmaQ0KPiAraWYgWyAteCAvc2Jpbi8ke0lOU1RBTExLRVJO
-RUx9IF07IHRoZW4gZXhlYyAvc2Jpbi8ke0lOU1RBTExLRVJORUx9ICQxICQyICQzICQ0OyBmaQ0K
-DQpZb3UgcHJvYmFibHkgd2FudCB0byBlbmNsb3NlIHRoZSAkMSBpbiAiIGFzOg0KDQo+ICtpZiBb
-IC14IC9zYmluLyR7SU5TVEFMTEtFUk5FTH0gXTsgdGhlbiBleGVjIC9zYmluLyR7SU5TVEFMTEtF
-Uk5FTH0gIiQxIiAiJDIiICIkMyIgIiQ0IjsgZmkNCg0KCURhdmlkDQoNCg==
+On vcpu schedule, the condition checked for tlb pollution is too tight.
+The tlb entries of one vcpu are polluted when a different vcpu from the
+same partition runs in-between. Relax the current tlb invalidation
+condition taking into account the lpid.
+
+Signed-off-by: Mihai Caraman <mihai.caraman <at> freescale.com>
+Cc: Scott Wood <scottwood <at> freescale.com>
+---
+ arch/powerpc/kvm/e500mc.c | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+index 17e4562..2e0cd69 100644
+--- a/arch/powerpc/kvm/e500mc.c
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -111,10 +111,12 @@ void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
+ }
+ 
+ static DEFINE_PER_CPU(struct kvm_vcpu *, last_vcpu_on_cpu);
++static DEFINE_PER_CPU(int, last_lpid_on_cpu);
+ 
+ static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	bool update_last = false, inval_tlb = false;
+ 
+ 	kvmppc_booke_vcpu_load(vcpu, cpu);
+ 
+@@ -140,12 +142,24 @@ static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
+ 	mtspr(SPRN_GDEAR, vcpu->arch.shared->dar);
+ 	mtspr(SPRN_GESR, vcpu->arch.shared->esr);
+ 
+-	if (vcpu->arch.oldpir != mfspr(SPRN_PIR) ||
+-	    __get_cpu_var(last_vcpu_on_cpu) != vcpu) {
+-		kvmppc_e500_tlbil_all(vcpu_e500);
++	if (vcpu->arch.oldpir != mfspr(SPRN_PIR)) {
++		/* tlb entries deprecated */
++		inval_tlb = update_last = true;
++	} else if (__get_cpu_var(last_vcpu_on_cpu) != vcpu) {
++		update_last = true;
++		/* tlb entries polluted */
++		inval_tlb = __get_cpu_var(last_lpid_on_cpu) ==
++			    vcpu->kvm->arch.lpid;
++	}
++
++	if (update_last) {
+ 		__get_cpu_var(last_vcpu_on_cpu) = vcpu;
++		__get_cpu_var(last_lpid_on_cpu) = vcpu->kvm->arch.lpid;
+ 	}
+ 
++	if (inval_tlb)
++		kvmppc_e500_tlbil_all(vcpu_e500);
++
+ 	kvmppc_load_guest_fp(vcpu);
+ }
+ 
+-- 
+1.7.11.7
