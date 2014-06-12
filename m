@@ -1,16 +1,18 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Wei.Yang@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ADDD91A02C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 16:53:14 +1000 (EST)
-Date: Thu, 12 Jun 2014 16:53:08 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Reduce scariness of interrupt frames in stack traces
-Message-ID: <20140612065308.GB16578@drongo>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B23A71A02BD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 17:01:01 +1000 (EST)
+From: <Wei.Yang@windriver.com>
+To: <horms@verge.net.au>
+Subject: [PATCH v1] fs2dt: Refine kdump device_tree sort
+Date: Thu, 12 Jun 2014 13:16:08 +0800
+Message-ID: <1402550168-7826-1-git-send-email-Wei.Yang@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, wei.yang@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +22,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some people see things like "Exception: 501" in stack traces in dmesg
-and assume that means that something has gone badly wrong, when in
-fact "Exception: 501" just means a device interrupt was taken.
-This changes "Exception" to "interrupt" to make it clearer that we
-are just recording the fact of a change in control flow rather than
-some error condition.
+From: Yang Wei <Wei.Yang@windriver.com>
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+The commit b02d735bf was to rearrange the device-tree entries, and
+assumed that these entries are sorted in the ascending order. but
+acctually when I was validating kexec and kdump, the order of
+serial node still is changed. We should not only compare the length
+of directory name, but also compare the directory name, it would
+ensure that the order of device node is really in ascending order.
+
+Signed-off-by: Yang Wei <Wei.Yang@windriver.com>
 ---
- arch/powerpc/kernel/process.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kexec/fs2dt.c |   13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 31d0215..aa103dc 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1577,7 +1577,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
- 			struct pt_regs *regs = (struct pt_regs *)
- 				(sp + STACK_FRAME_OVERHEAD);
- 			lr = regs->link;
--			printk("--- Exception: %lx at %pS\n    LR = %pS\n",
-+			printk("--- interrupt: %lx at %pS\n    LR = %pS\n",
- 			       regs->trap, (void *)regs->nip, (void *)lr);
- 			firstframe = 1;
- 		}
+		It is validated on Freescale t4240qds.
+
+diff --git a/kexec/fs2dt.c b/kexec/fs2dt.c
+index 1e5f074..0bffaf5 100644
+--- a/kexec/fs2dt.c
++++ b/kexec/fs2dt.c
+@@ -479,6 +479,9 @@ static int comparefunc(const struct dirent **dentry1,
+ {
+ 	char *str1 = (*(struct dirent **)dentry1)->d_name;
+ 	char *str2 = (*(struct dirent **)dentry2)->d_name;
++	char* ptr1 = strchr(str1, '@');
++	char* ptr2 = strchr(str2, '@');
++	int len1, len2;
+ 
+ 	/*
+ 	 * strcmp scans from left to right and fails to idetify for some
+@@ -486,9 +489,13 @@ static int comparefunc(const struct dirent **dentry1,
+ 	 * Therefore, we get the wrong sorted order like memory@10000000 and
+ 	 * memory@f000000.
+ 	 */
+-	if (strchr(str1, '@') && strchr(str2, '@') &&
+-		(strlen(str1) > strlen(str2)))
+-		return 1;
++	if (ptr1 && ptr2) {
++		len1 = ptr1 - str1;
++		len2 = ptr2 - str2;
++		if (!strncmp(str1, str2, len1 >len2 ? len1: len2) &&
++					(strlen(str1) > strlen(str2)))
++				return 1;
++	}
+ 
+ 	return strcmp(str1, str2);
+ }
 -- 
-2.0.0.rc4
+1.7.9.5
