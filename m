@@ -1,25 +1,24 @@
-Return-Path: <minchan@kernel.org>
-Received: from lgemrelse7q.lge.com (LGEMRELSE7Q.lge.com [156.147.1.151])
- by lists.ozlabs.org (Postfix) with ESMTP id D8CA71A00C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 15:37:34 +1000 (EST)
-Date: Thu, 12 Jun 2014 14:37:43 +0900
-From: Minchan Kim <minchan@kernel.org>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH v2 03/10] DMA, CMA: separate core cma management codes
- from DMA APIs
-Message-ID: <20140612053743.GF12415@bbox>
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from lgeamrelo02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
+ by lists.ozlabs.org (Postfix) with ESMTP id 513061A02C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 15:50:01 +1000 (EST)
+Date: Thu, 12 Jun 2014 14:53:58 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 01/10] DMA, CMA: clean-up log message
+Message-ID: <20140612055358.GA30128@js1304-P5Q-DELUXE>
 References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-4-git-send-email-iamjoonsoo.kim@lge.com>
+ <1402543307-29800-2-git-send-email-iamjoonsoo.kim@lge.com>
+ <87y4x2pwnk.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1402543307-29800-4-git-send-email-iamjoonsoo.kim@lge.com>
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
+In-Reply-To: <87y4x2pwnk.fsf@linux.vnet.ibm.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
+ linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, kvm-ppc@vger.kernel.org,
  Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
  Marek Szyprowski <m.szyprowski@samsung.com>
@@ -32,145 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2014 at 12:21:40PM +0900, Joonsoo Kim wrote:
-> To prepare future generalization work on cma area management code,
-> we need to separate core cma management codes from DMA APIs.
-> We will extend these core functions to cover requirements of
-> ppc kvm's cma area management functionality in following patches.
-> This separation helps us not to touch DMA APIs while extending
-> core functions.
+On Thu, Jun 12, 2014 at 10:11:19AM +0530, Aneesh Kumar K.V wrote:
+> Joonsoo Kim <iamjoonsoo.kim@lge.com> writes:
 > 
-> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> > We don't need explicit 'CMA:' prefix, since we already define prefix
+> > 'cma:' in pr_fmt. So remove it.
+> >
+> > And, some logs print function name and others doesn't. This looks
+> > bad to me, so I unify log format to print function name consistently.
+> >
+> > Lastly, I add one more debug log on cma_activate_area().
+> >
+> > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+> >
+> > diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
+> > index 83969f8..bd0bb81 100644
+> > --- a/drivers/base/dma-contiguous.c
+> > +++ b/drivers/base/dma-contiguous.c
+> > @@ -144,7 +144,7 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
+> >  	}
+> >
+> >  	if (selected_size && !dma_contiguous_default_area) {
+> > -		pr_debug("%s: reserving %ld MiB for global area\n", __func__,
+> > +		pr_debug("%s(): reserving %ld MiB for global area\n", __func__,
+> >  			 (unsigned long)selected_size / SZ_1M);
 > 
-> diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> index fb0cdce..8a44c82 100644
-> --- a/drivers/base/dma-contiguous.c
-> +++ b/drivers/base/dma-contiguous.c
-> @@ -231,9 +231,9 @@ core_initcall(cma_init_reserved_areas);
->   * If @fixed is true, reserve contiguous area at exactly @base.  If false,
->   * reserve in range from @base to @limit.
->   */
-> -int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
-> -				       phys_addr_t limit, struct cma **res_cma,
-> -				       bool fixed)
-> +static int __init __dma_contiguous_reserve_area(phys_addr_t size,
-> +				phys_addr_t base, phys_addr_t limit,
-> +				struct cma **res_cma, bool fixed)
->  {
->  	struct cma *cma = &cma_areas[cma_area_count];
->  	phys_addr_t alignment;
-> @@ -288,16 +288,30 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
->  
->  	pr_info("%s(): reserved %ld MiB at %08lx\n",
->  		__func__, (unsigned long)size / SZ_1M, (unsigned long)base);
-> -
-> -	/* Architecture specific contiguous memory fixup. */
-> -	dma_contiguous_early_fixup(base, size);
->  	return 0;
-> +
->  err:
->  	pr_err("%s(): failed to reserve %ld MiB\n",
->  		__func__, (unsigned long)size / SZ_1M);
->  	return ret;
->  }
->  
-> +int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
-> +				       phys_addr_t limit, struct cma **res_cma,
-> +				       bool fixed)
-> +{
-> +	int ret;
-> +
-> +	ret = __dma_contiguous_reserve_area(size, base, limit, res_cma, fixed);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* Architecture specific contiguous memory fixup. */
-> +	dma_contiguous_early_fixup(base, size);
+> Do we need to do function(), or just function:. I have seen the later
+> usage in other parts of the kernel.
 
-In old, base and size are aligned with alignment and passed into arch fixup
-but your patch is changing it.
-I didn't look at what kinds of side effect it makes but just want to confirm.
+Hello,
 
-> +
-> +	return 0;
-> +}
-> +
->  static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int count)
->  {
->  	mutex_lock(&cma->lock);
-> @@ -316,20 +330,16 @@ static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int count)
->   * global one. Requires architecture specific dev_get_cma_area() helper
->   * function.
->   */
-> -struct page *dma_alloc_from_contiguous(struct device *dev, int count,
-> +static struct page *__dma_alloc_from_contiguous(struct cma *cma, int count,
->  				       unsigned int align)
->  {
->  	unsigned long mask, pfn, pageno, start = 0;
-> -	struct cma *cma = dev_get_cma_area(dev);
->  	struct page *page = NULL;
->  	int ret;
->  
->  	if (!cma || !cma->count)
->  		return NULL;
->  
-> -	if (align > CONFIG_CMA_ALIGNMENT)
-> -		align = CONFIG_CMA_ALIGNMENT;
-> -
->  	pr_debug("%s(cma %p, count %d, align %d)\n", __func__, (void *)cma,
->  		 count, align);
->  
-> @@ -377,6 +387,17 @@ struct page *dma_alloc_from_contiguous(struct device *dev, int count,
->  	return page;
->  }
->  
+I also haven't seen this format in other kernel code, but, in cma, they use
+this format as following.
 
-Please move the description in __dma_alloc_from_contiguous to here exported API.
+function(arg1, arg2, ...): some message
 
-> +struct page *dma_alloc_from_contiguous(struct device *dev, int count,
-> +				       unsigned int align)
-> +{
-> +	struct cma *cma = dev_get_cma_area(dev);
-> +
-> +	if (align > CONFIG_CMA_ALIGNMENT)
-> +		align = CONFIG_CMA_ALIGNMENT;
-> +
-> +	return __dma_alloc_from_contiguous(cma, count, align);
-> +}
-> +
->  /**
->   * dma_release_from_contiguous() - release allocated pages
->   * @dev:   Pointer to device for which the pages were allocated.
-> @@ -387,10 +408,9 @@ struct page *dma_alloc_from_contiguous(struct device *dev, int count,
->   * It returns false when provided pages do not belong to contiguous area and
->   * true otherwise.
->   */
-> -bool dma_release_from_contiguous(struct device *dev, struct page *pages,
-> +static bool __dma_release_from_contiguous(struct cma *cma, struct page *pages,
->  				 int count)
->  {
-> -	struct cma *cma = dev_get_cma_area(dev);
->  	unsigned long pfn;
->  
->  	if (!cma || !pages)
-> @@ -410,3 +430,11 @@ bool dma_release_from_contiguous(struct device *dev, struct page *pages,
->  
->  	return true;
->  }
-> +
+If we all dislike this format, we can change it after merging this
+patchset. Until then, it seems better to me to leave it as is.
 
-Ditto.
+> 
+> >
+> >  		dma_contiguous_reserve_area(selected_size, selected_base,
+> > @@ -163,8 +163,9 @@ static int __init cma_activate_area(struct cma *cma)
+> >  	unsigned i = cma->count >> pageblock_order;
+> >  	struct zone *zone;
+> >
+> > -	cma->bitmap = kzalloc(bitmap_size, GFP_KERNEL);
+> > +	pr_debug("%s()\n", __func__);
+> 
+> why ?
+> 
 
-> +bool dma_release_from_contiguous(struct device *dev, struct page *pages,
-> +				 int count)
-> +{
-> +	struct cma *cma = dev_get_cma_area(dev);
-> +
-> +	return __dma_release_from_contiguous(cma, pages, count);
-> +}
-> -- 
-> 1.7.9.5
+This pr_debug() comes from ppc kvm's kvm_cma_init_reserved_areas().
+I want to maintain all log messages as much as possible to reduce confusion
+with this generalization.
 
--- 
-Kind regards,
-Minchan Kim
+Thanks.
