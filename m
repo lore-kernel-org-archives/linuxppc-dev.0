@@ -2,35 +2,35 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA5311A02A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 14:41:33 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90C231A02A6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 14:43:11 +1000 (EST)
 Received: from /spool/local
  by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 12 Jun 2014 10:11:28 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id BF8E53940067
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:11:22 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5C4fYJw62193722
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:11:34 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5C4fKkJ028982
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:11:21 +0530
+ Thu, 12 Jun 2014 10:13:09 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D5DE0394005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:13:06 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5C4i06s18088148
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:14:00 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5C4h5PO003011
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:13:06 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
  Andrew Morton <akpm@linux-foundation.org>,
  Marek Szyprowski <m.szyprowski@samsung.com>,
  Michal Nazarewicz <mina86@mina86.com>
-Subject: Re: [PATCH v2 01/10] DMA, CMA: clean-up log message
-In-Reply-To: <1402543307-29800-2-git-send-email-iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH v2 02/10] DMA, CMA: fix possible memory leak
+In-Reply-To: <1402543307-29800-3-git-send-email-iamjoonsoo.kim@lge.com>
 References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-2-git-send-email-iamjoonsoo.kim@lge.com>
-Date: Thu, 12 Jun 2014 10:11:19 +0530
-Message-ID: <87y4x2pwnk.fsf@linux.vnet.ibm.com>
+ <1402543307-29800-3-git-send-email-iamjoonsoo.kim@lge.com>
+Date: Thu, 12 Jun 2014 10:13:04 +0530
+Message-ID: <87vbs6pwkn.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
@@ -52,75 +52,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Joonsoo Kim <iamjoonsoo.kim@lge.com> writes:
 
-> We don't need explicit 'CMA:' prefix, since we already define prefix
-> 'cma:' in pr_fmt. So remove it.
+> We should free memory for bitmap when we find zone mis-match,
+> otherwise this memory will leak.
 >
-> And, some logs print function name and others doesn't. This looks
-> bad to me, so I unify log format to print function name consistently.
->
-> Lastly, I add one more debug log on cma_activate_area().
+> Additionally, I copy code comment from ppc kvm's cma code to notify
+> why we need to check zone mis-match.
 >
 > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
 >
 > diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> index 83969f8..bd0bb81 100644
+> index bd0bb81..fb0cdce 100644
 > --- a/drivers/base/dma-contiguous.c
 > +++ b/drivers/base/dma-contiguous.c
-> @@ -144,7 +144,7 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
->  	}
+> @@ -177,14 +177,24 @@ static int __init cma_activate_area(struct cma *cma)
+>  		base_pfn = pfn;
+>  		for (j = pageblock_nr_pages; j; --j, pfn++) {
+>  			WARN_ON_ONCE(!pfn_valid(pfn));
+> +			/*
+> +			 * alloc_contig_range requires the pfn range
+> +			 * specified to be in the same zone. Make this
+> +			 * simple by forcing the entire CMA resv range
+> +			 * to be in the same zone.
+> +			 */
+>  			if (page_zone(pfn_to_page(pfn)) != zone)
+> -				return -EINVAL;
+> +				goto err;
+>  		}
+>  		init_cma_reserved_pageblock(pfn_to_page(base_pfn));
+>  	} while (--i);
 >
->  	if (selected_size && !dma_contiguous_default_area) {
-> -		pr_debug("%s: reserving %ld MiB for global area\n", __func__,
-> +		pr_debug("%s(): reserving %ld MiB for global area\n", __func__,
->  			 (unsigned long)selected_size / SZ_1M);
-
-Do we need to do function(), or just function:. I have seen the later
-usage in other parts of the kernel.
-
->
->  		dma_contiguous_reserve_area(selected_size, selected_base,
-> @@ -163,8 +163,9 @@ static int __init cma_activate_area(struct cma *cma)
->  	unsigned i = cma->count >> pageblock_order;
->  	struct zone *zone;
->
-> -	cma->bitmap = kzalloc(bitmap_size, GFP_KERNEL);
-> +	pr_debug("%s()\n", __func__);
-
-why ?
-
->
-> +	cma->bitmap = kzalloc(bitmap_size, GFP_KERNEL);
->  	if (!cma->bitmap)
->  		return -ENOMEM;
->
-> @@ -234,7 +235,8 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
->
->  	/* Sanity checks */
->  	if (cma_area_count == ARRAY_SIZE(cma_areas)) {
-> -		pr_err("Not enough slots for CMA reserved regions!\n");
-> +		pr_err("%s(): Not enough slots for CMA reserved regions!\n",
-> +			__func__);
->  		return -ENOSPC;
->  	}
->
-> @@ -274,14 +276,15 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
->  	*res_cma = cma;
->  	cma_area_count++;
->
-> -	pr_info("CMA: reserved %ld MiB at %08lx\n", (unsigned long)size / SZ_1M,
-> -		(unsigned long)base);
-> +	pr_info("%s(): reserved %ld MiB at %08lx\n",
-> +		__func__, (unsigned long)size / SZ_1M, (unsigned long)base);
->
->  	/* Architecture specific contiguous memory fixup. */
->  	dma_contiguous_early_fixup(base, size);
+>  	mutex_init(&cma->lock);
 >  	return 0;
->  err:
-> -	pr_err("CMA: failed to reserve %ld MiB\n", (unsigned long)size / SZ_1M);
-> +	pr_err("%s(): failed to reserve %ld MiB\n",
-> +		__func__, (unsigned long)size / SZ_1M);
->  	return ret;
+> +
+> +err:
+> +	kfree(cma->bitmap);
+> +	return -EINVAL;
 >  }
 >
+>  static struct cma cma_areas[MAX_CMA_AREAS];
 > -- 
 > 1.7.9.5
