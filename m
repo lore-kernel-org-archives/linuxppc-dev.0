@@ -1,18 +1,19 @@
 Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from lgeamrelo02.lge.com (lgeamrelo02.lge.com [156.147.1.126])
- by lists.ozlabs.org (Postfix) with ESMTP id 9E5851A02C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 15:58:14 +1000 (EST)
-Date: Thu, 12 Jun 2014 15:02:11 +0900
+Received: from lgeamrelo01.lge.com (lgeamrelo01.lge.com [156.147.1.125])
+ by lists.ozlabs.org (Postfix) with ESMTP id B0D461A02A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 16:03:23 +1000 (EST)
+Date: Thu, 12 Jun 2014 15:07:20 +0900
 From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 To: Minchan Kim <minchan@kernel.org>
-Subject: Re: [PATCH v2 02/10] DMA, CMA: fix possible memory leak
-Message-ID: <20140612060211.GC30128@js1304-P5Q-DELUXE>
+Subject: Re: [PATCH v2 04/10] DMA, CMA: support alignment constraint on cma
+ region
+Message-ID: <20140612060720.GD30128@js1304-P5Q-DELUXE>
 References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-3-git-send-email-iamjoonsoo.kim@lge.com>
- <20140612052543.GE12415@bbox>
+ <1402543307-29800-5-git-send-email-iamjoonsoo.kim@lge.com>
+ <20140612055219.GG12415@bbox>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140612052543.GE12415@bbox>
+In-Reply-To: <20140612055219.GG12415@bbox>
 Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
  kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -32,55 +33,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2014 at 02:25:43PM +0900, Minchan Kim wrote:
-> On Thu, Jun 12, 2014 at 12:21:39PM +0900, Joonsoo Kim wrote:
-> > We should free memory for bitmap when we find zone mis-match,
-> > otherwise this memory will leak.
-> 
-> Then, -stable stuff?
-
-I don't think so. This is just possible leak candidate, so we don't
-need to push this to stable tree.
-
-> 
+On Thu, Jun 12, 2014 at 02:52:20PM +0900, Minchan Kim wrote:
+> On Thu, Jun 12, 2014 at 12:21:41PM +0900, Joonsoo Kim wrote:
+> > ppc kvm's cma area management needs alignment constraint on
+> > cma region. So support it to prepare generalization of cma area
+> > management functionality.
 > > 
-> > Additionally, I copy code comment from ppc kvm's cma code to notify
-> > why we need to check zone mis-match.
+> > Additionally, add some comments which tell us why alignment
+> > constraint is needed on cma region.
 > > 
 > > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 > > 
 > > diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> > index bd0bb81..fb0cdce 100644
+> > index 8a44c82..bc4c171 100644
 > > --- a/drivers/base/dma-contiguous.c
 > > +++ b/drivers/base/dma-contiguous.c
-> > @@ -177,14 +177,24 @@ static int __init cma_activate_area(struct cma *cma)
-> >  		base_pfn = pfn;
-> >  		for (j = pageblock_nr_pages; j; --j, pfn++) {
-> >  			WARN_ON_ONCE(!pfn_valid(pfn));
-> > +			/*
-> > +			 * alloc_contig_range requires the pfn range
-> > +			 * specified to be in the same zone. Make this
-> > +			 * simple by forcing the entire CMA resv range
-> > +			 * to be in the same zone.
-> > +			 */
-> >  			if (page_zone(pfn_to_page(pfn)) != zone)
-> > -				return -EINVAL;
-> > +				goto err;
+> > @@ -32,6 +32,7 @@
+> >  #include <linux/swap.h>
+> >  #include <linux/mm_types.h>
+> >  #include <linux/dma-contiguous.h>
+> > +#include <linux/log2.h>
+> >  
+> >  struct cma {
+> >  	unsigned long	base_pfn;
+> > @@ -219,6 +220,7 @@ core_initcall(cma_init_reserved_areas);
+> >   * @size: Size of the reserved area (in bytes),
+> >   * @base: Base address of the reserved area optional, use 0 for any
+> >   * @limit: End address of the reserved memory (optional, 0 for any).
+> > + * @alignment: Alignment for the contiguous memory area, should be power of 2
+> >   * @res_cma: Pointer to store the created cma region.
+> >   * @fixed: hint about where to place the reserved area
+> >   *
 > 
-> At a first glance, I thought it would be better to handle such error
-> before activating.
-> So when I see the registration code(ie, dma_contiguous_revere_area),
-> I realized it is impossible because we didn't set up zone yet. :(
+> Pz, move the all description to new API function rather than internal one.
+
+Reason I leave all description as is is that I will remove it in
+following patch. I think that moving these makes patch bigger and hard
+to review.
+
+But, if it is necessary, I will do it. :)
+
 > 
-> If so, when we detect to fail here, it would be better to report more
-> meaningful error message like what was successful zone and what is
-> new zone and failed pfn number?
+> > @@ -233,15 +235,15 @@ core_initcall(cma_init_reserved_areas);
+> >   */
+> >  static int __init __dma_contiguous_reserve_area(phys_addr_t size,
+> >  				phys_addr_t base, phys_addr_t limit,
+> > +				phys_addr_t alignment,
+> >  				struct cma **res_cma, bool fixed)
+> >  {
+> >  	struct cma *cma = &cma_areas[cma_area_count];
+> > -	phys_addr_t alignment;
+> >  	int ret = 0;
+> >  
+> > -	pr_debug("%s(size %lx, base %08lx, limit %08lx)\n", __func__,
+> > -		 (unsigned long)size, (unsigned long)base,
+> > -		 (unsigned long)limit);
+> > +	pr_debug("%s(size %lx, base %08lx, limit %08lx align_order %08lx)\n",
+> 
+> Why is it called by "align_order"?
 
-What I want to do in early phase of this patchset is to make cma code
-on DMA APIs similar to ppc kvm's cma code. ppc kvm's cma code already
-has this error handling logic, so I make this patch.
-
-If we think that we need more things, we can do that on general cma code
-after merging this patchset.
+Oops... mistake.
+I will fix it.
 
 Thanks.
