@@ -1,24 +1,37 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F2DC1A03CD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 10:05:52 +1000 (EST)
-Date: Thu, 12 Jun 2014 00:34:53 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Message-ID: <20140611233453.GP5099@sirena.org.uk>
-References: <1402470832-24889-1-git-send-email-linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A06B21A054E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 12:07:14 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Thu, 12 Jun 2014 07:37:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 01710E004B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 07:38:07 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5C27x0L7274938
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 07:38:00 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5C2762F004986
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 07:37:06 +0530
+Message-ID: <53990B48.8010902@linux.vnet.ibm.com>
+Date: Thu, 12 Jun 2014 10:07:04 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8Ioc0IVuiHZoupes"
-In-Reply-To: <1402470832-24889-1-git-send-email-linux@roeck-us.net>
-Subject: Re: [PATCH] ASoC: fsl: Fix build problem
-Cc: alsa-devel@alsa-project.org, Liam Girdwood <lgirdwood@gmail.com>,
- Takashi Iwai <tiwai@suse.de>, Timur Tabi <timur@tabi.org>,
- Jaroslav Kysela <perex@perex.cz>, Markus Pargmann <mpa@pengutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+To: Michal Marek <mmarek@suse.cz>
+Subject: Re: [PATCH v2] powerpc: Avoid circular dependency with zImage.%
+References: <53984D4F.6040808@linux.vnet.ibm.com>
+ <1402501243-28213-1-git-send-email-mmarek@suse.cz>
+In-Reply-To: <1402501243-28213-1-git-send-email-mmarek@suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Sam Ravnborg <sam@ravnborg.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +41,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This v2 patch is good,
 
---8Ioc0IVuiHZoupes
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Tested-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 
-On Wed, Jun 11, 2014 at 12:13:52AM -0700, Guenter Roeck wrote:
-> Commit 432481220 (ASoC: fsl-ssi: Use regmap) removed struct ccsr_ssi.
-> Unfortunately, the structure is still used. This causes
-> mpc85xx_smp_defconfig and mpc85xx_defconfig builds to fail with
-
-Applied, thanks,.
-
---8Ioc0IVuiHZoupes
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBAgAGBQJTmOeZAAoJELSic+t+oim9vfUP+gL2Kunt8IHQpb2QCqBnQmCi
-c6/4lVq8KM5yBWiAva8iaBvjjKUr1Wt757bDj0NYyJPMt2+mi/3b/Fy0uYZC1Vh7
-Y/m5ZsWk6VDcu0fPLLYpsGvTcnCggLbEt+G5W8LFcv/Qijb26x315FnUkwvRd3B0
-zMU9V/GfWmfmz4h6+YCMnhYE4b+qIHaAKcBW/qPJmlyWvZKhO4i/Hyz+fbUo+7SU
-KiQgts8QUplKmyrHEP9y2pcw+W1swb2wueFDvKSJc+7l+qzgeMjS0yNWemCEybkL
-GAvgFB+1V7x4hf+CziefOCkfeCDSkUpSbizZj/c63yKQBDw4afwTuGdcDh9xeHND
-1YWHhE2MIiZnr55DjwvILhUHKPGJfZZNXWV2W4T+hGCTU+zX2XJ4Lc9PFUjMQkvO
-Z6oa3H7NbKMcg+rCvF7XVhyQv85n7XBofWQIW2wZKGH6M3pn6S3FBW/GWIOM5rMw
-tLA++QsvDYyuk4xMfTAnfUQvj6R00p8RrseDxx1CM55aX62OFLgSvwIESZOqQewe
-/ZW38o59Iacniwb5vzSBkMx7lu/VULZJEt6BllVenDv6leOB18EH+f9lqnVgp70/
-SUQoIo4g7xFyXz0fXDLnss4+K+4eYigwkH4abBRnKIGFwubnjRO3hNAhnOwDlBYW
-j/ln3Yw0z3TNkklTE5s9
-=Ck1x
------END PGP SIGNATURE-----
-
---8Ioc0IVuiHZoupes--
+On 06/11/2014 11:40 PM, Michal Marek wrote:
+> The rule to create the final images uses a zImage.% pattern.
+> Unfortunately, this also matches the names of the zImage.*.lds linker
+> scripts, which appear as a dependency of the final images. This somehow
+> worked when $(srctree) used to be an absolute path, but now the pattern
+> matches too much. List only the images from $(image-y) as the target of
+> the rule, to avoid the circular dependency.
+>
+> Signed-off-by: Michal Marek <mmarek@suse.cz>
+> ---
+> v2:
+>    - Filter out duplicates in the target list
+>    - fix the platform argument to cmd_wrap
+>
+>   arch/powerpc/boot/Makefile | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 426dce7..ccc25ed 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -333,8 +333,8 @@ $(addprefix $(obj)/, $(initrd-y)): $(obj)/ramdisk.image.gz
+>   $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
+>   	$(call if_changed,wrap,$*,,,$(obj)/ramdisk.image.gz)
+>
+> -$(obj)/zImage.%: vmlinux $(wrapperbits)
+> -	$(call if_changed,wrap,$*)
+> +$(addprefix $(obj)/, $(sort $(filter zImage.%, $(image-y)))): vmlinux $(wrapperbits)
+> +	$(call if_changed,wrap,$(subst $(obj)/zImage.,,$@))
+>
+>   # dtbImage% - a dtbImage is a zImage with an embedded device tree blob
+>   $(obj)/dtbImage.initrd.%: vmlinux $(wrapperbits) $(obj)/%.dtb
