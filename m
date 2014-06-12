@@ -1,34 +1,45 @@
-Return-Path: <mpn@google.com>
-Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
- [IPv6:2a00:1450:400c:c05::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A3A491A0329
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 18:56:45 +1000 (EST)
-Received: by mail-wi0-f172.google.com with SMTP id hi2so7358557wib.17
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 01:56:40 -0700 (PDT)
-Sender: Michal Nazarewicz <mpn@google.com>
-From: Michal Nazarewicz <mina86@mina86.com>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v2 01/10] DMA, CMA: clean-up log message
-In-Reply-To: <1402543307-29800-2-git-send-email-iamjoonsoo.kim@lge.com>
-References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-2-git-send-email-iamjoonsoo.kim@lge.com>
-Date: Thu, 12 Jun 2014 10:56:37 +0200
-Message-ID: <xa1tlht2jyka.fsf@mina86.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E8301A02E4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2014 19:11:32 +1000 (EST)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 423391400A6
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 19:11:32 +1000 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Thu, 12 Jun 2014 19:11:29 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 26F782CE8040
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 19:11:24 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5C8tHNX33357872
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 18:55:17 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5C9BMxh030641
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Jun 2014 19:11:23 +1000
+Message-ID: <53996E41.4070309@linux.vnet.ibm.com>
+Date: Thu, 12 Jun 2014 14:39:21 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
- linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, kvm-ppc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>, Paolo Bonzini <pbonzini@redhat.com>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH V3 0/3] Add new PowerPC specific ELF core notes
+References: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1400858138-3939-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Michael Neuling <mikey@neuling.org>, james.hogan@imgtec.com,
+ avagin@openvz.org, Paul.Clothier@imgtec.com, davem@davemloft.net,
+ peterz@infradead.org, palves@redhat.com, linux-kernel@vger.kernel.org,
+ oleg@redhat.com, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ davej@redhat.com, akpm@linux-foundation.org, tglx@linutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,81 +49,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12 2014, Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
-> We don't need explicit 'CMA:' prefix, since we already define prefix
-> 'cma:' in pr_fmt. So remove it.
->
-> And, some logs print function name and others doesn't. This looks
-> bad to me, so I unify log format to print function name consistently.
->
-> Lastly, I add one more debug log on cma_activate_area().
+On 05/23/2014 08:45 PM, Anshuman Khandual wrote:
+> 	This patch series adds five new ELF core note sections which can be
+> used with existing ptrace request PTRACE_GETREGSET/SETREGSET for accessing
+> various transactional memory and miscellaneous register sets on PowerPC
+> platform. Please find a test program exploiting these new ELF core note
+> types on a POWER8 system.
+> 
+> RFC: https://lkml.org/lkml/2014/4/1/292
+> V1:  https://lkml.org/lkml/2014/4/2/43
+> V2:  https://lkml.org/lkml/2014/5/5/88
+> 
+> Changes in V3
+> =============
+> (1) Added two new error paths in every TM related get/set functions when regset
+>     support is not present on the system (ENODEV) or when the process does not
+>     have any transaction active (ENODATA) in the context
+> 
+> (2) Installed the active hooks for all the newly added regset core note types
+> 
+> Changes in V2
+> =============
+> (1) Removed all the power specific ptrace requests corresponding to new NT_PPC_*
+>     elf core note types. Now all the register sets can be accessed from ptrace
+>     through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual NT_PPC* core
+>     note type instead
+> (2) Fixed couple of attribute values for REGSET_TM_CGPR register set
+> (3) Renamed flush_tmreg_to_thread as flush_tmregs_to_thread
+> (4) Fixed 32 bit checkpointed GPR support
+> (5) Changed commit messages accordingly
+> 
+> Outstanding Issues
+> ==================
+> (1) Running DSCR register value inside a transaction does not seem to be saved
+>     at thread.dscr when the process stops for ptrace examination.
 
-I don't particularly care what format of logs you choose, so:
+Hey Ben,
 
-Acked-by: Michal Nazarewicz <mina86@mina86.com>
-
-even though I'd go without empty =E2=80=9C()=E2=80=9D.
-
-> Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
->
-> diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> index 83969f8..bd0bb81 100644
-> --- a/drivers/base/dma-contiguous.c
-> +++ b/drivers/base/dma-contiguous.c
-> @@ -144,7 +144,7 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
->  	}
->=20=20
->  	if (selected_size && !dma_contiguous_default_area) {
-> -		pr_debug("%s: reserving %ld MiB for global area\n", __func__,
-> +		pr_debug("%s(): reserving %ld MiB for global area\n", __func__,
->  			 (unsigned long)selected_size / SZ_1M);
->=20=20
->  		dma_contiguous_reserve_area(selected_size, selected_base,
-> @@ -163,8 +163,9 @@ static int __init cma_activate_area(struct cma *cma)
->  	unsigned i =3D cma->count >> pageblock_order;
->  	struct zone *zone;
->=20=20
-> -	cma->bitmap =3D kzalloc(bitmap_size, GFP_KERNEL);
-> +	pr_debug("%s()\n", __func__);
->=20=20
-> +	cma->bitmap =3D kzalloc(bitmap_size, GFP_KERNEL);
->  	if (!cma->bitmap)
->  		return -ENOMEM;
->=20=20
-> @@ -234,7 +235,8 @@ int __init dma_contiguous_reserve_area(phys_addr_t si=
-ze, phys_addr_t base,
->=20=20
->  	/* Sanity checks */
->  	if (cma_area_count =3D=3D ARRAY_SIZE(cma_areas)) {
-> -		pr_err("Not enough slots for CMA reserved regions!\n");
-> +		pr_err("%s(): Not enough slots for CMA reserved regions!\n",
-> +			__func__);
->  		return -ENOSPC;
->  	}
->=20=20
-> @@ -274,14 +276,15 @@ int __init dma_contiguous_reserve_area(phys_addr_t =
-size, phys_addr_t base,
->  	*res_cma =3D cma;
->  	cma_area_count++;
->=20=20
-> -	pr_info("CMA: reserved %ld MiB at %08lx\n", (unsigned long)size / SZ_1M,
-> -		(unsigned long)base);
-> +	pr_info("%s(): reserved %ld MiB at %08lx\n",
-> +		__func__, (unsigned long)size / SZ_1M, (unsigned long)base);
->=20=20
->  	/* Architecture specific contiguous memory fixup. */
->  	dma_contiguous_early_fixup(base, size);
->  	return 0;
->  err:
-> -	pr_err("CMA: failed to reserve %ld MiB\n", (unsigned long)size / SZ_1M);
-> +	pr_err("%s(): failed to reserve %ld MiB\n",
-> +		__func__, (unsigned long)size / SZ_1M);
->  	return ret;
->  }
-
---=20
-Best regards,                                         _     _
-.o. | Liege of Serenely Enlightened Majesty of      o' \,=3D./ `o
-..o | Computer Science,  Micha=C5=82 =E2=80=9Cmina86=E2=80=9D Nazarewicz   =
- (o o)
-ooo +--<mpn@google.com>--<xmpp:mina86@jabber.org>--ooO--(_)--Ooo--
+Any updates on this patch series ?
