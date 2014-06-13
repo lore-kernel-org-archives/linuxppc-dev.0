@@ -1,36 +1,21 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D930C1A0965
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 10:56:10 +1000 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Fri, 13 Jun 2014 10:56:08 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 907273578047
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 10:56:06 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5D0dxwR3866690
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 10:39:59 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5D0u6bb013946
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 10:56:06 +1000
-Message-ID: <1402620965.14780.104.camel@pasglop>
-Subject: Re: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 13 Jun 2014 10:56:05 +1000
-In-Reply-To: <1402620918.14780.102.camel@pasglop>
-References: <1402620918.14780.102.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <cl@gentwo.org>
+Received: from qmta05.emeryville.ca.mail.comcast.net
+ (qmta05.emeryville.ca.mail.comcast.net [76.96.30.48])
+ by lists.ozlabs.org (Postfix) with ESMTP id EF1931A0516
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 11:56:07 +1000 (EST)
+Date: Thu, 12 Jun 2014 20:56:00 -0500 (CDT)
+From: Christoph Lameter <cl@gentwo.org>
+To: David Laight <David.Laight@ACULAB.COM>
+Subject: RE: Kernel build issues after yesterdays merge by Linus
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1725BABB@AcuExch.aculab.com>
+Message-ID: <alpine.DEB.2.10.1406122055220.19271@gentwo.org>
+References: <alpine.DEB.2.10.1406111013580.8422@gentwo.org>
+ <20140612220912.3447677f@kryten>
+ <063D6719AE5E284EB5DD2968C1650D6D1725BABB@AcuExch.aculab.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ 'Anton Blanchard' <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,261 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-06-13 at 10:55 +1000, Benjamin Herrenschmidt wrote:
-> Hi Linus !
+Goobledieguy due to missing Mime header.
 
-Sending a copy via IBM just in case gmail has an issue with pull
-requests :-) If it goes through fine I'll stop doing it.
+On Thu, 12 Jun 2014, David Laight wrote:
 
-Cheers,
-Ben.
-
-> Here are the remaining bits I was mentioning earlier. Mostly bug fixes
-> and new selftests from Michael (yay !). He also removed the WSP platform
-> and A2 core support which were dead before release, so less clutter.
-> 
-> One little "feature" I snuck in is the doorbell IPI support for
-> non-virtualized P8 which speeds up IPIs significantly between threads
-> of a core.
-> 
-> Cheers,
-> Ben.
-> 
-> The following changes since commit dfb945473ae8528fd885607b6fa843c676745e0c:
-> 
->   Merge git://www.linux-watchdog.org/linux-watchdog (2014-06-10 19:16:36 -0700)
-> 
-> are available in the git repository at:
-> 
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
-> 
-> for you to fetch changes up to ad718622ab6d500c870772b1b8dda46fa2195e6d:
-> 
->   powerpc/book3s: Fix some ABIv2 issues in machine check code (2014-06-12 09:41:33 +1000)
-> 
-> ----------------------------------------------------------------
-> Anton Blanchard (4):
->       powernv: Fix permissions on sysparam sysfs entries
->       crypto/nx: disable NX on little endian builds
->       powerpc/powernv: Reduce panic timeout from 180s to 10s
->       powerpc/book3s: Fix some ABIv2 issues in machine check code
-> 
-> Benjamin Herrenschmidt (1):
->       powerpc: Add AT_HWCAP2 to indicate V.CRYPTO category support
-> 
-> Dan Carpenter (2):
->       powerpc/cpm: Remove duplicate FCC_GFMR_TTX define
->       powerpc/spufs: Remove duplicate SPUFS_CNTL_MAP_SIZE define
-> 
-> Gavin Shan (5):
->       powerpc/eeh: Clear frozen state for child PE
->       powerpc/eeh: Report frozen parent PE prior to child PE
->       powerpc/powernv: Don't escalate non-existing frozen PE
->       powerpc/powernv: Fix killed EEH event
->       powerpc/eeh: Dump PE location code
-> 
-> Guo Chao (1):
->       powerpc/powernv: Fix endianness problems in EEH
-> 
-> Joel Stanley (1):
->       powerpc/powernv: Fix reading of OPAL msglog
-> 
-> Kees Cook (1):
->       powerpc/xmon: avoid format string leaking to printk
-> 
-> Mahesh Salgaonkar (4):
->       powerpc/book3s: Fix machine check handling for unhandled errors
->       powerpc/book3s: Add stack overflow check in machine check handler.
->       powerpc/book3s: Increment the mce counter during machine_check_early call.
->       powerpc/book3s: Fix guest MC delivery mechanism to avoid soft lockups in guest.
-> 
-> Michael Ellerman (6):
->       powerpc: Remove platforms/wsp and associated pieces
->       powerpc/perf: Ensure all EBB register state is cleared on fork()
->       selftests/powerpc: Fix instruction loop for ABIv2 (LE)
->       selftests/powerpc: Put the test in a separate process group
->       selftests/powerpc: Add support for skipping tests
->       selftests/powerpc: Add tests of PMU EBBs
-> 
-> Michael Neuling (3):
->       powerpc: Don't setup CPUs with bad status
->       powerpc/cpuidle: Only clear LPCR decrementer wakeup bit on fast sleep entry
->       powerpc/powernv: Enable POWER8 doorbell IPIs
-> 
-> Paul Bolle (3):
->       powerpc: Remove check for CONFIG_SERIAL_TEXT_DEBUG
->       powerpc: fix typo 'CONFIG_PPC_CPU'
->       powerpc: fix typo 'CONFIG_PMAC'
-> 
-> Sam bobroff (1):
->       powerpc: Correct DSCR during TM context switch
-> 
-> Shreyas B. Prabhu (2):
->       powerpc/powernv: Include asm/smp.h to fix UP build failure
->       powerpc/powernv : Disable subcore for UP configs
-> 
->  arch/powerpc/Kconfig.debug                         |    5 -
->  arch/powerpc/configs/chroma_defconfig              |  307 ------
->  arch/powerpc/include/asm/cpm2.h                    |    1 -
->  arch/powerpc/include/asm/eeh.h                     |    1 +
->  arch/powerpc/include/asm/eeh_event.h               |    2 +-
->  arch/powerpc/include/asm/mmu-book3e.h              |    4 -
->  arch/powerpc/include/asm/opal.h                    |  102 +-
->  arch/powerpc/include/asm/reg_a2.h                  |    9 -
->  arch/powerpc/include/asm/switch_to.h               |    8 +-
->  arch/powerpc/include/asm/wsp.h                     |   14 -
->  arch/powerpc/include/uapi/asm/cputable.h           |    1 +
->  arch/powerpc/kernel/Makefile                       |    1 -
->  arch/powerpc/kernel/cpu_setup_a2.S                 |  120 ---
->  arch/powerpc/kernel/cpu_setup_power.S              |    2 +
->  arch/powerpc/kernel/cputable.c                     |   41 +-
->  arch/powerpc/kernel/eeh.c                          |   38 +-
->  arch/powerpc/kernel/eeh_driver.c                   |   24 +-
->  arch/powerpc/kernel/eeh_event.c                    |   21 +-
->  arch/powerpc/kernel/eeh_pe.c                       |   60 ++
->  arch/powerpc/kernel/entry_64.S                     |    6 -
->  arch/powerpc/kernel/exceptions-64e.S               |   16 -
->  arch/powerpc/kernel/exceptions-64s.S               |   64 +-
->  arch/powerpc/kernel/head_40x.S                     |   19 -
->  arch/powerpc/kernel/process.c                      |    8 +-
->  arch/powerpc/kernel/setup-common.c                 |    2 +-
->  arch/powerpc/kernel/time.c                         |    2 +-
->  arch/powerpc/kernel/traps.c                        |    2 +
->  arch/powerpc/kernel/udbg.c                         |    2 -
->  arch/powerpc/kernel/udbg_16550.c                   |   11 -
->  arch/powerpc/kvm/book3s_hv_ras.c                   |   15 +-
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   19 +-
->  arch/powerpc/lib/sstep.c                           |    2 +-
->  arch/powerpc/platforms/Kconfig                     |    1 -
->  arch/powerpc/platforms/Kconfig.cputype             |    6 +-
->  arch/powerpc/platforms/Makefile                    |    1 -
->  arch/powerpc/platforms/cell/spufs/spufs.h          |    1 -
->  arch/powerpc/platforms/powernv/Kconfig             |    1 +
->  arch/powerpc/platforms/powernv/Makefile            |    4 +-
->  arch/powerpc/platforms/powernv/eeh-ioda.c          |  109 +-
->  arch/powerpc/platforms/powernv/opal-msglog.c       |    6 +-
->  arch/powerpc/platforms/powernv/opal-sysparam.c     |    4 +-
->  arch/powerpc/platforms/powernv/pci.c               |   81 +-
->  arch/powerpc/platforms/powernv/setup.c             |    3 +
->  arch/powerpc/platforms/powernv/smp.c               |    6 +
->  arch/powerpc/platforms/pseries/Kconfig             |    1 +
->  arch/powerpc/platforms/wsp/Kconfig                 |   30 -
->  arch/powerpc/platforms/wsp/Makefile                |   10 -
->  arch/powerpc/platforms/wsp/chroma.c                |   56 -
->  arch/powerpc/platforms/wsp/h8.c                    |  135 ---
->  arch/powerpc/platforms/wsp/ics.c                   |  762 -------------
->  arch/powerpc/platforms/wsp/ics.h                   |   25 -
->  arch/powerpc/platforms/wsp/msi.c                   |  102 --
->  arch/powerpc/platforms/wsp/msi.h                   |   19 -
->  arch/powerpc/platforms/wsp/opb_pic.c               |  321 ------
->  arch/powerpc/platforms/wsp/psr2.c                  |   67 --
->  arch/powerpc/platforms/wsp/scom_smp.c              |  435 --------
->  arch/powerpc/platforms/wsp/scom_wsp.c              |   82 --
->  arch/powerpc/platforms/wsp/setup.c                 |   36 -
->  arch/powerpc/platforms/wsp/smp.c                   |   88 --
->  arch/powerpc/platforms/wsp/wsp.c                   |  117 --
->  arch/powerpc/platforms/wsp/wsp.h                   |   29 -
->  arch/powerpc/platforms/wsp/wsp_pci.c               | 1134 --------------------
->  arch/powerpc/platforms/wsp/wsp_pci.h               |  268 -----
->  arch/powerpc/sysdev/xics/icp-native.c              |    9 +-
->  arch/powerpc/xmon/nonstdio.c                       |    2 +-
->  drivers/cpuidle/cpuidle-powernv.c                  |    8 +-
->  drivers/crypto/Kconfig                             |    2 +-
->  tools/testing/selftests/powerpc/Makefile           |    2 +-
->  tools/testing/selftests/powerpc/harness.c          |   15 +-
->  tools/testing/selftests/powerpc/pmu/Makefile       |   26 +-
->  tools/testing/selftests/powerpc/pmu/ebb/Makefile   |   32 +
->  .../powerpc/pmu/ebb/back_to_back_ebbs_test.c       |  106 ++
->  .../powerpc/pmu/ebb/close_clears_pmcc_test.c       |   59 +
->  .../powerpc/pmu/ebb/cpu_event_pinned_vs_ebb_test.c |   93 ++
->  .../powerpc/pmu/ebb/cpu_event_vs_ebb_test.c        |   89 ++
->  .../selftests/powerpc/pmu/ebb/cycles_test.c        |   58 +
->  .../powerpc/pmu/ebb/cycles_with_freeze_test.c      |  117 ++
->  tools/testing/selftests/powerpc/pmu/ebb/ebb.c      |  727 +++++++++++++
->  tools/testing/selftests/powerpc/pmu/ebb/ebb.h      |   78 ++
->  .../selftests/powerpc/pmu/ebb/ebb_handler.S        |  365 +++++++
->  .../selftests/powerpc/pmu/ebb/ebb_on_child_test.c  |   86 ++
->  .../powerpc/pmu/ebb/ebb_on_willing_child_test.c    |   92 ++
->  .../powerpc/pmu/ebb/ebb_vs_cpu_event_test.c        |   86 ++
->  .../powerpc/pmu/ebb/event_attributes_test.c        |  131 +++
->  .../powerpc/pmu/ebb/fixed_instruction_loop.S       |   43 +
->  .../selftests/powerpc/pmu/ebb/fork_cleanup_test.c  |   79 ++
->  .../powerpc/pmu/ebb/instruction_count_test.c       |  164 +++
->  .../powerpc/pmu/ebb/lost_exception_test.c          |  100 ++
->  .../selftests/powerpc/pmu/ebb/multi_counter_test.c |   91 ++
->  .../powerpc/pmu/ebb/multi_ebb_procs_test.c         |  109 ++
->  .../selftests/powerpc/pmu/ebb/no_handler_test.c    |   61 ++
->  .../selftests/powerpc/pmu/ebb/pmae_handling_test.c |  106 ++
->  .../powerpc/pmu/ebb/pmc56_overflow_test.c          |   93 ++
->  tools/testing/selftests/powerpc/pmu/ebb/reg.h      |   49 +
->  .../selftests/powerpc/pmu/ebb/reg_access_test.c    |   39 +
->  .../pmu/ebb/task_event_pinned_vs_ebb_test.c        |   91 ++
->  .../powerpc/pmu/ebb/task_event_vs_ebb_test.c       |   83 ++
->  tools/testing/selftests/powerpc/pmu/ebb/trace.c    |  300 ++++++
->  tools/testing/selftests/powerpc/pmu/ebb/trace.h    |   41 +
->  tools/testing/selftests/powerpc/pmu/event.c        |   26 +
->  tools/testing/selftests/powerpc/pmu/event.h        |    4 +
->  tools/testing/selftests/powerpc/pmu/lib.c          |  252 +++++
->  tools/testing/selftests/powerpc/pmu/lib.h          |   41 +
->  tools/testing/selftests/powerpc/pmu/loop.S         |   73 +-
->  tools/testing/selftests/powerpc/subunit.h          |    5 +
->  tools/testing/selftests/powerpc/tm/Makefile        |   15 +
->  .../testing/selftests/powerpc/tm/tm-resched-dscr.c |   90 ++
->  tools/testing/selftests/powerpc/utils.h            |   12 +
->  108 files changed, 4514 insertions(+), 4505 deletions(-)
->  delete mode 100644 arch/powerpc/configs/chroma_defconfig
->  delete mode 100644 arch/powerpc/include/asm/wsp.h
->  delete mode 100644 arch/powerpc/kernel/cpu_setup_a2.S
->  delete mode 100644 arch/powerpc/platforms/wsp/Kconfig
->  delete mode 100644 arch/powerpc/platforms/wsp/Makefile
->  delete mode 100644 arch/powerpc/platforms/wsp/chroma.c
->  delete mode 100644 arch/powerpc/platforms/wsp/h8.c
->  delete mode 100644 arch/powerpc/platforms/wsp/ics.c
->  delete mode 100644 arch/powerpc/platforms/wsp/ics.h
->  delete mode 100644 arch/powerpc/platforms/wsp/msi.c
->  delete mode 100644 arch/powerpc/platforms/wsp/msi.h
->  delete mode 100644 arch/powerpc/platforms/wsp/opb_pic.c
->  delete mode 100644 arch/powerpc/platforms/wsp/psr2.c
->  delete mode 100644 arch/powerpc/platforms/wsp/scom_smp.c
->  delete mode 100644 arch/powerpc/platforms/wsp/scom_wsp.c
->  delete mode 100644 arch/powerpc/platforms/wsp/setup.c
->  delete mode 100644 arch/powerpc/platforms/wsp/smp.c
->  delete mode 100644 arch/powerpc/platforms/wsp/wsp.c
->  delete mode 100644 arch/powerpc/platforms/wsp/wsp.h
->  delete mode 100644 arch/powerpc/platforms/wsp/wsp_pci.c
->  delete mode 100644 arch/powerpc/platforms/wsp/wsp_pci.h
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/Makefile
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/back_to_back_ebbs_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/close_clears_pmcc_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/cpu_event_pinned_vs_ebb_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/cpu_event_vs_ebb_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/cycles_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/cycles_with_freeze_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb.h
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_handler.S
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_on_child_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_on_willing_child_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/ebb_vs_cpu_event_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/event_attributes_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/fixed_instruction_loop.S
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/fork_cleanup_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/instruction_count_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/lost_exception_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/multi_counter_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/multi_ebb_procs_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/no_handler_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/pmae_handling_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/pmc56_overflow_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/reg.h
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/reg_access_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/task_event_pinned_vs_ebb_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/task_event_vs_ebb_test.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/trace.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/ebb/trace.h
->  create mode 100644 tools/testing/selftests/powerpc/pmu/lib.c
->  create mode 100644 tools/testing/selftests/powerpc/pmu/lib.h
->  create mode 100644 tools/testing/selftests/powerpc/tm/Makefile
->  create mode 100644 tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
-> 
+> RnJvbTogQW50b24gQmxhbmNoYXJkDQouLi4NCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9i
+> b290L2luc3RhbGwuc2ggYi9hcmNoL3Bvd2VycGMvYm9vdC9pbnN0YWxsLnNoDQo+IGluZGV4IGI2
+> YTI1NmIuLmUwOTZlNWEgMTAwNjQ0DQo+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2luc3RhbGwu
+> c2gNCj4gKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvaW5zdGFsbC5zaA0KPiBAQCAtMjMsOCArMjMs
+> OCBAQCBzZXQgLWUNCj4gDQo+ICAjIFVzZXIgbWF5IGhhdmUgYSBjdXN0b20gaW5zdGFsbCBzY3Jp
+> cHQNCj4gDQo+IC1pZiBbIC14IH4vYmluLyR7SU5TVEFMTEtFUk5FTH0gXTsgdGhlbiBleGVjIH4v
+> YmluLyR7SU5TVEFMTEtFUk5FTH0gIiRAIjsgZmkNCj4gLWlmIFsgLXggL3NiaW4vJHtJTlNUQUxM
+> S0VSTkVMfSBdOyB0aGVuIGV4ZWMgL3NiaW4vJHtJTlNUQUxMS0VSTkVMfSAiJEAiOyBmaQ0KPiAr
+> aWYgWyAteCB+L2Jpbi8ke0lOU1RBTExLRVJORUx9IF07IHRoZW4gZXhlYyB+L2Jpbi8ke0lOU1RB
+> TExLRVJORUx9ICQxICQyICQzICQ0OyBmaQ0KPiAraWYgWyAteCAvc2Jpbi8ke0lOU1RBTExLRVJO
+> RUx9IF07IHRoZW4gZXhlYyAvc2Jpbi8ke0lOU1RBTExLRVJORUx9ICQxICQyICQzICQ0OyBmaQ0K
+> DQpZb3UgcHJvYmFibHkgd2FudCB0byBlbmNsb3NlIHRoZSAkMSBpbiAiIGFzOg0KDQo+ICtpZiBb
+> IC14IC9zYmluLyR7SU5TVEFMTEtFUk5FTH0gXTsgdGhlbiBleGVjIC9zYmluLyR7SU5TVEFMTEtF
+> Uk5FTH0gIiQxIiAiJDIiICIkMyIgIiQ0IjsgZmkNCg0KCURhdmlkDQoNCg==
+>
