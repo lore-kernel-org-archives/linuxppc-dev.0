@@ -1,27 +1,26 @@
-Return-Path: <catalin.marinas@arm.com>
-Received: from collaborate-mta1.arm.com (fw-tnat.austin.arm.com
- [217.140.110.23])
- by lists.ozlabs.org (Postfix) with ESMTP id AFA1F1A0561
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 19:05:51 +1000 (EST)
-Date: Fri, 13 Jun 2014 09:56:40 +0100
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Subject: Re: kmemleak: Unable to handle kernel paging request
-Message-ID: <20140613085640.GA21018@arm.com>
-References: <CAOJe8K3fy3XFxDdVc3y1hiMAqUCPmkUhECU7j5TT=E=gxwBqHg@mail.gmail.com>
- <20140611173851.GA5556@MacBook-Pro.local>
- <CAOJe8K1TgTDX5=LdE9r6c0ami7TRa7zr0hL_uu6YpiWrsePAgQ@mail.gmail.com>
- <B01EB0A1-992B-49F4-93AE-71E4BA707795@arm.com>
- <CAOJe8K3LDhhPWbtdaWt23mY+2vnw5p05+eyk2D8fovOxC10cgA@mail.gmail.com>
- <CAOJe8K2WaJUP9_buwgKw89fxGe56mGP1Mn8rDUO9W48KZzmybA@mail.gmail.com>
- <20140612143916.GB8970@arm.com>
- <CAOJe8K3zN+fFWumKaGx3Tmv5JRZu10_FZ6R3Tjjc+nc-KVB0hg@mail.gmail.com>
+Return-Path: <guangyu.chen@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C40471A0565
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 19:31:57 +1000 (EST)
+Date: Fri, 13 Jun 2014 16:56:03 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [alsa-devel] [RFC][PATCH v1] ASoC: fsl_ssi: Add DAI master mode
+ support for SSI on i.MX series
+Message-ID: <20140613085602.GA16026@MrMyself>
+References: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
+ <CAOZdJXWsxMq19-wNTKv6d45K4d79ASpMbSbofM+DMoTOKW2JJA@mail.gmail.com>
+ <s5hioo5gp66.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <CAOJe8K3zN+fFWumKaGx3Tmv5JRZu10_FZ6R3Tjjc+nc-KVB0hg@mail.gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <s5hioo5gp66.wl%tiwai@suse.de>
+Cc: alsa-devel
+ mailing list <alsa-devel@alsa-project.org>, Mark Brown <broonie@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Timur Tabi <timur@tabi.org>, Liam Girdwood <lgirdwood@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,108 +30,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 13, 2014 at 08:12:08AM +0100, Denis Kirjanov wrote:
-> On 6/12/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > On Thu, Jun 12, 2014 at 01:00:57PM +0100, Denis Kirjanov wrote:
-> >> On 6/12/14, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> >> > On 6/12/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> >> >> On 11 Jun 2014, at 21:04, Denis Kirjanov <kda@linux-powerpc.org>
-> >> >> wrote:
-> >> >>> On 6/11/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> >> >>>> On Wed, Jun 11, 2014 at 04:13:07PM +0400, Denis Kirjanov wrote:
-> >> >>>>> I got a trace while running 3.15.0-08556-gdfb9454:
-> >> >>>>>
-> >> >>>>> [  104.534026] Unable to handle kernel paging request for data at
-> >> >>>>> address 0xc00000007f000000
-> >> >>>>
-> >> >>>> Were there any kmemleak messages prior to this, like "kmemleak
-> >> >>>> disabled"? There could be a race when kmemleak is disabled because
-> >> >>>> of
-> >> >>>> some fatal (for kmemleak) error while the scanning is taking place
-> >> >>>> (which needs some more thinking to fix properly).
-> >> >>>
-> >> >>> No. I checked for the similar problem and didn't find anything
-> >> >>> relevant.
-> >> >>> I'll try to bisect it.
-> >> >>
-> >> >> Does this happen soon after boot? I guess it’s the first scan
-> >> >> (scheduled at around 1min after boot). Something seems to be telling
-> >> >> kmemleak that there is a valid memory block at 0xc00000007f000000.
-> >> >
-> >> > Yeah, it happens after a while with a booted system so that's the
-> >> > first kmemleak scan.
-> >>
-> >> I've bisected to this commit: d4c54919ed86302094c0ca7d48a8cbd4ee753e92
-> >> "mm: add !pte_present() check on existing hugetlb_entry callbacks".
-> >> Reverting the commit fixes the issue
-> >
-> > I can't figure how this causes the problem but I have more questions. Is
-> > 0xc00000007f000000 address always the same in all crashes? If yes, you
-> > could comment out start_scan_thread() in kmemleak_late_init() to avoid
-> > the scanning thread starting. Once booted, you can run:
-> >
-> >   echo dump=0xc00000007f000000 > /sys/kernel/debug/kmemleak
-> >
-> > and check the dmesg for what kmemleak knows about that address, when it
-> > was allocated and whether it should be mapped or not.
+On Fri, Jun 13, 2014 at 11:00:01AM +0200, Takashi Iwai wrote:
+> At Thu, 12 Jun 2014 22:24:55 -0500,
+> Timur Tabi wrote:
+> > 
+> > On Thu, Dec 12, 2013 at 4:44 AM, Nicolin Chen
+> > <Guangyu.Chen@freescale.com> wrote:
+> > >
+> > > +static int fsl_ssi_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
+> > > +                                 int clk_id, unsigned int freq, int dir)
+> > > +{
+> > > +       struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
+> > > +       struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
+> > > +       int synchronous = ssi_private->cpu_dai_drv.symmetric_rates, ret;
+> > > +       u32 pm = 999, div2, psr, stccr, mask, afreq, factor, i;
+> > > +       unsigned long flags, clkrate, baudrate, tmprate;
+> > > +       u64 sub, savesub = 100000;
+> > > +
+> > > +       /* Don't apply it to any non-baudclk circumstance */
+> > > +       if (IS_ERR(ssi_private->baudclk))
+> > > +               return -EINVAL;
+> > > +
+> > > +       /* It should be already enough to divide clock by setting pm alone */
+> > > +       psr = 0;
+> > > +       div2 = 0;
+> > > +
+> > > +       factor = (div2 + 1) * (7 * psr + 1) * 2;
+> > > +
+> > > +       for (i = 0; i < 255; i++) {
+> > > +               /* The bclk rate must be smaller than 1/5 sysclk rate */
+> > > +               if (factor * (i + 1) < 5)
+> > > +                       continue;
+> > > +
+> > > +               tmprate = freq * factor * (i + 2);
+> > > +               clkrate = clk_round_rate(ssi_private->baudclk, tmprate);
+> > > +
+> > > +               do_div(clkrate, factor);
+> > 
+> > This do_div() call causes this warning on PowerPC:
+> > 
+> >   CC      sound/soc/fsl/fsl_ssi.o
+> > sound/soc/fsl/fsl_ssi.c: In function 'fsl_ssi_set_bclk':
+> > sound/soc/fsl/fsl_ssi.c:593:3: warning: comparison of distinct pointer
+> > types lacks a cast
+> > sound/soc/fsl/fsl_ssi.c:593:3: warning: right shift count >= width of type
+> > sound/soc/fsl/fsl_ssi.c:593:3: warning: passing argument 1 of
+> > '__div64_32' from incompatible pointer type
+> > include/asm-generic/div64.h:35:17: note: expected 'uint64_t *' but
+> > argument is of type 'long unsigned int *'
+> > 
+> > The comments in do_div() say that clkrate should be 64-bits.  Changing
+> > clkrate to a u64 does fix this problem, but I'm wondering if anyone
+> > else has seen this.  This code has been around for months.
 > 
-> The address is always the same.
+> Using do_div() for unsigned long makes no sense.
+> And, you *must* pass uint64_t there as an argument, since it's no
+> inline function and there is no implicit conversion in the generic
+> code.
 > 
-> [  179.466239] kmemleak: Object 0xc00000007f000000 (size 16777216):
-> [  179.466503] kmemleak:   comm "swapper/0", pid 0, jiffies 4294892300
-> [  179.466508] kmemleak:   min_count = 0
-> [  179.466512] kmemleak:   count = 0
-> [  179.466517] kmemleak:   flags = 0x1
-> [  179.466522] kmemleak:   checksum = 0
-> [  179.466526] kmemleak:   backtrace:
-> [  179.466531]      [<c000000000afc3dc>] .memblock_alloc_range_nid+0x68/0x88
-> [  179.466544]      [<c000000000afc444>] .memblock_alloc_base+0x20/0x58
-> [  179.466553]      [<c000000000ae96cc>] .alloc_dart_table+0x5c/0xb0
-> [  179.466561]      [<c000000000aea300>] .pmac_probe+0x38/0xa0
-> [  179.466569]      [<000000000002166c>] 0x2166c
-> [  179.466579]      [<0000000000ae0e68>] 0xae0e68
-> [  179.466587]      [<0000000000009bc4>] 0x9bc4
+> In short, use the normal division operator instead:
+> 	clkrate /= factor;
 
-OK, so that's the DART table allocated via alloc_dart_table(). Is
-dart_tablebase removed from the kernel linear mapping after allocation?
-If that's the case, we need to tell kmemleak to ignore this block (see
-patch below, untested). But I still can't explain how commit
-d4c54919ed863020 causes this issue.
+Yes. I forgot why I used do_div() for clkrate at the first place
+but it's definitely a mistake here.
 
-(also cc'ing the powerpc list and maintainers)
+Sorry,
+Nicolin
 
----------------8<--------------------------
-
->From 09a7f1c97166c7bdca7ca4e8a4ff2774f3706ea3 Mon Sep 17 00:00:00 2001
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 13 Jun 2014 09:44:21 +0100
-Subject: [PATCH] powerpc/kmemleak: Do not scan the DART table
-
-The DART table allocation is registered to kmemleak via the
-memblock_alloc_base() call. However, the DART table is later unmapped
-and dart_tablebase VA no longer accessible. This patch tells kmemleak
-not to scan this block and avoid an unhandled paging request.
-
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/sysdev/dart_iommu.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 62c47bb76517..9e5353ff6d1b 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -476,6 +476,11 @@ void __init alloc_dart_table(void)
- 	 */
- 	dart_tablebase = (unsigned long)
- 		__va(memblock_alloc_base(1UL<<24, 1UL<<24, 0x80000000L));
-+	/*
-+	 * The DART space is later unmapped from the kernel linear mapping and
-+	 * accessing dart_tablebase during kmemleak scanning will fault.
-+	 */
-+	kmemleak_no_scan((void *)dart_tablebase);
- 
- 	printk(KERN_INFO "DART table allocated at: %lx\n", dart_tablebase);
- }
+> 
+> 
+> Takashi
