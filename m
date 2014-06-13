@@ -1,32 +1,21 @@
-Return-Path: <kda@linux-powerpc.org>
-Received: from mail-ob0-f169.google.com (mail-ob0-f169.google.com
- [209.85.214.169])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <pannir@xsmail.com>
+Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
+ [66.111.4.26])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 26EA21A055F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 20:26:40 +1000 (EST)
-Received: by mail-ob0-f169.google.com with SMTP id wp18so2683952obc.14
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 03:26:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D583F1A0401
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 20:35:01 +1000 (EST)
+Message-Id: <1402655698.25732.128363405.372AD838@webmail.messagingengine.com>
+From: Pannirselvam Kanagaratnam <pannir@xsmail.com>
+To: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20140613085640.GA21018@arm.com>
-References: <CAOJe8K3fy3XFxDdVc3y1hiMAqUCPmkUhECU7j5TT=E=gxwBqHg@mail.gmail.com>
- <20140611173851.GA5556@MacBook-Pro.local>
- <CAOJe8K1TgTDX5=LdE9r6c0ami7TRa7zr0hL_uu6YpiWrsePAgQ@mail.gmail.com>
- <B01EB0A1-992B-49F4-93AE-71E4BA707795@arm.com>
- <CAOJe8K3LDhhPWbtdaWt23mY+2vnw5p05+eyk2D8fovOxC10cgA@mail.gmail.com>
- <CAOJe8K2WaJUP9_buwgKw89fxGe56mGP1Mn8rDUO9W48KZzmybA@mail.gmail.com>
- <20140612143916.GB8970@arm.com>
- <CAOJe8K3zN+fFWumKaGx3Tmv5JRZu10_FZ6R3Tjjc+nc-KVB0hg@mail.gmail.com>
- <20140613085640.GA21018@arm.com>
-Date: Fri, 13 Jun 2014 14:26:36 +0400
-Message-ID: <CAOJe8K1VJ5RFWSB9i4PMdYq5X2vEgv0opGwU39ZRhYdfwj-kPw@mail.gmail.com>
-Subject: Re: kmemleak: Unable to handle kernel paging request
-From: Denis Kirjanov <kda@linux-powerpc.org>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Subject: Re: Device Tree Binding for DSA on P1023RDB
+Date: Fri, 13 Jun 2014 18:34:58 +0800
+In-Reply-To: <1402608088.6603.549.camel@snotra.buserror.net>
+References: <5399C8F2.8060108@xsmail.com>
+ <1402608088.6603.549.camel@snotra.buserror.net>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,125 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 6/13/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
-> On Fri, Jun 13, 2014 at 08:12:08AM +0100, Denis Kirjanov wrote:
->> On 6/12/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
->> > On Thu, Jun 12, 2014 at 01:00:57PM +0100, Denis Kirjanov wrote:
->> >> On 6/12/14, Denis Kirjanov <kda@linux-powerpc.org> wrote:
->> >> > On 6/12/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
->> >> >> On 11 Jun 2014, at 21:04, Denis Kirjanov <kda@linux-powerpc.org>
->> >> >> wrote:
->> >> >>> On 6/11/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
->> >> >>>> On Wed, Jun 11, 2014 at 04:13:07PM +0400, Denis Kirjanov wrote:
->> >> >>>>> I got a trace while running 3.15.0-08556-gdfb9454:
->> >> >>>>>
->> >> >>>>> [  104.534026] Unable to handle kernel paging request for data
->> >> >>>>> at
->> >> >>>>> address 0xc00000007f000000
->> >> >>>>
->> >> >>>> Were there any kmemleak messages prior to this, like "kmemleak
->> >> >>>> disabled"? There could be a race when kmemleak is disabled
->> >> >>>> because
->> >> >>>> of
->> >> >>>> some fatal (for kmemleak) error while the scanning is taking
->> >> >>>> place
->> >> >>>> (which needs some more thinking to fix properly).
->> >> >>>
->> >> >>> No. I checked for the similar problem and didn't find anything
->> >> >>> relevant.
->> >> >>> I'll try to bisect it.
->> >> >>
->> >> >> Does this happen soon after boot? I guess it=E2=80=99s the first s=
-can
->> >> >> (scheduled at around 1min after boot). Something seems to be
->> >> >> telling
->> >> >> kmemleak that there is a valid memory block at 0xc00000007f000000.
->> >> >
->> >> > Yeah, it happens after a while with a booted system so that's the
->> >> > first kmemleak scan.
->> >>
->> >> I've bisected to this commit: d4c54919ed86302094c0ca7d48a8cbd4ee753e9=
-2
->> >> "mm: add !pte_present() check on existing hugetlb_entry callbacks".
->> >> Reverting the commit fixes the issue
->> >
->> > I can't figure how this causes the problem but I have more questions.
->> > Is
->> > 0xc00000007f000000 address always the same in all crashes? If yes, you
->> > could comment out start_scan_thread() in kmemleak_late_init() to avoid
->> > the scanning thread starting. Once booted, you can run:
->> >
->> >   echo dump=3D0xc00000007f000000 > /sys/kernel/debug/kmemleak
->> >
->> > and check the dmesg for what kmemleak knows about that address, when i=
-t
->> > was allocated and whether it should be mapped or not.
->>
->> The address is always the same.
->>
->> [  179.466239] kmemleak: Object 0xc00000007f000000 (size 16777216):
->> [  179.466503] kmemleak:   comm "swapper/0", pid 0, jiffies 4294892300
->> [  179.466508] kmemleak:   min_count =3D 0
->> [  179.466512] kmemleak:   count =3D 0
->> [  179.466517] kmemleak:   flags =3D 0x1
->> [  179.466522] kmemleak:   checksum =3D 0
->> [  179.466526] kmemleak:   backtrace:
->> [  179.466531]      [<c000000000afc3dc>]
->> .memblock_alloc_range_nid+0x68/0x88
->> [  179.466544]      [<c000000000afc444>] .memblock_alloc_base+0x20/0x58
->> [  179.466553]      [<c000000000ae96cc>] .alloc_dart_table+0x5c/0xb0
->> [  179.466561]      [<c000000000aea300>] .pmac_probe+0x38/0xa0
->> [  179.466569]      [<000000000002166c>] 0x2166c
->> [  179.466579]      [<0000000000ae0e68>] 0xae0e68
->> [  179.466587]      [<0000000000009bc4>] 0x9bc4
->
-> OK, so that's the DART table allocated via alloc_dart_table(). Is
-> dart_tablebase removed from the kernel linear mapping after allocation?
-> If that's the case, we need to tell kmemleak to ignore this block (see
-> patch below, untested). But I still can't explain how commit
-> d4c54919ed863020 causes this issue.
->
-> (also cc'ing the powerpc list and maintainers)
 
-Ok, your path fixes the oops.
 
-Ben, can you shed some light on this issue?
+On Fri, Jun 13, 2014, at 05:21 AM, Scott Wood wrote:
+> On Thu, 2014-06-12 at 23:36 +0800, Pannirselvam Kanagaratnam wrote:
+> > The QORIQ P1023RDB has an option to populate the Marvell 88E6165
+> > Ethernet switch. We populated this device and was able to initialize
+> > it as a basic switch in U-Boot. However, the switch driver was not
+> > loaded upon kernel bootup. DSA kernel config was enabled for the
+> > 88E6165. The following patch was applied:
+> > 
+> > 
+> > http://patchwork.ozlabs.org/patch/230257/
+> > 
+> > 
+> > The switch is attached to phy address 0x3 via dtsec2. My dts file is
+> > as below. Would appreciate any feedback on whether the DSA is
+> > correctly structured in the dts.
+> 
+> If you have a dtsec driver you're not working with an upstream kernel
+> (or you've ported a lot of SDK code to it)...  What tree are you working
+> with?  Are there prerequisites to the above patch that you might be
+> missing?
+> 
 
-Thanks!
-> ---------------8<--------------------------
->
-> From 09a7f1c97166c7bdca7ca4e8a4ff2774f3706ea3 Mon Sep 17 00:00:00 2001
-> From: Catalin Marinas <catalin.marinas@arm.com>
-> Date: Fri, 13 Jun 2014 09:44:21 +0100
-> Subject: [PATCH] powerpc/kmemleak: Do not scan the DART table
->
-> The DART table allocation is registered to kmemleak via the
-> memblock_alloc_base() call. However, the DART table is later unmapped
-> and dart_tablebase VA no longer accessible. This patch tells kmemleak
-> not to scan this block and avoid an unhandled paging request.
->
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> ---
->  arch/powerpc/sysdev/dart_iommu.c | 5 +++++
->  1 file changed, 5 insertions(+)
->
-> diff --git a/arch/powerpc/sysdev/dart_iommu.c
-> b/arch/powerpc/sysdev/dart_iommu.c
-> index 62c47bb76517..9e5353ff6d1b 100644
-> --- a/arch/powerpc/sysdev/dart_iommu.c
-> +++ b/arch/powerpc/sysdev/dart_iommu.c
-> @@ -476,6 +476,11 @@ void __init alloc_dart_table(void)
->  	 */
->  	dart_tablebase =3D (unsigned long)
->  		__va(memblock_alloc_base(1UL<<24, 1UL<<24, 0x80000000L));
-> +	/*
-> +	 * The DART space is later unmapped from the kernel linear mapping and
-> +	 * accessing dart_tablebase during kmemleak scanning will fault.
-> +	 */
-> +	kmemleak_no_scan((void *)dart_tablebase);
->
->  	printk(KERN_INFO "DART table allocated at: %lx\n", dart_tablebase);
->  }
->
+I am using QorIQ-SDK-V1.5-20131219-yocto (3.8-r11.1). Not sure if I am
+missing
+any prerequisites. 
+
+> The above patch is a platform driver and you put the node in the
+> toplevel device tree node.  Have you added marvell,dsa to the list of
+> compatible strings that get probed (of_device_ids in corenet_generic.c
+> or an equivalent list in your SDK kernel)?
+> > 
+
+I was missing this. I added it in arch/powerpc/platforms/85xx/common.c
+
+After adding the above, the driver is now attempting to probe. However,
+I got the following message:
+
+Distributed Switch Architecture driver version 0.1
+dsa: probe of dsa.16 failed with error -22
+
+I dumped the mdio, mdio_bus and ethernet parameters:
+
+1) For mdio = of_parse_phandle(np, "dsa,mii-bus", 0); I get the
+following:
+np-name: dsa
+mdio-name: mdio
+mdio-type: <NULL>
+mdio-full-name: /soc@ff600000/fman@100000/mdio@e1120 
+
+2) mdio_bus = of_mdio_find_bus(mdio);
+mdio_bus_name: Freescale PowerQUICC MII Bus
+mdio_bus_id: mdio@ff7e1120
+
+3) ethernet = of_parse_phandle(np, "dsa,ethernet", 0);
+ethernet-name: ethernet
+ethernet-type: <NULL>
+ethernet-full-name: /soc@ff600000/fman@100000/ethernet@e2000
+
+Anything amiss here?
+
+> >     dsa@0 {
+> >             compatible = "marvell,dsa";
+> >             #address-cells = <2>;
+> >             #size-cells = <0>;
+> > 
+> >             interrupts = <3>;
+> 
+> This interrupts property needs to be four cells rather than one, if MPIC
+> is the parent -- assuming you have #interrupt-cells = <4> and not some
+> old device tree with #interrupt-cells = <2>, but in any case you need
+> more than one cell.
+> 
+
+The interrupt is an optional entry and not supported by the driver. I
+have omitted it for now.
+
+Pannir
