@@ -1,27 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A6391A0457
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 05:42:56 +1000 (EST)
-Message-ID: <1402688561.6603.583.camel@snotra.buserror.net>
-Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition on
- vcpu schedule
-From: Scott Wood <scottwood@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Date: Fri, 13 Jun 2014 14:42:41 -0500
-In-Reply-To: <539B10DF.6070509@suse.de>
-References: <1402581610-16585-1-git-send-email-mihai.caraman@freescale.com>
- <5399DDA8.5060404@suse.de>
- <306b1e4daa2f4441aaef7c7383b484fc@BY2PR03MB508.namprd03.prod.outlook.com>
- <539B10DF.6070509@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C4EB1A0080
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 07:44:47 +1000 (EST)
+Message-ID: <1402695853.20360.17.camel@pasglop>
+Subject: Re: kmemleak: Unable to handle kernel paging request
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Date: Sat, 14 Jun 2014 07:44:13 +1000
+In-Reply-To: <20140613085640.GA21018@arm.com>
+References: <CAOJe8K3fy3XFxDdVc3y1hiMAqUCPmkUhECU7j5TT=E=gxwBqHg@mail.gmail.com>
+ <20140611173851.GA5556@MacBook-Pro.local>
+ <CAOJe8K1TgTDX5=LdE9r6c0ami7TRa7zr0hL_uu6YpiWrsePAgQ@mail.gmail.com>
+ <B01EB0A1-992B-49F4-93AE-71E4BA707795@arm.com>
+ <CAOJe8K3LDhhPWbtdaWt23mY+2vnw5p05+eyk2D8fovOxC10cgA@mail.gmail.com>
+ <CAOJe8K2WaJUP9_buwgKw89fxGe56mGP1Mn8rDUO9W48KZzmybA@mail.gmail.com>
+ <20140612143916.GB8970@arm.com>
+ <CAOJe8K3zN+fFWumKaGx3Tmv5JRZu10_FZ6R3Tjjc+nc-KVB0hg@mail.gmail.com>
+ <20140613085640.GA21018@arm.com>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Mime-Version: 1.0
+Cc: Denis Kirjanov <kda@linux-powerpc.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,48 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2014-06-13 at 16:55 +0200, Alexander Graf wrote:
-> On 13.06.14 16:43, mihai.caraman@freescale.com wrote:
-> >> -----Original Message-----
-> >> From: Alexander Graf [mailto:agraf@suse.de]
-> >> Sent: Thursday, June 12, 2014 8:05 PM
-> >> To: Caraman Mihai Claudiu-B02008
-> >> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> >> dev@lists.ozlabs.org; Wood Scott-B07421
-> >> Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition
-> >> on vcpu schedule
-> >>
-> >> On 06/12/2014 04:00 PM, Mihai Caraman wrote:
-> >>> On vcpu schedule, the condition checked for tlb pollution is too tight.
-> >>> The tlb entries of one vcpu are polluted when a different vcpu from the
-> >>> same partition runs in-between. Relax the current tlb invalidation
-> >>> condition taking into account the lpid.
+On Fri, 2014-06-13 at 09:56 +0100, Catalin Marinas wrote:
 
-Can you quantify the performance improvement from this?  We've had bugs
-in this area before, so let's make sure it's worth it before making this
-more complicated.
+> OK, so that's the DART table allocated via alloc_dart_table(). Is
+> dart_tablebase removed from the kernel linear mapping after allocation?
 
-> >>> Signed-off-by: Mihai Caraman <mihai.caraman <at> freescale.com>
-> >> Your mailer is broken? :)
-> >> This really should be an @.
-> >>
-> >> I think this should work. Scott, please ack.
-> > Alex, you were right. I screwed up the patch description by inverting relax
-> > and tight terms :) It should have been more like this:
-> >
-> > KVM: PPC: e500mc: Enhance tlb invalidation condition on vcpu schedule
-> >
-> > On vcpu schedule, the condition checked for tlb pollution is too loose.
-> > The tlb entries of a vcpu are polluted (vs stale) only when a different vcpu
-> > within the same logical partition runs in-between. Optimize the tlb invalidation
-> > condition taking into account the lpid.
+Yes.
+
+> If that's the case, we need to tell kmemleak to ignore this block (see
+> patch below, untested). But I still can't explain how commit
+> d4c54919ed863020 causes this issue.
 > 
-> Can't we give every vcpu its own lpid? Or don't we trap on global 
-> invalidates?
+> (also cc'ing the powerpc list and maintainers)
 
-That would significantly increase the odds of exhausting LPIDs,
-especially on large chips like t4240 with similarly large VMs.  If we
-were to do that, the LPIDs would need to be dynamically assigned (like
-PIDs), and should probably be a separate numberspace per physical core.
+We remove the DART from the linear mapping because it has to be mapped
+non-cachable and having it in the linear mapping would cause cache
+paradoxes. We also can't just change the caching attributes in the
+linear mapping because we use 16M pages for it and 970 CPUs don't
+support cache-inhibited 16M pages :-( And due to the MMU segmentation
+model, we also can't mix & match page sizes in that area.
 
--Scott
+So we just unmap it, and ioremap it elsewhere.
+
+Cheers,
+Ben.
+
+> ---------------8<--------------------------
+> 
+> >From 09a7f1c97166c7bdca7ca4e8a4ff2774f3706ea3 Mon Sep 17 00:00:00 2001
+> From: Catalin Marinas <catalin.marinas@arm.com>
+> Date: Fri, 13 Jun 2014 09:44:21 +0100
+> Subject: [PATCH] powerpc/kmemleak: Do not scan the DART table
+> 
+> The DART table allocation is registered to kmemleak via the
+> memblock_alloc_base() call. However, the DART table is later unmapped
+> and dart_tablebase VA no longer accessible. This patch tells kmemleak
+> not to scan this block and avoid an unhandled paging request.
+> 
+> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> ---
+>  arch/powerpc/sysdev/dart_iommu.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
+> index 62c47bb76517..9e5353ff6d1b 100644
+> --- a/arch/powerpc/sysdev/dart_iommu.c
+> +++ b/arch/powerpc/sysdev/dart_iommu.c
+> @@ -476,6 +476,11 @@ void __init alloc_dart_table(void)
+>  	 */
+>  	dart_tablebase = (unsigned long)
+>  		__va(memblock_alloc_base(1UL<<24, 1UL<<24, 0x80000000L));
+> +	/*
+> +	 * The DART space is later unmapped from the kernel linear mapping and
+> +	 * accessing dart_tablebase during kmemleak scanning will fault.
+> +	 */
+> +	kmemleak_no_scan((void *)dart_tablebase);
+>  
+>  	printk(KERN_INFO "DART table allocated at: %lx\n", dart_tablebase);
+>  }
