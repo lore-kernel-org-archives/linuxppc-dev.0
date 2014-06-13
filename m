@@ -1,21 +1,15 @@
-Return-Path: <pannir@xsmail.com>
-Received: from out2-smtp.messagingengine.com (out2-smtp.messagingengine.com
- [66.111.4.26])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D583F1A0401
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 20:35:01 +1000 (EST)
-Message-Id: <1402655698.25732.128363405.372AD838@webmail.messagingengine.com>
-From: Pannirselvam Kanagaratnam <pannir@xsmail.com>
-To: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Subject: Re: Device Tree Binding for DSA on P1023RDB
-Date: Fri, 13 Jun 2014 18:34:58 +0800
-In-Reply-To: <1402608088.6603.549.camel@snotra.buserror.net>
-References: <5399C8F2.8060108@xsmail.com>
- <1402608088.6603.549.camel@snotra.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93F891A0510
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 21:16:09 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] selftests/powerpc: Use the test harness for the TM DSCR test
+Date: Fri, 13 Jun 2014 21:16:04 +1000
+Message-Id: <1402658164-29839-1-git-send-email-mpe@ellerman.id.au>
+Cc: sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,82 +19,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This gives us standardised success/failure output and also handles
+killing the test if it runs forever (2 minutes).
 
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ tools/testing/selftests/powerpc/tm/Makefile          |  2 +-
+ tools/testing/selftests/powerpc/tm/tm-resched-dscr.c | 14 +++++++++++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-On Fri, Jun 13, 2014, at 05:21 AM, Scott Wood wrote:
-> On Thu, 2014-06-12 at 23:36 +0800, Pannirselvam Kanagaratnam wrote:
-> > The QORIQ P1023RDB has an option to populate the Marvell 88E6165
-> > Ethernet switch. We populated this device and was able to initialize
-> > it as a basic switch in U-Boot. However, the switch driver was not
-> > loaded upon kernel bootup. DSA kernel config was enabled for the
-> > 88E6165. The following patch was applied:
-> > 
-> > 
-> > http://patchwork.ozlabs.org/patch/230257/
-> > 
-> > 
-> > The switch is attached to phy address 0x3 via dtsec2. My dts file is
-> > as below. Would appreciate any feedback on whether the DSA is
-> > correctly structured in the dts.
-> 
-> If you have a dtsec driver you're not working with an upstream kernel
-> (or you've ported a lot of SDK code to it)...  What tree are you working
-> with?  Are there prerequisites to the above patch that you might be
-> missing?
-> 
-
-I am using QorIQ-SDK-V1.5-20131219-yocto (3.8-r11.1). Not sure if I am
-missing
-any prerequisites. 
-
-> The above patch is a platform driver and you put the node in the
-> toplevel device tree node.  Have you added marvell,dsa to the list of
-> compatible strings that get probed (of_device_ids in corenet_generic.c
-> or an equivalent list in your SDK kernel)?
-> > 
-
-I was missing this. I added it in arch/powerpc/platforms/85xx/common.c
-
-After adding the above, the driver is now attempting to probe. However,
-I got the following message:
-
-Distributed Switch Architecture driver version 0.1
-dsa: probe of dsa.16 failed with error -22
-
-I dumped the mdio, mdio_bus and ethernet parameters:
-
-1) For mdio = of_parse_phandle(np, "dsa,mii-bus", 0); I get the
-following:
-np-name: dsa
-mdio-name: mdio
-mdio-type: <NULL>
-mdio-full-name: /soc@ff600000/fman@100000/mdio@e1120 
-
-2) mdio_bus = of_mdio_find_bus(mdio);
-mdio_bus_name: Freescale PowerQUICC MII Bus
-mdio_bus_id: mdio@ff7e1120
-
-3) ethernet = of_parse_phandle(np, "dsa,ethernet", 0);
-ethernet-name: ethernet
-ethernet-type: <NULL>
-ethernet-full-name: /soc@ff600000/fman@100000/ethernet@e2000
-
-Anything amiss here?
-
-> >     dsa@0 {
-> >             compatible = "marvell,dsa";
-> >             #address-cells = <2>;
-> >             #size-cells = <0>;
-> > 
-> >             interrupts = <3>;
-> 
-> This interrupts property needs to be four cells rather than one, if MPIC
-> is the parent -- assuming you have #interrupt-cells = <4> and not some
-> old device tree with #interrupt-cells = <2>, but in any case you need
-> more than one cell.
-> 
-
-The interrupt is an optional entry and not supported by the driver. I
-have omitted it for now.
-
-Pannir
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 51267f4..2cede23 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -2,7 +2,7 @@ PROGS := tm-resched-dscr
+ 
+ all: $(PROGS)
+ 
+-$(PROGS):
++$(PROGS): ../harness.c
+ 
+ run_tests: all
+ 	@-for PROG in $(PROGS); do \
+diff --git a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+index ee98e38..42d4c8c 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
++++ b/tools/testing/selftests/powerpc/tm/tm-resched-dscr.c
+@@ -28,6 +28,8 @@
+ #include <assert.h>
+ #include <asm/tm.h>
+ 
++#include "utils.h"
++
+ #define TBEGIN          ".long 0x7C00051D ;"
+ #define TEND            ".long 0x7C00055D ;"
+ #define TCHECK          ".long 0x7C00059C ;"
+@@ -36,7 +38,8 @@
+ #define SPRN_TEXASR     0x82
+ #define SPRN_DSCR       0x03
+ 
+-int main(void) {
++int test_body(void)
++{
+ 	uint64_t rv, dscr1 = 1, dscr2, texasr;
+ 
+ 	printf("Check DSCR TM context switch: ");
+@@ -81,10 +84,15 @@ int main(void) {
+ 		}
+ 		if (dscr2 != dscr1) {
+ 			printf(" FAIL\n");
+-			exit(EXIT_FAILURE);
++			return 1;
+ 		} else {
+ 			printf(" OK\n");
+-			exit(EXIT_SUCCESS);
++			return 0;
+ 		}
+ 	}
+ }
++
++int main(void)
++{
++	return test_harness(test_body, "tm_resched_dscr");
++}
+-- 
+1.9.1
