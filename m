@@ -1,23 +1,37 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45F971A0339
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 00:17:05 +1000 (EST)
-Date: Fri, 13 Jun 2014 09:16:16 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: power and percpu: Could we move the paca into the percpu area?
-Message-ID: <20140613141616.GA7350@gate.crashing.org>
-References: <alpine.DEB.2.10.1406111426480.10600@gentwo.org>
- <1402518131.14780.60.camel@pasglop> <20140611210351.GA7155@visitor2.iram.es>
- <20140612122639.GA17838@gate.crashing.org>
- <20140613115553.GA31054@visitor2.iram.es>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140613115553.GA31054@visitor2.iram.es>
-Cc: Tejun Heo <htejun@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Christoph Lameter <cl@gentwo.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 327001A03AB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 00:29:00 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 13 Jun 2014 19:58:56 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 93E50394003E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 19:58:54 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5DETol346596262
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 19:59:50 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5DESr2p031911
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 19:58:54 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: HV: Use base page size when comparing
+ against slb value
+In-Reply-To: <539ACC62.1040004@suse.de>
+References: <1402644190-15604-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <539ACC62.1040004@suse.de>
+Date: Fri, 13 Jun 2014 19:58:53 +0530
+Message-ID: <87vbs4dgt6.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +41,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > > So cr5, which is number 73, is never used by gcc. 
-> > 
-> > Not available for RA is not the same thing at all as not used by GCC.
-> > For example, GPR1 and XER[CA] are also fixed regs.
-> 
-> Indeed, I should have been more clear, it is never explicitly reserved
-> by any ABI like GPR1 for the stack pointer nor used implicitly by any pattern
-> like the carry (which is also never allocated, but used or clobbered
-> by many patterns). However no machine description pattern uses cr5.
-> 
-> The line "cr5 is not supposed to be used" has always been a mystery
-> to me, but gcc has always obeyed this rule. If memory serves it has 
-> been in rs6000.h since I got my first PPC board in 1997.
+Alexander Graf <agraf@suse.de> writes:
 
-It's been there (in the public repo) since 1992.  The copyrights for
-some  of the rest of the port go back to 1990, so the code has most
-likely existed at least that far back.
+> On 13.06.14 09:23, Aneesh Kumar K.V wrote:
+>> With guest supporting Multiple page size per segment (MPSS),
+>> hpte_page_size returns actual page size used. Add a new function to
+>> return base page size and use that to compare against the the page size
+>> calculated from SLB
+>
+> Why? What does this fix? Is this a bug fix, an enhancement? Don't 
+> describe only what you do, but also why you do it.
+>
+>
 
-> > But, indeed, it does look like GCC doesn't use it.  It seems to me that
-> > some ABI forbade userland (or non-libraries or whatever) from using it.
-> > I'll see what I can find out.
-> 
-> Take what I say with a grain of salt, but I always had the impression that
-> it was a remnant from the first port of GCC to Power, which could well have 
-> been AIX. This first port might have been done by Richard Kenner.
+This could result in page fault failures (unhandled page fault) because
+even though we have a valid hpte entry mapping a 16MB page, since we
+were comparing actual page size against page size calculated from SLB
+bits kvmppc_hv_find_lock_hpte will fail and return -1. I did not observe
+a failure in real and the bug was found during code audit. That could be
+because with THP we have guest ram backed by hugetlbfs and we always
+find the page in the host linux page table. The will result in do_h_enter always
+inserting HPTE_V_VALID entry and hence we might not really end up calling
+kvmppc_hv_find_lock_hpte.
 
-That is all correct as far as I can see.
-
-Presumably the AIX ABI at that time (AIX2? AIX3?) had cr5 reserved.
-
-Still digging...
-
-
-Segher
+-aneesh
