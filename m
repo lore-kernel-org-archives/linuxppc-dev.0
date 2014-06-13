@@ -1,25 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <groeck7@gmail.com>
+Received: from mail-pb0-x22a.google.com (mail-pb0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c01::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1D061A0329
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 00:55:31 +1000 (EST)
-Message-ID: <539B10DF.6070509@suse.de>
-Date: Fri, 13 Jun 2014 16:55:27 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition on
- vcpu schedule
-References: <1402581610-16585-1-git-send-email-mihai.caraman@freescale.com>
- <5399DDA8.5060404@suse.de>
- <306b1e4daa2f4441aaef7c7383b484fc@BY2PR03MB508.namprd03.prod.outlook.com>
-In-Reply-To: <306b1e4daa2f4441aaef7c7383b484fc@BY2PR03MB508.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0C9F1A03CB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 02:38:44 +1000 (EST)
+Received: by mail-pb0-f42.google.com with SMTP id ma3so2057519pbc.29
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 09:38:39 -0700 (PDT)
+Sender: Guenter Roeck <groeck7@gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Fix build warning
+Date: Fri, 13 Jun 2014 09:38:19 -0700
+Message-Id: <1402677499-28289-1-git-send-email-linux@roeck-us.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>,
+ Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+If compiled with W=1, the following warning is seen in powerpc builds.
 
-On 13.06.14 16:43, mihai.caraman@freescale.com wrote:
->> -----Original Message-----
->> From: Alexander Graf [mailto:agraf@suse.de]
->> Sent: Thursday, June 12, 2014 8:05 PM
->> To: Caraman Mihai Claudiu-B02008
->> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
->> dev@lists.ozlabs.org; Wood Scott-B07421
->> Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition
->> on vcpu schedule
->>
->> On 06/12/2014 04:00 PM, Mihai Caraman wrote:
->>> On vcpu schedule, the condition checked for tlb pollution is too tight.
->>> The tlb entries of one vcpu are polluted when a different vcpu from the
->>> same partition runs in-between. Relax the current tlb invalidation
->>> condition taking into account the lpid.
->>>
->>> Signed-off-by: Mihai Caraman <mihai.caraman <at> freescale.com>
->> Your mailer is broken? :)
->> This really should be an @.
->>
->> I think this should work. Scott, please ack.
-> Alex, you were right. I screwed up the patch description by inverting relax
-> and tight terms :) It should have been more like this:
->
-> KVM: PPC: e500mc: Enhance tlb invalidation condition on vcpu schedule
->
-> On vcpu schedule, the condition checked for tlb pollution is too loose.
-> The tlb entries of a vcpu are polluted (vs stale) only when a different vcpu
-> within the same logical partition runs in-between. Optimize the tlb invalidation
-> condition taking into account the lpid.
+arch/powerpc/kernel/smp.c:750:18: warning:
+	type qualifiers ignored on function return type
+static const int powerpc_smt_flags(void)
+                 ^
 
-Can't we give every vcpu its own lpid? Or don't we trap on global 
-invalidates?
+This is caused by a function returning 'const int', which doesn't
+make sense to gcc. Drop 'const' to fix the problem.
 
+Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ arch/powerpc/kernel/smp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Alex
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 10ffffe..49d5d4e 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -768,7 +768,7 @@ int setup_profiling_timer(unsigned int multiplier)
+ 
+ #ifdef CONFIG_SCHED_SMT
+ /* cpumask of CPUs with asymetric SMT dependancy */
+-static const int powerpc_smt_flags(void)
++static int powerpc_smt_flags(void)
+ {
+ 	int flags = SD_SHARE_CPUPOWER | SD_SHARE_PKG_RESOURCES;
+ 
+-- 
+1.9.1
