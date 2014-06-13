@@ -1,26 +1,21 @@
-Return-Path: <guangyu.chen@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C40471A0565
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 19:31:57 +1000 (EST)
-Date: Fri, 13 Jun 2014 16:56:03 +0800
-From: Nicolin Chen <Guangyu.Chen@freescale.com>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [alsa-devel] [RFC][PATCH v1] ASoC: fsl_ssi: Add DAI master mode
- support for SSI on i.MX series
-Message-ID: <20140613085602.GA16026@MrMyself>
-References: <1386845085-21682-1-git-send-email-Guangyu.Chen@freescale.com>
- <CAOZdJXWsxMq19-wNTKv6d45K4d79ASpMbSbofM+DMoTOKW2JJA@mail.gmail.com>
- <s5hioo5gp66.wl%tiwai@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 238121A0569
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2014 20:03:21 +1000 (EST)
+Message-ID: <539ACC62.1040004@suse.de>
+Date: Fri, 13 Jun 2014 12:03:14 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <s5hioo5gp66.wl%tiwai@suse.de>
-Cc: alsa-devel
- mailing list <alsa-devel@alsa-project.org>, Mark Brown <broonie@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Timur Tabi <timur@tabi.org>, Liam Girdwood <lgirdwood@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH] KVM: PPC: BOOK3S: HV: Use base page size when comparing
+ against slb value
+References: <1402644190-15604-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1402644190-15604-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +25,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 13, 2014 at 11:00:01AM +0200, Takashi Iwai wrote:
-> At Thu, 12 Jun 2014 22:24:55 -0500,
-> Timur Tabi wrote:
-> > 
-> > On Thu, Dec 12, 2013 at 4:44 AM, Nicolin Chen
-> > <Guangyu.Chen@freescale.com> wrote:
-> > >
-> > > +static int fsl_ssi_set_dai_sysclk(struct snd_soc_dai *cpu_dai,
-> > > +                                 int clk_id, unsigned int freq, int dir)
-> > > +{
-> > > +       struct fsl_ssi_private *ssi_private = snd_soc_dai_get_drvdata(cpu_dai);
-> > > +       struct ccsr_ssi __iomem *ssi = ssi_private->ssi;
-> > > +       int synchronous = ssi_private->cpu_dai_drv.symmetric_rates, ret;
-> > > +       u32 pm = 999, div2, psr, stccr, mask, afreq, factor, i;
-> > > +       unsigned long flags, clkrate, baudrate, tmprate;
-> > > +       u64 sub, savesub = 100000;
-> > > +
-> > > +       /* Don't apply it to any non-baudclk circumstance */
-> > > +       if (IS_ERR(ssi_private->baudclk))
-> > > +               return -EINVAL;
-> > > +
-> > > +       /* It should be already enough to divide clock by setting pm alone */
-> > > +       psr = 0;
-> > > +       div2 = 0;
-> > > +
-> > > +       factor = (div2 + 1) * (7 * psr + 1) * 2;
-> > > +
-> > > +       for (i = 0; i < 255; i++) {
-> > > +               /* The bclk rate must be smaller than 1/5 sysclk rate */
-> > > +               if (factor * (i + 1) < 5)
-> > > +                       continue;
-> > > +
-> > > +               tmprate = freq * factor * (i + 2);
-> > > +               clkrate = clk_round_rate(ssi_private->baudclk, tmprate);
-> > > +
-> > > +               do_div(clkrate, factor);
-> > 
-> > This do_div() call causes this warning on PowerPC:
-> > 
-> >   CC      sound/soc/fsl/fsl_ssi.o
-> > sound/soc/fsl/fsl_ssi.c: In function 'fsl_ssi_set_bclk':
-> > sound/soc/fsl/fsl_ssi.c:593:3: warning: comparison of distinct pointer
-> > types lacks a cast
-> > sound/soc/fsl/fsl_ssi.c:593:3: warning: right shift count >= width of type
-> > sound/soc/fsl/fsl_ssi.c:593:3: warning: passing argument 1 of
-> > '__div64_32' from incompatible pointer type
-> > include/asm-generic/div64.h:35:17: note: expected 'uint64_t *' but
-> > argument is of type 'long unsigned int *'
-> > 
-> > The comments in do_div() say that clkrate should be 64-bits.  Changing
-> > clkrate to a u64 does fix this problem, but I'm wondering if anyone
-> > else has seen this.  This code has been around for months.
-> 
-> Using do_div() for unsigned long makes no sense.
-> And, you *must* pass uint64_t there as an argument, since it's no
-> inline function and there is no implicit conversion in the generic
-> code.
-> 
-> In short, use the normal division operator instead:
-> 	clkrate /= factor;
 
-Yes. I forgot why I used do_div() for clkrate at the first place
-but it's definitely a mistake here.
+On 13.06.14 09:23, Aneesh Kumar K.V wrote:
+> With guest supporting Multiple page size per segment (MPSS),
+> hpte_page_size returns actual page size used. Add a new function to
+> return base page size and use that to compare against the the page size
+> calculated from SLB
 
-Sorry,
-Nicolin
+Why? What does this fix? Is this a bug fix, an enhancement? Don't 
+describe only what you do, but also why you do it.
 
-> 
-> 
-> Takashi
+
+Alex
+
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/include/asm/kvm_book3s_64.h | 19 +++++++++++++++++--
+>   arch/powerpc/kvm/book3s_64_mmu_hv.c      |  2 +-
+>   arch/powerpc/kvm/book3s_hv_rm_mmu.c      |  2 +-
+>   3 files changed, 19 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+> index 34422be566ce..3d0f3fb9c6b6 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> @@ -202,8 +202,10 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+>   	return rb;
+>   }
+>   
+> -static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+> +static inline unsigned long __hpte_page_size(unsigned long h, unsigned long l,
+> +					     bool is_base_size)
+>   {
+> +
+>   	int size, a_psize;
+>   	/* Look at the 8 bit LP value */
+>   	unsigned int lp = (l >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+> @@ -218,14 +220,27 @@ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+>   				continue;
+>   
+>   			a_psize = __hpte_actual_psize(lp, size);
+> -			if (a_psize != -1)
+> +			if (a_psize != -1) {
+> +				if (is_base_size)
+> +					return 1ul << mmu_psize_defs[size].shift;
+>   				return 1ul << mmu_psize_defs[a_psize].shift;
+> +			}
+>   		}
+>   
+>   	}
+>   	return 0;
+>   }
+>   
+> +static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+> +{
+> +	return __hpte_page_size(h, l, 0);
+> +}
+> +
+> +static inline unsigned long hpte_base_page_size(unsigned long h, unsigned long l)
+> +{
+> +	return __hpte_page_size(h, l, 1);
+> +}
+> +
+>   static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
+>   {
+>   	return ((ptel & HPTE_R_RPN) & ~(psize - 1)) >> PAGE_SHIFT;
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index f53cf2eae36a..7ff45ed27c65 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -1567,7 +1567,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+>   				goto out;
+>   			}
+>   			if (!rma_setup && is_vrma_hpte(v)) {
+> -				unsigned long psize = hpte_page_size(v, r);
+> +				unsigned long psize = hpte_base_page_size(v, r);
+>   				unsigned long senc = slb_pgsize_encoding(psize);
+>   				unsigned long lpcr;
+>   
+> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> index 87624ab5ba82..c6aca75b8376 100644
+> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+> @@ -839,7 +839,7 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+>   			 * to check against the actual page size.
+>   			 */
+>   			if ((v & valid) && (v & mask) == val &&
+> -			    hpte_page_size(v, r) == (1ul << pshift))
+> +			    hpte_base_page_size(v, r) == (1ul << pshift))
+>   				/* Return with the HPTE still locked */
+>   				return (hash << 3) + (i >> 1);
+>   
