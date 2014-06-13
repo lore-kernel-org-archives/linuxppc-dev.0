@@ -1,38 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BEA621A0010
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 02:43:34 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 14 Jun 2014 02:43:33 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D6BD22CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 02:43:29 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5DGLP379306490
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 02:21:26 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5DGhSdG002882
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 02:43:28 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alexander Graf <agraf@suse.de>, benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH] KVM: PPC: BOOK3S: HV: Use base page size when comparing
- against slb value
-In-Reply-To: <539B0E38.6050100@suse.de>
-References: <1402644190-15604-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <539ACC62.1040004@suse.de> <87vbs4dgt6.fsf@linux.vnet.ibm.com>
- <539B0E38.6050100@suse.de>
-Date: Fri, 13 Jun 2014 22:13:24 +0530
-Message-ID: <87zjhgsqtv.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A6391A0457
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 05:42:56 +1000 (EST)
+Message-ID: <1402688561.6603.583.camel@snotra.buserror.net>
+Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition on
+ vcpu schedule
+From: Scott Wood <scottwood@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Fri, 13 Jun 2014 14:42:41 -0500
+In-Reply-To: <539B10DF.6070509@suse.de>
+References: <1402581610-16585-1-git-send-email-mihai.caraman@freescale.com>
+ <5399DDA8.5060404@suse.de>
+ <306b1e4daa2f4441aaef7c7383b484fc@BY2PR03MB508.namprd03.prod.outlook.com>
+ <539B10DF.6070509@suse.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+Cc: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +31,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> writes:
+On Fri, 2014-06-13 at 16:55 +0200, Alexander Graf wrote:
+> On 13.06.14 16:43, mihai.caraman@freescale.com wrote:
+> >> -----Original Message-----
+> >> From: Alexander Graf [mailto:agraf@suse.de]
+> >> Sent: Thursday, June 12, 2014 8:05 PM
+> >> To: Caraman Mihai Claudiu-B02008
+> >> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> >> dev@lists.ozlabs.org; Wood Scott-B07421
+> >> Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition
+> >> on vcpu schedule
+> >>
+> >> On 06/12/2014 04:00 PM, Mihai Caraman wrote:
+> >>> On vcpu schedule, the condition checked for tlb pollution is too tight.
+> >>> The tlb entries of one vcpu are polluted when a different vcpu from the
+> >>> same partition runs in-between. Relax the current tlb invalidation
+> >>> condition taking into account the lpid.
 
-> On 13.06.14 16:28, Aneesh Kumar K.V wrote:
->> Alexander Graf <agraf@suse.de> writes:
->>
->>> On 13.06.14 09:23, Aneesh Kumar K.V wrote:
->>>> With guest supporting Multiple page size per segment (MPSS),
->>>> hpte_page_size returns actual page size used. Add a new function to
->>>> return base page size and use that to compare against the the page size
->>>> calculated from SLB
->>> Why? What does this fix? Is this a bug fix, an enhancement? Don't
->>> describe only what you do, but also why you do it.
->>>
->>>
->> This could result in page fault failures (unhandled page fault) because
->> even though we have a valid hpte entry mapping a 16MB page, since we
->> were comparing actual page size against page size calculated from SLB
->> bits kvmppc_hv_find_lock_hpte will fail and return -1. I did not observe
->> a failure in real and the bug was found during code audit. That could be
->> because with THP we have guest ram backed by hugetlbfs and we always
->> find the page in the host linux page table. The will result in do_h_enter always
->> inserting HPTE_V_VALID entry and hence we might not really end up calling
->> kvmppc_hv_find_lock_hpte.
->
-> So why do we need to override to base page size for the VRMA region?
+Can you quantify the performance improvement from this?  We've had bugs
+in this area before, so let's make sure it's worth it before making this
+more complicated.
 
-slb encoding should be derived based on base page size. 
+> >>> Signed-off-by: Mihai Caraman <mihai.caraman <at> freescale.com>
+> >> Your mailer is broken? :)
+> >> This really should be an @.
+> >>
+> >> I think this should work. Scott, please ack.
+> > Alex, you were right. I screwed up the patch description by inverting relax
+> > and tight terms :) It should have been more like this:
+> >
+> > KVM: PPC: e500mc: Enhance tlb invalidation condition on vcpu schedule
+> >
+> > On vcpu schedule, the condition checked for tlb pollution is too loose.
+> > The tlb entries of a vcpu are polluted (vs stale) only when a different vcpu
+> > within the same logical partition runs in-between. Optimize the tlb invalidation
+> > condition taking into account the lpid.
+> 
+> Can't we give every vcpu its own lpid? Or don't we trap on global 
+> invalidates?
 
-> Also I think you want to change the comment above the line in 
-> find_lock_hpte you're changing.
->
+That would significantly increase the odds of exhausting LPIDs,
+especially on large chips like t4240 with similarly large VMs.  If we
+were to do that, the LPIDs would need to be dynamically assigned (like
+PIDs), and should probably be a separate numberspace per physical core.
 
-Will do that.
-
--aneesh
+-Scott
