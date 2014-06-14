@@ -1,25 +1,25 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3E161A048D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 20:08:27 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D011F1A04C1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 20:09:07 +1000 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sat, 14 Jun 2014 15:38:24 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4D5F0E0044
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 15:39:26 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5EA8aui53543088
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 15:38:36 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5EA8MCi013898
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 15:38:23 +0530
+ Sat, 14 Jun 2014 20:09:06 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id EA1A12BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 20:09:03 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5E9kxuY31850690
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 19:46:59 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5EA92K5029458
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 20:09:03 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Joonsoo Kim <iamjoonsoo.kim@lge.com>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -30,8 +30,8 @@ Subject: Re: [PATCH v2 06/10] CMA: generalize CMA reserved area management
 In-Reply-To: <1402543307-29800-7-git-send-email-iamjoonsoo.kim@lge.com>
 References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
  <1402543307-29800-7-git-send-email-iamjoonsoo.kim@lge.com>
-Date: Sat, 14 Jun 2014 15:38:13 +0530
-Message-ID: <87fvj7g5wy.fsf@linux.vnet.ibm.com>
+Date: Sat, 14 Jun 2014 15:36:44 +0530
+Message-ID: <87ha3ng5zf.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
