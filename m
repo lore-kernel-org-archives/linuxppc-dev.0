@@ -1,35 +1,24 @@
-Return-Path: <catalin.marinas@gmail.com>
-Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
- [IPv6:2a00:1450:400c:c00::22f])
+Return-Path: <himangi774@gmail.com>
+Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
+ [IPv6:2607:f8b0:400e:c02::231])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C54BA1A04CE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 22:05:30 +1000 (EST)
-Received: by mail-wg0-f47.google.com with SMTP id k14so3786351wgh.30
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 05:05:23 -0700 (PDT)
-Sender: Catalin Marinas <catalin.marinas@gmail.com>
-Subject: Re: kmemleak: Unable to handle kernel paging request
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.2\))
-Content-Type: text/plain; charset=windows-1252
-From: Catalin Marinas <catalin.marinas@arm.com>
-In-Reply-To: <1402695853.20360.17.camel@pasglop>
-Date: Sat, 14 Jun 2014 13:05:18 +0100
-Message-Id: <D9560F26-D206-4423-ACA4-31342A73B5F9@arm.com>
-References: <CAOJe8K3fy3XFxDdVc3y1hiMAqUCPmkUhECU7j5TT=E=gxwBqHg@mail.gmail.com>
- <20140611173851.GA5556@MacBook-Pro.local>
- <CAOJe8K1TgTDX5=LdE9r6c0ami7TRa7zr0hL_uu6YpiWrsePAgQ@mail.gmail.com>
- <B01EB0A1-992B-49F4-93AE-71E4BA707795@arm.com>
- <CAOJe8K3LDhhPWbtdaWt23mY+2vnw5p05+eyk2D8fovOxC10cgA@mail.gmail.com>
- <CAOJe8K2WaJUP9_buwgKw89fxGe56mGP1Mn8rDUO9W48KZzmybA@mail.gmail.com>
- <20140612143916.GB8970@arm.com>
- <CAOJe8K3zN+fFWumKaGx3Tmv5JRZu10_FZ6R3Tjjc+nc-KVB0hg@mail.gmail.com>
- <20140613085640.GA21018@arm.com> <1402695853.20360.17.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Denis Kirjanov <kda@linux-powerpc.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C79E81A04D0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jun 2014 01:18:37 +1000 (EST)
+Received: by mail-pd0-f177.google.com with SMTP id y10so1562070pdj.22
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jun 2014 08:18:35 -0700 (PDT)
+Date: Sat, 14 Jun 2014 20:48:27 +0530
+From: Himangi Saraogi <himangi774@gmail.com>
+To: Li Yang <leoli@freescale.com>, Felipe Balbi <balbi@ti.com>,
+ GregKroah-Hartman@himangi-Dell, gregkh@linuxfoundation.org,
+ linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH] usb: gadget: fsl_qe_udc: Introduce use of managed version of
+ kzalloc
+Message-ID: <20140614151827.GA2910@himangi-Dell>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: julia.lawall@lip6.fr
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,37 +28,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 13 Jun 2014, at 22:44, Benjamin Herrenschmidt =
-<benh@kernel.crashing.org> wrote:
-> On Fri, 2014-06-13 at 09:56 +0100, Catalin Marinas wrote:
->=20
->> OK, so that's the DART table allocated via alloc_dart_table(). Is
->> dart_tablebase removed from the kernel linear mapping after =
-allocation?
->=20
-> Yes.
->=20
->> If that's the case, we need to tell kmemleak to ignore this block =
-(see
->> patch below, untested). But I still can't explain how commit
->> d4c54919ed863020 causes this issue.
->>=20
->> (also cc'ing the powerpc list and maintainers)
->=20
-> We remove the DART from the linear mapping because it has to be mapped
-> non-cachable and having it in the linear mapping would cause cache
-> paradoxes. We also can't just change the caching attributes in the
-> linear mapping because we use 16M pages for it and 970 CPUs don't
-> support cache-inhibited 16M pages :-( And due to the MMU segmentation
-> model, we also can't mix & match page sizes in that area.
->=20
-> So we just unmap it, and ioremap it elsewhere.
+This patch moves data allocated using kzalloc to managed data allocated
+using devm_kzalloc and cleans now unnecessary kfrees in probe and remove
+functions. Also, the unnecesary labels are removed and some labels are
+renamed to preserve ordering.
 
-OK, thanks for the explanation. So the kmemleak annotation makes sense.
+The following Coccinelle semantic patch was used for making the change:
 
-Would you please take the I patch earlier (I guess with Denis=92 tested-
-by). I can send it separately if more convenient.
+@platform@
+identifier p, probefn, removefn;
+@@
+struct platform_driver p = {
+  .probe = probefn,
+  .remove = removefn,
+};
 
-Thanks,
+@prb@
+identifier platform.probefn, pdev;
+expression e, e1, e2;
+@@
+probefn(struct platform_device *pdev, ...) {
+  <+...
+- e = kzalloc(e1, e2)
++ e = devm_kzalloc(&pdev->dev, e1, e2)
+  ...
+?-kfree(e);
+  ...+>
+}
 
-Catalin=
+@rem depends on prb@
+identifier platform.removefn;
+expression e;
+@@
+removefn(...) {
+  <...
+- kfree(e);
+  ...>
+}
+
+Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+---
+Not compile tested due to incompatible architecture.
+
+ drivers/usb/gadget/fsl_qe_udc.c | 19 +++++++------------
+ 1 file changed, 7 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
+index ad54833..7324308 100644
+--- a/drivers/usb/gadget/fsl_qe_udc.c
++++ b/drivers/usb/gadget/fsl_qe_udc.c
+@@ -2539,7 +2539,7 @@ static int qe_udc_probe(struct platform_device *ofdev)
+ 		goto err2;
+ 
+ 	/* create a buf for ZLP send, need to remain zeroed */
+-	udc->nullbuf = kzalloc(256, GFP_KERNEL);
++	udc->nullbuf = devm_kzalloc(&ofdev->dev, 256, GFP_KERNEL);
+ 	if (udc->nullbuf == NULL) {
+ 		dev_err(udc->dev, "cannot alloc nullbuf\n");
+ 		ret = -ENOMEM;
+@@ -2547,10 +2547,10 @@ static int qe_udc_probe(struct platform_device *ofdev)
+ 	}
+ 
+ 	/* buffer for data of get_status request */
+-	udc->statusbuf = kzalloc(2, GFP_KERNEL);
++	udc->statusbuf = devm_kzalloc(&ofdev->dev, 2, GFP_KERNEL);
+ 	if (udc->statusbuf == NULL) {
+ 		ret = -ENOMEM;
+-		goto err4;
++		goto err3;
+ 	}
+ 
+ 	udc->nullp = virt_to_phys((void *)udc->nullbuf);
+@@ -2581,13 +2581,13 @@ static int qe_udc_probe(struct platform_device *ofdev)
+ 	if (ret) {
+ 		dev_err(udc->dev, "cannot request irq %d err %d\n",
+ 				udc->usb_irq, ret);
+-		goto err5;
++		goto err4;
+ 	}
+ 
+ 	ret = usb_add_gadget_udc_release(&ofdev->dev, &udc->gadget,
+ 			qe_udc_release);
+ 	if (ret)
+-		goto err6;
++		goto err5;
+ 
+ 	platform_set_drvdata(ofdev, udc);
+ 	dev_info(udc->dev,
+@@ -2595,9 +2595,9 @@ static int qe_udc_probe(struct platform_device *ofdev)
+ 			(udc->soc_type == PORT_QE) ? "QE" : "CPM");
+ 	return 0;
+ 
+-err6:
+-	free_irq(udc->usb_irq, udc);
+ err5:
++	free_irq(udc->usb_irq, udc);
++err4:
+ 	irq_dispose_mapping(udc->usb_irq);
+ err_noirq:
+ 	if (udc->nullmap) {
+@@ -2610,9 +2610,6 @@ err_noirq:
+ 			udc->nullp, 256,
+ 				DMA_TO_DEVICE);
+ 	}
+-	kfree(udc->statusbuf);
+-err4:
+-	kfree(udc->nullbuf);
+ err3:
+ 	ep = &udc->eps[0];
+ 	cpm_muram_free(cpm_muram_offset(ep->rxbase));
+@@ -2660,8 +2657,6 @@ static int qe_udc_remove(struct platform_device *ofdev)
+ 			udc->nullp, 256,
+ 				DMA_TO_DEVICE);
+ 	}
+-	kfree(udc->statusbuf);
+-	kfree(udc->nullbuf);
+ 
+ 	ep = &udc->eps[0];
+ 	cpm_muram_free(cpm_muram_offset(ep->rxbase));
+-- 
+1.9.1
