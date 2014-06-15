@@ -1,33 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A0D621A0366
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:28 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 16 Jun 2014 04:47:25 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E65232CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:21 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5FIl50b7995720
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:06 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5FIlKNJ014118
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:20 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH V2] KVM: PPC: BOOK3S: HV: Use base page size when comparing
- against slb value
-Date: Mon, 16 Jun 2014 00:17:07 +0530
-Message-Id: <1402858027-11296-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0185.hostedemail.com
+ [216.40.44.185])
+ by lists.ozlabs.org (Postfix) with ESMTP id CE19F1A0367
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 06:38:15 +1000 (EST)
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH -next 01/26] powerpc: Use dma_zalloc_coherent
+Date: Sun, 15 Jun 2014 13:37:30 -0700
+Message-Id: <ceb2b3214fbb7c5ea5e356d35df4d0b38b90a41a.1402863905.git.joe@perches.com>
+In-Reply-To: <cover.1402863904.git.joe@perches.com>
+References: <cover.1402863904.git.joe@perches.com>
+Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,100 +21,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With guests supporting Multiple page size per segment (MPSS),
-hpte_page_size returns the actual page size used. Add a new function to
-return base page size and use that to compare against the the page size
-calculated from SLB. Without this patch a hpte lookup can fail since
-we are comparing wrong page size in kvmppc_hv_find_lock_hpte.
+Use the zeroing function instead of dma_alloc_coherent & memset(,0,)
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Joe Perches <joe@perches.com>
 ---
-Changes from V1:
-* Remove obsolete comment from the code
-* Update commit message
+ arch/powerpc/platforms/pasemi/dma_lib.c | 8 +++-----
+ arch/powerpc/sysdev/fsl_rmu.c           | 9 ++++-----
+ 2 files changed, 7 insertions(+), 10 deletions(-)
 
- arch/powerpc/include/asm/kvm_book3s_64.h | 19 +++++++++++++++++--
- arch/powerpc/kvm/book3s_64_mmu_hv.c      |  2 +-
- arch/powerpc/kvm/book3s_hv_rm_mmu.c      |  7 ++-----
- 3 files changed, 20 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 34422be566ce..3d0f3fb9c6b6 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -202,8 +202,10 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 	return rb;
- }
+diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
+index aafa01ba..52b391f 100644
+--- a/arch/powerpc/platforms/pasemi/dma_lib.c
++++ b/arch/powerpc/platforms/pasemi/dma_lib.c
+@@ -255,15 +255,13 @@ int pasemi_dma_alloc_ring(struct pasemi_dmachan *chan, int ring_size)
  
--static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
-+static inline unsigned long __hpte_page_size(unsigned long h, unsigned long l,
-+					     bool is_base_size)
- {
-+
- 	int size, a_psize;
- 	/* Look at the 8 bit LP value */
- 	unsigned int lp = (l >> LP_SHIFT) & ((1 << LP_BITS) - 1);
-@@ -218,14 +220,27 @@ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
- 				continue;
+ 	chan->ring_size = ring_size;
  
- 			a_psize = __hpte_actual_psize(lp, size);
--			if (a_psize != -1)
-+			if (a_psize != -1) {
-+				if (is_base_size)
-+					return 1ul << mmu_psize_defs[size].shift;
- 				return 1ul << mmu_psize_defs[a_psize].shift;
-+			}
- 		}
+-	chan->ring_virt = dma_alloc_coherent(&dma_pdev->dev,
+-					     ring_size * sizeof(u64),
+-					     &chan->ring_dma, GFP_KERNEL);
++	chan->ring_virt = dma_zalloc_coherent(&dma_pdev->dev,
++					      ring_size * sizeof(u64),
++					      &chan->ring_dma, GFP_KERNEL);
  
- 	}
+ 	if (!chan->ring_virt)
+ 		return -ENOMEM;
+ 
+-	memset(chan->ring_virt, 0, ring_size * sizeof(u64));
+-
  	return 0;
  }
+ EXPORT_SYMBOL(pasemi_dma_alloc_ring);
+diff --git a/arch/powerpc/sysdev/fsl_rmu.c b/arch/powerpc/sysdev/fsl_rmu.c
+index b48197a..34b49fc 100644
+--- a/arch/powerpc/sysdev/fsl_rmu.c
++++ b/arch/powerpc/sysdev/fsl_rmu.c
+@@ -744,15 +744,14 @@ fsl_open_outb_mbox(struct rio_mport *mport, void *dev_id, int mbox, int entries)
+ 	}
  
-+static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
-+{
-+	return __hpte_page_size(h, l, 0);
-+}
-+
-+static inline unsigned long hpte_base_page_size(unsigned long h, unsigned long l)
-+{
-+	return __hpte_page_size(h, l, 1);
-+}
-+
- static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
- {
- 	return ((ptel & HPTE_R_RPN) & ~(psize - 1)) >> PAGE_SHIFT;
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index f53cf2eae36a..7ff45ed27c65 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -1567,7 +1567,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
- 				goto out;
- 			}
- 			if (!rma_setup && is_vrma_hpte(v)) {
--				unsigned long psize = hpte_page_size(v, r);
-+				unsigned long psize = hpte_base_page_size(v, r);
- 				unsigned long senc = slb_pgsize_encoding(psize);
- 				unsigned long lpcr;
+ 	/* Initialize outbound message descriptor ring */
+-	rmu->msg_tx_ring.virt = dma_alloc_coherent(priv->dev,
+-				rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
+-				&rmu->msg_tx_ring.phys, GFP_KERNEL);
++	rmu->msg_tx_ring.virt = dma_zalloc_coherent(priv->dev,
++						    rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE,
++						    &rmu->msg_tx_ring.phys,
++						    GFP_KERNEL);
+ 	if (!rmu->msg_tx_ring.virt) {
+ 		rc = -ENOMEM;
+ 		goto out_dma;
+ 	}
+-	memset(rmu->msg_tx_ring.virt, 0,
+-			rmu->msg_tx_ring.size * RIO_MSG_DESC_SIZE);
+ 	rmu->msg_tx_ring.tx_slot = 0;
  
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index 87624ab5ba82..d86356bfc970 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -833,13 +833,10 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
- 			r = be64_to_cpu(hpte[i+1]);
- 
- 			/*
--			 * Check the HPTE again, including large page size
--			 * Since we don't currently allow any MPSS (mixed
--			 * page-size segment) page sizes, it is sufficient
--			 * to check against the actual page size.
-+			 * Check the HPTE again, including base page size
- 			 */
- 			if ((v & valid) && (v & mask) == val &&
--			    hpte_page_size(v, r) == (1ul << pshift))
-+			    hpte_base_page_size(v, r) == (1ul << pshift))
- 				/* Return with the HPTE still locked */
- 				return (hash << 3) + (i >> 1);
- 
+ 	/* Point dequeue/enqueue pointers at first entry in ring */
 -- 
-1.9.1
+1.8.1.2.459.gbcd45b4.dirty
