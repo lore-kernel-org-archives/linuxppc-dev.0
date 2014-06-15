@@ -1,32 +1,33 @@
-Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F5961A04F5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jun 2014 07:08:30 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0D621A0366
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:28 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Sun, 15 Jun 2014 07:08:27 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3693E2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jun 2014 07:08:23 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5EKkHDW11075986
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jun 2014 06:46:18 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5EL8M4V009085
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Jun 2014 07:08:22 +1000
-From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 16 Jun 2014 04:47:25 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E65232CE8047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:21 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5FIl50b7995720
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:06 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5FIlKNJ014118
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 04:47:20 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc/kvm: support to handle sw breakpoint
-Date: Sun, 15 Jun 2014 02:38:17 +0530
-Message-Id: <1402780097-28827-1-git-send-email-maddy@linux.vnet.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Subject: [PATCH V2] KVM: PPC: BOOK3S: HV: Use base page size when comparing
+ against slb value
+Date: Mon, 16 Jun 2014 00:17:07 +0530
+Message-Id: <1402858027-11296-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,76 +37,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds kernel side support for software breakpoint.
-Design is that, by using an illegal instruction, we trap to hypervisor
-via Emulation Assistance interrupt, where we check for the illegal instruction
-and accordingly we return to Host or Guest. Patch mandates use of "abs" instruction
-(primary opcode 31 and extended opcode 360) as sw breakpoint instruction.
-Based on PowerISA v2.01, ABS instruction has been dropped from the architecture
-and treated an illegal instruction.
+With guests supporting Multiple page size per segment (MPSS),
+hpte_page_size returns the actual page size used. Add a new function to
+return base page size and use that to compare against the the page size
+calculated from SLB. Without this patch a hpte lookup can fail since
+we are comparing wrong page size in kvmppc_hv_find_lock_hpte.
 
-Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/kvm/book3s.c    |  3 ++-
- arch/powerpc/kvm/book3s_hv.c | 23 +++++++++++++++++++----
- 2 files changed, 21 insertions(+), 5 deletions(-)
+Changes from V1:
+* Remove obsolete comment from the code
+* Update commit message
 
-diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-index c254c27..b40fe5d 100644
---- a/arch/powerpc/kvm/book3s.c
-+++ b/arch/powerpc/kvm/book3s.c
-@@ -789,7 +789,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
- int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
- 					struct kvm_guest_debug *dbg)
- {
--	return -EINVAL;
-+	vcpu->guest_debug = dbg->control;
-+	return 0;
+ arch/powerpc/include/asm/kvm_book3s_64.h | 19 +++++++++++++++++--
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      |  2 +-
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      |  7 ++-----
+ 3 files changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 34422be566ce..3d0f3fb9c6b6 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -202,8 +202,10 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
+ 	return rb;
  }
  
- void kvmppc_decrementer_func(unsigned long data)
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 7a12edb..688421d 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -67,6 +67,14 @@
- /* Used as a "null" value for timebase values */
- #define TB_NIL	(~(u64)0)
- 
-+/*
-+ * SW_BRK_DBG_INT is debug Instruction for supporting Software Breakpoint.
-+ * Instruction mnemonic is ABS, primary opcode is 31 and extended opcode is 360.
-+ * Based on PowerISA v2.01, ABS instruction has been dropped from the architecture
-+ * and treated an illegal instruction.
-+ */
-+#define SW_BRK_DBG_INT 0x7c0002d0
+-static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
++static inline unsigned long __hpte_page_size(unsigned long h, unsigned long l,
++					     bool is_base_size)
+ {
 +
- static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
- static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
+ 	int size, a_psize;
+ 	/* Look at the 8 bit LP value */
+ 	unsigned int lp = (l >> LP_SHIFT) & ((1 << LP_BITS) - 1);
+@@ -218,14 +220,27 @@ static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
+ 				continue;
  
-@@ -721,12 +729,19 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		break;
- 	/*
- 	 * This occurs if the guest executes an illegal instruction.
--	 * We just generate a program interrupt to the guest, since
--	 * we don't emulate any guest instructions at this stage.
-+	 * To support software breakpoint, we check for the sw breakpoint
-+	 * instruction to return back to host, if not we just generate a
-+	 * program interrupt to the guest.
- 	 */
- 	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
--		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
--		r = RESUME_GUEST;
-+		if (vcpu->arch.last_inst == SW_BRK_DBG_INT) {
-+			run->exit_reason = KVM_EXIT_DEBUG;
-+			run->debug.arch.address = vcpu->arch.pc;
-+			r = RESUME_HOST;
-+		} else {
-+			kvmppc_core_queue_program(vcpu, 0x80000);
-+			r = RESUME_GUEST;
-+		}
- 		break;
- 	/*
- 	 * This occurs if the guest (kernel or userspace), does something that
+ 			a_psize = __hpte_actual_psize(lp, size);
+-			if (a_psize != -1)
++			if (a_psize != -1) {
++				if (is_base_size)
++					return 1ul << mmu_psize_defs[size].shift;
+ 				return 1ul << mmu_psize_defs[a_psize].shift;
++			}
+ 		}
+ 
+ 	}
+ 	return 0;
+ }
+ 
++static inline unsigned long hpte_page_size(unsigned long h, unsigned long l)
++{
++	return __hpte_page_size(h, l, 0);
++}
++
++static inline unsigned long hpte_base_page_size(unsigned long h, unsigned long l)
++{
++	return __hpte_page_size(h, l, 1);
++}
++
+ static inline unsigned long hpte_rpn(unsigned long ptel, unsigned long psize)
+ {
+ 	return ((ptel & HPTE_R_RPN) & ~(psize - 1)) >> PAGE_SHIFT;
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index f53cf2eae36a..7ff45ed27c65 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -1567,7 +1567,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+ 				goto out;
+ 			}
+ 			if (!rma_setup && is_vrma_hpte(v)) {
+-				unsigned long psize = hpte_page_size(v, r);
++				unsigned long psize = hpte_base_page_size(v, r);
+ 				unsigned long senc = slb_pgsize_encoding(psize);
+ 				unsigned long lpcr;
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 87624ab5ba82..d86356bfc970 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -833,13 +833,10 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+ 			r = be64_to_cpu(hpte[i+1]);
+ 
+ 			/*
+-			 * Check the HPTE again, including large page size
+-			 * Since we don't currently allow any MPSS (mixed
+-			 * page-size segment) page sizes, it is sufficient
+-			 * to check against the actual page size.
++			 * Check the HPTE again, including base page size
+ 			 */
+ 			if ((v & valid) && (v & mask) == val &&
+-			    hpte_page_size(v, r) == (1ul << pshift))
++			    hpte_base_page_size(v, r) == (1ul << pshift))
+ 				/* Return with the HPTE still locked */
+ 				return (hash << 3) + (i >> 1);
+ 
 -- 
-1.8.3.1
+1.9.1
