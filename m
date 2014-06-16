@@ -1,33 +1,47 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qa0-f41.google.com (mail-qa0-f41.google.com
- [209.85.216.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <jg1.han@samsung.com>
+Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
+ (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10C6B1A0362
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 22:17:33 +1000 (EST)
-Received: by mail-qa0-f41.google.com with SMTP id cm18so7310582qab.28
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 05:17:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20140616104615.GA10701@n2100.arm.linux.org.uk>
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
- <E1Wd2Wd-0003vp-S2@rmk-PC.arm.linux.org.uk>
- <20140616104615.GA10701@n2100.arm.linux.org.uk>
-Date: Mon, 16 Jun 2014 14:17:30 +0200
-Message-ID: <CAPDyKFrp8JokqBbo3rg2i6WYykU1C9CuPF0FL7AOHh=Gcp5=hg@mail.gmail.com>
-Subject: Re: [PATCH 23/38] mmc: sdhci: convert sdhci_set_uhs_signaling() into
- a library function
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: Barry Song <baohua@kernel.org>, Anton Vorontsov <anton@enomsg.org>,
- Stephen Warren <swarren@wwwdotorg.org>, spear-devel@list.st.com,
- linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
- Michal Simek <michal.simek@xilinx.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Viresh Kumar <viresh.linux@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F41D41A0336
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 22:38:11 +1000 (EST)
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7u4-24.01
+ (7.0.4.24.0) 64bit (built Nov 17 2011))
+ with ESMTP id <0N7900AC4HAQUK20@mailout3.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 16 Jun 2014 21:28:03 +0900 (KST)
+From: Jingoo Han <jg1.han@samsung.com>
+To: 'Andrzej Hajda' <a.hajda@samsung.com>, 'Lee Jones' <lee.jones@linaro.org>,
+ 'Bryan Wu' <cooloney@gmail.com>
+References: <1401444650-12267-1-git-send-email-a.hajda@samsung.com>
+In-reply-to: <1401444650-12267-1-git-send-email-a.hajda@samsung.com>
+Subject: Re: [PATCH 0/2] backlight: remove trivial get_brightness
+ implementations
+Date: Mon, 16 Jun 2014 21:28:02 +0900
+Message-id: <000701cf895e$6a648f20$3f2dad60$%han@samsung.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Cc: 'Milo Kim' <milo.kim@ti.com>,
+ "'open list:FRAMEBUFFER LAYER'" <linux-fbdev@vger.kernel.org>,
+ "'open list:X86 PLATFORM DRIVERS'" <platform-driver-x86@vger.kernel.org>,
+ 'Thierry Reding' <thierry.reding@gmail.com>,
+ 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>,
+ 'Yijing Wang' <wangyijing@huawei.com>,
+ 'Matthew Garrett' <matthew.garrett@nebula.com>,
+ 'Kukjin Kim' <kgene.kim@samsung.com>, 'Sachin Kamat' <sachin.kamat@linaro.org>,
+ 'Jingoo Han' <jg1.han@samsung.com>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>,
+ 'Geert Uytterhoeven' <geert@linux-m68k.org>,
+ 'Daniel Vetter' <daniel.vetter@ffwll.ch>,
+ 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>,
+ 'Dan Carpenter' <dan.carpenter@oracle.com>,
+ "'open list:PWM SUBSYSTEM'" <linux-pwm@vger.kernel.org>,
+ "'moderated list:ARM/S5P EXYNOS AR...'" <linux-samsung-soc@vger.kernel.org>,
+ 'Mikulas Patocka' <mpatocka@redhat.com>,
+ "'moderated list:ARM/S5P EXYNOS AR...'" <linux-arm-kernel@lists.infradead.org>,
+ 'Randy Dunlap' <rdunlap@infradead.org>,
+ 'open list' <linux-kernel@vger.kernel.org>, 'Rob Clark' <robdclark@gmail.com>,
+ 'Jon Mason' <jdmason@kudzu.us>, 'Joe Perches' <joe@perches.com>,
+ "'open list:LINUX FOR POWER M...'" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,81 +51,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16 June 2014 12:46, Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> On Wed, Apr 23, 2014 at 08:08:07PM +0100, Russell King wrote:
->> @@ -1507,25 +1529,7 @@ static void sdhci_do_set_ios(struct sdhci_host *host, struct mmc_ios *ios)
->>                       host->ops->set_clock(host, host->clock);
->>               }
->>
->> -             if (host->ops->set_uhs_signaling)
->> -                     host->ops->set_uhs_signaling(host, ios->timing);
->> -             else {
->> -                     ctrl_2 = sdhci_readw(host, SDHCI_HOST_CONTROL2);
->> -                     /* Select Bus Speed Mode for host */
->> -                     ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
->> -                     if ((ios->timing == MMC_TIMING_MMC_HS200) ||
->> -                         (ios->timing == MMC_TIMING_UHS_SDR104))
->> -                             ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
->> -                     else if (ios->timing == MMC_TIMING_UHS_SDR12)
->> -                             ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
->> -                     else if (ios->timing == MMC_TIMING_UHS_SDR25)
->> -                             ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
->> -                     else if (ios->timing == MMC_TIMING_UHS_SDR50)
->> -                             ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
->> -                     else if (ios->timing == MMC_TIMING_UHS_DDR50)
->> -                             ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
->> -                     sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
->> -             }
->> +             host->ops->set_uhs_signaling(host, ios->timing);
->>
->>               if (!(host->quirks2 & SDHCI_QUIRK2_PRESET_VALUE_BROKEN) &&
->>                               ((ios->timing == MMC_TIMING_UHS_SDR12) ||
->
-> Whoever decided to poorly pick these patches up against my will has
-> slightly messed this patch up - whereas my original patch left the
-> code correctly formatted, when whoever applied this patch did so, they
-> left an additional blank line in the above.
+On Friday, May 30, 2014 7:11 PM, Andrzej Hajda wrote:
+> 
+> This patchset makes get_brightness callback optional
+> and removes trivial implementations.
+> Driver changes are quite obvious so I have put them into single
+> patch.
+> 
+> The patchset is based on the current linux-next branch.
+> 
+> Regards
+> Andrzej
+> 
+> Andrzej Hajda (2):
+>   backlight: show brightness even if get_brightness is not implemented
+>   backlight: remove trivial get_brightness implementations
 
-Hi Russell,
+These patches look good!
+Acked-by: Jingoo Han <jg1.han@samsung.com>
 
-We kindly pinged you several times asking for your state and for the
-PR, but I suppose you were just too busy. Your PR were kind of
-blocking patches for sdhci, if you remember.
+Lee Jones,
+Would you merge these patches into backlight git?
 
-Anyway, we did get some folks to test the patches and was thus fairly
-confident that we could merge them. Chris asked me to try to collect
-them in a PR for him, so I did. Sorry if I managed to screw some
-things up, there were several conflicts and actual regressions, which
-I tried to take care of.
+Best regards,
+Jingoo Han
 
-The mmc people were also very helping in sending patches to fixup
-related regressions, immediately after we merged your patchset. Thus
-together I think we managed to pull it off.
-
->
-> The other thing I'd ask is that the MMC people learn C precedence
-> rules, and realise that it's not necessary (and actively harmful)
-> to add additional parenthesis around simple if() conditions.  Testing
-> for timing being one of two values does not need anything more than
-> one set of parenthesis - it does not need if ((a == b) || (a == c)) -
-> if (a == b || a == c) does just fine, and is less confusing when
-> encountering more complex statements, such as:
->
->         if ((((a == b) || (a == c)) && ((d > a) || (d < c))) || (z == f))
->
-> compared with:
->
->         if (((a == b || a == c) && (d > a || d < c)) || z == f)
->
-> With the former "style", I normally end up having to pull the file into
-> the editor, and rewrite the damned statement to work out what the
-> grouping is, because the excessive use of parenthesis is detrimental to
-> readability.  Don't do it.  Learn the C precedence rules and keep code
-> readable.
-
-Sure, we will adopt.
-
-Please, feel free to send a patch to fixup my misstake. I will happily apply it.
-
-Kind regards
-Ulf Hansson
+> 
+>  drivers/macintosh/via-pmu-backlight.c      | 6 ------
+>  drivers/platform/x86/samsung-q10.c         | 6 ------
+>  drivers/video/backlight/aat2870_bl.c       | 6 ------
+>  drivers/video/backlight/ams369fg06.c       | 6 ------
+>  drivers/video/backlight/backlight.c        | 2 ++
+>  drivers/video/backlight/bd6107.c           | 6 ------
+>  drivers/video/backlight/gpio_backlight.c   | 6 ------
+>  drivers/video/backlight/ld9040.c           | 6 ------
+>  drivers/video/backlight/lp855x_bl.c        | 6 ------
+>  drivers/video/backlight/lp8788_bl.c        | 6 ------
+>  drivers/video/backlight/lv5207lp.c         | 6 ------
+>  drivers/video/backlight/pandora_bl.c       | 6 ------
+>  drivers/video/backlight/pwm_bl.c           | 6 ------
+>  drivers/video/backlight/s6e63m0.c          | 6 ------
+>  drivers/video/backlight/tps65217_bl.c      | 6 ------
+>  drivers/video/fbdev/aty/aty128fb.c         | 6 ------
+>  drivers/video/fbdev/aty/atyfb_base.c       | 6 ------
+>  drivers/video/fbdev/aty/radeon_backlight.c | 6 ------
+>  drivers/video/fbdev/exynos/s6e8ax0.c       | 6 ------
+>  drivers/video/fbdev/nvidia/nv_backlight.c  | 6 ------
+>  drivers/video/fbdev/riva/fbdev.c           | 6 ------
+>  21 files changed, 2 insertions(+), 120 deletions(-)
+> 
+> --
+> 1.9.1
