@@ -1,18 +1,31 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0026.hostedemail.com
- [216.40.44.26])
- by lists.ozlabs.org (Postfix) with ESMTP id EC5E91A03BF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 06:39:24 +1000 (EST)
-From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH -next 26/26] sound: Use dma_zalloc_coherent
-Date: Sun, 15 Jun 2014 13:37:55 -0700
-Message-Id: <1ee1f44142267688ea2db19c11a83596b98c4f17.1402863905.git.joe@perches.com>
-In-Reply-To: <cover.1402863904.git.joe@perches.com>
-References: <cover.1402863904.git.joe@perches.com>
-Cc: Takashi Iwai <tiwai@suse.de>, Johannes Berg <johannes@sipsolutions.net>,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- Jaroslav Kysela <perex@perex.cz>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8554F1A0364
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 12:40:07 +1000 (EST)
+Message-ID: <1402886406.25275.1.camel@concordia>
+Subject: Re: kmemleak: Unable to handle kernel paging request
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Mon, 16 Jun 2014 12:40:06 +1000
+In-Reply-To: <CAOJe8K1VJ5RFWSB9i4PMdYq5X2vEgv0opGwU39ZRhYdfwj-kPw@mail.gmail.com>
+References: <CAOJe8K3fy3XFxDdVc3y1hiMAqUCPmkUhECU7j5TT=E=gxwBqHg@mail.gmail.com>
+ <20140611173851.GA5556@MacBook-Pro.local>
+ <CAOJe8K1TgTDX5=LdE9r6c0ami7TRa7zr0hL_uu6YpiWrsePAgQ@mail.gmail.com>
+ <B01EB0A1-992B-49F4-93AE-71E4BA707795@arm.com>
+ <CAOJe8K3LDhhPWbtdaWt23mY+2vnw5p05+eyk2D8fovOxC10cgA@mail.gmail.com>
+ <CAOJe8K2WaJUP9_buwgKw89fxGe56mGP1Mn8rDUO9W48KZzmybA@mail.gmail.com>
+ <20140612143916.GB8970@arm.com>
+ <CAOJe8K3zN+fFWumKaGx3Tmv5JRZu10_FZ6R3Tjjc+nc-KVB0hg@mail.gmail.com>
+ <20140613085640.GA21018@arm.com>
+ <CAOJe8K1VJ5RFWSB9i4PMdYq5X2vEgv0opGwU39ZRhYdfwj-kPw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,56 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use the zeroing function instead of dma_alloc_coherent & memset(,0,)
+On Fri, 2014-06-13 at 14:26 +0400, Denis Kirjanov wrote:
+> On 6/13/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > On Fri, Jun 13, 2014 at 08:12:08AM +0100, Denis Kirjanov wrote:
+> >> On 6/12/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> >> > On Thu, Jun 12, 2014 at 01:00:57PM +0100, Denis Kirjanov wrote:
+> >> >> On 6/12/14, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> >> >> > On 6/12/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> >> >> >> On 11 Jun 2014, at 21:04, Denis Kirjanov <kda@linux-powerpc.org>
+> >> >> >> wrote:
+> >> >> >>> On 6/11/14, Catalin Marinas <catalin.marinas@arm.com> wrote:
+> >> >> >>>> On Wed, Jun 11, 2014 at 04:13:07PM +0400, Denis Kirjanov wrote:
+> >> >> >>>>> I got a trace while running 3.15.0-08556-gdfb9454:
+> >> >> >>>>>
+> >> >> >>>>> [  104.534026] Unable to handle kernel paging request for data
+> >> >> >>>>> at
+> >> >> >>>>> address 0xc00000007f000000
+> >> >> >>>>
+> >> >> >>>> Were there any kmemleak messages prior to this, like "kmemleak
+> >> >> >>>> disabled"? There could be a race when kmemleak is disabled
+> >> >> >>>> because
+> >> >> >>>> of
+> >> >> >>>> some fatal (for kmemleak) error while the scanning is taking
+> >> >> >>>> place
+> >> >> >>>> (which needs some more thinking to fix properly).
+> >> >> >>>
+> >> >> >>> No. I checked for the similar problem and didn't find anything
+> >> >> >>> relevant.
+> >> >> >>> I'll try to bisect it.
+> >> >> >>
+> >> >> >> Does this happen soon after boot? I guess it’s the first scan
+> >> >> >> (scheduled at around 1min after boot). Something seems to be
+> >> >> >> telling
+> >> >> >> kmemleak that there is a valid memory block at 0xc00000007f000000.
+> >> >> >
+> >> >> > Yeah, it happens after a while with a booted system so that's the
+> >> >> > first kmemleak scan.
+> >> >>
+> >> >> I've bisected to this commit: d4c54919ed86302094c0ca7d48a8cbd4ee753e92
+> >> >> "mm: add !pte_present() check on existing hugetlb_entry callbacks".
+> >> >> Reverting the commit fixes the issue
+> >> >
+> >> > I can't figure how this causes the problem but I have more questions.
+> >> > Is
+> >> > 0xc00000007f000000 address always the same in all crashes? If yes, you
+> >> > could comment out start_scan_thread() in kmemleak_late_init() to avoid
+> >> > the scanning thread starting. Once booted, you can run:
+> >> >
+> >> >   echo dump=0xc00000007f000000 > /sys/kernel/debug/kmemleak
+> >> >
+> >> > and check the dmesg for what kmemleak knows about that address, when it
+> >> > was allocated and whether it should be mapped or not.
+> >>
+> >> The address is always the same.
+> >>
+> >> [  179.466239] kmemleak: Object 0xc00000007f000000 (size 16777216):
+> >> [  179.466503] kmemleak:   comm "swapper/0", pid 0, jiffies 4294892300
+> >> [  179.466508] kmemleak:   min_count = 0
+> >> [  179.466512] kmemleak:   count = 0
+> >> [  179.466517] kmemleak:   flags = 0x1
+> >> [  179.466522] kmemleak:   checksum = 0
+> >> [  179.466526] kmemleak:   backtrace:
+> >> [  179.466531]      [<c000000000afc3dc>]
+> >> .memblock_alloc_range_nid+0x68/0x88
+> >> [  179.466544]      [<c000000000afc444>] .memblock_alloc_base+0x20/0x58
+> >> [  179.466553]      [<c000000000ae96cc>] .alloc_dart_table+0x5c/0xb0
+> >> [  179.466561]      [<c000000000aea300>] .pmac_probe+0x38/0xa0
+> >> [  179.466569]      [<000000000002166c>] 0x2166c
+> >> [  179.466579]      [<0000000000ae0e68>] 0xae0e68
+> >> [  179.466587]      [<0000000000009bc4>] 0x9bc4
+> >
+> > OK, so that's the DART table allocated via alloc_dart_table(). Is
+> > dart_tablebase removed from the kernel linear mapping after allocation?
+> > If that's the case, we need to tell kmemleak to ignore this block (see
+> > patch below, untested). But I still can't explain how commit
+> > d4c54919ed863020 causes this issue.
+> >
+> > (also cc'ing the powerpc list and maintainers)
+> 
+> Ok, your path fixes the oops.
+> 
+> Ben, can you shed some light on this issue?
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- sound/aoa/soundbus/i2sbus/core.c | 12 ++++--------
- sound/sparc/dbri.c               |  6 ++----
- 2 files changed, 6 insertions(+), 12 deletions(-)
+(I'm not Ben)
 
-diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
-index 4678360..a80d5ea 100644
---- a/sound/aoa/soundbus/i2sbus/core.c
-+++ b/sound/aoa/soundbus/i2sbus/core.c
-@@ -47,15 +47,11 @@ static int alloc_dbdma_descriptor_ring(struct i2sbus_dev *i2sdev,
- 	/* We use the PCI APIs for now until the generic one gets fixed
- 	 * enough or until we get some macio-specific versions
- 	 */
--	r->space = dma_alloc_coherent(
--			&macio_get_pci_dev(i2sdev->macio)->dev,
--			r->size,
--			&r->bus_addr,
--			GFP_KERNEL);
-+	r->space = dma_zalloc_coherent(&macio_get_pci_dev(i2sdev->macio)->dev,
-+				       r->size, &r->bus_addr, GFP_KERNEL);
-+	if (!r->space)
-+		return -ENOMEM;
- 
--	if (!r->space) return -ENOMEM;
--
--	memset(r->space, 0, r->size);
- 	r->cmds = (void*)DBDMA_ALIGN(r->space);
- 	r->bus_cmd_start = r->bus_addr +
- 			   (dma_addr_t)((char*)r->cmds - (char*)r->space);
-diff --git a/sound/sparc/dbri.c b/sound/sparc/dbri.c
-index be1b1aa..b2c3d0d 100644
---- a/sound/sparc/dbri.c
-+++ b/sound/sparc/dbri.c
-@@ -2534,12 +2534,10 @@ static int snd_dbri_create(struct snd_card *card,
- 	dbri->op = op;
- 	dbri->irq = irq;
- 
--	dbri->dma = dma_alloc_coherent(&op->dev,
--				       sizeof(struct dbri_dma),
--				       &dbri->dma_dvma, GFP_ATOMIC);
-+	dbri->dma = dma_zalloc_coherent(&op->dev, sizeof(struct dbri_dma),
-+					&dbri->dma_dvma, GFP_ATOMIC);
- 	if (!dbri->dma)
- 		return -ENOMEM;
--	memset((void *)dbri->dma, 0, sizeof(struct dbri_dma));
- 
- 	dprintk(D_GEN, "DMA Cmd Block 0x%p (0x%08x)\n",
- 		dbri->dma, dbri->dma_dvma);
--- 
-1.8.1.2.459.gbcd45b4.dirty
+Yes, the memory for dart_tablebase is removed from the linear mapping. In fact
+it's never mapped, see htab_initialize().
+
+I don't easily see how commit d4c54919ed8, could have exposed this, but I don't
+know enough of the kmemleak internals to say for sure.
+
+cheers
