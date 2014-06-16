@@ -1,46 +1,27 @@
-Return-Path: <lee.jones@linaro.org>
-Received: from mail-ig0-f173.google.com (mail-ig0-f173.google.com
- [209.85.213.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from mailout61.mail01.mtsvc.net (mailout61.mail01.mtsvc.net
+ [216.70.64.9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D21F71A035F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 23:32:47 +1000 (EST)
-Received: by mail-ig0-f173.google.com with SMTP id r2so2910639igi.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 06:32:44 -0700 (PDT)
-Date: Mon, 16 Jun 2014 14:32:34 +0100
-From: Lee Jones <lee.jones@linaro.org>
-To: Jingoo Han <jg1.han@samsung.com>
-Subject: Re: [PATCH 0/2] backlight: remove trivial get_brightness
- implementations
-Message-ID: <20140616133234.GX14323@lee--X1>
-References: <1401444650-12267-1-git-send-email-a.hajda@samsung.com>
- <000701cf895e$6a648f20$3f2dad60$%han@samsung.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <000701cf895e$6a648f20$3f2dad60$%han@samsung.com>
-Cc: 'Milo Kim' <milo.kim@ti.com>,
- "'open list:FRAMEBUFFER LAYER'" <linux-fbdev@vger.kernel.org>,
- "'open list:X86 PLATFORM DRIVERS'" <platform-driver-x86@vger.kernel.org>,
- 'Andrzej Hajda' <a.hajda@samsung.com>,
- 'Thierry Reding' <thierry.reding@gmail.com>,
- 'Laurent Pinchart' <laurent.pinchart@ideasonboard.com>,
- 'Yijing Wang' <wangyijing@huawei.com>,
- 'Matthew Garrett' <matthew.garrett@nebula.com>,
- 'Kukjin Kim' <kgene.kim@samsung.com>, 'Sachin Kamat' <sachin.kamat@linaro.org>,
- 'Tomi Valkeinen' <tomi.valkeinen@ti.com>,
- 'Geert Uytterhoeven' <geert@linux-m68k.org>,
- 'Daniel Vetter' <daniel.vetter@ffwll.ch>,
- 'Jean-Christophe Plagniol-Villard' <plagnioj@jcrosoft.com>,
- 'Dan Carpenter' <dan.carpenter@oracle.com>,
- "'open list:PWM SUBSYSTEM'" <linux-pwm@vger.kernel.org>,
- 'Bryan Wu' <cooloney@gmail.com>,
- "'moderated list:ARM/S5P EXYNOS AR...'" <linux-samsung-soc@vger.kernel.org>,
- 'Mikulas Patocka' <mpatocka@redhat.com>,
- "'moderated list:ARM/S5P EXYNOS AR...'" <linux-arm-kernel@lists.infradead.org>,
- 'Randy Dunlap' <rdunlap@infradead.org>,
- 'open list' <linux-kernel@vger.kernel.org>, 'Rob Clark' <robdclark@gmail.com>,
- 'Jon Mason' <jdmason@kudzu.us>, 'Joe Perches' <joe@perches.com>,
- "'open list:LINUX FOR POWER M...'" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 798091A0361
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 01:18:52 +1000 (EST)
+Received: from mailout32.mail01.mtsvc.net ([216.70.64.70]
+ helo=n23.mail01.mtsvc.net)
+ by mailout61.mail01.mtsvc.net with esmtps (UNKNOWN:AES256-GCM-SHA384:256)
+ (Exim 4.72) (envelope-from <peter@hurleysoftware.com>)
+ id 1WwWrQ-0000uP-7I
+ for linuxppc-dev@lists.ozlabs.org; Mon, 16 Jun 2014 09:22:08 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH tty-next 14/22] tty: Remove tty_wait_until_sent_from_close()
+Date: Mon, 16 Jun 2014 09:17:11 -0400
+Message-Id: <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
+In-Reply-To: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
+References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
+Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
+ Karsten Keil <isdn@linux-pingi.de>, Peter Hurley <peter@hurleysoftware.com>,
+ linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,63 +31,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 16 Jun 2014, Jingoo Han wrote:
+tty_wait_until_sent_from_close() drops the tty lock while waiting
+for the tty driver to finish sending previously accepted data (ie.,
+data remaining in its write buffer and transmit fifo).
 
-> On Friday, May 30, 2014 7:11 PM, Andrzej Hajda wrote:
-> > 
-> > This patchset makes get_brightness callback optional
-> > and removes trivial implementations.
-> > Driver changes are quite obvious so I have put them into single
-> > patch.
-> > 
-> > The patchset is based on the current linux-next branch.
-> > 
-> > Regards
-> > Andrzej
-> > 
-> > Andrzej Hajda (2):
-> >   backlight: show brightness even if get_brightness is not implemented
-> >   backlight: remove trivial get_brightness implementations
-> 
-> These patches look good!
-> Acked-by: Jingoo Han <jg1.han@samsung.com>
-> 
-> Lee Jones,
-> Would you merge these patches into backlight git?
+However, dropping the tty lock is a hold-over from when the tty
+lock was system-wide; ie., one lock for all ttys.
 
-Yep, done.
+Since commit 89c8d91e31f267703e365593f6bfebb9f6d2ad01,
+'tty: localise the lock', dropping the tty lock has not been necessary.
 
-NB: You don't have to ask.  I'll see that you've reviewed/acked the
-patches and just apply them automatically (provided I'm on the CC list
-of course).
+CC: Karsten Keil <isdn@linux-pingi.de>
+CC: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
+---
+ drivers/isdn/i4l/isdn_tty.c   |  2 +-
+ drivers/tty/hvc/hvc_console.c |  2 +-
+ drivers/tty/hvc/hvcs.c        |  2 +-
+ drivers/tty/tty_port.c        | 11 ++---------
+ include/linux/tty.h           | 18 ------------------
+ 5 files changed, 5 insertions(+), 30 deletions(-)
 
-> >  drivers/macintosh/via-pmu-backlight.c      | 6 ------
-> >  drivers/platform/x86/samsung-q10.c         | 6 ------
-> >  drivers/video/backlight/aat2870_bl.c       | 6 ------
-> >  drivers/video/backlight/ams369fg06.c       | 6 ------
-> >  drivers/video/backlight/backlight.c        | 2 ++
-> >  drivers/video/backlight/bd6107.c           | 6 ------
-> >  drivers/video/backlight/gpio_backlight.c   | 6 ------
-> >  drivers/video/backlight/ld9040.c           | 6 ------
-> >  drivers/video/backlight/lp855x_bl.c        | 6 ------
-> >  drivers/video/backlight/lp8788_bl.c        | 6 ------
-> >  drivers/video/backlight/lv5207lp.c         | 6 ------
-> >  drivers/video/backlight/pandora_bl.c       | 6 ------
-> >  drivers/video/backlight/pwm_bl.c           | 6 ------
-> >  drivers/video/backlight/s6e63m0.c          | 6 ------
-> >  drivers/video/backlight/tps65217_bl.c      | 6 ------
-> >  drivers/video/fbdev/aty/aty128fb.c         | 6 ------
-> >  drivers/video/fbdev/aty/atyfb_base.c       | 6 ------
-> >  drivers/video/fbdev/aty/radeon_backlight.c | 6 ------
-> >  drivers/video/fbdev/exynos/s6e8ax0.c       | 6 ------
-> >  drivers/video/fbdev/nvidia/nv_backlight.c  | 6 ------
-> >  drivers/video/fbdev/riva/fbdev.c           | 6 ------
-> >  21 files changed, 2 insertions(+), 120 deletions(-)
-> > 
-> 
-
+diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
+index 3c5f249..732f68a 100644
+--- a/drivers/isdn/i4l/isdn_tty.c
++++ b/drivers/isdn/i4l/isdn_tty.c
+@@ -1587,7 +1587,7 @@ isdn_tty_close(struct tty_struct *tty, struct file *filp)
+ 	 * line status register.
+ 	 */
+ 	if (port->flags & ASYNC_INITIALIZED) {
+-		tty_wait_until_sent_from_close(tty, 3000);	/* 30 seconds timeout */
++		tty_wait_until_sent(tty, 3000);	/* 30 seconds timeout */
+ 		/*
+ 		 * Before we drop DTR, make sure the UART transmitter
+ 		 * has completely drained; this is especially
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 0ff7fda..2297dc7 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -417,7 +417,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 		 * there is no buffered data otherwise sleeps on a wait queue
+ 		 * waking periodically to check chars_in_buffer().
+ 		 */
+-		tty_wait_until_sent_from_close(tty, HVC_CLOSE_WAIT);
++		tty_wait_until_sent(tty, HVC_CLOSE_WAIT);
+ 	} else {
+ 		if (hp->port.count < 0)
+ 			printk(KERN_ERR "hvc_close %X: oops, count is %d\n",
+diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
+index 81e939e..236302d 100644
+--- a/drivers/tty/hvc/hvcs.c
++++ b/drivers/tty/hvc/hvcs.c
+@@ -1230,7 +1230,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
+ 		irq = hvcsd->vdev->irq;
+ 		spin_unlock_irqrestore(&hvcsd->lock, flags);
+ 
+-		tty_wait_until_sent_from_close(tty, HVCS_CLOSE_WAIT);
++		tty_wait_until_sent(tty, HVCS_CLOSE_WAIT);
+ 
+ 		/*
+ 		 * This line is important because it tells hvcs_open that this
+diff --git a/drivers/tty/tty_port.c b/drivers/tty/tty_port.c
+index 1b93357..6b6214b 100644
+--- a/drivers/tty/tty_port.c
++++ b/drivers/tty/tty_port.c
+@@ -464,10 +464,7 @@ static void tty_port_drain_delay(struct tty_port *port, struct tty_struct *tty)
+ 	schedule_timeout_interruptible(timeout);
+ }
+ 
+-/* Caller holds tty lock.
+- * NB: may drop and reacquire tty lock (in tty_wait_until_sent_from_close())
+- * so tty and tty port may have changed state (but not hung up or reopened).
+- */
++/* Caller holds tty lock. */
+ int tty_port_close_start(struct tty_port *port,
+ 				struct tty_struct *tty, struct file *filp)
+ {
+@@ -505,7 +502,7 @@ int tty_port_close_start(struct tty_port *port,
+ 		if (tty->flow_stopped)
+ 			tty_driver_flush_buffer(tty);
+ 		if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE)
+-			tty_wait_until_sent_from_close(tty, port->closing_wait);
++			tty_wait_until_sent(tty, port->closing_wait);
+ 		if (port->drain_delay)
+ 			tty_port_drain_delay(port, tty);
+ 	}
+@@ -545,10 +542,6 @@ EXPORT_SYMBOL(tty_port_close_end);
+  * tty_port_close
+  *
+  * Caller holds tty lock
+- *
+- * NB: may drop and reacquire tty lock (in tty_port_close_start()->
+- * tty_wait_until_sent_from_close()) so tty and tty_port may have changed
+- * state (but not hung up or reopened).
+  */
+ void tty_port_close(struct tty_port *port, struct tty_struct *tty,
+ 							struct file *filp)
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 1c3316a..f3eb70d 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -644,24 +644,6 @@ extern void __lockfunc tty_unlock_pair(struct tty_struct *tty,
+ 				struct tty_struct *tty2);
+ 
+ /*
+- * this shall be called only from where BTM is held (like close)
+- *
+- * We need this to ensure nobody waits for us to finish while we are waiting.
+- * Without this we were encountering system stalls.
+- *
+- * This should be indeed removed with BTM removal later.
+- *
+- * Locking: BTM required. Nobody is allowed to hold port->mutex.
+- */
+-static inline void tty_wait_until_sent_from_close(struct tty_struct *tty,
+-		long timeout)
+-{
+-	tty_unlock(tty); /* tty->ops->close holds the BTM, drop it while waiting */
+-	tty_wait_until_sent(tty, timeout);
+-	tty_lock(tty);
+-}
+-
+-/*
+  * wait_event_interruptible_tty -- wait for a condition with the tty lock held
+  *
+  * The condition we are waiting for might take a long time to
 -- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.0.0
