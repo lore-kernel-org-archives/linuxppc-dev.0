@@ -1,19 +1,18 @@
 Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
- by lists.ozlabs.org (Postfix) with ESMTP id 5652E1A02B3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 15:15:41 +1000 (EST)
-Date: Mon, 16 Jun 2014 14:19:52 +0900
+Received: from lgemrelse6q.lge.com (LGEMRELSE6Q.lge.com [156.147.1.121])
+ by lists.ozlabs.org (Postfix) with ESMTP id C13C61A00EF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 15:19:14 +1000 (EST)
+Date: Mon, 16 Jun 2014 14:23:25 +0900
 From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 To: Michal Nazarewicz <mina86@mina86.com>
-Subject: Re: [PATCH v2 04/10] DMA, CMA: support alignment constraint on cma
- region
-Message-ID: <20140616051952.GB23210@js1304-P5Q-DELUXE>
+Subject: Re: [PATCH v2 05/10] DMA, CMA: support arbitrary bitmap granularity
+Message-ID: <20140616052325.GC23210@js1304-P5Q-DELUXE>
 References: <1402543307-29800-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402543307-29800-5-git-send-email-iamjoonsoo.kim@lge.com>
- <xa1t8up2jvi9.fsf@mina86.com>
+ <1402543307-29800-6-git-send-email-iamjoonsoo.kim@lge.com>
+ <xa1t61k6juph.fsf@mina86.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <xa1t8up2jvi9.fsf@mina86.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <xa1t61k6juph.fsf@mina86.com>
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
  linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -33,69 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 12, 2014 at 12:02:38PM +0200, Michal Nazarewicz wrote:
+On Thu, Jun 12, 2014 at 12:19:54PM +0200, Michal Nazarewicz wrote:
 > On Thu, Jun 12 2014, Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
-> > ppc kvm's cma area management needs alignment constraint on
-> 
-> I've noticed it earlier and cannot seem to get to terms with this.  It
-> should IMO be PPC, KVM and CMA since those are acronyms.  But if you
-> have strong feelings, it's not a big issue.
-
-Yes, I will fix it.
-
-> 
-> > cma region. So support it to prepare generalization of cma area
-> > management functionality.
-> >
-> > Additionally, add some comments which tell us why alignment
-> > constraint is needed on cma region.
+> > ppc kvm's cma region management requires arbitrary bitmap granularity,
+> > since they want to reserve very large memory and manage this region
+> > with bitmap that one bit for several pages to reduce management overheads.
+> > So support arbitrary bitmap granularity for following generalization.
 > >
 > > Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 > 
 > Acked-by: Michal Nazarewicz <mina86@mina86.com>
 > 
 > > diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-> > index 8a44c82..bc4c171 100644
+> > index bc4c171..9bc9340 100644
 > > --- a/drivers/base/dma-contiguous.c
 > > +++ b/drivers/base/dma-contiguous.c
-> > @@ -219,6 +220,7 @@ core_initcall(cma_init_reserved_areas);
-> >   * @size: Size of the reserved area (in bytes),
-> >   * @base: Base address of the reserved area optional, use 0 for any
-> >   * @limit: End address of the reserved memory (optional, 0 for any).
-> > + * @alignment: Alignment for the contiguous memory area, should be
-> >  	power of 2
+> > @@ -38,6 +38,7 @@ struct cma {
+> >  	unsigned long	base_pfn;
+> >  	unsigned long	count;
 > 
-> “must be power of 2 or zero”.
+> Have you considered replacing count with maxno?
 
-Okay.
+No, I haven't.
+I think that count is better than maxno, since it represent number of
+pages in this region.
 
-> >   * @res_cma: Pointer to store the created cma region.
-> >   * @fixed: hint about where to place the reserved area
-> >   *
-> > @@ -233,15 +235,15 @@ core_initcall(cma_init_reserved_areas);
-> >   */
-> >  static int __init __dma_contiguous_reserve_area(phys_addr_t size,
-> >  				phys_addr_t base, phys_addr_t limit,
-> > +				phys_addr_t alignment,
-> >  				struct cma **res_cma, bool fixed)
-> >  {
-> >  	struct cma *cma = &cma_areas[cma_area_count];
-> > -	phys_addr_t alignment;
-> >  	int ret = 0;
+> 
+> >  	unsigned long	*bitmap;
+> > +	int order_per_bit; /* Order of pages represented by one bit */
+> 
+> I'd make it unsigned.
+
+Will fix it.
+
+> >  	struct mutex	lock;
+> >  };
 > >  
-> > -	pr_debug("%s(size %lx, base %08lx, limit %08lx)\n", __func__,
-> > -		 (unsigned long)size, (unsigned long)base,
-> > -		 (unsigned long)limit);
-> > +	pr_debug("%s(size %lx, base %08lx, limit %08lx align_order %08lx)\n",
-> > +		__func__, (unsigned long)size, (unsigned long)base,
-> > +		(unsigned long)limit, (unsigned long)alignment);
+> > +static void clear_cma_bitmap(struct cma *cma, unsigned long pfn, int
+> > count)
 > 
-> Nit: Align with the rest of the arguments, i.e.:
-> 
-> +	pr_debug("%s(size %lx, base %08lx, limit %08lx align_order %08lx)\n",
-> +		 __func__, (unsigned long)size, (unsigned long)base,
-> +		 (unsigned long)limit, (unsigned long)alignment);
+> For consistency cma_clear_bitmap would make more sense I think.  On the
+> other hand, you're just moving stuff around so perhaps renaming the
+> function at this point is not worth it any more.
 
-What's the difference between mine and yours?
+Will fix it.
+
+> > +{
+> > +	unsigned long bitmapno, nr_bits;
+> > +
+> > +	bitmapno = (pfn - cma->base_pfn) >> cma->order_per_bit;
+> > +	nr_bits = cma_bitmap_pages_to_bits(cma, count);
+> > +
+> > +	mutex_lock(&cma->lock);
+> > +	bitmap_clear(cma->bitmap, bitmapno, nr_bits);
+> > +	mutex_unlock(&cma->lock);
+> > +}
+> > +
+> >  static int __init cma_activate_area(struct cma *cma)
+> >  {
+> > -	int bitmap_size = BITS_TO_LONGS(cma->count) * sizeof(long);
+> > +	int bitmap_maxno = cma_bitmap_maxno(cma);
+> > +	int bitmap_size = BITS_TO_LONGS(bitmap_maxno) * sizeof(long);
+> >  	unsigned long base_pfn = cma->base_pfn, pfn = base_pfn;
+> >  	unsigned i = cma->count >> pageblock_order;
+> >  	struct zone *zone;
+> 
+> bitmap_maxno is never used again, perhaps:
+> 
+> +	int bitmap_size = BITS_TO_LONGS(cma_bitmap_maxno(cma)) * sizeof(long);
+> 
+> instead? Up to you.
+
+Okay!!
 
 Thanks.
