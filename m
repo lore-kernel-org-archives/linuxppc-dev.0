@@ -1,15 +1,15 @@
 Return-Path: <iamjoonsoo.kim@lge.com>
 Received: from lgeamrelo01.lge.com (lgeamrelo01.lge.com [156.147.1.125])
- by lists.ozlabs.org (Postfix) with ESMTP id 855CF1A0377
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 15:36:43 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 27D0A1A036B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 15:36:42 +1000 (EST)
 From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Marek Szyprowski <m.szyprowski@samsung.com>,
  Michal Nazarewicz <mina86@mina86.com>
-Subject: [PATCH v3 -next 7/9] mm, CMA: clean-up CMA allocation error path
-Date: Mon, 16 Jun 2014 14:40:49 +0900
-Message-Id: <1402897251-23639-8-git-send-email-iamjoonsoo.kim@lge.com>
+Subject: [PATCH v3 -next 9/9] mm, CMA: clean-up log message
+Date: Mon, 16 Jun 2014 14:40:51 +0900
+Message-Id: <1402897251-23639-10-git-send-email-iamjoonsoo.kim@lge.com>
 In-Reply-To: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
 References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
@@ -30,34 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can remove one call sites for clear_cma_bitmap() if we first
-call it before checking error number.
+We don't need explicit 'CMA:' prefix, since we already define prefix
+'cma:' in pr_fmt. So remove it.
 
-Acked-by: Minchan Kim <minchan@kernel.org>
-Reviewed-by: Michal Nazarewicz <mina86@mina86.com>
+Acked-by: Michal Nazarewicz <mina86@mina86.com>
 Reviewed-by: Zhang Yanfei <zhangyanfei@cn.fujitsu.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 
 diff --git a/mm/cma.c b/mm/cma.c
-index 0cf50da..b442a13 100644
+index 9961120..4b251b0 100644
 --- a/mm/cma.c
 +++ b/mm/cma.c
-@@ -285,11 +285,12 @@ struct page *cma_alloc(struct cma *cma, int count, unsigned int align)
- 		if (ret == 0) {
- 			page = pfn_to_page(pfn);
- 			break;
--		} else if (ret != -EBUSY) {
--			cma_clear_bitmap(cma, pfn, count);
--			break;
- 		}
-+
- 		cma_clear_bitmap(cma, pfn, count);
-+		if (ret != -EBUSY)
-+			break;
-+
- 		pr_debug("%s(): memory range at %p is busy, retrying\n",
- 			 __func__, pfn_to_page(pfn));
- 		/* try again with a bit different memory target */
+@@ -225,12 +225,12 @@ int __init cma_declare_contiguous(phys_addr_t base,
+ 	*res_cma = cma;
+ 	cma_area_count++;
+ 
+-	pr_info("CMA: reserved %ld MiB at %08lx\n", (unsigned long)size / SZ_1M,
++	pr_info("Reserved %ld MiB at %08lx\n", (unsigned long)size / SZ_1M,
+ 		(unsigned long)base);
+ 	return 0;
+ 
+ err:
+-	pr_err("CMA: failed to reserve %ld MiB\n", (unsigned long)size / SZ_1M);
++	pr_err("Failed to reserve %ld MiB\n", (unsigned long)size / SZ_1M);
+ 	return ret;
+ }
+ 
 -- 
 1.7.9.5
