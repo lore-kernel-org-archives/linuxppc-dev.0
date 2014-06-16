@@ -1,18 +1,15 @@
 Return-Path: <iamjoonsoo.kim@lge.com>
 Received: from lgeamrelo01.lge.com (lgeamrelo01.lge.com [156.147.1.125])
- by lists.ozlabs.org (Postfix) with ESMTP id 2BC831A0370
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 15:36:42 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 287211A036C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jun 2014 15:36:41 +1000 (EST)
 From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Marek Szyprowski <m.szyprowski@samsung.com>,
  Michal Nazarewicz <mina86@mina86.com>
-Subject: [PATCH v3 -next 8/9] mm,
- CMA: change cma_declare_contiguous() to obey coding convention
-Date: Mon, 16 Jun 2014 14:40:50 +0900
-Message-Id: <1402897251-23639-9-git-send-email-iamjoonsoo.kim@lge.com>
-In-Reply-To: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
-References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
+Subject: [PATCH v3 -next 0/9] CMA: generalize CMA reserved area management code
+Date: Mon, 16 Jun 2014 14:40:42 +0900
+Message-Id: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
 Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, kvm@vger.kernel.org,
  linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -31,104 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Conventionally, we put output param to the end of param list
-and put the 'base' ahead of 'size', but cma_declare_contiguous()
-doesn't look like that, so change it.
+Currently, there are two users on CMA functionality, one is the DMA
+subsystem and the other is the KVM on powerpc. They have their own code
+to manage CMA reserved area even if they looks really similar.
+>From my guess, it is caused by some needs on bitmap management. Kvm side
+wants to maintain bitmap not for 1 page, but for more size. Eventually it
+use bitmap where one bit represents 64 pages.
 
-Additionally, move down cma_areas reference code to the position
-where it is really needed.
+When I implement CMA related patches, I should change those two places
+to apply my change and it seem to be painful to me. I want to change
+this situation and reduce future code management overhead through
+this patch.
 
-v3: put 'base' ahead of 'size' (Minchan)
+This change could also help developer who want to use CMA in their
+new feature development, since they can use CMA easily without
+copying & pasting this reserved area management code.
 
-Acked-by: Michal Nazarewicz <mina86@mina86.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+v3:
+  - Simplify old patch 1(log format fix) and move it to the end of patchset.
+  - Patch 2: Pass aligned base and size to dma_contiguous_early_fixup()
+  - Patch 5: Add some accessor functions to pass aligned base and size to
+  dma_contiguous_early_fixup() function
+  - Patch 5: Move MAX_CMA_AREAS definition to cma.h
+  - Patch 6: Add CMA region zeroing to PPC KVM's CMA alloc function
+  - Patch 8: put 'base' ahead of 'size' in cma_declare_contiguous()
+  - Remaining minor fixes are noted in commit description of each one
 
-diff --git a/arch/powerpc/kvm/book3s_hv_builtin.c b/arch/powerpc/kvm/book3s_hv_builtin.c
-index 3960e0b..6cf498a 100644
---- a/arch/powerpc/kvm/book3s_hv_builtin.c
-+++ b/arch/powerpc/kvm/book3s_hv_builtin.c
-@@ -185,8 +185,8 @@ void __init kvm_cma_reserve(void)
- 			align_size = HPT_ALIGN_PAGES << PAGE_SHIFT;
- 
- 		align_size = max(kvm_rma_pages << PAGE_SHIFT, align_size);
--		cma_declare_contiguous(selected_size, 0, 0, align_size,
--			KVM_CMA_CHUNK_ORDER - PAGE_SHIFT, &kvm_cma, false);
-+		cma_declare_contiguous(0, selected_size, 0, align_size,
-+			KVM_CMA_CHUNK_ORDER - PAGE_SHIFT, false, &kvm_cma);
- 	}
- }
- 
-diff --git a/drivers/base/dma-contiguous.c b/drivers/base/dma-contiguous.c
-index 0411c1c..6606abd 100644
---- a/drivers/base/dma-contiguous.c
-+++ b/drivers/base/dma-contiguous.c
-@@ -165,7 +165,7 @@ int __init dma_contiguous_reserve_area(phys_addr_t size, phys_addr_t base,
- {
- 	int ret;
- 
--	ret = cma_declare_contiguous(size, base, limit, 0, 0, res_cma, fixed);
-+	ret = cma_declare_contiguous(base, size, limit, 0, 0, fixed, res_cma);
- 	if (ret)
- 		return ret;
- 
-diff --git a/include/linux/cma.h b/include/linux/cma.h
-index 69d3726..32cab7a 100644
---- a/include/linux/cma.h
-+++ b/include/linux/cma.h
-@@ -15,7 +15,7 @@ extern unsigned long cma_get_size(struct cma *cma);
- extern int __init cma_declare_contiguous(phys_addr_t size,
- 			phys_addr_t base, phys_addr_t limit,
- 			phys_addr_t alignment, unsigned int order_per_bit,
--			struct cma **res_cma, bool fixed);
-+			bool fixed, struct cma **res_cma);
- extern struct page *cma_alloc(struct cma *cma, int count, unsigned int align);
- extern bool cma_release(struct cma *cma, struct page *pages, int count);
- #endif
-diff --git a/mm/cma.c b/mm/cma.c
-index b442a13..9961120 100644
---- a/mm/cma.c
-+++ b/mm/cma.c
-@@ -141,13 +141,13 @@ core_initcall(cma_init_reserved_areas);
- 
- /**
-  * cma_declare_contiguous() - reserve custom contiguous area
-- * @size: Size of the reserved area (in bytes),
-  * @base: Base address of the reserved area optional, use 0 for any
-+ * @size: Size of the reserved area (in bytes),
-  * @limit: End address of the reserved memory (optional, 0 for any).
-  * @alignment: Alignment for the CMA area, should be power of 2 or zero
-  * @order_per_bit: Order of pages represented by one bit on bitmap.
-- * @res_cma: Pointer to store the created cma region.
-  * @fixed: hint about where to place the reserved area
-+ * @res_cma: Pointer to store the created cma region.
-  *
-  * This function reserves memory from early allocator. It should be
-  * called by arch specific code once the early allocator (memblock or bootmem)
-@@ -157,12 +157,12 @@ core_initcall(cma_init_reserved_areas);
-  * If @fixed is true, reserve contiguous area at exactly @base.  If false,
-  * reserve in range from @base to @limit.
-  */
--int __init cma_declare_contiguous(phys_addr_t size,
--			phys_addr_t base, phys_addr_t limit,
-+int __init cma_declare_contiguous(phys_addr_t base,
-+			phys_addr_t size, phys_addr_t limit,
- 			phys_addr_t alignment, unsigned int order_per_bit,
--			struct cma **res_cma, bool fixed)
-+			bool fixed, struct cma **res_cma)
- {
--	struct cma *cma = &cma_areas[cma_area_count];
-+	struct cma *cma;
- 	int ret = 0;
- 
- 	pr_debug("%s(size %lx, base %08lx, limit %08lx alignment %08lx)\n",
-@@ -218,6 +218,7 @@ int __init cma_declare_contiguous(phys_addr_t size,
- 	 * Each reserved area must be initialised later, when more kernel
- 	 * subsystems (like slab allocator) are available.
- 	 */
-+	cma = &cma_areas[cma_area_count];
- 	cma->base_pfn = PFN_DOWN(base);
- 	cma->count = size >> PAGE_SHIFT;
- 	cma->order_per_bit = order_per_bit;
+v2:
+  - Although this patchset looks very different with v1, the end result,
+  that is, mm/cma.c is same with v1's one. So I carry Ack to patch 6-7.
+
+This patchset is based on linux-next 20140610.
+
+Patch 1-4 prepare some features to cover PPC KVM's requirements.
+Patch 5-6 generalize CMA reserved area management code and change users
+to use it.
+Patch 7-9 clean-up minor things.
+
+Joonsoo Kim (9):
+  DMA, CMA: fix possible memory leak
+  DMA, CMA: separate core CMA management codes from DMA APIs
+  DMA, CMA: support alignment constraint on CMA region
+  DMA, CMA: support arbitrary bitmap granularity
+  CMA: generalize CMA reserved area management functionality
+  PPC, KVM, CMA: use general CMA reserved area management framework
+  mm, CMA: clean-up CMA allocation error path
+  mm, CMA: change cma_declare_contiguous() to obey coding convention
+  mm, CMA: clean-up log message
+
+ arch/arm/mm/dma-mapping.c            |    1 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c  |    4 +-
+ arch/powerpc/kvm/book3s_hv_builtin.c |   19 +-
+ arch/powerpc/kvm/book3s_hv_cma.c     |  240 ------------------------
+ arch/powerpc/kvm/book3s_hv_cma.h     |   27 ---
+ drivers/base/Kconfig                 |   10 -
+ drivers/base/dma-contiguous.c        |  210 ++-------------------
+ include/linux/cma.h                  |   21 +++
+ include/linux/dma-contiguous.h       |   11 +-
+ mm/Kconfig                           |   11 ++
+ mm/Makefile                          |    1 +
+ mm/cma.c                             |  335 ++++++++++++++++++++++++++++++++++
+ 12 files changed, 397 insertions(+), 493 deletions(-)
+ delete mode 100644 arch/powerpc/kvm/book3s_hv_cma.c
+ delete mode 100644 arch/powerpc/kvm/book3s_hv_cma.h
+ create mode 100644 include/linux/cma.h
+ create mode 100644 mm/cma.c
+
 -- 
 1.7.9.5
