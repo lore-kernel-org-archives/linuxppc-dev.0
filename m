@@ -1,21 +1,26 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AFC001A02B4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 19:02:34 +1000 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH v2] KVM: PPC: e500mc: Enhance tlb invalidation condition on
- vcpu schedule
-Date: Tue, 17 Jun 2014 12:02:19 +0300
-Message-ID: <1402995739-23756-1-git-send-email-mihai.caraman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BC2E1A02B7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 19:08:49 +1000 (EST)
+Message-ID: <53A0059E.7060501@suse.de>
+Date: Tue, 17 Jun 2014 11:08:46 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>,
- Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition on
+ vcpu schedule
+References: <1402581610-16585-1-git-send-email-mihai.caraman@freescale.com>	
+ <5399DDA8.5060404@suse.de>	
+ <306b1e4daa2f4441aaef7c7383b484fc@BY2PR03MB508.namprd03.prod.outlook.com>	
+ <539B10DF.6070509@suse.de> <1402688561.6603.583.camel@snotra.buserror.net>
+In-Reply-To: <1402688561.6603.583.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,101 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On vcpu schedule, the condition checked for tlb pollution is too loose.
-The tlb entries of a vcpu become polluted (vs stale) only when a different
-vcpu within the same logical partition runs in-between. Optimize the tlb
-invalidation condition taking into account the logical partition id.
 
-With the new invalidation condition, a guest shows 4% performance improvement
-on P5020DS while running a memory stress application with the cpu oversubscribed,
-the other guest running a cpu intensive workload.
+On 13.06.14 21:42, Scott Wood wrote:
+> On Fri, 2014-06-13 at 16:55 +0200, Alexander Graf wrote:
+>> On 13.06.14 16:43, mihai.caraman@freescale.com wrote:
+>>>> -----Original Message-----
+>>>> From: Alexander Graf [mailto:agraf@suse.de]
+>>>> Sent: Thursday, June 12, 2014 8:05 PM
+>>>> To: Caraman Mihai Claudiu-B02008
+>>>> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+>>>> dev@lists.ozlabs.org; Wood Scott-B07421
+>>>> Subject: Re: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition
+>>>> on vcpu schedule
+>>>>
+>>>> On 06/12/2014 04:00 PM, Mihai Caraman wrote:
+>>>>> On vcpu schedule, the condition checked for tlb pollution is too tight.
+>>>>> The tlb entries of one vcpu are polluted when a different vcpu from the
+>>>>> same partition runs in-between. Relax the current tlb invalidation
+>>>>> condition taking into account the lpid.
+> Can you quantify the performance improvement from this?  We've had bugs
+> in this area before, so let's make sure it's worth it before making this
+> more complicated.
+>
+>>>>> Signed-off-by: Mihai Caraman <mihai.caraman <at> freescale.com>
+>>>> Your mailer is broken? :)
+>>>> This really should be an @.
+>>>>
+>>>> I think this should work. Scott, please ack.
+>>> Alex, you were right. I screwed up the patch description by inverting relax
+>>> and tight terms :) It should have been more like this:
+>>>
+>>> KVM: PPC: e500mc: Enhance tlb invalidation condition on vcpu schedule
+>>>
+>>> On vcpu schedule, the condition checked for tlb pollution is too loose.
+>>> The tlb entries of a vcpu are polluted (vs stale) only when a different vcpu
+>>> within the same logical partition runs in-between. Optimize the tlb invalidation
+>>> condition taking into account the lpid.
+>> Can't we give every vcpu its own lpid? Or don't we trap on global
+>> invalidates?
+> That would significantly increase the odds of exhausting LPIDs,
+> especially on large chips like t4240 with similarly large VMs.  If we
+> were to do that, the LPIDs would need to be dynamically assigned (like
+> PIDs), and should probably be a separate numberspace per physical core.
 
-Guest - old invalidation condition
-  real 3.89
-  user 3.87
-  sys 0.01
+True, I didn't realize we only have so few of them. It would however 
+save us from most flushing as long as we have spare LPIDs available :).
 
-Guest - enhanced invalidation condition
-  real 3.75
-  user 3.73
-  sys 0.01
 
-Host
-  real 3.70
-  user 1.85
-  sys 0.00
-
-The memory stress application accesses 4KB pages backed by 75% of available
-TLB0 entries:
-
-char foo[ENTRIES][4096] __attribute__ ((aligned (4096)));
-
-int main()
-{
-	char bar;
-	int i, j;
-
-	for (i = 0; i < ITERATIONS; i++)
-        	for (j = 0; j < ENTRIES; j++)
-            		bar = foo[j][0];
-
-	return 0;
-}
-
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>
----
-v2:
- - improve patch name and description
- - add performance results
-
- arch/powerpc/kvm/e500mc.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index 17e4562..d3b814b0 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -111,10 +111,12 @@ void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
- }
- 
- static DEFINE_PER_CPU(struct kvm_vcpu *, last_vcpu_on_cpu);
-+static DEFINE_PER_CPU(int, last_lpid_on_cpu);
- 
- static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
-+	bool update_last = false, inval_tlb = false;
- 
- 	kvmppc_booke_vcpu_load(vcpu, cpu);
- 
-@@ -140,12 +142,24 @@ static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
- 	mtspr(SPRN_GDEAR, vcpu->arch.shared->dar);
- 	mtspr(SPRN_GESR, vcpu->arch.shared->esr);
- 
--	if (vcpu->arch.oldpir != mfspr(SPRN_PIR) ||
--	    __get_cpu_var(last_vcpu_on_cpu) != vcpu) {
--		kvmppc_e500_tlbil_all(vcpu_e500);
-+	if (vcpu->arch.oldpir != mfspr(SPRN_PIR)) {
-+		/* stale tlb entries */
-+		inval_tlb = update_last = true;
-+	} else if (__get_cpu_var(last_vcpu_on_cpu) != vcpu) {
-+		update_last = true;
-+		/* polluted tlb entries */
-+		inval_tlb = __get_cpu_var(last_lpid_on_cpu) ==
-+			    vcpu->kvm->arch.lpid;
-+	}
-+
-+	if (update_last) {
- 		__get_cpu_var(last_vcpu_on_cpu) = vcpu;
-+		__get_cpu_var(last_lpid_on_cpu) = vcpu->kvm->arch.lpid;
- 	}
- 
-+	if (inval_tlb)
-+		kvmppc_e500_tlbil_all(vcpu_e500);
-+
- 	kvmppc_load_guest_fp(vcpu);
- }
- 
--- 
-1.7.11.7
+Alex
