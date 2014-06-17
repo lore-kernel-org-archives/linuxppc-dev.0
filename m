@@ -1,27 +1,29 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0208.outbound.protection.outlook.com [207.46.163.208])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <gnomes@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (lxorguk.ukuu.org.uk [81.2.110.251])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 138501A02CC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 22:00:34 +1000 (EST)
-From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
-To: Alexander Graf <agraf@suse.de>, Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] KVM: PPC: e500mc: Relax tlb invalidation condition on
- vcpu schedule
-Date: Tue, 17 Jun 2014 12:00:21 +0000
-Message-ID: <e7391a8c40244f0bb5beb90d5df45271@BY2PR03MB508.namprd03.prod.outlook.com>
-References: <1402581610-16585-1-git-send-email-mihai.caraman@freescale.com>
- <5399DDA8.5060404@suse.de>
- <306b1e4daa2f4441aaef7c7383b484fc@BY2PR03MB508.namprd03.prod.outlook.com>
- <539B10DF.6070509@suse.de> <1402688561.6603.583.camel@snotra.buserror.net>
- <53A0059E.7060501@suse.de>
-In-Reply-To: <53A0059E.7060501@suse.de>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C63DD1A027F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 22:07:52 +1000 (EST)
+Date: Tue, 17 Jun 2014 12:54:41 +0100
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH tty-next 14/22] tty: Remove
+ tty_wait_until_sent_from_close()
+Message-ID: <20140617125441.67cd5ef4@alan.etchedpixels.co.uk>
+In-Reply-To: <8191805.dfI4LbYmWz@wuerfel>
+References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
+ <53A01F02.7000202@hurleysoftware.com>
+ <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
+ <8191805.dfI4LbYmWz@wuerfel>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Karsten Keil <isdn@linux-pingi.de>,
+ 'Peter Hurley' <peter@hurleysoftware.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ David Laight <David.Laight@aculab.com>,
+ "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,67 +33,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbGV4YW5kZXIgR3JhZiBbbWFp
-bHRvOmFncmFmQHN1c2UuZGVdDQo+IFNlbnQ6IFR1ZXNkYXksIEp1bmUgMTcsIDIwMTQgMTI6MDkg
-UE0NCj4gVG86IFdvb2QgU2NvdHQtQjA3NDIxDQo+IENjOiBDYXJhbWFuIE1paGFpIENsYXVkaXUt
-QjAyMDA4OyBrdm0tcHBjQHZnZXIua2VybmVsLm9yZzsNCj4ga3ZtQHZnZXIua2VybmVsLm9yZzsg
-bGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gS1ZN
-OiBQUEM6IGU1MDBtYzogUmVsYXggdGxiIGludmFsaWRhdGlvbiBjb25kaXRpb24NCj4gb24gdmNw
-dSBzY2hlZHVsZQ0KPiANCj4gDQo+IE9uIDEzLjA2LjE0IDIxOjQyLCBTY290dCBXb29kIHdyb3Rl
-Og0KPiA+IE9uIEZyaSwgMjAxNC0wNi0xMyBhdCAxNjo1NSArMDIwMCwgQWxleGFuZGVyIEdyYWYg
-d3JvdGU6DQo+ID4+IE9uIDEzLjA2LjE0IDE2OjQzLCBtaWhhaS5jYXJhbWFuQGZyZWVzY2FsZS5j
-b20gd3JvdGU6DQo+ID4+Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4+PiBGcm9t
-OiBBbGV4YW5kZXIgR3JhZiBbbWFpbHRvOmFncmFmQHN1c2UuZGVdDQo+ID4+Pj4gU2VudDogVGh1
-cnNkYXksIEp1bmUgMTIsIDIwMTQgODowNSBQTQ0KPiA+Pj4+IFRvOiBDYXJhbWFuIE1paGFpIENs
-YXVkaXUtQjAyMDA4DQo+ID4+Pj4gQ2M6IGt2bS1wcGNAdmdlci5rZXJuZWwub3JnOyBrdm1Admdl
-ci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gPj4+PiBkZXZAbGlzdHMub3psYWJzLm9yZzsgV29v
-ZCBTY290dC1CMDc0MjENCj4gPj4+PiBTdWJqZWN0OiBSZTogW1BBVENIXSBLVk06IFBQQzogZTUw
-MG1jOiBSZWxheCB0bGIgaW52YWxpZGF0aW9uDQo+IGNvbmRpdGlvbg0KPiA+Pj4+IG9uIHZjcHUg
-c2NoZWR1bGUNCj4gPj4+Pg0KPiA+Pj4+IE9uIDA2LzEyLzIwMTQgMDQ6MDAgUE0sIE1paGFpIENh
-cmFtYW4gd3JvdGU6DQo+ID4+Pj4+IE9uIHZjcHUgc2NoZWR1bGUsIHRoZSBjb25kaXRpb24gY2hl
-Y2tlZCBmb3IgdGxiIHBvbGx1dGlvbiBpcyB0b28NCj4gdGlnaHQuDQo+ID4+Pj4+IFRoZSB0bGIg
-ZW50cmllcyBvZiBvbmUgdmNwdSBhcmUgcG9sbHV0ZWQgd2hlbiBhIGRpZmZlcmVudCB2Y3B1IGZy
-b20NCj4gdGhlDQo+ID4+Pj4+IHNhbWUgcGFydGl0aW9uIHJ1bnMgaW4tYmV0d2Vlbi4gUmVsYXgg
-dGhlIGN1cnJlbnQgdGxiIGludmFsaWRhdGlvbg0KPiA+Pj4+PiBjb25kaXRpb24gdGFraW5nIGlu
-dG8gYWNjb3VudCB0aGUgbHBpZC4NCj4gPiBDYW4geW91IHF1YW50aWZ5IHRoZSBwZXJmb3JtYW5j
-ZSBpbXByb3ZlbWVudCBmcm9tIHRoaXM/ICBXZSd2ZSBoYWQgYnVncw0KPiA+IGluIHRoaXMgYXJl
-YSBiZWZvcmUsIHNvIGxldCdzIG1ha2Ugc3VyZSBpdCdzIHdvcnRoIGl0IGJlZm9yZSBtYWtpbmcN
-Cj4gdGhpcw0KPiA+IG1vcmUgY29tcGxpY2F0ZWQuDQo+ID4NCj4gPj4+Pj4gU2lnbmVkLW9mZi1i
-eTogTWloYWkgQ2FyYW1hbiA8bWloYWkuY2FyYW1hbiA8YXQ+IGZyZWVzY2FsZS5jb20+DQo+ID4+
-Pj4gWW91ciBtYWlsZXIgaXMgYnJva2VuPyA6KQ0KPiA+Pj4+IFRoaXMgcmVhbGx5IHNob3VsZCBi
-ZSBhbiBALg0KPiA+Pj4+DQo+ID4+Pj4gSSB0aGluayB0aGlzIHNob3VsZCB3b3JrLiBTY290dCwg
-cGxlYXNlIGFjay4NCj4gPj4+IEFsZXgsIHlvdSB3ZXJlIHJpZ2h0LiBJIHNjcmV3ZWQgdXAgdGhl
-IHBhdGNoIGRlc2NyaXB0aW9uIGJ5IGludmVydGluZw0KPiByZWxheA0KPiA+Pj4gYW5kIHRpZ2h0
-IHRlcm1zIDopIEl0IHNob3VsZCBoYXZlIGJlZW4gbW9yZSBsaWtlIHRoaXM6DQo+ID4+Pg0KPiA+
-Pj4gS1ZNOiBQUEM6IGU1MDBtYzogRW5oYW5jZSB0bGIgaW52YWxpZGF0aW9uIGNvbmRpdGlvbiBv
-biB2Y3B1IHNjaGVkdWxlDQo+ID4+Pg0KPiA+Pj4gT24gdmNwdSBzY2hlZHVsZSwgdGhlIGNvbmRp
-dGlvbiBjaGVja2VkIGZvciB0bGIgcG9sbHV0aW9uIGlzIHRvbw0KPiBsb29zZS4NCj4gPj4+IFRo
-ZSB0bGIgZW50cmllcyBvZiBhIHZjcHUgYXJlIHBvbGx1dGVkICh2cyBzdGFsZSkgb25seSB3aGVu
-IGENCj4gZGlmZmVyZW50IHZjcHUNCj4gPj4+IHdpdGhpbiB0aGUgc2FtZSBsb2dpY2FsIHBhcnRp
-dGlvbiBydW5zIGluLWJldHdlZW4uIE9wdGltaXplIHRoZSB0bGINCj4gaW52YWxpZGF0aW9uDQo+
-ID4+PiBjb25kaXRpb24gdGFraW5nIGludG8gYWNjb3VudCB0aGUgbHBpZC4NCj4gPj4gQ2FuJ3Qg
-d2UgZ2l2ZSBldmVyeSB2Y3B1IGl0cyBvd24gbHBpZD8gT3IgZG9uJ3Qgd2UgdHJhcCBvbiBnbG9i
-YWwNCj4gPj4gaW52YWxpZGF0ZXM/DQo+ID4gVGhhdCB3b3VsZCBzaWduaWZpY2FudGx5IGluY3Jl
-YXNlIHRoZSBvZGRzIG9mIGV4aGF1c3RpbmcgTFBJRHMsDQo+ID4gZXNwZWNpYWxseSBvbiBsYXJn
-ZSBjaGlwcyBsaWtlIHQ0MjQwIHdpdGggc2ltaWxhcmx5IGxhcmdlIFZNcy4gIElmIHdlDQo+ID4g
-d2VyZSB0byBkbyB0aGF0LCB0aGUgTFBJRHMgd291bGQgbmVlZCB0byBiZSBkeW5hbWljYWxseSBh
-c3NpZ25lZCAobGlrZQ0KPiA+IFBJRHMpLCBhbmQgc2hvdWxkIHByb2JhYmx5IGJlIGEgc2VwYXJh
-dGUgbnVtYmVyc3BhY2UgcGVyIHBoeXNpY2FsIGNvcmUuDQo+IA0KPiBUcnVlLCBJIGRpZG4ndCBy
-ZWFsaXplIHdlIG9ubHkgaGF2ZSBzbyBmZXcgb2YgdGhlbS4gSXQgd291bGQgaG93ZXZlcg0KPiBz
-YXZlIHVzIGZyb20gbW9zdCBmbHVzaGluZyBhcyBsb25nIGFzIHdlIGhhdmUgc3BhcmUgTFBJRHMg
-YXZhaWxhYmxlIDopLg0KDQpZZXMsIHdlIGhhZCB0aGlzIHByb3Bvc2FsIG9uIHRoZSB0YWJsZSBm
-b3IgZTY1MDAgbXVsdGl0aHJlYWRlZCBjb3JlLiBUaGlzDQpjb3JlIGxhY2tzIHRsYiB3cml0ZSBj
-b25kaXRpb25hbCBpbnN0cnVjdGlvbiwgc28gYW4gT1MgbmVlZHMgdG8gdXNlIGxvY2tzDQp0byBw
-cm90ZWN0IGl0c2VsZiBhZ2FpbnN0IGNvbmN1cnJlbnQgdGxiIHdyaXRlcyBleGVjdXRlZCBmcm9t
-IHNpYmxpbmcgdGhyZWFkcy4NCldoZW4gd2UgZXhwb3NlIGh3IHRyZWFkcyBhcyBzaW5nbGUtdGhy
-ZWFkZWQgdmNwdXMgKHVzZWZ1bCB3aGVuIHRoZSB1c2VyIG9wdA0Kbm90IHRvIHBpbiB2Y3B1cyks
-IHRoZSBndWVzdCBjYW4ndCBubyBsb25nZXIgcHJvdGVjdCBpdHNlbGYgb3B0aW1hbGx5DQooaXQg
-Y2FuIHByb3RlY3QgdGxiIHdyaXRlcyBhY3Jvc3MgYWxsIHRocmVhZHMgYnV0IHRoaXMgaXMgbm90
-IGFjY2VwdGFibGUpLg0KU28gaW5zdGVhZCwgd2UgZm91bmQgYSBzb2x1dGlvbiBhdCBoeXBlcnZp
-c29yIGxldmVsIGJ5IGFzc2lnbmluZyBkaWZmZXJlbnQNCmxvZ2ljYWwgcGFydGl0aW9uIGlkcyB0
-byBndWVzdCdzIHZjcHVzIHJ1bm5pbmcgc2ltdWx0YW5lb3VzIG9uIHNpYmxpbmcgaHcNCnRocmVh
-ZHMuIEN1cnJlbnRseSBpbiBGU0wgU0RLIHdlIGFsbG9jYXRlIHR3byBscGlkcyB0byBlYWNoIGd1
-ZXN0Lg0KDQpJIGFtIGFsc28gYSBwcm9wb25lbnQgZm9yIHVzaW5nIGFsbCBMUElEIHNwYWNlICg2
-MyB2YWx1ZXMpIHBlciAobXVsdGktdGhyZWFkZWQpDQpwaHlzaWNhbCBjb3JlLCB3aGljaCB3aWxs
-IGxlYWQgdG8gZmV3ZXIgaW52YWxpZGF0ZXMgb24gdmNwdSBzY2hlZHVsZSBhbmQgd2lsbA0KYWNj
-b21tb2RhdGUgdGhlIHNvbHV0aW9uIGRlc2NyaWJlZCBhYm92ZS4NCg0KLU1pa2UNCg==
+> Before the patch, I believe tty_reopen() would return -EIO because
+> the TTY_CLOSING flag is set. After the patch, tty_open() blocks
+> on tty_lock() before calling tty_reopen(). AFAICT, this is independent
+> of O_NONBLOCK.
+
+That would be a bug then. Returning -EIO is fine (if unfriendly). The
+O_NONBLOCK can't block in this case though because the port could take a
+long time to give up trying to dribble its bits (up to 30 seconds or so)
+
+Alan
