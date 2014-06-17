@@ -1,39 +1,35 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 976AB1A034F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 01:47:54 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 78E671A029E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 01:59:14 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 17 Jun 2014 11:47:52 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 336136E802D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 11:47:40 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5HFlmIG3473912
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 15:47:48 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5HFlmku025790
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 11:47:48 -0400
-Received: from localhost.localdomain ([9.80.40.207])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s5HFllms025703
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 11:47:47 -0400
-Message-ID: <53A06323.3080707@linux.vnet.ibm.com>
-Date: Tue, 17 Jun 2014 10:47:47 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Tue, 17 Jun 2014 16:59:09 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 1464C17D86F9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 16:58:24 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5HFuxYt29294728
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 15:57:00 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5HFuwZj028869
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 09:56:59 -0600
+Subject: [PATCH] powerpc: module: fix TOC symbol CRC
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [RFC PATCH 4/4] Hook into ras epow interrupt handler for hotplug
-References: <53A061EC.10403@linux.vnet.ibm.com>
-In-Reply-To: <53A061EC.10403@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Date: Tue, 17 Jun 2014 17:56:58 +0200
+Message-ID: <20140617155658.30560.578.stgit@nimbus>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,84 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch hooks into the ras EPOW interrupt handler so that we can
-communicate hotplug rtas events to a PowerKVM guest from qemu.
+The commit 71ec7c55ed91 introduced the magic symbol ".TOC." for ELFv2 ABI.
+This symbol is built manually and has no CRC value computed. A zero value
+is put in the CRC section to avoid modpost complaining about a missing CRC.
+Unfortunately, this breaks the kernel module loading when the kernel is
+relocated (kdump case for instance) because of the relocation applied to
+the kcrctab values.
 
-The ras epow interrupt wil lnow check for hotplgu rtas events and
-invoke the common handling routine accordingly.
+This patch compute a CRC value for the TOC symbol which will match the one
+compute by the kernel when it is relocated - aka '0 - relocate_start' done in
+maybe_relocated called by check_version (module.c).
+
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/include/asm/rtas.h          |  1 +
- arch/powerpc/platforms/pseries/dlpar.c   |  2 +-
- arch/powerpc/platforms/pseries/pseries.h |  1 +
- arch/powerpc/platforms/pseries/ras.c     | 12 +++++++++++-
- 4 files changed, 14 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/module_64.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 26491ae..7313e6f 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -124,6 +124,7 @@ struct rtas_suspend_me_data {
- #define RTAS_TYPE_INFO			0xE2
- #define RTAS_TYPE_DEALLOC		0xE3
- #define RTAS_TYPE_DUMP			0xE4
-+#define RTAS_TYPE_HOTPLUG		0xE5
- /* I don't add PowerMGM events right now, this is a different topic */ 
- #define RTAS_TYPE_PMGM_POWER_SW_ON	0x60
- #define RTAS_TYPE_PMGM_POWER_SW_OFF	0x61
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 53f4fe6..6d3de6e 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -360,7 +360,7 @@ int dlpar_release_drc(u32 drc_index)
- 	return 0;
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 077d2ce..a80c933 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -315,8 +315,15 @@ static void dedotify_versions(struct modversion_info *vers,
+ 	struct modversion_info *end;
+ 
+ 	for (end = (void *)vers + size; vers < end; vers++)
+-		if (vers->name[0] == '.')
++		if (vers->name[0] == '.') {
+ 			memmove(vers->name, vers->name+1, strlen(vers->name));
++			/* The TOC symbol has no CRC computed. To avoid CRC
++			 * check failing, we must force it to the expected
++			 * value (see CRC check in module.c).
++			 */
++			if (!strcmp(vers->name, "TOC."))
++				vers->crc = -(unsigned long)reloc_start;
++		}
  }
  
--static int handle_dlpar_errorlog(struct rtas_error_log *error_log)
-+int handle_dlpar_errorlog(struct rtas_error_log *error_log)
- {
- 	struct pseries_errorlog *pseries_log;
- 	struct pseries_hp_elog *hp_elog;
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 1706215..9b9bd82 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -64,6 +64,7 @@ extern int dlpar_acquire_drc(u32);
- extern int dlpar_release_drc(u32);
- extern int dlpar_memory(struct pseries_hp_elog *);
- extern int dlpar_cpus(struct pseries_hp_elog *);
-+extern int handle_dlpar_errorlog(struct rtas_error_log *);
- 
- /* PCI root bridge prepare function override for pseries */
- struct pci_host_bridge;
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 9c5778e..3cc6a49 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -183,6 +183,7 @@ void rtas_parse_epow_errlog(struct rtas_error_log *log)
- /* Handle environmental and power warning (EPOW) interrupts. */
- static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
- {
-+	struct rtas_error_log *elog;
- 	int status;
- 	int state;
- 	int critical;
-@@ -205,7 +206,16 @@ static irqreturn_t ras_epow_interrupt(int irq, void *dev_id)
- 
- 	log_error(ras_log_buf, ERR_TYPE_RTAS_LOG, 0);
- 
--	rtas_parse_epow_errlog((struct rtas_error_log *)ras_log_buf);
-+	elog = (struct rtas_error_log *)ras_log_buf;
-+
-+	switch(rtas_error_type(elog)) {
-+	case RTAS_TYPE_EPOW:
-+		rtas_parse_epow_errlog(elog);
-+		break;
-+	case RTAS_TYPE_HOTPLUG:
-+		handle_dlpar_errorlog(elog);
-+		break;
-+	}
- 
- 	spin_unlock(&ras_log_buf_lock);
- 	return IRQ_HANDLED;
--- 
-2.0.0.rc3.2.g998f840
+ /* Undefined symbols which refer to .funcname, hack to funcname (or .TOC.) */
