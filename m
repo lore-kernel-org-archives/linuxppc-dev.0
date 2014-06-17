@@ -1,29 +1,21 @@
-Return-Path: <iamjoonsoo.kim@lge.com>
-Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
- by lists.ozlabs.org (Postfix) with ESMTP id A5EF51A005E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 11:29:35 +1000 (EST)
-Date: Tue, 17 Jun 2014 10:33:50 +0900
-From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-To: Minchan Kim <minchan@kernel.org>
-Subject: Re: [PATCH v3 -next 1/9] DMA, CMA: fix possible memory leak
-Message-ID: <20140617013349.GB6825@js1304-P5Q-DELUXE>
-References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402897251-23639-2-git-send-email-iamjoonsoo.kim@lge.com>
- <20140616062719.GA18790@bbox>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205])
+ by lists.ozlabs.org (Postfix) with ESMTP id 19E3F1A0350
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 12:02:19 +1000 (EST)
+Message-ID: <539FA1A1.6030502@roeck-us.net>
+Date: Mon, 16 Jun 2014 19:02:09 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140616062719.GA18790@bbox>
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
- Zhang Yanfei <zhangyanfei@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [PATCH] powerpc: Fix build warning
+References: <1402677499-28289-1-git-send-email-linux@roeck-us.net>
+ <alpine.DEB.2.02.1406161824340.21018@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.02.1406161824340.21018@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Vincent Guittot <vincent.guittot@linaro.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,38 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 16, 2014 at 03:27:19PM +0900, Minchan Kim wrote:
-> Hi, Joonsoo
-> 
-> On Mon, Jun 16, 2014 at 02:40:43PM +0900, Joonsoo Kim wrote:
-> > We should free memory for bitmap when we find zone mis-match,
-> > otherwise this memory will leak.
-> > 
-> > Additionally, I copy code comment from PPC KVM's CMA code to inform
-> > why we need to check zone mis-match.
-> > 
-> > * Note
-> > Minchan suggested to add a tag for the stable, but, I don't do it,
-> > because I found this possibility during code-review and, IMO,
-> > this patch isn't suitable for stable tree.
-> 
-> Nice idea to put the comment in here. Thanks Joonsoo.
-> 
-> It seems you obey "It must fix a real bug that bothers people"
-> on Documentation/stable_kernel_rules.txt but it's a really obvious
-> bug and hard to get a report from people because limited user and
-> hard to detect small such small memory leak.
-> 
-> In my experince, Andrew perfered stable marking for such a obvious
-> problem but simple fix like this but not sure so let's pass the decision
-> to him and will learn a lesson from him and will follow the decision
-> from now on.
+On 06/16/2014 06:25 PM, David Rientjes wrote:
+> On Fri, 13 Jun 2014, Guenter Roeck wrote:
+>
+>> If compiled with W=1, the following warning is seen in powerpc builds.
+>>
+>> arch/powerpc/kernel/smp.c:750:18: warning:
+>> 	type qualifiers ignored on function return type
+>> static const int powerpc_smt_flags(void)
+>>                   ^
+>>
+>> This is caused by a function returning 'const int', which doesn't
+>> make sense to gcc. Drop 'const' to fix the problem.
+>>
+>> Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>
+> Acked-by: David Rientjes <rientjes@google.com>
+>
+> Although it's strange you report this happening on line 750 in the
+> changelog but the patch shows it differently.
+>
 
-Yes, I intended to pass the decision to others. :)
+In the latest kernel (v3.16-rc1) the function is at line 750.
+It appears that I ran the build test on a later version than
+the one I used to write the patch. Hope that is not a problem.
 
-> 
-> Thanks.
-> 
-> Acked-by: Minchan Kim <minchan@kernel.org>
-
-Thanks.
+Guenter
