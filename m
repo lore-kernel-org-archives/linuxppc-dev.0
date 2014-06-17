@@ -1,20 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 912121A0234
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 18:54:10 +1000 (EST)
-Message-ID: <53A0022D.5020108@suse.de>
-Date: Tue, 17 Jun 2014 10:54:05 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AFC001A02B4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 19:02:34 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH v2] KVM: PPC: e500mc: Enhance tlb invalidation condition on
+ vcpu schedule
+Date: Tue, 17 Jun 2014 12:02:19 +0300
+Message-ID: <1402995739-23756-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH] powerpc/kvm: support to handle sw breakpoint
-References: <1402780097-28827-1-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1402780097-28827-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>,
+ Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,95 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On vcpu schedule, the condition checked for tlb pollution is too loose.
+The tlb entries of a vcpu become polluted (vs stale) only when a different
+vcpu within the same logical partition runs in-between. Optimize the tlb
+invalidation condition taking into account the logical partition id.
 
-On 14.06.14 23:08, Madhavan Srinivasan wrote:
-> This patch adds kernel side support for software breakpoint.
-> Design is that, by using an illegal instruction, we trap to hypervisor
-> via Emulation Assistance interrupt, where we check for the illegal instruction
-> and accordingly we return to Host or Guest. Patch mandates use of "abs" instruction
-> (primary opcode 31 and extended opcode 360) as sw breakpoint instruction.
-> Based on PowerISA v2.01, ABS instruction has been dropped from the architecture
-> and treated an illegal instruction.
->
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/kvm/book3s.c    |  3 ++-
->   arch/powerpc/kvm/book3s_hv.c | 23 +++++++++++++++++++----
->   2 files changed, 21 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index c254c27..b40fe5d 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -789,7 +789,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
->   int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
->   					struct kvm_guest_debug *dbg)
->   {
-> -	return -EINVAL;
-> +	vcpu->guest_debug = dbg->control;
-> +	return 0;
->   }
->   
->   void kvmppc_decrementer_func(unsigned long data)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 7a12edb..688421d 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -67,6 +67,14 @@
->   /* Used as a "null" value for timebase values */
->   #define TB_NIL	(~(u64)0)
->   
-> +/*
-> + * SW_BRK_DBG_INT is debug Instruction for supporting Software Breakpoint.
-> + * Instruction mnemonic is ABS, primary opcode is 31 and extended opcode is 360.
-> + * Based on PowerISA v2.01, ABS instruction has been dropped from the architecture
-> + * and treated an illegal instruction.
-> + */
-> +#define SW_BRK_DBG_INT 0x7c0002d0
+With the new invalidation condition, a guest shows 4% performance improvement
+on P5020DS while running a memory stress application with the cpu oversubscribed,
+the other guest running a cpu intensive workload.
 
-The instruction we use to trap needs to get exposed to user space via a 
-ONE_REG property.
+Guest - old invalidation condition
+  real 3.89
+  user 3.87
+  sys 0.01
 
-Also, why don't we use twi always or something else that actually is 
-defined as illegal instruction? I would like to see this shared with 
-book3s_32 PR.
+Guest - enhanced invalidation condition
+  real 3.75
+  user 3.73
+  sys 0.01
 
-> +
->   static void kvmppc_end_cede(struct kvm_vcpu *vcpu);
->   static int kvmppc_hv_setup_htab_rma(struct kvm_vcpu *vcpu);
->   
-> @@ -721,12 +729,19 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   		break;
->   	/*
->   	 * This occurs if the guest executes an illegal instruction.
-> -	 * We just generate a program interrupt to the guest, since
-> -	 * we don't emulate any guest instructions at this stage.
-> +	 * To support software breakpoint, we check for the sw breakpoint
-> +	 * instruction to return back to host, if not we just generate a
-> +	 * program interrupt to the guest.
->   	 */
->   	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
-> -		kvmppc_core_queue_program(vcpu, SRR1_PROGILL);
-> -		r = RESUME_GUEST;
-> +		if (vcpu->arch.last_inst == SW_BRK_DBG_INT) {
+Host
+  real 3.70
+  user 1.85
+  sys 0.00
 
-Don't access last_inst directly. Instead use the provided helpers.
+The memory stress application accesses 4KB pages backed by 75% of available
+TLB0 entries:
 
-> +			run->exit_reason = KVM_EXIT_DEBUG;
-> +			run->debug.arch.address = vcpu->arch.pc;
-> +			r = RESUME_HOST;
-> +		} else {
-> +			kvmppc_core_queue_program(vcpu, 0x80000);
+char foo[ENTRIES][4096] __attribute__ ((aligned (4096)));
 
-magic numbers
+int main()
+{
+	char bar;
+	int i, j;
 
-> +			r = RESUME_GUEST;
-> +		}
->   		break;
->   	/*
->   	 * This occurs if the guest (kernel or userspace), does something that
+	for (i = 0; i < ITERATIONS; i++)
+        	for (j = 0; j < ENTRIES; j++)
+            		bar = foo[j][0];
 
-Please enable PR KVM as well while you're at it.
+	return 0;
+}
 
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>
+---
+v2:
+ - improve patch name and description
+ - add performance results
 
-Alex
+ arch/powerpc/kvm/e500mc.c | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+index 17e4562..d3b814b0 100644
+--- a/arch/powerpc/kvm/e500mc.c
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -111,10 +111,12 @@ void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
+ }
+ 
+ static DEFINE_PER_CPU(struct kvm_vcpu *, last_vcpu_on_cpu);
++static DEFINE_PER_CPU(int, last_lpid_on_cpu);
+ 
+ static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
+ {
+ 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
++	bool update_last = false, inval_tlb = false;
+ 
+ 	kvmppc_booke_vcpu_load(vcpu, cpu);
+ 
+@@ -140,12 +142,24 @@ static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
+ 	mtspr(SPRN_GDEAR, vcpu->arch.shared->dar);
+ 	mtspr(SPRN_GESR, vcpu->arch.shared->esr);
+ 
+-	if (vcpu->arch.oldpir != mfspr(SPRN_PIR) ||
+-	    __get_cpu_var(last_vcpu_on_cpu) != vcpu) {
+-		kvmppc_e500_tlbil_all(vcpu_e500);
++	if (vcpu->arch.oldpir != mfspr(SPRN_PIR)) {
++		/* stale tlb entries */
++		inval_tlb = update_last = true;
++	} else if (__get_cpu_var(last_vcpu_on_cpu) != vcpu) {
++		update_last = true;
++		/* polluted tlb entries */
++		inval_tlb = __get_cpu_var(last_lpid_on_cpu) ==
++			    vcpu->kvm->arch.lpid;
++	}
++
++	if (update_last) {
+ 		__get_cpu_var(last_vcpu_on_cpu) = vcpu;
++		__get_cpu_var(last_lpid_on_cpu) = vcpu->kvm->arch.lpid;
+ 	}
+ 
++	if (inval_tlb)
++		kvmppc_e500_tlbil_all(vcpu_e500);
++
+ 	kvmppc_load_guest_fp(vcpu);
+ }
+ 
+-- 
+1.7.11.7
