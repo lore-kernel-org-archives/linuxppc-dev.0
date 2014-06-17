@@ -1,20 +1,24 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- by lists.ozlabs.org (Postfix) with ESMTP id D2CC21A0168
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 05:19:38 +1000 (EST)
-Date: Tue, 17 Jun 2014 12:23:34 -0700
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Jeff Liu <jeff.liu@oracle.com>
-Subject: Re: [PATCH 04/24] powerpc: check/return actual error on sysfs
- functions
-Message-ID: <20140617192334.GA4628@kroah.com>
-References: <53A0512D.1090909@oracle.com>
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0183.outbound.protection.outlook.com [207.46.163.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E0D5D1A02AA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 05:42:49 +1000 (EST)
+From: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v3] KVM: PPC: e500mc: Enhance tlb invalidation condition
+ on vcpu schedule
+Date: Tue, 17 Jun 2014 19:42:41 +0000
+Message-ID: <37af68eb6855437892a438eec213d788@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1403032176-28362-1-git-send-email-mihai.caraman@freescale.com>
+ <1403032706.6603.776.camel@snotra.buserror.net>
+In-Reply-To: <1403032706.6603.776.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <53A0512D.1090909@oracle.com>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 17, 2014 at 10:31:09PM +0800, Jeff Liu wrote:
-> From: Jie Liu <jeff.liu@oracle.com>
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Jie Liu <jeff.liu@oracle.com>
-> ---
->  arch/powerpc/platforms/powernv/opal-dump.c | 2 +-
->  arch/powerpc/platforms/powernv/opal-elog.c | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
-
-Ben and Paul, please do not take this patch, it is incorrect.
-
-greg k-h
+PiA+IC1zdGF0aWMgREVGSU5FX1BFUl9DUFUoc3RydWN0IGt2bV92Y3B1ICosIGxhc3RfdmNwdV9v
+bl9jcHUpOw0KPiA+ICtzdGF0aWMgREVGSU5FX1BFUl9DUFUoc3RydWN0IGt2bV92Y3B1ICogW0tW
+TVBQQ19OUl9MUElEU10sDQo+IGxhc3RfdmNwdV9vbl9jcHUpOw0KPiANCj4gSG1tLCBJIGRpZG4n
+dCBrbm93IHlvdSBjb3VsZCBleHByZXNzIHR5cGVzIGxpa2UgdGhhdC4gIElzIHRoaXMgc3BlY2lh
+bA0KPiBzeW50YXggdGhhdCBvbmx5IHdvcmtzIGZvciB0eXBlb2Y/DQoNClllcywgQUZBSUsuDQoN
+Cj4gTm8gc3BhY2UgYWZ0ZXIgKg0KDQpDaGVja3BhdGNoIGNvbXBsYWlucyBhYm91dCB0aGUgbWlz
+c2luZyBzcGFjZSA7KQ0KDQo+IA0KPiBOYW1lIHNob3VsZCBiZSBhZGp1c3RlZCB0byBtYXRjaCwg
+c29tZXRoaW5nIGxpa2UgbGFzdF92Y3B1X29mX2xwaWQgKHdpdGgNCj4gdGhlIF9vbl9jcHUgYmVp
+bmcgaW1wbGllZCBieSB0aGUgZmFjdCB0aGF0IGl0J3MgUEVSX0NQVSkuDQoNCkkgd2FzIHRoaW5r
+aW5nIHRvIHRoZSBsb25nIG5hbWUgYnV0IGl0IHdhcyBub3QgYXBwZWFsaW5nLCBJIHdpbGwgY2hh
+bmdlIGl0IHRvDQpsYXN0X3ZjcHVfb2ZfbHBpZC4NCg0KLU1pa2UNCg==
