@@ -1,27 +1,28 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from mailout61.mail01.mtsvc.net (mailout61.mail01.mtsvc.net
- [216.70.64.9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 798091A0361
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 01:18:52 +1000 (EST)
-Received: from mailout32.mail01.mtsvc.net ([216.70.64.70]
- helo=n23.mail01.mtsvc.net)
- by mailout61.mail01.mtsvc.net with esmtps (UNKNOWN:AES256-GCM-SHA384:256)
- (Exim 4.72) (envelope-from <peter@hurleysoftware.com>)
- id 1WwWrQ-0000uP-7I
- for linuxppc-dev@lists.ozlabs.org; Mon, 16 Jun 2014 09:22:08 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH tty-next 14/22] tty: Remove tty_wait_until_sent_from_close()
-Date: Mon, 16 Jun 2014 09:17:11 -0400
-Message-Id: <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
-In-Reply-To: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
-References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
-Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
- Karsten Keil <isdn@linux-pingi.de>, Peter Hurley <peter@hurleysoftware.com>,
- linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <iamjoonsoo.kim@lge.com>
+Received: from lgemrelse7q.lge.com (LGEMRELSE7Q.lge.com [156.147.1.151])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0F8591A0357
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 11:20:54 +1000 (EST)
+Date: Tue, 17 Jun 2014 10:25:07 +0900
+From: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v3 -next 0/9] CMA: generalize CMA reserved area
+ management code
+Message-ID: <20140617012507.GA6825@js1304-P5Q-DELUXE>
+References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <539EB4C7.3080106@samsung.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <539EB4C7.3080106@samsung.com>
+Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Zhang Yanfei <zhangyanfei@cn.fujitsu.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,130 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tty_wait_until_sent_from_close() drops the tty lock while waiting
-for the tty driver to finish sending previously accepted data (ie.,
-data remaining in its write buffer and transmit fifo).
+On Mon, Jun 16, 2014 at 11:11:35AM +0200, Marek Szyprowski wrote:
+> Hello,
+> 
+> On 2014-06-16 07:40, Joonsoo Kim wrote:
+> >Currently, there are two users on CMA functionality, one is the DMA
+> >subsystem and the other is the KVM on powerpc. They have their own code
+> >to manage CMA reserved area even if they looks really similar.
+> >>From my guess, it is caused by some needs on bitmap management. Kvm side
+> >wants to maintain bitmap not for 1 page, but for more size. Eventually it
+> >use bitmap where one bit represents 64 pages.
+> >
+> >When I implement CMA related patches, I should change those two places
+> >to apply my change and it seem to be painful to me. I want to change
+> >this situation and reduce future code management overhead through
+> >this patch.
+> >
+> >This change could also help developer who want to use CMA in their
+> >new feature development, since they can use CMA easily without
+> >copying & pasting this reserved area management code.
+> >
+> >v3:
+> >   - Simplify old patch 1(log format fix) and move it to the end of patchset.
+> >   - Patch 2: Pass aligned base and size to dma_contiguous_early_fixup()
+> >   - Patch 5: Add some accessor functions to pass aligned base and size to
+> >   dma_contiguous_early_fixup() function
+> >   - Patch 5: Move MAX_CMA_AREAS definition to cma.h
+> >   - Patch 6: Add CMA region zeroing to PPC KVM's CMA alloc function
+> >   - Patch 8: put 'base' ahead of 'size' in cma_declare_contiguous()
+> >   - Remaining minor fixes are noted in commit description of each one
+> >
+> >v2:
+> >   - Although this patchset looks very different with v1, the end result,
+> >   that is, mm/cma.c is same with v1's one. So I carry Ack to patch 6-7.
+> >
+> >This patchset is based on linux-next 20140610.
+> 
+> Thanks for taking care of this. I will test it with my setup and if
+> everything goes well, I will take it to my -next tree. If any branch
+> is required for anyone to continue his works on top of those patches,
+> let me know, I will also prepare it.
 
-However, dropping the tty lock is a hold-over from when the tty
-lock was system-wide; ie., one lock for all ttys.
+Hello,
 
-Since commit 89c8d91e31f267703e365593f6bfebb9f6d2ad01,
-'tty: localise the lock', dropping the tty lock has not been necessary.
+I'm glad to hear that. :)
+But, there is one concern. As you already know, I am preparing further
+patches (Aggressively allocate the pages on CMA reserved memory). It
+may be highly related to MM branch and also slightly depends on this CMA
+changes. In this case, what is the best strategy to merge this
+patchset? IMHO, Anrew's tree is more appropriate branch. If there is
+no issue in this case, I am willing to develope further patches based
+on your tree.
 
-CC: Karsten Keil <isdn@linux-pingi.de>
-CC: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
----
- drivers/isdn/i4l/isdn_tty.c   |  2 +-
- drivers/tty/hvc/hvc_console.c |  2 +-
- drivers/tty/hvc/hvcs.c        |  2 +-
- drivers/tty/tty_port.c        | 11 ++---------
- include/linux/tty.h           | 18 ------------------
- 5 files changed, 5 insertions(+), 30 deletions(-)
-
-diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
-index 3c5f249..732f68a 100644
---- a/drivers/isdn/i4l/isdn_tty.c
-+++ b/drivers/isdn/i4l/isdn_tty.c
-@@ -1587,7 +1587,7 @@ isdn_tty_close(struct tty_struct *tty, struct file *filp)
- 	 * line status register.
- 	 */
- 	if (port->flags & ASYNC_INITIALIZED) {
--		tty_wait_until_sent_from_close(tty, 3000);	/* 30 seconds timeout */
-+		tty_wait_until_sent(tty, 3000);	/* 30 seconds timeout */
- 		/*
- 		 * Before we drop DTR, make sure the UART transmitter
- 		 * has completely drained; this is especially
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 0ff7fda..2297dc7 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -417,7 +417,7 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
- 		 * there is no buffered data otherwise sleeps on a wait queue
- 		 * waking periodically to check chars_in_buffer().
- 		 */
--		tty_wait_until_sent_from_close(tty, HVC_CLOSE_WAIT);
-+		tty_wait_until_sent(tty, HVC_CLOSE_WAIT);
- 	} else {
- 		if (hp->port.count < 0)
- 			printk(KERN_ERR "hvc_close %X: oops, count is %d\n",
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 81e939e..236302d 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -1230,7 +1230,7 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 		irq = hvcsd->vdev->irq;
- 		spin_unlock_irqrestore(&hvcsd->lock, flags);
- 
--		tty_wait_until_sent_from_close(tty, HVCS_CLOSE_WAIT);
-+		tty_wait_until_sent(tty, HVCS_CLOSE_WAIT);
- 
- 		/*
- 		 * This line is important because it tells hvcs_open that this
-diff --git a/drivers/tty/tty_port.c b/drivers/tty/tty_port.c
-index 1b93357..6b6214b 100644
---- a/drivers/tty/tty_port.c
-+++ b/drivers/tty/tty_port.c
-@@ -464,10 +464,7 @@ static void tty_port_drain_delay(struct tty_port *port, struct tty_struct *tty)
- 	schedule_timeout_interruptible(timeout);
- }
- 
--/* Caller holds tty lock.
-- * NB: may drop and reacquire tty lock (in tty_wait_until_sent_from_close())
-- * so tty and tty port may have changed state (but not hung up or reopened).
-- */
-+/* Caller holds tty lock. */
- int tty_port_close_start(struct tty_port *port,
- 				struct tty_struct *tty, struct file *filp)
- {
-@@ -505,7 +502,7 @@ int tty_port_close_start(struct tty_port *port,
- 		if (tty->flow_stopped)
- 			tty_driver_flush_buffer(tty);
- 		if (port->closing_wait != ASYNC_CLOSING_WAIT_NONE)
--			tty_wait_until_sent_from_close(tty, port->closing_wait);
-+			tty_wait_until_sent(tty, port->closing_wait);
- 		if (port->drain_delay)
- 			tty_port_drain_delay(port, tty);
- 	}
-@@ -545,10 +542,6 @@ EXPORT_SYMBOL(tty_port_close_end);
-  * tty_port_close
-  *
-  * Caller holds tty lock
-- *
-- * NB: may drop and reacquire tty lock (in tty_port_close_start()->
-- * tty_wait_until_sent_from_close()) so tty and tty_port may have changed
-- * state (but not hung up or reopened).
-  */
- void tty_port_close(struct tty_port *port, struct tty_struct *tty,
- 							struct file *filp)
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 1c3316a..f3eb70d 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -644,24 +644,6 @@ extern void __lockfunc tty_unlock_pair(struct tty_struct *tty,
- 				struct tty_struct *tty2);
- 
- /*
-- * this shall be called only from where BTM is held (like close)
-- *
-- * We need this to ensure nobody waits for us to finish while we are waiting.
-- * Without this we were encountering system stalls.
-- *
-- * This should be indeed removed with BTM removal later.
-- *
-- * Locking: BTM required. Nobody is allowed to hold port->mutex.
-- */
--static inline void tty_wait_until_sent_from_close(struct tty_struct *tty,
--		long timeout)
--{
--	tty_unlock(tty); /* tty->ops->close holds the BTM, drop it while waiting */
--	tty_wait_until_sent(tty, timeout);
--	tty_lock(tty);
--}
--
--/*
-  * wait_event_interruptible_tty -- wait for a condition with the tty lock held
-  *
-  * The condition we are waiting for might take a long time to
--- 
-2.0.0
+Thanks.
