@@ -1,24 +1,29 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCFEE1A02CA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 20:57:16 +1000 (EST)
-Message-ID: <53A01F02.7000202@hurleysoftware.com>
-Date: Tue, 17 Jun 2014 06:57:06 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH tty-next 14/22] tty: Remove
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id 253351A0296
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 21:05:04 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 14906-09 for <linuxppc-dev@lists.ozlabs.org>;
+ Tue, 17 Jun 2014 12:04:53 +0100 (BST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Peter Hurley' <peter@hurleysoftware.com>, Arnd Bergmann <arnd@arndb.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH tty-next 14/22] tty: Remove
  tty_wait_until_sent_from_close()
+Date: Tue, 17 Jun 2014 11:03:50 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
 References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
  <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
- <4575870.N9RCpZ4UMg@wuerfel>
-In-Reply-To: <4575870.N9RCpZ4UMg@wuerfel>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <4575870.N9RCpZ4UMg@wuerfel> <53A01F02.7000202@hurleysoftware.com>
+In-Reply-To: <53A01F02.7000202@hurleysoftware.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Karsten Keil <isdn@linux-pingi.de>, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+ Karsten Keil <isdn@linux-pingi.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+ One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2014 04:00 AM, Arnd Bergmann wrote:
-> On Monday 16 June 2014 09:17:11 Peter Hurley wrote:
->> tty_wait_until_sent_from_close() drops the tty lock while waiting
->> for the tty driver to finish sending previously accepted data (ie.,
->> data remaining in its write buffer and transmit fifo).
->>
->> However, dropping the tty lock is a hold-over from when the tty
->> lock was system-wide; ie., one lock for all ttys.
->>
->> Since commit 89c8d91e31f267703e365593f6bfebb9f6d2ad01,
->> 'tty: localise the lock', dropping the tty lock has not been necessary.
->>
->> CC: Karsten Keil <isdn@linux-pingi.de>
->> CC: linuxppc-dev@lists.ozlabs.org
->> Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
->
-> I don't understand the second half of the changelog, it doesn't seem
-> to fit here: there deadlock that we are trying to avoid here happens
-> when the *same* tty needs the lock to complete the function that
-> sends the pending data. I don't think we do still do that any more,
-> but it doesn't seem related to the tty lock being system-wide or not.
-
-The tty lock is not used in the i/o path; it's purpose is to
-mutually exclude state changes in open(), close() and hangup().
-
-The commit that added this [1] comments that _other_ ttys may wait
-for this tty to complete, and comments in the code note that this
-function should be removed when the system-wide tty mutex was removed
-(which happened with the commit noted in the changelog).
-
-Regards,
-Peter Hurley
-
-
-[1]
-commit a57a7bf3fc7eff00f07eb9c805774d911a3f2472
-Author: Jiri Slaby <jslaby@suse.cz>
-Date:   Thu Aug 25 15:12:06 2011 +0200
-
-     TTY: define tty_wait_until_sent_from_close
-
-     We need this helper to fix system stalls. The issue is that the rest
-     of the system TTYs wait for us to finish waiting. This wasn't an issue
-     with BKL. BKL used to unlock implicitly.
-
-     This is based on the Arnd suggestion.
-
-     Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-     Acked-by: Arnd Bergmann <arnd@arndb.de>
-     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+RnJvbTogUGV0ZXIgSHVybGV5DQouLi4NCj4gPiBJIGRvbid0IHVuZGVyc3RhbmQgdGhlIHNlY29u
+ZCBoYWxmIG9mIHRoZSBjaGFuZ2Vsb2csIGl0IGRvZXNuJ3Qgc2VlbQ0KPiA+IHRvIGZpdCBoZXJl
+OiB0aGVyZSBkZWFkbG9jayB0aGF0IHdlIGFyZSB0cnlpbmcgdG8gYXZvaWQgaGVyZSBoYXBwZW5z
+DQo+ID4gd2hlbiB0aGUgKnNhbWUqIHR0eSBuZWVkcyB0aGUgbG9jayB0byBjb21wbGV0ZSB0aGUg
+ZnVuY3Rpb24gdGhhdA0KPiA+IHNlbmRzIHRoZSBwZW5kaW5nIGRhdGEuIEkgZG9uJ3QgdGhpbmsg
+d2UgZG8gc3RpbGwgZG8gdGhhdCBhbnkgbW9yZSwNCj4gPiBidXQgaXQgZG9lc24ndCBzZWVtIHJl
+bGF0ZWQgdG8gdGhlIHR0eSBsb2NrIGJlaW5nIHN5c3RlbS13aWRlIG9yIG5vdC4NCj4gDQo+IFRo
+ZSB0dHkgbG9jayBpcyBub3QgdXNlZCBpbiB0aGUgaS9vIHBhdGg7IGl0J3MgcHVycG9zZSBpcyB0
+bw0KPiBtdXR1YWxseSBleGNsdWRlIHN0YXRlIGNoYW5nZXMgaW4gb3BlbigpLCBjbG9zZSgpIGFu
+ZCBoYW5ndXAoKS4NCj4gDQo+IFRoZSBjb21taXQgdGhhdCBhZGRlZCB0aGlzIFsxXSBjb21tZW50
+cyB0aGF0IF9vdGhlcl8gdHR5cyBtYXkgd2FpdA0KPiBmb3IgdGhpcyB0dHkgdG8gY29tcGxldGUs
+IGFuZCBjb21tZW50cyBpbiB0aGUgY29kZSBub3RlIHRoYXQgdGhpcw0KPiBmdW5jdGlvbiBzaG91
+bGQgYmUgcmVtb3ZlZCB3aGVuIHRoZSBzeXN0ZW0td2lkZSB0dHkgbXV0ZXggd2FzIHJlbW92ZWQN
+Cj4gKHdoaWNoIGhhcHBlbmVkIHdpdGggdGhlIGNvbW1pdCBub3RlZCBpbiB0aGUgY2hhbmdlbG9n
+KS4NCg0KV2hhdCBoYXBwZW5zIGlmIGFub3RoZXIgcHJvY2VzcyB0cmllcyB0byBkbyBhIG5vbi1i
+bG9ja2luZyBvcGVuDQp3aGlsZSB5b3UgYXJlIHNsZWVwaW5nIGluIGNsb3NlIHdhaXRpbmcgZm9y
+IG91dHB1dCB0byBkcmFpbj8NCg0KSG9wZWZ1bGx5IHRoaXMgcmV0dXJucyBiZWZvcmUgdGhhdCBk
+YXRhIGhhcyBkcmFpbmVkLg0KDQoJRGF2aWQNCg0K
