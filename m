@@ -1,20 +1,15 @@
-Return-Path: <Wei.Yang@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 12A201A02B7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 16:01:58 +1000 (EST)
-Message-ID: <539FD9A9.1070307@windriver.com>
-Date: Tue, 17 Jun 2014 14:01:13 +0800
-From: "Yang,Wei" <Wei.Yang@windriver.com>
-MIME-Version: 1.0
-To: <Wei.Yang@windriver.com>, <horms@verge.net.au>
-Subject: Re: [PATCH v1] fs2dt: Refine kdump device_tree sort
-References: <1402550168-7826-1-git-send-email-Wei.Yang@windriver.com>
-In-Reply-To: <1402550168-7826-1-git-send-email-Wei.Yang@windriver.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 56DB31A0168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 16:15:39 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/5] powerpc: Add ppc_global_function_entry()
+Date: Tue, 17 Jun 2014 16:15:32 +1000
+Message-Id: <1402985736-32180-1-git-send-email-mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>, dcb314@hotmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,57 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Simon,
+ABIv2 has the concept of a global and local entry point to a function.
+In most cases we are interested in the local entry point, and so that is
+what ppc_function_entry() returns.
 
-How about this patch?
+However we have a case in the ftrace code where we want the global entry
+point, and there may be other places we need it too. Rather than special
+casing each, add an accessor.
 
-Thanks
-Wei
-On 06/12/2014 01:16 PM, Wei.Yang@windriver.com wrote:
-> From: Yang Wei <Wei.Yang@windriver.com>
->
-> The commit b02d735bf was to rearrange the device-tree entries, and
-> assumed that these entries are sorted in the ascending order. but
-> acctually when I was validating kexec and kdump, the order of
-> serial node still is changed. We should not only compare the length
-> of directory name, but also compare the directory name, it would
-> ensure that the order of device node is really in ascending order.
->
-> Signed-off-by: Yang Wei <Wei.Yang@windriver.com>
-> ---
->   kexec/fs2dt.c |   13 ++++++++++---
->   1 file changed, 10 insertions(+), 3 deletions(-)
->
-> 		It is validated on Freescale t4240qds.
->
-> diff --git a/kexec/fs2dt.c b/kexec/fs2dt.c
-> index 1e5f074..0bffaf5 100644
-> --- a/kexec/fs2dt.c
-> +++ b/kexec/fs2dt.c
-> @@ -479,6 +479,9 @@ static int comparefunc(const struct dirent **dentry1,
->   {
->   	char *str1 = (*(struct dirent **)dentry1)->d_name;
->   	char *str2 = (*(struct dirent **)dentry2)->d_name;
-> +	char* ptr1 = strchr(str1, '@');
-> +	char* ptr2 = strchr(str2, '@');
-> +	int len1, len2;
->   
->   	/*
->   	 * strcmp scans from left to right and fails to idetify for some
-> @@ -486,9 +489,13 @@ static int comparefunc(const struct dirent **dentry1,
->   	 * Therefore, we get the wrong sorted order like memory@10000000 and
->   	 * memory@f000000.
->   	 */
-> -	if (strchr(str1, '@') && strchr(str2, '@') &&
-> -		(strlen(str1) > strlen(str2)))
-> -		return 1;
-> +	if (ptr1 && ptr2) {
-> +		len1 = ptr1 - str1;
-> +		len2 = ptr2 - str2;
-> +		if (!strncmp(str1, str2, len1 >len2 ? len1: len2) &&
-> +					(strlen(str1) > strlen(str2)))
-> +				return 1;
-> +	}
->   
->   	return strcmp(str1, str2);
->   }
+For ABIv1 and 32-bit there is only a single entry point, so we return
+that. That means it's safe for the caller to use this without also
+checking the ABI version.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/code-patching.h | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/code-patching.h b/arch/powerpc/include/asm/code-patching.h
+index 37991e1..840a550 100644
+--- a/arch/powerpc/include/asm/code-patching.h
++++ b/arch/powerpc/include/asm/code-patching.h
+@@ -88,4 +88,15 @@ static inline unsigned long ppc_function_entry(void *func)
+ #endif
+ }
+ 
++static inline unsigned long ppc_global_function_entry(void *func)
++{
++#if defined(CONFIG_PPC64) && defined(_CALL_ELF) && _CALL_ELF == 2
++	/* PPC64 ABIv2 the global entry point is at the address */
++	return (unsigned long)func;
++#else
++	/* All other cases there is no change vs ppc_function_entry() */
++	return ppc_function_entry(func);
++#endif
++}
++
+ #endif /* _ASM_POWERPC_CODE_PATCHING_H */
+-- 
+1.9.1
