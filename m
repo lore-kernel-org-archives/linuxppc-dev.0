@@ -1,22 +1,27 @@
-Return-Path: <jeff.liu@oracle.com>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-x230.google.com (mail-lb0-x230.google.com
+ [IPv6:2a00:1450:4010:c04::230])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C7EBA1A02C4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 00:31:23 +1000 (EST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- s5HEVLYZ007927
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 14:31:21 GMT
-Message-ID: <53A0512D.1090909@oracle.com>
-Date: Tue, 17 Jun 2014 22:31:09 +0800
-From: Jeff Liu <jeff.liu@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 073001A02E3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 01:23:13 +1000 (EST)
+Received: by mail-lb0-f176.google.com with SMTP id w7so2197680lbi.35
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jun 2014 08:23:08 -0700 (PDT)
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 04/24] powerpc: check/return actual error on sysfs functions
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1403018163-25307-1-git-send-email-geert@linux-m68k.org>
+References: <1403018163-25307-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 17 Jun 2014 17:23:08 +0200
+Message-ID: <CAMuHMdU2DTt0va67uSKqhhqbVORuY+xEs3uGZ21sKjahE_MSXg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.16-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: sparclinux <sparclinux@vger.kernel.org>,
+ Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Michal Simek <monstr@monstr.eu>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +31,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Jie Liu <jeff.liu@oracle.com>
+On Tue, Jun 17, 2014 at 5:16 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> 85 regressions:
+>   + /scratch/kisskb/src/arch/mips/net/bpf_jit.c: error: 'BPF_S_ALU_ADD_K' undeclared (first use in this function):  => 930:8
+    [....]
+>   + /scratch/kisskb/src/arch/mips/net/bpf_jit.c: error: 'BPF_S_STX' undeclared (first use in this function):  => 925:8
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Jie Liu <jeff.liu@oracle.com>
----
- arch/powerpc/platforms/powernv/opal-dump.c | 2 +-
- arch/powerpc/platforms/powernv/opal-elog.c | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+mips-allmodconfig (being fixed)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
-index 788a197..e718baf 100644
---- a/arch/powerpc/platforms/powernv/opal-dump.c
-+++ b/arch/powerpc/platforms/powernv/opal-dump.c
-@@ -424,7 +424,7 @@ void __init opal_platform_dump_init(void)
- 	int rc;
- 
- 	dump_kset = kset_create_and_add("dump", NULL, opal_kobj);
--	if (!dump_kset) {
-+	if (IS_ERR(dump_kset)) {
- 		pr_warn("%s: Failed to create dump kset\n", __func__);
- 		return;
- 	}
-diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
-index 10268c4..09c1f6f 100644
---- a/arch/powerpc/platforms/powernv/opal-elog.c
-+++ b/arch/powerpc/platforms/powernv/opal-elog.c
-@@ -296,9 +296,9 @@ int __init opal_elog_init(void)
- 	int rc = 0;
- 
- 	elog_kset = kset_create_and_add("elog", NULL, opal_kobj);
--	if (!elog_kset) {
-+	if (IS_ERR(elog_kset)) {
- 		pr_warn("%s: failed to create elog kset\n", __func__);
--		return -1;
-+		return PTR_ERR(elog_kset);
- 	}
- 
- 	rc = opal_notifier_register(&elog_nb);
--- 
-1.8.3.2
+>   + /scratch/kisskb/src/arch/powerpc/kernel/cacheinfo.c: error: 'size_kb' may be used uninitialized in this function [-Werror=uninitialized]:  => 525:2
+>   + /scratch/kisskb/src/drivers/tty/serial/nwpserial.c: error: implicit declaration of function 'udelay' [-Werror=implicit-function-declaration]:  => 53:3
+>   + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
+
+powerpc-randconfig
+
+>   + /scratch/kisskb/src/arch/sh/kernel/smp.c: error: implicit declaration of function 'cpu_context' [-Werror=implicit-function-declaration]:  => 368:5
+>   + /scratch/kisskb/src/arch/sh/kernel/smp.c: error: lvalue required as left operand of assignment:  => 405:24, 368:24, 448:32
+>   + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error: 'cached_to_uncached' undeclared (first use in this function):  => 99:17
+>   + /scratch/kisskb/src/arch/sh/mm/cache-sh4.c: error: implicit declaration of function 'cpu_context' [-Werror=implicit-function-declaration]:  => 192:2
+
+sh-randconfig
+
+>   + /scratch/kisskb/src/drivers/of/platform.c: error: 'struct pdev_archdata' has no member named 'dma_mask':  => 170:16
+
+microblaze/mmu_defconfig (being fixed)
+
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_add' [-Werror=implicit-function-declaration]:  => 176:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_add_negative' [-Werror=implicit-function-declaration]:  => 211:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_add_return' [-Werror=implicit-function-declaration]:  => 218:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_dec' [-Werror=implicit-function-declaration]:  => 169:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_dec_and_test' [-Werror=implicit-function-declaration]:  => 197:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_dec_return' [-Werror=implicit-function-declaration]:  => 239:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_inc' [-Werror=implicit-function-declaration]:  => 162:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_inc_and_test' [-Werror=implicit-function-declaration]:  => 204:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_inc_return' [-Werror=implicit-function-declaration]:  => 232:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_set' [-Werror=implicit-function-declaration]:  => 155:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_sub' [-Werror=implicit-function-declaration]:  => 183:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_sub_and_test' [-Werror=implicit-function-declaration]:  => 190:2
+>   + /scratch/kisskb/src/include/asm-generic/atomic-long.h: error: implicit declaration of function 'atomic_sub_return' [-Werror=implicit-function-declaration]:  => 225:2
+>   + /scratch/kisskb/src/include/linux/atomic.h: error: implicit declaration of function '__atomic_add_unless' [-Werror=implicit-function-declaration]:  => 53:2
+>   + /scratch/kisskb/src/include/linux/atomic.h: error: implicit declaration of function 'atomic_cmpxchg' [-Werror=implicit-function-declaration]:  => 89:3
+>   + /scratch/kisskb/src/include/linux/atomic.h: error: implicit declaration of function 'atomic_read' [-Werror=implicit-function-declaration]:  => 136:2
+
+sparc-allmodconfig
+
+>   + /scratch/kisskb/src/sound/soc/fsl/fsl_dma.c: error: invalid use of undefined type 'struct ccsr_ssi':  => 926:34, 927:34
+
+powerpc/mpc85xx_defconfig
+
+>   + error: filter.c: undefined reference to `__fpscr_values':  => .text+0x3166c), .text+0x32000), .text+0x31860), .text+0x31d8c), .text+0x324b0)
+
+sh4/se7206_defconfig
+sh4/rsk7203_defconfig (toolchain issue)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
