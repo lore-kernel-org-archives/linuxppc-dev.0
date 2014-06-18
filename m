@@ -1,12 +1,12 @@
 Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-la0-x229.google.com (mail-la0-x229.google.com
- [IPv6:2a00:1450:4010:c03::229])
+Received: from mail-la0-x22f.google.com (mail-la0-x22f.google.com
+ [IPv6:2a00:1450:4010:c03::22f])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0FA391A02E3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 20:48:35 +1000 (EST)
-Received: by mail-la0-f41.google.com with SMTP id hz20so400826lab.28
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 03:48:30 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0654E1A02C0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 20:48:36 +1000 (EST)
+Received: by mail-la0-f47.google.com with SMTP id s18so393651lam.34
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 03:48:31 -0700 (PDT)
 From: Alexander Popov <a13xp0p0v88@gmail.com>
 To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
@@ -14,9 +14,10 @@ To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
  Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
  Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  dmaengine@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v2 1/3] dmaengine: mpc512x: add device tree binding document
-Date: Wed, 18 Jun 2014 14:48:10 +0400
-Message-Id: <1403088492-15241-2-git-send-email-a13xp0p0v88@gmail.com>
+Subject: [PATCH v2 2/3] dmaengine: of: add common xlate function for matching
+ by channel id
+Date: Wed, 18 Jun 2014 14:48:11 +0400
+Message-Id: <1403088492-15241-3-git-send-email-a13xp0p0v88@gmail.com>
 In-Reply-To: <1403088492-15241-1-git-send-email-a13xp0p0v88@gmail.com>
 References: <1403088492-15241-1-git-send-email-a13xp0p0v88@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,50 +29,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Introduce a device tree binding document for the MPC512x DMA controller
+This patch adds a new common OF dma xlate callback function which will match a
+channel by it's id. The binding expects one integer argument which it will use to
+lookup the channel by the id.
+
+Unlike of_dma_simple_xlate this function is able to handle a system with
+multiple DMA controllers. When registering the of dma provider with
+of_dma_controller_register a pointer to the dma_device struct which is
+associated with the dt node needs to passed as the data parameter.
+New function will use this pointer to match only channels which belong to the
+specified DMA controller.
 
 Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
 ---
- .../devicetree/bindings/dma/mpc512x-dma.txt        | 31 ++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+ drivers/dma/of-dma.c   | 35 +++++++++++++++++++++++++++++++++++
+ include/linux/of_dma.h |  4 ++++
+ 2 files changed, 39 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/dma/mpc512x-dma.txt b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
-new file mode 100644
-index 0000000..95e2ca0
---- /dev/null
-+++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
-@@ -0,0 +1,31 @@
-+* Freescale MPC512x and MPC8308 DMA Controller
+diff --git a/drivers/dma/of-dma.c b/drivers/dma/of-dma.c
+index e8fe9dc..d5fbeaa 100644
+--- a/drivers/dma/of-dma.c
++++ b/drivers/dma/of-dma.c
+@@ -218,3 +218,38 @@ struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
+ 			&dma_spec->args[0]);
+ }
+ EXPORT_SYMBOL_GPL(of_dma_simple_xlate);
 +
-+The DMA controller in Freescale MPC512x and MPC8308 SoCs can move
-+blocks of memory contents between memory and peripherals or
-+from memory to memory.
++/**
++ * of_dma_xlate_by_chan_id - Translate dt property to DMA channel by channel id
++ * @dma_spec:	pointer to DMA specifier as found in the device tree
++ * @of_dma:	pointer to DMA controller data
++ *
++ * This function can be used as the of xlate callback for DMA driver which wants
++ * to match the channel based on the channel id. When using this xlate function
++ * the #dma-cells propety of the DMA controller dt node needs to be set to 1.
++ * The data parameter of of_dma_controller_register must be a pointer to the
++ * dma_device struct the function should match upon.
++ *
++ * Returns pointer to appropriate dma channel on success or NULL on error.
++ */
++struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
++					 struct of_dma *ofdma)
++{
++	struct dma_device *dev = ofdma->of_dma_data;
++	struct dma_chan *chan, *candidate = NULL;
 +
-+Refer to "Generic DMA Controller and DMA request bindings" in
-+the dma/dma.txt file for a more detailed description of binding.
++	if (!dev || dma_spec->args_count != 1)
++		return NULL;
 +
-+Required properties:
-+- compatible: should be "fsl,mpc5121-dma" or "fsl,mpc8308-dma";
-+- reg: should contain the DMA controller registers location and length;
-+- interrupt for the DMA controller: syntax of interrupt client node
-+	is described in interrupt-controller/interrupts.txt file.
++	list_for_each_entry(chan, &dev->channels, device_node)
++		if (chan->chan_id == dma_spec->args[0]) {
++			candidate = chan;
++			break;
++		}
 +
-+Optional properties:
-+- #dma-cells: the length of the DMA specifier, must be <1>.
-+	Each channel of this DMA controller has a peripheral request line,
-+	the assignment is fixed in hardware. This one cell
-+	in dmas property of a client device represents the channel number.
++	if (!candidate)
++		return NULL;
 +
-+Example:
++	return dma_get_slave_channel(candidate);
++}
++EXPORT_SYMBOL_GPL(of_dma_xlate_by_chan_id);
+diff --git a/include/linux/of_dma.h b/include/linux/of_dma.h
+index ae36298..56bc026 100644
+--- a/include/linux/of_dma.h
++++ b/include/linux/of_dma.h
+@@ -41,6 +41,8 @@ extern struct dma_chan *of_dma_request_slave_channel(struct device_node *np,
+ 						     const char *name);
+ extern struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_spec,
+ 		struct of_dma *ofdma);
++extern struct dma_chan *of_dma_xlate_by_chan_id(struct of_phandle_args *dma_spec,
++		struct of_dma *ofdma);
+ #else
+ static inline int of_dma_controller_register(struct device_node *np,
+ 		struct dma_chan *(*of_dma_xlate)
+@@ -66,6 +68,8 @@ static inline struct dma_chan *of_dma_simple_xlate(struct of_phandle_args *dma_s
+ 	return NULL;
+ }
+ 
++#define of_dma_xlate_by_chan_id NULL
 +
-+	dma0: dma@14000 {
-+		compatible = "fsl,mpc5121-dma";
-+		reg = <0x14000 0x1800>;
-+		interrupts = <65 0x8>;
-+		#dma-cells = <1>;
-+	};
-+
-+DMA clients must use the format described in dma/dma.txt file.
+ #endif
+ 
+ #endif /* __LINUX_OF_DMA_H */
 -- 
 1.8.4.2
