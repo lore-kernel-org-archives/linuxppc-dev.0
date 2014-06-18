@@ -1,27 +1,26 @@
-Return-Path: <jolsa@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0DEE1A0098
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 23:39:57 +1000 (EST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 49477140084
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2014 23:39:57 +1000 (EST)
-Date: Wed, 18 Jun 2014 15:39:37 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 1/2]: Allow architectures to skip a callchain entry
-Message-ID: <20140618133937.GC9865@krava.brq.redhat.com>
-References: <20140606032109.GA16600@us.ibm.com>
+Return-Path: <mark.rutland@arm.com>
+Received: from cam-admin0.cambridge.arm.com (cam-admin0.cambridge.arm.com
+ [217.140.96.50])
+ by lists.ozlabs.org (Postfix) with ESMTP id E00A31A033C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 23:53:35 +1000 (EST)
+Date: Wed, 18 Jun 2014 14:37:30 +0100
+From: Mark Rutland <mark.rutland@arm.com>
+To: Alexander Popov <a13xp0p0v88@gmail.com>
+Subject: Re: [PATCH v2 1/3] dmaengine: mpc512x: add device tree binding
+ document
+Message-ID: <20140618133730.GB11895@leverpostej>
+References: <1403088492-15241-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1403088492-15241-2-git-send-email-a13xp0p0v88@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140606032109.GA16600@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- michael@ellerman.id.au, Ulrich.Weigand@de.ibm.com,
- Maynard Johnson <mpjohn@us.ibm.com>
+In-Reply-To: <1403088492-15241-2-git-send-email-a13xp0p0v88@gmail.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,68 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 05, 2014 at 08:21:09PM -0700, Sukadev Bhattiprolu wrote:
-
-SNIP
-
-> index 7409ac8..3f97cf2 100644
-> --- a/tools/perf/util/machine.c
-> +++ b/tools/perf/util/machine.c
-> @@ -1288,8 +1288,10 @@ static int machine__resolve_callchain_sample(struct machine *machine,
->  {
->  	u8 cpumode = PERF_RECORD_MISC_USER;
->  	int chain_nr = min(max_stack, (int)chain->nr);
-> +	enum chain_order order = callchain_param.order;
->  	int i;
->  	int err;
-> +	int skip_idx;
->  
->  	callchain_cursor_reset(&callchain_cursor);
->  
-> @@ -1298,14 +1300,13 @@ static int machine__resolve_callchain_sample(struct machine *machine,
->  		return 0;
->  	}
->  
-> +	skip_idx = arch_skip_callchain_idx(machine, thread, chain);
-> +
->  	for (i = 0; i < chain_nr; i++) {
->  		u64 ip;
->  		struct addr_location al;
->  
-> -		if (callchain_param.order == ORDER_CALLEE)
-> -			ip = chain->ips[i];
-> -		else
-> -			ip = chain->ips[chain->nr - i - 1];
-> +		ip = next_callchain_ip(chain, order, i, skip_idx);
-
-hum, I still dont see a point of adding new user
-enum API (PERF_CONTEXT_IGNORE) when we can just do:
-
-		#ifdef HAVE_SKIP_CALLCHAIN_IDX
-			if (idx == skip_idx)
-				continue;
-		#endif
-
-		if (callchain_param.order == ORDER_CALLEE)
-			ip = chain->ips[i];
-		else
-			ip = chain->ips[chain->nr - i - 1];
-
-
-jirka
-
->  
->  		if (ip >= PERF_CONTEXT_MAX) {
->  			switch (ip) {
-> @@ -1318,6 +1319,8 @@ static int machine__resolve_callchain_sample(struct machine *machine,
->  			case PERF_CONTEXT_USER:
->  				cpumode = PERF_RECORD_MISC_USER;
->  				break;
-> +			case PERF_CONTEXT_IGNORE:
-> +				break;
->  			default:
->  				pr_debug("invalid callchain context: "
->  					 "%"PRId64"\n", (s64) ip);
-> -- 
-> 1.7.9.5
+On Wed, Jun 18, 2014 at 11:48:10AM +0100, Alexander Popov wrote:
+> Introduce a device tree binding document for the MPC512x DMA controller
 > 
+> Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+> ---
+>  .../devicetree/bindings/dma/mpc512x-dma.txt        | 31 ++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/dma/mpc512x-dma.txt b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> new file mode 100644
+> index 0000000..95e2ca0
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/dma/mpc512x-dma.txt
+> @@ -0,0 +1,31 @@
+> +* Freescale MPC512x and MPC8308 DMA Controller
+> +
+> +The DMA controller in Freescale MPC512x and MPC8308 SoCs can move
+> +blocks of memory contents between memory and peripherals or
+> +from memory to memory.
+> +
+> +Refer to "Generic DMA Controller and DMA request bindings" in
+> +the dma/dma.txt file for a more detailed description of binding.
+> +
+> +Required properties:
+> +- compatible: should be "fsl,mpc5121-dma" or "fsl,mpc8308-dma";
+> +- reg: should contain the DMA controller registers location and length;
+> +- interrupt for the DMA controller: syntax of interrupt client node
+> +	is described in interrupt-controller/interrupts.txt file.
+> +
+> +Optional properties:
+> +- #dma-cells: the length of the DMA specifier, must be <1>.
+> +	Each channel of this DMA controller has a peripheral request line,
+> +	the assignment is fixed in hardware. This one cell
+> +	in dmas property of a client device represents the channel number.
+
+Surely this is required to be able to refer to DMA channels on the
+device?
+
+Mark.
