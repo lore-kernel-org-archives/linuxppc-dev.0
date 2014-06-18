@@ -1,25 +1,33 @@
-Return-Path: <a13xp0p0v88@gmail.com>
-Received: from mail-lb0-x22b.google.com (mail-lb0-x22b.google.com
- [IPv6:2a00:1450:4010:c04::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D4F221A02E3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 20:48:37 +1000 (EST)
-Received: by mail-lb0-f171.google.com with SMTP id s7so395760lbd.30
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 03:48:32 -0700 (PDT)
-From: Alexander Popov <a13xp0p0v88@gmail.com>
-To: Gerhard Sittig <gsi@denx.de>, Dan Williams <dan.j.williams@intel.com>,
- Vinod Koul <vinod.koul@intel.com>, Lars-Peter Clausen <lars@metafoo.de>,
- Arnd Bergmann <arnd@arndb.de>, Anatolij Gustschin <agust@denx.de>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Alexander Popov <a13xp0p0v88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- dmaengine@vger.kernel.org, devicetree@vger.kernel.org
-Subject: [PATCH v2 3/3] dmaengine: mpc512x: register for device tree channel
- lookup
-Date: Wed, 18 Jun 2014 14:48:12 +0400
-Message-Id: <1403088492-15241-4-git-send-email-a13xp0p0v88@gmail.com>
-In-Reply-To: <1403088492-15241-1-git-send-email-a13xp0p0v88@gmail.com>
-References: <1403088492-15241-1-git-send-email-a13xp0p0v88@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 268D31A032E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 21:36:40 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Wed, 18 Jun 2014 21:36:38 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D95EE3578048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 21:36:34 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5IBaITi10027468
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 21:36:19 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5IBaXcH028839
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 21:36:34 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] vfio: Fix endianness handling for emulated BARs
+Date: Wed, 18 Jun 2014 21:36:31 +1000
+Message-Id: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>
+Cc: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, kvm@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, Alex Williamson <alex.williamson@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +37,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Register the controller for device tree based lookup of DMA channels
-(non-fatal for backwards compatibility with older device trees) and
-provide the '#dma-cells' property in the shared mpc5121.dtsi file
+VFIO exposes BARs to user space as a byte stream so userspace can
+read it using pread()/pwrite(). Since this is a byte stream, VFIO should
+not do byte swapping and simply return values as it gets them from
+PCI device.
 
-Signed-off-by: Alexander Popov <a13xp0p0v88@gmail.com>
+Instead, the existing code assumes that byte stream in read/write is
+little-endian and it fixes endianness for values which it passes to
+ioreadXX/iowriteXX helpers. This works for little-endian as PCI is
+little endian and le32_to_cpu/... are stubs.
+
+This also works for big endian but rather by an accident: it reads 4 bytes
+from the stream (@val is big endian), converts to CPU format (which should
+be big endian) as it was little endian (@val becomes actually little
+endian) and calls iowrite32() which does not do swapping on big endian
+system.
+
+This removes byte swapping and makes use ioread32be/iowrite32be
+(and 16bit versions) on big-endian systems. The "be" helpers take
+native endian values and do swapping at the moment of writing to a PCI
+register using one of "store byte-reversed" instructions.
+
+Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/boot/dts/mpc5121.dtsi |  1 +
- drivers/dma/mpc512x_dma.c          | 13 ++++++++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+ drivers/vfio/pci/vfio_pci_rdwr.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc5121.dtsi b/arch/powerpc/boot/dts/mpc5121.dtsi
-index 2c0e155..7f9d14f 100644
---- a/arch/powerpc/boot/dts/mpc5121.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5121.dtsi
-@@ -498,6 +498,7 @@
- 			compatible = "fsl,mpc5121-dma";
- 			reg = <0x14000 0x1800>;
- 			interrupts = <65 0x8>;
-+			#dma-cells = <1>;
- 		};
- 	};
+diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+index 210db24..f363b5a 100644
+--- a/drivers/vfio/pci/vfio_pci_rdwr.c
++++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+@@ -21,6 +21,18 @@
  
-diff --git a/drivers/dma/mpc512x_dma.c b/drivers/dma/mpc512x_dma.c
-index 2ad4373..881db2b 100644
---- a/drivers/dma/mpc512x_dma.c
-+++ b/drivers/dma/mpc512x_dma.c
-@@ -53,6 +53,7 @@
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/of_irq.h>
-+#include <linux/of_dma.h>
- #include <linux/of_platform.h>
+ #include "vfio_pci_private.h"
  
- #include <linux/random.h>
-@@ -1036,7 +1037,15 @@ static int mpc_dma_probe(struct platform_device *op)
- 	if (retval)
- 		goto err_free2;
- 
--	return retval;
-+	/* Register with OF helpers for DMA lookups (nonfatal) */
-+	if (dev->of_node) {
-+		retval = of_dma_controller_register(dev->of_node,
-+						of_dma_xlate_by_chan_id, mdma);
-+		if (retval)
-+			dev_warn(dev, "Could not register for OF lookup\n");
-+	}
++#ifdef __BIG_ENDIAN__
++#define ioread16_native		ioread16be
++#define ioread32_native		ioread32be
++#define iowrite16_native	iowrite16be
++#define iowrite32_native	iowrite32be
++#else
++#define ioread16_native		ioread16
++#define ioread32_native		ioread32
++#define iowrite16_native	iowrite16
++#define iowrite32_native	iowrite32
++#endif
 +
-+	return 0;
+ /*
+  * Read or write from an __iomem region (MMIO or I/O port) with an excluded
+  * range which is inaccessible.  The excluded range drops writes and fills
+@@ -50,9 +62,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+ 				if (copy_from_user(&val, buf, 4))
+ 					return -EFAULT;
  
- err_free2:
- 	if (mdma->is_mpc8308)
-@@ -1057,6 +1066,8 @@ static int mpc_dma_remove(struct platform_device *op)
- 	struct device *dev = &op->dev;
- 	struct mpc_dma *mdma = dev_get_drvdata(dev);
+-				iowrite32(le32_to_cpu(val), io + off);
++				iowrite32_native(val, io + off);
+ 			} else {
+-				val = cpu_to_le32(ioread32(io + off));
++				val = ioread32_native(io + off);
  
-+	if (dev->of_node)
-+		of_dma_controller_free(dev->of_node);
- 	dma_async_device_unregister(&mdma->dma);
- 	if (mdma->is_mpc8308) {
- 		free_irq(mdma->irq2, mdma);
+ 				if (copy_to_user(buf, &val, 4))
+ 					return -EFAULT;
+@@ -66,9 +78,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+ 				if (copy_from_user(&val, buf, 2))
+ 					return -EFAULT;
+ 
+-				iowrite16(le16_to_cpu(val), io + off);
++				iowrite16_native(val, io + off);
+ 			} else {
+-				val = cpu_to_le16(ioread16(io + off));
++				val = ioread16_native(io + off);
+ 
+ 				if (copy_to_user(buf, &val, 2))
+ 					return -EFAULT;
 -- 
-1.8.4.2
+2.0.0
