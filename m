@@ -1,29 +1,40 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- by lists.ozlabs.org (Postfix) with ESMTP id B9DAF1A02E7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:48:18 +1000 (EST)
-Date: Wed, 18 Jun 2014 13:48:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH v3 -next 4/9] DMA, CMA: support arbitrary bitmap
- granularity
-Message-Id: <20140618134815.69c4d0a5f916846f9857e9ff@linux-foundation.org>
-In-Reply-To: <1402897251-23639-5-git-send-email-iamjoonsoo.kim@lge.com>
-References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
- <1402897251-23639-5-git-send-email-iamjoonsoo.kim@lge.com>
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F152D1A0280
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:51:14 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Thu, 19 Jun 2014 06:51:12 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D559A2BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:51:09 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5IKSxRT1900996
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:28:59 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5IKp8aq002227
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:51:09 +1000
+Message-ID: <1403124662.7661.225.camel@pasglop>
+Subject: Re: [RFC PATCH V3 14/17] ppc/pci: create/release dev-tree node for VFs
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Date: Thu, 19 Jun 2014 06:51:02 +1000
+In-Reply-To: <CACxGe6v6Rdd=GQ8qR5LQ64NThidn7kn3WkKFkOXOsNuWq75D-A@mail.gmail.com>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-15-git-send-email-weiyang@linux.vnet.ibm.com>
+ <CACxGe6v6Rdd=GQ8qR5LQ64NThidn7kn3WkKFkOXOsNuWq75D-A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ gwshan@linux.vnet.ibm.com, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
+ Bjorn Helgaas <bhelgaas@google.com>, yan@linux.vnet.ibm.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,69 +44,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 16 Jun 2014 14:40:46 +0900 Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
+On Wed, 2014-06-18 at 19:26 +0100, Grant Likely wrote:
+> I don't think this is the right way to handle this. Unless it is a
+> fixup to a buggy devicetree provided by firmware, I don't want to see
+> any code modifying the devicetree to describe stuff that is able to be
+> directly enumerated. Really the pci code should handle the lack of a
+> device_node gracefully. If it cannot then it should be fixed.
 
-> PPC KVM's CMA area management requires arbitrary bitmap granularity,
-> since they want to reserve very large memory and manage this region
-> with bitmap that one bit for several pages to reduce management overheads.
-> So support arbitrary bitmap granularity for following generalization.
-> 
-> ...
->
-> --- a/drivers/base/dma-contiguous.c
-> +++ b/drivers/base/dma-contiguous.c
-> @@ -38,6 +38,7 @@ struct cma {
->  	unsigned long	base_pfn;
->  	unsigned long	count;
->  	unsigned long	*bitmap;
-> +	unsigned int order_per_bit; /* Order of pages represented by one bit */
->  	struct mutex	lock;
->  };
->  
-> @@ -157,9 +158,37 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
->  
->  static DEFINE_MUTEX(cma_mutex);
->  
-> +static unsigned long cma_bitmap_aligned_mask(struct cma *cma, int align_order)
-> +{
-> +	return (1 << (align_order >> cma->order_per_bit)) - 1;
-> +}
+Right, I've long said that we need to get rid of that "pci_dn" structure
+we've been carrying around forever on ppc64.
 
-Might want a "1UL << ..." here.
+Any auxiliary data structures we keep around associated with a PCI
+device should be pointed to by the pci_dev itself, possibly using
+firmware_data or similar.
 
-> +static unsigned long cma_bitmap_maxno(struct cma *cma)
-> +{
-> +	return cma->count >> cma->order_per_bit;
-> +}
-> +
-> +static unsigned long cma_bitmap_pages_to_bits(struct cma *cma,
-> +						unsigned long pages)
-> +{
-> +	return ALIGN(pages, 1 << cma->order_per_bit) >> cma->order_per_bit;
-> +}
-
-Ditto.  I'm not really sure what the compiler will do in these cases,
-but would prefer not to rely on it anyway!
-
-
---- a/drivers/base/dma-contiguous.c~dma-cma-support-arbitrary-bitmap-granularity-fix
-+++ a/drivers/base/dma-contiguous.c
-@@ -160,7 +160,7 @@ static DEFINE_MUTEX(cma_mutex);
- 
- static unsigned long cma_bitmap_aligned_mask(struct cma *cma, int align_order)
- {
--	return (1 << (align_order >> cma->order_per_bit)) - 1;
-+	return (1UL << (align_order >> cma->order_per_bit)) - 1;
- }
- 
- static unsigned long cma_bitmap_maxno(struct cma *cma)
-@@ -171,7 +171,7 @@ static unsigned long cma_bitmap_maxno(st
- static unsigned long cma_bitmap_pages_to_bits(struct cma *cma,
- 						unsigned long pages)
- {
--	return ALIGN(pages, 1 << cma->order_per_bit) >> cma->order_per_bit;
-+	return ALIGN(pages, 1UL << cma->order_per_bit) >> cma->order_per_bit;
- }
- 
- static void cma_clear_bitmap(struct cma *cma, unsigned long pfn, int count)
-_
+Cheers,
+Ben.
