@@ -1,24 +1,21 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB6341A032C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 02:01:10 +1000 (EST)
-From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-To: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
-Subject: RE: [PATCH] KVM: PPC: Book3E: Unlock mmu_lock when setting caching
- atttribute
-Date: Wed, 18 Jun 2014 16:01:02 +0000
-Message-ID: <aecdf3dd06214788862b7c53f080f559@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1403106305-11565-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1403106305-11565-1-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 630971A02A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 03:22:07 +1000 (EST)
+Message-ID: <1403112114.12851.54.camel@snotra.buserror.net>
+Subject: Re: [PATCH v4] KVM: PPC: e500mc: Enhance tlb invalidation condition
+ on vcpu schedule
+From: Scott Wood <scottwood@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Date: Wed, 18 Jun 2014 12:21:54 -0500
+In-Reply-To: <1403075722-11151-1-git-send-email-mihai.caraman@freescale.com>
+References: <1403075722-11151-1-git-send-email-mihai.caraman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +25,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: Mihai Caraman [mailto:mihai.caraman@freescale.com]
-> Sent: Wednesday, June 18, 2014 9:15 PM
-> To: kvm-ppc@vger.kernel.org
-> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Caraman Mihai Cla=
-udiu-
-> B02008; Bhushan Bharat-R65777
-> Subject: [PATCH] KVM: PPC: Book3E: Unlock mmu_lock when setting caching
-> atttribute
->=20
-> The patch 08c9a188d0d0fc0f0c5e17d89a06bb59c493110f
->   	kvm: powerpc: use caching attributes as per linux pte
-> do not handle properly the error case, letting mmu_lock locked. The lock
-> will further generate a RCU stall from kvmppc_e500_emul_tlbwe() caller.
->=20
-> In case of an error go to out label.
->=20
+On Wed, 2014-06-18 at 10:15 +0300, Mihai Caraman wrote:
+> On vcpu schedule, the condition checked for tlb pollution is too loose.
+> The tlb entries of a vcpu become polluted (vs stale) only when a different
+> vcpu within the same logical partition runs in-between. Optimize the tlb
+> invalidation condition keeping last_vcpu per logical partition id.
+> 
+> With the new invalidation condition, a guest shows 4% performance improvement
+> on P5020DS while running a memory stress application with the cpu oversubscribed,
+> the other guest running a cpu intensive workload.
+> 
+> Guest - old invalidation condition
+>   real 3.89
+>   user 3.87
+>   sys 0.01
+> 
+> Guest - enhanced invalidation condition
+>   real 3.75
+>   user 3.73
+>   sys 0.01
+> 
+> Host
+>   real 3.70
+>   user 1.85
+>   sys 0.00
+> 
+> The memory stress application accesses 4KB pages backed by 75% of available
+> TLB0 entries:
+> 
+> char foo[ENTRIES][4096] __attribute__ ((aligned (4096)));
+> 
+> int main()
+> {
+> 	char bar;
+> 	int i, j;
+> 
+> 	for (i = 0; i < ITERATIONS; i++)
+>         	for (j = 0; j < ENTRIES; j++)
+>             		bar = foo[j][0];
+> 
+> 	return 0;
+> }
+> 
 > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
-
-Thanks mike for fixing this; I am curious to know how you reached to this p=
-oint :)
-
-Reviewed-by: Bharat Bhushan <bharat.bhushan@freescale.com>
-
-Regards
--Bharat
-
+> Cc: Scott Wood <scottwood@freescale.com>
 > ---
->  arch/powerpc/kvm/e500_mmu_host.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu=
-_host.c
-> index 0528fe5..54144c7 100644
-> --- a/arch/powerpc/kvm/e500_mmu_host.c
-> +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -473,7 +473,8 @@ static inline int kvmppc_e500_shadow_map(struct
-> kvmppc_vcpu_e500 *vcpu_e500,
->  		if (printk_ratelimit())
->  			pr_err("%s: pte not present: gfn %lx, pfn %lx\n",
->  				__func__, (long)gfn, pfn);
-> -		return -EINVAL;
-> +		ret =3D -EINVAL;
-> +		goto out;
+> v4:
+>  - rename last_vcpu_on_cpu to last_vcpu_of_lpid
+>  - use "*[" syntax despite checkpatch error
+>  
+> v3:
+>  - use existing logic while keeping last_cpu per lpid
+> 
+>  arch/powerpc/kvm/e500mc.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+> index 17e4562..690499d 100644
+> --- a/arch/powerpc/kvm/e500mc.c
+> +++ b/arch/powerpc/kvm/e500mc.c
+> @@ -110,7 +110,7 @@ void kvmppc_mmu_msr_notify(struct kvm_vcpu *vcpu, u32 old_msr)
+>  {
+>  }
+>  
+> -static DEFINE_PER_CPU(struct kvm_vcpu *, last_vcpu_on_cpu);
+> +static DEFINE_PER_CPU(struct kvm_vcpu *[KVMPPC_NR_LPIDS], last_vcpu_of_lpid);
+>  
+>  static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
+>  {
+> @@ -141,9 +141,9 @@ static void kvmppc_core_vcpu_load_e500mc(struct kvm_vcpu *vcpu, int cpu)
+>  	mtspr(SPRN_GESR, vcpu->arch.shared->esr);
+>  
+>  	if (vcpu->arch.oldpir != mfspr(SPRN_PIR) ||
+> -	    __get_cpu_var(last_vcpu_on_cpu) != vcpu) {
+> +	    __get_cpu_var(last_vcpu_of_lpid)[vcpu->kvm->arch.lpid] != vcpu) {
+>  		kvmppc_e500_tlbil_all(vcpu_e500);
+> -		__get_cpu_var(last_vcpu_on_cpu) = vcpu;
+> +		__get_cpu_var(last_vcpu_of_lpid)[vcpu->kvm->arch.lpid] = vcpu;
 >  	}
->  	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
->=20
-> --
-> 1.7.11.7
+>  
+>  	kvmppc_load_guest_fp(vcpu);
+
+Reviewed-by: Scott Wood <scottwood@freescale.com>
+
+-Scott
