@@ -1,38 +1,33 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20A0F1A0123
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:44:32 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Wed, 18 Jun 2014 14:14:27 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 005E6E0045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 14:15:31 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5I8jNFG61669392
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 14:15:24 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5I8iK1e021871
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 14:14:20 +0530
-Message-ID: <53A1514F.30907@linux.vnet.ibm.com>
-Date: Wed, 18 Jun 2014 14:13:59 +0530
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
+ by lists.ozlabs.org (Postfix) with ESMTP id A108C1A0123
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:47:05 +1000 (EST)
+Message-ID: <53A15201.7060404@hitachi.com>
+Date: Wed, 18 Jun 2014 17:46:57 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>, linuxppc-dev@lists.ozlabs.org,
- jdelvare@suse.de, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v2] powerpc/powernv: hwmon driver for power values, fan
- rpm and temperature
-References: <20140519141931.9248.11356.stgit@neelegup-tp-t420.in.ibm.com>
- <53858F02.2020808@roeck-us.net>
-In-Reply-To: <53858F02.2020808@roeck-us.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sbhat@linux.vnet.ibm.com
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to
+ find blacklist" error on ia64 and ppc64
+References: <5387F150.5000307@hitachi.com>
+ <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
+ <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
+In-Reply-To: <1403078179.32307.7.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
+ Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
+ akataria@vmware.com, Tony Luck <tony.luck@intel.com>,
+ Kevin Hao <haokexin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ rdunlap@infradead.org, Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,54 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
->> +}
->> +
->> +static void __init get_sensor_index_attr(const char *name, u32 
->> *index, char *attr)
->> +{
->> +    char *hash_pos = strchr(name, '#');
->> +    char *dash_pos;
->> +    u32 copy_len;
->> +    char buf[8];
->> +
->> +    memset(buf, 0, sizeof(buf));
->> +    *index = 0;
->> +    *attr = '\0';
->> +
->> +    if (hash_pos) {
->> +        dash_pos = strchr(hash_pos, '-');
->> +        if (dash_pos) {
->> +            copy_len = dash_pos - hash_pos - 1;
->> +            if (copy_len < sizeof(buf)) {
->> +                strncpy(buf, hash_pos + 1, copy_len);
->> +                sscanf(buf, "%d", index);
->
-> What if sscanf fails ? Might be an interesting exercise to try and create
-> multiple sensors with index 0 (or, for that matter, with the same 
-> index value).
-> Do you have any protection against bad input data ? Guess not; did you 
-> test
-> what happens if you pass bad data to the driver (such as duplicate sensor
-> entries) ?
-
-We can't have duplicate entries in the device tree under the same node ?
-But yes, rest other scenarios must be validated.
-
-- Neelesh
-
->
->> +            }
->> +
->> +            strncpy(attr, dash_pos + 1, MAX_ATTR_LEN);
->> +        }
->> +    }
->> +}
->> +
->> +
+(2014/06/18 16:56), Michael Ellerman wrote:
+> On Fri, 2014-06-06 at 15:38 +0900, Masami Hiramatsu wrote:
+>> Ping?
 >>
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> I guess this should go to 3.16 branch, shouldn't it?
+> 
+>>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+>>> index bfb6ded..8b89d65 100644
+>>> --- a/arch/powerpc/include/asm/types.h
+>>> +++ b/arch/powerpc/include/asm/types.h
+>>> @@ -25,6 +25,17 @@ typedef struct {
+>>>  	unsigned long env;
+>>>  } func_descr_t;
+>>>  
+>>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
+>>> +/*
+>>> + * On PPC64 ABIv1 the function pointer actually points to the
+>>> + * function's descriptor. The first entry in the descriptor is the
+>>> + * address of the function text.
+>>> + */
+>>> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
+>>> +#else
+>>> +#define function_entry(fn)	((unsigned long)(fn))
+>>> +#endif
+> 
+> We already have ppc_function_entry(), can't you use that?
+
+I'd like to ask you whether the address which ppc_function_entry() returns on
+PPC ABIv2 is really same address in kallsyms or not.
+As you can see, kprobes uses function_entry() to get the actual entry address
+where kallsyms knows. I have not much information about that, but it seems that
+the "global entry point" is the address which kallsyms knows, isn't it?
+
+Thank you,
+
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
