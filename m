@@ -1,36 +1,27 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <chzigotzky@xenosoft.de>
+Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
+ [IPv6:2a01:238:20a:202:5300::9])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0658F1A027E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:02:39 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Wed, 18 Jun 2014 19:02:36 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D96AE3578053
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:02:32 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5I8kI3230670898
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:46:19 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5I92V0w007409
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:02:31 +1000
-Message-ID: <53A155A6.2030805@linux.vnet.ibm.com>
-Date: Wed, 18 Jun 2014 17:02:30 +0800
-From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D1811A02C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:11:14 +1000 (EST)
+Message-ID: <53A15492.3090604@xenosoft.de>
+Date: Wed, 18 Jun 2014 10:57:54 +0200
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Boot failure in Power7 pSeries
-References: <53A00E2B.8030903@linux.vnet.ibm.com>
- <53A1070C.50106@linux.vnet.ibm.com> <1403078080.32307.6.camel@concordia>
-In-Reply-To: <1403078080.32307.6.camel@concordia>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+ Olof Johansson <olof@lixom.net>
+Subject: Kernel 3.15: Boot problems with a PA6T board
+References: <5366649E.4030102@xenosoft.de>				
+ <1399268891.4600.3.camel@concordia> <53720AAC.1000100@xenosoft.de>			
+ <1401107166.23096.1.camel@concordia> <53851AFA.5040504@xenosoft.de>		
+ <1401251015.5468.5.camel@concordia> <5385A3F4.8070004@xenosoft.de>		
+ <5385C7A3.1080508@xenosoft.de> <1401331711.4930.7.camel@concordia>	
+ <5389AEB6.4030500@xenosoft.de> <5389B686.7070305@xenosoft.de>	
+ <538A58D4.5090602@xenosoft.de> <5396E4D6.60306@xenosoft.de>	
+ <5397060F.9010308@xenosoft.de> <1403074303.32307.5.camel@concordia>
+In-Reply-To: <1403074303.32307.5.camel@concordia>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,24 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/18/2014 03:54 PM, Michael Ellerman wrote:
-> On Wed, 2014-06-18 at 11:27 +0800, Mike Qiu wrote:
->> Anyone has a idea on this issue?
-> Did it ever work? If so which kernel version?
-It works for 3.15, but failed with linux version 3.16.0-rc1-next-20140617
-
-The config file can be simply get from /boot/configxxx. and "make 
-menuconfig" and save without change anything(default).
-> Can you attach your actual .config.
+Am 18.06.14 08:51, schrieb Michael Ellerman:
+> On Tue, 2014-06-10 at 15:20 +0200, Christian Zigotzky wrote:
+>> Hi All,
+>>
+>> Could you help me to remove the changes of the PCI code, please? Or
+>> which patches shall I remove to get the old PCI code?
+> Hi Christian,
 >
-> You could try building without CONFIG_PPC_POWERNV.
-
-Trying...., but it should work as default config from /boot/
-
-Thanks
-Mike
+> Thanks for doing the bisect. It wasn't clear why that change was causing your
+> issue, so I guess we're a bit stuck.
+>
+> Olof (on CC), was going to try and look at it when he got some spare time.
+> Please keep him on CC.
 >
 > cheers
 >
 >
 >
+Hi Michael,
+
+Thank you for your answer. Adrian told me the reason about this issue.
+
+Quote Adrian:
+
+As I recall, PCI resource allocation on Nemo was always a little strange 
+due to using an AMD south bridge together with the PA6T north bridge. 
+The south bridge does not behave as a standard PCIe device, but instead 
+presents itself as multiple devices on the PCIe root bus. This is not 
+compliant with the PCIe specification. We modified the core powerpc PCI 
+code so that Nemo could boot, but the changes to PCI code in 3.15 have 
+broken the old workaround. I don't understand the PCI changes in 3.15 
+enough to comment further at this point.
+
+Regards,
+Adrian
+
+Quote end
+
+Cheers,
+
+Christian
