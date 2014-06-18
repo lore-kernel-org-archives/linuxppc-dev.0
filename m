@@ -1,30 +1,19 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- by lists.ozlabs.org (Postfix) with ESMTP id B82FE1A05AB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:51:46 +1000 (EST)
-Date: Wed, 18 Jun 2014 13:51:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH v3 -next 0/9] CMA: generalize CMA reserved area
- management code
-Message-Id: <20140618135144.297c785260f9e2aebead867c@linux-foundation.org>
-In-Reply-To: <20140617012507.GA6825@js1304-P5Q-DELUXE>
-References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
- <539EB4C7.3080106@samsung.com>
- <20140617012507.GA6825@js1304-P5Q-DELUXE>
-Mime-Version: 1.0
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 108E41A02F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 09:44:11 +1000 (EST)
+Date: Thu, 19 Jun 2014 09:44:04 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, rusty@rustcorp.com.au
+Subject: Re: [PATCH] powerpc: module: fix TOC symbol CRC
+Message-ID: <20140619094404.18e7047b@kryten>
+In-Reply-To: <20140617155658.30560.578.stgit@nimbus>
+References: <20140617155658.30560.578.stgit@nimbus>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 17 Jun 2014 10:25:07 +0900 Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
 
-> > >v2:
-> > >   - Although this patchset looks very different with v1, the end result,
-> > >   that is, mm/cma.c is same with v1's one. So I carry Ack to patch 6-7.
-> > >
-> > >This patchset is based on linux-next 20140610.
-> > 
-> > Thanks for taking care of this. I will test it with my setup and if
-> > everything goes well, I will take it to my -next tree. If any branch
-> > is required for anyone to continue his works on top of those patches,
-> > let me know, I will also prepare it.
-> 
-> Hello,
-> 
-> I'm glad to hear that. :)
-> But, there is one concern. As you already know, I am preparing further
-> patches (Aggressively allocate the pages on CMA reserved memory). It
-> may be highly related to MM branch and also slightly depends on this CMA
-> changes. In this case, what is the best strategy to merge this
-> patchset? IMHO, Anrew's tree is more appropriate branch. If there is
-> no issue in this case, I am willing to develope further patches based
-> on your tree.
+Hi Laurent,
 
-That's probably easier.  Marek, I'll merge these into -mm (and hence
--next and git://git.kernel.org/pub/scm/linux/kernel/git/mhocko/mm.git)
-and shall hold them pending you review/ack/test/etc, OK?
+> The commit 71ec7c55ed91 introduced the magic symbol ".TOC." for ELFv2
+> ABI. This symbol is built manually and has no CRC value computed. A
+> zero value is put in the CRC section to avoid modpost complaining
+> about a missing CRC. Unfortunately, this breaks the kernel module
+> loading when the kernel is relocated (kdump case for instance)
+> because of the relocation applied to the kcrctab values.
+> 
+> This patch compute a CRC value for the TOC symbol which will match
+> the one compute by the kernel when it is relocated - aka '0 -
+> relocate_start' done in maybe_relocated called by check_version
+> (module.c).
+
+Adding Rusty since he maintains the module loader code.
+
+Anton
+
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> ---
+>  arch/powerpc/kernel/module_64.c |    9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/module_64.c
+> b/arch/powerpc/kernel/module_64.c index 077d2ce..a80c933 100644
+> --- a/arch/powerpc/kernel/module_64.c
+> +++ b/arch/powerpc/kernel/module_64.c
+> @@ -315,8 +315,15 @@ static void dedotify_versions(struct
+> modversion_info *vers, struct modversion_info *end;
+>  
+>  	for (end = (void *)vers + size; vers < end; vers++)
+> -		if (vers->name[0] == '.')
+> +		if (vers->name[0] == '.') {
+>  			memmove(vers->name, vers->name+1, strlen(vers->name));
+> +			/* The TOC symbol has no CRC computed. To avoid CRC
+> +			 * check failing, we must force it to the expected
+> +			 * value (see CRC check in module.c).
+> +			 */
+> +			if (!strcmp(vers->name, "TOC."))
+> +				vers->crc = -(unsigned long)reloc_start;
+> +		}
+>  }
+>  
+>  /* Undefined symbols which refer to .funcname, hack to funcname
+> (or .TOC.) */
