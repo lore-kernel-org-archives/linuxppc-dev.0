@@ -1,24 +1,20 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f174.google.com (mail-pd0-f174.google.com
- [209.85.192.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 384AE1A02E3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 17:56:27 +1000 (EST)
-Received: by mail-pd0-f174.google.com with SMTP id y10so444670pdj.33
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 00:56:24 -0700 (PDT)
-Message-ID: <53A14623.4080900@ozlabs.ru>
-Date: Wed, 18 Jun 2014 17:56:19 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/6] powerpc/powernv: Applying it_page_shift to platform
- code
-References: <1402044246-13650-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1402044246-13650-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=KOI8-R
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Alistair Popple <alistair@popple.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 976A61A02E4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:20:16 +1000 (EST)
+Message-ID: <1403079615.32307.8.camel@concordia>
+Subject: Re: [PATCH] powerpc: Reduce scariness of interrupt frames in stack
+ traces
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Date: Wed, 18 Jun 2014 18:20:15 +1000
+In-Reply-To: <20140612065308.GB16578@drongo>
+References: <20140612065308.GB16578@drongo>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2014 06:44 PM, Alexey Kardashevskiy wrote:
-> Here is what I got for powernv in order to support variable page size
-> in iommu_table.
-> 
-> I am very uncertain about Patch #4 "Add @it_owner to iommu_table struct"
-> and wonder if there any better way to get PE from iommu_table.
-> 
-> Please comment. Thanks.
+On Thu, 2014-06-12 at 16:53 +1000, Paul Mackerras wrote:
+> Some people see things like "Exception: 501" in stack traces in dmesg
+> and assume that means that something has gone badly wrong, when in
+> fact "Exception: 501" just means a device interrupt was taken.
+> This changes "Exception" to "interrupt" to make it clearer that we
+> are just recording the fact of a change in control flow rather than
+> some error condition.
 
+Surely this would be preferable:
 
-Ben, these patches are really simple :)
-
-
-> 
-> 
-> Alexey Kardashevskiy (6):
->   powerpc/powernv: use it_page_shift for TCE invalidation
->   powerpc/powernv: use it_page_shift in TCE build
->   powerpc/powernv: Add a page size parameter to
->     pnv_pci_setup_iommu_table()
->   powerpc/powernv: Add @it_owner to iommu_table struct
->   powerpc/powernv: Make set_bypass() callback a type
->   powerpc/powernv: Make invalidate() callback an iommu_table callback
-> 
->  arch/powerpc/include/asm/iommu.h            | 13 ++++++-
->  arch/powerpc/platforms/powernv/pci-ioda.c   | 55 ++++++++++++++---------------
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  3 +-
->  arch/powerpc/platforms/powernv/pci.c        | 43 +++++++++++++++-------
->  arch/powerpc/platforms/powernv/pci.h        |  7 ++--
->  5 files changed, 74 insertions(+), 47 deletions(-)
-> 
-
-
--- 
-Alexey
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index 31d0215..aa103dc 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -1577,7 +1577,7 @@ void show_stack(struct task_struct *tsk, unsigned long *stack)
+>  			struct pt_regs *regs = (struct pt_regs *)
+>  				(sp + STACK_FRAME_OVERHEAD);
+>  			lr = regs->link;
+> -			printk("--- Exception: %lx at %pS\n    LR = %pS\n",
+> +			printk("--- 👋🌷🌹🌻🌼🐷🐰🐱💜: %lx at %pS\n    LR = %pS\n",
+>  			       regs->trap, (void *)regs->nip, (void *)lr);
+>  			firstframe = 1;
+>  		}
