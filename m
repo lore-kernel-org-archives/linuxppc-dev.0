@@ -1,29 +1,29 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 599D51A02C0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:07:50 +1000 (EST)
-Received: from mail-ie0-f181.google.com (mail-ie0-f181.google.com
- [209.85.223.181])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A654A140087
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2014 06:07:48 +1000 (EST)
-Received: by mail-ie0-f181.google.com with SMTP id y20so1133588ier.26
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Jun 2014 13:07:46 -0700 (PDT)
-MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-From: Grant Likely <grant.likely@linaro.org>
-Date: Wed, 18 Jun 2014 21:07:26 +0100
-Message-ID: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
-Subject: OF_DYNAMIC node lifecycle
-To: Nathan Fontenot <nfont@austin.ibm.com>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ by lists.ozlabs.org (Postfix) with ESMTP id B9DAF1A02E7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:48:18 +1000 (EST)
+Date: Wed, 18 Jun 2014 13:48:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH v3 -next 4/9] DMA, CMA: support arbitrary bitmap
+ granularity
+Message-Id: <20140618134815.69c4d0a5f916846f9857e9ff@linux-foundation.org>
+In-Reply-To: <1402897251-23639-5-git-send-email-iamjoonsoo.kim@lge.com>
+References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <1402897251-23639-5-git-send-email-iamjoonsoo.kim@lge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +33,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Nathan and Tyrel,
+On Mon, 16 Jun 2014 14:40:46 +0900 Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
 
-I'm looking into lifecycle issues on nodes modified by OF_DYNAMIC, and
-I'm hoping you can help me. Right now, pseries seems to be the only
-user of OF_DYNAMIC, but making OF_DYNAMIC work has a huge impact on
-the entire kernel because it requires all DT code to manage reference
-counting with iterating over nodes. Most users simply get it wrong.
-Pantelis did some investigation and found that the reference counts on
-a running kernel are all over the place. I have my doubts that any
-code really gets it right.
+> PPC KVM's CMA area management requires arbitrary bitmap granularity,
+> since they want to reserve very large memory and manage this region
+> with bitmap that one bit for several pages to reduce management overheads.
+> So support arbitrary bitmap granularity for following generalization.
+> 
+> ...
+>
+> --- a/drivers/base/dma-contiguous.c
+> +++ b/drivers/base/dma-contiguous.c
+> @@ -38,6 +38,7 @@ struct cma {
+>  	unsigned long	base_pfn;
+>  	unsigned long	count;
+>  	unsigned long	*bitmap;
+> +	unsigned int order_per_bit; /* Order of pages represented by one bit */
+>  	struct mutex	lock;
+>  };
+>  
+> @@ -157,9 +158,37 @@ void __init dma_contiguous_reserve(phys_addr_t limit)
+>  
+>  static DEFINE_MUTEX(cma_mutex);
+>  
+> +static unsigned long cma_bitmap_aligned_mask(struct cma *cma, int align_order)
+> +{
+> +	return (1 << (align_order >> cma->order_per_bit)) - 1;
+> +}
 
-The problem is that users need to know when it is appropriate to call
-of_node_get()/of_node_put(). All list traversals that exit early need
-an extra call to of_node_put(), and code that is searching for a node
-in the tree and holding a reference to it needs to call of_node_get().
+Might want a "1UL << ..." here.
 
-I've got a few pseries questions:
-- What are the changes being requested by pseries firmware? Is it only
-CPUs and memory nodes, or does it manipulate things all over the tree?
-- How frequent are the changes? How many changes would be likely over
-the runtime of the system?
-- Are you able to verify that removed nodes are actually able to be
-freed correctly? Do you have any testcases for node removal?
+> +static unsigned long cma_bitmap_maxno(struct cma *cma)
+> +{
+> +	return cma->count >> cma->order_per_bit;
+> +}
+> +
+> +static unsigned long cma_bitmap_pages_to_bits(struct cma *cma,
+> +						unsigned long pages)
+> +{
+> +	return ALIGN(pages, 1 << cma->order_per_bit) >> cma->order_per_bit;
+> +}
 
-I'm thinking very seriously about changing the locking semantics of DT
-code entirely so that most users never have to worry about
-of_node_get/put at all. If the DT code is switched to use rcu
-primitives for tree iteration (which also means making DT code use
-list_head, something I'm already investigating), then instead of
-trying to figure out of_node_get/put rules, callers could use
-rcu_read_lock()/rcu_read_unlock() to protect the region that is
-searching over nodes, and only call of_node_get() if the node pointer
-is needed outside the rcu read-side lock.
+Ditto.  I'm not really sure what the compiler will do in these cases,
+but would prefer not to rely on it anyway!
 
-I'd really like to be rid of the node reference counting entirely, but
-I can't figure out a way of doing that safely, so I'd settle for
-making it a lot easier to get correct.
 
-Thoughts?
-
-g.
+--- a/drivers/base/dma-contiguous.c~dma-cma-support-arbitrary-bitmap-granularity-fix
++++ a/drivers/base/dma-contiguous.c
+@@ -160,7 +160,7 @@ static DEFINE_MUTEX(cma_mutex);
+ 
+ static unsigned long cma_bitmap_aligned_mask(struct cma *cma, int align_order)
+ {
+-	return (1 << (align_order >> cma->order_per_bit)) - 1;
++	return (1UL << (align_order >> cma->order_per_bit)) - 1;
+ }
+ 
+ static unsigned long cma_bitmap_maxno(struct cma *cma)
+@@ -171,7 +171,7 @@ static unsigned long cma_bitmap_maxno(st
+ static unsigned long cma_bitmap_pages_to_bits(struct cma *cma,
+ 						unsigned long pages)
+ {
+-	return ALIGN(pages, 1 << cma->order_per_bit) >> cma->order_per_bit;
++	return ALIGN(pages, 1UL << cma->order_per_bit) >> cma->order_per_bit;
+ }
+ 
+ static void cma_clear_bitmap(struct cma *cma, unsigned long pfn, int count)
+_
