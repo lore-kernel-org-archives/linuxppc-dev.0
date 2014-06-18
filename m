@@ -1,33 +1,36 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
- by lists.ozlabs.org (Postfix) with ESMTP id A108C1A0123
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:47:05 +1000 (EST)
-Message-ID: <53A15201.7060404@hitachi.com>
-Date: Wed, 18 Jun 2014 17:46:57 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0658F1A027E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:02:39 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 18 Jun 2014 19:02:36 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id D96AE3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:02:32 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5I8kI3230670898
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:46:19 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5I92V0w007409
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 19:02:31 +1000
+Message-ID: <53A155A6.2030805@linux.vnet.ibm.com>
+Date: Wed, 18 Jun 2014 17:02:30 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to
- find blacklist" error on ia64 and ppc64
-References: <5387F150.5000307@hitachi.com>
- <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
- <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
-In-Reply-To: <1403078179.32307.7.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
- Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
- akataria@vmware.com, Tony Luck <tony.luck@intel.com>,
- Kevin Hao <haokexin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- rdunlap@infradead.org, Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Boot failure in Power7 pSeries
+References: <53A00E2B.8030903@linux.vnet.ibm.com>
+ <53A1070C.50106@linux.vnet.ibm.com> <1403078080.32307.6.camel@concordia>
+In-Reply-To: <1403078080.32307.6.camel@concordia>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,43 +40,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2014/06/18 16:56), Michael Ellerman wrote:
-> On Fri, 2014-06-06 at 15:38 +0900, Masami Hiramatsu wrote:
->> Ping?
->>
->> I guess this should go to 3.16 branch, shouldn't it?
-> 
->>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
->>> index bfb6ded..8b89d65 100644
->>> --- a/arch/powerpc/include/asm/types.h
->>> +++ b/arch/powerpc/include/asm/types.h
->>> @@ -25,6 +25,17 @@ typedef struct {
->>>  	unsigned long env;
->>>  } func_descr_t;
->>>  
->>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
->>> +/*
->>> + * On PPC64 ABIv1 the function pointer actually points to the
->>> + * function's descriptor. The first entry in the descriptor is the
->>> + * address of the function text.
->>> + */
->>> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
->>> +#else
->>> +#define function_entry(fn)	((unsigned long)(fn))
->>> +#endif
-> 
-> We already have ppc_function_entry(), can't you use that?
+On 06/18/2014 03:54 PM, Michael Ellerman wrote:
+> On Wed, 2014-06-18 at 11:27 +0800, Mike Qiu wrote:
+>> Anyone has a idea on this issue?
+> Did it ever work? If so which kernel version?
+It works for 3.15, but failed with linux version 3.16.0-rc1-next-20140617
 
-I'd like to ask you whether the address which ppc_function_entry() returns on
-PPC ABIv2 is really same address in kallsyms or not.
-As you can see, kprobes uses function_entry() to get the actual entry address
-where kallsyms knows. I have not much information about that, but it seems that
-the "global entry point" is the address which kallsyms knows, isn't it?
+The config file can be simply get from /boot/configxxx. and "make 
+menuconfig" and save without change anything(default).
+> Can you attach your actual .config.
+>
+> You could try building without CONFIG_PPC_POWERNV.
 
-Thank you,
+Trying...., but it should work as default config from /boot/
 
--- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+Thanks
+Mike
+>
+> cheers
+>
+>
+>
