@@ -1,14 +1,14 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
+Received: from mail-pd0-f170.google.com (mail-pd0-f170.google.com
+ [209.85.192.170])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF75D1A0324
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 11:50:40 +1000 (EST)
-Received: by mail-pa0-f48.google.com with SMTP id et14so1336390pad.35
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:50:38 -0700 (PDT)
-Message-ID: <53A241E8.7010706@ozlabs.ru>
-Date: Thu, 19 Jun 2014 11:50:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 82A851A0324
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 11:51:13 +1000 (EST)
+Received: by mail-pd0-f170.google.com with SMTP id z10so1273941pdj.15
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 18:51:10 -0700 (PDT)
+Message-ID: <53A241F6.9010307@ozlabs.ru>
+Date: Thu, 19 Jun 2014 11:50:46 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: Alex Williamson <alex.williamson@redhat.com>
