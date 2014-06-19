@@ -1,54 +1,23 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E46031A0347
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:41:52 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Thu, 19 Jun 2014 16:41:51 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C7EA72BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:41:46 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5J6JZxA8978836
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:19:36 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5J6fhj9025626
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:41:45 +1000
-Message-ID: <53A285D0.1030106@in.ibm.com>
-Date: Thu, 19 Jun 2014 12:10:16 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-MIME-Version: 1.0
-To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-References: <5387F150.5000307@hitachi.com>
- <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
- <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
- <53A15201.7060404@hitachi.com> <1403141433.4768.1.camel@concordia>
- <53A26C99.6060000@hitachi.com>
-In-Reply-To: <53A26C99.6060000@hitachi.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, rdunlap@infradead.org,
- Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05FDF1A0353
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 17:21:17 +1000 (EST)
+Message-ID: <1403162474.4768.7.camel@concordia>
+Subject: Re: Boot failure in Power7 pSeries
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+Date: Thu, 19 Jun 2014 17:21:14 +1000
+In-Reply-To: <53A279FB.8010307@linux.vnet.ibm.com>
+References: <53A00E2B.8030903@linux.vnet.ibm.com>
+ <53A1070C.50106@linux.vnet.ibm.com> <1403078080.32307.6.camel@concordia>
+ <53A155A6.2030805@linux.vnet.ibm.com> <1403141538.4768.2.camel@concordia>
+ <53A2488A.1060507@linux.vnet.ibm.com> <1403150108.4768.3.camel@concordia>
+ <53A279FB.8010307@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -58,76 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2014 10:22 AM, Masami Hiramatsu wrote:
-> (2014/06/19 10:30), Michael Ellerman wrote:
->> On Wed, 2014-06-18 at 17:46 +0900, Masami Hiramatsu wrote:
->>> (2014/06/18 16:56), Michael Ellerman wrote:
->>>> On Fri, 2014-06-06 at 15:38 +0900, Masami Hiramatsu wrote:
->>>>> Ping?
->>>>>
->>>>> I guess this should go to 3.16 branch, shouldn't it?
->>>>
->>>>>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
->>>>>> index bfb6ded..8b89d65 100644
->>>>>> --- a/arch/powerpc/include/asm/types.h
->>>>>> +++ b/arch/powerpc/include/asm/types.h
->>>>>> @@ -25,6 +25,17 @@ typedef struct {
->>>>>>  	unsigned long env;
->>>>>>  } func_descr_t;
->>>>>>  
->>>>>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
->>>>>> +/*
->>>>>> + * On PPC64 ABIv1 the function pointer actually points to the
->>>>>> + * function's descriptor. The first entry in the descriptor is the
->>>>>> + * address of the function text.
->>>>>> + */
->>>>>> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
->>>>>> +#else
->>>>>> +#define function_entry(fn)	((unsigned long)(fn))
->>>>>> +#endif
->>>>
->>>> We already have ppc_function_entry(), can't you use that?
->>>
->>> I'd like to ask you whether the address which ppc_function_entry() returns on
->>> PPC ABIv2 is really same address in kallsyms or not.
->>> As you can see, kprobes uses function_entry() to get the actual entry address
->>> where kallsyms knows. I have not much information about that, but it seems that
->>> the "global entry point" is the address which kallsyms knows, isn't it?
->>
->> OK. I'm not sure off the top of my head which address kallsyms knows about, but
->> yes it's likely that it is the global entry point.
->>
->> I recently sent a patch to add ppc_global_function_entry(), because we need it
->> in the ftrace code. Once that is merged you could use that.
+On Thu, 2014-06-19 at 13:49 +0800, Mike Qiu wrote:
+> Hi Michael,
 > 
-> Yeah, I could use that. But since this is used in arch-independent code (e.g. IA64
-> needs similar macro), I think we'd better define function_entry() in asm/types.h for
-> general use (for kallsyms), and rename ppc_function_entry to local_function_entry()
-> in asm/code-patching.h.
-> 
-> 
->> How do you hit the original problem, you don't actually specify in your commit
->> message? Something with kprobes obviously, but what exactly? I'll try and
->> reproduce it here.
-> 
-> Ah, those messages should be shown in dmesg when booting if it doesn't work,
-> because the messages are printed by initialization process of kprobe blacklist.
-> So, reproducing it is just enabling CONFIG_KPROBES and boot it.
-Well,  we don't get those messages on Power, since the kallsyms has the
-entries for ".function_name". The correct way to verify is, either  :
+> The config file has attached ...
 
-1) Dump the black_list via xmon ( see :
-https://lkml.org/lkml/2014/5/29/893 ) and verify the entries.
+Thanks.
 
-or
+Nothing is obviously broken in there.
 
-2) Issue a kprobe on a black listed entry and hit a success,(which we
-will, since we don't check the actual function address).
+Can you try building with POWERNV=n, I think that will fix it.
 
-Thanks
-Suzuki
-
-
-> 
-> Thank you,
-> 
+cheers
