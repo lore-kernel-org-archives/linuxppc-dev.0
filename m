@@ -1,35 +1,43 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-ve0-f182.google.com (mail-ve0-f182.google.com
- [209.85.128.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 772641A035F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 03:02:21 +1000 (EST)
-Received: by mail-ve0-f182.google.com with SMTP id oy12so2587797veb.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 10:02:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AF401A0362
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 03:14:42 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 19 Jun 2014 11:14:36 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 29099C40029
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 11:14:22 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07029.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5JFArdZ66519080
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 17:10:53 +0200
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5JHEK0o007234
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 11:14:22 -0600
+Date: Thu, 19 Jun 2014 10:14:01 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Subject: Re: Node 0 not necessary for powerpc?
+Message-ID: <20140619171401.GU16644@linux.vnet.ibm.com>
+References: <20140311195632.GA946@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1403120839110.6865@nuc>
+ <20140313164949.GC22247@linux.vnet.ibm.com>
+ <20140519182400.GM8941@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1405210915170.7859@gentwo.org>
+ <20140521185812.GA5259@htj.dyndns.org>
 MIME-Version: 1.0
-In-Reply-To: <20140619122830.GP32514@n2100.arm.linux.org.uk>
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
- <E1Wd2Wd-0003vp-S2@rmk-PC.arm.linux.org.uk>
- <20140616104615.GA10701@n2100.arm.linux.org.uk>
- <CAPDyKFrp8JokqBbo3rg2i6WYykU1C9CuPF0FL7AOHh=Gcp5=hg@mail.gmail.com>
- <20140619122830.GP32514@n2100.arm.linux.org.uk>
-Date: Thu, 19 Jun 2014 10:02:16 -0700
-Message-ID: <CAOesGMh_8JSMzZQXVncBGmiTN6B--udY11kX=xmD5_TWRsUiSg@mail.gmail.com>
-Subject: Re: [PATCH 23/38] mmc: sdhci: convert sdhci_set_uhs_signaling() into
- a library function
-From: Olof Johansson <olof@lixom.net>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: Barry Song <baohua@kernel.org>, Anton Vorontsov <anton@enomsg.org>,
- Stephen Warren <swarren@wwwdotorg.org>, spear-devel <spear-devel@list.st.com>,
- linux-mmc <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>,
- Chris Ball <chris@printf.net>, Thierry Reding <thierry.reding@gmail.com>,
- Viresh Kumar <viresh.linux@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michal Simek <michal.simek@xilinx.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140521185812.GA5259@htj.dyndns.org>
+Cc: tony.luck@intel.com, linux-mm@kvack.org, anton@samba.org,
+ David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,75 +47,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 19, 2014 at 5:28 AM, Russell King - ARM Linux
-<linux@arm.linux.org.uk> wrote:
-> On Mon, Jun 16, 2014 at 02:17:30PM +0200, Ulf Hansson wrote:
->> Anyway, we did get some folks to test the patches and was thus fairly
->> confident that we could merge them. Chris asked me to try to collect
->> them in a PR for him, so I did. Sorry if I managed to screw some
->> things up, there were several conflicts and actual regressions, which
->> I tried to take care of.
->>
->> The mmc people were also very helping in sending patches to fixup
->> related regressions, immediately after we merged your patchset. Thus
->> together I think we managed to pull it off.
->
-> I tend to look through slightly less rose-tinted glasses.
->
-> The fact is... there's loads of ARM platforms which now fail in Olof's
-> build/boot testing, and they all seem to have a very similar pattern:
->
-> hummingboard:
-> [    1.149688] sdhci: Secure Digital Host Controller Interface driver
-> [    1.155901] sdhci: Copyright(c) Pierre Ossman
-> ...
-> [    1.253630] Waiting for root device /dev/mmcblk0p2...
-> [   60.325469] imx-sdma 20ec000.sdma: firmware not found
-> ~$off
-> # PYBOOT: Exception: timeout
->
-> jetson:
-> [    2.261355] Waiting for root device /dev/mmcblk0p1...
->
-> wandboard:
-> [    1.186870] sdhci: Secure Digital Host Controller Interface driver
-> [    1.193075] sdhci: Copyright(c) Pierre Ossman
-> ...
-> [    1.291064] Waiting for root device /dev/mmcblk0p2...
->
-> Whether these are caused by the patch set or not is anyone's guess,
-> because we (a) don't know what's causing these failures, and (b)
-> my patch series was never tested on anything but iMX6.
->
-> I'm pretty certain that the hummingboard failure is not related to
-> my series as that's one of the platforms I did test my series on.
->
-> There's more failures which look like possibly something in core MMC is
-> rather screwed, as OMAP5 (which doesn't use SDHCI) is also failing at
-> a similar point.
->
-> What these failures /do/ mean is that when I'm pushing my ARM for-next
-> branch out, Olof's builder picks it up and runs a build across it, and
-> the report returns a whole load of failures.  A whole load of failures
-> means that those platforms haven't tested my changes, which means the
-> quality of testing is much lower than it should be.
->
-> With 26 passing and 15 failing, that's over 1/3 of platforms failing,
-> which means 1/3 aren't getting tested.
->
-> This level of failure has been going on for quite a while now, and (afaik)
-> it remains uninvestigated and undiagnosed.  (This is one of the complaints
-> I have about Olof's build/boot test system, much of the information about
-> the build and boot is hidden away and unpublished, which makes it almost
-> impossible for third parties to diagnose any problem there.  I've given up
-> looking at most of Olof's build/boot mails because of this - it's just
-> not interesting to see the same abbreviated boot failure logs which give
-> no useful information time and time again.)
+On 21.05.2014 [14:58:12 -0400], Tejun Heo wrote:
+> Hello,
+> 
+> On Wed, May 21, 2014 at 09:16:27AM -0500, Christoph Lameter wrote:
+> > On Mon, 19 May 2014, Nishanth Aravamudan wrote:
+> > > I'm seeing a panic at boot with this change on an LPAR which actually
+> > > has no Node 0. Here's what I think is happening:
+> > >
+> > > start_kernel
+> > >     ...
+> > >     -> setup_per_cpu_areas
+> > >         -> pcpu_embed_first_chunk
+> > >             -> pcpu_fc_alloc
+> > >                 -> ___alloc_bootmem_node(NODE_DATA(cpu_to_node(cpu), ...
+> > >     -> smp_prepare_boot_cpu
+> > >         -> set_numa_node(boot_cpuid)
+> > >
+> > > So we panic on the NODE_DATA call. It seems that ia64, at least, uses
+> > > pcpu_alloc_first_chunk rather than embed. x86 has some code to handle
+> > > early calls of cpu_to_node (early_cpu_to_node) and sets the mapping for
+> > > all CPUs in setup_per_cpu_areas().
+> > 
+> > Maybe we can switch ia64 too embed? Tejun: Why are there these
+> > dependencies?
+> > 
+> > > Thoughts? Does that mean we need something similar to x86 for powerpc?
+> 
+> I'm missing context to properly understand what's going on but the
+> specific allocator in use shouldn't matter.  e.g. x86 can use both
+> embed and page allocators.  If the problem is that the arch is
+> accessing percpu memory before percpu allocator is initialized and the
+> problem was masked before somehow, the right thing to do would be
+> removing those premature percpu accesses.  If early percpu variables
+> are really necessary, doing similar early_percpu thing as in x86 would
+> be necessary.
 
-Most of this is because I want to avoid sending huuuge emails out with
-the failures. I'll add a push of the full log to arm-soc.lixom.net and
-include a link to it in the emails, similar to how I do the build
-logs. I'll let you know when I've made that change.
+The early access is in the arch's pcpu_alloc_bootmem. On x86, rather
+than using NODE_DATA(cpu_to_node), it uses (in pcpu_alloc_bootmem),
+early_cpu_to_node(cpu) with their custom logic.
 
+The issue is that cpu_to_node, if USE_PERCPU_NUMA_NODE_ID is defined
+(which it is for NUMA powerpc, x86, ia64), is that cpu_to_node uses the
+percpu area, which data isn't initialized yet.
 
--Olof
+So I guess powerpc needs the same treatment as x86.
+
+Thanks,
+Nish
