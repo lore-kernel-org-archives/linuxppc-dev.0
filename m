@@ -1,33 +1,33 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-we0-x235.google.com (mail-we0-x235.google.com
+ [IPv6:2a00:1450:400c:c03::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 982B71A0380
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 22:28:57 +1000 (EST)
-Date: Thu, 19 Jun 2014 13:28:31 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Ulf Hansson <ulf.hansson@linaro.org>, Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 23/38] mmc: sdhci: convert sdhci_set_uhs_signaling()
- into a library function
-Message-ID: <20140619122830.GP32514@n2100.arm.linux.org.uk>
-References: <20140423185534.GA26756@n2100.arm.linux.org.uk>
- <E1Wd2Wd-0003vp-S2@rmk-PC.arm.linux.org.uk>
- <20140616104615.GA10701@n2100.arm.linux.org.uk>
- <CAPDyKFrp8JokqBbo3rg2i6WYykU1C9CuPF0FL7AOHh=Gcp5=hg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EE23C1A0044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 23:59:26 +1000 (EST)
+Received: by mail-we0-f181.google.com with SMTP id q59so2338334wes.26
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 06:59:20 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPDyKFrp8JokqBbo3rg2i6WYykU1C9CuPF0FL7AOHh=Gcp5=hg@mail.gmail.com>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Barry Song <baohua@kernel.org>, Anton Vorontsov <anton@enomsg.org>,
- Stephen Warren <swarren@wwwdotorg.org>, spear-devel@list.st.com,
- linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
- Michal Simek <michal.simek@xilinx.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Viresh Kumar <viresh.linux@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <CAF0T0X4=fynr+ou+LK58DwpFnz5rgPiqadykKXf-bsp7N0uaeA@mail.gmail.com>
+References: <1403088492-15241-1-git-send-email-a13xp0p0v88@gmail.com>
+ <1403088492-15241-2-git-send-email-a13xp0p0v88@gmail.com>
+ <20140618133730.GB11895@leverpostej>
+ <CAF0T0X4=fynr+ou+LK58DwpFnz5rgPiqadykKXf-bsp7N0uaeA@mail.gmail.com>
+Date: Thu, 19 Jun 2014 17:59:19 +0400
+Message-ID: <CAF0T0X5LPRtm6_Q5i0ncpA3NTWckYUwqXgBxGn5ydPMq40VHBQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/3] dmaengine: mpc512x: add device tree binding
+ document
+From: Alexander Popov <a13xp0p0v88@gmail.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>,
+ Vinod Koul <vinod.koul@intel.com>, Gerhard Sittig <gsi@denx.de>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Alexander Popov <a13xp0p0v88@gmail.com>,
+ "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>, Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,71 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 16, 2014 at 02:17:30PM +0200, Ulf Hansson wrote:
-> Anyway, we did get some folks to test the patches and was thus fairly
-> confident that we could merge them. Chris asked me to try to collect
-> them in a PR for him, so I did. Sorry if I managed to screw some
-> things up, there were several conflicts and actual regressions, which
-> I tried to take care of.
-> 
-> The mmc people were also very helping in sending patches to fixup
-> related regressions, immediately after we merged your patchset. Thus
-> together I think we managed to pull it off.
+2014-06-18 18:56 GMT+04:00 Alexander Popov <a13xp0p0v88@gmail.com>:
+> 2014-06-18 17:37 GMT+04:00 Mark Rutland <mark.rutland@arm.com>:
+>> On Wed, Jun 18, 2014 at 11:48:10AM +0100, Alexander Popov wrote:
+>>> Introduce a device tree binding document for the MPC512x DMA controller
+>>> +Optional properties:
+>>> +- #dma-cells: the length of the DMA specifier, must be <1>.
+>>> +     Each channel of this DMA controller has a peripheral request line,
+>>> +     the assignment is fixed in hardware. This one cell
+>>> +     in dmas property of a client device represents the channel number.
+>>
+>> Surely this is required to be able to refer to DMA channels on the
+>> device?
+>
+> Excuse me, I didn't understand your question.
+> Do you inquire about the reason of making #dma-cells an optional property?
+> It's optional because device tree based lookup support is made
+> optional (part 3/3).
 
-I tend to look through slightly less rose-tinted glasses.
+Mark, did I answer your question?
+Should I fix anything in this patch series?
 
-The fact is... there's loads of ARM platforms which now fail in Olof's
-build/boot testing, and they all seem to have a very similar pattern:
-
-hummingboard:
-[    1.149688] sdhci: Secure Digital Host Controller Interface driver
-[    1.155901] sdhci: Copyright(c) Pierre Ossman
-...
-[    1.253630] Waiting for root device /dev/mmcblk0p2...
-[   60.325469] imx-sdma 20ec000.sdma: firmware not found
-~$off
-# PYBOOT: Exception: timeout
-
-jetson:
-[    2.261355] Waiting for root device /dev/mmcblk0p1...
-
-wandboard:
-[    1.186870] sdhci: Secure Digital Host Controller Interface driver
-[    1.193075] sdhci: Copyright(c) Pierre Ossman
-...
-[    1.291064] Waiting for root device /dev/mmcblk0p2...
-
-Whether these are caused by the patch set or not is anyone's guess,
-because we (a) don't know what's causing these failures, and (b)
-my patch series was never tested on anything but iMX6.
-
-I'm pretty certain that the hummingboard failure is not related to
-my series as that's one of the platforms I did test my series on.
-
-There's more failures which look like possibly something in core MMC is
-rather screwed, as OMAP5 (which doesn't use SDHCI) is also failing at
-a similar point.
-
-What these failures /do/ mean is that when I'm pushing my ARM for-next
-branch out, Olof's builder picks it up and runs a build across it, and
-the report returns a whole load of failures.  A whole load of failures
-means that those platforms haven't tested my changes, which means the
-quality of testing is much lower than it should be.
-
-With 26 passing and 15 failing, that's over 1/3 of platforms failing,
-which means 1/3 aren't getting tested.
-
-This level of failure has been going on for quite a while now, and (afaik)
-it remains uninvestigated and undiagnosed.  (This is one of the complaints
-I have about Olof's build/boot test system, much of the information about
-the build and boot is hidden away and unpublished, which makes it almost
-impossible for third parties to diagnose any problem there.  I've given up
-looking at most of Olof's build/boot mails because of this - it's just
-not interesting to see the same abbreviated boot failure logs which give
-no useful information time and time again.)
-
-We need to get on top of these failures and get them sorted.
-
--- 
-FTTC broadband for 0.8mile line: now at 9.7Mbps down 460kbps up... slowly
-improving, and getting towards what was expected from it.
+Hope for the reply.
+Alexander
