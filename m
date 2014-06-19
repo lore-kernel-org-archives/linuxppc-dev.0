@@ -1,30 +1,54 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f54.google.com (mail-pa0-f54.google.com
- [209.85.220.54])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 50D9F1A0342
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:17:10 +1000 (EST)
-Received: by mail-pa0-f54.google.com with SMTP id et14so1554877pad.41
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 23:17:07 -0700 (PDT)
-Message-ID: <53A2805E.3000401@ozlabs.ru>
-Date: Thu, 19 Jun 2014 16:17:02 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E46031A0347
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:41:52 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Thu, 19 Jun 2014 16:41:51 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C7EA72BB0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:41:46 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5J6JZxA8978836
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:19:36 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5J6fhj9025626
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 16:41:45 +1000
+Message-ID: <53A285D0.1030106@in.ibm.com>
+Date: Thu, 19 Jun 2014 12:10:16 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
 MIME-Version: 1.0
-To: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>,
- Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
-References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>
- <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>
- <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>
- <0df01f652acd446fa6db39f7049d6e72@BLUPR03MB566.namprd03.prod.outlook.com>
-In-Reply-To: <0df01f652acd446fa6db39f7049d6e72@BLUPR03MB566.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset=KOI8-R
-Cc: Alexander Graf <agraf@suse.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+References: <5387F150.5000307@hitachi.com>
+ <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
+ <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
+ <53A15201.7060404@hitachi.com> <1403141433.4768.1.camel@concordia>
+ <53A26C99.6060000@hitachi.com>
+In-Reply-To: <53A26C99.6060000@hitachi.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,262 +58,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/19/2014 03:30 PM, Bharat.Bhushan@freescale.com wrote:
-> 
-> 
->> -----Original Message-----
->> From: Linuxppc-dev [mailto:linuxppc-dev-
->> bounces+bharat.bhushan=freescale.com@lists.ozlabs.org] On Behalf Of Alexey
->> Kardashevskiy
->> Sent: Thursday, June 19, 2014 9:18 AM
->> To: Alex Williamson
->> Cc: kvm@vger.kernel.org; Nikunj A Dadhania; linux-kernel@vger.kernel.org;
->> Alexander Graf; linuxppc-dev@lists.ozlabs.org
->> Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
->>
->> On 06/19/2014 11:50 AM, Alexey Kardashevskiy wrote:
->>> On 06/19/2014 10:50 AM, Alexey Kardashevskiy wrote:
->>>> On 06/19/2014 04:35 AM, Alex Williamson wrote:
->>>>> On Wed, 2014-06-18 at 21:36 +1000, Alexey Kardashevskiy wrote:
->>>>>> VFIO exposes BARs to user space as a byte stream so userspace can
->>>>>> read it using pread()/pwrite(). Since this is a byte stream, VFIO
->>>>>> should not do byte swapping and simply return values as it gets
->>>>>> them from PCI device.
->>>>>>
->>>>>> Instead, the existing code assumes that byte stream in read/write
->>>>>> is little-endian and it fixes endianness for values which it passes
->>>>>> to ioreadXX/iowriteXX helpers. This works for little-endian as PCI
->>>>>> is little endian and le32_to_cpu/... are stubs.
+On 06/19/2014 10:22 AM, Masami Hiramatsu wrote:
+> (2014/06/19 10:30), Michael Ellerman wrote:
+>> On Wed, 2014-06-18 at 17:46 +0900, Masami Hiramatsu wrote:
+>>> (2014/06/18 16:56), Michael Ellerman wrote:
+>>>> On Fri, 2014-06-06 at 15:38 +0900, Masami Hiramatsu wrote:
+>>>>> Ping?
 >>>>>
->>>>> vfio read32:
->>>>>
->>>>> val = cpu_to_le32(ioread32(io + off));
->>>>>
->>>>> Where the typical x86 case, ioread32 is:
->>>>>
->>>>> #define ioread32(addr)          readl(addr)
->>>>>
->>>>> and readl is:
->>>>>
->>>>> __le32_to_cpu(__raw_readl(addr));
->>>>>
->>>>> So we do canceling byte swaps, which are both nops on x86, and end
->>>>> up returning device endian, which we assume is little endian.
->>>>>
->>>>> vfio write32 is similar:
->>>>>
->>>>> iowrite32(le32_to_cpu(val), io + off);
->>>>>
->>>>> The implicit cpu_to_le32 of iowrite32() and our explicit swap cancel
->>>>> out, so input data is device endian, which is assumed little.
->>>>>
->>>>>> This also works for big endian but rather by an accident: it reads
->>>>>> 4 bytes from the stream (@val is big endian), converts to CPU
->>>>>> format (which should be big endian) as it was little endian (@val
->>>>>> becomes actually little
->>>>>> endian) and calls iowrite32() which does not do swapping on big
->>>>>> endian system.
->>>>>
->>>>> Really?
->>>>>
->>>>> In arch/powerpc/kernel/iomap.c iowrite32() is just a wrapper around
->>>>> writel(), which seems to use the generic implementation, which does
->>>>> include a cpu_to_le32.
+>>>>> I guess this should go to 3.16 branch, shouldn't it?
 >>>>
->>>>
->>>> Ouch, wrong comment. iowrite32() does swapping. My bad.
->>>>
->>>>
->>>>>
->>>>> I also see other big endian archs like parisc doing cpu_to_le32 on
->>>>> iowrite32, so I don't think this statement is true.  I imagine it's
->>>>> probably working for you because the swap cancel.
->>>>>
->>>>>> This removes byte swapping and makes use ioread32be/iowrite32be
->>>>>> (and 16bit versions) on big-endian systems. The "be" helpers take
->>>>>> native endian values and do swapping at the moment of writing to a
->>>>>> PCI register using one of "store byte-reversed" instructions.
->>>>>
->>>>> So now you want iowrite32() on little endian and iowrite32be() on
->>>>> big endian, the former does a cpu_to_le32 (which is a nop on little
->>>>> endian) and the latter does a cpu_to_be32 (which is a nop on big endian)...
->>>>> should we just be using __raw_writel() on both?
->>>>
->>>>
->>>> We can do that too. The beauty of iowrite32be on ppc64 is that it
->>>> does not swap and write separately, it is implemented via the "Store
->>>> Word Byte-Reverse Indexed X-form" single instruction.
->>>>
->>>> And some archs (do not know which ones) may add memory barriers in
->>>> their implementations of ioread/iowrite. __raw_writel is too raw :)
->>>>
->>>>>  There doesn't actually
->>>>> seem to be any change in behavior here, it just eliminates
->>>>> back-to-back byte swaps, which are a nop on x86, but not power, right?
->>>>
->>>> Exactly. No dependency for QEMU.
->>>
->>> How about that:
->>> ===
->>>
->>> VFIO exposes BARs to user space as a byte stream so userspace can read
->>> it using pread()/pwrite(). Since this is a byte stream, VFIO should
->>> not do byte swapping and simply return values as it gets them from PCI
->>> device.
->>>
->>> Instead, the existing code assumes that byte stream in read/write is
->>> little-endian and it fixes endianness for values which it passes to
->>> ioreadXX/iowriteXX helpers in native format. The IO helpers do
->>> swapping again. Since both byte swaps are nops on little-endian host, this
->> works.
->>>
->>> This also works for big endian but rather by an accident: it reads 4
->>> bytes from the stream (@val is big endian), converts to CPU format
->>> (which should be big endian) as it was little endian (and @val becomes
->>> actually little
->>> endian) and calls iowrite32() which does swapping on big endian system
->>> again. So byte swap gets cancelled, __raw_writel() receives a native
->>> value and then *(volatile unsigned int __force *)PCI_FIX_ADDR(addr) =
->>> v; just does the right thing.
->>
->> I am wrong here, sorry. This is what happens when you watch soccer between 2am
->> and 4am :)
->>
->>
->>>
->>> This removes byte swaps and makes use of ioread32be/iowrite32be (and
->>> 16bit versions) which do explicit byte swapping at the moment of write
->>> to a PCI register. PPC64 uses a special "Store Word Byte-Reverse
->>> Indexed X-form" instruction which does swap and store.
->>
->> No swapping is done here if we use ioread32be as it calls in_be32 and that
->> animal does "lwz" which is simple load from memory.
->>
->> So @val (16/32 bit variable on stack) will have different values on LE and BE
->> but since we do not handle it the host and just memcpy it to the buffer, nothing
->> breaks here.
->>
->>
->> So it should be like this:
->> ===
->> VFIO exposes BARs to user space as a byte stream so userspace can read it using
->> pread()/pwrite(). Since this is a byte stream, VFIO should not do byte swapping
->> and simply return values as it gets them from PCI device and copy_to_user will
->> save bytes in the correct same true for writes.
-> 
-> " copy_to_user will save bytes in the correct" ---? --- "same true for writes".
-
-
-Oops. "correct order" is it.
-
-
-
-
-> 
-> Thanks
-> -Bharat
-> 
->>
->> Instead, the existing code assumes that byte stream in read/write is little-
->> endian and it fixes endianness for values which it passes to ioreadXX/iowriteXX
->> helpers in native format. The IO helpers do swapping again. Since both byte
->> swaps are nops on little-endian host, this works.
-> 
->>
->> This also works for big endian but rather by an accident: it reads 4 bytes from
->> the stream (@val is big endian), converts to CPU format (which should be big
->> endian) as it was little endian (and @val becomes actually little
->> endian) and calls iowrite32() which does swapping on big endian system again. So
->> byte swap in the host gets cancelled and __raw_writel() writes the value which
->> was swapped originally by the guest.
->>
->> This removes byte swaps and makes use of ioread32be/iowrite32be (and 16bit
->> versions) which do not do byte swap on BE hosts.
->> For LE hosts, ioread32/iowrite32 are still used.
->>
->> ===
->>
->>
->>> ===
->>>
->>> any better?
->>>
->>>
->>>
->>>
->>>>>> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>>> ---
->>>>>>  drivers/vfio/pci/vfio_pci_rdwr.c | 20 ++++++++++++++++----
->>>>>>  1 file changed, 16 insertions(+), 4 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c
->>>>>> b/drivers/vfio/pci/vfio_pci_rdwr.c
->>>>>> index 210db24..f363b5a 100644
->>>>>> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
->>>>>> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
->>>>>> @@ -21,6 +21,18 @@
->>>>>>
->>>>>>  #include "vfio_pci_private.h"
->>>>>>
->>>>>> +#ifdef __BIG_ENDIAN__
->>>>>> +#define ioread16_native		ioread16be
->>>>>> +#define ioread32_native		ioread32be
->>>>>> +#define iowrite16_native	iowrite16be
->>>>>> +#define iowrite32_native	iowrite32be
+>>>>>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+>>>>>> index bfb6ded..8b89d65 100644
+>>>>>> --- a/arch/powerpc/include/asm/types.h
+>>>>>> +++ b/arch/powerpc/include/asm/types.h
+>>>>>> @@ -25,6 +25,17 @@ typedef struct {
+>>>>>>  	unsigned long env;
+>>>>>>  } func_descr_t;
+>>>>>>  
+>>>>>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
+>>>>>> +/*
+>>>>>> + * On PPC64 ABIv1 the function pointer actually points to the
+>>>>>> + * function's descriptor. The first entry in the descriptor is the
+>>>>>> + * address of the function text.
+>>>>>> + */
+>>>>>> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
 >>>>>> +#else
->>>>>> +#define ioread16_native		ioread16
->>>>>> +#define ioread32_native		ioread32
->>>>>> +#define iowrite16_native	iowrite16
->>>>>> +#define iowrite32_native	iowrite32
+>>>>>> +#define function_entry(fn)	((unsigned long)(fn))
 >>>>>> +#endif
->>>>>> +
->>>>>>  /*
->>>>>>   * Read or write from an __iomem region (MMIO or I/O port) with an
->> excluded
->>>>>>   * range which is inaccessible.  The excluded range drops writes
->>>>>> and fills @@ -50,9 +62,9 @@ static ssize_t do_io_rw(void __iomem *io, char
->> __user *buf,
->>>>>>  				if (copy_from_user(&val, buf, 4))
->>>>>>  					return -EFAULT;
->>>>>>
->>>>>> -				iowrite32(le32_to_cpu(val), io + off);
->>>>>> +				iowrite32_native(val, io + off);
->>>>>>  			} else {
->>>>>> -				val = cpu_to_le32(ioread32(io + off));
->>>>>> +				val = ioread32_native(io + off);
->>>>>>
->>>>>>  				if (copy_to_user(buf, &val, 4))
->>>>>>  					return -EFAULT;
->>>>>> @@ -66,9 +78,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user
->> *buf,
->>>>>>  				if (copy_from_user(&val, buf, 2))
->>>>>>  					return -EFAULT;
->>>>>>
->>>>>> -				iowrite16(le16_to_cpu(val), io + off);
->>>>>> +				iowrite16_native(val, io + off);
->>>>>>  			} else {
->>>>>> -				val = cpu_to_le16(ioread16(io + off));
->>>>>> +				val = ioread16_native(io + off);
->>>>>>
->>>>>>  				if (copy_to_user(buf, &val, 2))
->>>>>>  					return -EFAULT;
->>>>>
->>>>>
->>>>>
 >>>>
->>>>
+>>>> We already have ppc_function_entry(), can't you use that?
 >>>
->>>
+>>> I'd like to ask you whether the address which ppc_function_entry() returns on
+>>> PPC ABIv2 is really same address in kallsyms or not.
+>>> As you can see, kprobes uses function_entry() to get the actual entry address
+>>> where kallsyms knows. I have not much information about that, but it seems that
+>>> the "global entry point" is the address which kallsyms knows, isn't it?
 >>
+>> OK. I'm not sure off the top of my head which address kallsyms knows about, but
+>> yes it's likely that it is the global entry point.
 >>
->> --
->> Alexey
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> I recently sent a patch to add ppc_global_function_entry(), because we need it
+>> in the ftrace code. Once that is merged you could use that.
+> 
+> Yeah, I could use that. But since this is used in arch-independent code (e.g. IA64
+> needs similar macro), I think we'd better define function_entry() in asm/types.h for
+> general use (for kallsyms), and rename ppc_function_entry to local_function_entry()
+> in asm/code-patching.h.
+> 
+> 
+>> How do you hit the original problem, you don't actually specify in your commit
+>> message? Something with kprobes obviously, but what exactly? I'll try and
+>> reproduce it here.
+> 
+> Ah, those messages should be shown in dmesg when booting if it doesn't work,
+> because the messages are printed by initialization process of kprobe blacklist.
+> So, reproducing it is just enabling CONFIG_KPROBES and boot it.
+Well,  we don't get those messages on Power, since the kallsyms has the
+entries for ".function_name". The correct way to verify is, either  :
+
+1) Dump the black_list via xmon ( see :
+https://lkml.org/lkml/2014/5/29/893 ) and verify the entries.
+
+or
+
+2) Issue a kprobe on a black listed entry and hit a success,(which we
+will, since we don't check the actual function address).
+
+Thanks
+Suzuki
 
 
--- 
-Alexey
+> 
+> Thank you,
+> 
