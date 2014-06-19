@@ -1,45 +1,54 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E39FD1A0383
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 19:42:19 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A3E31A033C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 19:47:02 +1000 (EST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Thu, 19 Jun 2014 15:12:12 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 6BF17125805A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 15:11:34 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5J9h9oj51642460
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 15:13:09 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5J9g4BF020439
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 15:12:05 +0530
-Date: Thu, 19 Jun 2014 17:42:02 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH V3 14/17] ppc/pci: create/release dev-tree node for VFs
-Message-ID: <20140619094202.GA10609@richard>
-References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1402365399-5121-15-git-send-email-weiyang@linux.vnet.ibm.com>
- <CACxGe6v6Rdd=GQ8qR5LQ64NThidn7kn3WkKFkOXOsNuWq75D-A@mail.gmail.com>
- <20140619024651.GC6478@richard>
- <CACxGe6sgOh3MP-03Ge9NK7DWf+dgC98huA9Sv4DcThXNfByf2w@mail.gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Thu, 19 Jun 2014 19:47:01 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id BCA6C2CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 19:46:54 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5J9kcUB1245478
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 19:46:38 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5J9kqWs029523
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 19:46:54 +1000
+Message-ID: <53A2B136.108@in.ibm.com>
+Date: Thu, 19 Jun 2014 15:15:26 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CACxGe6sgOh3MP-03Ge9NK7DWf+dgC98huA9Sv4DcThXNfByf2w@mail.gmail.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- gwshan@linux.vnet.ibm.com, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- Bjorn Helgaas <bhelgaas@google.com>, yan@linux.vnet.ibm.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Subject: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+References: <5387F150.5000307@hitachi.com>
+ <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
+ <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
+ <53A15201.7060404@hitachi.com> <1403141433.4768.1.camel@concordia>
+ <53A26C99.6060000@hitachi.com> <53A285D0.1030106@in.ibm.com>
+ <53A2908E.2000806@hitachi.com>
+In-Reply-To: <53A2908E.2000806@hitachi.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, rdunlap@infradead.org,
+ Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,44 +58,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 19, 2014 at 09:30:47AM +0100, Grant Likely wrote:
->On Thu, Jun 19, 2014 at 3:46 AM, Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
->> On Wed, Jun 18, 2014 at 07:26:27PM +0100, Grant Likely wrote:
->>>On Tue, Jun 10, 2014 at 2:56 AM, Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
->>>> Currently, powernv platform is not aware of VFs. This means no dev-node
->>>> represents a VF. Also, VF PCI device is created when PF driver want to enable
->>>> it. This leads to the pdn->pdev and pdn->pe_number an invalid value.
+On 06/19/2014 12:56 PM, Masami Hiramatsu wrote:
+> (2014/06/19 15:40), Suzuki K. Poulose wrote:
+>> On 06/19/2014 10:22 AM, Masami Hiramatsu wrote:
+>>> (2014/06/19 10:30), Michael Ellerman wrote:
+>>>> On Wed, 2014-06-18 at 17:46 +0900, Masami Hiramatsu wrote:
+>>>>> (2014/06/18 16:56), Michael Ellerman wrote:
+>>>>>> On Fri, 2014-06-06 at 15:38 +0900, Masami Hiramatsu wrote:
+>>>>>>> Ping?
+>>>>>>>
+>>>>>>> I guess this should go to 3.16 branch, shouldn't it?
+>>>>>>
+>>>>>>>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+>>>>>>>> index bfb6ded..8b89d65 100644
+>>>>>>>> --- a/arch/powerpc/include/asm/types.h
+>>>>>>>> +++ b/arch/powerpc/include/asm/types.h
+>>>>>>>> @@ -25,6 +25,17 @@ typedef struct {
+>>>>>>>>  	unsigned long env;
+>>>>>>>>  } func_descr_t;
+>>>>>>>>  
+>>>>>>>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
+>>>>>>>> +/*
+>>>>>>>> + * On PPC64 ABIv1 the function pointer actually points to the
+>>>>>>>> + * function's descriptor. The first entry in the descriptor is the
+>>>>>>>> + * address of the function text.
+>>>>>>>> + */
+>>>>>>>> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
+>>>>>>>> +#else
+>>>>>>>> +#define function_entry(fn)	((unsigned long)(fn))
+>>>>>>>> +#endif
+>>>>>>
+>>>>>> We already have ppc_function_entry(), can't you use that?
+>>>>>
+>>>>> I'd like to ask you whether the address which ppc_function_entry() returns on
+>>>>> PPC ABIv2 is really same address in kallsyms or not.
+>>>>> As you can see, kprobes uses function_entry() to get the actual entry address
+>>>>> where kallsyms knows. I have not much information about that, but it seems that
+>>>>> the "global entry point" is the address which kallsyms knows, isn't it?
 >>>>
->>>> This patch create/release dev-node for VF and fixs this when a VF's pci_dev
->>>> is created.
+>>>> OK. I'm not sure off the top of my head which address kallsyms knows about, but
+>>>> yes it's likely that it is the global entry point.
 >>>>
->>>> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>> I recently sent a patch to add ppc_global_function_entry(), because we need it
+>>>> in the ftrace code. Once that is merged you could use that.
 >>>
->>>I don't think this is the right way to handle this. Unless it is a
->>>fixup to a buggy devicetree provided by firmware, I don't want to see
->>>any code modifying the devicetree to describe stuff that is able to be
->>>directly enumerated. Really the pci code should handle the lack of a
->>>device_node gracefully. If it cannot then it should be fixed.
->>
->> Grant,
->>
->> Glad to see your comment.
->>
->> I will fix this in the firmware.
->
->That's not really what I meant. The kernel should be able to deal with
->virtual functions even if firmware doesn't know how, and the kernel
->should not require modifying the device tree to support them.
->
->I'm saying fix the kernel so that a device node is not necessary for
->virtual functions.
+>>> Yeah, I could use that. But since this is used in arch-independent code (e.g. IA64
+>>> needs similar macro), I think we'd better define function_entry() in asm/types.h for
+>>> general use (for kallsyms), and rename ppc_function_entry to local_function_entry()
+>>> in asm/code-patching.h.
+>>>
+>>>
+>>>> How do you hit the original problem, you don't actually specify in your commit
+>>>> message? Something with kprobes obviously, but what exactly? I'll try and
+>>>> reproduce it here.
+>>>
+>>> Ah, those messages should be shown in dmesg when booting if it doesn't work,
+>>> because the messages are printed by initialization process of kprobe blacklist.
+>>> So, reproducing it is just enabling CONFIG_KPROBES and boot it.
+>> Well,  we don't get those messages on Power, since the kallsyms has the
+>> entries for ".function_name". The correct way to verify is, either  :
+> 
+> Hmm, that seems another issue on powerpc. Is that expected(and designed)
+> behavior?
+AFAIK, yes, it is.
+To be more precise :
 
-oh, sorry for my poor understanding. Let me do some investigation to see
-whether it is fine to get rid of device node for vfs.
+we have 'foo' and '.foo' for a function foo(), where 'foo' points to the
+function_entry and '.foo' points to the actual function.
 
->
->g.
+So, a kallsyms_lookup_size_offset() on both 'foo' and '.foo' will return
+a hit. So, if we make sure we use the value of '.foo' (by using the
+appropriate macros) we should be fine.
 
--- 
-Richard Yang
-Help you, Help me
+ And if so, how I can verify when initializing blacklist?
+> (should I better use kallsyms_lookup() and kallsyms_lookup_name() for
+> verification?)
+One way to verify would be to make sure the symbol starts with '.' from
+the result of the current kallsyms_lookup_size_offset() for PPC.
+
+Thanks
+Suzuki
+
+> 
+> Thank you,
+> 
+>>
+>> 1) Dump the black_list via xmon ( see :
+>> https://lkml.org/lkml/2014/5/29/893 ) and verify the entries.
+>>
+>> or
+>>
+>> 2) Issue a kprobe on a black listed entry and hit a success,(which we
+>> will, since we don't check the actual function address).
+>>
+>> Thanks
+>> Suzuki
+>>
+>>
+>>>
+>>> Thank you,
+>>>
