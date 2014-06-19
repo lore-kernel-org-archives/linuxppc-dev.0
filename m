@@ -1,22 +1,30 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <pantelis.antoniou@konsulko.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB3F81A0361
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 18:51:13 +1000 (EST)
-Message-ID: <53A29F24.2050509@pengutronix.de>
-Date: Thu, 19 Jun 2014 10:28:20 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
-MIME-Version: 1.0
-To: Zhao Qiang <B45475@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-can@vger.kernel.org, wg@grandegger.com, B07421@freescale.com
-Subject: Re: [PATCH 1/2] flexcan: add err_irq handler for flexcan
-References: <1403163973-48239-1-git-send-email-B45475@freescale.com>
-In-Reply-To: <1403163973-48239-1-git-send-email-B45475@freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="HiIp3sK5uMT3pkRAnLvNgr8cToXthlwrF"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03C921A0339
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 18:33:29 +1000 (EST)
+Received: from mail-we0-f180.google.com (mail-we0-f180.google.com
+ [74.125.82.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 32B9D140087
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2014 18:33:27 +1000 (EST)
+Received: by mail-we0-f180.google.com with SMTP id x48so1956634wes.25
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Jun 2014 01:33:23 -0700 (PDT)
+Subject: Re: OF_DYNAMIC node lifecycle
+Mime-Version: 1.0 (Apple Message framework v1085)
+Content-Type: text/plain; charset=us-ascii
+From: Pantelis Antoniou <pantelis.antoniou@konsulko.com>
+In-Reply-To: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
+Date: Thu, 19 Jun 2014 11:33:20 +0300
+Message-Id: <43898B58-2EA7-42B5-A17A-27F16F2618A6@konsulko.com>
+References: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
+To: Grant Likely <grant.likely@linaro.org>
+Cc: devicetree@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,131 +34,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---HiIp3sK5uMT3pkRAnLvNgr8cToXthlwrF
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Hi Grant,
 
-On 06/19/2014 09:46 AM, Zhao Qiang wrote:
-> when flexcan is not physically linked, command 'cantest' will
-> trigger an err_irq, add err_irq handler for it.
->=20
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
->  drivers/net/can/flexcan.c | 31 ++++++++++++++++++++++++++++++-
->  1 file changed, 30 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
-> index aaed97b..e3c6cfd 100644
-> --- a/drivers/net/can/flexcan.c
-> +++ b/drivers/net/can/flexcan.c
-> @@ -206,6 +206,7 @@ struct flexcan_priv {
->  	void __iomem *base;
->  	u32 reg_esr;
->  	u32 reg_ctrl_default;
-> +	unsigned int	err_irq;
+CCing Thomas Gleixner & Steven Rostedt, since they might have a few
+ideas...
 
-Please use a space instead of a tab before err_irq.
+On Jun 18, 2014, at 11:07 PM, Grant Likely wrote:
 
-> =20
->  	struct clk *clk_ipg;
->  	struct clk *clk_per;
-> @@ -654,6 +655,23 @@ static irqreturn_t flexcan_irq(int irq, void *dev_=
-id)
->  	return IRQ_HANDLED;
->  }
-> =20
-> +static irqreturn_t flexcan_err_irq(int irq, void *dev_id)
-> +{
-> +	struct net_device *dev =3D dev_id;
-> +	struct flexcan_priv *priv =3D netdev_priv(dev);
-> +	struct flexcan_regs __iomem *regs =3D priv->base;
-> +	u32 reg_ctrl, reg_esr;
-> +
-> +	reg_esr =3D flexcan_read(&regs->esr);
-> +	reg_ctrl =3D flexcan_read(&regs->ctrl);
-> +	if (reg_esr & FLEXCAN_ESR_TX_WRN) {
-> +		flexcan_write(reg_esr & ~FLEXCAN_ESR_TX_WRN, &regs->esr);
-> +		flexcan_write(reg_ctrl & ~FLEXCAN_CTRL_ERR_MSK, &regs->ctrl);
-> +		netdev_err(dev, "No physical link!\n");
+> Hi Nathan and Tyrel,
+> 
+> I'm looking into lifecycle issues on nodes modified by OF_DYNAMIC, and
+> I'm hoping you can help me. Right now, pseries seems to be the only
+> user of OF_DYNAMIC, but making OF_DYNAMIC work has a huge impact on
+> the entire kernel because it requires all DT code to manage reference
+> counting with iterating over nodes. Most users simply get it wrong.
+> Pantelis did some investigation and found that the reference counts on
+> a running kernel are all over the place. I have my doubts that any
+> code really gets it right.
+> 
+> The problem is that users need to know when it is appropriate to call
+> of_node_get()/of_node_put(). All list traversals that exit early need
+> an extra call to of_node_put(), and code that is searching for a node
+> in the tree and holding a reference to it needs to call of_node_get().
+> 
 
-A warning IRQ does not imply that you have no physical link. I suggest
-to make use of the existing flexcan_poll_state() function.
+In hindsight it appears that drivers just can't get the lifecycle right.
+So we need to simplify things.
 
-> +	}
-> +	return IRQ_HANDLED;
-> +}
-> +
->  static void flexcan_set_bittiming(struct net_device *dev)
->  {
->  	const struct flexcan_priv *priv =3D netdev_priv(dev);
-> @@ -860,6 +878,12 @@ static int flexcan_open(struct net_device *dev)
->  	if (err)
->  		goto out_close;
-> =20
-> +	if (priv->err_irq)
-> +		err =3D request_irq(priv->err_irq, flexcan_err_irq, IRQF_SHARED,
-> +				  dev->name, dev);
-> +	if (err)
-> +		goto out_close;
-> +
->  	/* start chip and queuing */
->  	err =3D flexcan_chip_start(dev);
->  	if (err)
-> @@ -1007,7 +1031,7 @@ static int flexcan_probe(struct platform_device *=
-pdev)
->  	struct resource *mem;
->  	struct clk *clk_ipg =3D NULL, *clk_per =3D NULL;
->  	void __iomem *base;
-> -	int err, irq;
-> +	int err, irq, err_irq;
->  	u32 clock_freq =3D 0;
-> =20
->  	if (pdev->dev.of_node)
-> @@ -1034,6 +1058,10 @@ static int flexcan_probe(struct platform_device =
-*pdev)
->  	if (irq <=3D 0)
->  		return -ENODEV;
-> =20
-> +	err_irq =3D platform_get_irq(pdev, 1);
-> +	if (err_irq <=3D 0)
-> +		err_irq =3D 0;
-> +
->  	base =3D devm_ioremap_resource(&pdev->dev, mem);
->  	if (IS_ERR(base))
->  		return PTR_ERR(base);
-> @@ -1057,6 +1085,7 @@ static int flexcan_probe(struct platform_device *=
-pdev)
->  	dev->flags |=3D IFF_ECHO;
-> =20
->  	priv =3D netdev_priv(dev);
-> +	priv->err_irq =3D err_irq;
->  	priv->can.clock.freq =3D clock_freq;
->  	priv->can.bittiming_const =3D &flexcan_bittiming_const;
->  	priv->can.do_set_mode =3D flexcan_set_mode;
->=20
+> I've got a few pseries questions:
+> - What are the changes being requested by pseries firmware? Is it only
+> CPUs and memory nodes, or does it manipulate things all over the tree?
+> - How frequent are the changes? How many changes would be likely over
+> the runtime of the system?
+> - Are you able to verify that removed nodes are actually able to be
+> freed correctly? Do you have any testcases for node removal?
+> 
+> I'm thinking very seriously about changing the locking semantics of DT
+> code entirely so that most users never have to worry about
+> of_node_get/put at all. If the DT code is switched to use rcu
+> primitives for tree iteration (which also means making DT code use
+> list_head, something I'm already investigating), then instead of
+> trying to figure out of_node_get/put rules, callers could use
+> rcu_read_lock()/rcu_read_unlock() to protect the region that is
+> searching over nodes, and only call of_node_get() if the node pointer
+> is needed outside the rcu read-side lock.
+> 
+> I'd really like to be rid of the node reference counting entirely, but
+> I can't figure out a way of doing that safely, so I'd settle for
+> making it a lot easier to get correct.
+> 
 
-Marc
+Since we're going about changing things, how about that devtree_lock?
 
---=20
-Pengutronix e.K.                  | Marc Kleine-Budde           |
-Industrial Linux Solutions        | Phone: +49-231-2826-924     |
-Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+We're using a raw_spinlock and we're always taking the lock with
+interrupts disabled.
 
+If we're going to make DT changes frequently during normal runtime
+and not only during boot time, those are bad for any kind of real-time
+performance.
 
---HiIp3sK5uMT3pkRAnLvNgr8cToXthlwrF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+So the question is, do we really have code that access the live tree
+during atomic sections? Is that something we want? Enforcing this
+will make our lives easier, and we'll get the change to replace
+that spinlock with a mutex.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+ 
+> Thoughts?
+> 
+> g.
 
-iEYEARECAAYFAlOinycACgkQjTAFq1RaXHPw9gCgipHbnFavmanET3XOt3QkGl0Z
-fX4AniLy53jyQS+irNYAiTNwoQ2Vqgek
-=IDuR
------END PGP SIGNATURE-----
+Regards
 
---HiIp3sK5uMT3pkRAnLvNgr8cToXthlwrF--
+-- Pantelis
