@@ -1,35 +1,19 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
- by lists.ozlabs.org (Postfix) with ESMTP id 512A61A0355
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 17:26:15 +1000 (EST)
-Message-ID: <53A2908E.2000806@hitachi.com>
-Date: Thu, 19 Jun 2014 16:26:06 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC2E11A00F2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 17:49:36 +1000 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-can@vger.kernel.org>,
+ <wg@grandegger.com>, <mkl@pengutronix.de>, <B07421@freescale.com>
+Subject: [PATCH 1/2] flexcan: add err_irq handler for flexcan
+Date: Thu, 19 Jun 2014 15:46:12 +0800
+Message-ID: <1403163973-48239-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: Re: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to
- find blacklist" error on ia64 and ppc64
-References: <5387F150.5000307@hitachi.com>
- <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
- <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
- <53A15201.7060404@hitachi.com> <1403141433.4768.1.camel@concordia>
- <53A26C99.6060000@hitachi.com> <53A285D0.1030106@in.ibm.com>
-In-Reply-To: <53A285D0.1030106@in.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, akataria@vmware.com,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, rdunlap@infradead.org,
- Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,90 +23,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2014/06/19 15:40), Suzuki K. Poulose wrote:
-> On 06/19/2014 10:22 AM, Masami Hiramatsu wrote:
->> (2014/06/19 10:30), Michael Ellerman wrote:
->>> On Wed, 2014-06-18 at 17:46 +0900, Masami Hiramatsu wrote:
->>>> (2014/06/18 16:56), Michael Ellerman wrote:
->>>>> On Fri, 2014-06-06 at 15:38 +0900, Masami Hiramatsu wrote:
->>>>>> Ping?
->>>>>>
->>>>>> I guess this should go to 3.16 branch, shouldn't it?
->>>>>
->>>>>>> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
->>>>>>> index bfb6ded..8b89d65 100644
->>>>>>> --- a/arch/powerpc/include/asm/types.h
->>>>>>> +++ b/arch/powerpc/include/asm/types.h
->>>>>>> @@ -25,6 +25,17 @@ typedef struct {
->>>>>>>  	unsigned long env;
->>>>>>>  } func_descr_t;
->>>>>>>  
->>>>>>> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
->>>>>>> +/*
->>>>>>> + * On PPC64 ABIv1 the function pointer actually points to the
->>>>>>> + * function's descriptor. The first entry in the descriptor is the
->>>>>>> + * address of the function text.
->>>>>>> + */
->>>>>>> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
->>>>>>> +#else
->>>>>>> +#define function_entry(fn)	((unsigned long)(fn))
->>>>>>> +#endif
->>>>>
->>>>> We already have ppc_function_entry(), can't you use that?
->>>>
->>>> I'd like to ask you whether the address which ppc_function_entry() returns on
->>>> PPC ABIv2 is really same address in kallsyms or not.
->>>> As you can see, kprobes uses function_entry() to get the actual entry address
->>>> where kallsyms knows. I have not much information about that, but it seems that
->>>> the "global entry point" is the address which kallsyms knows, isn't it?
->>>
->>> OK. I'm not sure off the top of my head which address kallsyms knows about, but
->>> yes it's likely that it is the global entry point.
->>>
->>> I recently sent a patch to add ppc_global_function_entry(), because we need it
->>> in the ftrace code. Once that is merged you could use that.
->>
->> Yeah, I could use that. But since this is used in arch-independent code (e.g. IA64
->> needs similar macro), I think we'd better define function_entry() in asm/types.h for
->> general use (for kallsyms), and rename ppc_function_entry to local_function_entry()
->> in asm/code-patching.h.
->>
->>
->>> How do you hit the original problem, you don't actually specify in your commit
->>> message? Something with kprobes obviously, but what exactly? I'll try and
->>> reproduce it here.
->>
->> Ah, those messages should be shown in dmesg when booting if it doesn't work,
->> because the messages are printed by initialization process of kprobe blacklist.
->> So, reproducing it is just enabling CONFIG_KPROBES and boot it.
-> Well,  we don't get those messages on Power, since the kallsyms has the
-> entries for ".function_name". The correct way to verify is, either  :
+when flexcan is not physically linked, command 'cantest' will
+trigger an err_irq, add err_irq handler for it.
 
-Hmm, that seems another issue on powerpc. Is that expected(and designed)
-behavior? And if so, how I can verify when initializing blacklist?
-(should I better use kallsyms_lookup() and kallsyms_lookup_name() for
-verification?)
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ drivers/net/can/flexcan.c | 31 ++++++++++++++++++++++++++++++-
+ 1 file changed, 30 insertions(+), 1 deletion(-)
 
-Thank you,
-
-> 
-> 1) Dump the black_list via xmon ( see :
-> https://lkml.org/lkml/2014/5/29/893 ) and verify the entries.
-> 
-> or
-> 
-> 2) Issue a kprobe on a black listed entry and hit a success,(which we
-> will, since we don't check the actual function address).
-> 
-> Thanks
-> Suzuki
-> 
-> 
->>
->> Thank you,
->>
+diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
+index aaed97b..e3c6cfd 100644
+--- a/drivers/net/can/flexcan.c
++++ b/drivers/net/can/flexcan.c
+@@ -206,6 +206,7 @@ struct flexcan_priv {
+ 	void __iomem *base;
+ 	u32 reg_esr;
+ 	u32 reg_ctrl_default;
++	unsigned int	err_irq;
+ 
+ 	struct clk *clk_ipg;
+ 	struct clk *clk_per;
+@@ -654,6 +655,23 @@ static irqreturn_t flexcan_irq(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static irqreturn_t flexcan_err_irq(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	struct flexcan_priv *priv = netdev_priv(dev);
++	struct flexcan_regs __iomem *regs = priv->base;
++	u32 reg_ctrl, reg_esr;
++
++	reg_esr = flexcan_read(&regs->esr);
++	reg_ctrl = flexcan_read(&regs->ctrl);
++	if (reg_esr & FLEXCAN_ESR_TX_WRN) {
++		flexcan_write(reg_esr & ~FLEXCAN_ESR_TX_WRN, &regs->esr);
++		flexcan_write(reg_ctrl & ~FLEXCAN_CTRL_ERR_MSK, &regs->ctrl);
++		netdev_err(dev, "No physical link!\n");
++	}
++	return IRQ_HANDLED;
++}
++
+ static void flexcan_set_bittiming(struct net_device *dev)
+ {
+ 	const struct flexcan_priv *priv = netdev_priv(dev);
+@@ -860,6 +878,12 @@ static int flexcan_open(struct net_device *dev)
+ 	if (err)
+ 		goto out_close;
+ 
++	if (priv->err_irq)
++		err = request_irq(priv->err_irq, flexcan_err_irq, IRQF_SHARED,
++				  dev->name, dev);
++	if (err)
++		goto out_close;
++
+ 	/* start chip and queuing */
+ 	err = flexcan_chip_start(dev);
+ 	if (err)
+@@ -1007,7 +1031,7 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	struct resource *mem;
+ 	struct clk *clk_ipg = NULL, *clk_per = NULL;
+ 	void __iomem *base;
+-	int err, irq;
++	int err, irq, err_irq;
+ 	u32 clock_freq = 0;
+ 
+ 	if (pdev->dev.of_node)
+@@ -1034,6 +1058,10 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	if (irq <= 0)
+ 		return -ENODEV;
+ 
++	err_irq = platform_get_irq(pdev, 1);
++	if (err_irq <= 0)
++		err_irq = 0;
++
+ 	base = devm_ioremap_resource(&pdev->dev, mem);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
+@@ -1057,6 +1085,7 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	dev->flags |= IFF_ECHO;
+ 
+ 	priv = netdev_priv(dev);
++	priv->err_irq = err_irq;
+ 	priv->can.clock.freq = clock_freq;
+ 	priv->can.bittiming_const = &flexcan_bittiming_const;
+ 	priv->can.do_set_mode = flexcan_set_mode;
 -- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+1.8.5
