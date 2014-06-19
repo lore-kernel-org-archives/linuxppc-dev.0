@@ -1,19 +1,25 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f50.google.com (mail-pb0-f50.google.com
+ [209.85.160.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 108E41A02F3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 09:44:11 +1000 (EST)
-Date: Thu, 19 Jun 2014 09:44:04 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, rusty@rustcorp.com.au
-Subject: Re: [PATCH] powerpc: module: fix TOC symbol CRC
-Message-ID: <20140619094404.18e7047b@kryten>
-In-Reply-To: <20140617155658.30560.578.stgit@nimbus>
-References: <20140617155658.30560.578.stgit@nimbus>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 186BB1A0322
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 10:51:04 +1000 (EST)
+Received: by mail-pb0-f50.google.com with SMTP id rp16so1321341pbb.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2014 17:51:01 -0700 (PDT)
+Message-ID: <53A233E9.6030006@ozlabs.ru>
+Date: Thu, 19 Jun 2014 10:50:49 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
+References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>
+ <1403116512.3707.175.camel@ul30vt.home>
+In-Reply-To: <1403116512.3707.175.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,50 +29,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-Hi Laurent,
-
-> The commit 71ec7c55ed91 introduced the magic symbol ".TOC." for ELFv2
-> ABI. This symbol is built manually and has no CRC value computed. A
-> zero value is put in the CRC section to avoid modpost complaining
-> about a missing CRC. Unfortunately, this breaks the kernel module
-> loading when the kernel is relocated (kdump case for instance)
-> because of the relocation applied to the kcrctab values.
+On 06/19/2014 04:35 AM, Alex Williamson wrote:
+> On Wed, 2014-06-18 at 21:36 +1000, Alexey Kardashevskiy wrote:
+>> VFIO exposes BARs to user space as a byte stream so userspace can
+>> read it using pread()/pwrite(). Since this is a byte stream, VFIO should
+>> not do byte swapping and simply return values as it gets them from
+>> PCI device.
+>>
+>> Instead, the existing code assumes that byte stream in read/write is
+>> little-endian and it fixes endianness for values which it passes to
+>> ioreadXX/iowriteXX helpers. This works for little-endian as PCI is
+>> little endian and le32_to_cpu/... are stubs.
 > 
-> This patch compute a CRC value for the TOC symbol which will match
-> the one compute by the kernel when it is relocated - aka '0 -
-> relocate_start' done in maybe_relocated called by check_version
-> (module.c).
-
-Adding Rusty since he maintains the module loader code.
-
-Anton
-
-> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-> Cc: Anton Blanchard <anton@samba.org>
-> ---
->  arch/powerpc/kernel/module_64.c |    9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+> vfio read32:
 > 
-> diff --git a/arch/powerpc/kernel/module_64.c
-> b/arch/powerpc/kernel/module_64.c index 077d2ce..a80c933 100644
-> --- a/arch/powerpc/kernel/module_64.c
-> +++ b/arch/powerpc/kernel/module_64.c
-> @@ -315,8 +315,15 @@ static void dedotify_versions(struct
-> modversion_info *vers, struct modversion_info *end;
->  
->  	for (end = (void *)vers + size; vers < end; vers++)
-> -		if (vers->name[0] == '.')
-> +		if (vers->name[0] == '.') {
->  			memmove(vers->name, vers->name+1, strlen(vers->name));
-> +			/* The TOC symbol has no CRC computed. To avoid CRC
-> +			 * check failing, we must force it to the expected
-> +			 * value (see CRC check in module.c).
-> +			 */
-> +			if (!strcmp(vers->name, "TOC."))
-> +				vers->crc = -(unsigned long)reloc_start;
-> +		}
->  }
->  
->  /* Undefined symbols which refer to .funcname, hack to funcname
-> (or .TOC.) */
+> val = cpu_to_le32(ioread32(io + off));
+> 
+> Where the typical x86 case, ioread32 is:
+> 
+> #define ioread32(addr)          readl(addr)
+> 
+> and readl is:
+> 
+> __le32_to_cpu(__raw_readl(addr));
+> 
+> So we do canceling byte swaps, which are both nops on x86, and end up
+> returning device endian, which we assume is little endian.
+> 
+> vfio write32 is similar:
+> 
+> iowrite32(le32_to_cpu(val), io + off);
+> 
+> The implicit cpu_to_le32 of iowrite32() and our explicit swap cancel
+> out, so input data is device endian, which is assumed little.
+> 
+>> This also works for big endian but rather by an accident: it reads 4 bytes
+>> from the stream (@val is big endian), converts to CPU format (which should
+>> be big endian) as it was little endian (@val becomes actually little
+>> endian) and calls iowrite32() which does not do swapping on big endian
+>> system.
+> 
+> Really?
+> 
+> In arch/powerpc/kernel/iomap.c iowrite32() is just a wrapper around
+> writel(), which seems to use the generic implementation, which does
+> include a cpu_to_le32.
+
+
+Ouch, wrong comment. iowrite32() does swapping. My bad.
+
+
+> 
+> I also see other big endian archs like parisc doing cpu_to_le32 on
+> iowrite32, so I don't think this statement is true.  I imagine it's
+> probably working for you because the swap cancel.
+> 
+>> This removes byte swapping and makes use ioread32be/iowrite32be
+>> (and 16bit versions) on big-endian systems. The "be" helpers take
+>> native endian values and do swapping at the moment of writing to a PCI
+>> register using one of "store byte-reversed" instructions.
+> 
+> So now you want iowrite32() on little endian and iowrite32be() on big
+> endian, the former does a cpu_to_le32 (which is a nop on little endian)
+> and the latter does a cpu_to_be32 (which is a nop on big endian)...
+> should we just be using __raw_writel() on both?
+
+
+We can do that too. The beauty of iowrite32be on ppc64 is that it does not
+swap and write separately, it is implemented via the "Store Word
+Byte-Reverse Indexed X-form" single instruction.
+
+And some archs (do not know which ones) may add memory barriers in their
+implementations of ioread/iowrite. __raw_writel is too raw :)
+
+>  There doesn't actually
+> seem to be any change in behavior here, it just eliminates back-to-back
+> byte swaps, which are a nop on x86, but not power, right?
+
+Exactly. No dependency for QEMU.
+
+
+> 
+>> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  drivers/vfio/pci/vfio_pci_rdwr.c | 20 ++++++++++++++++----
+>>  1 file changed, 16 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+>> index 210db24..f363b5a 100644
+>> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+>> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+>> @@ -21,6 +21,18 @@
+>>  
+>>  #include "vfio_pci_private.h"
+>>  
+>> +#ifdef __BIG_ENDIAN__
+>> +#define ioread16_native		ioread16be
+>> +#define ioread32_native		ioread32be
+>> +#define iowrite16_native	iowrite16be
+>> +#define iowrite32_native	iowrite32be
+>> +#else
+>> +#define ioread16_native		ioread16
+>> +#define ioread32_native		ioread32
+>> +#define iowrite16_native	iowrite16
+>> +#define iowrite32_native	iowrite32
+>> +#endif
+>> +
+>>  /*
+>>   * Read or write from an __iomem region (MMIO or I/O port) with an excluded
+>>   * range which is inaccessible.  The excluded range drops writes and fills
+>> @@ -50,9 +62,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+>>  				if (copy_from_user(&val, buf, 4))
+>>  					return -EFAULT;
+>>  
+>> -				iowrite32(le32_to_cpu(val), io + off);
+>> +				iowrite32_native(val, io + off);
+>>  			} else {
+>> -				val = cpu_to_le32(ioread32(io + off));
+>> +				val = ioread32_native(io + off);
+>>  
+>>  				if (copy_to_user(buf, &val, 4))
+>>  					return -EFAULT;
+>> @@ -66,9 +78,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+>>  				if (copy_from_user(&val, buf, 2))
+>>  					return -EFAULT;
+>>  
+>> -				iowrite16(le16_to_cpu(val), io + off);
+>> +				iowrite16_native(val, io + off);
+>>  			} else {
+>> -				val = cpu_to_le16(ioread16(io + off));
+>> +				val = ioread16_native(io + off);
+>>  
+>>  				if (copy_to_user(buf, &val, 2))
+>>  					return -EFAULT;
+> 
+> 
+> 
+
+
+-- 
+Alexey
