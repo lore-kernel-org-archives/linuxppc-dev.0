@@ -1,22 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <vincent.yang.fujitsu@gmail.com>
+Received: from mail-pb0-x22b.google.com (mail-pb0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c01::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A2C31A0339
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 20:06:32 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Vincent Yang <vincent.yang.fujitsu@gmail.com>
-Subject: Re: [RFC PATCH 5/7] mmc: sdhci: host: add new f_sdh30
-Date: Fri, 20 Jun 2014 12:00:40 +0200
-Message-ID: <5136245.WRbqGRMMHn@wuerfel>
-In-Reply-To: <1403256928-11359-6-git-send-email-Vincent.Yang@tw.fujitsu.com>
-References: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <1403256928-11359-6-git-send-email-Vincent.Yang@tw.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: andy.green@linaro.org, patches@linaro.org, anton@enomsg.org,
- linux-mmc@vger.kernel.org, chris@printf.net, Vincent.Yang@tw.fujitsu.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C47F1A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 19:35:38 +1000 (EST)
+Received: by mail-pb0-f43.google.com with SMTP id um1so2684476pbc.16
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 02:35:34 -0700 (PDT)
+From: Vincent Yang <vincent.yang.fujitsu@gmail.com>
+To: chris@printf.net,
+	linux-mmc@vger.kernel.org
+Subject: [RFC PATCH 0/7] mmc: sdhci: adding support for a new Fujitsu sdhci IP
+Date: Fri, 20 Jun 2014 17:35:21 +0800
+Message-Id: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
+Cc: andy.green@linaro.org, anton@enomsg.org, linuxppc-dev@lists.ozlabs.org,
+ Vincent.Yang@tw.fujitsu.com, patches@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday 20 June 2014 17:35:26 Vincent Yang wrote:
-> +Required properties:
-> +- compatible: "fujitsu,f_sdh30"
-> +
-> +Optional properties:
-> +- gpios: Specify gpios for controlling signal level
-> +- clocks: Specify clocks used by SDHCI controller
-> +- clock-names: Specify the clock-names to be used
+Hi,
+We are adding support for a new Fujitsu sdhci IP.
 
-If you want to use "clock-names", you have to specify the exact names
-of the clock input signals used by your device, and the order in which
-they are listed.
+These patches are against v3.16-rc1 mainline since nothing in
+mmc-next at this moment.
 
-For both the clocks and the gpios, you have to specify how many signals
-there are, and ideally describe what they are used for. In case of a
-gpio controlling the signal level, it may be better to model this
-as a gpio-regulator device, depending on how exactly it is used.
+These patches are tested on 3.16-rc1 integration tree.
 
-When posting a DT binding document, please always add
-devicetree@vger.kernel.org to Cc.
+We welcome any comment and advice about how to make any
+improvements or better align them with upstream.
 
-	Arnd
+Thanks a lot!
+
+
+Best regards,
+Vincent Yang
+
+
+Vincent Yang (7):
+  mmc: sdhci: add quirk for broken 3.0V support
+  mmc: sdhci: add quirk for voltage switch callback
+  mmc: sdhci: add quirk for tuning work around
+  mmc: sdhci: add quirk for single block transactions
+  mmc: sdhci: host: add new f_sdh30
+  mmc: core: hold SD Clock before CMD11 during Signal Voltage Switch
+    Procedure
+  mmc: core: add manual resume capability
+
+ .../devicetree/bindings/mmc/sdhci-fujitsu.txt      |  25 ++
+ drivers/mmc/core/core.c                            |   8 +-
+ drivers/mmc/core/sd.c                              |   4 +
+ drivers/mmc/host/Kconfig                           |   7 +
+ drivers/mmc/host/Makefile                          |   1 +
+ drivers/mmc/host/sdhci.c                           |  18 +-
+ drivers/mmc/host/sdhci.h                           |   1 +
+ drivers/mmc/host/sdhci_f_sdh30.c                   | 429 +++++++++++++++++++++
+ drivers/mmc/host/sdhci_f_sdh30.h                   |  40 ++
+ include/linux/mmc/host.h                           |  14 +
+ include/linux/mmc/sdhci.h                          |   8 +
+ 11 files changed, 550 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
+ create mode 100644 drivers/mmc/host/sdhci_f_sdh30.c
+ create mode 100644 drivers/mmc/host/sdhci_f_sdh30.h
+
+-- 
+1.9.0
