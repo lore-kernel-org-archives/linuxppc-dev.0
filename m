@@ -1,25 +1,24 @@
-Return-Path: <anton@scarybugs.org>
-Received: from mail-pa0-f44.google.com (mail-pa0-f44.google.com
- [209.85.220.44])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7837C1A039E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jun 2014 06:26:47 +1000 (EST)
-Received: by mail-pa0-f44.google.com with SMTP id rd3so3488506pab.31
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 13:26:45 -0700 (PDT)
-Sender: Anton Vorontsov <anton@scarybugs.org>
-Date: Fri, 20 Jun 2014 13:26:38 -0700
-From: Anton Vorontsov <anton@enomsg.org>
-To: Vincent Yang <vincent.yang.fujitsu@gmail.com>
-Subject: Re: [RFC PATCH 1/7] mmc: sdhci: add quirk for broken 3.0V support
-Message-ID: <20140620202638.GA21349@teo>
-References: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <1403256928-11359-2-git-send-email-Vincent.Yang@tw.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1403256928-11359-2-git-send-email-Vincent.Yang@tw.fujitsu.com>
-Cc: andy.green@linaro.org, patches@linaro.org, linux-mmc@vger.kernel.org,
- chris@printf.net, Vincent.Yang@tw.fujitsu.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B16961A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jun 2014 09:12:54 +1000 (EST)
+Message-ID: <1403305961.4587.66.camel@pasglop>
+Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alex Williamson <alex.williamson@redhat.com>
+Date: Sat, 21 Jun 2014 09:12:41 +1000
+In-Reply-To: <1403234514.3707.278.camel@ul30vt.home>
+References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>
+ <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>
+ <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>
+ <1403234514.3707.278.camel@ul30vt.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +28,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 20, 2014 at 05:35:22PM +0800, Vincent Yang wrote:
-> This patch defines a quirk for platforms unable
-> to enable 3.0V support.
-> It is a preparation and will be used by Fujitsu
-> SDHCI controller f_sdh30 driver.
+On Thu, 2014-06-19 at 21:21 -0600, Alex Williamson wrote:
+
+> Working on big endian being an accident may be a matter of perspective
+
+ :-)
+
+> The comment remains that this patch doesn't actually fix anything except
+> the overhead on big endian systems doing redundant byte swapping and
+> maybe the philosophy that vfio regions are little endian.
+
+Yes, that works by accident because technically VFIO is a transport and
+thus shouldn't perform any endian swapping of any sort, which remains
+the responsibility of the end driver which is the only one to know
+whether a given BAR location is a a register or some streaming data
+and in the former case whether it's LE or BE (some PCI devices are BE
+even ! :-)
+
+But yes, in the end, it works with the dual "cancelling" swaps and the
+overhead of those swaps is probably drowned in the noise of the syscall
+overhead.
+
+> I'm still not a fan of iowrite vs iowritebe, there must be something we
+> can use that doesn't have an implicit swap.
+
+Sadly there isn't ... In the old day we didn't even have the "be"
+variant and readl/writel style accessors still don't have them either
+for all archs.
+
+There is __raw_readl/writel but here the semantics are much more than
+just "don't swap", they also don't have memory barriers (which means
+they are essentially useless to most drivers unless those are platform
+specific drivers which know exactly what they are doing, or in the rare
+cases such as accessing a framebuffer which we know never have side
+effects). 
+
+>  Calling it iowrite*_native is also an abuse of the namespace.
+
+
+>  Next thing we know some common code
+> will legitimately use that name. 
+
+I might make sense to those definitions into a common header. There have
+been a handful of cases in the past that wanted that sort of "native
+byte order" MMIOs iirc (though don't ask me for examples, I can't really
+remember).
+
+>  If we do need to define an alias
+> (which I'd like to avoid) it should be something like vfio_iowrite32.
+> Thanks,
+
+Cheers,
+Ben.
+
+> Alex
 > 
-> Signed-off-by: Vincent Yang <Vincent.Yang@tw.fujitsu.com>
-
-I don't think you need this patch. Instead, you can exclude 3V using the
-voltage-ranges = <> in the device tree.
-
-Thanks,
-
-Anton
-
->  drivers/mmc/host/sdhci.c  | 3 +++
->  include/linux/mmc/sdhci.h | 2 ++
->  2 files changed, 5 insertions(+)
+> > > ===
+> > > 
+> > > any better?
+> > > 
+> > > 
+> > > 
+> > > 
+> > >>>> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> > >>>> ---
+> > >>>>  drivers/vfio/pci/vfio_pci_rdwr.c | 20 ++++++++++++++++----
+> > >>>>  1 file changed, 16 insertions(+), 4 deletions(-)
+> > >>>>
+> > >>>> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+> > >>>> index 210db24..f363b5a 100644
+> > >>>> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+> > >>>> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+> > >>>> @@ -21,6 +21,18 @@
+> > >>>>  
+> > >>>>  #include "vfio_pci_private.h"
+> > >>>>  
+> > >>>> +#ifdef __BIG_ENDIAN__
+> > >>>> +#define ioread16_native		ioread16be
+> > >>>> +#define ioread32_native		ioread32be
+> > >>>> +#define iowrite16_native	iowrite16be
+> > >>>> +#define iowrite32_native	iowrite32be
+> > >>>> +#else
+> > >>>> +#define ioread16_native		ioread16
+> > >>>> +#define ioread32_native		ioread32
+> > >>>> +#define iowrite16_native	iowrite16
+> > >>>> +#define iowrite32_native	iowrite32
+> > >>>> +#endif
+> > >>>> +
+> > >>>>  /*
+> > >>>>   * Read or write from an __iomem region (MMIO or I/O port) with an excluded
+> > >>>>   * range which is inaccessible.  The excluded range drops writes and fills
+> > >>>> @@ -50,9 +62,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+> > >>>>  				if (copy_from_user(&val, buf, 4))
+> > >>>>  					return -EFAULT;
+> > >>>>  
+> > >>>> -				iowrite32(le32_to_cpu(val), io + off);
+> > >>>> +				iowrite32_native(val, io + off);
+> > >>>>  			} else {
+> > >>>> -				val = cpu_to_le32(ioread32(io + off));
+> > >>>> +				val = ioread32_native(io + off);
+> > >>>>  
+> > >>>>  				if (copy_to_user(buf, &val, 4))
+> > >>>>  					return -EFAULT;
+> > >>>> @@ -66,9 +78,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+> > >>>>  				if (copy_from_user(&val, buf, 2))
+> > >>>>  					return -EFAULT;
+> > >>>>  
+> > >>>> -				iowrite16(le16_to_cpu(val), io + off);
+> > >>>> +				iowrite16_native(val, io + off);
+> > >>>>  			} else {
+> > >>>> -				val = cpu_to_le16(ioread16(io + off));
+> > >>>> +				val = ioread16_native(io + off);
+> > >>>>  
+> > >>>>  				if (copy_to_user(buf, &val, 2))
+> > >>>>  					return -EFAULT;
+> > >>>
+> > >>>
+> > >>>
+> > >>
+> > >>
+> > > 
+> > > 
+> > 
+> > 
 > 
-> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> index 47055f3..523075f 100644
-> --- a/drivers/mmc/host/sdhci.c
-> +++ b/drivers/mmc/host/sdhci.c
-> @@ -3069,6 +3069,9 @@ int sdhci_add_host(struct sdhci_host *host)
->  	}
->  #endif /* CONFIG_REGULATOR */
->  
-> +	if (host->quirks2 & SDHCI_QUIRK2_NO_3_0_V)
-> +		caps[0] &= ~SDHCI_CAN_VDD_300;
-> +
->  	/*
->  	 * According to SD Host Controller spec v3.00, if the Host System
->  	 * can afford more than 150mA, Host Driver should set XPC to 1. Also
-> diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
-> index 08abe99..cac0958 100644
-> --- a/include/linux/mmc/sdhci.h
-> +++ b/include/linux/mmc/sdhci.h
-> @@ -98,6 +98,8 @@ struct sdhci_host {
->  #define SDHCI_QUIRK2_BROKEN_HS200			(1<<6)
->  /* Controller does not support DDR50 */
->  #define SDHCI_QUIRK2_BROKEN_DDR50			(1<<7)
-> +/* The system physically doesn't support 3.0v, even if the host does */
-> +#define SDHCI_QUIRK2_NO_3_0_V				(1<<8)
->  
->  	int irq;		/* Device IRQ */
->  	void __iomem *ioaddr;	/* Mapped address */
-> -- 
-> 1.9.0
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
