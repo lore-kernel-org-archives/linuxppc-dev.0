@@ -1,37 +1,27 @@
 Return-Path: <masami.hiramatsu.pt@hitachi.com>
 Received: from mail4.hitachi.co.jp (mail4.hitachi.co.jp [133.145.228.5])
- by lists.ozlabs.org (Postfix) with ESMTP id 171D91A02CD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 12:13:24 +1000 (EST)
-Message-ID: <53A398BB.2010909@hitachi.com>
-Date: Fri, 20 Jun 2014 11:13:15 +0900
+ by lists.ozlabs.org (Postfix) with ESMTP id A65D21A0364
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 12:23:18 +1000 (EST)
+Subject: [PATCH v4] [BUGFIX] kprobes: Fix "Failed to find blacklist" error
+ on ia64 and ppc64
 From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
+Date: Fri, 20 Jun 2014 02:23:07 +0000
+Message-ID: <20140620022307.23075.55858.stgit@kbuild-fedora.novalocal>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFT PATCH -next v3] [BUGFIX] kprobes: Fix "Failed to find
- blacklist" error on ia64 and ppc64
-References: <5387F150.5000307@hitachi.com>
- <20140530031838.17427.75896.stgit@ltc230.yrl.intra.hitachi.co.jp>
- <539161D6.7020508@hitachi.com> <1403078179.32307.7.camel@concordia>
- <53A15201.7060404@hitachi.com> <1403141433.4768.1.camel@concordia>
- <53A26C99.6060000@hitachi.com> <53A285D0.1030106@in.ibm.com>
- <53A2908E.2000806@hitachi.com> <53A2B136.108@in.ibm.com>
- <53A2C315.9030006@hitachi.com> <53A2C78D.9060708@hitachi.com>
- <1403224646.18509.1.camel@concordia>
-In-Reply-To: <1403224646.18509.1.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-tip-commits@vger.kernel.org,
- anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
- Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
- Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
- akataria@vmware.com, Tony Luck <tony.luck@intel.com>,
- Kevin Hao <haokexin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- rdunlap@infradead.org, Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
+ sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>, akataria@vmware.com,
+ linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
+ Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,56 +32,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2014/06/20 9:37), Michael Ellerman wrote:
-> On Thu, 2014-06-19 at 20:20 +0900, Masami Hiramatsu wrote:
->> (2014/06/19 20:01), Masami Hiramatsu wrote:
->>
->>>>>>> Ah, those messages should be shown in dmesg when booting if it doesn't work,
->>>>>>> because the messages are printed by initialization process of kprobe blacklist.
->>>>>>> So, reproducing it is just enabling CONFIG_KPROBES and boot it.
->>>>>> Well,  we don't get those messages on Power, since the kallsyms has the
->>>>>> entries for ".function_name". The correct way to verify is, either  :
->>>>>
->>>>> Hmm, that seems another issue on powerpc. Is that expected(and designed)
->>>>> behavior?
->>>> AFAIK, yes, it is.
->>>> To be more precise :
->>>>
->>>> we have 'foo' and '.foo' for a function foo(), where 'foo' points to the
->>>> function_entry and '.foo' points to the actual function.
->>>
->>> Ah, I see. So if we run
->>>
->>>   func_ptr p = foo;
->>>   return p == kallsyms_lookup_name(".foo");
->>>
->>> it returns true.
->>
->> One more thing I should know, is the address of ".function_name" within the
->> kernel text? In other words, does kernel_text_address() return true for that
->> address? If not, it's easy to verify the address.
-> 
-> Yes. That is the text address, kernel_text_address() should definitely return
-> true.
-> 
-> On 64-bit, ABIv1, "foo" points to the function descriptor, in the ".opd"
-> section.
-> 
-> ".foo" points to the actual text of the function, in ".text".
+On ia64 and ppc64, the function pointer does not point the
+entry address of the function, but the address of function
+discriptor (which contains the entry address and misc
+data.) Since the kprobes passes the function pointer stored
+by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
+initalizing its blacklist, it fails and reports many errors
+as below.
 
-Hmm, I misunderstood that. Anyway, we can verify it by kernel_text_address().
+  Failed to find blacklist 0001013168300000
+  Failed to find blacklist 0001013000f0a000
+  Failed to find blacklist 000101315f70a000
+  Failed to find blacklist 000101324c80a000
+  Failed to find blacklist 0001013063f0a000
+  Failed to find blacklist 000101327800a000
+  Failed to find blacklist 0001013277f0a000
+  Failed to find blacklist 000101315a70a000
+  Failed to find blacklist 0001013277e0a000
+  Failed to find blacklist 000101305a20a000
+  Failed to find blacklist 0001013277d0a000
+  Failed to find blacklist 00010130bdc0a000
+  Failed to find blacklist 00010130dc20a000
+  Failed to find blacklist 000101309a00a000
+  Failed to find blacklist 0001013277c0a000
+  Failed to find blacklist 0001013277b0a000
+  Failed to find blacklist 0001013277a0a000
+  Failed to find blacklist 000101327790a000
+  Failed to find blacklist 000101303140a000
+  Failed to find blacklist 0001013a3280a000
 
-> 
-> On 64-bit, ABIv2, "foo" points to the text in ".text". There are no dot
-> symbols.
+To fix this bug, this introduces function_entry() macro to
+retrieve the entry address from the given function pointer,
+and uses for kallsyms_lookup_size_offset() while initializing
+blacklist.
 
-OK, in that case, kernel_text_address() check is still available. :)
+Changes in v4:
+ - Add kernel_text_address() check for verifying the address.
+ - Moved on the latest linus tree.
 
-Thank you,
+Changes in v3:
+ - Fix a bug to get blacklist address based on function entry
+   instead of function descriptor. (Suzuki's work, Thanks!)
 
+Changes in V2:
+ - Use function_entry() macro when lookin up symbols instead
+   of storing it.
+ - Update for the latest -next.
 
--- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Reported-by: Tony Luck <tony.luck@gmail.com>
+Tested-by: Tony Luck <tony.luck@intel.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Kevin Hao <haokexin@gmail.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/ia64/include/asm/types.h    |    2 ++
+ arch/powerpc/include/asm/types.h |   11 +++++++++++
+ include/linux/types.h            |    4 ++++
+ kernel/kprobes.c                 |   15 ++++++++++-----
+ 4 files changed, 27 insertions(+), 5 deletions(-)
+
+diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
+index 4c351b1..95279dd 100644
+--- a/arch/ia64/include/asm/types.h
++++ b/arch/ia64/include/asm/types.h
+@@ -27,5 +27,7 @@ struct fnptr {
+ 	unsigned long gp;
+ };
+ 
++#define function_entry(fn) (((struct fnptr *)(fn))->ip)
++
+ #endif /* !__ASSEMBLY__ */
+ #endif /* _ASM_IA64_TYPES_H */
+diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+index bfb6ded..8b89d65 100644
+--- a/arch/powerpc/include/asm/types.h
++++ b/arch/powerpc/include/asm/types.h
+@@ -25,6 +25,17 @@ typedef struct {
+ 	unsigned long env;
+ } func_descr_t;
+ 
++#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
++/*
++ * On PPC64 ABIv1 the function pointer actually points to the
++ * function's descriptor. The first entry in the descriptor is the
++ * address of the function text.
++ */
++#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
++#else
++#define function_entry(fn)	((unsigned long)(fn))
++#endif
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* _ASM_POWERPC_TYPES_H */
+diff --git a/include/linux/types.h b/include/linux/types.h
+index a0bb704..3b95369 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -213,5 +213,9 @@ struct callback_head {
+ };
+ #define rcu_head callback_head
+ 
++#ifndef function_entry
++#define function_entry(fn)	((unsigned long)(fn))
++#endif
++
+ #endif /*  __ASSEMBLY__ */
+ #endif /* _LINUX_TYPES_H */
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index 3214289..7412535 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -32,6 +32,7 @@
+  *		<prasanna@in.ibm.com> added function-return probes.
+  */
+ #include <linux/kprobes.h>
++#include <linux/types.h>
+ #include <linux/hash.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+@@ -2037,19 +2038,23 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
+ {
+ 	unsigned long *iter;
+ 	struct kprobe_blacklist_entry *ent;
+-	unsigned long offset = 0, size = 0;
++	unsigned long entry, offset = 0, size = 0;
+ 
+ 	for (iter = start; iter < end; iter++) {
+-		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
+-			pr_err("Failed to find blacklist %p\n", (void *)*iter);
++		entry = function_entry(*iter);
++
++		if (!kernel_text_address(entry) ||
++		    !kallsyms_lookup_size_offset(entry, &size, &offset)) {
++			pr_err("Failed to find blacklist at %p\n",
++				(void *)entry);
+ 			continue;
+ 		}
+ 
+ 		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
+ 		if (!ent)
+ 			return -ENOMEM;
+-		ent->start_addr = *iter;
+-		ent->end_addr = *iter + size;
++		ent->start_addr = entry;
++		ent->end_addr = entry + size;
+ 		INIT_LIST_HEAD(&ent->list);
+ 		list_add_tail(&ent->list, &kprobe_blacklist);
+ 	}
