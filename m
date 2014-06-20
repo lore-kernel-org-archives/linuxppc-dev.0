@@ -1,47 +1,21 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B27951A035D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 03:41:21 +1000 (EST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 19 Jun 2014 13:41:11 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 3B309C90040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 13:41:03 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23032.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5JHf8dI7930300
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 17:41:09 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5JHf6ED006243
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2014 13:41:08 -0400
-Date: Thu, 19 Jun 2014 10:40:47 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: Node 0 not necessary for powerpc?
-Message-ID: <20140619174047.GV16644@linux.vnet.ibm.com>
-References: <20140311195632.GA946@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1403120839110.6865@nuc>
- <20140313164949.GC22247@linux.vnet.ibm.com>
- <20140519182400.GM8941@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1405210915170.7859@gentwo.org>
- <20140521185812.GA5259@htj.dyndns.org>
- <20140521195743.GA5755@linux.vnet.ibm.com>
- <alpine.DEB.2.02.1406091447240.5271@chino.kir.corp.google.com>
- <20140610233157.GB24463@linux.vnet.ibm.com>
- <20140619145950.GG26904@htj.dyndns.org>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [IPv6:2001:44b8:8060:ff02:300:1:6:6])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8CDE61A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 10:09:38 +1000 (EST)
+From: Alistair Popple <alistair@popple.id.au>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] IBM Akebono: Remove obsolete config select
+Date: Fri, 20 Jun 2014 10:10 +1000
+Message-ID: <1774195.a1B25gz7RT@mexican>
+In-Reply-To: <1402660592.28881.22.camel@x220>
+References: <1398998002.2925.15.camel@pasglop>
+ <1399018005-23136-1-git-send-email-alistair@popple.id.au>
+ <1402660592.28881.22.camel@x220>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140619145950.GG26904@htj.dyndns.org>
-Cc: tony.luck@intel.com, linux-mm@kvack.org, anton@samba.org,
- David Rientjes <rientjes@google.com>, Christoph Lameter <cl@linux.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: devicetree@vger.kernel.org, Paul Bolle <pebolle@tiscali.nl>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,29 +25,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 19.06.2014 [10:59:50 -0400], Tejun Heo wrote:
-> On Tue, Jun 10, 2014 at 04:31:57PM -0700, Nishanth Aravamudan wrote:
-> > > I think what this really wants to do is NODE_DATA(cpu_to_mem(cpu)) and I 
-> > > thought ppc had the cpu-to-local-memory-node mappings correct?
+Hi Ben,
+
+It looks like we may have missed this trivial fix? Can you please apply it to 
+your tree?
+
+Regards,
+
+Alistair
+
+On Fri, 13 Jun 2014 13:56:32 Paul Bolle wrote:
+> On Fri, 2014-05-02 at 18:06 +1000, Alistair Popple wrote:
+> > The original implementation of MMC support for Akebono introduced a
+> > new configuration symbol (MMC_SDHCI_OF_476GTR). This symbol has been
+> > dropped in favour of using the generic platform driver however the
+> > select for this symbol was mistakenly left in the platform
+> > configuration.
 > > 
-> > Except cpu_to_mem relies on the mapping being defined, but early in
-> > boot, specifically, it isn't yet (at least not necessarily).
+> > This patch removes the obsolete symbol selection.
+> > 
+> > Signed-off-by: Alistair Popple <alistair@popple.id.au>
 > 
-> Can't ppc NODE_DATA simply return dummy generic node_data during early
-> boot?  Populating it with just enough to make early boot work
-> shouldn't be too hard, right?
-
-So the problem is this, whether we use cpu_to_mem() or cpu_to_node()
-here, neither is setup yet because of the ordering between percpu setup
-and the actual writing of the percpu data (that is actually storing what
-node/local memory is relative to a given CPU).
-
-The NODE_DATA is all correct, but since we are calling cpu_to_{mem,node}
-before it really holds valid data, it falsely says 0, which is not
-necessarily even an online node.
-
-So, I think we need to do the same thing as x86 and have an early
-mapping setup and configured before the percpu areas are.
-
-Thanks,
-Nish
+> This patch hasn't yet entered linux-next nor Linus' tree. Is it queued
+> somewhere? If not, would a
+>     Acked-by: Paul Bolle <pebolle@tiscali.nl>
+> 
+> help to get this trivial patch queued for either of those trees?
+> 
+> 
+> Paul Bolle
+> 
+> > ---
+> > 
+> >  arch/powerpc/platforms/44x/Kconfig | 1 -
+> >  1 file changed, 1 deletion(-)
+> > 
+> > diff --git a/arch/powerpc/platforms/44x/Kconfig
+> > b/arch/powerpc/platforms/44x/Kconfig index 8beec7d..908bf11 100644
+> > --- a/arch/powerpc/platforms/44x/Kconfig
+> > +++ b/arch/powerpc/platforms/44x/Kconfig
+> > @@ -220,7 +220,6 @@ config AKEBONO
+> > 
+> >  	select USB_EHCI_HCD_PLATFORM
+> >  	select MMC_SDHCI
+> >  	select MMC_SDHCI_PLTFM
+> > 
+> > -	select MMC_SDHCI_OF_476GTR
+> > 
+> >  	select ATA
+> >  	select SATA_AHCI_PLATFORM
+> >  	help
