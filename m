@@ -1,18 +1,20 @@
 Return-Path: <vincent.yang.fujitsu@gmail.com>
-Received: from mail-pb0-x22b.google.com (mail-pb0-x22b.google.com
- [IPv6:2607:f8b0:400e:c01::22b])
+Received: from mail-pd0-x230.google.com (mail-pd0-x230.google.com
+ [IPv6:2607:f8b0:400e:c02::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C47F1A0006
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 19:35:38 +1000 (EST)
-Received: by mail-pb0-f43.google.com with SMTP id um1so2684476pbc.16
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 02:35:34 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E29011A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 19:35:40 +1000 (EST)
+Received: by mail-pd0-f176.google.com with SMTP id ft15so2799879pdb.21
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 02:35:36 -0700 (PDT)
 From: Vincent Yang <vincent.yang.fujitsu@gmail.com>
 To: chris@printf.net,
 	linux-mmc@vger.kernel.org
-Subject: [RFC PATCH 0/7] mmc: sdhci: adding support for a new Fujitsu sdhci IP
-Date: Fri, 20 Jun 2014 17:35:21 +0800
-Message-Id: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
+Subject: [RFC PATCH 1/7] mmc: sdhci: add quirk for broken 3.0V support
+Date: Fri, 20 Jun 2014 17:35:22 +0800
+Message-Id: <1403256928-11359-2-git-send-email-Vincent.Yang@tw.fujitsu.com>
+In-Reply-To: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
+References: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
 Cc: andy.green@linaro.org, anton@enomsg.org, linuxppc-dev@lists.ozlabs.org,
  Vincent.Yang@tw.fujitsu.com, patches@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,49 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-We are adding support for a new Fujitsu sdhci IP.
+This patch defines a quirk for platforms unable
+to enable 3.0V support.
+It is a preparation and will be used by Fujitsu
+SDHCI controller f_sdh30 driver.
 
-These patches are against v3.16-rc1 mainline since nothing in
-mmc-next at this moment.
+Signed-off-by: Vincent Yang <Vincent.Yang@tw.fujitsu.com>
+---
+ drivers/mmc/host/sdhci.c  | 3 +++
+ include/linux/mmc/sdhci.h | 2 ++
+ 2 files changed, 5 insertions(+)
 
-These patches are tested on 3.16-rc1 integration tree.
-
-We welcome any comment and advice about how to make any
-improvements or better align them with upstream.
-
-Thanks a lot!
-
-
-Best regards,
-Vincent Yang
-
-
-Vincent Yang (7):
-  mmc: sdhci: add quirk for broken 3.0V support
-  mmc: sdhci: add quirk for voltage switch callback
-  mmc: sdhci: add quirk for tuning work around
-  mmc: sdhci: add quirk for single block transactions
-  mmc: sdhci: host: add new f_sdh30
-  mmc: core: hold SD Clock before CMD11 during Signal Voltage Switch
-    Procedure
-  mmc: core: add manual resume capability
-
- .../devicetree/bindings/mmc/sdhci-fujitsu.txt      |  25 ++
- drivers/mmc/core/core.c                            |   8 +-
- drivers/mmc/core/sd.c                              |   4 +
- drivers/mmc/host/Kconfig                           |   7 +
- drivers/mmc/host/Makefile                          |   1 +
- drivers/mmc/host/sdhci.c                           |  18 +-
- drivers/mmc/host/sdhci.h                           |   1 +
- drivers/mmc/host/sdhci_f_sdh30.c                   | 429 +++++++++++++++++++++
- drivers/mmc/host/sdhci_f_sdh30.h                   |  40 ++
- include/linux/mmc/host.h                           |  14 +
- include/linux/mmc/sdhci.h                          |   8 +
- 11 files changed, 550 insertions(+), 5 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
- create mode 100644 drivers/mmc/host/sdhci_f_sdh30.c
- create mode 100644 drivers/mmc/host/sdhci_f_sdh30.h
-
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 47055f3..523075f 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -3069,6 +3069,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 	}
+ #endif /* CONFIG_REGULATOR */
+ 
++	if (host->quirks2 & SDHCI_QUIRK2_NO_3_0_V)
++		caps[0] &= ~SDHCI_CAN_VDD_300;
++
+ 	/*
+ 	 * According to SD Host Controller spec v3.00, if the Host System
+ 	 * can afford more than 150mA, Host Driver should set XPC to 1. Also
+diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
+index 08abe99..cac0958 100644
+--- a/include/linux/mmc/sdhci.h
++++ b/include/linux/mmc/sdhci.h
+@@ -98,6 +98,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK2_BROKEN_HS200			(1<<6)
+ /* Controller does not support DDR50 */
+ #define SDHCI_QUIRK2_BROKEN_DDR50			(1<<7)
++/* The system physically doesn't support 3.0v, even if the host does */
++#define SDHCI_QUIRK2_NO_3_0_V				(1<<8)
+ 
+ 	int irq;		/* Device IRQ */
+ 	void __iomem *ioaddr;	/* Mapped address */
 -- 
 1.9.0
