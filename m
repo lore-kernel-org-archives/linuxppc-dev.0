@@ -1,26 +1,27 @@
-Return-Path: <vincent.yang.fujitsu@gmail.com>
-Received: from mail-yk0-x22e.google.com (mail-yk0-x22e.google.com
- [IPv6:2607:f8b0:4002:c07::22e])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
+ [209.85.192.171])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2AD3B1A0364
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 20:29:54 +1000 (EST)
-Received: by mail-yk0-f174.google.com with SMTP id 19so2519382ykq.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 03:29:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BEFB01A0391
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jun 2014 00:14:58 +1000 (EST)
+Received: by mail-pd0-f171.google.com with SMTP id fp1so3032115pdb.30
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2014 07:14:55 -0700 (PDT)
+Message-ID: <53A441D3.8010602@ozlabs.ru>
+Date: Sat, 21 Jun 2014 00:14:43 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-In-Reply-To: <5136245.WRbqGRMMHn@wuerfel>
-References: <1403256928-11359-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <1403256928-11359-6-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <5136245.WRbqGRMMHn@wuerfel>
-Date: Fri, 20 Jun 2014 18:29:51 +0800
-Message-ID: <CAOEd-H3Q+Men=MKoLrBK_faAXw3b6M5eJ+FxSSPq3idyAK=eGw@mail.gmail.com>
-Subject: Re: [RFC PATCH 5/7] mmc: sdhci: host: add new f_sdh30
-From: Vincent Yang <vincent.yang.fujitsu@gmail.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: Andy Green <andy.green@linaro.org>, patches@linaro.org, anton@enomsg.org,
- linux-mmc@vger.kernel.org, chris@printf.net,
- Vincent Yang <Vincent.Yang@tw.fujitsu.com>, linuxppc-dev@lists.ozlabs.org
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
+References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>	
+ <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>	
+ <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>
+ <1403234514.3707.278.camel@ul30vt.home>
+In-Reply-To: <1403234514.3707.278.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +31,254 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
-Thanks a lot for your review.
-I will update it in next version.
+On 06/20/2014 01:21 PM, Alex Williamson wrote:
+> On Thu, 2014-06-19 at 13:48 +1000, Alexey Kardashevskiy wrote:
+>> On 06/19/2014 11:50 AM, Alexey Kardashevskiy wrote:
+>>> On 06/19/2014 10:50 AM, Alexey Kardashevskiy wrote:
+>>>> On 06/19/2014 04:35 AM, Alex Williamson wrote:
+>>>>> On Wed, 2014-06-18 at 21:36 +1000, Alexey Kardashevskiy wrote:
+>>>>>> VFIO exposes BARs to user space as a byte stream so userspace can
+>>>>>> read it using pread()/pwrite(). Since this is a byte stream, VFIO should
+>>>>>> not do byte swapping and simply return values as it gets them from
+>>>>>> PCI device.
+>>>>>>
+>>>>>> Instead, the existing code assumes that byte stream in read/write is
+>>>>>> little-endian and it fixes endianness for values which it passes to
+>>>>>> ioreadXX/iowriteXX helpers. This works for little-endian as PCI is
+>>>>>> little endian and le32_to_cpu/... are stubs.
+>>>>>
+>>>>> vfio read32:
+>>>>>
+>>>>> val = cpu_to_le32(ioread32(io + off));
+>>>>>
+>>>>> Where the typical x86 case, ioread32 is:
+>>>>>
+>>>>> #define ioread32(addr)          readl(addr)
+>>>>>
+>>>>> and readl is:
+>>>>>
+>>>>> __le32_to_cpu(__raw_readl(addr));
+>>>>>
+>>>>> So we do canceling byte swaps, which are both nops on x86, and end up
+>>>>> returning device endian, which we assume is little endian.
+>>>>>
+>>>>> vfio write32 is similar:
+>>>>>
+>>>>> iowrite32(le32_to_cpu(val), io + off);
+>>>>>
+>>>>> The implicit cpu_to_le32 of iowrite32() and our explicit swap cancel
+>>>>> out, so input data is device endian, which is assumed little.
+>>>>>
+>>>>>> This also works for big endian but rather by an accident: it reads 4 bytes
+>>>>>> from the stream (@val is big endian), converts to CPU format (which should
+>>>>>> be big endian) as it was little endian (@val becomes actually little
+>>>>>> endian) and calls iowrite32() which does not do swapping on big endian
+>>>>>> system.
+>>>>>
+>>>>> Really?
+>>>>>
+>>>>> In arch/powerpc/kernel/iomap.c iowrite32() is just a wrapper around
+>>>>> writel(), which seems to use the generic implementation, which does
+>>>>> include a cpu_to_le32.
+>>>>
+>>>>
+>>>> Ouch, wrong comment. iowrite32() does swapping. My bad.
+>>>>
+>>>>
+>>>>>
+>>>>> I also see other big endian archs like parisc doing cpu_to_le32 on
+>>>>> iowrite32, so I don't think this statement is true.  I imagine it's
+>>>>> probably working for you because the swap cancel.
+>>>>>
+>>>>>> This removes byte swapping and makes use ioread32be/iowrite32be
+>>>>>> (and 16bit versions) on big-endian systems. The "be" helpers take
+>>>>>> native endian values and do swapping at the moment of writing to a PCI
+>>>>>> register using one of "store byte-reversed" instructions.
+>>>>>
+>>>>> So now you want iowrite32() on little endian and iowrite32be() on big
+>>>>> endian, the former does a cpu_to_le32 (which is a nop on little endian)
+>>>>> and the latter does a cpu_to_be32 (which is a nop on big endian)...
+>>>>> should we just be using __raw_writel() on both?
+>>>>
+>>>>
+>>>> We can do that too. The beauty of iowrite32be on ppc64 is that it does not
+>>>> swap and write separately, it is implemented via the "Store Word
+>>>> Byte-Reverse Indexed X-form" single instruction.
+>>>>
+>>>> And some archs (do not know which ones) may add memory barriers in their
+>>>> implementations of ioread/iowrite. __raw_writel is too raw :)
+>>>>
+>>>>>  There doesn't actually
+>>>>> seem to be any change in behavior here, it just eliminates back-to-back
+>>>>> byte swaps, which are a nop on x86, but not power, right?
+>>>>
+>>>> Exactly. No dependency for QEMU.
+>>>
+>>> How about that:
+>>> ===
+>>>
+>>> VFIO exposes BARs to user space as a byte stream so userspace can
+>>> read it using pread()/pwrite(). Since this is a byte stream, VFIO should
+>>> not do byte swapping and simply return values as it gets them from
+>>> PCI device.
+>>>
+>>> Instead, the existing code assumes that byte stream in read/write is
+>>> little-endian and it fixes endianness for values which it passes to
+>>> ioreadXX/iowriteXX helpers in native format. The IO helpers do swapping
+>>> again. Since both byte swaps are nops on little-endian host, this works.
+>>>
+>>> This also works for big endian but rather by an accident: it reads 4 bytes
+>>> from the stream (@val is big endian), converts to CPU format (which should
+>>> be big endian) as it was little endian (and @val becomes actually little
+>>> endian) and calls iowrite32() which does swapping on big endian
+>>> system again. So byte swap gets cancelled, __raw_writel() receives
+>>> a native value and then
+>>> *(volatile unsigned int __force *)PCI_FIX_ADDR(addr) = v;
+>>> just does the right thing.
+>>
+>> I am wrong here, sorry. This is what happens when you watch soccer between
+>> 2am and 4am :)
+>>
+>>
+>>>
+>>> This removes byte swaps and makes use of ioread32be/iowrite32be
+>>> (and 16bit versions) which do explicit byte swapping at the moment
+>>> of write to a PCI register. PPC64 uses a special "Store Word
+>>> Byte-Reverse Indexed X-form" instruction which does swap and store.
+>>
+>> No swapping is done here if we use ioread32be as it calls in_be32 and that
+>> animal does "lwz" which is simple load from memory.
+>>
+>> So @val (16/32 bit variable on stack) will have different values on LE and
+>> BE but since we do not handle it the host and just memcpy it to the buffer,
+>> nothing breaks here.
+>>
+>>
+>> So it should be like this:
+>> ===
+>> VFIO exposes BARs to user space as a byte stream so userspace can
+>> read it using pread()/pwrite(). Since this is a byte stream, VFIO should
+>> not do byte swapping and simply return values as it gets them from
+>> PCI device and copy_to_user will save bytes in the correct
+>> same true for writes.
+>>
+>> Instead, the existing code assumes that byte stream in read/write is
+>> little-endian and it fixes endianness for values which it passes to
+>> ioreadXX/iowriteXX helpers in native format. The IO helpers do swapping
+>> again. Since both byte swaps are nops on little-endian host, this works.
+>>
+>> This also works for big endian but rather by an accident: it reads 4 bytes
+>> from the stream (@val is big endian), converts to CPU format (which should
+>> be big endian) as it was little endian (and @val becomes actually little
+>> endian) and calls iowrite32() which does swapping on big endian
+>> system again. So byte swap in the host gets cancelled and __raw_writel()
+>> writes the value which was swapped originally by the guest.
+>>
+>> This removes byte swaps and makes use of ioread32be/iowrite32be
+>> (and 16bit versions) which do not do byte swap on BE hosts.
+>> For LE hosts, ioread32/iowrite32 are still used.
+>>
+>> ===
+> 
+> Working on big endian being an accident may be a matter of perspective.
+> The comment remains that this patch doesn't actually fix anything except
+> the overhead on big endian systems doing redundant byte swapping and
+> maybe the philosophy that vfio regions are little endian.
 
 
-Best regards,
-Vincent Yang
+They are little-endian only between ioread32() and copy_to_user() calls,
+besides that it is a bytes stream which does not have endianness so I do
+not understand the comment about philosophy...
 
-2014-06-20 18:00 GMT+08:00 Arnd Bergmann <arnd@arndb.de>:
-> On Friday 20 June 2014 17:35:26 Vincent Yang wrote:
->> +Required properties:
->> +- compatible: "fujitsu,f_sdh30"
->> +
->> +Optional properties:
->> +- gpios: Specify gpios for controlling signal level
->> +- clocks: Specify clocks used by SDHCI controller
->> +- clock-names: Specify the clock-names to be used
->
-> If you want to use "clock-names", you have to specify the exact names
-> of the clock input signals used by your device, and the order in which
-> they are listed.
->
-> For both the clocks and the gpios, you have to specify how many signals
-> there are, and ideally describe what they are used for. In case of a
-> gpio controlling the signal level, it may be better to model this
-> as a gpio-regulator device, depending on how exactly it is used.
->
-> When posting a DT binding document, please always add
-> devicetree@vger.kernel.org to Cc.
->
->         Arnd
+
+> I'm still not a fan of iowrite vs iowritebe, there must be something we
+> can use that doesn't have an implicit swap.  Calling it iowrite*_native
+> is also an abuse of the namespace.  Next thing we know some common code
+> will legitimately use that name.  If we do need to define an alias
+> (which I'd like to avoid) it should be something like vfio_iowrite32.
+
+
+We can still use __raw_writel&co, would that be ok?
+
+
+
+> Thanks,
+> 
+> Alex
+> 
+>>> ===
+>>>
+>>> any better?
+>>>
+>>>
+>>>
+>>>
+>>>>>> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>> ---
+>>>>>>  drivers/vfio/pci/vfio_pci_rdwr.c | 20 ++++++++++++++++----
+>>>>>>  1 file changed, 16 insertions(+), 4 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+>>>>>> index 210db24..f363b5a 100644
+>>>>>> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+>>>>>> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+>>>>>> @@ -21,6 +21,18 @@
+>>>>>>  
+>>>>>>  #include "vfio_pci_private.h"
+>>>>>>  
+>>>>>> +#ifdef __BIG_ENDIAN__
+>>>>>> +#define ioread16_native		ioread16be
+>>>>>> +#define ioread32_native		ioread32be
+>>>>>> +#define iowrite16_native	iowrite16be
+>>>>>> +#define iowrite32_native	iowrite32be
+>>>>>> +#else
+>>>>>> +#define ioread16_native		ioread16
+>>>>>> +#define ioread32_native		ioread32
+>>>>>> +#define iowrite16_native	iowrite16
+>>>>>> +#define iowrite32_native	iowrite32
+>>>>>> +#endif
+>>>>>> +
+>>>>>>  /*
+>>>>>>   * Read or write from an __iomem region (MMIO or I/O port) with an excluded
+>>>>>>   * range which is inaccessible.  The excluded range drops writes and fills
+>>>>>> @@ -50,9 +62,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+>>>>>>  				if (copy_from_user(&val, buf, 4))
+>>>>>>  					return -EFAULT;
+>>>>>>  
+>>>>>> -				iowrite32(le32_to_cpu(val), io + off);
+>>>>>> +				iowrite32_native(val, io + off);
+>>>>>>  			} else {
+>>>>>> -				val = cpu_to_le32(ioread32(io + off));
+>>>>>> +				val = ioread32_native(io + off);
+>>>>>>  
+>>>>>>  				if (copy_to_user(buf, &val, 4))
+>>>>>>  					return -EFAULT;
+>>>>>> @@ -66,9 +78,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+>>>>>>  				if (copy_from_user(&val, buf, 2))
+>>>>>>  					return -EFAULT;
+>>>>>>  
+>>>>>> -				iowrite16(le16_to_cpu(val), io + off);
+>>>>>> +				iowrite16_native(val, io + off);
+>>>>>>  			} else {
+>>>>>> -				val = cpu_to_le16(ioread16(io + off));
+>>>>>> +				val = ioread16_native(io + off);
+>>>>>>  
+>>>>>>  				if (copy_to_user(buf, &val, 2))
+>>>>>>  					return -EFAULT;
+>>>>>
+>>>>>
+>>>>>
+>>>>
+>>>>
+>>>
+>>>
+>>
+>>
+> 
+> 
+> 
+
+
+-- 
+Alexey
