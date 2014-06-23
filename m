@@ -1,34 +1,15 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 41E261A0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:48 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Jun 2014 12:14:46 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 898733578055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:43 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5N2ERRt11600374
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:27 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5N2EhDV000961
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:43 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v1 3/3] powerpc/powernv: Clear PAPR error injection registers
-Date: Mon, 23 Jun 2014 12:14:42 +1000
-Message-Id: <1403489682-14841-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1403489682-14841-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1403489682-14841-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: aik@ozlabs.ru, qiudayu@linux.vnet.ibm.com, agraf@suse.de,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E1101A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 13:23:39 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/kprobes: Fix jprobes on ABI v2 (LE)
+Date: Mon, 23 Jun 2014 13:23:31 +1000
+Message-Id: <1403493811-28172-1-git-send-email-mpe@ellerman.id.au>
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,53 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The frozen state on one specific PE is probably caused by error
-injection, which is done with help of PAPR error injection registers.
-According to the hardware spec, those registers should be cleared
-automatically after one-shot frozen PE. However, that's not always
-true, at least on P7IOC of Firebird-L. So we have to clear them
-before doing PE reset to avoid recursive EEH errors at recovery
-stage.
+In commit 721aeaa9 "Build little endian ppc64 kernel with ABIv2", we
+missed some updates required in the kprobes code to make jprobes work
+when the kernel is built with ABI v2.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Firstly update arch_deref_entry_point() to do the right thing. Now that
+we have added ppc_global_function_entry() we can just always use that, it
+will do the right thing for 32 & 64 bit and ABI v1 & v2.
+
+Secondly we need to update the code that sets up the register state before
+calling the jprobe handler. On ABI v1 we setup r2 to hold the TOC, on ABI
+v2 we need to populate r12 with the function entry point address.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+Obviously depends on my previous patch to add ppc_global_function_entry().
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 79193eb..cbc7c98 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -657,6 +657,30 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
- 	if (pe->type & EEH_PE_PHB) {
- 		ret = ioda_eeh_phb_reset(hose, option);
- 	} else {
-+		struct pnv_phb *phb;
-+		s64 rc;
-+
-+		/*
-+		 * The frozen PE might be caused by PAPR error injection
-+		 * registers, which are expected to be cleared after hitting
-+		 * frozen PE as stated in the hardware spec. Unfortunately,
-+		 * that's not true on P7IOC. So we have to clear it manually
-+		 * to avoid recursive EEH errors during recovery.
-+		 */
-+		phb = hose->private_data;
-+		if (phb->model == PNV_PHB_MODEL_P7IOC &&
-+		    (option == EEH_RESET_HOT ||
-+		    option == EEH_RESET_FUNDAMENTAL)) {
-+			rc = opal_pci_reset(phb->opal_id,
-+					    OPAL_PHB_ERROR,
-+					    OPAL_ASSERT_RESET);
-+			if (rc != OPAL_SUCCESS) {
-+				pr_warn("%s: Can't clear errinjct reg (%lld)\n",
-+					__func__, rc);
-+				return -EIO;
-+			}
-+		}
-+
- 		bus = eeh_pe_bus_get(pe);
- 		if (pci_is_root_bus(bus) ||
- 		    pci_is_root_bus(bus->parent))
+ arch/powerpc/kernel/kprobes.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+index 90fab64..2f72af8 100644
+--- a/arch/powerpc/kernel/kprobes.c
++++ b/arch/powerpc/kernel/kprobes.c
+@@ -32,6 +32,7 @@
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
+ #include <linux/slab.h>
++#include <asm/code-patching.h>
+ #include <asm/cacheflush.h>
+ #include <asm/sstep.h>
+ #include <asm/uaccess.h>
+@@ -491,12 +492,10 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
+ 	return ret;
+ }
+ 
+-#ifdef CONFIG_PPC64
+ unsigned long arch_deref_entry_point(void *entry)
+ {
+-	return ((func_descr_t *)entry)->entry;
++	return ppc_global_function_entry(entry);
+ }
+-#endif
+ 
+ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+ {
+@@ -508,8 +507,12 @@ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+ 	/* setup return addr to the jprobe handler routine */
+ 	regs->nip = arch_deref_entry_point(jp->entry);
+ #ifdef CONFIG_PPC64
++#if defined(_CALL_ELF) && _CALL_ELF == 2
++	regs->gpr[12] = (unsigned long)jp->entry;
++#else
+ 	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
+ #endif
++#endif
+ 
+ 	return 1;
+ }
 -- 
-1.8.3.2
+1.9.1
