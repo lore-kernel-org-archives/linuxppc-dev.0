@@ -1,24 +1,41 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF99D1A0054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 16:20:59 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v2 1/2] flexcan: add err_irq handler for flexcan
-Date: Mon, 23 Jun 2014 06:20:51 +0000
-Message-ID: <fc0a7150924249768aee8e4361c654a1@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1403229664-33912-1-git-send-email-B45475@freescale.com>
- <1403281165.12851.186.camel@snotra.buserror.net>
-In-Reply-To: <1403281165.12851.186.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 910851A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 16:29:28 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 23 Jun 2014 11:59:23 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 325CAE0053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:00:31 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5N6TY3g61079786
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 11:59:34 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5N6TIc3030239
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 11:59:18 +0530
+Date: Mon, 23 Jun 2014 14:29:15 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH V3 02/17] pci/of: Match PCI VFs to dev-tree nodes
+ dynamically
+Message-ID: <20140623062915.GA5172@richard>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140623050747.GB5069@shangw>
 MIME-Version: 1.0
-Cc: "mkl@pengutronix.de" <mkl@pengutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "wg@grandegger.com" <wg@grandegger.com>,
- "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140623050747.GB5069@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linux-pci@vger.kernel.org, yan@linux.vnet.ibm.com, bhelgaas@google.com,
+ qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +45,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gU2F0LCAyMDE0LTA2LTIxIGF0IDEyOjE5LCBXb29kIFNjb3R0IHdyb3RlOg0KDQo+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6
-IFNhdHVyZGF5LCBKdW5lIDIxLCAyMDE0IDEyOjE5IEFNDQo+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3
-NQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWNhbkB2Z2VyLmtl
-cm5lbC5vcmc7DQo+IHdnQGdyYW5kZWdnZXIuY29tOyBta2xAcGVuZ3V0cm9uaXguZGU7IFdvb2Qg
-U2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMS8yXSBmbGV4Y2FuOiBhZGQg
-ZXJyX2lycSBoYW5kbGVyIGZvciBmbGV4Y2FuDQo+IA0KPiBPbiBGcmksIDIwMTQtMDYtMjAgYXQg
-MTA6MDEgKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gd2hlbiBmbGV4Y2FuIGlzIG5vdCBw
-aHlzaWNhbGx5IGxpbmtlZCwgY29tbWFuZCAnY2FudGVzdCcgd2lsbCB0cmlnZ2VyDQo+ID4gYW4g
-ZXJyX2lycSwgYWRkIGVycl9pcnEgaGFuZGxlciBmb3IgaXQuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBaaGFvIFFpYW5nIDxCNDU0NzVAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiBDaGFu
-Z2VzIGZvciB2MjoNCj4gPiAJLSB1c2UgYSBzcGFjZSBpbnN0ZWFkIG9mIHRhYg0KPiA+IAktIHVz
-ZSBmbGV4Y2FuX3BvbGxfc3RhdGUgaW5zdGVhZCBvZiBwcmludA0KPiA+DQo+ID4gIGRyaXZlcnMv
-bmV0L2Nhbi9mbGV4Y2FuLmMgfCAzMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKystDQo+
-ID4gIDEgZmlsZSBjaGFuZ2VkLCAzMCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4N
-Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvY2FuL2ZsZXhjYW4uYyBiL2RyaXZlcnMvbmV0
-L2Nhbi9mbGV4Y2FuLmMNCj4gPiBpbmRleCBmNDI1ZWMyLi43NDMyYmE0IDEwMDY0NA0KPiA+IC0t
-LSBhL2RyaXZlcnMvbmV0L2Nhbi9mbGV4Y2FuLmMNCj4gPiArKysgYi9kcml2ZXJzL25ldC9jYW4v
-ZmxleGNhbi5jDQo+ID4gQEAgLTIwOCw2ICsyMDgsNyBAQCBzdHJ1Y3QgZmxleGNhbl9wcml2IHsN
-Cj4gPiAgCXZvaWQgX19pb21lbSAqYmFzZTsNCj4gPiAgCXUzMiByZWdfZXNyOw0KPiA+ICAJdTMy
-IHJlZ19jdHJsX2RlZmF1bHQ7DQo+ID4gKwl1bnNpZ25lZCBpbnQgZXJyX2lycTsNCj4gDQo+IFdo
-eSB1bnNpZ25lZD8NCkVycl9pcnEgaXMgZnJvbSAwLg0KPiANCj4gPiArc3RhdGljIGlycXJldHVy
-bl90IGZsZXhjYW5fZXJyX2lycShpbnQgaXJxLCB2b2lkICpkZXZfaWQpIHsNCj4gPiArCXN0cnVj
-dCBuZXRfZGV2aWNlICpkZXYgPSBkZXZfaWQ7DQo+ID4gKwlzdHJ1Y3QgZmxleGNhbl9wcml2ICpw
-cml2ID0gbmV0ZGV2X3ByaXYoZGV2KTsNCj4gPiArCXN0cnVjdCBmbGV4Y2FuX3JlZ3MgX19pb21l
-bSAqcmVncyA9IHByaXYtPmJhc2U7DQo+ID4gKwl1MzIgcmVnX2N0cmwsIHJlZ19lc3I7DQo+ID4g
-Kw0KPiA+ICsJcmVnX2VzciA9IGZsZXhjYW5fcmVhZCgmcmVncy0+ZXNyKTsNCj4gPiArCXJlZ19j
-dHJsID0gZmxleGNhbl9yZWFkKCZyZWdzLT5jdHJsKTsNCj4gPiArCWlmIChyZWdfZXNyICYgRkxF
-WENBTl9FU1JfVFhfV1JOKSB7DQo+ID4gKwkJZmxleGNhbl93cml0ZShyZWdfZXNyICYgfkZMRVhD
-QU5fRVNSX1RYX1dSTiwgJnJlZ3MtPmVzcik7DQo+ID4gKwkJZmxleGNhbl93cml0ZShyZWdfY3Ry
-bCAmIH5GTEVYQ0FOX0NUUkxfRVJSX01TSywgJnJlZ3MtPmN0cmwpOw0KPiA+ICsJCWZsZXhjYW5f
-cG9sbF9zdGF0ZShkZXYsIHJlZ19lc3IpOw0KPiA+ICsJfQ0KPiA+ICsJcmV0dXJuIElSUV9IQU5E
-TEVEOw0KPiA+ICt9DQo+IA0KPiBZb3Ugc2hvdWxkIG9ubHkgcmV0dXJuIElSUV9IQU5ETEVEIGlm
-IHRoZXJlIHdhcyBzb21ldGhpbmcgdG8gaGFuZGxlLg0KPiANCj4gPiBAQCAtOTQ0LDYgKzk2Miwx
-MiBAQCBzdGF0aWMgaW50IGZsZXhjYW5fb3BlbihzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQ0KPiA+
-ICAJaWYgKGVycikNCj4gPiAgCQlnb3RvIG91dF9jbG9zZTsNCj4gPg0KPiA+ICsJaWYgKHByaXYt
-PmVycl9pcnEpDQo+ID4gKwkJZXJyID0gcmVxdWVzdF9pcnEocHJpdi0+ZXJyX2lycSwgZmxleGNh
-bl9lcnJfaXJxLCBJUlFGX1NIQVJFRCwNCj4gPiArCQkJCSAgZGV2LT5uYW1lLCBkZXYpOw0KPiA+
-ICsJaWYgKGVycikNCj4gPiArCQlnb3RvIG91dF9jbG9zZTsNCj4gDQo+IElzIHRoaXMgcmVhbGx5
-IGEgZmF0YWwgZXJyb3I/ICBBbmQgd2h5IGRvIHlvdSBjaGVjayBlcnIgb3V0c2lkZSB0aGUgImlm
-DQo+IChwcml2LT5lcnJfaXJxKSIgYmxvY2s/ICBXaGF0IGlmIHNvbWUgcHJldmlvdXMgY29kZSBs
-ZWZ0IGVyciBub24temVybw0KPiAoZWl0aGVyIG5vdyBvciBhZnRlciBzb21lIGZ1dHVyZSBjb2Rl
-IGNoYW5nZSk/DQo+IA0KPiA+IEBAIC0xMTI2LDYgKzExNTAsMTAgQEAgc3RhdGljIGludCBmbGV4
-Y2FuX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ID4gIAlpZiAoaXJx
-IDw9IDApDQo+ID4gIAkJcmV0dXJuIC1FTk9ERVY7DQo+ID4NCj4gPiArCWVycl9pcnEgPSBwbGF0
-Zm9ybV9nZXRfaXJxKHBkZXYsIDEpOw0KPiA+ICsJaWYgKGVycl9pcnEgPD0gMCkNCj4gPiArCQll
-cnJfaXJxID0gMDsNCj4gPiArDQo+IA0KPiBXaHkgaXMgdGhpcyA8PSAwIGNoZWNrIG5lZWRlZD8N
-Cg0KSW50ZXJydXB0WzFdIGlzIG9wdGlvbmFsLiBJZiB0aGVyZSBpcyBub3QgaW50ZXJydXB0WzFd
-IGluIGR0YiwgZXJyX2lycSB3aWxsIGJlIDw9MC4NCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+On Mon, Jun 23, 2014 at 03:07:47PM +1000, Gavin Shan wrote:
+>On Tue, Jun 10, 2014 at 09:56:24AM +0800, Wei Yang wrote:
+>>As introduced by commit 98d9f30c82 ("pci/of: Match PCI devices to dev-tree nodes
+>>dynamically"), we need to match PCI devices to their corresponding dev-tree
+>>nodes. While for VFs, this step was missed.
+>>
+>>This patch matches VFs' PCI devices to dev-tree nodes dynamically.
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>---
+>> drivers/pci/iov.c |    1 +
+>> 1 file changed, 1 insertion(+)
+>>
+>>diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>>index 589ef7d..1d21f43 100644
+>>--- a/drivers/pci/iov.c
+>>+++ b/drivers/pci/iov.c
+>>@@ -67,6 +67,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>>
+>> 	virtfn->devfn = pci_iov_virtfn_devfn(dev, id);
+>> 	virtfn->vendor = dev->vendor;
+>>+	pci_set_of_node(virtfn);
+>
+>If the VF and PF seats on different PCI buses, I guess pci_set_of_node() always
+>binds nothing with the VF. It might be one of the problem your code missed and
+>I didn't catch this in the code review done previously. However, it shouldn't
+>be a real problem if we're not going to rely on dynamic device_node.
+>
+
+Thanks for the comment.
+
+This case is not took into consideration yet, so it is not supported now.
+While I think it is time to think about the solution now.
+
+Hmm... after reading the code a while, this seems some change in current code.
+
+1. The hierarchy of VF's device node
+   
+                    +---------+
+                    |P2P      |parent
+                    +----+----+
+                         |       pbus
+            +------------+------------+              vbus
+            |                         |           ---------------+
+       +---------+              +-----+---+          |
+       |DEV      |child1        |DEV      |child2    |
+       +---------+              +---------+          |
+                                                  +----+------+
+                                                  |VF         | vchild
+                                                  +-----------+
+
+   From the chart above, the left side is the device node hierarchy without
+   VFs. Each pci device is the direct child of the P2P bridge. When match pci
+   device and its device node, the code go through the parent bus node's child
+   list and find the one with same devfn.(in pci_set_of_node()). And we can
+   tell the parent bus node is the P2P bridge's device node.
+
+   This works fine, untill VFs need to be added. vbus is a child of the pbus,
+   and vbus->self is NULL. So first thing is to set the correct device node
+   for this virtual bus. From the chart above, looks both P2P bridge and the
+   DEV could be the device node. While the later one seems more reasonable.
+
+2. Reserve virtual bus number in firmware
+   This is not a big issue, just reserve enough bus number in firmware.
+   Otherwise, pci device and device node may not match.
+
+>> 	pci_|ead_config_word(dev, iov->pos + PCI_SRIOV_VF_DID, &virtfn->device);
+>> 	pci_setup_device(virtfn);
+>> 	virtfn->dev.parent = dev->dev.parent;
+>
+>Thanks,
+>Gavin
+
+-- 
+Richard Yang
+Help you, Help me
