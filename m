@@ -1,31 +1,32 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF3981A000E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 10:56:32 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FB251A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:45 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Jun 2014 10:56:26 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3758F2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 10:56:23 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5N0u6LV4194748
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 10:56:07 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5N0uM5e019698
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 10:56:22 +1000
+ Mon, 23 Jun 2014 12:14:44 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9E8CE3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:42 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5N1qRTD2294178
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 11:52:27 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5N2EfFe003449
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 12:14:42 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/kerenl: Enable EEH for IO accessors
-Date: Mon, 23 Jun 2014 10:56:22 +1000
-Message-Id: <1403484982-29100-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v1 0/3] Support PCI Error Injection
+Date: Mon, 23 Jun 2014 12:14:39 +1000
+Message-Id: <1403489682-14841-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, qiudayu@linux.vnet.ibm.com, agraf@suse.de,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,95 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In arch/powerpc/kernel/iomap.c, lots of IO reading accessors missed
-to check EEH error as Ben pointed. The patch fixes it.
+The series of patches supports PCI error injection as defined in PAPR spec.
+There are 3 RTAS calls related to it:
 
-For the writing accessors, we change the called functions only for
-making them look similar to the reading counterparts.
+"ibm,open-errinjct": Apply for token to do error injection
+"ibm,close-errinjct": Free the token assigned previously
+"ibm,errinjct": Do error injection
 
-Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/iomap.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+For PCI errors, we need manupulate 3 hardware registers by predetermined
+OPAL API. In order to export the capability to userland, one OPAL firmware
+related sysfs entries are created: /sys/firmware/opal/errinjct. It accepts
+strings to call OPAL API to inject specific errors. So it corresponds to
+"ibm,errinjct". So "ibm,open-errinjct" and "ibm,close-errinjct" won't be
+handled by host kernel and applications have full freedom to implement logic
+of themselves for them.
 
-diff --git a/arch/powerpc/kernel/iomap.c b/arch/powerpc/kernel/iomap.c
-index b82227e..12e48d5 100644
---- a/arch/powerpc/kernel/iomap.c
-+++ b/arch/powerpc/kernel/iomap.c
-@@ -23,7 +23,7 @@ unsigned int ioread16(void __iomem *addr)
- }
- unsigned int ioread16be(void __iomem *addr)
- {
--	return in_be16(addr);
-+	return readw_be(addr);
- }
- unsigned int ioread32(void __iomem *addr)
- {
-@@ -31,7 +31,7 @@ unsigned int ioread32(void __iomem *addr)
- }
- unsigned int ioread32be(void __iomem *addr)
- {
--	return in_be32(addr);
-+	return readl_be(addr);
- }
- EXPORT_SYMBOL(ioread8);
- EXPORT_SYMBOL(ioread16);
-@@ -49,7 +49,7 @@ void iowrite16(u16 val, void __iomem *addr)
- }
- void iowrite16be(u16 val, void __iomem *addr)
- {
--	out_be16(addr, val);
-+	writew_be(val, addr);
- }
- void iowrite32(u32 val, void __iomem *addr)
- {
-@@ -57,7 +57,7 @@ void iowrite32(u32 val, void __iomem *addr)
- }
- void iowrite32be(u32 val, void __iomem *addr)
- {
--	out_be32(addr, val);
-+	writel_be(val, addr);
- }
- EXPORT_SYMBOL(iowrite8);
- EXPORT_SYMBOL(iowrite16);
-@@ -75,15 +75,15 @@ EXPORT_SYMBOL(iowrite32be);
-  */
- void ioread8_rep(void __iomem *addr, void *dst, unsigned long count)
- {
--	_insb((u8 __iomem *) addr, dst, count);
-+	readsb(addr, dst, count);
- }
- void ioread16_rep(void __iomem *addr, void *dst, unsigned long count)
- {
--	_insw_ns((u16 __iomem *) addr, dst, count);
-+	readsw(addr, dst, count);
- }
- void ioread32_rep(void __iomem *addr, void *dst, unsigned long count)
- {
--	_insl_ns((u32 __iomem *) addr, dst, count);
-+	readsl(addr, dst, count);
- }
- EXPORT_SYMBOL(ioread8_rep);
- EXPORT_SYMBOL(ioread16_rep);
-@@ -91,15 +91,15 @@ EXPORT_SYMBOL(ioread32_rep);
- 
- void iowrite8_rep(void __iomem *addr, const void *src, unsigned long count)
- {
--	_outsb((u8 __iomem *) addr, src, count);
-+	writesb(addr, src, count);
- }
- void iowrite16_rep(void __iomem *addr, const void *src, unsigned long count)
- {
--	_outsw_ns((u16 __iomem *) addr, src, count);
-+	writesw(addr, src, count);
- }
- void iowrite32_rep(void __iomem *addr, const void *src, unsigned long count)
- {
--	_outsl_ns((u32 __iomem *) addr, src, count);
-+	writesl(addr, src, count);
- }
- EXPORT_SYMBOL(iowrite8_rep);
- EXPORT_SYMBOL(iowrite16_rep);
+Gavin Shan (3):
+  powerpc/powernv: Sync header with firmware
+  powerpc/powernv: Support PCI error injection
+  powerpc/powernv: Clear PAPR error injection registers
+
+ arch/powerpc/include/asm/opal.h                |  66 +++++++++
+ arch/powerpc/platforms/powernv/Makefile        |   2 +-
+ arch/powerpc/platforms/powernv/eeh-ioda.c      |  24 ++++
+ arch/powerpc/platforms/powernv/opal-errinjct.c | 184 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/opal.c          |   2 +
+ 6 files changed, 278 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-errinjct.c
+
 -- 
 1.8.3.2
