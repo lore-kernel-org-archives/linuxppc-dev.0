@@ -1,27 +1,41 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E666C1A0351
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:37:35 +1000 (EST)
-Message-ID: <53A7D92E.4060708@pengutronix.de>
-Date: Mon, 23 Jun 2014 09:37:18 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB8A21A0149
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:57:00 +1000 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 23 Jun 2014 13:26:56 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 37EDA394005B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 13:26:53 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5N7v4pF54132748
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 13:27:04 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5N7ums9000694
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 13:26:49 +0530
+Date: Mon, 23 Jun 2014 15:56:45 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH V3 08/17] PCI: Add weak pcibios_sriov_resource_size()
+ interface
+Message-ID: <20140623075645.GA4509@richard>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-9-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140623054128.GA9831@shangw>
 MIME-Version: 1.0
-To: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>,
- "wg@grandegger.com" <wg@grandegger.com>,
- Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 1/2] flexcan: add err_irq handler for flexcan
-References: <1403507484-46547-1-git-send-email-B45475@freescale.com>
- <53A7D497.7080806@pengutronix.de>
- <d7e8cae0bc584530bedc8febf5476fcf@BLUPR03MB341.namprd03.prod.outlook.com>
-In-Reply-To: <d7e8cae0bc584530bedc8febf5476fcf@BLUPR03MB341.namprd03.prod.outlook.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="FtQmtj7FT19Ktb18XjeNbudQ5wcqEE0mv"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140623054128.GA9831@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linux-pci@vger.kernel.org, yan@linux.vnet.ibm.com, bhelgaas@google.com,
+ qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,105 +45,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---FtQmtj7FT19Ktb18XjeNbudQ5wcqEE0mv
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 06/23/2014 09:26 AM, qiang.zhao@freescale.com wrote:
->=20
-> On 06/23/2014 03:18 PM, Marc Kleine-Budde wrote:
->=20
+On Mon, Jun 23, 2014 at 03:41:28PM +1000, Gavin Shan wrote:
+>On Tue, Jun 10, 2014 at 09:56:30AM +0800, Wei Yang wrote:
+>>When retrieving sriov resource size in pci_sriov_resource_size(), it will
+>>divide the total IOV resource size with the totalVF number. This is true for
+>>most cases, while may not be correct on some specific platform.
 >>
->> On 06/23/2014 09:11 AM, Zhao Qiang wrote:
->>> when flexcan is not physically linked, command 'cantest' will trigger=
-
->>> an err_irq, add err_irq handler for it.
->>>
->>> Signed-off-by: Zhao Qiang <B45475@freescale.com>
->>> ---
->>> Changes for v2:
->>> 	- use a space instead of tab
->>> 	- use flexcan_poll_state instead of print Changes for v3:
->>> 	- return IRQ_HANDLED if err is triggered
->>> 	- stop transmitted packets when there is an err_interrupt
->>>
->>>  drivers/net/can/flexcan.c | 35 ++++++++++++++++++++++++++++++++++-
->>>  1 file changed, 34 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
->>> index f425ec2..6802a25 100644
->>> --- a/drivers/net/can/flexcan.c
->>> +++ b/drivers/net/can/flexcan.c
->>> @@ -208,6 +208,7 @@ struct flexcan_priv {
->>>  	void __iomem *base;
->>>  	u32 reg_esr;
->>>  	u32 reg_ctrl_default;
->>> +	unsigned int err_irq;
->>>
->>>  	struct clk *clk_ipg;
->>>  	struct clk *clk_per;
->>> @@ -744,6 +745,24 @@ static irqreturn_t flexcan_irq(int irq, void
->> *dev_id)
->>>  	return IRQ_HANDLED;
->>>  }
->>>
->>> +static irqreturn_t flexcan_err_irq(int irq, void *dev_id) {
->>> +	struct net_device *dev =3D dev_id;
->>> +	struct flexcan_priv *priv =3D netdev_priv(dev);
->>> +	struct flexcan_regs __iomem *regs =3D priv->base;
->>> +	u32 reg_ctrl, reg_esr;
->>> +
->>> +	reg_esr =3D flexcan_read(&regs->esr);
->>> +	reg_ctrl =3D flexcan_read(&regs->ctrl);
->>> +	if (reg_esr & FLEXCAN_ESR_TX_WRN) {
+>>For example on powernv platform, in order to fix the IOV BAR into a hardware
+>>alignment, the IOV resource size would be expended. This means the original
+>>method couldn't work.
 >>
->> When does the hardware trigger the interrupt?
->=20
-> When there is no wire link between tx and rx, tx start transfer and doe=
-sn=E2=80=99t get the ack.
-
-You are testing for the warning interrupt, not for the
-FLEXCAN_ESR_ACK_ERR (which is triggered there isn't any ACK).
-
->>> +		flexcan_write(reg_esr & ~FLEXCAN_ESR_TX_WRN, &regs->esr);
->>> +		flexcan_write(reg_ctrl & ~FLEXCAN_CTRL_ERR_MSK, &regs->ctrl);
->>> +		netif_stop_queue(dev);
+>>This patch introduces a weak pcibios_sriov_resource_size() interface, which
+>>gives platform a chance to implement specific method to calculate the sriov
+>>resource size.
 >>
->> Why are you stopping the txqueue?
->=20
-> There is no wire link, tx can't transfer successfully.=20
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>---
+>> drivers/pci/iov.c   |   27 +++++++++++++++++++++++++--
+>> include/linux/pci.h |    3 +++
+>> 2 files changed, 28 insertions(+), 2 deletions(-)
+>>
+>>diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>>index cc87773..9fd4648 100644
+>>--- a/drivers/pci/iov.c
+>>+++ b/drivers/pci/iov.c
+>>@@ -45,6 +45,30 @@ static void virtfn_remove_bus(struct pci_bus *physbus, struct pci_bus *virtbus)
+>> 		pci_remove_bus(virtbus);
+>> }
+>>
+>>+resource_size_t __weak pcibios_sriov_resource_size(struct pci_dev *dev, int resno)
+>>+{
+>>+	return 0;
+>>+}
+>>+
+>
+>Please define the prototype of weak function in header files (e.g.
+>linux/include/pci.h) :-)
 
-You are testing for the warning interrupt, which is triggered if the
-error counter increases from 95 to 96. And the error counter can
-increase due to several reasons. No link is only one of them. If the CAN
-core cannot transmit new packages any more the flow control in the
-driver will take care.
+Missed, will add it.
 
-What about calling the normal interrupt if er err_irq occurs, as this
-function will take care of both normal and error interrupts anyway?
+>
+>If you missed doing same thing for the weak functions added in the
+>previous patches, you need fix it as well.
 
-Marc
+Yep.
 
---=20
-Pengutronix e.K.                  | Marc Kleine-Budde           |
-Industrial Linux Solutions        | Phone: +49-231-2826-924     |
-Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
+>
+>>+resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno)
+>>+{
+>>+	u64 size;
+>
+>I guess it'd better to be "resource_size_t". 
+>
+>>+	struct pci_sriov *iov;
+>>+
+>>+	if (!dev->is_physfn)
+>>+		return 0;
+>>+
+>>+	size = pcibios_sriov_resource_size(dev, resno);
+>>+	if (size != 0)
+>>+		return size;
+>>+
+>>+	iov = dev->sriov;
+>>+	size = resource_size(dev->resource + resno);
+>>+	do_div(size, iov->total_VFs);
+>>+
+>>+	return size;
+>>+}
+>>+
+>> static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>> {
+>> 	int i;
+>>@@ -81,8 +105,7 @@ static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>> 			continue;
+>> 		virtfn->resource[i].name = pci_name(virtfn);
+>> 		virtfn->resource[i].flags = res->flags;
+>>-		size = resource_size(res);
+>>-		do_div(size, iov->total_VFs);
+>>+		size = pci_sriov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>> 		virtfn->resource[i].start = res->start + size * id;
+>> 		virtfn->resource[i].end = virtfn->resource[i].start + size - 1;
+>> 		rc = request_resource(res, &virtfn->resource[i]);
+>>diff --git a/include/linux/pci.h b/include/linux/pci.h
+>>index ddb1ca0..315c150 100644
+>>--- a/include/linux/pci.h
+>>+++ b/include/linux/pci.h
+>>@@ -1637,6 +1637,7 @@ int pci_num_vf(struct pci_dev *dev);
+>> int pci_vfs_assigned(struct pci_dev *dev);
+>> int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
+>> int pci_sriov_get_totalvfs(struct pci_dev *dev);
+>>+resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno);
+>> #else
+>> static inline int pci_iov_virtfn_bus(struct pci_dev *dev, int id)
+>> {
+>>@@ -1658,6 +1659,8 @@ static inline int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs)
+>> { return 0; }
+>> static inline int pci_sriov_get_totalvfs(struct pci_dev *dev)
+>> { return 0; }
+>>+static inline resource_size_t pci_sriov_resource_size(struct pci_dev *dev, int resno)
+>>+{ return -1; }
+>> #endif
+>>
+>> #if defined(CONFIG_HOTPLUG_PCI) || defined(CONFIG_HOTPLUG_PCI_MODULE)
+>
+>Thanks,
+>Gavin
 
-
---FtQmtj7FT19Ktb18XjeNbudQ5wcqEE0mv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: Using GnuPG with Icedove - http://www.enigmail.net/
-
-iEYEARECAAYFAlOn2S4ACgkQjTAFq1RaXHPTmQCfcQDcpXO1pAKj+oiM53B7FGvX
-E4wAn06axydfZnKAH+1ml9BooZbj/9t7
-=326+
------END PGP SIGNATURE-----
-
---FtQmtj7FT19Ktb18XjeNbudQ5wcqEE0mv--
+-- 
+Richard Yang
+Help you, Help me
