@@ -1,41 +1,19 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0243.outbound.protection.outlook.com [207.46.163.243])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 70C491A0078
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:09:12 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Jun 2014 17:09:00 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0C3812CE8054
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:08:57 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5N78f5D9109812
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:08:41 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5N78uud006631
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:08:56 +1000
-Date: Mon, 23 Jun 2014 17:08:57 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH V3 11/17] ppc/pnv: Expand VF resources according to
- the number of total_pe
-Message-ID: <20140623070857.GA22440@shangw>
-References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1402365399-5121-12-git-send-email-weiyang@linux.vnet.ibm.com>
- <20140623060707.GA12055@shangw> <20140623065651.GD5172@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8AB51A0078
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 17:14:49 +1000 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-can@vger.kernel.org>,
+ <wg@grandegger.com>, <mkl@pengutronix.de>, <B07421@freescale.com>
+Subject: [PATCH v3 1/2] flexcan: add err_irq handler for flexcan
+Date: Mon, 23 Jun 2014 15:11:23 +0800
+Message-ID: <1403507484-46547-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140623065651.GD5172@richard>
-Cc: benh@au1.ibm.com, linux-pci@vger.kernel.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, yan@linux.vnet.ibm.com,
- bhelgaas@google.com, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,112 +23,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 23, 2014 at 02:56:52PM +0800, Wei Yang wrote:
->On Mon, Jun 23, 2014 at 04:07:07PM +1000, Gavin Shan wrote:
->>On Tue, Jun 10, 2014 at 09:56:33AM +0800, Wei Yang wrote:
->>>On PHB3, VF resources will be covered by M64 BAR to have better PE isolation.
->>>Mostly the total_pe number is different from the total_VFs, which will lead to
->>>a conflict between MMIO space and the PE number.
->>>
->>>This patch expands the VF resource size to reserve total_pe number of VFs'
->>>resource, which prevents the conflict.
->>>
->>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>---
->>> arch/powerpc/include/asm/machdep.h        |    6 +++
->>> arch/powerpc/include/asm/pci-bridge.h     |    3 ++
->>> arch/powerpc/kernel/pci-common.c          |   15 ++++++
->>> arch/powerpc/platforms/powernv/pci-ioda.c |   83 +++++++++++++++++++++++++++++
->>> 4 files changed, 107 insertions(+)
->>>
->>>diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
->>>index ad3025d..2f2e770 100644
->>>--- a/arch/powerpc/include/asm/machdep.h
->>>+++ b/arch/powerpc/include/asm/machdep.h
->>>@@ -234,9 +234,15 @@ struct machdep_calls {
->>>
->>> 	/* Called after scan and before resource survey */
->>> 	void (*pcibios_fixup_phb)(struct pci_controller *hose);
->>>+#ifdef CONFIG_PCI_IOV
->>>+	void (*pcibios_fixup_sriov)(struct pci_bus *bus);
->>>+#endif /* CONFIG_PCI_IOV */
->>>
->>> 	/* Called during PCI resource reassignment */
->>> 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
->>>+#ifdef CONFIG_PCI_IOV
->>>+	resource_size_t (*__pci_sriov_resource_size)(struct pci_dev *, int resno);
->>
->>	resource_size_t (*pcibios_sriov_resource_size)(struct pci_dev *, int resno);
->>
->>You probably can put all SRIOV related functions together:
->>
->>#ifdef CONFIG_PCI_IOV
->>	func_a;
->>	func_b;
->>	 :
->>#endif
->>
->>>+#endif /* CONFIG_PCI_IOV */
->>>
->>> 	/* Called to shutdown machine specific hardware not already controlled
->>> 	 * by other drivers.
->>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>index 4ca90a3..8c849d8 100644
->>>--- a/arch/powerpc/include/asm/pci-bridge.h
->>>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>>@@ -168,6 +168,9 @@ struct pci_dn {
->>> #define IODA_INVALID_PE		(-1)
->>> #ifdef CONFIG_PPC_POWERNV
->>> 	int	pe_number;
->>>+#ifdef CONFIG_PCI_IOV
->>>+	u16     vfs;
->>>+#endif /* CONFIG_PCI_IOV */
->>> #endif
->>> };
->>>
->>>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->>>index c449a26..c4e2e92 100644
->>>--- a/arch/powerpc/kernel/pci-common.c
->>>+++ b/arch/powerpc/kernel/pci-common.c
->>>@@ -120,6 +120,16 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
->>> 	return 1;
->>> }
->>>
->>>+#ifdef CONFIG_PCI_IOV
->>>+resource_size_t pcibios_sriov_resource_size(struct pci_dev *pdev, int resno)
->>>+{
->>>+	if (ppc_md.__pci_sriov_resource_size)
->>>+		return ppc_md.__pci_sriov_resource_size(pdev, resno);
->>>+
->>>+	return 0;
->>>+}
->>>+#endif /* CONFIG_PCI_IOV */
->>>+
->>> static resource_size_t pcibios_io_size(const struct pci_controller *hose)
->>> {
->>> #ifdef CONFIG_PPC64
->>>@@ -1675,6 +1685,11 @@ void pcibios_scan_phb(struct pci_controller *hose)
->>> 	if (ppc_md.pcibios_fixup_phb)
->>> 		ppc_md.pcibios_fixup_phb(hose);
->>>
->>>+#ifdef CONFIG_PCI_IOV
->>>+	if (ppc_md.pcibios_fixup_sriov)
->>>+		ppc_md.pcibios_fixup_sriov(bus);
->>
->>One question I probably asked before: why we can't put the logic
->>of ppc_md.pcibios_fixup_sriov() to ppc_md.pcibios_fixup_phb()?
->>
->
->Yep, you have asked before and I replied before too :-)
->
->During EEH hotplug, if the PF are removed, the IOV BAR will be retrieved from
->the device itself again. If I merge this fixup into
->ppc_md.pcibios_fixup_phb(), this is not proper to be invoked at hotplug event.
->
->Or fixup the phb during EEH hotplug is reasonable?
->
+when flexcan is not physically linked, command 'cantest' will
+trigger an err_irq, add err_irq handler for it.
 
-Yeah. It's not reasonable to apply fixup to PHB when doing hotplug on PF.
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+Changes for v2:
+	- use a space instead of tab
+	- use flexcan_poll_state instead of print
+Changes for v3:
+	- return IRQ_HANDLED if err is triggered
+	- stop transmitted packets when there is an err_interrupt 
 
-Thanks,
-Gavin
+ drivers/net/can/flexcan.c | 35 ++++++++++++++++++++++++++++++++++-
+ 1 file changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
+index f425ec2..6802a25 100644
+--- a/drivers/net/can/flexcan.c
++++ b/drivers/net/can/flexcan.c
+@@ -208,6 +208,7 @@ struct flexcan_priv {
+ 	void __iomem *base;
+ 	u32 reg_esr;
+ 	u32 reg_ctrl_default;
++	unsigned int err_irq;
+ 
+ 	struct clk *clk_ipg;
+ 	struct clk *clk_per;
+@@ -744,6 +745,24 @@ static irqreturn_t flexcan_irq(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
++static irqreturn_t flexcan_err_irq(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	struct flexcan_priv *priv = netdev_priv(dev);
++	struct flexcan_regs __iomem *regs = priv->base;
++	u32 reg_ctrl, reg_esr;
++
++	reg_esr = flexcan_read(&regs->esr);
++	reg_ctrl = flexcan_read(&regs->ctrl);
++	if (reg_esr & FLEXCAN_ESR_TX_WRN) {
++		flexcan_write(reg_esr & ~FLEXCAN_ESR_TX_WRN, &regs->esr);
++		flexcan_write(reg_ctrl & ~FLEXCAN_CTRL_ERR_MSK, &regs->ctrl);
++		netif_stop_queue(dev);
++		return IRQ_HANDLED;
++	}
++	return IRQ_NONE;
++}
++
+ static void flexcan_set_bittiming(struct net_device *dev)
+ {
+ 	const struct flexcan_priv *priv = netdev_priv(dev);
+@@ -944,6 +963,15 @@ static int flexcan_open(struct net_device *dev)
+ 	if (err)
+ 		goto out_close;
+ 
++	if (priv->err_irq) {
++		err = request_irq(priv->err_irq, flexcan_err_irq, IRQF_SHARED,
++				  dev->name, dev);
++		if (err) {
++			free_irq(priv->err_irq, dev);
++			goto out_free_irq;
++		}
++	}
++
+ 	/* start chip and queuing */
+ 	err = flexcan_chip_start(dev);
+ 	if (err)
+@@ -1099,7 +1127,7 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	struct resource *mem;
+ 	struct clk *clk_ipg = NULL, *clk_per = NULL;
+ 	void __iomem *base;
+-	int err, irq;
++	int err, irq, err_irq;
+ 	u32 clock_freq = 0;
+ 
+ 	if (pdev->dev.of_node)
+@@ -1126,6 +1154,10 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	if (irq <= 0)
+ 		return -ENODEV;
+ 
++	err_irq = platform_get_irq(pdev, 1);
++	if (err_irq <= 0)
++		err_irq = 0;
++
+ 	base = devm_ioremap_resource(&pdev->dev, mem);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
+@@ -1149,6 +1181,7 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	dev->flags |= IFF_ECHO;
+ 
+ 	priv = netdev_priv(dev);
++	priv->err_irq = err_irq;
+ 	priv->can.clock.freq = clock_freq;
+ 	priv->can.bittiming_const = &flexcan_bittiming_const;
+ 	priv->can.do_set_mode = flexcan_set_mode;
+-- 
+1.8.5
