@@ -1,25 +1,41 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F6A81A014C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 18:15:18 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Marc Kleine-Budde <mkl@pengutronix.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linux-can@vger.kernel.org"
- <linux-can@vger.kernel.org>, "wg@grandegger.com" <wg@grandegger.com>, "Scott
- Wood" <scottwood@freescale.com>
-Subject: RE: [PATCH v3 1/2] flexcan: add err_irq handler for flexcan
-Date: Mon, 23 Jun 2014 08:15:11 +0000
-Message-ID: <c0ae03364c7946bb8278bf20b03bab90@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1403507484-46547-1-git-send-email-B45475@freescale.com>
- <53A7D497.7080806@pengutronix.de>
- <d7e8cae0bc584530bedc8febf5476fcf@BLUPR03MB341.namprd03.prod.outlook.com>
- <53A7D92E.4060708@pengutronix.de>
-In-Reply-To: <53A7D92E.4060708@pengutronix.de>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F4AA1A014C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 18:21:47 +1000 (EST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 23 Jun 2014 18:21:46 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2759B2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 18:21:45 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5N85PF453215392
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 18:05:25 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5N8Lhng024938
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 18:21:44 +1000
+Date: Mon, 23 Jun 2014 16:21:42 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH V3 12/17] powerpc/powernv: implement
+ pcibios_sriov_resource_alignment on powernv
+Message-ID: <20140623082142.GB4509@richard>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-13-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140623060947.GB12055@shangw>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140623060947.GB12055@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linux-pci@vger.kernel.org, yan@linux.vnet.ibm.com, bhelgaas@google.com,
+ qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +45,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gMDYvMjMvMjAxNCAwMzozNyBQTSwgTWFyYyBLbGVpbmUtQnVkZGUgd3JvdGU6DQoNCj4gLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTWFyYyBLbGVpbmUtQnVkZGUgW21haWx0
-bzpta2xAcGVuZ3V0cm9uaXguZGVdDQo+IFNlbnQ6IE1vbmRheSwgSnVuZSAyMywgMjAxNCAzOjM3
-IFBNDQo+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3NTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
-cmc7IGxpbnV4LQ0KPiBjYW5Admdlci5rZXJuZWwub3JnOyB3Z0BncmFuZGVnZ2VyLmNvbTsgV29v
-ZCBTY290dC1CMDc0MjENCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAxLzJdIGZsZXhjYW46IGFk
-ZCBlcnJfaXJxIGhhbmRsZXIgZm9yIGZsZXhjYW4NCj4gDQo+IE9uIDA2LzIzLzIwMTQgMDk6MjYg
-QU0sIHFpYW5nLnpoYW9AZnJlZXNjYWxlLmNvbSB3cm90ZToNCj4gPg0KPiA+IE9uIDA2LzIzLzIw
-MTQgMDM6MTggUE0sIE1hcmMgS2xlaW5lLUJ1ZGRlIHdyb3RlOg0KPiA+DQo+ID4+DQo+ID4+IE9u
-IDA2LzIzLzIwMTQgMDk6MTEgQU0sIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4+PiB3aGVuIGZsZXhj
-YW4gaXMgbm90IHBoeXNpY2FsbHkgbGlua2VkLCBjb21tYW5kICdjYW50ZXN0JyB3aWxsDQo+ID4+
-PiB0cmlnZ2VyIGFuIGVycl9pcnEsIGFkZCBlcnJfaXJxIGhhbmRsZXIgZm9yIGl0Lg0KPiA+Pj4N
-Cj4gPj4+IFNpZ25lZC1vZmYtYnk6IFpoYW8gUWlhbmcgPEI0NTQ3NUBmcmVlc2NhbGUuY29tPg0K
-PiA+Pj4gLS0tDQo+ID4+PiBDaGFuZ2VzIGZvciB2MjoNCj4gPj4+IAktIHVzZSBhIHNwYWNlIGlu
-c3RlYWQgb2YgdGFiDQo+ID4+PiAJLSB1c2UgZmxleGNhbl9wb2xsX3N0YXRlIGluc3RlYWQgb2Yg
-cHJpbnQgQ2hhbmdlcyBmb3IgdjM6DQo+ID4+PiAJLSByZXR1cm4gSVJRX0hBTkRMRUQgaWYgZXJy
-IGlzIHRyaWdnZXJlZA0KPiA+Pj4gCS0gc3RvcCB0cmFuc21pdHRlZCBwYWNrZXRzIHdoZW4gdGhl
-cmUgaXMgYW4gZXJyX2ludGVycnVwdA0KPiA+Pj4NCj4gPj4+ICBkcml2ZXJzL25ldC9jYW4vZmxl
-eGNhbi5jIHwgMzUgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0NCj4gPj4+ICAx
-IGZpbGUgY2hhbmdlZCwgMzQgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiA+Pj4NCj4g
-Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL25ldC9jYW4vZmxleGNhbi5jIGIvZHJpdmVycy9uZXQv
-Y2FuL2ZsZXhjYW4uYw0KPiA+Pj4gaW5kZXggZjQyNWVjMi4uNjgwMmEyNSAxMDA2NDQNCj4gPj4+
-IC0tLSBhL2RyaXZlcnMvbmV0L2Nhbi9mbGV4Y2FuLmMNCj4gPj4+ICsrKyBiL2RyaXZlcnMvbmV0
-L2Nhbi9mbGV4Y2FuLmMNCj4gPj4+IEBAIC0yMDgsNiArMjA4LDcgQEAgc3RydWN0IGZsZXhjYW5f
-cHJpdiB7DQo+ID4+PiAgCXZvaWQgX19pb21lbSAqYmFzZTsNCj4gPj4+ICAJdTMyIHJlZ19lc3I7
-DQo+ID4+PiAgCXUzMiByZWdfY3RybF9kZWZhdWx0Ow0KPiA+Pj4gKwl1bnNpZ25lZCBpbnQgZXJy
-X2lycTsNCj4gPj4+DQo+ID4+PiAgCXN0cnVjdCBjbGsgKmNsa19pcGc7DQo+ID4+PiAgCXN0cnVj
-dCBjbGsgKmNsa19wZXI7DQo+ID4+PiBAQCAtNzQ0LDYgKzc0NSwyNCBAQCBzdGF0aWMgaXJxcmV0
-dXJuX3QgZmxleGNhbl9pcnEoaW50IGlycSwgdm9pZA0KPiA+PiAqZGV2X2lkKQ0KPiA+Pj4gIAly
-ZXR1cm4gSVJRX0hBTkRMRUQ7DQo+ID4+PiAgfQ0KPiA+Pj4NCj4gPj4+ICtzdGF0aWMgaXJxcmV0
-dXJuX3QgZmxleGNhbl9lcnJfaXJxKGludCBpcnEsIHZvaWQgKmRldl9pZCkgew0KPiA+Pj4gKwlz
-dHJ1Y3QgbmV0X2RldmljZSAqZGV2ID0gZGV2X2lkOw0KPiA+Pj4gKwlzdHJ1Y3QgZmxleGNhbl9w
-cml2ICpwcml2ID0gbmV0ZGV2X3ByaXYoZGV2KTsNCj4gPj4+ICsJc3RydWN0IGZsZXhjYW5fcmVn
-cyBfX2lvbWVtICpyZWdzID0gcHJpdi0+YmFzZTsNCj4gPj4+ICsJdTMyIHJlZ19jdHJsLCByZWdf
-ZXNyOw0KPiA+Pj4gKw0KPiA+Pj4gKwlyZWdfZXNyID0gZmxleGNhbl9yZWFkKCZyZWdzLT5lc3Ip
-Ow0KPiA+Pj4gKwlyZWdfY3RybCA9IGZsZXhjYW5fcmVhZCgmcmVncy0+Y3RybCk7DQo+ID4+PiAr
-CWlmIChyZWdfZXNyICYgRkxFWENBTl9FU1JfVFhfV1JOKSB7DQo+ID4+DQo+ID4+IFdoZW4gZG9l
-cyB0aGUgaGFyZHdhcmUgdHJpZ2dlciB0aGUgaW50ZXJydXB0Pw0KPiA+DQo+ID4gV2hlbiB0aGVy
-ZSBpcyBubyB3aXJlIGxpbmsgYmV0d2VlbiB0eCBhbmQgcngsIHR4IHN0YXJ0IHRyYW5zZmVyIGFu
-ZA0KPiBkb2VzbuKAmXQgZ2V0IHRoZSBhY2suDQo+IA0KPiBZb3UgYXJlIHRlc3RpbmcgZm9yIHRo
-ZSB3YXJuaW5nIGludGVycnVwdCwgbm90IGZvciB0aGUNCj4gRkxFWENBTl9FU1JfQUNLX0VSUiAo
-d2hpY2ggaXMgdHJpZ2dlcmVkIHRoZXJlIGlzbid0IGFueSBBQ0spLg0KPiANCj4gPj4+ICsJCWZs
-ZXhjYW5fd3JpdGUocmVnX2VzciAmIH5GTEVYQ0FOX0VTUl9UWF9XUk4sICZyZWdzLT5lc3IpOw0K
-PiA+Pj4gKwkJZmxleGNhbl93cml0ZShyZWdfY3RybCAmIH5GTEVYQ0FOX0NUUkxfRVJSX01TSywg
-JnJlZ3MtPmN0cmwpOw0KPiA+Pj4gKwkJbmV0aWZfc3RvcF9xdWV1ZShkZXYpOw0KPiA+Pg0KPiA+
-PiBXaHkgYXJlIHlvdSBzdG9wcGluZyB0aGUgdHhxdWV1ZT8NCj4gPg0KPiA+IFRoZXJlIGlzIG5v
-IHdpcmUgbGluaywgdHggY2FuJ3QgdHJhbnNmZXIgc3VjY2Vzc2Z1bGx5Lg0KPiANCj4gWW91IGFy
-ZSB0ZXN0aW5nIGZvciB0aGUgd2FybmluZyBpbnRlcnJ1cHQsIHdoaWNoIGlzIHRyaWdnZXJlZCBp
-ZiB0aGUNCj4gZXJyb3IgY291bnRlciBpbmNyZWFzZXMgZnJvbSA5NSB0byA5Ni4gQW5kIHRoZSBl
-cnJvciBjb3VudGVyIGNhbiBpbmNyZWFzZQ0KPiBkdWUgdG8gc2V2ZXJhbCByZWFzb25zLiBObyBs
-aW5rIGlzIG9ubHkgb25lIG9mIHRoZW0uIElmIHRoZSBDQU4gY29yZQ0KPiBjYW5ub3QgdHJhbnNt
-aXQgbmV3IHBhY2thZ2VzIGFueSBtb3JlIHRoZSBmbG93IGNvbnRyb2wgaW4gdGhlIGRyaXZlciB3
-aWxsDQo+IHRha2UgY2FyZS4NCg0KV2hlbiBUeCBlcnJvciBjb3VudGVyIGluY3JlYXNlcyBmcm9t
-IDk1IHRvIDk2LCB0aGVyZSBtdXN0IGJlIGlzc3VlIGZvciB0eCwNClNvIHdoeSBjYW4ndCBJIHN0
-b3AgdGhlIHR4cXVldWU/IA0KWW91IHNhaWQgdGhhdCB0aGVyZSBhcmUgc2V2ZXJhbCByZWFzb25z
-LCB3b3VsZCB5b3UgbGlrZSB0byB0YWtlIHNvbWUgZXhhbXBsZXM/DQoNCj4gDQo+IFdoYXQgYWJv
-dXQgY2FsbGluZyB0aGUgbm9ybWFsIGludGVycnVwdCBpZiBlciBlcnJfaXJxIG9jY3VycywgYXMg
-dGhpcw0KPiBmdW5jdGlvbiB3aWxsIHRha2UgY2FyZSBvZiBib3RoIG5vcm1hbCBhbmQgZXJyb3Ig
-aW50ZXJydXB0cyBhbnl3YXk/DQoNCkNhbGxpbmcgdGhlIG5vcm1hbCBpbnRlcnJ1cHQgZG9lc24n
-dCB3b3JrLg0KDQo+IA0KPiBNYXJjDQo+IA0KPiAtLQ0KPiBQZW5ndXRyb25peCBlLksuICAgICAg
-ICAgICAgICAgICAgfCBNYXJjIEtsZWluZS1CdWRkZSAgICAgICAgICAgfA0KPiBJbmR1c3RyaWFs
-IExpbnV4IFNvbHV0aW9ucyAgICAgICAgfCBQaG9uZTogKzQ5LTIzMS0yODI2LTkyNCAgICAgfA0K
-PiBWZXJ0cmV0dW5nIFdlc3QvRG9ydG11bmQgICAgICAgICAgfCBGYXg6ICAgKzQ5LTUxMjEtMjA2
-OTE3LTU1NTUgfA0KPiBBbXRzZ2VyaWNodCBIaWxkZXNoZWltLCBIUkEgMjY4NiAgfCBodHRwOi8v
-d3d3LnBlbmd1dHJvbml4LmRlICAgfA0KDQo=
+On Mon, Jun 23, 2014 at 04:09:47PM +1000, Gavin Shan wrote:
+>On Tue, Jun 10, 2014 at 09:56:34AM +0800, Wei Yang wrote:
+>>This patch implements the pcibios_sriov_resource_alignment() on powernv
+>>platform.
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>---
+>> arch/powerpc/include/asm/machdep.h        |    1 +
+>> arch/powerpc/kernel/pci-common.c          |    8 ++++++++
+>> arch/powerpc/platforms/powernv/pci-ioda.c |   17 +++++++++++++++++
+>> 3 files changed, 26 insertions(+)
+>>
+>>diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+>>index 2f2e770..3bbc55f 100644
+>>--- a/arch/powerpc/include/asm/machdep.h
+>>+++ b/arch/powerpc/include/asm/machdep.h
+>>@@ -242,6 +242,7 @@ struct machdep_calls {
+>> 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
+>> #ifdef CONFIG_PCI_IOV
+>> 	resource_size_t (*__pci_sriov_resource_size)(struct pci_dev *, int resno);
+>>+	resource_size_t (*__pci_sriov_resource_alignment)(struct pci_dev *, int resno, resource_size_t align);
+>> #endif /* CONFIG_PCI_IOV */
+>>
+>> 	/* Called to shutdown machine specific hardware not already controlled
+>>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>>index c4e2e92..35345ac 100644
+>>--- a/arch/powerpc/kernel/pci-common.c
+>>+++ b/arch/powerpc/kernel/pci-common.c
+>>@@ -128,6 +128,14 @@ resource_size_t pcibios_sriov_resource_size(struct pci_dev *pdev, int resno)
+>>
+>> 	return 0;
+>> }
+>>+
+>>+resource_size_t pcibios_sriov_resource_alignment(struct pci_dev *pdev, int resno, resource_size_t align)
+>>+{
+>>+	if (ppc_md.__pci_sriov_resource_alignment)
+>>+		return ppc_md.__pci_sriov_resource_alignment(pdev, resno, align);
+>>+
+>>+	return 0;
+>>+}
+>> #endif /* CONFIG_PCI_IOV */
+>>
+>> static resource_size_t pcibios_io_size(const struct pci_controller *hose)
+>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>index 7dfad6a..b0ac851 100644
+>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>@@ -1573,6 +1573,22 @@ static resource_size_t __pnv_pci_sriov_resource_size(struct pci_dev *pdev, int r
+>>
+>> 	return size;
+>> }
+>>+
+>>+static resource_size_t __pnv_pci_sriov_resource_alignment(struct pci_dev *pdev, int resno,
+>>+		resource_size_t align)
+>
+>The function could be "pcibios_sriov_resource_alignment()", but it's not a big deal.
+>If you prefer the original one, then keep it :)
+
+I guess you want to name it to pnv_pcibios_sriov_resource_alignment()?
+pcibios_sriov_resource_alignment() is the general name for this function.
+
+If yes, this is changed.
+
+>
+>>+{
+>>+	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>+	resource_size_t iov_align;
+>>+
+>>+	iov_align = resource_size(&pdev->resource[resno]);
+>>+	if (iov_align)
+>>+		return iov_align;
+>>+
+>>+	if (pdn->vfs)
+>>+		return pdn->vfs * align;
+>>+
+>>+	return align;
+>>+}
+>> #endif /* CONFIG_PCI_IOV */
+>>
+>> /* Prevent enabling devices for which we couldn't properly
+>>@@ -1777,6 +1793,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>> 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+>> #ifdef CONFIG_PCI_IOV
+>> 	ppc_md.__pci_sriov_resource_size = __pnv_pci_sriov_resource_size;
+>>+	ppc_md.__pci_sriov_resource_alignment = __pnv_pci_sriov_resource_alignment;
+>> #endif /* CONFIG_PCI_IOV */
+>> 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+>>
+>
+>Thanks,
+>Gavin
+
+-- 
+Richard Yang
+Help you, Help me
