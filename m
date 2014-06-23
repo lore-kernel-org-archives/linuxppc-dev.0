@@ -1,15 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E1101A0018
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 13:23:39 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 038E71A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 14:17:50 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/kprobes: Fix jprobes on ABI v2 (LE)
-Date: Mon, 23 Jun 2014 13:23:31 +1000
-Message-Id: <1403493811-28172-1-git-send-email-mpe@ellerman.id.au>
-Cc: Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc: Remove ancient DEBUG_SIG code
+Date: Mon, 23 Jun 2014 14:17:47 +1000
+Message-Id: <1403497067-28512-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,63 +18,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit 721aeaa9 "Build little endian ppc64 kernel with ABIv2", we
-missed some updates required in the kprobes code to make jprobes work
-when the kernel is built with ABI v2.
+We have some compile-time disabled debug code in signal_xx.c. It's from
+some ancient time BG, almost certainly part of the original port, given
+the very similar code on other arches.
 
-Firstly update arch_deref_entry_point() to do the right thing. Now that
-we have added ppc_global_function_entry() we can just always use that, it
-will do the right thing for 32 & 64 bit and ABI v1 & v2.
-
-Secondly we need to update the code that sets up the register state before
-calling the jprobe handler. On ABI v1 we setup r2 to hold the TOC, on ABI
-v2 we need to populate r12 with the function entry point address.
+The show_unhandled_signal logic, added in d0c3d534a438 (2.6.24) is
+cleaner and prints more useful information, so drop the debug code.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-Obviously depends on my previous patch to add ppc_global_function_entry().
+ arch/powerpc/kernel/signal_32.c | 9 ---------
+ arch/powerpc/kernel/signal_64.c | 9 ---------
+ 2 files changed, 18 deletions(-)
 
- arch/powerpc/kernel/kprobes.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-index 90fab64..2f72af8 100644
---- a/arch/powerpc/kernel/kprobes.c
-+++ b/arch/powerpc/kernel/kprobes.c
-@@ -32,6 +32,7 @@
- #include <linux/module.h>
- #include <linux/kdebug.h>
- #include <linux/slab.h>
-+#include <asm/code-patching.h>
- #include <asm/cacheflush.h>
- #include <asm/sstep.h>
- #include <asm/uaccess.h>
-@@ -491,12 +492,10 @@ int __kprobes kprobe_exceptions_notify(struct notifier_block *self,
- 	return ret;
- }
+diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
+index 4e47db6..1bc5a17 100644
+--- a/arch/powerpc/kernel/signal_32.c
++++ b/arch/powerpc/kernel/signal_32.c
+@@ -54,7 +54,6 @@
  
--#ifdef CONFIG_PPC64
- unsigned long arch_deref_entry_point(void *entry)
- {
--	return ((func_descr_t *)entry)->entry;
-+	return ppc_global_function_entry(entry);
- }
--#endif
+ #include "signal.h"
  
- int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
- {
-@@ -508,8 +507,12 @@ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
- 	/* setup return addr to the jprobe handler routine */
- 	regs->nip = arch_deref_entry_point(jp->entry);
+-#undef DEBUG_SIG
+ 
  #ifdef CONFIG_PPC64
-+#if defined(_CALL_ELF) && _CALL_ELF == 2
-+	regs->gpr[12] = (unsigned long)jp->entry;
-+#else
- 	regs->gpr[2] = (unsigned long)(((func_descr_t *)jp->entry)->toc);
- #endif
-+#endif
- 
+ #define sys_rt_sigreturn	compat_sys_rt_sigreturn
+@@ -1063,10 +1062,6 @@ int handle_rt_signal32(unsigned long sig, struct k_sigaction *ka,
  	return 1;
- }
+ 
+ badframe:
+-#ifdef DEBUG_SIG
+-	printk("badframe in handle_rt_signal, regs=%p frame=%p newsp=%lx\n",
+-	       regs, frame, newsp);
+-#endif
+ 	if (show_unhandled_signals)
+ 		printk_ratelimited(KERN_INFO
+ 				   "%s[%d]: bad frame in handle_rt_signal32: "
+@@ -1484,10 +1479,6 @@ int handle_signal32(unsigned long sig, struct k_sigaction *ka,
+ 	return 1;
+ 
+ badframe:
+-#ifdef DEBUG_SIG
+-	printk("badframe in handle_signal, regs=%p frame=%p newsp=%lx\n",
+-	       regs, frame, newsp);
+-#endif
+ 	if (show_unhandled_signals)
+ 		printk_ratelimited(KERN_INFO
+ 				   "%s[%d]: bad frame in handle_signal32: "
+diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
+index d501dc4..97c1e4b 100644
+--- a/arch/powerpc/kernel/signal_64.c
++++ b/arch/powerpc/kernel/signal_64.c
+@@ -38,7 +38,6 @@
+ 
+ #include "signal.h"
+ 
+-#define DEBUG_SIG 0
+ 
+ #define GP_REGS_SIZE	min(sizeof(elf_gregset_t), sizeof(struct pt_regs))
+ #define FP_REGS_SIZE	sizeof(elf_fpregset_t)
+@@ -700,10 +699,6 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	return 0;
+ 
+ badframe:
+-#if DEBUG_SIG
+-	printk("badframe in sys_rt_sigreturn, regs=%p uc=%p &uc->uc_mcontext=%p\n",
+-	       regs, uc, &uc->uc_mcontext);
+-#endif
+ 	if (show_unhandled_signals)
+ 		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+ 				   current->comm, current->pid, "rt_sigreturn",
+@@ -809,10 +804,6 @@ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
+ 	return 1;
+ 
+ badframe:
+-#if DEBUG_SIG
+-	printk("badframe in setup_rt_frame, regs=%p frame=%p newsp=%lx\n",
+-	       regs, frame, newsp);
+-#endif
+ 	if (show_unhandled_signals)
+ 		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
+ 				   current->comm, current->pid, "setup_rt_frame",
 -- 
 1.9.1
