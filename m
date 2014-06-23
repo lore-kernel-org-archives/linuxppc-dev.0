@@ -1,40 +1,24 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ADD861A001C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 16:09:51 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Jun 2014 16:09:50 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E4DBE357804F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 16:09:47 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5N5rSMw39649426
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:53:28 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5N69kQ9015987
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 16:09:47 +1000
-Date: Mon, 23 Jun 2014 16:09:47 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH V3 12/17] powerpc/powernv: implement
- pcibios_sriov_resource_alignment on powernv
-Message-ID: <20140623060947.GB12055@shangw>
-References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1402365399-5121-13-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF99D1A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 16:20:59 +1000 (EST)
+From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH v2 1/2] flexcan: add err_irq handler for flexcan
+Date: Mon, 23 Jun 2014 06:20:51 +0000
+Message-ID: <fc0a7150924249768aee8e4361c654a1@BLUPR03MB341.namprd03.prod.outlook.com>
+References: <1403229664-33912-1-git-send-email-B45475@freescale.com>
+ <1403281165.12851.186.camel@snotra.buserror.net>
+In-Reply-To: <1403281165.12851.186.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1402365399-5121-13-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: benh@au1.ibm.com, linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- yan@linux.vnet.ibm.com, bhelgaas@google.com, qiudayu@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: "mkl@pengutronix.de" <mkl@pengutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "wg@grandegger.com" <wg@grandegger.com>,
+ "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,87 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 10, 2014 at 09:56:34AM +0800, Wei Yang wrote:
->This patch implements the pcibios_sriov_resource_alignment() on powernv
->platform.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->---
-> arch/powerpc/include/asm/machdep.h        |    1 +
-> arch/powerpc/kernel/pci-common.c          |    8 ++++++++
-> arch/powerpc/platforms/powernv/pci-ioda.c |   17 +++++++++++++++++
-> 3 files changed, 26 insertions(+)
->
->diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
->index 2f2e770..3bbc55f 100644
->--- a/arch/powerpc/include/asm/machdep.h
->+++ b/arch/powerpc/include/asm/machdep.h
->@@ -242,6 +242,7 @@ struct machdep_calls {
-> 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
-> #ifdef CONFIG_PCI_IOV
-> 	resource_size_t (*__pci_sriov_resource_size)(struct pci_dev *, int resno);
->+	resource_size_t (*__pci_sriov_resource_alignment)(struct pci_dev *, int resno, resource_size_t align);
-> #endif /* CONFIG_PCI_IOV */
->
-> 	/* Called to shutdown machine specific hardware not already controlled
->diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->index c4e2e92..35345ac 100644
->--- a/arch/powerpc/kernel/pci-common.c
->+++ b/arch/powerpc/kernel/pci-common.c
->@@ -128,6 +128,14 @@ resource_size_t pcibios_sriov_resource_size(struct pci_dev *pdev, int resno)
->
-> 	return 0;
-> }
->+
->+resource_size_t pcibios_sriov_resource_alignment(struct pci_dev *pdev, int resno, resource_size_t align)
->+{
->+	if (ppc_md.__pci_sriov_resource_alignment)
->+		return ppc_md.__pci_sriov_resource_alignment(pdev, resno, align);
->+
->+	return 0;
->+}
-> #endif /* CONFIG_PCI_IOV */
->
-> static resource_size_t pcibios_io_size(const struct pci_controller *hose)
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 7dfad6a..b0ac851 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -1573,6 +1573,22 @@ static resource_size_t __pnv_pci_sriov_resource_size(struct pci_dev *pdev, int r
->
-> 	return size;
-> }
->+
->+static resource_size_t __pnv_pci_sriov_resource_alignment(struct pci_dev *pdev, int resno,
->+		resource_size_t align)
-
-The function could be "pcibios_sriov_resource_alignment()", but it's not a big deal.
-If you prefer the original one, then keep it :)
-
->+{
->+	struct pci_dn *pdn = pci_get_pdn(pdev);
->+	resource_size_t iov_align;
->+
->+	iov_align = resource_size(&pdev->resource[resno]);
->+	if (iov_align)
->+		return iov_align;
->+
->+	if (pdn->vfs)
->+		return pdn->vfs * align;
->+
->+	return align;
->+}
-> #endif /* CONFIG_PCI_IOV */
->
-> /* Prevent enabling devices for which we couldn't properly
->@@ -1777,6 +1793,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
-> 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
-> #ifdef CONFIG_PCI_IOV
-> 	ppc_md.__pci_sriov_resource_size = __pnv_pci_sriov_resource_size;
->+	ppc_md.__pci_sriov_resource_alignment = __pnv_pci_sriov_resource_alignment;
-> #endif /* CONFIG_PCI_IOV */
-> 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
->
-
-Thanks,
-Gavin
+T24gU2F0LCAyMDE0LTA2LTIxIGF0IDEyOjE5LCBXb29kIFNjb3R0IHdyb3RlOg0KDQo+IC0tLS0t
+T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6
+IFNhdHVyZGF5LCBKdW5lIDIxLCAyMDE0IDEyOjE5IEFNDQo+IFRvOiBaaGFvIFFpYW5nLUI0NTQ3
+NQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWNhbkB2Z2VyLmtl
+cm5lbC5vcmc7DQo+IHdnQGdyYW5kZWdnZXIuY29tOyBta2xAcGVuZ3V0cm9uaXguZGU7IFdvb2Qg
+U2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMS8yXSBmbGV4Y2FuOiBhZGQg
+ZXJyX2lycSBoYW5kbGVyIGZvciBmbGV4Y2FuDQo+IA0KPiBPbiBGcmksIDIwMTQtMDYtMjAgYXQg
+MTA6MDEgKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6DQo+ID4gd2hlbiBmbGV4Y2FuIGlzIG5vdCBw
+aHlzaWNhbGx5IGxpbmtlZCwgY29tbWFuZCAnY2FudGVzdCcgd2lsbCB0cmlnZ2VyDQo+ID4gYW4g
+ZXJyX2lycSwgYWRkIGVycl9pcnEgaGFuZGxlciBmb3IgaXQuDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBaaGFvIFFpYW5nIDxCNDU0NzVAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiBDaGFu
+Z2VzIGZvciB2MjoNCj4gPiAJLSB1c2UgYSBzcGFjZSBpbnN0ZWFkIG9mIHRhYg0KPiA+IAktIHVz
+ZSBmbGV4Y2FuX3BvbGxfc3RhdGUgaW5zdGVhZCBvZiBwcmludA0KPiA+DQo+ID4gIGRyaXZlcnMv
+bmV0L2Nhbi9mbGV4Y2FuLmMgfCAzMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKystDQo+
+ID4gIDEgZmlsZSBjaGFuZ2VkLCAzMCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4N
+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvY2FuL2ZsZXhjYW4uYyBiL2RyaXZlcnMvbmV0
+L2Nhbi9mbGV4Y2FuLmMNCj4gPiBpbmRleCBmNDI1ZWMyLi43NDMyYmE0IDEwMDY0NA0KPiA+IC0t
+LSBhL2RyaXZlcnMvbmV0L2Nhbi9mbGV4Y2FuLmMNCj4gPiArKysgYi9kcml2ZXJzL25ldC9jYW4v
+ZmxleGNhbi5jDQo+ID4gQEAgLTIwOCw2ICsyMDgsNyBAQCBzdHJ1Y3QgZmxleGNhbl9wcml2IHsN
+Cj4gPiAgCXZvaWQgX19pb21lbSAqYmFzZTsNCj4gPiAgCXUzMiByZWdfZXNyOw0KPiA+ICAJdTMy
+IHJlZ19jdHJsX2RlZmF1bHQ7DQo+ID4gKwl1bnNpZ25lZCBpbnQgZXJyX2lycTsNCj4gDQo+IFdo
+eSB1bnNpZ25lZD8NCkVycl9pcnEgaXMgZnJvbSAwLg0KPiANCj4gPiArc3RhdGljIGlycXJldHVy
+bl90IGZsZXhjYW5fZXJyX2lycShpbnQgaXJxLCB2b2lkICpkZXZfaWQpIHsNCj4gPiArCXN0cnVj
+dCBuZXRfZGV2aWNlICpkZXYgPSBkZXZfaWQ7DQo+ID4gKwlzdHJ1Y3QgZmxleGNhbl9wcml2ICpw
+cml2ID0gbmV0ZGV2X3ByaXYoZGV2KTsNCj4gPiArCXN0cnVjdCBmbGV4Y2FuX3JlZ3MgX19pb21l
+bSAqcmVncyA9IHByaXYtPmJhc2U7DQo+ID4gKwl1MzIgcmVnX2N0cmwsIHJlZ19lc3I7DQo+ID4g
+Kw0KPiA+ICsJcmVnX2VzciA9IGZsZXhjYW5fcmVhZCgmcmVncy0+ZXNyKTsNCj4gPiArCXJlZ19j
+dHJsID0gZmxleGNhbl9yZWFkKCZyZWdzLT5jdHJsKTsNCj4gPiArCWlmIChyZWdfZXNyICYgRkxF
+WENBTl9FU1JfVFhfV1JOKSB7DQo+ID4gKwkJZmxleGNhbl93cml0ZShyZWdfZXNyICYgfkZMRVhD
+QU5fRVNSX1RYX1dSTiwgJnJlZ3MtPmVzcik7DQo+ID4gKwkJZmxleGNhbl93cml0ZShyZWdfY3Ry
+bCAmIH5GTEVYQ0FOX0NUUkxfRVJSX01TSywgJnJlZ3MtPmN0cmwpOw0KPiA+ICsJCWZsZXhjYW5f
+cG9sbF9zdGF0ZShkZXYsIHJlZ19lc3IpOw0KPiA+ICsJfQ0KPiA+ICsJcmV0dXJuIElSUV9IQU5E
+TEVEOw0KPiA+ICt9DQo+IA0KPiBZb3Ugc2hvdWxkIG9ubHkgcmV0dXJuIElSUV9IQU5ETEVEIGlm
+IHRoZXJlIHdhcyBzb21ldGhpbmcgdG8gaGFuZGxlLg0KPiANCj4gPiBAQCAtOTQ0LDYgKzk2Miwx
+MiBAQCBzdGF0aWMgaW50IGZsZXhjYW5fb3BlbihzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQ0KPiA+
+ICAJaWYgKGVycikNCj4gPiAgCQlnb3RvIG91dF9jbG9zZTsNCj4gPg0KPiA+ICsJaWYgKHByaXYt
+PmVycl9pcnEpDQo+ID4gKwkJZXJyID0gcmVxdWVzdF9pcnEocHJpdi0+ZXJyX2lycSwgZmxleGNh
+bl9lcnJfaXJxLCBJUlFGX1NIQVJFRCwNCj4gPiArCQkJCSAgZGV2LT5uYW1lLCBkZXYpOw0KPiA+
+ICsJaWYgKGVycikNCj4gPiArCQlnb3RvIG91dF9jbG9zZTsNCj4gDQo+IElzIHRoaXMgcmVhbGx5
+IGEgZmF0YWwgZXJyb3I/ICBBbmQgd2h5IGRvIHlvdSBjaGVjayBlcnIgb3V0c2lkZSB0aGUgImlm
+DQo+IChwcml2LT5lcnJfaXJxKSIgYmxvY2s/ICBXaGF0IGlmIHNvbWUgcHJldmlvdXMgY29kZSBs
+ZWZ0IGVyciBub24temVybw0KPiAoZWl0aGVyIG5vdyBvciBhZnRlciBzb21lIGZ1dHVyZSBjb2Rl
+IGNoYW5nZSk/DQo+IA0KPiA+IEBAIC0xMTI2LDYgKzExNTAsMTAgQEAgc3RhdGljIGludCBmbGV4
+Y2FuX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ID4gIAlpZiAoaXJx
+IDw9IDApDQo+ID4gIAkJcmV0dXJuIC1FTk9ERVY7DQo+ID4NCj4gPiArCWVycl9pcnEgPSBwbGF0
+Zm9ybV9nZXRfaXJxKHBkZXYsIDEpOw0KPiA+ICsJaWYgKGVycl9pcnEgPD0gMCkNCj4gPiArCQll
+cnJfaXJxID0gMDsNCj4gPiArDQo+IA0KPiBXaHkgaXMgdGhpcyA8PSAwIGNoZWNrIG5lZWRlZD8N
+Cg0KSW50ZXJydXB0WzFdIGlzIG9wdGlvbmFsLiBJZiB0aGVyZSBpcyBub3QgaW50ZXJydXB0WzFd
+IGluIGR0YiwgZXJyX2lycSB3aWxsIGJlIDw9MC4NCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
