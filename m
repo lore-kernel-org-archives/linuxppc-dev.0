@@ -1,14 +1,39 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 038E71A001D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 14:17:50 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Remove ancient DEBUG_SIG code
-Date: Mon, 23 Jun 2014 14:17:47 +1000
-Message-Id: <1403497067-28512-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 020DF1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:03:16 +1000 (EST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 23 Jun 2014 15:03:13 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0BAF13578052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:03:11 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5N4etJ562390290
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 14:40:55 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5N539ii032673
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:03:10 +1000
+Date: Mon, 23 Jun 2014 15:03:10 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH V3 04/17] PCI: SRIOV: add VF enable/disable hook
+Message-ID: <20140623050310.GA5069@shangw>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-5-git-send-email-weiyang@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1402365399-5121-5-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: benh@au1.ibm.com, linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
+ yan@linux.vnet.ibm.com, bhelgaas@google.com, qiudayu@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,86 +43,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have some compile-time disabled debug code in signal_xx.c. It's from
-some ancient time BG, almost certainly part of the original port, given
-the very similar code on other arches.
+On Tue, Jun 10, 2014 at 09:56:26AM +0800, Wei Yang wrote:
+>VFs are dynamically created/released when driver enable them. On some
+>platforms, like PowerNV, special resources are necessary to enable VFs.
+>
+>This patch adds two hooks for platform initialization before creating the VFs.
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> drivers/pci/iov.c |   19 +++++++++++++++++++
+> 1 file changed, 19 insertions(+)
+>
+>diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>index 1d21f43..cc87773 100644
+>--- a/drivers/pci/iov.c
+>+++ b/drivers/pci/iov.c
+>@@ -250,6 +250,11 @@ static void sriov_disable_migration(struct pci_dev *dev)
+> 	iounmap(iov->mstate);
+> }
+>
+>+int __weak pcibios_sriov_enable(struct pci_dev *pdev, u16 vf_num)
+>+{
+>+       return 0;
+>+}
+>+
+> static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+> {
+> 	int rc;
+>@@ -260,6 +265,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+> 	struct pci_dev *pdev;
+> 	struct pci_sriov *iov = dev->sriov;
+> 	int bars = 0;
+>+	int retval;
+>
+> 	if (!nr_virtfn)
+> 		return 0;
+>@@ -334,6 +340,12 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+> 	if (nr_virtfn < initial)
+> 		initial = nr_virtfn;
+>
+>+	if ((retval = pcibios_sriov_enable(dev, initial))) {
+>+		dev_err(&dev->dev, "Failure %d from pcibios_sriov_setup()\n",
+>+				retval);
 
-The show_unhandled_signal logic, added in d0c3d534a438 (2.6.24) is
-cleaner and prints more useful information, so drop the debug code.
+		dev_err(&dev->dev, "Failure %d from pcibios_sriov_enable()\n",
+			retval);
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/signal_32.c | 9 ---------
- arch/powerpc/kernel/signal_64.c | 9 ---------
- 2 files changed, 18 deletions(-)
+>+		return retval;
+>+	}
+>+
+> 	for (i = 0; i < initial; i++) {
+> 		rc = virtfn_add(dev, i, 0);
+> 		if (rc)
+>@@ -368,6 +380,11 @@ failed:
+> 	return rc;
+> }
+>
+>+int __weak pcibios_sriov_disable(struct pci_dev *pdev)
+>+{
+>+       return 0;
+>+}
+>+
+> static void sriov_disable(struct pci_dev *dev)
+> {
+> 	int i;
+>@@ -382,6 +399,8 @@ static void sriov_disable(struct pci_dev *dev)
+> 	for (i = 0; i < iov->num_VFs; i++)
+> 		virtfn_remove(dev, i, 0);
+>
+>+	pcibios_sriov_disable(dev);
+>+
+> 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+> 	pci_cfg_access_lock(dev);
+> 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
 
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index 4e47db6..1bc5a17 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -54,7 +54,6 @@
- 
- #include "signal.h"
- 
--#undef DEBUG_SIG
- 
- #ifdef CONFIG_PPC64
- #define sys_rt_sigreturn	compat_sys_rt_sigreturn
-@@ -1063,10 +1062,6 @@ int handle_rt_signal32(unsigned long sig, struct k_sigaction *ka,
- 	return 1;
- 
- badframe:
--#ifdef DEBUG_SIG
--	printk("badframe in handle_rt_signal, regs=%p frame=%p newsp=%lx\n",
--	       regs, frame, newsp);
--#endif
- 	if (show_unhandled_signals)
- 		printk_ratelimited(KERN_INFO
- 				   "%s[%d]: bad frame in handle_rt_signal32: "
-@@ -1484,10 +1479,6 @@ int handle_signal32(unsigned long sig, struct k_sigaction *ka,
- 	return 1;
- 
- badframe:
--#ifdef DEBUG_SIG
--	printk("badframe in handle_signal, regs=%p frame=%p newsp=%lx\n",
--	       regs, frame, newsp);
--#endif
- 	if (show_unhandled_signals)
- 		printk_ratelimited(KERN_INFO
- 				   "%s[%d]: bad frame in handle_signal32: "
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index d501dc4..97c1e4b 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -38,7 +38,6 @@
- 
- #include "signal.h"
- 
--#define DEBUG_SIG 0
- 
- #define GP_REGS_SIZE	min(sizeof(elf_gregset_t), sizeof(struct pt_regs))
- #define FP_REGS_SIZE	sizeof(elf_fpregset_t)
-@@ -700,10 +699,6 @@ int sys_rt_sigreturn(unsigned long r3, unsigned long r4, unsigned long r5,
- 	return 0;
- 
- badframe:
--#if DEBUG_SIG
--	printk("badframe in sys_rt_sigreturn, regs=%p uc=%p &uc->uc_mcontext=%p\n",
--	       regs, uc, &uc->uc_mcontext);
--#endif
- 	if (show_unhandled_signals)
- 		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
- 				   current->comm, current->pid, "rt_sigreturn",
-@@ -809,10 +804,6 @@ int handle_rt_signal64(int signr, struct k_sigaction *ka, siginfo_t *info,
- 	return 1;
- 
- badframe:
--#if DEBUG_SIG
--	printk("badframe in setup_rt_frame, regs=%p frame=%p newsp=%lx\n",
--	       regs, frame, newsp);
--#endif
- 	if (show_unhandled_signals)
- 		printk_ratelimited(regs->msr & MSR_64BIT ? fmt64 : fmt32,
- 				   current->comm, current->pid, "setup_rt_frame",
--- 
-1.9.1
+Thanks,
+Gavin
