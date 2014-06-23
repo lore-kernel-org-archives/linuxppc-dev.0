@@ -1,35 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DE71A0039
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:12:37 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDBCC1A004A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:27:25 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Jun 2014 15:12:35 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 55E6F2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:12:33 +1000 (EST)
+ Mon, 23 Jun 2014 15:27:25 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AABD72CE8051
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:27:21 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5N4oHUM64291026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 14:50:17 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5N5B1cP9044056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:11:02 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5N5CWSS032186
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:12:32 +1000
-Date: Mon, 23 Jun 2014 15:12:33 +1000
+ s5N5RKYe026502
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jun 2014 15:27:20 +1000
+Date: Mon, 23 Jun 2014 15:27:21 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH V3 05/17] ppc/pnv: user macro to define the TCE size
-Message-ID: <20140623051233.GA7223@shangw>
+Subject: Re: [RFC PATCH V3 07/17] ppc/pnv: Add function to deconfig a PE
+Message-ID: <20140623052721.GB7223@shangw>
 References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1402365399-5121-6-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-8-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1402365399-5121-6-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1402365399-5121-8-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: benh@au1.ibm.com, linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
  yan@linux.vnet.ibm.com, bhelgaas@google.com, qiudayu@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org
@@ -43,163 +43,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 10, 2014 at 09:56:27AM +0800, Wei Yang wrote:
->During the initialization of the TVT/TCE, it uses digits to specify the TCE IO
->Page Size, TCE Table Size, TCE Entry Size, etc.
+On Tue, Jun 10, 2014 at 09:56:29AM +0800, Wei Yang wrote:
+>On PowerNV platform, it will support dynamic PE allocation and deallocation.
 >
->This patch replaces those digits with macros, which will be more meaningful and
->easy to read.
+>This patch adds a function to release those resources related to a PE.
 >
 >Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-
-It looks conflicting with "dynamic page size support" posted by Alexey:
-
-http://patchwork.ozlabs.org/patch/356718/
- 
 >---
-> arch/powerpc/include/asm/tce.h            |    3 ++-
-> arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++++--------------
-> arch/powerpc/platforms/powernv/pci.c      |    2 +-
-> arch/powerpc/platforms/powernv/pci.h      |    5 +++++
-> 4 files changed, 19 insertions(+), 16 deletions(-)
+> arch/powerpc/platforms/powernv/pci-ioda.c |   77 +++++++++++++++++++++++++++++
+> 1 file changed, 77 insertions(+)
 >
->diff --git a/arch/powerpc/include/asm/tce.h b/arch/powerpc/include/asm/tce.h
->index 743f36b..28a1d06 100644
->--- a/arch/powerpc/include/asm/tce.h
->+++ b/arch/powerpc/include/asm/tce.h
->@@ -40,7 +40,8 @@
-> #define TCE_SHIFT	12
-> #define TCE_PAGE_SIZE	(1 << TCE_SHIFT)
->
->-#define TCE_ENTRY_SIZE		8		/* each TCE is 64 bits */
->+#define TCE_ENTRY_SHIFT		3
->+#define TCE_ENTRY_SIZE		(1 << TCE_ENTRY_SHIFT)	/* each TCE is 64 bits */
->
-> #define TCE_RPN_MASK		0xfffffffffful  /* 40-bit RPN (4K pages) */
-> #define TCE_RPN_SHIFT		12
 >diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 8ae09cf..9715351 100644
+>index 8ca3926..87cb3089 100644
 >--- a/arch/powerpc/platforms/powernv/pci-ioda.c
 >+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -820,9 +820,6 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
-> 	int64_t rc;
-> 	void *addr;
->
->-	/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
->-#define TCE32_TABLE_SIZE	((0x10000000 / 0x1000) * 8)
->-
-> 	/* XXX FIXME: Handle 64-bit only DMA devices */
-> 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
-> 	/* XXX FIXME: Allocate multi-level tables on PHB3 */
->@@ -834,7 +831,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
-> 	/* Grab a 32-bit TCE table */
-> 	pe->tce32_seg = base;
-> 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
->-		(base << 28), ((base + segs) << 28) - 1);
->+		(base << PNV_TCE32_SEG_SHIFT), ((base + segs) << PNV_TCE32_SEG_SHIFT) - 1);
->
-> 	/* XXX Currently, we allocate one big contiguous table for the
-> 	 * TCEs. We only really need one chunk per 256M of TCE space
->@@ -842,21 +839,21 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
-> 	 * requires some added smarts with our get/put_tce implementation
-> 	 */
-> 	tce_mem = alloc_pages_node(phb->hose->node, GFP_KERNEL,
->-				   get_order(TCE32_TABLE_SIZE * segs));
->+				   get_order(PNV_TCE32_TAB_SIZE * segs));
-> 	if (!tce_mem) {
-> 		pe_err(pe, " Failed to allocate a 32-bit TCE memory\n");
-> 		goto fail;
-> 	}
-> 	addr = page_address(tce_mem);
->-	memset(addr, 0, TCE32_TABLE_SIZE * segs);
->+	memset(addr, 0, PNV_TCE32_TAB_SIZE * segs);
->
-> 	/* Configure HW */
-> 	for (i = 0; i < segs; i++) {
-> 		rc = opal_pci_map_pe_dma_window(phb->opal_id,
-> 					      pe->pe_number,
-> 					      base + i, 1,
->-					      __pa(addr) + TCE32_TABLE_SIZE * i,
->-					      TCE32_TABLE_SIZE, 0x1000);
->+					      __pa(addr) + PNV_TCE32_TAB_SIZE * i,
->+					      PNV_TCE32_TAB_SIZE, TCE_PAGE_SIZE);
-> 		if (rc) {
-> 			pe_err(pe, " Failed to configure 32-bit TCE table,"
-> 			       " err %ld\n", rc);
->@@ -866,8 +863,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->
-> 	/* Setup linux iommu table */
-> 	tbl = &pe->tce32_table;
->-	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
->-				  base << 28);
->+	pnv_pci_setup_iommu_table(tbl, addr, PNV_TCE32_TAB_SIZE * segs,
->+				  base << PNV_TCE32_SEG_SHIFT);
->
-> 	/* OPAL variant of P7IOC SW invalidated TCEs */
-> 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
->@@ -898,7 +895,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
-> 	if (pe->tce32_seg >= 0)
-> 		pe->tce32_seg = -1;
-> 	if (tce_mem)
->-		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
->+		__free_pages(tce_mem, get_order(PNV_TCE32_TAB_SIZE * segs));
+>@@ -330,6 +330,83 @@ static struct pnv_ioda_pe *pnv_ioda_get_pe(struct pci_dev *dev)
 > }
+> #endif /* CONFIG_PCI_MSI */
 >
-> static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
->@@ -968,7 +965,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> 	/* The PE will reserve all possible 32-bits space */
-> 	pe->tce32_seg = 0;
-> 	end = (1 << ilog2(phb->ioda.m32_pci_base));
->-	tce_table_size = (end / 0x1000) * 8;
->+	tce_table_size = (end / TCE_PAGE_SIZE) * TCE_ENTRY_SIZE;
-> 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
-> 		end);
->
->@@ -988,7 +985,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> 	 */
-> 	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
-> 					pe->pe_number << 1, 1, __pa(addr),
->-					tce_table_size, 0x1000);
->+					tce_table_size, TCE_PAGE_SIZE);
-> 	if (rc) {
-> 		pe_err(pe, "Failed to configure 32-bit TCE table,"
-> 		       " err %ld\n", rc);
->@@ -1573,7 +1570,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
-> 	INIT_LIST_HEAD(&phb->ioda.pe_list);
->
-> 	/* Calculate how many 32-bit TCE segments we have */
->-	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> 28;
->+	phb->ioda.tce32_count = phb->ioda.m32_pci_base >> PNV_TCE32_SEG_SHIFT;
->
-> #if 0 /* We should really do that ... */
-> 	rc = opal_pci_set_phb_mem_window(opal->phb_id,
->diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->index 8518817..687a068 100644
->--- a/arch/powerpc/platforms/powernv/pci.c
->+++ b/arch/powerpc/platforms/powernv/pci.c
->@@ -597,7 +597,7 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
-> 	tbl->it_page_shift = IOMMU_PAGE_SHIFT_4K;
-> 	tbl->it_offset = dma_offset >> tbl->it_page_shift;
-> 	tbl->it_index = 0;
->-	tbl->it_size = tce_size >> 3;
->+	tbl->it_size = tce_size >> TCE_ENTRY_SHIFT;
-> 	tbl->it_busno = 0;
-> 	tbl->it_type = TCE_PCI;
-> }
->diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->index 3e5f5a1..90f6da4 100644
->--- a/arch/powerpc/platforms/powernv/pci.h
->+++ b/arch/powerpc/platforms/powernv/pci.h
->@@ -227,4 +227,9 @@ extern void pnv_pci_init_ioda2_phb(struct device_node *np);
-> extern void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
-> 					__be64 *startp, __be64 *endp, bool rm);
->
->+#define PNV_TCE32_SEG_SHIFT     28
->+#define PNV_TCE32_SEG_SIZE      (1UL << PNV_TCE32_SEG_SHIFT)
->+/* 256M DMA window, 4K TCE pages, 8 bytes TCE */
->+#define PNV_TCE32_TAB_SIZE	((PNV_TCE32_SEG_SIZE / TCE_PAGE_SIZE) * TCE_ENTRY_SIZE)
+>+static int pnv_ioda_deconfigure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+>+{
+
+Richard, it seems that the deconfiguration is incomplete. Something seems
+missed: DMA, IO and MMIO, MSI. If I understand correctly, pnv_ioda_deconfigure_pe()
+won't tear down DMA, IO and MMIO, MSI properly. For MSI/MSIx, it wouldn't
+be a problem as the VF driver should disable them before calling this function.
+
+>+	struct pci_dev *parent;
+>+	uint8_t bcomp, dcomp, fcomp;
+>+	int64_t rc;
+>+	long rid_end, rid;
+
+Blank line needed here to separate variable declaration and logic. And I think
+we won't run into case "if (pe->pbus)" for now. So it's worthy to have some
+comments to explain it for a bit :-)
+
+>+	if (pe->pbus) {
+>+		int count;
 >+
-> #endif /* __POWERNV_PCI_H */
+>+		dcomp = OPAL_IGNORE_RID_DEVICE_NUMBER;
+>+		fcomp = OPAL_IGNORE_RID_FUNCTION_NUMBER;
+>+		parent = pe->pbus->self;
+>+		if (pe->flags & PNV_IODA_PE_BUS_ALL)
+>+			count = pe->pbus->busn_res.end - pe->pbus->busn_res.start + 1;
+>+		else
+>+			count = 1;
+>+
+>+		switch(count) {
+>+		case  1: bcomp = OpalPciBusAll;         break;
+>+		case  2: bcomp = OpalPciBus7Bits;       break;
+>+		case  4: bcomp = OpalPciBus6Bits;       break;
+>+		case  8: bcomp = OpalPciBus5Bits;       break;
+>+		case 16: bcomp = OpalPciBus4Bits;       break;
+>+		case 32: bcomp = OpalPciBus3Bits;       break;
+>+		default:
+>+			pr_err("%s: Number of subordinate busses %d"
+>+			       " unsupported\n",
+>+			       pci_name(pe->pbus->self), count);
+
+I guess it's not safe to do "pci_name(pe->pbus->self)" root root bus.
+
+>+			/* Do an exact match only */
+>+			bcomp = OpalPciBusAll;
+>+		}
+>+		rid_end = pe->rid + (count << 8);
+>+	}else {
+
+	} else {
+
+>+		parent = pe->pdev->bus->self;
+>+		bcomp = OpalPciBusAll;
+>+		dcomp = OPAL_COMPARE_RID_DEVICE_NUMBER;
+>+		fcomp = OPAL_COMPARE_RID_FUNCTION_NUMBER;
+>+		rid_end = pe->rid + 1;
+>+	}
+>+
+>+	/* Disable MVT on IODA1 */
+>+	if (phb->type == PNV_PHB_IODA1) {
+>+		rc = opal_pci_set_mve_enable(phb->opal_id,
+>+					     pe->mve_number, OPAL_DISABLE_MVE);
+>+		if (rc) {
+>+			pe_err(pe, "OPAL error %ld enabling MVE %d\n",
+>+			       rc, pe->mve_number);
+>+			pe->mve_number = -1;
+>+		}
+>+	}
+>+	/* Clear the reverse map */
+>+	for (rid = pe->rid; rid < rid_end; rid++)
+>+		phb->ioda.pe_rmap[rid] = 0;
+>+
+>+	/* Release from all parents PELT-V */
+>+	while (parent) {
+>+		struct pci_dn *pdn = pci_get_pdn(parent);
+>+		if (pdn && pdn->pe_number != IODA_INVALID_PE) {
+>+			rc = opal_pci_set_peltv(phb->opal_id, pdn->pe_number,
+>+						pe->pe_number, OPAL_REMOVE_PE_FROM_DOMAIN);
+>+			/* XXX What to do in case of error ? */
+>+		}
+>+		parent = parent->bus->self;
+>+	}
+
+It seems that you missed removing the PE from its own PELTV, which was
+introduced by commit 631ad69 ("powerpc/powernv: Add PE to its own PELTV").
+
+>+
+>+	/* Dissociate PE in PELT */
+>+	rc = opal_pci_set_pe(phb->opal_id, pe->pe_number, pe->rid,
+>+			     bcomp, dcomp, fcomp, OPAL_UNMAP_PE);
+>+	if (rc)
+>+		pe_err(pe, "OPAL error %ld trying to setup PELT table\n", rc);
+>+
+>+	pe->pbus = NULL;
+>+	pe->pdev = NULL;
+>+
+>+	return 0;
+>+}
+>+
+> static int pnv_ioda_configure_pe(struct pnv_phb *phb, struct pnv_ioda_pe *pe)
+> {
+> 	struct pci_dev *parent;
 
 Thanks,
 Gavin
