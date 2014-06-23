@@ -1,18 +1,30 @@
-Return-Path: <martijn.de.gouw@prodrive-technologies.com>
-Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
- by lists.ozlabs.org (Postfix) with ESMTP id CF4DD1A0177
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 00:12:09 +1000 (EST)
-From: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
-To: <Alexandre.Bounine@idt.com>
-Subject: [PATCH v2] fsl-rio: add support for mapping inbound windows
-Date: Mon, 23 Jun 2014 16:11:55 +0200
-Message-ID: <1403532715-21389-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Martijn de Gouw <martijn.de.gouw@prodrive.nl>,
- Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>,
- Barry.Wood@idt.com, scottwood@freescale.com,
- stef.van.os@prodrive-technologies.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <glikely@secretlab.ca>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F1FF1A0177
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 01:00:02 +1000 (EST)
+Received: from mail-we0-f176.google.com (mail-we0-f176.google.com
+ [74.125.82.176])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id F06EC14007C
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2014 01:00:00 +1000 (EST)
+Received: by mail-we0-f176.google.com with SMTP id u56so7037251wes.21
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2014 07:59:56 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@linaro.org>
+Subject: Re: OF_DYNAMIC node lifecycle
+To: Nathan Fontenot <nfont@austin.ibm.com>, Tyrel Datwyler
+ <tyreld@linux.vnet.ibm.com>
+In-Reply-To: <53A30117.3010100@austin.ibm.com>
+References: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
+ <53A30117.3010100@austin.ibm.com>
+Date: Mon, 23 Jun 2014 15:48:06 +0100
+Message-Id: <20140623144806.1348EC40A60@trevor.secretlab.ca>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,186 +34,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Martijn de Gouw <martijn.de.gouw@prodrive.nl>
+On Thu, 19 Jun 2014 10:26:15 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> On 06/18/2014 03:07 PM, Grant Likely wrote:
+> > Hi Nathan and Tyrel,
+> > 
+> > I'm looking into lifecycle issues on nodes modified by OF_DYNAMIC, and
+> > I'm hoping you can help me. Right now, pseries seems to be the only
+> > user of OF_DYNAMIC, but making OF_DYNAMIC work has a huge impact on
+> > the entire kernel because it requires all DT code to manage reference
+> > counting with iterating over nodes. Most users simply get it wrong.
+> > Pantelis did some investigation and found that the reference counts on
+> > a running kernel are all over the place. I have my doubts that any
+> > code really gets it right.
+> > 
+> > The problem is that users need to know when it is appropriate to call
+> > of_node_get()/of_node_put(). All list traversals that exit early need
+> > an extra call to of_node_put(), and code that is searching for a node
+> > in the tree and holding a reference to it needs to call of_node_get().
+> > 
+> > I've got a few pseries questions:
+> > - What are the changes being requested by pseries firmware? Is it only
+> > CPUs and memory nodes, or does it manipulate things all over the tree?
+> 
+> The short answer, everything.
 
-Add support for mapping and unmapping of inbound rapidio windows.
+:-)
 
-Signed-off-by: Martijn de Gouw <martijn.de.gouw@prodrive-technologies.com>
----
- arch/powerpc/sysdev/fsl_rio.c |   92 +++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_rio.h |   12 ++++++
- 2 files changed, 104 insertions(+)
+> For pseries the two big actions that can change the device tree are
+> adding/removing resources and partition migration.
+> 
+> The most frequent updates to the device tree happen during resource
+> (cpu, memory, and pci/phb) add and remove. During this process we add
+> and remove the node and its properties from the device tree.
+> - For memory on newer systems this just involves updating the
+>   ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory property. Older
+>   firmware levels add and remove the memroy@XXX nodes and their properties.
+> - For cpus the cpus/PowerPC,POWERXXXX nodes and its properties are added
+>   or removed
+> - For pci/phb the pci@XXXXX nodes and properties are added/removed.
+> 
+> The less frequent operation of live partition migration (and suspend/resume)
+> can update just about anything in the device tree. When this occurs and the
+> systems starts after being migrated (or waking up after a suspend) we make
+> a call to firmware to get updates to the device tree for the new hardware
+> we are running on.
+>  
+> > - How frequent are the changes? How many changes would be likely over
+> > the runtime of the system?
+> 
+> This can happen frequently.
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index cf2b084..02fe69b 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -58,6 +58,19 @@
- #define RIO_ISR_AACR		0x10120
- #define RIO_ISR_AACR_AA		0x1	/* Accept All ID */
- 
-+#define RIWTAR_TRAD_VAL_SHIFT	12
-+#define RIWTAR_TRAD_MASK	0x00FFFFFF
-+#define RIWBAR_BADD_VAL_SHIFT	12
-+#define RIWBAR_BADD_MASK	0x003FFFFF
-+#define RIWAR_ENABLE		0x80000000
-+#define RIWAR_TGINT_LOCAL	0x00F00000
-+#define RIWAR_RDTYP_NO_SNOOP	0x00040000
-+#define RIWAR_RDTYP_SNOOP	0x00050000
-+#define RIWAR_WRTYP_NO_SNOOP	0x00004000
-+#define RIWAR_WRTYP_SNOOP	0x00005000
-+#define RIWAR_WRTYP_ALLOC	0x00006000
-+#define RIWAR_SIZE_MASK		0x0000003F
-+
- #define __fsl_read_rio_config(x, addr, err, op)		\
- 	__asm__ __volatile__(				\
- 		"1:	"op" %1,0(%2)\n"		\
-@@ -266,6 +279,80 @@ fsl_rio_config_write(struct rio_mport *mport, int index, u16 destid,
- 	return 0;
- }
- 
-+static void fsl_rio_inbound_mem_init(struct rio_priv *priv)
-+{
-+	int i;
-+
-+	/* close inbound windows */
-+	for (i = 0; i < RIO_INB_ATMU_COUNT; i++)
-+		out_be32(&priv->inb_atmu_regs[i].riwar, 0);
-+}
-+
-+int fsl_map_inb_mem(struct rio_mport *mport, dma_addr_t lstart,
-+	u64 rstart, u32 size, u32 flags)
-+{
-+	struct rio_priv *priv = mport->priv;
-+	u32 base_size;
-+	unsigned int base_size_log;
-+	u64 win_start, win_end;
-+	u32 riwar;
-+	int i;
-+
-+	base_size_log = __ilog2(size) + ((size & (size - 1)) != 0);
-+	base_size = 1 << base_size_log;
-+
-+	/* check for conflicting ranges */
-+	for (i = 0; i < RIO_INB_ATMU_COUNT; i++) {
-+		riwar = in_be32(&priv->inb_atmu_regs[i].riwar);
-+		if ((riwar & RIWAR_ENABLE) == 0)
-+			continue;
-+		win_start = ((u64)(in_be32(&priv->inb_atmu_regs[i].riwbar) & RIWBAR_BADD_MASK))
-+			<< RIWBAR_BADD_VAL_SHIFT;
-+		win_end = win_start + ((1 << ((riwar & RIWAR_SIZE_MASK) + 1)) - 1);
-+		if (rstart < win_end && (rstart + size) > win_start)
-+			return -EINVAL;
-+	}
-+
-+	/* find unused atmu */
-+	for (i = 0; i < RIO_INB_ATMU_COUNT; i++) {
-+		riwar = in_be32(&priv->inb_atmu_regs[i].riwar);
-+		if ((riwar & RIWAR_ENABLE) == 0)
-+			break;
-+	}
-+	if (i >= RIO_INB_ATMU_COUNT)
-+		return -ENOMEM;
-+
-+	out_be32(&priv->inb_atmu_regs[i].riwtar, lstart >> RIWTAR_TRAD_VAL_SHIFT);
-+	out_be32(&priv->inb_atmu_regs[i].riwbar, rstart >> RIWBAR_BADD_VAL_SHIFT);
-+	out_be32(&priv->inb_atmu_regs[i].riwar, RIWAR_ENABLE | RIWAR_TGINT_LOCAL |
-+		RIWAR_RDTYP_SNOOP | RIWAR_WRTYP_SNOOP | (base_size_log - 1));
-+
-+	return 0;
-+}
-+
-+void fsl_unmap_inb_mem(struct rio_mport *mport, dma_addr_t lstart)
-+{
-+	u32 win_start_shift, base_start_shift;
-+	struct rio_priv *priv = mport->priv;
-+	u32 riwar, riwtar;
-+	int i;
-+
-+	/* skip default window */
-+	base_start_shift = lstart >> RIWTAR_TRAD_VAL_SHIFT;
-+	for (i = 0; i < RIO_INB_ATMU_COUNT; i++) {
-+		riwar = in_be32(&priv->inb_atmu_regs[i].riwar);
-+		if ((riwar & RIWAR_ENABLE) == 0)
-+			continue;
-+
-+		riwtar = in_be32(&priv->inb_atmu_regs[i].riwtar);
-+		win_start_shift = riwtar & RIWTAR_TRAD_MASK;
-+		if (win_start_shift == base_start_shift) {
-+			out_be32(&priv->inb_atmu_regs[i].riwar, riwar & ~RIWAR_ENABLE);
-+			return;
-+		}
-+	}
-+}
-+
- void fsl_rio_port_error_handler(int offset)
- {
- 	/*XXX: Error recovery is not implemented, we just clear errors */
-@@ -389,6 +476,8 @@ int fsl_rio_setup(struct platform_device *dev)
- 	ops->add_outb_message = fsl_add_outb_message;
- 	ops->add_inb_buffer = fsl_add_inb_buffer;
- 	ops->get_inb_message = fsl_get_inb_message;
-+	ops->map_inb = fsl_map_inb_mem;
-+	ops->unmap_inb = fsl_unmap_inb_mem;
- 
- 	rmu_node = of_parse_phandle(dev->dev.of_node, "fsl,srio-rmu-handle", 0);
- 	if (!rmu_node)
-@@ -598,6 +687,8 @@ int fsl_rio_setup(struct platform_device *dev)
- 			RIO_ATMU_REGS_PORT2_OFFSET));
- 
- 		priv->maint_atmu_regs = priv->atmu_regs + 1;
-+		priv->inb_atmu_regs = (struct rio_inb_atmu_regs *)
-+			(priv->regs_win + RIO_INB_ATMU_REGS_OFFSET);
- 
- 		/* Set to receive any dist ID for serial RapidIO controller. */
- 		if (port->phy_type == RIO_PHY_SERIAL)
-@@ -616,6 +707,7 @@ int fsl_rio_setup(struct platform_device *dev)
- 		rio_law_start = range_start;
- 
- 		fsl_rio_setup_rmu(port, rmu_np[i]);
-+		fsl_rio_inbound_mem_init(priv);
- 
- 		dbell->mport[i] = port;
- 
-diff --git a/arch/powerpc/sysdev/fsl_rio.h b/arch/powerpc/sysdev/fsl_rio.h
-index ae8e274..dad17f9 100644
---- a/arch/powerpc/sysdev/fsl_rio.h
-+++ b/arch/powerpc/sysdev/fsl_rio.h
-@@ -50,9 +50,11 @@
- #define RIO_S_DBELL_REGS_OFFSET	0x13400
- #define RIO_S_PW_REGS_OFFSET	0x134e0
- #define RIO_ATMU_REGS_DBELL_OFFSET	0x10C40
-+#define RIO_INB_ATMU_REGS_OFFSET 0x10d60
- 
- #define MAX_MSG_UNIT_NUM	2
- #define MAX_PORT_NUM		4
-+#define RIO_INB_ATMU_COUNT	4
- 
- struct rio_atmu_regs {
- 	 u32 rowtar;
-@@ -63,6 +65,15 @@ struct rio_atmu_regs {
- 	 u32 pad2[3];
- };
- 
-+struct rio_inb_atmu_regs {
-+	u32 riwtar;
-+	u32 pad1;
-+	u32 riwbar;
-+	u32 pad2;
-+	u32 riwar;
-+	u32 pad3[3];
-+};
-+
- struct rio_dbell_ring {
- 	void *virt;
- 	dma_addr_t phys;
-@@ -99,6 +110,7 @@ struct rio_priv {
- 	void __iomem *regs_win;
- 	struct rio_atmu_regs __iomem *atmu_regs;
- 	struct rio_atmu_regs __iomem *maint_atmu_regs;
-+	struct rio_inb_atmu_regs __iomem *inb_atmu_regs;
- 	void __iomem *maint_win;
- 	void *rmm_handle; /* RapidIO message manager(unit) Handle */
- };
--- 
-1.7.10.4
+Thanks, that is exactly the information that I want. I'm not so much
+concerned with the addition or removal of nodes/properties, which is
+actually pretty easy to handle. It is the lifecycle of allocations on
+dynamic nodes that causes heartburn.
+
+> > - Are you able to verify that removed nodes are actually able to be
+> > freed correctly? Do you have any testcases for node removal?
+> 
+> I have always tested this by doing resource add/remove, usually cpu and memory
+> since it is the easiest.
+
+Is that just testing the functionality, or do you have tests that check
+if the memory gets freed?
+
+> > I'm thinking very seriously about changing the locking semantics of DT
+> > code entirely so that most users never have to worry about
+> > of_node_get/put at all. If the DT code is switched to use rcu
+> > primitives for tree iteration (which also means making DT code use
+> > list_head, something I'm already investigating), then instead of
+> > trying to figure out of_node_get/put rules, callers could use
+> > rcu_read_lock()/rcu_read_unlock() to protect the region that is
+> > searching over nodes, and only call of_node_get() if the node pointer
+> > is needed outside the rcu read-side lock.
+> > 
+> 
+> This sounds good. I like just taking the rcu lock around accessing the DT.
+> Do we have many places where DT node pointers are held that require
+> keeping the of_node_get/put calls? If this did exist perhaps we could
+> update those places to look up the DT node every time instead of
+> holding on to the pointer. We could just get rid of the reference counting
+> altogether then.
+
+There are a few, but I would be happy to restrict reference counting to
+only those locations. Most places will decode the DT data, and then
+throw away the reference. We /might/ even be able to do rcu_lock/unlock
+around the entire probe path which would make it transparent to all
+device drivers.
+
+> > I'd really like to be rid of the node reference counting entirely, but
+> > I can't figure out a way of doing that safely, so I'd settle for
+> > making it a lot easier to get correct.
+> > 
+> 
+> heh! I have often thought about adding reference counting to device tree
+> properties.
+
+You horrible, horrible man.
+
+> I don't really want to but there are some properties that can
+> get updated frequently (namely the one mentioned above for memory) that
+> can also get pretty big, especially on systems with a lot of memory. We
+> never free the memory for old versions of a device tree property. This is
+> a pretty minor issue though and probably best suited for a separate
+> discussion after resolving this. 
+
+We might be able to do some in-place modification of properties if the
+size of the property doesn't change. That still leaves some nasty
+lifecycle issues that need to be resolved though. It would require
+swapping back and forth between memory for an old copy of the property
+and a new one. Yes, this should be a separate discussion.
+
+> 
+> Other than pseries, who else does dynamic device tree updating? Are we the
+> only ones?
+
+Right now you're the only ones. Pantelis has a series that adds bulk
+changes to the device tree which are also removable (called overlays). I
+also have a GSoC student working on the selftest code which will
+dynamically add testcase data to the tree.
+
+g.
