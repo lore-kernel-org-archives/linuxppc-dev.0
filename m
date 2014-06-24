@@ -1,23 +1,20 @@
-Return-Path: <sergei.shtylyov@cogentembedded.com>
-Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
- [209.85.217.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Varun.Sethi@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F8C01A000E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 00:23:07 +1000 (EST)
-Received: by mail-lb0-f173.google.com with SMTP id s7so551755lbd.32
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 07:23:03 -0700 (PDT)
-Message-ID: <53A989CA.9030405@cogentembedded.com>
-Date: Tue, 24 Jun 2014 18:23:06 +0400
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0EDDD1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 00:32:16 +1000 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <iommu@lists.linux-foundation.org>, <joro@8bytes.org>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <alex.williamson@redhat.com>
+Subject: [PATCH 0/3] iommu/fsl: Fixes for the PAMU driver. 
+Date: Tue, 24 Jun 2014 19:27:14 +0530
+Message-ID: <1403618237-26248-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-To: Denis Kirjanov <kda@linux-powerpc.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] powerpc: bpf: Fix the broken LD_VLAN_TAG_PRESENT test
-References: <1403603969-24436-1-git-send-email-kda@linux-powerpc.org>
- <1403603969-24436-2-git-send-email-kda@linux-powerpc.org>
-In-Reply-To: <1403603969-24436-2-git-send-email-kda@linux-powerpc.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+This patch set contains fixes for the PAMU driver. 
+The patches are based on 3.16-rc1.
 
-On 06/24/2014 01:59 PM, Denis Kirjanov wrote:
+Varun Sethi (3):
+  Fix PAMU window size check. 
+  Fix the device domain attach condition.
+  Fix the error condition during iommu group creation.
 
-> We have to return the boolean here if the tag presents
-> or not, not jusr ORing the TCI with the mask which results to:
+ drivers/iommu/fsl_pamu.c        |    8 ++++----
+ drivers/iommu/fsl_pamu_domain.c |   19 +++++++++----------
+ 2 files changed, 13 insertions(+), 14 deletions(-)
 
-> [  709.412097] test_bpf: #18 LD_VLAN_TAG_PRESENT
-> [  709.412245] ret 4096 != 1
-> [  709.412332] ret 4096 != 1
-> [  709.412333] FAIL (2 times)
-
-    You need to sign off on the patch, else it won't be applied.
-
-> ---
->   arch/powerpc/net/bpf_jit_comp.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index af0ed4d..a3d8f58 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-> @@ -394,8 +394,10 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
->   							  vlan_tci));
->   			if (code == (BPF_ANC | SKF_AD_VLAN_TAG))
->   				PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
-> -			else
-> +			else {
-
-    All arms of the *if* statement should have {} if one branch has {}.
-
->   				PPC_ANDI(r_A, r_A, VLAN_TAG_PRESENT);
-> +				PPC_SRWI(r_A, r_A, 12);
-> +			}
->   			break;
->   		case BPF_ANC | SKF_AD_QUEUE:
->   			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff,
-
-WBR, Sergei
+-- 
+1.7.9.5
