@@ -1,39 +1,38 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F16A1A023A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 18:42:29 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C97A71A01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 18:54:06 +1000 (EST)
 Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 24 Jun 2014 09:42:24 +0100
+ Tue, 24 Jun 2014 09:54:02 +0100
 Received: from b06cxnps4076.portsmouth.uk.ibm.com
  (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 203392190042
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 09:42:10 +0100 (BST)
-Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
- [9.149.37.251])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id D69292190056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 09:53:48 +0100 (BST)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
  by b06cxnps4076.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5O8gLoo33816660
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 08:42:22 GMT
-Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5O8gLxm003272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 02:42:21 -0600
-Message-ID: <53A939EC.7060206@linux.vnet.ibm.com>
-Date: Tue, 24 Jun 2014 10:42:20 +0200
+ s5O8s0Zg29491396
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 08:54:00 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5O8s085012732
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 02:54:00 -0600
+Subject: [PATCH V2] powerpc: module: fix TOC symbol CRC
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: module: fix TOC symbol CRC
-References: <20140617155658.30560.578.stgit@nimbus>
- <20140619094404.18e7047b@kryten> <1403582770.4587.150.camel@pasglop>
+Date: Tue, 24 Jun 2014 10:53:59 +0200
+Message-ID: <20140624085359.11554.3723.stgit@nimbus>
 In-Reply-To: <1403582770.4587.150.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: rusty@rustcorp.com.au, linuxppc-dev@lists.ozlabs.org
+References: <1403582770.4587.150.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: rusty@rustcorp.com.au, linuxppc-dev@lists.ozlabs.org,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,40 +42,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/06/2014 06:06, Benjamin Herrenschmidt wrote:
-> On Thu, 2014-06-19 at 09:44 +1000, Anton Blanchard wrote:
->> Hi Laurent,
->>
->>> The commit 71ec7c55ed91 introduced the magic symbol ".TOC." for ELFv2
->>> ABI. This symbol is built manually and has no CRC value computed. A
->>> zero value is put in the CRC section to avoid modpost complaining
->>> about a missing CRC. Unfortunately, this breaks the kernel module
->>> loading when the kernel is relocated (kdump case for instance)
->>> because of the relocation applied to the kcrctab values.
->>>
->>> This patch compute a CRC value for the TOC symbol which will match
->>> the one compute by the kernel when it is relocated - aka '0 -
->>> relocate_start' done in maybe_relocated called by check_version
->>> (module.c).
->>
->> Adding Rusty since he maintains the module loader code.
-> 
-> This patch gives me:
-> 
-> arch/powerpc/kernel/module_64.c: In function 'dedotify_versions':
-> arch/powerpc/kernel/module_64.c:325:33: error: 'reloc_start' undeclared (first use in this function)
-> arch/powerpc/kernel/module_64.c:325:33: note: each undeclared identifier is reported only once for each function it appears in
+The commit 71ec7c55ed91 introduced the magic symbol ".TOC." for ELFv2 ABI.
+This symbol is built manually and has no CRC value computed. A zero value
+is put in the CRC section to avoid modpost complaining about a missing CRC.
+Unfortunately, this breaks the kernel module loading when the kernel is
+relocated (kdump case for instance) because of the relocation applied to
+the kcrctab values.
 
-Hi Ben,
+This patch compute a CRC value for the TOC symbol which will match the one
+compute by the kernel when it is relocated - aka '0 - relocate_start' done in
+maybe_relocated called by check_version (module.c).
 
-My mistake, I forgot to check building the kernel when module version
-checking is disabled. I'll send a v2 asap.
+Changes in V2:
+ - fix only when relocation is applied to kcrctab.
 
-Cheers,
-Laurent.
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/kernel/module_64.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-
-> Cheers,
-> Ben.
-> 
-> 
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 077d2ce..d807ee6 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -315,8 +315,17 @@ static void dedotify_versions(struct modversion_info *vers,
+ 	struct modversion_info *end;
+ 
+ 	for (end = (void *)vers + size; vers < end; vers++)
+-		if (vers->name[0] == '.')
++		if (vers->name[0] == '.') {
+ 			memmove(vers->name, vers->name+1, strlen(vers->name));
++#ifdef ARCH_RELOCATES_KCRCTAB
++			/* The TOC symbol has no CRC computed. To avoid CRC
++			 * check failing, we must force it to the expected
++			 * value (see CRC check in module.c).
++			 */
++			if (!strcmp(vers->name, "TOC."))
++				vers->crc = -(unsigned long)reloc_start;
++#endif
++		}
+ }
+ 
+ /* Undefined symbols which refer to .funcname, hack to funcname (or .TOC.) */
