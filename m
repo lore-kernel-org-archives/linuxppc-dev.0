@@ -1,27 +1,23 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lb0-f173.google.com (mail-lb0-f173.google.com
+ [209.85.217.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 255DC1A000E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 00:21:34 +1000 (EST)
-Message-ID: <1403619685.16078.15.camel@ul30vt.home>
-Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexander Graf <agraf@suse.de>
-Date: Tue, 24 Jun 2014 08:21:25 -0600
-In-Reply-To: <53A97BA9.4020702@suse.de>
-References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>
- <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>
- <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>
- <1403234514.3707.278.camel@ul30vt.home> <1403305961.4587.66.camel@pasglop>
- <53A94EBD.101@ozlabs.ru> <53A955F5.6050801@suse.de>
- <53A9741B.1040500@ozlabs.ru> <53A97486.4070604@suse.de>
- <53A976B7.3070709@ozlabs.ru> <53A97BA9.4020702@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
- Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F8C01A000E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 00:23:07 +1000 (EST)
+Received: by mail-lb0-f173.google.com with SMTP id s7so551755lbd.32
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 07:23:03 -0700 (PDT)
+Message-ID: <53A989CA.9030405@cogentembedded.com>
+Date: Tue, 24 Jun 2014 18:23:06 +0400
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+MIME-Version: 1.0
+To: Denis Kirjanov <kda@linux-powerpc.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] powerpc: bpf: Fix the broken LD_VLAN_TAG_PRESENT test
+References: <1403603969-24436-1-git-send-email-kda@linux-powerpc.org>
+ <1403603969-24436-2-git-send-email-kda@linux-powerpc.org>
+In-Reply-To: <1403603969-24436-2-git-send-email-kda@linux-powerpc.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,95 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-06-24 at 15:22 +0200, Alexander Graf wrote:
-> On 24.06.14 15:01, Alexey Kardashevskiy wrote:
-> > On 06/24/2014 10:52 PM, Alexander Graf wrote:
-> >> On 24.06.14 14:50, Alexey Kardashevskiy wrote:
-> >>> On 06/24/2014 08:41 PM, Alexander Graf wrote:
-> >>>> On 24.06.14 12:11, Alexey Kardashevskiy wrote:
-> >>>>> On 06/21/2014 09:12 AM, Benjamin Herrenschmidt wrote:
-> >>>>>> On Thu, 2014-06-19 at 21:21 -0600, Alex Williamson wrote:
-> >>>>>>
-> >>>>>>> Working on big endian being an accident may be a matter of perspective
-> >>>>>>     :-)
-> >>>>>>
-> >>>>>>> The comment remains that this patch doesn't actually fix anything except
-> >>>>>>> the overhead on big endian systems doing redundant byte swapping and
-> >>>>>>> maybe the philosophy that vfio regions are little endian.
-> >>>>>> Yes, that works by accident because technically VFIO is a transport and
-> >>>>>> thus shouldn't perform any endian swapping of any sort, which remains
-> >>>>>> the responsibility of the end driver which is the only one to know
-> >>>>>> whether a given BAR location is a a register or some streaming data
-> >>>>>> and in the former case whether it's LE or BE (some PCI devices are BE
-> >>>>>> even ! :-)
-> >>>>>>
-> >>>>>> But yes, in the end, it works with the dual "cancelling" swaps and the
-> >>>>>> overhead of those swaps is probably drowned in the noise of the syscall
-> >>>>>> overhead.
-> >>>>>>
-> >>>>>>> I'm still not a fan of iowrite vs iowritebe, there must be something we
-> >>>>>>> can use that doesn't have an implicit swap.
-> >>>>>> Sadly there isn't ... In the old day we didn't even have the "be"
-> >>>>>> variant and readl/writel style accessors still don't have them either
-> >>>>>> for all archs.
-> >>>>>>
-> >>>>>> There is __raw_readl/writel but here the semantics are much more than
-> >>>>>> just "don't swap", they also don't have memory barriers (which means
-> >>>>>> they are essentially useless to most drivers unless those are platform
-> >>>>>> specific drivers which know exactly what they are doing, or in the rare
-> >>>>>> cases such as accessing a framebuffer which we know never have side
-> >>>>>> effects).
-> >>>>>>
-> >>>>>>>     Calling it iowrite*_native is also an abuse of the namespace.
-> >>>>>>>     Next thing we know some common code
-> >>>>>>> will legitimately use that name.
-> >>>>>> I might make sense to those definitions into a common header. There have
-> >>>>>> been a handful of cases in the past that wanted that sort of "native
-> >>>>>> byte order" MMIOs iirc (though don't ask me for examples, I can't really
-> >>>>>> remember).
-> >>>>>>
-> >>>>>>>     If we do need to define an alias
-> >>>>>>> (which I'd like to avoid) it should be something like vfio_iowrite32.
-> >>>>> Ping?
-> >>>>>
-> >>>>> We need to make a decision whether to move those xxx_native() helpers
-> >>>>> somewhere (where?) or leave the patch as is (as we figured out that
-> >>>>> iowriteXX functions implement barriers and we cannot just use raw
-> >>>>> accessors) and fix commit log to explain everything.
-> >>>> Is there actually any difference in generated code with this patch applied
-> >>>> and without? I would hope that iowrite..() is inlined and cancels out the
-> >>>> cpu_to_le..() calls that are also inlined?
-> >>> iowrite32 is a non-inline function so conversions take place so are the
-> >>> others. And sorry but I fail to see why this matters. We are not trying to
-> >>> accelerate things, we are removing redundant operations which confuse
-> >>> people who read the code.
-> >> The confusion depends on where you're coming from. If you happen to know
-> >> that "iowrite32" writes in LE, then the LE conversion makes a lot of sense.
-> > It was like this (and this is just confusing):
-> >
-> > iowrite32(le32_to_cpu(val), io + off);
-> >
-> > What would make sense (according to you and I would understand this) is this:
-> >
-> > iowrite32(cpu_to_le32(val), io + off);
-> >
-> >
-> > Or I missed your point, did I?
-> 
-> No, you didn't miss it. I think for people who know how iowrite32() 
-> works the above is obvious. I find the fact that iowrite32() writes in 
-> LE always pretty scary though ;).
-> 
-> So IMHO we should either create new, generic iowrite helpers that don't 
-> do any endian swapping at all or do iowrite32(cpu_to_le32(val)) calls.
+Hello.
 
-I'm one of those people for whom iowrite32(le32_to_cpu(val)) makes sense
-and keeps the byte order consistent regardless of the platform, while
-iowrite32(val) or iowrite32be(val) makes me scratch my head and try to
-remember that the byte swaps are a nop on the given platforms.  As Ben
-noted, a native, no-swap ioread/write doesn't exist, but perhaps should.
-I'd prefer an attempt be made to make it exist before adding
-vfio-specific macros.  vfio is arguably doing the right thing here given
-the functions available.  Thanks,
+On 06/24/2014 01:59 PM, Denis Kirjanov wrote:
 
-Alex
+> We have to return the boolean here if the tag presents
+> or not, not jusr ORing the TCI with the mask which results to:
+
+> [  709.412097] test_bpf: #18 LD_VLAN_TAG_PRESENT
+> [  709.412245] ret 4096 != 1
+> [  709.412332] ret 4096 != 1
+> [  709.412333] FAIL (2 times)
+
+    You need to sign off on the patch, else it won't be applied.
+
+> ---
+>   arch/powerpc/net/bpf_jit_comp.c | 4 +++-
+>   1 file changed, 3 insertions(+), 1 deletion(-)
+
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index af0ed4d..a3d8f58 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -394,8 +394,10 @@ static int bpf_jit_build_body(struct sk_filter *fp, u32 *image,
+>   							  vlan_tci));
+>   			if (code == (BPF_ANC | SKF_AD_VLAN_TAG))
+>   				PPC_ANDI(r_A, r_A, ~VLAN_TAG_PRESENT);
+> -			else
+> +			else {
+
+    All arms of the *if* statement should have {} if one branch has {}.
+
+>   				PPC_ANDI(r_A, r_A, VLAN_TAG_PRESENT);
+> +				PPC_SRWI(r_A, r_A, 12);
+> +			}
+>   			break;
+>   		case BPF_ANC | SKF_AD_QUEUE:
+>   			BUILD_BUG_ON(FIELD_SIZEOF(struct sk_buff,
+
+WBR, Sergei
