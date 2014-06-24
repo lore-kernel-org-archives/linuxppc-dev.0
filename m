@@ -1,21 +1,42 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 865191A014F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 10:42:40 +1000 (EST)
-Message-ID: <1403505404.28453.7.camel@ale.ozlabs.ibm.com>
-Subject: Re: [PATCH v1 2/3] powerpc/powernv: Support PCI error injection
-From: Michael Neuling <mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D55D1A0195
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 11:24:22 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 24 Jun 2014 06:54:19 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 57F5D394003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 06:54:16 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5O1PRl262128214
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 06:55:27 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5O1OFii027916
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 06:54:15 +0530
+Date: Tue, 24 Jun 2014 09:24:14 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Mon, 23 Jun 2014 16:36:44 +1000
-In-Reply-To: <1403489682-14841-3-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1403489682-14841-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1403489682-14841-3-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- agraf@suse.de, kvm-ppc@vger.kernel.org
+Subject: Re: [RFC PATCH V3 12/17] powerpc/powernv: implement
+ pcibios_sriov_resource_alignment on powernv
+Message-ID: <20140624012414.GA5204@richard>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-13-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20140623060947.GB12055@shangw> <20140623082142.GB4509@richard>
+ <20140623232922.GA4018@shangw>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140623232922.GA4018@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linux-pci@vger.kernel.org, yan@linux.vnet.ibm.com, bhelgaas@google.com,
+ qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,281 +46,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-06-23 at 12:14 +1000, Gavin Shan wrote:
-> The patch implements one OPAL firmware sysfs file to support PCI error
-> injection: "/sys/firmware/opal/errinjct", which will be used like the
-> way described as follows.
->=20
-> According to PAPR spec, there are 3 RTAS calls related to error injection=
-:
-> "ibm,open-errinjct": allocate token prior to doing error injection.
-> "ibm,close-errinjct": release the token allocated from "ibm,open-errinjct=
-".
-> "ibm,errinjct": do error injection.
->=20
-> Sysfs file /sys/firmware/opal/errinjct accepts strings that have fixed
-> format "ei_token ...". For now, we only support 32-bits and 64-bits
-> PCI error injection and they should have following strings written to
-> /sys/firmware/opal/errinjct as follows. We don't have corresponding
-> sysfs files for "ibm,open-errinjct" and "ibm,close-errinjct", which
-> means that we rely on userland to maintain the token by itself.
+On Tue, Jun 24, 2014 at 09:29:22AM +1000, Gavin Shan wrote:
+>On Mon, Jun 23, 2014 at 04:21:42PM +0800, Wei Yang wrote:
+>>On Mon, Jun 23, 2014 at 04:09:47PM +1000, Gavin Shan wrote:
+>>>On Tue, Jun 10, 2014 at 09:56:34AM +0800, Wei Yang wrote:
+>>>>This patch implements the pcibios_sriov_resource_alignment() on powernv
+>>>>platform.
+>>>>
+>>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>>---
+>>>> arch/powerpc/include/asm/machdep.h        |    1 +
+>>>> arch/powerpc/kernel/pci-common.c          |    8 ++++++++
+>>>> arch/powerpc/platforms/powernv/pci-ioda.c |   17 +++++++++++++++++
+>>>> 3 files changed, 26 insertions(+)
+>>>>
+>>>>diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+>>>>index 2f2e770..3bbc55f 100644
+>>>>--- a/arch/powerpc/include/asm/machdep.h
+>>>>+++ b/arch/powerpc/include/asm/machdep.h
+>>>>@@ -242,6 +242,7 @@ struct machdep_calls {
+>>>> 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
+>>>> #ifdef CONFIG_PCI_IOV
+>>>> 	resource_size_t (*__pci_sriov_resource_size)(struct pci_dev *, int resno);
+>>>>+	resource_size_t (*__pci_sriov_resource_alignment)(struct pci_dev *, int resno, resource_size_t align);
+>
+>Both lines exceed 80 lines here :)
+>
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>>
+>>>> 	/* Called to shutdown machine specific hardware not already controlled
+>>>>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>>>>index c4e2e92..35345ac 100644
+>>>>--- a/arch/powerpc/kernel/pci-common.c
+>>>>+++ b/arch/powerpc/kernel/pci-common.c
+>>>>@@ -128,6 +128,14 @@ resource_size_t pcibios_sriov_resource_size(struct pci_dev *pdev, int resno)
+>>>>
+>>>> 	return 0;
+>>>> }
+>>>>+
+>>>>+resource_size_t pcibios_sriov_resource_alignment(struct pci_dev *pdev, int resno, resource_size_t align)
+>>>>+{
+>>>>+	if (ppc_md.__pci_sriov_resource_alignment)
+>>>>+		return ppc_md.__pci_sriov_resource_alignment(pdev, resno, align);
+>>>>+
+>>>>+	return 0;
+>>>>+}
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>>
+>>>> static resource_size_t pcibios_io_size(const struct pci_controller *hose)
+>>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>index 7dfad6a..b0ac851 100644
+>>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>>@@ -1573,6 +1573,22 @@ static resource_size_t __pnv_pci_sriov_resource_size(struct pci_dev *pdev, int r
+>>>>
+>>>> 	return size;
+>>>> }
+>>>>+
+>>>>+static resource_size_t __pnv_pci_sriov_resource_alignment(struct pci_dev *pdev, int resno,
+>>>>+		resource_size_t align)
+>>>
+>>>The function could be "pcibios_sriov_resource_alignment()", but it's not a big deal.
+>>>If you prefer the original one, then keep it :)
+>>
+>>I guess you want to name it to pnv_pcibios_sriov_resource_alignment()?
+>>pcibios_sriov_resource_alignment() is the general name for this function.
+>>
+>>If yes, this is changed.
+>>
+>
+>Nope, What I mean is to have something like this:
+>
+>	struct machdep_calls {
+>		:
+>	#ifdef CONFIG_PCI_IOV
+>	resource_size_t (*pci_sriov_resource_size)(struct pci_dev *dev,
+>						   int resno);
+>	resource_size_t (*pci_sriov_resource_alignment)(struct pci_dev *dev,
+>							int resno,
+>							resource_size_t align);
+>	#endif
+>		:
+>	}
+>
+>	ppc_md.pci_sriov_resource_size = pnv_pci_iov_res_size;
+>	ppc_md.pci_sriov_resource_alignment = pnv_pci_iov_res_alignment;
+>
+>The point is not to have prefix "__" for callbacks in "struct machdep_calls".
+>ppc_md.__pci_sriov_resource_size is the first one that has prefix "__"
 
-This sounds cool. =20
+Yep, will change the name.
 
-Can you document the sysfs interface in Documentation/powerpc?
+>
+>>>
+>>>>+{
+>>>>+	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>>>+	resource_size_t iov_align;
+>>>>+
+>>>>+	iov_align = resource_size(&pdev->resource[resno]);
+>>>>+	if (iov_align)
+>>>>+		return iov_align;
+>>>>+
+>>>>+	if (pdn->vfs)
+>>>>+		return pdn->vfs * align;
+>>>>+
+>>>>+	return align;
+>>>>+}
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>>
+>>>> /* Prevent enabling devices for which we couldn't properly
+>>>>@@ -1777,6 +1793,7 @@ void __init pnv_pci_init_ioda_phb(struct device_node *np,
+>>>> 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+>>>> #ifdef CONFIG_PCI_IOV
+>>>> 	ppc_md.__pci_sriov_resource_size = __pnv_pci_sriov_resource_size;
+>>>>+	ppc_md.__pci_sriov_resource_alignment = __pnv_pci_sriov_resource_alignment;
+>>>> #endif /* CONFIG_PCI_IOV */
+>>>> 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
+>>>>
+>
+>Thanks,
+>Gavin
 
-Mikey
-
->=20
-> 32-bits PCI error: "7:addr:mask:iommu_group_id:function".
-> 64-bits PCI error: "8:addr:mask:iommu_group_id:function".
->=20
-> The above "7" and "8" represent 32-bits and 64-bits PCI error seperately
-> and "function" is one of the specific PCI errors (e.g. MMIO access addres=
-s
-> parity error), which are defined by PAPR spec.
->=20
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/opal.h                |   1 +
->  arch/powerpc/platforms/powernv/Makefile        |   2 +-
->  arch/powerpc/platforms/powernv/opal-errinjct.c | 184 +++++++++++++++++++=
-++++++
->  arch/powerpc/platforms/powernv/opal.c          |   2 +
->  4 files changed, 188 insertions(+), 1 deletion(-)
->  create mode 100644 arch/powerpc/platforms/powernv/opal-errinjct.c
->=20
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/o=
-pal.h
-> index d982bb8..bf280d9 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -985,6 +985,7 @@ extern int opal_elog_init(void);
->  extern void opal_platform_dump_init(void);
->  extern void opal_sys_param_init(void);
->  extern void opal_msglog_init(void);
-> +extern void opal_errinjct_init(void);
-> =20
->  extern int opal_machine_check(struct pt_regs *regs);
->  extern bool opal_mce_check_early_recovery(struct pt_regs *regs);
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platf=
-orms/powernv/Makefile
-> index 63cebb9..4711de8 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -1,7 +1,7 @@
->  obj-y			+=3D setup.o opal-takeover.o opal-wrappers.o opal.o opal-async.o
->  obj-y			+=3D opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
->  obj-y			+=3D rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
-> -obj-y			+=3D opal-msglog.o
-> +obj-y			+=3D opal-msglog.o opal-errinjct.o
-> =20
->  obj-$(CONFIG_SMP)	+=3D smp.o
->  obj-$(CONFIG_PCI)	+=3D pci.o pci-p5ioc2.o pci-ioda.o
-> diff --git a/arch/powerpc/platforms/powernv/opal-errinjct.c b/arch/powerp=
-c/platforms/powernv/opal-errinjct.c
-> new file mode 100644
-> index 0000000..29c9e83
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-errinjct.c
-> @@ -0,0 +1,184 @@
-> +/*
-> + * The file supports error injection, which works based on OPAL API.
-> + * For now, we only support PCI error injection. We need support
-> + * injecting other types of errors in future.
-> + *
-> + * Copyright Gavin Shan, IBM Corporation 2014.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/msi.h>
-> +#include <linux/pci.h>
-> +#include <linux/iommu.h>
-> +#include <linux/random.h>
-> +#include <linux/slab.h>
-> +#include <linux/sysfs.h>
-> +#include <linux/fs.h>
-> +#include <linux/fcntl.h>
-> +#include <linux/kobject.h>
-> +
-> +#include <asm/msi_bitmap.h>
-> +#include <asm/iommu.h>
-> +#include <asm/pci-bridge.h>
-> +#include <asm/ppc-pci.h>
-> +#include <asm/opal.h>
-> +
-> +#include "powernv.h"
-> +#include "pci.h"
-> +
-> +static DEFINE_MUTEX(errinjct_mutex);
-> +
-> +static int errinjct_iommu_group_to_phb_and_pe(uint32_t iommu_grp_id,
-> +					      uint64_t *phb_id,
-> +					      uint32_t *pe_num)
-> +{
-> +#ifdef CONFIG_IOMMU_API
-> +	struct iommu_group *iommu_grp;
-> +	struct iommu_table *tbl;
-> +	struct pnv_ioda_pe *pe;
-> +
-> +	iommu_grp =3D iommu_group_get_by_id(iommu_grp_id);
-> +	if (!iommu_grp)
-> +		return -ENODEV;
-> +
-> +	tbl =3D iommu_group_get_iommudata(iommu_grp);
-> +	if (!tbl)
-> +		return -ENODEV;
-> +
-> +	pe =3D container_of(tbl, struct pnv_ioda_pe, tce32_table);
-> +	if (!pe->phb)
-> +		return -ENODEV;
-> +
-> +	*phb_id =3D pe->phb->opal_id;
-> +	*pe_num =3D pe->pe_number;
-> +
-> +	return 0;
-> +#endif
-> +
-> +	return -ENXIO;
-> +}
-> +
-> +static int errinjct_ioa_bus_error(const char *buf, struct OpalErrinjct *=
-ei)
-> +{
-> +	uint32_t iommu_grp_id;
-> +	int ret;
-> +
-> +	/* Extract parameters */
-> +	ret =3D sscanf(buf, "%x:%x:%x:%x:%x",
-> +		     &ei->type, &ei->ioa.addr,
-> +		     &ei->ioa.mask, &iommu_grp_id, ei->ioa.function);
-> +	if (ret !=3D 5)
-> +		return -EINVAL;
-> +
-> +	/* Invalid function ? */
-> +	if (ei->ioa.function < OpalEitIoaLoadMemAddr ||
-> +	    ei->ioa.function > OpalEitIoaDmaWriteMemTarget)
-> +		return -ERANGE;
-> +
-> +	/* Retrieve PHB ID and PE number */
-> +	ret =3D errinjct_iommu_group_to_phb_and_pe(iommu_grp_id,
-> +						 &ei->ioa.phb_id,
-> +						 &ei->ioa.pe);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-> +}
-> +
-> +static int errinjct_ioa_bus_error64(const char *buf, struct OpalErrinjct=
- *ei)
-> +{
-> +	uint32_t iommu_grp_id;
-> +	int ret;
-> +
-> +	/* Extract parameter */
-> +	ret =3D sscanf(buf, "%x:%llx:%llx:%x:%x",
-> +		     &ei->type, &ei->ioa64.addr,
-> +		     &ei->ioa64.mask, &iommu_grp_id, &ei->ioa64.function);
-> +	if (ret !=3D 5)
-> +		return -EINVAL;
-> +
-> +	/* Invalid function ? */
-> +	if (ei->ioa64.function < OpalEitIoaLoadMemAddr ||
-> +	    ei->ioa64.function > OpalEitIoaDmaWriteMemTarget)
-> +		return -ERANGE;
-> +
-> +	/* Retrieve PHB ID and PE number */
-> +	ret =3D errinjct_iommu_group_to_phb_and_pe(iommu_grp_id,
-> +						 &ei->ioa64.phb_id,
-> +						 &ei->ioa64.pe);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-> +}
-> +
-> +static ssize_t errinjct_store(struct kobject *kobj,
-> +			      struct kobj_attribute *attr,
-> +			      const char *buf, size_t count)
-> +{
-> +	struct OpalErrinjct ei;
-> +	int ret;
-> +	long rc;
-> +
-> +	/* Extract common parameters */
-> +	ret =3D sscanf(buf, "%x", &ei.type);
-> +	if (ret !=3D 1)
-> +		return -EINVAL;
-> +
-> +	/* Error injection might be in progress */
-> +	if (!mutex_trylock(&errinjct_mutex))
-> +		return -EAGAIN;
-> +
-> +	switch (ei.type) {
-> +	case OpalErrinjctTypeIoaBusError:
-> +		ret =3D errinjct_ioa_bus_error(buf, &ei);
-> +		break;
-> +	case OpalErrinjctTypeIoaBusError64:
-> +		ret =3D errinjct_ioa_bus_error64(buf, &ei);
-> +		break;
-> +	default:
-> +		ret =3D -ERANGE;
-> +	}
-> +
-> +	/* Invalid parameters ? */
-> +	if (ret)
-> +		goto mutex_unlock_exit;
-> +
-> +	/* OPAL call */
-> +	rc =3D opal_err_injct(&ei);
-> +	if (rc =3D=3D OPAL_SUCCESS)
-> +		ret =3D count;
-> +	else
-> +		ret =3D -EIO;
-> +
-> +mutex_unlock_exit:
-> +	mutex_unlock(&errinjct_mutex);
-> +	return ret;
-> +}
-> +
-> +static struct kobj_attribute errinjct_attr =3D
-> +	__ATTR(errinjct, 0600, NULL, errinjct_store);
-> +
-> +void __init opal_errinjct_init(void)
-> +{
-> +	int ret;
-> +
-> +	/* Make sure /sys/firmware/opal directory is created */
-> +	if (!opal_kobj) {
-> +		pr_warn("%s: opal kobject is not available\n",
-> +			__func__);
-> +		return;
-> +	}
-> +
-> +	/* Create the sysfs files */
-> +	ret =3D sysfs_create_file(opal_kobj, &errinjct_attr.attr);
-> +	if (ret)
-> +		pr_warn("%s: Cannot create sysfs file (%d)\n",
-> +			__func__, ret);
-> +}
-> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platfor=
-ms/powernv/opal.c
-> index 360ad80c..cb29bb5 100644
-> --- a/arch/powerpc/platforms/powernv/opal.c
-> +++ b/arch/powerpc/platforms/powernv/opal.c
-> @@ -604,6 +604,8 @@ static int __init opal_init(void)
->  		opal_sys_param_init();
->  		/* Setup message log interface. */
->  		opal_msglog_init();
-> +		/* Setup error injection interface */
-> +		opal_errinjct_init();
->  	}
-> =20
->  	return 0;
+-- 
+Richard Yang
+Help you, Help me
