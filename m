@@ -1,25 +1,28 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f44.google.com (mail-pb0-f44.google.com
- [209.85.160.44])
+Received: from mail-pa0-f52.google.com (mail-pa0-f52.google.com
+ [209.85.220.52])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C35A1A0244
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 20:06:50 +1000 (EST)
-Received: by mail-pb0-f44.google.com with SMTP id md12so55556pbc.31
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 03:06:47 -0700 (PDT)
-Message-ID: <53A94DA8.6020206@ozlabs.ru>
-Date: Tue, 24 Jun 2014 20:06:32 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 44C2D1A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 20:11:17 +1000 (EST)
+Received: by mail-pa0-f52.google.com with SMTP id eu11so63887pac.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 03:11:14 -0700 (PDT)
+Message-ID: <53A94EBD.101@ozlabs.ru>
+Date: Tue, 24 Jun 2014 20:11:09 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com
-Subject: Re: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
-References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
+References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>	
+ <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>	
+ <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>	
+ <1403234514.3707.278.camel@ul30vt.home> <1403305961.4587.66.camel@pasglop>
+In-Reply-To: <1403305961.4587.66.camel@pasglop>
 Content-Type: text/plain; charset=KOI8-R
-Cc: linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com,
- qiudayu@linux.vnet.ibm.com, bhelgaas@google.com, yan@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org, Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,145 +32,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/10/2014 11:56 AM, Wei Yang wrote:
-> Current iommu_table of a PE is a static field. This will have a problem when
-> iommu_free_table is called.
-
-What kind of problem? This table is per PE and PE is not going anywhere.
-
-
+On 06/21/2014 09:12 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2014-06-19 at 21:21 -0600, Alex Williamson wrote:
 > 
-> This patch allocate iommu_table dynamically.
+>> Working on big endian being an accident may be a matter of perspective
 > 
-> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/iommu.h          |    3 +++
->  arch/powerpc/platforms/powernv/pci-ioda.c |   24 +++++++++++++-----------
->  arch/powerpc/platforms/powernv/pci.h      |    2 +-
->  3 files changed, 17 insertions(+), 12 deletions(-)
+>  :-)
 > 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index 42632c7..0fedacb 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -78,6 +78,9 @@ struct iommu_table {
->  	struct iommu_group *it_group;
->  #endif
->  	void (*set_bypass)(struct iommu_table *tbl, bool enable);
-> +#ifdef CONFIG_PPC_POWERNV
-> +	void           *data;
-> +#endif
->  };
->  
->  /* Pure 2^n version of get_order */
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 9715351..8ca3926 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -608,6 +608,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
->  		return;
->  	}
->  
-> +	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
-> +			GFP_KERNEL, hose->node);
-> +	pe->tce32_table->data = pe;
-> +
->  	/* Associate it with all child devices */
->  	pnv_ioda_setup_same_PE(bus, pe);
->  
-> @@ -675,7 +679,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
->  
->  	pe = &phb->ioda.pe_array[pdn->pe_number];
->  	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
-> -	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
-> +	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
->  }
->  
->  static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
-> @@ -702,7 +706,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
->  	} else {
->  		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
->  		set_dma_ops(&pdev->dev, &dma_iommu_ops);
-> -		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
-> +		set_iommu_table_base(&pdev->dev, pe->tce32_table);
->  	}
->  	return 0;
->  }
-> @@ -712,7 +716,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe, struct pci_bus *bus)
->  	struct pci_dev *dev;
->  
->  	list_for_each_entry(dev, &bus->devices, bus_list) {
-> -		set_iommu_table_base_and_group(&dev->dev, &pe->tce32_table);
-> +		set_iommu_table_base_and_group(&dev->dev, pe->tce32_table);
->  		if (dev->subordinate)
->  			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
->  	}
-> @@ -798,8 +802,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
->  void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
->  				 __be64 *startp, __be64 *endp, bool rm)
->  {
-> -	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
-> -					      tce32_table);
-> +	struct pnv_ioda_pe *pe = tbl->data;
->  	struct pnv_phb *phb = pe->phb;
->  
->  	if (phb->type == PNV_PHB_IODA1)
-> @@ -862,7 +865,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->  	}
->  
->  	/* Setup linux iommu table */
-> -	tbl = &pe->tce32_table;
-> +	tbl = pe->tce32_table;
->  	pnv_pci_setup_iommu_table(tbl, addr, PNV_TCE32_TAB_SIZE * segs,
->  				  base << PNV_TCE32_SEG_SHIFT);
->  
-> @@ -900,8 +903,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->  
->  static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
->  {
-> -	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
-> -					      tce32_table);
-> +	struct pnv_ioda_pe *pe = tbl->data;
->  	uint16_t window_id = (pe->pe_number << 1 ) + 1;
->  	int64_t rc;
->  
-> @@ -942,10 +944,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
->  	pe->tce_bypass_base = 1ull << 59;
->  
->  	/* Install set_bypass callback for VFIO */
-> -	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
-> +	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
->  
->  	/* Enable bypass by default */
-> -	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
-> +	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
->  }
->  
->  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> @@ -993,7 +995,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  	}
->  
->  	/* Setup linux iommu table */
-> -	tbl = &pe->tce32_table;
-> +	tbl = pe->tce32_table;
->  	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0);
->  
->  	/* OPAL variant of PHB3 invalidated TCEs */
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 90f6da4..9fbf7c0 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -60,7 +60,7 @@ struct pnv_ioda_pe {
->  	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
->  	int			tce32_seg;
->  	int			tce32_segcount;
-> -	struct iommu_table	tce32_table;
-> +	struct iommu_table	*tce32_table;
->  	phys_addr_t		tce_inval_reg_phys;
->  
->  	/* 64-bit TCE bypass region */
+>> The comment remains that this patch doesn't actually fix anything except
+>> the overhead on big endian systems doing redundant byte swapping and
+>> maybe the philosophy that vfio regions are little endian.
 > 
+> Yes, that works by accident because technically VFIO is a transport and
+> thus shouldn't perform any endian swapping of any sort, which remains
+> the responsibility of the end driver which is the only one to know
+> whether a given BAR location is a a register or some streaming data
+> and in the former case whether it's LE or BE (some PCI devices are BE
+> even ! :-)
+> 
+> But yes, in the end, it works with the dual "cancelling" swaps and the
+> overhead of those swaps is probably drowned in the noise of the syscall
+> overhead.
+> 
+>> I'm still not a fan of iowrite vs iowritebe, there must be something we
+>> can use that doesn't have an implicit swap.
+> 
+> Sadly there isn't ... In the old day we didn't even have the "be"
+> variant and readl/writel style accessors still don't have them either
+> for all archs.
+> 
+> There is __raw_readl/writel but here the semantics are much more than
+> just "don't swap", they also don't have memory barriers (which means
+> they are essentially useless to most drivers unless those are platform
+> specific drivers which know exactly what they are doing, or in the rare
+> cases such as accessing a framebuffer which we know never have side
+> effects). 
+> 
+>>  Calling it iowrite*_native is also an abuse of the namespace.
+> 
+> 
+>>  Next thing we know some common code
+>> will legitimately use that name. 
+> 
+> I might make sense to those definitions into a common header. There have
+> been a handful of cases in the past that wanted that sort of "native
+> byte order" MMIOs iirc (though don't ask me for examples, I can't really
+> remember).
+> 
+>>  If we do need to define an alias
+>> (which I'd like to avoid) it should be something like vfio_iowrite32.
 
+
+Ping?
+
+We need to make a decision whether to move those xxx_native() helpers
+somewhere (where?) or leave the patch as is (as we figured out that
+iowriteXX functions implement barriers and we cannot just use raw
+accessors) and fix commit log to explain everything.
+
+Thanks!
+
+
+
+
+>> Thanks,
+> 
+> Cheers,
+> Ben.
+> 
+>> Alex
+>>
+>>>> ===
+>>>>
+>>>> any better?
+>>>>
+>>>>
+>>>>
+>>>>
+>>>>>>> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>>> ---
+>>>>>>>  drivers/vfio/pci/vfio_pci_rdwr.c | 20 ++++++++++++++++----
+>>>>>>>  1 file changed, 16 insertions(+), 4 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/drivers/vfio/pci/vfio_pci_rdwr.c b/drivers/vfio/pci/vfio_pci_rdwr.c
+>>>>>>> index 210db24..f363b5a 100644
+>>>>>>> --- a/drivers/vfio/pci/vfio_pci_rdwr.c
+>>>>>>> +++ b/drivers/vfio/pci/vfio_pci_rdwr.c
+>>>>>>> @@ -21,6 +21,18 @@
+>>>>>>>  
+>>>>>>>  #include "vfio_pci_private.h"
+>>>>>>>  
+>>>>>>> +#ifdef __BIG_ENDIAN__
+>>>>>>> +#define ioread16_native		ioread16be
+>>>>>>> +#define ioread32_native		ioread32be
+>>>>>>> +#define iowrite16_native	iowrite16be
+>>>>>>> +#define iowrite32_native	iowrite32be
+>>>>>>> +#else
+>>>>>>> +#define ioread16_native		ioread16
+>>>>>>> +#define ioread32_native		ioread32
+>>>>>>> +#define iowrite16_native	iowrite16
+>>>>>>> +#define iowrite32_native	iowrite32
+>>>>>>> +#endif
+>>>>>>> +
+>>>>>>>  /*
+>>>>>>>   * Read or write from an __iomem region (MMIO or I/O port) with an excluded
+>>>>>>>   * range which is inaccessible.  The excluded range drops writes and fills
+>>>>>>> @@ -50,9 +62,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+>>>>>>>  				if (copy_from_user(&val, buf, 4))
+>>>>>>>  					return -EFAULT;
+>>>>>>>  
+>>>>>>> -				iowrite32(le32_to_cpu(val), io + off);
+>>>>>>> +				iowrite32_native(val, io + off);
+>>>>>>>  			} else {
+>>>>>>> -				val = cpu_to_le32(ioread32(io + off));
+>>>>>>> +				val = ioread32_native(io + off);
+>>>>>>>  
+>>>>>>>  				if (copy_to_user(buf, &val, 4))
+>>>>>>>  					return -EFAULT;
+>>>>>>> @@ -66,9 +78,9 @@ static ssize_t do_io_rw(void __iomem *io, char __user *buf,
+>>>>>>>  				if (copy_from_user(&val, buf, 2))
+>>>>>>>  					return -EFAULT;
+>>>>>>>  
+>>>>>>> -				iowrite16(le16_to_cpu(val), io + off);
+>>>>>>> +				iowrite16_native(val, io + off);
+>>>>>>>  			} else {
+>>>>>>> -				val = cpu_to_le16(ioread16(io + off));
+>>>>>>> +				val = ioread16_native(io + off);
+>>>>>>>  
+>>>>>>>  				if (copy_to_user(buf, &val, 2))
+>>>>>>>  					return -EFAULT;
+>>>>>>
+>>>>>>
+>>>>>>
 
 -- 
 Alexey
