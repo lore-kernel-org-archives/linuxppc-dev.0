@@ -1,21 +1,27 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAC391A0010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 23:39:50 +1000 (EST)
-Message-ID: <53A97FA1.4040503@suse.de>
-Date: Tue, 24 Jun 2014 15:39:45 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Mihai Caraman <mihai.caraman@freescale.com>, kvm-ppc@vger.kernel.org
-Subject: Re: [PATCH] KVM: PPC: Book3E: Unlock mmu_lock when setting caching
- atttribute
-References: <1403106305-11565-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1403106305-11565-1-git-send-email-mihai.caraman@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 255DC1A000E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 00:21:34 +1000 (EST)
+Message-ID: <1403619685.16078.15.camel@ul30vt.home>
+Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 24 Jun 2014 08:21:25 -0600
+In-Reply-To: <53A97BA9.4020702@suse.de>
+References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>
+ <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>
+ <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>
+ <1403234514.3707.278.camel@ul30vt.home> <1403305961.4587.66.camel@pasglop>
+ <53A94EBD.101@ozlabs.ru> <53A955F5.6050801@suse.de>
+ <53A9741B.1040500@ozlabs.ru> <53A97486.4070604@suse.de>
+ <53A976B7.3070709@ozlabs.ru> <53A97BA9.4020702@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +31,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2014-06-24 at 15:22 +0200, Alexander Graf wrote:
+> On 24.06.14 15:01, Alexey Kardashevskiy wrote:
+> > On 06/24/2014 10:52 PM, Alexander Graf wrote:
+> >> On 24.06.14 14:50, Alexey Kardashevskiy wrote:
+> >>> On 06/24/2014 08:41 PM, Alexander Graf wrote:
+> >>>> On 24.06.14 12:11, Alexey Kardashevskiy wrote:
+> >>>>> On 06/21/2014 09:12 AM, Benjamin Herrenschmidt wrote:
+> >>>>>> On Thu, 2014-06-19 at 21:21 -0600, Alex Williamson wrote:
+> >>>>>>
+> >>>>>>> Working on big endian being an accident may be a matter of perspective
+> >>>>>>     :-)
+> >>>>>>
+> >>>>>>> The comment remains that this patch doesn't actually fix anything except
+> >>>>>>> the overhead on big endian systems doing redundant byte swapping and
+> >>>>>>> maybe the philosophy that vfio regions are little endian.
+> >>>>>> Yes, that works by accident because technically VFIO is a transport and
+> >>>>>> thus shouldn't perform any endian swapping of any sort, which remains
+> >>>>>> the responsibility of the end driver which is the only one to know
+> >>>>>> whether a given BAR location is a a register or some streaming data
+> >>>>>> and in the former case whether it's LE or BE (some PCI devices are BE
+> >>>>>> even ! :-)
+> >>>>>>
+> >>>>>> But yes, in the end, it works with the dual "cancelling" swaps and the
+> >>>>>> overhead of those swaps is probably drowned in the noise of the syscall
+> >>>>>> overhead.
+> >>>>>>
+> >>>>>>> I'm still not a fan of iowrite vs iowritebe, there must be something we
+> >>>>>>> can use that doesn't have an implicit swap.
+> >>>>>> Sadly there isn't ... In the old day we didn't even have the "be"
+> >>>>>> variant and readl/writel style accessors still don't have them either
+> >>>>>> for all archs.
+> >>>>>>
+> >>>>>> There is __raw_readl/writel but here the semantics are much more than
+> >>>>>> just "don't swap", they also don't have memory barriers (which means
+> >>>>>> they are essentially useless to most drivers unless those are platform
+> >>>>>> specific drivers which know exactly what they are doing, or in the rare
+> >>>>>> cases such as accessing a framebuffer which we know never have side
+> >>>>>> effects).
+> >>>>>>
+> >>>>>>>     Calling it iowrite*_native is also an abuse of the namespace.
+> >>>>>>>     Next thing we know some common code
+> >>>>>>> will legitimately use that name.
+> >>>>>> I might make sense to those definitions into a common header. There have
+> >>>>>> been a handful of cases in the past that wanted that sort of "native
+> >>>>>> byte order" MMIOs iirc (though don't ask me for examples, I can't really
+> >>>>>> remember).
+> >>>>>>
+> >>>>>>>     If we do need to define an alias
+> >>>>>>> (which I'd like to avoid) it should be something like vfio_iowrite32.
+> >>>>> Ping?
+> >>>>>
+> >>>>> We need to make a decision whether to move those xxx_native() helpers
+> >>>>> somewhere (where?) or leave the patch as is (as we figured out that
+> >>>>> iowriteXX functions implement barriers and we cannot just use raw
+> >>>>> accessors) and fix commit log to explain everything.
+> >>>> Is there actually any difference in generated code with this patch applied
+> >>>> and without? I would hope that iowrite..() is inlined and cancels out the
+> >>>> cpu_to_le..() calls that are also inlined?
+> >>> iowrite32 is a non-inline function so conversions take place so are the
+> >>> others. And sorry but I fail to see why this matters. We are not trying to
+> >>> accelerate things, we are removing redundant operations which confuse
+> >>> people who read the code.
+> >> The confusion depends on where you're coming from. If you happen to know
+> >> that "iowrite32" writes in LE, then the LE conversion makes a lot of sense.
+> > It was like this (and this is just confusing):
+> >
+> > iowrite32(le32_to_cpu(val), io + off);
+> >
+> > What would make sense (according to you and I would understand this) is this:
+> >
+> > iowrite32(cpu_to_le32(val), io + off);
+> >
+> >
+> > Or I missed your point, did I?
+> 
+> No, you didn't miss it. I think for people who know how iowrite32() 
+> works the above is obvious. I find the fact that iowrite32() writes in 
+> LE always pretty scary though ;).
+> 
+> So IMHO we should either create new, generic iowrite helpers that don't 
+> do any endian swapping at all or do iowrite32(cpu_to_le32(val)) calls.
 
-On 18.06.14 17:45, Mihai Caraman wrote:
-> The patch 08c9a188d0d0fc0f0c5e17d89a06bb59c493110f
->    	kvm: powerpc: use caching attributes as per linux pte
-> do not handle properly the error case, letting mmu_lock locked. The lock
-> will further generate a RCU stall from kvmppc_e500_emul_tlbwe() caller.
->
-> In case of an error go to out label.
->
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
-
-Thanks, applied to for-3.16.
-
+I'm one of those people for whom iowrite32(le32_to_cpu(val)) makes sense
+and keeps the byte order consistent regardless of the platform, while
+iowrite32(val) or iowrite32be(val) makes me scratch my head and try to
+remember that the byte swaps are a nop on the given platforms.  As Ben
+noted, a native, no-swap ioread/write doesn't exist, but perhaps should.
+I'd prefer an attempt be made to make it exist before adding
+vfio-specific macros.  vfio is arguably doing the right thing here given
+the functions available.  Thanks,
 
 Alex
