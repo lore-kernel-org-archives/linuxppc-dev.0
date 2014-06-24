@@ -1,24 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 619B51A017A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 12:29:04 +1000 (EST)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B6ED1140081
- for <linuxppc-dev@ozlabs.org>; Tue, 24 Jun 2014 12:29:03 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id s5O2Suwc004261
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Jun 2014 21:28:59 -0500
-Message-ID: <1403576936.4587.145.camel@pasglop>
-Subject: [PATCH] powerpc: Remove __arch_swab*
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC9231A017A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 12:32:31 +1000 (EST)
+Message-ID: <1403577141.4587.147.camel@pasglop>
+Subject: Re: [PATCH 5/9] [arch/powerpc] replace obsolete strict_strto* calls
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@ozlabs.org
-Date: Tue, 24 Jun 2014 12:28:56 +1000
+To: Daniel Walter <dwalter@google.com>
+Date: Tue, 24 Jun 2014 12:32:21 +1000
+In-Reply-To: <20140621120536.GA7372@google.com>
+References: <20140621120536.GA7372@google.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,90 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The generic code uses gcc built-ins which work fine so there's no benefit
-in implementing our own anymore.
+On Sat, 2014-06-21 at 13:05 +0100, Daniel Walter wrote:
+> Replace strict_strto calls with more appropriate kstrto calls
+> 
+> Signed-off-by: Daniel Walter <dwalter@google.com>
+> ---
 
-We can't completely remove the ld/st_le* functions as some historical
-cruft still uses them, but that's next on the radar
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Should I put that in the powerpc tree ?
 
-diff --git a/arch/powerpc/include/asm/swab.h b/arch/powerpc/include/asm/swab.h
-index b9bd1ca..96f59de 100644
---- a/arch/powerpc/include/asm/swab.h
-+++ b/arch/powerpc/include/asm/swab.h
-@@ -9,10 +9,6 @@
- 
- #include <uapi/asm/swab.h>
- 
--#ifdef __GNUC__
--#ifndef __powerpc64__
--#endif /* __powerpc64__ */
--
- static __inline__ __u16 ld_le16(const volatile __u16 *addr)
- {
- 	__u16 val;
-@@ -20,19 +16,12 @@ static __inline__ __u16 ld_le16(const volatile __u16 *addr)
- 	__asm__ __volatile__ ("lhbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
- 	return val;
- }
--#define __arch_swab16p ld_le16
- 
- static __inline__ void st_le16(volatile __u16 *addr, const __u16 val)
- {
- 	__asm__ __volatile__ ("sthbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
- }
- 
--static inline void __arch_swab16s(__u16 *addr)
--{
--	st_le16(addr, *addr);
--}
--#define __arch_swab16s __arch_swab16s
--
- static __inline__ __u32 ld_le32(const volatile __u32 *addr)
- {
- 	__u32 val;
-@@ -40,42 +29,10 @@ static __inline__ __u32 ld_le32(const volatile __u32 *addr)
- 	__asm__ __volatile__ ("lwbrx %0,0,%1" : "=r" (val) : "r" (addr), "m" (*addr));
- 	return val;
- }
--#define __arch_swab32p ld_le32
- 
- static __inline__ void st_le32(volatile __u32 *addr, const __u32 val)
- {
- 	__asm__ __volatile__ ("stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
- }
- 
--static inline void __arch_swab32s(__u32 *addr)
--{
--	st_le32(addr, *addr);
--}
--#define __arch_swab32s __arch_swab32s
--
--static inline __attribute_const__ __u16 __arch_swab16(__u16 value)
--{
--	__u16 result;
--
--	__asm__("rlwimi %0,%1,8,16,23"
--	    : "=r" (result)
--	    : "r" (value), "0" (value >> 8));
--	return result;
--}
--#define __arch_swab16 __arch_swab16
--
--static inline __attribute_const__ __u32 __arch_swab32(__u32 value)
--{
--	__u32 result;
--
--	__asm__("rlwimi %0,%1,24,16,23\n\t"
--	    "rlwimi %0,%1,8,8,15\n\t"
--	    "rlwimi %0,%1,24,0,7"
--	    : "=r" (result)
--	    : "r" (value), "0" (value >> 24));
--	return result;
--}
--#define __arch_swab32 __arch_swab32
--
--#endif /* __GNUC__ */
- #endif /* _ASM_POWERPC_SWAB_H */
+>  arch/powerpc/kernel/setup_64.c            | 6 +++---
+>  arch/powerpc/kernel/vio.c                 | 2 +-
+>  arch/powerpc/platforms/pseries/dlpar.c    | 4 ++--
+>  arch/powerpc/platforms/pseries/mobility.c | 2 +-
+>  4 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index ee082d7..5257166 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -149,13 +149,13 @@ static void check_smt_enabled(void)
+>  		else if (!strcmp(smt_enabled_cmdline, "off"))
+>  			smt_enabled_at_boot = 0;
+>  		else {
+> -			long smt;
+> +			int smt;
+>  			int rc;
+>  
+> -			rc = strict_strtol(smt_enabled_cmdline, 10, &smt);
+> +			rc = kstrtoint(smt_enabled_cmdline, 10, &smt);
+>  			if (!rc)
+>  				smt_enabled_at_boot =
+> -					min(threads_per_core, (int)smt);
+> +					min(threads_per_core, smt);
+>  		}
+>  	} else {
+>  		dn = of_find_node_by_path("/options");
+> diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
+> index 904c661..5bfdab9 100644
+> --- a/arch/powerpc/kernel/vio.c
+> +++ b/arch/powerpc/kernel/vio.c
+> @@ -977,7 +977,7 @@ static ssize_t viodev_cmo_desired_set(struct device *dev,
+>  	size_t new_desired;
+>  	int ret;
+>  
+> -	ret = strict_strtoul(buf, 10, &new_desired);
+> +	ret = kstrtoul(buf, 10, &new_desired);
+>  	if (ret)
+>  		return ret;
+>  
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 022b38e..abc6892 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -399,10 +399,10 @@ out:
+>  static ssize_t dlpar_cpu_probe(const char *buf, size_t count)
+>  {
+>  	struct device_node *dn, *parent;
+> -	unsigned long drc_index;
+> +	u32 drc_index;
+>  	int rc;
+>  
+> -	rc = strict_strtoul(buf, 0, &drc_index);
+> +	rc = kstrtou32(buf, 0, &drc_index);
+>  	if (rc)
+>  		return -EINVAL;
+>  
+> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+> index bde7eba..0694ac6 100644
+> --- a/arch/powerpc/platforms/pseries/mobility.c
+> +++ b/arch/powerpc/platforms/pseries/mobility.c
+> @@ -319,7 +319,7 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
+>  	u64 streamid;
+>  	int rc;
+>  
+> -	rc = strict_strtoull(buf, 0, &streamid);
+> +	rc = kstrtou64(buf, 0, &streamid);
+>  	if (rc)
+>  		return rc;
+>  
