@@ -1,33 +1,31 @@
 Return-Path: <glikely@secretlab.ca>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6B101A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 06:22:28 +1000 (EST)
-Received: from mail-we0-f174.google.com (mail-we0-f174.google.com
- [74.125.82.174])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 314871A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 06:24:56 +1000 (EST)
+Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AF2531400AA
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2014 06:22:27 +1000 (EST)
-Received: by mail-we0-f174.google.com with SMTP id u57so2723550wes.33
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2014 13:22:24 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 0A0581400AA
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Jun 2014 06:24:54 +1000 (EST)
+Received: by mail-wg0-f45.google.com with SMTP id l18so2682705wgh.16
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jun 2014 13:24:52 -0700 (PDT)
 Sender: Grant Likely <glikely@secretlab.ca>
 From: Grant Likely <grant.likely@linaro.org>
 Subject: Re: OF_DYNAMIC node lifecycle
-To: Nathan Fontenot <nfont@austin.ibm.com>, Pantelis Antoniou
- <pantelis.antoniou@konsulko.com>
-In-Reply-To: <53A9DA69.1040101@austin.ibm.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>, Tyrel Datwyler
+ <tyreld@linux.vnet.ibm.com>
+In-Reply-To: <53A9DB4F.9060708@austin.ibm.com>
 References: <CACxGe6tsXuLZT=h8S0yRPRPy6Hqz1xkX8G+ViY0cxEUuxZ1dsw@mail.gmail.com>
- <43898B58-2EA7-42B5-A17A-27F16F2618A6@konsulko.com>
- <20140623145844.DA6A3C40AE5@trevor.secretlab.ca>
- <53A9DA69.1040101@austin.ibm.com>
-Date: Wed, 25 Jun 2014 21:22:16 +0100
-Message-Id: <20140625202216.16A8AC40AE6@trevor.secretlab.ca>
-Cc: devicetree@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>
+ <53A30117.3010100@austin.ibm.com>
+ <20140623144806.1348EC40A60@trevor.secretlab.ca>
+ <53A9DB4F.9060708@austin.ibm.com>
+Date: Wed, 25 Jun 2014 21:24:46 +0100
+Message-Id: <20140625202446.77687C40AE6@trevor.secretlab.ca>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Pantelis Antoniou <pantelis.antoniou@konsulko.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,16 +35,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 24 Jun 2014 15:07:05 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote:
-> On 06/23/2014 09:58 AM, Grant Likely wrote:
-> > On Thu, 19 Jun 2014 11:33:20 +0300, Pantelis Antoniou <pantelis.antoniou@konsulko.com> wrote:
-> >> Hi Grant,
-> >>
-> >> CCing Thomas Gleixner & Steven Rostedt, since they might have a few
-> >> ideas...
-> >>
-> >> On Jun 18, 2014, at 11:07 PM, Grant Likely wrote:
-> >>
+On Tue, 24 Jun 2014 15:10:55 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> On 06/23/2014 09:48 AM, Grant Likely wrote:
+> > On Thu, 19 Jun 2014 10:26:15 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote:
+> >> On 06/18/2014 03:07 PM, Grant Likely wrote:
 > >>> Hi Nathan and Tyrel,
 > >>>
 > >>> I'm looking into lifecycle issues on nodes modified by OF_DYNAMIC, and
@@ -63,18 +55,55 @@ On Tue, 24 Jun 2014 15:07:05 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote
 > >>> an extra call to of_node_put(), and code that is searching for a node
 > >>> in the tree and holding a reference to it needs to call of_node_get().
 > >>>
-> >>
-> >> In hindsight it appears that drivers just can't get the lifecycle right.
-> >> So we need to simplify things.
-> >>
 > >>> I've got a few pseries questions:
 > >>> - What are the changes being requested by pseries firmware? Is it only
 > >>> CPUs and memory nodes, or does it manipulate things all over the tree?
+> >>
+> >> The short answer, everything.
+> > 
+> > :-)
+> > 
+> >> For pseries the two big actions that can change the device tree are
+> >> adding/removing resources and partition migration.
+> >>
+> >> The most frequent updates to the device tree happen during resource
+> >> (cpu, memory, and pci/phb) add and remove. During this process we add
+> >> and remove the node and its properties from the device tree.
+> >> - For memory on newer systems this just involves updating the
+> >>   ibm,dynamic-reconfiguration-memory/ibm,dynamic-memory property. Older
+> >>   firmware levels add and remove the memroy@XXX nodes and their properties.
+> >> - For cpus the cpus/PowerPC,POWERXXXX nodes and its properties are added
+> >>   or removed
+> >> - For pci/phb the pci@XXXXX nodes and properties are added/removed.
+> >>
+> >> The less frequent operation of live partition migration (and suspend/resume)
+> >> can update just about anything in the device tree. When this occurs and the
+> >> systems starts after being migrated (or waking up after a suspend) we make
+> >> a call to firmware to get updates to the device tree for the new hardware
+> >> we are running on.
+> >>  
 > >>> - How frequent are the changes? How many changes would be likely over
 > >>> the runtime of the system?
+> >>
+> >> This can happen frequently.
+> > 
+> > Thanks, that is exactly the information that I want. I'm not so much
+> > concerned with the addition or removal of nodes/properties, which is
+> > actually pretty easy to handle. It is the lifecycle of allocations on
+> > dynamic nodes that causes heartburn.
+> > 
 > >>> - Are you able to verify that removed nodes are actually able to be
 > >>> freed correctly? Do you have any testcases for node removal?
-> >>>
+> >>
+> >> I have always tested this by doing resource add/remove, usually cpu and memory
+> >> since it is the easiest.
+> > 
+> > Is that just testing the functionality, or do you have tests that check
+> > if the memory gets freed?
+> 
+> In general it's just functionality testing.
+> 
+> > 
 > >>> I'm thinking very seriously about changing the locking semantics of DT
 > >>> code entirely so that most users never have to worry about
 > >>> of_node_get/put at all. If the DT code is switched to use rcu
@@ -85,51 +114,37 @@ On Tue, 24 Jun 2014 15:07:05 -0500, Nathan Fontenot <nfont@austin.ibm.com> wrote
 > >>> searching over nodes, and only call of_node_get() if the node pointer
 > >>> is needed outside the rcu read-side lock.
 > >>>
+> >>
+> >> This sounds good. I like just taking the rcu lock around accessing the DT.
+> >> Do we have many places where DT node pointers are held that require
+> >> keeping the of_node_get/put calls? If this did exist perhaps we could
+> >> update those places to look up the DT node every time instead of
+> >> holding on to the pointer. We could just get rid of the reference counting
+> >> altogether then.
+> > 
+> > There are a few, but I would be happy to restrict reference counting to
+> > only those locations. Most places will decode the DT data, and then
+> > throw away the reference. We /might/ even be able to do rcu_lock/unlock
+> > around the entire probe path which would make it transparent to all
+> > device drivers.
+> > 
 > >>> I'd really like to be rid of the node reference counting entirely, but
 > >>> I can't figure out a way of doing that safely, so I'd settle for
 > >>> making it a lot easier to get correct.
 > >>>
 > >>
-> >> Since we're going about changing things, how about that devtree_lock?
+> >> heh! I have often thought about adding reference counting to device tree
+> >> properties.
 > > 
-> > I believe rcu would pretty much eliminate the devtree_lock entirely. All
-> > modifiers would need to grab a mutex to ensure there is only one writer
-> > at any given time, but readers would have free reign to parse the tree
-> > however they like.
-> > 
-> > DT writers would have to follow some strict rules about how to handle
-> > nodes that are removed (ie. don't modify or of_node_put() them until
-> > after rcu is syncronized), but the number of writers is very small and
-> > we have control of all of them.
-> > 
-> >> We're using a raw_spinlock and we're always taking the lock with
-> >> interrupts disabled.
-> >>
-> >> If we're going to make DT changes frequently during normal runtime
-> >> and not only during boot time, those are bad for any kind of real-time
-> >> performance.
-> >>
-> >> So the question is, do we really have code that access the live tree
-> >> during atomic sections?  Is that something we want? Enforcing this
-> >> will make our lives easier, and we'll get the change to replace
-> >> that spinlock with a mutex.
-> > 
-> > Yes, I believe the powerpc CPU hotplug code accesses the DT in atomic
-> > sections. I cannot put my finger on the exact code however. Nathan might
-> > know better. But, if I'm right, the whole problem goes away with RCU.
+> > You horrible, horrible man.
 > 
-> I went back through the cpu hotplug code. we do update the DT during cpu
-> hotplug but I don't see it happening during atomic sections.
+> Yes. I are evil :)
 > 
-> The code is in arch/powerpc/platforms/pseries/dlpar.c
+> After looking again the work needed to add reference counts to properties
+> would be huge. The few properties I am concerned with are specific to powerpc
+> so perhaps just adding an arch specific lock around updating those
+> properties would work.
 
-Great, thanks,
-
-By the way, notifiers currently get sent before any updates are applied
-to the tree. I want to change it so that the notifier gets sent
-afterwards. Does that work for you? I've looked through all the users
-and aside from a stupid block of code in arch/powerpc/kernel/prom.c
-which does things that should be done by of_attach_node(), it looks like
-everything should be fine.
+Which code/properties? I'd like to have a look myself.
 
 g.
