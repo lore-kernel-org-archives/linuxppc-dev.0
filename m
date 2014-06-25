@@ -1,36 +1,24 @@
-Return-Path: <m.szyprowski@samsung.com>
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 75B431A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 22:34:04 +1000 (EST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout2.w1.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0N7Q00K0A5K6SH00@mailout2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Wed, 25 Jun 2014 13:33:42 +0100 (BST)
-Message-id: <53AAC1B4.5000204@samsung.com>
-Date: Wed, 25 Jun 2014 14:33:56 +0200
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-MIME-version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
- Joonsoo Kim <iamjoonsoo.kim@lge.com>
-Subject: Re: [PATCH v3 -next 0/9] CMA: generalize CMA reserved area management
- code
-References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
- <539EB4C7.3080106@samsung.com> <20140617012507.GA6825@js1304-P5Q-DELUXE>
- <20140618135144.297c785260f9e2aebead867c@linux-foundation.org>
-In-reply-to: <20140618135144.297c785260f9e2aebead867c@linux-foundation.org>
-Content-type: text/plain; charset=UTF-8; format=flowed
-Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
- kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8C63E1A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 00:28:02 +1000 (EST)
+Message-ID: <53AADC63.8080106@roeck-us.net>
+Date: Wed, 25 Jun 2014 07:27:47 -0700
+From: Guenter Roeck <linux@roeck-us.net>
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH v2] sched: Fix compiler warnings
+References: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
+ <20140625071416.GM14781@pengutronix.de>
+In-Reply-To: <20140625071416.GM14781@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Russell King <linux@arm.linux.org.uk>,
+ Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>,
  Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Paolo Bonzini <pbonzini@redhat.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+ Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,46 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
-
-On 2014-06-18 22:51, Andrew Morton wrote:
-> On Tue, 17 Jun 2014 10:25:07 +0900 Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
->>>> v2:
->>>>    - Although this patchset looks very different with v1, the end result,
->>>>    that is, mm/cma.c is same with v1's one. So I carry Ack to patch 6-7.
->>>>
->>>> This patchset is based on linux-next 20140610.
->>> Thanks for taking care of this. I will test it with my setup and if
->>> everything goes well, I will take it to my -next tree. If any branch
->>> is required for anyone to continue his works on top of those patches,
->>> let me know, I will also prepare it.
->> Hello,
+On 06/25/2014 12:14 AM, Uwe Kleine-König wrote:
+> On Tue, Jun 24, 2014 at 06:05:29PM -0700, Guenter Roeck wrote:
+>> Commit 143e1e28cb (sched: Rework sched_domain topology definition)
+>> introduced a number of functions with a return value of 'const int'.
+>> gcc doesn't know what to do with that and, if the kernel is compiled
+>> with W=1, complains with the following warnings whenever sched.h
+>> is included.
 >>
->> I'm glad to hear that. :)
->> But, there is one concern. As you already know, I am preparing further
->> patches (Aggressively allocate the pages on CMA reserved memory). It
->> may be highly related to MM branch and also slightly depends on this CMA
->> changes. In this case, what is the best strategy to merge this
->> patchset? IMHO, Anrew's tree is more appropriate branch. If there is
->> no issue in this case, I am willing to develope further patches based
->> on your tree.
-> That's probably easier.  Marek, I'll merge these into -mm (and hence
-> -next and git://git.kernel.org/pub/scm/linux/kernel/git/mhocko/mm.git)
-> and shall hold them pending you review/ack/test/etc, OK?
+>> include/linux/sched.h:875:25: warning:
+>> 	type qualifiers ignored on function return type
+>> include/linux/sched.h:882:25: warning:
+>> 	type qualifiers ignored on function return type
+>> include/linux/sched.h:889:25: warning:
+>> 	type qualifiers ignored on function return type
+>> include/linux/sched.h:1002:21: warning:
+>> 	type qualifiers ignored on function return type
+>>
+>> Commits fb2aa855 (sched, ARM: Create a dedicated scheduler topology table)
+>> and 607b45e9a (sched, powerpc: Create a dedicated topology table) introduce
+>> the same warning in the arm and powerpc code.
+>>
+>> Drop 'const' from the function declarations to fix the problem.
+>>
+>> The fix for all three patches has to be applied together to avoid
+>> compilation failures for the affected architectures.
+>>
+>> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+>> Cc: Peter Zijlstra <peterz@infradead.org>
+>> Cc: Ingo Molnar <mingo@kernel.org>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Vincent Guittot <vincent.guittot@linaro.org>
+>> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+>> ---
+>> v2: Fix problem in all affected architectures with a single patch
+>>      to avoid compilation errors.
+>>
+>>   arch/arm/kernel/topology.c | 2 +-
+>>   arch/powerpc/kernel/smp.c  | 2 +-
+>>   include/linux/sched.h      | 8 ++++----
+>>   3 files changed, 6 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+>> index 9d85318..e35d880 100644
+>> --- a/arch/arm/kernel/topology.c
+>> +++ b/arch/arm/kernel/topology.c
+>> @@ -275,7 +275,7 @@ void store_cpu_topology(unsigned int cpuid)
+>>   		cpu_topology[cpuid].socket_id, mpidr);
+>>   }
+>>
+>> -static inline const int cpu_corepower_flags(void)
+>> +static inline int cpu_corepower_flags(void)
+>>   {
+>>   	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
+>>   }
+> Maybe the author's intention was:
+>
+> 	static inline int cpu_corepower_flags(void) __attribute__((const));
+>
+> ?
+> This specifies that the function has no side effects and the return value
+> only depends on the (here non-existing) function arguments.
+>
 
-Ok. I've tested them and they work fine. I'm sorry that you had to wait for
-me for a few days. You can now add:
+Possibly, but either I am missing something or this doesn't compile.
 
-Acked-and-tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-
-I've also rebased my pending patches onto this set (I will send them soon).
-
-The question is now if you want to keep the discussed patches in your 
--mm tree,
-or should I take them to my -next branch. If you like to keep them, I assume
-you will also take the patches which depends on the discussed changes.
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Guenter
