@@ -1,27 +1,33 @@
-Return-Path: <Gang.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0244.outbound.protection.outlook.com [207.46.163.244])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
+ [209.85.220.45])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EE2EB1A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 20:09:59 +1000 (EST)
-From: "Gang.Liu@freescale.com" <Gang.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Martijn de Gouw
- <martijn.de.gouw@prodrive-technologies.com>
-Subject: RE: [PATCH v2] fsl-rio: add support for mapping inbound windows
-Date: Wed, 25 Jun 2014 09:55:01 +0000
-Message-ID: <50df6a8d1d394ec0a4838998e4474197@BY2PR03MB412.namprd03.prod.outlook.com>
-References: <1403532715-21389-1-git-send-email-martijn.de.gouw@prodrive-technologies.com>
- <1403656857.2435.61.camel@snotra.buserror.net>
-In-Reply-To: <1403656857.2435.61.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2506B1A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 20:30:48 +1000 (EST)
+Received: by mail-pa0-f45.google.com with SMTP id rd3so1553647pab.4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 03:30:45 -0700 (PDT)
+Message-ID: <53AAA4CF.70606@ozlabs.ru>
+Date: Wed, 25 Jun 2014 20:30:39 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Cc: "Alexandre.Bounine@idt.com" <Alexandre.Bounine@idt.com>,
- Martijn de Gouw <martijn.de.gouw@prodrive.nl>,
- "Barry.Wood@idt.com" <Barry.Wood@idt.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "stef.van.os@prodrive-technologies.com"
- <stef.van.os@prodrive-technologies.com>
+To: David Laight <David.Laight@ACULAB.COM>,
+ 'Wei Yang' <weiyang@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <53A94DA8.6020206@ozlabs.ru> <20140625011211.GA5785@richard>
+ <53AA4C32.7060004@ozlabs.ru> <20140625052758.GA8873@richard>
+ <063D6719AE5E284EB5DD2968C1650D6D17264AD8@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D17264AD8@AcuExch.aculab.com>
+Content-Type: text/plain; charset=KOI8-R
+Cc: "benh@au1.ibm.com" <benh@au1.ibm.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "yan@linux.vnet.ibm.com" <yan@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,30 +37,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IFN1YmplY3Q6IFtQQVRDSCB2Ml0gZnNsLXJpbzogYWRkIHN1cHBvcnQgZm9yIG1hcHBpbmcg
-aW5ib3VuZCB3aW5kb3dzDQo+IA0KPiBGcm9tOiBNYXJ0aWpuIGRlIEdvdXcgPG1hcnRpam4uZGUu
-Z291d0Bwcm9kcml2ZS5ubD4NCj4gDQo+IEFkZCBzdXBwb3J0IGZvciBtYXBwaW5nIGFuZCB1bm1h
-cHBpbmcgb2YgaW5ib3VuZCByYXBpZGlvIHdpbmRvd3MuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBN
-YXJ0aWpuIGRlIEdvdXcgPG1hcnRpam4uZGUuZ291d0Bwcm9kcml2ZS10ZWNobm9sb2dpZXMuY29t
-Pg0KPiAtLS0NCj4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3Jpby5jIHwgICA5MiArKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiAgYXJjaC9wb3dlcnBjL3N5c2Rl
-di9mc2xfcmlvLmggfCAgIDEyICsrKysrKw0KPiAgMiBmaWxlcyBjaGFuZ2VkLCAxMDQgaW5zZXJ0
-aW9ucygrKQ0KDQo+ICsJLyogY2hlY2sgZm9yIGNvbmZsaWN0aW5nIHJhbmdlcyAqLw0KPiArCWZv
-ciAoaSA9IDA7IGkgPCBSSU9fSU5CX0FUTVVfQ09VTlQ7IGkrKykgew0KPiArCQlyaXdhciA9IGlu
-X2JlMzIoJnByaXYtPmluYl9hdG11X3JlZ3NbaV0ucml3YXIpOw0KPiArCQlpZiAoKHJpd2FyICYg
-UklXQVJfRU5BQkxFKSA9PSAwKQ0KPiArCQkJY29udGludWU7DQo+ICsJCXdpbl9zdGFydCA9ICgo
-dTY0KShpbl9iZTMyKCZwcml2LT5pbmJfYXRtdV9yZWdzW2ldLnJpd2JhcikgJg0KPiBSSVdCQVJf
-QkFERF9NQVNLKSkNCj4gKwkJCTw8IFJJV0JBUl9CQUREX1ZBTF9TSElGVDsNCj4gKwkJd2luX2Vu
-ZCA9IHdpbl9zdGFydCArICgoMSA8PCAoKHJpd2FyICYgUklXQVJfU0laRV9NQVNLKSArIDEpKSAt
-IDEpOw0KPiArCQlpZiAocnN0YXJ0IDwgd2luX2VuZCAmJiAocnN0YXJ0ICsgc2l6ZSkgPiB3aW5f
-c3RhcnQpDQo+ICsJCQlyZXR1cm4gLUVJTlZBTDsNCj4gKwl9DQoNCkZvciB0aGUgaW5ib3VuZCB3
-aW5kb3csIHRoZSBiYXNlIGFkZHJlc3MgbXVzdCBiZSBhbGlnbmVkIGJhc2VkIG9uIHRoZQ0Kc2l6
-ZSBzZWxlY3RlZCBpbiB0aGUgd2luZG93IHNpemUgYml0cy4gU28gSSB0aGluayBpdCB3aWxsIGJl
-IGJldHRlcg0KaWYgeW91IGNhbiBjaGVjayB0aGUgYWxpZ25tZW50Lg0KDQoNCj4gQEAgLTU5OCw2
-ICs2ODcsOCBAQCBpbnQgZnNsX3Jpb19zZXR1cChzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpkZXYp
-DQo+ICAJCQlSSU9fQVRNVV9SRUdTX1BPUlQyX09GRlNFVCkpOw0KPiANCj4gIAkJcHJpdi0+bWFp
-bnRfYXRtdV9yZWdzID0gcHJpdi0+YXRtdV9yZWdzICsgMTsNCj4gKwkJcHJpdi0+aW5iX2F0bXVf
-cmVncyA9IChzdHJ1Y3QgcmlvX2luYl9hdG11X3JlZ3MgKikNCj4gKwkJCShwcml2LT5yZWdzX3dp
-biArIFJJT19JTkJfQVRNVV9SRUdTX09GRlNFVCk7DQoNClRoZSBSSU9fSU5CX0FUTVVfUkVHU19P
-RkZTRVQgaXMganVzdCBmb3IgcG9ydCAxLCBJIHRoaW5rIHRoZSBwb3J0IDINCmFsc28gc2hvdWxk
-IGJlIHN1cHBvcnRlZC4NCg0KQmVzdCBSZWdhcmRzLA0KTGl1IEdhbmcNCg==
+On 06/25/2014 07:20 PM, David Laight wrote:
+> From: Wei Yang
+>> On Wed, Jun 25, 2014 at 02:12:34PM +1000, Alexey Kardashevskiy wrote:
+>>> On 06/25/2014 11:12 AM, Wei Yang wrote:
+>>>> On Tue, Jun 24, 2014 at 08:06:32PM +1000, Alexey Kardashevskiy wrote:
+>>>>> On 06/10/2014 11:56 AM, Wei Yang wrote:
+>>>>>> Current iommu_table of a PE is a static field. This will have a problem when
+>>>>>> iommu_free_table is called.
+>>>>>
+>>>>> What kind of problem? This table is per PE and PE is not going anywhere.
+>>>>>
+>>>>
+>>>> Yes, for Bus PE, they will always sit in the system. When VF PE introduced,
+>>>> they could be released on the fly. When they are released, so do the iommu
+>>>> table for the PE.
+>>>
+>>> iommu_table is a part of PE struct. When PE is released, iommu_table will
+>>> go with it as well. Why to make is a pointer? I would understand it if you
+>>> added reference counting there but no - iommu_table's lifetime is equal to
+>>> PE lifetime.
+>>>
+>>
+>> Yes, iommu_talbe's life time equals to PE lifetime, so when releasing a PE we
+>> need to release the iommu table. Currently, there is one function to release
+>> the iommu table, iommu_free_table() which takes a pointer of the iommu_table
+>> and release it.
+>>
+>> If the iommu table in PE is just a part of PE, it will have some problem to
+>> release it with iommu_free_table(). That's why I make it a pointer in PE
+>> structure.
+> 
+> What are the sizes of the iommu table and the PE structure?
+
+This is all about iommu_table struct (which is just a descriptor), not
+IOMMU table per se (which may be megabytes) :)
+
+
+> If the table is a round number of pages then you probably don't want to
+> embed it inside the PE structure.
+
+
+
+
+-- 
+Alexey
