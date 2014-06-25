@@ -1,21 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA8FF1A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 14:20:28 +1000 (EST)
-Message-ID: <1403670013.4587.202.camel@pasglop>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 69EE91A077F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 14:21:09 +1000 (EST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Wed, 25 Jun 2014 05:21:06 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9B0051B0804B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 05:21:34 +0100 (BST)
+Received: from d06av09.portsmouth.uk.ibm.com (d06av09.portsmouth.uk.ibm.com
+ [9.149.37.250])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5P4L28X14745848
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 04:21:02 GMT
+Received: from d06av09.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av09.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5P4L2fD002332
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 22:21:02 -0600
+Message-ID: <1403670058.5842.15.camel@ThinkPad-T5421.cn.ibm.com>
 Subject: Re: [PATCH powerpc] Fix parameter restoring issue in commit 752a6422f
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Wed, 25 Jun 2014 14:20:13 +1000
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 25 Jun 2014 12:20:58 +0800
 In-Reply-To: <1403668804.5842.11.camel@ThinkPad-T5421.cn.ibm.com>
 References: <1403668804.5842.11.camel@ThinkPad-T5421.cn.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>, ulrich.weigand@de.ibm.com
+Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ ulrich.weigand@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +42,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+DaYu just reminded me that Michael already had a patch removing all the
+related code. 
+
+Please ignore this patch..
+
+Thanks, Zhong
+
 On Wed, 2014-06-25 at 12:00 +0800, Li Zhong wrote:
 > In commit 752a6422f, new stack frame is created for parameters.
 > 
 > However, the r1 is added back a little earlier, so r3 and r4 are
 > restored from a wrong place, which could cause following error during
 > boot:
-
-Thanks ! However I've decided to apply Michael Ellerman's patch to take
-the whole takeover code out instead.
-
-Cheers,
-Ben.
-
+> 
 > Querying for OPAL presence...  there !
 > DEFAULT CATCH!, exception-handler=fff00700 
 > at   %SRR0: 0000000004223058   %SRR1: 8000000000081002 
