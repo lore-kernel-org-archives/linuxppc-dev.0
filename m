@@ -1,32 +1,40 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
- [209.85.160.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0AC971A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 12:43:25 +1000 (EST)
-Received: by mail-pb0-f42.google.com with SMTP id ma3so1049537pbc.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 19:43:23 -0700 (PDT)
-Message-ID: <53AA3745.7070108@ozlabs.ru>
-Date: Wed, 25 Jun 2014 12:43:17 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EEE141A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 13:05:08 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Wed, 25 Jun 2014 08:35:04 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 49A1F1258054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 08:34:35 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5P35HsX41156652
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 08:35:18 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5P352Bt029877
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 08:35:02 +0530
+Message-ID: <53AA3C5C.4080807@linux.vnet.ibm.com>
+Date: Wed, 25 Jun 2014 11:05:00 +0800
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
-References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>	
- <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>	
- <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>	
- <1403234514.3707.278.camel@ul30vt.home> <1403305961.4587.66.camel@pasglop>		
- <53A94EBD.101@ozlabs.ru> <53A955F5.6050801@suse.de>		
- <53A9741B.1040500@ozlabs.ru> <53A97486.4070604@suse.de>		
- <53A976B7.3070709@ozlabs.ru> <53A97BA9.4020702@suse.de>	
- <1403619685.16078.15.camel@ul30vt.home> <53A98C38.8020205@ozlabs.ru>
- <1403646877.4587.184.camel@pasglop>
-In-Reply-To: <1403646877.4587.184.camel@pasglop>
-Content-Type: text/plain; charset=KOI8-R
-Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
- Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v1 2/3] powerpc/powernv: Support PCI error injection
+References: <1403489682-14841-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1403489682-14841-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ <53A91819.1010900@linux.vnet.ibm.com> <1403591761.4587.161.camel@pasglop>
+ <53A9216C.8050904@linux.vnet.ibm.com> <1403593252.4587.163.camel@pasglop>
+ <20140625000305.GA5742@shangw>
+In-Reply-To: <20140625000305.GA5742@shangw>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, agraf@suse.de,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,36 +44,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/25/2014 07:54 AM, Benjamin Herrenschmidt wrote:
-> On Wed, 2014-06-25 at 00:33 +1000, Alexey Kardashevskiy wrote:
+On 06/25/2014 08:03 AM, Gavin Shan wrote:
+> On Tue, Jun 24, 2014 at 05:00:52PM +1000, Benjamin Herrenschmidt wrote:
+>> On Tue, 2014-06-24 at 14:57 +0800, Mike Qiu wrote:
+>>> Is that mean *host* side error injection should base on
+>>> "CONFIG_IOMMU_API" ? If it is just host side(no guest, no pass through),
+>>> can't we do error inject?
+>>>
+>>> Maybe I misunderstand :)
+>> Ah no, make different patches, we don't want to use IOMMU group ID, just
+>> PE numbers. Maybe we should expose in sysfs the PEs from the platform
+>> code with the error injection files underneath ...
 >>
->> I do not understand why @val is considered LE here and need to be
->> converted
->> to CPU. Really. I truly believe it should be cpu_to_le32().
-> 
-> No. Both are slightly wrong semantically but le32_to_cpu() is less
-> wrong :-)
+> Yeah, "errinjct" needs grab PCI_domain_nr+PE number from sysfs. We
+> already had PE number sysfs file:
 >
-> iowrite32 supposedly takes a "cpu" value as argument and writes an "le"
-> value. So if anything, you need something that converts to a "cpu" value
-> before you call iowrite32.
-> 
-> Now it's still slightly wrong because the "input" to le32_to_cpu() is
-> supposed to be an "LE" value but of course here it's not, it's a "cpu"
-> value too :-)
-> 
-> But yes, I agree with aw here, either do nothing or stick a set of
-> iowriteXX_native or something equivalent in the generic iomap header,
-> define them in term of iowrite32be/iowrite32 based on the compile time
-> endian of the arch.
+> [root@ltcfbl8eb 0000:01:00.1]# pwd
+> /sys/bus/pci/devices/0000:01:00.1
+> [root@ltcfbl8eb 0000:01:00.1]# cat eeh_pe_config_addr
+> 0x1
+>
+> For guest support, we will rely on VFIO group ioctl command, which
+> naturally depends on pass-through.
+>
+> ---
+>
+> We probably implement it like this. If there're anything wrong, please
+> correct me:
+>
+> - Introduce EEH callback struct eeh_ops::err_inject(), which will be
+>    implemented for PowerNV (NULL for pSeries) by calling the PCI error
+>    injection dedicated OPAL API (opal_pci_err_inject()).
+> - Introduce global function eeh.c::eeh_err_inject(), which calls to
+>    eeh_ops::err_inject() and newly introduced VFIO EEH operation
+>    will be implemented based on this function.
+> - Introduce debugfs /sys/kernel/debug/powerpc/PCIxxxx/errinjct, which
 
+Here maybe  "/sys/kernel/debug/powerpc/errinjct" is better, because it 
+will supply "PCI_domain_nr" in parameters, so no need supply errinjct 
+for each PCI domain.
 
-Ok. I'll do nothing.
+Another reason is error inject not only for PCI(in future), so better 
+not in PCI domain entry.
 
+Also it simple for userland tools to has a fixed path.
 
-> Hitting asm-generic/iomap.h I think will cover all archs except ARM.
-> For ARM, just hack arch/arm/asm/io.h
+Thanks
+Mike
 
-
--- 
-Alexey
+>    receives PCI error injection parameters from "errinjct". It could
+>    have format: "ei_token:addr:mask:PCI_domain_nr:PE_num:function".
+>    Eventually, eeh_err_inject() is invoked to call the corresponding
+>    OPAL API.
+>
+> Thanks,
+> Gavin
+>
