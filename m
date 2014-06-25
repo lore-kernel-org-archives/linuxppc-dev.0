@@ -1,40 +1,19 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0235.outbound.protection.outlook.com [207.46.163.235])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B8BF1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:12:16 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 25 Jun 2014 11:12:15 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id CD4DC3578048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:12:13 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5P1Bv995439816
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:11:57 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5P1CCAW021211
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:12:13 +1000
-Date: Wed, 25 Jun 2014 09:12:11 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
-Message-ID: <20140625011211.GA5785@richard>
-References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
- <53A94DA8.6020206@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6F3F1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:16:06 +1000 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc: Don't skip ePAPR spin-table CPUs
+Date: Tue, 24 Jun 2014 20:15:51 -0500
+Message-ID: <1403658951-23158-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <53A94DA8.6020206@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
- bhelgaas@google.com, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, Michael Neuling <mikey@neuling.org>,
+ stable@vger.kernel.org, Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,19 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 24, 2014 at 08:06:32PM +1000, Alexey Kardashevskiy wrote:
->On 06/10/2014 11:56 AM, Wei Yang wrote:
->> Current iommu_table of a PE is a static field. This will have a problem when
->> iommu_free_table is called.
->
->What kind of problem? This table is per PE and PE is not going anywhere.
->
+Commit 59a53afe70fd530040bdc69581f03d880157f15a "powerpc: Don't setup
+CPUs with bad status" broke ePAPR SMP booting.  ePAPR says that CPUs
+that aren't presently running shall have status of disabled, with
+enable-method being used to determine whether the CPU can be enabled.
 
-Yes, for Bus PE, they will always sit in the system. When VF PE introduced,
-they could be released on the fly. When they are released, so do the iommu
-table for the PE.
+Fix by checking for spin-table, which is currently the only supported
+enable-method.
 
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: Emil Medve <Emilian.Medve@Freescale.com>
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/kernel/setup-common.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index e239df3..e5b022c 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -469,9 +469,17 @@ void __init smp_setup_cpu_maps(void)
+ 		}
+ 
+ 		for (j = 0; j < nthreads && cpu < nr_cpu_ids; j++) {
++			bool avail;
++
+ 			DBG("    thread %d -> cpu %d (hard id %d)\n",
+ 			    j, cpu, be32_to_cpu(intserv[j]));
+-			set_cpu_present(cpu, of_device_is_available(dn));
++
++			avail = of_device_is_available(dn);
++			if (!avail)
++				avail = !of_property_match_string(dn,
++						"enable-method", "spin-table");
++
++			set_cpu_present(cpu, avail);
+ 			set_hard_smp_processor_id(cpu, be32_to_cpu(intserv[j]));
+ 			set_cpu_possible(cpu, true);
+ 			cpu++;
 -- 
-Richard Yang
-Help you, Help me
+1.9.1
