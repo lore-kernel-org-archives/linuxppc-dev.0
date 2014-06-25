@@ -1,40 +1,41 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71EF01A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 15:18:46 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2D18C1A000E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 15:28:05 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Wed, 25 Jun 2014 15:18:43 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 69D932CE8047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 15:18:41 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5P4uNnE65994818
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 14:56:23 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5P5IeoL013736
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 15:18:40 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.190.163.12])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- s5P5Iego013733
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 15:18:40 +1000
-Received: from ocelot.ozlabs.ibm.com (haven.au.ibm.com [9.190.164.82])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id ADE02A0196
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 15:18:40 +1000 (EST)
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/1] selftests/powerpc: fix TARGETS in powerpc selftests
- makefile
-Date: Wed, 25 Jun 2014 15:18:40 +1000
-Message-Id: <cf202ebfe8a42e3f84646e7c2a4bfd6a7e6195bc.1403673509.git.sam.bobroff@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 25 Jun 2014 10:58:03 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 3FA1A3940048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 10:58:01 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5P5SGDG61997292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 10:58:16 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5P5RxXp008387
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 10:58:00 +0530
+Date: Wed, 25 Jun 2014 13:27:58 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
+Message-ID: <20140625052758.GA8873@richard>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <53A94DA8.6020206@ozlabs.ru> <20140625011211.GA5785@richard>
+ <53AA4C32.7060004@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <53AA4C32.7060004@ozlabs.ru>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
+ bhelgaas@google.com, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,48 +45,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch changes the name of a make variable (TARGETS) to prevent it
-from colliding with a value set by the user on the command line (as
-they are recommended to do by tools/testing/selftests/README.txt).
+On Wed, Jun 25, 2014 at 02:12:34PM +1000, Alexey Kardashevskiy wrote:
+>On 06/25/2014 11:12 AM, Wei Yang wrote:
+>> On Tue, Jun 24, 2014 at 08:06:32PM +1000, Alexey Kardashevskiy wrote:
+>>> On 06/10/2014 11:56 AM, Wei Yang wrote:
+>>>> Current iommu_table of a PE is a static field. This will have a problem when
+>>>> iommu_free_table is called.
+>>>
+>>> What kind of problem? This table is per PE and PE is not going anywhere.
+>>>
+>> 
+>> Yes, for Bus PE, they will always sit in the system. When VF PE introduced,
+>> they could be released on the fly. When they are released, so do the iommu
+>> table for the PE.
+>
+>iommu_table is a part of PE struct. When PE is released, iommu_table will
+>go with it as well. Why to make is a pointer? I would understand it if you
+>added reference counting there but no - iommu_table's lifetime is equal to
+>PE lifetime.
+>
 
-Before this patch, "make -C tools/testing/selftests TARGETS=powerpc"
-would fail.
+Yes, iommu_talbe's life time equals to PE lifetime, so when releasing a PE we
+need to release the iommu table. Currently, there is one function to release
+the iommu table, iommu_free_table() which takes a pointer of the iommu_table
+and release it.
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- tools/testing/selftests/powerpc/Makefile | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+If the iommu table in PE is just a part of PE, it will have some problem to
+release it with iommu_free_table(). That's why I make it a pointer in PE
+structure.
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 54833a7..84795c0 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -13,22 +13,22 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
- 
- export CC CFLAGS
- 
--TARGETS = pmu copyloops mm tm
-+SUB_TARGETS = pmu copyloops mm tm
- 
- endif
- 
- all:
--	@for TARGET in $(TARGETS); do \
-+	@for TARGET in $(SUB_TARGETS); do \
- 		$(MAKE) -C $$TARGET all; \
- 	done;
- 
- run_tests: all
--	@for TARGET in $(TARGETS); do \
-+	@for TARGET in $(SUB_TARGETS); do \
- 		$(MAKE) -C $$TARGET run_tests; \
- 	done;
- 
- clean:
--	@for TARGET in $(TARGETS); do \
-+	@for TARGET in $(SUB_TARGETS); do \
- 		$(MAKE) -C $$TARGET clean; \
- 	done;
- 	rm -f tags
+>
+>
+>-- 
+>Alexey
+
 -- 
-1.9.0
+Richard Yang
+Help you, Help me
