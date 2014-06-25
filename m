@@ -1,26 +1,32 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0241.outbound.protection.outlook.com [207.46.163.241])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 11C871A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 12:04:15 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH v2 1/2] flexcan: add err_irq handler for flexcan
-Date: Wed, 25 Jun 2014 02:04:08 +0000
-Message-ID: <1403661847384.93009@freescale.com>
-References: <1403229664-33912-1-git-send-email-B45475@freescale.com>
- <1403281165.12851.186.camel@snotra.buserror.net>
- <fc0a7150924249768aee8e4361c654a1@BLUPR03MB341.namprd03.prod.outlook.com>,
- <1403631298.26908.1.camel@snotra.buserror.net>
-In-Reply-To: <1403631298.26908.1.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AC971A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 12:43:25 +1000 (EST)
+Received: by mail-pb0-f42.google.com with SMTP id ma3so1049537pbc.15
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 19:43:23 -0700 (PDT)
+Message-ID: <53AA3745.7070108@ozlabs.ru>
+Date: Wed, 25 Jun 2014 12:43:17 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Cc: "mkl@pengutronix.de" <mkl@pengutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "wg@grandegger.com" <wg@grandegger.com>,
- "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] vfio: Fix endianness handling for emulated BARs
+References: <1403091391-31780-1-git-send-email-aik@ozlabs.ru>	
+ <1403116512.3707.175.camel@ul30vt.home> <53A233E9.6030006@ozlabs.ru>	
+ <53A241F6.9010307@ozlabs.ru> <53A25D74.5000804@ozlabs.ru>	
+ <1403234514.3707.278.camel@ul30vt.home> <1403305961.4587.66.camel@pasglop>		
+ <53A94EBD.101@ozlabs.ru> <53A955F5.6050801@suse.de>		
+ <53A9741B.1040500@ozlabs.ru> <53A97486.4070604@suse.de>		
+ <53A976B7.3070709@ozlabs.ru> <53A97BA9.4020702@suse.de>	
+ <1403619685.16078.15.camel@ul30vt.home> <53A98C38.8020205@ozlabs.ru>
+ <1403646877.4587.184.camel@pasglop>
+In-Reply-To: <1403646877.4587.184.camel@pasglop>
+Content-Type: text/plain; charset=KOI8-R
+Cc: kvm@vger.kernel.org, Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
+ Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +36,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=0A=
-________________________________________=0A=
-From: Wood Scott-B07421=0A=
-Sent: Wednesday, June 25, 2014 1:34 AM=0A=
-To: Zhao Qiang-B45475=0A=
-Cc: linuxppc-dev@lists.ozlabs.org; linux-can@vger.kernel.org; wg@grandegger=
-.com; mkl@pengutronix.de=0A=
-Subject: Re: [PATCH v2 1/2] flexcan: add err_irq handler for flexcan=0A=
-=0A=
-On Mon, 2014-06-23 at 01:20 -0500, Zhao Qiang-B45475 wrote:=0A=
-> On Sat, 2014-06-21 at 12:19, Wood Scott wrote:=0A=
->=0A=
-> > -----Original Message-----=0A=
-> > From: Wood Scott-B07421=0A=
-> > Sent: Saturday, June 21, 2014 12:19 AM=0A=
-> > To: Zhao Qiang-B45475=0A=
-> > Cc: linuxppc-dev@lists.ozlabs.org; linux-can@vger.kernel.org;=0A=
-> > wg@grandegger.com; mkl@pengutronix.de; Wood Scott-B07421=0A=
-> > Subject: Re: [PATCH v2 1/2] flexcan: add err_irq handler for flexcan=0A=
-> >=0A=
-> > On Fri, 2014-06-20 at 10:01 +0800, Zhao Qiang wrote:=0A=
-> > > when flexcan is not physically linked, command 'cantest' will trigger=
-=0A=
-> > > an err_irq, add err_irq handler for it.=0A=
-> > >=0A=
-> > > Signed-off-by: Zhao Qiang <B45475@freescale.com>=0A=
-> > > ---=0A=
-> > > Changes for v2:=0A=
-> > >   - use a space instead of tab=0A=
-> > >   - use flexcan_poll_state instead of print=0A=
-> > >=0A=
-> > >  drivers/net/can/flexcan.c | 31 ++++++++++++++++++++++++++++++-=0A=
-> > >  1 file changed, 30 insertions(+), 1 deletion(-)=0A=
-> > >=0A=
-> > > diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c=0A=
-> > > index f425ec2..7432ba4 100644=0A=
-> > > --- a/drivers/net/can/flexcan.c=0A=
-> > > +++ b/drivers/net/can/flexcan.c=0A=
-> > > @@ -208,6 +208,7 @@ struct flexcan_priv {=0A=
-> > >   void __iomem *base;=0A=
-> > >   u32 reg_esr;=0A=
-> > >   u32 reg_ctrl_default;=0A=
-> > > + unsigned int err_irq;=0A=
-> >=0A=
-> > Why unsigned?=0A=
-> Err_irq is from 0.=0A=
-=0A=
-So?  irqs are plain "int" almost everywhere in the kernel.=0A=
-=0A=
-OK, I will change it.=0A=
-=0A=
--Zhao =0A=
-=0A=
+On 06/25/2014 07:54 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2014-06-25 at 00:33 +1000, Alexey Kardashevskiy wrote:
+>>
+>> I do not understand why @val is considered LE here and need to be
+>> converted
+>> to CPU. Really. I truly believe it should be cpu_to_le32().
+> 
+> No. Both are slightly wrong semantically but le32_to_cpu() is less
+> wrong :-)
+>
+> iowrite32 supposedly takes a "cpu" value as argument and writes an "le"
+> value. So if anything, you need something that converts to a "cpu" value
+> before you call iowrite32.
+> 
+> Now it's still slightly wrong because the "input" to le32_to_cpu() is
+> supposed to be an "LE" value but of course here it's not, it's a "cpu"
+> value too :-)
+> 
+> But yes, I agree with aw here, either do nothing or stick a set of
+> iowriteXX_native or something equivalent in the generic iomap header,
+> define them in term of iowrite32be/iowrite32 based on the compile time
+> endian of the arch.
+
+
+Ok. I'll do nothing.
+
+
+> Hitting asm-generic/iomap.h I think will cover all archs except ARM.
+> For ARM, just hack arch/arm/asm/io.h
+
+
+-- 
+Alexey
