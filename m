@@ -1,21 +1,36 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <m.szyprowski@samsung.com>
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 507C11A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 22:08:17 +1000 (EST)
-Message-ID: <53AABBAC.6070400@suse.de>
-Date: Wed, 25 Jun 2014 14:08:12 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH V2] KVM: PPC: BOOK3S: HV: Use base page size when comparing
- against slb value
-References: <1402858027-11296-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1402858027-11296-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75B431A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 22:34:04 +1000 (EST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout2.w1.samsung.com
+ (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
+ 17 2011)) with ESMTP id <0N7Q00K0A5K6SH00@mailout2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Wed, 25 Jun 2014 13:33:42 +0100 (BST)
+Message-id: <53AAC1B4.5000204@samsung.com>
+Date: Wed, 25 Jun 2014 14:33:56 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+MIME-version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Joonsoo Kim <iamjoonsoo.kim@lge.com>
+Subject: Re: [PATCH v3 -next 0/9] CMA: generalize CMA reserved area management
+ code
+References: <1402897251-23639-1-git-send-email-iamjoonsoo.kim@lge.com>
+ <539EB4C7.3080106@samsung.com> <20140617012507.GA6825@js1304-P5Q-DELUXE>
+ <20140618135144.297c785260f9e2aebead867c@linux-foundation.org>
+In-reply-to: <20140618135144.297c785260f9e2aebead867c@linux-foundation.org>
+Content-type: text/plain; charset=UTF-8; format=flowed
+Cc: kvm-ppc@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ kvm@vger.kernel.org, linux-mm@kvack.org, Gleb Natapov <gleb@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Alexander Graf <agraf@suse.de>, Michal Nazarewicz <mina86@mina86.com>,
+ linux-kernel@vger.kernel.org, Minchan Kim <minchan@kernel.org>,
+ Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Paolo Bonzini <pbonzini@redhat.com>, Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello,
 
-On 15.06.14 20:47, Aneesh Kumar K.V wrote:
-> With guests supporting Multiple page size per segment (MPSS),
-> hpte_page_size returns the actual page size used. Add a new function to
-> return base page size and use that to compare against the the page size
-> calculated from SLB. Without this patch a hpte lookup can fail since
-> we are comparing wrong page size in kvmppc_hv_find_lock_hpte.
->
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+On 2014-06-18 22:51, Andrew Morton wrote:
+> On Tue, 17 Jun 2014 10:25:07 +0900 Joonsoo Kim <iamjoonsoo.kim@lge.com> wrote:
+>>>> v2:
+>>>>    - Although this patchset looks very different with v1, the end result,
+>>>>    that is, mm/cma.c is same with v1's one. So I carry Ack to patch 6-7.
+>>>>
+>>>> This patchset is based on linux-next 20140610.
+>>> Thanks for taking care of this. I will test it with my setup and if
+>>> everything goes well, I will take it to my -next tree. If any branch
+>>> is required for anyone to continue his works on top of those patches,
+>>> let me know, I will also prepare it.
+>> Hello,
+>>
+>> I'm glad to hear that. :)
+>> But, there is one concern. As you already know, I am preparing further
+>> patches (Aggressively allocate the pages on CMA reserved memory). It
+>> may be highly related to MM branch and also slightly depends on this CMA
+>> changes. In this case, what is the best strategy to merge this
+>> patchset? IMHO, Anrew's tree is more appropriate branch. If there is
+>> no issue in this case, I am willing to develope further patches based
+>> on your tree.
+> That's probably easier.  Marek, I'll merge these into -mm (and hence
+> -next and git://git.kernel.org/pub/scm/linux/kernel/git/mhocko/mm.git)
+> and shall hold them pending you review/ack/test/etc, OK?
 
-Thanks, applied to for-3.16.
+Ok. I've tested them and they work fine. I'm sorry that you had to wait for
+me for a few days. You can now add:
 
+Acked-and-tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-Alex
+I've also rebased my pending patches onto this set (I will send them soon).
+
+The question is now if you want to keep the discussed patches in your 
+-mm tree,
+or should I take them to my -next branch. If you like to keep them, I assume
+you will also take the patches which depends on the discussed changes.
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
