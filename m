@@ -1,23 +1,42 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by lists.ozlabs.org (Postfix) with SMTP id 0FC7F1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 18:45:32 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 26764-07 for <linuxppc-dev@lists.ozlabs.org>;
- Wed, 25 Jun 2014 09:45:21 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Zhao Qiang' <B45475@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "broonie@kernel.org" <broonie@kernel.org>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>,
- "B07421@freescale.com" <B07421@freescale.com>
-Subject: RE: [PATCH] spi: include "int ret" with macro
-Date: Wed, 25 Jun 2014 08:44:49 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D17264A4B@AcuExch.aculab.com>
-References: <1403661276-16598-1-git-send-email-B45475@freescale.com>
-In-Reply-To: <1403661276-16598-1-git-send-email-B45475@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 487021A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 19:13:52 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 25 Jun 2014 14:43:45 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 878901258054
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 14:43:12 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5P9EqNu54526096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 14:44:52 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5P9Dcld002164
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 14:43:38 +0530
+Date: Wed, 25 Jun 2014 17:13:36 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
+Message-ID: <20140625091336.GA5573@richard>
+References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <53A94DA8.6020206@ozlabs.ru> <20140625011211.GA5785@richard>
+ <53AA4C32.7060004@ozlabs.ru> <20140625052758.GA8873@richard>
+ <53AA7F30.40504@ozlabs.ru>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <53AA7F30.40504@ozlabs.ru>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
+ bhelgaas@google.com, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +46,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogWmhhbyBRaWFuZw0KPiByZXQgaXMgdW51c2VkIHdoZW4gQ09ORklHX0ZTTF9TT0MgZGVm
-aW5lZCwNCj4gc28gaW5jbHVkZSBpdCB3aXRoICIjaWZuZGVmIENPTkZJR19GU0xfU09DIi4NCj4g
-DQo+IFNpZ25lZC1vZmYtYnk6IFpoYW8gUWlhbmcgPEI0NTQ3NUBmcmVlc2NhbGUuY29tPg0KPiAt
-LS0NCj4gIGRyaXZlcnMvc3BpL3NwaS1mc2wtbGliLmMgfCAzICsrLQ0KPiAgMSBmaWxlIGNoYW5n
-ZWQsIDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvc3BpL3NwaS1mc2wtbGliLmMgYi9kcml2ZXJzL3NwaS9zcGktZnNsLWxpYi5jDQo+IGlu
-ZGV4IGU1ZDQ1ZmMuLjQ0YWFjZTEgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvc3BpL3NwaS1mc2wt
-bGliLmMNCj4gKysrIGIvZHJpdmVycy9zcGkvc3BpLWZzbC1saWIuYw0KPiBAQCAtMTk4LDggKzE5
-OCw5IEBAIGludCBvZl9tcGM4eHh4X3NwaV9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpv
-ZmRldikNCj4gIAlzdHJ1Y3QgbXBjOHh4eF9zcGlfcHJvYmVfaW5mbyAqcGluZm87DQo+ICAJc3Ry
-dWN0IGZzbF9zcGlfcGxhdGZvcm1fZGF0YSAqcGRhdGE7DQo+ICAJY29uc3Qgdm9pZCAqcHJvcDsN
-Cj4gKyNpZm5kZWYgQ09ORklHX0ZTTF9TT0MNCj4gIAlpbnQgcmV0ID0gLUVOT01FTTsNCj4gLQ0K
-PiArI2VuZGlmDQoNCllvdSBhcmUgcmVtb3ZpbmcgdGhlIGJsYW5rIGxpbmUgYWZ0ZXIgdGhlIGRl
-ZmluaXRpb24gb2YgdGhlIGxvY2FscywNCmFuZCB0aGUgaW5pdGlhbGlzZXIgaXNuJ3QgbmVlZGVk
-Lg0KDQo+ICAJcGluZm8gPSBkZXZtX2t6YWxsb2MoJm9mZGV2LT5kZXYsIHNpemVvZigqcGluZm8p
-LCBHRlBfS0VSTkVMKTsNCj4gIAlpZiAoIXBpbmZvKQ0KPiAgCQlyZXR1cm4gLUVOT01FTTsNCj4g
-LS0NCg0KSSB0aGluayBpdCBtaWdodCBiZSBwcmVmZXJhYmxlIHRvIGRlZmluZSAncmV0JyBpbnNp
-ZGUgdGhlIGNvbmRpdGlvbmFsDQp3aGVyZSBpdCBpcyB1c2VkIC0gd2hpY2ggcmVxdWlyZXMgYW4g
-ZXh0cmEgey4uLn0gYmxvY2suDQoNCkEgJ3NuZWFreScgd2F5IHRvIGF2b2lkIHRoZSB3YXJuaW5n
-IGlzIHRvICdyZXR1cm4gcmV0JyB3aGVuIHRoZSBremFsbG9jKCkgZmFpbHMuDQoNCglEYXZpZA0K
-DQoNCg==
+On Wed, Jun 25, 2014 at 05:50:08PM +1000, Alexey Kardashevskiy wrote:
+>On 06/25/2014 03:27 PM, Wei Yang wrote:
+>> On Wed, Jun 25, 2014 at 02:12:34PM +1000, Alexey Kardashevskiy wrote:
+>>> On 06/25/2014 11:12 AM, Wei Yang wrote:
+>>>> On Tue, Jun 24, 2014 at 08:06:32PM +1000, Alexey Kardashevskiy wrote:
+>>>>> On 06/10/2014 11:56 AM, Wei Yang wrote:
+>>>>>> Current iommu_table of a PE is a static field. This will have a problem when
+>>>>>> iommu_free_table is called.
+>>>>>
+>>>>> What kind of problem? This table is per PE and PE is not going anywhere.
+>>>>>
+>>>>
+>>>> Yes, for Bus PE, they will always sit in the system. When VF PE introduced,
+>>>> they could be released on the fly. When they are released, so do the iommu
+>>>> table for the PE.
+>>>
+>>> iommu_table is a part of PE struct. When PE is released, iommu_table will
+>>> go with it as well. Why to make is a pointer? I would understand it if you
+>>> added reference counting there but no - iommu_table's lifetime is equal to
+>>> PE lifetime.
+>>>
+>> 
+>> Yes, iommu_talbe's life time equals to PE lifetime, so when releasing a PE we
+>> need to release the iommu table. Currently, there is one function to release
+>> the iommu table, iommu_free_table() which takes a pointer of the iommu_table
+>> and release it.
+>> 
+>> If the iommu table in PE is just a part of PE, it will have some problem to
+>> release it with iommu_free_table(). That's why I make it a pointer in PE
+>> structure.
+>
+>So you are saying that you want to release PE by one kfree() and release
+>iommu_table by another kfree (embedded into iommu_free_table()). For me
+>that means that PE and iommu_table have different lifetime.
+>
+
+Hmm... it is right, the lifetime of these two may have some difference.
+
+>And I cannot find the exact place in this patchset where you call
+>iommu_free_table(), what do I miss?
+>
+
+This is called in pnv_pci_release_dev_dma(), which is introduced in the commit
+cd740988: powerpc/powernv: allocate VF PE
+
+>
+>
+>
+>-- 
+>Alexey
+
+-- 
+Richard Yang
+Help you, Help me
