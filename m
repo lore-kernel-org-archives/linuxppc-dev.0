@@ -1,38 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <vincent.guittot@linaro.org>
+Received: from mail-ob0-f172.google.com (mail-ob0-f172.google.com
+ [209.85.214.172])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 788191A0010
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:37:27 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 25 Jun 2014 16:37:26 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id ECDA02BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:37:23 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5P6F5bF11600318
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:15:06 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5P6bNFL026499
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:37:23 +1000
-Date: Wed, 25 Jun 2014 16:37:22 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Bugfix: powerpc/eeh: Create eeh sysfs entry in post_init()
-Message-ID: <20140625063721.GA5081@shangw>
-References: <1403667127-1622-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <20140625053312.GA3808@shangw> <20140625062353.GB15078@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 77C211A000E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:41:43 +1000 (EST)
+Received: by mail-ob0-f172.google.com with SMTP id uy5so1588176obc.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2014 23:41:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140625062353.GB15078@richard>
-Cc: linuxppc-dev@lists.ozlabs.org, Mike Qiu <qiudayu@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
+References: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Date: Wed, 25 Jun 2014 08:41:20 +0200
+Message-ID: <CAKfTPtBzpuVf7Ts0YunD=38hONg2RT3Ymr-jvFxx4woa_Qt9tQ@mail.gmail.com>
+Subject: Re: [PATCH v2] sched: Fix compiler warnings
+To: Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Russell King <linux@arm.linux.org.uk>,
+ Peter Zijlstra <peterz@infradead.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ LAK <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,83 +31,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 25, 2014 at 02:23:53PM +0800, Wei Yang wrote:
->On Wed, Jun 25, 2014 at 03:33:12PM +1000, Gavin Shan wrote:
->>On Tue, Jun 24, 2014 at 11:32:07PM -0400, Mike Qiu wrote:
->>
->>[ cc Richard ]
->>
->>>Eeh sysfs entry created must be after EEH_ENABLED been set
->>>in eeh_subsystem_flags.
->>>
->>>In PowerNV platform, it try to create sysfs entry before
->>>EEH_ENABLED been set, when boot up. So nothing will be
->>>created for eeh in sysfs.
->>>
->>
->>Could you please make the commit log more clear? :-)
->>
->>I guess the issue is introduced by commit 2213fb1 ("
->>powerpc/eeh: Skip eeh sysfs when eeh is disabled"). The
->>commit checks EEH is enabled while creating PCI device
->>EEH sysfs files. If not, the sysfs files won't be created.
->>That's to avoid warning reported during PCI hotplug.
->>
->>The problem you're reporting (if I understand completely):
->>You don't see the sysfs files after the system boots up.
->>If it's the case, you probably need following changes in
->>arch/powerpc/platforms/powernv/pci.c::pnv_pci_ioda_fixup().
->>Could you have a try with it?
->>
->>#ifdef CONFIG_EEH
->>	eeh_probe_mode_set(EEH_PROBE_MODE_DEV);
->>-	eeh_addr_cache_build();
->>	eeh_init();
->>+	eeh_addr_cache_build();
->>#endif
->>
+On 25 June 2014 03:05, Guenter Roeck <linux@roeck-us.net> wrote:
+> Commit 143e1e28cb (sched: Rework sched_domain topology definition)
+> introduced a number of functions with a return value of 'const int'.
+> gcc doesn't know what to do with that and, if the kernel is compiled
+> with W=1, complains with the following warnings whenever sched.h
+> is included.
 >
->I think this is a more proper fix.
+> include/linux/sched.h:875:25: warning:
+>         type qualifiers ignored on function return type
+> include/linux/sched.h:882:25: warning:
+>         type qualifiers ignored on function return type
+> include/linux/sched.h:889:25: warning:
+>         type qualifiers ignored on function return type
+> include/linux/sched.h:1002:21: warning:
+>         type qualifiers ignored on function return type
 >
->BTW, I have one confusion in this mode set.
+> Commits fb2aa855 (sched, ARM: Create a dedicated scheduler topology table)
+> and 607b45e9a (sched, powerpc: Create a dedicated topology table) introduce
+> the same warning in the arm and powerpc code.
 >
->eeh_init()
->  -> eeh_ops->dev_probe()
->     -> powernv_eeh_dev_probe()
->        -> eeh_set_enable(true)   <- here the eeh is marked enabled
+> Drop 'const' from the function declarations to fix the problem.
 >
->We can see this flag would be set for each pci_dev. So is it possible to make
->this "set" only once?
+> The fix for all three patches has to be applied together to avoid
+> compilation failures for the affected architectures.
 >
+> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Vincent Guittot <vincent.guittot@linaro.org>
 
-It shouldn't be a problem because there might not have PCI devices
-supporting EEH in the guest. All PCI devices are emulated.
+Acked-by Vincent Guittot <vincent.guittot@linaro.org>
 
->>Eventually PowerNV/pSeries have same function call sequence:
->>
->>- Set EEH probe mode
->>- Doing probe (with device node or PCI device)
->>- Build address cache.
->>
->>>Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
->>>---
->>> arch/powerpc/platforms/powernv/eeh-ioda.c | 3 +++
->>> 1 file changed, 3 insertions(+)
->>>
->>>diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
->>>index 8ad0c5b..5f95581 100644
->>>--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
->>>+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
->>>@@ -136,6 +136,9 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
->>> 	struct pnv_phb *phb = hose->private_data;
->>> 	int ret;
->>>
->>>+	/* Creat sysfs after EEH_ENABLED been set */
->>>+	eeh_add_sysfs_files(hose->bus);
->>>+
->>> 	/* Register OPAL event notifier */
->>> 	if (!ioda_eeh_nb_init) {
->>> 		ret = opal_notifier_register(&ioda_eeh_nb);
-
-Thanks,
-Gavin
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> ---
+> v2: Fix problem in all affected architectures with a single patch
+>     to avoid compilation errors.
+>
+>  arch/arm/kernel/topology.c | 2 +-
+>  arch/powerpc/kernel/smp.c  | 2 +-
+>  include/linux/sched.h      | 8 ++++----
+>  3 files changed, 6 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index 9d85318..e35d880 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -275,7 +275,7 @@ void store_cpu_topology(unsigned int cpuid)
+>                 cpu_topology[cpuid].socket_id, mpidr);
+>  }
+>
+> -static inline const int cpu_corepower_flags(void)
+> +static inline int cpu_corepower_flags(void)
+>  {
+>         return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
+>  }
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 51a3ff7..1007fb8 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -747,7 +747,7 @@ int setup_profiling_timer(unsigned int multiplier)
+>
+>  #ifdef CONFIG_SCHED_SMT
+>  /* cpumask of CPUs with asymetric SMT dependancy */
+> -static const int powerpc_smt_flags(void)
+> +static int powerpc_smt_flags(void)
+>  {
+>         int flags = SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+>
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 306f4f0..0376b05 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -872,21 +872,21 @@ enum cpu_idle_type {
+>  #define SD_NUMA                        0x4000  /* cross-node balancing */
+>
+>  #ifdef CONFIG_SCHED_SMT
+> -static inline const int cpu_smt_flags(void)
+> +static inline int cpu_smt_flags(void)
+>  {
+>         return SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+>  }
+>  #endif
+>
+>  #ifdef CONFIG_SCHED_MC
+> -static inline const int cpu_core_flags(void)
+> +static inline int cpu_core_flags(void)
+>  {
+>         return SD_SHARE_PKG_RESOURCES;
+>  }
+>  #endif
+>
+>  #ifdef CONFIG_NUMA
+> -static inline const int cpu_numa_flags(void)
+> +static inline int cpu_numa_flags(void)
+>  {
+>         return SD_NUMA;
+>  }
+> @@ -999,7 +999,7 @@ void free_sched_domains(cpumask_var_t doms[], unsigned int ndoms);
+>  bool cpus_share_cache(int this_cpu, int that_cpu);
+>
+>  typedef const struct cpumask *(*sched_domain_mask_f)(int cpu);
+> -typedef const int (*sched_domain_flags_f)(void);
+> +typedef int (*sched_domain_flags_f)(void);
+>
+>  #define SDTL_OVERLAP   0x01
+>
+> --
+> 1.9.1
+>
