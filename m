@@ -1,18 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B097F1A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:13:35 +1000 (EST)
-Message-ID: <1403676803.4587.204.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 25 Jun 2014 16:13:23 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F78D1A0012
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 16:24:07 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 25 Jun 2014 11:54:00 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id A277F394003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:53:55 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5P6OBlB8388898
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:54:11 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s5P6Nst0027576
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:53:54 +0530
+Date: Wed, 25 Jun 2014 14:23:53 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Bugfix: powerpc/eeh: Create eeh sysfs entry in post_init()
+Message-ID: <20140625062353.GB15078@richard>
+References: <1403667127-1622-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ <20140625053312.GA3808@shangw>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140625053312.GA3808@shangw>
+Cc: linuxppc-dev@lists.ozlabs.org, weiyang@linux.vnet.ibm.com,
+ Mike Qiu <qiudayu@linux.vnet.ibm.com>, kvm-ppc@vger.kernel.org
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,80 +42,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Wed, Jun 25, 2014 at 03:33:12PM +1000, Gavin Shan wrote:
+>On Tue, Jun 24, 2014 at 11:32:07PM -0400, Mike Qiu wrote:
+>
+>[ cc Richard ]
+>
+>>Eeh sysfs entry created must be after EEH_ENABLED been set
+>>in eeh_subsystem_flags.
+>>
+>>In PowerNV platform, it try to create sysfs entry before
+>>EEH_ENABLED been set, when boot up. So nothing will be
+>>created for eeh in sysfs.
+>>
+>
+>Could you please make the commit log more clear? :-)
+>
+>I guess the issue is introduced by commit 2213fb1 ("
+>powerpc/eeh: Skip eeh sysfs when eeh is disabled"). The
+>commit checks EEH is enabled while creating PCI device
+>EEH sysfs files. If not, the sysfs files won't be created.
+>That's to avoid warning reported during PCI hotplug.
+>
+>The problem you're reporting (if I understand completely):
+>You don't see the sysfs files after the system boots up.
+>If it's the case, you probably need following changes in
+>arch/powerpc/platforms/powernv/pci.c::pnv_pci_ioda_fixup().
+>Could you have a try with it?
+>
+>#ifdef CONFIG_EEH
+>	eeh_probe_mode_set(EEH_PROBE_MODE_DEV);
+>-	eeh_addr_cache_build();
+>	eeh_init();
+>+	eeh_addr_cache_build();
+>#endif
+>
 
-Here are a handful or two of powerpc fixes and simple/trivial
-cleanups. A bunch of them fix ftrace with the new ABI v2 in
-Little Endian, the rest is a scattering of fairly simple things.
+I think this is a more proper fix.
 
-Cheers,
-Ben.
+BTW, I have one confusion in this mode set.
 
-The following changes since commit 68986c9f0f4552c34c248501eb0c690553866d6e:
+eeh_init()
+  -> eeh_ops->dev_probe()
+     -> powernv_eeh_dev_probe()
+        -> eeh_set_enable(true)   <- here the eeh is marked enabled
 
-  Revert "offb: Add palette hack for little endian" (2014-06-16 19:45:45 +1000)
+We can see this flag would be set for each pci_dev. So is it possible to make
+this "set" only once?
 
-are available in the git repository at:
+>Eventually PowerNV/pSeries have same function call sequence:
+>
+>- Set EEH probe mode
+>- Doing probe (with device node or PCI device)
+>- Build address cache.
+>
+>>Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+>>---
+>> arch/powerpc/platforms/powernv/eeh-ioda.c | 3 +++
+>> 1 file changed, 3 insertions(+)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>>index 8ad0c5b..5f95581 100644
+>>--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+>>+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>>@@ -136,6 +136,9 @@ static int ioda_eeh_post_init(struct pci_controller *hose)
+>> 	struct pnv_phb *phb = hose->private_data;
+>> 	int ret;
+>>
+>>+	/* Creat sysfs after EEH_ENABLED been set */
+>>+	eeh_add_sysfs_files(hose->bus);
+>>+
+>> 	/* Register OPAL event notifier */
+>> 	if (!ioda_eeh_nb_init) {
+>> 		ret = opal_notifier_register(&ioda_eeh_nb);
+>
+>Thanks,
+>Gavin
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 6663a4fa6711050036562ddfd2086edf735fae21:
-
-  powerpc: Don't skip ePAPR spin-table CPUs (2014-06-25 13:10:49 +1000)
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (1):
-      powerpc: Remove __arch_swab*
-
-Catalin Marinas (1):
-      powerpc/kmemleak: Do not scan the DART table
-
-Gavin Shan (1):
-      powerpc/kerenl: Enable EEH for IO accessors
-
-Laurent Dufour (1):
-      powerpc/module: Fix TOC symbol CRC
-
-Michael Ellerman (9):
-      powerpc: Remove ancient DEBUG_SIG code
-      powerpc: Add ppc_global_function_entry()
-      powerpc/ftrace: Fix typo in mask of opcode
-      powerpc/ftrace: Fix inverted check of create_branch()
-      powerpc/ftrace: Fix nop of modules on 64bit LE (ABIv2)
-      powerpc/ftrace: Use pr_fmt() to namespace error messages
-      powerpc/kprobes: Fix jprobes on ABI v2 (LE)
-      selftests/powerpc: Use the test harness for the TM DSCR test
-      powerpc/powernv: Remove OPAL v1 takeover
-
-Rasmus Villemoes (1):
-      powerpc/macintosh/smu.c: Fix closing brace followed by if
-
-Rickard Strandqvist (1):
-      powerpc/cell: cbe_thermal.c: Cleaning up a variable is of the wrong type
-
-Scott Wood (1):
-      powerpc: Don't skip ePAPR spin-table CPUs
-
- arch/powerpc/Kconfig.debug                         |   1 -
- arch/powerpc/include/asm/code-patching.h           |  11 ++
- arch/powerpc/include/asm/opal.h                    |  29 ---
- arch/powerpc/include/asm/swab.h                    |  43 -----
- arch/powerpc/kernel/ftrace.c                       |  52 +++--
- arch/powerpc/kernel/iomap.c                        |  20 +-
- arch/powerpc/kernel/kprobes.c                      |   9 +-
- arch/powerpc/kernel/module_64.c                    |  11 +-
- arch/powerpc/kernel/prom.c                         |   7 -
- arch/powerpc/kernel/prom_init.c                    | 211 ---------------------
- arch/powerpc/kernel/prom_init_check.sh             |   4 +-
- arch/powerpc/kernel/setup-common.c                 |  10 +-
- arch/powerpc/kernel/signal_32.c                    |   9 -
- arch/powerpc/kernel/signal_64.c                    |   9 -
- arch/powerpc/platforms/cell/cbe_thermal.c          |   2 +-
- arch/powerpc/platforms/powernv/Makefile            |   2 +-
- arch/powerpc/platforms/powernv/opal-takeover.S     | 140 --------------
- arch/powerpc/sysdev/dart_iommu.c                   |   5 +
- drivers/macintosh/smu.c                            |   3 +-
- tools/testing/selftests/powerpc/tm/Makefile        |   2 +-
- .../testing/selftests/powerpc/tm/tm-resched-dscr.c |  14 +-
- 21 files changed, 93 insertions(+), 501 deletions(-)
- delete mode 100644 arch/powerpc/platforms/powernv/opal-takeover.S
+-- 
+Richard Yang
+Help you, Help me
