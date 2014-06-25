@@ -1,25 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0209.outbound.protection.outlook.com [207.46.163.209])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 51E1C1A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:25:15 +1000 (EST)
-Message-ID: <1403659426.4587.192.camel@pasglop>
-Subject: Re: [PATCH v2] sched: Fix compiler warnings
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Guenter Roeck <linux@roeck-us.net>
-Date: Wed, 25 Jun 2014 11:23:46 +1000
-In-Reply-To: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
-References: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Russell King <linux@arm.linux.org.uk>,
- Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- Dietmar Eggemann <dietmar.eggemann@arm.com>,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F9011A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 11:58:27 +1000 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <broonie@kernel.org>,
+ <linux-spi@vger.kernel.org>, <B07421@freescale.com>
+Subject: [PATCH] spi: include "int ret" with macro
+Date: Wed, 25 Jun 2014 09:54:36 +0800
+Message-ID: <1403661276-16598-1-git-send-email-B45475@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-06-24 at 18:05 -0700, Guenter Roeck wrote:
+ret is unused when CONFIG_FSL_SOC defined,
+so include it with "#ifndef CONFIG_FSL_SOC".
 
- .../...
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ drivers/spi/spi-fsl-lib.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> Drop 'const' from the function declarations to fix the problem.
-> 
-> The fix for all three patches has to be applied together to avoid
-> compilation failures for the affected architectures.
-> 
-> Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@kernel.org>
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
-> v2: Fix problem in all affected architectures with a single patch
->     to avoid compilation errors.
+diff --git a/drivers/spi/spi-fsl-lib.c b/drivers/spi/spi-fsl-lib.c
+index e5d45fc..44aace1 100644
+--- a/drivers/spi/spi-fsl-lib.c
++++ b/drivers/spi/spi-fsl-lib.c
+@@ -198,8 +198,9 @@ int of_mpc8xxx_spi_probe(struct platform_device *ofdev)
+ 	struct mpc8xxx_spi_probe_info *pinfo;
+ 	struct fsl_spi_platform_data *pdata;
+ 	const void *prop;
++#ifndef CONFIG_FSL_SOC
+ 	int ret = -ENOMEM;
+-
++#endif
+ 	pinfo = devm_kzalloc(&ofdev->dev, sizeof(*pinfo), GFP_KERNEL);
+ 	if (!pinfo)
+ 		return -ENOMEM;
+-- 
+1.8.5
