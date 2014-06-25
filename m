@@ -1,42 +1,31 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EAE371A000D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 19:19:04 +1000 (EST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 25 Jun 2014 19:19:04 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 467472BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 19:19:00 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5P92cCr34734102
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 19:02:38 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5P9Ixpo017456
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 19:18:59 +1000
-Date: Wed, 25 Jun 2014 17:18:57 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
-Message-ID: <20140625091857.GB5573@richard>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id 564851A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2014 19:20:52 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 04167-03 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 25 Jun 2014 10:20:50 +0100 (BST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Wei Yang' <weiyang@linux.vnet.ibm.com>, Alexey Kardashevskiy
+ <aik@ozlabs.ru>
+Subject: RE: [RFC PATCH V3 06/17] ppc/pnv: allocate pe->iommu_table dynamically
+Date: Wed, 25 Jun 2014 09:20:11 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D17264AD8@AcuExch.aculab.com>
 References: <1402365399-5121-1-git-send-email-weiyang@linux.vnet.ibm.com>
  <1402365399-5121-7-git-send-email-weiyang@linux.vnet.ibm.com>
  <53A94DA8.6020206@ozlabs.ru> <20140625011211.GA5785@richard>
  <53AA4C32.7060004@ozlabs.ru> <20140625052758.GA8873@richard>
- <53AA7F30.40504@ozlabs.ru> <1403682997.4587.208.camel@pasglop>
+In-Reply-To: <20140625052758.GA8873@richard>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1403682997.4587.208.camel@pasglop>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, yan@linux.vnet.ibm.com,
- bhelgaas@google.com, qiudayu@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Cc: "benh@au1.ibm.com" <benh@au1.ibm.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "gwshan@linux.vnet.ibm.com" <gwshan@linux.vnet.ibm.com>,
+ "qiudayu@linux.vnet.ibm.com" <qiudayu@linux.vnet.ibm.com>,
+ "bhelgaas@google.com" <bhelgaas@google.com>,
+ "yan@linux.vnet.ibm.com" <yan@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,48 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 25, 2014 at 05:56:37PM +1000, Benjamin Herrenschmidt wrote:
->On Wed, 2014-06-25 at 17:50 +1000, Alexey Kardashevskiy wrote:
->
->> > Yes, iommu_talbe's life time equals to PE lifetime, so when releasing a PE we
->> > need to release the iommu table. Currently, there is one function to release
->> > the iommu table, iommu_free_table() which takes a pointer of the iommu_table
->> > and release it.
->> > 
->> > If the iommu table in PE is just a part of PE, it will have some problem to
->> > release it with iommu_free_table(). That's why I make it a pointer in PE
->> > structure.
->> 
->> So you are saying that you want to release PE by one kfree() and release
->> iommu_table by another kfree (embedded into iommu_free_table()). For me
->> that means that PE and iommu_table have different lifetime.
->> 
->> And I cannot find the exact place in this patchset where you call
->> iommu_free_table(), what do I miss?
->
->He has a point though... iommu_free_table() does a whole bunch of things
->in addition to kfree at the end.
->
->This is a discrepancy in the iommu.c code, we don't allocate the table,
->it's allocated by our callers, but we do free it in iommu_free_table().
->
->My gut feeling is that we should fix that in the core by moving the
->kfree() out of iommu_free_table() and back into vio.c and
->pseries/iommu.c, the only two callers, otherwise we can't wrap the table
->structure inside another object if we are going to ever free it.
->
-
-Yes, this is another option. Move the kfree() outside could keep some logic in
-current code, like in pnv_pci_ioda_tce_invalidate(). We could get the tbl from
-a PE structure directly, instead of adding a field in tbl to point to the PE
-structure.
-
->Cheers,
->Ben.
->
->
->
-
--- 
-Richard Yang
-Help you, Help me
+RnJvbTogV2VpIFlhbmcNCj4gT24gV2VkLCBKdW4gMjUsIDIwMTQgYXQgMDI6MTI6MzRQTSArMTAw
+MCwgQWxleGV5IEthcmRhc2hldnNraXkgd3JvdGU6DQo+ID5PbiAwNi8yNS8yMDE0IDExOjEyIEFN
+LCBXZWkgWWFuZyB3cm90ZToNCj4gPj4gT24gVHVlLCBKdW4gMjQsIDIwMTQgYXQgMDg6MDY6MzJQ
+TSArMTAwMCwgQWxleGV5IEthcmRhc2hldnNraXkgd3JvdGU6DQo+ID4+PiBPbiAwNi8xMC8yMDE0
+IDExOjU2IEFNLCBXZWkgWWFuZyB3cm90ZToNCj4gPj4+PiBDdXJyZW50IGlvbW11X3RhYmxlIG9m
+IGEgUEUgaXMgYSBzdGF0aWMgZmllbGQuIFRoaXMgd2lsbCBoYXZlIGEgcHJvYmxlbSB3aGVuDQo+
+ID4+Pj4gaW9tbXVfZnJlZV90YWJsZSBpcyBjYWxsZWQuDQo+ID4+Pg0KPiA+Pj4gV2hhdCBraW5k
+IG9mIHByb2JsZW0/IFRoaXMgdGFibGUgaXMgcGVyIFBFIGFuZCBQRSBpcyBub3QgZ29pbmcgYW55
+d2hlcmUuDQo+ID4+Pg0KPiA+Pg0KPiA+PiBZZXMsIGZvciBCdXMgUEUsIHRoZXkgd2lsbCBhbHdh
+eXMgc2l0IGluIHRoZSBzeXN0ZW0uIFdoZW4gVkYgUEUgaW50cm9kdWNlZCwNCj4gPj4gdGhleSBj
+b3VsZCBiZSByZWxlYXNlZCBvbiB0aGUgZmx5LiBXaGVuIHRoZXkgYXJlIHJlbGVhc2VkLCBzbyBk
+byB0aGUgaW9tbXUNCj4gPj4gdGFibGUgZm9yIHRoZSBQRS4NCj4gPg0KPiA+aW9tbXVfdGFibGUg
+aXMgYSBwYXJ0IG9mIFBFIHN0cnVjdC4gV2hlbiBQRSBpcyByZWxlYXNlZCwgaW9tbXVfdGFibGUg
+d2lsbA0KPiA+Z28gd2l0aCBpdCBhcyB3ZWxsLiBXaHkgdG8gbWFrZSBpcyBhIHBvaW50ZXI/IEkg
+d291bGQgdW5kZXJzdGFuZCBpdCBpZiB5b3UNCj4gPmFkZGVkIHJlZmVyZW5jZSBjb3VudGluZyB0
+aGVyZSBidXQgbm8gLSBpb21tdV90YWJsZSdzIGxpZmV0aW1lIGlzIGVxdWFsIHRvDQo+ID5QRSBs
+aWZldGltZS4NCj4gPg0KPiANCj4gWWVzLCBpb21tdV90YWxiZSdzIGxpZmUgdGltZSBlcXVhbHMg
+dG8gUEUgbGlmZXRpbWUsIHNvIHdoZW4gcmVsZWFzaW5nIGEgUEUgd2UNCj4gbmVlZCB0byByZWxl
+YXNlIHRoZSBpb21tdSB0YWJsZS4gQ3VycmVudGx5LCB0aGVyZSBpcyBvbmUgZnVuY3Rpb24gdG8g
+cmVsZWFzZQ0KPiB0aGUgaW9tbXUgdGFibGUsIGlvbW11X2ZyZWVfdGFibGUoKSB3aGljaCB0YWtl
+cyBhIHBvaW50ZXIgb2YgdGhlIGlvbW11X3RhYmxlDQo+IGFuZCByZWxlYXNlIGl0Lg0KPiANCj4g
+SWYgdGhlIGlvbW11IHRhYmxlIGluIFBFIGlzIGp1c3QgYSBwYXJ0IG9mIFBFLCBpdCB3aWxsIGhh
+dmUgc29tZSBwcm9ibGVtIHRvDQo+IHJlbGVhc2UgaXQgd2l0aCBpb21tdV9mcmVlX3RhYmxlKCku
+IFRoYXQncyB3aHkgSSBtYWtlIGl0IGEgcG9pbnRlciBpbiBQRQ0KPiBzdHJ1Y3R1cmUuDQoNCldo
+YXQgYXJlIHRoZSBzaXplcyBvZiB0aGUgaW9tbXUgdGFibGUgYW5kIHRoZSBQRSBzdHJ1Y3R1cmU/
+DQpJZiB0aGUgdGFibGUgaXMgYSByb3VuZCBudW1iZXIgb2YgcGFnZXMgdGhlbiB5b3UgcHJvYmFi
+bHkgZG9uJ3Qgd2FudCB0bw0KZW1iZWQgaXQgaW5zaWRlIHRoZSBQRSBzdHJ1Y3R1cmUuDQoNCglE
+YXZpZA0KDQo=
