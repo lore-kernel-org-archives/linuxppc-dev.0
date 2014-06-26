@@ -1,23 +1,18 @@
-Return-Path: <dborkman@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alexandru.sardan@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 694061A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 18:36:11 +1000 (EST)
-Message-ID: <53ABDB72.9020902@redhat.com>
-Date: Thu, 26 Jun 2014 10:36:02 +0200
-From: Daniel Borkmann <dborkman@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8AFF1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 19:15:18 +1000 (EST)
+From: Alexandru-Cezar Sardan <alexandru.sardan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] perf/powerpc: reset event hw state when adding it to the PMU
+Date: Thu, 26 Jun 2014 11:58:58 +0300
+Message-ID: <1403773138-7558-1-git-send-email-alexandru.sardan@freescale.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 2/2] powerpc: bpf: Fix the broken LD_VLAN_TAG_PRESENT
- test
-References: <1403717697-3911-1-git-send-email-kda@linux-powerpc.org>
- <1403717697-3911-2-git-send-email-kda@linux-powerpc.org>
- <1403771455.18572.8.camel@concordia>
-In-Reply-To: <1403771455.18572.8.camel@concordia>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: netdev@vger.kernel.org, Denis Kirjanov <kda@linux-powerpc.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Alexandru-Cezar Sardan <alexandru.sardan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/26/2014 10:30 AM, Michael Ellerman wrote:
-> On Wed, 2014-06-25 at 21:34 +0400, Denis Kirjanov wrote:
->> We have to return the boolean here if the tag presents
->> or not, not just ANDing the TCI with the mask which results to:
->>
->> [  709.412097] test_bpf: #18 LD_VLAN_TAG_PRESENT
->> [  709.412245] ret 4096 != 1
->> [  709.412332] ret 4096 != 1
->> [  709.412333] FAIL (2 times)
->
-> Hi Denis,
->
-> Is this the same version of test_bpf that is in Linus' tree?
->
-> I don't see any fails with that version, am I missing something?
->
->    [  187.690640] test_bpf: #18 LD_VLAN_TAG_PRESENT 46 50 PASS
+When adding an event to the PMU with PERF_EF_START the STOPPED and UPTODATE
+flags need to be cleared in the hw.event status variable because they are
+preventing the update of the event count on overflow interrupt.
 
-Did you try to modprobe test_bpf after enabling JIT, i.e. :
+Signed-off-by: Alexandru-Cezar Sardan <alexandru.sardan@freescale.com>
+---
+ arch/powerpc/perf/core-fsl-emb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-   echo 1 > /proc/sys/net/core/bpf_jit_enable
-
-Last time I tested with ppc64, I saw the interpreter passing
-while JIT failed, which the fix above should address.
-
-Cheers,
-
-Daniel
+diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
+index d35ae52..ef2ce48 100644
+--- a/arch/powerpc/perf/core-fsl-emb.c
++++ b/arch/powerpc/perf/core-fsl-emb.c
+@@ -330,9 +330,11 @@ static int fsl_emb_pmu_add(struct perf_event *event, int flags)
+ 	}
+ 	local64_set(&event->hw.prev_count, val);
+ 
+-	if (!(flags & PERF_EF_START)) {
++	if (unlikely(!(flags & PERF_EF_START))) {
+ 		event->hw.state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
+ 		val = 0;
++	} else {
++		event->hw.state &= ~(PERF_HES_STOPPED | PERF_HES_UPTODATE);
+ 	}
+ 
+ 	write_pmc(i, val);
+-- 
+1.7.9.5
