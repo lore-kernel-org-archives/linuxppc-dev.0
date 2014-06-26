@@ -1,39 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCB501A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 10:12:11 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 26 Jun 2014 10:12:09 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A0BE12CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 10:12:05 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5PNnkuF11206982
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 09:49:46 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5Q0C4nA018900
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 10:12:05 +1000
-Date: Thu, 26 Jun 2014 10:12:04 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Bugfix: powerpc/eeh: Create eeh sysfs entry in post_init()
-Message-ID: <20140626001204.GA6787@shangw>
-References: <1403667127-1622-1-git-send-email-qiudayu@linux.vnet.ibm.com>
- <20140625053312.GA3808@shangw>
- <53AA79FB.5000202@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AAF841A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 10:59:33 +1000 (EST)
+Date: Thu, 26 Jun 2014 10:59:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2] sched: Fix compiler warnings
+Message-ID: <20140626105928.5f375f0c@canb.auug.org.au>
+In-Reply-To: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
+References: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="+QahgC5+KEYLbs62"
-In-Reply-To: <53AA79FB.5000202@linux.vnet.ibm.com>
-Cc: weiyang@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/wF5KR9VSDmitSY4.rX/W0Xh"; protocol="application/pgp-signature"
+Cc: Russell King <linux@arm.linux.org.uk>,
+ Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+ Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,160 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Sig_/wF5KR9VSDmitSY4.rX/W0Xh
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
---+QahgC5+KEYLbs62
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hi Guenter,
 
-On Wed, Jun 25, 2014 at 03:27:55PM +0800, Mike Qiu wrote:
->On 06/25/2014 01:33 PM, Gavin Shan wrote:
->>On Tue, Jun 24, 2014 at 11:32:07PM -0400, Mike Qiu wrote:
->>
->>[ cc Richard ]
->>
->>>Eeh sysfs entry created must be after EEH_ENABLED been set
->>>in eeh_subsystem_flags.
->>>
->>>In PowerNV platform, it try to create sysfs entry before
->>>EEH_ENABLED been set, when boot up. So nothing will be
->>>created for eeh in sysfs.
->>>
->>Could you please make the commit log more clear? :-)
->>
->>I guess the issue is introduced by commit 2213fb1 ("
->>powerpc/eeh: Skip eeh sysfs when eeh is disabled"). The
->>commit checks EEH is enabled while creating PCI device
->>EEH sysfs files. If not, the sysfs files won't be created.
->>That's to avoid warning reported during PCI hotplug.
->>
->>The problem you're reporting (if I understand completely):
->>You don't see the sysfs files after the system boots up.
->>If it's the case, you probably need following changes in
->>arch/powerpc/platforms/powernv/pci.c::pnv_pci_ioda_fixup().
->>Could you have a try with it?
->>
->>#ifdef CONFIG_EEH
->>	eeh_probe_mode_set(EEH_PROBE_MODE_DEV);
->>-	eeh_addr_cache_build();
->>	eeh_init();
->>+	eeh_addr_cache_build();
->>#endif
+[I know I'm a bit late to this, but ...]
+
+On Tue, 24 Jun 2014 18:05:29 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
 >
->But this was not work, as I test, see boot log below:
->
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index 9d85318..e35d880 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -275,7 +275,7 @@ void store_cpu_topology(unsigned int cpuid)
+>  		cpu_topology[cpuid].socket_id, mpidr);
+>  }
+> =20
+> -static inline const int cpu_corepower_flags(void)
+> +static inline int cpu_corepower_flags(void)
+>  {
+>  	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
+>  }
 
-Yeah, we can't convert eeh_dev to pci_dev that time. The
-association is populated by eeh_addr_cache_build(). The
-attached patch should fix your issue. I tried on P7 machine
-and sysfs entries created. Could you help having a test
-on your machine? :-)
+The only reference to this function is to take its address, so "inline"
+is useless, right?
 
-Thanks,
-Gavin
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 306f4f0..0376b05 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -872,21 +872,21 @@ enum cpu_idle_type {
+>  #define SD_NUMA			0x4000	/* cross-node balancing */
+> =20
+>  #ifdef CONFIG_SCHED_SMT
+> -static inline const int cpu_smt_flags(void)
+> +static inline int cpu_smt_flags(void)
+>  {
+>  	return SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+>  }
+>  #endif
+> =20
+>  #ifdef CONFIG_SCHED_MC
+> -static inline const int cpu_core_flags(void)
+> +static inline int cpu_core_flags(void)
+>  {
+>  	return SD_SHARE_PKG_RESOURCES;
+>  }
+>  #endif
+> =20
+>  #ifdef CONFIG_NUMA
+> -static inline const int cpu_numa_flags(void)
+> +static inline int cpu_numa_flags(void)
+>  {
+>  	return SD_NUMA;
+>  }
 
---+QahgC5+KEYLbs62
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0001-powerpc-eeh-sysfs-entries-lost.patch"
+The same is true of those three, but then they would have to be moved
+into a .c file and replaced with prototypes ...
 
->From 70b8ac1d64192954e04bc4a4f2736349d7df6a8a Mon Sep 17 00:00:00 2001
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Thu, 26 Jun 2014 09:50:25 +1000
-Subject: [PATCH] powerpc/eeh: sysfs entries lost
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-The sysfs entries are lost because of commit 2213fb1 ("powerpc/eeh:
-Skip eeh sysfs when eeh is disabled"). That commit added condition
-to create sysfs entries with EEH_ENABLED, which isn't populated
-when trying to create sysfs entries on PowerNV platform during system
-boot time. The patch fixes the issue by:
+--Sig_/wF5KR9VSDmitSY4.rX/W0Xh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-   * Reoder EEH initialization functions so that they're same on
-     PowerNV/pSeries.
-   * Cache PE's primary bus by PowerNV platform instead of EEH core
-     to avoid kernel crash caused by the function reorder. Another
-     benefit with this is to avoid one eeh_probe_mode_dev() in EEH
-     core.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Reported-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/eeh_pe.c                 | 11 -----------
- arch/powerpc/platforms/powernv/eeh-powernv.c | 17 ++++++++++++++++-
- arch/powerpc/platforms/powernv/pci-ioda.c    |  2 +-
- 3 files changed, 17 insertions(+), 13 deletions(-)
+iQIcBAEBCAAGBQJTq3B0AAoJEMDTa8Ir7ZwV8zMP/2IaL9O+TWfB5xl3Shi30PuI
+3/ThTtgA+dpwGmts0zA3tr1MfsgHE0BEw5z9LQzkd4auTIEjHKhK57eOO0o+BH3Z
+Dj9TdVMceRON45IA1En23y8bN0CdGl+82kXfvC7Nkkol1fDaHdHWtaQC/HmNzYFU
+51nT1YhawSpBdn0EyxFhWpIOFCu5gTw/qbgKa3nMv7vWMlnrFffTdf3NlQS2bXEN
+1t9EuBpL472hpnhdr8e8oDP7v4v4ZN9NZ4e/OUvoRnMBRRJpeFh+B63ipZOiEZIR
+s655tHiF6P5FL3nDvN78ZrJ481kE3zRJhkEzShns4MWiXMgdgChO6bEcf80B88d8
+RKH1rjXLpBhZhAOcBRyQMc2KT7j1sS+IBZhyMueHD0IJ36gVXyZMs+uNfw8xQ0MU
+0JfCvQlQwRRj8lwbyUN+muMP7FutWT2kHnHJNcB03Gu9wZvwISW0R21JlkVVrfMs
+kK5344O3VvGik1iW4Bs9S4YPBghC6dGqBMlNXOW0mHEpKza/Vu3bh0al6l9sRETx
+2Y9xPfyUbXuD+VhE4AsYBa22JGpWFtTWM6TK/w2A1DNuNIhaKZjACxyC3ajmwiZF
+4w/wgQKOdwQCyUsZIer+ASkgN5dKcQOs8EiY7VyX8lc4DGNEaPI6pV6FdLJRyHyd
+G23T3ps+VvfZJgGSMdlQ
+=0rW7
+-----END PGP SIGNATURE-----
 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index fbd01eb..1dce071a 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -351,17 +351,6 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 	pe->config_addr	= edev->config_addr;
- 
- 	/*
--	 * While doing PE reset, we probably hot-reset the
--	 * upstream bridge. However, the PCI devices including
--	 * the associated EEH devices might be removed when EEH
--	 * core is doing recovery. So that won't safe to retrieve
--	 * the bridge through downstream EEH device. We have to
--	 * trace the parent PCI bus, then the upstream bridge.
--	 */
--	if (eeh_probe_mode_dev())
--		pe->bus = eeh_dev_to_pci_dev(edev)->bus;
--
--	/*
- 	 * Put the new EEH PE into hierarchy tree. If the parent
- 	 * can't be found, the newly created PE will be attached
- 	 * to PHB directly. Otherwise, we have to associate the
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 56a206f..48eb223 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -107,6 +107,7 @@ static int powernv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	struct pnv_phb *phb = hose->private_data;
- 	struct device_node *dn = pci_device_to_OF_node(dev);
- 	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
-+	int ret;
- 
- 	/*
- 	 * When probing the root bridge, which doesn't have any
-@@ -143,7 +144,21 @@ static int powernv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	edev->pe_config_addr	= phb->bdfn_to_pe(phb, dev->bus, dev->devfn & 0xff);
- 
- 	/* Create PE */
--	eeh_add_to_parent_pe(edev);
-+	ret = eeh_add_to_parent_pe(edev);
-+	if (ret) {
-+		pr_warn("%s: Can't add PCI dev %s to parent PE (%d)\n",
-+			__func__, pci_name(dev), ret);
-+		return ret;
-+	}
-+
-+	/*
-+	 * Cache the PE primary bus, which can't be fetched when
-+	 * full hotplug is in progress. In that case, all child
-+	 * PCI devices of the PE are expected to be removed prior
-+	 * to PE reset.
-+	 */
-+	if (!edev->pe->bus)
-+		edev->pe->bus = dev->bus;
- 
- 	/*
- 	 * Enable EEH explicitly so that we will do EEH check
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index de19ede..81f2d3a 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1142,8 +1142,8 @@ static void pnv_pci_ioda_fixup(void)
- 
- #ifdef CONFIG_EEH
- 	eeh_probe_mode_set(EEH_PROBE_MODE_DEV);
--	eeh_addr_cache_build();
- 	eeh_init();
-+	eeh_addr_cache_build();
- #endif
- }
- 
--- 
-1.8.3.2
-
-
---+QahgC5+KEYLbs62--
+--Sig_/wF5KR9VSDmitSY4.rX/W0Xh--
