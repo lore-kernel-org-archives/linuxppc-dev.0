@@ -2,18 +2,20 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 342D01A000D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 18:22:22 +1000 (EST)
-Message-ID: <1403770940.18572.7.camel@concordia>
-Subject: Re: powerpc: crash with 3.16.0-rc2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 286A31A000D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 18:30:56 +1000 (EST)
+Message-ID: <1403771455.18572.8.camel@concordia>
+Subject: Re: [PATCH v2 2/2] powerpc: bpf: Fix the broken LD_VLAN_TAG_PRESENT
+ test
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Cedric Le Goater <clg@fr.ibm.com>
-Date: Thu, 26 Jun 2014 18:22:20 +1000
-In-Reply-To: <53ABC37C.6050101@fr.ibm.com>
-References: <20140626061015.GA13181@us.ibm.com> <53ABC37C.6050101@fr.ibm.com>
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Date: Thu, 26 Jun 2014 18:30:55 +1000
+In-Reply-To: <1403717697-3911-2-git-send-email-kda@linux-powerpc.org>
+References: <1403717697-3911-1-git-send-email-kda@linux-powerpc.org>
+ <1403717697-3911-2-git-send-email-kda@linux-powerpc.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-06-26 at 08:53 +0200, Cedric Le Goater wrote:
-> Hi Suka,
+On Wed, 2014-06-25 at 21:34 +0400, Denis Kirjanov wrote:
+> We have to return the boolean here if the tag presents
+> or not, not just ANDing the TCI with the mask which results to:
 > 
-> On 06/26/2014 08:10 AM, Sukadev Bhattiprolu wrote:
-> > I got the following crash in Open Firmware, on two separate systems
-> > with recent mainline kernel (3.16.0-rc2). One was a P8 LPAR with no
-> > changes to kernel and another a Power7 LPAR with some kernel changes
-> > (24x7 perf counter patches). I will backout the patches and try but
-> > wanted to check if there is some config change I am missing.
-> > 
-> > I am also attaching the config file (which is based on a 3.14
-> > kernel that boots ok).
-> > 
-> > ---
-> > OF stdout device is: /vdevice/vty@30000000
-> > Preparing to boot Linux version 3.16.0-rc2-unwind+ (root@saturn-lp2) (gcc version 4.8.2 20131212 (Red Hat 4.8.2-7) (GCC) ) #5 SMP Thu Jun 26 00:01:47 CDT 2014
-> > Detected machine type: 0000000000000101
-> > Max number of cores passed to firmware: 256 (NR_CPUS = 1024)
-> > Calling ibm,client-architecture-support... done
-> > command line: BOOT_IMAGE=/vmlinux-3.16.0-rc2-unwind root=UUID=017d60b7-9db9-4d91-9dc8-4e6f91b0ed40 ro biosdevname=0 vconsole.font=latarcyrheb-sun16
-> > memory layout at init:
-> >   memory_limit : 0000000000000000 (16 MB aligned)
-> >   alloc_bottom : 0000000005530000
-> >   alloc_top    : 0000000010000000
-> >   alloc_top_hi : 0000000010000000
-> >   rmo_top      : 0000000010000000
-> >   ram_top      : 0000000010000000
-> > instantiating rtas at 0x000000000ee90000... done
-> > Querying for OPAL presence... not there.
-> 
-> A patch from Michael Ellerman was just merged : 
-> 
-> 	powerpc/powernv: Remove OPAL v1 takeover
-> 
-> I think it fixes the problem you are seeing.
+> [  709.412097] test_bpf: #18 LD_VLAN_TAG_PRESENT
+> [  709.412245] ret 4096 != 1
+> [  709.412332] ret 4096 != 1
+> [  709.412333] FAIL (2 times)
 
-Yes it should.
+Hi Denis,
+
+Is this the same version of test_bpf that is in Linus' tree?
+
+I don't see any fails with that version, am I missing something?
+
+  [  187.690640] test_bpf: #18 LD_VLAN_TAG_PRESENT 46 50 PASS
 
 cheers
