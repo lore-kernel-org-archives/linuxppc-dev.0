@@ -1,19 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAF841A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 10:59:33 +1000 (EST)
-Date: Thu, 26 Jun 2014 10:59:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2] sched: Fix compiler warnings
-Message-ID: <20140626105928.5f375f0c@canb.auug.org.au>
-In-Reply-To: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
-References: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205])
+ by lists.ozlabs.org (Postfix) with ESMTP id 24F341A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2014 13:28:11 +1000 (EST)
+Message-ID: <53AB933D.1040108@roeck-us.net>
+Date: Wed, 25 Jun 2014 20:27:57 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/wF5KR9VSDmitSY4.rX/W0Xh"; protocol="application/pgp-signature"
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH v2] sched: Fix compiler warnings
+References: <1403658329-13196-1-git-send-email-linux@roeck-us.net>
+ <20140626105928.5f375f0c@canb.auug.org.au>
+In-Reply-To: <20140626105928.5f375f0c@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Russell King <linux@arm.linux.org.uk>,
  Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
  Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>,
@@ -29,90 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/wF5KR9VSDmitSY4.rX/W0Xh
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-Hi Guenter,
-
-[I know I'm a bit late to this, but ...]
-
-On Tue, 24 Jun 2014 18:05:29 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+On 06/25/2014 05:59 PM, Stephen Rothwell wrote:
+> Hi Guenter,
 >
-> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-> index 9d85318..e35d880 100644
-> --- a/arch/arm/kernel/topology.c
-> +++ b/arch/arm/kernel/topology.c
-> @@ -275,7 +275,7 @@ void store_cpu_topology(unsigned int cpuid)
->  		cpu_topology[cpuid].socket_id, mpidr);
->  }
-> =20
-> -static inline const int cpu_corepower_flags(void)
-> +static inline int cpu_corepower_flags(void)
->  {
->  	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
->  }
+> [I know I'm a bit late to this, but ...]
+>
+> On Tue, 24 Jun 2014 18:05:29 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+>>
+>> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+>> index 9d85318..e35d880 100644
+>> --- a/arch/arm/kernel/topology.c
+>> +++ b/arch/arm/kernel/topology.c
+>> @@ -275,7 +275,7 @@ void store_cpu_topology(unsigned int cpuid)
+>>   		cpu_topology[cpuid].socket_id, mpidr);
+>>   }
+>>
+>> -static inline const int cpu_corepower_flags(void)
+>> +static inline int cpu_corepower_flags(void)
+>>   {
+>>   	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
+>>   }
+>
+> The only reference to this function is to take its address, so "inline"
+> is useless, right?
+>
+>> diff --git a/include/linux/sched.h b/include/linux/sched.h
+>> index 306f4f0..0376b05 100644
+>> --- a/include/linux/sched.h
+>> +++ b/include/linux/sched.h
+>> @@ -872,21 +872,21 @@ enum cpu_idle_type {
+>>   #define SD_NUMA			0x4000	/* cross-node balancing */
+>>
+>>   #ifdef CONFIG_SCHED_SMT
+>> -static inline const int cpu_smt_flags(void)
+>> +static inline int cpu_smt_flags(void)
+>>   {
+>>   	return SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
+>>   }
+>>   #endif
+>>
+>>   #ifdef CONFIG_SCHED_MC
+>> -static inline const int cpu_core_flags(void)
+>> +static inline int cpu_core_flags(void)
+>>   {
+>>   	return SD_SHARE_PKG_RESOURCES;
+>>   }
+>>   #endif
+>>
+>>   #ifdef CONFIG_NUMA
+>> -static inline const int cpu_numa_flags(void)
+>> +static inline int cpu_numa_flags(void)
+>>   {
+>>   	return SD_NUMA;
+>>   }
+>
+> The same is true of those three, but then they would have to be moved
+> into a .c file and replaced with prototypes ...
+>
 
-The only reference to this function is to take its address, so "inline"
-is useless, right?
+Personally I wasn't sure why it had to be functions instead of defines,
+but who knows. Anyway, seems others are not happy with my proposed fix
+either, and everyone seems to suggest a different solution, so I guess
+it won't go anywhere.
 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 306f4f0..0376b05 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -872,21 +872,21 @@ enum cpu_idle_type {
->  #define SD_NUMA			0x4000	/* cross-node balancing */
-> =20
->  #ifdef CONFIG_SCHED_SMT
-> -static inline const int cpu_smt_flags(void)
-> +static inline int cpu_smt_flags(void)
->  {
->  	return SD_SHARE_CPUCAPACITY | SD_SHARE_PKG_RESOURCES;
->  }
->  #endif
-> =20
->  #ifdef CONFIG_SCHED_MC
-> -static inline const int cpu_core_flags(void)
-> +static inline int cpu_core_flags(void)
->  {
->  	return SD_SHARE_PKG_RESOURCES;
->  }
->  #endif
-> =20
->  #ifdef CONFIG_NUMA
-> -static inline const int cpu_numa_flags(void)
-> +static inline int cpu_numa_flags(void)
->  {
->  	return SD_NUMA;
->  }
+I "solved" my immediate problem of getting a polluted build log by
+filtering the warnings out, so I don't really care too much anymore ;-).
 
-The same is true of those three, but then they would have to be moved
-into a .c file and replaced with prototypes ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/wF5KR9VSDmitSY4.rX/W0Xh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJTq3B0AAoJEMDTa8Ir7ZwV8zMP/2IaL9O+TWfB5xl3Shi30PuI
-3/ThTtgA+dpwGmts0zA3tr1MfsgHE0BEw5z9LQzkd4auTIEjHKhK57eOO0o+BH3Z
-Dj9TdVMceRON45IA1En23y8bN0CdGl+82kXfvC7Nkkol1fDaHdHWtaQC/HmNzYFU
-51nT1YhawSpBdn0EyxFhWpIOFCu5gTw/qbgKa3nMv7vWMlnrFffTdf3NlQS2bXEN
-1t9EuBpL472hpnhdr8e8oDP7v4v4ZN9NZ4e/OUvoRnMBRRJpeFh+B63ipZOiEZIR
-s655tHiF6P5FL3nDvN78ZrJ481kE3zRJhkEzShns4MWiXMgdgChO6bEcf80B88d8
-RKH1rjXLpBhZhAOcBRyQMc2KT7j1sS+IBZhyMueHD0IJ36gVXyZMs+uNfw8xQ0MU
-0JfCvQlQwRRj8lwbyUN+muMP7FutWT2kHnHJNcB03Gu9wZvwISW0R21JlkVVrfMs
-kK5344O3VvGik1iW4Bs9S4YPBghC6dGqBMlNXOW0mHEpKza/Vu3bh0al6l9sRETx
-2Y9xPfyUbXuD+VhE4AsYBa22JGpWFtTWM6TK/w2A1DNuNIhaKZjACxyC3ajmwiZF
-4w/wgQKOdwQCyUsZIer+ASkgN5dKcQOs8EiY7VyX8lc4DGNEaPI6pV6FdLJRyHyd
-G23T3ps+VvfZJgGSMdlQ
-=0rW7
------END PGP SIGNATURE-----
-
---Sig_/wF5KR9VSDmitSY4.rX/W0Xh--
+Guenter
