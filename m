@@ -1,32 +1,29 @@
-Return-Path: <vincent.yang.fujitsu@gmail.com>
-Received: from mail-yk0-x231.google.com (mail-yk0-x231.google.com
- [IPv6:2607:f8b0:4002:c07::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <guangyu.chen@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C237C1A0006
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2014 21:00:23 +1000 (EST)
-Received: by mail-yk0-f177.google.com with SMTP id 10so2743433ykt.8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2014 04:00:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D389D1A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2014 21:08:25 +1000 (EST)
+Date: Fri, 27 Jun 2014 18:58:09 +0800
+From: Nicolin Chen <Guangyu.Chen@freescale.com>
+To: Nicolin Chen <nicoleotsuka@gmail.com>, <vinod.koul@intel.com>,
+ <s.hauer@pengutronix.de>
+Subject: Re: [RFC][PATCH 1/2] dma: imx-sdma: Add device to device support
+Message-ID: <20140627105808.GB2506@MrMyself>
+References: <cover.1402653667.git.nicoleotsuka@gmail.com>
+ <42744e778ce8a4b424d5642f86d18ef047bcc7cd.1402653667.git.nicoleotsuka@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <17c3cfc2-ae8c-4d19-8da5-fe40432f565c@email.android.com>
-References: <1403763812-5495-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <1403763812-5495-7-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <8b071848-f7df-4965-bd49-ae05b21ebe2e@email.android.com>
- <CAOEd-H2Xtpmj9LAnfX6SwcUSu3W1qvD32YNNPpB4ZQn_HF9-wg@mail.gmail.com>
- <17c3cfc2-ae8c-4d19-8da5-fe40432f565c@email.android.com>
-Date: Fri, 27 Jun 2014 19:00:21 +0800
-Message-ID: <CAOEd-H1c5rOs9ykdyvLNtLNhi6myxj7ExYQ6x1tNBP_LdJZoxg@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 6/6] mmc: core: add manual resume capability
-From: Vincent Yang <vincent.yang.fujitsu@gmail.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Andy Green <andy.green@linaro.org>, "patches@linaro.org" <patches@linaro.org>,
- Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "chris@printf.net" <chris@printf.net>,
- Jaswinder Singh <jaswinder.singh@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <42744e778ce8a4b424d5642f86d18ef047bcc7cd.1402653667.git.nicoleotsuka@gmail.com>
+Cc: mark.rutland@arm.com, alsa-devel@alsa-project.org,
+ linux-doc@vger.kernel.org, tiwai@suse.de, timur@tabi.org, lgirdwood@gmail.com,
+ b42378@freescale.com, b02247@freescale.com, grant.likely@linaro.org,
+ devicetree@vger.kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk,
+ b38343@freescale.com, robh+dt@kernel.org, dan.j.williams@intel.com,
+ perex@perex.cz, rdunlap@infradead.org, linux-kernel@vger.kernel.org,
+ broonie@kernel.org, galak@codeaurora.org, dmaengine@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,400 +33,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2014-06-27 17:40 GMT+08:00 Ulf Hansson <ulf.hansson@linaro.org>:
->
->
-> On 27 juni 2014 04:23:42 CEST, Vincent Yang <vincent.yang.fujitsu@gmail.com> wrote:
->>2014-06-26 17:42 GMT+08:00 Ulf Hansson <ulf.hansson@linaro.org>:
->>>
->>>
->>> On 26 juni 2014 08:23:32 CEST, Vincent Yang
->><vincent.yang.fujitsu@gmail.com> wrote:
->>>>This patch adds manual resume for some embedded platforms with rootfs
->>>>stored in SD card. It references CONFIG_MMC_BLOCK_DEFERRED_RESUME in
->>>>kernel 3.10. It lets host controller driver to manually handle resume
->>>>by itself.
->>>>
->>>>[symptom]
->>>>This issue is found on mb86s7x platforms with rootfs stored in SD
->>card.
->>>>It failed to resume form STR suspend mode because SD card cannot be
->>>>ready
->>>>in time. It take longer time (e.g., 600ms) to be ready for access.
->>>>The error log looks like below:
->>>>
->>>>root@localhost:~# echo mem > /sys/power/state
->>>>[   30.441974] SUSPEND
->>>>
->>>>SCB Firmware : Category 01 Version 02.03 Rev. 00_
->>>>    Config   : (no configuration)
->>>>root@localhost:~# [   30.702976] Buffer I/O error on device
->>mmcblk1p2,
->>>>logical block 31349
->>>>[   30.709678] Buffer I/O error on device mmcblk1p2, logical block
->>>>168073
->>>>[   30.716220] Buffer I/O error on device mmcblk1p2, logical block
->>>>168074
->>>>[   30.722759] Buffer I/O error on device mmcblk1p2, logical block
->>>>168075
->>>>[   30.729456] Buffer I/O error on device mmcblk1p2, logical block
->>>>31349
->>>>[   30.735916] Buffer I/O error on device mmcblk1p2, logical block
->>>>31350
->>>>[   30.742370] Buffer I/O error on device mmcblk1p2, logical block
->>>>31351
->>>>[   30.749025] Buffer I/O error on device mmcblk1p2, logical block
->>>>168075
->>>>[   30.755657] Buffer I/O error on device mmcblk1p2, logical block
->>>>31351
->>>>[   30.763130] Aborting journal on device mmcblk1p2-8.
->>>>[   30.768060] JBD2: Error -5 detected when updating journal
->>superblock
->>>>for mmcblk1p2-8.
->>>>[   30.776085] EXT4-fs error (device mmcblk1p2):
->>>>ext4_journal_check_start:56: Detected aborted journal
->>>>[   30.785259] EXT4-fs (mmcblk1p2): Remounting filesystem read-only
->>>>[   31.370716] EXT4-fs error (device mmcblk1p2):
->>ext4_find_entry:1309:
->>>>inode #2490369: comm udevd: reading directory lblock 0
->>>>[   31.382485] EXT4-fs error (device mmcblk1p2):
->>ext4_find_entry:1309:
->>>>inode #1048577: comm udevd: reading directory lblock 0
->>>>
->>>>[analysis]
->>>>In system resume path, mmc_sd_resume() is failed with error code -123
->>>>because at that time SD card is still not ready on mb86s7x platforms.
->>>
->>> So why does it fail? It shouldn't!
->>>
->>> I get the impression that you are solving this in the wrong way.
->>
->>Hi Uffe,
->>On mb86s7x EVB, power for SD card is completely removed when entering
->>STR suspend mode (i.e., echo mem > /sys/power/state). When system
->>starts to resume, it turns on the power for SD card again. However, It
->>take
->>longer time (e.g., 600ms) to get the power ready.
->>This is why mmc_sd_resume() failed with error code -123. At that time
->>point,
->>power for SD card is not ready yet.
->>
->>At first we fixed it by a simple method of using
->>SDHCI_QUIRK_DELAY_AFTER_POWER:
->>
->>diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
->>index 169e17d..ed28896 100644
->>--- a/drivers/mmc/host/sdhci.c
->>+++ b/drivers/mmc/host/sdhci.c
->>@@ -1283,7 +1283,7 @@ static void sdhci_set_power(struct sdhci_host
->>*host, unsigned char mode,
->>                 * they can apply clock after applying power
->>                 */
->>                if (host->quirks & SDHCI_QUIRK_DELAY_AFTER_POWER)
->>-                       mdelay(10);
->>+                       mdelay(600);
->>        }
->
-> If you can't model the power to the card through a regulator, this is what you need to do.
+On Fri, Jun 13, 2014 at 06:07:04PM +0800, Nicolin Chen wrote:
+> This patch adds DEV_TO_DEV support for i.MX SDMA driver to support data
+> tranfer between two peripheral FIFOs. The per_2_per script requires two
+> peripheral addresses and two DMA requests. So this patch also adds them
+> into private structure.
+> 
+> Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
 
-Hi Uffe,
-Yes, I got it.
+Excuse me, the patch has been here for two weeks. Could anyone please
+give a comment or an Ack on it?
 
->
->>
->>        if (host->vmmc) {
->>
->>However, we found it blocks the system resume path. It can slow down
->>system resume and also booting.
->>Therefore, we would like to resume SD card manually and asynchronously
->>by host controller driver itself. Thus system resume path is not
->>blocked.
->
-> That is accomplished by using MMC_CAP_RUNTIME_RESUME.
+Thank you,
+Nicolin
 
-Yes, I got it.
-Thanks a lot for your review and help.
-I will update it in next version.
-
-
-Best regards,
-Vincent Yang
-
->
-> Kind regards
-> Uffe
->
->
->>Thanks a lot for your review!
->>
->>
->>Best regards,
->>Vincent Yang
->>
->>>
->>> Kind regards
->>> Uffe
->>>
->>>>
->>>>[solution]
->>>>In order to not blocking system resume path, this patch just sets a
->>>>flag
->>>>MMC_BUSRESUME_MANUAL_RESUME when this error happened, and then host
->>>>controller
->>>>driver can understand it by this flag. Then host controller driver
->>have
->>>>to
->>>>resume SD card manually and asynchronously.
->>>>
->>>>Signed-off-by: Vincent Yang <Vincent.Yang@tw.fujitsu.com>
->>>>---
->>>> drivers/mmc/core/core.c          |  4 ++
->>>> drivers/mmc/core/sd.c            |  4 ++
->>>>drivers/mmc/host/sdhci_f_sdh30.c | 89
->>>>++++++++++++++++++++++++++++++++++++++++
->>>> include/linux/mmc/host.h         | 14 +++++++
->>>> 4 files changed, 111 insertions(+)
->>>>
->>>>diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
->>>>index 764af63..51fce49 100644
->>>>--- a/drivers/mmc/core/core.c
->>>>+++ b/drivers/mmc/core/core.c
->>>>@@ -2648,6 +2648,10 @@ int mmc_pm_notify(struct notifier_block
->>>>*notify_block,
->>>>       case PM_POST_RESTORE:
->>>>
->>>>               spin_lock_irqsave(&host->lock, flags);
->>>>+              if (mmc_bus_manual_resume(host)) {
->>>>+                      spin_unlock_irqrestore(&host->lock, flags);
->>>>+                      break;
->>>>+              }
->>>>               host->rescan_disable = 0;
->>>>               spin_unlock_irqrestore(&host->lock, flags);
->>>>               _mmc_detect_change(host, 0, false);
->>>>diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
->>>>index 0c44510..859390d 100644
->>>>--- a/drivers/mmc/core/sd.c
->>>>+++ b/drivers/mmc/core/sd.c
->>>>@@ -1133,6 +1133,10 @@ static int mmc_sd_resume(struct mmc_host
->>*host)
->>>>
->>>>       if (!(host->caps & MMC_CAP_RUNTIME_RESUME)) {
->>>>               err = _mmc_sd_resume(host);
->>>>+              if ((host->caps2 & MMC_CAP2_MANUAL_RESUME) && err)
->>>>+                      mmc_set_bus_resume_policy(host, 1);
->>>>+              else
->>>>+                      mmc_set_bus_resume_policy(host, 0);
->>>>               pm_runtime_set_active(&host->card->dev);
->>>>               pm_runtime_mark_last_busy(&host->card->dev);
->>>>       }
->>>>diff --git a/drivers/mmc/host/sdhci_f_sdh30.c
->>>>b/drivers/mmc/host/sdhci_f_sdh30.c
->>>>index 6fae509..67bcff2 100644
->>>>--- a/drivers/mmc/host/sdhci_f_sdh30.c
->>>>+++ b/drivers/mmc/host/sdhci_f_sdh30.c
->>>>@@ -30,6 +30,12 @@
->>>> #include "../core/core.h"
->>>>
->>>> #define DRIVER_NAME "f_sdh30"
->>>>+#define RESUME_WAIT_COUNT     100
->>>>+#define RESUME_WAIT_TIME      50
->>>>+#define RESUME_WAIT_JIFFIES   msecs_to_jiffies(RESUME_DETECT_TIME)
->>>>+#define RESUME_DETECT_COUNT   16
->>>>+#define RESUME_DETECT_TIME    50
->>>>+#define RESUME_DETECT_JIFFIES msecs_to_jiffies(RESUME_DETECT_TIME)
->>>>
->>>>
->>>> struct f_sdhost_priv {
->>>>@@ -38,8 +44,59 @@ struct f_sdhost_priv {
->>>>       int gpio_select_1v8;
->>>>       u32 vendor_hs200;
->>>>       struct device *dev;
->>>>+      unsigned int quirks;    /* Deviations from spec. */
->>>>+
->>>>+/* retry to detect mmc device when resume */
->>>>+#define F_SDH30_QUIRK_RESUME_DETECT_RETRY             (1<<0)
->>>>+
->>>>+      struct workqueue_struct *resume_detect_wq;
->>>>+      struct delayed_work resume_detect_work;
->>>>+      unsigned int            resume_detect_count;
->>>>+      unsigned int            resume_wait_count;
->>>> };
->>>>
->>>>+static void sdhci_f_sdh30_resume_detect_work_func(struct work_struct
->>>>*work)
->>>>+{
->>>>+      struct f_sdhost_priv *priv = container_of(work, struct
->>f_sdhost_priv,
->>>>+              resume_detect_work.work);
->>>>+      struct sdhci_host *host = dev_get_drvdata(priv->dev);
->>>>+      int err = 0;
->>>>+
->>>>+      if (mmc_bus_manual_resume(host->mmc)) {
->>>>+              pm_runtime_disable(&host->mmc->card->dev);
->>>>+              mmc_card_set_suspended(host->mmc->card);
->>>>+              err = host->mmc->bus_ops->resume(host->mmc);
->>>>+              if (priv->resume_detect_count-- && err)
->>>>+                      queue_delayed_work(priv->resume_detect_wq,
->>>>+                                         &priv->resume_detect_work,
->>>>+                              RESUME_DETECT_JIFFIES);
->>>>+              else
->>>>+                      pr_debug("%s: resume detection done (count:%d,
->>wait:%d, err:%d)\n",
->>>>+                               mmc_hostname(host->mmc),
->>>>+                               priv->resume_detect_count,
->>>>+                               priv->resume_wait_count, err);
->>>>+      } else {
->>>>+              if (priv->resume_wait_count--)
->>>>+                      queue_delayed_work(priv->resume_detect_wq,
->>>>+                                         &priv->resume_detect_work,
->>>>+                              RESUME_WAIT_JIFFIES);
->>>>+              else
->>>>+                      pr_debug("%s: resume done\n",
->>mmc_hostname(host->mmc));
->>>>+      }
->>>>+}
->>>>+
->>>>+static void sdhci_f_sdh30_resume_detect(struct mmc_host *mmc,
->>>>+                                      int detect, int wait)
->>>>+{
->>>>+      struct sdhci_host *host = mmc_priv(mmc);
->>>>+      struct f_sdhost_priv *priv = sdhci_priv(host);
->>>>+
->>>>+      priv->resume_detect_count = detect;
->>>>+      priv->resume_wait_count = wait;
->>>>+      queue_delayed_work(priv->resume_detect_wq,
->>>>+                         &priv->resume_detect_work, 0);
->>>>+}
->>>>+
->>>> void sdhci_f_sdh30_soft_voltage_switch(struct sdhci_host *host)
->>>> {
->>>>       struct f_sdhost_priv *priv = sdhci_priv(host);
->>>>@@ -146,6 +203,12 @@ static int sdhci_f_sdh30_probe(struct
->>>>platform_device *pdev)
->>>>               }
->>>>       }
->>>>
->>>>+      if (of_find_property(pdev->dev.of_node, "resume-detect-retry",
->>NULL))
->>>>{
->>>>+              dev_info(dev, "Applying resume detect retry quirk\n");
->>>>+              priv->quirks |= F_SDH30_QUIRK_RESUME_DETECT_RETRY;
->>>>+              host->mmc->caps2 |= MMC_CAP2_MANUAL_RESUME;
->>>>+      }
->>>>+
->>>>       ret = mmc_of_parse_voltage(pdev->dev.of_node,
->>&host->ocr_mask);
->>>>       if (ret) {
->>>>               dev_err(dev, "%s: parse voltage error\n", __func__);
->>>>@@ -197,6 +260,18 @@ static int sdhci_f_sdh30_probe(struct
->>>>platform_device *pdev)
->>>>               }
->>>>       }
->>>>
->>>>+      /* Init workqueue */
->>>>+      if (priv->quirks & F_SDH30_QUIRK_RESUME_DETECT_RETRY) {
->>>>+              priv->resume_detect_wq =
->>create_workqueue("sdhci_f_sdh30");
->>>>+              if (priv->resume_detect_wq == NULL) {
->>>>+                      ret = -ENOMEM;
->>>>+                      dev_err(dev, "Failed to create resume
->>detection workqueue\n");
->>>>+                      goto err_init_wq;
->>>>+              }
->>>>+              INIT_DELAYED_WORK(&priv->resume_detect_work,
->>>>+
->>sdhci_f_sdh30_resume_detect_work_func);
->>>>+      }
->>>>+
->>>>       ret = sdhci_add_host(host);
->>>>       if (ret) {
->>>>               dev_err(dev, "%s: host add error\n", __func__);
->>>>@@ -229,6 +304,9 @@ static int sdhci_f_sdh30_probe(struct
->>>>platform_device *pdev)
->>>>       return 0;
->>>>
->>>> err_add_host:
->>>>+      if (priv->quirks & F_SDH30_QUIRK_RESUME_DETECT_RETRY)
->>>>+              destroy_workqueue(priv->resume_detect_wq);
->>>>+err_init_wq:
->>>>       if (gpio_is_valid(priv->gpio_select_1v8)) {
->>>>               gpio_direction_output(priv->gpio_select_1v8, 1);
->>>>               gpio_free(priv->gpio_select_1v8);
->>>>@@ -268,6 +346,9 @@ static int sdhci_f_sdh30_remove(struct
->>>>platform_device *pdev)
->>>>               gpio_free(priv->gpio_select_1v8);
->>>>       }
->>>>
->>>>+      if (priv->quirks & F_SDH30_QUIRK_RESUME_DETECT_RETRY)
->>>>+              destroy_workqueue(priv->resume_detect_wq);
->>>>+
->>>>       sdhci_free_host(host);
->>>>       platform_set_drvdata(pdev, NULL);
->>>>
->>>>@@ -285,7 +366,15 @@ static int sdhci_f_sdh30_suspend(struct device
->>>>*dev)
->>>> static int sdhci_f_sdh30_resume(struct device *dev)
->>>> {
->>>>       struct sdhci_host *host = dev_get_drvdata(dev);
->>>>+      struct f_sdhost_priv *priv = sdhci_priv(host);
->>>>
->>>>+      if (priv->quirks & F_SDH30_QUIRK_RESUME_DETECT_RETRY) {
->>>>+              pr_debug("%s: start resume detect\n",
->>>>+                       mmc_hostname(host->mmc));
->>>>+              sdhci_f_sdh30_resume_detect(host->mmc,
->>>>+                                          RESUME_DETECT_COUNT,
->>>>+                                          RESUME_WAIT_COUNT);
->>>>+      }
->>>>       return sdhci_resume_host(host);
->>>> }
->>>> #endif
->>>>diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
->>>>index 7960424..55221dd 100644
->>>>--- a/include/linux/mmc/host.h
->>>>+++ b/include/linux/mmc/host.h
->>>>@@ -283,6 +283,7 @@ struct mmc_host {
->>>> #define MMC_CAP2_HS400                (MMC_CAP2_HS400_1_8V | \
->>>>                                MMC_CAP2_HS400_1_2V)
->>>> #define MMC_CAP2_SDIO_IRQ_NOTHREAD (1 << 17)
->>>>+#define MMC_CAP2_MANUAL_RESUME     (1 << 18)  /* Resume manually
->>when
->>>>error */
->>>>
->>>>       mmc_pm_flag_t           pm_caps;        /* supported pm
->>features */
->>>>
->>>>@@ -338,6 +339,9 @@ struct mmc_host {
->>>>       const struct mmc_bus_ops *bus_ops;      /* current bus driver
->>*/
->>>>       unsigned int            bus_refs;       /* reference counter
->>*/
->>>>
->>>>+      unsigned int            bus_resume_flags;
->>>>+#define MMC_BUSRESUME_MANUAL_RESUME   (1 << 0)
->>>>+
->>>>       unsigned int            sdio_irqs;
->>>>       struct task_struct      *sdio_irq_thread;
->>>>       bool                    sdio_irq_pending;
->>>>@@ -384,6 +388,16 @@ static inline void *mmc_priv(struct mmc_host
->>>>*host)
->>>> #define mmc_dev(x)    ((x)->parent)
->>>> #define mmc_classdev(x)       (&(x)->class_dev)
->>>> #define mmc_hostname(x)       (dev_name(&(x)->class_dev))
->>>>+#define mmc_bus_manual_resume(host) ((host)->bus_resume_flags &
->>         \
->>>>+      MMC_BUSRESUME_MANUAL_RESUME)
->>>>+
->>>>+static inline void mmc_set_bus_resume_policy(struct mmc_host *host,
->>>>int manual)
->>>>+{
->>>>+      if (manual)
->>>>+              host->bus_resume_flags |= MMC_BUSRESUME_MANUAL_RESUME;
->>>>+      else
->>>>+              host->bus_resume_flags &=
->>~MMC_BUSRESUME_MANUAL_RESUME;
->>>>+}
->>>>
->>>> int mmc_power_save_host(struct mmc_host *host);
->>>> int mmc_power_restore_host(struct mmc_host *host);
->>>
->
+> ---
+>  drivers/dma/imx-sdma.c                | 40 ++++++++++++++++++++++++++++++-----
+>  include/linux/platform_data/dma-imx.h |  1 +
+>  2 files changed, 36 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
+> index 85561dc..5af1a69 100644
+> --- a/drivers/dma/imx-sdma.c
+> +++ b/drivers/dma/imx-sdma.c
+> @@ -258,8 +258,9 @@ struct sdma_channel {
+>  	struct sdma_buffer_descriptor	*bd;
+>  	dma_addr_t			bd_phys;
+>  	unsigned int			pc_from_device, pc_to_device;
+> +	unsigned int			device_to_device;
+>  	unsigned long			flags;
+> -	dma_addr_t			per_address;
+> +	dma_addr_t			per_address, per_address2;
+>  	unsigned long			event_mask[2];
+>  	unsigned long			watermark_level;
+>  	u32				shp_addr, per_addr;
+> @@ -696,6 +697,7 @@ static void sdma_get_pc(struct sdma_channel *sdmac,
+>  
+>  	sdmac->pc_from_device = 0;
+>  	sdmac->pc_to_device = 0;
+> +	sdmac->device_to_device = 0;
+>  
+>  	switch (peripheral_type) {
+>  	case IMX_DMATYPE_MEMORY:
+> @@ -770,6 +772,7 @@ static void sdma_get_pc(struct sdma_channel *sdmac,
+>  
+>  	sdmac->pc_from_device = per_2_emi;
+>  	sdmac->pc_to_device = emi_2_per;
+> +	sdmac->device_to_device = per_2_per;
+>  }
+>  
+>  static int sdma_load_context(struct sdma_channel *sdmac)
+> @@ -782,11 +785,12 @@ static int sdma_load_context(struct sdma_channel *sdmac)
+>  	int ret;
+>  	unsigned long flags;
+>  
+> -	if (sdmac->direction == DMA_DEV_TO_MEM) {
+> +	if (sdmac->direction == DMA_DEV_TO_MEM)
+>  		load_address = sdmac->pc_from_device;
+> -	} else {
+> +	else if (sdmac->direction == DMA_DEV_TO_DEV)
+> +		load_address = sdmac->device_to_device;
+> +	else
+>  		load_address = sdmac->pc_to_device;
+> -	}
+>  
+>  	if (load_address < 0)
+>  		return load_address;
+> @@ -850,6 +854,12 @@ static int sdma_config_channel(struct sdma_channel *sdmac)
+>  		sdma_event_enable(sdmac, sdmac->event_id0);
+>  	}
+>  
+> +	if (sdmac->event_id1) {
+> +		if (sdmac->event_id1 >= sdmac->sdma->drvdata->num_events)
+> +			return -EINVAL;
+> +		sdma_event_enable(sdmac, sdmac->event_id1);
+> +	}
+> +
+>  	switch (sdmac->peripheral_type) {
+>  	case IMX_DMATYPE_DSP:
+>  		sdma_config_ownership(sdmac, false, true, true);
+> @@ -880,7 +890,12 @@ static int sdma_config_channel(struct sdma_channel *sdmac)
+>  		/* Watermark Level */
+>  		sdmac->watermark_level |= sdmac->watermark_level;
+>  		/* Address */
+> -		sdmac->shp_addr = sdmac->per_address;
+> +		if (sdmac->direction == DMA_DEV_TO_DEV) {
+> +			sdmac->shp_addr = sdmac->per_address2;
+> +			sdmac->per_addr = sdmac->per_address;
+> +		} else {
+> +			sdmac->shp_addr = sdmac->per_address;
+> +		}
+>  	} else {
+>  		sdmac->watermark_level = 0; /* FIXME: M3_BASE_ADDRESS */
+>  	}
+> @@ -974,6 +989,7 @@ static int sdma_alloc_chan_resources(struct dma_chan *chan)
+>  
+>  	sdmac->peripheral_type = data->peripheral_type;
+>  	sdmac->event_id0 = data->dma_request;
+> +	sdmac->event_id1 = data->dma_request2;
+>  
+>  	clk_enable(sdmac->sdma->clk_ipg);
+>  	clk_enable(sdmac->sdma->clk_ahb);
+> @@ -1213,6 +1229,19 @@ static int sdma_control(struct dma_chan *chan, enum dma_ctrl_cmd cmd,
+>  			sdmac->watermark_level = dmaengine_cfg->src_maxburst *
+>  						dmaengine_cfg->src_addr_width;
+>  			sdmac->word_size = dmaengine_cfg->src_addr_width;
+> +		} else if (dmaengine_cfg->direction == DMA_DEV_TO_DEV) {
+> +			sdmac->per_address = dmaengine_cfg->src_addr;
+> +			sdmac->per_address2 = dmaengine_cfg->dst_addr;
+> +			/*
+> +			 * For per_2_per sciprt, register r7 requires two
+> +			 * watermark levels: the lower placed at bits [0-7]
+> +			 * and the higher one placed at bits [16-23].
+> +			 */
+> +			sdmac->watermark_level =
+> +				dmaengine_cfg->src_maxburst & 0xff;
+> +			sdmac->watermark_level |=
+> +				(dmaengine_cfg->dst_maxburst & 0xff) << 16;
+> +			sdmac->word_size = dmaengine_cfg->dst_addr_width;
+>  		} else {
+>  			sdmac->per_address = dmaengine_cfg->dst_addr;
+>  			sdmac->watermark_level = dmaengine_cfg->dst_maxburst *
+> @@ -1433,6 +1462,7 @@ static struct dma_chan *sdma_xlate(struct of_phandle_args *dma_spec,
+>  	data.dma_request = dma_spec->args[0];
+>  	data.peripheral_type = dma_spec->args[1];
+>  	data.priority = dma_spec->args[2];
+> +	data.dma_request2 = 0;
+>  
+>  	return dma_request_channel(mask, sdma_filter_fn, &data);
+>  }
+> diff --git a/include/linux/platform_data/dma-imx.h b/include/linux/platform_data/dma-imx.h
+> index 7aa0e89..6a1357d 100644
+> --- a/include/linux/platform_data/dma-imx.h
+> +++ b/include/linux/platform_data/dma-imx.h
+> @@ -51,6 +51,7 @@ enum imx_dma_prio {
+>  
+>  struct imx_dma_data {
+>  	int dma_request; /* DMA request line */
+> +	int dma_request2; /* secondary DMA request line */
+>  	enum sdma_peripheral_type peripheral_type;
+>  	int priority;
+>  };
+> -- 
+> 1.8.4
+> 
