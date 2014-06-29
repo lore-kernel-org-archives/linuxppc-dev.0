@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 174331A0149
+ by lists.ozlabs.org (Postfix) with ESMTPS id 650681A014E
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:03 +1000 (EST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 29 Jun 2014 21:18:01 +1000
+ Sun, 29 Jun 2014 21:18:02 +1000
 Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id F11902BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:17:58 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id AE3052BB004A
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:00 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5TB1Vn553674202
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:01:32 +1000
+ s5TB1XRA35848366
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:01:33 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5TBHwNt004687
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:17:58 +1000
+ s5TBHxu7004719
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:00 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] KVM: PPC: BOOK3S: HV: Update compute_tlbie_rb to handle 16MB
- base page
-Date: Sun, 29 Jun 2014 16:47:30 +0530
-Message-Id: <1404040655-12076-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 2/6] KVM: PPC: BOOK3S: HV: Deny virtual page class key update
+ via h_protect
+Date: Sun, 29 Jun 2014 16:47:31 +0530
+Message-Id: <1404040655-12076-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
@@ -39,58 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When calculating the lower bits of AVA field, use the shift
-count based on the base page size. Also add the missing segment
-size and remove stale comment.
+This makes it consistent with h_enter where we clear the key
+bits. We also want to use virtual page class key protection mechanism
+for indicating host page fault. For that we will be using key class
+index 30 and 31. So prevent the guest from updating key bits until
+we add proper support for virtual page class protection mechanism for
+the guest. This will not have any impact for PAPR linux guest because
+Linux guest currently don't use virtual page class key protection model
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h | 6 ++++--
- arch/powerpc/kvm/book3s_hv.c             | 6 ------
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index 66a0a44b62a8..ca7c1688a7b6 100644
---- a/arch/powerpc/include/asm/kvm_book3s_64.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -158,6 +158,8 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 	 */
- 	/* This covers 14..54 bits of va*/
- 	rb = (v & ~0x7fUL) << 16;		/* AVA field */
-+
-+	rb |= v >> (62 - 8);			/*  B field */
- 	/*
- 	 * AVA in v had cleared lower 23 bits. We need to derive
- 	 * that from pteg index
-@@ -188,10 +190,10 @@ static inline unsigned long compute_tlbie_rb(unsigned long v, unsigned long r,
- 	{
- 		int aval_shift;
- 		/*
--		 * remaining 7bits of AVA/LP fields
-+		 * remaining bits of AVA/LP fields
- 		 * Also contain the rr bits of LP
- 		 */
--		rb |= (va_low & 0x7f) << 16;
-+		rb |= (va_low << mmu_psize_defs[b_psize].shift) & 0x7ff000;
- 		/*
- 		 * Now clear not needed LP bits based on actual psize
- 		 */
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index cbf46eb3f59c..328416f28a55 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -1917,12 +1917,6 @@ static void kvmppc_add_seg_page_size(struct kvm_ppc_one_seg_page_size **sps,
- 	(*sps)->page_shift = def->shift;
- 	(*sps)->slb_enc = def->sllp;
- 	(*sps)->enc[0].page_shift = def->shift;
--	/*
--	 * Only return base page encoding. We don't want to return
--	 * all the supporting pte_enc, because our H_ENTER doesn't
--	 * support MPSS yet. Once they do, we can start passing all
--	 * support pte_enc here
--	 */
- 	(*sps)->enc[0].pte_enc = def->penc[linux_psize];
- 	/*
- 	 * Add 16MB MPSS support if host supports it
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index 157a5f35edfa..f908845f7379 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -658,13 +658,17 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	}
+ 
+ 	v = pte;
++	/*
++	 * We ignore key bits here. We use class 31 and 30 for
++	 * hypervisor purpose. We still don't track the page
++	 * class seperately. Until then don't allow h_protect
++	 * to change key bits.
++	 */
+ 	bits = (flags << 55) & HPTE_R_PP0;
+-	bits |= (flags << 48) & HPTE_R_KEY_HI;
+-	bits |= flags & (HPTE_R_PP | HPTE_R_N | HPTE_R_KEY_LO);
++	bits |= flags & (HPTE_R_PP | HPTE_R_N);
+ 
+ 	/* Update guest view of 2nd HPTE dword */
+-	mask = HPTE_R_PP0 | HPTE_R_PP | HPTE_R_N |
+-		HPTE_R_KEY_HI | HPTE_R_KEY_LO;
++	mask = HPTE_R_PP0 | HPTE_R_PP | HPTE_R_N;
+ 	rev = real_vmalloc_addr(&kvm->arch.revmap[pte_index]);
+ 	if (rev) {
+ 		r = (rev->guest_rpte & ~mask) | bits;
 -- 
 1.9.1
