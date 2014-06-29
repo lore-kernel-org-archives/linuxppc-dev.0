@@ -1,20 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 8DB4F1A0157
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jun 2014 09:14:42 +1000 (EST)
-Date: Fri, 27 Jun 2014 16:14:40 -0700 (PDT)
-Message-Id: <20140627.161440.1789637356563737660.davem@davemloft.net>
-To: kda@linux-powerpc.org
-Subject: Re: [PATCH v2 2/2] powerpc: bpf: Fix the broken
- LD_VLAN_TAG_PRESENT test
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1403717697-3911-2-git-send-email-kda@linux-powerpc.org>
-References: <1403717697-3911-1-git-send-email-kda@linux-powerpc.org>
- <1403717697-3911-2-git-send-email-kda@linux-powerpc.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-we0-x229.google.com (mail-we0-x229.google.com
+ [IPv6:2a00:1450:400c:c03::229])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 901861A0012
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 20:21:50 +1000 (EST)
+Received: by mail-we0-f169.google.com with SMTP id t60so6962229wes.14
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 03:21:44 -0700 (PDT)
+Sender: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jiri Kosina <trivial@kernel.org>
+Subject: [PATCH -trivial 1/4] powerpc/simpleboot: Spelling s/trucate/truncate/
+Date: Sun, 29 Jun 2014 12:21:36 +0200
+Message-Id: <1404037299-31570-1-git-send-email-geert@linux-m68k.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Wed, 25 Jun 2014 21:34:57 +0400
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/boot/simpleboot.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> We have to return the boolean here if the tag presents
-> or not, not just ANDing the TCI with the mask which results to:
-> 
-> [  709.412097] test_bpf: #18 LD_VLAN_TAG_PRESENT
-> [  709.412245] ret 4096 != 1
-> [  709.412332] ret 4096 != 1
-> [  709.412333] FAIL (2 times)
-> 
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
-
-Applied.
+diff --git a/arch/powerpc/boot/simpleboot.c b/arch/powerpc/boot/simpleboot.c
+index 21cd48074ec8..9f8c678f0d9a 100644
+--- a/arch/powerpc/boot/simpleboot.c
++++ b/arch/powerpc/boot/simpleboot.c
+@@ -61,7 +61,7 @@ void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 		if (*reg++ != 0)
+ 			fatal("Memory range is not based at address 0\n");
+ 
+-	/* get the memsize and trucate it to under 4G on 32 bit machines */
++	/* get the memsize and truncate it to under 4G on 32 bit machines */
+ 	memsize64 = 0;
+ 	for (i = 0; i < *ns; i++)
+ 		memsize64 = (memsize64 << 32) | *reg++;
+-- 
+1.9.1
