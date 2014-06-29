@@ -1,31 +1,31 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9F421A0010
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:08 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1498D1A0078
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:12 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 29 Jun 2014 21:18:08 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1AD5B2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:06 +1000 (EST)
+ Sun, 29 Jun 2014 21:18:11 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2244B2BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:08 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5TB1cUY43843770
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:01:39 +1000
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s5TAtjxo4063662
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 20:55:45 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5TBI5qF004850
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:05 +1000
+ s5TBI7QX004900
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:18:07 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: agraf@suse.de, benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 5/6] KVM: PPC: BOOK3S: Use hpte_update_in_progress to track
- invalid hpte during an hpte update
-Date: Sun, 29 Jun 2014 16:47:34 +0530
-Message-Id: <1404040655-12076-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 6/6] KVM: PPC: BOOK3S: HV: Use virtual page class protection
+ mechanism for host fault and mmio
+Date: Sun, 29 Jun 2014 16:47:35 +0530
+Message-Id: <1404040655-12076-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
@@ -39,307 +39,576 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As per ISA, we first need to mark hpte invalid (V=0) before we update
-the hpte lower half bits. With virtual page class key protection mechanism we want
-to send any fault other than key fault to guest directly without
-searching the hash page table. But then we can get NO_HPTE fault while
-we are updating the hpte. To track that add a vm specific atomic
-variable that we check in the fault path to always send the fault
-to host.
+With this patch we use AMR class 30 and 31 for indicating a page
+fault that should be handled by host. This includes the MMIO access and
+the page fault resulting from guest RAM swapout in the host. This
+enables us to forward the fault to guest without doing the expensive
+hash page table search for finding the hpte entry. With this patch, we
+mark hash pte always valid and use class index 30 and 31 for key based
+fault. These virtual class index are configured in AMR to deny
+read/write. Since access class protection mechanism doesn't work with
+VRMA region, we need to handle them separately. We mark those HPTEs
+invalid and use the software defined bit, HPTE_V_VRMA, to differentiate
+them.
+
+NOTE: We still need to handle protection fault in host so that a
+write to KSM shared page is handled in the host.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/kvm_book3s_64.h |  1 +
- arch/powerpc/include/asm/kvm_host.h      |  1 +
- arch/powerpc/kernel/asm-offsets.c        |  1 +
- arch/powerpc/kvm/book3s_64_mmu_hv.c      | 19 ++++++----
- arch/powerpc/kvm/book3s_hv.c             |  1 +
- arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 40 +++++++++++++++++++--
- arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 60 +++++++++++++++++++++++++++++---
- 7 files changed, 109 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h | 80 +++++++++++++++++++++++++++-----
+ arch/powerpc/include/asm/reg.h           |  1 +
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      | 48 ++++++++++++++-----
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 69 ++++++++++++++++++---------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S  | 52 ++++++++++++++++-----
+ 5 files changed, 194 insertions(+), 56 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-index da00b1f05ea1..a6bf41865a66 100644
+index a6bf41865a66..4aa9c3601fe8 100644
 --- a/arch/powerpc/include/asm/kvm_book3s_64.h
 +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-@@ -416,6 +416,7 @@ static inline void kvmppc_unmap_host_hpte(struct kvm *kvm, __be64 *hptep)
+@@ -48,7 +48,18 @@ extern unsigned long kvm_rma_pages;
+  * HPTEs.
+  */
+ #define HPTE_V_HVLOCK	0x40UL
+-#define HPTE_V_ABSENT	0x20UL
++/*
++ * VRMA mapping
++ */
++#define HPTE_V_VRMA	0x20UL
++
++#define HPTE_R_HOST_UNMAP_KEY	0x3000000000000e00UL
++/*
++ * We use this to differentiate between an MMIO key fault and
++ * and a key fault resulting from host swapping out the page.
++ */
++#define HPTE_R_MMIO_UNMAP_KEY	0x3000000000000c00UL
++
+ 
+ /*
+  * We use this bit in the guest_rpte field of the revmap entry
+@@ -405,35 +416,82 @@ static inline void __kvmppc_unmap_host_hpte(struct kvm *kvm,
+ 					    unsigned long *hpte_r,
+ 					    bool mmio)
+ {
+-	*hpte_v |= HPTE_V_ABSENT;
+-	if (mmio)
+-		*hpte_r |= HPTE_R_KEY_HI | HPTE_R_KEY_LO;
++	/*
++	 * We unmap on host by adding the page to AMR class 31
++	 * which have both read/write access denied.
++	 *
++	 * For VRMA area we mark them invalid.
++	 *
++	 * If we are not using mmu_notifiers we don't use Access
++	 * class protection.
++	 *
++	 * Since we are not changing the hpt directly we don't
++	 * Worry about update ordering.
++	 */
++	if ((*hpte_v & HPTE_V_VRMA) || !kvm->arch.using_mmu_notifiers)
++		*hpte_v &= ~HPTE_V_VALID;
++	else if (!mmio) {
++		*hpte_r |= HPTE_R_HOST_UNMAP_KEY;
++		*hpte_v |= HPTE_V_VALID;
++	} else {
++		*hpte_r |= HPTE_R_MMIO_UNMAP_KEY;
++		*hpte_v |= HPTE_V_VALID;
++	}
+ }
+ 
+ static inline void kvmppc_unmap_host_hpte(struct kvm *kvm, __be64 *hptep)
+ {
++	unsigned long pte_v, pte_r;
++
++	pte_v = be64_to_cpu(hptep[0]);
++	pte_r = be64_to_cpu(hptep[1]);
+ 	/*
  	 * We will never call this for MMIO
  	 */
- 	hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
-+	atomic_dec(&kvm->arch.hpte_update_in_progress);
+-	hptep[0] |= cpu_to_be64(HPTE_V_ABSENT);
++	__kvmppc_unmap_host_hpte(kvm, &pte_v, &pte_r, 0);
++	hptep[1] = cpu_to_be64(pte_r);
++	eieio();
++	hptep[0] = cpu_to_be64(pte_v);
++	asm volatile("ptesync" : : : "memory");
++	/*
++	 * we have now successfully marked the hpte using key bits
++	 */
+ 	atomic_dec(&kvm->arch.hpte_update_in_progress);
  }
  
  static inline void kvmppc_map_host_hpte(struct kvm *kvm, unsigned long *hpte_v,
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index f9ae69682ce1..0a9ff60fae4c 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -254,6 +254,7 @@ struct kvm_arch {
- 	atomic_t hpte_mod_interest;
- 	spinlock_t slot_phys_lock;
- 	cpumask_t need_tlb_flush;
-+	atomic_t hpte_update_in_progress;
- 	struct kvmppc_vcore *vcores[KVM_MAX_VCORES];
- 	int hpt_cma_alloc;
- #endif /* CONFIG_KVM_BOOK3S_HV_POSSIBLE */
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index f5995a912213..54a36110f8f2 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -496,6 +496,7 @@ int main(void)
- 	DEFINE(KVM_LPCR, offsetof(struct kvm, arch.lpcr));
- 	DEFINE(KVM_RMOR, offsetof(struct kvm, arch.rmor));
- 	DEFINE(KVM_VRMA_SLB_V, offsetof(struct kvm, arch.vrma_slb_v));
-+	DEFINE(KVM_HPTE_UPDATE, offsetof(struct kvm, arch.hpte_update_in_progress));
- 	DEFINE(VCPU_DSISR, offsetof(struct kvm_vcpu, arch.shregs.dsisr));
- 	DEFINE(VCPU_DAR, offsetof(struct kvm_vcpu, arch.shregs.dar));
- 	DEFINE(VCPU_VPA, offsetof(struct kvm_vcpu, arch.vpa.pinned_addr));
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-index 8ce5e95613f8..cb7a616aacb1 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
-@@ -592,6 +592,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	unsigned int writing, write_ok;
- 	struct vm_area_struct *vma;
- 	unsigned long rcbits;
-+	bool hpte_invalidated = false;
- 
- 	/*
- 	 * Real-mode code has already searched the HPT and found the
-@@ -750,13 +751,15 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	r &= rcbits | ~(HPTE_R_R | HPTE_R_C);
- 
- 	if (be64_to_cpu(hptep[0]) & HPTE_V_VALID) {
--		/* HPTE was previously valid, so we need to invalidate it */
+ 					unsigned long *hpte_r)
+ {
+-	*hpte_v |= HPTE_V_VALID;
+-	*hpte_v &= ~HPTE_V_ABSENT;
++	/*
++	 * We will never try to map an MMIO region
++	 */
++	if ((*hpte_v & HPTE_V_VRMA) || !kvm->arch.using_mmu_notifiers)
++		*hpte_v |= HPTE_V_VALID;
++	else {
 +		/*
-+		 * If we had mapped this hpte before, we now need to
-+		 * invalidate that.
++		 * When we allow guest keys we should set this with key
++		 * for this page.
 +		 */
- 		unlock_rmap(rmap);
--		/* Always mark HPTE_V_ABSENT before invalidating */
--		kvmppc_unmap_host_hpte(kvm, hptep);
- 		kvmppc_invalidate_hpte(kvm, hptep, index);
- 		/* don't lose previous R and C bits */
- 		r |= be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
-+		hpte_invalidated = true;
- 	} else {
- 		kvmppc_add_revmap_chain(kvm, rev, rmap, index, 0);
- 	}
-@@ -765,6 +768,9 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	eieio();
- 	hptep[0] = cpu_to_be64(hpte[0]);
- 	asm volatile("ptesync" : : : "memory");
-+	if (hpte_invalidated)
-+		atomic_dec(&kvm->arch.hpte_update_in_progress);
-+
- 	preempt_enable();
- 	if (page && hpte_is_writable(r))
- 		SetPageDirty(page);
-@@ -1128,10 +1134,9 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
- 		/*
- 		 * need to make it temporarily absent so C is stable
- 		 */
--		kvmppc_unmap_host_hpte(kvm, hptep);
--		kvmppc_invalidate_hpte(kvm, hptep, i);
- 		v = be64_to_cpu(hptep[0]);
- 		r = be64_to_cpu(hptep[1]);
-+		kvmppc_invalidate_hpte(kvm, hptep, i);
- 		if (r & HPTE_R_C) {
- 			hptep[1] = cpu_to_be64(r & ~HPTE_R_C);
- 			if (!(rev[i].guest_rpte & HPTE_R_C)) {
-@@ -1144,8 +1149,8 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
- 				npages_dirty = n;
- 			eieio();
- 		}
--		kvmppc_map_host_hpte(kvm, &v, &r);
--		hptep[0] = cpu_to_be64(v & ~HPTE_V_HVLOCK);
-+		hptep[0] = cpu_to_be64(v & ~HPTE_V_LOCK);
-+		atomic_dec(&kvm->arch.hpte_update_in_progress);
- 	} while ((i = j) != head);
- 
- 	unlock_rmap(rmapp);
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 47d3f20ad10f..328416f28a55 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -2291,6 +2291,7 @@ static int kvmppc_core_init_vm_hv(struct kvm *kvm)
- 
- 	kvm->arch.using_mmu_notifiers = !!cpu_has_feature(CPU_FTR_ARCH_206);
- 	spin_lock_init(&kvm->arch.slot_phys_lock);
-+	atomic_set(&kvm->arch.hpte_update_in_progress, 0);
- 
- 	/*
- 	 * Track that we now have a HV mode VM active. This blocks secondary
-diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-index e8458c0d1336..d628d2810c93 100644
---- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-+++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
-@@ -647,6 +647,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 	struct revmap_entry *rev;
- 	unsigned long v, r, rb, mask, bits;
- 	u64 pte;
-+	bool hpte_invalidated = false;
- 
- 	if (pte_index >= kvm->arch.hpt_npte)
- 		return H_PARAMETER;
-@@ -683,8 +684,26 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 
- 	/* Update HPTE */
- 	if (kvmppc_is_host_mapped_hpte(kvm, hpte)) {
--		rb = compute_tlbie_rb(v, r, pte_index);
-+		/*
-+		 * We use this in the fault path to check whether a
-+		 * NO_HPTE fault should be send to guest. In this
-+		 * case we don't want to send it to guest.
-+		 */
-+		atomic_inc(&kvm->arch.hpte_update_in_progress);
-+		/*
-+		 * We want to ensure that other cpus see the hpte_update_in_progress
-+		 * change before taking a page fault due to us clearing the valid
-+		 * bit below
-+		 */
-+		smp_wmb();
-+		hpte_invalidated = true;
-+		/*
-+		 * We need to mark V = 0 before doing a tlb invalidate.
-+		 * Refer Page table entry modifying section in ISA
-+		 */
- 		hpte[0] = cpu_to_be64(v & ~HPTE_V_VALID);
-+
-+		rb = compute_tlbie_rb(v, r, pte_index);
- 		do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags), true);
- 		/*
- 		 * If the host has this page as readonly but the guest
-@@ -714,6 +733,8 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
- 	eieio();
- 	hpte[0] = cpu_to_be64(v & ~HPTE_V_HVLOCK);
- 	asm volatile("ptesync" : : : "memory");
-+	if (hpte_invalidated)
-+		atomic_dec(&kvm->arch.hpte_update_in_progress);
- 	return H_SUCCESS;
++		*hpte_r &= ~(HPTE_R_KEY_HI | HPTE_R_KEY_LO);
++	}
  }
  
-@@ -755,7 +776,22 @@ void kvmppc_invalidate_hpte(struct kvm *kvm, __be64 *hptep,
- 			unsigned long pte_index)
+ static inline bool kvmppc_is_host_mapped_hpte(struct kvm *kvm, __be64 *hpte)
  {
- 	unsigned long rb;
+-	unsigned long v;
++	unsigned long v, r;
+ 
+ 	v = be64_to_cpu(hpte[0]);
+-	if (v & HPTE_V_VALID)
+-		return true;
+-	return false;
++	if ((v & HPTE_V_VRMA) || !kvm->arch.using_mmu_notifiers)
++		return v & HPTE_V_VALID;
++
++	r = be64_to_cpu(hpte[1]);
++	if (!(v & HPTE_V_VALID))
++		return false;
++	if ((r & (HPTE_R_KEY_HI | HPTE_R_KEY_LO)) == HPTE_R_HOST_UNMAP_KEY)
++		return false;
++	if ((r & (HPTE_R_KEY_HI | HPTE_R_KEY_LO)) == HPTE_R_MMIO_UNMAP_KEY)
++		return false;
++	return true;
+ }
+ 
+ 
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1f34ef7ec4a8..ca9a7aebc9ce 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -605,6 +605,7 @@
+ #define   SRR1_ISI_NOPT		0x40000000 /* ISI: Not found in hash */
+ #define   SRR1_ISI_N_OR_G	0x10000000 /* ISI: Access is no-exec or G */
+ #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
++#define   SRR1_ISI_KEYFAULT	0x00200000	/* Key fault */
+ #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
+ #define   SRR1_WAKESYSERR	0x00300000 /* System error */
+ #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
+diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+index cb7a616aacb1..06f860d84d69 100644
+--- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
++++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+@@ -214,6 +214,11 @@ void kvmppc_map_vrma(struct kvm_vcpu *vcpu, struct kvm_memory_slot *memslot,
+ 		hash = (hash << 3) + 7;
+ 		hp_v = hp0 | ((addr >> 16) & ~0x7fUL);
+ 		hp_r = hp1 | addr;
++		/*
++		 * VRMA mapping doesn't work with access class protection
++		 * mechanism, hence don't use keys for them
++		 */
++		hp_v |= HPTE_V_VRMA;
+ 		ret = kvmppc_virtmode_do_h_enter(kvm, H_EXACT, hash, hp_v, hp_r,
+ 						 &idx_ret);
+ 		if (ret != H_SUCCESS) {
+@@ -409,7 +414,7 @@ long kvmppc_virtmode_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	/*
+ 	 * Clear few bits, when called via hcall
+ 	 */
+-	pteh &= ~(HPTE_V_HVLOCK | HPTE_V_ABSENT | HPTE_V_VALID);
++	pteh &= ~(HPTE_V_HVLOCK | HPTE_V_VRMA | HPTE_V_VALID);
+ 	ptel &= ~(HPTE_R_KEY_HI | HPTE_R_KEY_LO | HPTE_GR_RESERVED);
+ 
+ 	return kvmppc_virtmode_do_h_enter(vcpu->kvm, flags, pte_index,
+@@ -472,7 +477,7 @@ static int kvmppc_mmu_book3s_64_hv_xlate(struct kvm_vcpu *vcpu, gva_t eaddr,
+ 	preempt_disable();
+ 	/* Find the HPTE in the hash table */
+ 	index = kvmppc_hv_find_lock_hpte(kvm, eaddr, slb_v,
+-					 HPTE_V_VALID | HPTE_V_ABSENT);
++					 HPTE_V_VALID | HPTE_V_VRMA);
+ 	if (index < 0) {
+ 		preempt_enable();
+ 		return -ENOENT;
+@@ -733,7 +738,13 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		rev->guest_rpte != hpte[2])
+ 		/* HPTE has been changed under us; let the guest retry */
+ 		goto out_unlock;
+-	hpte[0] = (hpte[0] & ~HPTE_V_ABSENT) | HPTE_V_VALID;
++	/*
++	 * mark this hpte host mapped. We will use this value
++	 * to update actual hpte later. We don't need to clear
++	 * clear key bits, because we use rev->guest_rpte values
++	 * for the lower half.
++	 */
++	hpte[0] |= HPTE_V_VALID;
+ 
+ 	/* Always put the HPTE in the rmap chain for the page base address */
+ 	rmap = &memslot->arch.rmap[gfn_base - memslot->base_gfn];
+@@ -906,8 +917,9 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 		psize = hpte_page_size(be64_to_cpu(hptep[0]), ptel);
+ 		if (kvmppc_is_host_mapped_hpte(kvm, hptep) &&
+ 		    hpte_rpn(ptel, psize) == gfn) {
+-			if (kvm->arch.using_mmu_notifiers)
+-				kvmppc_unmap_host_hpte(kvm, hptep);
++			/*
++			 * For hpte update always invalidate first
++			 */
+ 			kvmppc_invalidate_hpte(kvm, hptep, i);
+ 
+ 			/* Harvest R and C */
+@@ -917,6 +929,11 @@ static int kvm_unmap_rmapp(struct kvm *kvm, unsigned long *rmapp,
+ 				rev[i].guest_rpte = ptel | rcbits;
+ 				note_hpte_modification(kvm, &rev[i]);
+ 			}
++			/*
++			 * Mark the hpte umapped so that host can
++			 * handle the faults.
++			 */
++			kvmppc_unmap_host_hpte(kvm, hptep);
+ 		}
+ 		unlock_rmap(rmapp);
+ 		hptep[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+@@ -1345,7 +1362,7 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
+ 		return 0;
+ 
+ 	valid = 0;
+-	if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT)) {
++	if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_VRMA)) {
+ 		valid = 1;
+ 		if ((flags & KVM_GET_HTAB_BOLTED_ONLY) &&
+ 		    !(be64_to_cpu(hptp[0]) & HPTE_V_BOLTED))
+@@ -1362,7 +1379,11 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
+ 			cpu_relax();
+ 		v = be64_to_cpu(hptp[0]);
+ 
+-		/* re-evaluate valid and dirty from synchronized HPTE value */
++		/*
++		 * re-evaluate valid and dirty from synchronized HPTE value
++		 * We don't need to worry of host unmapped. We keep the valid
++		 * bit set even if we move the hpte to class 31.
++		 */
+ 		valid = !!(v & HPTE_V_VALID);
+ 		dirty = !!(revp->guest_rpte & HPTE_GR_MODIFIED);
+ 
+@@ -1374,8 +1395,11 @@ static long record_hpte(unsigned long flags, __be64 *hptp,
+ 			dirty = 1;
+ 		}
+ 
+-		if (v & HPTE_V_ABSENT) {
+-			v &= ~HPTE_V_ABSENT;
++		if (v & HPTE_V_VRMA) {
++			/*
++			 * unmapped vrma consider them mapped and also
++			 * retain the HPTE_V_VRMA bit.
++			 */
+ 			v |= HPTE_V_VALID;
+ 			valid = 1;
+ 		}
+@@ -1559,14 +1583,14 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+ 			lbuf += 2;
+ 			nb += HPTE_SIZE;
+ 
+-			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
++			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_VRMA))
+ 				kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
+ 			err = -EIO;
+ 			/*
+ 			 * Clear few bits we got via read_htab which we
+ 			 * don't need to carry forward.
+ 			 */
+-			v &= ~(HPTE_V_HVLOCK | HPTE_V_ABSENT | HPTE_V_VALID);
++			v &= ~(HPTE_V_HVLOCK | HPTE_V_VALID);
+ 			r &= ~(HPTE_R_KEY_HI | HPTE_R_KEY_LO | HPTE_GR_RESERVED);
+ 
+ 			ret = kvmppc_virtmode_do_h_enter(kvm, H_EXACT, i, v, r,
+@@ -1592,7 +1616,7 @@ static ssize_t kvm_htab_write(struct file *file, const char __user *buf,
+ 		}
+ 
+ 		for (j = 0; j < hdr.n_invalid; ++j) {
+-			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_ABSENT))
++			if (be64_to_cpu(hptp[0]) & (HPTE_V_VALID | HPTE_V_VRMA))
+ 				kvmppc_do_h_remove(kvm, 0, i, 0, tmp);
+ 			++i;
+ 			hptp += 2;
+diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index d628d2810c93..f907be908b28 100644
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@ -252,7 +252,13 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 
+ 	ptel &= ~(HPTE_R_PP0 - psize);
+ 	ptel |= pa;
 -
 +	/*
-+	 * We use this in the fault path to check whether a
-+	 * NO_HPTE fault should be send to guest. In this
-+	 * case we don't want to send it to guest.
++	 * We mark the pte valid, if it is valid from guest point of view
++	 * For VRMA area we need to mark it still invalid, because access
++	 * class protection mechanism doesn't work with guest real mode
++	 * access.
++	 * Non vrma area is always valid, and vram is valid only if pa is set.
 +	 */
-+	atomic_inc(&kvm->arch.hpte_update_in_progress);
+ 	if (pa)
+ 		pteh |= HPTE_V_VALID;
+ 
+@@ -278,7 +284,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 		for (i = 0; i < 8; ++i) {
+ 			if ((be64_to_cpu(*hpte) & HPTE_V_VALID) == 0 &&
+ 			    try_lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID |
+-					  HPTE_V_ABSENT))
++					  HPTE_V_VRMA))
+ 				break;
+ 			hpte += 2;
+ 		}
+@@ -295,7 +301,7 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 				while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+ 					cpu_relax();
+ 				pte = be64_to_cpu(*hpte);
+-				if (!(pte & (HPTE_V_VALID | HPTE_V_ABSENT)))
++				if (!(pte & (HPTE_V_VALID | HPTE_V_VRMA)))
+ 					break;
+ 				*hpte &= ~cpu_to_be64(HPTE_V_HVLOCK);
+ 				hpte += 2;
+@@ -307,14 +313,14 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+ 	} else {
+ 		hpte = (__be64 *)(kvm->arch.hpt_virt + (pte_index << 4));
+ 		if (!try_lock_hpte(hpte, HPTE_V_HVLOCK | HPTE_V_VALID |
+-				   HPTE_V_ABSENT)) {
++				   HPTE_V_VRMA)) {
+ 			/* Lock the slot and check again */
+ 			u64 pte;
+ 
+ 			while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+ 				cpu_relax();
+ 			pte = be64_to_cpu(*hpte);
+-			if (pte & (HPTE_V_VALID | HPTE_V_ABSENT)) {
++			if (pte & (HPTE_V_VALID | HPTE_V_VRMA)) {
+ 				*hpte &= ~cpu_to_be64(HPTE_V_HVLOCK);
+ 				return H_PTEG_FULL;
+ 			}
+@@ -372,7 +378,7 @@ long kvmppc_h_enter(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	/*
+ 	 * Clear few bits. when called via hcall.
+ 	 */
+-	pteh &= ~(HPTE_V_HVLOCK | HPTE_V_ABSENT | HPTE_V_VALID);
++	pteh &= ~(HPTE_V_HVLOCK | HPTE_V_VRMA | HPTE_V_VALID);
+ 	ptel &= ~(HPTE_R_KEY_HI | HPTE_R_KEY_LO | HPTE_GR_RESERVED);
+ 
+ 	return kvmppc_do_h_enter(vcpu->kvm, flags, pte_index, pteh, ptel,
+@@ -492,7 +498,7 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
+ 	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+ 		cpu_relax();
+ 	pte = be64_to_cpu(hpte[0]);
+-	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
++	if ((pte & (HPTE_V_VRMA | HPTE_V_VALID)) == 0 ||
+ 	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn) ||
+ 	    ((flags & H_ANDCOND) && (pte & avpn) != 0)) {
+ 		hpte[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+@@ -503,9 +509,12 @@ long kvmppc_do_h_remove(struct kvm *kvm, unsigned long flags,
+ 	v = pte & ~HPTE_V_HVLOCK;
+ 	if (v & HPTE_V_VALID) {
+ 		u64 pte1;
+-
+ 		pte1 = be64_to_cpu(hpte[1]);
+-		hpte[0] &= ~cpu_to_be64(HPTE_V_VALID);
++		/*
++		 * Remove the valid and VRMA bits
++		 */
++		hpte[0] &= ~cpu_to_be64(HPTE_V_VALID | HPTE_V_VRMA);
++
+ 		rb = compute_tlbie_rb(v, pte1, pte_index);
+ 		do_tlbies(kvm, &rb, 1, global_invalidates(kvm, flags), true);
+ 		/* Read PTE low word after tlbie to get final R/C values */
+@@ -572,7 +581,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+ 			}
+ 			found = 0;
+ 			hp0 = be64_to_cpu(hp[0]);
+-			if (hp0 & (HPTE_V_ABSENT | HPTE_V_VALID)) {
++			if (hp0 & (HPTE_V_VRMA | HPTE_V_VALID)) {
+ 				switch (flags & 3) {
+ 				case 0:		/* absolute */
+ 					found = 1;
+@@ -606,7 +615,7 @@ long kvmppc_h_bulk_remove(struct kvm_vcpu *vcpu)
+ 			}
+ 
+ 			/* leave it locked */
+-			hp[0] &= ~cpu_to_be64(HPTE_V_VALID);
++			hp[0] &= ~cpu_to_be64(HPTE_V_VALID | HPTE_V_VRMA);
+ 			tlbrb[n] = compute_tlbie_rb(be64_to_cpu(hp[0]),
+ 				be64_to_cpu(hp[1]), pte_index);
+ 			indexes[n] = j;
+@@ -656,7 +665,7 @@ long kvmppc_h_protect(struct kvm_vcpu *vcpu, unsigned long flags,
+ 	while (!try_lock_hpte(hpte, HPTE_V_HVLOCK))
+ 		cpu_relax();
+ 	pte = be64_to_cpu(hpte[0]);
+-	if ((pte & (HPTE_V_ABSENT | HPTE_V_VALID)) == 0 ||
++	if ((pte & (HPTE_V_VRMA | HPTE_V_VALID)) == 0 ||
+ 	    ((flags & H_AVPN) && (pte & ~0x7fUL) != avpn)) {
+ 		hpte[0] &= ~cpu_to_be64(HPTE_V_HVLOCK);
+ 		return H_NOT_FOUND;
+@@ -758,10 +767,17 @@ long kvmppc_h_read(struct kvm_vcpu *vcpu, unsigned long flags,
+ 		hpte = (__be64 *)(kvm->arch.hpt_virt + (pte_index << 4));
+ 		v = be64_to_cpu(hpte[0]) & ~HPTE_V_HVLOCK;
+ 		r = be64_to_cpu(hpte[1]);
+-		if (v & HPTE_V_ABSENT) {
+-			v &= ~HPTE_V_ABSENT;
++		if (v & HPTE_V_VRMA) {
++			/*
++			 * don't share vrma bits back to guest
++			 */
++			v &= ~HPTE_V_VRMA;
+ 			v |= HPTE_V_VALID;
+ 		}
++		/*
++		 * Clear the AMR class bits
++		 */
++		r &= ~(HPTE_R_KEY_HI | HPTE_R_KEY_LO);
+ 		if (v & HPTE_V_VALID) {
+ 			r = rev[i].guest_rpte | (r & (HPTE_R_R | HPTE_R_C));
+ 			r &= ~HPTE_GR_RESERVED;
+@@ -871,8 +887,13 @@ long kvmppc_hv_find_lock_hpte(struct kvm *kvm, gva_t eaddr, unsigned long slb_v,
+ 			/* Read the PTE racily */
+ 			v = be64_to_cpu(hpte[i]) & ~HPTE_V_HVLOCK;
+ 
+-			/* Check valid/absent, hash, segment size and AVPN */
+-			if (!(v & valid) || (v & mask) != val)
++			/*
++			 * Check hash, segment size and AVPN.
++			 * We can't check for valid here without lock. We do
++			 * mark the hpte not valid while an hpte update is
++			 * in progress.
++			 */
++			if ((v & mask) != val)
+ 				continue;
+ 
+ 			/* Lock the PTE and read it under the lock */
+@@ -927,7 +948,7 @@ long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
+ 	/* For protection fault, expect to find a valid HPTE */
+ 	valid = HPTE_V_VALID;
+ 	if (status & DSISR_NOHPTE)
+-		valid |= HPTE_V_ABSENT;
++		valid |= HPTE_V_VRMA;
+ 
+ 	index = kvmppc_hv_find_lock_hpte(kvm, addr, slb_v, valid);
+ 	if (index < 0) {
+@@ -942,10 +963,17 @@ long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
+ 	gr = rev->guest_rpte;
+ 
+ 	unlock_hpte(hpte, v);
+-
+-	/* For not found, if the HPTE is valid by now, retry the instruction */
 +	/*
-+	 * We want to ensure that other cpus see the hpte_update_in_progress
-+	 * change before taking a page fault due to us clearing the valid
-+	 * bit below
++	 * For not found, if the HPTE is valid by now, retry the instruction
 +	 */
-+	smp_wmb();
+ 	if ((status & DSISR_NOHPTE) && (v & HPTE_V_VALID))
+ 		return 0;
 +	/*
-+	 * We need to mark V = 0 before doing a tlb invalidate.
-+	 * Refer Page table entry modifying section in ISA
++	 * For key fault if HPTE is host mapped by now retry the instruction
 +	 */
- 	hptep[0] &= ~cpu_to_be64(HPTE_V_VALID);
- 	rb = compute_tlbie_rb(be64_to_cpu(hptep[0]), be64_to_cpu(hptep[1]),
- 			      pte_index);
++	if ((status & DSISR_KEYFAULT) &&
++	    kvmppc_is_host_mapped_hpte(kvm, hpte))
++		return 0;
+ 
+ 	/* Check access permissions to the page */
+ 	pp = gr & (HPTE_R_PP0 | HPTE_R_PP);
+@@ -973,8 +1001,7 @@ long kvmppc_hpte_hv_fault(struct kvm_vcpu *vcpu, unsigned long addr,
+ 
+ 	/* Check the storage key to see if it is possibly emulated MMIO */
+ 	if (data && (vcpu->arch.shregs.msr & MSR_IR) &&
+-	    (r & (HPTE_R_KEY_HI | HPTE_R_KEY_LO)) ==
+-	    (HPTE_R_KEY_HI | HPTE_R_KEY_LO))
++	    ((r & HPTE_R_MMIO_UNMAP_KEY) == HPTE_R_MMIO_UNMAP_KEY))
+ 		return -2;	/* MMIO emulation - load instr word */
+ 
+ 	return -1;		/* send fault up to host kernel mode */
 diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 1ff3ebdd2ab0..0b425da9f8db 100644
+index 0b425da9f8db..f1af0d24e2b5 100644
 --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
 +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1790,11 +1790,33 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- kvmppc_hdsi:
- 	mfspr	r4, SPRN_HDAR
- 	mfspr	r6, SPRN_HDSISR
+@@ -834,7 +834,11 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mtmsrd	r8
+ 
+ 	/* Load up POWER8-specific registers */
 +	/*
-+	 * first check whether we have an hpte update in progress.
-+	 * If so, we go to host directly
++	 * Always disable read/write w.r.t to class index 31
 +	 */
-+	ld	r0, VCPU_KVM(r9)
-+	lwz	r0, KVM_HPTE_UPDATE(r0)
+ 	ld	r5, VCPU_IAMR(r4)
++	ori	r5, r5, 0x3
+ 	lwz	r6, VCPU_PSPB(r4)
+ 	ld	r7, VCPU_FSCR(r4)
+ 	mtspr	SPRN_IAMR, r5
+@@ -901,10 +905,25 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	mtspr	SPRN_DSISR, r6
+ 
+ BEGIN_FTR_SECTION
+-	/* Restore AMR and UAMOR, set AMOR to all 1s */
+-	ld	r5,VCPU_AMR(r4)
++	/* Restore AMR and UAMOR */
 +	/*
-+	 * If update is in progress go to host directly
++	 * Always disable read/write wr.t. to class index
++	 * 30 and 31
 +	 */
-+	cmpwi	r0, 0
-+	bne	5f
++	ld	r5, VCPU_AMR(r4)
++	ori	r5, r5, 0xf
++	/*
++	 * UAMOR set so that mask bits for class index 30
++	 * and 31 cannot be updated
++	 */
 +
-+	andi.	r0, r11, MSR_DR		/* data relocation enabled? */
-+	beq	3f
-+
- 	/* HPTE not found fault or protection fault? */
- 	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
- 	beq	1f			/* if not, send it to the guest */
+ 	ld	r6,VCPU_UAMOR(r4)
+-	li	r7,-1
++	rldicr  r6, r6, 0, 59
++	/*
++	 * AMOR set so that mask bits for class index 30
++	 * and 31 cannot be updated
++	 */
++	li	r7, ~0xf
+ 	mtspr	SPRN_AMR,r5
+ 	mtspr	SPRN_UAMOR,r6
+ 	mtspr	SPRN_AMOR,r7
+@@ -1801,13 +1820,22 @@ kvmppc_hdsi:
+ 	 */
+ 	cmpwi	r0, 0
+ 	bne	5f
+-
 -	andi.	r0, r11, MSR_DR		/* data relocation enabled? */
--	beq	3f
-+	b	8f
-+5:
 +	/*
-+	 * real mode access to be sent to host. because
-+	 * of an hpte update in progress
++	 * If data relocation is disabled, virtual page class
++	 * key protection mechanis does not apply.
 +	 */
 +	andi.	r0, r11, MSR_DR
-+	beq	7f
-+8:
- 	clrrdi	r0, r4, 28
- 	PPC_SLBFEE_DOT(R5, R0)		/* if so, look up SLB */
- 	bne	1f			/* if no SLB entry found */
-@@ -1833,7 +1855,14 @@ fast_interrupt_c_return:
- 	mr	r4, r9
- 	b	fast_guest_return
- 
--3:	ld	r5, VCPU_KVM(r9)	/* not relocated, use VRMA */
-+3:	/*
-+	 * Check whether we can send the fault directly to
-+	 * guest.
-+	 */
-+	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
-+	beq	1b
-+7:
-+	ld	r5, VCPU_KVM(r9)	/* not relocated, use VRMA */
- 	ld	r5, KVM_VRMA_SLB_V(r5)
- 	b	4b
- 
-@@ -1865,10 +1894,27 @@ fast_interrupt_c_return:
-  * it is an HPTE not found fault for a page that we have paged out.
-  */
- kvmppc_hisi:
-+	/* first check whether we have an hpte update in progress.
-+	 * If so, we go to host directly
-+	 */
-+	ld	r0, VCPU_KVM(r9)	/* not relocated, use VRMA */
-+	lwz	r0, KVM_HPTE_UPDATE(r0)
+ 	beq	3f
+-
+-	/* HPTE not found fault or protection fault? */
+-	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
+-	beq	1f			/* if not, send it to the guest */
 +	/*
-+	 * If update is in progress go to host directly
++	 * If access is not permitted by virtual page class
++	 * key protection, handle it in the host. If not
++	 * send it to the guest.
 +	 */
-+	cmpwi	r0, 0
-+	bne	5f
-+
-+	andi.	r0, r11, MSR_IR		/* instruction relocation enabled? */
-+	beq	3f
-+
- 	andis.	r0, r11, SRR1_ISI_NOPT@h
- 	beq	1f
-+	b	8f
-+5:
++	andis.	r0, r6, (DSISR_KEYFAULT | DSISR_PROTFAULT)@h
++	beq	1f
++	/*
++	 * skip the real mode check below
++	 */
+ 	b	8f
+ 5:
+ 	/*
+@@ -1857,7 +1885,8 @@ fast_interrupt_c_return:
+ 
+ 3:	/*
+ 	 * Check whether we can send the fault directly to
+-	 * guest.
++	 * guest. We don't need to worry about keyfault if
++	 * the fault happens in real mode.
+ 	 */
+ 	andis.	r0, r6, (DSISR_NOHPTE | DSISR_PROTFAULT)@h
+ 	beq	1b
+@@ -1907,8 +1936,7 @@ kvmppc_hisi:
+ 
  	andi.	r0, r11, MSR_IR		/* instruction relocation enabled? */
--	beq	3f
-+	beq	7f
-+8:
- 	clrrdi	r0, r10, 28
- 	PPC_SLBFEE_DOT(R5, R0)		/* if so, look up SLB */
- 	bne	1f			/* if no SLB entry found */
-@@ -1896,7 +1942,11 @@ kvmppc_hisi:
- 	bl	kvmppc_msr_interrupt
- 	b	fast_interrupt_c_return
- 
--3:	ld	r6, VCPU_KVM(r9)	/* not relocated, use VRMA */
-+3:	/* Check whether we should send this to guest */
-+	andis.	r0, r11, SRR1_ISI_NOPT@h
-+	beq	1b
-+7:
-+	ld	r6, VCPU_KVM(r9)	/* not relocated, use VRMA */
- 	ld	r5, KVM_VRMA_SLB_V(r6)
- 	b	4b
- 
+ 	beq	3f
+-
+-	andis.	r0, r11, SRR1_ISI_NOPT@h
++	andis.	r0, r11, SRR1_ISI_KEYFAULT@h
+ 	beq	1f
+ 	b	8f
+ 5:
 -- 
 1.9.1
