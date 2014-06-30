@@ -1,24 +1,19 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
- [IPv6:2607:f8b0:4003:c01::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mihai.caraman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20BD71A0017
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 22:21:26 +1000 (EST)
-Received: by mail-ob0-f173.google.com with SMTP id va2so8773184obc.18
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 05:21:24 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A1711A001C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 22:55:11 +1000 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] KVM: PPC: e500: Fix default tlb for victim hint
+Date: Mon, 30 Jun 2014 15:54:58 +0300
+Message-ID: <1404132898-27261-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-Sender: jwboyer@gmail.com
-In-Reply-To: <1404100934-7490-1-git-send-email-xerofoify@gmail.com>
-References: <1404100934-7490-1-git-send-email-xerofoify@gmail.com>
-Date: Mon, 30 Jun 2014 08:21:24 -0400
-Message-ID: <CA+5PVA7WOiSBSzZZ=H19X7KdUAZJWhe8Fm=sHzsXOgeVz7Po=g@mail.gmail.com>
-Subject: Re: [PATCH] Fixes return issues in uic_init_one
-From: Josh Boyer <jwboyer@fedoraproject.org>
-To: Nicholas Krause <xerofoify@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, paulus <paulus@samba.org>,
- "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +23,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 30, 2014 at 12:02 AM, Nicholas Krause <xerofoify@gmail.com> wrote:
-> This patch fixes the FIXME messages for returning a ENOMEM error
-> if uic is not allocated and if uic->irqhost is not allocated a
-> IRQ domain that is linear returns EIO.
->
-> Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+Tlb search operation used for victim hint relies on the default tlb set by the
+host. When hardware tablewalk support is enabled in the host, the default tlb is
+TLB1 which leads KVM to evict the bolted entry. Set and restore the default tlb
+when searching for victim hint.
 
-NAK.
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/include/asm/mmu-book3e.h | 5 ++++-
+ arch/powerpc/kvm/e500_mmu_host.c      | 4 ++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
-You didn't actually fix anything here.  In fact, you changed the
-semantics of what uic_init_one returns and the function that calls
-doesn't change for negative return codes.  You also didn't do similar
-changes for the rest of the error conditions in within the same
-function, making it inconsistent with itself.
-
-NULL is the appropriate return for errors in this function.  The FIXME
-about panicing is because without a UIC, the boards can't service
-interrupts at all.  A board that doesn't work might as well panic, but
-that panic is actually done in uic_init_tree appropriately.  If you're
-going to change anything, just remove the comment.
-
-josh
-
-> ---
->  arch/powerpc/sysdev/uic.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-> index 9203393..f95010a 100644
-> --- a/arch/powerpc/sysdev/uic.c
-> +++ b/arch/powerpc/sysdev/uic.c
-> @@ -239,7 +239,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
->
->         uic = kzalloc(sizeof(*uic), GFP_KERNEL);
->         if (! uic)
-> -               return NULL; /* FIXME: panic? */
-> +               return -ENOMEM;
->
->         raw_spin_lock_init(&uic->lock);
->         indexp = of_get_property(node, "cell-index", &len);
-> @@ -261,7 +261,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
->         uic->irqhost = irq_domain_add_linear(node, NR_UIC_INTS, &uic_host_ops,
->                                              uic);
->         if (! uic->irqhost)
-> -               return NULL; /* FIXME: panic? */
-> +               return -EIO;
->
->         /* Start with all interrupts disabled, level and non-critical */
->         mtdcr(uic->dcrbase + UIC_ER, 0);
-> --
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+index 901dac6..5dad378 100644
+--- a/arch/powerpc/include/asm/mmu-book3e.h
++++ b/arch/powerpc/include/asm/mmu-book3e.h
+@@ -40,7 +40,9 @@
+ 
+ /* MAS registers bit definitions */
+ 
+-#define MAS0_TLBSEL(x)		(((x) << 28) & 0x30000000)
++#define MAS0_TLBSEL_MASK        0x30000000
++#define MAS0_TLBSEL_SHIFT       28
++#define MAS0_TLBSEL(x)          (((x) << MAS0_TLBSEL_SHIFT) & MAS0_TLBSEL_MASK)
+ #define MAS0_ESEL_MASK		0x0FFF0000
+ #define MAS0_ESEL_SHIFT		16
+ #define MAS0_ESEL(x)		(((x) << MAS0_ESEL_SHIFT) & MAS0_ESEL_MASK)
+@@ -86,6 +88,7 @@
+ #define MAS3_SPSIZE		0x0000003e
+ #define MAS3_SPSIZE_SHIFT	1
+ 
++#define MAS4_TLBSEL_MASK	MAS0_TLBSEL_MASK
+ #define MAS4_TLBSELD(x) 	MAS0_TLBSEL(x)
+ #define MAS4_INDD		0x00008000	/* Default IND */
+ #define MAS4_TSIZED(x)		MAS1_TSIZE(x)
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index dd2cc03..79677d7 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -107,11 +107,15 @@ static u32 get_host_mas0(unsigned long eaddr)
+ {
+ 	unsigned long flags;
+ 	u32 mas0;
++	u32 mas4;
+ 
+ 	local_irq_save(flags);
+ 	mtspr(SPRN_MAS6, 0);
++	mas4 = mfspr(SPRN_MAS4);
++	mtspr(SPRN_MAS4, mas4 & ~MAS4_TLBSEL_MASK);
+ 	asm volatile("tlbsx 0, %0" : : "b" (eaddr & ~CONFIG_PAGE_OFFSET));
+ 	mas0 = mfspr(SPRN_MAS0);
++	mtspr(SPRN_MAS4, mas4);
+ 	local_irq_restore(flags);
+ 
+ 	return mas0;
+-- 
+1.7.11.7
