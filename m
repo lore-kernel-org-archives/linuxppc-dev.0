@@ -1,26 +1,37 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <luto@amacapital.net>
+Received: from mail-pd0-f181.google.com (mail-pd0-f181.google.com
+ [209.85.192.181])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CDCB1A0053
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 07:30:14 +1000 (EST)
-Date: Tue, 1 Jul 2014 07:28:01 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Hannes Reinecke <hare@suse.de>
-Subject: Re: Regression in 3.15 on POWER8 with multipath SCSI
-Message-ID: <20140630212801.GB20819@iris.ozlabs.ibm.com>
-References: <20140630103058.GA17747@iris.ozlabs.ibm.com>
- <53B1416D.8020305@suse.de>
- <20140630110202.GB17747@iris.ozlabs.ibm.com>
- <53B14B78.4010500@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <53B14B78.4010500@suse.de>
-Cc: Vladimir Davydov <vdavydov@parallels.com>,
- Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, dm-devel@redhat.com,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7986E1A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 07:54:01 +1000 (EST)
+Received: by mail-pd0-f181.google.com with SMTP id v10so8819528pde.26
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 14:53:58 -0700 (PDT)
+From: Andy Lutomirski <luto@amacapital.net>
+To: x86@kernel.org,
+	hpa@zytor.org
+Subject: [PATCH v2 09/10] arm64, ia64, ppc, s390, sh, tile, um, x86,
+ mm: Remove default gate area
+Date: Mon, 30 Jun 2014 14:53:20 -0700
+Message-Id: <e1656ab2adfd1891f62610abe3e85ad992ee0cbf.1404164803.git.luto@amacapital.net>
+In-Reply-To: <cover.1404164803.git.luto@amacapital.net>
+References: <cover.1404164803.git.luto@amacapital.net>
+In-Reply-To: <cover.1404164803.git.luto@amacapital.net>
+References: <cover.1404164803.git.luto@amacapital.net>
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, Ingo Molnar <mingo@redhat.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, user-mode-linux-devel@lists.sourceforge.net,
+ Will Deacon <will.deacon@arm.com>, Jeff Dike <jdike@addtoit.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>,
+ Nathan Lynch <Nathan_Lynch@mentor.com>, linux-kernel@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,98 +41,511 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 30, 2014 at 01:35:20PM +0200, Hannes Reinecke wrote:
-> On 06/30/2014 01:02 PM, Paul Mackerras wrote:
-> >On Mon, Jun 30, 2014 at 12:52:29PM +0200, Hannes Reinecke wrote:
-> >>On 06/30/2014 12:30 PM, Paul Mackerras wrote:
-> >>>I have a machine on which 3.15 usually fails to boot, and 3.14 boots
-> >>>every time.  The machine is a POWER8 2-socket server with 20 cores
-> >>>(thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
-> >>>hardware-RAID-capable adapter which appears as two IPR controllers
-> >>>which are both connected to each disk.  I am booting from a disk that
-> >>>has Fedora 20 installed on it.
-> >>>
-> >>>After over two weeks of bisections, I can finally point to the commits
-> >>>that cause the problems.  The culprits are:
-> >>>
-> >>>3e9f1be1 dm mpath: remove process_queued_ios()
-> >>>e8099177 dm mpath: push back requests instead of queueing
-> >>>bcccff93 kobject: don't block for each kobject_uevent
-> >>>
-> >>>The interesting thing is that neither e8099177 nor bcccff93 cause
-> >>>failures on their own, but with both commits in there are failures
-> >>>where the system will fail to find /home on some occasions.
-> >>>
-> >>>With 3e9f1be1 included, the system appears to be prone to a deadlock
-> >>>condition which typically causes the boot process to hang with this
-> >>>message showing:
-> >>>
-> >>>A start job is running for Monitoring of LVM2 mirror...rogress polling
-> >>>
-> >>>(with a [***     ] thing before it where the asterisks move back and
-> >>>forth).
-> >>>
-> >>>If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
-> >>>4cdd2ad7 ("dm mpath: fix lock order inconsistency in
-> >>>multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
-> >>>kernel that will boot every time.  The first two are later commits
-> >>>that fix some problems with 3e9f1be1 (though not the problems I am
-> >>>seeing).
-> >>>
-> >>>Can anyone see any reason why e8099177 and bcccff93 would interfere
-> >>>with each other?
-> >>>
-> >>It might be running afoul with the 'cookie' mechanism.
-> >>Device-mapper is using inserting a 'cookie' with the ioctl, and listens to
-> >>any event containing the cookie to ensure udev has finished processing that
-> >>device and hence the device node is accessible. Added to this is the problem
-> >>that we don't have any good means of detecting any changes to device-mapper
-> >>devices.
-> >>
-> >>EG look at this sequence of events:
-> >>
-> >>add dm-1
-> >>remove dm-1
-> >>add dm-1
-> >>
-> >>Originally udev would pick up the event, read the details from sysfs, and
-> >>return control to the kernel.
-> >>With bcccff93 udev will _not_have a chance to read the details
-> >>from sysfs for 'dm-1', as anything read from sysfs relating to 'dm-1' might
-> >>infact refer to the _second_ 'add' event, which might be a totally different
-> >>device.
-> >>As far as I know udev doesn't have any mechanism to drop events,
-> >>so it'll always process all events. Assuming that the sysfs attributes it
-> >>reads _do_ relate to that event. If they don't things become interesting ...
-> >>
-> >>(Actually, this issue was always present, especially with multipathing.
-> >>multipath occasionally can become sluggish when processing events, so the
-> >>same might happen with it. We've tried to work around this, but never found
-> >>a fool-proof way of doing so).
-> >>
-> >>Adding Kay as he might have some more insight here.
-> >>
-> >>Another thing:
-> >>Do you run LVM on top of multipathing?
-> >>If so, could you setup your system with _not_ using LVM and disabling the
-> >>LVM service?
-> >
-> >No, I'm not using LVM, and in fact I deleted all the physical volumes
-> >that were on any of the disks (they were installations of other
-> >distros), so there are no physical or logical volumes anywhere on any
-> >disk.  I haven't tried disabling the LVM service completely, though.
-> >What would it mean if disabling the LVM service made a difference?
-> >
-> Yes. LVM integration with systemd is a science unto itself.
-> I'm reasonably confident with multipath, but not LVM.
-> Plus the fact the the LVM service apparently is waiting for something sort
-> of points into that direction.
-> 
-> So please do disable the lvm service.
+The core mm code will provide a default gate area based on
+FIXADDR_USER_START and FIXADDR_USER_END if
+!defined(__HAVE_ARCH_GATE_AREA) && defined(AT_SYSINFO_EHDR).
 
-I disabled the LVM service, and it's still bad.  Unmodified 3.15
-booted successfully in only 18 out of 50 attempts with LVM disabled.
+This default is only useful for ia64.  arm64, ppc, s390, sh, tile,
+64-bit UML, and x86_32 have their own code just to disable it.  arm,
+32-bit UML, and x86_64 have gate areas, but they have their own
+implementations.
 
-So it's not LVM.  In any case LVM was fine with a 3.14 kernel.
+This gets rid of the default and moves the code into ia64.
 
-Paul.
+This should save some code on architectures without a gate area: it's
+now possible to inline the gate_area functions in the default case.
+
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux390@de.ibm.com
+Cc: Chris Metcalf <cmetcalf@tilera.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Richard Weinberger <richard@nod.at>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Nathan Lynch <Nathan_Lynch@mentor.com>
+Cc: x86@kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: linux-sh@vger.kernel.org
+Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: linux-mm@kvack.org
+Signed-off-by: Andy Lutomirski <luto@amacapital.net>
+---
+ arch/arm64/include/asm/page.h      |  3 ---
+ arch/arm64/kernel/vdso.c           | 19 -------------------
+ arch/ia64/include/asm/page.h       |  2 ++
+ arch/ia64/mm/init.c                | 26 ++++++++++++++++++++++++++
+ arch/powerpc/include/asm/page.h    |  3 ---
+ arch/powerpc/kernel/vdso.c         | 16 ----------------
+ arch/s390/include/asm/page.h       |  2 --
+ arch/s390/kernel/vdso.c            | 15 ---------------
+ arch/sh/include/asm/page.h         |  5 -----
+ arch/sh/kernel/vsyscall/vsyscall.c | 15 ---------------
+ arch/tile/include/asm/page.h       |  6 ------
+ arch/tile/kernel/vdso.c            | 15 ---------------
+ arch/um/include/asm/page.h         |  5 +++++
+ arch/x86/include/asm/page.h        |  1 -
+ arch/x86/include/asm/page_64.h     |  2 ++
+ arch/x86/um/asm/elf.h              |  1 -
+ arch/x86/um/mem_64.c               | 15 ---------------
+ arch/x86/vdso/vdso32-setup.c       | 19 +------------------
+ include/linux/mm.h                 | 17 ++++++++++++-----
+ mm/memory.c                        | 38 --------------------------------------
+ mm/nommu.c                         |  5 -----
+ 21 files changed, 48 insertions(+), 182 deletions(-)
+
+diff --git a/arch/arm64/include/asm/page.h b/arch/arm64/include/asm/page.h
+index 46bf666..992710f 100644
+--- a/arch/arm64/include/asm/page.h
++++ b/arch/arm64/include/asm/page.h
+@@ -28,9 +28,6 @@
+ #define PAGE_SIZE		(_AC(1,UL) << PAGE_SHIFT)
+ #define PAGE_MASK		(~(PAGE_SIZE-1))
+ 
+-/* We do define AT_SYSINFO_EHDR but don't use the gate mechanism */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+ #ifndef __ASSEMBLY__
+ 
+ #ifdef CONFIG_ARM64_64K_PAGES
+diff --git a/arch/arm64/kernel/vdso.c b/arch/arm64/kernel/vdso.c
+index 50384fe..f630626 100644
+--- a/arch/arm64/kernel/vdso.c
++++ b/arch/arm64/kernel/vdso.c
+@@ -187,25 +187,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ }
+ 
+ /*
+- * We define AT_SYSINFO_EHDR, so we need these function stubs to keep
+- * Linux happy.
+- */
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-/*
+  * Update the vDSO data page to keep in sync with kernel timekeeping.
+  */
+ void update_vsyscall(struct timekeeper *tk)
+diff --git a/arch/ia64/include/asm/page.h b/arch/ia64/include/asm/page.h
+index f1e1b2e..1f1bf14 100644
+--- a/arch/ia64/include/asm/page.h
++++ b/arch/ia64/include/asm/page.h
+@@ -231,4 +231,6 @@ get_order (unsigned long size)
+ #define PERCPU_ADDR		(-PERCPU_PAGE_SIZE)
+ #define LOAD_OFFSET		(KERNEL_START - KERNEL_TR_PAGE_SIZE)
+ 
++#define __HAVE_ARCH_GATE_AREA	1
++
+ #endif /* _ASM_IA64_PAGE_H */
+diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+index 25c3502..35efaa3 100644
+--- a/arch/ia64/mm/init.c
++++ b/arch/ia64/mm/init.c
+@@ -278,6 +278,32 @@ setup_gate (void)
+ 	ia64_patch_gate();
+ }
+ 
++static struct vm_area_struct gate_vma;
++
++static int __init gate_vma_init(void)
++{
++	gate_vma.vm_mm = NULL;
++	gate_vma.vm_start = FIXADDR_USER_START;
++	gate_vma.vm_end = FIXADDR_USER_END;
++	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
++	gate_vma.vm_page_prot = __P101;
++
++	return 0;
++}
++__initcall(gate_vma_init);
++
++struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
++{
++	return &gate_vma;
++}
++
++int in_gate_area_no_mm(unsigned long addr)
++{
++	if ((addr >= FIXADDR_USER_START) && (addr < FIXADDR_USER_END))
++		return 1;
++	return 0;
++}
++
+ void ia64_mmu_init(void *my_cpu_data)
+ {
+ 	unsigned long pta, impl_va_bits;
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index 32e4e21..26fe1ae 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -48,9 +48,6 @@ extern unsigned int HPAGE_SHIFT;
+ #define HUGE_MAX_HSTATE		(MMU_PAGE_COUNT-1)
+ #endif
+ 
+-/* We do define AT_SYSINFO_EHDR but don't use the gate mechanism */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+ /*
+  * Subtle: (1 << PAGE_SHIFT) is an int, not an unsigned long. So if we
+  * assign PAGE_MASK to a larger type it gets extended the way we want
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ce74c33..f174351 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -840,19 +840,3 @@ static int __init vdso_init(void)
+ 	return 0;
+ }
+ arch_initcall(vdso_init);
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
+index 114258e..7b2ac6e 100644
+--- a/arch/s390/include/asm/page.h
++++ b/arch/s390/include/asm/page.h
+@@ -162,6 +162,4 @@ static inline int devmem_is_allowed(unsigned long pfn)
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-#define __HAVE_ARCH_GATE_AREA 1
+-
+ #endif /* _S390_PAGE_H */
+diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+index 6136490..0bbb7e0 100644
+--- a/arch/s390/kernel/vdso.c
++++ b/arch/s390/kernel/vdso.c
+@@ -316,18 +316,3 @@ static int __init vdso_init(void)
+ 	return 0;
+ }
+ early_initcall(vdso_init);
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
+index 15d9703..fe20d14 100644
+--- a/arch/sh/include/asm/page.h
++++ b/arch/sh/include/asm/page.h
+@@ -186,11 +186,6 @@ typedef struct page *pgtable_t;
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-/* vDSO support */
+-#ifdef CONFIG_VSYSCALL
+-#define __HAVE_ARCH_GATE_AREA
+-#endif
+-
+ /*
+  * Some drivers need to perform DMA into kmalloc'ed buffers
+  * and so we have to increase the kmalloc minalign for this.
+diff --git a/arch/sh/kernel/vsyscall/vsyscall.c b/arch/sh/kernel/vsyscall/vsyscall.c
+index 5ca5797..ea2aa13 100644
+--- a/arch/sh/kernel/vsyscall/vsyscall.c
++++ b/arch/sh/kernel/vsyscall/vsyscall.c
+@@ -92,18 +92,3 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 
+ 	return NULL;
+ }
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long address)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long address)
+-{
+-	return 0;
+-}
+diff --git a/arch/tile/include/asm/page.h b/arch/tile/include/asm/page.h
+index 6727680..a213a8d 100644
+--- a/arch/tile/include/asm/page.h
++++ b/arch/tile/include/asm/page.h
+@@ -39,12 +39,6 @@
+ #define HPAGE_MASK	(~(HPAGE_SIZE - 1))
+ 
+ /*
+- * We do define AT_SYSINFO_EHDR to support vDSO,
+- * but don't use the gate mechanism.
+- */
+-#define __HAVE_ARCH_GATE_AREA		1
+-
+-/*
+  * If the Kconfig doesn't specify, set a maximum zone order that
+  * is enough so that we can create huge pages from small pages given
+  * the respective sizes of the two page types.  See <linux/mmzone.h>.
+diff --git a/arch/tile/kernel/vdso.c b/arch/tile/kernel/vdso.c
+index 1533af2..5bc51d7 100644
+--- a/arch/tile/kernel/vdso.c
++++ b/arch/tile/kernel/vdso.c
+@@ -121,21 +121,6 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 	return NULL;
+ }
+ 
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long address)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long address)
+-{
+-	return 0;
+-}
+-
+ int setup_vdso_pages(void)
+ {
+ 	struct page **pagelist;
+diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
+index 5ff53d9..71c5d13 100644
+--- a/arch/um/include/asm/page.h
++++ b/arch/um/include/asm/page.h
+@@ -119,4 +119,9 @@ extern unsigned long uml_physmem;
+ #include <asm-generic/getorder.h>
+ 
+ #endif	/* __ASSEMBLY__ */
++
++#ifdef CONFIG_X86_32
++#define __HAVE_ARCH_GATE_AREA 1
++#endif
++
+ #endif	/* __UM_PAGE_H */
+diff --git a/arch/x86/include/asm/page.h b/arch/x86/include/asm/page.h
+index 775873d..802dde3 100644
+--- a/arch/x86/include/asm/page.h
++++ b/arch/x86/include/asm/page.h
+@@ -70,7 +70,6 @@ extern bool __virt_addr_valid(unsigned long kaddr);
+ #include <asm-generic/memory_model.h>
+ #include <asm-generic/getorder.h>
+ 
+-#define __HAVE_ARCH_GATE_AREA 1
+ #define HAVE_ARCH_HUGETLB_UNMAPPED_AREA
+ 
+ #endif	/* __KERNEL__ */
+diff --git a/arch/x86/include/asm/page_64.h b/arch/x86/include/asm/page_64.h
+index 0f1ddee..f408caf 100644
+--- a/arch/x86/include/asm/page_64.h
++++ b/arch/x86/include/asm/page_64.h
+@@ -39,4 +39,6 @@ void copy_page(void *to, void *from);
+ 
+ #endif	/* !__ASSEMBLY__ */
+ 
++#define __HAVE_ARCH_GATE_AREA 1
++
+ #endif /* _ASM_X86_PAGE_64_H */
+diff --git a/arch/x86/um/asm/elf.h b/arch/x86/um/asm/elf.h
+index 0feee2f..25a1022 100644
+--- a/arch/x86/um/asm/elf.h
++++ b/arch/x86/um/asm/elf.h
+@@ -216,6 +216,5 @@ extern long elf_aux_hwcap;
+ #define ELF_HWCAP (elf_aux_hwcap)
+ 
+ #define SET_PERSONALITY(ex) do ; while(0)
+-#define __HAVE_ARCH_GATE_AREA 1
+ 
+ #endif
+diff --git a/arch/x86/um/mem_64.c b/arch/x86/um/mem_64.c
+index c6492e7..f8fecad 100644
+--- a/arch/x86/um/mem_64.c
++++ b/arch/x86/um/mem_64.c
+@@ -9,18 +9,3 @@ const char *arch_vma_name(struct vm_area_struct *vma)
+ 
+ 	return NULL;
+ }
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+diff --git a/arch/x86/vdso/vdso32-setup.c b/arch/x86/vdso/vdso32-setup.c
+index e4f7781..e904c27 100644
+--- a/arch/x86/vdso/vdso32-setup.c
++++ b/arch/x86/vdso/vdso32-setup.c
+@@ -115,23 +115,6 @@ static __init int ia32_binfmt_init(void)
+ 	return 0;
+ }
+ __initcall(ia32_binfmt_init);
+-#endif
+-
+-#else  /* CONFIG_X86_32 */
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-int in_gate_area(struct mm_struct *mm, unsigned long addr)
+-{
+-	return 0;
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
++#endif /* CONFIG_SYSCTL */
+ 
+ #endif	/* CONFIG_X86_64 */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index e03dd29..8981cc8 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -2014,13 +2014,20 @@ static inline bool kernel_page_present(struct page *page) { return true; }
+ #endif /* CONFIG_HIBERNATION */
+ #endif
+ 
++#ifdef __HAVE_ARCH_GATE_AREA
+ extern struct vm_area_struct *get_gate_vma(struct mm_struct *mm);
+-#ifdef	__HAVE_ARCH_GATE_AREA
+-int in_gate_area_no_mm(unsigned long addr);
+-int in_gate_area(struct mm_struct *mm, unsigned long addr);
++extern int in_gate_area_no_mm(unsigned long addr);
++extern int in_gate_area(struct mm_struct *mm, unsigned long addr);
+ #else
+-int in_gate_area_no_mm(unsigned long addr);
+-#define in_gate_area(mm, addr) ({(void)mm; in_gate_area_no_mm(addr);})
++static inline struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
++{
++	return NULL;
++}
++static inline int in_gate_area_no_mm(unsigned long addr) { return 0; }
++static inline int in_gate_area(struct mm_struct *mm, unsigned long addr)
++{
++	return 0;
++}
+ #endif	/* __HAVE_ARCH_GATE_AREA */
+ 
+ #ifdef CONFIG_SYSCTL
+diff --git a/mm/memory.c b/mm/memory.c
+index d67fd9f..099d234 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3399,44 +3399,6 @@ int __pmd_alloc(struct mm_struct *mm, pud_t *pud, unsigned long address)
+ }
+ #endif /* __PAGETABLE_PMD_FOLDED */
+ 
+-#if !defined(__HAVE_ARCH_GATE_AREA)
+-
+-#if defined(AT_SYSINFO_EHDR)
+-static struct vm_area_struct gate_vma;
+-
+-static int __init gate_vma_init(void)
+-{
+-	gate_vma.vm_mm = NULL;
+-	gate_vma.vm_start = FIXADDR_USER_START;
+-	gate_vma.vm_end = FIXADDR_USER_END;
+-	gate_vma.vm_flags = VM_READ | VM_MAYREAD | VM_EXEC | VM_MAYEXEC;
+-	gate_vma.vm_page_prot = __P101;
+-
+-	return 0;
+-}
+-__initcall(gate_vma_init);
+-#endif
+-
+-struct vm_area_struct *get_gate_vma(struct mm_struct *mm)
+-{
+-#ifdef AT_SYSINFO_EHDR
+-	return &gate_vma;
+-#else
+-	return NULL;
+-#endif
+-}
+-
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-#ifdef AT_SYSINFO_EHDR
+-	if ((addr >= FIXADDR_USER_START) && (addr < FIXADDR_USER_END))
+-		return 1;
+-#endif
+-	return 0;
+-}
+-
+-#endif	/* __HAVE_ARCH_GATE_AREA */
+-
+ static int __follow_pte(struct mm_struct *mm, unsigned long address,
+ 		pte_t **ptepp, spinlock_t **ptlp)
+ {
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 4a852f6..a881d96 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1981,11 +1981,6 @@ error:
+ 	return -ENOMEM;
+ }
+ 
+-int in_gate_area_no_mm(unsigned long addr)
+-{
+-	return 0;
+-}
+-
+ int filemap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
+ 	BUG();
+-- 
+1.9.3
