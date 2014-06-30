@@ -1,33 +1,30 @@
-Return-Path: <vincent.yang.fujitsu@gmail.com>
-Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
- [IPv6:2607:f8b0:4002:c01::231])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DA871A0014
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 12:10:24 +1000 (EST)
-Received: by mail-yh0-f49.google.com with SMTP id f73so4452116yha.8
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 19:10:21 -0700 (PDT)
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 086DF1A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 13:14:44 +1000 (EST)
+Message-ID: <53B0D61B.9010104@hitachi.com>
+Date: Mon, 30 Jun 2014 12:14:35 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-In-Reply-To: <20140627101248.GD7262@leverpostej>
-References: <1403763812-5495-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <1403763812-5495-5-git-send-email-Vincent.Yang@tw.fujitsu.com>
- <20140626110351.GN15240@leverpostej>
- <CAOEd-H3+MwT3DMqMO0XHaZQqYAN0zaQqRMjC_UjyJn5ZwCaMoQ@mail.gmail.com>
- <20140627101248.GD7262@leverpostej>
-Date: Mon, 30 Jun 2014 10:10:21 +0800
-Message-ID: <CAOEd-H2M7h1=Yd6m2wLJsSV55TtCaKBtXjHmzBiJ51kW-jzTTA@mail.gmail.com>
-Subject: Re: [RFC PATCH v2 4/6] mmc: sdhci: host: add new f_sdh30
-From: Vincent Yang <vincent.yang.fujitsu@gmail.com>
-To: Mark Rutland <mark.rutland@arm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH v4] [BUGFIX] kprobes: Fix "Failed to find blacklist" error
+ on ia64 and ppc64
+References: <20140620022307.23075.55858.stgit@kbuild-fedora.novalocal>
+In-Reply-To: <20140620022307.23075.55858.stgit@kbuild-fedora.novalocal>
 Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "andy.green@linaro.org" <andy.green@linaro.org>,
- "patches@linaro.org" <patches@linaro.org>,
- "anton@enomsg.org" <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "chris@printf.net" <chris@printf.net>,
- "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>, akataria@vmware.com,
+ linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
+ Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,121 +34,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2014-06-27 18:12 GMT+08:00 Mark Rutland <mark.rutland@arm.com>:
-> On Fri, Jun 27, 2014 at 04:32:21AM +0100, Vincent Yang wrote:
->> 2014-06-26 19:03 GMT+08:00 Mark Rutland <mark.rutland@arm.com>:
->> > On Thu, Jun 26, 2014 at 07:23:30AM +0100, Vincent Yang wrote:
->> >> This patch adds new host controller driver for
->> >> Fujitsu SDHCI controller f_sdh30.
->> >>
->> >> Signed-off-by: Vincent Yang <Vincent.Yang@tw.fujitsu.com>
->> >> ---
->> >>  .../devicetree/bindings/mmc/sdhci-fujitsu.txt      |  35 +++
->> >>  drivers/mmc/host/Kconfig                           |   7 +
->> >>  drivers/mmc/host/Makefile                          |   1 +
->> >>  drivers/mmc/host/sdhci_f_sdh30.c                   | 346 +++++++++++++++++++++
->> >>  drivers/mmc/host/sdhci_f_sdh30.h                   |  40 +++
->> >>  5 files changed, 429 insertions(+)
->> >>  create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
->> >>  create mode 100644 drivers/mmc/host/sdhci_f_sdh30.c
->> >>  create mode 100644 drivers/mmc/host/sdhci_f_sdh30.h
->> >>
->> >> diff --git a/Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt b/Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
->> >> new file mode 100644
->> >> index 0000000..40add438
->> >> --- /dev/null
->> >> +++ b/Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
->> >> @@ -0,0 +1,35 @@
->> >> +* Fujitsu SDHCI controller
->> >> +
->> >> +This file documents differences between the core properties in mmc.txt
->> >> +and the properties used by the sdhci_f_sdh30 driver.
->> >> +
->> >> +Required properties:
->> >> +- compatible: "fujitsu,f_sdh30"
->> >
->> > Please use '-' rather than '_' in compatible strings.
->>
->> Hi Mark,
->> Yes, I'll update it to '-' in next version.
->>
->> >
->> > This seems to be the name of the driver. What is the precise name of the
->> > IP block?
->>
->> The name of the IP block is "F_SDH30".
->> That's why it uses "fujitsu,f_sdh30"
->
-> Hmm. I'd still be tempted to use "fujitsu,f-sdh30".
+Ping? :)
 
-Hi Mark,
-Sure, I'll update it to "fujitsu,f-sdh30" in next version.
+(2014/06/20 11:23), Masami Hiramatsu wrote:
+> On ia64 and ppc64, the function pointer does not point the
+> entry address of the function, but the address of function
+> discriptor (which contains the entry address and misc
+> data.) Since the kprobes passes the function pointer stored
+> by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
+> initalizing its blacklist, it fails and reports many errors
+> as below.
+> 
+>   Failed to find blacklist 0001013168300000
+>   Failed to find blacklist 0001013000f0a000
+>   Failed to find blacklist 000101315f70a000
+>   Failed to find blacklist 000101324c80a000
+>   Failed to find blacklist 0001013063f0a000
+>   Failed to find blacklist 000101327800a000
+>   Failed to find blacklist 0001013277f0a000
+>   Failed to find blacklist 000101315a70a000
+>   Failed to find blacklist 0001013277e0a000
+>   Failed to find blacklist 000101305a20a000
+>   Failed to find blacklist 0001013277d0a000
+>   Failed to find blacklist 00010130bdc0a000
+>   Failed to find blacklist 00010130dc20a000
+>   Failed to find blacklist 000101309a00a000
+>   Failed to find blacklist 0001013277c0a000
+>   Failed to find blacklist 0001013277b0a000
+>   Failed to find blacklist 0001013277a0a000
+>   Failed to find blacklist 000101327790a000
+>   Failed to find blacklist 000101303140a000
+>   Failed to find blacklist 0001013a3280a000
+> 
+> To fix this bug, this introduces function_entry() macro to
+> retrieve the entry address from the given function pointer,
+> and uses for kallsyms_lookup_size_offset() while initializing
+> blacklist.
+> 
+> Changes in v4:
+>  - Add kernel_text_address() check for verifying the address.
+>  - Moved on the latest linus tree.
+> 
+> Changes in v3:
+>  - Fix a bug to get blacklist address based on function entry
+>    instead of function descriptor. (Suzuki's work, Thanks!)
+> 
+> Changes in V2:
+>  - Use function_entry() macro when lookin up symbols instead
+>    of storing it.
+>  - Update for the latest -next.
+> 
+> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> Reported-by: Tony Luck <tony.luck@gmail.com>
+> Tested-by: Tony Luck <tony.luck@intel.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Suzuki K. Poulose <suzuki@in.ibm.com>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Kevin Hao <haokexin@gmail.com>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/ia64/include/asm/types.h    |    2 ++
+>  arch/powerpc/include/asm/types.h |   11 +++++++++++
+>  include/linux/types.h            |    4 ++++
+>  kernel/kprobes.c                 |   15 ++++++++++-----
+>  4 files changed, 27 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
+> index 4c351b1..95279dd 100644
+> --- a/arch/ia64/include/asm/types.h
+> +++ b/arch/ia64/include/asm/types.h
+> @@ -27,5 +27,7 @@ struct fnptr {
+>  	unsigned long gp;
+>  };
+>  
+> +#define function_entry(fn) (((struct fnptr *)(fn))->ip)
+> +
+>  #endif /* !__ASSEMBLY__ */
+>  #endif /* _ASM_IA64_TYPES_H */
+> diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
+> index bfb6ded..8b89d65 100644
+> --- a/arch/powerpc/include/asm/types.h
+> +++ b/arch/powerpc/include/asm/types.h
+> @@ -25,6 +25,17 @@ typedef struct {
+>  	unsigned long env;
+>  } func_descr_t;
+>  
+> +#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF == 1)
+> +/*
+> + * On PPC64 ABIv1 the function pointer actually points to the
+> + * function's descriptor. The first entry in the descriptor is the
+> + * address of the function text.
+> + */
+> +#define function_entry(fn)	(((func_descr_t *)(fn))->entry)
+> +#else
+> +#define function_entry(fn)	((unsigned long)(fn))
+> +#endif
+> +
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* _ASM_POWERPC_TYPES_H */
+> diff --git a/include/linux/types.h b/include/linux/types.h
+> index a0bb704..3b95369 100644
+> --- a/include/linux/types.h
+> +++ b/include/linux/types.h
+> @@ -213,5 +213,9 @@ struct callback_head {
+>  };
+>  #define rcu_head callback_head
+>  
+> +#ifndef function_entry
+> +#define function_entry(fn)	((unsigned long)(fn))
+> +#endif
+> +
+>  #endif /*  __ASSEMBLY__ */
+>  #endif /* _LINUX_TYPES_H */
+> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> index 3214289..7412535 100644
+> --- a/kernel/kprobes.c
+> +++ b/kernel/kprobes.c
+> @@ -32,6 +32,7 @@
+>   *		<prasanna@in.ibm.com> added function-return probes.
+>   */
+>  #include <linux/kprobes.h>
+> +#include <linux/types.h>
+>  #include <linux/hash.h>
+>  #include <linux/init.h>
+>  #include <linux/slab.h>
+> @@ -2037,19 +2038,23 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
+>  {
+>  	unsigned long *iter;
+>  	struct kprobe_blacklist_entry *ent;
+> -	unsigned long offset = 0, size = 0;
+> +	unsigned long entry, offset = 0, size = 0;
+>  
+>  	for (iter = start; iter < end; iter++) {
+> -		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
+> -			pr_err("Failed to find blacklist %p\n", (void *)*iter);
+> +		entry = function_entry(*iter);
+> +
+> +		if (!kernel_text_address(entry) ||
+> +		    !kallsyms_lookup_size_offset(entry, &size, &offset)) {
+> +			pr_err("Failed to find blacklist at %p\n",
+> +				(void *)entry);
+>  			continue;
+>  		}
+>  
+>  		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
+>  		if (!ent)
+>  			return -ENOMEM;
+> -		ent->start_addr = *iter;
+> -		ent->end_addr = *iter + size;
+> +		ent->start_addr = entry;
+> +		ent->end_addr = entry + size;
+>  		INIT_LIST_HEAD(&ent->list);
+>  		list_add_tail(&ent->list, &kprobe_blacklist);
+>  	}
+> 
+> 
+> 
 
->
->> >
->> > [...]
->> >
->> >> +       if (!of_property_read_u32(pdev->dev.of_node, "vendor-hs200",
->> >> +                                 &priv->vendor_hs200))
->> >> +               dev_info(dev, "Applying vendor-hs200 setting\n");
->> >> +       else
->> >> +               priv->vendor_hs200 = 0;
->> >
->> > This wasn't in the binding document, and a grep for "vendor-hs200" in a
->> > v3.16-rc2 tree found me nothing.
->> >
->> > Please document this.
->>
->> Yes, it is a setting for a vendor specific register.
->> I'll update it in next version.
->
-> It would be nice to know exactly what this is. We usually shy clear of
-> placing register values in dt. I can wait until the next posting if
-> you're goin to document that.
 
-I'm thinking about removing this register value in dt.
-I'll update it in next version.
-
->
->> >> +       if (!of_property_read_u32(pdev->dev.of_node, "bus-width", &bus_width)) {
->> >> +               if (bus_width == 8) {
->> >> +                       dev_info(dev, "Applying 8 bit bus width\n");
->> >> +                       host->mmc->caps |= MMC_CAP_8_BIT_DATA;
->> >> +               }
->> >> +       }
->> >
->> > What if bus-width is not 8, or is not present?
->>
->> In both cases, it will not touch host->mmc->caps at all. Then sdhci_add_host()
->> will handle it and set MMC_CAP_4_BIT_DATA as default:
->>
->> [...]
->> /*
->> * A controller may support 8-bit width, but the board itself
->> * might not have the pins brought out.  Boards that support
->> * 8-bit width must set "mmc->caps |= MMC_CAP_8_BIT_DATA;" in
->> * their platform code before calling sdhci_add_host(), and we
->> * won't assume 8-bit width for hosts without that CAP.
->> */
->> if (!(host->quirks & SDHCI_QUIRK_FORCE_1_BIT_DATA))
->> mmc->caps |= MMC_CAP_4_BIT_DATA;
->
-> Ok, but does it make sense for a dts to have:
->
->         bus-width = <1>;
->
-> If so, we should presumably do something.
->
-> If not, we should at least print a warning that the dtb doesn't make
-> sense.
-
-I'll print a warning for invalid values in next version.
-Thanks a lot for your review!
-
-
-Best regards,
-Vincent Yang
-
->
-> Cheers,
-> Mark.
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
