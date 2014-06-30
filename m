@@ -1,18 +1,27 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
- [IPv6:2607:f8b0:4001:c05::22a])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9798F1A0016
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 14:02:21 +1000 (EST)
-Received: by mail-ig0-f170.google.com with SMTP id h15so3797735igd.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 21:02:19 -0700 (PDT)
-From: Nicholas Krause <xerofoify@gmail.com>
-To: paulus@samba.org
-Subject: [PATCH] Fixes return issues in uic_init_one
-Date: Mon, 30 Jun 2014 00:02:14 -0400
-Message-Id: <1404100934-7490-1-git-send-email-xerofoify@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E6961A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 14:59:05 +1000 (EST)
+From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
+ reporting driver
+Date: Mon, 30 Jun 2014 04:58:57 +0000
+Message-ID: <806516468c994e638fc9214b0e5a7b9f@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <20140530222743.GA6918@home.buserror.net>
+ <967d9a5e0f7e4d0a8f5e7ec6b8e88ff2@BLUPR03MB566.namprd03.prod.outlook.com>
+ <1401900111.6603.325.camel@snotra.buserror.net>
+ <35f1762b80694ba4835cd7902a2faa0a@BLUPR03MB566.namprd03.prod.outlook.com>
+ <1401901656.6603.327.camel@snotra.buserror.net>
+In-Reply-To: <1401901656.6603.327.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,36 +31,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch fixes the FIXME messages for returning a ENOMEM error
-if uic is not allocated and if uic->irqhost is not allocated a
-IRQ domain that is linear returns EIO.
-
-Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
----
- arch/powerpc/sysdev/uic.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-index 9203393..f95010a 100644
---- a/arch/powerpc/sysdev/uic.c
-+++ b/arch/powerpc/sysdev/uic.c
-@@ -239,7 +239,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
- 
- 	uic = kzalloc(sizeof(*uic), GFP_KERNEL);
- 	if (! uic)
--		return NULL; /* FIXME: panic? */
-+		return -ENOMEM; 
- 
- 	raw_spin_lock_init(&uic->lock);
- 	indexp = of_get_property(node, "cell-index", &len);
-@@ -261,7 +261,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
- 	uic->irqhost = irq_domain_add_linear(node, NR_UIC_INTS, &uic_host_ops,
- 					     uic);
- 	if (! uic->irqhost)
--		return NULL; /* FIXME: panic? */
-+		return -EIO; 
- 
- 	/* Start with all interrupts disabled, level and non-critical */
- 	mtdcr(uic->dcrbase + UIC_ER, 0);
--- 
-1.9.1
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBKdW5lIDA0LCAyMDE0IDEwOjM4IFBNDQo+IFRvOiBCaHVz
+aGFuIEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEdyZWcgS3JvYWgtSGFydG1hbjsgbGludXhwcGMtZGV2
+QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1
+YmplY3Q6IFJlOiBbUkVTRU5EIFBBVENIXSBtZW1vcnk6IEZyZWVzY2FsZSBDb3JlTmV0IENvaGVy
+ZW5jeSBGYWJyaWMgZXJyb3INCj4gcmVwb3J0aW5nIGRyaXZlcg0KPiANCj4gT24gV2VkLCAyMDE0
+LTA2LTA0IGF0IDEyOjA0IC0wNTAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4N
+Cj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0
+LUIwNzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBKdW5lIDA0LCAyMDE0IDEwOjEyIFBNDQo+
+ID4gPiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiBDYzogR3JlZyBLcm9haC1IYXJ0
+bWFuOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+ID4gPiBrZXJuZWxA
+dmdlci5rZXJuZWwub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1JFU0VORCBQQVRDSF0gbWVtb3J5
+OiBGcmVlc2NhbGUgQ29yZU5ldCBDb2hlcmVuY3kNCj4gPiA+IEZhYnJpYyBlcnJvciByZXBvcnRp
+bmcgZHJpdmVyDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAyMDE0LTA2LTA0IGF0IDAzOjE3IC0wNTAw
+LCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4gPiA+ID4gK3N0YXRpYyBpbnQgY2Nm
+X3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSB7DQo+ID4gPiA+ID4gKwlzdHJ1
+Y3QgY2NmX3ByaXZhdGUgKmNjZiA9IGRldl9nZXRfZHJ2ZGF0YSgmcGRldi0+ZGV2KTsNCj4gPiA+
+ID4gPiArDQo+ID4gPiA+ID4gKwlzd2l0Y2ggKGNjZi0+aW5mby0+dmVyc2lvbikgew0KPiA+ID4g
+PiA+ICsJY2FzZSBDQ0YxOg0KPiA+ID4gPiA+ICsJCWlvd3JpdGUzMmJlKDAsICZjY2YtPmVycl9y
+ZWdzLT5lcnJkaXMpOw0KPiA+ID4gPiA+ICsJCWJyZWFrOw0KPiA+ID4gPiA+ICsNCj4gPiA+ID4g
+PiArCWNhc2UgQ0NGMjoNCj4gPiA+ID4gPiArCQlpb3dyaXRlMzJiZSgwLCAmY2NmLT5lcnJfcmVn
+cy0+ZXJyaW50ZW4pOw0KPiA+ID4gPg0KPiA+ID4gPiBEbyB5b3UgdGhpbmsgaXQgaXMgc2FtZSB0
+byBkaXNhYmxlIGRldGVjdGlvbiBiaXRzIGluIGNjZi0+ZXJyX3JlZ3MtDQo+ID5lcnJkaXM/DQo+
+ID4gPg0KPiA+ID4gRGlzYWJsaW5nIHRoZSBpbnRlcnJ1cHQgaXMgd2hhdCB3ZSdyZSBhaW1pbmcg
+Zm9yIGhlcmUsIGJ1dCBjY2YxDQo+ID4gPiBkb2Vzbid0IHByb3ZpZGUgYSB3YXkgdG8gZG8gdGhh
+dCBzZXBhcmF0ZSBmcm9tIGRpc2FibGluZyBkZXRlY3Rpb24uDQo+ID4NCj4gPiBXaGF0IEkgd2Fu
+dGVkIHRvIHNheSB0aGF0IGRvIHdlIGFsc28gbmVlZCB0byBkaXNhYmxlIGRldGVjdGlvbiAoc2V0
+DQo+ID4gRVJSREVUX0xBRSB8IEVSUkRFVF9DViBiaXRzIGluIGVycmRpcykgYXBhcnQgZnJvbSBj
+bGVhcmluZyBlcnJpbnRlbiBvbg0KPiA+IGNjZjIgPw0KPiANCj4gSSBkb24ndCB0aGluayB3ZSAi
+bmVlZCIgdG8uICBZb3UgY291bGQgYXJndWUgdGhhdCB3ZSBzaG91bGQgZm9yIGNvbnNpc3RlbmN5
+LA0KPiB0aG91Z2ggSSB0aGluayB0aGVyZSdzIHZhbHVlIGluIGVycm9ycyBjb250aW51aW5nIHRv
+IGJlIGRldGVjdGVkIGV2ZW4gd2l0aG91dA0KPiB0aGUgZHJpdmVyIChlLmcuIGNhbiBkdW1wIHRo
+ZSByZWdpc3RlcnMgaW4gYSBkZWJ1Z2dlcikuDQoNClllcyB0aGlzIGNvbW1lbnQgd2FzIGZvciBj
+b25zaXN0ZW5jeS4gQWxzbyBJSVVDLCB0aGUgc3RhdGUgd2hpY2ggaXMgbGVmdCB3aGVuIHRoZSBk
+cml2ZXIgaXMgcmVtb3ZlZCBpcyBub3QgZGVmYXVsdCByZXNldCBiZWhhdmlvci4NCklmIHdlIHdh
+bnQgZXJyb3JzIHRvIGJlIGRldGVjdGVkIHRoZW4gc2hvdWxkIG5vdCB3ZSBoYXZlIGEgc3lzZnMg
+aW50ZXJmYWNlPw0KDQpUaGFua3MNCi1CaGFyYXQNCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
