@@ -1,20 +1,28 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E9C91A0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 04:45:48 +1000 (EST)
-Received: by mail-pa0-f50.google.com with SMTP id bj1so9183172pad.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 11:45:45 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Disable RELOCATABLE for COMPILE_TEST with PPC64
-Date: Mon, 30 Jun 2014 11:45:30 -0700
-Message-Id: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D59381A001A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 06:59:58 +1000 (EST)
+Message-ID: <1404161983.2435.182.camel@snotra.buserror.net>
+Subject: Re: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
+ reporting driver
+From: Scott Wood <scottwood@freescale.com>
+To: Bhushan Bharat-R65777 <Bharat.Bhushan@freescale.com>
+Date: Mon, 30 Jun 2014 15:59:43 -0500
+In-Reply-To: <806516468c994e638fc9214b0e5a7b9f@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <20140530222743.GA6918@home.buserror.net>
+ <967d9a5e0f7e4d0a8f5e7ec6b8e88ff2@BLUPR03MB566.namprd03.prod.outlook.com>
+ <1401900111.6603.325.camel@snotra.buserror.net>
+ <35f1762b80694ba4835cd7902a2faa0a@BLUPR03MB566.namprd03.prod.outlook.com>
+ <1401901656.6603.327.camel@snotra.buserror.net>
+ <806516468c994e638fc9214b0e5a7b9f@DM2PR03MB574.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +32,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc:allmodconfig has been failing for some time with the following
-error.
+On Sun, 2014-06-29 at 23:58 -0500, Bhushan Bharat-R65777 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Wednesday, June 04, 2014 10:38 PM
+> > To: Bhushan Bharat-R65777
+> > Cc: Greg Kroah-Hartman; linuxppc-dev@lists.ozlabs.org; linux-
+> > kernel@vger.kernel.org
+> > Subject: Re: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
+> > reporting driver
+> > 
+> > On Wed, 2014-06-04 at 12:04 -0500, Bhushan Bharat-R65777 wrote:
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Wednesday, June 04, 2014 10:12 PM
+> > > > To: Bhushan Bharat-R65777
+> > > > Cc: Greg Kroah-Hartman; linuxppc-dev@lists.ozlabs.org; linux-
+> > > > kernel@vger.kernel.org
+> > > > Subject: Re: [RESEND PATCH] memory: Freescale CoreNet Coherency
+> > > > Fabric error reporting driver
+> > > >
+> > > > On Wed, 2014-06-04 at 03:17 -0500, Bhushan Bharat-R65777 wrote:
+> > > > > > +static int ccf_remove(struct platform_device *pdev) {
+> > > > > > +	struct ccf_private *ccf = dev_get_drvdata(&pdev->dev);
+> > > > > > +
+> > > > > > +	switch (ccf->info->version) {
+> > > > > > +	case CCF1:
+> > > > > > +		iowrite32be(0, &ccf->err_regs->errdis);
+> > > > > > +		break;
+> > > > > > +
+> > > > > > +	case CCF2:
+> > > > > > +		iowrite32be(0, &ccf->err_regs->errinten);
+> > > > >
+> > > > > Do you think it is same to disable detection bits in ccf->err_regs-
+> > >errdis?
+> > > >
+> > > > Disabling the interrupt is what we're aiming for here, but ccf1
+> > > > doesn't provide a way to do that separate from disabling detection.
+> > >
+> > > What I wanted to say that do we also need to disable detection (set
+> > > ERRDET_LAE | ERRDET_CV bits in errdis) apart from clearing errinten on
+> > > ccf2 ?
+> > 
+> > I don't think we "need" to.  You could argue that we should for consistency,
+> > though I think there's value in errors continuing to be detected even without
+> > the driver (e.g. can dump the registers in a debugger).
+> 
+> Yes this comment was for consistency. Also IIUC, the state which is left when the driver is removed is not default reset behavior.
 
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org backwards
-make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
+How many drivers leave the hardware in pristine reset state when
+exiting?  And you could argue that having detection off by default is
+poor hardware design (enabling interrupts is another matter of course).
 
-A number of attempts to fix the problem by moving around code have been
-unsuccessful and resulted in failed builds for some configurations and
-the discovery of toolchain bugs.
+> If we want errors to be detected then should not we have a sysfs interface?
 
-Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
-While this is less than perfect, it avoids substantial code changes
-which would otherwise be necessary just to make COMPILE_TEST builds
-happy and might have undesired side effects.
+That may be useful but it's beyond the scope of what I'm doing with this
+patch.  We currently don't log machine checks anywhere but via printk
+either.
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- arch/powerpc/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+BTW, I thought I had sent v2 of this, but I don't see it anywhere...
+I'll respin soon.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index bd6dd6e..fefe7c8 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -414,7 +414,7 @@ config KEXEC
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
- 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
--	select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
-+	select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
- 	help
- 	  Build a kernel suitable for use as a kdump capture kernel.
- 	  The same kernel binary can be used as production kernel and dump
-@@ -1017,6 +1017,7 @@ endmenu
- if PPC64
- config RELOCATABLE
- 	bool "Build a relocatable kernel"
-+	depends on !COMPILE_TEST
- 	select NONSTATIC_KERNEL
- 	help
- 	  This builds a kernel image that is capable of running anywhere
--- 
-1.9.1
+-Scott
