@@ -1,17 +1,17 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC5A61A001D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 04:19:10 +1000 (EST)
-Message-ID: <1404152335.2435.130.camel@snotra.buserror.net>
-Subject: Re: [PATCH] KVM: PPC: e500: Fix default tlb for victim hint
+ by lists.ozlabs.org (Postfix) with ESMTPS id 432781A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 04:21:29 +1000 (EST)
+Message-ID: <1404152404.2435.132.camel@snotra.buserror.net>
+Subject: Re: [PATCH] KVM: PPC: e500: Emulate power management control SPR
 From: Scott Wood <scottwood@freescale.com>
 To: Mihai Caraman <mihai.caraman@freescale.com>
-Date: Mon, 30 Jun 2014 13:18:55 -0500
-In-Reply-To: <1404132898-27261-1-git-send-email-mihai.caraman@freescale.com>
-References: <1404132898-27261-1-git-send-email-mihai.caraman@freescale.com>
+Date: Mon, 30 Jun 2014 13:20:04 -0500
+In-Reply-To: <1404132929-27308-1-git-send-email-mihai.caraman@freescale.com>
+References: <1404132929-27308-1-git-send-email-mihai.caraman@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
@@ -24,62 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-06-30 at 15:54 +0300, Mihai Caraman wrote:
-> Tlb search operation used for victim hint relies on the default tlb set by the
-> host. When hardware tablewalk support is enabled in the host, the default tlb is
-> TLB1 which leads KVM to evict the bolted entry. Set and restore the default tlb
-> when searching for victim hint.
+On Mon, 2014-06-30 at 15:55 +0300, Mihai Caraman wrote:
+> For FSL e6500 core the kernel uses power management SPR register (PWRMGTCR0)
+> to enable idle power down for cores and devices by setting up the idle count
+> period at boot time. With the host already controlling the power management
+> configuration the guest could simply benefit from it, so emulate guest request
+> as nop.
 > 
 > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 > ---
->  arch/powerpc/include/asm/mmu-book3e.h | 5 ++++-
->  arch/powerpc/kvm/e500_mmu_host.c      | 4 ++++
->  2 files changed, 8 insertions(+), 1 deletion(-)
+>  arch/powerpc/kvm/e500_emulate.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
-> diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
-> index 901dac6..5dad378 100644
-> --- a/arch/powerpc/include/asm/mmu-book3e.h
-> +++ b/arch/powerpc/include/asm/mmu-book3e.h
-> @@ -40,7 +40,9 @@
+> diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+> index 002d517..98a22e5 100644
+> --- a/arch/powerpc/kvm/e500_emulate.c
+> +++ b/arch/powerpc/kvm/e500_emulate.c
+> @@ -250,6 +250,10 @@ int kvmppc_core_emulate_mtspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong spr_va
+>  				spr_val);
+>  		break;
 >  
->  /* MAS registers bit definitions */
+> +	case SPRN_PWRMGTCR0:
+> +		/* Guest relies on host power management configurations */
+> +		break;
+> +
+>  	/* extra exceptions */
+>  	case SPRN_IVOR32:
+>  		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL] = spr_val;
+> @@ -355,6 +359,10 @@ int kvmppc_core_emulate_mfspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong *spr_v
+>  		*spr_val = 0;
+>  		break;
 >  
-> -#define MAS0_TLBSEL(x)		(((x) << 28) & 0x30000000)
-> +#define MAS0_TLBSEL_MASK        0x30000000
-> +#define MAS0_TLBSEL_SHIFT       28
-> +#define MAS0_TLBSEL(x)          (((x) << MAS0_TLBSEL_SHIFT) & MAS0_TLBSEL_MASK)
->  #define MAS0_ESEL_MASK		0x0FFF0000
->  #define MAS0_ESEL_SHIFT		16
->  #define MAS0_ESEL(x)		(((x) << MAS0_ESEL_SHIFT) & MAS0_ESEL_MASK)
-> @@ -86,6 +88,7 @@
->  #define MAS3_SPSIZE		0x0000003e
->  #define MAS3_SPSIZE_SHIFT	1
->  
-> +#define MAS4_TLBSEL_MASK	MAS0_TLBSEL_MASK
->  #define MAS4_TLBSELD(x) 	MAS0_TLBSEL(x)
->  #define MAS4_INDD		0x00008000	/* Default IND */
->  #define MAS4_TSIZED(x)		MAS1_TSIZE(x)
-> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-> index dd2cc03..79677d7 100644
-> --- a/arch/powerpc/kvm/e500_mmu_host.c
-> +++ b/arch/powerpc/kvm/e500_mmu_host.c
-> @@ -107,11 +107,15 @@ static u32 get_host_mas0(unsigned long eaddr)
->  {
->  	unsigned long flags;
->  	u32 mas0;
-> +	u32 mas4;
->  
->  	local_irq_save(flags);
->  	mtspr(SPRN_MAS6, 0);
-> +	mas4 = mfspr(SPRN_MAS4);
-> +	mtspr(SPRN_MAS4, mas4 & ~MAS4_TLBSEL_MASK);
->  	asm volatile("tlbsx 0, %0" : : "b" (eaddr & ~CONFIG_PAGE_OFFSET));
->  	mas0 = mfspr(SPRN_MAS0);
-> +	mtspr(SPRN_MAS4, mas4);
->  	local_irq_restore(flags);
->  
->  	return mas0;
+> +	case SPRN_PWRMGTCR0:
+> +		*spr_val = 0;
+> +		break;
+> +
+>  	case SPRN_MMUCFG:
+>  		*spr_val = vcpu->arch.mmucfg;
+>  		break;
 
-Reviewed-by: Scott Wood <scottwood@freescale.com>
+When reading, is it better to return zero, or the current host value, or
+the value last written by the guest (even though it wasn't written to
+hardware)?
 
 -Scott
