@@ -2,18 +2,23 @@ Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A3C41A0018
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 20:31:09 +1000 (EST)
-Date: Mon, 30 Jun 2014 20:30:59 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2270E1A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 21:02:11 +1000 (EST)
+Date: Mon, 30 Jun 2014 21:02:02 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: dm-devel@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Regression in 3.15 on POWER8 with multipath SCSI
-Message-ID: <20140630103058.GA17747@iris.ozlabs.ibm.com>
+To: Hannes Reinecke <hare@suse.de>
+Subject: Re: Regression in 3.15 on POWER8 with multipath SCSI
+Message-ID: <20140630110202.GB17747@iris.ozlabs.ibm.com>
+References: <20140630103058.GA17747@iris.ozlabs.ibm.com>
+ <53B1416D.8020305@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <53B1416D.8020305@suse.de>
 Cc: Vladimir Davydov <vdavydov@parallels.com>,
+ Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, dm-devel@redhat.com,
  Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Hannes Reinecke <hare@suse.de>
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I have a machine on which 3.15 usually fails to boot, and 3.14 boots
-every time.  The machine is a POWER8 2-socket server with 20 cores
-(thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
-hardware-RAID-capable adapter which appears as two IPR controllers
-which are both connected to each disk.  I am booting from a disk that
-has Fedora 20 installed on it.
+On Mon, Jun 30, 2014 at 12:52:29PM +0200, Hannes Reinecke wrote:
+> On 06/30/2014 12:30 PM, Paul Mackerras wrote:
+> >I have a machine on which 3.15 usually fails to boot, and 3.14 boots
+> >every time.  The machine is a POWER8 2-socket server with 20 cores
+> >(thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
+> >hardware-RAID-capable adapter which appears as two IPR controllers
+> >which are both connected to each disk.  I am booting from a disk that
+> >has Fedora 20 installed on it.
+> >
+> >After over two weeks of bisections, I can finally point to the commits
+> >that cause the problems.  The culprits are:
+> >
+> >3e9f1be1 dm mpath: remove process_queued_ios()
+> >e8099177 dm mpath: push back requests instead of queueing
+> >bcccff93 kobject: don't block for each kobject_uevent
+> >
+> >The interesting thing is that neither e8099177 nor bcccff93 cause
+> >failures on their own, but with both commits in there are failures
+> >where the system will fail to find /home on some occasions.
+> >
+> >With 3e9f1be1 included, the system appears to be prone to a deadlock
+> >condition which typically causes the boot process to hang with this
+> >message showing:
+> >
+> >A start job is running for Monitoring of LVM2 mirror...rogress polling
+> >
+> >(with a [***     ] thing before it where the asterisks move back and
+> >forth).
+> >
+> >If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
+> >4cdd2ad7 ("dm mpath: fix lock order inconsistency in
+> >multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
+> >kernel that will boot every time.  The first two are later commits
+> >that fix some problems with 3e9f1be1 (though not the problems I am
+> >seeing).
+> >
+> >Can anyone see any reason why e8099177 and bcccff93 would interfere
+> >with each other?
+> >
+> It might be running afoul with the 'cookie' mechanism.
+> Device-mapper is using inserting a 'cookie' with the ioctl, and listens to
+> any event containing the cookie to ensure udev has finished processing that
+> device and hence the device node is accessible. Added to this is the problem
+> that we don't have any good means of detecting any changes to device-mapper
+> devices.
+> 
+> EG look at this sequence of events:
+> 
+> add dm-1
+> remove dm-1
+> add dm-1
+> 
+> Originally udev would pick up the event, read the details from sysfs, and
+> return control to the kernel.
+> With bcccff93 udev will _not_have a chance to read the details
+> from sysfs for 'dm-1', as anything read from sysfs relating to 'dm-1' might
+> infact refer to the _second_ 'add' event, which might be a totally different
+> device.
+> As far as I know udev doesn't have any mechanism to drop events,
+> so it'll always process all events. Assuming that the sysfs attributes it
+> reads _do_ relate to that event. If they don't things become interesting ...
+> 
+> (Actually, this issue was always present, especially with multipathing.
+> multipath occasionally can become sluggish when processing events, so the
+> same might happen with it. We've tried to work around this, but never found
+> a fool-proof way of doing so).
+> 
+> Adding Kay as he might have some more insight here.
+> 
+> Another thing:
+> Do you run LVM on top of multipathing?
+> If so, could you setup your system with _not_ using LVM and disabling the
+> LVM service?
 
-After over two weeks of bisections, I can finally point to the commits
-that cause the problems.  The culprits are:
+No, I'm not using LVM, and in fact I deleted all the physical volumes
+that were on any of the disks (they were installations of other
+distros), so there are no physical or logical volumes anywhere on any
+disk.  I haven't tried disabling the LVM service completely, though.
+What would it mean if disabling the LVM service made a difference?
 
-3e9f1be1 dm mpath: remove process_queued_ios()
-e8099177 dm mpath: push back requests instead of queueing
-bcccff93 kobject: don't block for each kobject_uevent
+> Reasoning here is that multipath should not be that susceptible to changes
+> here than LVM2 is (don't nail me on this, I not _that_ into LVM2 details).
+> 
+> And as the system is stuck while waiting for LVM it might indeed be an
+> side-effect when running LVM on top of multipathing.
 
-The interesting thing is that neither e8099177 nor bcccff93 cause
-failures on their own, but with both commits in there are failures
-where the system will fail to find /home on some occasions.
-
-With 3e9f1be1 included, the system appears to be prone to a deadlock
-condition which typically causes the boot process to hang with this
-message showing:
-
-A start job is running for Monitoring of LVM2 mirror...rogress polling
-
-(with a [***     ] thing before it where the asterisks move back and
-forth).
-
-If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
-4cdd2ad7 ("dm mpath: fix lock order inconsistency in
-multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
-kernel that will boot every time.  The first two are later commits
-that fix some problems with 3e9f1be1 (though not the problems I am
-seeing).
-
-Can anyone see any reason why e8099177 and bcccff93 would interfere
-with each other?
-
------
-
-The rest of this email outlines the steps I took to identify these
-commits.  I first identified that 3.15-rc1 would sometimes fail to
-boot, and did a bisection between 3.15 and 3.15-rc1 that identified
-3e9f1be1 as the bad commit.  I then took 3.15-rc8 and reverted
-63d832c3, 4cdd2ad7 and 3e9f1be1, and tested that.  That didn't fail
-with the deadlock, but was still prone to fail to find root or /home
-and thus fail to boot.
-
-To debug this second problem, I tested the commit before Linus merged
-in the dm modifications: 3f583bc2 ("Merge tag 'iommu-updates-v3.15' of
-git://git.kernel.org/pub/scm/linux/kernel/git/joro/iommu").  It was
-fine.  I then took 0596661f ("dm cache: fix a lock-inversion"), which
-is what Linus merged in during the 3.15 merge window, reverted
-3e9f1be1 on top of that, and tested that, and it also was fine.
-The ID of that revert commit was 9cfd3fe8 (that ID doesn't appear in
-any public tree, of course).
-
-Interestingly, the merge of 3f583bc2 with 9cfd3fe8 was bad.  To track
-this down, I first rebased the commits from the dm-3.15-changes branch
-except for 3e9f1be1 on top of 3f583bc2, and bisected between 3f583bc2
-and the tip of that branch.  That bisection pointed to e8099177.  I
-tried reverting that from 3.15-rc8, but it doesn't revert cleanly, and
-was too complex for me to work out how to manually revert it.
-
-Next I did a git bisection between 3.14 and 3f583bc2, merging in
-9cfd3fe8 at each point before testing.  That identified bcccff93 as
-the first bad commit, and indeed 3.15 with bcccff93 reverted was not
-prone to failing to find root or /home.
+Yes, I thought so too early on, and that's why I deleted all LVM
+physical and logical volumes, but that didn't help.
 
 Paul.
