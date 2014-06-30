@@ -1,21 +1,20 @@
-Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0185.outbound.protection.outlook.com [207.46.163.185])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 903C91A005E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 01:35:18 +1000 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 4/6 v2] KVM: PPC: Book3E: Add AltiVec support
-Date: Mon, 30 Jun 2014 18:34:55 +0300
-Message-ID: <1404142497-6430-5-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
-References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC5A61A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 04:19:10 +1000 (EST)
+Message-ID: <1404152335.2435.130.camel@snotra.buserror.net>
+Subject: Re: [PATCH] KVM: PPC: e500: Fix default tlb for victim hint
+From: Scott Wood <scottwood@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Date: Mon, 30 Jun 2014 13:18:55 -0500
+In-Reply-To: <1404132898-27261-1-git-send-email-mihai.caraman@freescale.com>
+References: <1404132898-27261-1-git-send-email-mihai.caraman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,136 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add KVM Book3E AltiVec support. KVM Book3E FPU support gracefully reuse host
-infrastructure so follow the same approach for AltiVec.
+On Mon, 2014-06-30 at 15:54 +0300, Mihai Caraman wrote:
+> Tlb search operation used for victim hint relies on the default tlb set by the
+> host. When hardware tablewalk support is enabled in the host, the default tlb is
+> TLB1 which leads KVM to evict the bolted entry. Set and restore the default tlb
+> when searching for victim hint.
+> 
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+>  arch/powerpc/include/asm/mmu-book3e.h | 5 ++++-
+>  arch/powerpc/kvm/e500_mmu_host.c      | 4 ++++
+>  2 files changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
+> index 901dac6..5dad378 100644
+> --- a/arch/powerpc/include/asm/mmu-book3e.h
+> +++ b/arch/powerpc/include/asm/mmu-book3e.h
+> @@ -40,7 +40,9 @@
+>  
+>  /* MAS registers bit definitions */
+>  
+> -#define MAS0_TLBSEL(x)		(((x) << 28) & 0x30000000)
+> +#define MAS0_TLBSEL_MASK        0x30000000
+> +#define MAS0_TLBSEL_SHIFT       28
+> +#define MAS0_TLBSEL(x)          (((x) << MAS0_TLBSEL_SHIFT) & MAS0_TLBSEL_MASK)
+>  #define MAS0_ESEL_MASK		0x0FFF0000
+>  #define MAS0_ESEL_SHIFT		16
+>  #define MAS0_ESEL(x)		(((x) << MAS0_ESEL_SHIFT) & MAS0_ESEL_MASK)
+> @@ -86,6 +88,7 @@
+>  #define MAS3_SPSIZE		0x0000003e
+>  #define MAS3_SPSIZE_SHIFT	1
+>  
+> +#define MAS4_TLBSEL_MASK	MAS0_TLBSEL_MASK
+>  #define MAS4_TLBSELD(x) 	MAS0_TLBSEL(x)
+>  #define MAS4_INDD		0x00008000	/* Default IND */
+>  #define MAS4_TSIZED(x)		MAS1_TSIZE(x)
+> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+> index dd2cc03..79677d7 100644
+> --- a/arch/powerpc/kvm/e500_mmu_host.c
+> +++ b/arch/powerpc/kvm/e500_mmu_host.c
+> @@ -107,11 +107,15 @@ static u32 get_host_mas0(unsigned long eaddr)
+>  {
+>  	unsigned long flags;
+>  	u32 mas0;
+> +	u32 mas4;
+>  
+>  	local_irq_save(flags);
+>  	mtspr(SPRN_MAS6, 0);
+> +	mas4 = mfspr(SPRN_MAS4);
+> +	mtspr(SPRN_MAS4, mas4 & ~MAS4_TLBSEL_MASK);
+>  	asm volatile("tlbsx 0, %0" : : "b" (eaddr & ~CONFIG_PAGE_OFFSET));
+>  	mas0 = mfspr(SPRN_MAS0);
+> +	mtspr(SPRN_MAS4, mas4);
+>  	local_irq_restore(flags);
+>  
+>  	return mas0;
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
-v2:
- - integrate Paul's FP/VMX/VSX changes
+Reviewed-by: Scott Wood <scottwood@freescale.com>
 
- arch/powerpc/kvm/booke.c | 67 ++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 65 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 4cc9b26..4ba75f6 100644
---- a/arch/powerpc/kvm/booke.c
-+++ b/arch/powerpc/kvm/booke.c
-@@ -100,6 +100,19 @@ static inline bool kvmppc_supports_spe(void)
- 	return false;
- }
- 
-+/*
-+ * Always returns true if AltiVec unit is present,
-+ * see kvmppc_core_check_processor_compat().
-+ */
-+static inline bool kvmppc_supports_altivec(void)
-+{
-+#ifdef CONFIG_ALTIVEC
-+	if (cpu_has_feature(CPU_FTR_ALTIVEC))
-+		return true;
-+#endif
-+	return false;
-+}
-+
- #ifdef CONFIG_SPE
- void kvmppc_vcpu_disable_spe(struct kvm_vcpu *vcpu)
- {
-@@ -178,6 +191,40 @@ static void kvmppc_vcpu_sync_fpu(struct kvm_vcpu *vcpu)
- #endif
- }
- 
-+/*
-+ * Simulate AltiVec unavailable fault to load guest state
-+ * from thread to AltiVec unit.
-+ * It requires to be called with preemption disabled.
-+ */
-+static inline void kvmppc_load_guest_altivec(struct kvm_vcpu *vcpu)
-+{
-+#ifdef CONFIG_ALTIVEC
-+	if (kvmppc_supports_altivec()) {
-+		if (!(current->thread.regs->msr & MSR_VEC)) {
-+			enable_kernel_altivec();
-+			load_vr_state(&vcpu->arch.vr);
-+			current->thread.vr_save_area = &vcpu->arch.vr;
-+			current->thread.regs->msr |= MSR_VEC;
-+		}
-+	}
-+#endif
-+}
-+
-+/*
-+ * Save guest vcpu AltiVec state into thread.
-+ * It requires to be called with preemption disabled.
-+ */
-+static inline void kvmppc_save_guest_altivec(struct kvm_vcpu *vcpu)
-+{
-+#ifdef CONFIG_ALTIVEC
-+	if (kvmppc_supports_altivec()) {
-+		if (current->thread.regs->msr & MSR_VEC)
-+			giveup_altivec(current);
-+		current->thread.vr_save_area = NULL;
-+	}
-+#endif
-+}
-+
- static void kvmppc_vcpu_sync_debug(struct kvm_vcpu *vcpu)
- {
- 	/* Synchronize guest's desire to get debug interrupts into shadow MSR */
-@@ -749,6 +796,17 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	kvmppc_load_guest_fp(vcpu);
- #endif
- 
-+#ifdef CONFIG_ALTIVEC
-+	/* Save userspace AltiVec state in stack */
-+	if (kvmppc_supports_altivec())
-+		enable_kernel_altivec();
-+	/*
-+	 * Since we can't trap on MSR_VEC in GS-mode, we consider the guest
-+	 * as always using the AltiVec.
-+	 */
-+	kvmppc_load_guest_altivec(vcpu);
-+#endif
-+
- 	/* Switch to guest debug context */
- 	debug = vcpu->arch.shadow_dbg_reg;
- 	switch_booke_debug_regs(&debug);
-@@ -771,6 +829,10 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, struct kvm_vcpu *vcpu)
- 	kvmppc_save_guest_fp(vcpu);
- #endif
- 
-+#ifdef CONFIG_ALTIVEC
-+	kvmppc_save_guest_altivec(vcpu);
-+#endif
-+
- out:
- 	vcpu->mode = OUTSIDE_GUEST_MODE;
- 	return ret;
-@@ -1014,7 +1076,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 		break;
- 
- 	case BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL: {
--		if (kvmppc_supports_spe()) {
-+		if (kvmppc_supports_spe() || kvmppc_supports_altivec()) {
- 			bool enabled = false;
- 
- #if !defined(CONFIG_KVM_BOOKE_HV) && defined(CONFIG_SPE)
-@@ -1040,7 +1102,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	}
- 
- 	case BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST:
--		if (kvmppc_supports_spe()) {
-+		if (kvmppc_supports_spe() || kvmppc_supports_altivec()) {
- 			kvmppc_booke_queue_irqprio(vcpu,
- 				BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST);
- 			r = RESUME_GUEST;
-@@ -1249,6 +1311,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			/* interrupts now hard-disabled */
- 			kvmppc_fix_ee_before_entry();
- 			kvmppc_load_guest_fp(vcpu);
-+			kvmppc_load_guest_altivec(vcpu);
- 		}
- 	}
- 
--- 
-1.7.11.7
+-Scott
