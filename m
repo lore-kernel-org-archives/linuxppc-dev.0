@@ -1,35 +1,19 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 116E91A0018
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 16:29:02 +1000 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 30 Jun 2014 00:28:58 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 9B58F19D803E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 00:28:46 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5U6StPR11796784
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 08:28:55 +0200
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5U6Ssrc030699
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 00:28:55 -0600
-Subject: [PATCH] powerpc/powernv: Check for IRQHAPPENED before sleeping
-To: benh@kernel.crashing.org, mikey@neuling.org, mpe@ellerman.id.au
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Mon, 30 Jun 2014 11:54:05 +0530
-Message-ID: <20140630062404.29315.23382.stgit@preeti.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A3C41A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 20:31:09 +1000 (EST)
+Date: Mon, 30 Jun 2014 20:30:59 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: dm-devel@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Regression in 3.15 on POWER8 with multipath SCSI
+Message-ID: <20140630103058.GA17747@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Vladimir Davydov <vdavydov@parallels.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Hannes Reinecke <hare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,26 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 8d6f7c5a: "powerpc/powernv: Make it possible to skip the IRQHAPPENED
-check in power7_nap()" added code that prevents even cores which enter sleep
-on idle, from checking for pending interrupts. Fix this.
+I have a machine on which 3.15 usually fails to boot, and 3.14 boots
+every time.  The machine is a POWER8 2-socket server with 20 cores
+(thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
+hardware-RAID-capable adapter which appears as two IPR controllers
+which are both connected to each disk.  I am booting from a disk that
+has Fedora 20 installed on it.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
+After over two weeks of bisections, I can finally point to the commits
+that cause the problems.  The culprits are:
 
- arch/powerpc/kernel/idle_power7.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+3e9f1be1 dm mpath: remove process_queued_ios()
+e8099177 dm mpath: push back requests instead of queueing
+bcccff93 kobject: don't block for each kobject_uevent
 
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 2480256..5cf3d36 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -131,7 +131,7 @@ _GLOBAL(power7_nap)
- 
- _GLOBAL(power7_sleep)
- 	li	r3,1
--	li	r4,0
-+	li	r4,1
- 	b	power7_powersave_common
- 	/* No return */
- 
+The interesting thing is that neither e8099177 nor bcccff93 cause
+failures on their own, but with both commits in there are failures
+where the system will fail to find /home on some occasions.
+
+With 3e9f1be1 included, the system appears to be prone to a deadlock
+condition which typically causes the boot process to hang with this
+message showing:
+
+A start job is running for Monitoring of LVM2 mirror...rogress polling
+
+(with a [***     ] thing before it where the asterisks move back and
+forth).
+
+If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
+4cdd2ad7 ("dm mpath: fix lock order inconsistency in
+multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
+kernel that will boot every time.  The first two are later commits
+that fix some problems with 3e9f1be1 (though not the problems I am
+seeing).
+
+Can anyone see any reason why e8099177 and bcccff93 would interfere
+with each other?
+
+-----
+
+The rest of this email outlines the steps I took to identify these
+commits.  I first identified that 3.15-rc1 would sometimes fail to
+boot, and did a bisection between 3.15 and 3.15-rc1 that identified
+3e9f1be1 as the bad commit.  I then took 3.15-rc8 and reverted
+63d832c3, 4cdd2ad7 and 3e9f1be1, and tested that.  That didn't fail
+with the deadlock, but was still prone to fail to find root or /home
+and thus fail to boot.
+
+To debug this second problem, I tested the commit before Linus merged
+in the dm modifications: 3f583bc2 ("Merge tag 'iommu-updates-v3.15' of
+git://git.kernel.org/pub/scm/linux/kernel/git/joro/iommu").  It was
+fine.  I then took 0596661f ("dm cache: fix a lock-inversion"), which
+is what Linus merged in during the 3.15 merge window, reverted
+3e9f1be1 on top of that, and tested that, and it also was fine.
+The ID of that revert commit was 9cfd3fe8 (that ID doesn't appear in
+any public tree, of course).
+
+Interestingly, the merge of 3f583bc2 with 9cfd3fe8 was bad.  To track
+this down, I first rebased the commits from the dm-3.15-changes branch
+except for 3e9f1be1 on top of 3f583bc2, and bisected between 3f583bc2
+and the tip of that branch.  That bisection pointed to e8099177.  I
+tried reverting that from 3.15-rc8, but it doesn't revert cleanly, and
+was too complex for me to work out how to manually revert it.
+
+Next I did a git bisection between 3.14 and 3f583bc2, merging in
+9cfd3fe8 at each point before testing.  That identified bcccff93 as
+the first bad commit, and indeed 3.15 with bcccff93 reverted was not
+prone to failing to find root or /home.
+
+Paul.
