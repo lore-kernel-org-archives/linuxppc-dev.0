@@ -1,38 +1,33 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <vincent.yang.fujitsu@gmail.com>
+Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
+ [IPv6:2607:f8b0:4002:c01::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E9E81A0012
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 02:57:19 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Sun, 29 Jun 2014 22:27:12 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id A86E83940048
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 22:27:08 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s5TGwQWs36569090
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 22:28:26 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s5TGv8IQ032676
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 22:27:08 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/6] Use virtual page class key protection mechanism for
- speeding up guest page fault
-In-Reply-To: <1404041166.31323.2.camel@pasglop>
-References: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1404041166.31323.2.camel@pasglop>
-Date: Sun, 29 Jun 2014 22:27:07 +0530
-Message-ID: <8738enwt5o.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DA871A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 12:10:24 +1000 (EST)
+Received: by mail-yh0-f49.google.com with SMTP id f73so4452116yha.8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jun 2014 19:10:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, agraf@suse.de,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+In-Reply-To: <20140627101248.GD7262@leverpostej>
+References: <1403763812-5495-1-git-send-email-Vincent.Yang@tw.fujitsu.com>
+ <1403763812-5495-5-git-send-email-Vincent.Yang@tw.fujitsu.com>
+ <20140626110351.GN15240@leverpostej>
+ <CAOEd-H3+MwT3DMqMO0XHaZQqYAN0zaQqRMjC_UjyJn5ZwCaMoQ@mail.gmail.com>
+ <20140627101248.GD7262@leverpostej>
+Date: Mon, 30 Jun 2014 10:10:21 +0800
+Message-ID: <CAOEd-H2M7h1=Yd6m2wLJsSV55TtCaKBtXjHmzBiJ51kW-jzTTA@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 4/6] mmc: sdhci: host: add new f_sdh30
+From: Vincent Yang <vincent.yang.fujitsu@gmail.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "andy.green@linaro.org" <andy.green@linaro.org>,
+ "patches@linaro.org" <patches@linaro.org>,
+ "anton@enomsg.org" <anton@enomsg.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "chris@printf.net" <chris@printf.net>,
+ "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,53 +37,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-
-> On Sun, 2014-06-29 at 16:47 +0530, Aneesh Kumar K.V wrote:
+2014-06-27 18:12 GMT+08:00 Mark Rutland <mark.rutland@arm.com>:
+> On Fri, Jun 27, 2014 at 04:32:21AM +0100, Vincent Yang wrote:
+>> 2014-06-26 19:03 GMT+08:00 Mark Rutland <mark.rutland@arm.com>:
+>> > On Thu, Jun 26, 2014 at 07:23:30AM +0100, Vincent Yang wrote:
+>> >> This patch adds new host controller driver for
+>> >> Fujitsu SDHCI controller f_sdh30.
+>> >>
+>> >> Signed-off-by: Vincent Yang <Vincent.Yang@tw.fujitsu.com>
+>> >> ---
+>> >>  .../devicetree/bindings/mmc/sdhci-fujitsu.txt      |  35 +++
+>> >>  drivers/mmc/host/Kconfig                           |   7 +
+>> >>  drivers/mmc/host/Makefile                          |   1 +
+>> >>  drivers/mmc/host/sdhci_f_sdh30.c                   | 346 +++++++++++++++++++++
+>> >>  drivers/mmc/host/sdhci_f_sdh30.h                   |  40 +++
+>> >>  5 files changed, 429 insertions(+)
+>> >>  create mode 100644 Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
+>> >>  create mode 100644 drivers/mmc/host/sdhci_f_sdh30.c
+>> >>  create mode 100644 drivers/mmc/host/sdhci_f_sdh30.h
+>> >>
+>> >> diff --git a/Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt b/Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
+>> >> new file mode 100644
+>> >> index 0000000..40add438
+>> >> --- /dev/null
+>> >> +++ b/Documentation/devicetree/bindings/mmc/sdhci-fujitsu.txt
+>> >> @@ -0,0 +1,35 @@
+>> >> +* Fujitsu SDHCI controller
+>> >> +
+>> >> +This file documents differences between the core properties in mmc.txt
+>> >> +and the properties used by the sdhci_f_sdh30 driver.
+>> >> +
+>> >> +Required properties:
+>> >> +- compatible: "fujitsu,f_sdh30"
+>> >
+>> > Please use '-' rather than '_' in compatible strings.
+>>
+>> Hi Mark,
+>> Yes, I'll update it to '-' in next version.
+>>
+>> >
+>> > This seems to be the name of the driver. What is the precise name of the
+>> > IP block?
+>>
+>> The name of the IP block is "F_SDH30".
+>> That's why it uses "fujitsu,f_sdh30"
 >
->> To achieve the above we use virtual page calss protection mechanism for
->> covering (2) and (3). For both the above case we mark the hpte
->> valid, but associate the page with virtual page class index 30 and 31.
->> The authority mask register is configured such that class index 30 and 31
->> will have read/write denied. The above change results in a key fault
->> for (2) and (3). This allows us to forward a NO_HPTE fault directly to guest
->> without doing the expensive hash pagetable lookup.
->
-> So we have a measurable performance benefit (about half a second out of
-> 8).
+> Hmm. I'd still be tempted to use "fujitsu,f-sdh30".
 
-I was able to measure a performance benefit of 2 seconds earlier. But
-once i get the below patch applied that got reduced. I am trying
-to find how the patch is helping the performance. May be it is
-avoiding some unnecessary invalidation ?
-
-http://mid.gmane.org/1403876103-32459-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com
-
-I also believe the benefit depends on how much impact a hash table
-lookup have. I did try to access the addresses linearly so that I can make
-sure we do take a cache miss for hash page table access. 
-
->but you didn't explain the drawback here which is to essentially make
-> it impossible for guests to exploit virtual page class keys, or did you
-> find a way to still make that possible ?
-
-I am now making PROTFAULT to go to host. That means, ksm sharing is
-represented as read only page and an attempt to write to it will get to
-host via PROTFAULT. Now with that we can implement keys for guest if we
-want to. So irrespective of what restrictions guest has put in, if the
-host swapout the page, we will deny read/write. Now if the key fault
-need to go to guest, we will find that out looking at the key index. 
+Hi Mark,
+Sure, I'll update it to "fujitsu,f-sdh30" in next version.
 
 >
-> As it-is, it's not a huge issue for Linux but we might have to care with
-> other OSes that do care...
+>> >
+>> > [...]
+>> >
+>> >> +       if (!of_property_read_u32(pdev->dev.of_node, "vendor-hs200",
+>> >> +                                 &priv->vendor_hs200))
+>> >> +               dev_info(dev, "Applying vendor-hs200 setting\n");
+>> >> +       else
+>> >> +               priv->vendor_hs200 = 0;
+>> >
+>> > This wasn't in the binding document, and a grep for "vendor-hs200" in a
+>> > v3.16-rc2 tree found me nothing.
+>> >
+>> > Please document this.
+>>
+>> Yes, it is a setting for a vendor specific register.
+>> I'll update it in next version.
 >
-> Do we have a way in PAPR to signify to the guest that the keys are not
-> available ?
+> It would be nice to know exactly what this is. We usually shy clear of
+> placing register values in dt. I can wait until the next posting if
+> you're goin to document that.
 
-Right now Qemu doesn't provide the device tree node
-ibm,processor-storage-keys. That means guest cannot use keys. So we are
-good there. If we want to support guest keys, we need to fill that with
-the value that indicate how many keys can be used for data and instruction.
+I'm thinking about removing this register value in dt.
+I'll update it in next version.
 
--aneesh
+>
+>> >> +       if (!of_property_read_u32(pdev->dev.of_node, "bus-width", &bus_width)) {
+>> >> +               if (bus_width == 8) {
+>> >> +                       dev_info(dev, "Applying 8 bit bus width\n");
+>> >> +                       host->mmc->caps |= MMC_CAP_8_BIT_DATA;
+>> >> +               }
+>> >> +       }
+>> >
+>> > What if bus-width is not 8, or is not present?
+>>
+>> In both cases, it will not touch host->mmc->caps at all. Then sdhci_add_host()
+>> will handle it and set MMC_CAP_4_BIT_DATA as default:
+>>
+>> [...]
+>> /*
+>> * A controller may support 8-bit width, but the board itself
+>> * might not have the pins brought out.  Boards that support
+>> * 8-bit width must set "mmc->caps |= MMC_CAP_8_BIT_DATA;" in
+>> * their platform code before calling sdhci_add_host(), and we
+>> * won't assume 8-bit width for hosts without that CAP.
+>> */
+>> if (!(host->quirks & SDHCI_QUIRK_FORCE_1_BIT_DATA))
+>> mmc->caps |= MMC_CAP_4_BIT_DATA;
+>
+> Ok, but does it make sense for a dts to have:
+>
+>         bus-width = <1>;
+>
+> If so, we should presumably do something.
+>
+> If not, we should at least print a warning that the dtb doesn't make
+> sense.
+
+I'll print a warning for invalid values in next version.
+Thanks a lot for your review!
+
+
+Best regards,
+Vincent Yang
+
+>
+> Cheers,
+> Mark.
