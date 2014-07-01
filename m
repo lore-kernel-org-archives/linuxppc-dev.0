@@ -1,22 +1,27 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <msnitzer@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D1EFD1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 20:04:52 +1000 (EST)
-Message-ID: <53B287A6.10707@pengutronix.de>
-Date: Tue, 01 Jul 2014 12:04:22 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 89EB91A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 05:39:13 +1000 (EST)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0CDBE14009B
+ for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2014 05:39:12 +1000 (EST)
+Date: Tue, 1 Jul 2014 15:39:07 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Regression in 3.15 on POWER8 with multipath SCSI
+Message-ID: <20140701193907.GA15306@redhat.com>
+References: <20140630103058.GA17747@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Zhao Qiang <B45475@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- wg@grandegger.com, linux-can@vger.kernel.org, B07421@freescale.com
-Subject: Re: [PATCH v4] flexcan: add err_irq handler for flexcan
-References: <1404201809-7010-1-git-send-email-B45475@freescale.com>
-In-Reply-To: <1404201809-7010-1-git-send-email-B45475@freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="6RAC8qtXoIOFgb0Xe4rcfSBJopUBWIH1l"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140630103058.GA17747@iris.ozlabs.ibm.com>
+Cc: Vladimir Davydov <vdavydov@parallels.com>, bvanassche@acm.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, dm-devel@redhat.com,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,155 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---6RAC8qtXoIOFgb0Xe4rcfSBJopUBWIH1l
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Mon, Jun 30 2014 at  6:30am -0400,
+Paul Mackerras <paulus@samba.org> wrote:
 
-On 07/01/2014 10:03 AM, Zhao Qiang wrote:
-> when flexcan is not physically linked, command 'cantest' will
-> trigger an err_irq, add err_irq handler for it.
->=20
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
-> Changes for v2:
-> 	- use a space instead of tab
-> 	- use flexcan_poll_state instead of print
-> Changes for v3:
-> 	- return IRQ_HANDLED if err is triggered
-> 	- stop transmitted packets when there is an err_interrupt=20
-> Changes for v4:
-> 	- call flexcan_irq=20
->=20
->  drivers/net/can/flexcan.c | 38 +++++++++++++++++++++++++++++++++++++-
->  1 file changed, 37 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
-> index f425ec2..098fcac 100644
-> --- a/drivers/net/can/flexcan.c
-> +++ b/drivers/net/can/flexcan.c
-> @@ -208,6 +208,7 @@ struct flexcan_priv {
->  	void __iomem *base;
->  	u32 reg_esr;
->  	u32 reg_ctrl_default;
-> +	int err_irq;
-> =20
->  	struct clk *clk_ipg;
->  	struct clk *clk_per;
-> @@ -744,6 +745,27 @@ static irqreturn_t flexcan_irq(int irq, void *dev_=
-id)
->  	return IRQ_HANDLED;
->  }
-> =20
-> +static irqreturn_t flexcan_err_irq(int irq, void *dev_id)
-> +{
-> +	struct net_device *dev =3D dev_id;
-> +	struct flexcan_priv *priv =3D netdev_priv(dev);
-> +	struct flexcan_regs __iomem *regs =3D priv->base;
-> +	u32 reg_ctrl, reg_esr;
-> +
-> +	reg_esr =3D flexcan_read(&regs->esr);
-> +	reg_ctrl =3D flexcan_read(&regs->ctrl);
-> +
-> +	if (reg_esr & FLEXCAN_ESR_ALL_INT) {
-> +		if (reg_esr & FLEXCAN_ESR_ERR_INT)
-> +			flexcan_write(reg_ctrl & ~FLEXCAN_CTRL_ERR_MSK,
-> +				      &regs->ctrl);
-> +		flexcan_irq(irq, dev);
+> I have a machine on which 3.15 usually fails to boot, and 3.14 boots
+> every time.  The machine is a POWER8 2-socket server with 20 cores
+> (thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
+> hardware-RAID-capable adapter which appears as two IPR controllers
+> which are both connected to each disk.  I am booting from a disk that
+> has Fedora 20 installed on it.
+> 
+> After over two weeks of bisections, I can finally point to the commits
+> that cause the problems.  The culprits are:
+> 
+> 3e9f1be1 dm mpath: remove process_queued_ios()
+> e8099177 dm mpath: push back requests instead of queueing
+> bcccff93 kobject: don't block for each kobject_uevent
+> 
+> The interesting thing is that neither e8099177 nor bcccff93 cause
+> failures on their own, but with both commits in there are failures
+> where the system will fail to find /home on some occasions.
+> 
+> With 3e9f1be1 included, the system appears to be prone to a deadlock
+> condition which typically causes the boot process to hang with this
+> message showing:
+> 
+> A start job is running for Monitoring of LVM2 mirror...rogress polling
+> 
+> (with a [***     ] thing before it where the asterisks move back and
+> forth).
+> 
+> If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
+> 4cdd2ad7 ("dm mpath: fix lock order inconsistency in
+> multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
+> kernel that will boot every time.  The first two are later commits
+> that fix some problems with 3e9f1be1 (though not the problems I am
+> seeing).
+> 
+> Can anyone see any reason why e8099177 and bcccff93 would interfere
+> with each other?
 
-I still don't understand why you need a special flexcan_err_irq()
-function. Why don't you just call:
+No, not seeing any obvious relation.
 
-request_irq(priv->err_irq, flexcan_irq, IRQF_SHARED, dev->name, dev);
+But even though you listed e8099177 as a culprit you didn't list it as a
+commit you reverted.  Did you leave e8099177 simply because attempting
+to revert it fails (if you don't first revert other dm-mpath.c commits)?
 
-instead?
+(btw, Bart Van Assche also has issues with commit e8099177 due to hangs
+during cable pull testing of mpath devices -- Bart: curious to know if
+your cable pull tests pass if you just revert bcccff93).
 
-> +		return IRQ_HANDLED;
-> +	}
-> +
-> +	return IRQ_NONE;
-> +}
-> +
->  static void flexcan_set_bittiming(struct net_device *dev)
->  {
->  	const struct flexcan_priv *priv =3D netdev_priv(dev);
-> @@ -944,6 +966,15 @@ static int flexcan_open(struct net_device *dev)
->  	if (err)
->  		goto out_close;
-> =20
-> +	if (priv->err_irq) {
-> +		err =3D request_irq(priv->err_irq, flexcan_err_irq, IRQF_SHARED,
-> +				  dev->name, dev);
-> +		if (err) {
-> +			free_irq(priv->err_irq, dev);
-
-Why do you want to free the err_irq, if requesting the err_irq fails?
-However you should adjust all error cleanup path following this request
-irq, so that it will be freed.
-
-BTW: where is the corresponding free_irq() in flexcan_close()?
-
-> +			goto out_free_irq;
-> +		}
-> +	}
-> +
->  	/* start chip and queuing */
->  	err =3D flexcan_chip_start(dev);
->  	if (err)
-> @@ -1099,7 +1130,7 @@ static int flexcan_probe(struct platform_device *=
-pdev)
->  	struct resource *mem;
->  	struct clk *clk_ipg =3D NULL, *clk_per =3D NULL;
->  	void __iomem *base;
-> -	int err, irq;
-> +	int err, irq, err_irq;
->  	u32 clock_freq =3D 0;
-> =20
->  	if (pdev->dev.of_node)
-> @@ -1126,6 +1157,10 @@ static int flexcan_probe(struct platform_device =
-*pdev)
->  	if (irq <=3D 0)
->  		return -ENODEV;
-> =20
-> +	err_irq =3D platform_get_irq(pdev, 1);
-> +	if (err_irq <=3D 0)
-> +		err_irq =3D 0;
-> +
->  	base =3D devm_ioremap_resource(&pdev->dev, mem);
->  	if (IS_ERR(base))
->  		return PTR_ERR(base);
-> @@ -1149,6 +1184,7 @@ static int flexcan_probe(struct platform_device *=
-pdev)
->  	dev->flags |=3D IFF_ECHO;
-> =20
->  	priv =3D netdev_priv(dev);
-> +	priv->err_irq =3D err_irq;
->  	priv->can.clock.freq =3D clock_freq;
->  	priv->can.bittiming_const =3D &flexcan_bittiming_const;
->  	priv->can.do_set_mode =3D flexcan_set_mode;
->=20
-
-Marc
-
---=20
-Pengutronix e.K.                  | Marc Kleine-Budde           |
-Industrial Linux Solutions        | Phone: +49-231-2826-924     |
-Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
-
-
---6RAC8qtXoIOFgb0Xe4rcfSBJopUBWIH1l
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: Using GnuPG with Icedove - http://www.enigmail.net/
-
-iEYEARECAAYFAlOyh6YACgkQjTAFq1RaXHM2bwCfTnObkssWRq15oMeYzU+Yvxrg
-OYwAnR/UMSQXG3qnDq66VMoEk1/E5hOB
-=AHH9
------END PGP SIGNATURE-----
-
---6RAC8qtXoIOFgb0Xe4rcfSBJopUBWIH1l--
+Mike
