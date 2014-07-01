@@ -1,17 +1,17 @@
 Return-Path: <xerofoify@gmail.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
+Received: from mail-ig0-x22d.google.com (mail-ig0-x22d.google.com
+ [IPv6:2607:f8b0:4001:c05::22d])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B2821A0014
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 12:31:47 +1000 (EST)
-Received: by mail-ie0-f178.google.com with SMTP id rd18so7693111iec.9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 19:31:45 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA8C41A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 12:47:45 +1000 (EST)
+Received: by mail-ig0-f173.google.com with SMTP id uq10so5019583igb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 19:47:40 -0700 (PDT)
 From: Nicholas Krause <xerofoify@gmail.com>
 To: benh@kernel.crashing.org
 Subject: [PATCH] Remove FIXME messages in arch/powerpc/sysdev/uic.c
-Date: Mon, 30 Jun 2014 22:31:40 -0400
-Message-Id: <1404181900-4452-1-git-send-email-xerofoify@gmail.com>
+Date: Mon, 30 Jun 2014 22:47:36 -0400
+Message-Id: <1404182856-4945-1-git-send-email-xerofoify@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
