@@ -1,19 +1,31 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB9421A0044
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 11:41:30 +1000 (EST)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <leoli@freescale.com>,
- <netdev@vger.kernel.org>, <B07421@freescale.com>
-Subject: [PATCH] powerpc/ucc_geth: deal with a compile warning
-Date: Tue, 1 Jul 2014 09:21:34 +0800
-Message-ID: <1404177694-5547-1-git-send-email-B45475@freescale.com>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 178F41A0006
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 12:21:11 +1000 (EST)
+Message-ID: <53B21B0E.8010707@hitachi.com>
+Date: Tue, 01 Jul 2014 11:21:02 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Zhao Qiang <B45475@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Re: [PATCH v4] [BUGFIX] kprobes: Fix "Failed to find blacklist"
+ error on ia64 and ppc64
+References: <20140620022307.23075.55858.stgit@kbuild-fedora.novalocal>
+ <53B0D61B.9010104@hitachi.com> <1404128176.7888.1.camel@concordia>
+In-Reply-To: <1404128176.7888.1.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ akataria@vmware.com, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
+ Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ Kevin Hao <haokexin@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+ rdunlap@infradead.org, Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +35,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-deal with a compile warning: comparison between
-'enum qe_fltr_largest_external_tbl_lookup_key_size'
-and 'enum qe_fltr_tbl_lookup_key_size'
+(2014/06/30 20:36), Michael Ellerman wrote:
+> On Mon, 2014-06-30 at 12:14 +0900, Masami Hiramatsu wrote:
+>> Ping? :)
+> 
+> Yeah sorry. I started looking at this and got dragged into another mess.
+> 
+> You seem to have duplicated the functionality of arch_deref_entry_point(),
+> which was also added for kprobes, and for the same reason - ie. because some
+> arches have strange function pointers. Is there some reason you can't use it?
 
-the code:
-	"if (ug_info->largestexternallookupkeysize ==
-	     QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES)"
-is warned because different enum, so modify it.
+Ah, right! Hmm, it seems some more work to update it. but basically, we can do.
+BTW, is there any other users who need to access the actual function entry (for
+kallsyms case)?
 
-	"enum qe_fltr_largest_external_tbl_lookup_key_size
-	             largestexternallookupkeysize;
+If so, I guess it'd better to merge this version and replace kprobe's local
+arch_deref_entry_point() with generic function_entry() macro.
 
-	enum qe_fltr_tbl_lookup_key_size {
-		 QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES
-			 = 0x3f,         /* LookupKey parsed by the Generate LookupKey
-					    CMD is truncated to 8 bytes */
-		 QE_FLTR_TABLE_LOOKUP_KEY_SIZE_16_BYTES
-			 = 0x5f,         /* LookupKey parsed by the Generate LookupKey
-					    CMD is truncated to 16 bytes */
-	 };
+Thank you,
 
-	 /* QE FLTR extended filtering Largest External Table Lookup Key Size */
-	 enum qe_fltr_largest_external_tbl_lookup_key_size {
-		 QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_NONE
-			 = 0x0,/* not used */
-		 QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_8_BYTES
-			 = QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES,        /* 8 bytes */
-		 QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_16_BYTES
-			 = QE_FLTR_TABLE_LOOKUP_KEY_SIZE_16_BYTES,       /* 16 bytes */
-	 };"
-
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index c8299c3..0bf5ba1 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -2993,11 +2993,11 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
- 	if (ug_info->rxExtendedFiltering) {
- 		size += THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING;
- 		if (ug_info->largestexternallookupkeysize ==
--		    QE_FLTR_TABLE_LOOKUP_KEY_SIZE_8_BYTES)
-+		    QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_8_BYTES)
- 			size +=
- 			    THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING_8;
- 		if (ug_info->largestexternallookupkeysize ==
--		    QE_FLTR_TABLE_LOOKUP_KEY_SIZE_16_BYTES)
-+		    QE_FLTR_LARGEST_EXTERNAL_TABLE_LOOKUP_KEY_SIZE_16_BYTES)
- 			size +=
- 			    THREAD_RX_PRAM_ADDITIONAL_FOR_EXTENDED_FILTERING_16;
- 	}
 -- 
-1.8.5
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
