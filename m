@@ -1,20 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2905B1A0044
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 10:52:08 +1000 (EST)
-Message-ID: <1404175926.30002.1.camel@concordia>
-Subject: Re: [PATCH] powerpc/powernv: Check for IRQHAPPENED before sleeping
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Tue, 01 Jul 2014 10:52:06 +1000
-In-Reply-To: <20140630062404.29315.23382.stgit@preeti.in.ibm.com>
-References: <20140630062404.29315.23382.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: mikey@neuling.org, linux-kernel@vger.kernel.org, shreyas@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65A951A0044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 10:55:20 +1000 (EST)
+Date: Tue, 1 Jul 2014 10:55:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] powerpc: Disable RELOCATABLE for COMPILE_TEST with PPC64
+Message-ID: <20140701105510.75718b47@canb.auug.org.au>
+In-Reply-To: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
+References: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/Ah16V83Qnbn0RGe8./=uM8U"; protocol="application/pgp-signature"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-06-30 at 11:54 +0530, Preeti U Murthy wrote:
-> Commit 8d6f7c5a: "powerpc/powernv: Make it possible to skip the IRQHAPPENED
-> check in power7_nap()" added code that prevents even cores which enter sleep
-> on idle, from checking for pending interrupts. Fix this.
+--Sig_/Ah16V83Qnbn0RGe8./=uM8U
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-To be clear, it is a bug in the original commit. Mikey and I pair programmed
-that code, and he was *definitely* typing at that point ;)
+Hi Guenter,
 
-Can you please include in the changelog what the symptom of the bug is, and
-have you seen it in practice?
+On Mon, 30 Jun 2014 11:45:30 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
+>
+> powerpc:allmodconfig has been failing for some time with the following
+> error.
+>=20
+> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+> arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org ba=
+ckwards
+> make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
+>=20
+> A number of attempts to fix the problem by moving around code have been
+> unsuccessful and resulted in failed builds for some configurations and
+> the discovery of toolchain bugs.
+>=20
+> Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
+> While this is less than perfect, it avoids substantial code changes
+> which would otherwise be necessary just to make COMPILE_TEST builds
+> happy and might have undesired side effects.
+>=20
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
-The bad commit went into 3.16-rc1, so we don't need to backport this to any
-stable release.
+I'll dump this in my "fixes" tree today and see how it goes.
 
-cheers
+Thanks.
 
-> diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-> index 2480256..5cf3d36 100644
-> --- a/arch/powerpc/kernel/idle_power7.S
-> +++ b/arch/powerpc/kernel/idle_power7.S
-> @@ -131,7 +131,7 @@ _GLOBAL(power7_nap)
->  
->  _GLOBAL(power7_sleep)
->  	li	r3,1
-> -	li	r4,0
-> +	li	r4,1
->  	b	power7_powersave_common
->  	/* No return */
->  
-> 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/Ah16V83Qnbn0RGe8./=uM8U
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJTsgb3AAoJEMDTa8Ir7ZwVK7YP/iIJm2oErendYz15HW/RVRoU
+BxQQtaYNlBF7CeOaJPtgP1GPtwNaSJdPDIdv97BMAx97A4vs8+/kfV6eG02/J78x
+e0CMaI5XFDjCqLnqw6e/x7R0Vzp/9q+7dSuzZ/DyCUJ2GUVCyondFixpVXGbjzzu
+PZ677a1DCR2DsZ4DKyg59I93XPbu3Kmj1mvmbvBvN2Y20aIewYOnVlhZ5bLYWHkw
+3dcxDrAYdkQtIp1TmOchyc7iSLCMnZTK8iJ0E4CkN3Mk+GczmXc5JLmxpxvj3fS2
+o7tGRPTWQbw3uZh74iV+NLmqGTuxknwuyxEAgWga+Ybb7/psgBYvQR8clxCFFp14
+0ji3o/Zqr/LXlyGE1IlxLLP5W70Vk61ob9uvlEnFHDloB5yvGWrGC8dVlD7GcWnj
+TiW0PBzXqJCwqecH17azb4npJRJ7aTN2Evx08SIzOZy9/1x+xWmFhTgCNGgIgvYG
+YR8ZX43WV487FFwQQgGiVOGKWOr4gO9oD8ATZ7UfyLUPzTfk5FgHZNeeCwx8Kvor
+Z+Ki5xmykJv6d5nST/KktgK/w/nJBLbhQVTWE7pmiK4mw18Y6T3ecf/v8ZYvWq3g
+0QDDbXSj2p6Gl4EDWlSzBPa6/5Y//CtlWMp7ZTZtjlOYXct8CmI83wWIghU/PiJd
+wTuayw0kws7LMJJkAMr4
+=MSVq
+-----END PGP SIGNATURE-----
+
+--Sig_/Ah16V83Qnbn0RGe8./=uM8U--
