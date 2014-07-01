@@ -1,35 +1,29 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Bharat.Bhushan@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0CA3C1A001A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 14:14:04 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 30 Jun 2014 22:14:02 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 63E181FF001E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 22:13:58 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s614Dwl1065862
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jul 2014 06:13:58 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s614Hwwo016796
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 22:17:59 -0600
-Subject: [PATCH V2] powerpc/powernv: Check for IRQHAPPENED before sleeping
-To: benh@kernel.crashing.org, mikey@neuling.org, mpe@ellerman.id.au
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Tue, 01 Jul 2014 09:39:14 +0530
-Message-ID: <20140701040808.6486.59805.stgit@preeti.in.ibm.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32A5C1A001A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 14:16:56 +1000 (EST)
+From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [RESEND PATCH] memory: Freescale CoreNet Coherency Fabric error
+ reporting driver
+Date: Tue, 1 Jul 2014 04:16:48 +0000
+Message-ID: <4256125352774a7898fe284927b41c2d@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <20140530222743.GA6918@home.buserror.net>
+ <967d9a5e0f7e4d0a8f5e7ec6b8e88ff2@BLUPR03MB566.namprd03.prod.outlook.com>
+ <1401900111.6603.325.camel@snotra.buserror.net>
+ <35f1762b80694ba4835cd7902a2faa0a@BLUPR03MB566.namprd03.prod.outlook.com>
+ <1401901656.6603.327.camel@snotra.buserror.net>
+ <806516468c994e638fc9214b0e5a7b9f@DM2PR03MB574.namprd03.prod.outlook.com>
+ <1404161983.2435.182.camel@snotra.buserror.net>
+In-Reply-To: <1404161983.2435.182.camel@snotra.buserror.net>
 Content-Type: text/plain; charset="utf-8"
-Cc: shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,49 +33,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 8d6f7c5a: "powerpc/powernv: Make it possible to skip the IRQHAPPENED
-check in power7_nap()" added code that prevents cpus from checking for pending
-interrupts just before entering sleep state, which is wrong. A cpu cannot enter
-any idle state with pending interrupts.
-
-Possible consequences of a cpu entering an idle state without checking for pending
-interrupts could be a device timeout or a more serious consequence in case of
-Power8 would be if doorbell IPIs are delivered when cpus have interrupts soft
-disabled. Precisely the state that the cpus are in just before entering an
-idle state on PowerPC.
-
-Interrupts delivered during soft disabled state are replayed when the interrupts
-are enabled again. Hence since a cpu goes to sleep with interrupts enabled
-again, it will receive any pending interrupts. However doorbell IPIs are not
-replayed even when the interrupts are re-enabled since they are edge triggered.Hence
-not checking for pending interrupts just before going to sleep state would mean
-that we will never take the doorbell IPI if it was delivered during the soft
-disabled state, unless some other interrupt wakes us up.This could result in the
-cpu that sent the doorbell IPI complaining that the sleeping cpu is stuck.
-
-This patch fixes these issues by ensuring that cpus check for pending interrupts
-just before entering any idle state as long as they are not in the path of split
-core operations.
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Acked-by: Michael Neuling <mikey@neuling.org>
----
-Changes from V1: Modified the changelog to add the details of the problem
-that this patch fixes.
-
- arch/powerpc/kernel/idle_power7.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 2480256..5cf3d36 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -131,7 +131,7 @@ _GLOBAL(power7_nap)
- 
- _GLOBAL(power7_sleep)
- 	li	r3,1
--	li	r4,0
-+	li	r4,1
- 	b	power7_powersave_common
- 	/* No return */
- 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgSnVseSAwMSwgMjAxNCAyOjMwIEFNDQo+IFRvOiBCaHVzaGFu
+IEJoYXJhdC1SNjU3NzcNCj4gQ2M6IEdyZWcgS3JvYWgtSGFydG1hbjsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFN1Ympl
+Y3Q6IFJlOiBbUkVTRU5EIFBBVENIXSBtZW1vcnk6IEZyZWVzY2FsZSBDb3JlTmV0IENvaGVyZW5j
+eSBGYWJyaWMgZXJyb3INCj4gcmVwb3J0aW5nIGRyaXZlcg0KPiANCj4gT24gU3VuLCAyMDE0LTA2
+LTI5IGF0IDIzOjU4IC0wNTAwLCBCaHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4NCj4g
+PiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIw
+NzQyMQ0KPiA+ID4gU2VudDogV2VkbmVzZGF5LCBKdW5lIDA0LCAyMDE0IDEwOjM4IFBNDQo+ID4g
+PiBUbzogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiBDYzogR3JlZyBLcm9haC1IYXJ0bWFu
+OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+ID4gPiBrZXJuZWxAdmdl
+ci5rZXJuZWwub3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW1JFU0VORCBQQVRDSF0gbWVtb3J5OiBG
+cmVlc2NhbGUgQ29yZU5ldCBDb2hlcmVuY3kNCj4gPiA+IEZhYnJpYyBlcnJvciByZXBvcnRpbmcg
+ZHJpdmVyDQo+ID4gPg0KPiA+ID4gT24gV2VkLCAyMDE0LTA2LTA0IGF0IDEyOjA0IC0wNTAwLCBC
+aHVzaGFuIEJoYXJhdC1SNjU3Nzcgd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+
+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgSnVuZSAwNCwgMjAxNCAxMDoxMiBQTQ0KPiA+ID4gPiA+
+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3NzcNCj4gPiA+ID4gPiBDYzogR3JlZyBLcm9haC1IYXJ0
+bWFuOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+ID4gPiA+ID4ga2Vy
+bmVsQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gPiA+IFN1YmplY3Q6IFJlOiBbUkVTRU5EIFBBVENI
+XSBtZW1vcnk6IEZyZWVzY2FsZSBDb3JlTmV0IENvaGVyZW5jeQ0KPiA+ID4gPiA+IEZhYnJpYyBl
+cnJvciByZXBvcnRpbmcgZHJpdmVyDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBPbiBXZWQsIDIwMTQt
+MDYtMDQgYXQgMDM6MTcgLTA1MDAsIEJodXNoYW4gQmhhcmF0LVI2NTc3NyB3cm90ZToNCj4gPiA+
+ID4gPiA+ID4gK3N0YXRpYyBpbnQgY2NmX3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpw
+ZGV2KSB7DQo+ID4gPiA+ID4gPiA+ICsJc3RydWN0IGNjZl9wcml2YXRlICpjY2YgPSBkZXZfZ2V0
+X2RydmRhdGEoJnBkZXYtPmRldik7DQo+ID4gPiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gKwlz
+d2l0Y2ggKGNjZi0+aW5mby0+dmVyc2lvbikgew0KPiA+ID4gPiA+ID4gPiArCWNhc2UgQ0NGMToN
+Cj4gPiA+ID4gPiA+ID4gKwkJaW93cml0ZTMyYmUoMCwgJmNjZi0+ZXJyX3JlZ3MtPmVycmRpcyk7
+DQo+ID4gPiA+ID4gPiA+ICsJCWJyZWFrOw0KPiA+ID4gPiA+ID4gPiArDQo+ID4gPiA+ID4gPiA+
+ICsJY2FzZSBDQ0YyOg0KPiA+ID4gPiA+ID4gPiArCQlpb3dyaXRlMzJiZSgwLCAmY2NmLT5lcnJf
+cmVncy0+ZXJyaW50ZW4pOw0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IERvIHlvdSB0aGluayBp
+dCBpcyBzYW1lIHRvIGRpc2FibGUgZGV0ZWN0aW9uIGJpdHMgaW4NCj4gPiA+ID4gPiA+IGNjZi0+
+ZXJyX3JlZ3MtDQo+ID4gPiA+ZXJyZGlzPw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gRGlzYWJsaW5n
+IHRoZSBpbnRlcnJ1cHQgaXMgd2hhdCB3ZSdyZSBhaW1pbmcgZm9yIGhlcmUsIGJ1dCBjY2YxDQo+
+ID4gPiA+ID4gZG9lc24ndCBwcm92aWRlIGEgd2F5IHRvIGRvIHRoYXQgc2VwYXJhdGUgZnJvbSBk
+aXNhYmxpbmcgZGV0ZWN0aW9uLg0KPiA+ID4gPg0KPiA+ID4gPiBXaGF0IEkgd2FudGVkIHRvIHNh
+eSB0aGF0IGRvIHdlIGFsc28gbmVlZCB0byBkaXNhYmxlIGRldGVjdGlvbg0KPiA+ID4gPiAoc2V0
+IEVSUkRFVF9MQUUgfCBFUlJERVRfQ1YgYml0cyBpbiBlcnJkaXMpIGFwYXJ0IGZyb20gY2xlYXJp
+bmcNCj4gPiA+ID4gZXJyaW50ZW4gb24NCj4gPiA+ID4gY2NmMiA/DQo+ID4gPg0KPiA+ID4gSSBk
+b24ndCB0aGluayB3ZSAibmVlZCIgdG8uICBZb3UgY291bGQgYXJndWUgdGhhdCB3ZSBzaG91bGQg
+Zm9yDQo+ID4gPiBjb25zaXN0ZW5jeSwgdGhvdWdoIEkgdGhpbmsgdGhlcmUncyB2YWx1ZSBpbiBl
+cnJvcnMgY29udGludWluZyB0byBiZQ0KPiA+ID4gZGV0ZWN0ZWQgZXZlbiB3aXRob3V0IHRoZSBk
+cml2ZXIgKGUuZy4gY2FuIGR1bXAgdGhlIHJlZ2lzdGVycyBpbiBhDQo+IGRlYnVnZ2VyKS4NCj4g
+Pg0KPiA+IFllcyB0aGlzIGNvbW1lbnQgd2FzIGZvciBjb25zaXN0ZW5jeS4gQWxzbyBJSVVDLCB0
+aGUgc3RhdGUgd2hpY2ggaXMgbGVmdCB3aGVuDQo+IHRoZSBkcml2ZXIgaXMgcmVtb3ZlZCBpcyBu
+b3QgZGVmYXVsdCByZXNldCBiZWhhdmlvci4NCj4gDQo+IEhvdyBtYW55IGRyaXZlcnMgbGVhdmUg
+dGhlIGhhcmR3YXJlIGluIHByaXN0aW5lIHJlc2V0IHN0YXRlIHdoZW4gZXhpdGluZz8NCg0KSSBk
+byBub3Qga25vdyA6KQ0KDQo+ICBBbmQNCj4geW91IGNvdWxkIGFyZ3VlIHRoYXQgaGF2aW5nIGRl
+dGVjdGlvbiBvZmYgYnkgZGVmYXVsdCBpcyBwb29yIGhhcmR3YXJlIGRlc2lnbg0KPiAoZW5hYmxp
+bmcgaW50ZXJydXB0cyBpcyBhbm90aGVyIG1hdHRlciBvZiBjb3Vyc2UpLg0KDQpPaywgdGhlbiBj
+YW4geW91IHBsZWFzZSBhZGQgYSBjb21tZW50IGluIF9yZW1vdmUoKSBmdW5jdGlvbiBkZXNjcmli
+aW5nIHdoeSBkZXRlY3Rpb24gaXMgc3RpbGwgZW5hYmxlZC4NCg0KVGhhbmtzDQotQmhhcmF0DQoN
+Cj4gDQo+ID4gSWYgd2Ugd2FudCBlcnJvcnMgdG8gYmUgZGV0ZWN0ZWQgdGhlbiBzaG91bGQgbm90
+IHdlIGhhdmUgYSBzeXNmcyBpbnRlcmZhY2U/DQo+IA0KPiBUaGF0IG1heSBiZSB1c2VmdWwgYnV0
+IGl0J3MgYmV5b25kIHRoZSBzY29wZSBvZiB3aGF0IEknbSBkb2luZyB3aXRoIHRoaXMgcGF0Y2gu
+DQo+IFdlIGN1cnJlbnRseSBkb24ndCBsb2cgbWFjaGluZSBjaGVja3MgYW55d2hlcmUgYnV0IHZp
+YSBwcmludGsgZWl0aGVyLg0KPiANCj4gQlRXLCBJIHRob3VnaHQgSSBoYWQgc2VudCB2MiBvZiB0
+aGlzLCBidXQgSSBkb24ndCBzZWUgaXQgYW55d2hlcmUuLi4NCj4gSSdsbCByZXNwaW4gc29vbi4N
+Cj4gDQo+IC1TY290dA0KPiANCg0K
