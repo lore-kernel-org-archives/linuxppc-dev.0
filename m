@@ -1,20 +1,19 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205])
- by lists.ozlabs.org (Postfix) with ESMTP id D3E0E1A0006
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 12:22:12 +1000 (EST)
-Message-ID: <53B21B50.2010207@roeck-us.net>
-Date: Mon, 30 Jun 2014 19:22:08 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] powerpc: Disable RELOCATABLE for COMPILE_TEST with PPC64
-References: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
- <20140701105510.75718b47@canb.auug.org.au>
-In-Reply-To: <20140701105510.75718b47@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+Return-Path: <xerofoify@gmail.com>
+Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
+ [IPv6:2607:f8b0:4001:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B2821A0014
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 12:31:47 +1000 (EST)
+Received: by mail-ie0-f178.google.com with SMTP id rd18so7693111iec.9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jun 2014 19:31:45 -0700 (PDT)
+From: Nicholas Krause <xerofoify@gmail.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] Remove FIXME messages in arch/powerpc/sysdev/uic.c
+Date: Mon, 30 Jun 2014 22:31:40 -0400
+Message-Id: <1404181900-4452-1-git-send-email-xerofoify@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/30/2014 05:55 PM, Stephen Rothwell wrote:
-> Hi Guenter,
->
-> On Mon, 30 Jun 2014 11:45:30 -0700 Guenter Roeck <linux@roeck-us.net> wrote:
->>
->> powerpc:allmodconfig has been failing for some time with the following
->> error.
->>
->> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
->> arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org backwards
->> make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
->>
->> A number of attempts to fix the problem by moving around code have been
->> unsuccessful and resulted in failed builds for some configurations and
->> the discovery of toolchain bugs.
->>
->> Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
+This removes FIXME messages in the function uic_init_one
+as this FIXMEs are not valid due to the kernel being better
+to panic due to boards without these allocated not being
+able to service IRQs.
 
-s/Fix/Work around/
+Signed-off-by: Nicholas Krause <xerofoify@gmail.com>
+---
+ arch/powerpc/sysdev/uic.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-would probably be a better here.
-
->> While this is less than perfect, it avoids substantial code changes
->> which would otherwise be necessary just to make COMPILE_TEST builds
->> happy and might have undesired side effects.
->>
->> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
->
-> I'll dump this in my "fixes" tree today and see how it goes.
->
-
-Would be great. Note that allyescconfig still fails with relocation errors
-after this patch has been applied.
-
-Thanks,
-Guenter
+diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
+index 9203393..937f6a5 100644
+--- a/arch/powerpc/sysdev/uic.c
++++ b/arch/powerpc/sysdev/uic.c
+@@ -239,7 +239,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
+ 
+ 	uic = kzalloc(sizeof(*uic), GFP_KERNEL);
+ 	if (! uic)
+-		return NULL; /* FIXME: panic? */
++		return NULL;
+ 
+ 	raw_spin_lock_init(&uic->lock);
+ 	indexp = of_get_property(node, "cell-index", &len);
+@@ -261,7 +261,7 @@ static struct uic * __init uic_init_one(struct device_node *node)
+ 	uic->irqhost = irq_domain_add_linear(node, NR_UIC_INTS, &uic_host_ops,
+ 					     uic);
+ 	if (! uic->irqhost)
+-		return NULL; /* FIXME: panic? */
++		return NULL;
+ 
+ 	/* Start with all interrupts disabled, level and non-critical */
+ 	mtdcr(uic->dcrbase + UIC_ER, 0);
+-- 
+1.9.1
