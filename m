@@ -1,27 +1,20 @@
-Return-Path: <msnitzer@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89EB91A0019
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 05:39:13 +1000 (EST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0CDBE14009B
- for <linuxppc-dev@ozlabs.org>; Wed,  2 Jul 2014 05:39:12 +1000 (EST)
-Date: Tue, 1 Jul 2014 15:39:07 -0400
-From: Mike Snitzer <snitzer@redhat.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Regression in 3.15 on POWER8 with multipath SCSI
-Message-ID: <20140701193907.GA15306@redhat.com>
-References: <20140630103058.GA17747@iris.ozlabs.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 384A81A0011
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 11:43:37 +1000 (EST)
+Date: Tue, 1 Jul 2014 20:43:24 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Subject: Re: [1/3,v4] powerpc/fsl-booke: Add support for T2080/T2081 SoC
+Message-ID: <20140702014324.GA21768@home.buserror.net>
+References: <1402481406-10830-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20140630103058.GA17747@iris.ozlabs.ibm.com>
-Cc: Vladimir Davydov <vdavydov@parallels.com>, bvanassche@acm.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, dm-devel@redhat.com,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1402481406-10830-1-git-send-email-Shengzhou.Liu@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 30 2014 at  6:30am -0400,
-Paul Mackerras <paulus@samba.org> wrote:
+On Wed, Jun 11, 2014 at 06:10:04PM +0800, Shengzhou Liu wrote:
+> +/* controller at 0x240000 */
+> +&pci0 {
+> +	compatible = "fsl,t2080-pcie", "fsl,qoriq-pcie";
 
-> I have a machine on which 3.15 usually fails to boot, and 3.14 boots
-> every time.  The machine is a POWER8 2-socket server with 20 cores
-> (thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
-> hardware-RAID-capable adapter which appears as two IPR controllers
-> which are both connected to each disk.  I am booting from a disk that
-> has Fedora 20 installed on it.
-> 
-> After over two weeks of bisections, I can finally point to the commits
-> that cause the problems.  The culprits are:
-> 
-> 3e9f1be1 dm mpath: remove process_queued_ios()
-> e8099177 dm mpath: push back requests instead of queueing
-> bcccff93 kobject: don't block for each kobject_uevent
-> 
-> The interesting thing is that neither e8099177 nor bcccff93 cause
-> failures on their own, but with both commits in there are failures
-> where the system will fail to find /home on some occasions.
-> 
-> With 3e9f1be1 included, the system appears to be prone to a deadlock
-> condition which typically causes the boot process to hang with this
-> message showing:
-> 
-> A start job is running for Monitoring of LVM2 mirror...rogress polling
-> 
-> (with a [***     ] thing before it where the asterisks move back and
-> forth).
-> 
-> If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
-> 4cdd2ad7 ("dm mpath: fix lock order inconsistency in
-> multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
-> kernel that will boot every time.  The first two are later commits
-> that fix some problems with 3e9f1be1 (though not the problems I am
-> seeing).
-> 
-> Can anyone see any reason why e8099177 and bcccff93 would interfere
-> with each other?
+None of your patches add "fsl,qoriq-pcie" to of_device_ids[] in
+corenet_generic.c, so PCIe will not get probed.
 
-No, not seeing any obvious relation.
+Worse, if I add that string, the kernel hangs trying to access a PCIe
+controller that is disabled by the RCW.  This is because U-Boot is
+expecting "fsl,qoriq-pcie-v3.0", and thus can't find the disabled node in
+order to delete it.
 
-But even though you listed e8099177 as a culprit you didn't list it as a
-commit you reverted.  Did you leave e8099177 simply because attempting
-to revert it fails (if you don't first revert other dm-mpath.c commits)?
+Did you test PCIe at all on these boards?
 
-(btw, Bart Van Assche also has issues with commit e8099177 due to hangs
-during cable pull testing of mpath devices -- Bart: curious to know if
-your cable pull tests pass if you just revert bcccff93).
+Did you test other peripherals?
 
-Mike
+-Scott
