@@ -1,23 +1,25 @@
-Return-Path: <Emilian.Medve@freescale.com>
+Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
+ (dns-bn1lp0143.outbound.protection.outlook.com [207.46.163.143])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89C791A0015
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 17:54:44 +1000 (EST)
-Message-ID: <53B3B8B9.30400@Freescale.com>
-Date: Wed, 2 Jul 2014 02:46:01 -0500
-From: Emil Medve <Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F90D1A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 18:32:58 +1000 (EST)
+From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
+To: Marc Kleine-Budde <mkl@pengutronix.de>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "wg@grandegger.com" <wg@grandegger.com>,
+ "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>, Scott Wood
+ <scottwood@freescale.com>
+Subject: RE: [PATCH v4] flexcan: add err_irq handler for flexcan
+Date: Wed, 2 Jul 2014 08:32:44 +0000
+Message-ID: <175067a435ce4d5c9a194a459e950544@BLUPR03MB341.namprd03.prod.outlook.com>
+References: <1404201809-7010-1-git-send-email-B45475@freescale.com>
+ <53B287A6.10707@pengutronix.de>
+ <a77a3b25e46f45c4951e0ec517904460@BLUPR03MB341.namprd03.prod.outlook.com>
+ <53B3AEEC.4060507@pengutronix.de>
+In-Reply-To: <53B3AEEC.4060507@pengutronix.de>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Varun Sethi <Varun.Sethi@Freescale.com>,
- <iommu@lists.linux-foundation.org>, <joro@8bytes.org>,
- <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <alex.williamson@redhat.com>
-Subject: Re: [PATCH 1/3] iommu/fsl: Fix PAMU window size check.
-References: <1403618237-26248-1-git-send-email-Varun.Sethi@freescale.com>
- <1403618237-26248-2-git-send-email-Varun.Sethi__13822.953499812$1403630309$gmane$org@freescale.com>
-In-Reply-To: <1403618237-26248-2-git-send-email-Varun.Sethi__13822.953499812$1403630309$gmane$org@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/24/2014 08:57 AM, Varun Sethi wrote:
-> is_power_of_2 requires an unsigned long parameter which would
-> lead to truncation of 64 bit values on 32 bit architectures.
-> 
-> __ffs also expects an unsigned long parameter thus won't work
-> for 64 bit values on 32 bit architectures.
-> 
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
->  drivers/iommu/fsl_pamu.c        |    8 ++++----
->  drivers/iommu/fsl_pamu_domain.c |    2 +-
->  2 files changed, 5 insertions(+), 5 deletions(-)
-
-Tested-by: Emil Medve <Emilian.Medve@Freescale.com>
-
-On a P4080 DS (i.e. 32-bit SoC)
-
-
-Cheers,
+T24gMDcvMDIvMjAxNCAwMzowNCBQTSwgTWFyYyBLbGVpbmUtQnVkZGUgd3JvdGU6DQo+IC0tLS0t
+T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IE1hcmMgS2xlaW5lLUJ1ZGRlIFttYWlsdG86
+bWtsQHBlbmd1dHJvbml4LmRlXQ0KPiBTZW50OiBXZWRuZXNkYXksIEp1bHkgMDIsIDIwMTQgMzow
+NCBQTQ0KPiBUbzogWmhhbyBRaWFuZy1CNDU0NzU7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnOyB3Z0BncmFuZGVnZ2VyLmNvbTsNCj4gbGludXgtY2FuQHZnZXIua2VybmVsLm9yZzsgV29v
+ZCBTY290dC1CMDc0MjENCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2NF0gZmxleGNhbjogYWRkIGVy
+cl9pcnEgaGFuZGxlciBmb3IgZmxleGNhbg0KPiANCj4gT24gMDcvMDIvMjAxNCAwNDowMCBBTSwg
+cWlhbmcuemhhb0BmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+Pj4gK3N0YXRpYyBpcnFyZXR1cm5f
+dCBmbGV4Y2FuX2Vycl9pcnEoaW50IGlycSwgdm9pZCAqZGV2X2lkKSB7DQo+ID4+PiArCXN0cnVj
+dCBuZXRfZGV2aWNlICpkZXYgPSBkZXZfaWQ7DQo+ID4+PiArCXN0cnVjdCBmbGV4Y2FuX3ByaXYg
+KnByaXYgPSBuZXRkZXZfcHJpdihkZXYpOw0KPiA+Pj4gKwlzdHJ1Y3QgZmxleGNhbl9yZWdzIF9f
+aW9tZW0gKnJlZ3MgPSBwcml2LT5iYXNlOw0KPiA+Pj4gKwl1MzIgcmVnX2N0cmwsIHJlZ19lc3I7
+DQo+ID4+PiArDQo+ID4+PiArCXJlZ19lc3IgPSBmbGV4Y2FuX3JlYWQoJnJlZ3MtPmVzcik7DQo+
+ID4+PiArCXJlZ19jdHJsID0gZmxleGNhbl9yZWFkKCZyZWdzLT5jdHJsKTsNCj4gPj4+ICsNCj4g
+Pj4+ICsJaWYgKHJlZ19lc3IgJiBGTEVYQ0FOX0VTUl9BTExfSU5UKSB7DQo+ID4+PiArCQlpZiAo
+cmVnX2VzciAmIEZMRVhDQU5fRVNSX0VSUl9JTlQpDQo+ID4+PiArCQkJZmxleGNhbl93cml0ZShy
+ZWdfY3RybCAmIH5GTEVYQ0FOX0NUUkxfRVJSX01TSywNCj4gPj4+ICsJCQkJICAgICAgJnJlZ3Mt
+PmN0cmwpOw0KPiA+Pj4gKwkJZmxleGNhbl9pcnEoaXJxLCBkZXYpOw0KPiA+Pg0KPiA+PiBJIHN0
+aWxsIGRvbid0IHVuZGVyc3RhbmQgd2h5IHlvdSBuZWVkIGEgc3BlY2lhbCBmbGV4Y2FuX2Vycl9p
+cnEoKQ0KPiA+PiBmdW5jdGlvbi4gV2h5IGRvbid0IHlvdSBqdXN0IGNhbGw6DQo+ID4+DQo+ID4+
+IHJlcXVlc3RfaXJxKHByaXYtPmVycl9pcnEsIGZsZXhjYW5faXJxLCBJUlFGX1NIQVJFRCwgZGV2
+LT5uYW1lLCBkZXYpOw0KPiA+Pg0KPiA+PiBpbnN0ZWFkPw0KPiA+DQo+ID4gRmxleGNhbl9pcnEg
+aXMgZm9yIGZsZXhjYW4gbm9ybWFsIGludGVycnVwdChzdWNoIGFzIE1lc3NhZ2UgQnVmZmVyLA0K
+PiBXYWtlIHVwIGFuZCBzbyBvbikuDQo+ID4gQW5kIGl0IHdpbGwgcmV0dXJuIElSUV9IQU5ETEVE
+IGlmIGZsZXhjYW5faXJxIGlzIHRyaWdnZXJlZC4NCj4gPiBCdXQgZXJyX2lycSBpcyBzaGFyZWQg
+d2l0aCBvdGhlciBkZXZpY2VzLCBpdCBzaG91bGQgcmV0dXJuIElSUV9IQU5ETEVEDQo+ID4gd2hl
+biB0aGUgaW50ZXJydXB0IGlzIHRyaWdnZXJlZCBieSBmbGV4Y2FuIGRldmljZSwgaWYgbm90IHJl
+dHVybg0KPiBJUlFfTk9ORS4NCj4gDQo+IFdoYXQgYWJvdXQgZml4aW5nIGZsZXhjYW5faXJxKCkg
+Zmlyc3QgYW5kIHRoZSBtYWtlIHVzZSBvZiBpdD8NCg0KRXJyX2lycSBpcyBhIHNoYXJlZCBpbnRl
+cnJ1cHQgd2l0aCBvdGhlciBkZXZpY2UsIA0KSSBob3BlIHRoYXQgaXRzIGhhbmRsZXIgaXMgaW5k
+ZXBlbmRlbnQuDQpIb3dldmVyLCBpZiB5b3UgcGVyc2lzdCBpbiB5b3VyIG9waW5pb24sIEkgd2ls
+bCBkbyBpdCBhcyB5b3Ugc2FpZC4NCg0KPiANCj4gTWFyYw0KPiANCj4gLS0NCj4gUGVuZ3V0cm9u
+aXggZS5LLiAgICAgICAgICAgICAgICAgIHwgTWFyYyBLbGVpbmUtQnVkZGUgICAgICAgICAgIHwN
+Cj4gSW5kdXN0cmlhbCBMaW51eCBTb2x1dGlvbnMgICAgICAgIHwgUGhvbmU6ICs0OS0yMzEtMjgy
+Ni05MjQgICAgIHwNCj4gVmVydHJldHVuZyBXZXN0L0RvcnRtdW5kICAgICAgICAgIHwgRmF4OiAg
+ICs0OS01MTIxLTIwNjkxNy01NTU1IHwNCj4gQW10c2dlcmljaHQgSGlsZGVzaGVpbSwgSFJBIDI2
+ODYgIHwgaHR0cDovL3d3dy5wZW5ndXRyb25peC5kZSAgIHwNCg0K
