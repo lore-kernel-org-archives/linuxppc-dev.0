@@ -1,23 +1,35 @@
-Return-Path: <qiang.zhao@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0184.outbound.protection.outlook.com [207.46.163.184])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2C4C81A0016
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 12:00:09 +1000 (EST)
-From: "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>
-To: Marc Kleine-Budde <mkl@pengutronix.de>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "wg@grandegger.com" <wg@grandegger.com>,
- "linux-can@vger.kernel.org" <linux-can@vger.kernel.org>, Scott Wood
- <scottwood@freescale.com>
-Subject: RE: [PATCH v4] flexcan: add err_irq handler for flexcan
-Date: Wed, 2 Jul 2014 02:00:02 +0000
-Message-ID: <a77a3b25e46f45c4951e0ec517904460@BLUPR03MB341.namprd03.prod.outlook.com>
-References: <1404201809-7010-1-git-send-email-B45475@freescale.com>
- <53B287A6.10707@pengutronix.de>
-In-Reply-To: <53B287A6.10707@pengutronix.de>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B8321A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 13:54:31 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Tue, 1 Jul 2014 21:54:30 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 7903F1FF001C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2014 21:54:26 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s623sQCo4850010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 2 Jul 2014 05:54:27 +0200
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s623sQGH013681
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 1 Jul 2014 21:54:26 -0600
+Subject: [PATCH V3] powerpc/powernv: Check for IRQHAPPENED before sleeping
+To: benh@kernel.crashing.org, mikey@neuling.org, mpe@ellerman.id.au
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Date: Wed, 02 Jul 2014 09:19:35 +0530
+Message-ID: <20140702034811.2956.30873.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,89 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T24gMDcvMDEvMjAxNCAwNjowNCBQTSwgTWFyYyBLbGVpbmUtQnVkZGUgd3JvdGU6DQo+IC0tLS0t
-T3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IE1hcmMgS2xlaW5lLUJ1ZGRlIFttYWlsdG86
-bWtsQHBlbmd1dHJvbml4LmRlXQ0KPiBTZW50OiBUdWVzZGF5LCBKdWx5IDAxLCAyMDE0IDY6MDQg
-UE0NCj4gVG86IFpoYW8gUWlhbmctQjQ1NDc1OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9y
-Zzsgd2dAZ3JhbmRlZ2dlci5jb207DQo+IGxpbnV4LWNhbkB2Z2VyLmtlcm5lbC5vcmc7IFdvb2Qg
-U2NvdHQtQjA3NDIxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjRdIGZsZXhjYW46IGFkZCBlcnJf
-aXJxIGhhbmRsZXIgZm9yIGZsZXhjYW4NCj4gDQo+IE9uIDA3LzAxLzIwMTQgMTA6MDMgQU0sIFpo
-YW8gUWlhbmcgd3JvdGU6DQo+ID4gd2hlbiBmbGV4Y2FuIGlzIG5vdCBwaHlzaWNhbGx5IGxpbmtl
-ZCwgY29tbWFuZCAnY2FudGVzdCcgd2lsbCB0cmlnZ2VyDQo+ID4gYW4gZXJyX2lycSwgYWRkIGVy
-cl9pcnEgaGFuZGxlciBmb3IgaXQuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5n
-IDxCNDU0NzVAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiBDaGFuZ2VzIGZvciB2MjoNCj4g
-PiAJLSB1c2UgYSBzcGFjZSBpbnN0ZWFkIG9mIHRhYg0KPiA+IAktIHVzZSBmbGV4Y2FuX3BvbGxf
-c3RhdGUgaW5zdGVhZCBvZiBwcmludCBDaGFuZ2VzIGZvciB2MzoNCj4gPiAJLSByZXR1cm4gSVJR
-X0hBTkRMRUQgaWYgZXJyIGlzIHRyaWdnZXJlZA0KPiA+IAktIHN0b3AgdHJhbnNtaXR0ZWQgcGFj
-a2V0cyB3aGVuIHRoZXJlIGlzIGFuIGVycl9pbnRlcnJ1cHQgQ2hhbmdlcw0KPiBmb3INCj4gPiB2
-NDoNCj4gPiAJLSBjYWxsIGZsZXhjYW5faXJxDQo+ID4NCj4gPiAgZHJpdmVycy9uZXQvY2FuL2Zs
-ZXhjYW4uYyB8IDM4ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystDQo+ID4g
-IDEgZmlsZSBjaGFuZ2VkLCAzNyBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQo+ID4NCj4g
-PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9uZXQvY2FuL2ZsZXhjYW4uYyBiL2RyaXZlcnMvbmV0L2Nh
-bi9mbGV4Y2FuLmMNCj4gPiBpbmRleCBmNDI1ZWMyLi4wOThmY2FjIDEwMDY0NA0KPiA+IC0tLSBh
-L2RyaXZlcnMvbmV0L2Nhbi9mbGV4Y2FuLmMNCj4gPiArKysgYi9kcml2ZXJzL25ldC9jYW4vZmxl
-eGNhbi5jDQo+ID4gQEAgLTIwOCw2ICsyMDgsNyBAQCBzdHJ1Y3QgZmxleGNhbl9wcml2IHsNCj4g
-PiAgCXZvaWQgX19pb21lbSAqYmFzZTsNCj4gPiAgCXUzMiByZWdfZXNyOw0KPiA+ICAJdTMyIHJl
-Z19jdHJsX2RlZmF1bHQ7DQo+ID4gKwlpbnQgZXJyX2lycTsNCj4gPg0KPiA+ICAJc3RydWN0IGNs
-ayAqY2xrX2lwZzsNCj4gPiAgCXN0cnVjdCBjbGsgKmNsa19wZXI7DQo+ID4gQEAgLTc0NCw2ICs3
-NDUsMjcgQEAgc3RhdGljIGlycXJldHVybl90IGZsZXhjYW5faXJxKGludCBpcnEsIHZvaWQNCj4g
-KmRldl9pZCkNCj4gPiAgCXJldHVybiBJUlFfSEFORExFRDsNCj4gPiAgfQ0KPiA+DQo+ID4gK3N0
-YXRpYyBpcnFyZXR1cm5fdCBmbGV4Y2FuX2Vycl9pcnEoaW50IGlycSwgdm9pZCAqZGV2X2lkKSB7
-DQo+ID4gKwlzdHJ1Y3QgbmV0X2RldmljZSAqZGV2ID0gZGV2X2lkOw0KPiA+ICsJc3RydWN0IGZs
-ZXhjYW5fcHJpdiAqcHJpdiA9IG5ldGRldl9wcml2KGRldik7DQo+ID4gKwlzdHJ1Y3QgZmxleGNh
-bl9yZWdzIF9faW9tZW0gKnJlZ3MgPSBwcml2LT5iYXNlOw0KPiA+ICsJdTMyIHJlZ19jdHJsLCBy
-ZWdfZXNyOw0KPiA+ICsNCj4gPiArCXJlZ19lc3IgPSBmbGV4Y2FuX3JlYWQoJnJlZ3MtPmVzcik7
-DQo+ID4gKwlyZWdfY3RybCA9IGZsZXhjYW5fcmVhZCgmcmVncy0+Y3RybCk7DQo+ID4gKw0KPiA+
-ICsJaWYgKHJlZ19lc3IgJiBGTEVYQ0FOX0VTUl9BTExfSU5UKSB7DQo+ID4gKwkJaWYgKHJlZ19l
-c3IgJiBGTEVYQ0FOX0VTUl9FUlJfSU5UKQ0KPiA+ICsJCQlmbGV4Y2FuX3dyaXRlKHJlZ19jdHJs
-ICYgfkZMRVhDQU5fQ1RSTF9FUlJfTVNLLA0KPiA+ICsJCQkJICAgICAgJnJlZ3MtPmN0cmwpOw0K
-PiA+ICsJCWZsZXhjYW5faXJxKGlycSwgZGV2KTsNCj4gDQo+IEkgc3RpbGwgZG9uJ3QgdW5kZXJz
-dGFuZCB3aHkgeW91IG5lZWQgYSBzcGVjaWFsIGZsZXhjYW5fZXJyX2lycSgpDQo+IGZ1bmN0aW9u
-LiBXaHkgZG9uJ3QgeW91IGp1c3QgY2FsbDoNCj4gDQo+IHJlcXVlc3RfaXJxKHByaXYtPmVycl9p
-cnEsIGZsZXhjYW5faXJxLCBJUlFGX1NIQVJFRCwgZGV2LT5uYW1lLCBkZXYpOw0KPiANCj4gaW5z
-dGVhZD8NCg0KRmxleGNhbl9pcnEgaXMgZm9yIGZsZXhjYW4gbm9ybWFsIGludGVycnVwdChzdWNo
-IGFzIE1lc3NhZ2UgQnVmZmVyLCBXYWtlIHVwIGFuZCBzbyBvbikuDQpBbmQgaXQgd2lsbCByZXR1
-cm4gSVJRX0hBTkRMRUQgaWYgZmxleGNhbl9pcnEgaXMgdHJpZ2dlcmVkLg0KQnV0IGVycl9pcnEg
-aXMgc2hhcmVkIHdpdGggb3RoZXIgZGV2aWNlcywgaXQgc2hvdWxkIHJldHVybiBJUlFfSEFORExF
-RCB3aGVuIHRoZSBpbnRlcnJ1cHQgDQppcyB0cmlnZ2VyZWQgYnkgZmxleGNhbiBkZXZpY2UsIGlm
-IG5vdCByZXR1cm4gSVJRX05PTkUuDQoNCj4gDQo+ID4gKwkJcmV0dXJuIElSUV9IQU5ETEVEOw0K
-PiA+ICsJfQ0KPiA+ICsNCj4gPiArCXJldHVybiBJUlFfTk9ORTsNCj4gPiArfQ0KPiA+ICsNCj4g
-PiAgc3RhdGljIHZvaWQgZmxleGNhbl9zZXRfYml0dGltaW5nKHN0cnVjdCBuZXRfZGV2aWNlICpk
-ZXYpICB7DQo+ID4gIAljb25zdCBzdHJ1Y3QgZmxleGNhbl9wcml2ICpwcml2ID0gbmV0ZGV2X3By
-aXYoZGV2KTsgQEAgLTk0NCw2DQo+ID4gKzk2NiwxNSBAQCBzdGF0aWMgaW50IGZsZXhjYW5fb3Bl
-bihzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQ0KPiA+ICAJaWYgKGVycikNCj4gPiAgCQlnb3RvIG91
-dF9jbG9zZTsNCj4gPg0KPiA+ICsJaWYgKHByaXYtPmVycl9pcnEpIHsNCj4gPiArCQllcnIgPSBy
-ZXF1ZXN0X2lycShwcml2LT5lcnJfaXJxLCBmbGV4Y2FuX2Vycl9pcnEsIElSUUZfU0hBUkVELA0K
-PiA+ICsJCQkJICBkZXYtPm5hbWUsIGRldik7DQo+ID4gKwkJaWYgKGVycikgew0KPiA+ICsJCQlm
-cmVlX2lycShwcml2LT5lcnJfaXJxLCBkZXYpOw0KPiANCj4gV2h5IGRvIHlvdSB3YW50IHRvIGZy
-ZWUgdGhlIGVycl9pcnEsIGlmIHJlcXVlc3RpbmcgdGhlIGVycl9pcnEgZmFpbHM/DQo+IEhvd2V2
-ZXIgeW91IHNob3VsZCBhZGp1c3QgYWxsIGVycm9yIGNsZWFudXAgcGF0aCBmb2xsb3dpbmcgdGhp
-cyByZXF1ZXN0DQo+IGlycSwgc28gdGhhdCBpdCB3aWxsIGJlIGZyZWVkLg0KPiANCj4gQlRXOiB3
-aGVyZSBpcyB0aGUgY29ycmVzcG9uZGluZyBmcmVlX2lycSgpIGluIGZsZXhjYW5fY2xvc2UoKT8N
-Cg0KSGVyZSwgSSB0aGluayB5b3UgYXJlIHJpZ2h0LiBUaGFua3MgZm9yIHlvdXIgcmVtaW5kZXIu
-DQpJIHdpbGwgbW9kaWZ5IGl0Lg0KDQo+IA0KPiA+ICsJCQlnb3RvIG91dF9mcmVlX2lycTsNCj4g
-PiArCQl9DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICAJLyogc3RhcnQgY2hpcCBhbmQgcXVldWluZyAq
-Lw0KPiA+ICAJZXJyID0gZmxleGNhbl9jaGlwX3N0YXJ0KGRldik7DQo+ID4gIAlpZiAoZXJyKQ0K
-PiA+IEBAIC0xMDk5LDcgKzExMzAsNyBAQCBzdGF0aWMgaW50IGZsZXhjYW5fcHJvYmUoc3RydWN0
-IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPiAgCXN0cnVjdCByZXNvdXJjZSAqbWVtOw0K
-PiA+ICAJc3RydWN0IGNsayAqY2xrX2lwZyA9IE5VTEwsICpjbGtfcGVyID0gTlVMTDsNCj4gPiAg
-CXZvaWQgX19pb21lbSAqYmFzZTsNCj4gPiAtCWludCBlcnIsIGlycTsNCj4gPiArCWludCBlcnIs
-IGlycSwgZXJyX2lycTsNCj4gPiAgCXUzMiBjbG9ja19mcmVxID0gMDsNCj4gPg0KPiA+ICAJaWYg
-KHBkZXYtPmRldi5vZl9ub2RlKQ0KPiA+IEBAIC0xMTI2LDYgKzExNTcsMTAgQEAgc3RhdGljIGlu
-dCBmbGV4Y2FuX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gKnBkZXYpDQo+ID4gIAlp
-ZiAoaXJxIDw9IDApDQo+ID4gIAkJcmV0dXJuIC1FTk9ERVY7DQo+ID4NCj4gPiArCWVycl9pcnEg
-PSBwbGF0Zm9ybV9nZXRfaXJxKHBkZXYsIDEpOw0KPiA+ICsJaWYgKGVycl9pcnEgPD0gMCkNCj4g
-PiArCQllcnJfaXJxID0gMDsNCj4gPiArDQo+ID4gIAliYXNlID0gZGV2bV9pb3JlbWFwX3Jlc291
-cmNlKCZwZGV2LT5kZXYsIG1lbSk7DQo+ID4gIAlpZiAoSVNfRVJSKGJhc2UpKQ0KPiA+ICAJCXJl
-dHVybiBQVFJfRVJSKGJhc2UpOw0KPiA+IEBAIC0xMTQ5LDYgKzExODQsNyBAQCBzdGF0aWMgaW50
-IGZsZXhjYW5fcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPiAgCWRl
-di0+ZmxhZ3MgfD0gSUZGX0VDSE87DQo+ID4NCj4gPiAgCXByaXYgPSBuZXRkZXZfcHJpdihkZXYp
-Ow0KPiA+ICsJcHJpdi0+ZXJyX2lycSA9IGVycl9pcnE7DQo+ID4gIAlwcml2LT5jYW4uY2xvY2su
-ZnJlcSA9IGNsb2NrX2ZyZXE7DQo+ID4gIAlwcml2LT5jYW4uYml0dGltaW5nX2NvbnN0ID0gJmZs
-ZXhjYW5fYml0dGltaW5nX2NvbnN0Ow0KPiA+ICAJcHJpdi0+Y2FuLmRvX3NldF9tb2RlID0gZmxl
-eGNhbl9zZXRfbW9kZTsNCj4gPg0KPiANCj4gTWFyYw0KPiANCj4gLS0NCj4gUGVuZ3V0cm9uaXgg
-ZS5LLiAgICAgICAgICAgICAgICAgIHwgTWFyYyBLbGVpbmUtQnVkZGUgICAgICAgICAgIHwNCj4g
-SW5kdXN0cmlhbCBMaW51eCBTb2x1dGlvbnMgICAgICAgIHwgUGhvbmU6ICs0OS0yMzEtMjgyNi05
-MjQgICAgIHwNCj4gVmVydHJldHVuZyBXZXN0L0RvcnRtdW5kICAgICAgICAgIHwgRmF4OiAgICs0
-OS01MTIxLTIwNjkxNy01NTU1IHwNCj4gQW10c2dlcmljaHQgSGlsZGVzaGVpbSwgSFJBIDI2ODYg
-IHwgaHR0cDovL3d3dy5wZW5ndXRyb25peC5kZSAgIHwNCg0K
+Commit 8d6f7c5a: "powerpc/powernv: Make it possible to skip the IRQHAPPENED
+check in power7_nap()" added code that prevents cpus from checking for
+pending interrupts just before entering sleep state, which is wrong. These
+interrupts are delivered during the soft irq disabled state of the cpu.
+
+A cpu cannot enter any idle state with pending interrupts because they will
+never be serviced until the next time the cpu is woken up by some other
+interrupt. Its only then that the pending interrupts are replayed. This can result
+in device timeouts or warnings about this cpu being stuck.
+
+This patch fixes ths issue by ensuring that cpus check for pending interrupts
+just before entering any idle state as long as they are not in the path of split
+core operations.
+
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+Chanes in V2: https://lkml.org/lkml/2014/7/1/3
+Modified the changelog to add the details of the problem that this patch
+fixes
+
+Changes in V3:
+V2 assumed that this patch would be useful only in the context of doorbell
+ipis. But that is not true; this patch is required to correctly handle any
+type of interrupt delivered in the idle enter path.
+
+
+ arch/powerpc/kernel/idle_power7.S |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 2480256..5cf3d36 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -131,7 +131,7 @@ _GLOBAL(power7_nap)
+ 
+ _GLOBAL(power7_sleep)
+ 	li	r3,1
+-	li	r4,0
++	li	r4,1
+ 	b	power7_powersave_common
+ 	/* No return */
+ 
