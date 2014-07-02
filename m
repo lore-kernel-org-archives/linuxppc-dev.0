@@ -1,22 +1,32 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D0E2E1A000E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 15:43:57 +1000 (EST)
-Date: Wed, 2 Jul 2014 15:41:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/6] KVM: PPC: BOOK3S: Use hpte_update_in_progress to
- track invalid hpte during an hpte update
-Message-ID: <20140702054156.GD16865@drongo>
-References: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1404040655-12076-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail7.hitachi.co.jp (mail7.hitachi.co.jp [133.145.228.42])
+ by lists.ozlabs.org (Postfix) with ESMTP id 8C19C1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 16:39:34 +1000 (EST)
+Message-ID: <53B3A91D.2040107@hitachi.com>
+Date: Wed, 02 Jul 2014 15:39:25 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1404040655-12076-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
- kvm@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Re: Re: [PATCH v4] [BUGFIX] kprobes: Fix "Failed to find
+ blacklist" error on ia64 and ppc64
+References: <20140620022307.23075.55858.stgit@kbuild-fedora.novalocal>
+ <53B0D61B.9010104@hitachi.com> <1404128176.7888.1.camel@concordia>
+ <53B21B0E.8010707@hitachi.com> <1404276081.7254.1.camel@concordia>
+In-Reply-To: <1404276081.7254.1.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ akataria@vmware.com, linux-tip-commits@vger.kernel.org,
+ anil.s.keshavamurthy@intel.com, Ingo Molnar <mingo@kernel.org>,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Arnd Bergmann <arnd@arndb.de>, Rusty Russell <rusty@rustcorp.com.au>,
+ Chris Wright <chrisw@sous-sol.org>, yrl.pp-manager.tt@hitachi.com,
+ Thomas Gleixner <tglx@linutronix.de>, Tony Luck <tony.luck@intel.com>,
+ Kevin Hao <haokexin@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+ rdunlap@infradead.org, Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 29, 2014 at 04:47:34PM +0530, Aneesh Kumar K.V wrote:
-> As per ISA, we first need to mark hpte invalid (V=0) before we update
-> the hpte lower half bits. With virtual page class key protection mechanism we want
-> to send any fault other than key fault to guest directly without
-> searching the hash page table. But then we can get NO_HPTE fault while
-> we are updating the hpte. To track that add a vm specific atomic
-> variable that we check in the fault path to always send the fault
-> to host.
+(2014/07/02 13:41), Michael Ellerman wrote:
+> On Tue, 2014-07-01 at 11:21 +0900, Masami Hiramatsu wrote:
+>> (2014/06/30 20:36), Michael Ellerman wrote:
+>>> On Mon, 2014-06-30 at 12:14 +0900, Masami Hiramatsu wrote:
+>>>> Ping? :)
+>>>
+>>> Yeah sorry. I started looking at this and got dragged into another mess.
+>>>
+>>> You seem to have duplicated the functionality of arch_deref_entry_point(),
+>>> which was also added for kprobes, and for the same reason - ie. because some
+>>> arches have strange function pointers. Is there some reason you can't use it?
+>>
+>> Ah, right! Hmm, it seems some more work to update it. but basically, we can do.
+>> BTW, is there any other users who need to access the actual function entry (for
+>> kallsyms case)?
+> 
+> Not that I'm aware of. We have had function descriptors on 64-bit powerpc for
+> ever, so in theory by now we should have already found any cases where we need
+> that sort of wrapper.
 
-[...]
+OK, then I'll update this patch to use arch_deref_entry_point(), and add additional
+patch which update to support PPC64 ABIv2.
 
-> @@ -750,13 +751,15 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->  	r &= rcbits | ~(HPTE_R_R | HPTE_R_C);
->  
->  	if (be64_to_cpu(hptep[0]) & HPTE_V_VALID) {
-> -		/* HPTE was previously valid, so we need to invalidate it */
-> +		/*
-> +		 * If we had mapped this hpte before, we now need to
-> +		 * invalidate that.
-> +		 */
->  		unlock_rmap(rmap);
-> -		/* Always mark HPTE_V_ABSENT before invalidating */
-> -		kvmppc_unmap_host_hpte(kvm, hptep);
->  		kvmppc_invalidate_hpte(kvm, hptep, index);
->  		/* don't lose previous R and C bits */
->  		r |= be64_to_cpu(hptep[1]) & (HPTE_R_R | HPTE_R_C);
-> +		hpte_invalidated = true;
+Thank you!
 
-So now we're not setting the ABSENT bit before invalidating the HPTE.
-That means that another guest vcpu could do an H_ENTER which could
-think that this HPTE is free and use it for another unrelated guest
-HPTE, which would be bad...
-
-> @@ -1144,8 +1149,8 @@ static int kvm_test_clear_dirty_npages(struct kvm *kvm, unsigned long *rmapp)
->  				npages_dirty = n;
->  			eieio();
->  		}
-> -		kvmppc_map_host_hpte(kvm, &v, &r);
-> -		hptep[0] = cpu_to_be64(v & ~HPTE_V_HVLOCK);
-> +		hptep[0] = cpu_to_be64(v & ~HPTE_V_LOCK);
-> +		atomic_dec(&kvm->arch.hpte_update_in_progress);
-
-Why are we using LOCK rather than HVLOCK now?  (And why didn't you
-mention this change and its rationale in the patch description?)
-
-Paul.
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
