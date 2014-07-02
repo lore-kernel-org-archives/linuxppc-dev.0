@@ -1,35 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <paulus@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 714FE1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 14:41:22 +1000 (EST)
-Message-ID: <1404276081.7254.1.camel@concordia>
-Subject: Re: Re: [PATCH v4] [BUGFIX] kprobes: Fix "Failed to find blacklist"
- error on ia64 and ppc64
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Date: Wed, 02 Jul 2014 14:41:21 +1000
-In-Reply-To: <53B21B0E.8010707@hitachi.com>
-References: <20140620022307.23075.55858.stgit@kbuild-fedora.novalocal>
- <53B0D61B.9010104@hitachi.com> <1404128176.7888.1.camel@concordia>
- <53B21B0E.8010707@hitachi.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, "H.
- Peter Anvin" <hpa@zytor.com>, akataria@vmware.com,
- linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
- Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Tony Luck <tony.luck@gmail.com>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9D5B1A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  2 Jul 2014 14:50:07 +1000 (EST)
+Date: Wed, 2 Jul 2014 14:50:02 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/6] KVM: PPC: BOOK3S: HV: Deny virtual page class key
+ update via h_protect
+Message-ID: <20140702045002.GC16865@drongo>
+References: <1404040655-12076-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1404040655-12076-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1404040655-12076-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,23 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-07-01 at 11:21 +0900, Masami Hiramatsu wrote:
-> (2014/06/30 20:36), Michael Ellerman wrote:
-> > On Mon, 2014-06-30 at 12:14 +0900, Masami Hiramatsu wrote:
-> >> Ping? :)
-> > 
-> > Yeah sorry. I started looking at this and got dragged into another mess.
-> > 
-> > You seem to have duplicated the functionality of arch_deref_entry_point(),
-> > which was also added for kprobes, and for the same reason - ie. because some
-> > arches have strange function pointers. Is there some reason you can't use it?
-> 
-> Ah, right! Hmm, it seems some more work to update it. but basically, we can do.
-> BTW, is there any other users who need to access the actual function entry (for
-> kallsyms case)?
+On Sun, Jun 29, 2014 at 04:47:31PM +0530, Aneesh Kumar K.V wrote:
+> This makes it consistent with h_enter where we clear the key
+> bits. We also want to use virtual page class key protection mechanism
+> for indicating host page fault. For that we will be using key class
+> index 30 and 31. So prevent the guest from updating key bits until
+> we add proper support for virtual page class protection mechanism for
+> the guest. This will not have any impact for PAPR linux guest because
+> Linux guest currently don't use virtual page class key protection model
 
-Not that I'm aware of. We have had function descriptors on 64-bit powerpc for
-ever, so in theory by now we should have already found any cases where we need
-that sort of wrapper.
+As things stand, without this patch series, we do actually have
+everything we need in the kernel for guests to use virtual page class
+keys.  Arguably we should have a capability to tell userspace how many
+storage keys the guest can use, but that's the only missing piece as
+far as I can see.
 
-cheers
+If we add such a capability, I can't see any reason why we should need
+to disable guest use of storage keys in this patchset.
+
+Paul.
