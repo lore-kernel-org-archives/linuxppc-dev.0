@@ -1,15 +1,15 @@
 Return-Path: <mihai.caraman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0236.outbound.protection.outlook.com [207.46.163.236])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD67A1A0008
+ by lists.ozlabs.org (Postfix) with ESMTPS id DFC451A0009
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 00:45:44 +1000 (EST)
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [RFC PATCH 3/4] KVM: PPC: e500: TLB emulation for IND entries
-Date: Thu, 3 Jul 2014 17:45:26 +0300
-Message-ID: <1404398727-12844-4-git-send-email-mihai.caraman@freescale.com>
+Subject: [RFC PATCH 2/4] KVM: PPC: Book3E: Handle LRAT error exception
+Date: Thu, 3 Jul 2014 17:45:25 +0300
+Message-ID: <1404398727-12844-3-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1404398727-12844-1-git-send-email-mihai.caraman@freescale.com>
 References: <1404398727-12844-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -25,551 +25,350 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Handle indirect entries (IND) in TLB emulation code. Translation size of IND
-entries differ from the size of referred Page Tables (Linux guests now use IND
-of 2MB for 4KB PTs) and this require careful tweak of the existing logic.
-
-TLB search emulation requires additional search in HW TLB0 (since these entries
-are directly added by HTW) and found entries shoud be presented to the guest with
-RPN changed from PFN to GFN. There might be more GFNs pointing to the same PFN so
-the only way to get the corresponding GFN is to search it in guest's PTE. If IND
-entry for the corresponding PT is not available just invalidate guest's ea and
-report a tlbsx miss. This patch only implements the invalidation and let a TODO
-note for searching HW TLB0.
+Handle LRAT error exception with support for lrat mapping and invalidation.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
- arch/powerpc/include/asm/mmu-book3e.h |  2 +
- arch/powerpc/kvm/e500.h               | 81 ++++++++++++++++++++++++++++-------
- arch/powerpc/kvm/e500_mmu.c           | 78 +++++++++++++++++++++++++++------
- arch/powerpc/kvm/e500_mmu_host.c      | 31 ++++++++++++--
- arch/powerpc/kvm/e500mc.c             | 53 +++++++++++++++++++++--
- 5 files changed, 211 insertions(+), 34 deletions(-)
+ arch/powerpc/include/asm/kvm_host.h   |   1 +
+ arch/powerpc/include/asm/kvm_ppc.h    |   2 +
+ arch/powerpc/include/asm/mmu-book3e.h |   3 +
+ arch/powerpc/include/asm/reg_booke.h  |  13 ++++
+ arch/powerpc/kernel/asm-offsets.c     |   1 +
+ arch/powerpc/kvm/booke.c              |  40 +++++++++++
+ arch/powerpc/kvm/bookehv_interrupts.S |   9 ++-
+ arch/powerpc/kvm/e500_mmu_host.c      | 125 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/e500mc.c             |   2 +
+ 9 files changed, 195 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
+index bb66d8b..7b6b2ec 100644
+--- a/arch/powerpc/include/asm/kvm_host.h
++++ b/arch/powerpc/include/asm/kvm_host.h
+@@ -433,6 +433,7 @@ struct kvm_vcpu_arch {
+ 	u32 eplc;
+ 	u32 epsc;
+ 	u32 oldpir;
++	u64 fault_lper;
+ #endif
+ 
+ #if defined(CONFIG_BOOKE)
+diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
+index 9c89cdd..2730a29 100644
+--- a/arch/powerpc/include/asm/kvm_ppc.h
++++ b/arch/powerpc/include/asm/kvm_ppc.h
+@@ -86,6 +86,8 @@ extern gpa_t kvmppc_mmu_xlate(struct kvm_vcpu *vcpu, unsigned int gtlb_index,
+                               gva_t eaddr);
+ extern void kvmppc_mmu_dtlb_miss(struct kvm_vcpu *vcpu);
+ extern void kvmppc_mmu_itlb_miss(struct kvm_vcpu *vcpu);
++extern void kvmppc_lrat_map(struct kvm_vcpu *vcpu, gfn_t gfn);
++extern void kvmppc_lrat_invalidate(struct kvm_vcpu *vcpu);
+ 
+ extern struct kvm_vcpu *kvmppc_core_vcpu_create(struct kvm *kvm,
+                                                 unsigned int id);
 diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
-index ac6acf7..e482ad8 100644
+index 088fd9f..ac6acf7 100644
 --- a/arch/powerpc/include/asm/mmu-book3e.h
 +++ b/arch/powerpc/include/asm/mmu-book3e.h
-@@ -59,6 +59,7 @@
+@@ -40,6 +40,8 @@
+ 
+ /* MAS registers bit definitions */
+ 
++#define MAS0_ATSEL		0x80000000
++#define MAS0_ATSEL_SHIFT	31
+ #define MAS0_TLBSEL_MASK        0x30000000
+ #define MAS0_TLBSEL_SHIFT       28
+ #define MAS0_TLBSEL(x)          (((x) << MAS0_TLBSEL_SHIFT) & MAS0_TLBSEL_MASK)
+@@ -53,6 +55,7 @@
+ #define MAS0_WQ_CLR_RSRV       	0x00002000
+ 
+ #define MAS1_VALID		0x80000000
++#define MAS1_VALID_SHIFT	31
  #define MAS1_IPROT		0x40000000
  #define MAS1_TID(x)		(((x) << 16) & 0x3FFF0000)
  #define MAS1_IND		0x00002000
-+#define MAS1_IND_SHIFT		13
- #define MAS1_TS			0x00001000
- #define MAS1_TSIZE_MASK		0x00000f80
- #define MAS1_TSIZE_SHIFT	7
-@@ -94,6 +95,7 @@
- #define MAS4_TLBSEL_MASK	MAS0_TLBSEL_MASK
- #define MAS4_TLBSELD(x) 	MAS0_TLBSEL(x)
- #define MAS4_INDD		0x00008000	/* Default IND */
-+#define MAS4_INDD_SHIFT		15
- #define MAS4_TSIZED(x)		MAS1_TSIZE(x)
- #define MAS4_X0D		0x00000040
- #define MAS4_X1D		0x00000020
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index a326178..70a556d 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -148,6 +148,22 @@ unsigned int kvmppc_e500_get_sid(struct kvmppc_vcpu_e500 *vcpu_e500,
- 				 unsigned int pr, int avoid_recursion);
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 75bda23..783d617 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -43,6 +43,8 @@
+ 
+ /* Special Purpose Registers (SPRNs)*/
+ #define SPRN_DECAR	0x036	/* Decrementer Auto Reload Register */
++#define SPRN_LPER	0x038	/* Logical Page Exception Register */
++#define SPRN_LPERU	0x039	/* Logical Page Exception Register Upper */
+ #define SPRN_IVPR	0x03F	/* Interrupt Vector Prefix Register */
+ #define SPRN_USPRG0	0x100	/* User Special Purpose Register General 0 */
+ #define SPRN_SPRG3R	0x103	/* Special Purpose Register General 3 Read */
+@@ -358,6 +360,9 @@
+ #define ESR_ILK		0x00100000	/* Instr. Cache Locking */
+ #define ESR_PUO		0x00040000	/* Unimplemented Operation exception */
+ #define ESR_BO		0x00020000	/* Byte Ordering */
++#define ESR_DATA	0x00000400	/* Page Table Data Access */
++#define ESR_TLBI	0x00000200	/* Page Table TLB Ineligible */
++#define ESR_PT		0x00000100	/* Page Table Translation */
+ #define ESR_SPV		0x00000080	/* Signal Processing operation */
+ 
+ /* Bit definitions related to the DBCR0. */
+@@ -649,6 +654,14 @@
+ #define EPC_EPID	0x00003fff
+ #define EPC_EPID_SHIFT	0
+ 
++/* Bit definitions for LPER */
++#define LPER_ALPN		0x000FFFFFFFFFF000ULL
++#define LPER_ALPN_SHIFT		12
++#define LPER_WIMGE		0x00000F80
++#define LPER_WIMGE_SHIFT	7
++#define LPER_LPS		0x0000000F
++#define LPER_LPS_SHIFT		0
++
+ /*
+  * The IBM-403 is an even more odd special case, as it is much
+  * older than the IBM-405 series.  We put these down here incase someone
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index f5995a9..be6e329 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -713,6 +713,7 @@ int main(void)
+ 	DEFINE(VCPU_HOST_MAS4, offsetof(struct kvm_vcpu, arch.host_mas4));
+ 	DEFINE(VCPU_HOST_MAS6, offsetof(struct kvm_vcpu, arch.host_mas6));
+ 	DEFINE(VCPU_EPLC, offsetof(struct kvm_vcpu, arch.eplc));
++	DEFINE(VCPU_FAULT_LPER, offsetof(struct kvm_vcpu, arch.fault_lper));
  #endif
  
-+static inline bool has_feature(const struct kvm_vcpu *vcpu,
-+			       enum vcpu_ftr ftr)
-+{
-+	bool has_ftr;
-+
-+	switch (ftr) {
-+	case VCPU_FTR_MMU_V2:
-+		has_ftr = ((vcpu->arch.mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2);
-+		break;
-+
-+	default:
-+		return false;
-+	}
-+	return has_ftr;
-+}
-+
- /* TLB helper functions */
- static inline unsigned int
- get_tlb_size(const struct kvm_book3e_206_tlb_entry *tlbe)
-@@ -207,6 +223,16 @@ get_tlb_tsize(const struct kvm_book3e_206_tlb_entry *tlbe)
- 	return (tlbe->mas1 & MAS1_TSIZE_MASK) >> MAS1_TSIZE_SHIFT;
- }
+ #ifdef CONFIG_KVM_EXIT_TIMING
+diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+index a192975..ab1077f 100644
+--- a/arch/powerpc/kvm/booke.c
++++ b/arch/powerpc/kvm/booke.c
+@@ -1286,6 +1286,46 @@ int kvmppc_handle_exit(struct kvm_run *run, struct kvm_vcpu *vcpu,
+ 		break;
+ 	}
  
-+static inline unsigned int
-+get_tlb_ind(const struct kvm_vcpu *vcpu,
-+	    const struct kvm_book3e_206_tlb_entry *tlbe)
-+{
-+	if (has_feature(vcpu, VCPU_FTR_MMU_V2))
-+		return (tlbe->mas1 & MAS1_IND) >> MAS1_IND_SHIFT;
-+
-+	return 0;
-+}
-+
- static inline unsigned int get_cur_pid(struct kvm_vcpu *vcpu)
- {
- 	return vcpu->arch.pid & 0xff;
-@@ -232,6 +258,30 @@ static inline unsigned int get_cur_sas(const struct kvm_vcpu *vcpu)
- 	return vcpu->arch.shared->mas6 & 0x1;
- }
- 
-+static inline unsigned int get_cur_ind(const struct kvm_vcpu *vcpu)
-+{
-+	if (has_feature(vcpu, VCPU_FTR_MMU_V2))
-+		return (vcpu->arch.shared->mas1 & MAS1_IND) >> MAS1_IND_SHIFT;
-+
-+	return 0;
-+}
-+
-+static inline unsigned int get_cur_indd(const struct kvm_vcpu *vcpu)
-+{
-+	if (has_feature(vcpu, VCPU_FTR_MMU_V2))
-+		return (vcpu->arch.shared->mas4 & MAS4_INDD) >> MAS4_INDD_SHIFT;
-+
-+	return 0;
-+}
-+
-+static inline unsigned int get_cur_sind(const struct kvm_vcpu *vcpu)
-+{
-+	if (has_feature(vcpu, VCPU_FTR_MMU_V2))
-+		return (vcpu->arch.shared->mas6 & MAS6_SIND) >> MAS6_SIND_SHIFT;
-+
-+	return 0;
-+}
-+
- static inline unsigned int get_tlb_tlbsel(const struct kvm_vcpu *vcpu)
- {
- 	/*
-@@ -286,6 +336,22 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
- void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500);
- 
- #ifdef CONFIG_KVM_BOOKE_HV
-+void inval_tlb_on_host(struct kvm_vcpu *vcpu, int type, int pid);
-+
-+void inval_ea_on_host(struct kvm_vcpu *vcpu, gva_t ea, int pid, int sas,
-+		      int sind);
-+#else
-+/* TLB is fully virtualized */
-+static inline void inval_tlb_on_host(struct kvm_vcpu *vcpu,
-+				     int type, int pid)
-+{}
-+
-+static inline void inval_ea_on_host(struct kvm_vcpu *vcpu, gva_t ea, int pid,
-+				    int sas, int sind)
-+{}
-+#endif
-+
 +#ifdef CONFIG_KVM_BOOKE_HV
- #define kvmppc_e500_get_tlb_stid(vcpu, gtlbe)       get_tlb_tid(gtlbe)
- #define get_tlbmiss_tid(vcpu)           get_cur_pid(vcpu)
- #define get_tlb_sts(gtlbe)              (gtlbe->mas1 & MAS1_TS)
-@@ -304,19 +370,4 @@ static inline unsigned int get_tlbmiss_tid(struct kvm_vcpu *vcpu)
- /* Force TS=1 for all guest mappings. */
- #define get_tlb_sts(gtlbe)              (MAS1_TS)
- #endif /* !BOOKE_HV */
--
--static inline bool has_feature(const struct kvm_vcpu *vcpu,
--			       enum vcpu_ftr ftr)
--{
--	bool has_ftr;
--	switch (ftr) {
--	case VCPU_FTR_MMU_V2:
--		has_ftr = ((vcpu->arch.mmucfg & MMUCFG_MAVN) == MMUCFG_MAVN_V2);
--		break;
--	default:
--		return false;
--	}
--	return has_ftr;
--}
--
- #endif /* KVM_E500_H */
-diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
-index 50860e9..b775e6a 100644
---- a/arch/powerpc/kvm/e500_mmu.c
-+++ b/arch/powerpc/kvm/e500_mmu.c
-@@ -81,7 +81,8 @@ static unsigned int get_tlb_esel(struct kvm_vcpu *vcpu, int tlbsel)
- 
- /* Search the guest TLB for a matching entry. */
- static int kvmppc_e500_tlb_index(struct kvmppc_vcpu_e500 *vcpu_e500,
--		gva_t eaddr, int tlbsel, unsigned int pid, int as)
-+		gva_t eaddr, int tlbsel, unsigned int pid, int as,
-+		int sind)
- {
- 	int size = vcpu_e500->gtlb_params[tlbsel].entries;
- 	unsigned int set_base, offset;
-@@ -120,6 +121,9 @@ static int kvmppc_e500_tlb_index(struct kvmppc_vcpu_e500 *vcpu_e500,
- 		if (get_tlb_ts(tlbe) != as && as != -1)
- 			continue;
- 
-+		if (sind != -1 && get_tlb_ind(&vcpu_e500->vcpu, tlbe) != sind)
-+			continue;
++	case BOOKE_INTERRUPT_LRAT_ERROR:
++	{
++		gfn_t gfn;
 +
- 		return set_base + i;
- 	}
- 
-@@ -130,25 +134,28 @@ static inline void kvmppc_e500_deliver_tlb_miss(struct kvm_vcpu *vcpu,
- 		gva_t eaddr, int as)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
--	unsigned int victim, tsized;
-+	unsigned int victim, tsized, indd;
- 	int tlbsel;
- 
- 	/* since we only have two TLBs, only lower bit is used. */
- 	tlbsel = (vcpu->arch.shared->mas4 >> 28) & 0x1;
- 	victim = (tlbsel == 0) ? gtlb0_get_next_victim(vcpu_e500) : 0;
- 	tsized = (vcpu->arch.shared->mas4 >> 7) & 0x1f;
-+	indd = get_cur_indd(vcpu);
- 
- 	vcpu->arch.shared->mas0 = MAS0_TLBSEL(tlbsel) | MAS0_ESEL(victim)
- 		| MAS0_NV(vcpu_e500->gtlb_nv[tlbsel]);
- 	vcpu->arch.shared->mas1 = MAS1_VALID | (as ? MAS1_TS : 0)
- 		| MAS1_TID(get_tlbmiss_tid(vcpu))
--		| MAS1_TSIZE(tsized);
-+		| MAS1_TSIZE(tsized)
-+		| (indd << MAS1_IND_SHIFT);
- 	vcpu->arch.shared->mas2 = (eaddr & MAS2_EPN)
- 		| (vcpu->arch.shared->mas4 & MAS2_ATTRIB_MASK);
- 	vcpu->arch.shared->mas7_3 &= MAS3_U0 | MAS3_U1 | MAS3_U2 | MAS3_U3;
- 	vcpu->arch.shared->mas6 = (vcpu->arch.shared->mas6 & MAS6_SPID1)
- 		| (get_cur_pid(vcpu) << 16)
--		| (as ? MAS6_SAS : 0);
-+		| (as ? MAS6_SAS : 0)
-+		| (indd << MAS6_SIND_SHIFT);
- }
- 
- static void kvmppc_recalc_tlb1map_range(struct kvmppc_vcpu_e500 *vcpu_e500)
-@@ -264,12 +271,12 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, gva_t ea)
- 	} else {
- 		ea &= 0xfffff000;
- 		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel,
--				get_cur_pid(vcpu), -1);
-+				get_cur_pid(vcpu), -1, get_cur_sind(vcpu));
- 		if (esel >= 0)
- 			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
- 	}
- 
--	/* Invalidate all host shadow mappings */
-+	/* Invalidate all host shadow mappings including those set by HTW */
- 	kvmppc_core_flush_tlb(&vcpu_e500->vcpu);
- 
- 	return EMULATE_DONE;
-@@ -280,6 +287,7 @@ static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
- {
- 	struct kvm_book3e_206_tlb_entry *tlbe;
- 	int tid, esel;
-+	int sind = get_cur_sind(&vcpu_e500->vcpu);
- 
- 	/* invalidate all entries */
- 	for (esel = 0; esel < vcpu_e500->gtlb_params[tlbsel].entries; esel++) {
-@@ -290,21 +298,32 @@ static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
- 			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
- 		}
- 	}
-+
-+	/* Invalidate enties added by HTW */
-+	if (has_feature(&vcpu_e500->vcpu, VCPU_FTR_MMU_V2) && (!sind))
-+		inval_tlb_on_host(&vcpu_e500->vcpu, type, pid);
- }
- 
- static void tlbilx_one(struct kvmppc_vcpu_e500 *vcpu_e500, int pid,
- 		       gva_t ea)
- {
- 	int tlbsel, esel;
-+	int sas = get_cur_sas(&vcpu_e500->vcpu);
-+	int sind = get_cur_sind(&vcpu_e500->vcpu);
- 
- 	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
--		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, -1);
-+		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, -1,
-+					     sind);
- 		if (esel >= 0) {
- 			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
- 			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
- 			break;
- 		}
- 	}
-+
-+	/* Invalidate enties added by HTW */
-+	if (has_feature(&vcpu_e500->vcpu, VCPU_FTR_MMU_V2) && (!sind))
-+		inval_ea_on_host(&vcpu_e500->vcpu, ea, pid, sas, sind);
- }
- 
- int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int type, gva_t ea)
-@@ -350,7 +369,8 @@ int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, gva_t ea)
- 	struct kvm_book3e_206_tlb_entry *gtlbe = NULL;
- 
- 	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
--		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, as);
-+		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, as,
-+					     get_cur_sind(vcpu));
- 		if (esel >= 0) {
- 			gtlbe = get_entry(vcpu_e500, tlbsel, esel);
- 			break;
-@@ -368,6 +388,23 @@ int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, gva_t ea)
- 	} else {
- 		int victim;
- 
-+		if (has_feature(vcpu, VCPU_FTR_MMU_V2) &&
-+			get_cur_sind(vcpu) != 1) {
-+			/*
-+			 * TLB0 entries are not cached in KVM being written
-+			 * directly by HTW. TLB0 entry found in HW TLB0 needs
-+			 * to be presented to the guest with RPN changed from
-+			 * PFN to GFN. There might be more GFNs pointing to the
-+			 * same PFN so the only way to get the corresponding GFN
-+			 * is to search it in guest's PTE. If IND entry for the
-+			 * corresponding PT is not available just invalidate
-+			 * guest's ea and report a tlbsx miss.
-+			 *
-+			 * TODO: search ea in HW TLB0
-+			 */
-+			inval_ea_on_host(vcpu, ea, pid, as, 0);
++		/*
++		 * Guest TLB management instructions (EPCR.DGTMI == 0) is not
++		 * supported for now
++		 */
++		if (!(vcpu->arch.fault_esr & ESR_PT)) {
++			WARN(1, "%s: Guest TLB management instructions not supported!\n", __func__);
++			break;
 +		}
 +
- 		/* since we only have two TLBs, only lower bit is used. */
- 		tlbsel = vcpu->arch.shared->mas4 >> 28 & 0x1;
- 		victim = (tlbsel == 0) ? gtlb0_get_next_victim(vcpu_e500) : 0;
-@@ -378,7 +415,8 @@ int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, gva_t ea)
- 		vcpu->arch.shared->mas1 =
- 			  (vcpu->arch.shared->mas6 & MAS6_SPID0)
- 			| (vcpu->arch.shared->mas6 & (MAS6_SAS ? MAS1_TS : 0))
--			| (vcpu->arch.shared->mas4 & MAS4_TSIZED(~0));
-+			| (vcpu->arch.shared->mas4 & MAS4_TSIZED(~0))
-+			| (get_cur_indd(vcpu) << MAS1_IND_SHIFT);
- 		vcpu->arch.shared->mas2 &= MAS2_EPN;
- 		vcpu->arch.shared->mas2 |= vcpu->arch.shared->mas4 &
- 					   MAS2_ATTRIB_MASK;
-@@ -396,7 +434,7 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
- 	struct kvm_book3e_206_tlb_entry *gtlbe;
- 	int tlbsel, esel;
- 	int recal = 0;
--	int idx;
-+	int idx, tsize;
- 
- 	tlbsel = get_tlb_tlbsel(vcpu);
- 	esel = get_tlb_esel(vcpu, tlbsel);
-@@ -411,9 +449,17 @@ int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu)
- 	}
- 
- 	gtlbe->mas1 = vcpu->arch.shared->mas1;
++		gfn = (vcpu->arch.fault_lper & LPER_ALPN) >> LPER_ALPN_SHIFT;
 +
- 	gtlbe->mas2 = vcpu->arch.shared->mas2;
-+	/* EPN offset bits should be zero, fix early versions of Linux HTW */
-+	if (get_cur_ind(vcpu)) {
-+		tsize = (vcpu->arch.shared->mas1 & MAS1_TSIZE_MASK) >>
-+			MAS1_TSIZE_SHIFT;
-+		gtlbe->mas2 &= MAS2_EPN_MASK(tsize) | (~MAS2_EPN);
++		idx = srcu_read_lock(&vcpu->kvm->srcu);
++
++		if (kvm_is_visible_gfn(vcpu->kvm, gfn)) {
++			kvmppc_lrat_map(vcpu, gfn);
++			r = RESUME_GUEST;
++		} else if (vcpu->arch.fault_esr & ESR_DATA) {
++			vcpu->arch.paddr_accessed = (gfn << PAGE_SHIFT)
++				| (vcpu->arch.fault_dear & (PAGE_SIZE - 1));
++			vcpu->arch.vaddr_accessed =
++				vcpu->arch.fault_dear;
++
++			r = kvmppc_emulate_mmio(run, vcpu);
++			kvmppc_account_exit(vcpu, MMIO_EXITS);
++		} else {
++			kvmppc_booke_queue_irqprio(vcpu,
++						BOOKE_IRQPRIO_MACHINE_CHECK);
++			r = RESUME_GUEST;
++		}
++
++		srcu_read_unlock(&vcpu->kvm->srcu, idx);
++		break;
 +	}
- 	if (!(vcpu->arch.shared->msr & MSR_CM))
- 		gtlbe->mas2 &= 0xffffffffUL;
++#endif
 +
- 	gtlbe->mas7_3 = vcpu->arch.shared->mas7_3;
+ 	case BOOKE_INTERRUPT_DEBUG: {
+ 		r = kvmppc_handle_debug(run, vcpu);
+ 		if (r == RESUME_HOST)
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index b3ecdd6..341c3a8 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -64,6 +64,7 @@
+ #define NEED_EMU		0x00000001 /* emulation -- save nv regs */
+ #define NEED_DEAR		0x00000002 /* save faulting DEAR */
+ #define NEED_ESR		0x00000004 /* save faulting ESR */
++#define NEED_LPER		0x00000008 /* save faulting LPER */
  
- 	trace_kvm_booke206_gtlb_write(vcpu->arch.shared->mas0, gtlbe->mas1,
-@@ -460,7 +506,8 @@ static int kvmppc_e500_tlb_search(struct kvm_vcpu *vcpu,
- 	int esel, tlbsel;
+ /*
+  * On entry:
+@@ -203,6 +204,12 @@
+ 	PPC_STL	r9, VCPU_FAULT_DEAR(r4)
+ 	.endif
  
- 	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
--		esel = kvmppc_e500_tlb_index(vcpu_e500, eaddr, tlbsel, pid, as);
-+		esel = kvmppc_e500_tlb_index(vcpu_e500, eaddr, tlbsel, pid, as,
-+					     -1);
- 		if (esel >= 0)
- 			return index_of(tlbsel, esel);
- 	}
-@@ -531,7 +578,14 @@ gpa_t kvmppc_mmu_xlate(struct kvm_vcpu *vcpu, unsigned int index,
- 	u64 pgmask;
++	/* Only suppported on 64-bit cores for now */
++	.if	\flags & NEED_LPER
++	mfspr	r7, SPRN_LPER
++	std	r7, VCPU_FAULT_LPER(r4)
++	.endif
++
+ 	b	kvmppc_resume_host
+ .endm
  
- 	gtlbe = get_entry(vcpu_e500, tlbsel_of(index), esel_of(index));
--	pgmask = get_tlb_bytes(gtlbe) - 1;
-+	/*
-+	 * Use 4095 for page mask for IND enties:
-+	 *	(1ULL << (10 + BOOK3E_PAGESZ_4K)) - 1
-+	 */
-+	if (get_tlb_ind(vcpu, gtlbe))
-+		pgmask = 4095;
-+	else
-+		pgmask = get_tlb_bytes(gtlbe) - 1;
- 
- 	return get_tlb_raddr(gtlbe) | (eaddr & pgmask);
- }
+@@ -325,7 +332,7 @@ kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(DBG), \
+ kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(CRIT), \
+ 	SPRN_CSRR0, SPRN_CSRR1, 0
+ kvm_handler BOOKE_INTERRUPT_LRAT_ERROR, EX_PARAMS(GEN), \
+-	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR)
++	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR | NEED_LPER)
+ #else
+ /*
+  * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_asm.h
 diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
-index be1454b..60bf272 100644
+index 79677d7..be1454b 100644
 --- a/arch/powerpc/kvm/e500_mmu_host.c
 +++ b/arch/powerpc/kvm/e500_mmu_host.c
-@@ -438,7 +438,8 @@ static void kvmppc_e500_setup_stlbe(
- 	BUG_ON(!(ref->flags & E500_TLB_VALID));
+@@ -95,6 +95,131 @@ static inline void __write_host_tlbe(struct kvm_book3e_206_tlb_entry *stlbe,
+ 	                              stlbe->mas2, stlbe->mas7_3);
+ }
  
- 	/* Force IPROT=0 for all guest mappings. */
--	stlbe->mas1 = MAS1_TSIZE(tsize) | get_tlb_sts(gtlbe) | MAS1_VALID;
-+	stlbe->mas1 = MAS1_TSIZE(tsize) | get_tlb_sts(gtlbe) | MAS1_VALID |
-+		      (get_tlb_ind(vcpu, gtlbe) << MAS1_IND_SHIFT);
- 	stlbe->mas2 = (gvaddr & MAS2_EPN) | (ref->flags & E500_TLB_MAS2_ATTR);
- 	stlbe->mas7_3 = ((u64)pfn << PAGE_SHIFT) |
- 			e500_shadow_mas3_attrib(gtlbe->mas7_3, pr);
-@@ -465,6 +466,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	pte_t *ptep;
- 	unsigned int wimg = 0;
- 	pgd_t *pgdir;
-+	int ind;
- 
- 	/* used to check for invalidations in progress */
- 	mmu_seq = kvm->mmu_notifier_seq;
-@@ -481,6 +483,15 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	slot = gfn_to_memslot(vcpu_e500->vcpu.kvm, gfn);
- 	hva = gfn_to_hva_memslot(slot, gfn);
- 
-+	/*
-+	 * An IND entry refer a Page Table which have a different size
-+	 * then the translation size.
-+	 *	page size bytes = (tsize bytes / 4KB) * 8 bytes
-+	 * so we have
-+	 *	psize = tsize - BOOK3E_PAGESZ_4K - 7;
-+	 */
-+	ind = get_tlb_ind(&vcpu_e500->vcpu, gtlbe);
++#ifdef CONFIG_KVM_BOOKE_HV
++#ifdef CONFIG_64BIT
++static inline int lrat_next(void)
++{
++	int this, next;
 +
- 	if (tlbsel == 1) {
- 		struct vm_area_struct *vma;
- 		down_read(&current->mm->mmap_sem);
-@@ -516,12 +527,17 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 
- 			tsize = (gtlbe->mas1 & MAS1_TSIZE_MASK) >>
- 				MAS1_TSIZE_SHIFT;
-+			if (ind)
-+				tsize -= BOOK3E_PAGESZ_4K + 7;
- 
- 			/*
- 			 * e500 doesn't implement the lowest tsize bit,
- 			 * or 1K pages.
- 			 */
--			tsize = max(BOOK3E_PAGESZ_4K, tsize & ~1);
-+			if (!has_feature(&vcpu_e500->vcpu, VCPU_FTR_MMU_V2))
-+				tsize &= ~1;
++	this = local_paca->tcd.lrat_next;
++	next = (this + 1) % local_paca->tcd.lrat_max;
++	local_paca->tcd.lrat_next = next;
 +
-+			tsize = max(BOOK3E_PAGESZ_4K, tsize);
- 
- 			/*
- 			 * Now find the largest tsize (up to what the guest
-@@ -555,6 +571,8 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 
- 			tsize = (gtlbe->mas1 & MAS1_TSIZE_MASK) >>
- 				MAS1_TSIZE_SHIFT;
-+			if (ind)
-+				tsize -= BOOK3E_PAGESZ_4K + 7;
- 
- 			/*
- 			 * Take the largest page size that satisfies both host
-@@ -566,7 +584,10 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 			 * e500 doesn't implement the lowest tsize bit,
- 			 * or 1K pages.
- 			 */
--			tsize = max(BOOK3E_PAGESZ_4K, tsize & ~1);
-+			if (!has_feature(&vcpu_e500->vcpu, VCPU_FTR_MMU_V2))
-+				tsize &= ~1;
++	return this;
++}
 +
-+			tsize = max(BOOK3E_PAGESZ_4K, tsize);
- 		}
- 
- 		up_read(&current->mm->mmap_sem);
-@@ -606,6 +627,10 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	}
- 	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
- 
-+	/* Restore translation size for indirect entries */
-+	if (ind)
-+		tsize += BOOK3E_PAGESZ_4K + 7;
++static inline int lrat_size(void)
++{
++	return local_paca->tcd.lrat_max;
++}
++#else
++/* LRAT is only supported in 64-bit kernel for now */
++static inline int lrat_next(void)
++{
++	BUG();
++}
 +
- 	kvmppc_e500_setup_stlbe(&vcpu_e500->vcpu, gtlbe, tsize,
- 				ref, gvaddr, stlbe);
- 
++static inline int lrat_size(void)
++{
++	return 0;
++}
++#endif
++
++void write_host_lrate(int tsize, gfn_t gfn, unsigned long pfn, uint32_t lpid,
++		      int valid, int lrat_entry)
++{
++	struct kvm_book3e_206_tlb_entry stlbe;
++	int esel = lrat_entry;
++	unsigned long flags;
++
++	stlbe.mas1 = (valid ? MAS1_VALID : 0) | MAS1_TSIZE(tsize);
++	stlbe.mas2 = ((u64)gfn << PAGE_SHIFT);
++	stlbe.mas7_3 = ((u64)pfn << PAGE_SHIFT);
++	stlbe.mas8 = MAS8_TGS | lpid;
++
++	local_irq_save(flags);
++	/* book3e_tlb_lock(); */
++
++	if (esel == -1)
++		esel = lrat_next();
++	__write_host_tlbe(&stlbe, MAS0_ATSEL | MAS0_ESEL(esel));
++
++	/* book3e_tlb_unlock(); */
++	local_irq_restore(flags);
++}
++
++void kvmppc_lrat_map(struct kvm_vcpu *vcpu, gfn_t gfn)
++{
++	struct kvm_memory_slot *slot;
++	unsigned long pfn;
++	unsigned long hva;
++	struct vm_area_struct *vma;
++	unsigned long psize;
++	int tsize;
++	unsigned long tsize_pages;
++
++	slot = gfn_to_memslot(vcpu->kvm, gfn);
++	if (!slot) {
++		pr_err_ratelimited("%s: couldn't find memslot for gfn %lx!\n",
++				   __func__, (long)gfn);
++		return;
++	}
++
++	hva = slot->userspace_addr;
++
++	down_read(&current->mm->mmap_sem);
++	vma = find_vma(current->mm, hva);
++	if (vma && (hva >= vma->vm_start)) {
++		psize = vma_kernel_pagesize(vma);
++	} else {
++		pr_err_ratelimited("%s: couldn't find virtual memory address for gfn %lx!\n", __func__, (long)gfn);
++		return;
++	}
++	up_read(&current->mm->mmap_sem);
++
++	pfn = gfn_to_pfn_memslot(slot, gfn);
++	if (is_error_noslot_pfn(pfn)) {
++		pr_err_ratelimited("%s: couldn't get real page for gfn %lx!\n",
++				   __func__, (long)gfn);
++		return;
++	}
++
++	tsize = __ilog2(psize) - 10;
++	tsize_pages = 1 << (tsize + 10 - PAGE_SHIFT);
++	gfn &= ~(tsize_pages - 1);
++	pfn &= ~(tsize_pages - 1);
++
++	write_host_lrate(tsize, gfn, pfn, vcpu->kvm->arch.lpid, 1, -1);
++	kvm_release_pfn_clean(pfn);
++}
++
++void kvmppc_lrat_invalidate(struct kvm_vcpu *vcpu)
++{
++	uint32_t mas0, mas1 = 0;
++	int esel;
++	unsigned long flags;
++
++	local_irq_save(flags);
++	/* book3e_tlb_lock(); */
++
++	/* LRAT does not have a dedicated instruction for invalidation */
++	for (esel = 0; esel < lrat_size(); esel++) {
++		mas0 = MAS0_ATSEL | MAS0_ESEL(esel);
++		mtspr(SPRN_MAS0, mas0);
++		asm volatile("isync; tlbre" : : : "memory");
++		mas1 = mfspr(SPRN_MAS1) & ~MAS1_VALID;
++		mtspr(SPRN_MAS1, mas1);
++		asm volatile("isync; tlbwe" : : : "memory");
++	}
++	/* Must clear mas8 for other host tlbwe's */
++	mtspr(SPRN_MAS8, 0);
++	isync();
++
++	/* book3e_tlb_unlock(); */
++	local_irq_restore(flags);
++}
++#endif
++
+ /*
+  * Acquire a mas0 with victim hint, as if we just took a TLB miss.
+  *
 diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index 5622d9a..933a4cf 100644
+index b1d9939..5622d9a 100644
 --- a/arch/powerpc/kvm/e500mc.c
 +++ b/arch/powerpc/kvm/e500mc.c
-@@ -58,7 +58,7 @@ void kvmppc_set_pending_interrupt(struct kvm_vcpu *vcpu, enum int_class type)
- void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
- 			   struct kvm_book3e_206_tlb_entry *gtlbe)
- {
--	unsigned int tid, ts;
-+	unsigned int tid, ts, ind;
- 	gva_t eaddr;
- 	u32 val, lpid;
- 	unsigned long flags;
-@@ -66,9 +66,10 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	ts = get_tlb_ts(gtlbe);
- 	tid = get_tlb_tid(gtlbe);
- 	lpid = vcpu_e500->vcpu.kvm->arch.lpid;
-+	ind = get_tlb_ind(&vcpu_e500->vcpu, gtlbe);
- 
- 	/* We search the host TLB to invalidate its shadow TLB entry */
--	val = (tid << 16) | ts;
-+	val = (tid << 16) | ts | (ind << MAS6_SIND_SHIFT);
- 	eaddr = get_tlb_eaddr(gtlbe);
- 
- 	local_irq_save(flags);
-@@ -90,16 +91,60 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
- 	local_irq_restore(flags);
- }
- 
--void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500)
-+void inval_ea_on_host(struct kvm_vcpu *vcpu, gva_t ea, int pid, int sas,
-+		      int sind)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
-+	mtspr(SPRN_MAS6, (pid << MAS6_SPID_SHIFT) |
-+		sas | (sind << MAS6_SIND_SHIFT));
-+	asm volatile("tlbilx 3, 0, %[ea]\n" : : [ea] "r" (ea));
-+	mtspr(SPRN_MAS5, 0);
-+	isync();
-+
-+	local_irq_restore(flags);
-+}
-+
-+void kvmppc_e500_tlbil_pid(struct kvm_vcpu *vcpu, int pid)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
-+	mtspr(SPRN_MAS6, pid << MAS6_SPID_SHIFT);
-+	asm volatile("tlbilxpid");
-+	mtspr(SPRN_MAS5, 0);
-+	isync();
-+
-+	local_irq_restore(flags);
-+}
-+
-+void kvmppc_e500_tlbil_lpid(struct kvm_vcpu *vcpu)
- {
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
--	mtspr(SPRN_MAS5, MAS5_SGS | vcpu_e500->vcpu.kvm->arch.lpid);
-+	mtspr(SPRN_MAS5, MAS5_SGS | vcpu->kvm->arch.lpid);
+@@ -99,6 +99,8 @@ void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500)
  	asm volatile("tlbilxlpid");
  	mtspr(SPRN_MAS5, 0);
-+	isync();
-+
  	local_irq_restore(flags);
-+}
- 
-+void inval_tlb_on_host(struct kvm_vcpu *vcpu, int type, int pid)
-+{
-+	if (type == 0)
-+		kvmppc_e500_tlbil_lpid(vcpu);
-+	else
-+		kvmppc_e500_tlbil_pid(vcpu, pid);
-+}
 +
-+void kvmppc_e500_tlbil_all(struct kvmppc_vcpu_e500 *vcpu_e500)
-+{
-+	kvmppc_e500_tlbil_lpid(&vcpu_e500->vcpu);
- 	kvmppc_lrat_invalidate(&vcpu_e500->vcpu);
++	kvmppc_lrat_invalidate(&vcpu_e500->vcpu);
  }
  
+ void kvmppc_set_pid(struct kvm_vcpu *vcpu, u32 pid)
 -- 
 1.7.11.7
