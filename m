@@ -1,28 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c05::22c])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 858A01A0010
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 08:35:54 +1000 (EST)
-Message-ID: <53B5DAC6.6050403@suse.de>
-Date: Fri, 04 Jul 2014 00:35:50 +0200
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1899B1A0011
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 08:47:09 +1000 (EST)
+Received: by mail-ig0-f172.google.com with SMTP id hn18so8183159igb.17
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 03 Jul 2014 15:47:06 -0700 (PDT)
+Date: Thu, 3 Jul 2014 16:47:04 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] PCI: Make resetting secondary bus logic common
+Message-ID: <20140703224704.GA25980@google.com>
+References: <1403162565-26835-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>,
- Caraman Mihai Claudiu-B02008 <mihai.caraman@freescale.com>
-Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
- SPE/FP/AltiVec int numbers
-References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>	
- <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>	
- <53B54AAD.4040609@suse.de>	
- <2399bd1f8fde430a945311ff27c3f5c3@BY2PR03MB508.namprd03.prod.outlook.com>	
- <1404425722.21434.93.camel@snotra.buserror.net>
- <1404426684.21434.102.camel@snotra.buserror.net>
-In-Reply-To: <1404426684.21434.102.camel@snotra.buserror.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1403162565-26835-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,76 +26,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Jun 19, 2014 at 05:22:44PM +1000, Gavin Shan wrote:
+> Commit d92a208d086 ("powerpc/pci: Mask linkDown on resetting PCI bus")
+> implemented same logic (resetting PCI secondary bus by bridge's config
+> register PCI_BRIDGE_CTL_BUS_RESET) in PCI core and arch-dependent
+> code. In order to avoid the duplicate implementation introduced by the
+> commit, the patch puts the logic into pci_reset_secondary_bus().
+> 
+> That commit also missed declaring newly introduced weak function
+> pcibios_reset_secondary_bus() in linux/include/pci.h. The patch fixes
+> it.
+> 
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-On 04.07.14 00:31, Scott Wood wrote:
-> On Thu, 2014-07-03 at 17:15 -0500, Scott Wood wrote:
->> On Thu, 2014-07-03 at 10:25 -0500, Caraman Mihai Claudiu-B02008 wrote:
->>>> -----Original Message-----
->>>> From: Alexander Graf [mailto:agraf@suse.de]
->>>> Sent: Thursday, July 03, 2014 3:21 PM
->>>> To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
->>>> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
->>>> Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
->>>> SPE/FP/AltiVec int numbers
->>>>
->>>>
->>>> On 30.06.14 17:34, Mihai Caraman wrote:
->>>>> Use common BOOKE_IRQPRIO and BOOKE_INTERRUPT defines for SPE/FP/AltiVec
->>>>> which share the same interrupt numbers.
->>>>>
->>>>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
->>>>> ---
->>>>> v2:
->>>>>    - remove outdated definitions
->>>>>
->>>>>    arch/powerpc/include/asm/kvm_asm.h    |  8 --------
->>>>>    arch/powerpc/kvm/booke.c              | 17 +++++++++--------
->>>>>    arch/powerpc/kvm/booke.h              |  4 ++--
->>>>>    arch/powerpc/kvm/booke_interrupts.S   |  9 +++++----
->>>>>    arch/powerpc/kvm/bookehv_interrupts.S |  4 ++--
->>>>>    arch/powerpc/kvm/e500.c               | 10 ++++++----
->>>>>    arch/powerpc/kvm/e500_emulate.c       | 10 ++++++----
->>>>>    7 files changed, 30 insertions(+), 32 deletions(-)
->>>>>
->>>>> diff --git a/arch/powerpc/include/asm/kvm_asm.h
->>>> b/arch/powerpc/include/asm/kvm_asm.h
->>>>> index 9601741..c94fd33 100644
->>>>> --- a/arch/powerpc/include/asm/kvm_asm.h
->>>>> +++ b/arch/powerpc/include/asm/kvm_asm.h
->>>>> @@ -56,14 +56,6 @@
->>>>>    /* E500 */
->>>>>    #define BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL 32
->>>>>    #define BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST 33
->>>>> -/*
->>>>> - * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same
->>>> defines
->>>>> - */
->>>>> -#define BOOKE_INTERRUPT_SPE_UNAVAIL
->>>> BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
->>>>> -#define BOOKE_INTERRUPT_SPE_FP_DATA
->>>> BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
->>>>> -#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL
->>>> BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
->>>>> -#define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
->>>>> -				BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
->>>> I think I'd prefer to keep them separate.
->>> What is the reason from changing your mind from ver 1? Do you want to have
->>> different defines with same values (we specifically mapped them to the
->>> hardware interrupt numbers). We already upstreamed the necessary changes
->>> in the kernel. Scott, please share your opinion here.
->> I don't like hiding the fact that they're the same number, which could
->> lead to wrong code in the absence of ifdefs that strictly mutually
->> exclude SPE and Altivec code -- there was an instance of this with
->> MSR_VEC versus MSR_SPE in a previous patchset.
-> That said, if you want to enforce that mutual exclusion in a way that is
-> clear, I won't object too loudly -- but the code does look pretty
-> similar between the two (as well as between the two IVORs).
+I applied both of these to pci/virtualization for v3.17.  Ben, if you'd
+rather apply the powerpc one [1], let me know and I'll drop that one.
 
-Yes, I want to make sure we have 2 separate code paths for SPE and 
-Altivec. No code sharing at all unless it's very generically possible.
+Bjorn
 
-Also, which code does look pretty similar? The fact that we deflect 
-interrupts back into the guest? That's mostly boilerplate.
+[1] http://patchwork.ozlabs.org/patch/361802/
 
-
-Alex
+> ---
+>  drivers/pci/pci.c   | 7 ++++++-
+>  include/linux/pci.h | 2 ++
+>  2 files changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 63a54a3..758f1d8 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -3193,7 +3193,7 @@ static int pci_pm_reset(struct pci_dev *dev, int probe)
+>  	return 0;
+>  }
+>  
+> -void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+> +void pci_reset_secondary_bus(struct pci_dev *dev)
+>  {
+>  	u16 ctrl;
+>  
+> @@ -3219,6 +3219,11 @@ void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+>  	ssleep(1);
+>  }
+>  
+> +void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+> +{
+> +	pci_reset_secondary_bus(dev);
+> +}
+> +
+>  /**
+>   * pci_reset_bridge_secondary_bus - Reset the secondary bus on a PCI bridge.
+>   * @dev: Bridge device
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 466bcd1..340529d 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -978,6 +978,8 @@ int pci_try_reset_slot(struct pci_slot *slot);
+>  int pci_probe_reset_bus(struct pci_bus *bus);
+>  int pci_reset_bus(struct pci_bus *bus);
+>  int pci_try_reset_bus(struct pci_bus *bus);
+> +void pci_reset_secondary_bus(struct pci_dev *dev);
+> +void pcibios_reset_secondary_bus(struct pci_dev *dev);
+>  void pci_reset_bridge_secondary_bus(struct pci_dev *dev);
+>  void pci_update_resource(struct pci_dev *dev, int resno);
+>  int __must_check pci_assign_resource(struct pci_dev *dev, int i);
+> -- 
+> 1.8.3.2
+> 
