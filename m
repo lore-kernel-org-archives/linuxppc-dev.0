@@ -1,22 +1,33 @@
-Return-Path: <mkl@pengutronix.de>
-Received: from metis.ext.pengutronix.de (unknown
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C5B11A0004
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 19:15:21 +1000 (EST)
-Message-ID: <53B51F10.4040900@pengutronix.de>
-Date: Thu, 03 Jul 2014 11:14:56 +0200
-From: Marc Kleine-Budde <mkl@pengutronix.de>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by lists.ozlabs.org (Postfix) with SMTP id 194C21A0005
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 19:22:05 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 20786-04 for <linuxppc-dev@lists.ozlabs.org>;
+ Thu,  3 Jul 2014 10:22:01 +0100 (BST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Bjorn Helgaas' <bhelgaas@google.com>, Alexander Gordeev
+ <agordeev@redhat.com>
+Subject: RE: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
+Date: Thu, 3 Jul 2014 09:20:52 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1726BF4E@AcuExch.aculab.com>
+References: <cover.1402405331.git.agordeev@redhat.com>
+ <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
+ <20140702202201.GA28852@google.com>
+In-Reply-To: <20140702202201.GA28852@google.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Zhao Qiang <B45475@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- wg@grandegger.com, linux-can@vger.kernel.org, B07421@freescale.com
-Subject: Re: [PATCH v5] flexcan: add err_irq handler for flexcan
-References: <1404354180-46431-1-git-send-email-B45475@freescale.com>
-In-Reply-To: <1404354180-46431-1-git-send-email-B45475@freescale.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX"
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +37,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-On 07/03/2014 04:23 AM, Zhao Qiang wrote:
-> when flexcan is not physically linked, command 'cantest' will
-> trigger an err_irq, add err_irq handler for it.
->=20
-> Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> ---
-> Changes for v2:
-> 	- use a space instead of tab
-> 	- use flexcan_poll_state instead of print
-> Changes for v3:
-> 	- return IRQ_HANDLED if err is triggered
-> 	- stop transmitted packets when there is an err_interrupt=20
-> Changes for v4:
-> 	- call flexcan_irq=20
-> Changes for v5:
-> 	- move err_int_handling code from flexcan_irq to flexcan_err_irq
-> 	- call flexcan_err_irq from flexcan_irq
-
-Why do you move the RX IRQ handling into the error IRQ function? If I
-understand you correctly you only want to do error interrupt handling
-the error IRQ function, right?
-
-Marc
---=20
-Pengutronix e.K.                  | Marc Kleine-Budde           |
-Industrial Linux Solutions        | Phone: +49-231-2826-924     |
-Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
-Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
-
-
---87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-Comment: Using GnuPG with Icedove - http://www.enigmail.net/
-
-iEYEARECAAYFAlO1HxEACgkQjTAFq1RaXHO5TACgjBRadhnrz9W6sy8alYPSGg3H
-iH0AnRDp6H7tUKGgwMKyPbFC4xjjDJOe
-=Bkej
------END PGP SIGNATURE-----
-
---87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX--
+RnJvbTogQmpvcm4gSGVsZ2Fhcw0KPiBPbiBUdWUsIEp1biAxMCwgMjAxNCBhdCAwMzoxMDozMFBN
+ICswMjAwLCBBbGV4YW5kZXIgR29yZGVldiB3cm90ZToNCj4gPiBUaGVyZSBhcmUgUENJIGRldmlj
+ZXMgdGhhdCByZXF1aXJlIGEgcGFydGljdWxhciB2YWx1ZSB3cml0dGVuDQo+ID4gdG8gdGhlIE11
+bHRpcGxlIE1lc3NhZ2UgRW5hYmxlIChNTUUpIHJlZ2lzdGVyIHdoaWxlIGFsaWduZWQgb24NCj4g
+PiBwb3dlciBvZiAyIGJvdW5kYXJ5IHZhbHVlIG9mIGFjdHVhbGx5IHVzZWQgTVNJIHZlY3RvcnMg
+J252ZWMnDQo+ID4gaXMgYSBsZXNzZXIgb2YgdGhhdCBNTUUgdmFsdWU6DQo+ID4NCj4gPiAJcm91
+bmR1cF9wb3dfb2ZfdHdvKG52ZWMpIDwgJ011bHRpcGxlIE1lc3NhZ2UgRW5hYmxlJw0KPiA+DQo+
+ID4gSG93ZXZlciB0aGUgZXhpc3RpbmcgcGNpX2VuYWJsZV9tc2lfYmxvY2soKSBpbnRlcmZhY2Ug
+aXMgbm90DQo+ID4gYWJsZSB0byBjb25maWd1cmUgc3VjaCBkZXZpY2VzLCBzaW5jZSB0aGUgdmFs
+dWUgd3JpdHRlbiB0byB0aGUNCj4gPiBNTUUgcmVnaXN0ZXIgaXMgY2FsY3VsYXRlZCBmcm9tIHRo
+ZSBudW1iZXIgb2YgcmVxdWVzdGVkIE1TSXMNCj4gPiAnbnZlYyc6DQo+ID4NCj4gPiAJJ011bHRp
+cGxlIE1lc3NhZ2UgRW5hYmxlJyA9IHJvdW5kdXBfcG93X29mX3R3byhudmVjKQ0KPiANCj4gRm9y
+IE1TSSwgc29mdHdhcmUgbGVhcm5zIGhvdyBtYW55IHZlY3RvcnMgYSBkZXZpY2UgcmVxdWVzdHMg
+YnkgcmVhZGluZw0KPiB0aGUgTXVsdGlwbGUgTWVzc2FnZSBDYXBhYmxlIChNTUMpIGZpZWxkLiAg
+VGhpcyBmaWVsZCBpcyBlbmNvZGVkLCBzbyBhDQo+IGRldmljZSBjYW4gb25seSByZXF1ZXN0IDEs
+IDIsIDQsIDgsIGV0Yy4sIHZlY3RvcnMuICBJdCdzIGltcG9zc2libGUNCj4gZm9yIGEgZGV2aWNl
+IHRvIHJlcXVlc3QgMyB2ZWN0b3JzOyBpdCB3b3VsZCBoYXZlIHRvIHJvdW5kIHVwIHRoYXQgdXAN
+Cj4gdG8gYSBwb3dlciBvZiB0d28gYW5kIHJlcXVlc3QgNCB2ZWN0b3JzLg0KPiANCj4gU29mdHdh
+cmUgd3JpdGVzIHNpbWlsYXJseSBlbmNvZGVkIHZhbHVlcyB0byBNTUUgdG8gdGVsbCB0aGUgZGV2
+aWNlIGhvdw0KPiBtYW55IHZlY3RvcnMgaGF2ZSBiZWVuIGFsbG9jYXRlZCBmb3IgaXRzIHVzZS4g
+IEZvciBleGFtcGxlLCBpdCdzDQo+IGltcG9zc2libGUgdG8gdGVsbCB0aGUgZGV2aWNlIHRoYXQg
+aXQgY2FuIHVzZSAzIHZlY3RvcnM7IHRoZSBPUyBoYXMgdG8NCj4gcm91bmQgdGhhdCB1cCBhbmQg
+dGVsbCB0aGUgZGV2aWNlIGl0IGNhbiB1c2UgNCB2ZWN0b3JzLg0KPiANCj4gU28gaWYgSSB1bmRl
+cnN0YW5kIGNvcnJlY3RseSwgdGhlIHBvaW50IG9mIHRoaXMgc2VyaWVzIGlzIHRvIHRha2UNCj4g
+YWR2YW50YWdlIG9mIGRldmljZS1zcGVjaWZpYyBrbm93bGVkZ2UsIGUuZy4sIHRoZSBkZXZpY2Ug
+cmVxdWVzdHMgNA0KPiB2ZWN0b3JzIHZpYSBNTUMsIGJ1dCB3ZSAia25vdyIgdGhlIGRldmljZSBp
+cyBvbmx5IGNhcGFibGUgb2YgdXNpbmcgMy4NCj4gTW9yZW92ZXIsIHdlIHRlbGwgdGhlIGRldmlj
+ZSB2aWEgTU1FIHRoYXQgNCB2ZWN0b3JzIGFyZSBhdmFpbGFibGUsIGJ1dA0KPiB3ZSd2ZSBvbmx5
+IGFjdHVhbGx5IHNldCB1cCAzIG9mIHRoZW0uDQouLi4NCg0KRXZlbiBpZiB5b3UgZG8gdGhhdCwg
+eW91IG91Z2h0IHRvIHdyaXRlIHZhbGlkIGludGVycnVwdCBpbmZvcm1hdGlvbg0KaW50byB0aGUg
+NHRoIHNsb3QgKG1heWJlIHJlcGxpY2F0aW5nIG9uZSBvZiB0aGUgZWFybGllciBpbnRlcnJ1cHRz
+KS4NClRoZW4sIGlmIHRoZSBkZXZpY2UgZG9lcyByYWlzZSB0aGUgJ3VuZXhwZWN0ZWQnIGludGVy
+cnVwdCB5b3UgZG9uJ3QNCmdldCBhIHdyaXRlIHRvIGEgcmFuZG9tIGtlcm5lbCBsb2NhdGlvbi4N
+Cg0KUGxhdXNpYmx5IHNvbWV0aGluZyBzaW1pbGFyIHNob3VsZCBiZSBkb25lIHdoZW4gYSBzbWFs
+bGVyIG51bWJlciBvZg0KaW50ZXJydXB0cyBpcyBhc3NpZ25lZC4NCg0KCURhdmlkDQoNCg==
