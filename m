@@ -2,18 +2,19 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA5661A0004
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 21:51:40 +1000 (EST)
-Message-ID: <53B543C5.0@suse.de>
-Date: Thu, 03 Jul 2014 13:51:33 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 564911A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 22:03:05 +1000 (EST)
+Message-ID: <53B54675.5040308@suse.de>
+Date: Thu, 03 Jul 2014 14:03:01 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
- benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH v2] powerpc/kvm: support to handle sw breakpoint
-References: <1404204062-19635-1-git-send-email-maddy@linux.vnet.ibm.com>
-In-Reply-To: <1404204062-19635-1-git-send-email-maddy@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Scott Wood <scottwood@freescale.com>,
+ Mihai Caraman <mihai.caraman@freescale.com>
+Subject: Re: [PATCH] KVM: PPC: e500: Emulate power management control SPR
+References: <1404132929-27308-1-git-send-email-mihai.caraman@freescale.com>
+ <1404152404.2435.132.camel@snotra.buserror.net>
+In-Reply-To: <1404152404.2435.132.camel@snotra.buserror.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,102 +26,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 01.07.14 10:41, Madhavan Srinivasan wrote:
-> This patch adds kernel side support for software breakpoint.
-> Design is that, by using an illegal instruction, we trap to hypervisor
-> via Emulation Assistance interrupt, where we check for the illegal instruction
-> and accordingly we return to Host or Guest. Patch also adds support for
-> software breakpoint in PR KVM.
->
-> Patch mandates use of "abs" instruction as sw breakpoint instruction
-> (primary opcode 31 and extended opcode 360). Based on PowerISA v2.01,
-> ABS instruction has been dropped from the architecture and treated an
-> illegal instruction.
->
-> Changes v1->v2:
->
->   Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
->   Added code to use KVM get one reg infrastructure to get debug opcode.
->   Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
->   Made changes to commit message.
->
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->   arch/powerpc/include/asm/kvm_book3s.h |    8 ++++++++
->   arch/powerpc/include/asm/ppc-opcode.h |    5 +++++
->   arch/powerpc/kvm/book3s.c             |    3 ++-
->   arch/powerpc/kvm/book3s_hv.c          |    9 +++++++++
->   arch/powerpc/kvm/book3s_pr.c          |    3 +++
->   arch/powerpc/kvm/emulate.c            |   10 ++++++++++
->   6 files changed, 37 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> index f52f656..180d549 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -24,6 +24,14 @@
->   #include <linux/kvm_host.h>
->   #include <asm/kvm_book3s_asm.h>
->   
-> +/*
-> + * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
-> + * Instruction mnemonic is ABS, primary opcode is 31 and extended opcode is 360.
-> + * Based on PowerISA v2.01, ABS instruction has been dropped from the architecture
-> + * and treated an illegal instruction.
-> + */
-> +#define KVMPPC_INST_BOOK3S_DEBUG	0x7c0002d0
+On 30.06.14 20:20, Scott Wood wrote:
+> On Mon, 2014-06-30 at 15:55 +0300, Mihai Caraman wrote:
+>> For FSL e6500 core the kernel uses power management SPR register (PWRMGTCR0)
+>> to enable idle power down for cores and devices by setting up the idle count
+>> period at boot time. With the host already controlling the power management
+>> configuration the guest could simply benefit from it, so emulate guest request
+>> as nop.
+>>
+>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+>> ---
+>>   arch/powerpc/kvm/e500_emulate.c | 8 ++++++++
+>>   1 file changed, 8 insertions(+)
+>>
+>> diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
+>> index 002d517..98a22e5 100644
+>> --- a/arch/powerpc/kvm/e500_emulate.c
+>> +++ b/arch/powerpc/kvm/e500_emulate.c
+>> @@ -250,6 +250,10 @@ int kvmppc_core_emulate_mtspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong spr_va
+>>   				spr_val);
+>>   		break;
+>>   
+>> +	case SPRN_PWRMGTCR0:
+>> +		/* Guest relies on host power management configurations */
+>> +		break;
+>> +
+>>   	/* extra exceptions */
+>>   	case SPRN_IVOR32:
+>>   		vcpu->arch.ivor[BOOKE_IRQPRIO_SPE_UNAVAIL] = spr_val;
+>> @@ -355,6 +359,10 @@ int kvmppc_core_emulate_mfspr_e500(struct kvm_vcpu *vcpu, int sprn, ulong *spr_v
+>>   		*spr_val = 0;
+>>   		break;
+>>   
+>> +	case SPRN_PWRMGTCR0:
+>> +		*spr_val = 0;
+>> +		break;
+>> +
+>>   	case SPRN_MMUCFG:
+>>   		*spr_val = vcpu->arch.mmucfg;
+>>   		break;
+> When reading, is it better to return zero, or the current host value, or
+> the value last written by the guest (even though it wasn't written to
+> hardware)?
 
-This will still break with LE guests.
-
-> +
->   struct kvmppc_bat {
->   	u64 raw;
->   	u32 bepi;
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index 3132bb9..3fbb4c1 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -111,6 +111,11 @@
->   #define OP_31_XOP_LHBRX     790
->   #define OP_31_XOP_STHBRX    918
->   
-> +/* KVMPPC_INST_BOOK3S_DEBUG -- Software breakpoint Instruction
-> + * Instruction mnemonic is ABS, primary opcode is 31 and extended opcode is 360.
-> + */
-> +#define OP_31_XOP_ABS	    360
-> +
->   #define OP_LWZ  32
->   #define OP_LD   58
->   #define OP_LWZU 33
-> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
-> index c254c27..b40fe5d 100644
-> --- a/arch/powerpc/kvm/book3s.c
-> +++ b/arch/powerpc/kvm/book3s.c
-> @@ -789,7 +789,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
->   int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
->   					struct kvm_guest_debug *dbg)
->   {
-> -	return -EINVAL;
-> +	vcpu->guest_debug = dbg->control;
-> +	return 0;
->   }
->   
->   void kvmppc_decrementer_func(unsigned long data)
-> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-> index 7a12edb..402c1ec 100644
-> --- a/arch/powerpc/kvm/book3s_hv.c
-> +++ b/arch/powerpc/kvm/book3s_hv.c
-> @@ -725,8 +725,14 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
->   	 * we don't emulate any guest instructions at this stage.
->   	 */
->   	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
-> +	if (kvmppc_get_last_inst(vcpu) == KVMPPC_INST_BOOK3S_DEBUG ) {
-> +		run->exit_reason = KVM_EXIT_DEBUG;
-> +		run->debug.arch.address = kvmppc_get_pc(vcpu);
-> +		r = RESUME_HOST;
-
-Phew - why can't we just go into the normal instruction emulator for 
-EMUL_ASSIST?
+I think it makes sense to treat it as general storage. I don't think 
+leaking the host value into the guest is useful. And while zero works, 
+the spec does say that the value gets retained, so I think we should do 
+the same.
 
 
 Alex
