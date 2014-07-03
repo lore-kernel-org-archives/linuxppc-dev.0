@@ -1,22 +1,27 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (mail-bn1blp0181.outbound.protection.outlook.com [207.46.163.181])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F07011A0004
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 08:10:14 +1000 (EST)
-Message-ID: <1404425400.21434.89.camel@snotra.buserror.net>
-Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
- memory
+ by lists.ozlabs.org (Postfix) with ESMTPS id 332211A0005
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 08:15:34 +1000 (EST)
+Message-ID: <1404425722.21434.93.camel@snotra.buserror.net>
+Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
+ SPE/FP/AltiVec int numbers
 From: Scott Wood <scottwood@freescale.com>
-To: Priyanka Jain <Priyanka.Jain@freescale.com>
-Date: Thu, 3 Jul 2014 17:10:00 -0500
-In-Reply-To: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
-References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
+To: Caraman Mihai Claudiu-B02008 <mihai.caraman@freescale.com>
+Date: Thu, 3 Jul 2014 17:15:22 -0500
+In-Reply-To: <2399bd1f8fde430a945311ff27c3f5c3@BY2PR03MB508.namprd03.prod.outlook.com>
+References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
+ <1404142497-6430-2-git-send-email-mihai.caraman@freescale.com>
+ <53B54AAD.4040609@suse.de>
+ <2399bd1f8fde430a945311ff27c3f5c3@BY2PR03MB508.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-mtd@lists.infradead.org, linux-spi@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Alexander Graf <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,49 +31,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-07-03 at 15:42 +0530, Priyanka Jain wrote:
-> -Micron n25q512a memory is supported by m25p80 driver.
->  Add compatible field required to support n25q512a in m25p80.txt
-> -Add micron to the vendor-prefixes.txt file
+On Thu, 2014-07-03 at 10:25 -0500, Caraman Mihai Claudiu-B02008 wrote:
+> > -----Original Message-----
+> > From: Alexander Graf [mailto:agraf@suse.de]
+> > Sent: Thursday, July 03, 2014 3:21 PM
+> > To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
+> > Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH 1/6 v2] KVM: PPC: Book3E: Use common defines for
+> > SPE/FP/AltiVec int numbers
+> > 
+> > 
+> > On 30.06.14 17:34, Mihai Caraman wrote:
+> > > Use common BOOKE_IRQPRIO and BOOKE_INTERRUPT defines for SPE/FP/AltiVec
+> > > which share the same interrupt numbers.
+> > >
+> > > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> > > ---
+> > > v2:
+> > >   - remove outdated definitions
+> > >
+> > >   arch/powerpc/include/asm/kvm_asm.h    |  8 --------
+> > >   arch/powerpc/kvm/booke.c              | 17 +++++++++--------
+> > >   arch/powerpc/kvm/booke.h              |  4 ++--
+> > >   arch/powerpc/kvm/booke_interrupts.S   |  9 +++++----
+> > >   arch/powerpc/kvm/bookehv_interrupts.S |  4 ++--
+> > >   arch/powerpc/kvm/e500.c               | 10 ++++++----
+> > >   arch/powerpc/kvm/e500_emulate.c       | 10 ++++++----
+> > >   7 files changed, 30 insertions(+), 32 deletions(-)
+> > >
+> > > diff --git a/arch/powerpc/include/asm/kvm_asm.h
+> > b/arch/powerpc/include/asm/kvm_asm.h
+> > > index 9601741..c94fd33 100644
+> > > --- a/arch/powerpc/include/asm/kvm_asm.h
+> > > +++ b/arch/powerpc/include/asm/kvm_asm.h
+> > > @@ -56,14 +56,6 @@
+> > >   /* E500 */
+> > >   #define BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL 32
+> > >   #define BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST 33
+> > > -/*
+> > > - * TODO: Unify 32-bit and 64-bit kernel exception handlers to use same
+> > defines
+> > > - */
+> > > -#define BOOKE_INTERRUPT_SPE_UNAVAIL
+> > BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> > > -#define BOOKE_INTERRUPT_SPE_FP_DATA
+> > BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+> > > -#define BOOKE_INTERRUPT_ALTIVEC_UNAVAIL
+> > BOOKE_INTERRUPT_SPE_ALTIVEC_UNAVAIL
+> > > -#define BOOKE_INTERRUPT_ALTIVEC_ASSIST \
+> > > -				BOOKE_INTERRUPT_SPE_FP_DATA_ALTIVEC_ASSIST
+> > 
+> > I think I'd prefer to keep them separate.
 > 
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> ---
->  Documentation/devicetree/bindings/mtd/m25p80.txt   |    1 +
->  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->  2 files changed, 2 insertions(+), 0 deletions(-)
+> What is the reason from changing your mind from ver 1? Do you want to have
+> different defines with same values (we specifically mapped them to the
+> hardware interrupt numbers). We already upstreamed the necessary changes
+> in the kernel. Scott, please share your opinion here.
 
-Why did you send this to the ppc list but not the spi or mtd lists?
+I don't like hiding the fact that they're the same number, which could
+lead to wrong code in the absence of ifdefs that strictly mutually
+exclude SPE and Altivec code -- there was an instance of this with
+MSR_VEC versus MSR_SPE in a previous patchset.
+ 
+> > >   #define BOOKE_INTERRUPT_SPE_FP_ROUND 34
+> > >   #define BOOKE_INTERRUPT_PERFORMANCE_MONITOR 35
+> > >   #define BOOKE_INTERRUPT_DOORBELL 36
+> > > diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> > > index ab62109..3c86d9b 100644
+> > > --- a/arch/powerpc/kvm/booke.c
+> > > +++ b/arch/powerpc/kvm/booke.c
+> > > @@ -388,8 +388,8 @@ static int kvmppc_booke_irqprio_deliver(struct
+> > kvm_vcpu *vcpu,
+> > >   	case BOOKE_IRQPRIO_ITLB_MISS:
+> > >   	case BOOKE_IRQPRIO_SYSCALL:
+> > >   	case BOOKE_IRQPRIO_FP_UNAVAIL:
+> > > -	case BOOKE_IRQPRIO_SPE_UNAVAIL:
+> > > -	case BOOKE_IRQPRIO_SPE_FP_DATA:
+> > > +	case BOOKE_IRQPRIO_SPE_ALTIVEC_UNAVAIL:
+> > > +	case BOOKE_IRQPRIO_SPE_FP_DATA_ALTIVEC_ASSIST:
+> > 
+> > #ifdef CONFIG_KVM_E500V2
+> >    case ...SPE:
+> > #else
+> >    case ..ALTIVEC:
+> > #endif
 
-I'm having a hard time following the flow of how these SPI devices get
-bound -- is the compatible involved at all?  I don't see this string
-(with vendor prefix included) in the driver.  I do see a table that
-contains what looks like device IDs.  If the device can report its id,
-shouldn't we rely on that rather than device tree compatible?
+I don't think that's an improvement.
 
 -Scott
-
-
-> diff --git a/Documentation/devicetree/bindings/mtd/m25p80.txt b/Documentation/devicetree/bindings/mtd/m25p80.txt
-> index 4611aa8..ce02e81 100644
-> --- a/Documentation/devicetree/bindings/mtd/m25p80.txt
-> +++ b/Documentation/devicetree/bindings/mtd/m25p80.txt
-> @@ -7,6 +7,7 @@ Required properties:
->                 the DT binding is not Linux-only, but in case of Linux, see the
->                 "spi_nor_ids" table in drivers/mtd/spi-nor/spi-nor.c for the list
->                 of supported chips.
-> +               example: "micron,n25q512a"
->  - reg : Chip-Select number
->  - spi-max-frequency : Maximum frequency of the SPI bus the chip can operate at
->  
-> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> index 4d7f375..a44cfee 100644
-> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-> @@ -79,6 +79,7 @@ marvell	Marvell Technology Group Ltd.
->  maxim	Maxim Integrated Products
->  micrel	Micrel Inc.
->  microchip	Microchip Technology Inc.
-> +micron	Micron Technology Inc.
->  mosaixtech	Mosaix Technologies, Inc.
->  moxa	Moxa
->  mpl	MPL AG
