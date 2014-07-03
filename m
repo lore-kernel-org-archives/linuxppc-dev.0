@@ -1,18 +1,22 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mkl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D90F21A0004
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 17:20:51 +1000 (EST)
-Date: Thu, 3 Jul 2014 17:20:50 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mikey@neuling.org, paulmck@linux.vnet.ibm.com
-Subject: [PATCH] powernv: Add OPAL tracepoints
-Message-ID: <20140703172050.495b3f72@kryten>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C5B11A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 19:15:21 +1000 (EST)
+Message-ID: <53B51F10.4040900@pengutronix.de>
+Date: Thu, 03 Jul 2014 11:14:56 +0200
+From: Marc Kleine-Budde <mkl@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Zhao Qiang <B45475@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ wg@grandegger.com, linux-can@vger.kernel.org, B07421@freescale.com
+Subject: Re: [PATCH v5] flexcan: add err_irq handler for flexcan
+References: <1404354180-46431-1-git-send-email-B45475@freescale.com>
+In-Reply-To: <1404354180-46431-1-git-send-email-B45475@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,326 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Knowing how long we spend in firmware calls is an important part of
-minimising OS jitter.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-This patch adds tracepoints to each OPAL call. If tracepoints are
-enabled we branch out to a common routine that calls an entry and exit
-tracepoint.
+On 07/03/2014 04:23 AM, Zhao Qiang wrote:
+> when flexcan is not physically linked, command 'cantest' will
+> trigger an err_irq, add err_irq handler for it.
+>=20
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+> Changes for v2:
+> 	- use a space instead of tab
+> 	- use flexcan_poll_state instead of print
+> Changes for v3:
+> 	- return IRQ_HANDLED if err is triggered
+> 	- stop transmitted packets when there is an err_interrupt=20
+> Changes for v4:
+> 	- call flexcan_irq=20
+> Changes for v5:
+> 	- move err_int_handling code from flexcan_irq to flexcan_err_irq
+> 	- call flexcan_err_irq from flexcan_irq
 
-This allows us to write tools that monitor the frequency and duration
-of OPAL calls, eg:
+Why do you move the RX IRQ handling into the error IRQ function? If I
+understand you correctly you only want to do error interrupt handling
+the error IRQ function, right?
 
-name                  count  total(ms)  min(ms)  max(ms)  avg(ms)  period(ms)
-OPAL_HANDLE_INTERRUPT     5      0.199    0.037    0.042    0.040   12547.545
-OPAL_POLL_EVENTS        204      2.590    0.012    0.036    0.013    2264.899
-OPAL_PCI_MSI_EOI       2830      3.066    0.001    0.005    0.001      81.166
+Marc
+--=20
+Pengutronix e.K.                  | Marc Kleine-Budde           |
+Industrial Linux Solutions        | Phone: +49-231-2826-924     |
+Vertretung West/Dortmund          | Fax:   +49-5121-206917-5555 |
+Amtsgericht Hildesheim, HRA 2686  | http://www.pengutronix.de   |
 
-We use jump labels if configured, which means we only add a single
-nop instruction to every OPAL call when the tracepoints are disabled.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+--87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Index: b/arch/powerpc/include/asm/trace.h
-===================================================================
---- a/arch/powerpc/include/asm/trace.h
-+++ b/arch/powerpc/include/asm/trace.h
-@@ -99,6 +99,51 @@ TRACE_EVENT_FN(hcall_exit,
- );
- #endif
- 
-+#ifdef CONFIG_PPC_POWERNV
-+extern void opal_tracepoint_regfunc(void);
-+extern void opal_tracepoint_unregfunc(void);
-+
-+TRACE_EVENT_FN(opal_entry,
-+
-+	TP_PROTO(unsigned long opcode, unsigned long *args),
-+
-+	TP_ARGS(opcode, args),
-+
-+	TP_STRUCT__entry(
-+		__field(unsigned long, opcode)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->opcode = opcode;
-+	),
-+
-+	TP_printk("opcode=%lu", __entry->opcode),
-+
-+	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
-+);
-+
-+TRACE_EVENT_FN(opal_exit,
-+
-+	TP_PROTO(unsigned long opcode, unsigned long retval),
-+
-+	TP_ARGS(opcode, retval),
-+
-+	TP_STRUCT__entry(
-+		__field(unsigned long, opcode)
-+		__field(unsigned long, retval)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->opcode = opcode;
-+		__entry->retval = retval;
-+	),
-+
-+	TP_printk("opcode=%lu retval=%lu", __entry->opcode, __entry->retval),
-+
-+	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
-+);
-+#endif
-+
- #endif /* _TRACE_POWERPC_H */
- 
- #undef TRACE_INCLUDE_PATH
-Index: b/arch/powerpc/platforms/powernv/Makefile
-===================================================================
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -8,3 +8,4 @@ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o
- obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
- obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
- obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
-+obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
-Index: b/arch/powerpc/platforms/powernv/opal-wrappers.S
-===================================================================
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -13,30 +13,69 @@
- #include <asm/hvcall.h>
- #include <asm/asm-offsets.h>
- #include <asm/opal.h>
-+#include <asm/jump_label.h>
-+
-+	.section	".text"
-+
-+#ifdef CONFIG_TRACEPOINTS
-+#ifdef CONFIG_JUMP_LABEL
-+#define OPAL_BRANCH(LABEL)					\
-+	ARCH_STATIC_BRANCH(LABEL, opal_tracepoint_key)
-+#else
-+
-+	.section	".toc","aw"
-+
-+	.globl opal_tracepoint_refcount
-+opal_tracepoint_refcount:
-+	.llong	0
-+
-+	.section	".text"
-+
-+/*
-+ * We branch around this in early init by using an unconditional cpu
-+ * feature.
-+ */
-+#define OPAL_BRANCH(LABEL)					\
-+BEGIN_FTR_SECTION;						\
-+	b	1f;						\
-+END_FTR_SECTION(0, 1);						\
-+	ld	r12,opal_tracepoint_refcount@toc(r2);		\
-+	std	r12,32(r1);					\
-+	cmpdi	r12,0;						\
-+	bne-	LABEL;						\
-+1:
-+
-+#endif
-+
-+#else
-+#define OPAL_BRANCH(LABEL)
-+#endif
- 
- /* TODO:
-  *
-  * - Trace irqs in/off (needs saving/restoring all args, argh...)
-  * - Get r11 feed up by Dave so I can have better register usage
-  */
-+
- #define OPAL_CALL(name, token)		\
-  _GLOBAL(name);				\
- 	mflr	r0;			\
--	mfcr	r12;			\
- 	std	r0,16(r1);		\
-+	li	r0,token;		\
-+	OPAL_BRANCH(opal_tracepoint_entry) \
-+	mfcr	r12;			\
- 	stw	r12,8(r1);		\
- 	std	r1,PACAR1(r13);		\
--	li	r0,0;			\
-+	li	r11,0;			\
- 	mfmsr	r12;			\
--	ori	r0,r0,MSR_EE;		\
-+	ori	r11,r11,MSR_EE;		\
- 	std	r12,PACASAVEDMSR(r13);	\
--	andc	r12,r12,r0;		\
-+	andc	r12,r12,r11;		\
- 	mtmsrd	r12,1;			\
--	LOAD_REG_ADDR(r0,opal_return);	\
--	mtlr	r0;			\
--	li	r0,MSR_DR|MSR_IR|MSR_LE;\
--	andc	r12,r12,r0;		\
--	li	r0,token;		\
-+	LOAD_REG_ADDR(r11,opal_return);	\
-+	mtlr	r11;			\
-+	li	r11,MSR_DR|MSR_IR|MSR_LE;\
-+	andc	r12,r12,r11;		\
- 	mtspr	SPRN_HSRR1,r12;		\
- 	LOAD_REG_ADDR(r11,opal);	\
- 	ld	r12,8(r11);		\
-@@ -61,6 +100,64 @@ opal_return:
- 	mtcr	r4;
- 	rfid
- 
-+#ifdef CONFIG_TRACEPOINTS
-+opal_tracepoint_entry:
-+	stdu	r1,-STACKFRAMESIZE(r1)
-+	std	r0,STK_REG(R23)(r1)
-+	std	r3,STK_REG(R24)(r1)
-+	std	r4,STK_REG(R25)(r1)
-+	std	r5,STK_REG(R26)(r1)
-+	std	r6,STK_REG(R27)(r1)
-+	std	r7,STK_REG(R28)(r1)
-+	std	r8,STK_REG(R29)(r1)
-+	std	r9,STK_REG(R30)(r1)
-+	std	r10,STK_REG(R31)(r1)
-+	mr	r3,r0
-+	addi	r4,r1,STK_REG(R24)
-+	bl	__trace_opal_entry
-+	ld	r0,STK_REG(R23)(r1)
-+	ld	r3,STK_REG(R24)(r1)
-+	ld	r4,STK_REG(R25)(r1)
-+	ld	r5,STK_REG(R26)(r1)
-+	ld	r6,STK_REG(R27)(r1)
-+	ld	r7,STK_REG(R28)(r1)
-+	ld	r8,STK_REG(R29)(r1)
-+	ld	r9,STK_REG(R30)(r1)
-+	ld	r10,STK_REG(R31)(r1)
-+	LOAD_REG_ADDR(r11,opal_tracepoint_return)
-+	mfcr	r12
-+	std	r11,16(r1)
-+	stw	r12,8(r1)
-+	std	r1,PACAR1(r13)
-+	li	r11,0
-+	mfmsr	r12
-+	ori	r11,r11,MSR_EE
-+	std	r12,PACASAVEDMSR(r13)
-+	andc	r12,r12,r11
-+	mtmsrd	r12,1
-+	LOAD_REG_ADDR(r11,opal_return)
-+	mtlr	r11
-+	li	r11,MSR_DR|MSR_IR|MSR_LE
-+	andc	r12,r12,r11
-+	mtspr	SPRN_HSRR1,r12
-+	LOAD_REG_ADDR(r11,opal)
-+	ld	r12,8(r11)
-+	ld	r2,0(r11)
-+	mtspr	SPRN_HSRR0,r12
-+	hrfid
-+
-+opal_tracepoint_return:
-+	std	r3,STK_REG(R31)(r1)
-+	mr	r4,r3
-+	ld	r0,STK_REG(R23)(r1)
-+	bl	__trace_opal_exit
-+	ld	r3,STK_REG(R31)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+	ld	r0,16(r1)
-+	mtlr	r0
-+	blr
-+#endif
-+
- OPAL_CALL(opal_invalid_call,			OPAL_INVALID_CALL);
- OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
- OPAL_CALL(opal_console_read,			OPAL_CONSOLE_READ);
-Index: b/arch/powerpc/platforms/powernv/opal-tracepoints.c
-===================================================================
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-tracepoints.c
-@@ -0,0 +1,84 @@
-+#include <linux/percpu.h>
-+#include <linux/jump_label.h>
-+#include <asm/trace.h>
-+
-+#ifdef CONFIG_JUMP_LABEL
-+struct static_key opal_tracepoint_key = STATIC_KEY_INIT;
-+
-+void opal_tracepoint_regfunc(void)
-+{
-+	static_key_slow_inc(&opal_tracepoint_key);
-+}
-+
-+void opal_tracepoint_unregfunc(void)
-+{
-+	static_key_slow_dec(&opal_tracepoint_key);
-+}
-+#else
-+/*
-+ * We optimise OPAL calls by placing opal_tracepoint_refcount
-+ * directly in the TOC so we can check if the opal tracepoints are
-+ * enabled via a single load.
-+ */
-+
-+/* NB: reg/unreg are called while guarded with the tracepoints_mutex */
-+extern long opal_tracepoint_refcount;
-+
-+void opal_tracepoint_regfunc(void)
-+{
-+	opal_tracepoint_refcount++;
-+}
-+
-+void opal_tracepoint_unregfunc(void)
-+{
-+	opal_tracepoint_refcount--;
-+}
-+#endif
-+
-+/*
-+ * Since the tracing code might execute OPAL calls we need to guard against
-+ * recursion.
-+ */
-+static DEFINE_PER_CPU(unsigned int, opal_trace_depth);
-+
-+void __trace_opal_entry(unsigned long opcode, unsigned long *args)
-+{
-+	unsigned long flags;
-+	unsigned int *depth;
-+
-+	local_irq_save(flags);
-+
-+	depth = &__get_cpu_var(opal_trace_depth);
-+
-+	if (*depth)
-+		goto out;
-+
-+	(*depth)++;
-+	preempt_disable();
-+	trace_opal_entry(opcode, args);
-+	(*depth)--;
-+
-+out:
-+	local_irq_restore(flags);
-+}
-+
-+void __trace_opal_exit(long opcode, unsigned long retval)
-+{
-+	unsigned long flags;
-+	unsigned int *depth;
-+
-+	local_irq_save(flags);
-+
-+	depth = &__get_cpu_var(opal_trace_depth);
-+
-+	if (*depth)
-+		goto out;
-+
-+	(*depth)++;
-+	trace_opal_exit(opcode, retval);
-+	preempt_enable();
-+	(*depth)--;
-+
-+out:
-+	local_irq_restore(flags);
-+}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+Comment: Using GnuPG with Icedove - http://www.enigmail.net/
+
+iEYEARECAAYFAlO1HxEACgkQjTAFq1RaXHO5TACgjBRadhnrz9W6sy8alYPSGg3H
+iH0AnRDp6H7tUKGgwMKyPbFC4xjjDJOe
+=Bkej
+-----END PGP SIGNATURE-----
+
+--87Q4CxoqtOM3wjgLsRxU0xLDLsBb8dxjX--
