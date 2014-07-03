@@ -1,22 +1,17 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0238.outbound.protection.outlook.com [207.46.163.238])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CDAA1A0004
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 13:37:56 +1000 (EST)
-From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v2] memory: Freescale CoreNet Coherency Fabric error
- reporting driver
-Date: Thu, 3 Jul 2014 03:37:49 +0000
-Message-ID: <2c99870181dd45189e54e2f49c4b6726@BLUPR03MB566.namprd03.prod.outlook.com>
-References: <20140702235211.GA3898@home.buserror.net>
-In-Reply-To: <20140702235211.GA3898@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFF251A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 15:52:11 +1000 (EST)
+Date: Thu, 3 Jul 2014 15:52:03 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH 1/2] powerpc/pseries: Use jump labels for hcall tracepoints
+Message-ID: <20140703155203.33af5387@kryten>
 MIME-Version: 1.0
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,362 +21,372 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+hcall tracepoints add quite a few instructions to our hcall path:
 
+plpar_hcall:
+	mr      r2,r2
+	mfcr    r0
+	stw     r0,8(r1)
+	b       164		<---- start
+	ld      r12,0(r2)
+	std     r12,32(r1)
+	cmpdi   r12,0
+	beq     164		<---- end
+...
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, July 03, 2014 5:22 AM
-> To: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org; Bhushan Bharat-R65777
-> Subject: [PATCH v2] memory: Freescale CoreNet Coherency Fabric error repo=
-rting
-> driver
->=20
-> The CoreNet Coherency Fabric is part of the memory subsystem on
-> some Freescale QorIQ chips.  It can report coherency violations (e.g.
-> due to misusing memory that is mapped noncoherent) as well as
-> transactions that do not hit any local access window, or which hit a
-> local access window with an invalid target ID.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+We have an unconditional branch that gets noped out during boot and
+a load/compare/branch. We also store the tracepoint value to the
+stack for the hcall_exit path to use.
 
-Reviewed-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+By using jump labels we can simplify this to just a single nop that
+gets replaced with a branch when the tracepoint is enabled:
 
+plpar_hcall:
+	mr      r2,r2
+	mfcr    r0
+	stw     r0,8(r1)
+	nop			<----
+...
 
-Regards
--Bharat
+If jump labels are not enabled, we fall back to the old method.
 
-> ---
-> v2:
->  - s/cecadr/cecaddr/ to consistently use ccf2 names
->  - fix ERRDET_CTYPE_MASK value
->  - use the ccf2 value for CECADDRH_ADDRH (harmless on ccf1)
->  - add comment explaining why we disable detection on remove for
->    ccf1 but not ccf2
-> ---
->  arch/powerpc/configs/corenet32_smp_defconfig |   1 +
->  arch/powerpc/configs/corenet64_smp_defconfig |   1 +
->  drivers/memory/Kconfig                       |  10 ++
->  drivers/memory/Makefile                      |   1 +
->  drivers/memory/fsl-corenet-cf.c              | 251 +++++++++++++++++++++=
-++++++
->  5 files changed, 264 insertions(+)
->  create mode 100644 drivers/memory/fsl-corenet-cf.c
->=20
-> diff --git a/arch/powerpc/configs/corenet32_smp_defconfig
-> b/arch/powerpc/configs/corenet32_smp_defconfig
-> index 7d0c837..6a3c58a 100644
-> --- a/arch/powerpc/configs/corenet32_smp_defconfig
-> +++ b/arch/powerpc/configs/corenet32_smp_defconfig
-> @@ -180,3 +180,4 @@ CONFIG_CRYPTO_SHA512=3Dy
->  CONFIG_CRYPTO_AES=3Dy
->  # CONFIG_CRYPTO_ANSI_CPRNG is not set
->  CONFIG_CRYPTO_DEV_FSL_CAAM=3Dy
-> +CONFIG_FSL_CORENET_CF=3Dy
-> diff --git a/arch/powerpc/configs/corenet64_smp_defconfig
-> b/arch/powerpc/configs/corenet64_smp_defconfig
-> index 6ae07e1..4b07bad 100644
-> --- a/arch/powerpc/configs/corenet64_smp_defconfig
-> +++ b/arch/powerpc/configs/corenet64_smp_defconfig
-> @@ -179,3 +179,4 @@ CONFIG_CRYPTO_SHA256=3Dy
->  CONFIG_CRYPTO_SHA512=3Dy
->  # CONFIG_CRYPTO_ANSI_CPRNG is not set
->  CONFIG_CRYPTO_DEV_FSL_CAAM=3Dy
-> +CONFIG_FSL_CORENET_CF=3Dy
-> diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
-> index c59e9c9..fab81a1 100644
-> --- a/drivers/memory/Kconfig
-> +++ b/drivers/memory/Kconfig
-> @@ -61,6 +61,16 @@ config TEGRA30_MC
->  	  analysis, especially for IOMMU/SMMU(System Memory Management
->  	  Unit) module.
->=20
-> +config FSL_CORENET_CF
-> +	tristate "Freescale CoreNet Error Reporting"
-> +	depends on FSL_SOC_BOOKE
-> +	help
-> +	  Say Y for reporting of errors from the Freescale CoreNet
-> +	  Coherency Fabric.  Errors reported include accesses to
-> +	  physical addresses that mapped by no local access window
-> +	  (LAW) or an invalid LAW, as well as bad cache state that
-> +	  represents a coherency violation.
-> +
->  config FSL_IFC
->  	bool
->  	depends on FSL_SOC
-> diff --git a/drivers/memory/Makefile b/drivers/memory/Makefile
-> index 71160a2..4055c47 100644
-> --- a/drivers/memory/Makefile
-> +++ b/drivers/memory/Makefile
-> @@ -7,6 +7,7 @@ obj-$(CONFIG_OF)		+=3D of_memory.o
->  endif
->  obj-$(CONFIG_TI_AEMIF)		+=3D ti-aemif.o
->  obj-$(CONFIG_TI_EMIF)		+=3D emif.o
-> +obj-$(CONFIG_FSL_CORENET_CF)	+=3D fsl-corenet-cf.o
->  obj-$(CONFIG_FSL_IFC)		+=3D fsl_ifc.o
->  obj-$(CONFIG_MVEBU_DEVBUS)	+=3D mvebu-devbus.o
->  obj-$(CONFIG_TEGRA20_MC)	+=3D tegra20-mc.o
-> diff --git a/drivers/memory/fsl-corenet-cf.c b/drivers/memory/fsl-corenet=
--cf.c
-> new file mode 100644
-> index 0000000..c9443fc
-> --- /dev/null
-> +++ b/drivers/memory/fsl-corenet-cf.c
-> @@ -0,0 +1,251 @@
-> +/*
-> + * CoreNet Coherency Fabric error reporting
-> + *
-> + * Copyright 2014 Freescale Semiconductor Inc.
-> + *
-> + * This program is free software; you can redistribute  it and/or modify=
- it
-> + * under  the terms of  the GNU General  Public License as published by =
-the
-> + * Free Software Foundation;  either version 2 of the  License, or (at y=
-our
-> + * option) any later version.
-> + */
-> +
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/irq.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_device.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/platform_device.h>
-> +
-> +enum ccf_version {
-> +	CCF1,
-> +	CCF2,
-> +};
-> +
-> +struct ccf_info {
-> +	enum ccf_version version;
-> +	int err_reg_offs;
-> +};
-> +
-> +static const struct ccf_info ccf1_info =3D {
-> +	.version =3D CCF1,
-> +	.err_reg_offs =3D 0xa00,
-> +};
-> +
-> +static const struct ccf_info ccf2_info =3D {
-> +	.version =3D CCF2,
-> +	.err_reg_offs =3D 0xe40,
-> +};
-> +
-> +static const struct of_device_id ccf_matches[] =3D {
-> +	{
-> +		.compatible =3D "fsl,corenet1-cf",
-> +		.data =3D &ccf1_info,
-> +	},
-> +	{
-> +		.compatible =3D "fsl,corenet2-cf",
-> +		.data =3D &ccf2_info,
-> +	},
-> +	{}
-> +};
-> +
-> +struct ccf_err_regs {
-> +	u32 errdet;		/* 0x00 Error Detect Register */
-> +	/* 0x04 Error Enable (ccf1)/Disable (ccf2) Register */
-> +	u32 errdis;
-> +	/* 0x08 Error Interrupt Enable Register (ccf2 only) */
-> +	u32 errinten;
-> +	u32 cecar;		/* 0x0c Error Capture Attribute Register */
-> +	u32 cecaddrh;		/* 0x10 Error Capture Address High */
-> +	u32 cecaddrl;		/* 0x14 Error Capture Address Low */
-> +	u32 cecar2;		/* 0x18 Error Capture Attribute Register 2 */
-> +};
-> +
-> +/* LAE/CV also valid for errdis and errinten */
-> +#define ERRDET_LAE		(1 << 0)  /* Local Access Error */
-> +#define ERRDET_CV		(1 << 1)  /* Coherency Violation */
-> +#define ERRDET_CTYPE_SHIFT	26	  /* Capture Type (ccf2 only) */
-> +#define ERRDET_CTYPE_MASK	(0x1f << ERRDET_CTYPE_SHIFT)
-> +#define ERRDET_CAP		(1 << 31) /* Capture Valid (ccf2 only) */
-> +
-> +#define CECAR_VAL		(1 << 0)  /* Valid (ccf1 only) */
-> +#define CECAR_UVT		(1 << 15) /* Unavailable target ID (ccf1) */
-> +#define CECAR_SRCID_SHIFT_CCF1	24
-> +#define CECAR_SRCID_MASK_CCF1	(0xff << CECAR_SRCID_SHIFT_CCF1)
-> +#define CECAR_SRCID_SHIFT_CCF2	18
-> +#define CECAR_SRCID_MASK_CCF2	(0xff << CECAR_SRCID_SHIFT_CCF2)
-> +
-> +#define CECADDRH_ADDRH		0xff
-> +
-> +struct ccf_private {
-> +	const struct ccf_info *info;
-> +	struct device *dev;
-> +	void __iomem *regs;
-> +	struct ccf_err_regs __iomem *err_regs;
-> +};
-> +
-> +static irqreturn_t ccf_irq(int irq, void *dev_id)
-> +{
-> +	struct ccf_private *ccf =3D dev_id;
-> +	static DEFINE_RATELIMIT_STATE(ratelimit, DEFAULT_RATELIMIT_INTERVAL,
-> +				      DEFAULT_RATELIMIT_BURST);
-> +	u32 errdet, cecar, cecar2;
-> +	u64 addr;
-> +	u32 src_id;
-> +	bool uvt =3D false;
-> +	bool cap_valid =3D false;
-> +
-> +	errdet =3D ioread32be(&ccf->err_regs->errdet);
-> +	cecar =3D ioread32be(&ccf->err_regs->cecar);
-> +	cecar2 =3D ioread32be(&ccf->err_regs->cecar2);
-> +	addr =3D ioread32be(&ccf->err_regs->cecaddrl);
-> +	addr |=3D ((u64)(ioread32be(&ccf->err_regs->cecaddrh) &
-> +		       CECADDRH_ADDRH)) << 32;
-> +
-> +	if (!__ratelimit(&ratelimit))
-> +		goto out;
-> +
-> +	switch (ccf->info->version) {
-> +	case CCF1:
-> +		if (cecar & CECAR_VAL) {
-> +			if (cecar & CECAR_UVT)
-> +				uvt =3D true;
-> +
-> +			src_id =3D (cecar & CECAR_SRCID_MASK_CCF1) >>
-> +				 CECAR_SRCID_SHIFT_CCF1;
-> +			cap_valid =3D true;
-> +		}
-> +
-> +		break;
-> +	case CCF2:
-> +		if (errdet & ERRDET_CAP) {
-> +			src_id =3D (cecar & CECAR_SRCID_MASK_CCF2) >>
-> +				 CECAR_SRCID_SHIFT_CCF2;
-> +			cap_valid =3D true;
-> +		}
-> +
-> +		break;
-> +	}
-> +
-> +	dev_crit(ccf->dev, "errdet 0x%08x cecar 0x%08x cecar2 0x%08x\n",
-> +		 errdet, cecar, cecar2);
-> +
-> +	if (errdet & ERRDET_LAE) {
-> +		if (uvt)
-> +			dev_crit(ccf->dev, "LAW Unavailable Target ID\n");
-> +		else
-> +			dev_crit(ccf->dev, "Local Access Window Error\n");
-> +	}
-> +
-> +	if (errdet & ERRDET_CV)
-> +		dev_crit(ccf->dev, "Coherency Violation\n");
-> +
-> +	if (cap_valid) {
-> +		dev_crit(ccf->dev, "address 0x%09llx, src id 0x%x\n",
-> +			 addr, src_id);
-> +	}
-> +
-> +out:
-> +	iowrite32be(errdet, &ccf->err_regs->errdet);
-> +	return errdet ? IRQ_HANDLED : IRQ_NONE;
-> +}
-> +
-> +static int ccf_probe(struct platform_device *pdev)
-> +{
-> +	struct ccf_private *ccf;
-> +	struct resource *r;
-> +	const struct of_device_id *match;
-> +	int ret, irq;
-> +
-> +	match =3D of_match_device(ccf_matches, &pdev->dev);
-> +	if (WARN_ON(!match))
-> +		return -ENODEV;
-> +
-> +	ccf =3D devm_kzalloc(&pdev->dev, sizeof(*ccf), GFP_KERNEL);
-> +	if (!ccf)
-> +		return -ENOMEM;
-> +
-> +	r =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!r) {
-> +		dev_err(&pdev->dev, "%s: no mem resource\n", __func__);
-> +		return -ENXIO;
-> +	}
-> +
-> +	ccf->regs =3D devm_ioremap_resource(&pdev->dev, r);
-> +	if (IS_ERR(ccf->regs)) {
-> +		dev_err(&pdev->dev, "%s: can't map mem resource\n", __func__);
-> +		return PTR_ERR(ccf->regs);
-> +	}
-> +
-> +	ccf->dev =3D &pdev->dev;
-> +	ccf->info =3D match->data;
-> +	ccf->err_regs =3D ccf->regs + ccf->info->err_reg_offs;
-> +
-> +	dev_set_drvdata(&pdev->dev, ccf);
-> +
-> +	irq =3D platform_get_irq(pdev, 0);
-> +	if (!irq) {
-> +		dev_err(&pdev->dev, "%s: no irq\n", __func__);
-> +		return -ENXIO;
-> +	}
-> +
-> +	ret =3D devm_request_irq(&pdev->dev, irq, ccf_irq, 0, pdev->name, ccf);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "%s: can't request irq\n", __func__);
-> +		return ret;
-> +	}
-> +
-> +	switch (ccf->info->version) {
-> +	case CCF1:
-> +		/* On CCF1 this register enables rather than disables. */
-> +		iowrite32be(ERRDET_LAE | ERRDET_CV, &ccf->err_regs->errdis);
-> +		break;
-> +
-> +	case CCF2:
-> +		iowrite32be(0, &ccf->err_regs->errdis);
-> +		iowrite32be(ERRDET_LAE | ERRDET_CV, &ccf->err_regs->errinten);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int ccf_remove(struct platform_device *pdev)
-> +{
-> +	struct ccf_private *ccf =3D dev_get_drvdata(&pdev->dev);
-> +
-> +	switch (ccf->info->version) {
-> +	case CCF1:
-> +		iowrite32be(0, &ccf->err_regs->errdis);
-> +		break;
-> +
-> +	case CCF2:
-> +		/*
-> +		 * We clear errdis on ccf1 because that's the only way to
-> +		 * disable interrupts, but on ccf2 there's no need to disable
-> +		 * detection.
-> +		 */
-> +		iowrite32be(0, &ccf->err_regs->errinten);
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver ccf_driver =3D {
-> +	.driver =3D {
-> +		.name =3D KBUILD_MODNAME,
-> +		.owner =3D THIS_MODULE,
-> +		.of_match_table =3D ccf_matches,
-> +	},
-> +	.probe =3D ccf_probe,
-> +	.remove =3D ccf_remove,
-> +};
-> +
-> +module_platform_driver(ccf_driver);
-> +
-> +MODULE_LICENSE("GPL");
-> +MODULE_AUTHOR("Freescale Semiconductor");
-> +MODULE_DESCRIPTION("Freescale CoreNet Coherency Fabric error reporting")=
-;
-> --
-> 1.9.1
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: b/arch/powerpc/include/asm/jump_label.h
+===================================================================
+--- a/arch/powerpc/include/asm/jump_label.h
++++ b/arch/powerpc/include/asm/jump_label.h
+@@ -10,6 +10,7 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
++#ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ 
+ #include <asm/feature-fixups.h>
+@@ -42,4 +43,12 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#else
++#define ARCH_STATIC_BRANCH(LABEL, KEY)		\
++1098:	nop;					\
++	.pushsection __jump_table, "aw";	\
++	FTR_ENTRY_LONG 1098b, LABEL, KEY;	\
++	.popsection
++#endif
++
+ #endif /* _ASM_POWERPC_JUMP_LABEL_H */
+Index: b/arch/powerpc/platforms/pseries/hvCall.S
+===================================================================
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -12,9 +12,13 @@
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/ptrace.h>
++#include <asm/jump_label.h>
++
++	.section	".text"
+ 	
+ #ifdef CONFIG_TRACEPOINTS
+ 
++#ifndef CONFIG_JUMP_LABEL
+ 	.section	".toc","aw"
+ 
+ 	.globl hcall_tracepoint_refcount
+@@ -22,21 +26,13 @@ hcall_tracepoint_refcount:
+ 	.llong	0
+ 
+ 	.section	".text"
++#endif
+ 
+ /*
+  * precall must preserve all registers.  use unused STK_PARAM()
+- * areas to save snapshots and opcode. We branch around this
+- * in early init (eg when populating the MMU hashtable) by using an
+- * unconditional cpu feature.
++ * areas to save snapshots and opcode.
+  */
+ #define HCALL_INST_PRECALL(FIRST_REG)				\
+-BEGIN_FTR_SECTION;						\
+-	b	1f;						\
+-END_FTR_SECTION(0, 1);						\
+-	ld      r12,hcall_tracepoint_refcount@toc(r2);		\
+-	std	r12,32(r1);					\
+-	cmpdi	r12,0;						\
+-	beq+	1f;						\
+ 	mflr	r0;						\
+ 	std	r3,STK_PARAM(R3)(r1);				\
+ 	std	r4,STK_PARAM(R4)(r1);				\
+@@ -60,22 +56,13 @@ END_FTR_SECTION(0, 1);						\
+ 	ld	r8,STK_PARAM(R8)(r1);				\
+ 	ld	r9,STK_PARAM(R9)(r1);				\
+ 	ld	r10,STK_PARAM(R10)(r1);				\
+-	mtlr	r0;						\
+-1:
++	mtlr	r0
+ 
+ /*
+  * postcall is performed immediately before function return which
+- * allows liberal use of volatile registers.  We branch around this
+- * in early init (eg when populating the MMU hashtable) by using an
+- * unconditional cpu feature.
++ * allows liberal use of volatile registers.
+  */
+ #define __HCALL_INST_POSTCALL					\
+-BEGIN_FTR_SECTION;						\
+-	b	1f;						\
+-END_FTR_SECTION(0, 1);						\
+-	ld      r12,32(r1);					\
+-	cmpdi	r12,0;						\
+-	beq+	1f;						\
+ 	mflr	r0;						\
+ 	ld	r6,STK_PARAM(R3)(r1);				\
+ 	std	r3,STK_PARAM(R3)(r1);				\
+@@ -87,8 +74,7 @@ END_FTR_SECTION(0, 1);						\
+ 	addi	r1,r1,STACK_FRAME_OVERHEAD;			\
+ 	ld	r0,16(r1);					\
+ 	ld	r3,STK_PARAM(R3)(r1);				\
+-	mtlr	r0;						\
+-1:
++	mtlr	r0
+ 
+ #define HCALL_INST_POSTCALL_NORETS				\
+ 	li	r5,0;						\
+@@ -98,37 +84,62 @@ END_FTR_SECTION(0, 1);						\
+ 	mr	r5,BUFREG;					\
+ 	__HCALL_INST_POSTCALL
+ 
++#ifdef CONFIG_JUMP_LABEL
++#define HCALL_BRANCH(LABEL)					\
++	ARCH_STATIC_BRANCH(LABEL, hcall_tracepoint_key)
++#else
++
++/*
++ * We branch around this in early init (eg when populating the MMU
++ * hashtable) by using an unconditional cpu feature.
++ */
++#define HCALL_BRANCH(LABEL)					\
++BEGIN_FTR_SECTION;						\
++	b	1f;						\
++END_FTR_SECTION(0, 1);						\
++	ld	r12,hcall_tracepoint_refcount@toc(r2);		\
++	std	r12,32(r1);					\
++	cmpdi	r12,0;						\
++	bne-	LABEL;						\
++1:
++#endif
++
+ #else
+ #define HCALL_INST_PRECALL(FIRST_ARG)
+ #define HCALL_INST_POSTCALL_NORETS
+ #define HCALL_INST_POSTCALL(BUFREG)
++#define HCALL_BRANCH(LABEL)
+ #endif
+ 
+-	.text
+-
+ _GLOBAL_TOC(plpar_hcall_norets)
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+ 	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL(R4)
+-
++	HCALL_BRANCH(plpar_hcall_norets_trace)
+ 	HVSC				/* invoke the hypervisor */
+ 
+-	HCALL_INST_POSTCALL_NORETS
+-
+ 	lwz	r0,8(r1)
+ 	mtcrf	0xff,r0
+ 	blr				/* return r3 = status */
+ 
++#ifdef CONFIG_TRACEPOINTS
++plpar_hcall_norets_trace:
++	HCALL_INST_PRECALL(R4)
++	HVSC
++	HCALL_INST_POSTCALL_NORETS
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++	blr
++#endif
++
+ _GLOBAL_TOC(plpar_hcall)
+ 	HMT_MEDIUM
+ 
+ 	mfcr	r0
+ 	stw	r0,8(r1)
+ 
+-	HCALL_INST_PRECALL(R5)
++	HCALL_BRANCH(plpar_hcall_trace)
+ 
+ 	std     r4,STK_PARAM(R4)(r1)     /* Save ret buffer */
+ 
+@@ -147,12 +158,40 @@ _GLOBAL_TOC(plpar_hcall)
+ 	std	r6, 16(r12)
+ 	std	r7, 24(r12)
+ 
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++#ifdef CONFIG_TRACEPOINTS
++plpar_hcall_trace:
++	HCALL_INST_PRECALL(R5)
++
++	std	r4,STK_PARAM(R4)(r1)
++	mr	r0,r4
++
++	mr	r4,r5
++	mr	r5,r6
++	mr	r6,r7
++	mr	r7,r8
++	mr	r8,r9
++	mr	r9,r10
++
++	HVSC
++
++	ld	r12,STK_PARAM(R4)(r1)
++	std	r4,0(r12)
++	std	r5,8(r12)
++	std	r6,16(r12)
++	std	r7,24(r12)
++
+ 	HCALL_INST_POSTCALL(r12)
+ 
+ 	lwz	r0,8(r1)
+ 	mtcrf	0xff,r0
+ 
+-	blr				/* return r3 = status */
++	blr
++#endif
+ 
+ /*
+  * plpar_hcall_raw can be called in real mode. kexec/kdump need some
+@@ -194,7 +233,7 @@ _GLOBAL_TOC(plpar_hcall9)
+ 	mfcr	r0
+ 	stw	r0,8(r1)
+ 
+-	HCALL_INST_PRECALL(R5)
++	HCALL_BRANCH(plpar_hcall9_trace)
+ 
+ 	std     r4,STK_PARAM(R4)(r1)     /* Save ret buffer */
+ 
+@@ -222,12 +261,49 @@ _GLOBAL_TOC(plpar_hcall9)
+ 	std	r11,56(r12)
+ 	std	r0, 64(r12)
+ 
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++#ifdef CONFIG_TRACEPOINTS
++plpar_hcall9_trace:
++	HCALL_INST_PRECALL(R5)
++
++	std	r4,STK_PARAM(R4)(r1)
++	mr	r0,r4
++
++	mr	r4,r5
++	mr	r5,r6
++	mr	r6,r7
++	mr	r7,r8
++	mr	r8,r9
++	mr	r9,r10
++	ld	r10,STK_PARAM(R11)(r1)
++	ld	r11,STK_PARAM(R12)(r1)
++	ld	r12,STK_PARAM(R13)(r1)
++
++	HVSC
++
++	mr	r0,r12
++	ld	r12,STK_PARAM(R4)(r1)
++	std	r4,0(r12)
++	std	r5,8(r12)
++	std	r6,16(r12)
++	std	r7,24(r12)
++	std	r8,32(r12)
++	std	r9,40(r12)
++	std	r10,48(r12)
++	std	r11,56(r12)
++	std	r0,64(r12)
++
+ 	HCALL_INST_POSTCALL(r12)
+ 
+ 	lwz	r0,8(r1)
+ 	mtcrf	0xff,r0
+ 
+-	blr				/* return r3 = status */
++	blr
++#endif
+ 
+ /* See plpar_hcall_raw to see why this is needed */
+ _GLOBAL(plpar_hcall9_raw)
+Index: b/arch/powerpc/platforms/pseries/lpar.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -26,6 +26,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/console.h>
+ #include <linux/export.h>
++#include <linux/static_key.h>
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
+@@ -649,6 +650,19 @@ EXPORT_SYMBOL(arch_free_page);
+ #endif
+ 
+ #ifdef CONFIG_TRACEPOINTS
++#ifdef CONFIG_JUMP_LABEL
++struct static_key hcall_tracepoint_key = STATIC_KEY_INIT;
++
++void hcall_tracepoint_regfunc(void)
++{
++	static_key_slow_inc(&hcall_tracepoint_key);
++}
++
++void hcall_tracepoint_unregfunc(void)
++{
++	static_key_slow_dec(&hcall_tracepoint_key);
++}
++#else
+ /*
+  * We optimise our hcall path by placing hcall_tracepoint_refcount
+  * directly in the TOC so we can check if the hcall tracepoints are
+@@ -658,13 +672,6 @@ EXPORT_SYMBOL(arch_free_page);
+ /* NB: reg/unreg are called while guarded with the tracepoints_mutex */
+ extern long hcall_tracepoint_refcount;
+ 
+-/* 
+- * Since the tracing code might execute hcalls we need to guard against
+- * recursion. One example of this are spinlocks calling H_YIELD on
+- * shared processor partitions.
+- */
+-static DEFINE_PER_CPU(unsigned int, hcall_trace_depth);
+-
+ void hcall_tracepoint_regfunc(void)
+ {
+ 	hcall_tracepoint_refcount++;
+@@ -674,6 +681,15 @@ void hcall_tracepoint_unregfunc(void)
+ {
+ 	hcall_tracepoint_refcount--;
+ }
++#endif
++
++/*
++ * Since the tracing code might execute hcalls we need to guard against
++ * recursion. One example of this are spinlocks calling H_YIELD on
++ * shared processor partitions.
++ */
++static DEFINE_PER_CPU(unsigned int, hcall_trace_depth);
++
+ 
+ void __trace_hcall_entry(unsigned long opcode, unsigned long *args)
+ {
