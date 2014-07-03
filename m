@@ -1,33 +1,19 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by lists.ozlabs.org (Postfix) with SMTP id 194C21A0005
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 19:22:05 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 20786-04 for <linuxppc-dev@lists.ozlabs.org>;
- Thu,  3 Jul 2014 10:22:01 +0100 (BST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Bjorn Helgaas' <bhelgaas@google.com>, Alexander Gordeev
- <agordeev@redhat.com>
-Subject: RE: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-Date: Thu, 3 Jul 2014 09:20:52 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1726BF4E@AcuExch.aculab.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
- <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
- <20140702202201.GA28852@google.com>
-In-Reply-To: <20140702202201.GA28852@google.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2lp0239.outbound.protection.outlook.com [207.46.163.239])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 88A5A1A0005
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 19:25:55 +1000 (EST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <wg@grandegger.com>,
+ <mkl@pengutronix.de>, <linux-can@vger.kernel.org>, <B07421@freescale.com>
+Subject: [PATCH v6] flexcan: add err_irq handler for flexcan
+Date: Thu, 3 Jul 2014 17:22:17 +0800
+Message-ID: <1404379337-15351-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Zhao Qiang <B45475@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +23,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQmpvcm4gSGVsZ2Fhcw0KPiBPbiBUdWUsIEp1biAxMCwgMjAxNCBhdCAwMzoxMDozMFBN
-ICswMjAwLCBBbGV4YW5kZXIgR29yZGVldiB3cm90ZToNCj4gPiBUaGVyZSBhcmUgUENJIGRldmlj
-ZXMgdGhhdCByZXF1aXJlIGEgcGFydGljdWxhciB2YWx1ZSB3cml0dGVuDQo+ID4gdG8gdGhlIE11
-bHRpcGxlIE1lc3NhZ2UgRW5hYmxlIChNTUUpIHJlZ2lzdGVyIHdoaWxlIGFsaWduZWQgb24NCj4g
-PiBwb3dlciBvZiAyIGJvdW5kYXJ5IHZhbHVlIG9mIGFjdHVhbGx5IHVzZWQgTVNJIHZlY3RvcnMg
-J252ZWMnDQo+ID4gaXMgYSBsZXNzZXIgb2YgdGhhdCBNTUUgdmFsdWU6DQo+ID4NCj4gPiAJcm91
-bmR1cF9wb3dfb2ZfdHdvKG52ZWMpIDwgJ011bHRpcGxlIE1lc3NhZ2UgRW5hYmxlJw0KPiA+DQo+
-ID4gSG93ZXZlciB0aGUgZXhpc3RpbmcgcGNpX2VuYWJsZV9tc2lfYmxvY2soKSBpbnRlcmZhY2Ug
-aXMgbm90DQo+ID4gYWJsZSB0byBjb25maWd1cmUgc3VjaCBkZXZpY2VzLCBzaW5jZSB0aGUgdmFs
-dWUgd3JpdHRlbiB0byB0aGUNCj4gPiBNTUUgcmVnaXN0ZXIgaXMgY2FsY3VsYXRlZCBmcm9tIHRo
-ZSBudW1iZXIgb2YgcmVxdWVzdGVkIE1TSXMNCj4gPiAnbnZlYyc6DQo+ID4NCj4gPiAJJ011bHRp
-cGxlIE1lc3NhZ2UgRW5hYmxlJyA9IHJvdW5kdXBfcG93X29mX3R3byhudmVjKQ0KPiANCj4gRm9y
-IE1TSSwgc29mdHdhcmUgbGVhcm5zIGhvdyBtYW55IHZlY3RvcnMgYSBkZXZpY2UgcmVxdWVzdHMg
-YnkgcmVhZGluZw0KPiB0aGUgTXVsdGlwbGUgTWVzc2FnZSBDYXBhYmxlIChNTUMpIGZpZWxkLiAg
-VGhpcyBmaWVsZCBpcyBlbmNvZGVkLCBzbyBhDQo+IGRldmljZSBjYW4gb25seSByZXF1ZXN0IDEs
-IDIsIDQsIDgsIGV0Yy4sIHZlY3RvcnMuICBJdCdzIGltcG9zc2libGUNCj4gZm9yIGEgZGV2aWNl
-IHRvIHJlcXVlc3QgMyB2ZWN0b3JzOyBpdCB3b3VsZCBoYXZlIHRvIHJvdW5kIHVwIHRoYXQgdXAN
-Cj4gdG8gYSBwb3dlciBvZiB0d28gYW5kIHJlcXVlc3QgNCB2ZWN0b3JzLg0KPiANCj4gU29mdHdh
-cmUgd3JpdGVzIHNpbWlsYXJseSBlbmNvZGVkIHZhbHVlcyB0byBNTUUgdG8gdGVsbCB0aGUgZGV2
-aWNlIGhvdw0KPiBtYW55IHZlY3RvcnMgaGF2ZSBiZWVuIGFsbG9jYXRlZCBmb3IgaXRzIHVzZS4g
-IEZvciBleGFtcGxlLCBpdCdzDQo+IGltcG9zc2libGUgdG8gdGVsbCB0aGUgZGV2aWNlIHRoYXQg
-aXQgY2FuIHVzZSAzIHZlY3RvcnM7IHRoZSBPUyBoYXMgdG8NCj4gcm91bmQgdGhhdCB1cCBhbmQg
-dGVsbCB0aGUgZGV2aWNlIGl0IGNhbiB1c2UgNCB2ZWN0b3JzLg0KPiANCj4gU28gaWYgSSB1bmRl
-cnN0YW5kIGNvcnJlY3RseSwgdGhlIHBvaW50IG9mIHRoaXMgc2VyaWVzIGlzIHRvIHRha2UNCj4g
-YWR2YW50YWdlIG9mIGRldmljZS1zcGVjaWZpYyBrbm93bGVkZ2UsIGUuZy4sIHRoZSBkZXZpY2Ug
-cmVxdWVzdHMgNA0KPiB2ZWN0b3JzIHZpYSBNTUMsIGJ1dCB3ZSAia25vdyIgdGhlIGRldmljZSBp
-cyBvbmx5IGNhcGFibGUgb2YgdXNpbmcgMy4NCj4gTW9yZW92ZXIsIHdlIHRlbGwgdGhlIGRldmlj
-ZSB2aWEgTU1FIHRoYXQgNCB2ZWN0b3JzIGFyZSBhdmFpbGFibGUsIGJ1dA0KPiB3ZSd2ZSBvbmx5
-IGFjdHVhbGx5IHNldCB1cCAzIG9mIHRoZW0uDQouLi4NCg0KRXZlbiBpZiB5b3UgZG8gdGhhdCwg
-eW91IG91Z2h0IHRvIHdyaXRlIHZhbGlkIGludGVycnVwdCBpbmZvcm1hdGlvbg0KaW50byB0aGUg
-NHRoIHNsb3QgKG1heWJlIHJlcGxpY2F0aW5nIG9uZSBvZiB0aGUgZWFybGllciBpbnRlcnJ1cHRz
-KS4NClRoZW4sIGlmIHRoZSBkZXZpY2UgZG9lcyByYWlzZSB0aGUgJ3VuZXhwZWN0ZWQnIGludGVy
-cnVwdCB5b3UgZG9uJ3QNCmdldCBhIHdyaXRlIHRvIGEgcmFuZG9tIGtlcm5lbCBsb2NhdGlvbi4N
-Cg0KUGxhdXNpYmx5IHNvbWV0aGluZyBzaW1pbGFyIHNob3VsZCBiZSBkb25lIHdoZW4gYSBzbWFs
-bGVyIG51bWJlciBvZg0KaW50ZXJydXB0cyBpcyBhc3NpZ25lZC4NCg0KCURhdmlkDQoNCg==
+when flexcan is not physically linked, command 'cantest' will
+trigger an err_irq, add err_irq handler for it.
+
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+Changes for v2:
+	- use a space instead of tab
+	- use flexcan_poll_state instead of print
+Changes for v3:
+	- return IRQ_HANDLED if err is triggered
+	- stop transmitted packets when there is an err_interrupt 
+Changes for v4:
+	- call flexcan_irq 
+Changes for v5:
+	- move err_int_handling code from flexcan_irq to flexcan_err_irq
+	- call flexcan_err_irq from flexcan_irq
+Changes for v6:
+	- move RX_IRQ handling back to flexcan_irq
+
+ drivers/net/can/flexcan.c | 52 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 46 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/net/can/flexcan.c b/drivers/net/can/flexcan.c
+index f425ec2..f6c92bc 100644
+--- a/drivers/net/can/flexcan.c
++++ b/drivers/net/can/flexcan.c
+@@ -208,6 +208,7 @@ struct flexcan_priv {
+ 	void __iomem *base;
+ 	u32 reg_esr;
+ 	u32 reg_ctrl_default;
++	int err_irq;
+ 
+ 	struct clk *clk_ipg;
+ 	struct clk *clk_per;
+@@ -690,6 +691,28 @@ static int flexcan_poll(struct napi_struct *napi, int quota)
+ 	return work_done;
+ }
+ 
++static irqreturn_t flexcan_err_irq(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	struct flexcan_priv *priv = netdev_priv(dev);
++	struct flexcan_regs __iomem *regs = priv->base;
++	u32 reg_ctrl, reg_esr;
++	irqreturn_t ret = IRQ_NONE;
++
++	reg_esr = flexcan_read(&regs->esr);
++	reg_ctrl = flexcan_read(&regs->ctrl);
++
++	if (reg_esr & FLEXCAN_ESR_ALL_INT) {
++		flexcan_write(reg_esr & FLEXCAN_ESR_ALL_INT, &regs->esr);
++		ret = IRQ_HANDLED;
++	}
++
++	if (reg_esr & FLEXCAN_ESR_ERR_INT)
++		flexcan_write(reg_ctrl & ~FLEXCAN_CTRL_ERR_MSK, &regs->ctrl);
++
++	return ret;
++}
++
+ static irqreturn_t flexcan_irq(int irq, void *dev_id)
+ {
+ 	struct net_device *dev = dev_id;
+@@ -698,11 +721,10 @@ static irqreturn_t flexcan_irq(int irq, void *dev_id)
+ 	struct flexcan_regs __iomem *regs = priv->base;
+ 	u32 reg_iflag1, reg_esr;
+ 
+-	reg_iflag1 = flexcan_read(&regs->iflag1);
+ 	reg_esr = flexcan_read(&regs->esr);
+-	/* ACK all bus error and state change IRQ sources */
+-	if (reg_esr & FLEXCAN_ESR_ALL_INT)
+-		flexcan_write(reg_esr & FLEXCAN_ESR_ALL_INT, &regs->esr);
++	reg_iflag1 = flexcan_read(&regs->iflag1);
++
++	flexcan_err_irq(irq, dev);
+ 
+ 	/*
+ 	 * schedule NAPI in case of:
+@@ -944,10 +966,17 @@ static int flexcan_open(struct net_device *dev)
+ 	if (err)
+ 		goto out_close;
+ 
++	if (priv->err_irq) {
++		err = request_irq(priv->err_irq, flexcan_err_irq, IRQF_SHARED,
++				  dev->name, dev);
++		if (err)
++			goto out_free_irq;
++	}
++
+ 	/* start chip and queuing */
+ 	err = flexcan_chip_start(dev);
+ 	if (err)
+-		goto out_free_irq;
++		goto out_free_err_irq;
+ 
+ 	can_led_event(dev, CAN_LED_EVENT_OPEN);
+ 
+@@ -956,6 +985,9 @@ static int flexcan_open(struct net_device *dev)
+ 
+ 	return 0;
+ 
++ out_free_err_irq:
++	if (priv->err_irq)
++		free_irq(priv->err_irq, dev);
+  out_free_irq:
+ 	free_irq(dev->irq, dev);
+  out_close:
+@@ -977,6 +1009,9 @@ static int flexcan_close(struct net_device *dev)
+ 	flexcan_chip_stop(dev);
+ 
+ 	free_irq(dev->irq, dev);
++	if (priv->err_irq)
++		free_irq(priv->err_irq, dev);
++
+ 	clk_disable_unprepare(priv->clk_per);
+ 	clk_disable_unprepare(priv->clk_ipg);
+ 
+@@ -1099,7 +1134,7 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	struct resource *mem;
+ 	struct clk *clk_ipg = NULL, *clk_per = NULL;
+ 	void __iomem *base;
+-	int err, irq;
++	int err, irq, err_irq;
+ 	u32 clock_freq = 0;
+ 
+ 	if (pdev->dev.of_node)
+@@ -1126,6 +1161,10 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	if (irq <= 0)
+ 		return -ENODEV;
+ 
++	err_irq = platform_get_irq(pdev, 1);
++	if (err_irq <= 0)
++		err_irq = 0;
++
+ 	base = devm_ioremap_resource(&pdev->dev, mem);
+ 	if (IS_ERR(base))
+ 		return PTR_ERR(base);
+@@ -1149,6 +1188,7 @@ static int flexcan_probe(struct platform_device *pdev)
+ 	dev->flags |= IFF_ECHO;
+ 
+ 	priv = netdev_priv(dev);
++	priv->err_irq = err_irq;
+ 	priv->can.clock.freq = clock_freq;
+ 	priv->can.bittiming_const = &flexcan_bittiming_const;
+ 	priv->can.do_set_mode = flexcan_set_mode;
+-- 
+1.8.5
