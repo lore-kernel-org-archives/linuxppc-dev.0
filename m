@@ -1,19 +1,20 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0205.outbound.protection.outlook.com [207.46.163.205])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4330F1A0004
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 20:26:32 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <scottwood@freescale.com>
-Subject: [PATCH] devicetree/binding/powerpc/fsl: Add binding for CPLD
-Date: Thu, 3 Jul 2014 15:39:45 +0530
-Message-ID: <1404382185-2967-1-git-send-email-Priyanka.Jain@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA5661A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 21:51:40 +1000 (EST)
+Message-ID: <53B543C5.0@suse.de>
+Date: Thu, 03 Jul 2014 13:51:33 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ benh@kernel.crashing.org, paulus@samba.org
+Subject: Re: [PATCH v2] powerpc/kvm: support to handle sw breakpoint
+References: <1404204062-19635-1-git-send-email-maddy@linux.vnet.ibm.com>
+In-Reply-To: <1404204062-19635-1-git-send-email-maddy@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +24,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some Freescale boards like T1040RDB have on board CPLD connected on
-the IFC bus. Add binding for this in board.txt file
 
-Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
----
- .../devicetree/bindings/powerpc/fsl/board.txt      |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+On 01.07.14 10:41, Madhavan Srinivasan wrote:
+> This patch adds kernel side support for software breakpoint.
+> Design is that, by using an illegal instruction, we trap to hypervisor
+> via Emulation Assistance interrupt, where we check for the illegal instruction
+> and accordingly we return to Host or Guest. Patch also adds support for
+> software breakpoint in PR KVM.
+>
+> Patch mandates use of "abs" instruction as sw breakpoint instruction
+> (primary opcode 31 and extended opcode 360). Based on PowerISA v2.01,
+> ABS instruction has been dropped from the architecture and treated an
+> illegal instruction.
+>
+> Changes v1->v2:
+>
+>   Moved the debug instruction #def to kvm_book3s.h. This way PR_KVM can also share it.
+>   Added code to use KVM get one reg infrastructure to get debug opcode.
+>   Updated emulate.c to include emulation of debug instruction incase of PR_KVM.
+>   Made changes to commit message.
+>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/include/asm/kvm_book3s.h |    8 ++++++++
+>   arch/powerpc/include/asm/ppc-opcode.h |    5 +++++
+>   arch/powerpc/kvm/book3s.c             |    3 ++-
+>   arch/powerpc/kvm/book3s_hv.c          |    9 +++++++++
+>   arch/powerpc/kvm/book3s_pr.c          |    3 +++
+>   arch/powerpc/kvm/emulate.c            |   10 ++++++++++
+>   6 files changed, 37 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+> index f52f656..180d549 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> @@ -24,6 +24,14 @@
+>   #include <linux/kvm_host.h>
+>   #include <asm/kvm_book3s_asm.h>
+>   
+> +/*
+> + * KVMPPC_INST_BOOK3S_DEBUG is debug Instruction for supporting Software Breakpoint.
+> + * Instruction mnemonic is ABS, primary opcode is 31 and extended opcode is 360.
+> + * Based on PowerISA v2.01, ABS instruction has been dropped from the architecture
+> + * and treated an illegal instruction.
+> + */
+> +#define KVMPPC_INST_BOOK3S_DEBUG	0x7c0002d0
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-index 700dec4..f35f295 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-@@ -84,3 +84,22 @@ Example:
- 		compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
- 		reg = <0x66>;
- 	};
-+
-+* Freescale on-board CPLD
-+
-+Some Freescale boards like T1040RDB have on board CPLD connected on
-+the IFC bus.
-+
-+Required properties:
-+- compatible: Should be a board-specific string like "fsl,<board>-cpld"
-+  Example:
-+	"fsl,T1040RDB-cpld", "fsl,T1042RDB-cpld", "fsl,T1042RDB_PI-cpld"
-+- reg: Should contain the chip select, address offset and length of the CPLD
-+
-+Example:
-+	cpld@3,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,T1040RDB-cpld";
-+		reg = <3 0 0x300>;
-+	};
--- 
-1.7.4.1
+This will still break with LE guests.
+
+> +
+>   struct kvmppc_bat {
+>   	u64 raw;
+>   	u32 bepi;
+> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+> index 3132bb9..3fbb4c1 100644
+> --- a/arch/powerpc/include/asm/ppc-opcode.h
+> +++ b/arch/powerpc/include/asm/ppc-opcode.h
+> @@ -111,6 +111,11 @@
+>   #define OP_31_XOP_LHBRX     790
+>   #define OP_31_XOP_STHBRX    918
+>   
+> +/* KVMPPC_INST_BOOK3S_DEBUG -- Software breakpoint Instruction
+> + * Instruction mnemonic is ABS, primary opcode is 31 and extended opcode is 360.
+> + */
+> +#define OP_31_XOP_ABS	    360
+> +
+>   #define OP_LWZ  32
+>   #define OP_LD   58
+>   #define OP_LWZU 33
+> diff --git a/arch/powerpc/kvm/book3s.c b/arch/powerpc/kvm/book3s.c
+> index c254c27..b40fe5d 100644
+> --- a/arch/powerpc/kvm/book3s.c
+> +++ b/arch/powerpc/kvm/book3s.c
+> @@ -789,7 +789,8 @@ int kvm_arch_vcpu_ioctl_translate(struct kvm_vcpu *vcpu,
+>   int kvm_arch_vcpu_ioctl_set_guest_debug(struct kvm_vcpu *vcpu,
+>   					struct kvm_guest_debug *dbg)
+>   {
+> -	return -EINVAL;
+> +	vcpu->guest_debug = dbg->control;
+> +	return 0;
+>   }
+>   
+>   void kvmppc_decrementer_func(unsigned long data)
+> diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
+> index 7a12edb..402c1ec 100644
+> --- a/arch/powerpc/kvm/book3s_hv.c
+> +++ b/arch/powerpc/kvm/book3s_hv.c
+> @@ -725,8 +725,14 @@ static int kvmppc_handle_exit_hv(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>   	 * we don't emulate any guest instructions at this stage.
+>   	 */
+>   	case BOOK3S_INTERRUPT_H_EMUL_ASSIST:
+> +	if (kvmppc_get_last_inst(vcpu) == KVMPPC_INST_BOOK3S_DEBUG ) {
+> +		run->exit_reason = KVM_EXIT_DEBUG;
+> +		run->debug.arch.address = kvmppc_get_pc(vcpu);
+> +		r = RESUME_HOST;
+
+Phew - why can't we just go into the normal instruction emulator for 
+EMUL_ASSIST?
+
+
+Alex
