@@ -1,21 +1,17 @@
-Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2B7AB1A002D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 16:12:57 +1000 (EST)
-Received: by mail-pa0-f47.google.com with SMTP id kq14so13856593pab.20
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jul 2014 23:12:55 -0700 (PDT)
-From: Joel Stanley <joel@jms.id.au>
-To: paulus@samba.org,
-	benh@kernel.crashing.org,
-	mpe@ellerman.id.au
-Subject: [PATCH 3/3] powerpc/perf: Clear MMCR2 when enabling PMU
-Date: Thu,  3 Jul 2014 15:42:36 +0930
-Message-Id: <1404367956-19515-4-git-send-email-joel@jms.id.au>
-In-Reply-To: <1404367956-19515-1-git-send-email-joel@jms.id.au>
-References: <1404367956-19515-1-git-send-email-joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D90F21A0004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 17:20:51 +1000 (EST)
+Date: Thu, 3 Jul 2014 17:20:50 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ mikey@neuling.org, paulmck@linux.vnet.ibm.com
+Subject: [PATCH] powernv: Add OPAL tracepoints
+Message-ID: <20140703172050.495b3f72@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,67 +22,326 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER8 when switching to a KVM guest we set bits in MMCR2 to freeze
-the PMU counters. Aside from on boot they are then never reset,
-resulting in stuck perf counters for any user in the guest or host.
+Knowing how long we spend in firmware calls is an important part of
+minimising OS jitter.
 
-We now set MMCR2 to 0 whenever enabling the PMU, which provides a sane
-state for perf to use the PMU counters under either the guest or the
-host.
+This patch adds tracepoints to each OPAL call. If tracepoints are
+enabled we branch out to a common routine that calls an entry and exit
+tracepoint.
 
-This was manifesting as a bug with ppc64_cpu --frequency:
+This allows us to write tools that monitor the frequency and duration
+of OPAL calls, eg:
 
-    $ sudo ppc64_cpu --frequency
-    WARNING: couldn't run on cpu 0
-    WARNING: couldn't run on cpu 8
-      ...
-    WARNING: couldn't run on cpu 144
-    WARNING: couldn't run on cpu 152
-    min:    18446744073.710 GHz (cpu -1)
-    max:    0.000 GHz (cpu -1)
-    avg:    0.000 GHz
+name                  count  total(ms)  min(ms)  max(ms)  avg(ms)  period(ms)
+OPAL_HANDLE_INTERRUPT     5      0.199    0.037    0.042    0.040   12547.545
+OPAL_POLL_EVENTS        204      2.590    0.012    0.036    0.013    2264.899
+OPAL_PCI_MSI_EOI       2830      3.066    0.001    0.005    0.001      81.166
 
-The command uses a perf counter to measure CPU cycles over a fixed
-amount of time, in order to approximate the frequency of the machine.
-The counters were returning zero once a guest was started, regardless of
-weather it was still running or had been shut down.
+We use jump labels if configured, which means we only add a single
+nop instruction to every OPAL call when the tracepoints are disabled.
 
-By dumping the value of MMCR2, it was observed that once a guest is
-running MMCR2 is set to 1s - which stops counters from running:
-
-    $ sudo sh -c 'echo p > /proc/sysrq-trigger'
-    CPU: 0 PMU registers, ppmu = POWER8 n_counters = 6
-    PMC1:  5b635e38 PMC2: 00000000 PMC3: 00000000 PMC4: 00000000
-    PMC5:  1bf5a646 PMC6: 5793d378 PMC7: deadbeef PMC8: deadbeef
-    MMCR0: 0000000080000000 MMCR1: 000000001e000000 MMCRA: 0000040000000000
-    MMCR2: fffffffffffffc00 EBBHR: 0000000000000000
-    EBBRR: 0000000000000000 BESCR: 0000000000000000
-    SIAR:  00000000000a51cc SDAR:  c00000000fc40000 SIER:  0000000001000000
-
-This is done unconditionally in book3s_hv_interrupts.S upon entering the
-guest, and the original value is only save/restored if the host has
-indicated it was using the PMU. This is okay, however the user of the
-PMU needs to ensure that it is in a defined state when it starts using
-it.
-
-Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- arch/powerpc/perf/core-book3s.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index a2ff1bd..bae697c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1300,6 +1300,9 @@ static void power_pmu_enable(struct pmu *pmu)
+Index: b/arch/powerpc/include/asm/trace.h
+===================================================================
+--- a/arch/powerpc/include/asm/trace.h
++++ b/arch/powerpc/include/asm/trace.h
+@@ -99,6 +99,51 @@ TRACE_EVENT_FN(hcall_exit,
+ );
+ #endif
  
- 	write_mmcr0(cpuhw, mmcr0);
- 
-+	if (ppmu->flags & PPMU_ARCH_207S)
-+		mtspr(SPRN_MMCR2, 0);
++#ifdef CONFIG_PPC_POWERNV
++extern void opal_tracepoint_regfunc(void);
++extern void opal_tracepoint_unregfunc(void);
 +
- 	/*
- 	 * Enable instruction sampling if necessary
- 	 */
--- 
-2.0.0
++TRACE_EVENT_FN(opal_entry,
++
++	TP_PROTO(unsigned long opcode, unsigned long *args),
++
++	TP_ARGS(opcode, args),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, opcode)
++	),
++
++	TP_fast_assign(
++		__entry->opcode = opcode;
++	),
++
++	TP_printk("opcode=%lu", __entry->opcode),
++
++	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
++);
++
++TRACE_EVENT_FN(opal_exit,
++
++	TP_PROTO(unsigned long opcode, unsigned long retval),
++
++	TP_ARGS(opcode, retval),
++
++	TP_STRUCT__entry(
++		__field(unsigned long, opcode)
++		__field(unsigned long, retval)
++	),
++
++	TP_fast_assign(
++		__entry->opcode = opcode;
++		__entry->retval = retval;
++	),
++
++	TP_printk("opcode=%lu retval=%lu", __entry->opcode, __entry->retval),
++
++	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
++);
++#endif
++
+ #endif /* _TRACE_POWERPC_H */
+ 
+ #undef TRACE_INCLUDE_PATH
+Index: b/arch/powerpc/platforms/powernv/Makefile
+===================================================================
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -8,3 +8,4 @@ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o
+ obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
+ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
++obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
+Index: b/arch/powerpc/platforms/powernv/opal-wrappers.S
+===================================================================
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -13,30 +13,69 @@
+ #include <asm/hvcall.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/opal.h>
++#include <asm/jump_label.h>
++
++	.section	".text"
++
++#ifdef CONFIG_TRACEPOINTS
++#ifdef CONFIG_JUMP_LABEL
++#define OPAL_BRANCH(LABEL)					\
++	ARCH_STATIC_BRANCH(LABEL, opal_tracepoint_key)
++#else
++
++	.section	".toc","aw"
++
++	.globl opal_tracepoint_refcount
++opal_tracepoint_refcount:
++	.llong	0
++
++	.section	".text"
++
++/*
++ * We branch around this in early init by using an unconditional cpu
++ * feature.
++ */
++#define OPAL_BRANCH(LABEL)					\
++BEGIN_FTR_SECTION;						\
++	b	1f;						\
++END_FTR_SECTION(0, 1);						\
++	ld	r12,opal_tracepoint_refcount@toc(r2);		\
++	std	r12,32(r1);					\
++	cmpdi	r12,0;						\
++	bne-	LABEL;						\
++1:
++
++#endif
++
++#else
++#define OPAL_BRANCH(LABEL)
++#endif
+ 
+ /* TODO:
+  *
+  * - Trace irqs in/off (needs saving/restoring all args, argh...)
+  * - Get r11 feed up by Dave so I can have better register usage
+  */
++
+ #define OPAL_CALL(name, token)		\
+  _GLOBAL(name);				\
+ 	mflr	r0;			\
+-	mfcr	r12;			\
+ 	std	r0,16(r1);		\
++	li	r0,token;		\
++	OPAL_BRANCH(opal_tracepoint_entry) \
++	mfcr	r12;			\
+ 	stw	r12,8(r1);		\
+ 	std	r1,PACAR1(r13);		\
+-	li	r0,0;			\
++	li	r11,0;			\
+ 	mfmsr	r12;			\
+-	ori	r0,r0,MSR_EE;		\
++	ori	r11,r11,MSR_EE;		\
+ 	std	r12,PACASAVEDMSR(r13);	\
+-	andc	r12,r12,r0;		\
++	andc	r12,r12,r11;		\
+ 	mtmsrd	r12,1;			\
+-	LOAD_REG_ADDR(r0,opal_return);	\
+-	mtlr	r0;			\
+-	li	r0,MSR_DR|MSR_IR|MSR_LE;\
+-	andc	r12,r12,r0;		\
+-	li	r0,token;		\
++	LOAD_REG_ADDR(r11,opal_return);	\
++	mtlr	r11;			\
++	li	r11,MSR_DR|MSR_IR|MSR_LE;\
++	andc	r12,r12,r11;		\
+ 	mtspr	SPRN_HSRR1,r12;		\
+ 	LOAD_REG_ADDR(r11,opal);	\
+ 	ld	r12,8(r11);		\
+@@ -61,6 +100,64 @@ opal_return:
+ 	mtcr	r4;
+ 	rfid
+ 
++#ifdef CONFIG_TRACEPOINTS
++opal_tracepoint_entry:
++	stdu	r1,-STACKFRAMESIZE(r1)
++	std	r0,STK_REG(R23)(r1)
++	std	r3,STK_REG(R24)(r1)
++	std	r4,STK_REG(R25)(r1)
++	std	r5,STK_REG(R26)(r1)
++	std	r6,STK_REG(R27)(r1)
++	std	r7,STK_REG(R28)(r1)
++	std	r8,STK_REG(R29)(r1)
++	std	r9,STK_REG(R30)(r1)
++	std	r10,STK_REG(R31)(r1)
++	mr	r3,r0
++	addi	r4,r1,STK_REG(R24)
++	bl	__trace_opal_entry
++	ld	r0,STK_REG(R23)(r1)
++	ld	r3,STK_REG(R24)(r1)
++	ld	r4,STK_REG(R25)(r1)
++	ld	r5,STK_REG(R26)(r1)
++	ld	r6,STK_REG(R27)(r1)
++	ld	r7,STK_REG(R28)(r1)
++	ld	r8,STK_REG(R29)(r1)
++	ld	r9,STK_REG(R30)(r1)
++	ld	r10,STK_REG(R31)(r1)
++	LOAD_REG_ADDR(r11,opal_tracepoint_return)
++	mfcr	r12
++	std	r11,16(r1)
++	stw	r12,8(r1)
++	std	r1,PACAR1(r13)
++	li	r11,0
++	mfmsr	r12
++	ori	r11,r11,MSR_EE
++	std	r12,PACASAVEDMSR(r13)
++	andc	r12,r12,r11
++	mtmsrd	r12,1
++	LOAD_REG_ADDR(r11,opal_return)
++	mtlr	r11
++	li	r11,MSR_DR|MSR_IR|MSR_LE
++	andc	r12,r12,r11
++	mtspr	SPRN_HSRR1,r12
++	LOAD_REG_ADDR(r11,opal)
++	ld	r12,8(r11)
++	ld	r2,0(r11)
++	mtspr	SPRN_HSRR0,r12
++	hrfid
++
++opal_tracepoint_return:
++	std	r3,STK_REG(R31)(r1)
++	mr	r4,r3
++	ld	r0,STK_REG(R23)(r1)
++	bl	__trace_opal_exit
++	ld	r3,STK_REG(R31)(r1)
++	addi	r1,r1,STACKFRAMESIZE
++	ld	r0,16(r1)
++	mtlr	r0
++	blr
++#endif
++
+ OPAL_CALL(opal_invalid_call,			OPAL_INVALID_CALL);
+ OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
+ OPAL_CALL(opal_console_read,			OPAL_CONSOLE_READ);
+Index: b/arch/powerpc/platforms/powernv/opal-tracepoints.c
+===================================================================
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-tracepoints.c
+@@ -0,0 +1,84 @@
++#include <linux/percpu.h>
++#include <linux/jump_label.h>
++#include <asm/trace.h>
++
++#ifdef CONFIG_JUMP_LABEL
++struct static_key opal_tracepoint_key = STATIC_KEY_INIT;
++
++void opal_tracepoint_regfunc(void)
++{
++	static_key_slow_inc(&opal_tracepoint_key);
++}
++
++void opal_tracepoint_unregfunc(void)
++{
++	static_key_slow_dec(&opal_tracepoint_key);
++}
++#else
++/*
++ * We optimise OPAL calls by placing opal_tracepoint_refcount
++ * directly in the TOC so we can check if the opal tracepoints are
++ * enabled via a single load.
++ */
++
++/* NB: reg/unreg are called while guarded with the tracepoints_mutex */
++extern long opal_tracepoint_refcount;
++
++void opal_tracepoint_regfunc(void)
++{
++	opal_tracepoint_refcount++;
++}
++
++void opal_tracepoint_unregfunc(void)
++{
++	opal_tracepoint_refcount--;
++}
++#endif
++
++/*
++ * Since the tracing code might execute OPAL calls we need to guard against
++ * recursion.
++ */
++static DEFINE_PER_CPU(unsigned int, opal_trace_depth);
++
++void __trace_opal_entry(unsigned long opcode, unsigned long *args)
++{
++	unsigned long flags;
++	unsigned int *depth;
++
++	local_irq_save(flags);
++
++	depth = &__get_cpu_var(opal_trace_depth);
++
++	if (*depth)
++		goto out;
++
++	(*depth)++;
++	preempt_disable();
++	trace_opal_entry(opcode, args);
++	(*depth)--;
++
++out:
++	local_irq_restore(flags);
++}
++
++void __trace_opal_exit(long opcode, unsigned long retval)
++{
++	unsigned long flags;
++	unsigned int *depth;
++
++	local_irq_save(flags);
++
++	depth = &__get_cpu_var(opal_trace_depth);
++
++	if (*depth)
++		goto out;
++
++	(*depth)++;
++	trace_opal_exit(opcode, retval);
++	preempt_enable();
++	(*depth)--;
++
++out:
++	local_irq_restore(flags);
++}
