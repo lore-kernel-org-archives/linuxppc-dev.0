@@ -1,19 +1,21 @@
 Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
+Received: from mail-pd0-x232.google.com (mail-pd0-x232.google.com
+ [IPv6:2607:f8b0:400e:c02::232])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4FF7A1A0004
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 16:12:50 +1000 (EST)
-Received: by mail-pa0-f53.google.com with SMTP id ey11so13724604pad.26
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jul 2014 23:12:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 534851A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2014 16:12:52 +1000 (EST)
+Received: by mail-pd0-f178.google.com with SMTP id r10so13367015pdi.9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 Jul 2014 23:12:50 -0700 (PDT)
 From: Joel Stanley <joel@jms.id.au>
 To: paulus@samba.org,
 	benh@kernel.crashing.org,
 	mpe@ellerman.id.au
-Subject: [PATCH 0/3] POWER8 PMU bugfixes
-Date: Thu,  3 Jul 2014 15:42:33 +0930
-Message-Id: <1404367956-19515-1-git-send-email-joel@jms.id.au>
+Subject: [PATCH 1/3] powerpc/kvm: Remove redundant save of SIER AND MMCR2
+Date: Thu,  3 Jul 2014 15:42:34 +0930
+Message-Id: <1404367956-19515-2-git-send-email-joel@jms.id.au>
+In-Reply-To: <1404367956-19515-1-git-send-email-joel@jms.id.au>
+References: <1404367956-19515-1-git-send-email-joel@jms.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,23 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These three patches are required for correct operation of perf counters on
-POWER8 boxes when running KVM guests. There were two bugs; not clearing MMCR2
-and writing over the saved value when entering a guest. However the first
-obscured the second.
+These two registers are already saved in the block above. Aside from
+being unnecessary, by the time we get down to the second save location
+r8 no longer contains MMCR2, so we are clobbering the saved value with
+PMC5.
 
-Thanks to who mpe helped diagnose the issue and pointed out the fix.
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+---
+ arch/powerpc/kvm/book3s_hv_interrupts.S | 5 -----
+ 1 file changed, 5 deletions(-)
 
-Joel Stanley (3):
-  powerpc/kvm: Remove redundant save of SIER AND MMCR2
-  powerpc/perf: Add PPMU_ARCH_207S define
-  powerpc/perf: Clear MMCR2 when enabling PMU
-
- arch/powerpc/include/asm/perf_event_server.h | 3 +--
- arch/powerpc/kvm/book3s_hv_interrupts.S      | 5 -----
- arch/powerpc/perf/core-book3s.c              | 9 ++++++---
- arch/powerpc/perf/power8-pmu.c               | 2 +-
- 4 files changed, 8 insertions(+), 11 deletions(-)
-
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 8c86422..731be74 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -127,11 +127,6 @@ BEGIN_FTR_SECTION
+ 	stw	r10, HSTATE_PMC + 24(r13)
+ 	stw	r11, HSTATE_PMC + 28(r13)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+-BEGIN_FTR_SECTION
+-	mfspr	r9, SPRN_SIER
+-	std	r8, HSTATE_MMCR + 40(r13)
+-	std	r9, HSTATE_MMCR + 48(r13)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 31:
+ 
+ 	/*
 -- 
 2.0.0
