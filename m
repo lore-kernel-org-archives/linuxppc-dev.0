@@ -1,20 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E5A61A0010
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 12:36:03 +1000 (EST)
-Message-ID: <1404441362.25056.2.camel@concordia>
-Subject: Re: [PATCH 3/3] powerpc/perf: Clear MMCR2 when enabling PMU
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Joel Stanley <joel@jms.id.au>
-Date: Fri, 04 Jul 2014 12:36:02 +1000
-In-Reply-To: <1404367956-19515-4-git-send-email-joel@jms.id.au>
-References: <1404367956-19515-1-git-send-email-joel@jms.id.au>
- <1404367956-19515-4-git-send-email-joel@jms.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E64E81A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 14:08:30 +1000 (EST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] devicetree/bindings: Add binding for micron n25q512a
+ memory
+Date: Fri, 4 Jul 2014 04:08:16 +0000
+Message-ID: <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
+References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1404425400.21434.89.camel@snotra.buserror.net>
+In-Reply-To: <1404425400.21434.89.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,13 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-07-03 at 15:42 +0930, Joel Stanley wrote:
-> On POWER8 when switching to a KVM guest we set bits in MMCR2 to freeze
-> the PMU counters. Aside from on boot they are then never reset,
-> resulting in stuck perf counters for any user in the guest or host.
-
-Cc: stable@vger.kernel.org
-Fixes: e05b9b9e5c10 ("powerpc/perf: Power8 PMU support")
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-
-cheers
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBKdWx5IDA0LCAyMDE0IDM6NDAgQU0NCj4gVG86IEphaW4gUHJp
+eWFua2EtQjMyMTY3DQo+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBzcGlAdmdlci5rZXJuZWwub3JnOyBsaW51
+eC1tdGRAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBkZXZpY2V0
+cmVlL2JpbmRpbmdzOiBBZGQgYmluZGluZyBmb3IgbWljcm9uIG4yNXE1MTJhDQo+IG1lbW9yeQ0K
+PiANCj4gT24gVGh1LCAyMDE0LTA3LTAzIGF0IDE1OjQyICswNTMwLCBQcml5YW5rYSBKYWluIHdy
+b3RlOg0KPiA+IC1NaWNyb24gbjI1cTUxMmEgbWVtb3J5IGlzIHN1cHBvcnRlZCBieSBtMjVwODAg
+ZHJpdmVyLg0KPiA+ICBBZGQgY29tcGF0aWJsZSBmaWVsZCByZXF1aXJlZCB0byBzdXBwb3J0IG4y
+NXE1MTJhIGluIG0yNXA4MC50eHQgLUFkZA0KPiA+IG1pY3JvbiB0byB0aGUgdmVuZG9yLXByZWZp
+eGVzLnR4dCBmaWxlDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBQcml5YW5rYSBKYWluIDxQcml5
+YW5rYS5KYWluQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIERvY3VtZW50YXRpb24vZGV2
+aWNldHJlZS9iaW5kaW5ncy9tdGQvbTI1cDgwLnR4dCAgIHwgICAgMSArDQo+ID4gIC4uLi9kZXZp
+Y2V0cmVlL2JpbmRpbmdzL3ZlbmRvci1wcmVmaXhlcy50eHQgICAgICAgIHwgICAgMSArDQo+ID4g
+IDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQ0KPiANCj4g
+V2h5IGRpZCB5b3Ugc2VuZCB0aGlzIHRvIHRoZSBwcGMgbGlzdCBidXQgbm90IHRoZSBzcGkgb3Ig
+bXRkIGxpc3RzPw0KPiANCltKYWluIFByaXlhbmthLUIzMjE2N10gU29ycnksIEkgbWlzc2VkIHRo
+YXQNCj4gSSdtIGhhdmluZyBhIGhhcmQgdGltZSBmb2xsb3dpbmcgdGhlIGZsb3cgb2YgaG93IHRo
+ZXNlIFNQSSBkZXZpY2VzIGdldA0KPiBib3VuZCAtLSBpcyB0aGUgY29tcGF0aWJsZSBpbnZvbHZl
+ZCBhdCBhbGw/ICBJIGRvbid0IHNlZSB0aGlzIHN0cmluZw0KPiAod2l0aCB2ZW5kb3IgcHJlZml4
+IGluY2x1ZGVkKSBpbiB0aGUgZHJpdmVyLiAgSSBkbyBzZWUgYSB0YWJsZSB0aGF0DQo+IGNvbnRh
+aW5zIHdoYXQgbG9va3MgbGlrZSBkZXZpY2UgSURzLiAgSWYgdGhlIGRldmljZSBjYW4gcmVwb3J0
+IGl0cyBpZCwNCj4gc2hvdWxkbid0IHdlIHJlbHkgb24gdGhhdCByYXRoZXIgdGhhbiBkZXZpY2Ug
+dHJlZSBjb21wYXRpYmxlPw0KPiANCj4gLVNjb3R0DQpbSmFpbiBQcml5YW5rYS1CMzIxNjddDQpT
+cGkgZHJpdmVyIGhhcyBhIGNoZWNrIHRvIGRldmljZSBuYW1lIGNvcnJlc3BvbmRpbmcgdG8gZGV2
+aWNlLWlkIGFuZCBjb21wYXJlIHRvIHdoYXQgaXMgcGFzc2VkIGluIGR0cyBzdHJpbmcuDQpOZXcg
+Y2hlY2twYXRjaCBzY3JpcHQgc2VhcmNoIGZvciBleGFjdCBzdHJpbmcgbWF0Y2ggaW4gYmluZGlu
+ZyBmb2xkZXIuIFNvLCBJIGhhdmUgYWRkZWQgdGhpcyBpbiBleGFtcGxlLg0KPiANCj4gDQo+ID4g
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9tdGQvbTI1cDgw
+LnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL210ZC9tMjVwODAu
+dHh0DQo+ID4gaW5kZXggNDYxMWFhOC4uY2UwMmU4MSAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbXRkL20yNXA4MC50eHQNCj4gPiArKysgYi9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbXRkL20yNXA4MC50eHQNCj4gPiBAQCAtNyw2
+ICs3LDcgQEAgUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiAgICAgICAgICAgICAgICAgdGhlIERU
+IGJpbmRpbmcgaXMgbm90IExpbnV4LW9ubHksIGJ1dCBpbiBjYXNlIG9mIExpbnV4LA0KPiBzZWUg
+dGhlDQo+ID4gICAgICAgICAgICAgICAgICJzcGlfbm9yX2lkcyIgdGFibGUgaW4gZHJpdmVycy9t
+dGQvc3BpLW5vci9zcGktbm9yLmMNCj4gZm9yIHRoZSBsaXN0DQo+ID4gICAgICAgICAgICAgICAg
+IG9mIHN1cHBvcnRlZCBjaGlwcy4NCj4gPiArICAgICAgICAgICAgICAgZXhhbXBsZTogIm1pY3Jv
+bixuMjVxNTEyYSINCj4gPiAgLSByZWcgOiBDaGlwLVNlbGVjdCBudW1iZXINCj4gPiAgLSBzcGkt
+bWF4LWZyZXF1ZW5jeSA6IE1heGltdW0gZnJlcXVlbmN5IG9mIHRoZSBTUEkgYnVzIHRoZSBjaGlw
+IGNhbg0KPiA+IG9wZXJhdGUgYXQNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvdmVuZG9yLXByZWZpeGVzLnR4dA0KPiA+IGIvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3ZlbmRvci1wcmVmaXhlcy50eHQNCj4gPiBpbmRleCA0
+ZDdmMzc1Li5hNDRjZmVlIDEwMDY0NA0KPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
+ZS9iaW5kaW5ncy92ZW5kb3ItcHJlZml4ZXMudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL3ZlbmRvci1wcmVmaXhlcy50eHQNCj4gPiBAQCAtNzksNiArNzks
+NyBAQCBtYXJ2ZWxsCU1hcnZlbGwgVGVjaG5vbG9neSBHcm91cCBMdGQuDQo+ID4gIG1heGltCU1h
+eGltIEludGVncmF0ZWQgUHJvZHVjdHMNCj4gPiAgbWljcmVsCU1pY3JlbCBJbmMuDQo+ID4gIG1p
+Y3JvY2hpcAlNaWNyb2NoaXAgVGVjaG5vbG9neSBJbmMuDQo+ID4gK21pY3JvbglNaWNyb24gVGVj
+aG5vbG9neSBJbmMuDQo+ID4gIG1vc2FpeHRlY2gJTW9zYWl4IFRlY2hub2xvZ2llcywgSW5jLg0K
+PiA+ICBtb3hhCU1veGENCj4gPiAgbXBsCU1QTCBBRw0KPiANCg0K
