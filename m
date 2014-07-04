@@ -2,23 +2,21 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D5DD81A001C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 17:54:47 +1000 (EST)
-Message-ID: <53B65DC4.5070001@suse.de>
-Date: Fri, 04 Jul 2014 09:54:44 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id D7E561A002E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 17:57:26 +1000 (EST)
+Message-ID: <53B65E61.3070107@suse.de>
+Date: Fri, 04 Jul 2014 09:57:21 +0200
 From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-To: "mihai.caraman@freescale.com" <mihai.caraman@freescale.com>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
-Subject: Re: [PATCH 5/6 v2] KVM: PPC: Book3E: Add ONE_REG AltiVec support
-References: <1404142497-6430-1-git-send-email-mihai.caraman@freescale.com>
- <1404142497-6430-6-git-send-email-mihai.caraman@freescale.com>
- <53B54DB2.1000805@suse.de>
- <92e31868b99a421ab578640527b41ccf@BY2PR03MB508.namprd03.prod.outlook.com>
-In-Reply-To: <92e31868b99a421ab578640527b41ccf@BY2PR03MB508.namprd03.prod.outlook.com>
+To: Joel Stanley <joel@jms.id.au>, paulus@samba.org,
+ benh@kernel.crashing.org, mpe@ellerman.id.au
+Subject: Re: [PATCH 1/3] powerpc/kvm: Remove redundant save of SIER AND MMCR2
+References: <1404367956-19515-1-git-send-email-joel@jms.id.au>
+ <1404367956-19515-2-git-send-email-joel@jms.id.au>
+In-Reply-To: <1404367956-19515-2-git-send-email-joel@jms.id.au>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, KVM <kvm@vger.kernel.org>,
+ kvm-ppc <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +27,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 03.07.14 18:11, mihai.caraman@freescale.com wrote:
->> -----Original Message-----
->> From: Alexander Graf [mailto:agraf@suse.de]
->> Sent: Thursday, July 03, 2014 3:34 PM
->> To: Caraman Mihai Claudiu-B02008; kvm-ppc@vger.kernel.org
->> Cc: kvm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
->> Subject: Re: [PATCH 5/6 v2] KVM: PPC: Book3E: Add ONE_REG AltiVec support
->>
->>
->> On 30.06.14 17:34, Mihai Caraman wrote:
->>> Add ONE_REG support for AltiVec on Book3E.
->>>
->>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
->> Any chance we can handle these in generic code?
-> I expected this request :) Can we let this for a second phase to have
-> e6500 enabled first?
+On 03.07.14 08:12, Joel Stanley wrote:
+> These two registers are already saved in the block above. Aside from
+> being unnecessary, by the time we get down to the second save location
+> r8 no longer contains MMCR2, so we are clobbering the saved value with
+> PMC5.
+>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 
-I don't see the value of duplicating code in e500 specific code only to 
-remove and combine it in common code in a follow-up patch after that.
+Reviewed-by: Alexander Graf <agraf@suse.de>
 
-> Can you share with us a Book3S setup so I can validate the requested
-> changes? I already fell anxious touching strange hardware specific
-> Book3S code without running it.
+Please CC kvm-ppc@vger and kvm@vger when you send kvm related patches :).
 
-Until a few weeks ago I had an externally reachable G5 machine that we 
-could've used for this. Unfortunately I had to replace the box with 
-another one that's not quite as stable. I'll try and see if I can fix or 
-replace it soon.
+Ben, I think this patch makes sense to go via your tree. Want to take it?
 
 
 Alex
+
+> ---
+>   arch/powerpc/kvm/book3s_hv_interrupts.S | 5 -----
+>   1 file changed, 5 deletions(-)
+>
+> diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+> index 8c86422..731be74 100644
+> --- a/arch/powerpc/kvm/book3s_hv_interrupts.S
+> +++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+> @@ -127,11 +127,6 @@ BEGIN_FTR_SECTION
+>   	stw	r10, HSTATE_PMC + 24(r13)
+>   	stw	r11, HSTATE_PMC + 28(r13)
+>   END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+> -BEGIN_FTR_SECTION
+> -	mfspr	r9, SPRN_SIER
+> -	std	r8, HSTATE_MMCR + 40(r13)
+> -	std	r9, HSTATE_MMCR + 48(r13)
+> -END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+>   31:
+>   
+>   	/*
