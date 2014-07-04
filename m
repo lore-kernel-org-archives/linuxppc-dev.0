@@ -1,22 +1,19 @@
 Return-Path: <Priyanka.Jain@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0140.outbound.protection.outlook.com [207.46.163.140])
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAAA71A0011
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 14:15:06 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F25D21A0011
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jul 2014 14:33:45 +1000 (EST)
 From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] devicetree/binding/powerpc/fsl: Add binding for CPLD
-Date: Fri, 4 Jul 2014 04:14:52 +0000
-Message-ID: <8a5f7147eb7e477ebf5ac5b38b6c456c@BLUPR03MB135.namprd03.prod.outlook.com>
-References: <1404382185-2967-1-git-send-email-Priyanka.Jain@freescale.com>
- <1404410878.21434.70.camel@snotra.buserror.net>
-In-Reply-To: <1404410878.21434.70.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH][v2] devicetree/binding/powerpc/fsl: Add binding for CPLD
+Date: Fri, 4 Jul 2014 10:03:15 +0530
+Message-ID: <1404448395-6513-1-git-send-email-Priyanka.Jain@freescale.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIEp1bHkgMDMsIDIwMTQgMTE6MzggUE0NCj4gVG86IEphaW4g
-UHJpeWFua2EtQjMyMTY3DQo+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gZGV2aWNldHJl
-ZS9iaW5kaW5nL3Bvd2VycGMvZnNsOiBBZGQgYmluZGluZyBmb3IgQ1BMRA0KPiANCj4gT24gVGh1
-LCAyMDE0LTA3LTAzIGF0IDE1OjM5ICswNTMwLCBQcml5YW5rYSBKYWluIHdyb3RlOg0KPiA+IFNv
-bWUgRnJlZXNjYWxlIGJvYXJkcyBsaWtlIFQxMDQwUkRCIGhhdmUgb24gYm9hcmQgQ1BMRCBjb25u
-ZWN0ZWQgb24NCj4gPiB0aGUgSUZDIGJ1cy4gQWRkIGJpbmRpbmcgZm9yIHRoaXMgaW4gYm9hcmQu
-dHh0IGZpbGUNCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFByaXlhbmthIEphaW4gPFByaXlhbmth
-LkphaW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGlu
-Z3MvcG93ZXJwYy9mc2wvYm9hcmQudHh0ICAgICAgfCAgIDE5DQo+ICsrKysrKysrKysrKysrKysr
-KysNCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCAxOSBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygt
-KQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
-cy9wb3dlcnBjL2ZzbC9ib2FyZC50eHQNCj4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9wb3dlcnBjL2ZzbC9ib2FyZC50eHQNCj4gPiBpbmRleCA3MDBkZWM0Li5mMzVmMjk1
-IDEwMDY0NA0KPiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dl
-cnBjL2ZzbC9ib2FyZC50eHQNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvcG93ZXJwYy9mc2wvYm9hcmQudHh0DQo+ID4gQEAgLTg0LDMgKzg0LDIyIEBAIEV4YW1w
-bGU6DQo+ID4gIAkJY29tcGF0aWJsZSA9ICJmc2wsYnNjOTEzMnFkcy1mcGdhIiwgImZzbCxmcGdh
-LXFpeGlzLWkyYyI7DQo+ID4gIAkJcmVnID0gPDB4NjY+Ow0KPiA+ICAJfTsNCj4gPiArDQo+ID4g
-KyogRnJlZXNjYWxlIG9uLWJvYXJkIENQTEQNCj4gPiArDQo+ID4gK1NvbWUgRnJlZXNjYWxlIGJv
-YXJkcyBsaWtlIFQxMDQwUkRCIGhhdmUgb24gYm9hcmQgQ1BMRCBjb25uZWN0ZWQgb24NCj4gPiAr
-dGhlIElGQyBidXMuDQo+ID4gKw0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+ICstIGNv
-bXBhdGlibGU6IFNob3VsZCBiZSBhIGJvYXJkLXNwZWNpZmljIHN0cmluZyBsaWtlICJmc2wsPGJv
-YXJkPi0NCj4gY3BsZCINCj4gPiArICBFeGFtcGxlOg0KPiA+ICsJImZzbCxUMTA0MFJEQi1jcGxk
-IiwgImZzbCxUMTA0MlJEQi1jcGxkIiwgImZzbCxUMTA0MlJEQl9QSS1jcGxkIg0KPiA+ICstIHJl
-ZzogU2hvdWxkIGNvbnRhaW4gdGhlIGNoaXAgc2VsZWN0LCBhZGRyZXNzIG9mZnNldCBhbmQgbGVu
-Z3RoIG9mDQo+ID4gK3RoZSBDUExEDQo+ID4gKw0KPiA+ICtFeGFtcGxlOg0KPiA+ICsJY3BsZEAz
-LDAgew0KPiA+ICsJCSNhZGRyZXNzLWNlbGxzID0gPDE+Ow0KPiA+ICsJCSNzaXplLWNlbGxzID0g
-PDE+Ow0KPiA+ICsJCWNvbXBhdGlibGUgPSAiZnNsLFQxMDQwUkRCLWNwbGQiOw0KPiA+ICsJCXJl
-ZyA9IDwzIDAgMHgzMDA+Ow0KPiA+ICsJfTsNCj4gDQo+IFBsZWFzZSBrZWVwIHRoZSBib2FyZCBu
-YW1lIGluIGxvd2VyY2FzZSBsaWtlIHRoZSByZXN0Lg0KPiANCj4gLVNjb3R0DQo+IA0KW0phaW4g
-UHJpeWFua2EtQjMyMTY3XVRoYW5rcyBmb3IgdGhlIGlucHV0cy4gIEkgd2lsbCBjb3JyZWN0IHRo
-aXMNCg0K
+Some Freescale boards like T1040RDB have on board CPLD connected on
+the IFC bus. Add binding for this in board.txt file
+
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+---
+Changes for v2:
+ convert board name to lower-case based on Scott's suggestions
+
+ .../devicetree/bindings/powerpc/fsl/board.txt      |   19 +++++++++++++++++++
+ 1 files changed, 19 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+index 700dec4..f35f295 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+@@ -84,3 +84,22 @@ Example:
+ 		compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
+ 		reg = <0x66>;
+ 	};
++
++* Freescale on-board CPLD
++
++Some Freescale boards like T1040RDB have on board CPLD connected on
++the IFC bus.
++
++Required properties:
++- compatible: Should be a board-specific string like "fsl,<board>-cpld"
++  Example:
++	"fsl,t1040rdb-cpld", "fsl,t1042rdb-cpld", "fsl,t1042rdb_pi-cpld"
++- reg: Should contain the chip select, address offset and length of the CPLD
++
++Example:
++	cpld@3,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,t1040rdb-cpld";
++		reg = <3 0 0x300>;
++	};
+-- 
+1.7.4.1
