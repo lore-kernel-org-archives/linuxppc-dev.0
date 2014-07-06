@@ -1,20 +1,20 @@
 Return-Path: <himangi774@gmail.com>
-Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
- [IPv6:2607:f8b0:400e:c03::234])
+Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
+ [IPv6:2607:f8b0:400e:c03::230])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E2EC1A000B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jul 2014 00:34:04 +1000 (EST)
-Received: by mail-pa0-f52.google.com with SMTP id eu11so3175489pac.11
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 05 Jul 2014 07:34:02 -0700 (PDT)
-Date: Sat, 5 Jul 2014 20:03:56 +0530
+ by lists.ozlabs.org (Postfix) with ESMTPS id 42EFD1A0009
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jul 2014 02:12:11 +1000 (EST)
+Received: by mail-pa0-f48.google.com with SMTP id et14so4097634pad.7
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Jul 2014 09:12:08 -0700 (PDT)
+Date: Sun, 6 Jul 2014 21:42:01 +0530
 From: Himangi Saraogi <himangi774@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/fsl-pci: Correct use of ! and &
-Message-ID: <20140705143356.GA3321@himangi-Dell>
+Subject: [PATCH] powerpc/mpic_msgr: Use kcalloc and correct the argument to
+ sizeof
+Message-ID: <20140706161201.GA6228@himangi-Dell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: julia.lawall@lip6.fr
@@ -27,44 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit ae91d60ba88ef0bdb1b5e9b2363bd52fc45d2af7, a bug was fixed that
-involved converting !x & y to !(x & y).  The code below shows the same
-pattern, and thus should perhaps be fixed in the same way.
+mpic_msgrs has type struct mpic_msgr **, not struct mpic_msgr *, so the
+elements of the array should have pointer type, not structure type.
+The advantage of kcalloc is, that will prevent integer overflows which
+could result from the multiplication of number of elements and size and
+it is also a bit nicer to read.
 
-The Coccinelle semantic patch that makes this change is as follows:
+The Coccinelle semantic patch that makes the first change is as follows:
 
 // <smpl>
-@@ expression E1,E2; @@
-(
-  !E1 & !E2
-|
-- !E1 & E2
-+ !(E1 & E2)
-)
+@disable sizeof_type_expr@
+type T;
+T **x;
+@@
+
+  x =
+  <+...sizeof(
+- T
++ *x
+  )...+>
 // </smpl>
 
 Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
 ---
-This is not tested and clearly changes the semantics, so it is only
-something to consider.
+ arch/powerpc/sysdev/mpic_msgr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/powerpc/sysdev/fsl_pci.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4bd091a..c507767 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -853,8 +853,8 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
- 		in = pcie->cfg_type0 + PEX_RC_INWIN_BASE;
- 		for (i = 0; i < 4; i++) {
- 			/* not enabled, skip */
--			if (!in_le32(&in[i].ar) & PEX_RCIWARn_EN)
--				 continue;
-+			if (!(in_le32(&in[i].ar) & PEX_RCIWARn_EN))
-+				continue;
+diff --git a/arch/powerpc/sysdev/mpic_msgr.c b/arch/powerpc/sysdev/mpic_msgr.c
+index 2c9b52a..7bdf3cc 100644
+--- a/arch/powerpc/sysdev/mpic_msgr.c
++++ b/arch/powerpc/sysdev/mpic_msgr.c
+@@ -184,7 +184,7 @@ static int mpic_msgr_probe(struct platform_device *dev)
+ 		dev_info(&dev->dev, "Found %d message registers\n",
+ 				mpic_msgr_count);
  
- 			if (get_immrbase() == in_le32(&in[i].tar))
- 				return (u64)in_le32(&in[i].barh) << 32 |
+-		mpic_msgrs = kzalloc(sizeof(struct mpic_msgr) * mpic_msgr_count,
++		mpic_msgrs = kcalloc(mpic_msgr_count, sizeof(*mpic_msgrs),
+ 							 GFP_KERNEL);
+ 		if (!mpic_msgrs) {
+ 			dev_err(&dev->dev,
 -- 
 1.9.1
