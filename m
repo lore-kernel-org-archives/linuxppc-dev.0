@@ -1,20 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2lp0237.outbound.protection.outlook.com [207.46.163.237])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C0E71A0010
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 07:30:35 +1000 (EST)
-Message-ID: <1404768624.21434.196.camel@snotra.buserror.net>
-Subject: Re: [PATCH] devicetree/bindings/powerpc/fsl: Add binding for board
+ by lists.ozlabs.org (Postfix) with ESMTPS id 569B11A000A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 08:16:40 +1000 (EST)
+Message-ID: <1404771387.21434.212.camel@snotra.buserror.net>
+Subject: Re: [3/3,v4] powerpc/t2080rdb: Add T2080RDB board support
 From: Scott Wood <scottwood@freescale.com>
-To: Priyanka Jain <Priyanka.Jain@freescale.com>
-Date: Mon, 7 Jul 2014 16:30:24 -0500
-In-Reply-To: <1404722194-8103-1-git-send-email-Priyanka.Jain@freescale.com>
-References: <1404722194-8103-1-git-send-email-Priyanka.Jain@freescale.com>
+To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
+Date: Mon, 7 Jul 2014 17:16:27 -0500
+In-Reply-To: <8f75541b111b44e3a26e2f6f4dc9df77@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1402481406-10830-3-git-send-email-Shengzhou.Liu@freescale.com>
+ <20140625233450.GA13860@home.buserror.net>
+ <8f75541b111b44e3a26e2f6f4dc9df77@DM2PR03MB398.namprd03.prod.outlook.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-07-07 at 14:06 +0530, Priyanka Jain wrote:
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/board.txt      |   17 ++++++++++++++++-
->  1 files changed, 16 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> index f35f295..7800729 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> @@ -1,8 +1,23 @@
->  Freescale Reference Board Bindings
->  
-> -This document describes device tree bindings for various devices that
-> +This document describes device tree bindings for board and  various devices that
->  exist on some Freescale reference boards.
->  
-> +* Board node
-> +Required properties:
-> +
-> + - model : Should be "fsl,<board>"
-> + - compatible : Should be "fsl,<board>"
-> +	example: "fsl,T1040RDB", "fsl,T1042RDB", "fsl,T1042RDB_PI"
-> +		 "fsl,T1040QDS", "fsl,T1042QDS"
-> +
-> +Example:
-> +
-> +/ {
-> +	model = "fsl,T1040RDB";
-> +	compatible = "fsl,T1040RDB";
-> +};
+On Mon, 2014-07-07 at 05:26 -0500, Liu Shengzhou-B36685 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, June 26, 2014 7:35 AM
+> > To: Liu Shengzhou-B36685
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [3/3,v4] powerpc/t2080rdb: Add T2080RDB board support
+> > 
+> > On Wed, Jun 11, 2014 at 06:10:06PM +0800, Shengzhou Liu wrote:
+> > > +				i2c@0 {
+> > > +					#address-cells = <1>;
+> > > +					#size-cells = <0>;
+> > > +					reg = <0x0>;
+> > > +
+> > > +					sfp@50 {
+> > > +						compatible = "optics,sfp";
+> > > +						reg = <0x50>;
+> > > +					};
+> > > +				};
+> > 
+> > What is "sfp"?  Please use generic node names when possible.
+> > 
+> > I'm not able to easily find what chip this is referring to by googling
+> > "optics sfp".  I suspect this compatible is too vague -- what is the
+> > actual part number?  Could you provide a URL to a description of the chip?
+> > 
+> > If "optics" is the correct vendor name, it needs to go into vendor-prefixes.txt.
+> > 
+> > -Scott
+>
+> [Shengzhou] SFP is "Small Form-factor Pluggable transceiver" for 10Gpbs
+> optics module.  Actually, there is no a specific vendor for this case,
+> it is a general sfp cage to which we can plug in different optics
+> module from different vendors.  And there is no need to configure it by
+> SW.  
 
-We really don't need to do this for every board just to satisfy
-checkpatch.
+Do not put arbitrary things in the vendor prefix.
+
+What is the programming interface that is made available on i2c port
+0x50?  If it can change based on user configuration, then perhaps it
+should just be left out.
 
 -Scott
