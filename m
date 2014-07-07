@@ -1,22 +1,19 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org
- [IPv6:2a01:238:4242:f000:64f:6c43:3523:e535])
- by lists.ozlabs.org (Postfix) with ESMTP id 142341A000A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jul 2014 18:32:23 +1000 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id DB18112B165
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jul 2014 10:32:17 +0200 (CEST)
-Date: Mon, 7 Jul 2014 10:32:17 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Subject: Re: [PATCH 0/3] iommu/fsl: Fixes for the PAMU driver.
-Message-ID: <20140707083216.GA1958@8bytes.org>
-References: <1403618237-26248-1-git-send-email-Varun.Sethi@freescale.com>
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0208.outbound.protection.outlook.com [207.46.163.208])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36C4D1A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jul 2014 18:47:47 +1000 (EST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: <devicetree@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH] devicetree/bindings/powerpc/fsl: Add binding for board
+Date: Mon, 7 Jul 2014 14:06:34 +0530
+Message-ID: <1404722194-8103-1-git-send-email-Priyanka.Jain@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1403618237-26248-1-git-send-email-Varun.Sethi@freescale.com>
-Cc: alex.williamson@redhat.com, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,17 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 24, 2014 at 07:27:14PM +0530, Varun Sethi wrote:
-> This patch set contains fixes for the PAMU driver. 
-> The patches are based on 3.16-rc1.
-> 
-> Varun Sethi (3):
->   Fix PAMU window size check. 
->   Fix the device domain attach condition.
->   Fix the error condition during iommu group creation.
-> 
->  drivers/iommu/fsl_pamu.c        |    8 ++++----
->  drivers/iommu/fsl_pamu_domain.c |   19 +++++++++----------
->  2 files changed, 13 insertions(+), 14 deletions(-)
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+---
+ .../devicetree/bindings/powerpc/fsl/board.txt      |   17 ++++++++++++++++-
+ 1 files changed, 16 insertions(+), 1 deletions(-)
 
-Applied to iommu/fixes, thanks.
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+index f35f295..7800729 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+@@ -1,8 +1,23 @@
+ Freescale Reference Board Bindings
+ 
+-This document describes device tree bindings for various devices that
++This document describes device tree bindings for board and  various devices that
+ exist on some Freescale reference boards.
+ 
++* Board node
++Required properties:
++
++ - model : Should be "fsl,<board>"
++ - compatible : Should be "fsl,<board>"
++	example: "fsl,T1040RDB", "fsl,T1042RDB", "fsl,T1042RDB_PI"
++		 "fsl,T1040QDS", "fsl,T1042QDS"
++
++Example:
++
++/ {
++	model = "fsl,T1040RDB";
++	compatible = "fsl,T1040RDB";
++};
++
+ * Board Control and Status (BCSR)
+ 
+ Required properties:
+-- 
+1.7.4.1
