@@ -1,31 +1,26 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 29EA71A000A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 06:41:59 +1000 (EST)
-Date: Mon, 7 Jul 2014 22:42:43 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-Message-ID: <20140707204242.GA27809@dhcp-26-207.brq.redhat.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
- <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
- <20140702202201.GA28852@google.com>
- <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
- <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0B2131A000A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 07:26:13 +1000 (EST)
+Message-ID: <1404768354.21434.191.camel@snotra.buserror.net>
+Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
+ memory
+From: Scott Wood <scottwood@freescale.com>
+To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
+Date: Mon, 7 Jul 2014 16:25:54 -0500
+In-Reply-To: <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
+References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
+ <1404425400.21434.89.camel@snotra.buserror.net>
+ <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- linux-s390@vger.kernel.org,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
- xen-devel@lists.xenproject.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+ "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,34 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 07, 2014 at 01:40:48PM -0600, Bjorn Helgaas wrote:
-> As you can tell, I'm a little skeptical about this.  It's a fairly big
-> change, it affects the arch interface, it seems to be targeted for
-> only a single chipset (though it's widely used), and we already
-> support a standard solution (MSI-X, reducing the number of vectors
-> requested, or even operating with 1 vector).
+On Thu, 2014-07-03 at 23:08 -0500, Jain Priyanka-B32167 wrote:
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, July 04, 2014 3:40 AM
+> > To: Jain Priyanka-B32167
+> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> > spi@vger.kernel.org; linux-mtd@lists.infradead.org
+> > Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
+> > memory
+> > 
+> > On Thu, 2014-07-03 at 15:42 +0530, Priyanka Jain wrote:
+> > > -Micron n25q512a memory is supported by m25p80 driver.
+> > >  Add compatible field required to support n25q512a in m25p80.txt -Add
+> > > micron to the vendor-prefixes.txt file
+> > >
+> > > Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> > > ---
+> > >  Documentation/devicetree/bindings/mtd/m25p80.txt   |    1 +
+> > >  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+> > >  2 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > Why did you send this to the ppc list but not the spi or mtd lists?
+> > 
+> [Jain Priyanka-B32167] Sorry, I missed that
+> > I'm having a hard time following the flow of how these SPI devices get
+> > bound -- is the compatible involved at all?  I don't see this string
+> > (with vendor prefix included) in the driver.  I do see a table that
+> > contains what looks like device IDs.  If the device can report its id,
+> > shouldn't we rely on that rather than device tree compatible?
+> > 
+> > -Scott
+> [Jain Priyanka-B32167]
+> Spi driver has a check to device name corresponding to device-id and compare to what is passed in dts string.
 
-Bjorn,
+Please go into more detail.  I don't see where the string
+"micron,n25q512a" appears in the current kernel.  I do see "n25q512a",
+but how does that compare successfully with the version of the string
+that has a vendor compatible?
 
-I surely understand your concerns. I am answering this "summary"
-question right away.
+Again, is there a device ID that can be read at runtime?  Is there a
+compatible string that represents a common programming interface?
 
-Even though an extra parameter is introduced, functionally this update
-is rather small. It is only the new pci_enable_msi_partial() function
-that could exploit a custom 'nvec_mme' parameter. By contrast, existing
-pci_enable_msi_range() function (and therefore all device drivers) is
-unaffected - it just rounds up 'nvec' to the nearest power of two and
-continues exactly as it has been. All archs besides x86 just ignore it.
-And x86 change is fairly small as well - all necessary functionality is
-already in.
+> New checkpatch script search for exact string match in binding folder. So, I have added this in example.
 
-Thus, at the moment it is only AHCI of concern. And no, AHCI can not do MSI-X..
+That check has a lot of false positives when it comes to compatible
+strings for specific chips that don't need to be specifically mentioned
+in a more generic binding.
 
-Thanks!
-
-> Bjorn
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+-Scott
