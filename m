@@ -1,22 +1,42 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0141.outbound.protection.outlook.com [207.46.163.141])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 569B11A000A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 08:16:40 +1000 (EST)
-Message-ID: <1404771387.21434.212.camel@snotra.buserror.net>
-Subject: Re: [3/3,v4] powerpc/t2080rdb: Add T2080RDB board support
-From: Scott Wood <scottwood@freescale.com>
-To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
-Date: Mon, 7 Jul 2014 17:16:27 -0500
-In-Reply-To: <8f75541b111b44e3a26e2f6f4dc9df77@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1402481406-10830-3-git-send-email-Shengzhou.Liu@freescale.com>
- <20140625233450.GA13860@home.buserror.net>
- <8f75541b111b44e3a26e2f6f4dc9df77@DM2PR03MB398.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 958141A0009
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 09:22:00 +1000 (EST)
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 991AF1400D7
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2014 09:21:59 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Mon, 7 Jul 2014 19:21:56 -0400
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D028E38C803B
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2014 19:21:53 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s67NLj6Y7209348
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2014 23:21:53 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s67NLK2e003085
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2014 19:21:21 -0400
+Message-ID: <53BB2B5F.6080206@linux.vnet.ibm.com>
+Date: Mon, 07 Jul 2014 18:21:03 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] ibmvfc: fix little endian issues
+References: <1403827435-29522-1-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1403827435-29522-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ jbottomley@parallels.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +46,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2014-07-07 at 05:26 -0500, Liu Shengzhou-B36685 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, June 26, 2014 7:35 AM
-> > To: Liu Shengzhou-B36685
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [3/3,v4] powerpc/t2080rdb: Add T2080RDB board support
-> > 
-> > On Wed, Jun 11, 2014 at 06:10:06PM +0800, Shengzhou Liu wrote:
-> > > +				i2c@0 {
-> > > +					#address-cells = <1>;
-> > > +					#size-cells = <0>;
-> > > +					reg = <0x0>;
-> > > +
-> > > +					sfp@50 {
-> > > +						compatible = "optics,sfp";
-> > > +						reg = <0x50>;
-> > > +					};
-> > > +				};
-> > 
-> > What is "sfp"?  Please use generic node names when possible.
-> > 
-> > I'm not able to easily find what chip this is referring to by googling
-> > "optics sfp".  I suspect this compatible is too vague -- what is the
-> > actual part number?  Could you provide a URL to a description of the chip?
-> > 
-> > If "optics" is the correct vendor name, it needs to go into vendor-prefixes.txt.
-> > 
-> > -Scott
->
-> [Shengzhou] SFP is "Small Form-factor Pluggable transceiver" for 10Gpbs
-> optics module.  Actually, there is no a specific vendor for this case,
-> it is a general sfp cage to which we can plug in different optics
-> module from different vendors.  And there is no need to configure it by
-> SW.  
+On 06/26/2014 07:03 PM, Tyrel Datwyler wrote:
+> Added big endian annotations to relevant data structure fields, and necessary
+> byte swappings to support little endian builds.
 
-Do not put arbitrary things in the vendor prefix.
+Acked-by: Brian King <brking@linux.vnet.ibm.com>
 
-What is the programming interface that is made available on i2c port
-0x50?  If it can change based on user configuration, then perhaps it
-should just be left out.
+Thanks,
 
--Scott
+Brian
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
