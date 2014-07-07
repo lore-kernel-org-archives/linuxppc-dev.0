@@ -1,23 +1,25 @@
-Return-Path: <himangi774@gmail.com>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 42EFD1A0009
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jul 2014 02:12:11 +1000 (EST)
-Received: by mail-pa0-f48.google.com with SMTP id et14so4097634pad.7
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 06 Jul 2014 09:12:08 -0700 (PDT)
-Date: Sun, 6 Jul 2014 21:42:01 +0530
-From: Himangi Saraogi <himangi774@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc/mpic_msgr: Use kcalloc and correct the argument to
- sizeof
-Message-ID: <20140706161201.GA6228@himangi-Dell>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: julia.lawall@lip6.fr
+Return-Path: <minchan@kernel.org>
+Received: from lgeamrelo04.lge.com (lgeamrelo04.lge.com [156.147.1.127])
+ by lists.ozlabs.org (Postfix) with ESMTP id 854001A0009
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jul 2014 10:52:31 +1000 (EST)
+From: Minchan Kim <minchan@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v10 4/7] powerpc: add pmd_[dirty|mkclean] for THP
+Date: Mon,  7 Jul 2014 09:53:55 +0900
+Message-Id: <1404694438-10272-5-git-send-email-minchan@kernel.org>
+In-Reply-To: <1404694438-10272-1-git-send-email-minchan@kernel.org>
+References: <1404694438-10272-1-git-send-email-minchan@kernel.org>
+Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
+ Minchan Kim <minchan@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Linux API <linux-api@vger.kernel.org>, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,45 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mpic_msgrs has type struct mpic_msgr **, not struct mpic_msgr *, so the
-elements of the array should have pointer type, not structure type.
-The advantage of kcalloc is, that will prevent integer overflows which
-could result from the multiplication of number of elements and size and
-it is also a bit nicer to read.
+MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
+overwrite of the contents since MADV_FREE syscall is called for
+THP page.
 
-The Coccinelle semantic patch that makes the first change is as follows:
+This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
+support.
 
-// <smpl>
-@disable sizeof_type_expr@
-type T;
-T **x;
-@@
-
-  x =
-  <+...sizeof(
-- T
-+ *x
-  )...+>
-// </smpl>
-
-Signed-off-by: Himangi Saraogi <himangi774@gmail.com>
-Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Minchan Kim <minchan@kernel.org>
 ---
- arch/powerpc/sysdev/mpic_msgr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/sysdev/mpic_msgr.c b/arch/powerpc/sysdev/mpic_msgr.c
-index 2c9b52a..7bdf3cc 100644
---- a/arch/powerpc/sysdev/mpic_msgr.c
-+++ b/arch/powerpc/sysdev/mpic_msgr.c
-@@ -184,7 +184,7 @@ static int mpic_msgr_probe(struct platform_device *dev)
- 		dev_info(&dev->dev, "Found %d message registers\n",
- 				mpic_msgr_count);
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index eb9261024f51..c9a4bbe8e179 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
  
--		mpic_msgrs = kzalloc(sizeof(struct mpic_msgr) * mpic_msgr_count,
-+		mpic_msgrs = kcalloc(mpic_msgr_count, sizeof(*mpic_msgrs),
- 							 GFP_KERNEL);
- 		if (!mpic_msgrs) {
- 			dev_err(&dev->dev,
+ #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
+ #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
++#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+ #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
+ #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
+ #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
++#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
+ 
 -- 
-1.9.1
+2.0.0
