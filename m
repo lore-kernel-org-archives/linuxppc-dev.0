@@ -1,26 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0210.outbound.protection.outlook.com [207.46.163.210])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1lp0144.outbound.protection.outlook.com [207.46.163.144])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B2131A000A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 07:26:13 +1000 (EST)
-Message-ID: <1404768354.21434.191.camel@snotra.buserror.net>
-Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
- memory
+ by lists.ozlabs.org (Postfix) with ESMTPS id A322E1A000A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 07:29:44 +1000 (EST)
+Message-ID: <1404768569.21434.195.camel@snotra.buserror.net>
+Subject: Re: [PATCH][v2] devicetree/binding/powerpc/fsl: Add binding for CPLD
 From: Scott Wood <scottwood@freescale.com>
-To: Jain Priyanka-B32167 <Priyanka.Jain@freescale.com>
-Date: Mon, 7 Jul 2014 16:25:54 -0500
-In-Reply-To: <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
-References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
- <1404425400.21434.89.camel@snotra.buserror.net>
- <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
+To: Priyanka Jain <Priyanka.Jain@freescale.com>
+Date: Mon, 7 Jul 2014 16:29:29 -0500
+In-Reply-To: <1404448395-6513-1-git-send-email-Priyanka.Jain@freescale.com>
+References: <1404448395-6513-1-git-send-email-Priyanka.Jain@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,53 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2014-07-03 at 23:08 -0500, Jain Priyanka-B32167 wrote:
+On Fri, 2014-07-04 at 10:03 +0530, Priyanka Jain wrote:
+> Some Freescale boards like T1040RDB have on board CPLD connected on
+> the IFC bus. Add binding for this in board.txt file
 > 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, July 04, 2014 3:40 AM
-> > To: Jain Priyanka-B32167
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > spi@vger.kernel.org; linux-mtd@lists.infradead.org
-> > Subject: Re: [PATCH] devicetree/bindings: Add binding for micron n25q512a
-> > memory
-> > 
-> > On Thu, 2014-07-03 at 15:42 +0530, Priyanka Jain wrote:
-> > > -Micron n25q512a memory is supported by m25p80 driver.
-> > >  Add compatible field required to support n25q512a in m25p80.txt -Add
-> > > micron to the vendor-prefixes.txt file
-> > >
-> > > Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> > > ---
-> > >  Documentation/devicetree/bindings/mtd/m25p80.txt   |    1 +
-> > >  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
-> > >  2 files changed, 2 insertions(+), 0 deletions(-)
-> > 
-> > Why did you send this to the ppc list but not the spi or mtd lists?
-> > 
-> [Jain Priyanka-B32167] Sorry, I missed that
-> > I'm having a hard time following the flow of how these SPI devices get
-> > bound -- is the compatible involved at all?  I don't see this string
-> > (with vendor prefix included) in the driver.  I do see a table that
-> > contains what looks like device IDs.  If the device can report its id,
-> > shouldn't we rely on that rather than device tree compatible?
-> > 
-> > -Scott
-> [Jain Priyanka-B32167]
-> Spi driver has a check to device name corresponding to device-id and compare to what is passed in dts string.
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> ---
+> Changes for v2:
+>  convert board name to lower-case based on Scott's suggestions
+> 
+>  .../devicetree/bindings/powerpc/fsl/board.txt      |   19 +++++++++++++++++++
+>  1 files changed, 19 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> index 700dec4..f35f295 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> @@ -84,3 +84,22 @@ Example:
+>  		compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
+>  		reg = <0x66>;
+>  	};
+> +
+> +* Freescale on-board CPLD
+> +
+> +Some Freescale boards like T1040RDB have on board CPLD connected on
+> +the IFC bus.
+> +
+> +Required properties:
+> +- compatible: Should be a board-specific string like "fsl,<board>-cpld"
+> +  Example:
+> +	"fsl,t1040rdb-cpld", "fsl,t1042rdb-cpld", "fsl,t1042rdb_pi-cpld"
+> +- reg: Should contain the chip select, address offset and length of the CPLD
 
-Please go into more detail.  I don't see where the string
-"micron,n25q512a" appears in the current kernel.  I do see "n25q512a",
-but how does that compare successfully with the version of the string
-that has a vendor compatible?
+We don't say "chip select, address offset and length" anywhere else in
+this document.  The reg format expected by the parent node should be
+documented in the binding for the parent node (e.g. you could find the
+node with a different reg format if for some reason it's not under a
+localbus node, such as may happen in certain virtualization
+scenarios).  
 
-Again, is there a device ID that can be read at runtime?  Is there a
-compatible string that represents a common programming interface?
+All you need to say here is that there is one reg region, which
+describes the CPLD registers.
 
-> New checkpatch script search for exact string match in binding folder. So, I have added this in example.
 
-That check has a lot of false positives when it comes to compatible
-strings for specific chips that don't need to be specifically mentioned
-in a more generic binding.
+> +Example:
+> +	cpld@3,0 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+
+Why do you need #address-cells/#size-cells?
+
+If you do need them, where is ranges and/or a description of what the
+child reg format is?
 
 -Scott
