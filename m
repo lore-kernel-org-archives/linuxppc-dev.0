@@ -1,27 +1,27 @@
-Return-Path: <Priyanka.Jain@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1lp0139.outbound.protection.outlook.com [207.46.163.139])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xerofoify@gmail.com>
+Received: from mail-vc0-x231.google.com (mail-vc0-x231.google.com
+ [IPv6:2607:f8b0:400c:c03::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BEBC71A0019
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 14:41:32 +1000 (EST)
-From: Priyanka Jain <Priyanka.Jain@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] devicetree/bindings: Add binding for micron n25q512a
- memory
-Date: Tue, 8 Jul 2014 04:41:23 +0000
-Message-ID: <a9ac5cbcdb554bedbda35594740e320d@BLUPR03MB135.namprd03.prod.outlook.com>
-References: <1404382376-3115-1-git-send-email-Priyanka.Jain@freescale.com>
- <1404425400.21434.89.camel@snotra.buserror.net>
- <b7e1d3bf1675492585121d9e7950f05a@BLUPR03MB135.namprd03.prod.outlook.com>
- <1404768354.21434.191.camel@snotra.buserror.net>
-In-Reply-To: <1404768354.21434.191.camel@snotra.buserror.net>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F30441A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 14:57:54 +1000 (EST)
+Received: by mail-vc0-f177.google.com with SMTP id ij19so4830694vcb.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 21:57:51 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
- "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
+In-Reply-To: <53BB6C2D.60209@roeck-us.net>
+References: <CAPDOMVi5ptjaKzT+Exd3XtKcy7W7nNZYUD+MEwN8LmhPrQTZBQ@mail.gmail.com>
+ <53BB6067.1090402@roeck-us.net>
+ <CAPDOMVgeUWGtMC2yssh3zz6y208mHW5WCduDCwr+J09d7LF+CQ@mail.gmail.com>
+ <53BB6C2D.60209@roeck-us.net>
+Date: Tue, 8 Jul 2014 00:57:51 -0400
+Message-ID: <CAPDOMVj0LPN1+wb-vj4ruruz4bpQb4X5nvRVtNWMpQecVgmd6A@mail.gmail.com>
+Subject: Fwd: Fwd: Allyesconfig for powerpc still Failing
+From: Nick Krause <xerofoify@gmail.com>
+To: linux@roeck-us.net
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,70 +31,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgSnVseSAwOCwgMjAxNCAyOjU2IEFNDQo+IFRvOiBKYWluIFBy
-aXlhbmthLUIzMjE2Nw0KPiBDYzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBj
-LWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4gc3BpQHZnZXIua2VybmVsLm9yZzsgbGlu
-dXgtbXRkQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gZGV2aWNl
-dHJlZS9iaW5kaW5nczogQWRkIGJpbmRpbmcgZm9yIG1pY3JvbiBuMjVxNTEyYQ0KPiBtZW1vcnkN
-Cj4gDQo+IE9uIFRodSwgMjAxNC0wNy0wMyBhdCAyMzowOCAtMDUwMCwgSmFpbiBQcml5YW5rYS1C
-MzIxNjcgd3JvdGU6DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4g
-PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogRnJpZGF5LCBKdWx5IDA0LCAy
-MDE0IDM6NDAgQU0NCj4gPiA+IFRvOiBKYWluIFByaXlhbmthLUIzMjE2Nw0KPiA+ID4gQ2M6IGRl
-dmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsN
-Cj4gPiA+IGxpbnV4LSBzcGlAdmdlci5rZXJuZWwub3JnOyBsaW51eC1tdGRAbGlzdHMuaW5mcmFk
-ZWFkLm9yZw0KPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF0gZGV2aWNldHJlZS9iaW5kaW5nczog
-QWRkIGJpbmRpbmcgZm9yIG1pY3Jvbg0KPiA+ID4gbjI1cTUxMmEgbWVtb3J5DQo+ID4gPg0KPiA+
-ID4gT24gVGh1LCAyMDE0LTA3LTAzIGF0IDE1OjQyICswNTMwLCBQcml5YW5rYSBKYWluIHdyb3Rl
-Og0KPiA+ID4gPiAtTWljcm9uIG4yNXE1MTJhIG1lbW9yeSBpcyBzdXBwb3J0ZWQgYnkgbTI1cDgw
-IGRyaXZlci4NCj4gPiA+ID4gIEFkZCBjb21wYXRpYmxlIGZpZWxkIHJlcXVpcmVkIHRvIHN1cHBv
-cnQgbjI1cTUxMmEgaW4gbTI1cDgwLnR4dA0KPiA+ID4gPiAtQWRkIG1pY3JvbiB0byB0aGUgdmVu
-ZG9yLXByZWZpeGVzLnR4dCBmaWxlDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFBy
-aXlhbmthIEphaW4gPFByaXlhbmthLkphaW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gLS0tDQo+
-ID4gPiA+ICBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbXRkL20yNXA4MC50eHQg
-ICB8ICAgIDEgKw0KPiA+ID4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdmVuZG9yLXByZWZp
-eGVzLnR4dCAgICAgICAgfCAgICAxICsNCj4gPiA+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMiBpbnNl
-cnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQ0KPiA+ID4NCj4gPiA+IFdoeSBkaWQgeW91IHNlbmQg
-dGhpcyB0byB0aGUgcHBjIGxpc3QgYnV0IG5vdCB0aGUgc3BpIG9yIG10ZCBsaXN0cz8NCj4gPiA+
-DQo+ID4gW0phaW4gUHJpeWFua2EtQjMyMTY3XSBTb3JyeSwgSSBtaXNzZWQgdGhhdA0KPiA+ID4g
-SSdtIGhhdmluZyBhIGhhcmQgdGltZSBmb2xsb3dpbmcgdGhlIGZsb3cgb2YgaG93IHRoZXNlIFNQ
-SSBkZXZpY2VzDQo+ID4gPiBnZXQgYm91bmQgLS0gaXMgdGhlIGNvbXBhdGlibGUgaW52b2x2ZWQg
-YXQgYWxsPyAgSSBkb24ndCBzZWUgdGhpcw0KPiA+ID4gc3RyaW5nICh3aXRoIHZlbmRvciBwcmVm
-aXggaW5jbHVkZWQpIGluIHRoZSBkcml2ZXIuICBJIGRvIHNlZSBhDQo+ID4gPiB0YWJsZSB0aGF0
-IGNvbnRhaW5zIHdoYXQgbG9va3MgbGlrZSBkZXZpY2UgSURzLiAgSWYgdGhlIGRldmljZSBjYW4N
-Cj4gPiA+IHJlcG9ydCBpdHMgaWQsIHNob3VsZG4ndCB3ZSByZWx5IG9uIHRoYXQgcmF0aGVyIHRo
-YW4gZGV2aWNlIHRyZWUNCj4gY29tcGF0aWJsZT8NCj4gPiA+DQo+ID4gPiAtU2NvdHQNCj4gPiBb
-SmFpbiBQcml5YW5rYS1CMzIxNjddDQo+ID4gU3BpIGRyaXZlciBoYXMgYSBjaGVjayB0byBkZXZp
-Y2UgbmFtZSBjb3JyZXNwb25kaW5nIHRvIGRldmljZS1pZCBhbmQNCj4gY29tcGFyZSB0byB3aGF0
-IGlzIHBhc3NlZCBpbiBkdHMgc3RyaW5nLg0KPiANCj4gUGxlYXNlIGdvIGludG8gbW9yZSBkZXRh
-aWwuICBJIGRvbid0IHNlZSB3aGVyZSB0aGUgc3RyaW5nDQo+ICJtaWNyb24sbjI1cTUxMmEiIGFw
-cGVhcnMgaW4gdGhlIGN1cnJlbnQga2VybmVsLiAgSSBkbyBzZWUgIm4yNXE1MTJhIiwNCj4gYnV0
-IGhvdyBkb2VzIHRoYXQgY29tcGFyZSBzdWNjZXNzZnVsbHkgd2l0aCB0aGUgdmVyc2lvbiBvZiB0
-aGUgc3RyaW5nDQo+IHRoYXQgaGFzIGEgdmVuZG9yIGNvbXBhdGlibGU/DQo+IA0KPiBBZ2Fpbiwg
-aXMgdGhlcmUgYSBkZXZpY2UgSUQgdGhhdCBjYW4gYmUgcmVhZCBhdCBydW50aW1lPyAgSXMgdGhl
-cmUgYQ0KPiBjb21wYXRpYmxlIHN0cmluZyB0aGF0IHJlcHJlc2VudHMgYSBjb21tb24gcHJvZ3Jh
-bW1pbmcgaW50ZXJmYWNlPw0KW0phaW4gUHJpeWFua2EtQjMyMTY3XSANClNwaSBkcml2ZXIgKG9m
-X3JlZ2lzdGVyX3NwaV9kZXZpY2VzKCkpIHNlYXJjaCBmb3IgY29tcGF0aWJsZSBzdHJpbmcgaW4g
-ZGV2aWNlLXRyZWUuIEl0IHNlbGVjdHMgdGhlIGZsYXNoIGRldmljZSBkcml2ZXIgYmFzZWQgb24g
-dGhlIGNvbXBhdGlibGUgc3RyaW5nIChuMjVxNTEyYSkuIFRoaXMgY29tcGF0aWJsZSBzdHJpbmcg
-aXMgZXNzZW50aWFsLCBlbHNlIGRldmljZSBwcm9iZSB3b250IGNvbnRpbnVlLiAgVGhlbiBEZXZp
-Y2UtaWQgb2YgZmxhc2ggaXMgcmVhZCBhdCBydW50aW1lIGluIHByb2JlIGFuZCBjb21wYXJlZCB3
-aXRoIHRoZSBjb3JyZXNwb25kaW5nIGRldmljZS1pZCBvZiBmbGFzaCAobjI1cTUxMmEpLiBEZXZp
-Y2UtaWQgKG1haW50YWluZWQgYXMgZmlyc3QgZWxlbWVudCBpbiBJTkZPIHN0cmluZyBpbiBzcGlf
-bm9yX2lkc1tdIGluIGRyaXZlcnMvbXRkL3NwaS1ub3Ivc3BpLW5vci5jIGZpbGUpDQpPbmx5IGlm
-IGJvdGggZGV2aWNlLWlkcyBtYXRjaCwgdGhlIGRldmljZSBpcyB0YWtlbiBhcyBzdWNjZXNzZnVs
-bHkgZGV0ZWN0ZWQuDQpSZWdhcmRpbmcgdmVuZG9yICJtaWNyb24iLCB5b3UgYXJlIHJpZ2h0IGN1
-cnJlbnRseSB0aGUgdmVuZG9yIGluZm9ybWF0aW9uIGlzIG5vdCBtYWludGFpbmVkIGFzIHN1Y2gg
-aW4gZGV2aWNlLWlkLCBidXQgdGhlIGNvbnZlbnRpb24gdGhhdCBpcyBmb2xsb3dlZCBmb3IgY29t
-cGF0aWJsZSBzdHJpbmcgaXMgInZlbmRvci1pZCwgZGV2aWNlLWlkIg0KPiANCj4gPiBOZXcgY2hl
-Y2twYXRjaCBzY3JpcHQgc2VhcmNoIGZvciBleGFjdCBzdHJpbmcgbWF0Y2ggaW4gYmluZGluZyBm
-b2xkZXIuDQo+IFNvLCBJIGhhdmUgYWRkZWQgdGhpcyBpbiBleGFtcGxlLg0KPiANCj4gVGhhdCBj
-aGVjayBoYXMgYSBsb3Qgb2YgZmFsc2UgcG9zaXRpdmVzIHdoZW4gaXQgY29tZXMgdG8gY29tcGF0
-aWJsZQ0KPiBzdHJpbmdzIGZvciBzcGVjaWZpYyBjaGlwcyB0aGF0IGRvbid0IG5lZWQgdG8gYmUg
-c3BlY2lmaWNhbGx5IG1lbnRpb25lZA0KPiBpbiBhIG1vcmUgZ2VuZXJpYyBiaW5kaW5nLg0KPiAN
-Cj4gLVNjb3R0DQo+IA0KW0phaW4gUHJpeWFua2EtQjMyMTY3XSBFdmVuIHRob3VnaCAibWljcm9u
-LG4yNXE1MTJhIiBpcyBpbiBzeW5jIHdpdGggYmluZGluZyBtZW50aW9uZWQgaW4gIiBEb2N1bWVu
-dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbXRkL20yNXA4MC50eHQgICAiLCBJIGhhdmUgdG8g
-YWRkIHRoaXMgYXMgYW4gYSBleGFtcGxlLCBqdXN0IHRvIGF2b2lkIGNoZWNrcGF0Y2ggZXJyb3Iu
-IFdoYXQgc2hvdWxkIGJlIHRoZSBhcHByb2FjaCBnb2luZyBmb3J3YXJkOiBTaG91bGQgc3VjaCBj
-aGVja3BhdGNoIHdhcm5pbmdzIGJlIGlnbm9yZWQ/DQoNCg0KDQoNCg==
+From: Guenter Roeck on  Mon, Jul 7, 2014 at 11:57 PM wrote
+Subject: Re: Fwd: Allyesconfig for powerpc still Failing
+To: Nick Krause <xerofoify@gmail.com>, "linux-kernel@vger.kernel.org"
+<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+<linuxppc-dev@lists.ozlabs.org>
+
+
+On 07/07/2014 08:38 PM, Nick Krause wrote:
+>
+> On 07/07/2014 07:45 PM, Nick Krause wrote:
+>>
+>>
+>> Today I tested the allyesconfig for powerpc and it seems to be still
+>> failing according to my tests.
+>> Below are the error messages I get before the jobs finish and exit
+>> failing the build.
+>> Cheers Nick
+>> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+>> arch/powerpc/kernel/exceptions-64s.S:1331: Error: attempt to move .org backwards
+>> make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
+>> make: *** [arch/powerpc/kernel] Error 2
+>> make: *** Waiting for unfinished jobs....
+>
+>
+> Guenter Roeck wrote on Mon, Jul 7, 2014 at 11:07 PM
+> I submitted a patch to work around this problem a couple of weeks ago [1].
+> Unfortunately, with this patch applied, allyesconfig still fails with
+> relocation errors, but at least the above message is gone, and
+> allmodconfig passes.
+>
+> Maybe we can convince Ben to accept the patch ...
+>
+> Thanks,
+> Guenter
+>
+> ---
+> [1] https://lkml.org/lkml/2014/6/30/607
+>
+> Hey Guenter,
+> Would you mind sending me the patch that fixes these errors.
+> I would like to test it before sending in to Ben.
+> Cheers Nick
+>
+
+Hi Nick,
+
+Just follow the link above, select 'forward', and follow the directions.
+You'll get the patch per e-mail.
+
+Alternative:
+
+wget "http://download.gmane.org/gmane.linux.kernel/1736036/1736037"
+
+The patch will be in a file named '1736037'.
+
+I copied the list for others, in case the 'how to download a patch'
+question comes up again.
+
+Guenter
+
+Guenter,
+Your patch works for me in building the powerpc allyesconfig.
+This is one news, I am going to send this patch to Ben.
+Cheers Nick
