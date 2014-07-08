@@ -1,31 +1,31 @@
-Return-Path: <j-nomura@ce.jp.nec.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A92EE1A0082
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 20:42:41 +1000 (EST)
-Received: from tyo201.gate.nec.co.jp (TYO201.gate.nec.co.jp [210.143.35.51])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 53B971400B0
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2014 20:42:41 +1000 (EST)
-From: Junichi Nomura <j-nomura@ce.jp.nec.com>
-To: Mike Snitzer <snitzer@redhat.com>, Paul Mackerras <paulus@samba.org>
-Subject: Re: Regression in 3.15 on POWER8 with multipath SCSI
-Date: Tue, 8 Jul 2014 10:28:13 +0000
-Message-ID: <11AF7C027C4C02408624617A4986078401323542@BPXM12GP.gisp.nec.co.jp>
-References: <20140630103058.GA17747@iris.ozlabs.ibm.com>
- <20140701193907.GA15306@redhat.com>
-In-Reply-To: <20140701193907.GA15306@redhat.com>
-Content-Type: text/plain; charset="iso-2022-jp"
+Return-Path: <masami.hiramatsu.pt@hitachi.com>
+Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
+ by lists.ozlabs.org (Postfix) with ESMTP id 5860B1A008B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 22:07:10 +1000 (EST)
+Message-ID: <53BBDEE6.1080800@hitachi.com>
+Date: Tue, 08 Jul 2014 21:07:02 +0900
+From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 MIME-Version: 1.0
-Cc: Vladimir Davydov <vdavydov@parallels.com>,
- "bvanassche@acm.org" <bvanassche@acm.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "dm-devel@redhat.com" <dm-devel@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
+Subject: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find blacklist"
+ error on ia64 and ppc64
+References: <1404276081.7254.1.camel@concordia>
+ <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+In-Reply-To: <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
+Content-Type: text/plain; charset=UTF-8
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
+ sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>, akataria@vmware.com,
+ linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
+ Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
+ yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
+ Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,104 +35,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/14 04:39, Mike Snitzer wrote:
-> On Mon, Jun 30 2014 at  6:30am -0400,
-> Paul Mackerras <paulus@samba.org> wrote:
->=20
->> I have a machine on which 3.15 usually fails to boot, and 3.14 boots
->> every time.  The machine is a POWER8 2-socket server with 20 cores
->> (thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
->> hardware-RAID-capable adapter which appears as two IPR controllers
->> which are both connected to each disk.  I am booting from a disk that
->> has Fedora 20 installed on it.
->>
->> After over two weeks of bisections, I can finally point to the commits
->> that cause the problems.  The culprits are:
->>
->> 3e9f1be1 dm mpath: remove process_queued_ios()
->> e8099177 dm mpath: push back requests instead of queueing
->> bcccff93 kobject: don't block for each kobject_uevent
->>
->> The interesting thing is that neither e8099177 nor bcccff93 cause
->> failures on their own, but with both commits in there are failures
->> where the system will fail to find /home on some occasions.
->>
->> With 3e9f1be1 included, the system appears to be prone to a deadlock
->> condition which typically causes the boot process to hang with this
->> message showing:
->>
->> A start job is running for Monitoring of LVM2 mirror...rogress polling
->>
->> (with a [***     ] thing before it where the asterisks move back and
->> forth).
->>
->> If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
->> 4cdd2ad7 ("dm mpath: fix lock order inconsistency in
->> multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
->> kernel that will boot every time.  The first two are later commits
->> that fix some problems with 3e9f1be1 (though not the problems I am
->> seeing).
->>
->> Can anyone see any reason why e8099177 and bcccff93 would interfere
->> with each other?
->=20
-> No, not seeing any obvious relation.
->=20
-> But even though you listed e8099177 as a culprit you didn't list it as a
-> commit you reverted.  Did you leave e8099177 simply because attempting
-> to revert it fails (if you don't first revert other dm-mpath.c commits)?
->=20
-> (btw, Bart Van Assche also has issues with commit e8099177 due to hangs
-> during cable pull testing of mpath devices -- Bart: curious to know if
-> your cable pull tests pass if you just revert bcccff93).
+Ping?
 
-It seems Bart's issue has gone with the attached patch:
-http://www.redhat.com/archives/dm-devel/2014-July/msg00035.html
-Could you try if it makes any difference on your issue?
+This patch can be applied without 1/2, and will fix ia64/ppc64 problem.
 
-The problem is dm-mpath's state machine stall due to e8099177
-but ioctl to the device can kick the state machine running again.
-That might be related to why bcccff93 affects the reproducibility.
-Also, 3e9f1be1 integrates some codes into the one which is affected
-by this problem. So it makes sense why the problem becomes easier
-to occur with that.
+Thank you,
 
--
-Jun'ichi Nomura, NEC Corporation
+(2014/07/02 16:00), Masami Hiramatsu wrote:
+> On ia64 and ppc64, the function pointer does not point the
+> entry address of the function, but the address of function
+> discriptor (which contains the entry address and misc
+> data.) Since the kprobes passes the function pointer stored
+> by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
+> initalizing its blacklist, it fails and reports many errors
+> as below.
+> 
+>   Failed to find blacklist 0001013168300000
+>   Failed to find blacklist 0001013000f0a000
+>   Failed to find blacklist 000101315f70a000
+>   Failed to find blacklist 000101324c80a000
+>   Failed to find blacklist 0001013063f0a000
+>   Failed to find blacklist 000101327800a000
+>   Failed to find blacklist 0001013277f0a000
+>   Failed to find blacklist 000101315a70a000
+>   Failed to find blacklist 0001013277e0a000
+>   Failed to find blacklist 000101305a20a000
+>   Failed to find blacklist 0001013277d0a000
+>   Failed to find blacklist 00010130bdc0a000
+>   Failed to find blacklist 00010130dc20a000
+>   Failed to find blacklist 000101309a00a000
+>   Failed to find blacklist 0001013277c0a000
+>   Failed to find blacklist 0001013277b0a000
+>   Failed to find blacklist 0001013277a0a000
+>   Failed to find blacklist 000101327790a000
+>   Failed to find blacklist 000101303140a000
+>   Failed to find blacklist 0001013a3280a000
+> 
+> To fix this bug, this introduces function_entry() macro to
+> retrieve the entry address from the given function pointer,
+> and uses for kallsyms_lookup_size_offset() while initializing
+> blacklist.
+> 
+> Changes in v5:
+>  - Use arch_deref_entry_point() instead of function_entry().
+> 
+> Changes in v4:
+>  - Add kernel_text_address() check for verifying the address.
+>  - Moved on the latest linus tree.
+> 
+> Changes in v3:
+>  - Fix a bug to get blacklist address based on function entry
+>    instead of function descriptor. (Suzuki's work, Thanks!)
+> 
+> Changes in V2:
+>  - Use function_entry() macro when lookin up symbols instead
+>    of storing it.
+>  - Update for the latest -next.
+> 
+> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> Reported-by: Tony Luck <tony.luck@gmail.com>
+> Tested-by: Tony Luck <tony.luck@intel.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Suzuki K. Poulose <suzuki@in.ibm.com>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Kevin Hao <haokexin@gmail.com>
+> Cc: linux-ia64@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  kernel/kprobes.c |   15 ++++++++++-----
+>  1 file changed, 10 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+> index 3214289..ec370cc 100644
+> --- a/kernel/kprobes.c
+> +++ b/kernel/kprobes.c
+> @@ -32,6 +32,7 @@
+>   *		<prasanna@in.ibm.com> added function-return probes.
+>   */
+>  #include <linux/kprobes.h>
+> +#include <linux/types.h>
+>  #include <linux/hash.h>
+>  #include <linux/init.h>
+>  #include <linux/slab.h>
+> @@ -2037,19 +2038,23 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
+>  {
+>  	unsigned long *iter;
+>  	struct kprobe_blacklist_entry *ent;
+> -	unsigned long offset = 0, size = 0;
+> +	unsigned long entry, offset = 0, size = 0;
+>  
+>  	for (iter = start; iter < end; iter++) {
+> -		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
+> -			pr_err("Failed to find blacklist %p\n", (void *)*iter);
+> +		entry = arch_deref_entry_point((void *)*iter);
+> +
+> +		if (!kernel_text_address(entry) ||
+> +		    !kallsyms_lookup_size_offset(entry, &size, &offset)) {
+> +			pr_err("Failed to find blacklist at %p\n",
+> +				(void *)entry);
+>  			continue;
+>  		}
+>  
+>  		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
+>  		if (!ent)
+>  			return -ENOMEM;
+> -		ent->start_addr = *iter;
+> -		ent->end_addr = *iter + size;
+> +		ent->start_addr = entry;
+> +		ent->end_addr = entry + size;
+>  		INIT_LIST_HEAD(&ent->list);
+>  		list_add_tail(&ent->list, &kprobe_blacklist);
+>  	}
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
 
-pg_ready() checks the current state of the multipath and may return
-false even if a new IO is needed to change the state.
-
-OTOH, if multipath_busy() returns busy, a new IO will not be sent
-to multipath target and the state change won't happen. That results
-in lock up.
-
-The intent of multipath_busy() is to avoid unnecessary cycles of
-dequeue + request_fn + requeue if it is known that multipath device
-will requeue.
-
-Such situation would be:
-  - path group is being activated
-  - there is no path and the multipath is setup to requeue if no path
-
-This patch should fix the problem introduced as a part of this commit:
-  commit e809917735ebf1b9a56c24e877ce0d320baee2ec
-  dm mpath: push back requests instead of queueing
-
-diff --git a/drivers/md/dm-mpath.c b/drivers/md/dm-mpath.c
-index ebfa411..d58343e 100644
---- a/drivers/md/dm-mpath.c
-+++ b/drivers/md/dm-mpath.c
-@@ -1620,8 +1620,9 @@ static int multipath_busy(struct dm_target *ti)
-=20
- 	spin_lock_irqsave(&m->lock, flags);
-=20
--	/* pg_init in progress, requeue until done */
--	if (!pg_ready(m)) {
-+	/* pg_init in progress or no paths available */
-+	if (m->pg_init_in_progress ||
-+	    (!m->nr_valid_paths && m->queue_if_no_path)) {
- 		busy =3D 1;
- 		goto out;
- 	}=
+-- 
+Masami HIRAMATSU
+Software Platform Research Dept. Linux Technology Research Center
+Hitachi, Ltd., Yokohama Research Laboratory
+E-mail: masami.hiramatsu.pt@hitachi.com
