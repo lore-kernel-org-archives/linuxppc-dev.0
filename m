@@ -1,26 +1,21 @@
-Return-Path: <xerofoify@gmail.com>
-Received: from mail-ve0-x22d.google.com (mail-ve0-x22d.google.com
- [IPv6:2607:f8b0:400c:c01::22d])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7DE791A0010
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 13:09:33 +1000 (EST)
-Received: by mail-ve0-f173.google.com with SMTP id db11so5048908veb.32
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 20:09:30 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1404788634.16156.38.camel@pasglop>
-References: <CAPDOMVi5ptjaKzT+Exd3XtKcy7W7nNZYUD+MEwN8LmhPrQTZBQ@mail.gmail.com>
- <1404788634.16156.38.camel@pasglop>
-Date: Mon, 7 Jul 2014 23:09:29 -0400
-Message-ID: <CAPDOMVi8kcCZf1gSvBLWq4+X3ZnrZXcwPstzafM4K_Re4eiKRQ@mail.gmail.com>
-Subject: Re: Allyesconfig for powerpc still Failing
-From: Nick Krause <xerofoify@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: mahesh <mahesh@linux.vnet.ibm.com>, agraf <agraf@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- michael <michael@ellerman.id.au>, paulus@samba.org, anton <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F3AD1A01F2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 13:10:26 +1000 (EST)
+Message-ID: <1404789011.16156.39.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Disable RELOCATABLE for COMPILE_TEST with PPC64
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Date: Tue, 08 Jul 2014 13:10:11 +1000
+In-Reply-To: <53BB5F9A.2060105@roeck-us.net>
+References: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
+ <53BB5F9A.2060105@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, Nick <xerofoify@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,29 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just hoped this log may help you in your issues with the train wreck.
-If you need any help with the issues here please let me know.
-Cheers Nick :)
+On Mon, 2014-07-07 at 20:03 -0700, Guenter Roeck wrote:
+> ping ...
+> 
+> Ben, I know this is not perfect, but on the other side it is simple
+> and would be easy to backport. With this in place, a complete/clean
+> fix would not be as urgent. Any chance to get it applied ?
 
-On Mon, Jul 7, 2014 at 11:03 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2014-07-07 at 22:45 -0400, Nick Krause wrote:
->> Today I tested the allyesconfig for powerpc and it seems to be still
->> failing according to my tests.
->> Below are the error messages I get before the jobs finish and exit
->> failing the build.
->> Cheers Nick
->> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
->> arch/powerpc/kernel/exceptions-64s.S:1331: Error: attempt to move .org backwards
->> make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
->> make: *** [arch/powerpc/kernel] Error 2
->> make: *** Waiting for unfinished jobs....
->
-> Yes, it's a trainwreck and I don't know how to fix it yet ... I tried
-> various more or less invasive approaches and none of them worked
-> properly so far. I need to spend more time on this.
->
-> Cheers,
-> Ben.
->
->
+Yes, that definitely helps, I'll include it as a band aid.
+
+Cheers,
+Ben.
+
+> Nick, this doesn't fix the allyesconfig build - it still fails with
+> relocation errors. But it does fix the allmodconfig build.
+> 
+> Thanks,
+> Guenter
+> 
+> On 06/30/2014 11:45 AM, Guenter Roeck wrote:
+> > powerpc:allmodconfig has been failing for some time with the following
+> > error.
+> >
+> > arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+> > arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org backwards
+> > make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
+> >
+> > A number of attempts to fix the problem by moving around code have been
+> > unsuccessful and resulted in failed builds for some configurations and
+> > the discovery of toolchain bugs.
+> >
+> > Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
+> > While this is less than perfect, it avoids substantial code changes
+> > which would otherwise be necessary just to make COMPILE_TEST builds
+> > happy and might have undesired side effects.
+> >
+> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> > ---
+> >   arch/powerpc/Kconfig | 3 ++-
+> >   1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index bd6dd6e..fefe7c8 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -414,7 +414,7 @@ config KEXEC
+> >   config CRASH_DUMP
+> >   	bool "Build a kdump crash kernel"
+> >   	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+> > -	select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
+> > +	select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
+> >   	help
+> >   	  Build a kernel suitable for use as a kdump capture kernel.
+> >   	  The same kernel binary can be used as production kernel and dump
+> > @@ -1017,6 +1017,7 @@ endmenu
+> >   if PPC64
+> >   config RELOCATABLE
+> >   	bool "Build a relocatable kernel"
+> > +	depends on !COMPILE_TEST
+> >   	select NONSTATIC_KERNEL
+> >   	help
+> >   	  This builds a kernel image that is capable of running anywhere
+> >
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
