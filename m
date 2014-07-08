@@ -1,19 +1,22 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205])
- by lists.ozlabs.org (Postfix) with ESMTP id 09D9A1A000D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 13:04:01 +1000 (EST)
-Message-ID: <53BB5F9A.2060105@roeck-us.net>
-Date: Mon, 07 Jul 2014 20:03:54 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Disable RELOCATABLE for COMPILE_TEST with PPC64
-References: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
-In-Reply-To: <1404153930-26568-1-git-send-email-linux@roeck-us.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Nick <xerofoify@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C81DE1A019B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 13:04:19 +1000 (EST)
+Message-ID: <1404788634.16156.38.camel@pasglop>
+Subject: Re: Allyesconfig for powerpc still Failing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nick Krause <xerofoify@gmail.com>
+Date: Tue, 08 Jul 2014 13:03:54 +1000
+In-Reply-To: <CAPDOMVi5ptjaKzT+Exd3XtKcy7W7nNZYUD+MEwN8LmhPrQTZBQ@mail.gmail.com>
+References: <CAPDOMVi5ptjaKzT+Exd3XtKcy7W7nNZYUD+MEwN8LmhPrQTZBQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: mahesh@linux.vnet.ibm.com, agraf@suse.de,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ michael@ellerman.id.au, paulus@samba.org, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,59 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ping ...
-
-Ben, I know this is not perfect, but on the other side it is simple
-and would be easy to backport. With this in place, a complete/clean
-fix would not be as urgent. Any chance to get it applied ?
-
-Nick, this doesn't fix the allyesconfig build - it still fails with
-relocation errors. But it does fix the allmodconfig build.
-
-Thanks,
-Guenter
-
-On 06/30/2014 11:45 AM, Guenter Roeck wrote:
-> powerpc:allmodconfig has been failing for some time with the following
-> error.
->
+On Mon, 2014-07-07 at 22:45 -0400, Nick Krause wrote:
+> Today I tested the allyesconfig for powerpc and it seems to be still
+> failing according to my tests.
+> Below are the error messages I get before the jobs finish and exit
+> failing the build.
+> Cheers Nick
 > arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-> arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org backwards
+> arch/powerpc/kernel/exceptions-64s.S:1331: Error: attempt to move .org backwards
 > make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
->
-> A number of attempts to fix the problem by moving around code have been
-> unsuccessful and resulted in failed builds for some configurations and
-> the discovery of toolchain bugs.
->
-> Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
-> While this is less than perfect, it avoids substantial code changes
-> which would otherwise be necessary just to make COMPILE_TEST builds
-> happy and might have undesired side effects.
->
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->   arch/powerpc/Kconfig | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index bd6dd6e..fefe7c8 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -414,7 +414,7 @@ config KEXEC
->   config CRASH_DUMP
->   	bool "Build a kdump crash kernel"
->   	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
-> -	select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
-> +	select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
->   	help
->   	  Build a kernel suitable for use as a kdump capture kernel.
->   	  The same kernel binary can be used as production kernel and dump
-> @@ -1017,6 +1017,7 @@ endmenu
->   if PPC64
->   config RELOCATABLE
->   	bool "Build a relocatable kernel"
-> +	depends on !COMPILE_TEST
->   	select NONSTATIC_KERNEL
->   	help
->   	  This builds a kernel image that is capable of running anywhere
->
+> make: *** [arch/powerpc/kernel] Error 2
+> make: *** Waiting for unfinished jobs....
+
+Yes, it's a trainwreck and I don't know how to fix it yet ... I tried
+various more or less invasive approaches and none of them worked
+properly so far. I need to spend more time on this.
+
+Cheers,
+Ben.
