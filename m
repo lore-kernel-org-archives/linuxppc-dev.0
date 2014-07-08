@@ -1,22 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <joel@jms.id.au>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 883A51A0197
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:04:30 +1000 (EST)
-Date: Tue, 8 Jul 2014 16:04:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nicholas Krause <xerofoify@gmail.com>
-Subject: Re: powerpc allyesconfig fix
-Message-ID: <20140708160417.47fb4d7c@canb.auug.org.au>
-In-Reply-To: <1404795849-25609-1-git-send-email-xerofoify@gmail.com>
-References: <1404795849-25609-1-git-send-email-xerofoify@gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/O=XqCrweHOp8en2jl/Reuu1"; protocol="application/pgp-signature"
-Cc: agraf@suse.de, linux-kernel@vger.kernel.org, michael@ellerman.id.au,
- paulus@samba.org, anton@samba.org, mahesh@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FD8A1A002E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:37 +1000 (EST)
+Received: by mail-pa0-f50.google.com with SMTP id bj1so6712327pad.23
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:35 -0700 (PDT)
+From: Joel Stanley <joel@jms.id.au>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH v2 0/3] POWER8 PMU bugfixes
+Date: Tue,  8 Jul 2014 16:08:19 +0930
+Message-Id: <1404801502-4663-1-git-send-email-joel@jms.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/O=XqCrweHOp8en2jl/Reuu1
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+These three patches are required for correct operation of perf counters on
+POWER8 boxes when running KVM guests. There were two bugs; not clearing MMCR2
+and writing over the saved value when entering a guest. However the first
+obscured the second.
 
-Hi Nicholas,
+Thanks to who mpe helped diagnose the issue and pointed out the fix.
 
-On Tue,  8 Jul 2014 01:04:09 -0400 Nicholas Krause <xerofoify@gmail.com> wr=
-ote:
->
-> powerpc:allmodconfig has been failing for some time with the following
-> error.
+V2:
+ Add comment from mpe
 
-This patch has already bee submitted directly by Guenter, however for
-future reference:  when you submit someone else's patch, you should
-include a From line as the first line of the email body containing their
-email address and you should include a Signed-off-by line from yourself.
+Joel Stanley (3):
+  powerpc/kvm: Remove redundant save of SIER AND MMCR2
+  powerpc/perf: Add PPMU_ARCH_207S define
+  powerpc/perf: Clear MMCR2 when enabling PMU
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+ arch/powerpc/include/asm/perf_event_server.h | 3 +--
+ arch/powerpc/kvm/book3s_hv_interrupts.S      | 5 -----
+ arch/powerpc/perf/core-book3s.c              | 9 ++++++---
+ arch/powerpc/perf/power8-pmu.c               | 2 +-
+ 4 files changed, 8 insertions(+), 11 deletions(-)
 
---Sig_/O=XqCrweHOp8en2jl/Reuu1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJTu4nmAAoJEMDTa8Ir7ZwV4mIQAI1fivBNbbXD5/n/4Q+zTrsW
-ZXJ/pBalXPut/JpnaXEacvfwKI0QFVhtxED5hPYj/OjxMfwsHdk7FFfcgujYnPkB
-uPl2yQNiEeJWKHDtjF6aNNO69ZuqTpLeYjWj8nrGtZWkdEtVdsiQCPZKI8Yi5JyV
-GMVSW8rwWAqdwSrArUHR8wmm/dgW9img1/wk5uhIgABvMjs0UnDhIp4M4iHPuNYK
-VIjzIHYO0BF2rteFiilfsIxGIE0Xy7q4n7XseKuZMt8me1IEItPHsyVAm9F9F/W4
-QjOkxSE3jnDVDH/TSprc0X8qILgiPtsu3GZFmRbVVnWHWWnWBqgjTnDp7+ozuZi9
-BmjqFkNi6GWGSAivTaKUpozKNwQg2xVTD/ykrXZmJHY6T47DuqQTQoASJ7vvUUQ2
-McUU0LR8iX/OsqyrHhZOfn4eTGjUn9hisi5ncOkYPRKZdU9cLfEKSx5tf26JCTfu
-QyP3n8Njynu3ZUSlKFNY7A//ktjOk6clzOkbr9dOWriWBGAoY3HgOyHcohTjXzc7
-odUC0jslztiY5zbo49NHA1rBCZDxx3IP00/ALIVHUGSrWANWA+pYP9PO0CTj7TUN
-qVc4j9YdaO24CxU8qmkdkSqaFdgAD1rSjXY/PO8iAdiAW1bJD3qZQ0Cbd0PjH9rE
-Y598N/14XgOAFLd8TC/C
-=z/pS
------END PGP SIGNATURE-----
-
---Sig_/O=XqCrweHOp8en2jl/Reuu1--
+-- 
+2.0.0
