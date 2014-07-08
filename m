@@ -1,42 +1,22 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 958141A0009
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 09:22:00 +1000 (EST)
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 991AF1400D7
- for <linuxppc-dev@ozlabs.org>; Tue,  8 Jul 2014 09:21:59 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Mon, 7 Jul 2014 19:21:56 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D028E38C803B
- for <linuxppc-dev@ozlabs.org>; Mon,  7 Jul 2014 19:21:53 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22036.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s67NLj6Y7209348
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2014 23:21:53 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s67NLK2e003085
- for <linuxppc-dev@ozlabs.org>; Mon, 7 Jul 2014 19:21:21 -0400
-Message-ID: <53BB2B5F.6080206@linux.vnet.ibm.com>
-Date: Mon, 07 Jul 2014 18:21:03 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 743EA1A0009
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 11:06:43 +1000 (EST)
+Date: Tue, 8 Jul 2014 11:06:42 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Tony Breeds <tony@bakeyournoodle.com>, grant.likely@secretlab.ca
+Subject: Re: Kernel build issues after yesterdays merge by Linus
+Message-ID: <20140708110642.1193b53e@kryten>
+In-Reply-To: <20140613051559.GC19628@thor.bakeyournoodle.com>
+References: <alpine.DEB.2.10.1406111013580.8422@gentwo.org>
+ <20140612220912.3447677f@kryten>
+ <20140613051559.GC19628@thor.bakeyournoodle.com>
 MIME-Version: 1.0
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] ibmvfc: fix little endian issues
-References: <1403827435-29522-1-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1403827435-29522-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- jbottomley@parallels.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linuxppc-dev@lists.ozlabs.org,
+ Christoph Lameter <cl@gentwo.org>, Brian Hart <hartb@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,17 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/26/2014 07:03 PM, Tyrel Datwyler wrote:
-> Added big endian annotations to relevant data structure fields, and necessary
-> byte swappings to support little endian builds.
 
-Acked-by: Brian King <brking@linux.vnet.ibm.com>
+Hi Tony,
 
-Thanks,
+> > Shows how much we use make install :) Below is a quick hack to get
+> > you going but we should look at either fixing the Ubuntu
+> > installkernel to handle extra optional args, or stop passing them
+> > from the ppc64 kernel install.sh script.
+> 
+> It seems like passign the zImage files is probably wrong.  How about:
 
-Brian
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index ccc25ed..146d898 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -390,7 +390,7 @@ $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
+ 	@rm -f $@; ln $< $@
+ 
+ install: $(CONFIGURE) $(addprefix $(obj)/, $(image-y))
+-	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $^
++	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)"
+ 
+ # anything not in $(targets)
+ clean-files += $(image-) $(initrd-) cuImage.* dtbImage.* treeImage.* \
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+
+Looks reasonable to me. Grant added this back in commit 29f1aff2 (powerpc:
+Copy bootable images in the default install script) but the other archs have
+gone in a different direction and created make zinstall targets.
+
+Anton
