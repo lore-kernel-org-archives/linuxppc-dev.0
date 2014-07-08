@@ -1,22 +1,21 @@
-Return-Path: <joel@jms.id.au>
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C189F1A0058
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:46 +1000 (EST)
-Received: by mail-pd0-f169.google.com with SMTP id g10so6666093pdj.28
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:44 -0700 (PDT)
-From: Joel Stanley <joel@jms.id.au>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH v2 3/3] powerpc/perf: Clear MMCR2 when enabling PMU
-Date: Tue,  8 Jul 2014 16:08:22 +0930
-Message-Id: <1404801502-4663-4-git-send-email-joel@jms.id.au>
-In-Reply-To: <1404801502-4663-1-git-send-email-joel@jms.id.au>
-References: <1404801502-4663-1-git-send-email-joel@jms.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F7931A004F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 17:05:08 +1000 (EST)
+From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] of: Add vendor prefix for EON Corporation
+Date: Tue, 8 Jul 2014 07:04:53 +0000
+Message-ID: <d1f1002be5574bdc821e241e70138bc6@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1404725359-6754-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1404759301.21434.145.camel@snotra.buserror.net>
+In-Reply-To: <1404759301.21434.145.camel@snotra.buserror.net>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,70 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On POWER8 when switching to a KVM guest we set bits in MMCR2 to freeze
-the PMU counters. Aside from on boot they are then never reset,
-resulting in stuck perf counters for any user in the guest or host.
-
-We now set MMCR2 to 0 whenever enabling the PMU, which provides a sane
-state for perf to use the PMU counters under either the guest or the
-host.
-
-This was manifesting as a bug with ppc64_cpu --frequency:
-
-    $ sudo ppc64_cpu --frequency
-    WARNING: couldn't run on cpu 0
-    WARNING: couldn't run on cpu 8
-      ...
-    WARNING: couldn't run on cpu 144
-    WARNING: couldn't run on cpu 152
-    min:    18446744073.710 GHz (cpu -1)
-    max:    0.000 GHz (cpu -1)
-    avg:    0.000 GHz
-
-The command uses a perf counter to measure CPU cycles over a fixed
-amount of time, in order to approximate the frequency of the machine.
-The counters were returning zero once a guest was started, regardless of
-weather it was still running or had been shut down.
-
-By dumping the value of MMCR2, it was observed that once a guest is
-running MMCR2 is set to 1s - which stops counters from running:
-
-    $ sudo sh -c 'echo p > /proc/sysrq-trigger'
-    CPU: 0 PMU registers, ppmu = POWER8 n_counters = 6
-    PMC1:  5b635e38 PMC2: 00000000 PMC3: 00000000 PMC4: 00000000
-    PMC5:  1bf5a646 PMC6: 5793d378 PMC7: deadbeef PMC8: deadbeef
-    MMCR0: 0000000080000000 MMCR1: 000000001e000000 MMCRA: 0000040000000000
-    MMCR2: fffffffffffffc00 EBBHR: 0000000000000000
-    EBBRR: 0000000000000000 BESCR: 0000000000000000
-    SIAR:  00000000000a51cc SDAR:  c00000000fc40000 SIER:  0000000001000000
-
-This is done unconditionally in book3s_hv_interrupts.S upon entering the
-guest, and the original value is only save/restored if the host has
-indicated it was using the PMU. This is okay, however the user of the
-PMU needs to ensure that it is in a defined state when it starts using
-it.
-
-Fixes: e05b9b9e5c10 ("powerpc/perf: Power8 PMU support")
-Cc: stable@vger.kernel.org
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/perf/core-book3s.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index a2ff1bd..bae697c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1300,6 +1300,9 @@ static void power_pmu_enable(struct pmu *pmu)
- 
- 	write_mmcr0(cpuhw, mmcr0);
- 
-+	if (ppmu->flags & PPMU_ARCH_207S)
-+		mtspr(SPRN_MMCR2, 0);
-+
- 	/*
- 	 * Enable instruction sampling if necessary
- 	 */
--- 
-2.0.0
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgSnVseSAwOCwgMjAxNCAyOjU1IEFNDQo+IFRvOiBMaXUgU2hl
+bmd6aG91LUIzNjY4NQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3Vi
+amVjdDogUmU6IFtQQVRDSF0gb2Y6IEFkZCB2ZW5kb3IgcHJlZml4IGZvciBFT04gQ29ycG9yYXRp
+b24NCj4gDQo+IE9uIE1vbiwgMjAxNC0wNy0wNyBhdCAxNzoyOSArMDgwMCwgU2hlbmd6aG91IExp
+dSB3cm90ZToNCj4gPiBTaWduZWQtb2ZmLWJ5OiBTaGVuZ3pob3UgTGl1IDxTaGVuZ3pob3UuTGl1
+QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy92ZW5kb3ItcHJlZml4ZXMudHh0IHwgMSArDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAx
+IGluc2VydGlvbigrKQ0KPiANCj4gQWdhaW4sIHBsZWFzZSBDQyBhbGwgcmVsZXZhbnQgbWFpbGlu
+ZyBsaXN0cy4gIFdoZXJlIGlzIHRoZSBkZXZpY2V0cmVlDQo+IGxpc3Q/ICBBbmQgbWVudGlvbiB3
+aHkgdGhpcyBwYXRjaCBpcyByZWxldmFudCB0byBQUEMuDQo+IA0KPiAtU2NvdHQNCltTaGVuZ3po
+b3VdIEkgZGlkbid0IGZpbmQgYW55IHJlbGV2YW50IGxpc3QgZm9yIGRldmljZXRyZWUgaW4gdGhl
+IE1BSU5UQUlORVJTLCBzbyBzZW50IGl0IGhlcmUgdG8gd2FpdCBmb3Igc29tZW9uZSBwb2ludCB0
+byB0aGUgcHJvcGVyIGxpc3QuDQo+IA0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy92ZW5kb3ItcHJlZml4ZXMudHh0DQo+ID4gYi9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdmVuZG9yLXByZWZpeGVzLnR4dA0KPiA+IGluZGV4
+IDFhNjc5M2IuLjNjMTBhMjEgMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0
+cmVlL2JpbmRpbmdzL3ZlbmRvci1wcmVmaXhlcy50eHQNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvdmVuZG9yLXByZWZpeGVzLnR4dA0KPiA+IEBAIC00Miw2ICs0
+Miw3IEBAIGVidglFQlYgRWxla3Ryb25paw0KPiA+ICBlZHQJRW1lcmdpbmcgRGlzcGxheSBUZWNo
+bm9sb2dpZXMNCj4gPiAgZW1taWNybwlFTSBNaWNyb2VsZWN0cm9uaWMNCj4gPiAgZXBmbAlFY29s
+ZSBQb2x5dGVjaG5pcXVlIEbDqWTDqXJhbGUgZGUgTGF1c2FubmUNCj4gPiArZW9uCUVvbiBTaWxp
+Y29uIFNvbHV0aW9uLCBJbmMuDQo+ID4gIGVwc29uCVNlaWtvIEVwc29uIENvcnAuDQo+ID4gIGVz
+dAlFU1RlZW0gV2lyZWxlc3MgTW9kZW1zDQo+ID4gIGV1a3JlYSAgRXVrcsOpYSBFbGVjdHJvbWF0
+aXF1ZQ0KPiANCg0K
