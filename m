@@ -1,14 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE8D61A0019
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:00:13 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/cell: Fix compilation with CONFIG_COREDUMP=n
-Date: Tue,  8 Jul 2014 16:00:09 +1000
-Message-Id: <1404799209-14049-1-git-send-email-mpe@ellerman.id.au>
+Return-Path: <minchan@kernel.org>
+Received: from lgeamrelo01.lge.com (lgeamrelo01.lge.com [156.147.1.125])
+ by lists.ozlabs.org (Postfix) with ESMTP id EEDD61A0012
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:03:57 +1000 (EST)
+From: Minchan Kim <minchan@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v11 4/7] powerpc: add pmd_[dirty|mkclean] for THP
+Date: Tue,  8 Jul 2014 15:03:41 +0900
+Message-Id: <1404799424-1120-5-git-send-email-minchan@kernel.org>
+In-Reply-To: <1404799424-1120-1-git-send-email-minchan@kernel.org>
+References: <1404799424-1120-1-git-send-email-minchan@kernel.org>
+Cc: Jason Evans <je@fb.com>, Rik van Riel <riel@redhat.com>,
+ Minchan Kim <minchan@kernel.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Linux API <linux-api@vger.kernel.org>, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Zhang Yanfei <zhangyanfei@cn.fujitsu.com>,
+ Michael Kerrisk <mtk.manpages@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ "Kirill A. Shutemov" <kirill@shutemov.name>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,77 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 046d662f4818 "coredump: make core dump functionality optional"
-made the coredump optional, but didn't update the spufs code that
-depends on it. That leads to build errors such as:
+MADV_FREE needs pmd_dirty and pmd_mkclean for detecting recent
+overwrite of the contents since MADV_FREE syscall is called for
+THP page.
 
-  arch/powerpc/platforms/built-in.o: In function `.spufs_arch_write_note':
-  coredump.c:(.text+0x22cd4): undefined reference to `.dump_emit'
-  coredump.c:(.text+0x22cf4): undefined reference to `.dump_emit'
-  coredump.c:(.text+0x22d0c): undefined reference to `.dump_align'
-  coredump.c:(.text+0x22d48): undefined reference to `.dump_emit'
-  coredump.c:(.text+0x22e7c): undefined reference to `.dump_skip'
+This patch adds pmd_dirty and pmd_mkclean for THP page MADV_FREE
+support.
 
-Fix it by adding some ifdefs in the cell code.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Minchan Kim <minchan@kernel.org>
 ---
- arch/powerpc/platforms/cell/spu_syscalls.c   | 2 ++
- arch/powerpc/platforms/cell/spufs/Makefile   | 3 ++-
- arch/powerpc/platforms/cell/spufs/syscalls.c | 6 ++++--
- 3 files changed, 8 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/platforms/cell/spu_syscalls.c b/arch/powerpc/platforms/cell/spu_syscalls.c
-index 38e0a1a5cec3..5e6e0bad6db6 100644
---- a/arch/powerpc/platforms/cell/spu_syscalls.c
-+++ b/arch/powerpc/platforms/cell/spu_syscalls.c
-@@ -111,6 +111,7 @@ asmlinkage long sys_spu_run(int fd, __u32 __user *unpc, __u32 __user *ustatus)
- 	return ret;
- }
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index eb9261024f51..c9a4bbe8e179 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -468,9 +468,11 @@ static inline pte_t *pmdp_ptep(pmd_t *pmd)
  
-+#ifdef CONFIG_COREDUMP
- int elf_coredump_extra_notes_size(void)
- {
- 	struct spufs_calls *calls;
-@@ -142,6 +143,7 @@ int elf_coredump_extra_notes_write(struct coredump_params *cprm)
+ #define pmd_pfn(pmd)		pte_pfn(pmd_pte(pmd))
+ #define pmd_young(pmd)		pte_young(pmd_pte(pmd))
++#define pmd_dirty(pmd)		pte_dirty(pmd_pte(pmd))
+ #define pmd_mkold(pmd)		pte_pmd(pte_mkold(pmd_pte(pmd)))
+ #define pmd_wrprotect(pmd)	pte_pmd(pte_wrprotect(pmd_pte(pmd)))
+ #define pmd_mkdirty(pmd)	pte_pmd(pte_mkdirty(pmd_pte(pmd)))
++#define pmd_mkclean(pmd)	pte_pmd(pte_mkclean(pmd_pte(pmd)))
+ #define pmd_mkyoung(pmd)	pte_pmd(pte_mkyoung(pmd_pte(pmd)))
+ #define pmd_mkwrite(pmd)	pte_pmd(pte_mkwrite(pmd_pte(pmd)))
  
- 	return ret;
- }
-+#endif
- 
- void notify_spus_active(void)
- {
-diff --git a/arch/powerpc/platforms/cell/spufs/Makefile b/arch/powerpc/platforms/cell/spufs/Makefile
-index b9d5d678aa44..52a7d2596d30 100644
---- a/arch/powerpc/platforms/cell/spufs/Makefile
-+++ b/arch/powerpc/platforms/cell/spufs/Makefile
-@@ -1,8 +1,9 @@
- 
- obj-$(CONFIG_SPU_FS) += spufs.o
--spufs-y += inode.o file.o context.o syscalls.o coredump.o
-+spufs-y += inode.o file.o context.o syscalls.o
- spufs-y += sched.o backing_ops.o hw_ops.o run.o gang.o
- spufs-y += switch.o fault.o lscsa_alloc.o
-+spufs-$(CONFIG_COREDUMP) += coredump.o
- 
- # magic for the trace events
- CFLAGS_sched.o := -I$(src)
-diff --git a/arch/powerpc/platforms/cell/spufs/syscalls.c b/arch/powerpc/platforms/cell/spufs/syscalls.c
-index b045fdda4845..a87200a535fa 100644
---- a/arch/powerpc/platforms/cell/spufs/syscalls.c
-+++ b/arch/powerpc/platforms/cell/spufs/syscalls.c
-@@ -79,8 +79,10 @@ static long do_spu_create(const char __user *pathname, unsigned int flags,
- struct spufs_calls spufs_calls = {
- 	.create_thread = do_spu_create,
- 	.spu_run = do_spu_run,
--	.coredump_extra_notes_size = spufs_coredump_extra_notes_size,
--	.coredump_extra_notes_write = spufs_coredump_extra_notes_write,
- 	.notify_spus_active = do_notify_spus_active,
- 	.owner = THIS_MODULE,
-+#ifdef CONFIG_COREDUMP
-+	.coredump_extra_notes_size = spufs_coredump_extra_notes_size,
-+	.coredump_extra_notes_write = spufs_coredump_extra_notes_write,
-+#endif
- };
 -- 
-1.9.1
+2.0.0
