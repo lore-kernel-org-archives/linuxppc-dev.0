@@ -1,27 +1,20 @@
 Return-Path: <xerofoify@gmail.com>
-Received: from mail-vc0-x231.google.com (mail-vc0-x231.google.com
- [IPv6:2607:f8b0:400c:c03::231])
+Received: from mail-ig0-x22f.google.com (mail-ig0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c05::22f])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F30441A001D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 14:57:54 +1000 (EST)
-Received: by mail-vc0-f177.google.com with SMTP id ij19so4830694vcb.8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 21:57:51 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <53BB6C2D.60209@roeck-us.net>
-References: <CAPDOMVi5ptjaKzT+Exd3XtKcy7W7nNZYUD+MEwN8LmhPrQTZBQ@mail.gmail.com>
- <53BB6067.1090402@roeck-us.net>
- <CAPDOMVgeUWGtMC2yssh3zz6y208mHW5WCduDCwr+J09d7LF+CQ@mail.gmail.com>
- <53BB6C2D.60209@roeck-us.net>
-Date: Tue, 8 Jul 2014 00:57:51 -0400
-Message-ID: <CAPDOMVj0LPN1+wb-vj4ruruz4bpQb4X5nvRVtNWMpQecVgmd6A@mail.gmail.com>
-Subject: Fwd: Fwd: Allyesconfig for powerpc still Failing
-From: Nick Krause <xerofoify@gmail.com>
-To: linux@roeck-us.net
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD8E51A0019
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 15:04:19 +1000 (EST)
+Received: by mail-ig0-f175.google.com with SMTP id h3so271897igd.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 22:04:17 -0700 (PDT)
+From: Nicholas Krause <xerofoify@gmail.com>
+To: benh@kernel.crashing.org
+Subject: powerpc allyesconfig fix 
+Date: Tue,  8 Jul 2014 01:04:09 -0400
+Message-Id: <1404795849-25609-1-git-send-email-xerofoify@gmail.com>
+Cc: mahesh@linux.vnet.ibm.com, agraf@suse.de, linux-kernel@vger.kernel.org,
+ michael@ellerman.id.au, paulus@samba.org, anton@samba.org,
+ linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,67 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Guenter Roeck on  Mon, Jul 7, 2014 at 11:57 PM wrote
-Subject: Re: Fwd: Allyesconfig for powerpc still Failing
-To: Nick Krause <xerofoify@gmail.com>, "linux-kernel@vger.kernel.org"
-<linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
-<linuxppc-dev@lists.ozlabs.org>
+powerpc:allmodconfig has been failing for some time with the following
+error.
 
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:1312: Error: attempt to move .org backwards
+make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
 
-On 07/07/2014 08:38 PM, Nick Krause wrote:
->
-> On 07/07/2014 07:45 PM, Nick Krause wrote:
->>
->>
->> Today I tested the allyesconfig for powerpc and it seems to be still
->> failing according to my tests.
->> Below are the error messages I get before the jobs finish and exit
->> failing the build.
->> Cheers Nick
->> arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
->> arch/powerpc/kernel/exceptions-64s.S:1331: Error: attempt to move .org backwards
->> make[1]: *** [arch/powerpc/kernel/head_64.o] Error 1
->> make: *** [arch/powerpc/kernel] Error 2
->> make: *** Waiting for unfinished jobs....
->
->
-> Guenter Roeck wrote on Mon, Jul 7, 2014 at 11:07 PM
-> I submitted a patch to work around this problem a couple of weeks ago [1].
-> Unfortunately, with this patch applied, allyesconfig still fails with
-> relocation errors, but at least the above message is gone, and
-> allmodconfig passes.
->
-> Maybe we can convince Ben to accept the patch ...
->
-> Thanks,
-> Guenter
->
-> ---
-> [1] https://lkml.org/lkml/2014/6/30/607
->
-> Hey Guenter,
-> Would you mind sending me the patch that fixes these errors.
-> I would like to test it before sending in to Ben.
-> Cheers Nick
->
+A number of attempts to fix the problem by moving around code have been
+unsuccessful and resulted in failed builds for some configurations and
+the discovery of toolchain bugs.
 
-Hi Nick,
+Fix the problem by disabling RELOCATABLE for COMPILE_TEST builds instead.
+While this is less than perfect, it avoids substantial code changes
+which would otherwise be necessary just to make COMPILE_TEST builds
+happy and might have undesired side effects.
 
-Just follow the link above, select 'forward', and follow the directions.
-You'll get the patch per e-mail.
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+ arch/powerpc/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Alternative:
-
-wget "http://download.gmane.org/gmane.linux.kernel/1736036/1736037"
-
-The patch will be in a file named '1736037'.
-
-I copied the list for others, in case the 'how to download a patch'
-question comes up again.
-
-Guenter
-
-Guenter,
-Your patch works for me in building the powerpc allyesconfig.
-This is one news, I am going to send this patch to Ben.
-Cheers Nick
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index bd6dd6e..fefe7c8 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -414,7 +414,7 @@ config KEXEC
+ config CRASH_DUMP
+ 	bool "Build a kdump crash kernel"
+ 	depends on PPC64 || 6xx || FSL_BOOKE || (44x && !SMP)
+-	select RELOCATABLE if PPC64 || 44x || FSL_BOOKE
++	select RELOCATABLE if (PPC64 && !COMPILE_TEST) || 44x || FSL_BOOKE
+ 	help
+ 	  Build a kernel suitable for use as a kdump capture kernel.
+ 	  The same kernel binary can be used as production kernel and dump
+@@ -1017,6 +1017,7 @@ endmenu
+ if PPC64
+ config RELOCATABLE
+ 	bool "Build a relocatable kernel"
++	depends on !COMPILE_TEST
+ 	select NONSTATIC_KERNEL
+ 	help
+ 	  This builds a kernel image that is capable of running anywhere
+-- 
+1.9.1
