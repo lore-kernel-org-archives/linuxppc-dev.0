@@ -1,22 +1,22 @@
 Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 105EA1A0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:41 +1000 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id hz1so6826400pad.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:38 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38A0E1A0178
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:43 +1000 (EST)
+Received: by mail-pd0-f179.google.com with SMTP id w10so6688117pde.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:41 -0700 (PDT)
 From: Joel Stanley <joel@jms.id.au>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- Alexander Graf <agraf@suse.de>
-Subject: [PATCH v2 1/3] powerpc/kvm: Remove redundant save of SIER AND MMCR2
-Date: Tue,  8 Jul 2014 16:08:20 +0930
-Message-Id: <1404801502-4663-2-git-send-email-joel@jms.id.au>
+To: benh@kernel.crashing.org,
+	paulus@samba.org,
+	mpe@ellerman.id.au
+Subject: [PATCH v2 2/3] powerpc/perf: Add PPMU_ARCH_207S define
+Date: Tue,  8 Jul 2014 16:08:21 +0930
+Message-Id: <1404801502-4663-3-git-send-email-joel@jms.id.au>
 In-Reply-To: <1404801502-4663-1-git-send-email-joel@jms.id.au>
 References: <1404801502-4663-1-git-send-email-joel@jms.id.au>
-Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,43 +26,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These two registers are already saved in the block above. Aside from
-being unnecessary, by the time we get down to the second save location
-r8 no longer contains MMCR2, so we are clobbering the saved value with
-PMC5.
+Instead of separate bits for every POWER8 PMU feature, have a single one
+for v2.07 of the architecture.
 
-MMCR2 primarily consists of counter freeze bits. So restoring the value
-of PMC5 into MMCR2 will most likely have the effect of freezing
-counters.
+This saves us adding a MMCR2 define for a future patch.
 
-Fixes: 72cde5a88d37 ("KVM: PPC: Book3S HV: Save/restore host PMU registers that are new in POWER8")
 Cc: stable@vger.kernel.org
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 Acked-by: Michael Ellerman <mpe@ellerman.id.au>
-Acked-by: Paul Mackerras <paulus@samba.org>
-Reviewed-by: Alexander Graf <agraf@suse.de>
 ---
-V2:
- - Add comments from mpe
+ arch/powerpc/include/asm/perf_event_server.h | 3 +--
+ arch/powerpc/perf/core-book3s.c              | 6 +++---
+ arch/powerpc/perf/power8-pmu.c               | 2 +-
+ 3 files changed, 5 insertions(+), 6 deletions(-)
 
- arch/powerpc/kvm/book3s_hv_interrupts.S | 5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
-index 8c86422..731be74 100644
---- a/arch/powerpc/kvm/book3s_hv_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
-@@ -127,11 +127,6 @@ BEGIN_FTR_SECTION
- 	stw	r10, HSTATE_PMC + 24(r13)
- 	stw	r11, HSTATE_PMC + 28(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
--BEGIN_FTR_SECTION
--	mfspr	r9, SPRN_SIER
--	std	r8, HSTATE_MMCR + 40(r13)
--	std	r9, HSTATE_MMCR + 48(r13)
--END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 31:
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index 9ed73714..b3e9360 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -61,8 +61,7 @@ struct power_pmu {
+ #define PPMU_SIAR_VALID		0x00000010 /* Processor has SIAR Valid bit */
+ #define PPMU_HAS_SSLOT		0x00000020 /* Has sampled slot in MMCRA */
+ #define PPMU_HAS_SIER		0x00000040 /* Has SIER */
+-#define PPMU_BHRB		0x00000080 /* has BHRB feature enabled */
+-#define PPMU_EBB		0x00000100 /* supports event based branch */
++#define PPMU_ARCH_207S		0x00000080 /* PMC is architecture v2.07S */
  
- 	/*
+ /*
+  * Values for flags to get_alternatives()
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 4520c93..a2ff1bd 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -485,7 +485,7 @@ static bool is_ebb_event(struct perf_event *event)
+ 	 * check that the PMU supports EBB, meaning those that don't can still
+ 	 * use bit 63 of the event code for something else if they wish.
+ 	 */
+-	return (ppmu->flags & PPMU_EBB) &&
++	return (ppmu->flags & PPMU_ARCH_207S) &&
+ 	       ((event->attr.config >> PERF_EVENT_CONFIG_EBB_SHIFT) & 1);
+ }
+ 
+@@ -777,7 +777,7 @@ void perf_event_print_debug(void)
+ 	if (ppmu->flags & PPMU_HAS_SIER)
+ 		sier = mfspr(SPRN_SIER);
+ 
+-	if (ppmu->flags & PPMU_EBB) {
++	if (ppmu->flags & PPMU_ARCH_207S) {
+ 		pr_info("MMCR2: %016lx EBBHR: %016lx\n",
+ 			mfspr(SPRN_MMCR2), mfspr(SPRN_EBBHR));
+ 		pr_info("EBBRR: %016lx BESCR: %016lx\n",
+@@ -1696,7 +1696,7 @@ static int power_pmu_event_init(struct perf_event *event)
+ 
+ 	if (has_branch_stack(event)) {
+ 	        /* PMU has BHRB enabled */
+-		if (!(ppmu->flags & PPMU_BHRB))
++		if (!(ppmu->flags & PPMU_ARCH_207S))
+ 			return -EOPNOTSUPP;
+ 	}
+ 
+diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
+index fe2763b..639cd91 100644
+--- a/arch/powerpc/perf/power8-pmu.c
++++ b/arch/powerpc/perf/power8-pmu.c
+@@ -792,7 +792,7 @@ static struct power_pmu power8_pmu = {
+ 	.get_constraint		= power8_get_constraint,
+ 	.get_alternatives	= power8_get_alternatives,
+ 	.disable_pmc		= power8_disable_pmc,
+-	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB | PPMU_EBB,
++	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_ARCH_207S,
+ 	.n_generic		= ARRAY_SIZE(power8_generic_events),
+ 	.generic_events		= power8_generic_events,
+ 	.cache_events		= &power8_cache_events,
 -- 
 2.0.0
