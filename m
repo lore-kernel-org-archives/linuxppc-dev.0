@@ -1,20 +1,27 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <xerofoify@gmail.com>
+Received: from mail-ve0-x235.google.com (mail-ve0-x235.google.com
+ [IPv6:2607:f8b0:400c:c01::235])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33FE81A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 00:07:16 +1000 (EST)
-Message-ID: <1404828418.21434.278.camel@snotra.buserror.net>
-Subject: Re: [PATCH][v2]devicetree/binding/powerpc/fsl: Add binding for CPLD
-From: Scott Wood <scottwood@freescale.com>
-To: Priyanka Jain <Priyanka.Jain@freescale.com>
-Date: Tue, 8 Jul 2014 09:06:58 -0500
-In-Reply-To: <1404796006-3254-1-git-send-email-Priyanka.Jain@freescale.com>
-References: <1404796006-3254-1-git-send-email-Priyanka.Jain@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id D43B51A00D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 02:35:30 +1000 (EST)
+Received: by mail-ve0-f181.google.com with SMTP id db11so5967157veb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Jul 2014 09:35:27 -0700 (PDT)
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20140708160417.47fb4d7c@canb.auug.org.au>
+References: <1404795849-25609-1-git-send-email-xerofoify@gmail.com>
+ <20140708160417.47fb4d7c@canb.auug.org.au>
+Date: Tue, 8 Jul 2014 12:35:27 -0400
+Message-ID: <CAPDOMVitjYMkoLAbwf6oBJg+fpFdKLi+S4hTm6opD27DMC1NDw@mail.gmail.com>
+Subject: Fwd: powerpc allyesconfig fix
+From: Nick Krause <xerofoify@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: multipart/mixed; boundary=089e0118263ce4b6e604fdb12de2
+Cc: Alexander Graf <agraf@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <michael@ellerman.id.au>, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, mahesh <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2014-07-08 at 10:36 +0530, Priyanka Jain wrote:
-> Some Freescale boards like T1040RDB have on board CPLD connected on
-> the IFC bus. Add binding for this in board.txt file
-> 
-> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
-> ---
-> Changes for v2: Incorporated Scott's comments
+--089e0118263ce4b6e604fdb12de2
+Content-Type: text/plain; charset=UTF-8
 
-Isn't this v3?
+From: Stephen Rothwell wrote on Tue, Jul 8, 2014 at 2:04 AM
+Subject: Re: powerpc allyesconfig fix
 
->  .../devicetree/bindings/powerpc/fsl/board.txt      |   16 ++++++++++++++++
->  1 files changed, 16 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> index 700dec4..67ef6a4 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
-> @@ -84,3 +84,19 @@ Example:
->  		compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
->  		reg = <0x66>;
->  	};
-> +
-> +* Freescale on-board CPLD
-> +
-> +Some Freescale boards like T1040RDB have on board CPLD connected.
+Hi Nicholas,
 
-s/have on board/have an on board/
+On Tue,  8 Jul 2014 01:04:09 -0400 Nicholas Krause <xerofoify@gmail.com> wrote:
+>
+> powerpc:allmodconfig has been failing for some time with the following
+> error.
 
-> +
-> +Required properties:
-> +- compatible: Should be a board-specific string like "fsl,<board>-cpld"
-> +  Example:
-> +	"fsl,T1040RDB-cpld", "fsl,T1042RDB-cpld", "fsl,T1042RDB_PI-cpld"
-> +- reg: should describe CPLD registers
-> +
-> +Example:
-> +	cpld@3,0 {
-> +		compatible = "fsl,T1040RDB-cpld";
-> +		reg = <3 0 0x300>;
-> +	};
+This patch has already bee submitted directly by Guenter, however for
+future reference:  when you submit someone else's patch, you should
+include a From line as the first line of the email body containing their
+email address and you should include a Signed-off-by line from yourself.
 
-Again, please keep the board name lowercase.
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
--Scott
+
+Hey Stephen,
+Thanks for the heads up on submitting other people's patches. It would
+be great if you can push this up into Linus's tree
+for the next developer release.
+--
+Cheers Nick
+
+--089e0118263ce4b6e604fdb12de2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Disposition: attachment; filename="signature.asc"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: 63f63287fb3b277f_0.1
+
+LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBHIHYyDQoNCmlRSWNC
+QUVCQ0FBR0JRSlR1NG5tQUFvSkVNRFRhOElyN1p3VjRtSVFBSTFmaXZCTmJiWEQ1L24vNFErelRy
+c1cNClpYSi9wQmFsWFB1dC9KcG5hWEVhY3Zmd0tJMFFGVmh0eEVENWhQWWovT2p4TWZ3c0hkazdG
+RmZjZ3VqWW5Qa0INCnVQbDJ5UU5pRWVKV0tIRHRqRjZhTk5PNjladXFUcExlWWpXajhuckd0Wldr
+ZEV0VmRzaVFDUFpLSThZaTVKeVYNCkdNVlNXOHJ3V0FxZHdTckFyVUhSOHdtbS9kZ1c5aW1nMS93
+azV1aElnQUJ2TWpzMFVuRGhJcDRNNGlIUHVOWUsNClZJanpJSFlPMEJGMnJ0ZUZpaWxmc0l4R0lF
+MFh5N3E0bjdYc2VLdVpNdDhtZTFJRUl0UEhzeVZBbTlGOUYvVzQNClFqT2t4U0Uzam5EVkRIL1RT
+cHJjMFg4cUlMZ2lQdHN1M0daRm1SYlZWbldIV1duV0JxZ2pUbkRwNytvenVaaTkNCkJtanFGa05p
+NkdXR1NBaXZUYUtVcG96S053UWcyeFZURC95a3JYWm1KSFk2VDQ3RHVxUVRRb0FTSjd2dlVVUTIN
+Ck1jVVUwTFI4aVgvT3NxeXJIaFpPZm40ZVRHalVuOWhpc2k1bmNPa1lQUktaZFU5Y0xmRUtTeDV0
+ZjI2SkNUZnUNClF5UDNuOE5qeW51M1pVU2xLRk5ZN0EvL2t0ak9rNmNsek9rYnI5ZE9XcmlXQkdB
+b1kzSGdPeUhjb2hUalh6YzcNCm9kVUMwanNsenRpWTV6Ym80OU5IQTFyQkNaRHh4M0lQMDAvQUxJ
+VkhVR1NyV0FOV0ErcFlQOVBPMENUajdUVU4NCnFWYzRqOVlkYU8yNEN4VThxbWtka1NxYUZkZ0FE
+MXJTalhZL1BPOGlBZGlBVzFiSkQzcVpRMENiZDBQakg5ckUNClk1OThOLzE0WGdPQUZMZDhUQy9D
+DQo9ei9wUw0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQo=
+--089e0118263ce4b6e604fdb12de2--
