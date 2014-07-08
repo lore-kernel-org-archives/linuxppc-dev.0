@@ -1,29 +1,39 @@
-Return-Path: <groeck7@gmail.com>
-Received: from mail-pa0-x229.google.com (mail-pa0-x229.google.com
- [IPv6:2607:f8b0:400e:c03::229])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49A5D1A003E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 02:43:58 +1000 (EST)
-Received: by mail-pa0-f41.google.com with SMTP id fb1so7635184pad.14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Jul 2014 09:43:56 -0700 (PDT)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Tue, 8 Jul 2014 09:43:52 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: Nick Krause <xerofoify@gmail.com>
-Subject: Re: Fwd: powerpc allyesconfig fix
-Message-ID: <20140708164352.GA12935@roeck-us.net>
-References: <1404795849-25609-1-git-send-email-xerofoify@gmail.com>
- <20140708160417.47fb4d7c@canb.auug.org.au>
- <CAPDOMVitjYMkoLAbwf6oBJg+fpFdKLi+S4hTm6opD27DMC1NDw@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F6B41A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 08:59:49 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 8 Jul 2014 16:59:46 -0600
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 54E2CC90026
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 18:59:37 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s68MxhBK4915692
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Jul 2014 22:59:43 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s68Mxhqs011488
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Jul 2014 18:59:43 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Alexander Graf <agraf@suse.de>, linuxppc-dev@lists.ozlabs.org,
+ paulus@samba.org, kvm-ppc@vger.kernel.org
+Subject: Re: [PATCH v2] Use the POWER8 Micro Partition Prefetch Engine in KVM
+ HV on POWER8
+In-Reply-To: <53BBCAC7.90904@suse.de>
+References: <1404437035-4336-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <53BBCAC7.90904@suse.de>
+Date: Wed, 09 Jul 2014 08:59:38 +1000
+Message-ID: <m3bnszqwx1.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAPDOMVitjYMkoLAbwf6oBJg+fpFdKLi+S4hTm6opD27DMC1NDw@mail.gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, mahesh <mahesh@linux.vnet.ibm.com>,
- Alexander Graf <agraf@suse.de>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Michael Ellerman <michael@ellerman.id.au>, paulus@samba.org,
- Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +43,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 08, 2014 at 12:35:27PM -0400, Nick Krause wrote:
-> From: Stephen Rothwell wrote on Tue, Jul 8, 2014 at 2:04 AM
-> Subject: Re: powerpc allyesconfig fix
-> 
-> Hi Nicholas,
-> 
-> On Tue,  8 Jul 2014 01:04:09 -0400 Nicholas Krause <xerofoify@gmail.com> wrote:
-> >
-> > powerpc:allmodconfig has been failing for some time with the following
-> > error.
-> 
-> This patch has already bee submitted directly by Guenter, however for
-> future reference:  when you submit someone else's patch, you should
-> include a From line as the first line of the email body containing their
-> email address and you should include a Signed-off-by line from yourself.
-> 
-> --
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> 
-> Hey Stephen,
-> Thanks for the heads up on submitting other people's patches. It would
-> be great if you can push this up into Linus's tree
-> for the next developer release.
+Hi!
 
-Ben already mentioned that he would pick it up.
+Thanks for review, much appreciated!
 
-Guenter
+Alexander Graf <agraf@suse.de> writes:
+> On 08.07.14 07:06, Stewart Smith wrote:
+>> @@ -1528,6 +1535,7 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
+>>   	int i, need_vpa_update;
+>>   	int srcu_idx;
+>>   	struct kvm_vcpu *vcpus_to_update[threads_per_core];
+>> +	phys_addr_t phy_addr, tmp;
+>
+> Please put the variable declarations into the if () branch so that the 
+> compiler can catch potential leaks :)
+
+ack. will fix.
+
+>> @@ -1590,9 +1598,48 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
+>>   
+>>   	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
+>>   
+>> +	/* If we have a saved list of L2/L3, restore it */
+>> +	if (cpu_has_feature(CPU_FTR_ARCH_207S) && vc->mpp_buffer) {
+>> +		phy_addr = virt_to_phys((void *)vc->mpp_buffer);
+>> +#if defined(CONFIG_PPC_4K_PAGES)
+>> +		phy_addr = (phy_addr + 8*4096) & ~(8*4096);
+>
+> get_free_pages() is automatically aligned to the order, no?
+
+That's what Paul reckoned too, and then we've attempted to find anywhere
+that documents that behaviour. Happen to be able to point to docs/source
+that say this is part of API?
+
+>> +#endif
+>> +		tmp = phy_addr & PPC_MPPE_ADDRESS_MASK;
+>> +		tmp = tmp | PPC_MPPE_WHOLE_TABLE;
+>> +
+>> +		/* For sanity, abort any 'save' requests in progress */
+>> +		asm volatile(PPC_LOGMPP(R1) : : "r" (tmp));
+>> +
+>> +		/* Inititate a cache-load request */
+>> +		mtspr(SPRN_MPPR, tmp);
+>> +	}
+>
+> In fact, this whole block up here could be a function, no?
+
+It could, perfectly happy for it to be one. Will fix.
+
+>> +
+>> +	/* Allocate memory before switching out of guest so we don't
+>> +	   trash L2/L3 with memory allocation stuff */
+>> +	if (cpu_has_feature(CPU_FTR_ARCH_207S) && !vc->mpp_buffer) {
+>> +		vc->mpp_buffer = __get_free_pages(GFP_KERNEL|__GFP_ZERO,
+>> +						  MPP_BUFFER_ORDER);
+>
+> get_order(64 * 1024)?
+>
+> Also, why allocate it here and not on vcore creation?
+
+There's also the possibility of saving/restorting part of the L3 cache
+as well, and I was envisioning a future patch to this which checks a
+flag in vcore (maybe exposed via sysfs or whatever mechanism is
+applicable) if it should save/restore L2 or L2/L3, so thus it makes a
+bit more sense allocating it there rather than elsewhere.
+
+There's also no real reason to fail to create a vcore if we can't
+allocate a buffer for L2/L3 cache contents - retrying later is perfectly
+harmless.
+
+>> +
+>> +	if (cpu_has_feature(CPU_FTR_ARCH_207S) && vc->mpp_buffer) {
+>> +		phy_addr = (phys_addr_t)virt_to_phys((void *)vc->mpp_buffer);
+>> +#if defined(CONFIG_PPC_4K_PAGES)
+>> +		phy_addr = (phy_addr + 8*4096) & ~(8*4096);
+>> +#endif
+>> +		tmp = PPC_MPPE_ADDRESS_MASK & phy_addr;
+>> +		tmp = tmp | PPC_MPPE_LOG_L2;
+>> +
+>> +		/* Abort any existing 'fetch' operations for this core */
+>> +		mtspr(SPRN_MPPR, tmp&0x0fffffffffffffff);
+>
+> pretty magical, no?
+
+Yeah, sorry about that.... I'll hide it in a function at least, and do
+something a bit better there... IIRC this magic came from the initial
+work that proved the hardware functionality, so I'll go back and re-read
+some hardware documentation to see where exactly this came from...
+
+>> +
+>> +		/* Finally, issue logmpp to save cache contents for L2 */
+>> +		asm volatile(PPC_LOGMPP(R1) : : "r" (tmp));
+>> +	}
+>
+> This too should be a separate function.
+
+ack.
