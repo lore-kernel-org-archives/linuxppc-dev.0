@@ -1,20 +1,22 @@
 Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1FD8A1A002E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:37 +1000 (EST)
-Received: by mail-pa0-f50.google.com with SMTP id bj1so6712327pad.23
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 105EA1A0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:41 +1000 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id hz1so6826400pad.10
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:38 -0700 (PDT)
 From: Joel Stanley <joel@jms.id.au>
-To: benh@kernel.crashing.org,
-	paulus@samba.org,
-	mpe@ellerman.id.au
-Subject: [PATCH v2 0/3] POWER8 PMU bugfixes
-Date: Tue,  8 Jul 2014 16:08:19 +0930
-Message-Id: <1404801502-4663-1-git-send-email-joel@jms.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ Alexander Graf <agraf@suse.de>
+Subject: [PATCH v2 1/3] powerpc/kvm: Remove redundant save of SIER AND MMCR2
+Date: Tue,  8 Jul 2014 16:08:20 +0930
+Message-Id: <1404801502-4663-2-git-send-email-joel@jms.id.au>
+In-Reply-To: <1404801502-4663-1-git-send-email-joel@jms.id.au>
+References: <1404801502-4663-1-git-send-email-joel@jms.id.au>
+Cc: stable@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These three patches are required for correct operation of perf counters on
-POWER8 boxes when running KVM guests. There were two bugs; not clearing MMCR2
-and writing over the saved value when entering a guest. However the first
-obscured the second.
+These two registers are already saved in the block above. Aside from
+being unnecessary, by the time we get down to the second save location
+r8 no longer contains MMCR2, so we are clobbering the saved value with
+PMC5.
 
-Thanks to who mpe helped diagnose the issue and pointed out the fix.
+MMCR2 primarily consists of counter freeze bits. So restoring the value
+of PMC5 into MMCR2 will most likely have the effect of freezing
+counters.
 
+Fixes: 72cde5a88d37 ("KVM: PPC: Book3S HV: Save/restore host PMU registers that are new in POWER8")
+Cc: stable@vger.kernel.org
+Signed-off-by: Joel Stanley <joel@jms.id.au>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Reviewed-by: Alexander Graf <agraf@suse.de>
+---
 V2:
- Add comment from mpe
+ - Add comments from mpe
 
-Joel Stanley (3):
-  powerpc/kvm: Remove redundant save of SIER AND MMCR2
-  powerpc/perf: Add PPMU_ARCH_207S define
-  powerpc/perf: Clear MMCR2 when enabling PMU
+ arch/powerpc/kvm/book3s_hv_interrupts.S | 5 -----
+ 1 file changed, 5 deletions(-)
 
- arch/powerpc/include/asm/perf_event_server.h | 3 +--
- arch/powerpc/kvm/book3s_hv_interrupts.S      | 5 -----
- arch/powerpc/perf/core-book3s.c              | 9 ++++++---
- arch/powerpc/perf/power8-pmu.c               | 2 +-
- 4 files changed, 8 insertions(+), 11 deletions(-)
-
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 8c86422..731be74 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -127,11 +127,6 @@ BEGIN_FTR_SECTION
+ 	stw	r10, HSTATE_PMC + 24(r13)
+ 	stw	r11, HSTATE_PMC + 28(r13)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+-BEGIN_FTR_SECTION
+-	mfspr	r9, SPRN_SIER
+-	std	r8, HSTATE_MMCR + 40(r13)
+-	std	r9, HSTATE_MMCR + 48(r13)
+-END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 31:
+ 
+ 	/*
 -- 
 2.0.0
