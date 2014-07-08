@@ -1,31 +1,21 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 600A31A0094
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 22:25:26 +1000 (EST)
-Date: Tue, 8 Jul 2014 14:26:07 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-Message-ID: <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
- <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
- <20140702202201.GA28852@google.com>
- <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
- <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
+Return-Path: <linux@roeck-us.net>
+Received: from mail.active-venture.com (mail.active-venture.com
+ [67.228.131.205])
+ by lists.ozlabs.org (Postfix) with ESMTP id C6C3B1A00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 23:34:46 +1000 (EST)
+Message-ID: <53BBF373.6020703@roeck-us.net>
+Date: Tue, 08 Jul 2014 06:34:43 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- linux-s390@vger.kernel.org,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
- xen-devel@lists.xenproject.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v5] powerpc/powernv: hwmon driver for power, fan rpm,
+ voltage and temperature
+References: <20140708090315.3866.15604.stgit@localhost.localdomain>
+In-Reply-To: <20140708090315.3866.15604.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: sbhat@linux.vnet.ibm.com, jdelvare@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,58 +25,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 07, 2014 at 01:40:48PM -0600, Bjorn Helgaas wrote:
-> >> Can you quantify the benefit of this?  Can't a device already use
-> >> MSI-X to request exactly the number of vectors it can use?  (I know
-> >
-> > A Intel AHCI chipset requires 16 vectors written to MME while advertises
-> > (via AHCI registers) and uses only 6. Even attempt to init 8 vectors results
-> > in device's fallback to 1 (!).
-> 
-> Is the fact that it uses only 6 vectors documented in the public spec?
+On 07/08/2014 02:08 AM, Neelesh Gupta wrote:
+> This patch adds basic kernel support for reading power values, fan
+> speed rpm, voltage and temperature data on powernv platforms which
+> will be exported to user space through sysfs interface.
+>
+> Test results:
+> -------------
+> [root@tul163p1 ~]# sensors
+> ibmpowernv-isa-0000
+> Adapter: ISA adapter
+> fan1:        5465 RPM  (min =    0 RPM)
+> fan2:        5152 RPM  (min =    0 RPM)
+> fan3:        5521 RPM  (min =    0 RPM)
+> fan4:        4891 RPM  (min =    0 RPM)
+> fan5:           0 RPM  (min =    0 RPM)
+> fan6:           0 RPM  (min =    0 RPM)
+> fan7:        7480 RPM  (min =    0 RPM)
+> fan8:        7944 RPM  (min =    0 RPM)
+> temp1:        +39.0°C  (high =  +0.0°C)
+> power1:      190.00 W
+>
+> [root@tul163p1 ~]# ls /sys/devices/platform/
+> alarmtimer  ibmpowernv.0  power  rtc-generic  serial8250  uevent
+> [root@tul163p1 ~]# ls /sys/devices/platform/ibmpowernv.0/hwmon/hwmon0/
+> device	    fan2_min	fan4_min    fan6_min	fan8_min   power
+> fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  power1_input
+> fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  subsystem
+> fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_input
+> fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  temp1_max
+> fan2_input  fan4_input	fan6_input  fan8_input	name	   uevent
+> [root@tul163p1 ~]# ls /sys/class/hwmon/hwmon0/
+> device	    fan2_min	fan4_min    fan6_min	fan8_min   power
+> fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  power1_input
+> fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  subsystem
+> fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_input
+> fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  temp1_max
+> fan2_input  fan4_input	fan6_input  fan8_input	name	   uevent
+> [root@tul163p1 ~]#
+>
+> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 
-Yes, it is documented in ICH specs.
+Applied to -next, with a minor cleanup.
 
-> Is this a chipset erratum?  Are there newer versions of the chipset
-> that fix this, e.g., by requesting 8 vectors and using 6, or by also
-> supporting MSI-X?
+Thanks for your patience,
 
-No, this is not an erratum. The value of 8 vectors is reserved and could
-cause undefined results if used.
+Guenter
 
-> I know this conserves vector numbers.  What does that mean in real
-> user-visible terms?  Are there systems that won't boot because of this
-> issue, and this patch fixes them?  Does it enable bigger
-> configurations, e.g., more I/O devices, than before?
 
-Visibly, it ceases logging messages ('ahci 0000:00:1f.2: irq 107 for
-MSI/MSI-X') for IRQs that are not shown in /proc/interrupts later.
+> diff --git a/Documentation/hwmon/ibmpowernv b/Documentation/hwmon/ibmpowernv
+> new file mode 100644
+> index 0000000..644245a
+> --- /dev/null
+> +++ b/Documentation/hwmon/ibmpowernv
+> @@ -0,0 +1,41 @@
+> +Kernel Driver IBMPOWENV
 
-No, it does not enable/fix any existing hardware issue I am aware of.
-It just saves a couple of interrupt vectors, as Michael put it (10/16
-to be precise). However, interrupt vectors space is pretty much scarce
-resource on x86 and a risk of exhausting the vectors (and introducing
-quota i.e) has already been raised AFAIR.
-
-> Do you know how Windows handles this?  Does it have a similar interface?
-
-Have no clue, TBH. Can try to investigate if you see it helpful.
-
-> As you can tell, I'm a little skeptical about this.  It's a fairly big
-> change, it affects the arch interface, it seems to be targeted for
-> only a single chipset (though it's widely used), and we already
-> support a standard solution (MSI-X, reducing the number of vectors
-> requested, or even operating with 1 vector).
-
-I also do not like the fact the arch interface is getting complicated,
-so I happily leave it to your judgement ;) Well, it is low-level and
-hidden from drivers at least.
-
-Thanks!
-
-> Bjorn
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+s/IBMPOWENV/IBMPOWERNV/
