@@ -1,31 +1,31 @@
-Return-Path: <masami.hiramatsu.pt@hitachi.com>
-Received: from mail9.hitachi.co.jp (mail9.hitachi.co.jp [133.145.228.44])
- by lists.ozlabs.org (Postfix) with ESMTP id 5860B1A008B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 22:07:10 +1000 (EST)
-Message-ID: <53BBDEE6.1080800@hitachi.com>
-Date: Tue, 08 Jul 2014 21:07:02 +0900
-From: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 600A31A0094
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 22:25:26 +1000 (EST)
+Date: Tue, 8 Jul 2014 14:26:07 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
+Message-ID: <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
+References: <cover.1402405331.git.agordeev@redhat.com>
+ <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
+ <20140702202201.GA28852@google.com>
+ <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
+ <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Tony Luck <tony.luck@gmail.com>
-Subject: Re: [PATCH v5 2/2] [BUGFIX] kprobes: Fix "Failed to find blacklist"
- error on ia64 and ppc64
-References: <1404276081.7254.1.camel@concordia>
- <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
-In-Reply-To: <20140702070029.14689.18485.stgit@kbuild-fedora.novalocal>
-Content-Type: text/plain; charset=UTF-8
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-ia64@vger.kernel.org,
- sparse@chrisli.org, "H. Peter Anvin" <hpa@zytor.com>, akataria@vmware.com,
- linux-tip-commits@vger.kernel.org, anil.s.keshavamurthy@intel.com,
- Ingo Molnar <mingo@kernel.org>, "Suzuki K. Poulose" <suzuki@in.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Arnd Bergmann <arnd@arndb.de>,
- Rusty Russell <rusty@rustcorp.com.au>, Chris Wright <chrisw@sous-sol.org>,
- yrl.pp-manager.tt@hitachi.com, Thomas Gleixner <tglx@linutronix.de>,
- Tony Luck <tony.luck@intel.com>, Kevin Hao <haokexin@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, rdunlap@infradead.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dl9pf@gmx.de,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ linux-s390@vger.kernel.org,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
+ xen-devel@lists.xenproject.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,134 +35,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping?
+On Mon, Jul 07, 2014 at 01:40:48PM -0600, Bjorn Helgaas wrote:
+> >> Can you quantify the benefit of this?  Can't a device already use
+> >> MSI-X to request exactly the number of vectors it can use?  (I know
+> >
+> > A Intel AHCI chipset requires 16 vectors written to MME while advertises
+> > (via AHCI registers) and uses only 6. Even attempt to init 8 vectors results
+> > in device's fallback to 1 (!).
+> 
+> Is the fact that it uses only 6 vectors documented in the public spec?
 
-This patch can be applied without 1/2, and will fix ia64/ppc64 problem.
+Yes, it is documented in ICH specs.
 
-Thank you,
+> Is this a chipset erratum?  Are there newer versions of the chipset
+> that fix this, e.g., by requesting 8 vectors and using 6, or by also
+> supporting MSI-X?
 
-(2014/07/02 16:00), Masami Hiramatsu wrote:
-> On ia64 and ppc64, the function pointer does not point the
-> entry address of the function, but the address of function
-> discriptor (which contains the entry address and misc
-> data.) Since the kprobes passes the function pointer stored
-> by NOKPROBE_SYMBOL() to kallsyms_lookup_size_offset() for
-> initalizing its blacklist, it fails and reports many errors
-> as below.
-> 
->   Failed to find blacklist 0001013168300000
->   Failed to find blacklist 0001013000f0a000
->   Failed to find blacklist 000101315f70a000
->   Failed to find blacklist 000101324c80a000
->   Failed to find blacklist 0001013063f0a000
->   Failed to find blacklist 000101327800a000
->   Failed to find blacklist 0001013277f0a000
->   Failed to find blacklist 000101315a70a000
->   Failed to find blacklist 0001013277e0a000
->   Failed to find blacklist 000101305a20a000
->   Failed to find blacklist 0001013277d0a000
->   Failed to find blacklist 00010130bdc0a000
->   Failed to find blacklist 00010130dc20a000
->   Failed to find blacklist 000101309a00a000
->   Failed to find blacklist 0001013277c0a000
->   Failed to find blacklist 0001013277b0a000
->   Failed to find blacklist 0001013277a0a000
->   Failed to find blacklist 000101327790a000
->   Failed to find blacklist 000101303140a000
->   Failed to find blacklist 0001013a3280a000
-> 
-> To fix this bug, this introduces function_entry() macro to
-> retrieve the entry address from the given function pointer,
-> and uses for kallsyms_lookup_size_offset() while initializing
-> blacklist.
-> 
-> Changes in v5:
->  - Use arch_deref_entry_point() instead of function_entry().
-> 
-> Changes in v4:
->  - Add kernel_text_address() check for verifying the address.
->  - Moved on the latest linus tree.
-> 
-> Changes in v3:
->  - Fix a bug to get blacklist address based on function entry
->    instead of function descriptor. (Suzuki's work, Thanks!)
-> 
-> Changes in V2:
->  - Use function_entry() macro when lookin up symbols instead
->    of storing it.
->  - Update for the latest -next.
-> 
-> Signed-off-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-> Reported-by: Tony Luck <tony.luck@gmail.com>
-> Tested-by: Tony Luck <tony.luck@intel.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Suzuki K. Poulose <suzuki@in.ibm.com>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: Fenghua Yu <fenghua.yu@intel.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Kevin Hao <haokexin@gmail.com>
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  kernel/kprobes.c |   15 ++++++++++-----
->  1 file changed, 10 insertions(+), 5 deletions(-)
-> 
-> diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-> index 3214289..ec370cc 100644
-> --- a/kernel/kprobes.c
-> +++ b/kernel/kprobes.c
-> @@ -32,6 +32,7 @@
->   *		<prasanna@in.ibm.com> added function-return probes.
->   */
->  #include <linux/kprobes.h>
-> +#include <linux/types.h>
->  #include <linux/hash.h>
->  #include <linux/init.h>
->  #include <linux/slab.h>
-> @@ -2037,19 +2038,23 @@ static int __init populate_kprobe_blacklist(unsigned long *start,
->  {
->  	unsigned long *iter;
->  	struct kprobe_blacklist_entry *ent;
-> -	unsigned long offset = 0, size = 0;
-> +	unsigned long entry, offset = 0, size = 0;
->  
->  	for (iter = start; iter < end; iter++) {
-> -		if (!kallsyms_lookup_size_offset(*iter, &size, &offset)) {
-> -			pr_err("Failed to find blacklist %p\n", (void *)*iter);
-> +		entry = arch_deref_entry_point((void *)*iter);
-> +
-> +		if (!kernel_text_address(entry) ||
-> +		    !kallsyms_lookup_size_offset(entry, &size, &offset)) {
-> +			pr_err("Failed to find blacklist at %p\n",
-> +				(void *)entry);
->  			continue;
->  		}
->  
->  		ent = kmalloc(sizeof(*ent), GFP_KERNEL);
->  		if (!ent)
->  			return -ENOMEM;
-> -		ent->start_addr = *iter;
-> -		ent->end_addr = *iter + size;
-> +		ent->start_addr = entry;
-> +		ent->end_addr = entry + size;
->  		INIT_LIST_HEAD(&ent->list);
->  		list_add_tail(&ent->list, &kprobe_blacklist);
->  	}
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+No, this is not an erratum. The value of 8 vectors is reserved and could
+cause undefined results if used.
 
+> I know this conserves vector numbers.  What does that mean in real
+> user-visible terms?  Are there systems that won't boot because of this
+> issue, and this patch fixes them?  Does it enable bigger
+> configurations, e.g., more I/O devices, than before?
+
+Visibly, it ceases logging messages ('ahci 0000:00:1f.2: irq 107 for
+MSI/MSI-X') for IRQs that are not shown in /proc/interrupts later.
+
+No, it does not enable/fix any existing hardware issue I am aware of.
+It just saves a couple of interrupt vectors, as Michael put it (10/16
+to be precise). However, interrupt vectors space is pretty much scarce
+resource on x86 and a risk of exhausting the vectors (and introducing
+quota i.e) has already been raised AFAIR.
+
+> Do you know how Windows handles this?  Does it have a similar interface?
+
+Have no clue, TBH. Can try to investigate if you see it helpful.
+
+> As you can tell, I'm a little skeptical about this.  It's a fairly big
+> change, it affects the arch interface, it seems to be targeted for
+> only a single chipset (though it's widely used), and we already
+> support a standard solution (MSI-X, reducing the number of vectors
+> requested, or even operating with 1 vector).
+
+I also do not like the fact the arch interface is getting complicated,
+so I happily leave it to your judgement ;) Well, it is low-level and
+hidden from drivers at least.
+
+Thanks!
+
+> Bjorn
 
 -- 
-Masami HIRAMATSU
-Software Platform Research Dept. Linux Technology Research Center
-Hitachi, Ltd., Yokohama Research Laboratory
-E-mail: masami.hiramatsu.pt@hitachi.com
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
