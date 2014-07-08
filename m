@@ -1,21 +1,20 @@
-Return-Path: <linux@roeck-us.net>
-Received: from mail.active-venture.com (mail.active-venture.com
- [67.228.131.205])
- by lists.ozlabs.org (Postfix) with ESMTP id C6C3B1A00C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 23:34:46 +1000 (EST)
-Message-ID: <53BBF373.6020703@roeck-us.net>
-Date: Tue, 08 Jul 2014 06:34:43 -0700
-From: Guenter Roeck <linux@roeck-us.net>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2lp0206.outbound.protection.outlook.com [207.46.163.206])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 33FE81A00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 00:07:16 +1000 (EST)
+Message-ID: <1404828418.21434.278.camel@snotra.buserror.net>
+Subject: Re: [PATCH][v2]devicetree/binding/powerpc/fsl: Add binding for CPLD
+From: Scott Wood <scottwood@freescale.com>
+To: Priyanka Jain <Priyanka.Jain@freescale.com>
+Date: Tue, 8 Jul 2014 09:06:58 -0500
+In-Reply-To: <1404796006-3254-1-git-send-email-Priyanka.Jain@freescale.com>
+References: <1404796006-3254-1-git-send-email-Priyanka.Jain@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- lm-sensors@lm-sensors.org
-Subject: Re: [PATCH v5] powerpc/powernv: hwmon driver for power, fan rpm,
- voltage and temperature
-References: <20140708090315.3866.15604.stgit@localhost.localdomain>
-In-Reply-To: <20140708090315.3866.15604.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: sbhat@linux.vnet.ibm.com, jdelvare@suse.de
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,60 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/08/2014 02:08 AM, Neelesh Gupta wrote:
-> This patch adds basic kernel support for reading power values, fan
-> speed rpm, voltage and temperature data on powernv platforms which
-> will be exported to user space through sysfs interface.
->
-> Test results:
-> -------------
-> [root@tul163p1 ~]# sensors
-> ibmpowernv-isa-0000
-> Adapter: ISA adapter
-> fan1:        5465 RPM  (min =    0 RPM)
-> fan2:        5152 RPM  (min =    0 RPM)
-> fan3:        5521 RPM  (min =    0 RPM)
-> fan4:        4891 RPM  (min =    0 RPM)
-> fan5:           0 RPM  (min =    0 RPM)
-> fan6:           0 RPM  (min =    0 RPM)
-> fan7:        7480 RPM  (min =    0 RPM)
-> fan8:        7944 RPM  (min =    0 RPM)
-> temp1:        +39.0°C  (high =  +0.0°C)
-> power1:      190.00 W
->
-> [root@tul163p1 ~]# ls /sys/devices/platform/
-> alarmtimer  ibmpowernv.0  power  rtc-generic  serial8250  uevent
-> [root@tul163p1 ~]# ls /sys/devices/platform/ibmpowernv.0/hwmon/hwmon0/
-> device	    fan2_min	fan4_min    fan6_min	fan8_min   power
-> fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  power1_input
-> fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  subsystem
-> fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_input
-> fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  temp1_max
-> fan2_input  fan4_input	fan6_input  fan8_input	name	   uevent
-> [root@tul163p1 ~]# ls /sys/class/hwmon/hwmon0/
-> device	    fan2_min	fan4_min    fan6_min	fan8_min   power
-> fan1_fault  fan3_fault	fan5_fault  fan7_fault	in1_fault  power1_input
-> fan1_input  fan3_input	fan5_input  fan7_input	in2_fault  subsystem
-> fan1_min    fan3_min	fan5_min    fan7_min	in3_fault  temp1_input
-> fan2_fault  fan4_fault	fan6_fault  fan8_fault	in4_fault  temp1_max
-> fan2_input  fan4_input	fan6_input  fan8_input	name	   uevent
-> [root@tul163p1 ~]#
->
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+On Tue, 2014-07-08 at 10:36 +0530, Priyanka Jain wrote:
+> Some Freescale boards like T1040RDB have on board CPLD connected on
+> the IFC bus. Add binding for this in board.txt file
+> 
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> ---
+> Changes for v2: Incorporated Scott's comments
 
-Applied to -next, with a minor cleanup.
+Isn't this v3?
 
-Thanks for your patience,
+>  .../devicetree/bindings/powerpc/fsl/board.txt      |   16 ++++++++++++++++
+>  1 files changed, 16 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/board.txt b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> index 700dec4..67ef6a4 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/board.txt
+> @@ -84,3 +84,19 @@ Example:
+>  		compatible = "fsl,bsc9132qds-fpga", "fsl,fpga-qixis-i2c";
+>  		reg = <0x66>;
+>  	};
+> +
+> +* Freescale on-board CPLD
+> +
+> +Some Freescale boards like T1040RDB have on board CPLD connected.
 
-Guenter
+s/have on board/have an on board/
 
+> +
+> +Required properties:
+> +- compatible: Should be a board-specific string like "fsl,<board>-cpld"
+> +  Example:
+> +	"fsl,T1040RDB-cpld", "fsl,T1042RDB-cpld", "fsl,T1042RDB_PI-cpld"
+> +- reg: should describe CPLD registers
+> +
+> +Example:
+> +	cpld@3,0 {
+> +		compatible = "fsl,T1040RDB-cpld";
+> +		reg = <3 0 0x300>;
+> +	};
 
-> diff --git a/Documentation/hwmon/ibmpowernv b/Documentation/hwmon/ibmpowernv
-> new file mode 100644
-> index 0000000..644245a
-> --- /dev/null
-> +++ b/Documentation/hwmon/ibmpowernv
-> @@ -0,0 +1,41 @@
-> +Kernel Driver IBMPOWENV
+Again, please keep the board name lowercase.
 
-s/IBMPOWENV/IBMPOWERNV/
+-Scott
