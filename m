@@ -1,19 +1,19 @@
 Return-Path: <joel@jms.id.au>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
+Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
+ [IPv6:2607:f8b0:400e:c02::229])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38A0E1A0178
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:43 +1000 (EST)
-Received: by mail-pd0-f179.google.com with SMTP id w10so6688117pde.10
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:41 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C189F1A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2014 16:38:46 +1000 (EST)
+Received: by mail-pd0-f169.google.com with SMTP id g10so6666093pdj.28
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2014 23:38:44 -0700 (PDT)
 From: Joel Stanley <joel@jms.id.au>
 To: benh@kernel.crashing.org,
 	paulus@samba.org,
 	mpe@ellerman.id.au
-Subject: [PATCH v2 2/3] powerpc/perf: Add PPMU_ARCH_207S define
-Date: Tue,  8 Jul 2014 16:08:21 +0930
-Message-Id: <1404801502-4663-3-git-send-email-joel@jms.id.au>
+Subject: [PATCH v2 3/3] powerpc/perf: Clear MMCR2 when enabling PMU
+Date: Tue,  8 Jul 2014 16:08:22 +0930
+Message-Id: <1404801502-4663-4-git-send-email-joel@jms.id.au>
 In-Reply-To: <1404801502-4663-1-git-send-email-joel@jms.id.au>
 References: <1404801502-4663-1-git-send-email-joel@jms.id.au>
 Cc: linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org
@@ -26,77 +26,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Instead of separate bits for every POWER8 PMU feature, have a single one
-for v2.07 of the architecture.
+On POWER8 when switching to a KVM guest we set bits in MMCR2 to freeze
+the PMU counters. Aside from on boot they are then never reset,
+resulting in stuck perf counters for any user in the guest or host.
 
-This saves us adding a MMCR2 define for a future patch.
+We now set MMCR2 to 0 whenever enabling the PMU, which provides a sane
+state for perf to use the PMU counters under either the guest or the
+host.
 
+This was manifesting as a bug with ppc64_cpu --frequency:
+
+    $ sudo ppc64_cpu --frequency
+    WARNING: couldn't run on cpu 0
+    WARNING: couldn't run on cpu 8
+      ...
+    WARNING: couldn't run on cpu 144
+    WARNING: couldn't run on cpu 152
+    min:    18446744073.710 GHz (cpu -1)
+    max:    0.000 GHz (cpu -1)
+    avg:    0.000 GHz
+
+The command uses a perf counter to measure CPU cycles over a fixed
+amount of time, in order to approximate the frequency of the machine.
+The counters were returning zero once a guest was started, regardless of
+weather it was still running or had been shut down.
+
+By dumping the value of MMCR2, it was observed that once a guest is
+running MMCR2 is set to 1s - which stops counters from running:
+
+    $ sudo sh -c 'echo p > /proc/sysrq-trigger'
+    CPU: 0 PMU registers, ppmu = POWER8 n_counters = 6
+    PMC1:  5b635e38 PMC2: 00000000 PMC3: 00000000 PMC4: 00000000
+    PMC5:  1bf5a646 PMC6: 5793d378 PMC7: deadbeef PMC8: deadbeef
+    MMCR0: 0000000080000000 MMCR1: 000000001e000000 MMCRA: 0000040000000000
+    MMCR2: fffffffffffffc00 EBBHR: 0000000000000000
+    EBBRR: 0000000000000000 BESCR: 0000000000000000
+    SIAR:  00000000000a51cc SDAR:  c00000000fc40000 SIER:  0000000001000000
+
+This is done unconditionally in book3s_hv_interrupts.S upon entering the
+guest, and the original value is only save/restored if the host has
+indicated it was using the PMU. This is okay, however the user of the
+PMU needs to ensure that it is in a defined state when it starts using
+it.
+
+Fixes: e05b9b9e5c10 ("powerpc/perf: Power8 PMU support")
 Cc: stable@vger.kernel.org
 Signed-off-by: Joel Stanley <joel@jms.id.au>
 Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/perf_event_server.h | 3 +--
- arch/powerpc/perf/core-book3s.c              | 6 +++---
- arch/powerpc/perf/power8-pmu.c               | 2 +-
- 3 files changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/perf/core-book3s.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 9ed73714..b3e9360 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -61,8 +61,7 @@ struct power_pmu {
- #define PPMU_SIAR_VALID		0x00000010 /* Processor has SIAR Valid bit */
- #define PPMU_HAS_SSLOT		0x00000020 /* Has sampled slot in MMCRA */
- #define PPMU_HAS_SIER		0x00000040 /* Has SIER */
--#define PPMU_BHRB		0x00000080 /* has BHRB feature enabled */
--#define PPMU_EBB		0x00000100 /* supports event based branch */
-+#define PPMU_ARCH_207S		0x00000080 /* PMC is architecture v2.07S */
- 
- /*
-  * Values for flags to get_alternatives()
 diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 4520c93..a2ff1bd 100644
+index a2ff1bd..bae697c 100644
 --- a/arch/powerpc/perf/core-book3s.c
 +++ b/arch/powerpc/perf/core-book3s.c
-@@ -485,7 +485,7 @@ static bool is_ebb_event(struct perf_event *event)
- 	 * check that the PMU supports EBB, meaning those that don't can still
- 	 * use bit 63 of the event code for something else if they wish.
+@@ -1300,6 +1300,9 @@ static void power_pmu_enable(struct pmu *pmu)
+ 
+ 	write_mmcr0(cpuhw, mmcr0);
+ 
++	if (ppmu->flags & PPMU_ARCH_207S)
++		mtspr(SPRN_MMCR2, 0);
++
+ 	/*
+ 	 * Enable instruction sampling if necessary
  	 */
--	return (ppmu->flags & PPMU_EBB) &&
-+	return (ppmu->flags & PPMU_ARCH_207S) &&
- 	       ((event->attr.config >> PERF_EVENT_CONFIG_EBB_SHIFT) & 1);
- }
- 
-@@ -777,7 +777,7 @@ void perf_event_print_debug(void)
- 	if (ppmu->flags & PPMU_HAS_SIER)
- 		sier = mfspr(SPRN_SIER);
- 
--	if (ppmu->flags & PPMU_EBB) {
-+	if (ppmu->flags & PPMU_ARCH_207S) {
- 		pr_info("MMCR2: %016lx EBBHR: %016lx\n",
- 			mfspr(SPRN_MMCR2), mfspr(SPRN_EBBHR));
- 		pr_info("EBBRR: %016lx BESCR: %016lx\n",
-@@ -1696,7 +1696,7 @@ static int power_pmu_event_init(struct perf_event *event)
- 
- 	if (has_branch_stack(event)) {
- 	        /* PMU has BHRB enabled */
--		if (!(ppmu->flags & PPMU_BHRB))
-+		if (!(ppmu->flags & PPMU_ARCH_207S))
- 			return -EOPNOTSUPP;
- 	}
- 
-diff --git a/arch/powerpc/perf/power8-pmu.c b/arch/powerpc/perf/power8-pmu.c
-index fe2763b..639cd91 100644
---- a/arch/powerpc/perf/power8-pmu.c
-+++ b/arch/powerpc/perf/power8-pmu.c
-@@ -792,7 +792,7 @@ static struct power_pmu power8_pmu = {
- 	.get_constraint		= power8_get_constraint,
- 	.get_alternatives	= power8_get_alternatives,
- 	.disable_pmc		= power8_disable_pmc,
--	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_BHRB | PPMU_EBB,
-+	.flags			= PPMU_HAS_SSLOT | PPMU_HAS_SIER | PPMU_ARCH_207S,
- 	.n_generic		= ARRAY_SIZE(power8_generic_events),
- 	.generic_events		= power8_generic_events,
- 	.cache_events		= &power8_cache_events,
 -- 
 2.0.0
