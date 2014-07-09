@@ -1,36 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Priyanka.Jain@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1blp0186.outbound.protection.outlook.com [207.46.163.186])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2B3B1A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 13:55:36 +1000 (EST)
-Received: from mail-pd0-f173.google.com (mail-pd0-f173.google.com
- [209.85.192.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 27355140087
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2014 13:55:35 +1000 (EST)
-Received: by mail-pd0-f173.google.com with SMTP id r10so8260037pdi.18
- for <linuxppc-dev@ozlabs.org>; Tue, 08 Jul 2014 20:55:32 -0700 (PDT)
-Message-ID: <53BCBD2E.6010203@ozlabs.ru>
-Date: Wed, 09 Jul 2014 13:55:26 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 335DA1A002D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 14:23:37 +1000 (EST)
+From: Priyanka Jain <Priyanka.Jain@freescale.com>
+To: <scottwood@freescale.com>, <devicetree@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: =?UTF-8?q?=5BPATCH=201/2=5D=20powerpc/fsl-booke=3A=20Add=20initial=20T1040/T1042=20RDB=20board=20support?=
+Date: Wed, 9 Jul 2014 09:53:04 +0530
+Message-ID: <1404879784-2880-1-git-send-email-Priyanka.Jain@freescale.com>
 MIME-Version: 1.0
-To: Junichi Nomura <j-nomura@ce.jp.nec.com>,
- Mike Snitzer <snitzer@redhat.com>, Paul Mackerras <paulus@samba.org>
-Subject: Re: Regression in 3.15 on POWER8 with multipath SCSI
-References: <20140630103058.GA17747@iris.ozlabs.ibm.com>
- <20140701193907.GA15306@redhat.com>
- <11AF7C027C4C02408624617A4986078401323542@BPXM12GP.gisp.nec.co.jp>
-In-Reply-To: <11AF7C027C4C02408624617A4986078401323542@BPXM12GP.gisp.nec.co.jp>
-Content-Type: text/plain; charset=KOI8-R
-Cc: Vladimir Davydov <vdavydov@parallels.com>,
- "bvanassche@acm.org" <bvanassche@acm.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "dm-devel@redhat.com" <dm-devel@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>,
+ Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,113 +25,348 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/08/2014 08:28 PM, Junichi Nomura wrote:
-> On 07/02/14 04:39, Mike Snitzer wrote:
->> On Mon, Jun 30 2014 at  6:30am -0400,
->> Paul Mackerras <paulus@samba.org> wrote:
->>
->>> I have a machine on which 3.15 usually fails to boot, and 3.14 boots
->>> every time.  The machine is a POWER8 2-socket server with 20 cores
->>> (thus 160 CPUs), 128GB of RAM, and 7 SCSI disks connected via a
->>> hardware-RAID-capable adapter which appears as two IPR controllers
->>> which are both connected to each disk.  I am booting from a disk that
->>> has Fedora 20 installed on it.
->>>
->>> After over two weeks of bisections, I can finally point to the commits
->>> that cause the problems.  The culprits are:
->>>
->>> 3e9f1be1 dm mpath: remove process_queued_ios()
->>> e8099177 dm mpath: push back requests instead of queueing
->>> bcccff93 kobject: don't block for each kobject_uevent
->>>
->>> The interesting thing is that neither e8099177 nor bcccff93 cause
->>> failures on their own, but with both commits in there are failures
->>> where the system will fail to find /home on some occasions.
->>>
->>> With 3e9f1be1 included, the system appears to be prone to a deadlock
->>> condition which typically causes the boot process to hang with this
->>> message showing:
->>>
->>> A start job is running for Monitoring of LVM2 mirror...rogress polling
->>>
->>> (with a [***     ] thing before it where the asterisks move back and
->>> forth).
->>>
->>> If I revert 63d832c3 ("dm mpath: really fix lockdep warning") ,
->>> 4cdd2ad7 ("dm mpath: fix lock order inconsistency in
->>> multipath_ioctl"), 3e9f1be1 and bcccff93, in that order, I get a
->>> kernel that will boot every time.  The first two are later commits
->>> that fix some problems with 3e9f1be1 (though not the problems I am
->>> seeing).
->>>
->>> Can anyone see any reason why e8099177 and bcccff93 would interfere
->>> with each other?
->>
->> No, not seeing any obvious relation.
->>
->> But even though you listed e8099177 as a culprit you didn't list it as a
->> commit you reverted.  Did you leave e8099177 simply because attempting
->> to revert it fails (if you don't first revert other dm-mpath.c commits)?
->>
->> (btw, Bart Van Assche also has issues with commit e8099177 due to hangs
->> during cable pull testing of mpath devices -- Bart: curious to know if
->> your cable pull tests pass if you just revert bcccff93).
-> 
-> It seems Bart's issue has gone with the attached patch:
-> http://www.redhat.com/archives/dm-devel/2014-July/msg00035.html
-> Could you try if it makes any difference on your issue?
-> 
-> The problem is dm-mpath's state machine stall due to e8099177
-> but ioctl to the device can kick the state machine running again.
-> That might be related to why bcccff93 affects the reproducibility.
-> Also, 3e9f1be1 integrates some codes into the one which is affected
-> by this problem. So it makes sense why the problem becomes easier
-> to occur with that.
-> 
-> -
-> Jun'ichi Nomura, NEC Corporation
-> 
-> 
-> pg_ready() checks the current state of the multipath and may return
-> false even if a new IO is needed to change the state.
-> 
-> OTOH, if multipath_busy() returns busy, a new IO will not be sent
-> to multipath target and the state change won't happen. That results
-> in lock up.
-> 
-> The intent of multipath_busy() is to avoid unnecessary cycles of
-> dequeue + request_fn + requeue if it is known that multipath device
-> will requeue.
-> 
-> Such situation would be:
->   - path group is being activated
->   - there is no path and the multipath is setup to requeue if no path
-> 
-> This patch should fix the problem introduced as a part of this commit:
->   commit e809917735ebf1b9a56c24e877ce0d320baee2ec
->   dm mpath: push back requests instead of queueing
-> 
-> diff --git a/drivers/md/dm-mpath.c b/drivers/md/dm-mpath.c
-> index ebfa411..d58343e 100644
-> --- a/drivers/md/dm-mpath.c
-> +++ b/drivers/md/dm-mpath.c
-> @@ -1620,8 +1620,9 @@ static int multipath_busy(struct dm_target *ti)
->  
->  	spin_lock_irqsave(&m->lock, flags);
->  
-> -	/* pg_init in progress, requeue until done */
-> -	if (!pg_ready(m)) {
-> +	/* pg_init in progress or no paths available */
-> +	if (m->pg_init_in_progress ||
-> +	    (!m->nr_valid_paths && m->queue_if_no_path)) {
->  		busy = 1;
->  		goto out;
->  	}
+T1040/T1042RDB is Freescale Reference Design Board.
+The board can support both T1040/T1042 QorIQ Power Architecture™ processor.
 
-This patch fixes IPR SCSI for my POWER8 box, e8099177 was the problem.
+T1040/T1042RDB board Overview
+-----------------------
+- SERDES Connections, 8 lanes supporting:
+	- PCI
+	- SGMII
+    	- QSGMII
+    	- SATA 2.0
+- DDR Controller
+    	- Supports rates of up to 1600 MHz data-rate
+    	- Supports one DDR3LP UDIMM
+-IFC/Local Bus
+    	- NAND flash: 1GB 8-bit NAND flash
+    	- NOR: 128MB 16-bit NOR Flash
+- Ethernet
+    	- Two on-board RGMII 10/100/1G ethernet ports.
+    	- PHY #0 remains powered up during deep-sleep
+- CPLD
+- Clocks
+    	- System and DDR clock (SYSCLK, “DDRCLK”)
+    	- SERDES clocks
+- Power Supplies
+- USB
+    	- Supports two USB 2.0 ports with integrated PHYs
+    	- Two type A ports with 5V@1.5A per port.
+- SDHC
+    	- SDHC/SDXC connector
+- SPI
+    	- On-board 64MB SPI flash
+- I2C
+    	- Devices connected: EEPROM, thermal monitor, VID controller
+- Other IO
+    	- Two Serial ports
+    	- ProfiBus port
 
+Add support for T1040/T1042 RDB board:
+    -add device tree
+    -add entry in Kconfig to build
+    -Add entry in corenet_generic.c, as it is similar to other corenet platforms
 
+Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+---
+ arch/powerpc/boot/dts/t1040rdb.dts            |   43 +++++++
+ arch/powerpc/boot/dts/t1042rdb.dts            |   43 +++++++
+ arch/powerpc/boot/dts/t104xrdb.dtsi           |  157 +++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig           |    2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c |    2 +
+ 5 files changed, 246 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/t1040rdb.dts
+ create mode 100644 arch/powerpc/boot/dts/t1042rdb.dts
+ create mode 100644 arch/powerpc/boot/dts/t104xrdb.dtsi
 
-
+diff --git a/arch/powerpc/boot/dts/t1040rdb.dts b/arch/powerpc/boot/dts/t1040rdb.dts
+new file mode 100644
+index 0000000..ff26043
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t1040rdb.dts
+@@ -0,0 +1,43 @@
++/*
++ * T1040RDB Device Tree Source
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/t104xsi-pre.dtsi"
++/include/ "t104xrdb.dtsi"
++
++/ {
++	model = "fsl,T1040RDB";
++	compatible = "fsl,T1040RDB";
++};
++
++/include/ "fsl/t1040si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t1042rdb.dts b/arch/powerpc/boot/dts/t1042rdb.dts
+new file mode 100644
+index 0000000..a30058a
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t1042rdb.dts
+@@ -0,0 +1,43 @@
++/*
++ * T1042RDB Device Tree Source
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/t104xsi-pre.dtsi"
++/include/ "t104xrdb.dtsi"
++
++/ {
++	model = "fsl,T1042RDB";
++	compatible = "fsl,T1042RDB";
++};
++
++/include/ "fsl/t1042si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
+new file mode 100644
+index 0000000..9aaefa5
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
+@@ -0,0 +1,157 @@
++/*
++ * T1040RDB/T1042RDB Device Tree Source
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/ {
++
++	ifc: localbus@ffe124000 {
++		reg = <0xf 0xfe124000 0 0x2000>;
++		ranges = <0 0 0xf 0xe8000000 0x08000000
++			  2 0 0xf 0xff800000 0x00010000
++			  3 0 0xf 0xffdf0000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x8000000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		nand@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,ifc-nand";
++			reg = <0x2 0x0 0x10000>;
++		};
++
++		cpld@3,0 {
++			compatible = "fsl,t1040rdb-cpld","fsl,t1042rdb-cpld";
++			reg = <3 0 0x300>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
++	};
++
++	soc: soc@ffe000000 {
++		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg = <0xf 0xfe000000 0 0x00001000>;
++
++		spi@110000 {
++			flash@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "micron,n25q512a";
++				reg = <0>;
++				spi-max-frequency = <10000000>; /* input clock */
++			};
++		};
++
++		i2c@118100 {
++			pca9546@77 {
++				compatible = "nxp,pca9546";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
++		};
++
++	};
++
++	pci0: pcie@ffe240000 {
++		reg = <0xf 0xfe240000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0x0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8000000 0x0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci1: pcie@ffe250000 {
++		reg = <0xf 0xfe250000 0 0x10000>;
++		ranges = <0x02000000 0x0 0xe0000000 0xc 0x10000000 0x0 0x10000000
++			  0x01000000 0x0 0x00000000 0xf 0xf8010000 0x0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci2: pcie@ffe260000 {
++		reg = <0xf 0xfe260000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci3: pcie@ffe270000 {
++		reg = <0xf 0xfe270000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x30000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8030000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++};
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 5063696..157a1a4 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -276,7 +276,7 @@ config CORENET_GENERIC
+ 	  For 64bit kernel, the following boards are supported:
+ 	    T208x QDS, T4240 QDS/RDB and B4 QDS
+ 	  The following boards are supported for both 32bit and 64bit kernel:
+-	    P5020 DS, P5040 DS and T104xQDS
++	    P5020 DS, P5040 DS and T104xQDS/RDB
+ 
+ endif # FSL_SOC_BOOKE
+ 
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 4f22ad1..c268f89 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -128,6 +128,8 @@ static const char * const boards[] __initconst = {
+ 	"fsl,B4220QDS",
+ 	"fsl,T1040QDS",
+ 	"fsl,T1042QDS",
++	"fsl,T1040RDB",
++	"fsl,T1042RDB",
+ 	"keymile,kmcoge4",
+ 	NULL
+ };
 -- 
-Alexey
+1.7.4.1
