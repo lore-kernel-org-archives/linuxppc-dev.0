@@ -1,39 +1,21 @@
-Return-Path: <kmadhu@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E85F91A0009
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 02:08:44 +1000 (EST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4CE451400F1
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 02:08:44 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <kmadhu@linux.vnet.ibm.com>;
- Wed, 9 Jul 2014 21:38:38 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 58F8E1258048
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Jul 2014 21:38:19 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s69GA7Ts64487592
- for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2014 21:40:08 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s69G8ZUT005302
- for <linuxppc-dev@ozlabs.org>; Wed, 9 Jul 2014 21:38:36 +0530
-Message-ID: <53BD68FF.7000307@linux.vnet.ibm.com>
-Date: Wed, 09 Jul 2014 21:38:31 +0530
-From: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 752C91A00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 08:49:29 +1000 (EST)
+Date: Thu, 10 Jul 2014 08:49:11 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Fail remap_4k_pfn() if PFN doesn't fit inside PTE
+Message-ID: <20140710084911.22cb58d4@canb.auug.org.au>
+In-Reply-To: <53BD68FF.7000307@linux.vnet.ibm.com>
+References: <53BD68FF.7000307@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Fail remap_4k_pfn() if PFN doesn't fit inside PTE
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/h1fVS2dE973m3B64ZcYvb=W"; protocol="application/pgp-signature"
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,41 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Sig_/h1fVS2dE973m3B64ZcYvb=W
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-remap_4k_pfn() silently truncates upper bits of input 4K PFN if
-it cannot be contained in PTE. This leads invalid memory mapping
-and could result in a system crash when the memory is accessed.
-This patch fails remap_4k_pfn() and returns -EINVAL if the input
-4K PFN cannot be contained in PTE.
-Used a helper inline function in the failure case so that the
-remap_4k_pfn() macro can still be used in expression contexts.
+Hi Madhusudanan,
 
-Signed-off-by: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pte-hash64-64k.h | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+On Wed, 09 Jul 2014 21:38:31 +0530 Madhusudanan Kandasamy <kmadhu@linux.vne=
+t.ibm.com> wrote:
+>
+> diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/inc=
+lude/asm/pte-hash64-64k.h
+> index d836d94..10af7f1 100644
+> --- a/arch/powerpc/include/asm/pte-hash64-64k.h
+> +++ b/arch/powerpc/include/asm/pte-hash64-64k.h
+> @@ -74,8 +74,15 @@
+>  #define pte_pagesize_index(mm, addr, pte)	\
+>  	(((pte) & _PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
+>=20
+> +static inline int bad_4k_pfn(void)
+> +{
+> +	WARN_ON(1);
+> +	return -EINVAL;
+> +}
+> +
+>  #define remap_4k_pfn(vma, addr, pfn, prot)				\
+> -	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,		\
+> -			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN))
+> +	((pfn >=3D (1UL << (64 - PTE_RPN_SHIFT))) ? bad_4k_pfn() :	\
+> +		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
+> +			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
+>=20
+>  #endif	/* __ASSEMBLY__ */
 
-diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/include/asm/pte-hash64-64k.h
-index d836d94..10af7f1 100644
---- a/arch/powerpc/include/asm/pte-hash64-64k.h
-+++ b/arch/powerpc/include/asm/pte-hash64-64k.h
-@@ -74,8 +74,15 @@
- #define pte_pagesize_index(mm, addr, pte)	\
- 	(((pte) & _PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
+WARN_ON() returns the value it is passed, so no helper is needed:
 
-+static inline int bad_4k_pfn(void)
-+{
-+	WARN_ON(1);
-+	return -EINVAL;
-+}
-+
  #define remap_4k_pfn(vma, addr, pfn, prot)				\
 -	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,		\
 -			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN))
-+	((pfn >= (1UL << (64 - PTE_RPN_SHIFT))) ? bad_4k_pfn() :	\
++	WARN_ON(((pfn >=3D (1UL << (64 - PTE_RPN_SHIFT)))) ? -EINVAL :	\
 +		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
 +			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
 
- #endif	/* __ASSEMBLY__ */
--- 
-2.0.1
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/h1fVS2dE973m3B64ZcYvb=W
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJTvcb3AAoJEMDTa8Ir7ZwVlaIQAJBoBqF3IYhUMKxcoWhAmFXO
+huw/jlZF4sAFPjGintk8dk9PRoGXSwbQ/jcBJtdrFI3WDjkd4DVuClQ+bcw7nK3Z
+yJ5iam3EI5VT7e6wfymEtXSpKu4pBYT/nQVeWVzzgVM6hGo+i2np06xTQKbzWOpD
+paYvNzdiEkUqpaQUmH8d+YMKphYn0Fspye5jSQFyOeevKWx2y7y0ntOY2Ay3DE1u
+PSuYwpusaOKTKu6pRtnsnQWuRqigix37SDJquZ0ws9DO3A2DNVMPzW7qP2CMvCGX
+wmt2JoCLKngj2j0IyKcTRbIqAgh7tPBPhNiBvsBc96QdGH0AzmjJHj2FAovC1fZ8
+BWxgC6/QDt5TghG1+UVik/FdIP0xymUuwnagkA2kTEanOwVfk3EwSgHWQf4tBSl1
+5vagNJCY/pKiK1VQhCEmPGV3YLmyYwkKBNh5pDYi5cFTBpPOgCptEkzKU2aujp5B
+D3r1f29+GsUcJViMKuHQ7a9hb2LKZpmzL+Pm0tdLI2QBIOzMraArWcvL/zcx7apH
+jbWmbcfqtF5YjkKrgau6EiQoTVF+S1xGukLWpcTuMrb2K+3BOyLkfFDvfTS5s7PI
+RLR6JrDQ2gzqWN0rMQtbHq0ux6NVDz9IE4uYA/gkmviPdNQCTTzqsNHK1nYMCqSe
++JlbkihkpA9gV8y7ypBR
+=z5JH
+-----END PGP SIGNATURE-----
+
+--Sig_/h1fVS2dE973m3B64ZcYvb=W--
