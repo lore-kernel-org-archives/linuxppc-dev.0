@@ -1,29 +1,36 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-qa0-x22b.google.com (mail-qa0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c00::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 33AD51A00C1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 23:57:57 +1000 (EST)
-Message-ID: <53BD4A5E.90608@hurleysoftware.com>
-Date: Wed, 09 Jul 2014 09:57:50 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF6191A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 02:07:10 +1000 (EST)
+Received: by mail-qa0-f43.google.com with SMTP id k15so6164393qaq.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jul 2014 09:07:08 -0700 (PDT)
 MIME-Version: 1.0
-To: David Laight <David.Laight@ACULAB.COM>, Arnd Bergmann <arnd@arndb.de>,
- One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH tty-next 14/22] tty: Remove
- tty_wait_until_sent_from_close()
-References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
- <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
- <4575870.N9RCpZ4UMg@wuerfel> <53A01F02.7000202@hurleysoftware.com>
- <063D6719AE5E284EB5DD2968C1650D6D1725DAF6@AcuExch.aculab.com>
- <53A0273F.70400@hurleysoftware.com>
-In-Reply-To: <53A0273F.70400@hurleysoftware.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Karsten Keil <isdn@linux-pingi.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+In-Reply-To: <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
+References: <cover.1402405331.git.agordeev@redhat.com>
+ <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
+ <20140702202201.GA28852@google.com>
+ <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
+ <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
+ <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 9 Jul 2014 10:06:48 -0600
+Message-ID: <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
+Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
+To: Alexander Gordeev <agordeev@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,45 +40,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/17/2014 07:32 AM, Peter Hurley wrote:
-> On 06/17/2014 07:03 AM, David Laight wrote:
->> From: Peter Hurley
->> ...
->>>> I don't understand the second half of the changelog, it doesn't seem
->>>> to fit here: there deadlock that we are trying to avoid here happens
->>>> when the *same* tty needs the lock to complete the function that
->>>> sends the pending data. I don't think we do still do that any more,
->>>> but it doesn't seem related to the tty lock being system-wide or not.
->>>
->>> The tty lock is not used in the i/o path; it's purpose is to
->>> mutually exclude state changes in open(), close() and hangup().
->>>
->>> The commit that added this [1] comments that _other_ ttys may wait
->>> for this tty to complete, and comments in the code note that this
->>> function should be removed when the system-wide tty mutex was removed
->>> (which happened with the commit noted in the changelog).
+On Tue, Jul 8, 2014 at 6:26 AM, Alexander Gordeev <agordeev@redhat.com> wrote:
+> On Mon, Jul 07, 2014 at 01:40:48PM -0600, Bjorn Helgaas wrote:
+>> >> Can you quantify the benefit of this?  Can't a device already use
+>> >> MSI-X to request exactly the number of vectors it can use?  (I know
+>> >
+>> > A Intel AHCI chipset requires 16 vectors written to MME while advertises
+>> > (via AHCI registers) and uses only 6. Even attempt to init 8 vectors results
+>> > in device's fallback to 1 (!).
 >>
->> What happens if another process tries to do a non-blocking open
->> while you are sleeping in close waiting for output to drain?
->>
->> Hopefully this returns before that data has drained.
+>> Is the fact that it uses only 6 vectors documented in the public spec?
 >
-> Good point.
+> Yes, it is documented in ICH specs.
+
+Out of curiosity, do you have a pointer to this?  It looks like it
+uses one vector per port, and I'm wondering if the reason it requests
+16 is because there's some possibility of a part with more than 8
+ports.
+
+>> Is this a chipset erratum?  Are there newer versions of the chipset
+>> that fix this, e.g., by requesting 8 vectors and using 6, or by also
+>> supporting MSI-X?
 >
-> tty_open() should be trylocking both mutexes anyway in O_NONBLOCK.
+> No, this is not an erratum. The value of 8 vectors is reserved and could
+> cause undefined results if used.
 
-Further, the tty lock should not be nested within the tty_mutex lock
-in a reopen, regardless of O_NONBLOCK.
+As I read the spec (PCI 3.0, sec 6.8.1.3), if MMC contains 0b100
+(requesting 16 vectors), the OS is allowed to allocate 1, 2, 4, 8, or
+16 vectors.  If allocating 8 vectors and writing 0b011 to MME causes
+undefined results, I'd say that's a chipset defect.
 
-AFAICT, the tty_mutex in the reopen scenario is only protecting the
-tty count bump of the linked tty (if the tty is a pty).
+>> I know this conserves vector numbers.  What does that mean in real
+>> user-visible terms?  Are there systems that won't boot because of this
+>> issue, and this patch fixes them?  Does it enable bigger
+>> configurations, e.g., more I/O devices, than before?
+>
+> Visibly, it ceases logging messages ('ahci 0000:00:1f.2: irq 107 for
+> MSI/MSI-X') for IRQs that are not shown in /proc/interrupts later.
+>
+> No, it does not enable/fix any existing hardware issue I am aware of.
+> It just saves a couple of interrupt vectors, as Michael put it (10/16
+> to be precise). However, interrupt vectors space is pretty much scarce
+> resource on x86 and a risk of exhausting the vectors (and introducing
+> quota i.e) has already been raised AFAIR.
 
-I think with some refactoring and returning with a tty reference held
-from both tty_open_current_tty() and tty_driver_lookup_tty(), the tty
-lock in tty_open() can be attempted without nesting in the tty_mutex.
+I'm not too concerned about the logging issue.  If necessary, we could
+tweak that message somehow.
 
-Regardless, I'll be splitting this series and I'll be sure to cc
-you all when I resubmit these changes (after testing).
+Interrupt vector space is the issue I would worry about, but I think
+I'm going to put this on the back burner until it actually becomes a
+problem.
 
-Regards,
-Peter Hurley
+>> Do you know how Windows handles this?  Does it have a similar interface?
+>
+> Have no clue, TBH. Can try to investigate if you see it helpful.
+
+No, don't worry about investigating.  I was just curious because if
+Windows *did* support something like this, that would be an indication
+that there's a significant problem here and we might need to solve it,
+too.  But it sounds like we can safely ignore it for now.
+
+Bjorn
