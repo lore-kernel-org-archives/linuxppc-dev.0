@@ -1,36 +1,37 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qa0-x22b.google.com (mail-qa0-x22b.google.com
- [IPv6:2607:f8b0:400d:c00::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF6191A00A5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 02:07:10 +1000 (EST)
-Received: by mail-qa0-f43.google.com with SMTP id k15so6164393qaq.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jul 2014 09:07:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BFAF31A00C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 05:42:17 +1000 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Wed, 9 Jul 2014 13:42:14 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 64FE83E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 13:42:12 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08028.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s69JgC9I4456826
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jul 2014 21:42:12 +0200
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s69JkFEp030388
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jul 2014 13:46:15 -0600
+Date: Wed, 9 Jul 2014 12:42:10 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powernv: Add OPAL tracepoints
+Message-ID: <20140709194210.GX4603@linux.vnet.ibm.com>
+References: <20140703172050.495b3f72@kryten>
 MIME-Version: 1.0
-In-Reply-To: <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
- <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
- <20140702202201.GA28852@google.com>
- <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
- <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
- <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 9 Jul 2014 10:06:48 -0600
-Message-ID: <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
-Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-To: Alexander Gordeev <agordeev@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20140703172050.495b3f72@kryten>
+Cc: mikey@neuling.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,64 +41,336 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 8, 2014 at 6:26 AM, Alexander Gordeev <agordeev@redhat.com> wrote:
-> On Mon, Jul 07, 2014 at 01:40:48PM -0600, Bjorn Helgaas wrote:
->> >> Can you quantify the benefit of this?  Can't a device already use
->> >> MSI-X to request exactly the number of vectors it can use?  (I know
->> >
->> > A Intel AHCI chipset requires 16 vectors written to MME while advertises
->> > (via AHCI registers) and uses only 6. Even attempt to init 8 vectors results
->> > in device's fallback to 1 (!).
->>
->> Is the fact that it uses only 6 vectors documented in the public spec?
->
-> Yes, it is documented in ICH specs.
+On Thu, Jul 03, 2014 at 05:20:50PM +1000, Anton Blanchard wrote:
+> Knowing how long we spend in firmware calls is an important part of
+> minimising OS jitter.
+> 
+> This patch adds tracepoints to each OPAL call. If tracepoints are
+> enabled we branch out to a common routine that calls an entry and exit
+> tracepoint.
+> 
+> This allows us to write tools that monitor the frequency and duration
+> of OPAL calls, eg:
+> 
+> name                  count  total(ms)  min(ms)  max(ms)  avg(ms)  period(ms)
+> OPAL_HANDLE_INTERRUPT     5      0.199    0.037    0.042    0.040   12547.545
+> OPAL_POLL_EVENTS        204      2.590    0.012    0.036    0.013    2264.899
+> OPAL_PCI_MSI_EOI       2830      3.066    0.001    0.005    0.001      81.166
+> 
+> We use jump labels if configured, which means we only add a single
+> nop instruction to every OPAL call when the tracepoints are disabled.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Out of curiosity, do you have a pointer to this?  It looks like it
-uses one vector per port, and I'm wondering if the reason it requests
-16 is because there's some possibility of a part with more than 8
-ports.
+That is what I call invoking tracepoints the hard way -- from assembly!
+Just one question -- can these tracepoints be invoked from the idle
+loop?  If so, you need to use the _rcuidle suffix, for example, as
+in trace_opal_entry_rcuidle().  If not:
 
->> Is this a chipset erratum?  Are there newer versions of the chipset
->> that fix this, e.g., by requesting 8 vectors and using 6, or by also
->> supporting MSI-X?
->
-> No, this is not an erratum. The value of 8 vectors is reserved and could
-> cause undefined results if used.
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-As I read the spec (PCI 3.0, sec 6.8.1.3), if MMC contains 0b100
-(requesting 16 vectors), the OS is allowed to allocate 1, 2, 4, 8, or
-16 vectors.  If allocating 8 vectors and writing 0b011 to MME causes
-undefined results, I'd say that's a chipset defect.
-
->> I know this conserves vector numbers.  What does that mean in real
->> user-visible terms?  Are there systems that won't boot because of this
->> issue, and this patch fixes them?  Does it enable bigger
->> configurations, e.g., more I/O devices, than before?
->
-> Visibly, it ceases logging messages ('ahci 0000:00:1f.2: irq 107 for
-> MSI/MSI-X') for IRQs that are not shown in /proc/interrupts later.
->
-> No, it does not enable/fix any existing hardware issue I am aware of.
-> It just saves a couple of interrupt vectors, as Michael put it (10/16
-> to be precise). However, interrupt vectors space is pretty much scarce
-> resource on x86 and a risk of exhausting the vectors (and introducing
-> quota i.e) has already been raised AFAIR.
-
-I'm not too concerned about the logging issue.  If necessary, we could
-tweak that message somehow.
-
-Interrupt vector space is the issue I would worry about, but I think
-I'm going to put this on the back burner until it actually becomes a
-problem.
-
->> Do you know how Windows handles this?  Does it have a similar interface?
->
-> Have no clue, TBH. Can try to investigate if you see it helpful.
-
-No, don't worry about investigating.  I was just curious because if
-Windows *did* support something like this, that would be an indication
-that there's a significant problem here and we might need to solve it,
-too.  But it sounds like we can safely ignore it for now.
-
-Bjorn
+> ---
+> 
+> Index: b/arch/powerpc/include/asm/trace.h
+> ===================================================================
+> --- a/arch/powerpc/include/asm/trace.h
+> +++ b/arch/powerpc/include/asm/trace.h
+> @@ -99,6 +99,51 @@ TRACE_EVENT_FN(hcall_exit,
+>  );
+>  #endif
+> 
+> +#ifdef CONFIG_PPC_POWERNV
+> +extern void opal_tracepoint_regfunc(void);
+> +extern void opal_tracepoint_unregfunc(void);
+> +
+> +TRACE_EVENT_FN(opal_entry,
+> +
+> +	TP_PROTO(unsigned long opcode, unsigned long *args),
+> +
+> +	TP_ARGS(opcode, args),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(unsigned long, opcode)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->opcode = opcode;
+> +	),
+> +
+> +	TP_printk("opcode=%lu", __entry->opcode),
+> +
+> +	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
+> +);
+> +
+> +TRACE_EVENT_FN(opal_exit,
+> +
+> +	TP_PROTO(unsigned long opcode, unsigned long retval),
+> +
+> +	TP_ARGS(opcode, retval),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(unsigned long, opcode)
+> +		__field(unsigned long, retval)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->opcode = opcode;
+> +		__entry->retval = retval;
+> +	),
+> +
+> +	TP_printk("opcode=%lu retval=%lu", __entry->opcode, __entry->retval),
+> +
+> +	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
+> +);
+> +#endif
+> +
+>  #endif /* _TRACE_POWERPC_H */
+> 
+>  #undef TRACE_INCLUDE_PATH
+> Index: b/arch/powerpc/platforms/powernv/Makefile
+> ===================================================================
+> --- a/arch/powerpc/platforms/powernv/Makefile
+> +++ b/arch/powerpc/platforms/powernv/Makefile
+> @@ -8,3 +8,4 @@ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o
+>  obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
+>  obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+>  obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+> +obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
+> Index: b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> ===================================================================
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -13,30 +13,69 @@
+>  #include <asm/hvcall.h>
+>  #include <asm/asm-offsets.h>
+>  #include <asm/opal.h>
+> +#include <asm/jump_label.h>
+> +
+> +	.section	".text"
+> +
+> +#ifdef CONFIG_TRACEPOINTS
+> +#ifdef CONFIG_JUMP_LABEL
+> +#define OPAL_BRANCH(LABEL)					\
+> +	ARCH_STATIC_BRANCH(LABEL, opal_tracepoint_key)
+> +#else
+> +
+> +	.section	".toc","aw"
+> +
+> +	.globl opal_tracepoint_refcount
+> +opal_tracepoint_refcount:
+> +	.llong	0
+> +
+> +	.section	".text"
+> +
+> +/*
+> + * We branch around this in early init by using an unconditional cpu
+> + * feature.
+> + */
+> +#define OPAL_BRANCH(LABEL)					\
+> +BEGIN_FTR_SECTION;						\
+> +	b	1f;						\
+> +END_FTR_SECTION(0, 1);						\
+> +	ld	r12,opal_tracepoint_refcount@toc(r2);		\
+> +	std	r12,32(r1);					\
+> +	cmpdi	r12,0;						\
+> +	bne-	LABEL;						\
+> +1:
+> +
+> +#endif
+> +
+> +#else
+> +#define OPAL_BRANCH(LABEL)
+> +#endif
+> 
+>  /* TODO:
+>   *
+>   * - Trace irqs in/off (needs saving/restoring all args, argh...)
+>   * - Get r11 feed up by Dave so I can have better register usage
+>   */
+> +
+>  #define OPAL_CALL(name, token)		\
+>   _GLOBAL(name);				\
+>  	mflr	r0;			\
+> -	mfcr	r12;			\
+>  	std	r0,16(r1);		\
+> +	li	r0,token;		\
+> +	OPAL_BRANCH(opal_tracepoint_entry) \
+> +	mfcr	r12;			\
+>  	stw	r12,8(r1);		\
+>  	std	r1,PACAR1(r13);		\
+> -	li	r0,0;			\
+> +	li	r11,0;			\
+>  	mfmsr	r12;			\
+> -	ori	r0,r0,MSR_EE;		\
+> +	ori	r11,r11,MSR_EE;		\
+>  	std	r12,PACASAVEDMSR(r13);	\
+> -	andc	r12,r12,r0;		\
+> +	andc	r12,r12,r11;		\
+>  	mtmsrd	r12,1;			\
+> -	LOAD_REG_ADDR(r0,opal_return);	\
+> -	mtlr	r0;			\
+> -	li	r0,MSR_DR|MSR_IR|MSR_LE;\
+> -	andc	r12,r12,r0;		\
+> -	li	r0,token;		\
+> +	LOAD_REG_ADDR(r11,opal_return);	\
+> +	mtlr	r11;			\
+> +	li	r11,MSR_DR|MSR_IR|MSR_LE;\
+> +	andc	r12,r12,r11;		\
+>  	mtspr	SPRN_HSRR1,r12;		\
+>  	LOAD_REG_ADDR(r11,opal);	\
+>  	ld	r12,8(r11);		\
+> @@ -61,6 +100,64 @@ opal_return:
+>  	mtcr	r4;
+>  	rfid
+> 
+> +#ifdef CONFIG_TRACEPOINTS
+> +opal_tracepoint_entry:
+> +	stdu	r1,-STACKFRAMESIZE(r1)
+> +	std	r0,STK_REG(R23)(r1)
+> +	std	r3,STK_REG(R24)(r1)
+> +	std	r4,STK_REG(R25)(r1)
+> +	std	r5,STK_REG(R26)(r1)
+> +	std	r6,STK_REG(R27)(r1)
+> +	std	r7,STK_REG(R28)(r1)
+> +	std	r8,STK_REG(R29)(r1)
+> +	std	r9,STK_REG(R30)(r1)
+> +	std	r10,STK_REG(R31)(r1)
+> +	mr	r3,r0
+> +	addi	r4,r1,STK_REG(R24)
+> +	bl	__trace_opal_entry
+> +	ld	r0,STK_REG(R23)(r1)
+> +	ld	r3,STK_REG(R24)(r1)
+> +	ld	r4,STK_REG(R25)(r1)
+> +	ld	r5,STK_REG(R26)(r1)
+> +	ld	r6,STK_REG(R27)(r1)
+> +	ld	r7,STK_REG(R28)(r1)
+> +	ld	r8,STK_REG(R29)(r1)
+> +	ld	r9,STK_REG(R30)(r1)
+> +	ld	r10,STK_REG(R31)(r1)
+> +	LOAD_REG_ADDR(r11,opal_tracepoint_return)
+> +	mfcr	r12
+> +	std	r11,16(r1)
+> +	stw	r12,8(r1)
+> +	std	r1,PACAR1(r13)
+> +	li	r11,0
+> +	mfmsr	r12
+> +	ori	r11,r11,MSR_EE
+> +	std	r12,PACASAVEDMSR(r13)
+> +	andc	r12,r12,r11
+> +	mtmsrd	r12,1
+> +	LOAD_REG_ADDR(r11,opal_return)
+> +	mtlr	r11
+> +	li	r11,MSR_DR|MSR_IR|MSR_LE
+> +	andc	r12,r12,r11
+> +	mtspr	SPRN_HSRR1,r12
+> +	LOAD_REG_ADDR(r11,opal)
+> +	ld	r12,8(r11)
+> +	ld	r2,0(r11)
+> +	mtspr	SPRN_HSRR0,r12
+> +	hrfid
+> +
+> +opal_tracepoint_return:
+> +	std	r3,STK_REG(R31)(r1)
+> +	mr	r4,r3
+> +	ld	r0,STK_REG(R23)(r1)
+> +	bl	__trace_opal_exit
+> +	ld	r3,STK_REG(R31)(r1)
+> +	addi	r1,r1,STACKFRAMESIZE
+> +	ld	r0,16(r1)
+> +	mtlr	r0
+> +	blr
+> +#endif
+> +
+>  OPAL_CALL(opal_invalid_call,			OPAL_INVALID_CALL);
+>  OPAL_CALL(opal_console_write,			OPAL_CONSOLE_WRITE);
+>  OPAL_CALL(opal_console_read,			OPAL_CONSOLE_READ);
+> Index: b/arch/powerpc/platforms/powernv/opal-tracepoints.c
+> ===================================================================
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/powernv/opal-tracepoints.c
+> @@ -0,0 +1,84 @@
+> +#include <linux/percpu.h>
+> +#include <linux/jump_label.h>
+> +#include <asm/trace.h>
+> +
+> +#ifdef CONFIG_JUMP_LABEL
+> +struct static_key opal_tracepoint_key = STATIC_KEY_INIT;
+> +
+> +void opal_tracepoint_regfunc(void)
+> +{
+> +	static_key_slow_inc(&opal_tracepoint_key);
+> +}
+> +
+> +void opal_tracepoint_unregfunc(void)
+> +{
+> +	static_key_slow_dec(&opal_tracepoint_key);
+> +}
+> +#else
+> +/*
+> + * We optimise OPAL calls by placing opal_tracepoint_refcount
+> + * directly in the TOC so we can check if the opal tracepoints are
+> + * enabled via a single load.
+> + */
+> +
+> +/* NB: reg/unreg are called while guarded with the tracepoints_mutex */
+> +extern long opal_tracepoint_refcount;
+> +
+> +void opal_tracepoint_regfunc(void)
+> +{
+> +	opal_tracepoint_refcount++;
+> +}
+> +
+> +void opal_tracepoint_unregfunc(void)
+> +{
+> +	opal_tracepoint_refcount--;
+> +}
+> +#endif
+> +
+> +/*
+> + * Since the tracing code might execute OPAL calls we need to guard against
+> + * recursion.
+> + */
+> +static DEFINE_PER_CPU(unsigned int, opal_trace_depth);
+> +
+> +void __trace_opal_entry(unsigned long opcode, unsigned long *args)
+> +{
+> +	unsigned long flags;
+> +	unsigned int *depth;
+> +
+> +	local_irq_save(flags);
+> +
+> +	depth = &__get_cpu_var(opal_trace_depth);
+> +
+> +	if (*depth)
+> +		goto out;
+> +
+> +	(*depth)++;
+> +	preempt_disable();
+> +	trace_opal_entry(opcode, args);
+> +	(*depth)--;
+> +
+> +out:
+> +	local_irq_restore(flags);
+> +}
+> +
+> +void __trace_opal_exit(long opcode, unsigned long retval)
+> +{
+> +	unsigned long flags;
+> +	unsigned int *depth;
+> +
+> +	local_irq_save(flags);
+> +
+> +	depth = &__get_cpu_var(opal_trace_depth);
+> +
+> +	if (*depth)
+> +		goto out;
+> +
+> +	(*depth)++;
+> +	trace_opal_exit(opcode, retval);
+> +	preempt_enable();
+> +	(*depth)--;
+> +
+> +out:
+> +	local_irq_restore(flags);
+> +}
+> 
