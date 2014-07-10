@@ -1,27 +1,34 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C07971A00D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 10:04:41 +1000 (EST)
-Date: Wed, 9 Jul 2014 17:09:05 -0700
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/9] drivers: base: support cpu cache information
- interface to userspace via sysfs
-Message-ID: <20140710000905.GA18025@kroah.com>
-References: <1403717444-23559-1-git-send-email-sudeep.holla@arm.com>
- <1403717444-23559-3-git-send-email-sudeep.holla@arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1403717444-23559-3-git-send-email-sudeep.holla@arm.com>
-Cc: Rob Herring <robh@kernel.org>,
- Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-ia64@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D009E1A002F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 11:28:38 +1000 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Wed, 9 Jul 2014 19:28:36 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D104E19D804C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 19:28:22 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6A1SWsJ3211632
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 03:28:32 +0200
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ s6A1WZRJ019989
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jul 2014 19:32:36 -0600
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: dynamically added OF nodes need to call
+ of_node_init
+Date: Wed,  9 Jul 2014 21:20:05 -0400
+Message-Id: <1404955205-12847-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Cc: grant.likely@linaro.org, nfont@linux.vnet.ibm.com,
+ Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,163 +38,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 25, 2014 at 06:30:37PM +0100, Sudeep Holla wrote:
-> +static const struct device_attribute *cache_optional_attrs[] = {
-> +	&dev_attr_coherency_line_size,
-> +	&dev_attr_ways_of_associativity,
-> +	&dev_attr_number_of_sets,
-> +	&dev_attr_size,
-> +	&dev_attr_attributes,
-> +	&dev_attr_physical_line_partition,
-> +	NULL
-> +};
-> +
-> +static int device_add_attrs(struct device *dev,
-> +			    const struct device_attribute **dev_attrs)
-> +{
-> +	int i, error = 0;
-> +	struct device_attribute *dev_attr;
-> +	char *buf;
-> +
-> +	if (!dev_attrs)
-> +		return 0;
-> +
-> +	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-> +	if (!buf)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; dev_attrs[i]; i++) {
-> +		dev_attr = (struct device_attribute *)dev_attrs[i];
-> +
-> +		/* create attributes that provides meaningful value */
-> +		if (dev_attr->show(dev, dev_attr, buf) < 0)
-> +			continue;
-> +
-> +		error = device_create_file(dev, dev_attrs[i]);
-> +		if (error) {
-> +			while (--i >= 0)
-> +				device_remove_file(dev, dev_attrs[i]);
-> +			break;
-> +		}
-> +	}
-> +
-> +	kfree(buf);
-> +	return error;
-> +}
+Commit 75b57ecf9 refactored device tree nodes to use kobjects such that they
+can be exposed via /sysfs. A secondary commit 0829f6d1f furthered this rework
+by moving the kobect initialization logic out of of_node_add into its own
+of_node_init function. The inital commit removed the existing kref_init calls
+in the pseries dlpar code with the assumption kobject initialization would
+occur in of_node_add. The second commit had the side effect of triggering a
+BUG_ON as a result of dynamically added nodes being uninitialized.
 
-Ick, why create your own function for this when the driver core has this
-functionality built into it?  Look at the is_visible() callback, and how
-it is use for an attribute group please.
+This patch fixes this by adding of_node_init calls in place of the previously
+removed kref_init calls.
 
-> +static void device_remove_attrs(struct device *dev,
-> +				const struct device_attribute **dev_attrs)
-> +{
-> +	int i;
-> +
-> +	if (!dev_attrs)
-> +		return;
-> +
-> +	for (i = 0; dev_attrs[i]; dev_attrs++, i++)
-> +		device_remove_file(dev, dev_attrs[i]);
-> +}
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dlpar.c    | 1 +
+ arch/powerpc/platforms/pseries/reconfig.c | 1 +
+ 2 files changed, 2 insertions(+)
 
-You should just remove a whole group at once, not individually.
-
-> +
-> +const struct device_attribute **
-> +__weak cache_get_priv_attr(struct device *cache_idx_dev)
-> +{
-> +	return NULL;
-> +}
-> +
-> +/* Add/Remove cache interface for CPU device */
-> +static void cpu_cache_sysfs_exit(unsigned int cpu)
-> +{
-> +	int i;
-> +	struct device *tmp_dev;
-> +	const struct device_attribute **ci_priv_attr;
-> +
-> +	if (per_cpu_index_dev(cpu)) {
-> +		for (i = 0; i < cache_leaves(cpu); i++) {
-> +			tmp_dev = per_cache_index_dev(cpu, i);
-> +			if (!tmp_dev)
-> +				continue;
-> +			ci_priv_attr = cache_get_priv_attr(tmp_dev);
-> +			device_remove_attrs(tmp_dev, ci_priv_attr);
-> +			device_remove_attrs(tmp_dev, cache_optional_attrs);
-> +			device_unregister(tmp_dev);
-> +		}
-> +		kfree(per_cpu_index_dev(cpu));
-> +		per_cpu_index_dev(cpu) = NULL;
-> +	}
-> +	device_unregister(per_cpu_cache_dev(cpu));
-> +	per_cpu_cache_dev(cpu) = NULL;
-> +}
-> +
-> +static int cpu_cache_sysfs_init(unsigned int cpu)
-> +{
-> +	struct device *dev = get_cpu_device(cpu);
-> +
-> +	if (per_cpu_cacheinfo(cpu) == NULL)
-> +		return -ENOENT;
-> +
-> +	per_cpu_cache_dev(cpu) = device_create(dev->class, dev, cpu,
-> +					       NULL, "cache");
-> +	if (IS_ERR_OR_NULL(per_cpu_cache_dev(cpu)))
-> +		return PTR_ERR(per_cpu_cache_dev(cpu));
-> +
-> +	/* Allocate all required memory */
-> +	per_cpu_index_dev(cpu) = kzalloc(sizeof(struct device *) *
-> +					 cache_leaves(cpu), GFP_KERNEL);
-> +	if (unlikely(per_cpu_index_dev(cpu) == NULL))
-> +		goto err_out;
-> +
-> +	return 0;
-> +
-> +err_out:
-> +	cpu_cache_sysfs_exit(cpu);
-> +	return -ENOMEM;
-> +}
-> +
-> +static int cache_add_dev(unsigned int cpu)
-> +{
-> +	unsigned short i;
-> +	int rc;
-> +	struct device *tmp_dev, *parent;
-> +	struct cacheinfo *this_leaf;
-> +	const struct device_attribute **ci_priv_attr;
-> +	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
-> +
-> +	rc = cpu_cache_sysfs_init(cpu);
-> +	if (unlikely(rc < 0))
-> +		return rc;
-> +
-> +	parent = per_cpu_cache_dev(cpu);
-> +	for (i = 0; i < cache_leaves(cpu); i++) {
-> +		this_leaf = this_cpu_ci->info_list + i;
-> +		if (this_leaf->disable_sysfs)
-> +			continue;
-> +		tmp_dev = device_create_with_groups(parent->class, parent, i,
-> +						    this_leaf,
-> +						    cache_default_groups,
-> +						    "index%1u", i);
-> +		if (IS_ERR_OR_NULL(tmp_dev)) {
-> +			rc = PTR_ERR(tmp_dev);
-> +			goto err;
-> +		}
-> +
-> +		rc = device_add_attrs(tmp_dev, cache_optional_attrs);
-> +		if (unlikely(rc))
-> +			goto err;
-> +
-> +		ci_priv_attr = cache_get_priv_attr(tmp_dev);
-> +		rc = device_add_attrs(tmp_dev, ci_priv_attr);
-> +		if (unlikely(rc))
-> +			goto err;
-
-You just raced with userspace here, creating these files _after_ the
-device was announced to userspace, causing problems with anyone wanting
-to read these attributes :(
-
-I think if you fix up the is_visible() thing above, these calls will go
-away, right?
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 022b38e..2d0b4d6 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -86,6 +86,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
+ 	}
+ 
+ 	of_node_set_flag(dn, OF_DYNAMIC);
++	of_node_init(dn);
+ 
+ 	return dn;
+ }
+diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+index 0435bb6..1c0a60d 100644
+--- a/arch/powerpc/platforms/pseries/reconfig.c
++++ b/arch/powerpc/platforms/pseries/reconfig.c
+@@ -69,6 +69,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
+ 
+ 	np->properties = proplist;
+ 	of_node_set_flag(np, OF_DYNAMIC);
++	of_node_init(np);
+ 
+ 	np->parent = derive_parent(path);
+ 	if (IS_ERR(np->parent)) {
+-- 
+1.7.12.4
