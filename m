@@ -2,13 +2,13 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6147E1A00EF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:29:32 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BB751A014B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:29:33 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 4/9] powerpc: Pull out ksp_vsid logic into a helper
-Date: Thu, 10 Jul 2014 12:29:21 +1000
-Message-Id: <1404959366-17664-4-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 5/9] powerpc: Remove CONFIG_POWER3
+Date: Thu, 10 Jul 2014 12:29:22 +1000
+Message-Id: <1404959366-17664-5-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
 References: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,64 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The previous patch left a bit of a wart in copy_process(). Clean it up a
-bit by moving the logic out into a helper.
+Now that we have dropped power3 support we can remove CONFIG_POWER3. The
+usage in pgtable_32.c was already dead code as CONFIG_POWER3 was not
+selectable on PPC32.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/process.c | 32 ++++++++++++++++++--------------
- 1 file changed, 18 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/cputable.h    | 3 +--
+ arch/powerpc/mm/pgtable_32.c           | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype | 4 ----
+ 3 files changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index e39f388fc25c..9c34327e38ca 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -1095,6 +1095,23 @@ int arch_dup_task_struct(struct task_struct *dst, struct task_struct *src)
- 	return 0;
- }
- 
-+static void setup_ksp_vsid(struct task_struct *p, unsigned long sp)
-+{
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	unsigned long sp_vsid;
-+	unsigned long llp = mmu_psize_defs[mmu_linear_psize].sllp;
-+
-+	if (mmu_has_feature(MMU_FTR_1T_SEGMENT))
-+		sp_vsid = get_kernel_vsid(sp, MMU_SEGSIZE_1T)
-+			<< SLB_VSID_SHIFT_1T;
-+	else
-+		sp_vsid = get_kernel_vsid(sp, MMU_SEGSIZE_256M)
-+			<< SLB_VSID_SHIFT;
-+	sp_vsid |= SLB_VSID_KERNEL | llp;
-+	p->thread.ksp_vsid = sp_vsid;
-+#endif
-+}
-+
- /*
-  * Copy a thread..
-  */
-@@ -1174,21 +1191,8 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
- 	p->thread.vr_save_area = NULL;
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index ed17bc75b0a6..bff747eea06b 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -268,8 +268,7 @@ extern const char *powerpc_base_platform;
  #endif
  
--#ifdef CONFIG_PPC_STD_MMU_64
--	{
--		unsigned long sp_vsid;
--		unsigned long llp = mmu_psize_defs[mmu_linear_psize].sllp;
-+	setup_ksp_vsid(p, sp);
+ #define CLASSIC_PPC (!defined(CONFIG_8xx) && !defined(CONFIG_4xx) && \
+-		     !defined(CONFIG_POWER3) && !defined(CONFIG_POWER4) && \
+-		     !defined(CONFIG_BOOKE))
++		     !defined(CONFIG_POWER4) && !defined(CONFIG_BOOKE))
  
--		if (mmu_has_feature(MMU_FTR_1T_SEGMENT))
--			sp_vsid = get_kernel_vsid(sp, MMU_SEGSIZE_1T)
--				<< SLB_VSID_SHIFT_1T;
--		else
--			sp_vsid = get_kernel_vsid(sp, MMU_SEGSIZE_256M)
--				<< SLB_VSID_SHIFT;
--		sp_vsid |= SLB_VSID_KERNEL | llp;
--		p->thread.ksp_vsid = sp_vsid;
--	}
--#endif /* CONFIG_PPC_STD_MMU_64 */
- #ifdef CONFIG_PPC64 
- 	if (cpu_has_feature(CPU_FTR_DSCR)) {
- 		p->thread.dscr_inherit = current->thread.dscr_inherit;
+ #define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
+ 	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 343a87fa78b5..cf11342bf519 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -41,7 +41,7 @@ unsigned long ioremap_base;
+ unsigned long ioremap_bot;
+ EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
+ 
+-#if defined(CONFIG_6xx) || defined(CONFIG_POWER3)
++#ifdef CONFIG_6xx
+ #define HAVE_BATS	1
+ #endif
+ 
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index a41bd023647a..798e6add1cae 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -140,10 +140,6 @@ config 6xx
+ 	depends on PPC32 && PPC_BOOK3S
+ 	select PPC_HAVE_PMU_SUPPORT
+ 
+-config POWER3
+-	depends on PPC64 && PPC_BOOK3S
+-	def_bool y
+-
+ config POWER4
+ 	depends on PPC64 && PPC_BOOK3S
+ 	def_bool y
 -- 
 1.9.1
