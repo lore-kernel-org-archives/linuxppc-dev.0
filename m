@@ -1,34 +1,25 @@
-Return-Path: <agordeev@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EAA9B1A0169
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 20:11:12 +1000 (EST)
-Date: Thu, 10 Jul 2014 12:11:51 +0200
-From: Alexander Gordeev <agordeev@redhat.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-Message-ID: <20140710101151.GA21629@dhcp-26-207.brq.redhat.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
- <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
- <20140702202201.GA28852@google.com>
- <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
- <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
- <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
- <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 461851A016B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 20:16:17 +1000 (EST)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id A6376140146
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 20:16:16 +1000 (EST)
+Message-ID: <53BE67EA.8000206@suse.de>
+Date: Thu, 10 Jul 2014 12:16:10 +0200
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc/kvm: Create proper names for the kvm_host_state
+ PMU fields
+References: <1404984871-15145-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1404984871-15145-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,45 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 09, 2014 at 10:06:48AM -0600, Bjorn Helgaas wrote:
-> Out of curiosity, do you have a pointer to this?  It looks like it
 
-I.e. ICH8 chapter 12.1.30 or ICH10 chapter 14.1.27
+On 10.07.14 11:34, Michael Ellerman wrote:
+> We have two arrays in kvm_host_state that contain register values for
+> the PMU. Currently we only create an asm-offsets symbol for the base of
+> the arrays, and do the array offset in the assembly code.
+>
+> Creating an asm-offsets symbol for each field individually makes the
+> code much nicer to read, particularly for the MMCRx/SIxR/SDAR fields, and
+> might have helped us notice the recent double restore bug we had in this
+> code.
+>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-> uses one vector per port, and I'm wondering if the reason it requests
-> 16 is because there's some possibility of a part with more than 8
-> ports.
+Acked-by: Alexander Graf <agraf@suse.de>
 
-I doubt that is the reason. The only allowed MME values (powers of two)
-are 0b000, 0b001, 0b010 and 0b100. As you can see, only one bit is used -
-I would speculate it suits nicely to some hardware logic.
+I still think this whole code path should just be C though.
 
-BTW, apart from AHCI, it seems the reason MSI is not going to disappear
-(in a decade at least) is it is way cheaper to implement than MSI-X.
 
-> > No, this is not an erratum. The value of 8 vectors is reserved and could
-> > cause undefined results if used.
-> 
-> As I read the spec (PCI 3.0, sec 6.8.1.3), if MMC contains 0b100
-> (requesting 16 vectors), the OS is allowed to allocate 1, 2, 4, 8, or
-> 16 vectors.  If allocating 8 vectors and writing 0b011 to MME causes
-> undefined results, I'd say that's a chipset defect.
-
-Well, the PCI spec does not prevent devices to have their own specs on top
-of it. Undefined results are meant on the device side here. On the MSI side
-these results are likely perfectly within the PCI spec. I feel speaking as
-a lawer here ;)
-
-> Interrupt vector space is the issue I would worry about, but I think
-> I'm going to put this on the back burner until it actually becomes a
-> problem.
-
-I plan to try get rid of arch_msi_check_device() hook. Should I repost
-this series afterwards?
-
-Thanks!
-
--- 
-Regards,
-Alexander Gordeev
-agordeev@redhat.com
+Alex
