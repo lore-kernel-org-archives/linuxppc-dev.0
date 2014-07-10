@@ -1,25 +1,38 @@
-Return-Path: <mgorman@novell.com>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c04::22b])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96A5F1A017A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:30:18 +1000 (EST)
-Date: Thu, 10 Jul 2014 14:30:12 +0100
-From: Mel Gorman <mgorman@suse.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH v2] Use the POWER8 Micro Partition Prefetch Engine in KVM
- HV on POWER8
-Message-ID: <20140710133012.GR25275@novell.com>
-References: <1404437035-4336-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
- <53BBCAC7.90904@suse.de> <m3bnszqwx1.fsf@oc8180480414.ibm.com>
- <53BE738B.1010100@suse.de> <20140710130716.GQ25275@novell.com>
- <53BE925C.2030401@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AF9011A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jul 2014 03:02:47 +1000 (EST)
+Received: by mail-qg0-f43.google.com with SMTP id z60so7737484qgd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 10:02:44 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <53BE925C.2030401@suse.de>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <20140710101151.GA21629@dhcp-26-207.brq.redhat.com>
+References: <cover.1402405331.git.agordeev@redhat.com>
+ <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
+ <20140702202201.GA28852@google.com>
+ <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
+ <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
+ <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
+ <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
+ <20140710101151.GA21629@dhcp-26-207.brq.redhat.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 10 Jul 2014 11:02:24 -0600
+Message-ID: <CAErSpo6p=teHx+ZG9yritgcBvOer-FNtug4-WQQQkHhPhTLjZw@mail.gmail.com>
+Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
+To: Alexander Gordeev <agordeev@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +42,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 10, 2014 at 03:17:16PM +0200, Alexander Graf wrote:
-> 
-> On 10.07.14 15:07, Mel Gorman wrote:
-> >On Thu, Jul 10, 2014 at 01:05:47PM +0200, Alexander Graf wrote:
-> >>On 09.07.14 00:59, Stewart Smith wrote:
-> >>>Hi!
-> >>>
-> >>>Thanks for review, much appreciated!
-> >>>
-> >>>Alexander Graf <agraf@suse.de> writes:
-> >>>>On 08.07.14 07:06, Stewart Smith wrote:
-> >>>>>@@ -1528,6 +1535,7 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
-> >>>>>   	int i, need_vpa_update;
-> >>>>>   	int srcu_idx;
-> >>>>>   	struct kvm_vcpu *vcpus_to_update[threads_per_core];
-> >>>>>+	phys_addr_t phy_addr, tmp;
-> >>>>Please put the variable declarations into the if () branch so that the
-> >>>>compiler can catch potential leaks :)
-> >>>ack. will fix.
-> >>>
-> >>>>>@@ -1590,9 +1598,48 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
-> >>>>>   	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
-> >>>>>+	/* If we have a saved list of L2/L3, restore it */
-> >>>>>+	if (cpu_has_feature(CPU_FTR_ARCH_207S) && vc->mpp_buffer) {
-> >>>>>+		phy_addr = virt_to_phys((void *)vc->mpp_buffer);
-> >>>>>+#if defined(CONFIG_PPC_4K_PAGES)
-> >>>>>+		phy_addr = (phy_addr + 8*4096) & ~(8*4096);
-> >>>>get_free_pages() is automatically aligned to the order, no?
-> >>>That's what Paul reckoned too, and then we've attempted to find anywhere
-> >>>that documents that behaviour. Happen to be able to point to docs/source
-> >>>that say this is part of API?
-> >>Phew - it's probably buried somewhere. I could only find this
-> >>document saying that we always get order-aligned allocations:
-> >>
-> >>http://www.thehackademy.net/madchat/ebooks/Mem_virtuelle/linux-mm/zonealloc.html
-> >>
-> >>Mel, do you happen to have any pointer to something that explicitly
-> >>(or even properly implicitly) says that get_free_pages() returns
-> >>order-aligned memory?
-> >>
-> >I did not read the whole thread so I lack context and will just answer
-> >this part.
-> >
-> >There is no guarantee that pages are returned in PFN order for multiple
-> >requests to the page allocator. This is the relevant comment in
-> >rmqueue_bulk
-> >
-> >                 /*
-> >                  * Split buddy pages returned by expand() are received here
-> >                  * in physical page order. The page is added to the callers and
-> >                  * list and the list head then moves forward. From the callers
-> >                  * perspective, the linked list is ordered by page number in
-> >                  * some conditions. This is useful for IO devices that can
-> >                  * merge IO requests if the physical pages are ordered
-> >                  * properly.
-> >                  */
-> >
-> >It will probably be true early in the lifetime of the system but the milage
-> >will vary on systems with a lot of uptime. If you depend on this behaviour
-> >for correctness then you will have a bad day.
-> >
-> >High-order page requests to the page allocator are guaranteed to be in physical
-> >order. However, this does not apply to vmalloc() where allocations are
-> >only guaranteed to be virtually contiguous.
-> 
-> Hrm, ok to be very concrete:
-> 
->   Does __get_free_pages(..., 4); on a 4k page size system give me a
-> 64k aligned pointer? :)
-> 
+On Thu, Jul 10, 2014 at 4:11 AM, Alexander Gordeev <agordeev@redhat.com> wrote:
+> On Wed, Jul 09, 2014 at 10:06:48AM -0600, Bjorn Helgaas wrote:
+>> Out of curiosity, do you have a pointer to this?  It looks like it
+>
+> I.e. ICH8 chapter 12.1.30 or ICH10 chapter 14.1.27
+>
+>> uses one vector per port, and I'm wondering if the reason it requests
+>> 16 is because there's some possibility of a part with more than 8
+>> ports.
+>
+> I doubt that is the reason. The only allowed MME values (powers of two)
+> are 0b000, 0b001, 0b010 and 0b100. As you can see, only one bit is used -
+> I would speculate it suits nicely to some hardware logic.
+>
+> BTW, apart from AHCI, it seems the reason MSI is not going to disappear
+> (in a decade at least) is it is way cheaper to implement than MSI-X.
+>
+>> > No, this is not an erratum. The value of 8 vectors is reserved and could
+>> > cause undefined results if used.
+>>
+>> As I read the spec (PCI 3.0, sec 6.8.1.3), if MMC contains 0b100
+>> (requesting 16 vectors), the OS is allowed to allocate 1, 2, 4, 8, or
+>> 16 vectors.  If allocating 8 vectors and writing 0b011 to MME causes
+>> undefined results, I'd say that's a chipset defect.
+>
+> Well, the PCI spec does not prevent devices to have their own specs on top
+> of it. Undefined results are meant on the device side here. On the MSI side
+> these results are likely perfectly within the PCI spec. I feel speaking as
+> a lawer here ;)
 
-Yes.
+I disagree about this part.  The reason MSI is in the PCI spec is so
+the OS can have generic support for it without having to put
+device-specific support in every driver.  The PCI spec is clear that
+the OS can allocate any number of vectors less than or equal to the
+number requested via MMC.  The SATA device requests 16, and it should
+be perfectly legal for the OS to give it 8.
 
--- 
-Mel Gorman
-SUSE Labs
+It's interesting that the ICH10 spec (sec 14.1.27, thanks for the
+reference) says MMC 100b means "8 MSI Capable".  That smells like a
+hardware bug.  The PCI spec says:
+
+  000 => 1 vector
+  001 => 2 vectors
+  010 => 4 vectors
+  011 => 8 vectors
+  100 => 16 vectors
+
+The ICH10 spec seems to think 100 means 8 vectors (not 16 as the PCI
+spec says), and that would fit with the rest of the ICH10 MME info.
+If ICH10 was built assuming this table:
+
+  000 => 1 vector
+  001 => 2 vectors
+  010 => 4 vectors
+  100 => 8 vectors
+
+then everything makes sense: the device requests 8 vectors, and the
+behavior is defined in all possible MME cases (1, 2, 4, or 8 vectors
+assigned).  The "Values '011b' to '111b' are reserved" part is still
+slightly wrong, because the 100b value is in that range but is not
+reserved, but that's a tangent.
+
+So my guess (speculation, I admit) is that the intent was for ICH SATA
+to request only 8 vectors, but because of this error, it requests 16.
+Maybe some early MSI proposal used a different encoding for MMC and
+MME, and ICH was originally designed using that.
+
+>> Interrupt vector space is the issue I would worry about, but I think
+>> I'm going to put this on the back burner until it actually becomes a
+>> problem.
+>
+> I plan to try get rid of arch_msi_check_device() hook. Should I repost
+> this series afterwards?
+
+Honestly, I'm still not inclined to pursue this because of the API
+complication and lack of concrete benefit.
+
+Bjorn
