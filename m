@@ -1,16 +1,21 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D3B01A0138
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:29:35 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 236891A0B4A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:33:52 +1000 (EST)
+Message-ID: <1404959630.27178.1.camel@concordia>
+Subject: Re: [PATCH] powerpc/pseries: dynamically added OF nodes need to
+ call of_node_init
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 9/9] powerpc: Move CLASSIC_PPC into Kconfig and rename
-Date: Thu, 10 Jul 2014 12:29:26 +1000
-Message-Id: <1404959366-17664-9-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
-References: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Thu, 10 Jul 2014 12:33:50 +1000
+In-Reply-To: <1404955205-12847-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1404955205-12847-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: grant.likely@linaro.org, nfont@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,98 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a strange #define in cputable.h called CLASSIC_PPC. It is true
-when no other more modern platform is defined, and indicates that we're
-building for a "classic" platform.
+On Wed, 2014-07-09 at 21:20 -0400, Tyrel Datwyler wrote:
+> Commit 75b57ecf9 refactored device tree nodes to use kobjects such that they
+> can be exposed via /sysfs. A secondary commit 0829f6d1f furthered this rework
+> by moving the kobect initialization logic out of of_node_add into its own
+> of_node_init function. The inital commit removed the existing kref_init calls
+> in the pseries dlpar code with the assumption kobject initialization would
+> occur in of_node_add. The second commit had the side effect of triggering a
+> BUG_ON as a result of dynamically added nodes being uninitialized.
 
-Although it is defined for 32 & 64bit, it's only used for 32bit. So for
-starters, rename it to indicate that. There's also no reason for it not
-to be in Kconfig, so move it there.
+So does this mean DLPAR is broken since 0829f6d1f (3.15-rc1)?
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/cputable.h    | 7 ++-----
- arch/powerpc/kernel/cputable.c         | 4 ++--
- arch/powerpc/platforms/Kconfig.cputype | 6 +++++-
- 3 files changed, 9 insertions(+), 8 deletions(-)
+If so this should have a Cc: stable@kernel.org shouldn't it?
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index f1027481da0f..af5598688daf 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -267,9 +267,6 @@ extern const char *powerpc_base_platform;
- #define CPU_FTR_MAYBE_CAN_NAP	0
- #endif
- 
--#define CLASSIC_PPC (!defined(CONFIG_8xx) && !defined(CONFIG_4xx) && \
--		     !defined(CONFIG_BOOKE))
--
- #define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
- 	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
- #define CPU_FTRS_603	(CPU_FTR_COMMON | \
-@@ -466,7 +463,7 @@ extern const char *powerpc_base_platform;
- #else
- enum {
- 	CPU_FTRS_POSSIBLE =
--#if CLASSIC_PPC
-+#ifdef CONFIG_CLASSIC_PPC32
- 	    CPU_FTRS_PPC601 | CPU_FTRS_603 | CPU_FTRS_604 | CPU_FTRS_740_NOTAU |
- 	    CPU_FTRS_740 | CPU_FTRS_750 | CPU_FTRS_750FX1 |
- 	    CPU_FTRS_750FX2 | CPU_FTRS_750FX | CPU_FTRS_750GX |
-@@ -516,7 +513,7 @@ enum {
- #else
- enum {
- 	CPU_FTRS_ALWAYS =
--#if CLASSIC_PPC
-+#ifdef CONFIG_CLASSIC_PPC32
- 	    CPU_FTRS_PPC601 & CPU_FTRS_603 & CPU_FTRS_604 & CPU_FTRS_740_NOTAU &
- 	    CPU_FTRS_740 & CPU_FTRS_750 & CPU_FTRS_750FX1 &
- 	    CPU_FTRS_750FX2 & CPU_FTRS_750FX & CPU_FTRS_750GX &
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 4728c0885d83..e7b2ea906838 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -507,7 +507,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- #endif	/* CONFIG_PPC_BOOK3S_64 */
- 
- #ifdef CONFIG_PPC32
--#if CLASSIC_PPC
-+#ifdef CONFIG_CLASSIC_PPC32
- 	{	/* 601 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x00010000,
-@@ -1147,7 +1147,7 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.machine_check		= machine_check_generic,
- 		.platform		= "ppc603",
- 	},
--#endif /* CLASSIC_PPC */
-+#endif /* CONFIG_CLASSIC_PPC32 */
- #ifdef CONFIG_8xx
- 	{	/* 8xx */
- 		.pvr_mask		= 0xffff0000,
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index f03e7d0d76f8..5fe116bf9883 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -61,7 +61,7 @@ choice
- 	help
- 	  There are two families of 64 bit PowerPC chips supported.
- 	  The most common ones are the desktop and server CPUs
--	  (POWER3, RS64, POWER4, POWER5, POWER5+, POWER6, ...)
-+	  (POWER4, POWER5, 970, POWER5+, POWER6, POWER7, POWER8 ...)
- 
- 	  The other are the "embedded" processors compliant with the
- 	  "Book 3E" variant of the architecture
-@@ -140,6 +140,10 @@ config 6xx
- 	depends on PPC32 && PPC_BOOK3S
- 	select PPC_HAVE_PMU_SUPPORT
- 
-+config CLASSIC_PPC32
-+	depends on PPC32 && !8xx && !4xx && !BOOKE
-+	def_bool y
-+
- config TUNE_CELL
- 	bool "Optimize for Cell Broadband Engine"
- 	depends on PPC64 && PPC_BOOK3S
--- 
-1.9.1
+And the latest trend is to also add:
+
+Fixes: 0829f6d1f69e ("of: device_node kobject lifecycle fixes")
+
+cheers
