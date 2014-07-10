@@ -1,21 +1,27 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 752C91A00D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 08:49:29 +1000 (EST)
-Date: Thu, 10 Jul 2014 08:49:11 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Fail remap_4k_pfn() if PFN doesn't fit inside PTE
-Message-ID: <20140710084911.22cb58d4@canb.auug.org.au>
-In-Reply-To: <53BD68FF.7000307@linux.vnet.ibm.com>
-References: <53BD68FF.7000307@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C07971A00D8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 10:04:41 +1000 (EST)
+Date: Wed, 9 Jul 2014 17:09:05 -0700
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 2/9] drivers: base: support cpu cache information
+ interface to userspace via sysfs
+Message-ID: <20140710000905.GA18025@kroah.com>
+References: <1403717444-23559-1-git-send-email-sudeep.holla@arm.com>
+ <1403717444-23559-3-git-send-email-sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/h1fVS2dE973m3B64ZcYvb=W"; protocol="application/pgp-signature"
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1403717444-23559-3-git-send-email-sudeep.holla@arm.com>
+Cc: Rob Herring <robh@kernel.org>,
+ Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-ia64@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,72 +31,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/h1fVS2dE973m3B64ZcYvb=W
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-Hi Madhusudanan,
-
-On Wed, 09 Jul 2014 21:38:31 +0530 Madhusudanan Kandasamy <kmadhu@linux.vne=
-t.ibm.com> wrote:
->
-> diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/inc=
-lude/asm/pte-hash64-64k.h
-> index d836d94..10af7f1 100644
-> --- a/arch/powerpc/include/asm/pte-hash64-64k.h
-> +++ b/arch/powerpc/include/asm/pte-hash64-64k.h
-> @@ -74,8 +74,15 @@
->  #define pte_pagesize_index(mm, addr, pte)	\
->  	(((pte) & _PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
->=20
-> +static inline int bad_4k_pfn(void)
+On Wed, Jun 25, 2014 at 06:30:37PM +0100, Sudeep Holla wrote:
+> +static const struct device_attribute *cache_optional_attrs[] = {
+> +	&dev_attr_coherency_line_size,
+> +	&dev_attr_ways_of_associativity,
+> +	&dev_attr_number_of_sets,
+> +	&dev_attr_size,
+> +	&dev_attr_attributes,
+> +	&dev_attr_physical_line_partition,
+> +	NULL
+> +};
+> +
+> +static int device_add_attrs(struct device *dev,
+> +			    const struct device_attribute **dev_attrs)
 > +{
-> +	WARN_ON(1);
-> +	return -EINVAL;
+> +	int i, error = 0;
+> +	struct device_attribute *dev_attr;
+> +	char *buf;
+> +
+> +	if (!dev_attrs)
+> +		return 0;
+> +
+> +	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	for (i = 0; dev_attrs[i]; i++) {
+> +		dev_attr = (struct device_attribute *)dev_attrs[i];
+> +
+> +		/* create attributes that provides meaningful value */
+> +		if (dev_attr->show(dev, dev_attr, buf) < 0)
+> +			continue;
+> +
+> +		error = device_create_file(dev, dev_attrs[i]);
+> +		if (error) {
+> +			while (--i >= 0)
+> +				device_remove_file(dev, dev_attrs[i]);
+> +			break;
+> +		}
+> +	}
+> +
+> +	kfree(buf);
+> +	return error;
+> +}
+
+Ick, why create your own function for this when the driver core has this
+functionality built into it?  Look at the is_visible() callback, and how
+it is use for an attribute group please.
+
+> +static void device_remove_attrs(struct device *dev,
+> +				const struct device_attribute **dev_attrs)
+> +{
+> +	int i;
+> +
+> +	if (!dev_attrs)
+> +		return;
+> +
+> +	for (i = 0; dev_attrs[i]; dev_attrs++, i++)
+> +		device_remove_file(dev, dev_attrs[i]);
+> +}
+
+You should just remove a whole group at once, not individually.
+
+> +
+> +const struct device_attribute **
+> +__weak cache_get_priv_attr(struct device *cache_idx_dev)
+> +{
+> +	return NULL;
 > +}
 > +
->  #define remap_4k_pfn(vma, addr, pfn, prot)				\
-> -	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,		\
-> -			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN))
-> +	((pfn >=3D (1UL << (64 - PTE_RPN_SHIFT))) ? bad_4k_pfn() :	\
-> +		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
-> +			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
->=20
->  #endif	/* __ASSEMBLY__ */
+> +/* Add/Remove cache interface for CPU device */
+> +static void cpu_cache_sysfs_exit(unsigned int cpu)
+> +{
+> +	int i;
+> +	struct device *tmp_dev;
+> +	const struct device_attribute **ci_priv_attr;
+> +
+> +	if (per_cpu_index_dev(cpu)) {
+> +		for (i = 0; i < cache_leaves(cpu); i++) {
+> +			tmp_dev = per_cache_index_dev(cpu, i);
+> +			if (!tmp_dev)
+> +				continue;
+> +			ci_priv_attr = cache_get_priv_attr(tmp_dev);
+> +			device_remove_attrs(tmp_dev, ci_priv_attr);
+> +			device_remove_attrs(tmp_dev, cache_optional_attrs);
+> +			device_unregister(tmp_dev);
+> +		}
+> +		kfree(per_cpu_index_dev(cpu));
+> +		per_cpu_index_dev(cpu) = NULL;
+> +	}
+> +	device_unregister(per_cpu_cache_dev(cpu));
+> +	per_cpu_cache_dev(cpu) = NULL;
+> +}
+> +
+> +static int cpu_cache_sysfs_init(unsigned int cpu)
+> +{
+> +	struct device *dev = get_cpu_device(cpu);
+> +
+> +	if (per_cpu_cacheinfo(cpu) == NULL)
+> +		return -ENOENT;
+> +
+> +	per_cpu_cache_dev(cpu) = device_create(dev->class, dev, cpu,
+> +					       NULL, "cache");
+> +	if (IS_ERR_OR_NULL(per_cpu_cache_dev(cpu)))
+> +		return PTR_ERR(per_cpu_cache_dev(cpu));
+> +
+> +	/* Allocate all required memory */
+> +	per_cpu_index_dev(cpu) = kzalloc(sizeof(struct device *) *
+> +					 cache_leaves(cpu), GFP_KERNEL);
+> +	if (unlikely(per_cpu_index_dev(cpu) == NULL))
+> +		goto err_out;
+> +
+> +	return 0;
+> +
+> +err_out:
+> +	cpu_cache_sysfs_exit(cpu);
+> +	return -ENOMEM;
+> +}
+> +
+> +static int cache_add_dev(unsigned int cpu)
+> +{
+> +	unsigned short i;
+> +	int rc;
+> +	struct device *tmp_dev, *parent;
+> +	struct cacheinfo *this_leaf;
+> +	const struct device_attribute **ci_priv_attr;
+> +	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
+> +
+> +	rc = cpu_cache_sysfs_init(cpu);
+> +	if (unlikely(rc < 0))
+> +		return rc;
+> +
+> +	parent = per_cpu_cache_dev(cpu);
+> +	for (i = 0; i < cache_leaves(cpu); i++) {
+> +		this_leaf = this_cpu_ci->info_list + i;
+> +		if (this_leaf->disable_sysfs)
+> +			continue;
+> +		tmp_dev = device_create_with_groups(parent->class, parent, i,
+> +						    this_leaf,
+> +						    cache_default_groups,
+> +						    "index%1u", i);
+> +		if (IS_ERR_OR_NULL(tmp_dev)) {
+> +			rc = PTR_ERR(tmp_dev);
+> +			goto err;
+> +		}
+> +
+> +		rc = device_add_attrs(tmp_dev, cache_optional_attrs);
+> +		if (unlikely(rc))
+> +			goto err;
+> +
+> +		ci_priv_attr = cache_get_priv_attr(tmp_dev);
+> +		rc = device_add_attrs(tmp_dev, ci_priv_attr);
+> +		if (unlikely(rc))
+> +			goto err;
 
-WARN_ON() returns the value it is passed, so no helper is needed:
+You just raced with userspace here, creating these files _after_ the
+device was announced to userspace, causing problems with anyone wanting
+to read these attributes :(
 
- #define remap_4k_pfn(vma, addr, pfn, prot)				\
--	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,		\
--			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN))
-+	WARN_ON(((pfn >=3D (1UL << (64 - PTE_RPN_SHIFT)))) ? -EINVAL :	\
-+		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
-+			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/h1fVS2dE973m3B64ZcYvb=W
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJTvcb3AAoJEMDTa8Ir7ZwVlaIQAJBoBqF3IYhUMKxcoWhAmFXO
-huw/jlZF4sAFPjGintk8dk9PRoGXSwbQ/jcBJtdrFI3WDjkd4DVuClQ+bcw7nK3Z
-yJ5iam3EI5VT7e6wfymEtXSpKu4pBYT/nQVeWVzzgVM6hGo+i2np06xTQKbzWOpD
-paYvNzdiEkUqpaQUmH8d+YMKphYn0Fspye5jSQFyOeevKWx2y7y0ntOY2Ay3DE1u
-PSuYwpusaOKTKu6pRtnsnQWuRqigix37SDJquZ0ws9DO3A2DNVMPzW7qP2CMvCGX
-wmt2JoCLKngj2j0IyKcTRbIqAgh7tPBPhNiBvsBc96QdGH0AzmjJHj2FAovC1fZ8
-BWxgC6/QDt5TghG1+UVik/FdIP0xymUuwnagkA2kTEanOwVfk3EwSgHWQf4tBSl1
-5vagNJCY/pKiK1VQhCEmPGV3YLmyYwkKBNh5pDYi5cFTBpPOgCptEkzKU2aujp5B
-D3r1f29+GsUcJViMKuHQ7a9hb2LKZpmzL+Pm0tdLI2QBIOzMraArWcvL/zcx7apH
-jbWmbcfqtF5YjkKrgau6EiQoTVF+S1xGukLWpcTuMrb2K+3BOyLkfFDvfTS5s7PI
-RLR6JrDQ2gzqWN0rMQtbHq0ux6NVDz9IE4uYA/gkmviPdNQCTTzqsNHK1nYMCqSe
-+JlbkihkpA9gV8y7ypBR
-=z5JH
------END PGP SIGNATURE-----
-
---Sig_/h1fVS2dE973m3B64ZcYvb=W--
+I think if you fix up the is_visible() thing above, these calls will go
+away, right?
