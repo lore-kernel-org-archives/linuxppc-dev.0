@@ -1,34 +1,14 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D009E1A002F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 11:28:38 +1000 (EST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Wed, 9 Jul 2014 19:28:36 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D104E19D804C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jul 2014 19:28:22 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by b03cxnp08025.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6A1SWsJ3211632
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 03:28:32 +0200
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- s6A1WZRJ019989
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jul 2014 19:32:36 -0600
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pseries: dynamically added OF nodes need to call
- of_node_init
-Date: Wed,  9 Jul 2014 21:20:05 -0400
-Message-Id: <1404955205-12847-1-git-send-email-tyreld@linux.vnet.ibm.com>
-Cc: grant.likely@linaro.org, nfont@linux.vnet.ibm.com,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6D8A1A00EF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:29:30 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/9] powerpc: Drop support for pre-POWER4 cpus
+Date: Thu, 10 Jul 2014 12:29:18 +1000
+Message-Id: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,46 +18,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 75b57ecf9 refactored device tree nodes to use kobjects such that they
-can be exposed via /sysfs. A secondary commit 0829f6d1f furthered this rework
-by moving the kobect initialization logic out of of_node_add into its own
-of_node_init function. The inital commit removed the existing kref_init calls
-in the pseries dlpar code with the assumption kobject initialization would
-occur in of_node_add. The second commit had the side effect of triggering a
-BUG_ON as a result of dynamically added nodes being uninitialized.
+We inadvertently broke power3 support back in 3.4 with commit
+f5339277eb8d "powerpc: Remove FW_FEATURE ISERIES from arch code".
+No one noticed until at least 3.9.
 
-This patch fixes this by adding of_node_init calls in place of the previously
-removed kref_init calls.
+By then we'd also broken it with the optimised memcpy, copy_to/from_user
+and clear_user routines. We don't want to add any more complexity to
+those just to support ancient cpus, so it seems like it's a good time to
+drop support for power3 and earlier.
 
-Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/dlpar.c    | 1 +
- arch/powerpc/platforms/pseries/reconfig.c | 1 +
- 2 files changed, 2 insertions(+)
+ arch/powerpc/include/asm/cputable.h | 18 +++-----
+ arch/powerpc/kernel/cputable.c      | 90 -------------------------------------
+ 2 files changed, 6 insertions(+), 102 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
-index 022b38e..2d0b4d6 100644
---- a/arch/powerpc/platforms/pseries/dlpar.c
-+++ b/arch/powerpc/platforms/pseries/dlpar.c
-@@ -86,6 +86,7 @@ static struct device_node *dlpar_parse_cc_node(struct cc_workarea *ccwa,
- 	}
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index bc2347774f0a..2721946780df 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -400,11 +400,6 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTRS_GENERIC_32	(CPU_FTR_COMMON | CPU_FTR_NODSISRALIGN)
  
- 	of_node_set_flag(dn, OF_DYNAMIC);
-+	of_node_init(dn);
+ /* 64-bit CPUs */
+-#define CPU_FTRS_POWER3	(CPU_FTR_USE_TB | \
+-	    CPU_FTR_IABR | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_RS64	(CPU_FTR_USE_TB | \
+-	    CPU_FTR_IABR | \
+-	    CPU_FTR_MMCRA | CPU_FTR_CTRL)
+ #define CPU_FTRS_POWER4	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_MMCRA | CPU_FTR_CP_USE_DCBTZ | \
+@@ -466,10 +461,9 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTRS_POSSIBLE	(CPU_FTRS_E6500 | CPU_FTRS_E5500 | CPU_FTRS_A2)
+ #else
+ #define CPU_FTRS_POSSIBLE	\
+-	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+-	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+-	    CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | CPU_FTRS_POWER8 |	\
+-	    CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_VSX)
++	    (CPU_FTRS_POWER4 | CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | \
++	     CPU_FTRS_POWER6 | CPU_FTRS_POWER7 | CPU_FTRS_POWER8E | \
++	     CPU_FTRS_POWER8 | CPU_FTRS_CELL | CPU_FTRS_PA6T | CPU_FTR_VSX)
+ #endif
+ #else
+ enum {
+@@ -517,9 +511,9 @@ enum {
+ #define CPU_FTRS_ALWAYS		(CPU_FTRS_E6500 & CPU_FTRS_E5500 & CPU_FTRS_A2)
+ #else
+ #define CPU_FTRS_ALWAYS		\
+-	    (CPU_FTRS_POWER3 & CPU_FTRS_RS64 & CPU_FTRS_POWER4 &	\
+-	    CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & CPU_FTRS_POWER6 &	\
+-	    CPU_FTRS_POWER7 & CPU_FTRS_CELL & CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
++	    (CPU_FTRS_POWER4 & CPU_FTRS_PPC970 & CPU_FTRS_POWER5 & \
++	     CPU_FTRS_POWER6 & CPU_FTRS_POWER7 & CPU_FTRS_CELL & \
++	     CPU_FTRS_PA6T & CPU_FTRS_POSSIBLE)
+ #endif
+ #else
+ enum {
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 965291b4c2fa..4728c0885d83 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -123,96 +123,6 @@ extern void __restore_cpu_e6500(void);
  
- 	return dn;
- }
-diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-index 0435bb6..1c0a60d 100644
---- a/arch/powerpc/platforms/pseries/reconfig.c
-+++ b/arch/powerpc/platforms/pseries/reconfig.c
-@@ -69,6 +69,7 @@ static int pSeries_reconfig_add_node(const char *path, struct property *proplist
- 
- 	np->properties = proplist;
- 	of_node_set_flag(np, OF_DYNAMIC);
-+	of_node_init(np);
- 
- 	np->parent = derive_parent(path);
- 	if (IS_ERR(np->parent)) {
+ static struct cpu_spec __initdata cpu_specs[] = {
+ #ifdef CONFIG_PPC_BOOK3S_64
+-	{	/* Power3 */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00400000,
+-		.cpu_name		= "POWER3 (630)",
+-		.cpu_features		= CPU_FTRS_POWER3,
+-		.cpu_user_features	= COMMON_USER_PPC64|PPC_FEATURE_PPC_LE,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/power3",
+-		.oprofile_type		= PPC_OPROFILE_RS64,
+-		.platform		= "power3",
+-	},
+-	{	/* Power3+ */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00410000,
+-		.cpu_name		= "POWER3 (630+)",
+-		.cpu_features		= CPU_FTRS_POWER3,
+-		.cpu_user_features	= COMMON_USER_PPC64|PPC_FEATURE_PPC_LE,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/power3",
+-		.oprofile_type		= PPC_OPROFILE_RS64,
+-		.platform		= "power3",
+-	},
+-	{	/* Northstar */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00330000,
+-		.cpu_name		= "RS64-II (northstar)",
+-		.cpu_features		= CPU_FTRS_RS64,
+-		.cpu_user_features	= COMMON_USER_PPC64,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= PPC_OPROFILE_RS64,
+-		.platform		= "rs64",
+-	},
+-	{	/* Pulsar */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00340000,
+-		.cpu_name		= "RS64-III (pulsar)",
+-		.cpu_features		= CPU_FTRS_RS64,
+-		.cpu_user_features	= COMMON_USER_PPC64,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= PPC_OPROFILE_RS64,
+-		.platform		= "rs64",
+-	},
+-	{	/* I-star */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00360000,
+-		.cpu_name		= "RS64-III (icestar)",
+-		.cpu_features		= CPU_FTRS_RS64,
+-		.cpu_user_features	= COMMON_USER_PPC64,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= PPC_OPROFILE_RS64,
+-		.platform		= "rs64",
+-	},
+-	{	/* S-star */
+-		.pvr_mask		= 0xffff0000,
+-		.pvr_value		= 0x00370000,
+-		.cpu_name		= "RS64-IV (sstar)",
+-		.cpu_features		= CPU_FTRS_RS64,
+-		.cpu_user_features	= COMMON_USER_PPC64,
+-		.mmu_features		= MMU_FTR_HPTE_TABLE,
+-		.icache_bsize		= 128,
+-		.dcache_bsize		= 128,
+-		.num_pmcs		= 8,
+-		.pmc_type		= PPC_PMC_IBM,
+-		.oprofile_cpu_type	= "ppc64/rs64",
+-		.oprofile_type		= PPC_OPROFILE_RS64,
+-		.platform		= "rs64",
+-	},
+ 	{	/* Power4 */
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x00350000,
 -- 
-1.7.12.4
+1.9.1
