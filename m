@@ -1,38 +1,39 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
- [IPv6:2607:f8b0:400d:c04::22b])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF9011A019F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jul 2014 03:02:47 +1000 (EST)
-Received: by mail-qg0-f43.google.com with SMTP id z60so7737484qgd.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 10:02:44 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B7D651A01A1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jul 2014 04:36:13 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Thu, 10 Jul 2014 12:36:10 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DF6ABC40002
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:36:06 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08026.gho.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6AIYvTe9634294
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 20:34:57 +0200
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6AIa6Pa013107
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:36:06 -0600
+Message-ID: <53BEDD14.10901@linux.vnet.ibm.com>
+Date: Thu, 10 Jul 2014 11:36:04 -0700
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20140710101151.GA21629@dhcp-26-207.brq.redhat.com>
-References: <cover.1402405331.git.agordeev@redhat.com>
- <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
- <20140702202201.GA28852@google.com>
- <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
- <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
- <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
- <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
- <20140710101151.GA21629@dhcp-26-207.brq.redhat.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 10 Jul 2014 11:02:24 -0600
-Message-ID: <CAErSpo6p=teHx+ZG9yritgcBvOer-FNtug4-WQQQkHhPhTLjZw@mail.gmail.com>
-Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
-To: Alexander Gordeev <agordeev@redhat.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pseries: dynamically added OF nodes need to call
+ of_node_init
+References: <1404955205-12847-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1404959630.27178.1.camel@concordia>
+In-Reply-To: <1404959630.27178.1.camel@concordia>
 Content-Type: text/plain; charset=UTF-8
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
- "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: grant.likely@linaro.org, nfont@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,81 +43,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 10, 2014 at 4:11 AM, Alexander Gordeev <agordeev@redhat.com> wrote:
-> On Wed, Jul 09, 2014 at 10:06:48AM -0600, Bjorn Helgaas wrote:
->> Out of curiosity, do you have a pointer to this?  It looks like it
->
-> I.e. ICH8 chapter 12.1.30 or ICH10 chapter 14.1.27
->
->> uses one vector per port, and I'm wondering if the reason it requests
->> 16 is because there's some possibility of a part with more than 8
->> ports.
->
-> I doubt that is the reason. The only allowed MME values (powers of two)
-> are 0b000, 0b001, 0b010 and 0b100. As you can see, only one bit is used -
-> I would speculate it suits nicely to some hardware logic.
->
-> BTW, apart from AHCI, it seems the reason MSI is not going to disappear
-> (in a decade at least) is it is way cheaper to implement than MSI-X.
->
->> > No, this is not an erratum. The value of 8 vectors is reserved and could
->> > cause undefined results if used.
->>
->> As I read the spec (PCI 3.0, sec 6.8.1.3), if MMC contains 0b100
->> (requesting 16 vectors), the OS is allowed to allocate 1, 2, 4, 8, or
->> 16 vectors.  If allocating 8 vectors and writing 0b011 to MME causes
->> undefined results, I'd say that's a chipset defect.
->
-> Well, the PCI spec does not prevent devices to have their own specs on top
-> of it. Undefined results are meant on the device side here. On the MSI side
-> these results are likely perfectly within the PCI spec. I feel speaking as
-> a lawer here ;)
+On 07/09/2014 07:33 PM, Michael Ellerman wrote:
+> On Wed, 2014-07-09 at 21:20 -0400, Tyrel Datwyler wrote:
+>> Commit 75b57ecf9 refactored device tree nodes to use kobjects such that they
+>> can be exposed via /sysfs. A secondary commit 0829f6d1f furthered this rework
+>> by moving the kobect initialization logic out of of_node_add into its own
+>> of_node_init function. The inital commit removed the existing kref_init calls
+>> in the pseries dlpar code with the assumption kobject initialization would
+>> occur in of_node_add. The second commit had the side effect of triggering a
+>> BUG_ON as a result of dynamically added nodes being uninitialized.
+> 
+> So does this mean DLPAR is broken since 0829f6d1f (3.15-rc1)?
 
-I disagree about this part.  The reason MSI is in the PCI spec is so
-the OS can have generic support for it without having to put
-device-specific support in every driver.  The PCI spec is clear that
-the OS can allocate any number of vectors less than or equal to the
-number requested via MMC.  The SATA device requests 16, and it should
-be perfectly legal for the OS to give it 8.
+Yes, as well as suspend and migration.
 
-It's interesting that the ICH10 spec (sec 14.1.27, thanks for the
-reference) says MMC 100b means "8 MSI Capable".  That smells like a
-hardware bug.  The PCI spec says:
+> 
+> If so this should have a Cc: stable@kernel.org shouldn't it?
 
-  000 => 1 vector
-  001 => 2 vectors
-  010 => 4 vectors
-  011 => 8 vectors
-  100 => 16 vectors
+Doh, right you are.
 
-The ICH10 spec seems to think 100 means 8 vectors (not 16 as the PCI
-spec says), and that would fit with the rest of the ICH10 MME info.
-If ICH10 was built assuming this table:
+> 
+> And the latest trend is to also add:
+> 
+> Fixes: 0829f6d1f69e ("of: device_node kobject lifecycle fixes")
 
-  000 => 1 vector
-  001 => 2 vectors
-  010 => 4 vectors
-  100 => 8 vectors
+Got it. Will resend v2.
 
-then everything makes sense: the device requests 8 vectors, and the
-behavior is defined in all possible MME cases (1, 2, 4, or 8 vectors
-assigned).  The "Values '011b' to '111b' are reserved" part is still
-slightly wrong, because the 100b value is in that range but is not
-reserved, but that's a tangent.
+-Tyrel
 
-So my guess (speculation, I admit) is that the intent was for ICH SATA
-to request only 8 vectors, but because of this error, it requests 16.
-Maybe some early MSI proposal used a different encoding for MMC and
-MME, and ICH was originally designed using that.
-
->> Interrupt vector space is the issue I would worry about, but I think
->> I'm going to put this on the back burner until it actually becomes a
->> problem.
->
-> I plan to try get rid of arch_msi_check_device() hook. Should I repost
-> this series afterwards?
-
-Honestly, I'm still not inclined to pursue this because of the API
-complication and lack of concrete benefit.
-
-Bjorn
+> 
+> cheers
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
