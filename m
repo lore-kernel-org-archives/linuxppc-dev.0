@@ -1,39 +1,31 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <yan@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3ABE01A0185
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:40:41 +1000 (EST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D7F51A0179
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:54:06 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Thu, 10 Jul 2014 09:40:37 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id EACD96E8047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 09:40:25 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6ADeZIF131330
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 13:40:35 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6ADeYEV005054
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 09:40:35 -0400
-Message-ID: <53BE97D1.1070000@linux.vnet.ibm.com>
-Date: Thu, 10 Jul 2014 08:40:33 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>,
- Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/pseries: dynamically added OF nodes need to call
- of_node_init
-References: <1404955205-12847-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1404959630.27178.1.camel@concordia>
-In-Reply-To: <1404959630.27178.1.camel@concordia>
-Content-Type: text/plain; charset=UTF-8
-Cc: grant.likely@linaro.org, linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <yan@linux.vnet.ibm.com>;
+ Thu, 10 Jul 2014 23:54:01 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2F25B3578057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:54:00 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ s6ADVNa566519110
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:31:23 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ s6ADrwJa032267
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:53:59 +1000
+From: Guo Chao <yan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 0/6] powerpc/powernv: Support M64 window
+Date: Thu, 10 Jul 2014 21:53:40 +0800
+Message-Id: <1405000426-1016-1-git-send-email-yan@linux.vnet.ibm.com>
+Cc: Guo Chao <yan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,29 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2014 09:33 PM, Michael Ellerman wrote:
-> On Wed, 2014-07-09 at 21:20 -0400, Tyrel Datwyler wrote:
->> Commit 75b57ecf9 refactored device tree nodes to use kobjects such that they
->> can be exposed via /sysfs. A secondary commit 0829f6d1f furthered this rework
->> by moving the kobect initialization logic out of of_node_add into its own
->> of_node_init function. The inital commit removed the existing kref_init calls
->> in the pseries dlpar code with the assumption kobject initialization would
->> occur in of_node_add. The second commit had the side effect of triggering a
->> BUG_ON as a result of dynamically added nodes being uninitialized.
-> 
-> So does this mean DLPAR is broken since 0829f6d1f (3.15-rc1)?
+Currently, all MMIO resources, including 64-bits MMIO resources are hooked
+to PHB 32-bits MMIO BAR, which has limited space. If there're PCI devices
+with large 64-bits MMIO BAR (could reach 1GB), we're running out of MMIO
+resources (as well as PE numbers) quickly. The patchset reuses the M32
+infrastructure to support M64:
 
-Yes. Partition migration would also be affected by this.
+   * The last M64 BAR covers all M64 aperatus and that's shared by all PEs.
+   * Reuse ppc_md.pcibios_window_alignment() to affect resource assignment
+     in PCI core so that we can get well segmented 64-bits window of PCI
+     bridges.
+   * One PCI bus might require multiple discrete M64 segment. We invent
+     if we're going to unfreeze any one in the group.
 
--Nathan
+The patchset requires corresponding changes from firmware. And we don't
+support M64 for P7 yet. That's something to do in future.
 
-> 
-> If so this should have a Cc: stable@kernel.org shouldn't it?
-> 
-> And the latest trend is to also add:
-> 
-> Fixes: 0829f6d1f69e ("of: device_node kobject lifecycle fixes")
-> 
-> cheers
-> 
-> 
+Gavin Shan (5):
+  powerpc/powernv: Allows to freeze PE
+  powerpc/powernv: Split ioda_eeh_get_state()
+  powerpc/powernv: handle compound PE
+  powerpc/powernv: Handle compound PE for EEH
+  powerpc/powernv: Handle compound PE in config accessors
+
+Guo Chao (1):
+  powerpc/powernv: Enable M64 aperatus for PHB3
+
+ arch/powerpc/include/asm/opal.h                |  17 +-
+ arch/powerpc/platforms/powernv/eeh-ioda.c      | 293 ++++++++++-------
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c      | 432 ++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.c           |  87 +++--
+ arch/powerpc/platforms/powernv/pci.h           |  23 ++
+ 6 files changed, 685 insertions(+), 169 deletions(-)
+
+-- 
+1.8.3.1
