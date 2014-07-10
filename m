@@ -1,16 +1,34 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <agordeev@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEEC81A0158
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 19:34:39 +1000 (EST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/kvm: Create proper names for the kvm_host_state PMU
- fields
-Date: Thu, 10 Jul 2014 19:34:31 +1000
-Message-Id: <1404984871-15145-1-git-send-email-mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@samba.org>, agraf@suse.de, kvm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id EAA9B1A0169
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 20:11:12 +1000 (EST)
+Date: Thu, 10 Jul 2014 12:11:51 +0200
+From: Alexander Gordeev <agordeev@redhat.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 1/3] PCI/MSI: Add pci_enable_msi_partial()
+Message-ID: <20140710101151.GA21629@dhcp-26-207.brq.redhat.com>
+References: <cover.1402405331.git.agordeev@redhat.com>
+ <4fef62a2e647a7c38e9f2a1ea4244b3506a85e2b.1402405331.git.agordeev@redhat.com>
+ <20140702202201.GA28852@google.com>
+ <20140704085741.GA12247@dhcp-26-207.brq.redhat.com>
+ <CAErSpo6f6RXWv0DEtLBZX0jXoSUYJeWrSm7mubSJ_F-O7tQp6w@mail.gmail.com>
+ <20140708122606.GB6270@dhcp-26-207.brq.redhat.com>
+ <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAErSpo4oiabgoOjsGdWZpCMPnmopK4xRzB2f3tM0AiUFrdhFww@mail.gmail.com>
+Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+ "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "x86@kernel.org" <x86@kernel.org>,
+ "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ "open list:INTEL IOMMU \(VT-d\)" <iommu@lists.linux-foundation.org>,
+ "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,163 +38,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have two arrays in kvm_host_state that contain register values for
-the PMU. Currently we only create an asm-offsets symbol for the base of
-the arrays, and do the array offset in the assembly code.
+On Wed, Jul 09, 2014 at 10:06:48AM -0600, Bjorn Helgaas wrote:
+> Out of curiosity, do you have a pointer to this?  It looks like it
 
-Creating an asm-offsets symbol for each field individually makes the
-code much nicer to read, particularly for the MMCRx/SIxR/SDAR fields, and
-might have helped us notice the recent double restore bug we had in this
-code.
+I.e. ICH8 chapter 12.1.30 or ICH10 chapter 14.1.27
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
+> uses one vector per port, and I'm wondering if the reason it requests
+> 16 is because there's some possibility of a part with more than 8
+> ports.
 
-This is on top of "powerpc/kvm: Remove redundant save of SIER AND MMCR2".
+I doubt that is the reason. The only allowed MME values (powers of two)
+are 0b000, 0b001, 0b010 and 0b100. As you can see, only one bit is used -
+I would speculate it suits nicely to some hardware logic.
 
- arch/powerpc/kernel/asm-offsets.c       | 17 +++++++++++++++--
- arch/powerpc/kvm/book3s_hv_interrupts.S | 30 +++++++++++++++---------------
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 32 ++++++++++++++++----------------
- 3 files changed, 46 insertions(+), 33 deletions(-)
+BTW, apart from AHCI, it seems the reason MSI is not going to disappear
+(in a decade at least) is it is way cheaper to implement than MSI-X.
 
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index f5995a912213..9adadb1db9b8 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -645,8 +645,21 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_SAVED_XIRR, saved_xirr);
- 	HSTATE_FIELD(HSTATE_HOST_IPI, host_ipi);
- 	HSTATE_FIELD(HSTATE_PTID, ptid);
--	HSTATE_FIELD(HSTATE_MMCR, host_mmcr);
--	HSTATE_FIELD(HSTATE_PMC, host_pmc);
-+	HSTATE_FIELD(HSTATE_MMCR0, host_mmcr[0]);
-+	HSTATE_FIELD(HSTATE_MMCR1, host_mmcr[1]);
-+	HSTATE_FIELD(HSTATE_MMCRA, host_mmcr[2]);
-+	HSTATE_FIELD(HSTATE_SIAR, host_mmcr[3]);
-+	HSTATE_FIELD(HSTATE_SDAR, host_mmcr[4]);
-+	HSTATE_FIELD(HSTATE_MMCR2, host_mmcr[5]);
-+	HSTATE_FIELD(HSTATE_SIER, host_mmcr[6]);
-+	HSTATE_FIELD(HSTATE_PMC1, host_pmc[0]);
-+	HSTATE_FIELD(HSTATE_PMC2, host_pmc[1]);
-+	HSTATE_FIELD(HSTATE_PMC3, host_pmc[2]);
-+	HSTATE_FIELD(HSTATE_PMC4, host_pmc[3]);
-+	HSTATE_FIELD(HSTATE_PMC5, host_pmc[4]);
-+	HSTATE_FIELD(HSTATE_PMC6, host_pmc[5]);
-+	HSTATE_FIELD(HSTATE_PMC7, host_pmc[6]);
-+	HSTATE_FIELD(HSTATE_PMC8, host_pmc[7]);
- 	HSTATE_FIELD(HSTATE_PURR, host_purr);
- 	HSTATE_FIELD(HSTATE_SPURR, host_spurr);
- 	HSTATE_FIELD(HSTATE_DSCR, host_dscr);
-diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
-index 731be7478b27..16ef3163a8b6 100644
---- a/arch/powerpc/kvm/book3s_hv_interrupts.S
-+++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
-@@ -97,15 +97,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
- 	mfspr	r5, SPRN_MMCR1
- 	mfspr	r9, SPRN_SIAR
- 	mfspr	r10, SPRN_SDAR
--	std	r7, HSTATE_MMCR(r13)
--	std	r5, HSTATE_MMCR + 8(r13)
--	std	r6, HSTATE_MMCR + 16(r13)
--	std	r9, HSTATE_MMCR + 24(r13)
--	std	r10, HSTATE_MMCR + 32(r13)
-+	std	r7, HSTATE_MMCR0(r13)
-+	std	r5, HSTATE_MMCR1(r13)
-+	std	r6, HSTATE_MMCRA(r13)
-+	std	r9, HSTATE_SIAR(r13)
-+	std	r10, HSTATE_SDAR(r13)
- BEGIN_FTR_SECTION
- 	mfspr	r9, SPRN_SIER
--	std	r8, HSTATE_MMCR + 40(r13)
--	std	r9, HSTATE_MMCR + 48(r13)
-+	std	r8, HSTATE_MMCR2(r13)
-+	std	r9, HSTATE_SIER(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
- 	mfspr	r3, SPRN_PMC1
- 	mfspr	r5, SPRN_PMC2
-@@ -117,15 +117,15 @@ BEGIN_FTR_SECTION
- 	mfspr	r10, SPRN_PMC7
- 	mfspr	r11, SPRN_PMC8
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
--	stw	r3, HSTATE_PMC(r13)
--	stw	r5, HSTATE_PMC + 4(r13)
--	stw	r6, HSTATE_PMC + 8(r13)
--	stw	r7, HSTATE_PMC + 12(r13)
--	stw	r8, HSTATE_PMC + 16(r13)
--	stw	r9, HSTATE_PMC + 20(r13)
-+	stw	r3, HSTATE_PMC1(r13)
-+	stw	r5, HSTATE_PMC2(r13)
-+	stw	r6, HSTATE_PMC3(r13)
-+	stw	r7, HSTATE_PMC4(r13)
-+	stw	r8, HSTATE_PMC5(r13)
-+	stw	r9, HSTATE_PMC6(r13)
- BEGIN_FTR_SECTION
--	stw	r10, HSTATE_PMC + 24(r13)
--	stw	r11, HSTATE_PMC + 28(r13)
-+	stw	r10, HSTATE_PMC7(r13)
-+	stw	r11, HSTATE_PMC8(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
- 31:
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 868347ef09fd..d68ecb33b52a 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -87,20 +87,20 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
- 	cmpwi	r4, 0
- 	beq	23f			/* skip if not */
- BEGIN_FTR_SECTION
--	ld	r3, HSTATE_MMCR(r13)
-+	ld	r3, HSTATE_MMCR0(r13)
- 	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
- 	cmpwi	r4, MMCR0_PMAO
- 	beql	kvmppc_fix_pmao
- END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
--	lwz	r3, HSTATE_PMC(r13)
--	lwz	r4, HSTATE_PMC + 4(r13)
--	lwz	r5, HSTATE_PMC + 8(r13)
--	lwz	r6, HSTATE_PMC + 12(r13)
--	lwz	r8, HSTATE_PMC + 16(r13)
--	lwz	r9, HSTATE_PMC + 20(r13)
-+	lwz	r3, HSTATE_PMC1(r13)
-+	lwz	r4, HSTATE_PMC2(r13)
-+	lwz	r5, HSTATE_PMC3(r13)
-+	lwz	r6, HSTATE_PMC4(r13)
-+	lwz	r8, HSTATE_PMC5(r13)
-+	lwz	r9, HSTATE_PMC6(r13)
- BEGIN_FTR_SECTION
--	lwz	r10, HSTATE_PMC + 24(r13)
--	lwz	r11, HSTATE_PMC + 28(r13)
-+	lwz	r10, HSTATE_PMC7(r13)
-+	lwz	r11, HSTATE_PMC8(r13)
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
- 	mtspr	SPRN_PMC1, r3
- 	mtspr	SPRN_PMC2, r4
-@@ -112,18 +112,18 @@ BEGIN_FTR_SECTION
- 	mtspr	SPRN_PMC7, r10
- 	mtspr	SPRN_PMC8, r11
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
--	ld	r3, HSTATE_MMCR(r13)
--	ld	r4, HSTATE_MMCR + 8(r13)
--	ld	r5, HSTATE_MMCR + 16(r13)
--	ld	r6, HSTATE_MMCR + 24(r13)
--	ld	r7, HSTATE_MMCR + 32(r13)
-+	ld	r3, HSTATE_MMCR0(r13)
-+	ld	r4, HSTATE_MMCR1(r13)
-+	ld	r5, HSTATE_MMCRA(r13)
-+	ld	r6, HSTATE_SIAR(r13)
-+	ld	r7, HSTATE_SDAR(r13)
- 	mtspr	SPRN_MMCR1, r4
- 	mtspr	SPRN_MMCRA, r5
- 	mtspr	SPRN_SIAR, r6
- 	mtspr	SPRN_SDAR, r7
- BEGIN_FTR_SECTION
--	ld	r8, HSTATE_MMCR + 40(r13)
--	ld	r9, HSTATE_MMCR + 48(r13)
-+	ld	r8, HSTATE_MMCR2(r13)
-+	ld	r9, HSTATE_SIER(r13)
- 	mtspr	SPRN_MMCR2, r8
- 	mtspr	SPRN_SIER, r9
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+> > No, this is not an erratum. The value of 8 vectors is reserved and could
+> > cause undefined results if used.
+> 
+> As I read the spec (PCI 3.0, sec 6.8.1.3), if MMC contains 0b100
+> (requesting 16 vectors), the OS is allowed to allocate 1, 2, 4, 8, or
+> 16 vectors.  If allocating 8 vectors and writing 0b011 to MME causes
+> undefined results, I'd say that's a chipset defect.
+
+Well, the PCI spec does not prevent devices to have their own specs on top
+of it. Undefined results are meant on the device side here. On the MSI side
+these results are likely perfectly within the PCI spec. I feel speaking as
+a lawer here ;)
+
+> Interrupt vector space is the issue I would worry about, but I think
+> I'm going to put this on the back burner until it actually becomes a
+> problem.
+
+I plan to try get rid of arch_msi_check_device() hook. Should I repost
+this series afterwards?
+
+Thanks!
+
 -- 
-1.9.1
+Regards,
+Alexander Gordeev
+agordeev@redhat.com
