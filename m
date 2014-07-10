@@ -1,39 +1,16 @@
-Return-Path: <kmadhu@linux.vnet.ibm.com>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 998001A0158
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 18:42:28 +1000 (EST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 02D86140141
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 18:42:27 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <kmadhu@linux.vnet.ibm.com>;
- Thu, 10 Jul 2014 14:12:25 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 190FFE0045
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 14:13:49 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6A8hrck43974828
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 14:13:53 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6A8gLaC024058
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 14:12:21 +0530
-Message-ID: <53BE51EB.5090208@linux.vnet.ibm.com>
-Date: Thu, 10 Jul 2014 14:12:19 +0530
-From: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH V2] powerpc: Fail remap_4k_pfn() if PFN doesn't fit inside PTE
-Content-Type: text/plain; charset=ISO-8859-1
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEEC81A0158
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 19:34:39 +1000 (EST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/kvm: Create proper names for the kvm_host_state PMU
+ fields
+Date: Thu, 10 Jul 2014 19:34:31 +1000
+Message-Id: <1404984871-15145-1-git-send-email-mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>, agraf@suse.de, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,31 +20,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-V2 : Rewritten to avoid helper function as suggested by Stephen Rothwell.
-remap_4k_pfn() silently truncates upper bits of input 4K PFN if
-it cannot be contained in PTE. This leads invalid memory mapping
-and could result in a system crash when the memory is accessed.
-This patch fails remap_4k_pfn() and returns -EINVAL if the input
-4K PFN cannot be contained in PTE.
+We have two arrays in kvm_host_state that contain register values for
+the PMU. Currently we only create an asm-offsets symbol for the base of
+the arrays, and do the array offset in the assembly code.
 
-Signed-off-by: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
+Creating an asm-offsets symbol for each field individually makes the
+code much nicer to read, particularly for the MMCRx/SIxR/SDAR fields, and
+might have helped us notice the recent double restore bug we had in this
+code.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/pte-hash64-64k.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/include/asm/pte-hash64-64k.h
-index d836d94..b5178e4 100644
---- a/arch/powerpc/include/asm/pte-hash64-64k.h
-+++ b/arch/powerpc/include/asm/pte-hash64-64k.h
-@@ -75,7 +75,8 @@
- 	(((pte) & _PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
+This is on top of "powerpc/kvm: Remove redundant save of SIER AND MMCR2".
 
- #define remap_4k_pfn(vma, addr, pfn, prot)				\
--	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,		\
-+	WARN_ON((pfn >= (1UL << (64 - PTE_RPN_SHIFT)))) ? -EINVAL :	\
-+		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
- 			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN))
+ arch/powerpc/kernel/asm-offsets.c       | 17 +++++++++++++++--
+ arch/powerpc/kvm/book3s_hv_interrupts.S | 30 +++++++++++++++---------------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S | 32 ++++++++++++++++----------------
+ 3 files changed, 46 insertions(+), 33 deletions(-)
 
- #endif	/* __ASSEMBLY__ */
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index f5995a912213..9adadb1db9b8 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -645,8 +645,21 @@ int main(void)
+ 	HSTATE_FIELD(HSTATE_SAVED_XIRR, saved_xirr);
+ 	HSTATE_FIELD(HSTATE_HOST_IPI, host_ipi);
+ 	HSTATE_FIELD(HSTATE_PTID, ptid);
+-	HSTATE_FIELD(HSTATE_MMCR, host_mmcr);
+-	HSTATE_FIELD(HSTATE_PMC, host_pmc);
++	HSTATE_FIELD(HSTATE_MMCR0, host_mmcr[0]);
++	HSTATE_FIELD(HSTATE_MMCR1, host_mmcr[1]);
++	HSTATE_FIELD(HSTATE_MMCRA, host_mmcr[2]);
++	HSTATE_FIELD(HSTATE_SIAR, host_mmcr[3]);
++	HSTATE_FIELD(HSTATE_SDAR, host_mmcr[4]);
++	HSTATE_FIELD(HSTATE_MMCR2, host_mmcr[5]);
++	HSTATE_FIELD(HSTATE_SIER, host_mmcr[6]);
++	HSTATE_FIELD(HSTATE_PMC1, host_pmc[0]);
++	HSTATE_FIELD(HSTATE_PMC2, host_pmc[1]);
++	HSTATE_FIELD(HSTATE_PMC3, host_pmc[2]);
++	HSTATE_FIELD(HSTATE_PMC4, host_pmc[3]);
++	HSTATE_FIELD(HSTATE_PMC5, host_pmc[4]);
++	HSTATE_FIELD(HSTATE_PMC6, host_pmc[5]);
++	HSTATE_FIELD(HSTATE_PMC7, host_pmc[6]);
++	HSTATE_FIELD(HSTATE_PMC8, host_pmc[7]);
+ 	HSTATE_FIELD(HSTATE_PURR, host_purr);
+ 	HSTATE_FIELD(HSTATE_SPURR, host_spurr);
+ 	HSTATE_FIELD(HSTATE_DSCR, host_dscr);
+diff --git a/arch/powerpc/kvm/book3s_hv_interrupts.S b/arch/powerpc/kvm/book3s_hv_interrupts.S
+index 731be7478b27..16ef3163a8b6 100644
+--- a/arch/powerpc/kvm/book3s_hv_interrupts.S
++++ b/arch/powerpc/kvm/book3s_hv_interrupts.S
+@@ -97,15 +97,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 	mfspr	r5, SPRN_MMCR1
+ 	mfspr	r9, SPRN_SIAR
+ 	mfspr	r10, SPRN_SDAR
+-	std	r7, HSTATE_MMCR(r13)
+-	std	r5, HSTATE_MMCR + 8(r13)
+-	std	r6, HSTATE_MMCR + 16(r13)
+-	std	r9, HSTATE_MMCR + 24(r13)
+-	std	r10, HSTATE_MMCR + 32(r13)
++	std	r7, HSTATE_MMCR0(r13)
++	std	r5, HSTATE_MMCR1(r13)
++	std	r6, HSTATE_MMCRA(r13)
++	std	r9, HSTATE_SIAR(r13)
++	std	r10, HSTATE_SDAR(r13)
+ BEGIN_FTR_SECTION
+ 	mfspr	r9, SPRN_SIER
+-	std	r8, HSTATE_MMCR + 40(r13)
+-	std	r9, HSTATE_MMCR + 48(r13)
++	std	r8, HSTATE_MMCR2(r13)
++	std	r9, HSTATE_SIER(r13)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
+ 	mfspr	r3, SPRN_PMC1
+ 	mfspr	r5, SPRN_PMC2
+@@ -117,15 +117,15 @@ BEGIN_FTR_SECTION
+ 	mfspr	r10, SPRN_PMC7
+ 	mfspr	r11, SPRN_PMC8
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+-	stw	r3, HSTATE_PMC(r13)
+-	stw	r5, HSTATE_PMC + 4(r13)
+-	stw	r6, HSTATE_PMC + 8(r13)
+-	stw	r7, HSTATE_PMC + 12(r13)
+-	stw	r8, HSTATE_PMC + 16(r13)
+-	stw	r9, HSTATE_PMC + 20(r13)
++	stw	r3, HSTATE_PMC1(r13)
++	stw	r5, HSTATE_PMC2(r13)
++	stw	r6, HSTATE_PMC3(r13)
++	stw	r7, HSTATE_PMC4(r13)
++	stw	r8, HSTATE_PMC5(r13)
++	stw	r9, HSTATE_PMC6(r13)
+ BEGIN_FTR_SECTION
+-	stw	r10, HSTATE_PMC + 24(r13)
+-	stw	r11, HSTATE_PMC + 28(r13)
++	stw	r10, HSTATE_PMC7(r13)
++	stw	r11, HSTATE_PMC8(r13)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 31:
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 868347ef09fd..d68ecb33b52a 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -87,20 +87,20 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+ 	cmpwi	r4, 0
+ 	beq	23f			/* skip if not */
+ BEGIN_FTR_SECTION
+-	ld	r3, HSTATE_MMCR(r13)
++	ld	r3, HSTATE_MMCR0(r13)
+ 	andi.	r4, r3, MMCR0_PMAO_SYNC | MMCR0_PMAO
+ 	cmpwi	r4, MMCR0_PMAO
+ 	beql	kvmppc_fix_pmao
+ END_FTR_SECTION_IFSET(CPU_FTR_PMAO_BUG)
+-	lwz	r3, HSTATE_PMC(r13)
+-	lwz	r4, HSTATE_PMC + 4(r13)
+-	lwz	r5, HSTATE_PMC + 8(r13)
+-	lwz	r6, HSTATE_PMC + 12(r13)
+-	lwz	r8, HSTATE_PMC + 16(r13)
+-	lwz	r9, HSTATE_PMC + 20(r13)
++	lwz	r3, HSTATE_PMC1(r13)
++	lwz	r4, HSTATE_PMC2(r13)
++	lwz	r5, HSTATE_PMC3(r13)
++	lwz	r6, HSTATE_PMC4(r13)
++	lwz	r8, HSTATE_PMC5(r13)
++	lwz	r9, HSTATE_PMC6(r13)
+ BEGIN_FTR_SECTION
+-	lwz	r10, HSTATE_PMC + 24(r13)
+-	lwz	r11, HSTATE_PMC + 28(r13)
++	lwz	r10, HSTATE_PMC7(r13)
++	lwz	r11, HSTATE_PMC8(r13)
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+ 	mtspr	SPRN_PMC1, r3
+ 	mtspr	SPRN_PMC2, r4
+@@ -112,18 +112,18 @@ BEGIN_FTR_SECTION
+ 	mtspr	SPRN_PMC7, r10
+ 	mtspr	SPRN_PMC8, r11
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
+-	ld	r3, HSTATE_MMCR(r13)
+-	ld	r4, HSTATE_MMCR + 8(r13)
+-	ld	r5, HSTATE_MMCR + 16(r13)
+-	ld	r6, HSTATE_MMCR + 24(r13)
+-	ld	r7, HSTATE_MMCR + 32(r13)
++	ld	r3, HSTATE_MMCR0(r13)
++	ld	r4, HSTATE_MMCR1(r13)
++	ld	r5, HSTATE_MMCRA(r13)
++	ld	r6, HSTATE_SIAR(r13)
++	ld	r7, HSTATE_SDAR(r13)
+ 	mtspr	SPRN_MMCR1, r4
+ 	mtspr	SPRN_MMCRA, r5
+ 	mtspr	SPRN_SIAR, r6
+ 	mtspr	SPRN_SDAR, r7
+ BEGIN_FTR_SECTION
+-	ld	r8, HSTATE_MMCR + 40(r13)
+-	ld	r9, HSTATE_MMCR + 48(r13)
++	ld	r8, HSTATE_MMCR2(r13)
++	ld	r9, HSTATE_SIER(r13)
+ 	mtspr	SPRN_MMCR2, r8
+ 	mtspr	SPRN_SIER, r9
+ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_207S)
 -- 
-2.0.1
+1.9.1
