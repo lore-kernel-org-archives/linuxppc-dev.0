@@ -1,39 +1,24 @@
-Return-Path: <kmadhu@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mgorman@novell.com>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D0841A0197
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jul 2014 01:15:37 +1000 (EST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A838F140127
- for <linuxppc-dev@ozlabs.org>; Fri, 11 Jul 2014 01:15:36 +1000 (EST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <kmadhu@linux.vnet.ibm.com>;
- Thu, 10 Jul 2014 20:45:34 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0D114125805F
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 20:45:15 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- s6AFGr6h60293238
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 20:46:54 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- s6AFFIlb031605
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jul 2014 20:45:19 +0530
-Message-ID: <53BEAE01.7000401@linux.vnet.ibm.com>
-Date: Thu, 10 Jul 2014 20:45:13 +0530
-From: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 949431A0178
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 23:07:23 +1000 (EST)
+Date: Thu, 10 Jul 2014 14:07:16 +0100
+From: Mel Gorman <mgorman@suse.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH v2] Use the POWER8 Micro Partition Prefetch Engine in KVM
+ HV on POWER8
+Message-ID: <20140710130716.GQ25275@novell.com>
+References: <1404437035-4336-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <1404795988-9892-1-git-send-email-stewart@linux.vnet.ibm.com>
+ <53BBCAC7.90904@suse.de> <m3bnszqwx1.fsf@oc8180480414.ibm.com>
+ <53BE738B.1010100@suse.de>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
-Subject: [PATCH V3] powerpc : Fail remap_4k_pfn() if PFN doesn't fit inside PTE
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <53BE738B.1010100@suse.de>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,34 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-remap_4k_pfn() silently truncates upper bits of input 4K PFN
-if it cannot be contained in PTE. This leads invalid memory mapping and could
-result in a system crash when the memory is accessed. This patch fails
-remap_4k_pfn() and returns -EINVAL if the input 4K PFN cannot be contained in
-PTE.
+On Thu, Jul 10, 2014 at 01:05:47PM +0200, Alexander Graf wrote:
+> 
+> On 09.07.14 00:59, Stewart Smith wrote:
+> >Hi!
+> >
+> >Thanks for review, much appreciated!
+> >
+> >Alexander Graf <agraf@suse.de> writes:
+> >>On 08.07.14 07:06, Stewart Smith wrote:
+> >>>@@ -1528,6 +1535,7 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
+> >>>   	int i, need_vpa_update;
+> >>>   	int srcu_idx;
+> >>>   	struct kvm_vcpu *vcpus_to_update[threads_per_core];
+> >>>+	phys_addr_t phy_addr, tmp;
+> >>Please put the variable declarations into the if () branch so that the
+> >>compiler can catch potential leaks :)
+> >ack. will fix.
+> >
+> >>>@@ -1590,9 +1598,48 @@ static void kvmppc_run_core(struct kvmppc_vcore *vc)
+> >>>   	srcu_idx = srcu_read_lock(&vc->kvm->srcu);
+> >>>+	/* If we have a saved list of L2/L3, restore it */
+> >>>+	if (cpu_has_feature(CPU_FTR_ARCH_207S) && vc->mpp_buffer) {
+> >>>+		phy_addr = virt_to_phys((void *)vc->mpp_buffer);
+> >>>+#if defined(CONFIG_PPC_4K_PAGES)
+> >>>+		phy_addr = (phy_addr + 8*4096) & ~(8*4096);
+> >>get_free_pages() is automatically aligned to the order, no?
+> >That's what Paul reckoned too, and then we've attempted to find anywhere
+> >that documents that behaviour. Happen to be able to point to docs/source
+> >that say this is part of API?
+> 
+> Phew - it's probably buried somewhere. I could only find this
+> document saying that we always get order-aligned allocations:
+> 
+> http://www.thehackademy.net/madchat/ebooks/Mem_virtuelle/linux-mm/zonealloc.html
+> 
+> Mel, do you happen to have any pointer to something that explicitly
+> (or even properly implicitly) says that get_free_pages() returns
+> order-aligned memory?
+> 
 
-V3 : Added parentheses to protect 'pfn' and entire macro as suggested by Brian.
-V2 : Rewritten to avoid helper function as suggested by Stephen Rothwell.
+I did not read the whole thread so I lack context and will just answer
+this part.
 
-Signed-off-by: Madhusudanan Kandasamy <kmadhu@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pte-hash64-64k.h | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+There is no guarantee that pages are returned in PFN order for multiple
+requests to the page allocator. This is the relevant comment in
+rmqueue_bulk
 
-diff --git a/arch/powerpc/include/asm/pte-hash64-64k.h b/arch/powerpc/include/asm/pte-hash64-64k.h
-index d836d94..b6d2d42 100644
---- a/arch/powerpc/include/asm/pte-hash64-64k.h
-+++ b/arch/powerpc/include/asm/pte-hash64-64k.h
-@@ -75,7 +75,8 @@
- 	(((pte) & _PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
+                /*
+                 * Split buddy pages returned by expand() are received here
+                 * in physical page order. The page is added to the callers and
+                 * list and the list head then moves forward. From the callers
+                 * perspective, the linked list is ordered by page number in
+                 * some conditions. This is useful for IO devices that can
+                 * merge IO requests if the physical pages are ordered
+                 * properly.
+                 */
 
- #define remap_4k_pfn(vma, addr, pfn, prot)				\
--	remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,		\
--			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN))
-+	(WARN_ON(((pfn) >= (1UL << (64 - PTE_RPN_SHIFT)))) ? -EINVAL :	\
-+		remap_pfn_range((vma), (addr), (pfn), PAGE_SIZE,	\
-+			__pgprot(pgprot_val((prot)) | _PAGE_4K_PFN)))
+It will probably be true early in the lifetime of the system but the milage
+will vary on systems with a lot of uptime. If you depend on this behaviour
+for correctness then you will have a bad day.
 
- #endif	/* __ASSEMBLY__ */
+High-order page requests to the page allocator are guaranteed to be in physical
+order. However, this does not apply to vmalloc() where allocations are
+only guaranteed to be virtually contiguous.
+
 -- 
-2.0.1
+Mel Gorman
+SUSE Labs
