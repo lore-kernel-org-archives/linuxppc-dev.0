@@ -1,14 +1,14 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BB751A014B
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7EA3E1A0168
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2014 12:29:33 +1000 (EST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 5/9] powerpc: Remove CONFIG_POWER3
-Date: Thu, 10 Jul 2014 12:29:22 +1000
-Message-Id: <1404959366-17664-5-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 6/9] powerpc: Remove oprofile RS64 support
+Date: Thu, 10 Jul 2014 12:29:23 +1000
+Message-Id: <1404959366-17664-6-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
 References: <1404959366-17664-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,58 +20,283 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have dropped power3 support we can remove CONFIG_POWER3. The
-usage in pgtable_32.c was already dead code as CONFIG_POWER3 was not
-selectable on PPC32.
+We no longer support these cpus, so we don't need oprofile support for
+them either.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/include/asm/cputable.h    | 3 +--
- arch/powerpc/mm/pgtable_32.c           | 2 +-
- arch/powerpc/platforms/Kconfig.cputype | 4 ----
- 3 files changed, 2 insertions(+), 7 deletions(-)
+ arch/powerpc/include/asm/oprofile_impl.h |   1 -
+ arch/powerpc/oprofile/Makefile           |   2 +-
+ arch/powerpc/oprofile/common.c           |   3 -
+ arch/powerpc/oprofile/op_model_rs64.c    | 222 -------------------------------
+ 4 files changed, 1 insertion(+), 227 deletions(-)
+ delete mode 100644 arch/powerpc/oprofile/op_model_rs64.c
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index ed17bc75b0a6..bff747eea06b 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -268,8 +268,7 @@ extern const char *powerpc_base_platform;
+diff --git a/arch/powerpc/include/asm/oprofile_impl.h b/arch/powerpc/include/asm/oprofile_impl.h
+index d697b08994c9..61fe5d6f18e1 100644
+--- a/arch/powerpc/include/asm/oprofile_impl.h
++++ b/arch/powerpc/include/asm/oprofile_impl.h
+@@ -61,7 +61,6 @@ struct op_powerpc_model {
+ };
+ 
+ extern struct op_powerpc_model op_model_fsl_emb;
+-extern struct op_powerpc_model op_model_rs64;
+ extern struct op_powerpc_model op_model_power4;
+ extern struct op_powerpc_model op_model_7450;
+ extern struct op_powerpc_model op_model_cell;
+diff --git a/arch/powerpc/oprofile/Makefile b/arch/powerpc/oprofile/Makefile
+index 751ec7bd5018..cedbbeced632 100644
+--- a/arch/powerpc/oprofile/Makefile
++++ b/arch/powerpc/oprofile/Makefile
+@@ -14,6 +14,6 @@ oprofile-y := $(DRIVER_OBJS) common.o backtrace.o
+ oprofile-$(CONFIG_OPROFILE_CELL) += op_model_cell.o \
+ 		cell/spu_profiler.o cell/vma_map.o \
+ 		cell/spu_task_sync.o
+-oprofile-$(CONFIG_PPC_BOOK3S_64) += op_model_rs64.o op_model_power4.o op_model_pa6t.o
++oprofile-$(CONFIG_PPC_BOOK3S_64) += op_model_power4.o op_model_pa6t.o
+ oprofile-$(CONFIG_FSL_EMB_PERFMON) += op_model_fsl_emb.o
+ oprofile-$(CONFIG_6xx) += op_model_7450.o
+diff --git a/arch/powerpc/oprofile/common.c b/arch/powerpc/oprofile/common.c
+index c77348c5d463..bf094c5a4bd9 100644
+--- a/arch/powerpc/oprofile/common.c
++++ b/arch/powerpc/oprofile/common.c
+@@ -205,9 +205,6 @@ int __init oprofile_arch_init(struct oprofile_operations *ops)
+ 			ops->sync_stop = model->sync_stop;
+ 			break;
  #endif
- 
- #define CLASSIC_PPC (!defined(CONFIG_8xx) && !defined(CONFIG_4xx) && \
--		     !defined(CONFIG_POWER3) && !defined(CONFIG_POWER4) && \
--		     !defined(CONFIG_BOOKE))
-+		     !defined(CONFIG_POWER4) && !defined(CONFIG_BOOKE))
- 
- #define CPU_FTRS_PPC601	(CPU_FTR_COMMON | CPU_FTR_601 | \
- 	CPU_FTR_COHERENT_ICACHE | CPU_FTR_UNIFIED_ID_CACHE)
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 343a87fa78b5..cf11342bf519 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -41,7 +41,7 @@ unsigned long ioremap_base;
- unsigned long ioremap_bot;
- EXPORT_SYMBOL(ioremap_bot);	/* aka VMALLOC_END */
- 
--#if defined(CONFIG_6xx) || defined(CONFIG_POWER3)
-+#ifdef CONFIG_6xx
- #define HAVE_BATS	1
- #endif
- 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index a41bd023647a..798e6add1cae 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -140,10 +140,6 @@ config 6xx
- 	depends on PPC32 && PPC_BOOK3S
- 	select PPC_HAVE_PMU_SUPPORT
- 
--config POWER3
--	depends on PPC64 && PPC_BOOK3S
--	def_bool y
+-		case PPC_OPROFILE_RS64:
+-			model = &op_model_rs64;
+-			break;
+ 		case PPC_OPROFILE_POWER4:
+ 			model = &op_model_power4;
+ 			break;
+diff --git a/arch/powerpc/oprofile/op_model_rs64.c b/arch/powerpc/oprofile/op_model_rs64.c
+deleted file mode 100644
+index 7e5b8ed3a1b7..000000000000
+--- a/arch/powerpc/oprofile/op_model_rs64.c
++++ /dev/null
+@@ -1,222 +0,0 @@
+-/*
+- * Copyright (C) 2004 Anton Blanchard <anton@au.ibm.com>, IBM
+- *
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License
+- * as published by the Free Software Foundation; either version
+- * 2 of the License, or (at your option) any later version.
+- */
 -
- config POWER4
- 	depends on PPC64 && PPC_BOOK3S
- 	def_bool y
+-#include <linux/oprofile.h>
+-#include <linux/smp.h>
+-#include <asm/ptrace.h>
+-#include <asm/processor.h>
+-#include <asm/cputable.h>
+-#include <asm/oprofile_impl.h>
+-
+-#define dbg(args...)
+-
+-static void ctrl_write(unsigned int i, unsigned int val)
+-{
+-	unsigned int tmp = 0;
+-	unsigned long shift = 0, mask = 0;
+-
+-	dbg("ctrl_write %d %x\n", i, val);
+-
+-	switch(i) {
+-	case 0:
+-		tmp = mfspr(SPRN_MMCR0);
+-		shift = 6;
+-		mask = 0x7F;
+-		break;
+-	case 1:
+-		tmp = mfspr(SPRN_MMCR0);
+-		shift = 0;
+-		mask = 0x3F;
+-		break;
+-	case 2:
+-		tmp = mfspr(SPRN_MMCR1);
+-		shift = 31 - 4;
+-		mask = 0x1F;
+-		break;
+-	case 3:
+-		tmp = mfspr(SPRN_MMCR1);
+-		shift = 31 - 9;
+-		mask = 0x1F;
+-		break;
+-	case 4:
+-		tmp = mfspr(SPRN_MMCR1);
+-		shift = 31 - 14;
+-		mask = 0x1F;
+-		break;
+-	case 5:
+-		tmp = mfspr(SPRN_MMCR1);
+-		shift = 31 - 19;
+-		mask = 0x1F;
+-		break;
+-	case 6:
+-		tmp = mfspr(SPRN_MMCR1);
+-		shift = 31 - 24;
+-		mask = 0x1F;
+-		break;
+-	case 7:
+-		tmp = mfspr(SPRN_MMCR1);
+-		shift = 31 - 28;
+-		mask = 0xF;
+-		break;
+-	}
+-
+-	tmp = tmp & ~(mask << shift);
+-	tmp |= val << shift;
+-
+-	switch(i) {
+-		case 0:
+-		case 1:
+-			mtspr(SPRN_MMCR0, tmp);
+-			break;
+-		default:
+-			mtspr(SPRN_MMCR1, tmp);
+-	}
+-
+-	dbg("ctrl_write mmcr0 %lx mmcr1 %lx\n", mfspr(SPRN_MMCR0),
+-	       mfspr(SPRN_MMCR1));
+-}
+-
+-static unsigned long reset_value[OP_MAX_COUNTER];
+-
+-static int num_counters;
+-
+-static int rs64_reg_setup(struct op_counter_config *ctr,
+-			   struct op_system_config *sys,
+-			   int num_ctrs)
+-{
+-	int i;
+-
+-	num_counters = num_ctrs;
+-
+-	for (i = 0; i < num_counters; ++i)
+-		reset_value[i] = 0x80000000UL - ctr[i].count;
+-
+-	/* XXX setup user and kernel profiling */
+-	return 0;
+-}
+-
+-static int rs64_cpu_setup(struct op_counter_config *ctr)
+-{
+-	unsigned int mmcr0;
+-
+-	/* reset MMCR0 and set the freeze bit */
+-	mmcr0 = MMCR0_FC;
+-	mtspr(SPRN_MMCR0, mmcr0);
+-
+-	/* reset MMCR1, MMCRA */
+-	mtspr(SPRN_MMCR1, 0);
+-
+-	if (cpu_has_feature(CPU_FTR_MMCRA))
+-		mtspr(SPRN_MMCRA, 0);
+-
+-	mmcr0 |= MMCR0_FCM1|MMCR0_PMXE|MMCR0_FCECE;
+-	/* Only applies to POWER3, but should be safe on RS64 */
+-	mmcr0 |= MMCR0_PMC1CE|MMCR0_PMCjCE;
+-	mtspr(SPRN_MMCR0, mmcr0);
+-
+-	dbg("setup on cpu %d, mmcr0 %lx\n", smp_processor_id(),
+-	    mfspr(SPRN_MMCR0));
+-	dbg("setup on cpu %d, mmcr1 %lx\n", smp_processor_id(),
+-	    mfspr(SPRN_MMCR1));
+-
+-	return 0;
+-}
+-
+-static int rs64_start(struct op_counter_config *ctr)
+-{
+-	int i;
+-	unsigned int mmcr0;
+-
+-	/* set the PMM bit (see comment below) */
+-	mtmsrd(mfmsr() | MSR_PMM);
+-
+-	for (i = 0; i < num_counters; ++i) {
+-		if (ctr[i].enabled) {
+-			classic_ctr_write(i, reset_value[i]);
+-			ctrl_write(i, ctr[i].event);
+-		} else {
+-			classic_ctr_write(i, 0);
+-		}
+-	}
+-
+-	mmcr0 = mfspr(SPRN_MMCR0);
+-
+-	/*
+-	 * now clear the freeze bit, counting will not start until we
+-	 * rfid from this excetion, because only at that point will
+-	 * the PMM bit be cleared
+-	 */
+-	mmcr0 &= ~MMCR0_FC;
+-	mtspr(SPRN_MMCR0, mmcr0);
+-
+-	dbg("start on cpu %d, mmcr0 %x\n", smp_processor_id(), mmcr0);
+-	return 0;
+-}
+-
+-static void rs64_stop(void)
+-{
+-	unsigned int mmcr0;
+-
+-	/* freeze counters */
+-	mmcr0 = mfspr(SPRN_MMCR0);
+-	mmcr0 |= MMCR0_FC;
+-	mtspr(SPRN_MMCR0, mmcr0);
+-
+-	dbg("stop on cpu %d, mmcr0 %x\n", smp_processor_id(), mmcr0);
+-
+-	mb();
+-}
+-
+-static void rs64_handle_interrupt(struct pt_regs *regs,
+-				  struct op_counter_config *ctr)
+-{
+-	unsigned int mmcr0;
+-	int is_kernel;
+-	int val;
+-	int i;
+-	unsigned long pc = mfspr(SPRN_SIAR);
+-
+-	is_kernel = is_kernel_addr(pc);
+-
+-	/* set the PMM bit (see comment below) */
+-	mtmsrd(mfmsr() | MSR_PMM);
+-
+-	for (i = 0; i < num_counters; ++i) {
+-		val = classic_ctr_read(i);
+-		if (val < 0) {
+-			if (ctr[i].enabled) {
+-				oprofile_add_ext_sample(pc, regs, i, is_kernel);
+-				classic_ctr_write(i, reset_value[i]);
+-			} else {
+-				classic_ctr_write(i, 0);
+-			}
+-		}
+-	}
+-
+-	mmcr0 = mfspr(SPRN_MMCR0);
+-
+-	/* reset the perfmon trigger */
+-	mmcr0 |= MMCR0_PMXE;
+-
+-	/*
+-	 * now clear the freeze bit, counting will not start until we
+-	 * rfid from this exception, because only at that point will
+-	 * the PMM bit be cleared
+-	 */
+-	mmcr0 &= ~MMCR0_FC;
+-	mtspr(SPRN_MMCR0, mmcr0);
+-}
+-
+-struct op_powerpc_model op_model_rs64 = {
+-	.reg_setup		= rs64_reg_setup,
+-	.cpu_setup		= rs64_cpu_setup,
+-	.start			= rs64_start,
+-	.stop			= rs64_stop,
+-	.handle_interrupt	= rs64_handle_interrupt,
+-};
 -- 
 1.9.1
