@@ -1,24 +1,31 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from n23.mail01.mtsvc.net (mailout32.mail01.mtsvc.net [216.70.64.70])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <xerofoify@gmail.com>
+Received: from mail-vc0-x22e.google.com (mail-vc0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c03::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F07D91A01AA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 01:03:22 +1000 (EST)
-Message-ID: <53BFFCB0.5020400@hurleysoftware.com>
-Date: Fri, 11 Jul 2014 11:03:12 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CEF71A0005
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jul 2014 13:14:01 +1000 (EST)
+Received: by mail-vc0-f174.google.com with SMTP id hy4so3646229vcb.19
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jul 2014 20:13:58 -0700 (PDT)
 MIME-Version: 1.0
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH tty-next 14/22] tty: Remove
- tty_wait_until_sent_from_close()
-References: <1402924639-5164-1-git-send-email-peter@hurleysoftware.com>
- <1402924639-5164-15-git-send-email-peter@hurleysoftware.com>
- <20140710230936.GA31181@kroah.com>
-In-Reply-To: <20140710230936.GA31181@kroah.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>,
- Karsten Keil <isdn@linux-pingi.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+In-Reply-To: <1404798135.16156.50.camel@pasglop>
+References: <CAPDOMVi5ptjaKzT+Exd3XtKcy7W7nNZYUD+MEwN8LmhPrQTZBQ@mail.gmail.com>
+ <53BB6067.1090402@roeck-us.net>
+ <CAPDOMVgeUWGtMC2yssh3zz6y208mHW5WCduDCwr+J09d7LF+CQ@mail.gmail.com>
+ <53BB6C2D.60209@roeck-us.net>
+ <CAPDOMVj0LPN1+wb-vj4ruruz4bpQb4X5nvRVtNWMpQecVgmd6A@mail.gmail.com>
+ <1404798135.16156.50.camel@pasglop>
+Date: Fri, 11 Jul 2014 23:13:58 -0400
+Message-ID: <CAPDOMVggm6mPrNS1KO1KksntMaYL6cvUB1_rHpF91akn5amvpg@mail.gmail.com>
+Subject: Re: Fwd: Fwd: Allyesconfig for powerpc still Failing
+From: Nick Krause <xerofoify@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Guenter Roeck <linux@roeck-us.net>
+Content-Type: multipart/mixed; boundary=bcaec547ccdbe6f7c004fdf672d7
+Cc: mahesh <mahesh@linux.vnet.ibm.com>, Alexander Graf <agraf@suse.de>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Michael Ellerman <michael@ellerman.id.au>, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +35,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2014 07:09 PM, Greg Kroah-Hartman wrote:
-> On Mon, Jun 16, 2014 at 09:17:11AM -0400, Peter Hurley wrote:
->> tty_wait_until_sent_from_close() drops the tty lock while waiting
->> for the tty driver to finish sending previously accepted data (ie.,
->> data remaining in its write buffer and transmit fifo).
+--bcaec547ccdbe6f7c004fdf672d7
+Content-Type: text/plain; charset=UTF-8
+
+>> > Guenter Roeck wrote on Mon, Jul 7, 2014 at 11:07 PM
+>> > I submitted a patch to work around this problem a couple of weeks ago [1].
+>> > Unfortunately, with this patch applied, allyesconfig still fails with
+>> > relocation errors, but at least the above message is gone, and
+>> > allmodconfig passes.
+>> >
+>> > Maybe we can convince Ben to accept the patch ...
+>> >
+>> > Thanks,
+>> > Guenter
+>> >
+>> > ---
+>> > [1] https://lkml.org/lkml/2014/6/30/607
+>> >
+>> > Hey Guenter,
+>> > Would you mind sending me the patch that fixes these errors.
+>> > I would like to test it before sending in to Ben.
+>> > Cheers Nick
+>> >
 >>
->> However, dropping the tty lock is a hold-over from when the tty
->> lock was system-wide; ie., one lock for all ttys.
+>> Hi Nick,
 >>
->> Since commit 89c8d91e31f267703e365593f6bfebb9f6d2ad01,
->> 'tty: localise the lock', dropping the tty lock has not been necessary.
+>> Just follow the link above, select 'forward', and follow the directions.
+>> You'll get the patch per e-mail.
 >>
->> CC: Karsten Keil <isdn@linux-pingi.de>
->> CC: linuxppc-dev@lists.ozlabs.org
->> Signed-off-by: Peter Hurley <peter@hurleysoftware.com>
->> ---
->>   drivers/isdn/i4l/isdn_tty.c   |  2 +-
->>   drivers/tty/hvc/hvc_console.c |  2 +-
->>   drivers/tty/hvc/hvcs.c        |  2 +-
->>   drivers/tty/tty_port.c        | 11 ++---------
->>   include/linux/tty.h           | 18 ------------------
->>   5 files changed, 5 insertions(+), 30 deletions(-)
+>> Alternative:
+>>
+>> wget "http://download.gmane.org/gmane.linux.kernel/1736036/1736037"
+>>
+>> The patch will be in a file named '1736037'.
+>>
+>> I copied the list for others, in case the 'how to download a patch'
+>> question comes up again.
+>>
+>> Guenter
+>>
+>> Guenter,
+>> Your patch works for me in building the powerpc allyesconfig.
+>> This is one news, I am going to send this patch to Ben.
+>> Cheers Nick
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
 >
-> I've applied the first 13 patches in this series, as it looks like you
-> were going to split things up from here, right?
+>
 
-Yes, thanks for doing that.
+Powerpc allyesconfig seems to be succeeding as of me pulling upstream
+today. On the other hand I get one
+randconfig build to succeed and the second fails. I will attach my log
+of the failing build.
+Cheers Nick
 
-> Can you refresh these and resend when you have that done?
+--bcaec547ccdbe6f7c004fdf672d7
+Content-Type: application/octet-stream; name=randconfig2
+Content-Disposition: attachment; filename=randconfig2
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hxiczetz0
 
-Unfortunately, that probably won't be until after the 3.17 merge window,
-for 3.18. The tty_open() rework is not trivial and there is an issue
-with the ldisc flush removal patch.
-
-I'm hoping to include the tty flow control fixes with that stuff as well.
-
-Regards,
-Peter Hurley
+d2FybmluZzogKFVTQl9PVEdfRlNNICYmIEZTTF9VU0IyX09URyAmJiBVU0JfTVZfT1RHKSBzZWxl
+Y3RzIFVTQl9PVEcgd2hpY2ggaGFzIHVubWV0IGRpcmVjdCBkZXBlbmRlbmNpZXMgKFVTQl9TVVBQ
+T1JUICYmIFVTQiAmJiBQTV9SVU5USU1FKQp3YXJuaW5nOiAoTVBDODM2eF9SREsgJiYgTVREX05B
+TkRfRlNMX0VMQkMgJiYgTVREX05BTkRfRlNMX1VQTSkgc2VsZWN0cyBGU0xfTEJDIHdoaWNoIGhh
+cyB1bm1ldCBkaXJlY3QgZGVwZW5kZW5jaWVzIChGU0xfU09DKQp3YXJuaW5nOiAoVVNCX09UR19G
+U00gJiYgRlNMX1VTQjJfT1RHICYmIFVTQl9NVl9PVEcpIHNlbGVjdHMgVVNCX09URyB3aGljaCBo
+YXMgdW5tZXQgZGlyZWN0IGRlcGVuZGVuY2llcyAoVVNCX1NVUFBPUlQgJiYgVVNCICYmIFBNX1JV
+TlRJTUUpCndhcm5pbmc6IChNUEM4MzZ4X1JESyAmJiBNVERfTkFORF9GU0xfRUxCQyAmJiBNVERf
+TkFORF9GU0xfVVBNKSBzZWxlY3RzIEZTTF9MQkMgd2hpY2ggaGFzIHVubWV0IGRpcmVjdCBkZXBl
+bmRlbmNpZXMgKEZTTF9TT0MpCnBvd2VycGM2NC1saW51eC1nbnUtbGQ6IHVucmVjb2duaXNlZCBl
+bXVsYXRpb24gbW9kZTogZWxmNjRscHBjClN1cHBvcnRlZCBlbXVsYXRpb25zOiBlbGY2NHBwYyBl
+bGYzMnBwY2xpbnV4IGVsZjMycHBjIGVsZjMycHBjc2ltCm1ha2VbMV06ICoqKiBbdXNyL2J1aWx0
+LWluLm9dIEVycm9yIDEKbWFrZTogKioqIFt1c3JdIEVycm9yIDIKbWFrZTogKioqIFdhaXRpbmcg
+Zm9yIHVuZmluaXNoZWQgam9icy4uLi4KcG93ZXJwYzY0LWxpbnV4LWdudS1sZDogdW5yZWNvZ25p
+c2VkIGVtdWxhdGlvbiBtb2RlOiBlbGY2NGxwcGMKU3VwcG9ydGVkIGVtdWxhdGlvbnM6IGVsZjY0
+cHBjIGVsZjMycHBjbGludXggZWxmMzJwcGMgZWxmMzJwcGNzaW0KbWFrZVsxXTogKioqIFtpbml0
+L21vdW50cy5vXSBFcnJvciAxCm1ha2VbMV06ICoqKiBXYWl0aW5nIGZvciB1bmZpbmlzaGVkIGpv
+YnMuLi4uCm1ha2U6ICoqKiBbaW5pdF0gRXJyb3IgMgovdXNyL2xpYi9nY2MvcG93ZXJwYzY0LWxp
+bnV4LWdudS80LjguMS8uLi8uLi8uLi8uLi9wb3dlcnBjNjQtbGludXgtZ251L2Jpbi9sZDogdW5y
+ZWNvZ25pc2VkIGVtdWxhdGlvbiBtb2RlOiBlbGYzMmxwcGNsaW51eApTdXBwb3J0ZWQgZW11bGF0
+aW9uczogZWxmNjRwcGMgZWxmMzJwcGNsaW51eCBlbGYzMnBwYyBlbGYzMnBwY3NpbQpjb2xsZWN0
+MjogZXJyb3I6IGxkIHJldHVybmVkIDEgZXhpdCBzdGF0dXMKbWFrZVsyXTogKioqIFthcmNoL3Bv
+d2VycGMva2VybmVsL3Zkc28zMi92ZHNvMzIuc28uZGJnXSBFcnJvciAxCm1ha2VbMV06ICoqKiBb
+YXJjaC9wb3dlcnBjL2tlcm5lbC92ZHNvMzJdIEVycm9yIDIKbWFrZVsxXTogKioqIFdhaXRpbmcg
+Zm9yIHVuZmluaXNoZWQgam9icy4uLi4KcG93ZXJwYzY0LWxpbnV4LWdudS1sZDogdW5yZWNvZ25p
+c2VkIGVtdWxhdGlvbiBtb2RlOiBlbGY2NGxwcGMKU3VwcG9ydGVkIGVtdWxhdGlvbnM6IGVsZjY0
+cHBjIGVsZjMycHBjbGludXggZWxmMzJwcGMgZWxmMzJwcGNzaW0KbWFrZVsxXTogKioqIFthcmNo
+L3Bvd2VycGMvbW0vYnVpbHQtaW4ub10gRXJyb3IgMQptYWtlOiAqKiogW2FyY2gvcG93ZXJwYy9t
+bV0gRXJyb3IgMgovdXNyL2xpYi9nY2MvcG93ZXJwYzY0LWxpbnV4LWdudS80LjguMS8uLi8uLi8u
+Li8uLi9wb3dlcnBjNjQtbGludXgtZ251L2Jpbi9sZDogdW5yZWNvZ25pc2VkIGVtdWxhdGlvbiBt
+b2RlOiBlbGY2NGxwcGMKU3VwcG9ydGVkIGVtdWxhdGlvbnM6IGVsZjY0cHBjIGVsZjMycHBjbGlu
+dXggZWxmMzJwcGMgZWxmMzJwcGNzaW0KY29sbGVjdDI6IGVycm9yOiBsZCByZXR1cm5lZCAxIGV4
+aXQgc3RhdHVzCm1ha2VbMl06ICoqKiBbYXJjaC9wb3dlcnBjL2tlcm5lbC92ZHNvNjQvdmRzbzY0
+LnNvLmRiZ10gRXJyb3IgMQptYWtlWzFdOiAqKiogW2FyY2gvcG93ZXJwYy9rZXJuZWwvdmRzbzY0
+XSBFcnJvciAyCm1ha2U6ICoqKiBbYXJjaC9wb3dlcnBjL2tlcm5lbF0gRXJyb3IgMgptYWtlOiAq
+Kiogd2FpdDogTm8gY2hpbGQgcHJvY2Vzc2VzLiAgU3RvcC4K
+--bcaec547ccdbe6f7c004fdf672d7--
